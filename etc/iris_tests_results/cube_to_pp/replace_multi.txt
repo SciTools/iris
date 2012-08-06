@@ -1,0 +1,241 @@
+[PP Field
+   lbyr: 2008
+   lbmon: 12
+   lbdat: 3
+   lbhr: 12
+   lbmin: 0
+   lbsec: 0
+   lbyrd: 2008
+   lbmond: 12
+   lbdatd: 3
+   lbhrd: 12
+   lbmind: 0
+   lbsecd: 0
+   lbtim: 11
+   lbft: 0
+   lblrec: 307840
+   lbcode: 1
+   lbhem: 0
+   lbrow: 481
+   lbnpt: 640
+   lbext: 0
+   lbpack: 0
+   lbrel: 3
+   lbfc: 16
+   lbcfc: 0
+   lbproc: 0
+   lbvc: 8
+   lbrvc: 0
+   lbexp: 0
+   lbegin: 0
+   lbnrec: 0
+   lbproj: 0
+   lbtyp: 0
+   lblev: 0
+   lbrsvd: (0, 0, 0, 0)
+   lbsrce: 7051111
+   lbuser: (1, 0, 0, 16203, 0, 0, 1)
+   brsvd: (0.0, 0.0, 0.0, 0.0)
+   bdatum: 0.0
+   bacc: 0.0
+   blev: 0.1
+   brlev: 0.0
+   bhlev: 0.0
+   bhrlev: 0.0
+   bplat: 90.0
+   bplon: 0.0
+   bgor: 0.0
+   bzy: -90.375
+   bdy: 0.375
+   bzx: -0.5625
+   bdx: 0.5625
+   bmdi: -1e+30
+   bmks: 1.0
+   data: [[ 234.     234.     234.    ...,  234.     234.     234.   ]
+ [ 234.     234.     234.    ...,  234.     234.     234.   ]
+ [ 234.     234.     234.    ...,  234.     234.     234.   ]
+ ..., 
+ [ 217.5    217.5    217.5   ...,  217.5    217.5    217.5  ]
+ [ 217.625  217.625  217.625 ...,  217.625  217.625  217.625]
+ [ 217.75   217.75   217.75  ...,  217.75   217.75   217.75 ]]
+, PP Field
+   lbyr: 2008
+   lbmon: 12
+   lbdat: 3
+   lbhr: 12
+   lbmin: 0
+   lbsec: 0
+   lbyrd: 2008
+   lbmond: 12
+   lbdatd: 3
+   lbhrd: 12
+   lbmind: 0
+   lbsecd: 0
+   lbtim: 11
+   lbft: 0
+   lblrec: 307840
+   lbcode: 1
+   lbhem: 0
+   lbrow: 481
+   lbnpt: 640
+   lbext: 0
+   lbpack: 0
+   lbrel: 3
+   lbfc: 16
+   lbcfc: 0
+   lbproc: 0
+   lbvc: 8
+   lbrvc: 0
+   lbexp: 0
+   lbegin: 0
+   lbnrec: 0
+   lbproj: 0
+   lbtyp: 0
+   lblev: 0
+   lbrsvd: (0, 0, 0, 0)
+   lbsrce: 7051111
+   lbuser: (1, 0, 0, 16203, 0, 0, 1)
+   brsvd: (0.0, 0.0, 0.0, 0.0)
+   bdatum: 0.0
+   bacc: 0.0
+   blev: 0.2
+   brlev: 0.0
+   bhlev: 0.0
+   bhrlev: 0.0
+   bplat: 90.0
+   bplon: 0.0
+   bgor: 0.0
+   bzy: -90.375
+   bdy: 0.375
+   bzx: -0.5625
+   bdx: 0.5625
+   bmdi: -1e+30
+   bmks: 1.0
+   data: [[ 252.375  252.375  252.375 ...,  252.375  252.375  252.375]
+ [ 252.375  252.375  252.375 ...,  252.375  252.375  252.375]
+ [ 252.5    252.5    252.5   ...,  252.5    252.5    252.5  ]
+ ..., 
+ [ 237.     237.     237.    ...,  237.     237.     237.   ]
+ [ 237.125  237.125  237.125 ...,  237.125  237.125  237.125]
+ [ 237.375  237.375  237.375 ...,  237.375  237.375  237.375]]
+, PP Field
+   lbyr: 2008
+   lbmon: 12
+   lbdat: 4
+   lbhr: 12
+   lbmin: 0
+   lbsec: 0
+   lbyrd: 2008
+   lbmond: 12
+   lbdatd: 4
+   lbhrd: 12
+   lbmind: 0
+   lbsecd: 0
+   lbtim: 11
+   lbft: 0
+   lblrec: 307840
+   lbcode: 1
+   lbhem: 0
+   lbrow: 481
+   lbnpt: 640
+   lbext: 0
+   lbpack: 0
+   lbrel: 3
+   lbfc: 16
+   lbcfc: 0
+   lbproc: 0
+   lbvc: 8
+   lbrvc: 0
+   lbexp: 0
+   lbegin: 0
+   lbnrec: 0
+   lbproj: 0
+   lbtyp: 0
+   lblev: 0
+   lbrsvd: (0, 0, 0, 0)
+   lbsrce: 7051111
+   lbuser: (1, 0, 0, 16203, 0, 0, 1)
+   brsvd: (0.0, 0.0, 0.0, 0.0)
+   bdatum: 0.0
+   bacc: 0.0
+   blev: 0.1
+   brlev: 0.0
+   bhlev: 0.0
+   bhrlev: 0.0
+   bplat: 90.0
+   bplon: 0.0
+   bgor: 0.0
+   bzy: -90.375
+   bdy: 0.375
+   bzx: -0.5625
+   bdx: 0.5625
+   bmdi: -1e+30
+   bmks: 1.0
+   data: [[ 230.25   230.25   230.25  ...,  230.25   230.25   230.25 ]
+ [ 230.25   230.25   230.25  ...,  230.25   230.25   230.25 ]
+ [ 230.375  230.375  230.375 ...,  230.375  230.375  230.375]
+ ..., 
+ [ 219.75   219.75   219.75  ...,  219.75   219.75   219.75 ]
+ [ 219.125  219.125  219.125 ...,  219.125  219.125  219.125]
+ [ 218.625  218.625  218.625 ...,  218.625  218.625  218.625]]
+, PP Field
+   lbyr: 2008
+   lbmon: 12
+   lbdat: 4
+   lbhr: 12
+   lbmin: 0
+   lbsec: 0
+   lbyrd: 2008
+   lbmond: 12
+   lbdatd: 4
+   lbhrd: 12
+   lbmind: 0
+   lbsecd: 0
+   lbtim: 11
+   lbft: 0
+   lblrec: 307840
+   lbcode: 1
+   lbhem: 0
+   lbrow: 481
+   lbnpt: 640
+   lbext: 0
+   lbpack: 0
+   lbrel: 3
+   lbfc: 16
+   lbcfc: 0
+   lbproc: 0
+   lbvc: 8
+   lbrvc: 0
+   lbexp: 0
+   lbegin: 0
+   lbnrec: 0
+   lbproj: 0
+   lbtyp: 0
+   lblev: 0
+   lbrsvd: (0, 0, 0, 0)
+   lbsrce: 7051111
+   lbuser: (1, 0, 0, 16203, 0, 0, 1)
+   brsvd: (0.0, 0.0, 0.0, 0.0)
+   bdatum: 0.0
+   bacc: 0.0
+   blev: 0.2
+   brlev: 0.0
+   bhlev: 0.0
+   bhrlev: 0.0
+   bplat: 90.0
+   bplon: 0.0
+   bgor: 0.0
+   bzy: -90.375
+   bdy: 0.375
+   bzx: -0.5625
+   bdx: 0.5625
+   bmdi: -1e+30
+   bmks: 1.0
+   data: [[ 250.75   250.75   250.75  ...,  250.75   250.75   250.75 ]
+ [ 250.875  250.875  250.875 ...,  250.875  250.875  250.875]
+ [ 250.875  250.875  250.875 ...,  250.875  250.875  250.875]
+ ..., 
+ [ 240.125  240.125  240.125 ...,  240.125  240.125  240.125]
+ [ 239.875  239.875  239.875 ...,  239.875  239.875  239.875]
+ [ 239.625  239.625  239.625 ...,  239.625  239.625  239.625]]
+]

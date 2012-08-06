@@ -1,0 +1,617 @@
+# (C) British Crown Copyright 2010 - 2012, Met Office
+#
+# This file is part of Iris.
+#
+# Iris is free software: you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Iris is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+
+####################################
+### Edition independent metadata ###
+####################################
+
+
+IF
+grib.gridType=="regular_ll"
+grib.jPointsAreConsecutive == 0
+THEN
+CoordAndDims(DimCoord(numpy.arange(grib.Nj, dtype=numpy.float64) * grib.jDirectionIncrementInDegrees * (grib.jScansPositively*2-1) + grib.latitudeOfFirstGridPointInDegrees, grib._y_coord_name, units='degrees', coord_system=LatLonCS( grib._spheroid_datum, grib._prime_meridian, GeoPosition(90.0, 0.0), 0.0)), 0)
+CoordAndDims(DimCoord(numpy.arange(grib.Ni) * grib.iDirectionIncrementInDegrees * (grib.iScansNegatively*(-2)+1) + grib.longitudeOfFirstGridPointInDegrees, grib._x_coord_name, units='degrees', coord_system=LatLonCS( grib._spheroid_datum, grib._prime_meridian, GeoPosition(90.0, 0.0), 0.0)), 1)
+
+IF
+grib.gridType=="regular_ll"
+grib.jPointsAreConsecutive == 1
+THEN
+CoordAndDims(DimCoord(numpy.arange(grib.Nj, dtype=numpy.float64) * grib.jDirectionIncrementInDegrees * (grib.jScansPositively*2-1) + grib.latitudeOfFirstGridPointInDegrees, grib._y_coord_name, units='degrees', coord_system=LatLonCS( grib._spheroid_datum, grib._prime_meridian, GeoPosition(90.0, 0.0), 0.0)), 1)
+CoordAndDims(DimCoord(numpy.arange(grib.Ni, dtype=numpy.float64) * grib.iDirectionIncrementInDegrees * (grib.iScansNegatively*(-2)+1) + grib.longitudeOfFirstGridPointInDegrees, grib._x_coord_name, units='degrees', coord_system=LatLonCS( grib._spheroid_datum, grib._prime_meridian, GeoPosition(90.0, 0.0), 0.0)), 0)
+
+IF
+grib.gridType=="rotated_ll"
+grib.jPointsAreConsecutive == 0
+THEN
+CoordAndDims(DimCoord(numpy.arange(grib.Nj, dtype=numpy.float64) * grib.jDirectionIncrementInDegrees * (grib.jScansPositively*2-1) + grib.latitudeOfFirstGridPointInDegrees, grib._y_coord_name, units='degrees', coord_system=LatLonCS(grib._spheroid_datum, grib._prime_meridian, grib._northPole, grib._reference_longitude)), 0)
+CoordAndDims(DimCoord(numpy.arange(grib.Ni, dtype=numpy.float64) * grib.iDirectionIncrementInDegrees * (grib.iScansNegatively*(-2)+1) + grib.longitudeOfFirstGridPointInDegrees, grib._x_coord_name, units='degrees', coord_system=LatLonCS(grib._spheroid_datum, grib._prime_meridian, grib._northPole, grib._reference_longitude)), 1)
+
+IF
+grib.gridType=="rotated_ll"
+grib.jPointsAreConsecutive == 1
+THEN
+CoordAndDims(DimCoord(numpy.arange(grib.Nj, dtype=numpy.float64) * grib.jDirectionIncrementInDegrees * (grib.jScansPositively*2-1) + grib.latitudeOfFirstGridPointInDegrees, grib._y_coord_name, units='degrees', coord_system=LatLonCS(grib._spheroid_datum, grib._prime_meridian, grib._northPole, grib._reference_longitude)), 1)
+CoordAndDims(DimCoord(numpy.arange(grib.Ni, dtype=numpy.float64) * grib.iDirectionIncrementInDegrees * (grib.iScansNegatively*(-2)+1) + grib.longitudeOfFirstGridPointInDegrees, grib._x_coord_name, units='degrees', coord_system=LatLonCS(grib._spheroid_datum, grib._prime_meridian, grib._northPole, grib._reference_longitude)), 0)
+
+
+
+
+
+####################
+### Grib1 params ###
+####################
+
+IF
+grib.edition == 1
+grib.table2Version < 128
+grib.indicatorOfParameter == 11
+THEN
+CMAttribute("standard_name", "air_temperature")
+CMAttribute("units", "kelvin")
+
+IF
+grib.edition == 1
+grib.table2Version < 128
+grib.indicatorOfParameter == 33
+THEN
+CMAttribute("standard_name", "x_wind")
+CMAttribute("units", "m s-1")
+
+IF
+grib.edition == 1
+grib.table2Version < 128
+grib.indicatorOfParameter == 34
+THEN
+CMAttribute("standard_name", "y_wind")
+CMAttribute("units", "m s-1")
+
+IF
+grib.edition == 1
+grib.table2Version >= 128
+THEN
+CMAttribute("long_name", "UNKNOWN LOCAL PARAM " + str(grib.indicatorOfParameter) + "." + str(grib.table2Version))
+CMAttribute("units", "???")
+
+####################
+### Grib2 params ###
+####################
+
+## Note: Do we really want to be maintaining a list of these? There's lots of them...
+## Future grib  api versions may have "cfName" available for more params...
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 0
+grib.parameterNumber == 0
+THEN
+CMAttribute("standard_name", "air_temperature")
+CMAttribute("units", "kelvin")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 0
+grib.parameterNumber == 2
+THEN
+CMAttribute("standard_name", "potential_temperature")
+CMAttribute("units", "K")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 1
+grib.parameterNumber == 0
+THEN
+CMAttribute("standard_name", "specific_humidity")
+CMAttribute("units", "kg kg-1")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 1
+grib.parameterNumber == 1
+THEN
+CMAttribute("standard_name", "relative_humidity")
+CMAttribute("units", "%")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 1
+grib.parameterNumber == 3
+THEN
+CMAttribute("standard_name", "precipitable_water")
+CMAttribute("units", "kg m-2")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 1
+grib.parameterNumber == 22
+THEN
+CMAttribute("standard_name", "cloud_mixing_ratio")
+CMAttribute("units", "kg kg-1")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 1
+grib.parameterNumber == 13
+THEN
+CMAttribute("standard_name", "water_equivalent_of_accumulated_snow_depth")
+CMAttribute("units", "kg m-2")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 2
+grib.parameterNumber == 1
+THEN
+CMAttribute("standard_name", "wind_speed")
+CMAttribute("units", "m s-1")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 2
+grib.parameterNumber == 2
+THEN
+CMAttribute("standard_name", "x_wind")
+CMAttribute("units", "m s-1")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 2
+grib.parameterNumber == 3
+THEN
+CMAttribute("standard_name", "y_wind")
+CMAttribute("units", "m s-1")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 2
+grib.parameterNumber == 8
+THEN
+CMAttribute("standard_name", "vertical_velocity_(pressure)")
+CMAttribute("units", "Pa s-1")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 2
+grib.parameterNumber == 10
+THEN
+CMAttribute("standard_name", "absolute_vorticity")
+CMAttribute("units", "s-1")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 3
+grib.parameterNumber == 0
+THEN
+CMAttribute("standard_name", "pressure")
+CMAttribute("units", "Pa")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 3
+grib.parameterNumber == 1
+THEN
+CMAttribute("standard_name", "pressure_reduced_to_msl")
+CMAttribute("units", "Pa")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 3
+grib.parameterNumber == 3
+THEN
+CMAttribute("standard_name", "icao_standard_atmosphere_reference_height")
+CMAttribute("units", "m")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 3
+grib.parameterNumber == 5
+THEN
+CMAttribute("standard_name", "geopotential_height")
+CMAttribute("units", "gpm")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 3
+grib.parameterNumber == 9
+THEN
+CMAttribute("standard_name", "geopotential_height_anomaly")
+CMAttribute("units", "gpm")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 6
+grib.parameterNumber == 1
+THEN
+CMAttribute("standard_name", "total_cloud_cover")
+CMAttribute("units", "%")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 6
+grib.parameterNumber == 6
+THEN
+CMAttribute("standard_name", "cloud_water")
+CMAttribute("units", "kg m-2")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 7
+grib.parameterNumber == 6
+THEN
+CMAttribute("standard_name", "convective_available_potential_energy")
+CMAttribute("units", "J kg-1")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 7
+grib.parameterNumber == 7
+THEN
+CMAttribute("standard_name", "convective_inhibition")
+CMAttribute("units", "J kg-1")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 7
+grib.parameterNumber == 8
+THEN
+CMAttribute("standard_name", "storm_relative_helicity")
+CMAttribute("units", "J kg-1")
+
+IF
+grib.edition == 2
+grib.discipline == 0
+grib.parameterCategory == 14
+grib.parameterNumber == 0
+THEN
+CMAttribute("standard_name", "total_ozone")
+CMAttribute("units", "Dobson")
+
+IF
+grib.edition == 2
+grib.discipline == 2
+grib.parameterCategory == 0
+grib.parameterNumber == 0
+THEN
+CMAttribute("standard_name", "land_cover")
+CMAttribute("units", "proportion")
+
+IF
+grib.edition == 2
+grib.discipline == 10
+grib.parameterCategory == 2
+grib.parameterNumber == 0
+THEN
+CMAttribute("standard_name", "ice_cover")
+CMAttribute("units", "proportion")
+
+
+#######################################
+### Grib1 verification dates ##########
+#######################################
+
+IF
+grib.edition == 1
+grib._phenomenonDateTime != -1.0
+THEN
+CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
+CoordAndDims(DimCoord(points=grib.phenomenon_points('hours'), standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN))) 
+
+## time processed ##
+
+IF
+grib.edition == 1
+grib.timeRangeIndicator == 3
+CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
+CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours'), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CellMethod("mean", cm.coord("time"))
+
+IF
+grib.edition == 1
+grib.timeRangeIndicator == 4
+CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
+CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CellMethod("sum", cm.coord("time"))
+
+IF
+grib.edition == 1
+grib.timeRangeIndicator == 5
+CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
+CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CellMethod("_difference", cm.coord("time"))
+
+## XXX: There's more detail to these than represented here... ##
+
+IF
+grib.edition == 1
+grib.timeRangeIndicator == 51
+CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
+CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CellMethod("mean", cm.coord("time"))
+
+IF
+grib.edition == 1
+grib.timeRangeIndicator == 113
+CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
+CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CellMethod("mean", cm.coord("time"))
+
+IF
+grib.edition == 1
+grib.timeRangeIndicator == 114
+CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
+CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CellMethod("sum", cm.coord("time"))
+
+IF
+grib.edition == 1
+grib.timeRangeIndicator == 115
+CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
+CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours'), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CellMethod("mean", cm.coord("time"))
+
+IF
+grib.edition == 1
+grib.timeRangeIndicator == 4
+CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
+CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CellMethod("sum", cm.coord("time"))
+
+standard_name='forecast_period', grib._forecastTimeUnit)
+CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CellMethod("mean", cm.coord("time"))
+
+IF
+grib.edition == 1
+grib.timeRangeIndicator == 116
+CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
+CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CellMethod("sum", cm.coord("time"))
+
+IF
+grib.edition == 1
+grib.timeRangeIndicator == 117
+CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
+CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CellMethod("mean", cm.coord("time"))
+
+IF
+grib.edition == 1
+grib.timeRangeIndicator == 118
+CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
+CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CellMethod("_covariance", cm.coord("time"))
+
+IF
+grib.edition == 1
+grib.timeRangeIndicator == 123
+CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
+CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CellMethod("mean", cm.coord("time"))
+
+IF
+grib.edition == 1
+grib.timeRangeIndicator == 124
+CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
+CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CellMethod("sum", cm.coord("time"))
+
+IF
+grib.edition == 1
+grib.timeRangeIndicator == 125
+CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
+CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CellMethod("standard_deviation", cm.coord("time"))
+
+
+
+#######################################
+### Grib2 verification dates ##########
+#######################################
+
+IF
+grib.edition == 2
+grib.productDefinitionTemplateNumber == 0
+THEN
+CoordAndDims(DimCoord(points=Unit(grib._forecastTimeUnit).convert(int(grib.forecastTime), "hours"), standard_name='forecast_period', units="hours"))
+CoordAndDims(DimCoord(points=grib.phenomenon_points('hours'), standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+
+## time processed (4.8) ##
+
+# common
+ 
+IF
+grib.edition == 2
+grib.productDefinitionTemplateNumber == 8
+THEN
+CoordAndDims(DimCoord(points=Unit(grib._forecastTimeUnit).convert(int(grib.forecastTime), "hours"), standard_name='forecast_period', units="hours"))
+CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN), bounds=grib.phenomenon_bounds('hours')))
+
+
+# specifics
+
+IF
+grib.edition == 2
+grib.productDefinitionTemplateNumber == 8
+grib.typeOfStatisticalProcessing == 0
+THEN
+CellMethod("mean", cm.coord("time"))
+
+
+IF
+grib.edition == 2
+grib.productDefinitionTemplateNumber == 8
+grib.typeOfStatisticalProcessing == 1
+THEN
+CellMethod("sum", cm.coord("time"))
+
+IF
+grib.edition == 2
+grib.productDefinitionTemplateNumber == 8
+grib.typeOfStatisticalProcessing == 2
+THEN
+CellMethod("maximum", cm.coord("time"))
+
+IF
+grib.edition == 2
+grib.productDefinitionTemplateNumber == 8
+grib.typeOfStatisticalProcessing == 3
+THEN
+CellMethod("minimum", cm.coord("time"))
+
+IF
+grib.edition == 2
+grib.productDefinitionTemplateNumber == 8
+grib.typeOfStatisticalProcessing == 4
+THEN
+## XXX: end - start ## 
+CellMethod("_difference", cm.coord("time"))
+
+IF
+grib.edition == 2
+grib.productDefinitionTemplateNumber == 8
+grib.typeOfStatisticalProcessing == 5
+THEN
+CellMethod("_root_mean_square", cm.coord("time"))
+
+IF
+grib.edition == 2
+grib.productDefinitionTemplateNumber == 8
+grib.typeOfStatisticalProcessing == 6
+THEN
+CellMethod("standard_deviation", cm.coord("time"))
+
+IF
+grib.edition == 2
+grib.productDefinitionTemplateNumber == 8
+grib.typeOfStatisticalProcessing == 7
+THEN
+CellMethod("_convariance", cm.coord("time"))
+
+IF
+grib.edition == 2
+grib.productDefinitionTemplateNumber == 8
+grib.typeOfStatisticalProcessing == 8
+THEN
+## start - end ## 
+CellMethod("_difference", cm.coord("time"))
+
+IF
+grib.edition == 2
+grib.productDefinitionTemplateNumber == 8
+grib.typeOfStatisticalProcessing == 9
+THEN
+CellMethod("_ratio", cm.coord("time"))
+
+
+###################
+### Grib1 level ###
+###################
+
+IF
+grib.edition == 1
+grib.levelType == 'pl'
+THEN
+CoordAndDims(DimCoord(points=grib.level,  long_name="pressure", units="hPa"))
+
+
+
+###################
+### Grib2 level ###
+###################
+
+
+# pressure
+IF
+grib.edition == 2
+grib.typeOfFirstFixedSurface == 100
+grib.typeOfSecondFixedSurface == 255
+THEN
+CoordAndDims(DimCoord(points=grib.scaledValueOfFirstFixedSurface/(10.0**grib.scaleFactorOfFirstFixedSurface), long_name="pressure", units="Pa"))
+
+IF
+grib.edition == 2
+grib.typeOfFirstFixedSurface == 100
+grib.typeOfSecondFixedSurface != 255
+THEN
+CoordAndDims(DimCoord(points=0.5*(grib.scaledValueOfFirstFixedSurface/(10.0**grib.scaleFactorOfFirstFixedSurface) + grib.scaledValueOfSecondFixedSurface/(10.0**grib.scaleFactorOfSecondFixedSurface)), long_name="pressure", units="Pa", bounds=[grib.scaledValueOfFirstFixedSurface/(10.0**grib.scaleFactorOfFirstFixedSurface) , grib.scaledValueOfSecondFixedSurface/(10.0**grib.scaleFactorOfSecondFixedSurface)]))
+
+
+# XXX Addressed in #1118 pending #1039 for hybrid levels
+# hybrid height.
+# XXX We don't really see this, but it was useful to test Rachel's hybrid pressure data, pending #1039
+#IF
+#grib.edition == 2
+#grib.typeOfFirstFixedSurface == 118
+#grib.numberOfVerticalCoordinateValues > 0
+#THEN
+#ExplicitCoord("model_level", "1", 'z', points=grib.scaledValueOfFirstFixedSurface)
+#ExplicitCoord('level_height', 'm', 'z', points=grib.pv[grib.scaledValueOfFirstFixedSurface], definitive=True, coord_system=HybridHeightCS(Reference('orography')))
+#ExplicitCoord('sigma', '1', 'z', points=grib.pv[grib.numberOfVerticalCoordinateValues/2 + grib.scaledValueOfFirstFixedSurface], coord_system=HybridHeightCS(Reference('orography')))
+#
+# hybrid pressure.105 deprecated for 119.
+#IF
+#grib.edition == 2
+#grib.typeOfFirstFixedSurface in [105, 119]
+#grib.numberOfCoordinatesValues > 0
+#THEN
+#ExplicitCoord("model_level", "1", 'z', points=grib.scaledValueOfFirstFixedSurface)
+#ExplicitCoord('level_height', 'm', 'z', points=grib.pv[grib.scaledValueOfFirstFixedSurface], definitive=True, coord_system=HybridPressureCS(Reference('surface_pressure')))
+#ExplicitCoord('sigma', '1', 'z', points=grib.pv[grib.numberOfPoints/2 + grib.scaledValueOfFirstFixedSurface], coord_system=HybridPressureCS(Reference('surface_pressure')))
+
+
+
+##########################
+### originating centre ###
+##########################
+
+IF
+grib._originatingCentre != 'unknown'
+THEN
+CoordAndDims(AuxCoord(points=grib._originatingCentre, long_name='originating_centre', units='no_unit'))
+
+
+############
+### misc ###
+############
+
+# individual ensemble forecast
+IF
+grib.edition == 2
+grib.productDefinitionTemplateNumber == 1
+THEN
+CoordAndDims(DimCoord(points=grib.perturbationNumber, long_name='ensemble_member', units='no_unit'))

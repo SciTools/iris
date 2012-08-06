@@ -1,0 +1,54 @@
+dimensions:
+	time = 1096 ;
+	grid_latitude = 190 ;
+	grid_longitude = 174 ;
+	bnds = 2 ;
+variables:
+	float precipitation_flux(time, grid_latitude, grid_longitude) ;
+		precipitation_flux:standard_name = "precipitation_flux" ;
+		precipitation_flux:long_name = "Precipitation" ;
+		precipitation_flux:units = "kg m-2 s-1" ;
+		precipitation_flux:experiment = "ER3" ;
+		precipitation_flux:institution = "DMI" ;
+		precipitation_flux:cell_methods = "time: mean" ;
+		precipitation_flux:grid_mapping = "rotated_latitude_longitude" ;
+		precipitation_flux:coordinates = "latitude longitude" ;
+	int rotated_latitude_longitude ;
+		rotated_latitude_longitude:grid_mapping_name = "rotated_latitude_longitude" ;
+		rotated_latitude_longitude:longitude_of_prime_meridian = 0. ;
+		rotated_latitude_longitude:semi_major_axis = 6371229. ;
+		rotated_latitude_longitude:semi_minor_axis = 6371229. ;
+		rotated_latitude_longitude:grid_north_pole_latitude = 18.f ;
+		rotated_latitude_longitude:grid_north_pole_longitude = -140.75f ;
+		rotated_latitude_longitude:north_pole_grid_longitude = 0. ;
+	float time(time) ;
+		time:axis = "T" ;
+		time:bounds = "time_bnds" ;
+		time:units = "days since 1950-01-01 00:00:00.0" ;
+		time:standard_name = "time" ;
+		time:long_name = "Julian Day" ;
+		time:calendar = "gregorian" ;
+	float time_bnds(time, bnds) ;
+	float grid_latitude(grid_latitude) ;
+		grid_latitude:axis = "Y" ;
+		grid_latitude:units = "degrees" ;
+		grid_latitude:standard_name = "grid_latitude" ;
+		grid_latitude:long_name = "rotated latitude" ;
+	float grid_longitude(grid_longitude) ;
+		grid_longitude:axis = "X" ;
+		grid_longitude:units = "degrees" ;
+		grid_longitude:standard_name = "grid_longitude" ;
+		grid_longitude:long_name = "rotated longitude" ;
+	float latitude(grid_latitude, grid_longitude) ;
+		latitude:units = "degrees" ;
+		latitude:standard_name = "latitude" ;
+		latitude:long_name = "latitude" ;
+	float longitude(grid_latitude, grid_longitude) ;
+		longitude:units = "degrees" ;
+		longitude:standard_name = "longitude" ;
+		longitude:long_name = "longitude" ;
+
+// global attributes:
+		:Conventions = "CF-1.5" ;
+		:source = "HIRHAM" ;
+}

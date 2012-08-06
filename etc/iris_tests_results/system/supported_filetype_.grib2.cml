@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="air_temperature" unit="kelvin">
+    <coords>
+      <coord>
+        <explicitCoord axis="forecast_period" name="forecast_period" points="[9]" unit="Unit('hours')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0]">
+        <regularCoord axis="y" count="60" name="latitude" start="0.0" step="1.0" unit="Unit('degrees')" value_type="float64">
+          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=0, semi_minor_axis=0.0, flattening=0.0, unit='m')" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[1]">
+        <regularCoord axis="x" count="60" name="longitude" start="30.0" step="1.0" unit="Unit('degrees')" value_type="float64">
+          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=0, semi_minor_axis=0.0, flattening=0.0, unit='m')" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+        </regularCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="originating_centre" name="originating_centre" points="['U.K. Met Office - Exeter']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" name="pressure" points="[99.0]" unit="Unit('Pa')" value_type="float64"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="t" name="time" points="[3.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x146ac41b" dtype="float64" shape="(60, 60)"/>
+  </cube>
+</cubes>

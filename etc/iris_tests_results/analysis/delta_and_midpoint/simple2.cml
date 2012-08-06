@@ -1,0 +1,2 @@
+<?xml version="1.0" ?>
+<regularCoord axis="foo" circular="True" count="4" name="foo" start="180.0" step="-90.0" unit="Unit('degrees')" value_type="float32"/>

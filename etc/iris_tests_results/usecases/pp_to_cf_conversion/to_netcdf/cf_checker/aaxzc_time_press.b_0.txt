@@ -1,0 +1,22 @@
+
+CHECKING NetCDF FILE: /var/tmp/aaxzc_time_press.b_0.nc
+=====================
+
+
+------------------
+Checking variable: pressure
+------------------
+
+------------------
+Checking variable: geopotential_height
+------------------
+WARNING (2.4): space/time dimensions appear in incorrect order
+WARNING (7.3): Coordinate variable time should have bounds or climatology attribute
+
+------------------
+Checking variable: time
+------------------
+
+ERRORS detected: 0
+WARNINGS given: 2
+INFORMATION messages: 0

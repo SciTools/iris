@@ -1,0 +1,51 @@
+dimensions:
+	pseudo_level = 4 ;
+	forecast_period = 4 ;
+	depth = 20 ;
+	grid_latitude = 143 ;
+	bnds = 2 ;
+variables:
+	float unknown(pseudo_level, forecast_period, depth, grid_latitude) ;
+		unknown:_FillValue = -1.e+30f ;
+		unknown:ukmo__um_stash_source = "m02s00i???" ;
+		unknown:cell_methods = "time: mean" ;
+		unknown:grid_mapping = "rotated_latitude_longitude" ;
+		unknown:coordinates = "forecast_reference_time time" ;
+	int rotated_latitude_longitude ;
+		rotated_latitude_longitude:grid_mapping_name = "rotated_latitude_longitude" ;
+		rotated_latitude_longitude:longitude_of_prime_meridian = 0. ;
+		rotated_latitude_longitude:semi_major_axis = 6371229. ;
+		rotated_latitude_longitude:semi_minor_axis = 6371229. ;
+		rotated_latitude_longitude:grid_north_pole_latitude = 0.f ;
+		rotated_latitude_longitude:grid_north_pole_longitude = 0.f ;
+		rotated_latitude_longitude:north_pole_grid_longitude = 0. ;
+	int pseudo_level(pseudo_level) ;
+		pseudo_level:units = "1" ;
+		pseudo_level:long_name = "pseudo_level" ;
+	int forecast_period(forecast_period) ;
+		forecast_period:units = "hours" ;
+		forecast_period:standard_name = "forecast_period" ;
+	float depth(depth) ;
+		depth:axis = "Z" ;
+		depth:units = "m" ;
+		depth:standard_name = "depth" ;
+		depth:positive = "down" ;
+	float grid_latitude(grid_latitude) ;
+		grid_latitude:axis = "Y" ;
+		grid_latitude:units = "degrees" ;
+		grid_latitude:standard_name = "grid_latitude" ;
+	double forecast_reference_time ;
+		forecast_reference_time:units = "hours since 1970-01-01 00:00:00" ;
+		forecast_reference_time:standard_name = "forecast_reference_time" ;
+		forecast_reference_time:calendar = "360_day" ;
+	double time(forecast_period) ;
+		time:bounds = "time_bnds" ;
+		time:units = "hours since 1970-01-01 00:00:00" ;
+		time:standard_name = "time" ;
+		time:calendar = "360_day" ;
+	double time_bnds(forecast_period, bnds) ;
+
+// global attributes:
+		:Conventions = "CF-1.5" ;
+		:source = "Data from Met Office Unified Model" ;
+}

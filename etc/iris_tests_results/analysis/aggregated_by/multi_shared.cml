@@ -1,0 +1,57 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="temperature" unit="kelvin">
+    <attributes>
+      <attribute name="history" value="Mean of temperature aggregated over height, level"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <explicitCoord axis="z" bounds="[[19, 17],
+		[16, 15],
+		[14, 0],
+		[13, 11],
+		[10, 10],
+		[9, 8],
+		[7, 5],
+		[4, 4],
+		[3, 2]]" name="gamma" unit="Unit('1')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <explicitCoord axis="z" name="height" points="[1, 1, 2, 2, 3,
+		4, 4, 1, 5]" unit="Unit('m')" value_type="int32"/>
+      </coord>
+      <coord datadims="[2]">
+        <regularCoord axis="y" count="3" name="latitude" start="0.0" step="3.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_lon?"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[0]">
+        <explicitCoord axis="z" name="level" points="[1, 3, 3, 5, 7,
+		7, 9, 11, 11]" unit="Unit('1')" value_type="int32"/>
+      </coord>
+      <coord datadims="[1]">
+        <regularCoord axis="x" count="3" name="longitude" start="0.0" step="3.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_lon?"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[0]">
+        <explicitCoord axis="z" bounds="[[0, 2],
+		[3, 4],
+		[5, 19],
+		[6, 8],
+		[9, 9],
+		[10, 11],
+		[12, 14],
+		[15, 15],
+		[16, 17]]" name="sigma" unit="Unit('1')" value_type="int32"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="height"/>
+        <coord name="level"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="-0x7791c6fa" dtype="float64" shape="(9, 3, 3)"/>
+  </cube>
+</cubes>

@@ -1,0 +1,2 @@
+<?xml version="1.0" ?>
+<explicitCoord axis="foo" definitive="true" name="foo" points="[0.5, 1.5, 2.5, 3.5, 2.0]" unit="Unit('count')" value_type="float32"/>

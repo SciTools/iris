@@ -1,0 +1,69 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="u curl of wind" unit="0.277777777777778 hertz">
+    <attributes>
+      <attribute name="history" value="u cmpt of the curl of u_wind, v_wind and w_wind"/>
+    </attributes>
+    <coords>
+      <coord datadims="[2]">
+        <regularCoord axis="x" count="49" name="x" start="3.105" step="2.21" unit="Unit('meters')" value_type="float32">
+          <horizontalCS cs_type="cartesian" datum="Cartesian Datum?"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[1]">
+        <regularCoord axis="y" count="25" name="y" start="-50.0" step="25.0" unit="Unit('meters')" value_type="float32">
+          <horizontalCS cs_type="cartesian" datum="Cartesian Datum?"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[0]">
+        <regularCoord axis="z" count="10" name="z" start="0.0" step="2.0" unit="Unit('meters')" value_type="float32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float64" shape="(10, 25, 49)" state="loaded"/>
+  </cube>
+  <cube standard_name="v curl of wind" unit="0.277777777777778 hertz">
+    <attributes>
+      <attribute name="history" value="v cmpt of the curl of u_wind, v_wind and w_wind"/>
+    </attributes>
+    <coords>
+      <coord datadims="[2]">
+        <regularCoord axis="x" count="49" name="x" start="3.105" step="2.21" unit="Unit('meters')" value_type="float32">
+          <horizontalCS cs_type="cartesian" datum="Cartesian Datum?"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[1]">
+        <regularCoord axis="y" count="25" name="y" start="-50.0" step="25.0" unit="Unit('meters')" value_type="float32">
+          <horizontalCS cs_type="cartesian" datum="Cartesian Datum?"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[0]">
+        <regularCoord axis="z" count="10" name="z" start="0.0" step="2.0" unit="Unit('meters')" value_type="float32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float64" shape="(10, 25, 49)" state="loaded"/>
+  </cube>
+  <cube standard_name="w curl of wind" unit="0.277777777777778 hertz">
+    <attributes>
+      <attribute name="history" value="w cmpt of the curl of u_wind, v_wind and w_wind"/>
+    </attributes>
+    <coords>
+      <coord datadims="[2]">
+        <regularCoord axis="x" count="49" name="x" start="3.105" step="2.21" unit="Unit('meters')" value_type="float32">
+          <horizontalCS cs_type="cartesian" datum="Cartesian Datum?"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[1]">
+        <regularCoord axis="y" count="25" name="y" start="-50.0" step="25.0" unit="Unit('meters')" value_type="float32">
+          <horizontalCS cs_type="cartesian" datum="Cartesian Datum?"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[0]">
+        <regularCoord axis="z" count="10" name="z" start="0.0" step="2.0" unit="Unit('meters')" value_type="float32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float64" shape="(10, 25, 49)" state="loaded"/>
+  </cube>
+</cubes>

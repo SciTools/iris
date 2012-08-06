@@ -1,0 +1,10 @@
+air_temperature                     (scalar cube)
+     Scalar coordinates:
+          forecast_period: 6477.0 hours
+          latitude: 90.0 degrees
+          longitude: 0.0 degrees
+          pressure: 1000.0 hPa
+          source: Data from Met Office Unified Model
+          time: 253464.0 hours since 1970-01-01 00:00:00
+     Attributes:
+          STASH: m01s16i203

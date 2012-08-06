@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<explicitCoord axis="foobar" bounds="[[27.75, 30.75],
+		[24.75, 27.75],
+		[21.75, 24.75],
+		[18.75, 21.75],
+		[15.75, 18.75],
+		[12.75, 15.75],
+		[9.75, 12.75],
+		[6.75, 9.75]]" definitive="true" name="foo" points="[30.0, 27.0, 24.0, 21.0, 18.0,
+		15.0, 12.0, 9.0]" unit="Unit('meter')" value_type="float32"/>

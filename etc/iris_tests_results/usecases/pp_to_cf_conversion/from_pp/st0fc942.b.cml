@@ -1,0 +1,47 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="" unit="unknown">
+    <attributes>
+      <attribute name="STASH" value="m02s00i???"/>
+    </attributes>
+    <coords>
+      <coord datadims="[2]">
+        <explicitCoord axis="z" definitive="true" name="depth" points="[5.0, 15.0, 25.0, 35.100006, 47.850006,
+		67.0, 95.75, 138.89999, 203.7, 301.0,
+		447.05005, 666.30005, 995.55005, 1500.8501, 2116.1499,
+		2731.3999, 3346.6499, 3961.8999, 4577.1484, 5192.4492]" unit="Unit('m')" value_type="float32">
+          <attributes positive="down"/>
+        </explicitCoord>
+      </coord>
+      <coord datadims="[1]">
+        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[86400, 259200, 432000, 604800]" unit="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[-864720.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+      </coord>
+      <coord datadims="[3]">
+        <regularCoord axis="y" count="143" name="grid_latitude" start="-88.75" step="1.25" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=0.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[0]">
+        <explicitCoord axis="pseudo_level" name="pseudo_level" points="[4, 8, 12, 16]" unit="Unit('1')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord datadims="[1]">
+        <explicitCoord axis="t" bounds="[[-951120.0, -778320.0],
+		[-778320.0, -605520.0],
+		[-605520.0, -432720.0],
+		[-432720.0, -259920.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="-0x2ee3eacb" dtype="float32" mask_checksum="0x6d576d49" shape="(4, 4, 20, 143)"/>
+  </cube>
+</cubes>

@@ -1,0 +1,23 @@
+dimensions:
+	pressure = 15 ;
+	time = 4 ;
+variables:
+	float geopotential_height(pressure, time) ;
+		geopotential_height:standard_name = "geopotential_height" ;
+		geopotential_height:units = "m" ;
+		geopotential_height:ukmo__um_stash_source = "m01s16i202" ;
+		geopotential_height:cell_methods = "time: mean" ;
+	float pressure(pressure) ;
+		pressure:axis = "Z" ;
+		pressure:units = "hPa" ;
+		pressure:long_name = "pressure" ;
+	float time(time) ;
+		time:axis = "T" ;
+		time:units = "days since 0000-01-01 00:00:00" ;
+		time:standard_name = "time" ;
+		time:calendar = "360_day" ;
+
+// global attributes:
+		:Conventions = "CF-1.5" ;
+		:source = "Data from Met Office Unified Model" ;
+}

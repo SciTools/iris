@@ -1,0 +1,67 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="air_temperature" unit="K">
+    <attributes>
+      <attribute name="STASH" value="m01s16i203"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[8636, 17276, 25916, 34556, 43196,
+		51836, 60476, 69116, 77756, 86396,
+		95036, 103676, 112316, 120956, 129596,
+		138236, 146876, 155516, 164156, 172796,
+		181436, 190076]" unit="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[40324.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+      </coord>
+      <coord datadims="[2]">
+        <regularCoord axis="y" count="73" name="latitude" start="90.0" step="-2.5" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[3]">
+        <regularCoord axis="x" circular="True" count="96" name="longitude" start="0.0" step="3.75" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[1]">
+        <explicitCoord axis="z" definitive="true" name="pressure" points="[30.0, 50.0, 100.0, 150.0, 200.0,
+		300.0, 500.0, 700.0, 850.0]" unit="Unit('hPa')" value_type="float32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord datadims="[0]">
+        <explicitCoord axis="t" bounds="[[40320.0, 48960.0],
+		[48960.0, 57600.0],
+		[57600.0, 66240.0],
+		[66240.0, 74880.0],
+		[74880.0, 83520.0],
+		[83520.0, 92160.0],
+		[92160.0, 100800.0],
+		[100800.0, 109440.0],
+		[109440.0, 118080.0],
+		[118080.0, 126720.0],
+		[126720.0, 135360.0],
+		[135360.0, 144000.0],
+		[144000.0, 152640.0],
+		[152640.0, 161280.0],
+		[161280.0, 169920.0],
+		[169920.0, 178560.0],
+		[178560.0, 187200.0],
+		[187200.0, 195840.0],
+		[195840.0, 204480.0],
+		[204480.0, 213120.0],
+		[213120.0, 221760.0],
+		[221760.0, 230400.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="4 hour" name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="-0x36ca08e4" dtype="float32" shape="(22, 9, 73, 96)"/>
+  </cube>
+</cubes>

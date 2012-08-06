@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="" unit="lg(re 1 kelvin)">
+    <attributes>
+      <attribute name="history" value="lg"/>
+    </attributes>
+    <coords>
+      <coord>
+        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[6477]" unit="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <regularCoord axis="y" count="73" name="latitude" start="90.0" step="-2.5" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[1]">
+        <regularCoord axis="x" circular="True" count="96" name="longitude" start="0.0" step="3.75" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+        </regularCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" definitive="true" name="pressure" points="[1000.0]" unit="Unit('hPa')" value_type="float32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="t" bounds="[[215280.0, 249840.0]]" definitive="true" name="time" points="[232560.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float32" shape="(73, 96)" state="loaded"/>
+  </cube>
+</cubes>

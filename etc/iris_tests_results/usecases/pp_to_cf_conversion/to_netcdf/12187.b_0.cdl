@@ -1,0 +1,59 @@
+dimensions:
+	level_height = 38 ;
+	latitude = 145 ;
+	longitude = 192 ;
+	bnds = 2 ;
+variables:
+	float tendency_of_upward_air_velocity_due_to_advection(level_height, latitude, longitude) ;
+		tendency_of_upward_air_velocity_due_to_advection:standard_name = "tendency_of_upward_air_velocity_due_to_advection" ;
+		tendency_of_upward_air_velocity_due_to_advection:units = "m s-1" ;
+		tendency_of_upward_air_velocity_due_to_advection:ukmo__um_stash_source = "m01s12i187" ;
+		tendency_of_upward_air_velocity_due_to_advection:cell_methods = "time: mean (interval: 1 hour)" ;
+		tendency_of_upward_air_velocity_due_to_advection:grid_mapping = "latitude_longitude" ;
+		tendency_of_upward_air_velocity_due_to_advection:coordinates = "forecast_period forecast_reference_time model_level_number sigma time" ;
+	int latitude_longitude ;
+		latitude_longitude:grid_mapping_name = "latitude_longitude" ;
+		latitude_longitude:longitude_of_prime_meridian = 0. ;
+		latitude_longitude:semi_major_axis = 6371229. ;
+		latitude_longitude:semi_minor_axis = 6371229. ;
+	float level_height(level_height) ;
+		level_height:axis = "Z" ;
+		level_height:bounds = "level_height_bnds" ;
+		level_height:units = "m" ;
+		level_height:long_name = "level_height" ;
+		level_height:positive = "up" ;
+	float level_height_bnds(level_height, bnds) ;
+	float latitude(latitude) ;
+		latitude:axis = "Y" ;
+		latitude:units = "degrees_north" ;
+		latitude:standard_name = "latitude" ;
+	float longitude(longitude) ;
+		longitude:axis = "X" ;
+		longitude:units = "degrees_east" ;
+		longitude:standard_name = "longitude" ;
+	int forecast_period ;
+		forecast_period:units = "hours" ;
+		forecast_period:standard_name = "forecast_period" ;
+	double forecast_reference_time ;
+		forecast_reference_time:units = "hours since 1970-01-01 00:00:00" ;
+		forecast_reference_time:standard_name = "forecast_reference_time" ;
+		forecast_reference_time:calendar = "360_day" ;
+	int model_level_number(level_height) ;
+		model_level_number:units = "1" ;
+		model_level_number:standard_name = "model_level_number" ;
+	float sigma(level_height) ;
+		sigma:bounds = "sigma_bnds" ;
+		sigma:units = "1" ;
+		sigma:long_name = "sigma" ;
+	float sigma_bnds(level_height, bnds) ;
+	double time ;
+		time:bounds = "time_bnds" ;
+		time:units = "hours since 1970-01-01 00:00:00" ;
+		time:standard_name = "time" ;
+		time:calendar = "360_day" ;
+	double time_bnds(bnds) ;
+
+// global attributes:
+		:Conventions = "CF-1.5" ;
+		:source = "Data from Met Office Unified Model 6.01" ;
+}

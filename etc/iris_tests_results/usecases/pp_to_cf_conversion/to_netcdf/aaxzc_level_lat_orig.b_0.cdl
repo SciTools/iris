@@ -1,0 +1,44 @@
+dimensions:
+	forecast_period = 2 ;
+	pressure = 15 ;
+	latitude = 73 ;
+	bnds = 2 ;
+variables:
+	float geopotential_height(forecast_period, pressure, latitude) ;
+		geopotential_height:standard_name = "geopotential_height" ;
+		geopotential_height:units = "m" ;
+		geopotential_height:ukmo__um_stash_source = "m01s16i202" ;
+		geopotential_height:cell_methods = "time: mean" ;
+		geopotential_height:grid_mapping = "latitude_longitude" ;
+		geopotential_height:coordinates = "forecast_reference_time time" ;
+	int latitude_longitude ;
+		latitude_longitude:grid_mapping_name = "latitude_longitude" ;
+		latitude_longitude:longitude_of_prime_meridian = 0. ;
+		latitude_longitude:semi_major_axis = 6371229. ;
+		latitude_longitude:semi_minor_axis = 6371229. ;
+	int forecast_period(forecast_period) ;
+		forecast_period:units = "hours" ;
+		forecast_period:standard_name = "forecast_period" ;
+	float pressure(pressure) ;
+		pressure:axis = "Z" ;
+		pressure:units = "hPa" ;
+		pressure:long_name = "pressure" ;
+	float latitude(latitude) ;
+		latitude:axis = "Y" ;
+		latitude:units = "degrees_north" ;
+		latitude:standard_name = "latitude" ;
+	double forecast_reference_time ;
+		forecast_reference_time:units = "hours since 1970-01-01 00:00:00" ;
+		forecast_reference_time:standard_name = "forecast_reference_time" ;
+		forecast_reference_time:calendar = "360_day" ;
+	double time(forecast_period) ;
+		time:bounds = "time_bnds" ;
+		time:units = "hours since 1970-01-01 00:00:00" ;
+		time:standard_name = "time" ;
+		time:calendar = "360_day" ;
+	double time_bnds(forecast_period, bnds) ;
+
+// global attributes:
+		:Conventions = "CF-1.5" ;
+		:source = "Data from Met Office Unified Model" ;
+}

@@ -1,0 +1,147 @@
+<?xml version="1.0" ?>
+<cubes xmlns="http://www.metoffice.gov.uk/namespaces/cube/cubeml-0.1">
+  <cube standard_name="sea_water_potential_temperature" unit="degC">
+    <attributes>
+      <attribute name="Conventions" value="CF-1.1"/>
+      <attribute name="DOMAIN_DIM_N001" value="x"/>
+      <attribute name="DOMAIN_DIM_N002" value="y"/>
+      <attribute name="DOMAIN_DIM_N003" value="ncorners"/>
+      <attribute name="DOMAIN_DIM_N004" value="deptht"/>
+      <attribute name="DOMAIN_DIM_N005" value="ndepth_bounds"/>
+      <attribute name="DOMAIN_DIM_N006" value="time_counter"/>
+      <attribute name="DOMAIN_dimensions_ids" value="[1 2]"/>
+      <attribute name="DOMAIN_halo_size_end" value="[0 0]"/>
+      <attribute name="DOMAIN_halo_size_start" value="[0 0]"/>
+      <attribute name="DOMAIN_number" value="0"/>
+      <attribute name="DOMAIN_number_total" value="1"/>
+      <attribute name="DOMAIN_position_first" value="[1 1]"/>
+      <attribute name="DOMAIN_position_last" value="[182 149]"/>
+      <attribute name="DOMAIN_size_global" value="[182 149]"/>
+      <attribute name="DOMAIN_size_local" value="[182 149]"/>
+      <attribute name="DOMAIN_type" value="box"/>
+      <attribute name="NCO" value="4.0.8"/>
+      <attribute name="TimeStamp" value="2008-SEP-09 11:18:37 GMT+0000"/>
+      <attribute name="file_name" value="ORCA2_1d_00010101_00010101_grid_T_0000.nc"/>
+      <attribute name="history" value="Mon Apr  2 10:25:46 2012: /project/ukmo/rhel6/nco/bin/ncks -v votemper,deptht_bounds,nav_lat,nav_lon,areat,latt_bounds,lont_bounds ORCA2_1d_00010101_00010101_grid_T_0000.nc votemper.nc"/>
+      <attribute name="interval_operation" value="5760.0"/>
+      <attribute name="interval_write" value="86400.0"/>
+      <attribute name="production" value="An IPSL model"/>
+      <attribute name="short_name" value="votemper"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <explicitCoord axis="z" bounds="[[0.0, 10.0],
+		[10.0, 20.000799],
+		[20.000799, 30.003201],
+		[30.003201, 40.008598],
+		[40.008598, 50.02],
+		[50.02, 60.0429],
+		[60.0429, 70.088303],
+		[70.088303, 80.177597],
+		[80.177597, 90.352097],
+		[90.352097, 100.6928],
+		[100.6928, 111.3567],
+		[111.3567, 122.6488],
+		[122.6488, 135.1597],
+		[135.1597, 150.02679],
+		[150.02679, 169.416],
+		[169.416, 197.3678],
+		[197.3678, 241.1259],
+		[241.1259, 312.74469],
+		[312.74469, 429.72339],
+		[429.72339, 611.8891],
+		[611.8891, 872.87378],
+		[872.87378, 1211.588],
+		[1211.588, 1612.9757],
+		[1612.9757, 2057.1313],
+		[2057.1313, 2527.2168],
+		[2527.2168, 3011.8994],
+		[3011.8994, 3504.4551],
+		[3504.4551, 4001.1589],
+		[4001.1589, 4500.0215],
+		[4500.0215, 5000.0],
+		[5000.0, 5500.5537]]" definitive="true" name="deptht" points="[4.999938, 15.000288, 25.001759, 35.005413, 45.013317,
+		55.029499, 65.061806, 75.125511, 85.250366, 95.494286,
+		105.96992, 116.89624, 128.69791, 142.19525, 158.96062,
+		181.96278, 216.64792, 272.47672, 364.30304, 511.53476,
+		732.20087, 1033.2173, 1405.6975, 1830.885, 2289.7678,
+		2768.2424, 3257.4788, 3752.4421, 4250.4014, 4749.9131,
+		5250.2266]" unit="Unit('m')" value_type="float32">
+          <attributes title="deptht"/>
+        </explicitCoord>
+      </coord>
+      <coord datadims="[1]">
+        <explicitCoord axis="nav_lat" name="latitude" points="[21.478497, 21.478497, 21.478497, 21.478497, 21.478497,
+		21.478497, 21.478497, 21.478497, 21.478497, 21.478497,
+		21.478497, 21.478497, 21.478497, 21.478497, 21.478497,
+		21.478497, 21.478497, 21.478497, 21.478497, 21.478497,
+		21.478497, 21.478497, 21.478497, 21.478497, 21.478497,
+		21.478497, 21.478497, 21.478497, 21.478497, 21.478497,
+		21.478497, 21.478497, 21.478497, 21.478497, 21.478497,
+		21.478497, 21.478497, 21.478497, 21.478497, 21.478497,
+		21.478497, 21.478497, 21.478497, 21.478497, 21.478497,
+		21.478497, 21.478497, 21.478497, 21.478497, 21.478497,
+		21.478497, 21.478497, 21.478497, 21.478497, 21.478497,
+		21.478497, 21.478497, 21.478497, 21.478497, 21.478497,
+		21.478497, 21.478497, 21.478497, 21.478497, 21.478497,
+		21.478497, 21.478497, 21.478497, 21.478497, 21.478497,
+		21.478497, 21.478497, 21.478497, 21.478497, 21.478497,
+		21.478497, 21.478497, 21.478497, 21.478497, 21.478497,
+		21.478497, 21.478497, 21.478497, 21.478497, 21.478497,
+		21.478497, 21.478497, 21.478497, 21.478497, 21.478497]" unit="Unit('degrees')" value_type="float32">
+          <attributes nav_model="Default grid"/>
+        </explicitCoord>
+      </coord>
+      <coord datadims="[1]">
+        <explicitCoord axis="nav_lon" name="longitude" points="[-90.0, -90.0, -90.0, -90.0, -90.0,
+		-90.0, -90.0, -90.0, -90.0, -90.0,
+		-90.0, -90.0, -90.0, -90.0, -90.0,
+		-90.0, -90.0, -90.0, -90.0, -90.0,
+		-90.0, -90.0, -90.0, -90.0, -90.0,
+		-90.0, -90.0, -90.0, -90.0, -90.0,
+		-90.0, -90.0, -90.0, -90.0, -90.0,
+		-90.0, -90.0, -90.0, -90.0, -90.0,
+		-90.0, -90.0, -90.0, -90.0, -90.0,
+		-90.0, -90.0, -90.0, -90.0, -90.0,
+		-90.0, -90.0, -90.0, -90.0, -90.0,
+		-90.0, -90.0, -90.0, -90.0, -90.0,
+		-90.0, -90.0, -90.0, -90.0, -90.0,
+		-90.0, -90.0, -90.0, -90.0, -90.0,
+		-90.0, -90.0, -90.0, -90.0, -90.0,
+		-90.0, -90.0, -90.0, -90.0, -90.0,
+		-90.0, -90.0, -90.0, -90.0, -90.0,
+		-90.0, -90.0, -90.0, -90.0, -90.0]" unit="Unit('degrees')" value_type="float32">
+          <attributes nav_model="Default grid"/>
+        </explicitCoord>
+      </coord>
+      <coord datadims="[1]">
+        <explicitCoord axis="t" definitive="true" name="time" points="[43200.0, 43200.0, 43200.0, 43200.0, 43200.0,
+		43200.0, 43200.0, 43200.0, 43200.0, 43200.0,
+		43200.0, 43200.0, 43200.0, 43200.0, 43200.0,
+		43200.0, 43200.0, 43200.0, 43200.0, 43200.0,
+		43200.0, 43200.0, 43200.0, 43200.0, 43200.0,
+		43200.0, 43200.0, 43200.0, 43200.0, 43200.0,
+		43200.0, 43200.0, 43200.0, 43200.0, 43200.0,
+		43200.0, 43200.0, 43200.0, 43200.0, 43200.0,
+		43200.0, 43200.0, 43200.0, 43200.0, 43200.0,
+		43200.0, 43200.0, 43200.0, 43200.0, 43200.0,
+		43200.0, 43200.0, 43200.0, 43200.0, 43200.0,
+		43200.0, 43200.0, 43200.0, 43200.0, 43200.0,
+		43200.0, 43200.0, 43200.0, 43200.0, 43200.0,
+		43200.0, 43200.0, 43200.0, 43200.0, 43200.0,
+		43200.0, 43200.0, 43200.0, 43200.0, 43200.0,
+		43200.0, 43200.0, 43200.0, 43200.0, 43200.0,
+		43200.0, 43200.0, 43200.0, 43200.0, 43200.0,
+		43200.0, 43200.0, 43200.0, 43200.0, 43200.0]" unit="Unit('seconds since 0001-01-01 00:00:00', calendar='360_day')" value_type="float32">
+          <attributes time_origin=" 0001-JAN-01 00:00:00" title="Time"/>
+        </explicitCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="time_counter"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="-0x4804bb34" dtype="float64" shape="(31, 90)"/>
+  </cube>
+</cubes>

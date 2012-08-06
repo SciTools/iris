@@ -1,0 +1,1064 @@
+# (C) British Crown Copyright 2010 - 2012, Met Office
+#
+# This file is part of Iris.
+#
+# Iris is free software: you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Iris is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+
+#
+# Pyke forward chaining rule interface to translate NetCDF Climate Forecast (CF)
+# Metadata Conventions data into an Iris cube.
+#
+# References:
+#
+# [CF]  NetCDF Climate and Forecast (CF) Metadata conventions, Version 1.5, October, 2010.
+#
+
+
+#
+# Context:
+#   This rule will always trigger.
+#
+# Purpose:
+#   Add standard meta-data to the cube.
+#
+fc_default
+    assert
+        python build_cube_metadata(engine)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff no grid_mapping() case specific fact 
+#   has been asserted.
+#
+# Purpose:
+#   Creates the default lat/lon coordinate system.
+#
+fc_default_grid_mapping_latitude_longitude
+    foreach
+        notany
+            facts_cf.grid_mapping($_)
+    assert
+        python datum = iris.coord_systems.SpheroidDatum(label='spherical')
+        python meridian = iris.coord_systems.PrimeMeridian()
+        python coordinate_system = iris.coord_systems.LatLonCS(datum, meridian, iris.coord_systems.GeoPosition(90.0, 0.0), 0.0)
+        python engine.provides['coordinate_system'] = coordinate_system
+        facts_cf.provides(coordinate_system, latitude_longitude)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff a grid_mapping() case specific fact 
+#   has been asserted that refers to a rotated pole.
+#
+# Purpose:
+#   Creates the rotated pole lat/lon coordinate system.
+#
+fc_provides_grid_mapping_rotated_latitude_longitude
+    foreach
+        facts_cf.grid_mapping($grid_mapping)
+        check is_grid_mapping(engine, $grid_mapping, CF_GRID_MAPPING_ROTATED_LAT_LON)
+    assert
+        python cf_grid_var = engine.cf_var.cf_group.grid_mappings[$grid_mapping]
+        python coordinate_system = build_coordinate_system(engine, cf_grid_var)
+        python engine.provides['coordinate_system'] = coordinate_system
+        facts_cf.provides(coordinate_system, rotated_latitude_longitude)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff a grid_mapping() case specific fact
+#   has been asserted that refers to a regular lat/lon.
+#
+# Purpose:
+#   Creates the lat/lon coordinate system.
+#
+fc_provides_grid_mapping_latitude_longitude
+    foreach
+        facts_cf.grid_mapping($grid_mapping)
+        check is_grid_mapping(engine, $grid_mapping, CF_GRID_MAPPING_LAT_LON)
+    assert
+        python cf_grid_var = engine.cf_var.cf_group.grid_mappings[$grid_mapping]
+        python coordinate_system = build_coordinate_system(engine, cf_grid_var)
+        python engine.provides['coordinate_system'] = coordinate_system
+        facts_cf.provides(coordinate_system, latitude_longitude)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff a coordinate() case specific fact
+#   has been asserted that refers to a CF latitude coordinate.     
+#
+# Purpose:
+#   Assert that the CF latitude coordinate exists.    
+#
+fc_provides_coordinate_latitude
+    foreach
+        facts_cf.coordinate($coordinate)
+        check is_latitude(engine, $coordinate)
+    assert
+        facts_cf.provides(coordinate, latitude, $coordinate)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff a coordinate() case specific fact
+#   has been asserted that refers to a CF longitude coordinate.
+#
+# Purpose:
+#   Assert that the CF longitude coordinate exists.
+#
+fc_provides_coordinate_longitude
+    foreach
+        facts_cf.coordinate($coordinate)
+        check is_longitude(engine, $coordinate)
+    assert
+        facts_cf.provides(coordinate, longitude, $coordinate)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff a coordinate() case specific fact
+#   has been asserted that refers to a CF time coordinate.
+#
+# Purpose:
+#   Assert that the CF time coordinate exists.
+#
+fc_provides_coordinate_time
+    foreach
+        facts_cf.coordinate($coordinate)
+        check is_time(engine, $coordinate)
+    assert
+        facts_cf.provides(coordinate, time, $coordinate)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff a coordinate() case specific fact
+#   had been asserted that contains units of time, but is not
+#   a time reference.
+#
+# Purpose:
+#   Assert that the forecast period coordinate exists.
+#
+fc_provides_coordinate_time_period
+    foreach
+        facts_cf.coordinate($coordinate)
+        check is_time_period(engine, $coordinate)
+    assert
+        facts_cf.provides(coordinate, time_period, $coordinate)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger for each label() case specific fact.
+#
+# Purpose:
+#   Add the label coordinate to the cube.
+#
+fc_build_label_coordinate
+    foreach
+        facts_cf.label($coordinate)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.labels[$coordinate]
+        python build_auxiliary_coordinate(engine, cf_coord_var)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff an auxiliary_coordinate() case specific fact
+#   has been asserted that contains units that are a time reference or an
+#   axis of time.
+#
+# Purpose:
+#   Add the time reference auxiliary coordinate to the cube.
+#
+fc_build_auxiliary_coordinate_time
+    foreach
+        facts_cf.auxiliary_coordinate($coordinate)
+        check is_time(engine, $coordinate)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.auxiliary_coordinates[$coordinate]
+        python build_auxiliary_coordinate(engine, cf_coord_var)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff an auxiliary_coordinate() case specific fact
+#   has been asserted that contains units of time, but is not a time reference.
+#
+# Purpose:
+#   Add the time period auxiliary coordinate to the cube.
+#
+fc_build_auxiliary_coordinate_time_period
+    foreach
+        facts_cf.auxiliary_coordinate($coordinate)
+        check is_time_period(engine, $coordinate)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.auxiliary_coordinates[$coordinate]
+        python build_auxiliary_coordinate(engine, cf_coord_var)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff an auxiliary_coordinate() case specific fact
+#   has been asserted that refers to non-rotated pole latitude data.
+#
+# Purpose:
+#   Add the latitude auxiliary coordinate to the cube.
+#
+fc_build_auxiliary_coordinate_latitude
+    foreach
+        facts_cf.auxiliary_coordinate($coordinate)
+        check is_latitude(engine, $coordinate)
+        check not is_rotated_latitude(engine, $coordinate)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.auxiliary_coordinates[$coordinate]
+        python build_auxiliary_coordinate(engine, cf_coord_var, coord_name=CF_VALUE_STD_NAME_LAT)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff an auxiliary_coordiante() case specific fact
+#   has been asserted that refers to rotated pole latitude data.
+#
+# Purpose:
+#   Add the rotated pole latitude auxiliary coordinate to the cube.
+#
+fc_build_auxiliary_coordinate_latitude_rotated
+    foreach
+        facts_cf.auxiliary_coordinate($coordinate)
+        check is_latitude(engine, $coordinate)
+        check is_rotated_latitude(engine, $coordinate)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.auxiliary_coordinates[$coordinate]
+        python build_auxiliary_coordinate(engine, cf_coord_var, coord_name=CF_VALUE_STD_NAME_GRID_LAT)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff an auxiliary_coordinate() case specific fact
+#   has been asserted that refers to non-rotated pole longitude data.
+#
+# Purpose:
+#   Add the longitude auxiliary coordinate to the cube.
+#
+fc_build_auxiliary_coordinate_longitude
+    foreach
+        facts_cf.auxiliary_coordinate($coordinate)
+        check is_longitude(engine, $coordinate)
+        check not is_rotated_longitude(engine, $coordinate)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.auxiliary_coordinates[$coordinate]
+        python build_auxiliary_coordinate(engine, cf_coord_var, coord_name=CF_VALUE_STD_NAME_LON)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff an auxiliary_coordinate() case specific fact
+#   has been asserted that refers to rotated pole longitude data.
+#
+# Purpose:
+#   Add the rotated pole auxiliary coordinate to the cube.
+#
+fc_build_auxiliary_coordinate_longitude_rotated
+    foreach
+        facts_cf.auxiliary_coordinate($coordinate)
+        check is_longitude(engine, $coordinate)
+        check is_rotated_longitude(engine, $coordinate)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.auxiliary_coordinates[$coordinate]
+        python build_auxiliary_coordinate(engine, cf_coord_var, coord_name=CF_VALUE_STD_NAME_GRID_LON)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger for each auxiliary_coordinate() case specific fact
+#   that is not a spatio-temporal related auxiliary coordinate. 
+#
+# Purpose:
+#   Add the auxiliary coordinate to the cube.    
+#
+fc_build_auxiliary_coordinate
+    foreach
+        facts_cf.auxiliary_coordinate($coordinate)
+        check not is_time(engine, $coordinate)
+        check not is_time_period(engine, $coordinate)
+        check not is_latitude(engine, $coordinate)
+        check not is_longitude(engine, $coordinate)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.auxiliary_coordinates[$coordinate]
+        python build_auxiliary_coordinate(engine, cf_coord_var)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff a CF latitude coordinate exists and
+#   a lat/lon coordinate system exists.
+#
+# Purpose:
+#   Add the latitude coordinate into the cube.
+#
+fc_build_coordinate_latitude
+    foreach
+        facts_cf.provides(coordinate, latitude, $coordinate)
+        facts_cf.provides(coordinate_system, latitude_longitude)
+        check not is_rotated_latitude(engine, $coordinate)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
+        python build_dimension_coordinate(engine, cf_coord_var, coord_name=CF_VALUE_STD_NAME_LAT, coord_system=engine.provides['coordinate_system'])
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff a CF rotated latitude coordinate exists and
+#   a rotated lat/lon coordinate system exists.
+#
+# Purpose:
+#   Add the rotated latitude coordinate into the cube.
+#
+fc_build_coordinate_latitude_rotated
+    foreach
+        facts_cf.provides(coordinate, latitude, $coordinate)
+        facts_cf.provides(coordinate_system, rotated_latitude_longitude)
+        check is_rotated_latitude(engine, $coordinate)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
+        python build_dimension_coordinate(engine, cf_coord_var, coord_name=CF_VALUE_STD_NAME_GRID_LAT, coord_system=engine.provides['coordinate_system'])
+        python engine.rule_triggered.add(rule.name)
+        
+
+#
+# Context:
+#   This rule will trigger iff a CF longitude coordinate exists and
+#   a lat/lon coordinate system exists.
+#
+# Purpose:
+#   Add the longitude coordinate into the cube.
+#
+fc_build_coordinate_longitude
+    foreach
+        facts_cf.provides(coordinate, longitude, $coordinate)
+        facts_cf.provides(coordinate_system, latitude_longitude)
+        check not is_rotated_longitude(engine, $coordinate)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
+        python build_dimension_coordinate(engine, cf_coord_var, coord_name=CF_VALUE_STD_NAME_LON, coord_system=engine.provides['coordinate_system'])
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff a CF rotated longitude coordinate exists and
+#   a rotated lat/lon coordinate system exists.
+#
+# Purpose:
+#   Add the rotated longitude coordinate into the cube.
+#
+fc_build_coordinate_longitude_rotated
+    foreach
+        facts_cf.provides(coordinate, longitude, $coordinate)
+        facts_cf.provides(coordinate_system, rotated_latitude_longitude)
+        check is_rotated_longitude(engine, $coordinate)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
+        python build_dimension_coordinate(engine, cf_coord_var, coord_name=CF_VALUE_STD_NAME_GRID_LON, coord_system=engine.provides['coordinate_system'])
+        python engine.rule_triggered.add(rule.name)        
+        
+
+#
+# Context:
+#   This rule will trigger iff a CF time coordinate exists.
+#
+# Purpose:
+#   Add the time coordinate into the cube.
+#
+fc_build_coordinate_time
+    foreach
+        facts_cf.provides(coordinate, time, $coordinate)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
+        python build_dimension_coordinate(engine, cf_coord_var)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff a time period coordinate exists.
+#
+# Purpose:
+#   Add the time period coordinate to the cube.
+#
+fc_build_coordinate_time_period
+    foreach
+        facts_cf.provides(coordinate, time_period, $coordinate)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
+        python build_dimension_coordinate(engine, cf_coord_var)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff there exists an "unclassifed" coordinate.
+#   i.e. a coordinate that is not a latitude, longitude, time or vertical coordinate.
+#
+# Purpose:
+#   Add the miscellaneous coordinate into the cube.
+#
+fc_default_coordinate
+    foreach
+        facts_cf.coordinate($coordinate)
+        notany
+            facts_cf.provides(coordinate, $_, $coordinate)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
+        python build_dimension_coordinate(engine, cf_coord_var)
+        facts_cf.provides(coordinate, miscellaneous, $coordinate)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff the "ukmo__um_stash_source" attribute exists
+#   on the CF-netCDF data variable.
+#
+# Purpose:
+#   Add the CF-netCDF data variable "ukmo__um_stash_source" attribute to the
+#   cube attributes dictionary as a "STASH" key.
+#
+fc_attribute_ukmo__um_stash_source
+    foreach
+        check hasattr(engine.cf_var, 'ukmo__um_stash_source')
+    assert
+        python attr_value = engine.cf_var.ukmo__um_stash_source
+        python engine.cube.attributes['STASH'] = pp.STASH.from_msi(engine.cf_var.ukmo__um_stash_source)
+        python engine.rule_triggered.add(rule.name)
+
+#
+# Context:
+#    This rule will trigger iff the "ukmo__process_flags" attribute exists
+#    on the CF-netCDF data variable.
+#
+# Purpose:
+#    Add the CF-netCDF data variable "ukmo__process_flags" attribute to the
+#    cube attributes dictionary as a "ukmo__process_flags" key.
+#
+fc_attribute_ukmo__process_flags
+    foreach
+        check hasattr(engine.cf_var, 'ukmo__process_flags')
+    assert
+        python attr_value = engine.cf_var.ukmo__process_flags
+        python engine.cube.attributes['ukmo__process_flags'] = tuple([x.replace("_", " ") for x in attr_value.split(" ")])
+        python engine.rule_triggered.add(rule.name)
+        
+        
+#
+# Context:
+#   This rule will trigger iff a formula term that refers to a
+#   dimensionless vertical coordinate of hybrid height.
+#
+# Purpose:
+#   Assert that the formula term refers to hybrid height.
+#
+fc_formula_type_atmosphere_hybrid_height_coordinate
+    foreach
+        facts_cf.formula_root($coordinate)
+        check getattr(engine.cf_var.cf_group[$coordinate], 'standard_name') == 'atmosphere_hybrid_height_coordinate'
+    assert
+        python engine.requires['formula_type'] = 'atmosphere_hybrid_height_coordinate'
+        facts_cf.formula_type(atmosphere_hybrid_height_coordinate)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger for variables referenced by a dimensionless
+#   vertical coordinate.
+#
+# Purpose:
+#   Build a mapping from term name to netCDF variable name.
+#
+fc_formula_terms
+    foreach
+        facts_cf.formula_root($coordinate)
+        facts_cf.formula_term($var_name, $coordinate, $term)
+    assert
+        python engine.requires.setdefault('formula_terms', {})[$term] = $var_name
+        python engine.rule_triggered.add(rule.name)
+
+
+fc_extras
+    import re
+    import warnings
+
+    import numpy as np
+
+    import iris.coords
+    import iris.coord_systems
+    import iris.fileformats.cf as cf
+    import iris.fileformats.pp as pp
+    import iris.exceptions
+    import iris.std_names
+    import iris.unit
+    
+    
+    #
+    # UD Units Constants (based on Unidata udunits.dat definition file)
+    #
+    UD_UNITS_LAT = ['degrees_north', 'degree_north', 'degree_n', 'degrees_n', 'degreen', 'degreesn', 'degrees']
+    UD_UNITS_LON = ['degrees_east', 'degree_east', 'degree_e', 'degrees_e', 'degreee', 'degreese', 'degrees']
+    
+    #
+    # CF Dimensionless Vertical Coordinates
+    #
+    CF_COORD_VERTICAL = {'atmosphere_ln_pressure_coordinate':['p0', 'lev'],
+                         'atmosphere_sigma_coordinate':['sigma', 'ps', 'ptop'],
+                         'atmosphere_hybrid_sigma_pressure_coordinate':['a', 'b', 'ps', 'p0'],
+                         'atmosphere_hybrid_height_coordinate':['a', 'b', 'orog'],
+                         'atmosphere_sleve_coordinate':['a', 'b1', 'b2', 'ztop', 'zsurf1', 'zsurf2'],
+                         'ocean_sigma_coordinate':['sigma', 'eta', 'depth'],
+                         'ocean_s_coordinate':['s', 'eta', 'depth', 'a', 'b', 'depth_c'],
+                         'ocean_sigma_z_coordinate':['sigma', 'eta', 'depth', 'depth_c', 'nsigma', 'zlev'],
+                         'ocean_double_sigma_coordinate':['sigma', 'depth', 'z1', 'z2', 'a', 'href', 'k_c']}
+    
+    #
+    # CF Grid Mappings
+    #
+    CF_GRID_MAPPING_ALBERS = 'albers_conical_equal_area'
+    CF_GRID_MAPPING_AZIMUTHAL = 'azimuthal_equidistant'
+    CF_GRID_MAPPING_LAMBERT_AZIMUTHAL = 'lambert_azimuthal_equal_area'
+    CF_GRID_MAPPING_LAMBERT_CONFORMAL = 'lambert_conformal_conic'
+    CF_GRID_MAPPING_LAMBERT_CYLINDRICAL = 'lambert_cylindrical_equal_area'
+    CF_GRID_MAPPING_LAT_LON = 'latitude_longitude'
+    CF_GRID_MAPPING_MERCATOR = 'mercator'
+    CF_GRID_MAPPING_ORTHO = 'orthographic'
+    CF_GRID_MAPPING_POLAR = 'polar_stereographic'
+    CF_GRID_MAPPING_ROTATED_LAT_LON = 'rotated_latitude_longitude'
+    CF_GRID_MAPPING_STEREO = 'stereographic'
+    CF_GRID_MAPPING_TRANSVERSE = 'transverse_mercator'
+    CF_GRID_MAPPING_VERTICAL = 'vertical_perspective'
+    
+    #
+    # CF Attribute Names.
+    #
+    CF_ATTR_AXIS = 'axis'
+    CF_ATTR_BOUNDS = 'bounds'
+    CF_ATTR_CALENDAR = 'calendar'
+    CF_ATTR_GRID_INVERSE_FLATTENING = 'inverse_flattening'
+    CF_ATTR_GRID_MAPPING_NAME = 'grid_mapping_name'
+    CF_ATTR_GRID_NORTH_POLE_LAT = 'grid_north_pole_latitude'
+    CF_ATTR_GRID_NORTH_POLE_LON = 'grid_north_pole_longitude'
+    CF_ATTR_GRID_NORTH_POLE_GRID_LON = 'north_pole_grid_longitude'
+    CF_ATTR_GRID_SEMI_MAJOR_AXIS = 'semi_major_axis'
+    CF_ATTR_GRID_SEMI_MINOR_AXIS = 'semi_minor_axis'
+    CF_ATTR_POSITIVE = 'positive'
+    CF_ATTR_STD_NAME = 'standard_name'
+    CF_ATTR_LONG_NAME = 'long_name'
+    CF_ATTR_UNITS = 'units'
+    CF_ATTR_CELL_METHODS = 'cell_methods'
+    
+    #
+    # CF Attribute Value Constants.
+    #
+    # Attribute - axis.
+    CF_VALUE_AXIS_X = 'x'
+    CF_VALUE_AXIS_Y = 'y'
+    CF_VALUE_AXIS_T = 't'
+    CF_VALUE_AXIS_Z = 'z'
+    
+    
+    # Attribute - positive.
+    CF_VALUE_POSITIVE = ['down', 'up']
+    
+    # Attribute - standard_name.
+    CF_VALUE_STD_NAME_LAT = 'latitude'
+    CF_VALUE_STD_NAME_LON = 'longitude'
+    CF_VALUE_STD_NAME_GRID_LAT = 'grid_latitude'
+    CF_VALUE_STD_NAME_GRID_LON = 'grid_longitude'
+    CF_VALUE_STD_NAME_PROJ_X = 'projection_x_coordinate'
+    CF_VALUE_STD_NAME_PROJ_Y = 'projection_y_coordinate'
+    
+    # Cell methods.
+    CM_KNOWN_METHODS = ['point', 'sum', 'mean', 'maximum', 'minimum', 'mid_range',
+                        'standard_deviation', 'variance', 'mode', 'median']
+    
+    CM_COMMENT = 'comment'
+    CM_EXTRA = 'extra'
+    CM_INTERVAL = 'interval'
+    CM_METHOD = 'method'
+    CM_NAME = 'name'
+
+    CM_PARSE = re.compile(  r'''
+                                (?P<name>([\w_]+:\s+)+)
+                                (?P<method>[\w_]+)\s*
+                                (?:
+                                    \(\s*
+                                    (?P<extra>[^\)]+)
+                                    \)\s*
+                                )?
+                            ''', re.VERBOSE)
+
+
+    ################################################################################
+    def build_cube_metadata(engine):
+        """Add the standard meta data to the cube."""
+
+        cf_var = engine.cf_var
+        cube = engine.cube
+
+        # Determine the cube standard_name and long_name
+        standard_name = getattr(cf_var, CF_ATTR_STD_NAME, None)
+        long_name = getattr(cf_var, CF_ATTR_LONG_NAME, None)
+        cube.long_name = long_name
+
+        if standard_name is not None:
+            if standard_name in iris.std_names.STD_NAMES:
+                cube.standard_name = standard_name
+            else:
+                if cube.long_name is not None:
+                    cube.attributes['invalid_standard_name'] = standard_name
+                else:
+                    cube.long_name = standard_name
+                
+        # Determine the cube units.
+        attr_units = getattr(cf_var, CF_ATTR_UNITS, iris.unit._UNKNOWN_UNIT_STRING)
+
+        if np.issubdtype(cf_var.dtype, np.str):
+            attr_units = iris.unit._NO_UNIT_STRING
+
+        cube.units = attr_units
+
+        # Incorporate cell methods
+        nc_att_cell_methods = getattr(cf_var, CF_ATTR_CELL_METHODS, None)
+        cube.cell_methods = _parse_cell_methods(cf_var.cf_name, nc_att_cell_methods)
+
+        # Set the cube global attributes. 
+        for attr_name, attr_value in cf_var.cf_group.global_attributes.iteritems():
+            cube.attributes[str(attr_name)] = str(attr_value) if isinstance(attr_value, basestring) else attr_value
+
+
+    ################################################################################
+    def build_coordinate_system(engine, cf_grid_var):
+        """Create a coordinate system from the CF-netCDF grid mapping variable."""
+        
+        major = getattr(cf_grid_var, CF_ATTR_GRID_SEMI_MAJOR_AXIS, None)
+        minor = getattr(cf_grid_var, CF_ATTR_GRID_SEMI_MINOR_AXIS, None)
+        inverse = getattr(cf_grid_var, CF_ATTR_GRID_INVERSE_FLATTENING, None)
+        flattening = 1 / inverse if inverse else None
+        datum = iris.coord_systems.SpheroidDatum(label='spherical', semi_major_axis=major, semi_minor_axis=minor, flattening=flattening, units=iris.unit.Unit('m'))
+
+        prime_meridian = iris.coord_systems.PrimeMeridian()
+
+        north_pole_latitude = getattr(cf_grid_var, CF_ATTR_GRID_NORTH_POLE_LAT, 90.0)
+        north_pole_longitude = getattr(cf_grid_var, CF_ATTR_GRID_NORTH_POLE_LON, 0.0)
+        geo_position = iris.coord_systems.GeoPosition(north_pole_latitude, north_pole_longitude)
+
+        reference_longitude = getattr(cf_grid_var, CF_ATTR_GRID_NORTH_POLE_GRID_LON, 0.0)
+                
+        return iris.coord_systems.LatLonCS(datum, prime_meridian, geo_position, reference_longitude)
+
+
+    ################################################################################
+    def get_attr_units(cf_coord_var):
+        attr_units = getattr(cf_coord_var, CF_ATTR_UNITS, iris.unit._UNKNOWN_UNIT_STRING)
+
+        # Sanitise lat/lon units.
+        if attr_units in UD_UNITS_LAT or attr_units in UD_UNITS_LON:
+            attr_units = 'degrees'
+
+        if np.issubdtype(cf_coord_var.dtype, np.str):
+            attr_units = iris.unit._NO_UNIT_STRING
+
+        # Get any assoicated calendar for a time reference coordinate.
+        if iris.unit.as_unit(attr_units).time_reference:
+            attr_calendar = getattr(cf_coord_var, CF_ATTR_CALENDAR, None)
+
+            if attr_calendar:
+                attr_units = iris.unit.Unit(attr_units, calendar=attr_calendar)
+
+        return attr_units
+
+
+    ################################################################################
+    def get_names(cf_coord_var, coord_name, attributes):
+        """Determine the standard_name and long_name attributes."""
+
+        standard_name = getattr(cf_coord_var, CF_ATTR_STD_NAME, None)
+        long_name = getattr(cf_coord_var, CF_ATTR_LONG_NAME, None)
+        cf_name = str(cf_coord_var.cf_name)
+
+        if standard_name is not None:
+            if standard_name not in iris.std_names.STD_NAMES:
+                if long_name is not None:
+                    attributes['invalid_standard_name'] = standard_name
+                    if coord_name is not None:
+                        standard_name = coord_name
+                    else:
+                        standard_name = None
+                else:
+                    if coord_name is not None:
+                        attributes['invalid_standard_name'] = standard_name
+                        standard_name = coord_name
+                    else:
+                        standard_name = None
+                        long_name = standard_name
+        else:
+            if coord_name is not None:
+                standard_name = coord_name
+
+        # Last attempt to set the standard name to something meaningful.
+        if standard_name is None:
+            if cf_name in iris.std_names.STD_NAMES:
+                standard_name = cf_name
+
+        return (standard_name, long_name)
+
+
+    ################################################################################
+    def build_dimension_coordinate(engine, cf_coord_var, coord_name=None, coord_system=None):
+        """Create a dimension coordinate (DimCoord) and add it to the cube."""
+
+        cf_var = engine.cf_var
+        cube = engine.cube
+        attributes = {}
+
+        attr_units = get_attr_units(cf_coord_var)
+        points_data = cf_coord_var[:]
+
+        # Get any coordinate bounds.
+        bounds_data = None
+        attr_bounds = getattr(cf_coord_var, CF_ATTR_BOUNDS, None)
+
+        if attr_bounds is not None:
+            bounds_data = cf_coord_var.cf_group.bounds[attr_bounds][:]
+
+        # Determine whether the coordinate is circular.
+        circular = False
+        if points_data.ndim == 1 and coord_name in [CF_VALUE_STD_NAME_LON, CF_VALUE_STD_NAME_GRID_LON]:
+            diff = list(set(np.diff(points_data)))
+            diff_approx_equal = True
+            if len(points_data) > 1:
+                try:
+                    for value in diff[1:]:
+                        np.testing.assert_approx_equal(diff[0], value, significant=4)
+                    diff = max(diff)
+                except AssertionError:
+                    diff_approx_equal = False
+            
+            if diff_approx_equal and iris.unit.Unit(attr_units) in [iris.unit.Unit('radians'), iris.unit.Unit('degrees')]:
+                modulus_value = iris.unit.Unit(attr_units).modulus
+
+                if len(points_data) > 1:
+                    circular_value = (points_data[-1] + diff) % modulus_value
+                    try:
+                        np.testing.assert_approx_equal(points_data[0], circular_value, significant=4)
+                        circular = True
+                    except AssertionError:
+                        if points_data[0] == 0:
+                            try:
+                                np.testing.assert_approx_equal(modulus_value, circular_value, significant=4)
+                                circular = True
+                            except AssertionError:
+                                pass
+                else:
+                    circular = points_data[0] >= modulus_value
+
+        # Determine the name of the dimension/s shared between the CF-netCDF data variable
+        # and the coordinate being built.
+        common_dims = filter(lambda dim: dim in cf_var.dimensions, cf_coord_var.dimensions)
+        data_dims = None
+        if common_dims:
+            # Calculate the offset of each common dimension.
+            data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
+
+        # Determine the standard_name and long_name
+        standard_name, long_name = get_names(cf_coord_var, coord_name, attributes)
+
+        # Create the coordinate
+        coord = iris.coords.DimCoord(points_data, standard_name=standard_name, long_name=long_name, units=attr_units,
+                                     bounds=bounds_data, attributes=attributes, coord_system=coord_system, circular=circular)
+
+        # Add it to the cube
+        if data_dims:
+            cube.add_dim_coord(coord, data_dims)
+        else:
+            # Scalar coords are placed in the aux_coords container
+            cube.add_aux_coord(coord, data_dims)
+            
+        # Update the coordinate to CF-netCDF variable mapping.
+        engine.provides['coordinates'].append((coord, cf_coord_var.cf_name))
+
+
+    ################################################################################
+    def build_auxiliary_coordinate(engine, cf_coord_var, coord_name=None, coord_system=None):
+        """Create an auxiliary coordinate (AuxCoord) and add it to the cube."""
+
+        cf_var = engine.cf_var
+        cube = engine.cube
+        attributes = {}
+        
+        # Get units
+        attr_units = get_attr_units(cf_coord_var)
+
+        # Get any coordinate point data.
+        if isinstance(cf_coord_var, cf.CFLabelVariable):
+            points_data = cf_coord_var.cf_label_data(cf_var)
+        else:
+            points_data = cf_coord_var[:]
+
+        # Get any coordinate bounds.
+        bounds_data = None
+        attr_bounds = getattr(cf_coord_var, CF_ATTR_BOUNDS, None)
+
+        if attr_bounds is not None:
+            bounds_data = cf_coord_var.cf_group.bounds[attr_bounds][:]
+
+        # Determine the name of the dimension/s shared between the CF-netCDF data variable
+        # and the coordinate being built.
+        common_dims = filter(lambda dim: dim in cf_var.dimensions, cf_coord_var.dimensions)
+        data_dims = None    
+        if common_dims:
+            # Calculate the offset of each common dimension.
+            data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
+
+        # Determine the standard_name and long_name
+        standard_name, long_name = get_names(cf_coord_var, coord_name, attributes)
+
+        # Create the coordinate
+        coord = iris.coords.AuxCoord(points_data, standard_name=standard_name, long_name=long_name, units=attr_units,
+                                     bounds=bounds_data, attributes=attributes, coord_system=coord_system)
+
+        # Add it to the cube
+        cube.add_aux_coord(coord, data_dims)
+
+        # Update the coordinate to CF-netCDF variable mapping.
+        engine.provides['coordinates'].append((coord, cf_coord_var.cf_name))
+
+
+    ################################################################################
+    def _is_lat_lon(cf_var, ud_units, std_name, std_name_grid, axis_name, prefixes):
+        """
+        Determine whether the CF coordinate variable is a latitude/longitude variable.
+        
+        Ref: [CF] Section 4.1 Latitude Coordinate.
+             [CF] Section 4.2 Longitude Coordinate.
+        
+        """
+        is_valid = False
+        attr_units = getattr(cf_var, CF_ATTR_UNITS, None)
+
+        if attr_units is not None:
+            attr_units = attr_units.lower()
+            is_valid = attr_units in ud_units
+
+            # Special case - Check for rotated pole.
+            if attr_units == 'degrees':
+                attr_std_name = getattr(cf_var, CF_ATTR_STD_NAME, None)
+                if attr_std_name is not None:
+                    is_valid = attr_std_name.lower() == std_name_grid
+                else:
+                    is_valid = False
+                    # TODO: check that this interpretation of axis is correct.
+                    attr_axis = getattr(cf_var, CF_ATTR_AXIS, None)
+                    if attr_axis is not None:
+                        is_valid = attr_axis.lower() == axis_name
+        else:
+            # Alternative is to check standard_name or axis.
+            attr_std_name = getattr(cf_var, CF_ATTR_STD_NAME, None)
+
+            if attr_std_name is not None:
+                attr_std_name = attr_std_name.lower()
+                is_valid = attr_std_name in [std_name, std_name_grid]
+                if not is_valid:
+                    is_valid = any([attr_std_name.startswith(prefix) for prefix in prefixes])
+            else:
+                attr_axis = getattr(cf_var, CF_ATTR_AXIS, None)
+
+                if attr_axis is not None:
+                    is_valid = attr_axis.lower() == axis_name
+
+        return is_valid
+
+
+    ################################################################################
+    def is_latitude(engine, cf_name):
+        """Determine whether the CF coordinate variable is a latitude variable."""
+        cf_var = engine.cf_var.cf_group[cf_name]
+        return _is_lat_lon(cf_var, UD_UNITS_LAT, CF_VALUE_STD_NAME_LAT, 
+                           CF_VALUE_STD_NAME_GRID_LAT, CF_VALUE_AXIS_Y, ['lat', 'rlat'])
+
+
+    ################################################################################
+    def is_longitude(engine, cf_name):
+        """Determine whether the CF coordinate variable is a longitude variable."""
+        cf_var = engine.cf_var.cf_group[cf_name]
+        return _is_lat_lon(cf_var, UD_UNITS_LON, CF_VALUE_STD_NAME_LON,
+                           CF_VALUE_STD_NAME_GRID_LON, CF_VALUE_AXIS_X, ['lon', 'rlon'])
+
+
+    ################################################################################
+    def is_time(engine, cf_name):
+        """
+        Determine whether the CF coordinate variable is a time variable.
+
+        Ref: [CF] Section 4.4 Time Coordinate.
+
+        """
+        is_valid = False
+        cf_var = engine.cf_var.cf_group[cf_name]
+        attr_units = getattr(cf_var, CF_ATTR_UNITS, None)
+
+        attr_std_name = getattr(cf_var, CF_ATTR_STD_NAME, None)
+        attr_axis = getattr(cf_var, CF_ATTR_AXIS, '')
+        is_time_reference = iris.unit.Unit(attr_units or 1).time_reference
+        
+        return is_time_reference and (attr_std_name=='time' or attr_axis.lower()==CF_VALUE_AXIS_T)
+
+
+    ################################################################################
+    def is_time_period(engine, cf_name):
+        """Determine whether the CF coordinate variable represents a time period."""
+        is_valid = False
+        cf_var = engine.cf_var.cf_group[cf_name]
+        attr_units = getattr(cf_var, CF_ATTR_UNITS, None)
+
+        if attr_units is not None:
+            is_valid = iris.unit.is_time(attr_units)
+
+        return is_valid
+
+
+    ################################################################################
+    def is_grid_mapping(engine, cf_name, grid_mapping):
+        """Determine whether the CF grid mapping variable is of the appropriate type."""
+
+        is_valid = False
+        cf_var = engine.cf_var.cf_group[cf_name]
+        attr_mapping_name = getattr(cf_var, CF_ATTR_GRID_MAPPING_NAME, None)
+
+        if attr_mapping_name is not None:
+            is_valid = attr_mapping_name.lower() == grid_mapping
+
+        return is_valid
+
+
+    ################################################################################
+    def _is_rotated(engine, cf_name, cf_attr_value):
+        """Determine whether the CF coordinate variable is rotated."""
+
+        is_valid = False
+        cf_var = engine.cf_var.cf_group[cf_name]
+        attr_std_name = getattr(cf_var, CF_ATTR_STD_NAME, None)
+
+        if attr_std_name is not None:
+            is_valid = attr_std_name.lower() == cf_attr_value
+        else:
+            attr_units = getattr(cf_var, CF_ATTR_UNITS, None)
+            if attr_units is not None:
+                is_valid = attr_units.lower() == 'degrees'
+
+        return is_valid
+
+
+    ################################################################################
+    def is_rotated_latitude(engine, cf_name):
+        """Determine whether the CF coodinate variable is rotated latitude."""
+        return _is_rotated(engine, cf_name, CF_VALUE_STD_NAME_GRID_LAT)
+
+
+    ###############################################################################
+    def is_rotated_longitude(engine, cf_name):
+        """Determine whether the CF coordinate variable is rotated longitude."""
+        return _is_rotated(engine, cf_name, CF_VALUE_STD_NAME_GRID_LON)
+
+
+    ################################################################################
+    def _parse_cell_methods(cf_var_name, nc_cell_methods):
+        """Parse the CF cell_methods attribute string."""
+
+        cell_methods = []
+        if nc_cell_methods is not None:
+            for m in CM_PARSE.finditer(nc_cell_methods):
+                d = m.groupdict()
+                if d[CM_METHOD].lower() not in CM_KNOWN_METHODS:
+                    warnings.warn('NCDF variable "%s" contains unknown cell method "%s"' % (cf_var_name, d[CM_METHOD]))
+                name = d[CM_NAME]
+                name = name.replace(' ', '')
+                name = name.rstrip(':')
+                d[CM_NAME] = tuple([n for n in name.split(':')])
+                interval = []
+                comment = []
+                if d[CM_EXTRA] is not None:
+                    #
+                    # tokenise the key words and field colon marker
+                    #
+                    d[CM_EXTRA] = d[CM_EXTRA].replace('comment:', '<<comment>><<:>>')
+                    d[CM_EXTRA] = d[CM_EXTRA].replace('interval:', '<<interval>><<:>>')
+                    d[CM_EXTRA] = d[CM_EXTRA].split('<<:>>')
+                    if len(d[CM_EXTRA]) == 1:
+                        comment.extend(d[CM_EXTRA])
+                    else:
+                        next_field_type = comment
+                        for field in d[CM_EXTRA]:
+                            field_type = next_field_type
+                            index = field.rfind('<<interval>>')
+                            if index == 0:
+                                next_field_type = interval
+                                continue
+                            elif index > 0:
+                                next_field_type = interval
+                            else:
+                                index = field.rfind('<<comment>>')
+                                if index == 0:
+                                    next_field_type = comment
+                                    continue
+                                elif index > 0:
+                                    next_field_type = comment
+                            if index != -1:
+                                field = field[:index]
+                            field_type.append(field.strip())
+                #
+                # cater for a shared interval over multiple axes
+                #
+                if len(interval):
+                    if len(d[CM_NAME]) != len(interval) and len(interval) == 1:
+                        interval = interval*len(d[CM_NAME])
+                #
+                # cater for a shared comment over multiple axes
+                #
+                if len(comment):
+                    if len(d[CM_NAME]) != len(comment) and len(comment) == 1:
+                        comment = comment*len(d[CM_NAME])
+                d[CM_INTERVAL] = tuple(interval)
+                d[CM_COMMENT] = tuple(comment)               
+                cell_methods.append(iris.coords.CellMethod(d[CM_METHOD], coords=d[CM_NAME], intervals=d[CM_INTERVAL], comments=d[CM_COMMENT]))
+        return tuple(cell_methods)

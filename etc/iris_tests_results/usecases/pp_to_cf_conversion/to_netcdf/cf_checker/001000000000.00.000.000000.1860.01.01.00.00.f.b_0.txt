@@ -1,0 +1,40 @@
+
+CHECKING NetCDF FILE: /var/tmp/001000000000.00.000.000000.1860.01.01.00.00.f.b_0.nc
+=====================
+
+
+------------------
+Checking variable: time_bnds
+------------------
+
+------------------
+Checking variable: longitude
+------------------
+
+------------------
+Checking variable: latitude_longitude
+------------------
+
+------------------
+Checking variable: forecast_reference_time
+------------------
+
+------------------
+Checking variable: forecast_period
+------------------
+
+------------------
+Checking variable: sea_surface_height_above_geoid
+------------------
+
+------------------
+Checking variable: time
+------------------
+
+------------------
+Checking variable: latitude
+------------------
+
+ERRORS detected: 0
+WARNINGS given: 0
+INFORMATION messages: 0

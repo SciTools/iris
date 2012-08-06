@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="thingness" unit="1">
+    <attributes>
+      <attribute name="my_attr1" value="foo"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <explicitCoord axis="y" name="bar" points="[2.5, 7.5, 12.5]" unit="Unit('1')" value_type="float64"/>
+      </coord>
+      <coord datadims="[1]">
+        <explicitCoord axis="x" name="foo" points="[-7.5, 7.5, 22.5, 37.5]" unit="Unit('1')" value_type="float64"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" definitive="true" name="pressure" points="[10]" unit="Unit('Pa')" value_type="int32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="-0x49adf4af" dtype="int32" shape="(3, 4)"/>
+  </cube>
+  <cube standard_name="thingness" unit="1">
+    <coords>
+      <coord datadims="[0]">
+        <explicitCoord axis="y" name="bar" points="[2.5, 7.5, 12.5]" unit="Unit('1')" value_type="float64"/>
+      </coord>
+      <coord datadims="[1]">
+        <explicitCoord axis="x" name="foo" points="[-7.5, 7.5, 22.5, 37.5]" unit="Unit('1')" value_type="float64"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" definitive="true" name="pressure" points="[11]" unit="Unit('Pa')" value_type="int32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="-0x49adf4af" dtype="int32" shape="(3, 4)"/>
+  </cube>
+</cubes>

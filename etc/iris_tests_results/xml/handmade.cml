@@ -1,0 +1,531 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="temperature" unit="K">
+    <attributes>
+      <attribute name="my_attribute" value="foobar"/>
+    </attributes>
+    <coords>
+      <coord>
+        <explicitCoord axis="forecast_period" name="forecast_period" points="[6]" unit="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <regularCoord axis="y" count="5" name="latitude" start="-90.0" step="45.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[1]">
+        <regularCoord axis="x" count="5" name="longitude" start="-180.0" step="90.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </regularCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" name="pressure" points="[1000]" unit="Unit('Pa')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['itbb']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="time" name="time" points="[359388.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x32dbc5ad" dtype="int32" shape="(5, 5)"/>
+  </cube>
+  <cube standard_name="temperature" unit="K">
+    <attributes>
+      <attribute name="my_attribute" value="foobar"/>
+    </attributes>
+    <coords>
+      <coord>
+        <explicitCoord axis="forecast_period" name="forecast_period" points="[6]" unit="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <regularCoord axis="y" count="5" name="latitude" start="-90.0" step="45.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[1]">
+        <regularCoord axis="x" count="5" name="longitude" start="-180.0" step="90.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </regularCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" name="pressure" points="[1000]" unit="Unit('Pa')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['itbb']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="time" name="time" points="[359388.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x32dbc5ad" dtype="int32" shape="(5, 5)"/>
+  </cube>
+  <cube standard_name="temperature" unit="K">
+    <attributes>
+      <attribute name="my_attribute" value="foobar"/>
+    </attributes>
+    <coords>
+      <coord>
+        <explicitCoord axis="forecast_period" name="forecast_period" points="[6]" unit="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <regularCoord axis="y" count="5" name="latitude" start="-90.0" step="45.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[1]">
+        <regularCoord axis="x" count="5" name="longitude" start="-180.0" step="90.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </regularCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" name="pressure" points="[1000]" unit="Unit('Pa')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['itbb']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="time" bounds="[[359382.0, 359388.0]]" name="time" points="[359385.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="forecast_period"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x32dbc5ad" dtype="int32" shape="(5, 5)"/>
+  </cube>
+  <cube standard_name="temperature" unit="K">
+    <attributes>
+      <attribute name="my_attribute" value="foobar"/>
+    </attributes>
+    <coords>
+      <coord>
+        <explicitCoord axis="forecast_period" name="forecast_period" points="[6]" unit="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <regularCoord axis="y" count="5" name="latitude" start="-90.0" step="45.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[1]">
+        <regularCoord axis="x" count="5" name="longitude" start="-180.0" step="90.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </regularCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" name="pressure" points="[1000]" unit="Unit('Pa')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['itbb']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="time" bounds="[[359382.0, 359388.0]]" name="time" points="[359385.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="forecast_period"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x32dbc5ad" dtype="int32" shape="(5, 5)"/>
+  </cube>
+  <cube standard_name="temperature" unit="K">
+    <attributes>
+      <attribute name="my_attribute" value="foobar"/>
+    </attributes>
+    <coords>
+      <coord>
+        <explicitCoord axis="forecast_period" name="forecast_period" points="[6]" unit="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <regularCoord axis="y" count="5" name="latitude" start="-90.0" step="45.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[1]">
+        <regularCoord axis="x" count="5" name="longitude" start="-180.0" step="90.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </regularCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" name="pressure" points="[1000]" unit="Unit('Pa')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['itbb']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="time" name="time" points="[359388.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x32dbc5ad" dtype="int32" shape="(5, 5)"/>
+  </cube>
+  <cube standard_name="temperature" unit="K">
+    <attributes>
+      <attribute name="my_attribute" value="foobar"/>
+    </attributes>
+    <coords>
+      <coord>
+        <explicitCoord axis="forecast_period" name="forecast_period" points="[6]" unit="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <regularCoord axis="y" count="5" name="latitude" start="-90.0" step="45.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[1]">
+        <regularCoord axis="x" count="5" name="longitude" start="-180.0" step="90.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </regularCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" name="pressure" points="[1000]" unit="Unit('Pa')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['itbb']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="time" name="time" points="[359388.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x32dbc5ad" dtype="int32" shape="(5, 5)"/>
+  </cube>
+  <cube standard_name="temperature" unit="K">
+    <attributes>
+      <attribute name="my_attribute" value="foobar"/>
+    </attributes>
+    <coords>
+      <coord>
+        <explicitCoord axis="forecast_period" name="forecast_period" points="[6]" unit="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <regularCoord axis="y" count="5" name="latitude" start="-90.0" step="45.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[1]">
+        <regularCoord axis="x" count="5" name="longitude" start="-180.0" step="90.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </regularCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" name="pressure" points="[1000]" unit="Unit('Pa')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['itbb']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="time" bounds="[[359382.0, 359388.0]]" name="time" points="[359385.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="forecast_period"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x32dbc5ad" dtype="int32" shape="(5, 5)"/>
+  </cube>
+  <cube standard_name="temperature" unit="K">
+    <attributes>
+      <attribute name="my_attribute" value="foobar"/>
+    </attributes>
+    <coords>
+      <coord>
+        <explicitCoord axis="forecast_period" name="forecast_period" points="[6]" unit="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <regularCoord axis="y" count="5" name="latitude" start="-90.0" step="45.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[1]">
+        <regularCoord axis="x" count="5" name="longitude" start="-180.0" step="90.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </regularCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" name="pressure" points="[1000]" unit="Unit('Pa')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['itbb']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="time" bounds="[[359382.0, 359388.0]]" name="time" points="[359385.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="forecast_period"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x32dbc5ad" dtype="int32" shape="(5, 5)"/>
+  </cube>
+  <cube standard_name="temperature" unit="K">
+    <attributes>
+      <attribute name="my_attribute" value="foobar"/>
+    </attributes>
+    <coords>
+      <coord>
+        <explicitCoord axis="forecast_period" name="forecast_period" points="[6]" unit="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <explicitCoord axis="y" name="latitude" points="[-90, -45, 0, 45, 90]" unit="Unit('degrees')" value_type="int32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </explicitCoord>
+      </coord>
+      <coord datadims="[1]">
+        <explicitCoord axis="x" name="longitude" points="[-180, -90, 0, 90, 180]" unit="Unit('degrees')" value_type="int32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </explicitCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" name="pressure" points="[1000]" unit="Unit('Pa')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['itbb']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="time" name="time" points="[359388.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x32dbc5ad" dtype="int32" shape="(5, 5)"/>
+  </cube>
+  <cube standard_name="temperature" unit="K">
+    <attributes>
+      <attribute name="my_attribute" value="foobar"/>
+    </attributes>
+    <coords>
+      <coord>
+        <explicitCoord axis="forecast_period" name="forecast_period" points="[6]" unit="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <explicitCoord axis="y" name="latitude" points="[-90, -45, 0, 45, 90]" unit="Unit('degrees')" value_type="int32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </explicitCoord>
+      </coord>
+      <coord datadims="[1]">
+        <explicitCoord axis="x" name="longitude" points="[-180, -90, 0, 90, 180]" unit="Unit('degrees')" value_type="int32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </explicitCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" name="pressure" points="[1000]" unit="Unit('Pa')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['itbb']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="time" name="time" points="[359388.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x32dbc5ad" dtype="int32" shape="(5, 5)"/>
+  </cube>
+  <cube standard_name="temperature" unit="K">
+    <attributes>
+      <attribute name="my_attribute" value="foobar"/>
+    </attributes>
+    <coords>
+      <coord>
+        <explicitCoord axis="forecast_period" name="forecast_period" points="[6]" unit="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <explicitCoord axis="y" name="latitude" points="[-90, -45, 0, 45, 90]" unit="Unit('degrees')" value_type="int32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </explicitCoord>
+      </coord>
+      <coord datadims="[1]">
+        <explicitCoord axis="x" name="longitude" points="[-180, -90, 0, 90, 180]" unit="Unit('degrees')" value_type="int32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </explicitCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" name="pressure" points="[1000]" unit="Unit('Pa')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['itbb']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="time" bounds="[[359382.0, 359388.0]]" name="time" points="[359385.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="forecast_period"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x32dbc5ad" dtype="int32" shape="(5, 5)"/>
+  </cube>
+  <cube standard_name="temperature" unit="K">
+    <attributes>
+      <attribute name="my_attribute" value="foobar"/>
+    </attributes>
+    <coords>
+      <coord>
+        <explicitCoord axis="forecast_period" name="forecast_period" points="[6]" unit="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <explicitCoord axis="y" name="latitude" points="[-90, -45, 0, 45, 90]" unit="Unit('degrees')" value_type="int32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </explicitCoord>
+      </coord>
+      <coord datadims="[1]">
+        <explicitCoord axis="x" name="longitude" points="[-180, -90, 0, 90, 180]" unit="Unit('degrees')" value_type="int32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </explicitCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" name="pressure" points="[1000]" unit="Unit('Pa')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['itbb']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="time" bounds="[[359382.0, 359388.0]]" name="time" points="[359385.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="forecast_period"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x32dbc5ad" dtype="int32" shape="(5, 5)"/>
+  </cube>
+  <cube standard_name="temperature" unit="K">
+    <attributes>
+      <attribute name="my_attribute" value="foobar"/>
+    </attributes>
+    <coords>
+      <coord>
+        <explicitCoord axis="forecast_period" name="forecast_period" points="[6]" unit="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <explicitCoord axis="y" name="latitude" points="[-90, -45, 0, 45, 90]" unit="Unit('degrees')" value_type="int32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </explicitCoord>
+      </coord>
+      <coord datadims="[1]">
+        <explicitCoord axis="x" name="longitude" points="[-180, -90, 0, 90, 180]" unit="Unit('degrees')" value_type="int32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </explicitCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" name="pressure" points="[1000]" unit="Unit('Pa')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['itbb']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="time" name="time" points="[359388.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x32dbc5ad" dtype="int32" shape="(5, 5)"/>
+  </cube>
+  <cube standard_name="temperature" unit="K">
+    <attributes>
+      <attribute name="my_attribute" value="foobar"/>
+    </attributes>
+    <coords>
+      <coord>
+        <explicitCoord axis="forecast_period" name="forecast_period" points="[6]" unit="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <explicitCoord axis="y" name="latitude" points="[-90, -45, 0, 45, 90]" unit="Unit('degrees')" value_type="int32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </explicitCoord>
+      </coord>
+      <coord datadims="[1]">
+        <explicitCoord axis="x" name="longitude" points="[-180, -90, 0, 90, 180]" unit="Unit('degrees')" value_type="int32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </explicitCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" name="pressure" points="[1000]" unit="Unit('Pa')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['itbb']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="time" name="time" points="[359388.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x32dbc5ad" dtype="int32" shape="(5, 5)"/>
+  </cube>
+  <cube standard_name="temperature" unit="K">
+    <attributes>
+      <attribute name="my_attribute" value="foobar"/>
+    </attributes>
+    <coords>
+      <coord>
+        <explicitCoord axis="forecast_period" name="forecast_period" points="[6]" unit="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <explicitCoord axis="y" name="latitude" points="[-90, -45, 0, 45, 90]" unit="Unit('degrees')" value_type="int32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </explicitCoord>
+      </coord>
+      <coord datadims="[1]">
+        <explicitCoord axis="x" name="longitude" points="[-180, -90, 0, 90, 180]" unit="Unit('degrees')" value_type="int32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </explicitCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" name="pressure" points="[1000]" unit="Unit('Pa')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['itbb']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="time" bounds="[[359382.0, 359388.0]]" name="time" points="[359385.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="forecast_period"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x32dbc5ad" dtype="int32" shape="(5, 5)"/>
+  </cube>
+  <cube standard_name="temperature" unit="K">
+    <attributes>
+      <attribute name="my_attribute" value="foobar"/>
+    </attributes>
+    <coords>
+      <coord>
+        <explicitCoord axis="forecast_period" name="forecast_period" points="[6]" unit="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <explicitCoord axis="y" name="latitude" points="[-90, -45, 0, 45, 90]" unit="Unit('degrees')" value_type="int32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </explicitCoord>
+      </coord>
+      <coord datadims="[1]">
+        <explicitCoord axis="x" name="longitude" points="[-180, -90, 0, 90, 180]" unit="Unit('degrees')" value_type="int32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+        </explicitCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" name="pressure" points="[1000]" unit="Unit('Pa')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['itbb']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="time" bounds="[[359382.0, 359388.0]]" name="time" points="[359385.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="forecast_period"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x32dbc5ad" dtype="int32" shape="(5, 5)"/>
+  </cube>
+</cubes>

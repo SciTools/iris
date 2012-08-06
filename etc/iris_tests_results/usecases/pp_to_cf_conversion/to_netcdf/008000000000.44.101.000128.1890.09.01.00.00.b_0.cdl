@@ -1,0 +1,22 @@
+dimensions:
+	depth = 20 ;
+	time = 16 ;
+variables:
+	float unknown(depth, time) ;
+		unknown:ukmo__um_stash_source = "m??s44i101" ;
+		unknown:cell_methods = "time: mean (interval: 24 hour)" ;
+	float depth(depth) ;
+		depth:axis = "Z" ;
+		depth:units = "m" ;
+		depth:standard_name = "depth" ;
+		depth:positive = "down" ;
+	float time(time) ;
+		time:axis = "T" ;
+		time:units = "days since 0000-01-01 00:00:00" ;
+		time:standard_name = "time" ;
+		time:calendar = "360_day" ;
+
+// global attributes:
+		:Conventions = "CF-1.5" ;
+		:source = "Data from Met Office Unified Model" ;
+}

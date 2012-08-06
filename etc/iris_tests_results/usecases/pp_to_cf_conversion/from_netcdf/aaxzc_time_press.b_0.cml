@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="geopotential_height" unit="m">
+    <attributes>
+      <attribute name="Conventions" value="CF-1.5"/>
+      <attribute name="STASH" value="m01s16i202"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <explicitCoord axis="z" definitive="true" name="pressure" points="[10.0, 30.0, 50.0, 100.0, 150.0,
+		200.0, 250.0, 300.0, 400.0, 500.0,
+		600.0, 700.0, 850.0, 950.0, 1000.0]" unit="Unit('hPa')" value_type="float32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord datadims="[1]">
+        <explicitCoord axis="t" definitive="true" name="time" points="[756690.0, 763890.0, 771090.0, 778290.0]" unit="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x46976132" dtype="float32" shape="(15, 4)"/>
+  </cube>
+</cubes>

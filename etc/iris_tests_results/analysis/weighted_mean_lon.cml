@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="test_data" unit="1">
+    <attributes>
+      <attribute name="history" value="Mean of test_data over lon"/>
+    </attributes>
+    <coords>
+      <coord>
+        <explicitCoord axis="x" bounds="[[0.0, 2.0]]" definitive="true" name="dummy" points="[1.0]" unit="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <explicitCoord axis="y" definitive="true" name="lat" points="[1.0, 2.0, 3.0]" unit="Unit('1')" value_type="float32">
+          <horizontalCS cs_type="cartesian" datum="SpheroidDatum(label='undefined spheroid', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))"/>
+        </explicitCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="x" bounds="[[1.0, 3.0]]" definitive="true" name="lon" points="[2.0]" unit="Unit('1')" value_type="float32">
+          <horizontalCS cs_type="cartesian" datum="SpheroidDatum(label='undefined spheroid', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))"/>
+        </explicitCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="lon"/>
+      </cellMethod>
+    </cellMethods>
+    <data dtype="float64" shape="(3,)" state="loaded"/>
+  </cube>
+</cubes>

@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="derivative_of_x_wind_wrt_x" unit="0.277777777777778 meter-second^-1">
+    <attributes>
+      <attribute name="history" value="differential of x_wind wrt to x"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <regularCoord axis="y" count="5" name="latitude" start="-90.0" step="45.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='undefined spheroid', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="reference_longitude?"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[0]">
+        <regularCoord axis="x" circular="True" count="4" name="longitude" start="-135.0" step="90.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='undefined spheroid', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="reference_longitude?"/>
+        </regularCoord>
+      </coord>
+      <coord datadims="[0]">
+        <explicitCoord axis="x" definitive="true" name="x" points="[0.5, 1.5, 2.5, 1.5]" unit="Unit('count')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <regularCoord axis="y" count="5" name="y" start="0.0" step="1.0" unit="Unit('count')" value_type="float32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float32" shape="(4, 5)" state="loaded"/>
+  </cube>
+</cubes>

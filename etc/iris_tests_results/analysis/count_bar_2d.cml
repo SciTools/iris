@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="thingness" unit="1">
+    <attributes>
+      <attribute name="history" value="Count of thingness over bar"/>
+    </attributes>
+    <coords>
+      <coord>
+        <explicitCoord axis="y" bounds="[[0, 15]]" name="bar" points="[7.5]" unit="Unit('1')" value_type="float64"/>
+      </coord>
+      <coord datadims="[0]">
+        <explicitCoord axis="x" bounds="[[-15, 0],
+		[0, 15],
+		[15, 30],
+		[30, 45]]" name="foo" points="[-7.5, 7.5, 22.5, 37.5]" unit="Unit('1')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="count">
+        <coord name="bar"/>
+      </cellMethod>
+    </cellMethods>
+    <data dtype="int64" shape="(4,)" state="loaded"/>
+  </cube>
+</cubes>

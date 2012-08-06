@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="test 2d dimensional cube" unit="kelvin">
+    <coords>
+      <coord>
+        <explicitCoord axis="t" name="an_other" points="[3.0]" unit="Unit('1')" value_type="float64"/>
+      </coord>
+      <coord datadims="[0]">
+        <regularCoord axis="y" count="4" name="dim1" start="3.0" step="2.0" unit="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="x" name="dim2" points="[2.5]" unit="Unit('1')" value_type="float32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="-0x7a85d5e5" dtype="float32" shape="(4,)"/>
+  </cube>
+</cubes>

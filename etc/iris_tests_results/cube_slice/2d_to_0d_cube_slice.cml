@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="test 2d dimensional cube" unit="meters">
+    <coords>
+      <coord>
+        <explicitCoord axis="t" name="an_other" points="[3.0]" unit="Unit('meters')" value_type="float64"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="y" name="dim1" points="[3.0]" unit="Unit('meters')" value_type="float32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="x" bounds="[[0, 1]]" name="dim2" points="[0]" unit="Unit('meters')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="foo" bounds="[[0, 1, 2, 3]]" name="my_multi_dim_coord" points="[0]" unit="Unit('1')" value_type="int32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x2144df1c" dtype="int32" shape="()"/>
+  </cube>
+</cubes>

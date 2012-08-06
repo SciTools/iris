@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="air_pressure_at_sea_level" unit="Pa">
+    <attributes>
+      <attribute name="STASH" value="m01s16i222"/>
+      <attribute name="history" value="Maximum of air_pressure_at_sea_level over grid_latitude, grid_longitude"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[0.0, 0.9999999962747097, 2.0000000037252903, 3.0, 3.9999999962747097,
+		5.0000000037252903, 6.0, 6.9999999962747097, 8.0000000037252903, 9.0]" unit="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="y" bounds="[[-22.49, 24.92]]" definitive="true" name="grid_latitude" points="[1.2150002]" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+        </explicitCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="x" bounds="[[313.01999, 392.10999]]" definitive="true" name="grid_longitude" points="[352.565]" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+        </explicitCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.01']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord datadims="[0]">
+        <explicitCoord axis="t" definitive="true" name="time" points="[319536.0, 319536.99999999627, 319538.00000000373, 319539.0, 319539.99999999627,
+		319541.00000000373, 319542.0, 319542.99999999627, 319544.00000000373, 319545.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="maximum">
+        <coord name="grid_latitude"/>
+        <coord name="grid_longitude"/>
+      </cellMethod>
+    </cellMethods>
+    <data dtype="float64" shape="(10,)" state="loaded"/>
+  </cube>
+</cubes>

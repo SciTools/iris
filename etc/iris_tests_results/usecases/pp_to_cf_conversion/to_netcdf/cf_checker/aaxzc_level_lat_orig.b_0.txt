@@ -1,0 +1,40 @@
+
+CHECKING NetCDF FILE: /var/tmp/aaxzc_level_lat_orig.b_0.nc
+=====================
+
+
+------------------
+Checking variable: time_bnds
+------------------
+
+------------------
+Checking variable: latitude
+------------------
+
+------------------
+Checking variable: latitude_longitude
+------------------
+
+------------------
+Checking variable: pressure
+------------------
+
+------------------
+Checking variable: forecast_period
+------------------
+
+------------------
+Checking variable: time
+------------------
+
+------------------
+Checking variable: forecast_reference_time
+------------------
+
+------------------
+Checking variable: geopotential_height
+------------------
+
+ERRORS detected: 0
+WARNINGS given: 0
+INFORMATION messages: 0

@@ -1,0 +1,92 @@
+
+digraph CubeGraph{
+
+    rankdir = "LR"
+    fontname = "Bitstream Vera Sans"
+    fontsize = 8
+
+    node [
+        fontname = "Bitstream Vera Sans"
+        fontsize = 8
+        shape = "record"
+    ]
+
+#   Nodes
+    ":Cube" [
+        label = "Cube|STASH: m01s16i203\nmy_attribute: foobar"
+    ]
+
+    
+    subgraph clusterCubeDimensions {
+        label="Cube data"
+    
+        "CubeDimension_0" [
+            label = "0|len: 73"
+        ]
+
+        "CubeDimension_1" [
+            label = "1|len: 96"
+        ]
+
+    }
+    
+    
+    subgraph clusterCoords {
+        label = "Coords"
+        "Coord_0" [
+            label = "DimCoord|standard_name: forecast_period\nlong_name: None\nunits: hours\ncircular: False"
+        ]
+        "Coord_1" [
+            label = "DimCoord|standard_name: latitude\nlong_name: None\nunits: degrees\ncircular: False"
+        ]
+        "Coord_2" [
+            label = "DimCoord|standard_name: longitude\nlong_name: None\nunits: degrees\ncircular: True"
+        ]
+        "Coord_3" [
+            label = "DimCoord|standard_name: None\nlong_name: pressure\nunits: hPa\ncircular: False"
+        ]
+        "Coord_4" [
+            label = "AuxCoord|standard_name: None\nlong_name: source\nunits: no_unit"
+        ]
+        "Coord_5" [
+            label = "DimCoord|standard_name: time\nlong_name: None\nunits: hours since 1970-01-01 00:00:00\ncircular: False\nbrain: hurts\nmonty: python"
+        ]
+
+    }
+    
+    
+    subgraph clusterCoordSystems {
+        label = "CoordSystems"
+        "CoordSystem_LatLonCS_0" [
+            label = "LatLonCS|cs_type: spherical\ndatum: SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, units=Unit('m'))\nn_pole: GeoPosition(latitude=90.0, longitude=0.0)\nprime_meridian: PrimeMeridian(label='Greenwich', value=0.0)\nreference_longitude: 0.0"
+        ]
+
+    }
+    
+    edge [
+        arrowhead = "normal"
+    ]
+
+#   RELATIONSHIPS
+
+#   Containment
+    
+    ":Cube" -> "Coord_0"
+    "Coord_1" -> "CoordSystem_LatLonCS_0"
+    ":Cube" -> "Coord_1"
+    "Coord_2" -> "CoordSystem_LatLonCS_0"
+    ":Cube" -> "Coord_2"
+    ":Cube" -> "Coord_3"
+    ":Cube" -> "Coord_4"
+    ":Cube" -> "Coord_5"
+    edge [
+        style="dashed"
+        arrowhead = "onormal"
+    ]
+
+#   Association
+    
+    "Coord_1" -> "CubeDimension_0":w
+    "Coord_2" -> "CubeDimension_1":w
+}
+    

@@ -1,0 +1,44 @@
+
+CHECKING NetCDF FILE: /var/tmp/st30211.b_0.nc
+=====================
+
+
+------------------
+Checking variable: time_bnds
+------------------
+
+------------------
+Checking variable: northward_ocean_heat_transport
+------------------
+
+------------------
+Checking variable: pseudo_level
+------------------
+
+------------------
+Checking variable: longitude
+------------------
+
+------------------
+Checking variable: latitude_longitude
+------------------
+
+------------------
+Checking variable: forecast_reference_time
+------------------
+
+------------------
+Checking variable: forecast_period
+------------------
+
+------------------
+Checking variable: time
+------------------
+
+------------------
+Checking variable: latitude
+------------------
+
+ERRORS detected: 0
+WARNINGS given: 0
+INFORMATION messages: 0

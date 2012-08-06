@@ -1,0 +1,3 @@
+# The following command generated the gitwash subdirectory.
+
+python gitwash_dumper.py --repo-name=Iris --github-user=SciTools --gitwash-url=https://github.com/matthew-brett/gitwash.git --project-url=https://Iris.github.com --project-ml-url=TBD ./gitwash iris

@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="temperature" unit="kelvin">
+    <attributes>
+      <attribute name="history" value="Mean of temperature aggregated over longitude"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <explicitCoord axis="y" name="latitude" points="[0.0, 0.0, 10.0]" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_lon?"/>
+        </explicitCoord>
+      </coord>
+      <coord datadims="[1]">
+        <explicitCoord axis="x" name="longitude" points="[0.0, 10.0]" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_lon?"/>
+        </explicitCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="longitude"/>
+      </cellMethod>
+    </cellMethods>
+    <data dtype="float32" shape="(3, 2)" state="loaded"/>
+  </cube>
+</cubes>

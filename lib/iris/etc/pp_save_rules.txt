@@ -1,0 +1,615 @@
+# (C) British Crown Copyright 2010 - 2012, Met Office
+#
+# This file is part of Iris.
+#
+# Iris is free software: you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Iris is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+
+################################################################
+### stuff that's missing from the default pp, or always true ###
+################################################################
+
+IF
+    True
+THEN
+    pp.lbproc = 0                # Processing. Start at 0.
+
+IF
+    cm.coord_system("LatLonCS") is not None
+THEN
+    pp.bplat = cm.coord_system("LatLonCS").n_pole.latitude
+    pp.bplon = cm.coord_system("LatLonCS").n_pole.longitude
+    
+
+#UM - no version number
+IF
+    scalar_coord(cm, 'source') is not None
+    len(scalar_coord(cm, 'source').points[0].rsplit("Data from Met Office Unified Model", 1)) > 1
+    len(scalar_coord(cm, 'source').points[0].rsplit("Data from Met Office Unified Model", 1)[1]) == 0
+THEN
+    pp.lbsrce = 1111
+
+#UM - with version number
+IF
+    scalar_coord(cm, 'source') is not None
+    len(scalar_coord(cm, 'source').points[0].rsplit("Data from Met Office Unified Model", 1)) > 1
+    len(scalar_coord(cm, 'source').points[0].rsplit("Data from Met Office Unified Model", 1)[1]) > 0
+THEN
+    pp.lbsrce = int(float(scalar_coord(cm, 'source').points[0].rsplit("Data from Met Office Unified Model", 1)[1]) * 1000000) + 1111  # UM version
+
+IF
+    'STASH' in cm.attributes
+    isinstance(cm.attributes['STASH'], iris.fileformats.pp.STASH)
+THEN
+    pp.lbuser[3] = 1000 * (cm.attributes['STASH'].section or 0) + (cm.attributes['STASH'].item or 0)
+    pp.lbuser[6] = (cm.attributes['STASH'].model or 0)
+
+############################################
+# Attempt to derive LBFC from the STASH code
+#
+
+IF
+    'STASH' in cm.attributes
+    isinstance(cm.attributes['STASH'], iris.fileformats.pp.STASH)
+    cm.attributes['STASH'] == iris.fileformats.pp.STASH(1, 3, 236)
+THEN
+    pp.lbfc = 16
+
+IF
+    'STASH' in cm.attributes
+    isinstance(cm.attributes['STASH'], iris.fileformats.pp.STASH)
+    cm.attributes['STASH'] == iris.fileformats.pp.STASH(1, 16, 202)
+THEN
+    pp.lbfc = 1
+
+############################################
+# Fallback to derive LBFC from the standard_name
+#
+
+IF
+    pp.lbfc == 0
+    cm.name() in ['geopotential_height']
+THEN
+    pp.lbfc = 1
+
+IF
+    pp.lbfc == 0
+    cm.name() in ['temperature', 'air_temperature']
+THEN
+    pp.lbfc = 16
+
+IF
+    pp.lbfc == 0
+    cm.name() in ['sea_surface_elevation']
+THEN
+    pp.lbfc = 608
+
+IF
+cm.name() in ['wind_gust']
+THEN
+pp.lbfc = 1694
+pp.lbuser[3] = 3463
+
+IF
+cm.name() in ['wind_speed']
+THEN
+pp.lbfc = 50
+pp.lbuser[3] = 6017
+
+IF
+cm.name() in ['large_scale_rainfall_rate']
+THEN
+pp.lbfc = 99
+pp.lbuser[3] = 4203
+
+IF
+cm.name() in ['eastward_wind']
+THEN
+pp.lbfc = 56
+pp.lbuser[3] = 15201
+
+IF
+cm.name() in ['northward_wind']
+THEN
+pp.lbfc = 57
+pp.lbuser[3] = 15202
+
+
+    
+    
+    
+    
+
+
+
+
+######################################################
+### time - lbtim, t1, t2 and lbft (but not lbproc) ###
+######################################################
+
+#forecast
+IF
+    scalar_coord(cm, 'time') is not None
+    not scalar_coord(cm, 'time').has_bounds()
+    scalar_coord(cm, 'forecast_period') is not None
+THEN
+    pp.lbtim.ia = 0
+    pp.lbtim.ib = 1
+    pp.t1 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').points[0])
+    pp.t2 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').points[0] - scalar_coord(cm, 'forecast_period').points[0])
+    pp.lbft = scalar_coord(cm, 'forecast_period').points[0]
+
+
+#time mean (non-climatological)
+# XXX This only works when we have a single timestep
+IF
+    # XXX How do we know *which* time to use if there are more than
+    # one? *Can* there be more than one?
+    scalar_coord(cm, 'time') is not None
+    scalar_coord(cm, 'time').has_bounds()
+    scalar_coord(cm, 'clim_season') is None
+    scalar_coord(cm, 'forecast_period') is not None
+THEN
+    pp.lbtim.ib = 2
+    pp.t1 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0])
+    pp.t2 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1])
+    pp.lbft = scalar_coord(cm, 'forecast_period').points[0]
+
+IF
+    # XXX Note the repetition of the previous rule's constraints
+    # This can be addressed through REQUIRES/PROVIDES extensions
+    scalar_coord(cm, 'time') is not None
+    scalar_coord(cm, 'time').has_bounds()
+    scalar_coord(cm, 'clim_season') is None
+    scalar_coord(cm, 'forecast_period') is not None
+    scalar_cell_method(cm, 'mean', 'time') is not None
+    scalar_cell_method(cm, 'mean', 'time').intervals != ()
+    scalar_cell_method(cm, 'mean', 'time').intervals[0].endswith('hour')
+THEN
+    pp.lbtim.ia = int(scalar_cell_method(cm, 'mean', 'time').intervals[0][:-5])
+
+IF
+    # XXX Note the repetition of the previous rule's constraints
+    scalar_coord(cm, 'time') is not None
+    scalar_coord(cm, 'time').has_bounds()
+    scalar_coord(cm, 'clim_season') is None
+    scalar_coord(cm, 'forecast_period') is not None
+    scalar_cell_method(cm, 'mean', 'time') is None or scalar_cell_method(cm, 'mean', 'time').intervals == () or not scalar_cell_method(cm, 'mean', 'time').intervals[0].endswith('hour')
+THEN
+    pp.lbtim.ia = 0
+
+
+#climatiological time mean - single year
+IF
+    scalar_coord(cm, 'time') is not None
+    scalar_coord(cm, 'time').has_bounds()
+    scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0]).year == scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1]).year
+    scalar_coord(cm, 'forecast_period') is not None
+    scalar_coord(cm, 'clim_season') is not None
+    'clim_season' in cm.cell_methods[-1].coord_names
+THEN
+    pp.lbtim.ia = 0
+    pp.lbtim.ib = 2
+    pp.lbft = scalar_coord(cm, 'forecast_period').points[0]
+    pp.t1 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0, 0])
+    pp.t2 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0, 1])
+
+
+#climatiological time mean - spanning years - djf
+IF
+    scalar_coord(cm, 'time') is not None
+    scalar_coord(cm, 'time').has_bounds()
+    scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0]).year != scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1]).year
+    scalar_coord(cm, 'forecast_period') is not None
+    scalar_coord(cm, 'clim_season') is not None
+    'clim_season' in cm.cell_methods[-1].coord_names
+    scalar_coord(cm, 'clim_season').points[0] == 'djf'
+THEN
+    pp.lbtim.ia = 0
+    pp.lbtim.ib = 3
+    pp.lbft = scalar_coord(cm, 'forecast_period').points[0]
+
+    pp.t1 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0])
+    pp.t2 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1])
+
+    pp.t1 = netcdftime.datetime( pp.t1.year if pp.t1.month==12 else pp.t1.year-1, 12, 1, 0, 0, 0 )
+    pp.t2 = netcdftime.datetime( pp.t2.year, 3, 1, 0, 0, 0 )
+        
+    self.conditional_warning(scalar_coord(cm, 'time').bounds[0,0] != scalar_coord(cm, 'time').units.date2num(pp.t1), "modified t1 for climatological seasonal mean")
+    self.conditional_warning(scalar_coord(cm, 'time').bounds[0,1] != scalar_coord(cm, 'time').units.date2num(pp.t2), "modified t2 for climatological seasonal mean")
+
+
+#climatiological time mean - spanning years - mam
+IF
+    scalar_coord(cm, 'time') is not None
+    scalar_coord(cm, 'time').has_bounds()
+    scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0]).year != scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1]).year
+    scalar_coord(cm, 'forecast_period') is not None
+    scalar_coord(cm, 'clim_season') is not None
+    'clim_season' in cm.cell_methods[-1].coord_names
+    scalar_coord(cm, 'clim_season').points[0] == 'mam'
+THEN
+    pp.lbtim.ia = 0
+    pp.lbtim.ib = 3
+    pp.lbft = scalar_coord(cm, 'forecast_period').points[0]
+
+    pp.t1 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0])
+    pp.t2 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1])
+
+    pp.t1 = netcdftime.datetime( pp.t1.year, 3, 1, 0, 0, 0 )
+    pp.t2 = netcdftime.datetime( pp.t2.year, 6, 1, 0, 0, 0 )
+    
+    self.conditional_warning(scalar_coord(cm, 'time').bounds[0,0] != scalar_coord(cm, 'time').units.date2num(pp.t1), "modified t1 for climatological seasonal mean")
+    self.conditional_warning(scalar_coord(cm, 'time').bounds[0,1] != scalar_coord(cm, 'time').units.date2num(pp.t2), "modified t2 for climatological seasonal mean")
+
+#climatiological time mean - spanning years - jja
+IF
+    scalar_coord(cm, 'time') is not None
+    scalar_coord(cm, 'time').has_bounds()
+    scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0]).year != scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1]).year
+    scalar_coord(cm, 'forecast_period') is not None
+    scalar_coord(cm, 'clim_season') is not None
+    'clim_season' in cm.cell_methods[-1].coord_names
+    scalar_coord(cm, 'clim_season').points[0] == 'jja'
+THEN
+    pp.lbtim.ia = 0
+    pp.lbtim.ib = 3
+    pp.lbft = scalar_coord(cm, 'forecast_period').points[0]
+
+    pp.t1 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0])
+    pp.t2 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1])
+
+    pp.t1 = netcdftime.datetime( pp.t1.year, 6, 1, 0, 0, 0 )
+    pp.t2 = netcdftime.datetime( pp.t2.year, 9, 1, 0, 0, 0 )
+    
+    self.conditional_warning(scalar_coord(cm, 'time').bounds[0,0] != scalar_coord(cm, 'time').units.date2num(pp.t1), "modified t1 for climatological seasonal mean")
+    self.conditional_warning(scalar_coord(cm, 'time').bounds[0,1] != scalar_coord(cm, 'time').units.date2num(pp.t2), "modified t2 for climatological seasonal mean")
+
+#climatiological time mean - spanning years - son
+IF
+    scalar_coord(cm, 'time') is not None
+    scalar_coord(cm, 'time').has_bounds()
+    scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0]).year != scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1]).year
+    scalar_coord(cm, 'forecast_period') is not None
+    scalar_coord(cm, 'clim_season') is not None
+    'clim_season' in cm.cell_methods[-1].coord_names
+    scalar_coord(cm, 'clim_season').points[0] == 'son'
+THEN
+    pp.lbtim.ia = 0
+    pp.lbtim.ib = 3
+    pp.lbft = scalar_coord(cm, 'forecast_period').points[0]
+
+    pp.t1 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0])
+    pp.t2 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1])
+
+    pp.t1 = netcdftime.datetime( pp.t1.year, 9, 1, 0, 0, 0 )
+    pp.t2 = netcdftime.datetime( pp.t2.year, 12, 1, 0, 0, 0 )
+    
+    self.conditional_warning(scalar_coord(cm, 'time').bounds[0,0] != scalar_coord(cm, 'time').units.date2num(pp.t1), "modified t1 for climatological seasonal mean")
+    self.conditional_warning(scalar_coord(cm, 'time').bounds[0,1] != scalar_coord(cm, 'time').units.date2num(pp.t2), "modified t2 for climatological seasonal mean")
+
+#360 day calendar
+IF
+    scalar_coord(cm, 'time') is not None
+    scalar_coord(cm, 'time').units.calendar == '360_day'
+THEN
+    pp.lbtim.ic = 2
+
+
+#gregorian calendar
+IF
+    scalar_coord(cm, 'time') is not None
+    scalar_coord(cm, 'time').units.calendar == 'gregorian'
+THEN
+    pp.lbtim.ic = 1
+
+
+
+#####################
+### grid and pole ###
+#####################
+
+IF
+    vector_coord(cm, 'longitude') and not is_regular(vector_coord(cm, 'longitude'))
+THEN
+    pp.bzx = 0
+    pp.bdx = 0
+    pp.lbnpt = vector_coord(cm, 'longitude').shape[0]
+    pp.x = vector_coord(cm, 'longitude').points
+
+IF
+    vector_coord(cm, 'grid_longitude') and not is_regular(vector_coord(cm, 'grid_longitude'))
+THEN
+    pp.bzx = 0
+    pp.bdx = 0
+    pp.lbnpt = vector_coord(cm, 'grid_longitude').shape[0]
+    pp.x = vector_coord(cm, 'grid_longitude').points
+
+IF
+    vector_coord(cm, 'latitude') and not is_regular(vector_coord(cm, 'latitude'))
+THEN
+    pp.bzy = 0
+    pp.bdy = 0
+    pp.lbrow = vector_coord(cm, 'latitude').shape[0]
+    pp.y = vector_coord(cm, 'latitude').points
+
+IF
+    vector_coord(cm, 'grid_latitude') and not is_regular(vector_coord(cm, 'grid_latitude'))
+THEN
+    pp.bzy = 0
+    pp.bdy = 0
+    pp.lbrow = vector_coord(cm, 'grid_latitude').shape[0]
+    pp.y = vector_coord(cm, 'grid_latitude').points
+
+IF
+    vector_coord(cm, 'longitude') and is_regular(vector_coord(cm, 'longitude'))
+THEN
+    pp.bzx = vector_coord(cm, 'longitude').points[0] - regular_step(vector_coord(cm, 'longitude')) 
+    pp.bdx = regular_step(vector_coord(cm, 'longitude'))
+    pp.lbnpt = len(vector_coord(cm, 'longitude').points)
+
+IF
+    vector_coord(cm, 'grid_longitude') and is_regular(vector_coord(cm, 'grid_longitude'))
+THEN
+    pp.bzx = vector_coord(cm, 'grid_longitude').points[0] - regular_step(vector_coord(cm, 'grid_longitude'))
+    pp.bdx = regular_step(vector_coord(cm, 'grid_longitude'))
+    pp.lbnpt = len(vector_coord(cm, 'grid_longitude').points)
+
+IF
+    vector_coord(cm, 'latitude') and is_regular(vector_coord(cm, 'latitude'))
+THEN
+    pp.bzy = vector_coord(cm, 'latitude').points[0] - regular_step(vector_coord(cm, 'latitude'))
+    pp.bdy = regular_step(vector_coord(cm, 'latitude'))
+    pp.lbrow = len(vector_coord(cm, 'latitude').points)
+
+IF
+    vector_coord(cm, 'grid_latitude') and is_regular(vector_coord(cm, 'grid_latitude'))
+THEN
+    pp.bzy = vector_coord(cm, 'grid_latitude').points[0] - regular_step(vector_coord(cm, 'grid_latitude'))
+    pp.bdy = regular_step(vector_coord(cm, 'grid_latitude'))
+    pp.lbrow = len(vector_coord(cm, 'grid_latitude').points)
+
+
+#rotated?
+IF
+#    iris.fileformats.pp.is_cross_section(cm) == False
+    cm.coord_system("LatLonCS") is not None
+    cm.coord_system("LatLonCS").has_rotated_pole()
+THEN
+    pp.lbcode = int(pp.lbcode) + 100
+
+
+#lon global
+IF
+    vector_coord(cm, 'longitude') is not None
+    vector_coord(cm, 'longitude').circular
+THEN
+    pp.lbhem = 0
+
+IF
+    vector_coord(cm, 'grid_longitude') is not None
+    vector_coord(cm, 'grid_longitude').circular
+THEN
+    pp.lbhem = 0
+
+#lon not global
+IF
+    vector_coord(cm, 'longitude') is not None
+    not vector_coord(cm, 'longitude').circular
+THEN
+    pp.lbhem = 3
+
+IF
+    vector_coord(cm, 'grid_longitude') is not None
+    not vector_coord(cm, 'grid_longitude').circular
+THEN
+    pp.lbhem = 3
+
+
+
+#####################################################
+############ non-standard cross-sections ############
+#####################################################
+
+# Ticket #1037, x=latitude, y=air_pressure - non-standard cross-section with bounds
+IF
+    vector_coord(cm, 'air_pressure') is not None
+    not vector_coord(cm, 'air_pressure').circular
+    vector_coord(cm, 'air_pressure').has_bounds()
+    vector_coord(cm, 'latitude') is not None
+    not vector_coord(cm, 'latitude').circular
+    vector_coord(cm, 'latitude').has_bounds()
+THEN
+    pp.lbcode = 10000 + int(100*10) + 1
+    pp.bgor = 0
+    pp.y = vector_coord(cm, 'air_pressure').points 
+    pp.y_lower_bound = vector_coord(cm, 'air_pressure').bounds[:,0]
+    pp.y_upper_bound = vector_coord(cm, 'air_pressure').bounds[:,1]
+    pp.x = vector_coord(cm, 'latitude').points 
+    pp.x_lower_bound = vector_coord(cm, 'latitude').bounds[:,0]
+    pp.x_upper_bound = vector_coord(cm, 'latitude').bounds[:,1]
+    pp.lbrow = vector_coord(cm, 'air_pressure').shape[0]
+    pp.lbnpt = vector_coord(cm, 'latitude').shape[0]
+    pp.bzx = pp.bzy = pp.bdx = pp.bdy = 0
+
+# Ticket #1037, x=latitude, y=depth - non-standard cross-section with bounds
+IF
+    vector_coord(cm, 'depth') is not None
+    not vector_coord(cm, 'depth').circular
+    vector_coord(cm, 'depth').has_bounds()
+    vector_coord(cm, 'latitude') is not None
+    not vector_coord(cm, 'latitude').circular
+    vector_coord(cm, 'latitude').has_bounds()
+THEN
+    pp.lbcode = 10000 + int(100*10) + 4
+    pp.bgor = 0
+    pp.y = vector_coord(cm, 'depth').points 
+    pp.y_lower_bound = vector_coord(cm, 'depth').bounds[:,0]
+    pp.y_upper_bound = vector_coord(cm, 'depth').bounds[:,1]
+    pp.x = vector_coord(cm, 'latitude').points 
+    pp.x_lower_bound = vector_coord(cm, 'latitude').bounds[:,0]
+    pp.x_upper_bound = vector_coord(cm, 'latitude').bounds[:,1]
+    pp.lbrow = vector_coord(cm, 'depth').shape[0]
+    pp.lbnpt = vector_coord(cm, 'latitude').shape[0]
+    pp.bzx = pp.bzy = pp.bdx = pp.bdy = 0
+
+# Ticket #1037, x=latitude, y=ETA - non-standard cross-section with bounds
+IF
+    vector_coord(cm, 'eta') is not None
+    not vector_coord(cm, 'eta').circular
+    vector_coord(cm, 'eta').has_bounds()
+    vector_coord(cm, 'latitude') is not None
+    not vector_coord(cm, 'latitude').circular
+    vector_coord(cm, 'latitude').has_bounds()
+THEN
+    pp.lbcode = 10000 + int(100*10) + 3
+    pp.bgor = 0
+    pp.y = vector_coord(cm, 'eta').points 
+    pp.y_lower_bound = vector_coord(cm, 'eta').bounds[:,0]
+    pp.y_upper_bound = vector_coord(cm, 'eta').bounds[:,1]
+    pp.x = vector_coord(cm, 'latitude').points 
+    pp.x_lower_bound = vector_coord(cm, 'latitude').bounds[:,0]
+    pp.x_upper_bound = vector_coord(cm, 'latitude').bounds[:,1]
+    pp.lbrow = vector_coord(cm, 'eta').shape[0]
+    pp.lbnpt = vector_coord(cm, 'latitude').shape[0]
+    pp.bzx = pp.bzy = pp.bdx = pp.bdy = 0
+
+# Ticket #1037, x=days (360 calendar), y=depth - non-standard cross-section with bounds
+IF
+    vector_coord(cm, 'depth') is not None
+    not vector_coord(cm, 'depth').circular
+    vector_coord(cm, 'depth').has_bounds()
+    vector_coord(cm, 'time') is not None
+    not vector_coord(cm, 'time').circular
+    vector_coord(cm, 'time').has_bounds()
+THEN
+    pp.lbcode = 10000 + int(100*23) + 4
+    pp.bgor = 0
+    pp.y = vector_coord(cm, 'depth').points 
+    pp.y_lower_bound = vector_coord(cm, 'depth').bounds[:,0]
+    pp.y_upper_bound = vector_coord(cm, 'depth').bounds[:,1]
+    pp.x = vector_coord(cm, 'time').points 
+    pp.x_lower_bound = vector_coord(cm, 'time').bounds[:,0]
+    pp.x_upper_bound = vector_coord(cm, 'time').bounds[:,1]
+    pp.lbrow = vector_coord(cm, 'depth').shape[0]
+    pp.lbnpt = vector_coord(cm, 'time').shape[0]
+    pp.bzx = pp.bzy = pp.bdx = pp.bdy = 0
+
+
+# Ticket #1037, x=days (360 calendar), y=air_pressure - non-standard cross-section with bounds
+IF
+    vector_coord(cm, 'air_pressure') is not None
+    not vector_coord(cm, 'air_pressure').circular
+    vector_coord(cm, 'air_pressure').has_bounds()
+    vector_coord(cm, 'time') is not None
+    not vector_coord(cm, 'time').circular
+    vector_coord(cm, 'time').has_bounds()
+THEN
+    pp.lbcode = 10000 + int(100*23) + 1
+    pp.bgor = 0
+    pp.y = vector_coord(cm, 'air_pressure').points 
+    pp.y_lower_bound = vector_coord(cm, 'air_pressure').bounds[:,0]
+    pp.y_upper_bound = vector_coord(cm, 'air_pressure').bounds[:,1]
+    pp.x = vector_coord(cm, 'time').points 
+    pp.x_lower_bound = vector_coord(cm, 'time').bounds[:,0]
+    pp.x_upper_bound = vector_coord(cm, 'time').bounds[:,1]
+    pp.lbrow = vector_coord(cm, 'air_pressure').shape[0]
+    pp.lbnpt = vector_coord(cm, 'time').shape[0]
+    pp.bzx = pp.bzy = pp.bdx = pp.bdy = 0
+
+
+
+
+
+#####################################################
+### lbproc (must start at 0 before rules are run) ###
+#####################################################
+
+IF
+    cm.attributes.get("ukmo__process_flags", None)
+THEN
+    pp.lbproc += sum([iris.fileformats.pp.lbproc_map[name] for name in cm.attributes["ukmo__process_flags"]])
+
+#time-mean
+IF
+    # Look for a CellMethod which is a "mean" over "time".
+    scalar_cell_method(cm, 'mean', 'time') is not None
+THEN
+    pp.lbproc += 128
+
+#time-maximum
+IF
+    # Look for a CellMethod which is a "maximum" over "time".
+    scalar_cell_method(cm, 'maximum', 'time') is not None
+THEN
+    pp.lbproc += 8192
+
+################################
+### vertical - lbvc and blev ###
+################################
+
+#single height level
+IF
+    scalar_coord(cm, 'height') is not None
+    not scalar_coord(cm, 'height').bounds
+    scalar_coord(cm, 'height').points[0] == 1.5
+    cm.name() == 'air_temperature'
+THEN
+    pp.lbvc = 129
+    pp.blev = -1
+
+IF
+    pp.lbvc == 0
+    scalar_coord(cm, 'height') is not None
+    not scalar_coord(cm, 'height').bounds
+THEN
+    pp.lbvc = 1
+    pp.blev = cm.coord('height').points[0]
+
+
+#single air_pressure level
+IF
+    scalar_coord(cm, 'air_pressure') is not None
+    not scalar_coord(cm, 'air_pressure').bounds
+THEN
+    pp.lbvc = 8
+    pp.blev = scalar_coord(cm, 'air_pressure').points[0]
+
+#single "pressure" level
+#TODO: "pressure" is in the PP load rules awaiting more info 
+IF
+    scalar_coord(cm, 'pressure') is not None
+    not scalar_coord(cm, 'pressure').bounds
+THEN
+    pp.lbvc = 8
+    pp.blev = scalar_coord(cm, 'pressure').points[0]
+
+
+
+#MDI
+IF
+    isinstance(cm.data, numpy.ma.core.MaskedArray)
+THEN
+    pp.bmdi = cm.data.fill_value
+
+IF
+    not isinstance(cm.data, numpy.ma.core.MaskedArray)
+THEN
+    pp.bmdi = -1e30
+
+
+# CFname mega rule
+IF
+    (cm.name(),cm.units) in iris.fileformats.um_cf_map.CF_TO_LBFC
+THEN
+    pp.lbfc = iris.fileformats.um_cf_map.CF_TO_LBFC[(cm.name(),cm.units)]

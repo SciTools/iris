@@ -1,0 +1,78 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="geopotential_height" unit="m">
+    <attributes>
+      <attribute name="Conventions" value="CF-1.5"/>
+      <attribute name="STASH" value="m01s16i202"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[952556, 1125356]" unit="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[273604.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+      </coord>
+      <coord datadims="[2]">
+        <explicitCoord axis="y" definitive="true" name="latitude" points="[90.0, 87.5, 85.0, 82.5, 80.0,
+		77.5, 75.0, 72.5, 70.0, 67.5,
+		65.0, 62.5, 60.0, 57.5, 55.0,
+		52.5, 50.0, 47.5, 45.0, 42.5,
+		40.0, 37.5, 35.0, 32.5, 30.0,
+		27.5, 25.0, 22.5, 20.0, 17.5,
+		15.0, 12.5, 10.0, 7.5, 5.0,
+		2.5, 0.0, -2.5, -5.0, -7.5,
+		-10.0, -12.5, -15.0, -17.5, -20.0,
+		-22.5, -25.0, -27.5, -30.0, -32.5,
+		-35.0, -37.5, -40.0, -42.5, -45.0,
+		-47.5, -50.0, -52.5, -55.0, -57.5,
+		-60.0, -62.5, -65.0, -67.5, -70.0,
+		-72.5, -75.0, -77.5, -80.0, -82.5,
+		-85.0, -87.5, -90.0]" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+        </explicitCoord>
+      </coord>
+      <coord datadims="[3]">
+        <explicitCoord axis="x" circular="True" definitive="true" name="longitude" points="[0.0, 3.75, 7.5, 11.25, 15.0,
+		18.75, 22.5, 26.25, 30.0, 33.75,
+		37.5, 41.25, 45.0, 48.75, 52.5,
+		56.25, 60.0, 63.75, 67.5, 71.25,
+		75.0, 78.75, 82.5, 86.25, 90.0,
+		93.75, 97.5, 101.25, 105.0, 108.75,
+		112.5, 116.25, 120.0, 123.75, 127.5,
+		131.25, 135.0, 138.75, 142.5, 146.25,
+		150.0, 153.75, 157.5, 161.25, 165.0,
+		168.75, 172.5, 176.25, 180.0, 183.75,
+		187.5, 191.25, 195.0, 198.75, 202.5,
+		206.25, 210.0, 213.75, 217.5, 221.25,
+		225.0, 228.75, 232.5, 236.25, 240.0,
+		243.75, 247.5, 251.25, 255.0, 258.75,
+		262.5, 266.25, 270.0, 273.75, 277.5,
+		281.25, 285.0, 288.75, 292.5, 296.25,
+		300.0, 303.75, 307.5, 311.25, 315.0,
+		318.75, 322.5, 326.25, 330.0, 333.75,
+		337.5, 341.25, 345.0, 348.75, 352.5,
+		356.25]" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+        </explicitCoord>
+      </coord>
+      <coord datadims="[1]">
+        <explicitCoord axis="z" definitive="true" name="pressure" points="[10.0, 30.0, 50.0, 100.0, 150.0,
+		200.0, 250.0, 300.0, 400.0, 500.0,
+		600.0, 700.0, 850.0, 950.0, 1000.0]" unit="Unit('hPa')" value_type="float32"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord datadims="[0]">
+        <explicitCoord axis="t" bounds="[[1053360.0, 1226160.0],
+		[1226160.0, 1398960.0]]" definitive="true" name="time" points="[1139760.0, 1312560.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="-0x72d5cdb9" dtype="float32" shape="(2, 15, 73, 96)"/>
+  </cube>
+</cubes>

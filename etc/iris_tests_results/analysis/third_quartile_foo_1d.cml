@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="thingness" unit="1">
+    <attributes>
+      <attribute name="history" value="Percentile (75%) of thingness over foo"/>
+    </attributes>
+    <coords>
+      <coord>
+        <explicitCoord axis="x" bounds="[[0, 11]]" name="foo" points="[5]" unit="Unit('1')" value_type="int32"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="percentile (75%)">
+        <coord name="foo"/>
+      </cellMethod>
+    </cellMethods>
+    <data dtype="float64" shape="(1,)" state="loaded"/>
+  </cube>
+</cubes>

@@ -1,0 +1,126 @@
+
+digraph CubeGraph{
+
+    rankdir = "LR"
+    fontname = "Bitstream Vera Sans"
+    fontsize = 8
+
+    node [
+        fontname = "Bitstream Vera Sans"
+        fontsize = 8
+        shape = "record"
+    ]
+
+#   Nodes
+    ":Cube" [
+        label = "Cube|STASH: m01s00i002"
+    ]
+
+    
+    subgraph clusterCubeDimensions {
+        label="Cube data"
+    
+        "CubeDimension_0" [
+            label = "0|len: 6"
+        ]
+
+        "CubeDimension_1" [
+            label = "1|len: 70"
+        ]
+
+        "CubeDimension_2" [
+            label = "2|len: 412"
+        ]
+
+        "CubeDimension_3" [
+            label = "3|len: 412"
+        ]
+
+    }
+    
+    
+    subgraph clusterCoords {
+        label = "Coords"
+        "Coord_0" [
+            label = "AuxCoord|standard_name: altitude\nlong_name: None\nunits: m\npositive: up"
+        ]
+        "Coord_1" [
+            label = "DimCoord|standard_name: forecast_period\nlong_name: None\nunits: hours\ncircular: False"
+        ]
+        "Coord_2" [
+            label = "DimCoord|standard_name: grid_latitude\nlong_name: None\nunits: degrees\ncircular: False"
+        ]
+        "Coord_3" [
+            label = "DimCoord|standard_name: grid_longitude\nlong_name: None\nunits: degrees\ncircular: False"
+        ]
+        "Coord_4" [
+            label = "DimCoord|standard_name: None\nlong_name: level_height\nunits: m\ncircular: False\npositive: up"
+        ]
+        "Coord_5" [
+            label = "DimCoord|standard_name: model_level_number\nlong_name: None\nunits: 1\ncircular: False"
+        ]
+        "Coord_6" [
+            label = "AuxCoord|standard_name: None\nlong_name: sigma\nunits: 1"
+        ]
+        "Coord_7" [
+            label = "AuxCoord|standard_name: None\nlong_name: source\nunits: no_unit"
+        ]
+        "Coord_8" [
+            label = "AuxCoord|standard_name: surface_altitude\nlong_name: None\nunits: m"
+        ]
+        "Coord_9" [
+            label = "DimCoord|standard_name: time\nlong_name: None\nunits: hours since 1970-01-01 00:00:00\ncircular: False"
+        ]
+
+    }
+    
+    
+    subgraph clusterCoordSystems {
+        label = "CoordSystems"
+        "CoordSystem_LatLonCS_0" [
+            label = "LatLonCS|cs_type: spherical\ndatum: SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, units=Unit('m'))\nn_pole: GeoPosition(latitude=37.5, longitude=177.5)\nprime_meridian: PrimeMeridian(label='Greenwich', value=0.0)\nreference_longitude: 0.0"
+        ]
+
+    }
+    
+    edge [
+        arrowhead = "normal"
+    ]
+
+#   RELATIONSHIPS
+
+#   Containment
+    
+    ":Cube" -> "Coord_0"
+    ":Cube" -> "Coord_1"
+    "Coord_2" -> "CoordSystem_LatLonCS_0"
+    ":Cube" -> "Coord_2"
+    "Coord_3" -> "CoordSystem_LatLonCS_0"
+    ":Cube" -> "Coord_3"
+    ":Cube" -> "Coord_4"
+    ":Cube" -> "Coord_5"
+    ":Cube" -> "Coord_6"
+    ":Cube" -> "Coord_7"
+    ":Cube" -> "Coord_8"
+    ":Cube" -> "Coord_9"
+    edge [
+        style="dashed"
+        arrowhead = "onormal"
+    ]
+
+#   Association
+    
+    "Coord_0" -> "CubeDimension_1":w
+    "Coord_0" -> "CubeDimension_2":w
+    "Coord_0" -> "CubeDimension_3":w
+    "Coord_1" -> "CubeDimension_0":w
+    "Coord_2" -> "CubeDimension_2":w
+    "Coord_3" -> "CubeDimension_3":w
+    "Coord_4" -> "CubeDimension_1":w
+    "Coord_5" -> "CubeDimension_1":w
+    "Coord_6" -> "CubeDimension_1":w
+    "Coord_8" -> "CubeDimension_2":w
+    "Coord_8" -> "CubeDimension_3":w
+    "Coord_9" -> "CubeDimension_0":w
+}
+    

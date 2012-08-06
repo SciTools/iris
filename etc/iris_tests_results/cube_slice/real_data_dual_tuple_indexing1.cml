@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="air_pressure_at_sea_level" unit="Pa">
+    <attributes>
+      <attribute name="STASH" value="m01s16i222"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[0.0, 3.9999999962747097, 5.0000000037252903, 2.0000000037252903]" unit="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord>
+        <regularCoord axis="y" count="1" name="grid_latitude" start="-22.49" step="0.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+        </regularCoord>
+      </coord>
+      <coord>
+        <regularCoord axis="x" count="1" name="grid_longitude" start="313.02" step="0.0" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+        </regularCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.01']" unit="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord datadims="[0]">
+        <explicitCoord axis="t" definitive="true" name="time" points="[319536.0, 319539.99999999627, 319541.00000000373, 319538.00000000373]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x6c0bed46" dtype="float32" shape="(4,)"/>
+  </cube>
+</cubes>

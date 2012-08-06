@@ -1,0 +1,19 @@
+air_temperature                     (latitude: 73; longitude: 96)
+     Dimension coordinates:
+          latitude                           x              -
+          longitude                          -              x
+             sensor_id=808, status=2
+     Auxiliary coordinates:
+          latitude                           x              -
+             test='True'
+          longitude                          -              x
+             ref='A8T-22', sensor_id=810
+     Scalar coordinates:
+          forecast_period: 6477.0 hours
+          pressure: 1000.0 hPa
+          source: Data from Met Office Unified Model
+          source: Data from Met Office Unified Model
+             reliability='low'
+          time: 253464.0 hours since 1970-01-01 00:00:00
+     Attributes:
+          STASH: m01s16i203

@@ -1,0 +1,42 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="w curl of wind" unit="0.277777777777778 second^-1-radian^-1">
+    <attributes>
+      <attribute name="history" value="unknown / cos(latitude)
+w cmpt of the curl of u_wind and v_wind"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <explicitCoord axis="y" definitive="true" name="latitude" points="[-87.0, -81.0, -75.0, -69.0, -63.0,
+		-57.0, -51.0, -45.0, -39.0, -33.0,
+		-27.0, -21.0, -15.0, -9.0, -3.0,
+		3.0, 9.0, 15.0, 21.0, 27.0,
+		33.0, 39.0, 45.0, 51.0, 57.0,
+		63.0, 69.0, 75.0, 81.0]" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='Tiny Earth', semi_major_axis=6321, semi_minor_axis=6321.0, flattening=0.0, unit='m')" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="reference_longitude?"/>
+        </explicitCoord>
+      </coord>
+      <coord datadims="[1]">
+        <explicitCoord axis="x" circular="True" definitive="true" name="longitude" points="[-180.0, -174.0, -168.0, -162.0, -156.0,
+		-150.0, -144.0, -138.0, -132.0, -126.0,
+		-120.0, -114.0, -108.0, -102.0, -96.0,
+		-90.0, -84.0, -78.0, -72.0, -66.0,
+		-60.0, -54.0, -48.0, -42.0, -36.0,
+		-30.0, -24.0, -18.0, -12.0, -6.0,
+		0.0, 6.0, 12.0, 18.0, 24.0,
+		30.0, 36.0, 42.0, 48.0, 54.0,
+		60.0, 66.0, 72.0, 78.0, 84.0,
+		90.0, 96.0, 102.0, 108.0, 114.0,
+		120.0, 126.0, 132.0, 138.0, 144.0,
+		150.0, 156.0, 162.0, 168.0, 174.0]" unit="Unit('degrees')" value_type="float32">
+          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='Tiny Earth', semi_major_axis=6321, semi_minor_axis=6321.0, flattening=0.0, unit='m')" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="reference_longitude?"/>
+        </explicitCoord>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" definitive="true" name="z" points="[10.0]" unit="Unit('meters')" value_type="float32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float64" shape="(29, 60)" state="loaded"/>
+  </cube>
+</cubes>

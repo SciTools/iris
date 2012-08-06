@@ -1,0 +1,46 @@
+
+CHECKING NetCDF FILE: /var/tmp/st0fc942.b_0.nc
+=====================
+
+
+------------------
+Checking variable: time_bnds
+------------------
+
+------------------
+Checking variable: rotated_latitude_longitude
+------------------
+
+------------------
+Checking variable: unknown
+------------------
+WARNING (3): No standard_name or long_name attribute specified
+INFO (3.1): No units attribute set.  Please consider adding a units attribute for completeness.
+
+------------------
+Checking variable: grid_latitude
+------------------
+
+------------------
+Checking variable: pseudo_level
+------------------
+
+------------------
+Checking variable: depth
+------------------
+
+------------------
+Checking variable: time
+------------------
+
+------------------
+Checking variable: forecast_reference_time
+------------------
+
+------------------
+Checking variable: forecast_period
+------------------
+
+ERRORS detected: 0
+WARNINGS given: 1
+INFORMATION messages: 1

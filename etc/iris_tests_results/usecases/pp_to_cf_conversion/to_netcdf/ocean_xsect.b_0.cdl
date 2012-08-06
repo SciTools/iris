@@ -1,0 +1,47 @@
+dimensions:
+	depth = 20 ;
+	latitude = 144 ;
+	bnds = 2 ;
+variables:
+	float sea_water_potential_temperature(depth, latitude) ;
+		sea_water_potential_temperature:_FillValue = -1.e+30f ;
+		sea_water_potential_temperature:standard_name = "sea_water_potential_temperature" ;
+		sea_water_potential_temperature:units = "degC" ;
+		sea_water_potential_temperature:ukmo__um_stash_source = "m02s00i101" ;
+		sea_water_potential_temperature:cell_methods = "time: mean" ;
+		sea_water_potential_temperature:grid_mapping = "latitude_longitude" ;
+		sea_water_potential_temperature:coordinates = "forecast_period forecast_reference_time time" ;
+	int latitude_longitude ;
+		latitude_longitude:grid_mapping_name = "latitude_longitude" ;
+		latitude_longitude:longitude_of_prime_meridian = 0. ;
+		latitude_longitude:semi_major_axis = 6371229. ;
+		latitude_longitude:semi_minor_axis = 6371229. ;
+	float depth(depth) ;
+		depth:axis = "Z" ;
+		depth:bounds = "depth_bnds" ;
+		depth:units = "m" ;
+		depth:standard_name = "depth" ;
+		depth:positive = "down" ;
+	float depth_bnds(depth, bnds) ;
+	float latitude(latitude) ;
+		latitude:axis = "Y" ;
+		latitude:units = "degrees_north" ;
+		latitude:standard_name = "latitude" ;
+	int forecast_period ;
+		forecast_period:units = "hours" ;
+		forecast_period:standard_name = "forecast_period" ;
+	double forecast_reference_time ;
+		forecast_reference_time:units = "hours since 1970-01-01 00:00:00" ;
+		forecast_reference_time:standard_name = "forecast_reference_time" ;
+		forecast_reference_time:calendar = "360_day" ;
+	double time ;
+		time:bounds = "time_bnds" ;
+		time:units = "hours since 1970-01-01 00:00:00" ;
+		time:standard_name = "time" ;
+		time:calendar = "360_day" ;
+	double time_bnds(bnds) ;
+
+// global attributes:
+		:Conventions = "CF-1.5" ;
+		:source = "Data from Met Office Unified Model" ;
+}

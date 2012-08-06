@@ -1,0 +1,252 @@
+[PP Field
+   lbyr: 2010
+   lbmon: 1
+   lbdat: 6
+   lbhr: 12
+   lbmin: 5
+   lbday: 6
+   lbyrd: 2010
+   lbmond: 1
+   lbdatd: 4
+   lbhrd: 6
+   lbmind: 0
+   lbdayd: 4
+   lbtim: 11
+   lbft: 54
+   lblrec: 84866
+   lbcode: 101
+   lbhem: 3
+   lbrow: 360
+   lbnpt: 600
+   lbext: 0
+   lbpack: 1
+   lbrel: 2
+   lbfc: 186
+   lbcfc: 0
+   lbproc: 0
+   lbvc: 129
+   lbrvc: 0
+   lbexp: 44
+   lbegin: 0
+   lbnrec: 0
+   lbproj: 900
+   lbtyp: 34
+   lblev: 9999
+   lbrsvd: (0, 0, 0, 0)
+   lbsrce: 7031111
+   lbuser: (1, 1312768, 0, 1201, 0, 0, 1)
+   brsvd: (0.0, 0.0, 0.0, 0.0)
+   bdatum: 0.0
+   bacc: -6.0
+   blev: 0.0
+   brlev: 0.0
+   bhlev: 0.0
+   bhrlev: 0.0
+   bplat: 37.5
+   bplon: 177.5
+   bgor: 0.0
+   bzy: -20.18
+   bdy: 0.11
+   bzx: 326.11
+   bdx: 0.11
+   bmdi: -1.07374e+09
+   bmks: 1.0
+   data: [[ 388.78125   389.46875   384.0625   ...,  318.1875    310.84375
+   307.796875]
+ [ 388.09375   381.375     374.28125  ...,  310.28125   305.59375
+   300.53125 ]
+ [ 382.34375   373.671875  371.171875 ...,  297.046875  293.109375
+   288.484375]
+ ..., 
+ [   0.          0.          0.       ...,    0.          0.          0.      ]
+ [   0.          0.          0.       ...,    0.          0.          0.      ]
+ [   0.          0.          0.       ...,    0.          0.          0.      ]]
+, PP Field
+   lbyr: 2010
+   lbmon: 1
+   lbdat: 6
+   lbhr: 12
+   lbmin: 5
+   lbday: 6
+   lbyrd: 2010
+   lbmond: 1
+   lbdatd: 4
+   lbhrd: 6
+   lbmind: 0
+   lbdayd: 4
+   lbtim: 11
+   lbft: 54
+   lblrec: 85968
+   lbcode: 101
+   lbhem: 3
+   lbrow: 360
+   lbnpt: 600
+   lbext: 0
+   lbpack: 1
+   lbrel: 2
+   lbfc: 201
+   lbcfc: 0
+   lbproc: 0
+   lbvc: 133
+   lbrvc: 0
+   lbexp: 44
+   lbegin: 0
+   lbnrec: 0
+   lbproj: 900
+   lbtyp: 175
+   lblev: 8888
+   lbrsvd: (0, 0, 0, 0)
+   lbsrce: 7031111
+   lbuser: (1, 1355776, 0, 1208, 0, 0, 1)
+   brsvd: (0.0, 0.0, 0.0, 0.0)
+   bdatum: 0.0
+   bacc: -6.0
+   blev: 0.0
+   brlev: 0.0
+   bhlev: 0.0
+   bhrlev: 0.0
+   bplat: 37.5
+   bplon: 177.5
+   bgor: 0.0
+   bzy: -20.18
+   bdy: 0.11
+   bzx: 326.11
+   bdx: 0.11
+   bmdi: -1.07374e+09
+   bmks: 1.0
+   data: [[ 226.078125  226.515625  231.921875 ...,  244.796875  251.34375
+   254.578125]
+ [ 225.625     233.296875  241.171875 ...,  250.421875  254.65625
+   259.453125]
+ [ 230.046875  239.890625  242.84375  ...,  260.921875  264.59375
+   269.09375 ]
+ ..., 
+ [   0.          0.          0.       ...,    0.          0.          0.      ]
+ [   0.          0.          0.       ...,    0.          0.          0.      ]
+ [   0.          0.          0.       ...,    0.          0.          0.      ]]
+, PP Field
+   lbyr: 2010
+   lbmon: 1
+   lbdat: 6
+   lbhr: 12
+   lbmin: 5
+   lbday: 6
+   lbyrd: 2010
+   lbmond: 1
+   lbdatd: 4
+   lbhrd: 6
+   lbmind: 0
+   lbdayd: 4
+   lbtim: 11
+   lbft: 54
+   lblrec: 85902
+   lbcode: 101
+   lbhem: 3
+   lbrow: 360
+   lbnpt: 600
+   lbext: 0
+   lbpack: 1
+   lbrel: 2
+   lbfc: 203
+   lbcfc: 0
+   lbproc: 0
+   lbvc: 129
+   lbrvc: 0
+   lbexp: 44
+   lbegin: 0
+   lbnrec: 0
+   lbproj: 900
+   lbtyp: 129
+   lblev: 9999
+   lbrsvd: (0, 0, 0, 0)
+   lbsrce: 7031111
+   lbuser: (1, 1398784, 0, 1235, 0, 0, 1)
+   brsvd: (0.0, 0.0, 0.0, 0.0)
+   bdatum: 0.0
+   bacc: -6.0
+   blev: 0.0
+   brlev: 0.0
+   bhlev: 0.0
+   bhrlev: 0.0
+   bplat: 37.5
+   bplon: 177.5
+   bgor: 0.0
+   bzy: -20.18
+   bdy: 0.11
+   bzx: 326.11
+   bdx: 0.11
+   bmdi: -1.07374e+09
+   bmks: 1.0
+   data: [[ 412.875     413.5625    407.875    ...,  522.953125  523.265625
+   524.453125]
+ [ 412.1875    405.078125  397.578125 ...,  521.953125  522.421875  523.25    ]
+ [ 406.1875    397.015625  394.359375 ...,  521.515625  522.046875  522.875   ]
+ ..., 
+ [   0.          0.          0.       ...,    0.          0.          0.      ]
+ [   0.          0.          0.       ...,    0.          0.          0.      ]
+ [   0.          0.          0.       ...,    0.          0.          0.      ]]
+, PP Field
+   lbyr: 2010
+   lbmon: 1
+   lbdat: 6
+   lbhr: 12
+   lbmin: 5
+   lbday: 6
+   lbyrd: 2010
+   lbmond: 1
+   lbdatd: 4
+   lbhrd: 6
+   lbmind: 0
+   lbdayd: 4
+   lbtim: 11
+   lbft: 54
+   lblrec: 94852
+   lbcode: 101
+   lbhem: 3
+   lbrow: 360
+   lbnpt: 600
+   lbext: 0
+   lbpack: 1
+   lbrel: 2
+   lbfc: 187
+   lbcfc: 0
+   lbproc: 0
+   lbvc: 129
+   lbrvc: 0
+   lbexp: 44
+   lbegin: 0
+   lbnrec: 0
+   lbproj: 900
+   lbtyp: 35
+   lblev: 9999
+   lbrsvd: (0, 0, 0, 0)
+   lbsrce: 7031111
+   lbuser: (1, 1441792, 0, 2201, 0, 0, 1)
+   brsvd: (0.0, 0.0, 0.0, 0.0)
+   bdatum: 0.0
+   bacc: -6.0
+   blev: 0.0
+   brlev: 0.0
+   bhlev: 0.0
+   bhrlev: 0.0
+   bplat: 37.5
+   bplon: 177.5
+   bgor: 0.0
+   bzy: -20.18
+   bdy: 0.11
+   bzx: 326.11
+   bdx: 0.11
+   bmdi: -1.07374e+09
+   bmks: 1.0
+   data: [[ -61.265625  -61.3125    -60.4375   ..., -198.171875 -193.734375
+  -189.3125  ]
+ [ -61.234375  -60.0625    -58.6875   ..., -197.515625 -193.703125
+  -189.9375  ]
+ [ -60.390625  -59.03125   -58.640625 ..., -193.484375 -190.140625
+  -186.78125 ]
+ ..., 
+ [ -73.28125   -19.171875   -3.03125  ...,  -19.03125   -16.65625
+   -48.828125]
+ [ -48.1875      1.265625  -17.765625 ...,  -17.21875   -41.3125    -64.65625 ]
+ [ -72.578125  -46.671875  -68.734375 ...,  -49.15625   -66.71875   -65.6875  ]]
+]

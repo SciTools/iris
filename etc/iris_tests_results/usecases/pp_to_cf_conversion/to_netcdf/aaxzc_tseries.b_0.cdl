@@ -1,0 +1,27 @@
+dimensions:
+	time = 4 ;
+	site_number = 1 ;
+variables:
+	float air_temperature(time, site_number) ;
+		air_temperature:standard_name = "air_temperature" ;
+		air_temperature:units = "K" ;
+		air_temperature:ukmo__um_stash_source = "m01s03i236" ;
+		air_temperature:cell_methods = "time: mean" ;
+		air_temperature:coordinates = "height" ;
+	float time(time) ;
+		time:axis = "T" ;
+		time:units = "days since 0000-01-01 00:00:00" ;
+		time:standard_name = "time" ;
+		time:calendar = "360_day" ;
+	float site_number(site_number) ;
+		site_number:units = "1" ;
+		site_number:long_name = "site_number" ;
+	double height ;
+		height:units = "m" ;
+		height:standard_name = "height" ;
+		height:positive = "up" ;
+
+// global attributes:
+		:Conventions = "CF-1.5" ;
+		:source = "Data from Met Office Unified Model" ;
+}

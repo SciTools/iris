@@ -1,0 +1,44 @@
+
+CHECKING NetCDF FILE: /var/tmp/ocean_xsect.b_0.nc
+=====================
+
+
+------------------
+Checking variable: time_bnds
+------------------
+
+------------------
+Checking variable: sea_water_potential_temperature
+------------------
+
+------------------
+Checking variable: time
+------------------
+
+------------------
+Checking variable: forecast_period
+------------------
+
+------------------
+Checking variable: latitude_longitude
+------------------
+
+------------------
+Checking variable: forecast_reference_time
+------------------
+
+------------------
+Checking variable: depth
+------------------
+
+------------------
+Checking variable: depth_bnds
+------------------
+
+------------------
+Checking variable: latitude
+------------------
+
+ERRORS detected: 0
+WARNINGS given: 0
+INFORMATION messages: 0

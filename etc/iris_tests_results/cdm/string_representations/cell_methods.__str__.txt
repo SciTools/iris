@@ -1,0 +1,16 @@
+air_temperature                     (latitude: 73; longitude: 96)
+     Dimension coordinates:
+          latitude                           x              -
+          longitude                          -              x
+     Scalar coordinates:
+          forecast_period: 6477.0 hours
+          pressure: 1000.0 hPa
+          source: Data from Met Office Unified Model
+          time: 253464.0 hours since 1970-01-01 00:00:00
+     Attributes:
+          STASH: m01s16i203
+     Cell methods:
+          mean: longitude (6 minutes, This is a test comment), latitude (12 minutes)
+          average: longitude (6 minutes, This is another test comment), latitude (15 minutes, This is another comment)
+          average: longitude, latitude
+          percentile: longitude (6 minutes, This is another test comment)

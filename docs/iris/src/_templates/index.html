@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+{% set title = 'Iris documentation homepage' %}
+{% block extrahead %}
+
+<script type="text/javascript" src="_static/jquery.cycle.all.latest.js"></script>
+
+<style type="text/css">
+#slideshow { width: 400px; }
+#sliderNav { margin-left: 295px; margin-top: 10px; margin-bottom: 75px; cursor:pointer;cursor:hand; }
+#sliderNav div { float: left; height: 17px; width: 20px; background: url("_static/bullet_on.png"); }
+#sliderNav div.activeSlide { background: url("_static/bullet_off.png"); }
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $('.slideshow').cycle({
+        fx:      'fade',
+        pager:   '#sliderNav',
+        pagerAnchorBuilder: pagerFactory
+    });
+
+    function pagerFactory(idx, slide) {
+        var s = ' style="background-image: url("_static/bullet_on.png"); width:20px; height;17px; display: block;';
+        return '<div><a href="#"><span></span></a></div>';
+    };
+
+});
+
+$(document).bind('keypress', function(e) {
+	if (e.keyCode == 37)
+		$('.slideshow').cycle('prev');
+	else if (e.keyCode == 39)
+		$('.slideshow').cycle('next');
+});
+
+</script>
+
+{% endblock %}
+
+
+
+{% block body %}
+
+
+<p style="font-style: italic; font-size: larger;">
+Iris seeks to provide a powerful, easy to use, and community-driven Python library for analysing and visualising meteorological and oceanographic data sets.
+</p>
+<p>
+With Iris you can:
+<ul>
+    <li>Use a single API to work on your data, irrespective of its original format.
+    <li>Read and write (CF-)netCDF, GRIB, and PP files.</li>
+
+    <li>Easily produce graphs and maps via integration with matplotlib and Basemap.</li>
+</ul>
+</p>
+
+
+<div style="float: left;">
+	<ul style="list-style: none; margin-left: -15px; margin-right: 0px; margin-top: 50px;">
+	<li>
+		<p class="biglink"><a class="biglink" href="userguide/index.html">User guide</a><br/>
+         	<span class="linkdescr">an introduction to Iris and its core concepts</span></p>
+	</li>
+	<li>
+		<p class="biglink"><a class="biglink" href="iris/iris.html">Reference documentation</a><br/>
+		<span class="linkdescr">complete Iris package reference help</span></p>
+	</li>
+	<li>
+		<p class="biglink"><a class="biglink" href="gallery.html">Gallery</a><br/>
+		<span class="linkdescr">a collection of images produced using Iris</span></p>
+	</li>
+	<li>
+		<p class="biglink"><a class="biglink" href="whats_new/changes.html">Change Log</a><br/>
+		<span class="linkdescr">changes in Iris' capabilities</span></p>
+	</li>
+	</ul>
+</div>
+
+<div style="float:right; padding-top: 50px; padding-right: 10px;">
+	<div class="slideshow">
+                <a href="examples/graphics/COP_maps.html"><img src="_images/COP_maps.png" style="height: 250px;"/></a>
+                <a href="examples/graphics/custom_file_loading.html"><img src="_images/custom_file_loading.png" style="margin-left:130px; height: 300px;"/></a>
+                <a href="examples/graphics/COP_1d_plot.html"><img src="_images/COP_1d_plot.png" style="margin-left:130px; height: 300px;"/></a>
+                <a href="examples/graphics/hovmoller.html"><img src="_images/hovmoller.png" style="margin-left:130px; height: 300px;"/></a>
+                <a href="examples/graphics/TEC.html"><img src="_images/TEC.png" style="margin-left:130px; height: 300px;"/></a>
+        </div>
+        <div id="sliderNav" align="center"></div>
+</div>
+
+
+{% endblock %}

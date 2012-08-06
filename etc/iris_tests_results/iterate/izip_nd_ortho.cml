@@ -1,0 +1,233 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.1">
+  <cube standard_name="" unit="unknown">
+    <coords>
+      <coord datadims="[2, 3]">
+        <explicitCoord axis="x" definitive="true" name="x" points="[[0, 1, 2, 3, 4],
+		[5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14],
+		[15, 16, 17, 18, 19],
+		[20, 21, 22, 23, 24]]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0, 1]">
+        <explicitCoord axis="y" definitive="true" name="y" points="[[0, 1, 2, 3, 4],
+		[5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14],
+		[15, 16, 17, 18, 19],
+		[20, 21, 22, 23, 24]]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" definitive="true" name="z" points="[0]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
+  </cube>
+  <cube standard_name="" unit="unknown">
+    <coords>
+      <coord datadims="[2, 3]">
+        <explicitCoord axis="x" definitive="true" name="x" points="[[0, 1, 2, 3, 4],
+		[5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14],
+		[15, 16, 17, 18, 19],
+		[20, 21, 22, 23, 24]]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0, 1]">
+        <explicitCoord axis="y" definitive="true" name="y" points="[[0, 1, 2, 3, 4],
+		[5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14],
+		[15, 16, 17, 18, 19],
+		[20, 21, 22, 23, 24]]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" definitive="true" name="z" points="[0]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
+  </cube>
+  <cube standard_name="" unit="unknown">
+    <coords>
+      <coord datadims="[2, 3]">
+        <explicitCoord axis="x" definitive="true" name="x" points="[[0, 1, 2, 3, 4],
+		[5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14],
+		[15, 16, 17, 18, 19],
+		[20, 21, 22, 23, 24]]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0, 1]">
+        <explicitCoord axis="y" definitive="true" name="y" points="[[0, 1, 2, 3, 4],
+		[5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14],
+		[15, 16, 17, 18, 19],
+		[20, 21, 22, 23, 24]]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" definitive="true" name="z" points="[1]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
+  </cube>
+  <cube standard_name="" unit="unknown">
+    <coords>
+      <coord datadims="[2, 3]">
+        <explicitCoord axis="x" definitive="true" name="x" points="[[0, 1, 2, 3, 4],
+		[5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14],
+		[15, 16, 17, 18, 19],
+		[20, 21, 22, 23, 24]]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0, 1]">
+        <explicitCoord axis="y" definitive="true" name="y" points="[[0, 1, 2, 3, 4],
+		[5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14],
+		[15, 16, 17, 18, 19],
+		[20, 21, 22, 23, 24]]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" definitive="true" name="z" points="[1]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
+  </cube>
+  <cube standard_name="" unit="unknown">
+    <coords>
+      <coord datadims="[2, 3]">
+        <explicitCoord axis="x" definitive="true" name="x" points="[[0, 1, 2, 3, 4],
+		[5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14],
+		[15, 16, 17, 18, 19],
+		[20, 21, 22, 23, 24]]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0, 1]">
+        <explicitCoord axis="y" definitive="true" name="y" points="[[0, 1, 2, 3, 4],
+		[5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14],
+		[15, 16, 17, 18, 19],
+		[20, 21, 22, 23, 24]]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" definitive="true" name="z" points="[2]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
+  </cube>
+  <cube standard_name="" unit="unknown">
+    <coords>
+      <coord datadims="[2, 3]">
+        <explicitCoord axis="x" definitive="true" name="x" points="[[0, 1, 2, 3, 4],
+		[5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14],
+		[15, 16, 17, 18, 19],
+		[20, 21, 22, 23, 24]]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0, 1]">
+        <explicitCoord axis="y" definitive="true" name="y" points="[[0, 1, 2, 3, 4],
+		[5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14],
+		[15, 16, 17, 18, 19],
+		[20, 21, 22, 23, 24]]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" definitive="true" name="z" points="[2]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
+  </cube>
+  <cube standard_name="" unit="unknown">
+    <coords>
+      <coord datadims="[2, 3]">
+        <explicitCoord axis="x" definitive="true" name="x" points="[[0, 1, 2, 3, 4],
+		[5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14],
+		[15, 16, 17, 18, 19],
+		[20, 21, 22, 23, 24]]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0, 1]">
+        <explicitCoord axis="y" definitive="true" name="y" points="[[0, 1, 2, 3, 4],
+		[5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14],
+		[15, 16, 17, 18, 19],
+		[20, 21, 22, 23, 24]]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" definitive="true" name="z" points="[3]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
+  </cube>
+  <cube standard_name="" unit="unknown">
+    <coords>
+      <coord datadims="[2, 3]">
+        <explicitCoord axis="x" definitive="true" name="x" points="[[0, 1, 2, 3, 4],
+		[5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14],
+		[15, 16, 17, 18, 19],
+		[20, 21, 22, 23, 24]]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0, 1]">
+        <explicitCoord axis="y" definitive="true" name="y" points="[[0, 1, 2, 3, 4],
+		[5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14],
+		[15, 16, 17, 18, 19],
+		[20, 21, 22, 23, 24]]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" definitive="true" name="z" points="[3]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
+  </cube>
+  <cube standard_name="" unit="unknown">
+    <coords>
+      <coord datadims="[2, 3]">
+        <explicitCoord axis="x" definitive="true" name="x" points="[[0, 1, 2, 3, 4],
+		[5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14],
+		[15, 16, 17, 18, 19],
+		[20, 21, 22, 23, 24]]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0, 1]">
+        <explicitCoord axis="y" definitive="true" name="y" points="[[0, 1, 2, 3, 4],
+		[5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14],
+		[15, 16, 17, 18, 19],
+		[20, 21, 22, 23, 24]]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" definitive="true" name="z" points="[4]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
+  </cube>
+  <cube standard_name="" unit="unknown">
+    <coords>
+      <coord datadims="[2, 3]">
+        <explicitCoord axis="x" definitive="true" name="x" points="[[0, 1, 2, 3, 4],
+		[5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14],
+		[15, 16, 17, 18, 19],
+		[20, 21, 22, 23, 24]]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0, 1]">
+        <explicitCoord axis="y" definitive="true" name="y" points="[[0, 1, 2, 3, 4],
+		[5, 6, 7, 8, 9],
+		[10, 11, 12, 13, 14],
+		[15, 16, 17, 18, 19],
+		[20, 21, 22, 23, 24]]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord>
+        <explicitCoord axis="z" definitive="true" name="z" points="[4]" unit="Unit('1')" value_type="int64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
+  </cube>
+</cubes>

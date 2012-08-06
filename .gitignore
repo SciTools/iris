@@ -1,0 +1,47 @@
+*.py[co]
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+
+#Translations
+*.mo
+
+# Created by Iris build
+*.so
+lib/iris/etc/site.cfg
+lib/iris/fileformats/_pyke_rules/compiled_krb/
+lib/iris/std_names.py
+
+
+# Pydev/Eclipse files
+.project
+.pydevproject
+.settings
+
+# Auto generated documentation files
+docs/iris/src/_static/random_image.js
+docs/iris/src/_templates/gallery.html
+docs/iris/src/examples/
+docs/iris/src/iris/
+
+# Created by editiors
+*~
+\#*
+\.\#*

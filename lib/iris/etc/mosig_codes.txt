@@ -1,0 +1,1468 @@
+# (C) British Crown Copyright 2010 - 2012, Met Office
+#
+# This file is part of Iris.
+#
+# Iris is free software: you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Iris is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+
+# MOSIG rule #216
+IF
+f.lbuser[6] == 06
+f.lbuser[3] == 103
+THEN
+CMAttribute("standard_name", "upward_eastward_momentum_flux_in_air_due_to_nonorographic_westward_gravity_waves")
+CMAttribute("units", "Pa")
+
+# MOSIG rule #217
+IF
+f.lbuser[6] == 06
+f.lbuser[3] == 201
+THEN
+CMAttribute("standard_name", "upward_eastward_momentum_flux_in_air_due_to_orographic_gravity_waves")
+CMAttribute("units", "Pa")
+
+# MOSIG rule #214
+IF
+f.lbuser[6] == 03
+f.lbuser[3] == 394
+THEN
+CMAttribute("standard_name", "surface_downward_eastward_stress")
+CMAttribute("units", "Pa")
+
+# MOSIG rule #215
+IF
+f.lbuser[6] == 06
+f.lbuser[3] == 101
+THEN
+CMAttribute("standard_name", "upward_eastward_momentum_flux_in_air_due_to_nonorographic_eastward_gravity_waves")
+CMAttribute("units", "Pa")
+
+# MOSIG rule #212
+IF
+f.lbuser[6] == 03
+f.lbuser[3] == 337
+THEN
+CMAttribute("standard_name", "downward_heat_flux_in_soil")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #213
+IF
+f.lbuser[6] == 03
+f.lbuser[3] == 392
+THEN
+CMAttribute("standard_name", "surface_downward_eastward_stress")
+CMAttribute("units", "Pa")
+
+# MOSIG rule #210
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 1435
+THEN
+CMAttribute("standard_name", "surface_downwelling_shortwave_flux_in_air")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #211
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3334
+THEN
+CMAttribute("standard_name", "water_potential_evaporation_flux")
+CMAttribute("units", "kg m-2 s-1")
+
+# MOSIG rule #165
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 102
+THEN
+CMAttribute("standard_name", "sea_water_salinity")
+CMAttribute("units", "1")
+
+# MOSIG rule #218
+IF
+f.lbuser[6] == 06
+f.lbuser[3] == 207
+THEN
+CMAttribute("standard_name", "tendency_of_eastward_wind_due_to_orographic_gravity_wave_drag")
+CMAttribute("units", "m s-2")
+
+# MOSIG rule #219
+IF
+f.lbuser[6] == 15
+f.lbuser[3] == 243
+THEN
+CMAttribute("standard_name", "eastward_wind")
+CMAttribute("units", "m s-1")
+
+# MOSIG rule #133
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 15220
+THEN
+CMAttribute("standard_name", "square_of_eastward_wind")
+CMAttribute("units", "???")
+
+# MOSIG rule #132
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 15219
+THEN
+CMAttribute("standard_name", "square_of_air_temperature")
+CMAttribute("units", "???")
+
+# MOSIG rule #131
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 15214
+THEN
+CMAttribute("standard_name", "ertel_potential_vorticity")
+CMAttribute("units", "???")
+
+# MOSIG rule #137
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 15224
+THEN
+CMAttribute("standard_name", "product_of_eastward_wind_and_omega")
+CMAttribute("units", "???")
+
+# MOSIG rule #136
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 15223
+THEN
+CMAttribute("standard_name", "product_of_omega_and_air_temperature")
+CMAttribute("units", "???")
+
+# MOSIG rule #135
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 15222
+THEN
+CMAttribute("standard_name", "lagrangian_tendency_of_air_pressure")
+CMAttribute("units", "Pa s-1")
+
+# MOSIG rule #134
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 15221
+THEN
+CMAttribute("standard_name", "square_of_northward_wind")
+CMAttribute("units", "???")
+
+# MOSIG rule #139
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 15226
+THEN
+CMAttribute("standard_name", "specific_humidity")
+CMAttribute("units", "???")
+
+# MOSIG rule #138
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 15225
+THEN
+CMAttribute("standard_name", "product_of_northward_wind_and_omega")
+CMAttribute("units", "???")
+
+# MOSIG rule #27
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 1201
+THEN
+CMAttribute("standard_name", "surface_net_downward_shortwave_flux")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #20
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 205
+THEN
+CMAttribute("standard_name", "land_area_fraction")
+CMAttribute("units", "%")
+
+# MOSIG rule #160
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 30406
+THEN
+# TODO: Is there a CF standard name for this?
+CMAttribute("long_name", "atmosphere_cloud_ice_content")
+CMAttribute("units", "kg m-2")
+
+# MOSIG rule #29
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 1203
+THEN
+CMAttribute("standard_name", "surface_net_downward_shortwave_flux_where_open_sea")
+CMAttribute("units", "???")
+
+# MOSIG rule #161
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 30417
+THEN
+CMAttribute("standard_name", "surface_air_pressure")
+CMAttribute("units", "Pa")
+
+# MOSIG rule #4
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 4
+THEN
+CMAttribute("standard_name", "air_potential_temperature")
+CMAttribute("units", "K")
+
+# MOSIG rule #8
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 13
+THEN
+CMAttribute("standard_name", "convective_cloud_area_fraction")
+CMAttribute("units", "???")
+
+# MOSIG rule #119
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 8231
+THEN
+CMAttribute("standard_name", "surface_snow_melt_flux_where_land")
+CMAttribute("units", "kg m-2 s-1")
+
+# MOSIG rule #120
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 8234
+THEN
+CMAttribute("standard_name", "surface_runoff_flux")
+CMAttribute("units", "kg m-2 s-1")
+
+# MOSIG rule #122
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 8235
+THEN
+CMAttribute("standard_name", "subsurface_runoff_flux")
+CMAttribute("units", "kg m-2 s-1")
+
+# MOSIG rule #123
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 9201
+THEN
+CMAttribute("standard_name", "large_scale_cloud_area_fraction_of_atmosphere_layer")
+CMAttribute("units", "???")
+
+# MOSIG rule #126
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 12201
+THEN
+CMAttribute("standard_name", "lagrangian_tendency_of_air_pressure")
+CMAttribute("units", "Pa s-1")
+
+# MOSIG rule #127
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 15201
+THEN
+CMAttribute("standard_name", "eastward_wind")
+CMAttribute("units", "m s-1")
+
+# MOSIG rule #129
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 15202
+THEN
+CMAttribute("standard_name", "northward_wind")
+CMAttribute("units", "m s-1")
+
+# MOSIG rule #167
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 121
+THEN
+CMAttribute("standard_name", "baroclinic_eastward_sea_water_velocity")
+CMAttribute("units", "cm s-1")
+
+# MOSIG rule #59
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 2238
+THEN
+CMAttribute("standard_name", "tropopause_downwelling_longwave_flux")
+CMAttribute("units", "???")
+
+# MOSIG rule #55
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 2232
+THEN
+CMAttribute("standard_name", "tendency_of_air_temperature_due_to_longwave_heating")
+CMAttribute("units", "???")
+
+# MOSIG rule #54
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 2208
+THEN
+CMAttribute("standard_name", "surface_downwelling_longwave_flux_in_air_assuming_clear_sky")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #57
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 2237
+THEN
+CMAttribute("standard_name", "tropopause_net_downward_longwave_flux")
+CMAttribute("units", "???")
+
+# MOSIG rule #56
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 2233
+THEN
+CMAttribute("standard_name", "tendency_of_air_temperature_due_to_longwave_heating_assuming_clear_sky")
+CMAttribute("units", "???")
+
+# MOSIG rule #51
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 2205
+THEN
+CMAttribute("standard_name", "toa_outgoing_longwave_flux")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #53
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 2207
+THEN
+CMAttribute("standard_name", "surface_downwelling_longwave_flux_in_air")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #52
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 2206
+THEN
+CMAttribute("standard_name", "toa_outgoing_longwave_flux_assuming_clear_sky")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #259
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 146
+THEN
+CMAttribute("standard_name", "sea_ice_area_fraction")
+CMAttribute("units", "%")
+
+# MOSIG rule #201
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 32211
+THEN
+CMAttribute("standard_name", "tendency_of_sea_ice_area_fraction_due_to_thermodynamics")
+CMAttribute("units", "???")
+
+# MOSIG rule #199
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 32209
+THEN
+CMAttribute("standard_name", "eastward_sea_ice_velocity")
+CMAttribute("units", "m s-1")
+
+# MOSIG rule #198
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 32202
+THEN
+CMAttribute("standard_name", "tendency_of_sea_ice_thickness_due_to_dynamics")
+CMAttribute("units", "???")
+
+# MOSIG rule #200
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 32210
+THEN
+CMAttribute("standard_name", "northward_sea_ice_velocity")
+CMAttribute("units", "m s-1")
+
+# MOSIG rule #195
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 30321
+THEN
+CMAttribute("standard_name", "northward_sea_water_velocity")
+CMAttribute("units", "m s-1")
+
+# MOSIG rule #197
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 32201
+THEN
+CMAttribute("standard_name", "tendency_of_sea_ice_area_fraction_due_to_dynamics")
+CMAttribute("units", "???")
+
+# MOSIG rule #178
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 148
+THEN
+CMAttribute("standard_name", "eastward_sea_ice_velocity")
+CMAttribute("units", "m s-1")
+
+# MOSIG rule #190
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 30201
+THEN
+CMAttribute("standard_name", "upward_sea_water_velocity")
+CMAttribute("units", "m s-1")
+
+# MOSIG rule #193
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 30320
+THEN
+CMAttribute("standard_name", "eastward_sea_water_velocity")
+CMAttribute("units", "m s-1")
+
+# MOSIG rule #192
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 30211
+THEN
+CMAttribute("standard_name", "northward_ocean_heat_transport")
+CMAttribute("units", "PW")
+
+# MOSIG rule #115
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 8225
+THEN
+CMAttribute("standard_name", "soil_temperature")
+CMAttribute("units", "???")
+
+# MOSIG rule #252
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 8223
+THEN
+CMAttribute("standard_name", "soil_moisture_content")
+CMAttribute("units", "kg m-2")
+
+# MOSIG rule #89
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 4204
+THEN
+# TODO: Is there a CF standard name for this?
+CMAttribute("long_name", "large_scale_snowfall_flux")
+CMAttribute("units", "kg m-2 s-1")
+
+# MOSIG rule #111
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 8209
+THEN
+CMAttribute("standard_name", "canopy_water_amount")
+CMAttribute("units", "???")
+
+# MOSIG rule #110
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 8208
+THEN
+CMAttribute("standard_name", "soil_moisture_content")
+CMAttribute("units", "???")
+
+# MOSIG rule #82
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3261
+THEN
+CMAttribute("standard_name", "gross_primary_productivity_of_carbon")
+CMAttribute("units", "kg m-2 s-1")
+
+# MOSIG rule #83
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3262
+THEN
+CMAttribute("standard_name", "net_primary_productivity_of_carbon")
+CMAttribute("units", "kg m-2 s-1")
+
+# MOSIG rule #80
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3249
+THEN
+CMAttribute("standard_name", "wind_speed")
+CMAttribute("units", "m s-1")
+
+# MOSIG rule #81
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3258
+THEN
+CMAttribute("standard_name", "surface_snow_melt_heat_flux")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #86
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3332
+THEN
+CMAttribute("standard_name", "toa_outgoing_longwave_flux")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #87
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 4203
+THEN
+# TODO: Is there a CF standard name for this?
+CMAttribute("long_name", "large_scale_rainfall_rate")
+CMAttribute("units", "kg m-2 s-1")
+
+# MOSIG rule #84
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3295
+THEN
+CMAttribute("standard_name", "surface_snow_area_fraction_where_land")
+CMAttribute("units", "%")
+
+# MOSIG rule #85
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3298
+THEN
+CMAttribute("standard_name", "water_sublimation_flux")
+CMAttribute("units", "kg m-2 s-1")
+
+# MOSIG rule #207
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 408
+THEN
+CMAttribute("standard_name", "air_pressure")
+CMAttribute("units", "Pa")
+
+# MOSIG rule #206
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 31
+THEN
+CMAttribute("standard_name", "sea_ice_thickness")
+CMAttribute("units", "%")
+
+# MOSIG rule #226
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33001
+THEN
+CMAttribute("standard_name", "mole_fraction_of_ozone_in_air")
+CMAttribute("units", "mole mole-1")
+
+# MOSIG rule #3
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3
+THEN
+CMAttribute("standard_name", "northward_wind")
+CMAttribute("units", "???")
+
+# MOSIG rule #225
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 30314
+THEN
+CMAttribute("standard_name", "tendency_of_eastward_wind_due_to_eliassen_palm_flux_divergence")
+CMAttribute("units", "m s-2")
+
+# MOSIG rule #245
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33150
+THEN
+CMAttribute("standard_name", "age_of_stratospheric_air")
+CMAttribute("units", "Years")
+
+# MOSIG rule #244
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33058
+THEN
+CMAttribute("standard_name", "mole_fraction_of_atomic_nitrogen_in_air")
+CMAttribute("units", "mole mole-1")
+
+# MOSIG rule #108
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 8023
+THEN
+CMAttribute("standard_name", "surface_snow_amount")
+CMAttribute("units", "kg m-2")
+
+# MOSIG rule #109
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 8202
+THEN
+CMAttribute("standard_name", "surface_snow_melt_flux_where_land")
+CMAttribute("units", "kg m-2 s-1")
+
+# MOSIG rule #241
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33054
+THEN
+CMAttribute("standard_name", "mole_fraction_of_chlorine_nitrate_in_air")
+CMAttribute("units", "mole mole-1")
+
+# MOSIG rule #240
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33051
+THEN
+CMAttribute("standard_name", "mole_fraction_of_hypochlorous_acid_in_air")
+CMAttribute("units", "mole mole-1")
+
+# MOSIG rule #243
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33056
+THEN
+CMAttribute("standard_name", "mole_fraction_of_cfc12_in_air")
+CMAttribute("units", "mole mole-1")
+
+# MOSIG rule #242
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33055
+THEN
+CMAttribute("standard_name", "mole_fraction_of_cfc11_in_air")
+CMAttribute("units", "mole mole-1")
+
+# MOSIG rule #103
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 5214
+THEN
+CMAttribute("standard_name", "rainfall_flux")
+CMAttribute("units", "kg m-2 s-1")
+
+# MOSIG rule #101
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 5213
+THEN
+CMAttribute("standard_name", "mass_fraction_of_convective_cloud_liquid_water_in_air")
+CMAttribute("units", "1")
+
+# MOSIG rule #106
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 5233
+THEN
+CMAttribute("standard_name", "mass_fraction_of_convective_cloud_liquid_water_in_air")
+CMAttribute("units", "1")
+
+# MOSIG rule #104
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 5215
+THEN
+CMAttribute("standard_name", "snowfall_flux")
+CMAttribute("units", "kg m-2 s-1")
+
+# MOSIG rule #105
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 5216
+THEN
+CMAttribute("standard_name", "precipitation_flux")
+CMAttribute("units", "kg m-2 s-1")
+
+# MOSIG rule #39
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 1233
+THEN
+CMAttribute("standard_name", "tendency_of_air_temperature_due_to_shortwave_heating_assuming_clear_sky")
+CMAttribute("units", "???")
+
+# MOSIG rule #38
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 1232
+THEN
+CMAttribute("standard_name", "tendency_of_air_temperature_due_to_shortwave_heating")
+CMAttribute("units", "???")
+
+# MOSIG rule #30
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 1207
+THEN
+CMAttribute("standard_name", "toa_incoming_shortwave_flux")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #37
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 1211
+THEN
+CMAttribute("standard_name", "surface_upwelling_shortwave_flux_in_air_assuming_clear_sky")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #36
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 1210
+THEN
+CMAttribute("standard_name", "surface_downwelling_shortwave_flux_in_air_assuming_clear_sky")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #35
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 1209
+THEN
+CMAttribute("standard_name", "toa_outgoing_shortwave_flux_assuming_clear_sky")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #34
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 1208
+THEN
+CMAttribute("standard_name", "toa_outgoing_shortwave_flux")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #246
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33270
+THEN
+CMAttribute("standard_name", "age_of_stratospheric_air")
+CMAttribute("units", "Years")
+
+# MOSIG rule #205
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 43
+THEN
+CMAttribute("standard_name", "soil_porosity")
+CMAttribute("units", "1")
+
+# MOSIG rule #223
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 30312
+THEN
+CMAttribute("standard_name", "northward_eliassen_palm_flux_in_air")
+CMAttribute("units", "m3 s-2")
+
+# MOSIG rule #176
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 147
+THEN
+CMAttribute("standard_name", "sea_ice_thickness")
+CMAttribute("units", "m")
+
+# MOSIG rule #60
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3201
+THEN
+CMAttribute("standard_name", "downward_heat_flux_in_sea_ice")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #61
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3202
+THEN
+CMAttribute("standard_name", "downward_heat_flux_in_soil")
+CMAttribute("units", "???")
+
+# MOSIG rule #62
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3217
+THEN
+CMAttribute("standard_name", "surface_upward_sensible_heat_flux")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #63
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3219
+THEN
+CMAttribute("standard_name", "surface_downward_eastward_stress")
+CMAttribute("units", "Pa")
+
+# MOSIG rule #64
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3220
+THEN
+CMAttribute("standard_name", "surface_downward_northward_stress")
+CMAttribute("units", "Pa")
+
+# MOSIG rule #65
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3223
+THEN
+CMAttribute("standard_name", "water_evaporation_flux")
+CMAttribute("units", "kg m-2 s-1")
+
+# MOSIG rule #67
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3224
+THEN
+CMAttribute("standard_name", "wind_mixing_energy_flux_into_ocean")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #68
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3225
+THEN
+CMAttribute("standard_name", "eastward_wind")
+CMAttribute("units", "m s-1")
+
+# MOSIG rule #69
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3226
+THEN
+CMAttribute("standard_name", "northward_wind")
+CMAttribute("units", "m s-1")
+
+# MOSIG rule #173
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 143
+THEN
+CMAttribute("standard_name", "upward_sea_ice_basal_heat_flux")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #172
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 137
+THEN
+CMAttribute("standard_name", "ocean_mixed_layer_thickness")
+CMAttribute("units", "m")
+
+# MOSIG rule #170
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 132
+THEN
+CMAttribute("standard_name", "tendency_of_ocean_barotropic_streamfunction")
+CMAttribute("units", "???")
+
+# MOSIG rule #203
+IF
+f.lbuser[6] == 03
+f.lbuser[3] == 177
+THEN
+CMAttribute("standard_name", "prescribed_heat_flux_into_slab_ocean")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #222
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 30311
+THEN
+CMAttribute("standard_name", "northward_transformed_eulerian_mean_air_velocity")
+CMAttribute("units", "m s-1")
+
+# MOSIG rule #181
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 150
+THEN
+CMAttribute("standard_name", "surface_downward_eastward_stress")
+CMAttribute("units", "Pa")
+
+# MOSIG rule #182
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 151
+THEN
+CMAttribute("standard_name", "surface_downward_northward_stress")
+CMAttribute("units", "Pa")
+
+# MOSIG rule #183
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 152
+THEN
+CMAttribute("standard_name", "wind_mixing_energy_flux_into_ocean")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #180
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 149
+THEN
+CMAttribute("standard_name", "northward_sea_ice_velocity")
+CMAttribute("units", "m s-1")
+
+# MOSIG rule #2
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 2
+THEN
+CMAttribute("standard_name", "eastward_wind")
+CMAttribute("units", "???")
+
+# MOSIG rule #187
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 186
+THEN
+CMAttribute("standard_name", "water_flux_correction_where_ocean")
+CMAttribute("units", "kg m-2 s-1")
+
+# MOSIG rule #220
+IF
+f.lbuser[6] == 15
+f.lbuser[3] == 244
+THEN
+CMAttribute("standard_name", "northward_wind")
+CMAttribute("units", "m s-1")
+
+# MOSIG rule #186
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 171
+THEN
+CMAttribute("standard_name", "snowfall_flux")
+CMAttribute("units", "kg m-2 s-1")
+
+# MOSIG rule #188
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 190
+THEN
+CMAttribute("standard_name", "surface_melt_heat_flux")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #189
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 191
+THEN
+CMAttribute("standard_name", "downward_heat_flux_in_sea_ice")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #202
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 32212
+THEN
+CMAttribute("standard_name", "tendency_of_sea_ice_thickness_due_to_thermodynamics")
+CMAttribute("units", "???")
+
+# MOSIG rule #221
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 30310
+THEN
+CMAttribute("standard_name", "northward_transformed_eulerian_mean_air_velocity")
+CMAttribute("units", "m s-1")
+
+# MOSIG rule #185
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 166
+THEN
+CMAttribute("standard_name", "water_flux_into_ocean_from_rivers")
+CMAttribute("units", "kg m-2 s-1")
+
+# MOSIG rule #168
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 122
+THEN
+CMAttribute("standard_name", "baroclinic_northward_sea_water_velocity")
+CMAttribute("units", "cm s-1")
+
+# MOSIG rule #169
+IF
+f.lbuser[6] == 02
+f.lbuser[3] == 130
+THEN
+CMAttribute("standard_name", "ocean_barotropic_streamfunction")
+CMAttribute("units", "m3 s-1")
+
+# MOSIG rule #229
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33006
+THEN
+CMAttribute("standard_name", "mole_fraction_of_peroxynitric_acid_in_air")
+CMAttribute("units", "mole mole-1")
+
+# MOSIG rule #228
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33005
+THEN
+CMAttribute("standard_name", "mole_fraction_of_dinitrogen_pentoxide_in_air")
+CMAttribute("units", "mole mole-1")
+
+# MOSIG rule #90
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 5205
+THEN
+CMAttribute("standard_name", "convective_rainfall_rate")
+CMAttribute("units", "kg m-2 s-1")
+
+# MOSIG rule #93
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 5209
+THEN
+CMAttribute("standard_name", "air_temperature")
+CMAttribute("units", "???")
+
+# MOSIG rule #92
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 5206
+THEN
+CMAttribute("standard_name", "convective_snowfall_flux")
+CMAttribute("units", "kg m-2 s-1")
+
+# MOSIG rule #94
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 5212
+THEN
+CMAttribute("standard_name", "convective_cloud_area_fraction_of_atmosphere_layer")
+CMAttribute("units", "???")
+
+# MOSIG rule #11
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 25
+THEN
+CMAttribute("standard_name", "atmosphere_boundary_layer_thickness")
+CMAttribute("units", "???")
+
+# MOSIG rule #10
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 24
+THEN
+CMAttribute("standard_name", "surface_temperature")
+CMAttribute("units", "K")
+
+# MOSIG rule #13
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 29
+THEN
+CMAttribute("standard_name", "northward_sea_water_velocity")
+CMAttribute("units", "???")
+
+# MOSIG rule #12
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 28
+THEN
+CMAttribute("standard_name", "eastward_sea_water_velocity")
+CMAttribute("units", "???")
+
+# MOSIG rule #14
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 30
+THEN
+CMAttribute("standard_name", "land_area_fraction")
+CMAttribute("units", "%")
+
+# MOSIG rule #17
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33
+THEN
+CMAttribute("standard_name", "surface_altitude")
+CMAttribute("units", "m")
+
+# MOSIG rule #16
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 32
+THEN
+CMAttribute("standard_name", "sea_ice_thickness")
+CMAttribute("units", "m")
+
+# MOSIG rule #19
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 60
+THEN
+CMAttribute("standard_name", "mole_fraction_of_o3_in_air")
+CMAttribute("units", "1e-9")
+
+# MOSIG rule #117
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 8230
+THEN
+CMAttribute("standard_name", "mass_fraction_of_frozen_water_in_soil_moisture")
+CMAttribute("units", "???")
+
+# MOSIG rule #116
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 8229
+THEN
+CMAttribute("standard_name", "mass_fraction_of_unfrozen_water_in_soil_moisture")
+CMAttribute("units", "???")
+
+# MOSIG rule #204
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 40
+THEN
+CMAttribute("standard_name", "volume_fraction_of_water_in_soil_at_wilting_point")
+CMAttribute("units", "1")
+
+# MOSIG rule #151
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 16224
+THEN
+CMAttribute("standard_name", "square_of_height")
+CMAttribute("units", "???")
+
+# MOSIG rule #150
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 16222
+THEN
+CMAttribute("standard_name", "air_pressure_at_sea_level")
+CMAttribute("units", "Pa")
+
+# MOSIG rule #238
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33048
+THEN
+CMAttribute("standard_name", "mole_fraction_of_bromine_nitrate_in_air")
+CMAttribute("units", "mole mole-1")
+
+# MOSIG rule #239
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33049
+THEN
+CMAttribute("standard_name", "mole_fraction_of_nitrous_oxide_in_air")
+CMAttribute("units", "mole mole-1")
+
+# MOSIG rule #234
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33042
+THEN
+CMAttribute("standard_name", "mole_fraction_of_chlorine_monoxide_in_air")
+CMAttribute("units", "mole mole-1")
+
+# MOSIG rule #235
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33043
+THEN
+CMAttribute("standard_name", "mole_fraction_of_dichlorine_peroxide_in_air")
+CMAttribute("units", "mole mole-1")
+
+# MOSIG rule #236
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33044
+THEN
+CMAttribute("standard_name", "mole_fraction_of_chlorine_dioxide_in_air")
+CMAttribute("units", "mole mole-1")
+
+# MOSIG rule #237
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33047
+THEN
+CMAttribute("standard_name", "mole_fraction_of_bromine_chloride_in_air")
+CMAttribute("units", "mole mole-1")
+
+# MOSIG rule #230
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33007
+THEN
+CMAttribute("standard_name", "mole_fraction_of_chlorine_nitrate_in_air")
+CMAttribute("units", "mole mole-1")
+
+# MOSIG rule #231
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33009
+THEN
+CMAttribute("standard_name", "mole_fraction_of_methane_in_air")
+CMAttribute("units", "mole mole-1")
+
+# MOSIG rule #233
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33041
+THEN
+CMAttribute("standard_name", "mole_fraction_of_atomic_chlorine_in_air")
+CMAttribute("units", "mole mole-1")
+
+# MOSIG rule #224
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 30313
+THEN
+CMAttribute("standard_name", "upward_eliassen_palm_flux_in_air")
+CMAttribute("units", "m3 s-2")
+
+# MOSIG rule #48
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 2203
+THEN
+CMAttribute("standard_name", "surface_net_downward_longwave_flux_where_open_sea")
+CMAttribute("units", "???")
+
+# MOSIG rule #44
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 1242
+THEN
+CMAttribute("standard_name", "large_scale_cloud_liquid_water_content_of_atmosphere_layer")
+CMAttribute("units", "???")
+
+# MOSIG rule #45
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 2201
+THEN
+CMAttribute("standard_name", "surface_net_downward_longwave_flux")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #42
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 1237
+THEN
+CMAttribute("standard_name", "net_downward_shortwave_flux_in_air")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #43
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 1238
+THEN
+CMAttribute("standard_name", "tropopause_upwelling_shortwave_flux")
+CMAttribute("units", "???")
+
+# MOSIG rule #40
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 1235
+THEN
+CMAttribute("standard_name", "surface_downwelling_shortwave_flux_in_air")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #1
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 1
+THEN
+CMAttribute("standard_name", "surface_air_pressure")
+CMAttribute("units", "Pa")
+
+# MOSIG rule #5
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 10
+THEN
+CMAttribute("standard_name", "specific_humidity")
+CMAttribute("units", "1")
+
+# MOSIG rule #9
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 23
+THEN
+CMAttribute("standard_name", "surface_snow_amount")
+CMAttribute("units", "kg m-2")
+
+# MOSIG rule #146
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 16202
+THEN
+CMAttribute("standard_name", "geopotential_height")
+CMAttribute("units", "m")
+
+# MOSIG rule #147
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 16203
+THEN
+CMAttribute("standard_name", "air_temperature")
+CMAttribute("units", "K")
+
+# MOSIG rule #144
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 15239
+THEN
+CMAttribute("standard_name", "product_of_eastward_wind_and_geopotential_height")
+CMAttribute("units", "???")
+
+# MOSIG rule #145
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 15240
+THEN
+CMAttribute("standard_name", "product_of_northward_wind_and_geopotential_height")
+CMAttribute("units", "???")
+
+# MOSIG rule #142
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 15235
+THEN
+CMAttribute("standard_name", "product_of_omega_and_specific_humidity")
+CMAttribute("units", "???")
+
+# MOSIG rule #143
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 15238
+THEN
+CMAttribute("standard_name", "geopotential_height")
+CMAttribute("units", "???")
+
+# MOSIG rule #140
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 15227
+THEN
+CMAttribute("standard_name", "product_of_eastward_wind_and_specific_humidity")
+CMAttribute("units", "???")
+
+# MOSIG rule #141
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 15228
+THEN
+CMAttribute("standard_name", "product_of_northward_wind_and_specific_humidity")
+CMAttribute("units", "???")
+
+# MOSIG rule #209
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 1410
+THEN
+CMAttribute("standard_name", "surface_downwelling_shortwave_flux_in_air_assuming_clear_sky")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #208
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 409
+THEN
+CMAttribute("standard_name", "surface_air_pressure")
+CMAttribute("units", "Pa")
+
+# MOSIG rule #149
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 16204
+THEN
+CMAttribute("standard_name", "relative_humidity")
+CMAttribute("units", "%")
+
+# MOSIG rule #77
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3237
+THEN
+CMAttribute("standard_name", "specific_humidity")
+CMAttribute("units", "1")
+
+# MOSIG rule #76
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3236
+THEN
+CMAttribute("standard_name", "air_temperature")
+CMAttribute("units", "K")
+
+# MOSIG rule #72
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3234
+THEN
+CMAttribute("standard_name", "surface_upward_latent_heat_flux")
+CMAttribute("units", "W m-2")
+
+# MOSIG rule #71
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3227
+THEN
+CMAttribute("standard_name", "wind_speed")
+CMAttribute("units", "m s-1")
+
+# MOSIG rule #79
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3245
+THEN
+CMAttribute("standard_name", "relative_humidity")
+CMAttribute("units", "???")
+
+# MOSIG rule #78
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 3238
+THEN
+CMAttribute("standard_name", "soil_temperature")
+CMAttribute("units", "???")
+
+# MOSIG rule #227
+IF
+f.lbuser[6] == 1
+f.lbuser[3] == 33004
+THEN
+CMAttribute("standard_name", "mole_fraction_of_nitrogen_trioxide_in_air")
+CMAttribute("units", "mole mole-1")
+

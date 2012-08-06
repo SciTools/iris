@@ -1,0 +1,140 @@
+Release 0.8 (29 May, 2012)
+==========================
+ 
+Features added
+--------------
+* Cube trajectory extraction now supports irregular grids (ORCA2) using nearest-neighbour interpolation.
+* Support cube arithmetic with masked array data.
+* PP loading now utilises improved field-code to standard_name/unit mapping.
+* Upgraded to use centrally installed and managed version 2 of PP packing library.
+ 
+Incompatible changes
+--------------------
+* The ability to add UK Met Office branding to plots has been moved to
+  the UK Met Office's internal `monty` library.
+* The ability to read colour palettes from the UKMO IDL library has been
+  moved to the UK Met Office's internal `monty` library.
+ 
+Deprecations
+------------
+* None
+
+
+----------------------------
+
+
+Release 0.7 (23 Mar, 2012)
+==========================
+
+
+Features added
+--------------
+* Cubes can now have missing data in the form of numpy masked arrays. All plotting and aggregating routines
+  should now support masked data handling without any user code changes necessary.
+* GRIB2 saving now supported for common cases. GRIB loading capabilities further extended.
+* NetCDF loading of multidimensional auxiliary data implemented, providing initial support for data with an ORCA grid.
+* Extended the number of PP STASH code to standard name mappings.
+* PP saving of non ``latitude, longitude`` cubes added.
+* Cube merging has been upgraded to support optimisation of ``time``, ``forecast_period`` and 
+  ``forecast_reference_time`` dimensionality.
+* Added new gallery entry highlighting NetCDF support for rotated pole data.
+* NetCDF saving should now be CF-1.5 compliant.
+* Custom made colour palettes from the UKMO IDL library can now be loaded as matplotlib colour
+  palettes (see :func:`iris.clrtools.load_clr`).
+* It is now possible to iterate over multiple cubes "in step", ensuring that the metadata is consistent between the 
+  given cubes (see :func:`iris.iterate.izip`).
+* Cell methods will now appear in the printout of a cube.
+* Supporting software dependency versions have been updated. Of particular note is matplotlib which has gone from version 1.0.1
+  up to `1.1.0 <http://matplotlib.sourceforge.net/users/whats_new.html#new-in-matplotlib-1-1>`_ . This may have a small impact on
+  some plot element placements.  
+
+Incompatible changes
+--------------------
+* The call signature for custom loader functions handled via :class:`~iris.io.format_picker.FormatSpecification` has changed.  
+  Previously the signature was ``loader(filename, callback)`` and now looks like ``loader(filenames, callback)`` where ``filenames``
+  is an iterable of filenames.
+* Custom aggregators should now create :class:`iris.analysis.Aggregator` instances rather than defining 
+  a the partial creation of an Aggregate (i.e. ``partial(iris.analysis.Aggregate, ...)`` becomes ``iris.analsysis.Aggregator(...)``.
+* PP STASH code ingestion is now stricter. In particular handling of partial stash codes (i.e. those without a model or section) 
+  is no longer done, meaning that some cubes which previously had a standard name may no longer have a standard name. 
+  Further work is planned to support field code translation which should provide more robust and accurate PP interpretations.
+* For parity with the CF-NetCDF community 'phenomenon_time' has now become 'time'.
+
+Deprecations
+------------
+* Callback functions to ``iris.load`` and ``iris.load_strict`` should no longer return a value.
+  Updated documentation can be found at :func:`iris.load`.
+
+
+----------------------------
+
+
+Release 0.6 (20 Jan, 2012)
+==========================
+
+Features added
+--------------
+* The PP loader now supports PP fields with a header release number of 3.
+  (As used by the UM version 8.1)
+
+* Initial support for multidimensional coordinates (i.e. those which span multiple
+  cube data dimensions) with the standard ExplicitCoord class.
+
+* Added cube to CF-netCDF saving.
+
+* Print of a cube now supports multi-dimensional coordinates, and re-categorisation of
+  cube coordinates into "dimensioned", "scalar" and "other" (i.e. neither dimensioned or
+  scalar).
+
+* Provide support for CF-netCDF label variables and 1-D auxiliary coordinate variables.
+
+Incompatible changes
+--------------------
+* The ``cube.coords`` dictionary has been replaced with the ``cube.coord`` and ``cube.coords`` methods 
+  for easier identification of coordinates. Full details of this change can be found in :doc:`0p5_to_0p6_coord_api`.
+* ``iris.cdm.coords`` has been moved and separated to ``iris.coords and`` ``iris.coord_systems``.
+* CF-netCDF global attributes are now put in the cube "attributes" dictionary rather than
+  as scalar cube coordinates. Additionally any "unused" CF-netCDF variable attributes are also put in the 
+  cube "attributes" dictionary.
+
+Deprecations
+------------
+* ``cube.axes`` is now deprecated and read-only. A coordinate's dimensions on a cube can be  
+  found with the ``cube.coord_dims`` method. An interim cube convenience property
+  "axes" is provided to support legacy getter functionality.
+
+* ``cube.axis_length`` is now deprecated. A cube's shape can be determined with ``cube.shape``
+  and the dimensions to which a coordinate is associated can be determined with ``cube.coord_dims``.
+
+
+----------------------------
+
+Release 0.5 (31 Oct, 2011)
+==========================
+
+* Overhaul to NetCDF loading. Iris will now load a far wider variety of CF
+  compliant NetCDF files.
+
+* Cubes loaded from PP will now have the associated "STASH" code in MSI format
+  within the cube custom "attributes" dictionary.
+
+* Cubes now have an "attributes" dictionary which can be used for phenomenon
+  definition - cubes with different attributes are representing fundamentally
+  different phenomenon.
+
+* Strings can now be used to constrain standard name on load/extract.
+
+* Plotting routines now pick the colour palettes based on the cube to plot.
+
+* Added ability to derive area weights from a shapely geometry.
+
+* Cubes can now be operated on (added, muliplied, etc.) using numpy arrays.
+
+* New example of how to load custom ascii files into Cubes.
+
+* Percentile aggregation added.
+
+* Deferred data loading for Cubes loaded from netCDF.
+
+* Pickle support for cubes. Pickling should be reserved for short term storage and 
+  optimisation purposes only as pickle files will not be compatible across releases. 
