@@ -1,0 +1,449 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.plot &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Iris reference documentation" href="../iris.html" />
+    <link rel="next" title="iris.proxy" href="proxy.html" />
+    <link rel="prev" title="iris.palette" href="palette.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="proxy.html" title="iris.proxy"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="palette.html" title="iris.palette"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" accesskey="U">Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="palette.html"
+                        title="previous chapter">iris.palette</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="proxy.html"
+                        title="next chapter">iris.proxy</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/iris/iris/plot.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-plot">
+<span id="id1"></span><h1>iris.plot<a class="headerlink" href="#iris-plot" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.plot"></span><p>Iris-specific extensions to matplotlib, mimicking the <a class="reference external" href="http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot" title="(in Matplotlib v1.1.1)"><tt class="xref py py-mod docutils literal"><span class="pre">matplotlib.pyplot</span></tt></a>
+interface.</p>
+<p>See also: <a class="reference external" href="http://matplotlib.sourceforge.net/users/index.html#users-guide-index" title="(in Matplotlib v1.1.1)"><em class="xref std std-ref">matplotlib</em></a>, <a class="reference external" href="http://matplotlib.github.com/basemap/users/index.html#users-guide-index" title="(in Basemap Matplotlib Toolkit v1.0.3)"><em class="xref std std-ref">Basemap</em></a>.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.plot.contour" title="iris.plot.contour"><tt class="xref py py-obj docutils literal"><span class="pre">contour</span></tt></a></li>
+<li><a class="reference internal" href="#iris.plot.contourf" title="iris.plot.contourf"><tt class="xref py py-obj docutils literal"><span class="pre">contourf</span></tt></a></li>
+<li><a class="reference internal" href="#iris.plot.gcm" title="iris.plot.gcm"><tt class="xref py py-obj docutils literal"><span class="pre">gcm</span></tt></a></li>
+<li><a class="reference internal" href="#iris.plot.map_setup" title="iris.plot.map_setup"><tt class="xref py py-obj docutils literal"><span class="pre">map_setup</span></tt></a></li>
+<li><a class="reference internal" href="#iris.plot.orography_at_bounds" title="iris.plot.orography_at_bounds"><tt class="xref py py-obj docutils literal"><span class="pre">orography_at_bounds</span></tt></a></li>
+<li><a class="reference internal" href="#iris.plot.orography_at_points" title="iris.plot.orography_at_points"><tt class="xref py py-obj docutils literal"><span class="pre">orography_at_points</span></tt></a></li>
+<li><a class="reference internal" href="#iris.plot.outline" title="iris.plot.outline"><tt class="xref py py-obj docutils literal"><span class="pre">outline</span></tt></a></li>
+<li><a class="reference internal" href="#iris.plot.pcolor" title="iris.plot.pcolor"><tt class="xref py py-obj docutils literal"><span class="pre">pcolor</span></tt></a></li>
+<li><a class="reference internal" href="#iris.plot.pcolormesh" title="iris.plot.pcolormesh"><tt class="xref py py-obj docutils literal"><span class="pre">pcolormesh</span></tt></a></li>
+<li><a class="reference internal" href="#iris.plot.plot" title="iris.plot.plot"><tt class="xref py py-obj docutils literal"><span class="pre">plot</span></tt></a></li>
+<li><a class="reference internal" href="#iris.plot.points" title="iris.plot.points"><tt class="xref py py-obj docutils literal"><span class="pre">points</span></tt></a></li>
+<li><a class="reference internal" href="#iris.plot.symbols" title="iris.plot.symbols"><tt class="xref py py-obj docutils literal"><span class="pre">symbols</span></tt></a></li>
+<li><a class="reference internal" href="#iris.plot.PlotDefn" title="iris.plot.PlotDefn"><tt class="xref py py-obj docutils literal"><span class="pre">PlotDefn</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.plot.contour">
+<tt class="descclassname">iris.plot.</tt><tt class="descname">contour</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.plot.contour" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws contour lines based on the given Cube.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>Coords: list of coords or coordinate names</dt>
+<dd><p class="first last">Use the given coordinates as the axes for the plot. The order of the given coordinates
+indicates which axis to use for each, where the first element is the horizontal axis of
+the plot and the second element is the vertical axis of the plot.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>See <a class="reference external" href="http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.contour" title="(in Matplotlib v1.1.1)"><tt class="xref py py-func docutils literal"><span class="pre">matplotlib.pyplot.contour()</span></tt></a> for details of other valid keyword arguments.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.plot.contourf">
+<tt class="descclassname">iris.plot.</tt><tt class="descname">contourf</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.plot.contourf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws filled contours based on the given Cube.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>Coords: list of coords or coordinate names</dt>
+<dd><p class="first last">Use the given coordinates as the axes for the plot. The order of the given coordinates
+indicates which axis to use for each, where the first element is the horizontal axis of
+the plot and the second element is the vertical axis of the plot.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>See <a class="reference external" href="http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.contourf" title="(in Matplotlib v1.1.1)"><tt class="xref py py-func docutils literal"><span class="pre">matplotlib.pyplot.contourf()</span></tt></a> for details of other valid keyword arguments.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.plot.gcm">
+<tt class="descclassname">iris.plot.</tt><tt class="descname">gcm</tt><big>(</big><em>cube=None</em><big>)</big><a class="headerlink" href="#iris.plot.gcm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current <a class="reference external" href="http://matplotlib.github.com/basemap/api/basemap_api.html#mpl_toolkits.basemap.Basemap" title="(in Basemap Matplotlib Toolkit v1.0.3)"><tt class="xref py py-class docutils literal"><span class="pre">mpl_toolkits.basemap.Basemap</span></tt></a>, creating a new instance if necessary.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.plot.map_setup">
+<tt class="descclassname">iris.plot.</tt><tt class="descname">map_setup</tt><big>(</big><em>cube=None</em>, <em>mode=None</em>, <em>lon_range=None</em>, <em>lat_range=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.plot.map_setup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the map for the current plot.</p>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube:</dt>
+<dd><p class="first last">A cube whose native projection will be used to define the map projection.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>projection:</dt>
+<dd><p class="first last">Name of the projection to use. Currently only &#8216;cyl&#8217;, Cylindrical Equidistant, is supported.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>lon_range:</dt>
+<dd><p class="first last">Longitude range of the map, e.g [lon_min, lon_max].</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>lat_range:</dt>
+<dd><p class="first last">Latitude range of the map, e.g [lat_min, lat_max].</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>mode:</dt>
+<dd><p class="first last">If <em>cube</em> is given, and <em>lon_range</em> or <em>lat_range</em> are not provided they will be calculated automatically
+by looking at the appropriate points/bounds range of the lat/lon coordinates. If latitude or longitude
+coordinates have bounds then provide the <em>mode</em> keyword to determine whether to use
+bounds or points to calculate the latitude/longitude range.
+Valid values are iris.coords.POINT_MODE or iris.coords.BOUND_MODE.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>Returns a new <a class="reference external" href="http://matplotlib.github.com/basemap/api/basemap_api.html#mpl_toolkits.basemap.Basemap" title="(in Basemap Matplotlib Toolkit v1.0.3)"><tt class="xref py py-class docutils literal"><span class="pre">mpl_toolkits.basemap.Basemap</span></tt></a>.</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.plot.orography_at_bounds">
+<tt class="descclassname">iris.plot.</tt><tt class="descname">orography_at_bounds</tt><big>(</big><em>cube</em>, <em>facecolor='#888888'</em>, <em>coords=None</em><big>)</big><a class="headerlink" href="#iris.plot.orography_at_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots orography defined at cell boundaries from the given Cube.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.plot.orography_at_points">
+<tt class="descclassname">iris.plot.</tt><tt class="descname">orography_at_points</tt><big>(</big><em>cube</em>, <em>facecolor='#888888'</em>, <em>coords=None</em><big>)</big><a class="headerlink" href="#iris.plot.orography_at_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots orography defined at sample points from the given Cube.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.plot.outline">
+<tt class="descclassname">iris.plot.</tt><tt class="descname">outline</tt><big>(</big><em>cube</em>, <em>coords=None</em><big>)</big><a class="headerlink" href="#iris.plot.outline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws cell outlines based on the given Cube.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>Coords: list of coords or coordinate names</dt>
+<dd><p class="first last">Use the given coordinates as the axes for the plot. The order of the given coordinates
+indicates which axis to use for each, where the first element is the horizontal axis of
+the plot and the second element is the vertical axis of the plot.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.plot.pcolor">
+<tt class="descclassname">iris.plot.</tt><tt class="descname">pcolor</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.plot.pcolor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws a pseudocolor plot based on the given Cube.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>Coords: list of coords or coordinate names</dt>
+<dd><p class="first last">Use the given coordinates as the axes for the plot. The order of the given coordinates
+indicates which axis to use for each, where the first element is the horizontal axis of
+the plot and the second element is the vertical axis of the plot.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>See <a class="reference external" href="http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.pcolor" title="(in Matplotlib v1.1.1)"><tt class="xref py py-func docutils literal"><span class="pre">matplotlib.pyplot.pcolor()</span></tt></a> for details of other valid keyword arguments.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.plot.pcolormesh">
+<tt class="descclassname">iris.plot.</tt><tt class="descname">pcolormesh</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.plot.pcolormesh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws a pseudocolor plot based on the given Cube.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>Coords: list of coords or coordinate names</dt>
+<dd><p class="first last">Use the given coordinates as the axes for the plot. The order of the given coordinates
+indicates which axis to use for each, where the first element is the horizontal axis of
+the plot and the second element is the vertical axis of the plot.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>See <a class="reference external" href="http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.pcolormesh" title="(in Matplotlib v1.1.1)"><tt class="xref py py-func docutils literal"><span class="pre">matplotlib.pyplot.pcolormesh()</span></tt></a> for details of other valid keyword arguments.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.plot.plot">
+<tt class="descclassname">iris.plot.</tt><tt class="descname">plot</tt><big>(</big><em>cube</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.plot.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws a line plot based on the given Cube.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>Coords: list of coords or coordinate names</dt>
+<dd><p class="first last">Use the given coordinates as the axes for the plot. The order of the given coordinates
+indicates which axis to use for each, where the first element is the horizontal axis of
+the plot and the second element is the vertical axis of the plot.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>See <a class="reference external" href="http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.plot" title="(in Matplotlib v1.1.1)"><tt class="xref py py-func docutils literal"><span class="pre">matplotlib.pyplot.plot()</span></tt></a> for details of other valid keyword arguments.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.plot.points">
+<tt class="descclassname">iris.plot.</tt><tt class="descname">points</tt><big>(</big><em>cube</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.plot.points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws sample point positions based on the given Cube.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>Coords: list of coords or coordinate names</dt>
+<dd><p class="first last">Use the given coordinates as the axes for the plot. The order of the given coordinates
+indicates which axis to use for each, where the first element is the horizontal axis of
+the plot and the second element is the vertical axis of the plot.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>See <a class="reference external" href="http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.scatter" title="(in Matplotlib v1.1.1)"><tt class="xref py py-func docutils literal"><span class="pre">matplotlib.pyplot.scatter()</span></tt></a> for details of other valid keyword arguments.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.plot.symbols">
+<tt class="descclassname">iris.plot.</tt><tt class="descname">symbols</tt><big>(</big><em>x</em>, <em>y</em>, <em>symbols</em>, <em>size</em>, <em>axes=None</em>, <em>units='inches'</em><big>)</big><a class="headerlink" href="#iris.plot.symbols" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws fixed-size symbols.</p>
+<p>See <a class="reference internal" href="symbols.html#module-iris.symbols" title="iris.symbols"><tt class="xref py py-mod docutils literal"><span class="pre">iris.symbols</span></tt></a> for available symbols.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>x: iterable</dt>
+<dd><p class="first last">The x coordinates where the symbols will be plotted.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>y: iterable</dt>
+<dd><p class="first last">The y coordinates where the symbols will be plotted.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>symbols: iterable</dt>
+<dd><p class="first last">The symbols (from <a class="reference internal" href="symbols.html#module-iris.symbols" title="iris.symbols"><tt class="xref py py-mod docutils literal"><span class="pre">iris.symbols</span></tt></a>) to plot.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>size: float</dt>
+<dd><p class="first last">The symbol size in <cite>units</cite>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>axes:</dt>
+<dd><p class="first last">The <a class="reference external" href="http://matplotlib.sourceforge.net/api/axes_api.html#matplotlib.axes.Axes" title="(in Matplotlib v1.1.1)"><tt class="xref py py-class docutils literal"><span class="pre">matplotlib.axes.Axes</span></tt></a> in which the symbols will be added. Defaults to the current axes.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>units: [&#8216;inches&#8217;, &#8216;points&#8217;]</dt>
+<dd><p class="first last">The unit for the symbol size.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<hr class="docutils" />
+<p>PlotDefn(coords, transpose)</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.plot.PlotDefn">
+<em class="property">class </em><tt class="descclassname">iris.plot.</tt><tt class="descname">PlotDefn</tt><big>(</big><em>_cls</em>, <em>coords</em>, <em>transpose</em><big>)</big><a class="headerlink" href="#iris.plot.PlotDefn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create new instance of PlotDefn(coords, transpose)</p>
+<dl class="method">
+<dt id="iris.plot.PlotDefn.count">
+<tt class="descname">count</tt><big>(</big><em>value</em><big>)</big> &rarr; integer -- return number of occurrences of value<a class="headerlink" href="#iris.plot.PlotDefn.count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.plot.PlotDefn.index">
+<tt class="descname">index</tt><big>(</big><em>value</em><span class="optional">[</span>, <em>start</em><span class="optional">[</span>, <em>stop</em><span class="optional">]</span><span class="optional">]</span><big>)</big> &rarr; integer -- return first index of value.<a class="headerlink" href="#iris.plot.PlotDefn.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raises ValueError if the value is not present.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.plot.PlotDefn.coords">
+<tt class="descname">coords</tt><a class="headerlink" href="#iris.plot.PlotDefn.coords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.plot.PlotDefn.transpose">
+<tt class="descname">transpose</tt><a class="headerlink" href="#iris.plot.PlotDefn.transpose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="proxy.html" title="iris.proxy"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="palette.html" title="iris.palette"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" >Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

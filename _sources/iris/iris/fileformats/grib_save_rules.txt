@@ -1,0 +1,151 @@
+.. _iris.fileformats.grib_save_rules:
+
+================================
+iris.fileformats.grib_save_rules
+================================
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.fileformats.grib_save_rules
+
+In this module:
+
+ * :py:obj:`background_process_id`
+ * :py:obj:`centre`
+ * :py:obj:`data`
+ * :py:obj:`dx_dy`
+ * :py:obj:`generating_process_id`
+ * :py:obj:`generating_process_type`
+ * :py:obj:`gribbability_check`
+ * :py:obj:`grid_dims`
+ * :py:obj:`grid_template`
+ * :py:obj:`hybrid_surfaces`
+ * :py:obj:`identification`
+ * :py:obj:`latlon_common`
+ * :py:obj:`latlon_first_last`
+ * :py:obj:`non_hybrid_surfaces`
+ * :py:obj:`obs_time_after_cutoff`
+ * :py:obj:`param_code`
+ * :py:obj:`product_common`
+ * :py:obj:`product_template`
+ * :py:obj:`reference_time`
+ * :py:obj:`rotated_pole`
+ * :py:obj:`run`
+ * :py:obj:`scanning_mode_flags`
+ * :py:obj:`shape_of_the_earth`
+ * :py:obj:`surfaces`
+ * :py:obj:`time_processing_period`
+ * :py:obj:`time_range`
+ * :py:obj:`type_of_statistical_processing`
+
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.background_process_id
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.centre
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.data
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.dx_dy
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.generating_process_id
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.generating_process_type
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.gribbability_check
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.grid_dims
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.grid_template
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.hybrid_surfaces
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.identification
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.latlon_common
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.latlon_first_last
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.non_hybrid_surfaces
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.obs_time_after_cutoff
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.param_code
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.product_common
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.product_template
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.reference_time
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.rotated_pole
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.run
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.scanning_mode_flags
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.shape_of_the_earth
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.surfaces
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.time_processing_period
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.time_range
+
+----------
+
+.. autofunction:: iris.fileformats.grib_save_rules.type_of_statistical_processing
+

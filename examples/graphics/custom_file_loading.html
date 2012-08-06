@@ -1,0 +1,428 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Loading a cube from a custom file format &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Visualisation examples" href="index.html" />
+    <link rel="next" title="Deriving Exner Pressure and Air Temperature" href="deriving_phenomena.html" />
+    <link rel="prev" title="Cross section plots" href="cross_section.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="deriving_phenomena.html" title="Deriving Exner Pressure and Air Temperature"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cross_section.html" title="Cross section plots"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris examples</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Visualisation examples</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cross_section.html"
+                        title="previous chapter">Cross section plots</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="deriving_phenomena.html"
+                        title="next chapter">Deriving Exner Pressure and Air Temperature</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/examples/graphics/custom_file_loading.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="loading-a-cube-from-a-custom-file-format">
+<span id="graphics-custom-file-loading"></span><h1>Loading a cube from a custom file format<a class="headerlink" href="#loading-a-cube-from-a-custom-file-format" title="Permalink to this headline">¶</a></h1>
+<p>This example shows how a custom text file can be loaded using the standard Iris load mechanism.</p>
+<p>The first stage in the process is to define an Iris <a class="reference internal" href="../../iris/iris/io/format_picker.html#iris.io.format_picker.FormatSpecification" title="iris.io.format_picker.FormatSpecification"><tt class="xref py py-class docutils literal"><span class="pre">FormatSpecification</span></tt></a> for the file format.
+To create a format specification we need to define the following:</p>
+<ul>
+<li><p class="first">format_name - Some text that describes the format specification we are creating</p>
+</li>
+<li><dl class="first docutils">
+<dt>file_element - FileElement instance of the element which identifies this FormatSpecification</dt>
+<dd><p class="first">Possible values are:</p>
+<p><tt class="docutils literal"><span class="pre">iris.io.format_picker.MAGIC_NUMBER_32_BIT</span></tt> - The first 4 bytes from the file</p>
+<p><tt class="docutils literal"><span class="pre">iris.io.format_picker.MAGIC_NUMBER_64_BIT</span></tt> - The first 8 bytes from the file</p>
+<p><tt class="docutils literal"><span class="pre">iris.io.format_picker.FILE_EXTENSION</span></tt> - The files extension</p>
+<p class="last"><tt class="docutils literal"><span class="pre">iris.io.format_picker.LEADING_LINE</span></tt> - The first line of the file</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">file_element_value - The value that the file_element should take if a file matches this FormatSpecification</p>
+</li>
+<li><p class="first">handler (optional) - A generator function that will be called when the file specification has been identified. This function is
+provided by the user and provides the means to parse the whole file. If no handler function is provided, then identification
+is still possible without any handling.</p>
+<p>The handler function must define the following arguments:</p>
+<ul class="simple">
+<li>list of filenames to process</li>
+<li>callback function - An optional function to filter/alter the Iris cubes returned</li>
+</ul>
+<p>The handler function must be defined as generator which yields each cube as they are produced.</p>
+</li>
+<li><p class="first">priority (optional) - Integer giving a priority for considering this specification where higher priority means sooner consideration</p>
+</li>
+</ul>
+<p>In the following example, the function <tt class="xref py py-func docutils literal"><span class="pre">load_NAME_III()</span></tt> has been defined to handle the loading of the raw data from the custom file format.
+This function is called from <tt class="xref py py-func docutils literal"><span class="pre">NAME_to_cube()</span></tt> which uses this data to create and yield Iris cubes.</p>
+<p>In the <tt class="docutils literal"><span class="pre">main()</span></tt> function the filenames are loaded via the <tt class="docutils literal"><span class="pre">iris.load_strict</span></tt> function which automatically
+invokes the <tt class="docutils literal"><span class="pre">FormatSpecification</span></tt> we defined. The cube returned from the load function is then used to produce a plot.</p>
+<p id="custom-file-loading">[<a class="reference external" href="../../plot_directive/../example_code/graphics/custom_file_loading.py">source code</a>]</p>
+<blockquote>
+<div><div class="figure">
+<img alt="../../_images/custom_file_loading.png" src="../../_images/custom_file_loading.png" />
+</div>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Loading a cube from a custom file format</span>
+<span class="sd">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span>
+
+<span class="sd">This example shows how a custom text file can be loaded using the standard Iris load mechanism.</span>
+
+<span class="sd">The first stage in the process is to define an Iris :class:`FormatSpecification &lt;iris.io.format_picker.FormatSpecification&gt;` for the file format.</span>
+<span class="sd">To create a format specification we need to define the following:</span>
+
+<span class="sd">* format_name - Some text that describes the format specification we are creating</span>
+<span class="sd">* file_element - FileElement instance of the element which identifies this FormatSpecification</span>
+<span class="sd">    Possible values are:</span>
+
+<span class="sd">    ``iris.io.format_picker.MAGIC_NUMBER_32_BIT`` - The first 4 bytes from the file</span>
+
+<span class="sd">    ``iris.io.format_picker.MAGIC_NUMBER_64_BIT`` - The first 8 bytes from the file</span>
+
+<span class="sd">    ``iris.io.format_picker.FILE_EXTENSION`` - The files extension</span>
+
+<span class="sd">    ``iris.io.format_picker.LEADING_LINE`` - The first line of the file</span>
+
+<span class="sd">* file_element_value - The value that the file_element should take if a file matches this FormatSpecification</span>
+<span class="sd">* handler (optional) - A generator function that will be called when the file specification has been identified. This function is</span>
+<span class="sd">  provided by the user and provides the means to parse the whole file. If no handler function is provided, then identification</span>
+<span class="sd">  is still possible without any handling.</span>
+
+<span class="sd">  The handler function must define the following arguments:</span>
+
+<span class="sd">  * list of filenames to process</span>
+<span class="sd">  * callback function - An optional function to filter/alter the Iris cubes returned</span>
+
+<span class="sd">  The handler function must be defined as generator which yields each cube as they are produced.</span>
+
+<span class="sd">* priority (optional) - Integer giving a priority for considering this specification where higher priority means sooner consideration</span>
+
+<span class="sd">In the following example, the function :func:`load_NAME_III` has been defined to handle the loading of the raw data from the custom file format.</span>
+<span class="sd">This function is called from :func:`NAME_to_cube` which uses this data to create and yield Iris cubes.</span>
+
+<span class="sd">In the ``main()`` function the filenames are loaded via the ``iris.load_strict`` function which automatically</span>
+<span class="sd">invokes the ``FormatSpecification`` we defined. The cube returned from the load function is then used to produce a plot.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">import</span> <span class="nn">iris</span>
+<span class="kn">import</span> <span class="nn">iris.coords</span> <span class="kn">as</span> <span class="nn">icoords</span>
+<span class="kn">import</span> <span class="nn">iris.coord_systems</span> <span class="kn">as</span> <span class="nn">icoord_systems</span>
+<span class="kn">import</span> <span class="nn">iris.fileformats</span>
+<span class="kn">import</span> <span class="nn">iris.io.format_picker</span> <span class="kn">as</span> <span class="nn">format_picker</span>
+<span class="kn">import</span> <span class="nn">iris.plot</span> <span class="kn">as</span> <span class="nn">iplt</span>
+
+
+<span class="n">UTC_format</span> <span class="o">=</span> <span class="s">&#39;%H%M%Z </span><span class="si">%d</span><span class="s">/%m/%Y&#39;</span>
+
+
+<span class="k">def</span> <span class="nf">load_NAME_III</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loads the Met Office&#39;s NAME III grid output files returning headers, column definitions and data arrays as 3 separate lists.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c"># loading a file gives a generator of lines which can be progressed using the next() method.</span>
+    <span class="c"># This will come in handy as we wish to progress through the file line by line.</span>
+    <span class="n">file_handle</span> <span class="o">=</span> <span class="nb">file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="c"># define a dictionary which can hold the header metadata about this file</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c"># skip the NAME header of the file which looks something like &#39;NAME III (version X.X.X)&#39;</span>
+    <span class="n">file_handle</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+
+    <span class="c"># read the next 16 lines of header information, putting the form &quot;header name:    header value&quot; into a dictionary</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">16</span><span class="p">):</span>
+        <span class="n">header_name</span><span class="p">,</span> <span class="n">header_value</span> <span class="o">=</span> <span class="n">file_handle</span><span class="o">.</span><span class="n">next</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">)</span>
+
+        <span class="c"># strip off any spurious space characters in the header name and value</span>
+        <span class="n">header_name</span> <span class="o">=</span> <span class="n">header_name</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">header_value</span> <span class="o">=</span> <span class="n">header_value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="c"># cast some headers into floats or integers if they match a given header name</span>
+        <span class="k">if</span> <span class="n">header_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;X grid origin&#39;</span><span class="p">,</span> <span class="s">&#39;Y grid origin&#39;</span><span class="p">,</span> <span class="s">&#39;X grid resolution&#39;</span><span class="p">,</span> <span class="s">&#39;Y grid resolution&#39;</span><span class="p">]:</span>
+            <span class="n">header_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">header_value</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">header_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;X grid size&#39;</span><span class="p">,</span> <span class="s">&#39;Y grid size&#39;</span><span class="p">,</span> <span class="s">&#39;Number of fields&#39;</span><span class="p">]:</span>
+            <span class="n">header_value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">header_value</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">header_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;Run time&#39;</span><span class="p">,</span> <span class="s">&#39;Start of release&#39;</span><span class="p">,</span> <span class="s">&#39;End of release&#39;</span><span class="p">]:</span>
+            <span class="c"># convert the time to python datetimes</span>
+            <span class="n">header_value</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">header_value</span><span class="p">,</span> <span class="n">UTC_format</span><span class="p">)</span>
+
+        <span class="n">headers</span><span class="p">[</span><span class="n">header_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">header_value</span>
+
+    <span class="c"># skip the next blank line in the file.</span>
+    <span class="n">file_handle</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+
+    <span class="c"># Read the next 7 lines of column definitions</span>
+    <span class="n">column_headings</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">column_header_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;species_category&#39;</span><span class="p">,</span> <span class="s">&#39;species&#39;</span><span class="p">,</span> <span class="s">&#39;cell_measure&#39;</span><span class="p">,</span> <span class="s">&#39;quantity&#39;</span><span class="p">,</span> <span class="s">&#39;unit&#39;</span><span class="p">,</span> <span class="s">&#39;z_level&#39;</span><span class="p">,</span> <span class="s">&#39;time&#39;</span><span class="p">]:</span>
+        <span class="n">column_headings</span><span class="p">[</span><span class="n">column_header_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">file_handle</span><span class="o">.</span><span class="n">next</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c"># convert the time to python datetimes</span>
+    <span class="n">new_time_column_header</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">column_headings</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">]):</span>
+        <span class="c"># the first 4 columns aren&#39;t time at all, so don&#39;t convert them to datetimes</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">new_time_column_header</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">UTC_format</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_time_column_header</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">column_headings</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_time_column_header</span>
+
+    <span class="c"># skip the blank line after the column headers</span>
+    <span class="n">file_handle</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+
+    <span class="c"># make a list of data arrays to hold the data for each column</span>
+    <span class="n">data_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">headers</span><span class="p">[</span><span class="s">&#39;Y grid size&#39;</span><span class="p">],</span> <span class="n">headers</span><span class="p">[</span><span class="s">&#39;X grid size&#39;</span><span class="p">])</span>
+    <span class="n">data_arrays</span> <span class="o">=</span> <span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">data_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">headers</span><span class="p">[</span><span class="s">&#39;Number of fields&#39;</span><span class="p">])]</span>
+
+    <span class="c"># iterate over the remaining lines which represent the data in a column form</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">file_handle</span><span class="p">:</span>
+
+        <span class="c"># split the line by comma, removing the last empty column caused by the trailing comma</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c"># cast the x and y grid positions to floats and convert them to zero based indices</span>
+        <span class="c"># (the numbers are 1 based grid positions where 0.5 represents half a grid point.)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">vals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="mf">1.5</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">vals</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="mf">1.5</span>
+
+        <span class="c"># populate the data arrays (i.e. all columns but the leading 4)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">data_array</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data_arrays</span><span class="p">):</span>
+            <span class="n">data_array</span><span class="p">[</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">vals</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">4</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">headers</span><span class="p">,</span> <span class="n">column_headings</span><span class="p">,</span> <span class="n">data_arrays</span>
+
+
+<span class="k">def</span> <span class="nf">NAME_to_cube</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">callback</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns a generator of cubes given a list of filenames and a callback.&quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+        <span class="n">header</span><span class="p">,</span> <span class="n">column_headings</span><span class="p">,</span> <span class="n">data_arrays</span> <span class="o">=</span> <span class="n">load_NAME_III</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">data_array</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data_arrays</span><span class="p">):</span>
+            <span class="c"># turn the dictionary of column headers with a list of header information for each field into a dictionary of</span>
+            <span class="c"># headers for just this field. Ignore the first 4 columns of grid position (data was located with the data array).</span>
+            <span class="n">field_headings</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">4</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">column_headings</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()])</span>
+
+            <span class="c"># make an cube</span>
+            <span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">cube</span><span class="o">.</span><span class="n">Cube</span><span class="p">(</span><span class="n">data_array</span><span class="p">)</span>
+
+            <span class="c"># define the name and unit</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">field_headings</span><span class="p">[</span><span class="s">&#39;species&#39;</span><span class="p">],</span> <span class="n">field_headings</span><span class="p">[</span><span class="s">&#39;quantity&#39;</span><span class="p">]))</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="s">&#39;_&#39;</span><span class="p">)</span>
+            <span class="n">cube</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="c"># Some units are badly encoded in the file, fix this by putting a space in between. (if gs is not found, then the</span>
+            <span class="c"># string will be returned unchanged)</span>
+            <span class="n">cube</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">field_headings</span><span class="p">[</span><span class="s">&#39;unit&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;gs&#39;</span><span class="p">,</span> <span class="s">&#39;g s&#39;</span><span class="p">)</span>
+
+            <span class="c"># define and add the singular coordinates of the field (flight level, time etc.)</span>
+            <span class="n">cube</span><span class="o">.</span><span class="n">add_aux_coord</span><span class="p">(</span><span class="n">icoords</span><span class="o">.</span><span class="n">AuxCoord</span><span class="p">(</span><span class="n">field_headings</span><span class="p">[</span><span class="s">&#39;z_level&#39;</span><span class="p">],</span> <span class="n">long_name</span><span class="o">=</span><span class="s">&#39;flight_level&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s">&#39;1&#39;</span><span class="p">))</span>
+
+            <span class="c"># define the time unit and use it to serialise the datetime for the time coordinate</span>
+            <span class="n">time_unit</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;hours since epoch&#39;</span><span class="p">,</span> <span class="n">calendar</span><span class="o">=</span><span class="n">iris</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">CALENDAR_GREGORIAN</span><span class="p">)</span>
+            <span class="n">time_coord</span> <span class="o">=</span> <span class="n">icoords</span><span class="o">.</span><span class="n">AuxCoord</span><span class="p">(</span><span class="n">time_unit</span><span class="o">.</span><span class="n">date2num</span><span class="p">(</span><span class="n">field_headings</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">]),</span> <span class="n">standard_name</span><span class="o">=</span><span class="s">&#39;time&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">time_unit</span><span class="p">)</span>
+            <span class="n">cube</span><span class="o">.</span><span class="n">add_aux_coord</span><span class="p">(</span><span class="n">time_coord</span><span class="p">)</span>
+
+            <span class="c"># build a coordinate system which can be referenced by latitude and longitude coordinates</span>
+            <span class="n">lat_lon_coord_system</span> <span class="o">=</span> <span class="n">icoord_systems</span><span class="o">.</span><span class="n">LatLonCS</span><span class="p">(</span> <span class="n">icoord_systems</span><span class="o">.</span><span class="n">SpheroidDatum</span><span class="p">(</span><span class="s">&quot;spherical&quot;</span><span class="p">,</span> <span class="mf">6371229.0</span><span class="p">,</span> <span class="n">flattening</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s">&#39;m&#39;</span><span class="p">),</span>
+                                                     <span class="n">icoord_systems</span><span class="o">.</span><span class="n">PrimeMeridian</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;Greenwich&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">),</span>
+                                                     <span class="n">n_pole</span><span class="o">=</span><span class="n">icoord_systems</span><span class="o">.</span><span class="n">GeoPosition</span><span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">reference_longitude</span><span class="o">=</span><span class="mf">0.0</span>
+                                                    <span class="p">)</span>
+
+            <span class="c"># build regular latitude and longitude coordinates which have bounds</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">header</span><span class="p">[</span><span class="s">&#39;X grid origin&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">header</span><span class="p">[</span><span class="s">&#39;X grid resolution&#39;</span><span class="p">]</span>
+            <span class="n">step</span> <span class="o">=</span> <span class="n">header</span><span class="p">[</span><span class="s">&#39;X grid resolution&#39;</span><span class="p">]</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="n">header</span><span class="p">[</span><span class="s">&#39;X grid size&#39;</span><span class="p">]</span>
+            <span class="n">pts</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">*</span> <span class="n">step</span>
+            <span class="n">lon_coord</span> <span class="o">=</span> <span class="n">icoords</span><span class="o">.</span><span class="n">DimCoord</span><span class="p">(</span><span class="n">pts</span><span class="p">,</span> <span class="n">standard_name</span><span class="o">=</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s">&#39;degrees&#39;</span><span class="p">,</span> <span class="n">coord_system</span> <span class="o">=</span> <span class="n">lat_lon_coord_system</span><span class="p">)</span>
+            <span class="n">lon_coord</span><span class="o">.</span><span class="n">guess_bounds</span><span class="p">()</span>
+
+            <span class="n">start</span> <span class="o">=</span> <span class="n">header</span><span class="p">[</span><span class="s">&#39;Y grid origin&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">header</span><span class="p">[</span><span class="s">&#39;Y grid resolution&#39;</span><span class="p">]</span>
+            <span class="n">step</span> <span class="o">=</span> <span class="n">header</span><span class="p">[</span><span class="s">&#39;Y grid resolution&#39;</span><span class="p">]</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="n">header</span><span class="p">[</span><span class="s">&#39;Y grid size&#39;</span><span class="p">]</span>
+            <span class="n">pts</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">*</span> <span class="n">step</span>
+            <span class="n">lat_coord</span> <span class="o">=</span> <span class="n">icoords</span><span class="o">.</span><span class="n">DimCoord</span><span class="p">(</span><span class="n">pts</span><span class="p">,</span> <span class="n">standard_name</span><span class="o">=</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s">&#39;degrees&#39;</span><span class="p">,</span> <span class="n">coord_system</span> <span class="o">=</span> <span class="n">lat_lon_coord_system</span><span class="p">)</span>
+            <span class="n">lat_coord</span><span class="o">.</span><span class="n">guess_bounds</span><span class="p">()</span>
+
+            <span class="c"># add the latitude and longitude coordinates to the cube, with mappings to data dimensions</span>
+            <span class="n">cube</span><span class="o">.</span><span class="n">add_dim_coord</span><span class="p">(</span><span class="n">lat_coord</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">cube</span><span class="o">.</span><span class="n">add_dim_coord</span><span class="p">(</span><span class="n">lon_coord</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+            <span class="c"># implement standard iris callback capability. Although callbacks are not used in this example, the standard</span>
+            <span class="c"># mechanism for a custom loader to implement a callback is shown:</span>
+            <span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">run_callback</span><span class="p">(</span><span class="n">callback</span><span class="p">,</span> <span class="n">cube</span><span class="p">,</span> <span class="p">[</span><span class="n">header</span><span class="p">,</span> <span class="n">field_headings</span><span class="p">,</span> <span class="n">data_array</span><span class="p">],</span> <span class="n">filename</span><span class="p">)</span>
+
+            <span class="c"># yield the cube created (the loop will continue when the next() element is requested)</span>
+            <span class="k">yield</span> <span class="n">cube</span>
+
+
+<span class="c"># Create a format_picker specification of the NAME file format giving it a priority below NetCDF, GRIB &amp; PP etc.</span>
+<span class="n">_NAME_III_spec</span> <span class="o">=</span> <span class="n">format_picker</span><span class="o">.</span><span class="n">FormatSpecification</span><span class="p">(</span><span class="s">&#39;Name III&#39;</span><span class="p">,</span> <span class="n">format_picker</span><span class="o">.</span><span class="n">LEADING_LINE</span><span class="p">,</span>
+                                      <span class="k">lambda</span> <span class="n">line</span><span class="p">:</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;NAME III&quot;</span><span class="p">),</span> <span class="n">NAME_to_cube</span><span class="p">,</span>
+                                      <span class="n">priority</span><span class="o">=</span><span class="mi">3</span><span class="p">,)</span>
+
+<span class="c"># Register the NAME loader with iris</span>
+<span class="n">iris</span><span class="o">.</span><span class="n">fileformats</span><span class="o">.</span><span class="n">FORMAT_AGENT</span><span class="o">.</span><span class="n">add_spec</span><span class="p">(</span><span class="n">_NAME_III_spec</span><span class="p">)</span>
+
+
+
+<span class="c"># ---------------------------------------------</span>
+<span class="c"># |          Using the new loader             |</span>
+<span class="c"># ---------------------------------------------</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;ascii&#39;</span><span class="p">,</span> <span class="s">&#39;NAME&#39;</span><span class="p">,</span> <span class="s">&#39;20100509_18Z_variablesource_12Z_VAAC&#39;</span><span class="p">,</span> <span class="s">&#39;Fields_grid1_201005110600.txt&#39;</span><span class="p">)</span>
+
+    <span class="n">boundary_volc_ash_constraint</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="s">&#39;VOLCANIC_ASH_AIR_CONCENTRATION&#39;</span><span class="p">,</span> <span class="n">flight_level</span><span class="o">=</span><span class="s">&#39;Boundary layer&#39;</span><span class="p">)</span>
+
+    <span class="c"># Callback shown as None to illustrate where a cube-level callback function would be used if required</span>
+    <span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">boundary_volc_ash_constraint</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+
+    <span class="nb">map</span> <span class="o">=</span> <span class="n">iplt</span><span class="o">.</span><span class="n">map_setup</span><span class="p">(</span><span class="n">lon_range</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">70</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="n">lat_range</span><span class="o">=</span><span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">75</span><span class="p">],</span> <span class="n">resolution</span><span class="o">=</span><span class="s">&#39;i&#39;</span><span class="p">)</span>
+
+    <span class="nb">map</span><span class="o">.</span><span class="n">drawcoastlines</span><span class="p">()</span>
+
+    <span class="n">iplt</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span>
+                        <span class="n">levels</span><span class="o">=</span><span class="p">(</span><span class="mf">1e-17</span><span class="p">,</span> <span class="mf">1e-16</span><span class="p">,</span> <span class="mf">2e-16</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                        <span class="n">colors</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;#80ffff&#39;</span><span class="p">,</span> <span class="s">&#39;#939598&#39;</span><span class="p">,</span> <span class="s">&#39;#e00404&#39;</span><span class="p">),</span>
+                        <span class="n">extend</span><span class="o">=</span><span class="s">&#39;max&#39;</span>
+                  <span class="p">)</span>
+
+    <span class="n">time</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s">&#39;time&#39;</span><span class="p">)</span>
+    <span class="n">time_date</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">num2date</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">UTC_format</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Volcanic ash concentration forecast</span><span class="se">\n</span><span class="s">valid at </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">time_date</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="deriving_phenomena.html" title="Deriving Exner Pressure and Air Temperature"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cross_section.html" title="Cross section plots"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris examples</a> &raquo;</li>
+          <li><a href="index.html" >Visualisation examples</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

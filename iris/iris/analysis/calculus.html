@@ -1,0 +1,261 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.analysis.calculus &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../../index.html" />
+    <link rel="up" title="iris.analysis" href="../analysis.html" />
+    <link rel="next" title="iris.analysis.cartography" href="cartography.html" />
+    <link rel="prev" title="iris.analysis" href="../analysis.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../../index.html"><img src="../../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="cartography.html" title="iris.analysis.cartography"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../analysis.html" title="iris.analysis"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../analysis.html" accesskey="U">iris.analysis</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../analysis.html"
+                        title="previous chapter">iris.analysis</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cartography.html"
+                        title="next chapter">iris.analysis.cartography</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/iris/iris/analysis/calculus.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-analysis-calculus">
+<span id="id1"></span><h1>iris.analysis.calculus<a class="headerlink" href="#iris-analysis-calculus" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.analysis.calculus"></span><p>Calculus operations on <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a> instances.</p>
+<p>See also: <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/index.html#numpy" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-mod docutils literal"><span class="pre">NumPy</span></tt></a>.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.analysis.calculus.cube_delta" title="iris.analysis.calculus.cube_delta"><tt class="xref py py-obj docutils literal"><span class="pre">cube_delta</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.calculus.differentiate" title="iris.analysis.calculus.differentiate"><tt class="xref py py-obj docutils literal"><span class="pre">differentiate</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.calculus.curl" title="iris.analysis.calculus.curl"><tt class="xref py py-obj docutils literal"><span class="pre">curl</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.calculus.cube_delta">
+<tt class="descclassname">iris.analysis.calculus.</tt><tt class="descname">cube_delta</tt><big>(</big><em>cube</em>, <em>coord</em>, <em>update_history=True</em><big>)</big><a class="headerlink" href="#iris.analysis.calculus.cube_delta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a cube calculate the difference between each value in the given coord&#8217;s direction.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>coord </dt>
+<dd><p class="first last">either a Coord instance or the unique name of a coordinate in the cube.
+If a Coord instance is provided, it does not necessarily have to exist in the cube.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Example usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">change_in_temperature_wrt_pressure</span> <span class="o">=</span> <span class="n">cube_delta</span><span class="p">(</span><span class="n">temperature_cube</span><span class="p">,</span> <span class="s">&#39;pressure&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Missing data support not yet implemented.</p>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.calculus.differentiate">
+<tt class="descclassname">iris.analysis.calculus.</tt><tt class="descname">differentiate</tt><big>(</big><em>cube</em>, <em>coord_to_differentiate</em><big>)</big><a class="headerlink" href="#iris.analysis.calculus.differentiate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the differential of a given cube with respect to the coord_to_differentiate.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>coord_to_differentiate:</dt>
+<dd><p class="first last">Either a Coord instance or the unique name of a coordinate which exists in the cube.
+If a Coord instance is provided, it does not necessarily have to exist on the cube.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Example usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">u_wind_acceleration</span> <span class="o">=</span> <span class="n">differentiate</span><span class="p">(</span><span class="n">u_wind_cube</span><span class="p">,</span> <span class="s">&#39;forecast_time&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The algorithm used is equivalent to:</p>
+<img src="../../../_images/mathmpl/math-ac108f9e00.png" class="center" /><p>Where <tt class="docutils literal"><span class="pre">d</span></tt> is the differential, <tt class="docutils literal"><span class="pre">v</span></tt> is the data value, <tt class="docutils literal"><span class="pre">c</span></tt> is the coordinate value and <tt class="docutils literal"><span class="pre">i</span></tt> is the index in the differential
+direction. Hence, in a normal situation if a cube has a shape (x: n; y: m) differentiating with respect to x will result in a cube
+of shape (x: n-1; y: m) and differentiating with respect to y will result in (x: n; y: m-1). If the coordinate to differentiate is
+<a class="reference internal" href="../coords.html#iris.coords.DimCoord.circular" title="iris.coords.DimCoord.circular"><tt class="xref py py-attr docutils literal"><span class="pre">circular</span></tt></a> then the resultant shape will be the same as the input cube.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Difference method used is the same as <a class="reference internal" href="#iris.analysis.calculus.cube_delta" title="iris.analysis.calculus.cube_delta"><tt class="xref py py-func docutils literal"><span class="pre">cube_delta()</span></tt></a> and therefore has the same limitations.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Spherical differentiation does not occur in this routine.</p>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.calculus.curl">
+<tt class="descclassname">iris.analysis.calculus.</tt><tt class="descname">curl</tt><big>(</big><em>i_cube</em>, <em>j_cube</em>, <em>k_cube=None</em>, <em>ignore=None</em>, <em>update_history=True</em><big>)</big><a class="headerlink" href="#iris.analysis.calculus.curl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the 3d curl of the given vector of cubes.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>i_cube</dt>
+<dd><p class="first last">The i cube of the vector to operate on</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>j_cube</dt>
+<dd><p class="first last">The j cube of the vector to operate on</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>k_cube</dt>
+<dd><p class="first last">The k cube of the vector to operate on</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Return (i_cmpt_curl_cube, j_cmpt_curl_cube, k_cmpt_curl_cube)</p>
+<p>The calculation of curl is dependent on the type of <a class="reference internal" href="../coord_systems.html#iris.coord_systems.HorizontalCS" title="iris.coord_systems.HorizontalCS"><tt class="xref py py-func docutils literal"><span class="pre">iris.coord_systems.HorizontalCS()</span></tt></a> in the cube:</p>
+<blockquote>
+<div><p>Cartesian curl</p>
+<blockquote>
+<div><p>The Cartesian curl is defined as:</p>
+<img src="../../../_images/mathmpl/math-7beb79b357.png" class="center" /></div></blockquote>
+<p>Spherical curl</p>
+<blockquote>
+<div><p>When spherical calculus is used, i_cube is the phi vector component (e.g. eastward), j_cube is the theta component 
+(e.g. northward) and k_cube is the radial component.</p>
+<p>The spherical curl is defined as:</p>
+<img src="../../../_images/mathmpl/math-42bcfb1f1a.png" class="center" /><p>where phi is longitude, theta is latitude.</p>
+</div></blockquote>
+</div></blockquote>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="cartography.html" title="iris.analysis.cartography"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../analysis.html" title="iris.analysis"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../analysis.html" >iris.analysis</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

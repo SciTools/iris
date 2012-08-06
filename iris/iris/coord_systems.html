@@ -1,0 +1,415 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.coord_systems &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Iris reference documentation" href="../iris.html" />
+    <link rel="next" title="iris.coords" href="coords.html" />
+    <link rel="prev" title="iris.coord_categorisation" href="coord_categorisation.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="coords.html" title="iris.coords"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="coord_categorisation.html" title="iris.coord_categorisation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" accesskey="U">Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="coord_categorisation.html"
+                        title="previous chapter">iris.coord_categorisation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="coords.html"
+                        title="next chapter">iris.coords</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/iris/iris/coord_systems.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-coord-systems">
+<span id="id1"></span><h1>iris.coord_systems<a class="headerlink" href="#iris-coord-systems" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.coord_systems"></span><p>Definitions of coordinate systems.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.coord_systems.CoordSystem" title="iris.coord_systems.CoordSystem"><tt class="xref py py-obj docutils literal"><span class="pre">CoordSystem</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coord_systems.GeoPosition" title="iris.coord_systems.GeoPosition"><tt class="xref py py-obj docutils literal"><span class="pre">GeoPosition</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coord_systems.HorizontalCS" title="iris.coord_systems.HorizontalCS"><tt class="xref py py-obj docutils literal"><span class="pre">HorizontalCS</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coord_systems.HybridHeightCS" title="iris.coord_systems.HybridHeightCS"><tt class="xref py py-obj docutils literal"><span class="pre">HybridHeightCS</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coord_systems.LatLonCS" title="iris.coord_systems.LatLonCS"><tt class="xref py py-obj docutils literal"><span class="pre">LatLonCS</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coord_systems.PrimeMeridian" title="iris.coord_systems.PrimeMeridian"><tt class="xref py py-obj docutils literal"><span class="pre">PrimeMeridian</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coord_systems.SpheroidDatum" title="iris.coord_systems.SpheroidDatum"><tt class="xref py py-obj docutils literal"><span class="pre">SpheroidDatum</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<p>Abstract base class for coordinate systems.</p>
+<p>A Coord holds an optional CoordSystem, which can be used to indicate
+several Coords are defined to be &#8216;in the same system&#8217;.
+E.g lat and lon coords will hold a shared or identical LatLonCS.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.coord_systems.CoordSystem">
+<em class="property">class </em><tt class="descclassname">iris.coord_systems.</tt><tt class="descname">CoordSystem</tt><a class="headerlink" href="#iris.coord_systems.CoordSystem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract base class for coordinate systems.</p>
+<p>A Coord holds an optional CoordSystem, which can be used to indicate
+several Coords are defined to be &#8216;in the same system&#8217;.
+E.g lat and lon coords will hold a shared or identical LatLonCS.</p>
+<dl class="method">
+<dt id="iris.coord_systems.CoordSystem.assert_valid">
+<tt class="descname">assert_valid</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coord_systems.CoordSystem.assert_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check the CS is in a valid state (else raises error).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coord_systems.CoordSystem.xml_element">
+<tt class="descname">xml_element</tt><big>(</big><em>doc</em><big>)</big><a class="headerlink" href="#iris.coord_systems.CoordSystem.xml_element" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default behaviour for coord systems.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>Defines a geographic coordinate latitude/longitude pair.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.coord_systems.GeoPosition">
+<em class="property">class </em><tt class="descclassname">iris.coord_systems.</tt><tt class="descname">GeoPosition</tt><big>(</big><em>latitude</em>, <em>longitude</em><big>)</big><a class="headerlink" href="#iris.coord_systems.GeoPosition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines a geographic coordinate latitude/longitude pair.</p>
+<dl class="attribute">
+<dt id="iris.coord_systems.GeoPosition.latitude">
+<tt class="descname">latitude</tt><em class="property"> = None</em><a class="headerlink" href="#iris.coord_systems.GeoPosition.latitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>The latitude of the position in degrees.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coord_systems.GeoPosition.longitude">
+<tt class="descname">longitude</tt><em class="property"> = None</em><a class="headerlink" href="#iris.coord_systems.GeoPosition.longitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>The longitude of the position in degrees.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>Abstract CoordSystem for holding horizontal grid information.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.coord_systems.HorizontalCS">
+<em class="property">class </em><tt class="descclassname">iris.coord_systems.</tt><tt class="descname">HorizontalCS</tt><big>(</big><em>datum</em><big>)</big><a class="headerlink" href="#iris.coord_systems.HorizontalCS" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="iris.coord_systems.HorizontalCS.assert_valid">
+<tt class="descname">assert_valid</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coord_systems.HorizontalCS.assert_valid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.coord_systems.HorizontalCS.xml_element">
+<tt class="descname">xml_element</tt><big>(</big><em>doc</em><big>)</big><a class="headerlink" href="#iris.coord_systems.HorizontalCS.xml_element" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default behaviour for coord systems.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>CoordSystem for holding hybrid height information.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.coord_systems.HybridHeightCS">
+<em class="property">class </em><tt class="descclassname">iris.coord_systems.</tt><tt class="descname">HybridHeightCS</tt><big>(</big><em>orography</em><big>)</big><a class="headerlink" href="#iris.coord_systems.HybridHeightCS" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="iris.coord_systems.HybridHeightCS.assert_valid">
+<tt class="descname">assert_valid</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coord_systems.HybridHeightCS.assert_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check the CS is in a valid state (else raises error).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coord_systems.HybridHeightCS.heights">
+<tt class="descname">heights</tt><big>(</big><em>level_height</em>, <em>sigma</em>, <em>cube=None</em>, <em>_orography=None</em><big>)</big><a class="headerlink" href="#iris.coord_systems.HybridHeightCS.heights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a 3-D array (ZxYxX) of heights above the geoid for the given cube points.</p>
+<p>cube       - defines the points at which we want heights
+_orography - internal optimisation, array of precalculated orography at cube points</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coord_systems.HybridHeightCS.heights_at_contiguous_corners">
+<tt class="descname">heights_at_contiguous_corners</tt><big>(</big><em>level_height</em>, <em>sigma</em>, <em>cube</em>, <em>use_x_bounds</em>, <em>use_y_bounds</em><big>)</big><a class="headerlink" href="#iris.coord_systems.HybridHeightCS.heights_at_contiguous_corners" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a 3-D array (ZxYxX) of heights above the geoid for the given cube points.</p>
+<p>cube         - defines the points at which we want heights
+use_x_bounds - whether we should use point or bound positions along the x axis
+use_y_bounds - whether we should use point or bound positions along the y axis</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coord_systems.HybridHeightCS.orography_at_contiguous_corners">
+<tt class="descname">orography_at_contiguous_corners</tt><big>(</big><em>cube</em>, <em>use_x_bounds</em>, <em>use_y_bounds</em><big>)</big><a class="headerlink" href="#iris.coord_systems.HybridHeightCS.orography_at_contiguous_corners" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an (n+1, m), (n, m+1), or (n+1, m+1) array of orography for cell corners/bounds.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coord_systems.HybridHeightCS.orography_at_points">
+<tt class="descname">orography_at_points</tt><big>(</big><em>cube</em><big>)</big><a class="headerlink" href="#iris.coord_systems.HybridHeightCS.orography_at_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a 2D array (YxX) of orography heights for the given cube.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coord_systems.HybridHeightCS.orography_at_xy_corners">
+<tt class="descname">orography_at_xy_corners</tt><big>(</big><em>cube</em><big>)</big><a class="headerlink" href="#iris.coord_systems.HybridHeightCS.orography_at_xy_corners" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return (n, m, 4) array of orography at the 4 lon/lat corners of each cell.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coord_systems.HybridHeightCS.xml_element">
+<tt class="descname">xml_element</tt><big>(</big><em>doc</em><big>)</big><a class="headerlink" href="#iris.coord_systems.HybridHeightCS.xml_element" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default behaviour for coord systems.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>Holds latitude/longitude grid information for both regular and rotated coordinates.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.coord_systems.LatLonCS">
+<em class="property">class </em><tt class="descclassname">iris.coord_systems.</tt><tt class="descname">LatLonCS</tt><big>(</big><em>datum</em>, <em>prime_meridian</em>, <em>n_pole</em>, <em>reference_longitude</em><big>)</big><a class="headerlink" href="#iris.coord_systems.LatLonCS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>datum:</dt>
+<dd><p class="first last">An instance of <a class="reference internal" href="#iris.coord_systems.SpheroidDatum" title="iris.coord_systems.SpheroidDatum"><tt class="xref py py-class docutils literal"><span class="pre">iris.coord_systems.SpheroidDatum</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>prime_meridian:</dt>
+<dd><p class="first last">An instance of <a class="reference internal" href="#iris.coord_systems.PrimeMeridian" title="iris.coord_systems.PrimeMeridian"><tt class="xref py py-class docutils literal"><span class="pre">iris.coord_systems.PrimeMeridian</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>n_pole:</dt>
+<dd><p class="first last">An instance of <a class="reference internal" href="#iris.coord_systems.GeoPosition" title="iris.coord_systems.GeoPosition"><tt class="xref py py-class docutils literal"><span class="pre">iris.coord_systems.GeoPosition</span></tt></a> containing the geographic
+location of the, possibly rotated, North pole.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>reference_longitude:</dt>
+<dd><p class="first last">The longitude of the standard North pole within the possibly rotated
+coordinate system.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Example creation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cs</span> <span class="o">=</span> <span class="n">LatLonCS</span><span class="p">(</span><span class="n">datum</span><span class="o">=</span><span class="n">SpheroidDatum</span><span class="p">(),</span> 
+              <span class="n">prime_meridian</span><span class="o">=</span><span class="n">PrimeMeridian</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;Greenwich&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">),</span> 
+              <span class="n">n_pole</span><span class="o">=</span><span class="n">GeoPosition</span><span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> 
+              <span class="n">reference_longitude</span><span class="o">=</span><span class="mf">0.0</span>
+             <span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="iris.coord_systems.LatLonCS.assert_valid">
+<tt class="descname">assert_valid</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coord_systems.LatLonCS.assert_valid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.coord_systems.LatLonCS.has_rotated_pole">
+<tt class="descname">has_rotated_pole</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coord_systems.LatLonCS.has_rotated_pole" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.coord_systems.LatLonCS.xml_element">
+<tt class="descname">xml_element</tt><big>(</big><em>doc</em><big>)</big><a class="headerlink" href="#iris.coord_systems.LatLonCS.xml_element" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default behaviour for coord systems.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>Defines the origin of the coordinate system.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.coord_systems.PrimeMeridian">
+<em class="property">class </em><tt class="descclassname">iris.coord_systems.</tt><tt class="descname">PrimeMeridian</tt><big>(</big><em>label='Greenwich'</em>, <em>value=0.0</em><big>)</big><a class="headerlink" href="#iris.coord_systems.PrimeMeridian" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="iris.coord_systems.PrimeMeridian.label">
+<tt class="descname">label</tt><em class="property"> = None</em><a class="headerlink" href="#iris.coord_systems.PrimeMeridian.label" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the specific location which defines the reference point.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coord_systems.PrimeMeridian.value">
+<tt class="descname">value</tt><em class="property"> = None</em><a class="headerlink" href="#iris.coord_systems.PrimeMeridian.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>The longitude of the reference point.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>Defines the shape of the Earth.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.coord_systems.SpheroidDatum">
+<em class="property">class </em><tt class="descclassname">iris.coord_systems.</tt><tt class="descname">SpheroidDatum</tt><big>(</big><em>label='undefined spheroid'</em>, <em>semi_major_axis=None</em>, <em>semi_minor_axis=None</em>, <em>flattening=None</em>, <em>units='no unit'</em><big>)</big><a class="headerlink" href="#iris.coord_systems.SpheroidDatum" title="Permalink to this definition">¶</a></dt>
+<dd><p>If all three of semi_major_axis, semi_minor_axis, and flattening are None then
+it defaults to a perfect sphere using the radius 6371229m.</p>
+<p>Otherwise, at least two of semi_major_axis, semi_minor_axis, and flattening
+must be given.</p>
+<dl class="method">
+<dt id="iris.coord_systems.SpheroidDatum.is_spherical">
+<tt class="descname">is_spherical</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coord_systems.SpheroidDatum.is_spherical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether this datum describes a perfect sphere.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coord_systems.SpheroidDatum.flattening">
+<tt class="descname">flattening</tt><em class="property"> = None</em><a class="headerlink" href="#iris.coord_systems.SpheroidDatum.flattening" title="Permalink to this definition">¶</a></dt>
+<dd><p>The flattening, <img src="../../_images/mathmpl/math-e71929cce7.png" style="position: relative; bottom: -7px"/>, or ellipticity. Defined as <img src="../../_images/mathmpl/math-c4d16b6887.png" style="position: relative; bottom: -7px"/>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coord_systems.SpheroidDatum.label">
+<tt class="descname">label</tt><em class="property"> = None</em><a class="headerlink" href="#iris.coord_systems.SpheroidDatum.label" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of this spheroid definition.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coord_systems.SpheroidDatum.semi_major_axis">
+<tt class="descname">semi_major_axis</tt><em class="property"> = None</em><a class="headerlink" href="#iris.coord_systems.SpheroidDatum.semi_major_axis" title="Permalink to this definition">¶</a></dt>
+<dd><p>The length of the semi-major axis, <img src="../../_images/mathmpl/math-e269772661.png" style="position: relative; bottom: -3px"/>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coord_systems.SpheroidDatum.semi_minor_axis">
+<tt class="descname">semi_minor_axis</tt><em class="property"> = None</em><a class="headerlink" href="#iris.coord_systems.SpheroidDatum.semi_minor_axis" title="Permalink to this definition">¶</a></dt>
+<dd><p>The length of the semi-minor axis, <img src="../../_images/mathmpl/math-777531578f.png" style="position: relative; bottom: -3px"/>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coord_systems.SpheroidDatum.units">
+<tt class="descname">units</tt><em class="property"> = None</em><a class="headerlink" href="#iris.coord_systems.SpheroidDatum.units" title="Permalink to this definition">¶</a></dt>
+<dd><p>The unit of measure for the axes.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="coords.html" title="iris.coords"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="coord_categorisation.html" title="iris.coord_categorisation"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" >Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

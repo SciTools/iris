@@ -1,0 +1,76 @@
+.. _iris.cube:
+
+=========
+iris.cube
+=========
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.cube
+
+In this module:
+
+ * :py:obj:`Cube`
+ * :py:obj:`CubeList`
+ * :py:obj:`CubeMetadata`
+
+
+----------
+
+A single Iris cube of data and metadata.
+
+Typically obtained from :func:`iris.load`, :func:`iris.load_strict`, or
+from the manipulation of existing cubes.
+
+For example:
+
+    >>> cube = iris.load_strict(iris.sample_data_path('PP', 'aPPglob1', 'global.pp'))
+    >>> print cube
+    air_temperature                     (latitude: 73; longitude: 96)
+         Dimension coordinates:
+              latitude                           x              -
+              longitude                          -              x
+         Scalar coordinates:
+              forecast_period: 6477 hours
+              pressure: 1000.0 hPa
+              source: Data from Met Office Unified Model
+              time: Cell(point=232560.0, bound=(215280.0, 249840.0)) hours since 1970-01-01 00:00:00
+         Attributes:
+              STASH: m01s16i203
+         Cell methods:
+              mean: time
+
+
+See the :doc:`user guide</userguide/index>` for more information.
+
+..
+
+    .. autoclass:: iris.cube.Cube
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+All the functionality of a standard :class:`list` with added "Cube" context.
+
+..
+
+    .. autoclass:: iris.cube.CubeList
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Represents the phenomenon metadata for a single :class:`Cube`.
+
+..
+
+    .. autoclass:: iris.cube.CubeMetadata
+        :members:
+        :undoc-members:
+        :inherited-members:
+

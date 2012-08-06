@@ -1,0 +1,104 @@
+.. _iris.coord_systems:
+
+==================
+iris.coord_systems
+==================
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.coord_systems
+
+In this module:
+
+ * :py:obj:`CoordSystem`
+ * :py:obj:`GeoPosition`
+ * :py:obj:`HorizontalCS`
+ * :py:obj:`HybridHeightCS`
+ * :py:obj:`LatLonCS`
+ * :py:obj:`PrimeMeridian`
+ * :py:obj:`SpheroidDatum`
+
+
+----------
+
+Abstract base class for coordinate systems.
+
+A Coord holds an optional CoordSystem, which can be used to indicate
+several Coords are defined to be 'in the same system'.
+E.g lat and lon coords will hold a shared or identical LatLonCS.
+
+..
+
+    .. autoclass:: iris.coord_systems.CoordSystem
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Defines a geographic coordinate latitude/longitude pair.
+
+..
+
+    .. autoclass:: iris.coord_systems.GeoPosition
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Abstract CoordSystem for holding horizontal grid information.
+
+..
+
+    .. autoclass:: iris.coord_systems.HorizontalCS
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+CoordSystem for holding hybrid height information.
+
+..
+
+    .. autoclass:: iris.coord_systems.HybridHeightCS
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Holds latitude/longitude grid information for both regular and rotated coordinates.
+
+..
+
+    .. autoclass:: iris.coord_systems.LatLonCS
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Defines the origin of the coordinate system.
+
+..
+
+    .. autoclass:: iris.coord_systems.PrimeMeridian
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Defines the shape of the Earth.
+
+..
+
+    .. autoclass:: iris.coord_systems.SpheroidDatum
+        :members:
+        :undoc-members:
+        :inherited-members:
+

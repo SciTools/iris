@@ -1,0 +1,212 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Ionosphere space weather &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Visualisation examples" href="index.html" />
+    <link rel="next" title="Cross section plots" href="cross_section.html" />
+    <link rel="prev" title="Global average annual temperature maps" href="COP_maps.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="cross_section.html" title="Cross section plots"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="COP_maps.html" title="Global average annual temperature maps"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris examples</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Visualisation examples</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="COP_maps.html"
+                        title="previous chapter">Global average annual temperature maps</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cross_section.html"
+                        title="next chapter">Cross section plots</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/examples/graphics/TEC.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ionosphere-space-weather">
+<span id="graphics-tec"></span><h1>Ionosphere space weather<a class="headerlink" href="#ionosphere-space-weather" title="Permalink to this headline">¶</a></h1>
+<p>This space weather example plots a filled contour of rotated pole point data with a blue marble underlay.
+The plot shows aggregated vertical electron content in the ionosphere.</p>
+<p>The plot exhibits an interesting outline effect due to excluding data values below a certain threshold.</p>
+<p id="tec">[<a class="reference external" href="../../plot_directive/../example_code/graphics/TEC.py">source code</a>]</p>
+<blockquote>
+<div><div class="figure">
+<img alt="../../_images/TEC.png" src="../../_images/TEC.png" />
+</div>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Ionosphere space weather</span>
+<span class="sd">========================</span>
+
+<span class="sd">This space weather example plots a filled contour of rotated pole point data with a blue marble underlay.</span>
+<span class="sd">The plot shows aggregated vertical electron content in the ionosphere.</span>
+
+<span class="sd">The plot exhibits an interesting outline effect due to excluding data values below a certain threshold.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">iris</span>
+<span class="kn">import</span> <span class="nn">iris.plot</span> <span class="kn">as</span> <span class="nn">iplt</span>
+<span class="kn">import</span> <span class="nn">iris.quickplot</span> <span class="kn">as</span> <span class="nn">qplt</span>
+
+
+<span class="k">def</span> <span class="nf">total_electron_content_filter</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="c"># Filter out all cubes that don&#39;t have a matching &#39;long_name&#39; attribute.</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s">&#39;long_name&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">field</span><span class="o">.</span><span class="n">long_name</span> <span class="o">!=</span> <span class="s">&#39;total electron content&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">iris</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">IgnoreCubeException</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="c"># Load the &quot;total electron content&quot; cube.</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;NetCDF&#39;</span><span class="p">,</span> <span class="s">&#39;space_weather&#39;</span><span class="p">,</span> <span class="s">&#39;Test.nc&#39;</span><span class="p">)</span>
+    <span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">total_electron_content_filter</span><span class="p">)</span>
+
+    <span class="c"># For the purposes of this example slice away the top latitude data,</span>
+    <span class="c"># as matplotlib currently does not correctly plot rotated pole data</span>
+    <span class="c"># extending to/over the north pole.</span>
+    <span class="n">cube</span> <span class="o">=</span> <span class="n">cube</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+
+    <span class="c"># Explicitly mask negative electron content.</span>
+    <span class="n">cube</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_less</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c"># Currently require to remove the multi-dimensional</span>
+    <span class="c"># latitude and longitude coordinates for Iris plotting.</span>
+    <span class="n">cube</span><span class="o">.</span><span class="n">remove_coord</span><span class="p">(</span><span class="s">&#39;latitude&#39;</span><span class="p">)</span>
+    <span class="n">cube</span><span class="o">.</span><span class="n">remove_coord</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">)</span>
+
+    <span class="c"># Plot the cube using one hundred colour levels.</span>
+    <span class="n">qplt</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Total Electron Content&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;longitude / degrees&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;latitude / degrees&#39;</span><span class="p">)</span>
+    <span class="n">iplt</span><span class="o">.</span><span class="n">gcm</span><span class="p">()</span><span class="o">.</span><span class="n">bluemarble</span><span class="p">(</span><span class="n">zorder</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">iplt</span><span class="o">.</span><span class="n">gcm</span><span class="p">()</span><span class="o">.</span><span class="n">drawcoastlines</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="cross_section.html" title="Cross section plots"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="COP_maps.html" title="Global average annual temperature maps"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris examples</a> &raquo;</li>
+          <li><a href="index.html" >Visualisation examples</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

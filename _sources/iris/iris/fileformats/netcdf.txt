@@ -1,0 +1,38 @@
+.. _iris.fileformats.netcdf:
+
+=======================
+iris.fileformats.netcdf
+=======================
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.fileformats.netcdf
+
+In this module:
+
+ * :py:obj:`load_cubes`
+ * :py:obj:`save`
+ * :py:obj:`NetCDFDataProxy`
+
+
+----------
+
+.. autofunction:: iris.fileformats.netcdf.load_cubes
+
+----------
+
+.. autofunction:: iris.fileformats.netcdf.save
+
+----------
+
+A reference to the data payload of a single NetCDF file variable.
+
+..
+
+    .. autoclass:: iris.fileformats.netcdf.NetCDFDataProxy
+        :members:
+        :undoc-members:
+        :inherited-members:
+

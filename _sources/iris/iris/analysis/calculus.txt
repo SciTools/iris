@@ -1,0 +1,31 @@
+.. _iris.analysis.calculus:
+
+======================
+iris.analysis.calculus
+======================
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.analysis.calculus
+
+In this module:
+
+ * :py:obj:`cube_delta`
+ * :py:obj:`differentiate`
+ * :py:obj:`curl`
+
+
+----------
+
+.. autofunction:: iris.analysis.calculus.cube_delta
+
+----------
+
+.. autofunction:: iris.analysis.calculus.differentiate
+
+----------
+
+.. autofunction:: iris.analysis.calculus.curl
+

@@ -1,0 +1,385 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.exceptions &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Iris reference documentation" href="../iris.html" />
+    <link rel="next" title="iris.fileformats" href="fileformats.html" />
+    <link rel="prev" title="iris.cube" href="cube.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="fileformats.html" title="iris.fileformats"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cube.html" title="iris.cube"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" accesskey="U">Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cube.html"
+                        title="previous chapter">iris.cube</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="fileformats.html"
+                        title="next chapter">iris.fileformats</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/iris/iris/exceptions.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-exceptions">
+<span id="id1"></span><h1>iris.exceptions<a class="headerlink" href="#iris-exceptions" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.exceptions"></span><p>Exceptions specific to the Iris package.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.exceptions.ConstraintMismatchError" title="iris.exceptions.ConstraintMismatchError"><tt class="xref py py-obj docutils literal"><span class="pre">ConstraintMismatchError</span></tt></a></li>
+<li><a class="reference internal" href="#iris.exceptions.CoordinateCollapseError" title="iris.exceptions.CoordinateCollapseError"><tt class="xref py py-obj docutils literal"><span class="pre">CoordinateCollapseError</span></tt></a></li>
+<li><a class="reference internal" href="#iris.exceptions.CoordinateMultiDimError" title="iris.exceptions.CoordinateMultiDimError"><tt class="xref py py-obj docutils literal"><span class="pre">CoordinateMultiDimError</span></tt></a></li>
+<li><a class="reference internal" href="#iris.exceptions.CoordinateNotFoundError" title="iris.exceptions.CoordinateNotFoundError"><tt class="xref py py-obj docutils literal"><span class="pre">CoordinateNotFoundError</span></tt></a></li>
+<li><a class="reference internal" href="#iris.exceptions.CoordinateNotRegularError" title="iris.exceptions.CoordinateNotRegularError"><tt class="xref py py-obj docutils literal"><span class="pre">CoordinateNotRegularError</span></tt></a></li>
+<li><a class="reference internal" href="#iris.exceptions.DuplicateDataError" title="iris.exceptions.DuplicateDataError"><tt class="xref py py-obj docutils literal"><span class="pre">DuplicateDataError</span></tt></a></li>
+<li><a class="reference internal" href="#iris.exceptions.IgnoreCubeException" title="iris.exceptions.IgnoreCubeException"><tt class="xref py py-obj docutils literal"><span class="pre">IgnoreCubeException</span></tt></a></li>
+<li><a class="reference internal" href="#iris.exceptions.InvalidCubeError" title="iris.exceptions.InvalidCubeError"><tt class="xref py py-obj docutils literal"><span class="pre">InvalidCubeError</span></tt></a></li>
+<li><a class="reference internal" href="#iris.exceptions.IrisError" title="iris.exceptions.IrisError"><tt class="xref py py-obj docutils literal"><span class="pre">IrisError</span></tt></a></li>
+<li><a class="reference internal" href="#iris.exceptions.NotYetImplementedError" title="iris.exceptions.NotYetImplementedError"><tt class="xref py py-obj docutils literal"><span class="pre">NotYetImplementedError</span></tt></a></li>
+<li><a class="reference internal" href="#iris.exceptions.TranslationError" title="iris.exceptions.TranslationError"><tt class="xref py py-obj docutils literal"><span class="pre">TranslationError</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<p>Raised when a constraint operation has failed to find the correct number 
+of results.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.exceptions.ConstraintMismatchError">
+<em class="property">class </em><tt class="descclassname">iris.exceptions.</tt><tt class="descname">ConstraintMismatchError</tt><a class="headerlink" href="#iris.exceptions.ConstraintMismatchError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when a constraint operation has failed to find the correct number 
+of results.</p>
+<dl class="attribute">
+<dt id="iris.exceptions.ConstraintMismatchError.args">
+<tt class="descname">args</tt><a class="headerlink" href="#iris.exceptions.ConstraintMismatchError.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.exceptions.ConstraintMismatchError.message">
+<tt class="descname">message</tt><a class="headerlink" href="#iris.exceptions.ConstraintMismatchError.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>Raised when a requested coordinate cannot be collapsed.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.exceptions.CoordinateCollapseError">
+<em class="property">class </em><tt class="descclassname">iris.exceptions.</tt><tt class="descname">CoordinateCollapseError</tt><a class="headerlink" href="#iris.exceptions.CoordinateCollapseError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when a requested coordinate cannot be collapsed.</p>
+<dl class="attribute">
+<dt id="iris.exceptions.CoordinateCollapseError.args">
+<tt class="descname">args</tt><a class="headerlink" href="#iris.exceptions.CoordinateCollapseError.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.exceptions.CoordinateCollapseError.message">
+<tt class="descname">message</tt><a class="headerlink" href="#iris.exceptions.CoordinateCollapseError.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>Raised when a routine doesn&#8217;t support multi-dimensional coordinates.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.exceptions.CoordinateMultiDimError">
+<em class="property">class </em><tt class="descclassname">iris.exceptions.</tt><tt class="descname">CoordinateMultiDimError</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#iris.exceptions.CoordinateMultiDimError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when a routine doesn&#8217;t support multi-dimensional coordinates.</p>
+<dl class="attribute">
+<dt id="iris.exceptions.CoordinateMultiDimError.args">
+<tt class="descname">args</tt><a class="headerlink" href="#iris.exceptions.CoordinateMultiDimError.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.exceptions.CoordinateMultiDimError.message">
+<tt class="descname">message</tt><a class="headerlink" href="#iris.exceptions.CoordinateMultiDimError.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>Raised when a search yields no coordinates.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.exceptions.CoordinateNotFoundError">
+<em class="property">class </em><tt class="descclassname">iris.exceptions.</tt><tt class="descname">CoordinateNotFoundError</tt><a class="headerlink" href="#iris.exceptions.CoordinateNotFoundError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when a search yields no coordinates.</p>
+<dl class="attribute">
+<dt id="iris.exceptions.CoordinateNotFoundError.args">
+<tt class="descname">args</tt><a class="headerlink" href="#iris.exceptions.CoordinateNotFoundError.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.exceptions.CoordinateNotFoundError.message">
+<tt class="descname">message</tt><a class="headerlink" href="#iris.exceptions.CoordinateNotFoundError.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>Raised when a coordinate is unexpectedly irregular.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.exceptions.CoordinateNotRegularError">
+<em class="property">class </em><tt class="descclassname">iris.exceptions.</tt><tt class="descname">CoordinateNotRegularError</tt><a class="headerlink" href="#iris.exceptions.CoordinateNotRegularError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when a coordinate is unexpectedly irregular.</p>
+<dl class="attribute">
+<dt id="iris.exceptions.CoordinateNotRegularError.args">
+<tt class="descname">args</tt><a class="headerlink" href="#iris.exceptions.CoordinateNotRegularError.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.exceptions.CoordinateNotRegularError.message">
+<tt class="descname">message</tt><a class="headerlink" href="#iris.exceptions.CoordinateNotRegularError.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>Raised when merging two or more cubes that have identical metadata.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.exceptions.DuplicateDataError">
+<em class="property">class </em><tt class="descclassname">iris.exceptions.</tt><tt class="descname">DuplicateDataError</tt><a class="headerlink" href="#iris.exceptions.DuplicateDataError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when merging two or more cubes that have identical metadata.</p>
+<dl class="attribute">
+<dt id="iris.exceptions.DuplicateDataError.args">
+<tt class="descname">args</tt><a class="headerlink" href="#iris.exceptions.DuplicateDataError.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.exceptions.DuplicateDataError.message">
+<tt class="descname">message</tt><a class="headerlink" href="#iris.exceptions.DuplicateDataError.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>Raised from a callback function when a cube should be ignored on load.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.exceptions.IgnoreCubeException">
+<em class="property">class </em><tt class="descclassname">iris.exceptions.</tt><tt class="descname">IgnoreCubeException</tt><a class="headerlink" href="#iris.exceptions.IgnoreCubeException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised from a callback function when a cube should be ignored on load.</p>
+<dl class="attribute">
+<dt id="iris.exceptions.IgnoreCubeException.args">
+<tt class="descname">args</tt><a class="headerlink" href="#iris.exceptions.IgnoreCubeException.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.exceptions.IgnoreCubeException.message">
+<tt class="descname">message</tt><a class="headerlink" href="#iris.exceptions.IgnoreCubeException.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>Raised when a Cube validation check fails.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.exceptions.InvalidCubeError">
+<em class="property">class </em><tt class="descclassname">iris.exceptions.</tt><tt class="descname">InvalidCubeError</tt><a class="headerlink" href="#iris.exceptions.InvalidCubeError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when a Cube validation check fails.</p>
+<dl class="attribute">
+<dt id="iris.exceptions.InvalidCubeError.args">
+<tt class="descname">args</tt><a class="headerlink" href="#iris.exceptions.InvalidCubeError.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.exceptions.InvalidCubeError.message">
+<tt class="descname">message</tt><a class="headerlink" href="#iris.exceptions.InvalidCubeError.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>Base class for errors in the Iris package.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.exceptions.IrisError">
+<em class="property">class </em><tt class="descclassname">iris.exceptions.</tt><tt class="descname">IrisError</tt><a class="headerlink" href="#iris.exceptions.IrisError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for errors in the Iris package.</p>
+<dl class="attribute">
+<dt id="iris.exceptions.IrisError.args">
+<tt class="descname">args</tt><a class="headerlink" href="#iris.exceptions.IrisError.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.exceptions.IrisError.message">
+<tt class="descname">message</tt><a class="headerlink" href="#iris.exceptions.IrisError.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>Raised by missing functionality.</p>
+<p>Different meaning to NotImplementedError, which is for abstract methods.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.exceptions.NotYetImplementedError">
+<em class="property">class </em><tt class="descclassname">iris.exceptions.</tt><tt class="descname">NotYetImplementedError</tt><a class="headerlink" href="#iris.exceptions.NotYetImplementedError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised by missing functionality.</p>
+<p>Different meaning to NotImplementedError, which is for abstract methods.</p>
+<dl class="attribute">
+<dt id="iris.exceptions.NotYetImplementedError.args">
+<tt class="descname">args</tt><a class="headerlink" href="#iris.exceptions.NotYetImplementedError.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.exceptions.NotYetImplementedError.message">
+<tt class="descname">message</tt><a class="headerlink" href="#iris.exceptions.NotYetImplementedError.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>Raised when Iris is unable to translate format-specific codes.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.exceptions.TranslationError">
+<em class="property">class </em><tt class="descclassname">iris.exceptions.</tt><tt class="descname">TranslationError</tt><a class="headerlink" href="#iris.exceptions.TranslationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when Iris is unable to translate format-specific codes.</p>
+<dl class="attribute">
+<dt id="iris.exceptions.TranslationError.args">
+<tt class="descname">args</tt><a class="headerlink" href="#iris.exceptions.TranslationError.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.exceptions.TranslationError.message">
+<tt class="descname">message</tt><a class="headerlink" href="#iris.exceptions.TranslationError.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="fileformats.html" title="iris.fileformats"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cube.html" title="iris.cube"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" >Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

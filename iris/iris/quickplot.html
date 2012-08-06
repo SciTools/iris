@@ -1,0 +1,239 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.quickplot &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Iris reference documentation" href="../iris.html" />
+    <link rel="next" title="iris.std_names" href="std_names.html" />
+    <link rel="prev" title="iris.proxy" href="proxy.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="std_names.html" title="iris.std_names"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="proxy.html" title="iris.proxy"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" accesskey="U">Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="proxy.html"
+                        title="previous chapter">iris.proxy</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="std_names.html"
+                        title="next chapter">iris.std_names</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/iris/iris/quickplot.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-quickplot">
+<span id="id1"></span><h1>iris.quickplot<a class="headerlink" href="#iris-quickplot" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.quickplot"></span><p>High-level plotting extensions to <a class="reference internal" href="plot.html#module-iris.plot" title="iris.plot"><tt class="xref py py-mod docutils literal"><span class="pre">iris.plot</span></tt></a>.</p>
+<p>These routines work much like their <a class="reference internal" href="plot.html#module-iris.plot" title="iris.plot"><tt class="xref py py-mod docutils literal"><span class="pre">iris.plot</span></tt></a> counterparts, but they
+automatically add a plot title, axis titles, and a colour bar when appropriate.</p>
+<p>See also: <a class="reference external" href="http://matplotlib.sourceforge.net/users/index.html#users-guide-index" title="(in Matplotlib v1.1.1)"><em class="xref std std-ref">matplotlib</em></a>, <a class="reference external" href="http://matplotlib.github.com/basemap/users/index.html#users-guide-index" title="(in Basemap Matplotlib Toolkit v1.0.3)"><em class="xref std std-ref">Basemap</em></a>.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.quickplot.contour" title="iris.quickplot.contour"><tt class="xref py py-obj docutils literal"><span class="pre">contour</span></tt></a></li>
+<li><a class="reference internal" href="#iris.quickplot.contourf" title="iris.quickplot.contourf"><tt class="xref py py-obj docutils literal"><span class="pre">contourf</span></tt></a></li>
+<li><a class="reference internal" href="#iris.quickplot.outline" title="iris.quickplot.outline"><tt class="xref py py-obj docutils literal"><span class="pre">outline</span></tt></a></li>
+<li><a class="reference internal" href="#iris.quickplot.pcolor" title="iris.quickplot.pcolor"><tt class="xref py py-obj docutils literal"><span class="pre">pcolor</span></tt></a></li>
+<li><a class="reference internal" href="#iris.quickplot.pcolormesh" title="iris.quickplot.pcolormesh"><tt class="xref py py-obj docutils literal"><span class="pre">pcolormesh</span></tt></a></li>
+<li><a class="reference internal" href="#iris.quickplot.plot" title="iris.quickplot.plot"><tt class="xref py py-obj docutils literal"><span class="pre">plot</span></tt></a></li>
+<li><a class="reference internal" href="#iris.quickplot.points" title="iris.quickplot.points"><tt class="xref py py-obj docutils literal"><span class="pre">points</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.quickplot.contour">
+<tt class="descclassname">iris.quickplot.</tt><tt class="descname">contour</tt><big>(</big><em>cube</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.quickplot.contour" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws contour lines on a labelled plot based on the given Cube.</p>
+<p>With the basic call signature, contour &#8220;level&#8221; values are chosen automatically:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">contour</span><span class="p">(</span><span class="n">cube</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Supply a number to use <em>N</em> automatically chosen levels:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">contour</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Supply a sequence <em>V</em> to use explicitly defined levels:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">contour</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="plot.html#iris.plot.contour" title="iris.plot.contour"><tt class="xref py py-func docutils literal"><span class="pre">iris.plot.contour()</span></tt></a> for details of valid keyword arguments.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.quickplot.contourf">
+<tt class="descclassname">iris.quickplot.</tt><tt class="descname">contourf</tt><big>(</big><em>cube</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.quickplot.contourf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws filled contours on a labelled plot based on the given Cube.</p>
+<p>With the basic call signature, contour &#8220;level&#8221; values are chosen automatically:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">contour</span><span class="p">(</span><span class="n">cube</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Supply a number to use <em>N</em> automatically chosen levels:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">contour</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Supply a sequence <em>V</em> to use explicitly defined levels:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">contour</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="plot.html#iris.plot.contourf" title="iris.plot.contourf"><tt class="xref py py-func docutils literal"><span class="pre">iris.plot.contourf()</span></tt></a> for details of valid keyword arguments.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.quickplot.outline">
+<tt class="descclassname">iris.quickplot.</tt><tt class="descname">outline</tt><big>(</big><em>cube</em>, <em>coords=None</em><big>)</big><a class="headerlink" href="#iris.quickplot.outline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws cell outlines on a labelled plot based on the given Cube.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.quickplot.pcolor">
+<tt class="descclassname">iris.quickplot.</tt><tt class="descname">pcolor</tt><big>(</big><em>cube</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.quickplot.pcolor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws a labelled pseudocolor plot based on the given Cube.</p>
+<p>See <a class="reference internal" href="plot.html#iris.plot.pcolor" title="iris.plot.pcolor"><tt class="xref py py-func docutils literal"><span class="pre">iris.plot.pcolor()</span></tt></a> for details of valid keyword arguments.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.quickplot.pcolormesh">
+<tt class="descclassname">iris.quickplot.</tt><tt class="descname">pcolormesh</tt><big>(</big><em>cube</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.quickplot.pcolormesh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws a labelled pseudocolour plot based on the given Cube.</p>
+<p>See <a class="reference internal" href="plot.html#iris.plot.pcolormesh" title="iris.plot.pcolormesh"><tt class="xref py py-func docutils literal"><span class="pre">iris.plot.pcolormesh()</span></tt></a> for details of valid keyword arguments.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.quickplot.plot">
+<tt class="descclassname">iris.quickplot.</tt><tt class="descname">plot</tt><big>(</big><em>cube</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.quickplot.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws a labelled line plot based on the given Cube.</p>
+<p>See <a class="reference internal" href="plot.html#iris.plot.plot" title="iris.plot.plot"><tt class="xref py py-func docutils literal"><span class="pre">iris.plot.plot()</span></tt></a> for details of valid keyword arguments.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.quickplot.points">
+<tt class="descclassname">iris.quickplot.</tt><tt class="descname">points</tt><big>(</big><em>cube</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.quickplot.points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws sample point positions on a labelled plot based on the given Cube.</p>
+<p>See <a class="reference internal" href="plot.html#iris.plot.points" title="iris.plot.points"><tt class="xref py py-func docutils literal"><span class="pre">iris.plot.points()</span></tt></a> for details of valid keyword arguments.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="std_names.html" title="iris.std_names"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="proxy.html" title="iris.proxy"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" >Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

@@ -1,0 +1,372 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>1. Introduction &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../index.html" />
+    <link rel="up" title="Iris user guide" href="index.html" />
+    <link rel="next" title="2. Loading Iris cubes" href="loading_iris_cubes.html" />
+    <link rel="prev" title="Iris user guide" href="index.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../index.html"><img src="../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="loading_iris_cubes.html" title="2. Loading Iris cubes"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Iris user guide"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="index.html" accesskey="U">Iris user guide</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">1. Introduction</a><ul>
+<li><a class="reference internal" href="#iris-data-structures">1.1. Iris data structures</a><ul>
+<li><a class="reference internal" href="#coordinates">1.1.1. Coordinates</a></li>
+<li><a class="reference internal" href="#cube">1.1.2. Cube</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cubes-in-practice">1.2. Cubes in practice</a><ul>
+<li><a class="reference internal" href="#a-simple-cube-example">1.2.1. A simple cube example</a></li>
+<li><a class="reference internal" href="#printing-a-cube">1.2.2. Printing a cube</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Iris user guide</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="loading_iris_cubes.html"
+                        title="next chapter">2. Loading Iris cubes</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/userguide/iris_cubes.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="introduction">
+<span id="user-guide-introduction"></span><h1>1. Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="iris-data-structures">
+<h2>1.1. Iris data structures<a class="headerlink" href="#iris-data-structures" title="Permalink to this headline">¶</a></h2>
+<p>The top level object in Iris is called a cube. A cube contains data and metadata about a phenomenon.</p>
+<p>In Iris, a cube is an interpretation of the <em>Climate and Forecast (CF) Metadata Conventions</em> who&#8217;s purpose is to:</p>
+<blockquote>
+<div><em>require conforming datasets to contain sufficient metadata that they are self-describing... including physical 
+units if appropriate, and that each value can be located in space (relative to earth-based coordinates) and time.</em></div></blockquote>
+<p>Whilst the CF conventions are often mentioned alongside NetCDF, Iris implements several major format importers which can take
+files of specific formats and turn them into Iris cubes. Additionally, a framework is provided which allows users
+to extend Iris&#8217; import capability to cater for specialist or unimplemented formats.</p>
+<p>A single cube describes one and only one phenomenon, always has a name, a unit and 
+an n-dimensional data array to represents the cube&#8217;s phenomenon. In order to locate the
+data spatially, temporally, or in any other higher-dimensional space, a collection of <em>coordinates</em> 
+exist on the cube.</p>
+<div class="section" id="coordinates">
+<h3>1.1.1. Coordinates<a class="headerlink" href="#coordinates" title="Permalink to this headline">¶</a></h3>
+<p>A coordinate is a container to store metadata about some dimension(s) of a cube&#8217;s data array and therefore, 
+by definition, its phenomenon.</p>
+<blockquote>
+<div><ul>
+<li><p class="first">Each coordinate has a name and a unit.</p>
+</li>
+<li><dl class="first docutils">
+<dt>When a coordinate is added to a cube, the data dimensions that it represents are also provided.</dt>
+<dd><ul class="first last simple">
+<li>The shape of a coordinate is always the same as the shape of the associated data dimension(s) on the cube.</li>
+<li>A dimension not explicitly listed signifies that the coordinate is independent of that dimension.</li>
+<li>Each dimension of a coordinate must be mapped to a data dimension. The only coordinates with no mapping are
+scalar coordinates.</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">Depending on the underlying data that the coordinate is representing, its values may be discrete points or be
+bounded to represent interval extents (e.g. temperature at <em>point x</em> <strong>vs</strong> rainfall accumulation <em>between 0000-1200 hours</em>).</p>
+</li>
+<li><p class="first">Coordinates have an attributes dictionary which can hold arbitrary extra metadata, excluding certain restricted CF names</p>
+</li>
+<li><p class="first">More complex coordinates may contain a coordinate system which is necessary to fully interpret the values 
+contained within the coordinate.</p>
+</li>
+</ul>
+</div></blockquote>
+<p>There are two classes of coordinates:</p>
+<blockquote>
+<div><p><strong>DimCoord</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li>Numeric</li>
+<li>Monotonic</li>
+<li>Representative of, at most, a single data dimension (1d)</li>
+</ul>
+</div></blockquote>
+<p><strong>AuxCoord</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li>May be of any type, including strings</li>
+<li>May represent multiple data dimensions (n-dimensional)</li>
+</ul>
+</div></blockquote>
+</div></blockquote>
+</div>
+<div class="section" id="cube">
+<h3>1.1.2. Cube<a class="headerlink" href="#cube" title="Permalink to this headline">¶</a></h3>
+<p>A cube consists of:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">a standard name and/or a long name and an appropriate unit</p>
+</li>
+<li><p class="first">a data array who&#8217;s values are representative of the phenomenon</p>
+</li>
+<li><p class="first">a collection of coordinates and associated data dimensions on the cube&#8217;s data array, which are split into two separate lists:</p>
+<blockquote>
+<div><ul class="simple">
+<li><em>dimension coordinates</em> - DimCoords which uniquely map to exactly one data dimension, ordered by dimension.</li>
+<li><em>auxiliary coordinates</em> - DimCoords or AuxCoords which map to as many data dimensions as the coordinate has dimensions.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">an attributes dictionary which, other than some protected CF names, can hold arbitrary extra metadata.</p>
+</li>
+<li><p class="first">a list of cell methods to represent operations which have already been applied to the data (e.g. &#8220;mean over time&#8221;)</p>
+</li>
+<li><p class="first">a list of coordinate &#8220;factories&#8221; used for deriving coordinates from the values of other coordinates in the cube</p>
+</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="cubes-in-practice">
+<h2>1.2. Cubes in practice<a class="headerlink" href="#cubes-in-practice" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="a-simple-cube-example">
+<h3>1.2.1. A simple cube example<a class="headerlink" href="#a-simple-cube-example" title="Permalink to this headline">¶</a></h3>
+<p>Suppose we have some gridded data which has 24 air temperature readings (in Kelvin) which is located at 
+4 different longitudes, 2 different latitudes and 3 different heights. Our data array can be represented pictorially:</p>
+<img alt="../_images/multi_array.png" src="../_images/multi_array.png" />
+<p>Where dimensions 0, 1, and 2 have lengths 3, 2 and 4 respectively.</p>
+<p>The Iris cube to represent this data would consist of:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">a standard name of <tt class="docutils literal"><span class="pre">air_temperature</span></tt> and a unit of <tt class="docutils literal"><span class="pre">kelvin</span></tt></p>
+</li>
+<li><p class="first">a data array of shape <tt class="docutils literal"><span class="pre">(3,</span> <span class="pre">2,</span> <span class="pre">4)</span></tt></p>
+</li>
+<li><p class="first">a coordinate, mapping to dimension 0, consisting of:</p>
+<blockquote>
+<div><ul class="simple">
+<li>a standard name of <tt class="docutils literal"><span class="pre">height</span></tt> and unit of <tt class="docutils literal"><span class="pre">meters</span></tt></li>
+<li>an array of length 3 representing the 3 <tt class="docutils literal"><span class="pre">height</span></tt> points</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">a coordinate, mapping to dimension 1, consisting of:</p>
+<blockquote>
+<div><ul class="simple">
+<li>a standard name of <tt class="docutils literal"><span class="pre">latitude</span></tt> and unit of <tt class="docutils literal"><span class="pre">degrees</span></tt></li>
+<li>an array of length 2 representing the 2 latitude points</li>
+<li>a coordinate system such that the <tt class="docutils literal"><span class="pre">latitude</span></tt> points could be fully located on the globe</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">a coordinate, mapping to dimension 2, consisting of:</p>
+<blockquote>
+<div><ul class="simple">
+<li>a standard name of <tt class="docutils literal"><span class="pre">longitude</span></tt> and unit of <tt class="docutils literal"><span class="pre">degrees</span></tt></li>
+<li>an array of length 4 representing the 4 longitude points</li>
+<li>a coordinate system such that the <tt class="docutils literal"><span class="pre">longitude</span></tt> points could be fully located on the globe</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+<p>Pictorially the cube has taken on more information than a simple array:</p>
+<img alt="../_images/multi_array_to_cube.png" src="../_images/multi_array_to_cube.png" />
+<p>Additionally further information may be optionally attached to the cube. 
+For example, it is possible to attach any of the following:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">a coordinate, not mapping to any data dimensions, consisting of:</p>
+<blockquote>
+<div><ul class="simple">
+<li>a standard name of <tt class="docutils literal"><span class="pre">time</span></tt> and unit of <tt class="docutils literal"><span class="pre">days</span> <span class="pre">since</span> <span class="pre">2000-01-01</span> <span class="pre">00:00</span></tt></li>
+<li>a data array of length 1 representing the time that the data array is valid for</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">an auxiliary coordinate, mapping to dimensions 1 and 2, consisting of:</p>
+<blockquote>
+<div><ul class="simple">
+<li>a long name of <tt class="docutils literal"><span class="pre">place</span> <span class="pre">name</span></tt> and no unit</li>
+<li>a 2d string array of shape <tt class="docutils literal"><span class="pre">(2,</span> <span class="pre">4)</span></tt> with the names of the 8 places that the lat/lons correspond to</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">an auxiliary coordinate &#8220;factory&#8221;, which can derive its own mapping, consisting of:</p>
+<blockquote>
+<div><ul class="simple">
+<li>a standard name of <tt class="docutils literal"><span class="pre">height</span></tt> and a unit of <tt class="docutils literal"><span class="pre">feet</span></tt></li>
+<li>knowledge of how data values for this coordinate can be calculated given the <tt class="docutils literal"><span class="pre">height</span> <span class="pre">in</span> <span class="pre">meters</span></tt> coordinate</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">a cell method of &#8220;mean&#8221; over &#8220;ensemble&#8221; to indicate that the data has been meaned over 
+a collection of &#8220;ensembles&#8221; (i.e. multiple model runs).</p>
+</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="printing-a-cube">
+<h3>1.2.2. Printing a cube<a class="headerlink" href="#printing-a-cube" title="Permalink to this headline">¶</a></h3>
+<p>Every Iris cube can be printed to screen as you will see later in the user guide. It is worth familiarising yourself with the
+output as this is the quickest way of inspecting the contents of a cube. Here is the result of printing a real life cube:</p>
+<div class="highlight-none"><div class="highlight"><pre>air_potential_temperature           (forecast_period: 3; level_height: 40; grid_latitude: 810; grid_longitude: 622)
+     Dimension coordinates:
+          forecast_period                           x                -                  -                    -
+          level_height                              -                x                  -                    -
+          grid_latitude                             -                -                  x                    -
+          grid_longitude                            -                -                  -                    x
+     Auxiliary coordinates:
+          time                                      x                -                  -                    -
+          model_level_number                        -                x                  -                    -
+          sigma                                     -                x                  -                    -
+          surface_altitude                          -                -                  x                    x
+     Derived coordinates:
+          altitude                                  -                x                  x                    x
+     Scalar coordinates:
+          source: Data from Met Office Unified Model 7.03
+     Attributes:
+          STASH: m01s00i004
+</pre></div>
+</div>
+<p>Using this output we can deduce that:</p>
+<blockquote>
+<div><ul class="simple">
+<li>The cube represents air potential temperature.</li>
+<li>There are 4 data dimensions, and the data has a shape of <tt class="docutils literal"><span class="pre">(3,</span> <span class="pre">40,</span> <span class="pre">810,</span> <span class="pre">622)</span></tt></li>
+<li>The 4 data dimensions are mapped to the <tt class="docutils literal"><span class="pre">forecast_period</span></tt>, <tt class="docutils literal"><span class="pre">level_height</span></tt>, 
+<tt class="docutils literal"><span class="pre">grid_latitude</span></tt>, <tt class="docutils literal"><span class="pre">grid_longitude</span></tt> coordinates respectively</li>
+<li>There are three 1d auxiliary coordinates and one 2d auxiliary (<tt class="docutils literal"><span class="pre">surface_altitude</span></tt>)</li>
+<li>There is a single <tt class="docutils literal"><span class="pre">altitude</span></tt> derived coordinate, which spans 3 data dimensions</li>
+<li>There are 40 distinct values in the &#8220;level_height&#8221; coordinate. Similar inferences can 
+be made for the other dimension coordinates.</li>
+<li>There are 40, not necessarily distinct, values in the <tt class="docutils literal"><span class="pre">model_level_number</span></tt> coordinate.</li>
+<li>There is 1 coordinate (<tt class="docutils literal"><span class="pre">source</span></tt>) which represents a scalar value over all of the data dimensions.</li>
+<li>The cube has one further attribute relating to the  phenomenon. 
+In this case the originating file format, PP, encodes information in a STASH code which in some cases can
+be useful for identifying advanced experiment information relating to the phenomenon.</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="loading_iris_cubes.html" title="2. Loading Iris cubes"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Iris user guide"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="index.html" >Iris user guide</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

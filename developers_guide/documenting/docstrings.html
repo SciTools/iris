@@ -1,0 +1,381 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Docstrings &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Documentation in Iris" href="index.html" />
+    <link rel="next" title="reST quickstart" href="rest_guide.html" />
+    <link rel="prev" title="Documentation in Iris" href="index.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="rest_guide.html" title="reST quickstart"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Documentation in Iris"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris developer guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Documentation in Iris</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Docstrings</a><ul>
+<li><a class="reference internal" href="#single-line-docstrings">Single-line docstrings</a></li>
+<li><a class="reference internal" href="#multi-line-docstrings">Multi-line docstrings</a><ul>
+<li><a class="reference internal" href="#description">Description</a></li>
+<li><a class="reference internal" href="#sample-multi-line-docstring">Sample multi-line docstring</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#documenting-classes">Documenting classes</a><ul>
+<li><a class="reference internal" href="#attribute-and-property-docstrings">Attribute and Property docstrings</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Documentation in Iris</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="rest_guide.html"
+                        title="next chapter">reST quickstart</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/developers_guide/documenting/docstrings.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="docstrings">
+<h1>Docstrings<a class="headerlink" href="#docstrings" title="Permalink to this headline">¶</a></h1>
+<p>Guiding principle: Every public object in the Iris package should have an appropriate docstring.</p>
+<dl class="docutils">
+<dt>This document has been influenced by the following PEP&#8217;s,</dt>
+<dd><ul class="first last simple">
+<li>Attribute Docstrings <a class="reference external" href="http://www.python.org/dev/peps/pep-0224/">PEP-224</a></li>
+<li>Docstring Conventions <a class="reference external" href="http://www.python.org/dev/peps/pep-0257/">PEP-257</a></li>
+</ul>
+</dd>
+</dl>
+<p>For consistency, always use <tt class="docutils literal"><span class="pre">&quot;&quot;&quot;triple</span> <span class="pre">double</span> <span class="pre">quotes&quot;&quot;&quot;</span></tt> around docstrings. Use <tt class="docutils literal"><span class="pre">r&quot;&quot;&quot;raw</span> <span class="pre">triple</span> <span class="pre">double</span> <span class="pre">quotes&quot;&quot;&quot;</span></tt> if you use any backslashes in your docstrings. For Unicode docstrings, use <tt class="docutils literal"><span class="pre">u&quot;&quot;&quot;Unicode</span> <span class="pre">triple-quoted</span> <span class="pre">string&quot;&quot;&quot;</span></tt>.</p>
+<p>All docstrings should be written in rST (reStructuredText) markup; an rST guide follows this page.</p>
+<p>There are two forms of docstrings: <strong>single-line</strong> and <strong>multi-line</strong> docstrings.</p>
+<div class="section" id="single-line-docstrings">
+<h2>Single-line docstrings<a class="headerlink" href="#single-line-docstrings" title="Permalink to this headline">¶</a></h2>
+<p>The single line docstring of an object must state the <em>purpose</em> of that object, known as the <em>purpose section</em>. This terse overview must be on one line and ideally no longer than 90 characters.</p>
+</div>
+<div class="section" id="multi-line-docstrings">
+<h2>Multi-line docstrings<a class="headerlink" href="#multi-line-docstrings" title="Permalink to this headline">¶</a></h2>
+<p>Multi-line docstrings must consist of at least a purpose section akin to the single-line docstring, followed by a blank line and then any other content, as described below. The entire docstring should be indented to the same level as the quotes at the docstring&#8217;s first line.</p>
+<div class="section" id="description">
+<h3>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h3>
+<p>The multi-line docstring  <em>description section</em> should expand on what was stated in the one line <em>purpose section</em>. The description section should try not to document <em>argument</em> and <em>keyword argument</em> details. Such information should be documented in the following <em>arguments and keywords section</em>.</p>
+</div>
+<div class="section" id="sample-multi-line-docstring">
+<h3>Sample multi-line docstring<a class="headerlink" href="#sample-multi-line-docstring" title="Permalink to this headline">¶</a></h3>
+<p>Here is a simple example of a standard dosctring:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">sample_routine</span><span class="p">(</span><span class="n">arg1</span><span class="p">,</span> <span class="n">arg2</span><span class="p">,</span> <span class="n">kwarg1</span><span class="o">=</span><span class="s">&#39;foo&#39;</span><span class="p">,</span> <span class="n">kwarg2</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Purpose section text goes here.</span>
+
+<span class="sd">    Description section longer text goes here.</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">    * arg1 (numpy.ndarray): </span>
+<span class="sd">        First argument description.</span>
+<span class="sd">    * arg2 (numpy.ndarray): </span>
+<span class="sd">        Second argument description.</span>
+
+<span class="sd">    Kwargs:</span>
+
+<span class="sd">    * kwarg1 (string): </span>
+<span class="sd">        The first keyword argument. This argument description</span>
+<span class="sd">        can be multi-lined.</span>
+<span class="sd">    * kwarg2 (Boolean or None): </span>
+<span class="sd">        The second keyword argument.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        numpy.ndarray of arg1 * arg2</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>This would be rendered as:</p>
+<blockquote>
+<div><span class="target" id="module-documenting.docstrings_sample_routine"></span><dl class="function">
+<dt id="documenting.docstrings_sample_routine.sample_routine">
+<tt class="descclassname">documenting.docstrings_sample_routine.</tt><tt class="descname">sample_routine</tt><big>(</big><em>arg1</em>, <em>arg2</em>, <em>kwarg1='foo'</em>, <em>kwarg2=None</em><big>)</big><a class="headerlink" href="#documenting.docstrings_sample_routine.sample_routine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Purpose section text goes here.</p>
+<p>Description section longer text goes here.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>arg1 (numpy.ndarray): </dt>
+<dd><p class="first last">First argument description.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>arg2 (numpy.ndarray): </dt>
+<dd><p class="first last">Second argument description.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>kwarg1 (string): </dt>
+<dd><p class="first last">The first keyword argument. This argument description
+can be multi-lined.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>kwarg2 (Boolean or None): </dt>
+<dd><p class="first last">The second keyword argument.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>numpy.ndarray of arg1 * arg2</dd>
+</dl>
+</dd></dl>
+
+</div></blockquote>
+<p>Additionally, a summary can be extracted automatically, which would result in:</p>
+<blockquote>
+<div><table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#documenting.docstrings_sample_routine.sample_routine" title="documenting.docstrings_sample_routine.sample_routine"><tt class="xref py py-obj docutils literal"><span class="pre">documenting.docstrings_sample_routine.sample_routine</span></tt></a>(...)</td>
+<td>Purpose section text goes here.</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="documenting-classes">
+<h2>Documenting classes<a class="headerlink" href="#documenting-classes" title="Permalink to this headline">¶</a></h2>
+<p>The class constructor should be documented in the docstring for its <tt class="docutils literal"><span class="pre">__init__</span></tt> or <tt class="docutils literal"><span class="pre">__new__</span></tt> method. Methods should be documented by their own docstring, not in the class header itself.</p>
+<p>If a class subclasses another class and its behavior is mostly inherited from that class, its docstring should mention this and summarise the differences. Use the verb &#8220;override&#8221; to indicate that a subclass method replaces a superclass method and does not call the superclass method; use the verb &#8220;extend&#8221; to indicate that a subclass method calls the superclass method (in addition to its own behavior).</p>
+<div class="section" id="attribute-and-property-docstrings">
+<h3>Attribute and Property docstrings<a class="headerlink" href="#attribute-and-property-docstrings" title="Permalink to this headline">¶</a></h3>
+<p>Here is a simple example of a class containing an attribute docstring and a property docstring:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">ExampleClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class Summary</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg1</span><span class="p">,</span> <span class="n">arg2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Purpose section description.</span>
+
+<span class="sd">        Description section text.</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">        * arg1 (int):</span>
+<span class="sd">            First argument description.</span>
+<span class="sd">        * arg2 (float):</span>
+<span class="sd">            Second argument description.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Boolean.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">arg1</span>
+        <span class="s">&#39;Attribute arg1 docstring.&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">arg2</span>
+        <span class="s">&#39;Attribute arg2 docstring.&#39;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">square</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        *(read-only)* Purpose section description.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span>
+</pre></div>
+</div>
+<p>This would be rendered as:</p>
+<blockquote>
+<div><span class="target" id="module-documenting.docstrings_attribute"></span><dl class="class">
+<dt id="documenting.docstrings_attribute.ExampleClass">
+<em class="property">class </em><tt class="descclassname">documenting.docstrings_attribute.</tt><tt class="descname">ExampleClass</tt><big>(</big><em>arg1</em>, <em>arg2</em><big>)</big><a class="headerlink" href="#documenting.docstrings_attribute.ExampleClass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Purpose section description.</p>
+<p>Description section text.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>arg1 (int):</dt>
+<dd><p class="first last">First argument description.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>arg2 (float):</dt>
+<dd><p class="first last">Second argument description.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>Boolean.</dd>
+</dl>
+<dl class="attribute">
+<dt id="documenting.docstrings_attribute.ExampleClass.a">
+<tt class="descname">a</tt><em class="property"> = None</em><a class="headerlink" href="#documenting.docstrings_attribute.ExampleClass.a" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attribute arg1 docstring.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="documenting.docstrings_attribute.ExampleClass.b">
+<tt class="descname">b</tt><em class="property"> = None</em><a class="headerlink" href="#documenting.docstrings_attribute.ExampleClass.b" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attribute arg2 docstring.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="documenting.docstrings_attribute.ExampleClass.square">
+<tt class="descname">square</tt><a class="headerlink" href="#documenting.docstrings_attribute.ExampleClass.square" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(read-only)</em> Purpose section description.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>int.</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The purpose section of the property docstring <strong>must</strong> state whether the property is read-only.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="rest_guide.html" title="reST quickstart"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Documentation in Iris"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris developer guide</a> &raquo;</li>
+          <li><a href="index.html" >Documentation in Iris</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

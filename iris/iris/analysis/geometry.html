@@ -1,0 +1,189 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.analysis.geometry &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../../index.html" />
+    <link rel="up" title="iris.analysis" href="../analysis.html" />
+    <link rel="next" title="iris.analysis.interpolate" href="interpolate.html" />
+    <link rel="prev" title="iris.analysis.cartography" href="cartography.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../../index.html"><img src="../../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="interpolate.html" title="iris.analysis.interpolate"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cartography.html" title="iris.analysis.cartography"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../analysis.html" accesskey="U">iris.analysis</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cartography.html"
+                        title="previous chapter">iris.analysis.cartography</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="interpolate.html"
+                        title="next chapter">iris.analysis.interpolate</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/iris/iris/analysis/geometry.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-analysis-geometry">
+<span id="id1"></span><h1>iris.analysis.geometry<a class="headerlink" href="#iris-analysis-geometry" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.analysis.geometry"></span><p>Various utilities related to geometric operations.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This module requires <tt class="xref py py-mod docutils literal"><span class="pre">shapely</span></tt>.</p>
+</div>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.analysis.geometry.geometry_area_weights" title="iris.analysis.geometry.geometry_area_weights"><tt class="xref py py-obj docutils literal"><span class="pre">geometry_area_weights</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.geometry.geometry_area_weights">
+<tt class="descclassname">iris.analysis.geometry.</tt><tt class="descname">geometry_area_weights</tt><big>(</big><em>cube</em>, <em>geometry</em><big>)</big><a class="headerlink" href="#iris.analysis.geometry.geometry_area_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the array of weights corresponding to the area of overlap between
+the cells of cube&#8217;s horizontal grid, and the given shapely geometry.</p>
+<p>The returned array is suitable for use with <a class="reference internal" href="../analysis.html#iris.analysis.MEAN" title="iris.analysis.MEAN"><tt class="xref py py-const docutils literal"><span class="pre">iris.analysis.MEAN</span></tt></a>.</p>
+<p>The cube must have bounded horizontal coordinates.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This routine works in Euclidean space. Area calculations do not
+account for the curvature of the Earth. And care must be taken to
+ensure any longitude values are expressed over a suitable interval.</p>
+</div>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube (<a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>):</dt>
+<dd><p class="first last">A Cube containing a bounded, horizontal grid definition.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>geometry (a shapely geometry instance):</dt>
+<dd><p class="first last">The geometry of interest. To produce meaningful results this geometry
+must have a non-zero area. Typically a Polygon or MultiPolygon.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="interpolate.html" title="iris.analysis.interpolate"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cartography.html" title="iris.analysis.cartography"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../analysis.html" >iris.analysis</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

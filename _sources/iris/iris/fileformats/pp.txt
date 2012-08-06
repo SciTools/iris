@@ -1,0 +1,98 @@
+.. _iris.fileformats.pp:
+
+===================
+iris.fileformats.pp
+===================
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.fileformats.pp
+
+In this module:
+
+ * :py:obj:`load`
+ * :py:obj:`save`
+ * :py:obj:`PPField`
+ * :py:obj:`add_load_rules`
+ * :py:obj:`reset_load_rules`
+ * :py:obj:`add_save_rules`
+ * :py:obj:`reset_save_rules`
+ * :py:obj:`STASH`
+
+
+----------
+
+.. autofunction:: iris.fileformats.pp.load
+
+----------
+
+.. autofunction:: iris.fileformats.pp.save
+
+----------
+
+A generic class for PP fields - not specific to a particular header release number.
+
+A PPField instance can easily access the PP header "words" as attributes with some added useful capabilities::
+    
+    for field in iris.fileformats.pp.load(filename):
+        print field.lbyr
+        print field.lbuser
+        print field.lbuser[0]
+        print field.lbtim
+        print field.lbtim.ia
+        print field.t1
+
+..
+
+    .. autoclass:: iris.fileformats.pp.PPField
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+.. autofunction:: iris.fileformats.pp.add_load_rules
+
+----------
+
+.. autofunction:: iris.fileformats.pp.reset_load_rules
+
+----------
+
+.. autofunction:: iris.fileformats.pp.add_save_rules
+
+----------
+
+.. autofunction:: iris.fileformats.pp.reset_save_rules
+
+----------
+
+A class to hold a single STASH code.
+
+Create instances using:
+    >>> model = 1
+    >>> section = 2
+    >>> item = 3
+    >>> my_stash = iris.fileformats.pp.STASH(model, section, item)
+
+Access the sub-components via:
+    >>> my_stash.model
+    1
+    >>> my_stash.section
+    2
+    >>> my_stash.item
+    3
+
+String conversion results in the MSI format:
+    >>> print iris.fileformats.pp.STASH(1, 16, 203)
+    m01s16i203
+
+..
+
+    .. autoclass:: iris.fileformats.pp.STASH
+        :members:
+        :undoc-members:
+        :inherited-members:
+

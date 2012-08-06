@@ -1,0 +1,232 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.fileformats.grib &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../../index.html" />
+    <link rel="up" title="iris.fileformats" href="../fileformats.html" />
+    <link rel="next" title="iris.fileformats.grib_save_rules" href="grib_save_rules.html" />
+    <link rel="prev" title="iris.fileformats.ff" href="ff.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../../index.html"><img src="../../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="grib_save_rules.html" title="iris.fileformats.grib_save_rules"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ff.html" title="iris.fileformats.ff"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../fileformats.html" accesskey="U">iris.fileformats</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ff.html"
+                        title="previous chapter">iris.fileformats.ff</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="grib_save_rules.html"
+                        title="next chapter">iris.fileformats.grib_save_rules</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/iris/iris/fileformats/grib.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-fileformats-grib">
+<span id="id1"></span><h1>iris.fileformats.grib<a class="headerlink" href="#iris-fileformats-grib" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.fileformats.grib"></span><p>Conversion of cubes to/from GRIB.</p>
+<p>See also: <a class="reference external" href="http://www.ecmwf.int/publications/manuals/grib_api/index.html">ECMWF GRIB API</a>.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.fileformats.grib.add_load_rules" title="iris.fileformats.grib.add_load_rules"><tt class="xref py py-obj docutils literal"><span class="pre">add_load_rules</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib.load_cubes" title="iris.fileformats.grib.load_cubes"><tt class="xref py py-obj docutils literal"><span class="pre">load_cubes</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib.reset_load_rules" title="iris.fileformats.grib.reset_load_rules"><tt class="xref py py-obj docutils literal"><span class="pre">reset_load_rules</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib.save_grib2" title="iris.fileformats.grib.save_grib2"><tt class="xref py py-obj docutils literal"><span class="pre">save_grib2</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib.GribWrapper" title="iris.fileformats.grib.GribWrapper"><tt class="xref py py-obj docutils literal"><span class="pre">GribWrapper</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib.add_load_rules">
+<tt class="descclassname">iris.fileformats.grib.</tt><tt class="descname">add_load_rules</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib.add_load_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a rules file for use during the GRIB load process.</p>
+<p>Registered files are processed after the standard rules, and in the order
+they were registered.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib.load_cubes">
+<tt class="descclassname">iris.fileformats.grib.</tt><tt class="descname">load_cubes</tt><big>(</big><em>filenames</em>, <em>callback=None</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib.load_cubes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a generator of cubes from the given list of filenames.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib.reset_load_rules">
+<tt class="descclassname">iris.fileformats.grib.</tt><tt class="descname">reset_load_rules</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.fileformats.grib.reset_load_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the GRIB load process to use only the standard conversion rules.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib.save_grib2">
+<tt class="descclassname">iris.fileformats.grib.</tt><tt class="descname">save_grib2</tt><big>(</big><em>cube</em>, <em>target</em>, <em>append=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib.save_grib2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a cube to a GRIB2 file.</p>
+<p>Args:</p>
+<blockquote>
+<div><ul class="simple">
+<li>cube      - A <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>, <a class="reference internal" href="../cube.html#iris.cube.CubeList" title="iris.cube.CubeList"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.CubeList</span></tt></a> or list of cubes.</li>
+<li>target    - A filename or open file handle.</li>
+</ul>
+</div></blockquote>
+<p>Kwargs:</p>
+<blockquote>
+<div><ul>
+<li><dl class="first docutils">
+<dt>append    - Whether to start a new file afresh or add the cube(s) to the end of the file. </dt>
+<dd><p class="first last">Only applicable when target is a filename, not a file handle.
+Default is False.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<p>See also <a class="reference internal" href="../io.html#iris.io.save" title="iris.io.save"><tt class="xref py py-func docutils literal"><span class="pre">iris.io.save()</span></tt></a>.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<p>Contains a pygrib object plus some extra keys of our own.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.fileformats.grib.GribWrapper">
+<em class="property">class </em><tt class="descclassname">iris.fileformats.grib.</tt><tt class="descname">GribWrapper</tt><big>(</big><em>grib_message</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib.GribWrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store the grib message and compute our extra keys.</p>
+<dl class="method">
+<dt id="iris.fileformats.grib.GribWrapper.phenomenon_bounds">
+<tt class="descname">phenomenon_bounds</tt><big>(</big><em>time_unit</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib.GribWrapper.phenomenon_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the phenomenon time bound offsets from the epoch time reference 
+measured in the appropriate time units.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.fileformats.grib.GribWrapper.phenomenon_points">
+<tt class="descname">phenomenon_points</tt><big>(</big><em>time_unit</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib.GribWrapper.phenomenon_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the phenomenon time point offset from the epoch time reference 
+measured in the appropriate time units.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="grib_save_rules.html" title="iris.fileformats.grib_save_rules"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ff.html" title="iris.fileformats.ff"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../fileformats.html" >iris.fileformats</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

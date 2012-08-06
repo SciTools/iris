@@ -1,0 +1,352 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>3. Navigating a cube &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../index.html" />
+    <link rel="up" title="Iris user guide" href="index.html" />
+    <link rel="next" title="4. Reducing a Cube" href="reducing_a_cube.html" />
+    <link rel="prev" title="2. Loading Iris cubes" href="loading_iris_cubes.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../index.html"><img src="../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="reducing_a_cube.html" title="4. Reducing a Cube"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="loading_iris_cubes.html" title="2. Loading Iris cubes"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="index.html" accesskey="U">Iris user guide</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">3. Navigating a cube</a><ul>
+<li><a class="reference internal" href="#cube-string-representations">3.1. Cube string representations</a></li>
+<li><a class="reference internal" href="#working-with-cubes">3.2. Working with cubes</a></li>
+<li><a class="reference internal" href="#accessing-coordinates-on-the-cube">3.3. Accessing coordinates on the cube</a></li>
+<li><a class="reference internal" href="#adding-metadata-to-a-cube">3.4. Adding metadata to a cube</a></li>
+<li><a class="reference internal" href="#adding-and-removing-metadata-to-the-cube-at-load-time">3.5. Adding and removing metadata to the cube at load time</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="loading_iris_cubes.html"
+                        title="previous chapter">2. Loading Iris cubes</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reducing_a_cube.html"
+                        title="next chapter">4. Reducing a Cube</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/userguide/navigating_a_cube.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="navigating-a-cube">
+<h1>3. Navigating a cube<a class="headerlink" href="#navigating-a-cube" title="Permalink to this headline">¶</a></h1>
+<p>After loading any cube, you will want to investigate precisely what it contains. This section is all about accessing 
+and manipulating the metadata contained within a cube.</p>
+<div class="section" id="cube-string-representations">
+<h2>3.1. Cube string representations<a class="headerlink" href="#cube-string-representations" title="Permalink to this headline">¶</a></h2>
+<p>We have already seen a basic string representation of a cube when printing:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;aPProt1&#39;</span><span class="p">,</span> <span class="s">&#39;rotated.pp&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">cube</span>
+<span class="go">air_pressure_at_sea_level           (grid_latitude: 432; grid_longitude: 720)</span>
+<span class="go">     Dimension coordinates:</span>
+<span class="go">          grid_latitude                           x                    -</span>
+<span class="go">          grid_longitude                          -                    x</span>
+<span class="go">     Scalar coordinates:</span>
+<span class="go">          forecast_period: 0.0 hours</span>
+<span class="go">          source: Data from Met Office Unified Model 6.01</span>
+<span class="go">          time: 319536.0 hours since 1970-01-01 00:00:00</span>
+<span class="go">     Attributes:</span>
+<span class="go">          STASH: m01s16i222</span>
+</pre></div>
+</div>
+<p>This representation is equivalent to passing the cube to the <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">str()</span></tt></a> function.  This function can be used on 
+any Python variable to get a string representation of that variable. 
+Similarly there exist other standard functions for interrogating your variable: <tt class="xref py py-func docutils literal"><span class="pre">repr()</span></tt>, <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#type" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">type()</span></tt></a> for example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="nb">str</span><span class="p">(</span><span class="n">cube</span><span class="p">)</span>
+<span class="k">print</span> <span class="nb">repr</span><span class="p">(</span><span class="n">cube</span><span class="p">)</span>
+<span class="k">print</span> <span class="nb">type</span><span class="p">(</span><span class="n">cube</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Other, more verbose, functions also exist which give information on <strong>what</strong> you can do with <em>any</em> given 
+variable. In most cases it is reasonable to ignore anything starting with <tt class="docutils literal"><span class="pre">_</span></tt> or <tt class="docutils literal"><span class="pre">__</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nb">dir</span><span class="p">(</span><span class="n">cube</span><span class="p">)</span>
+<span class="n">help</span><span class="p">(</span><span class="n">cube</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="working-with-cubes">
+<h2>3.2. Working with cubes<a class="headerlink" href="#working-with-cubes" title="Permalink to this headline">¶</a></h2>
+<p>Every cube has a standard name, long name and units which are accessed with 
+<a class="reference internal" href="../iris/iris/cube.html#iris.cube.Cube.standard_name" title="iris.cube.Cube.standard_name"><tt class="xref py py-attr docutils literal"><span class="pre">Cube.standard_name</span></tt></a>,
+<a class="reference internal" href="../iris/iris/cube.html#iris.cube.Cube.long_name" title="iris.cube.Cube.long_name"><tt class="xref py py-attr docutils literal"><span class="pre">Cube.long_name</span></tt></a> 
+and <a class="reference internal" href="../iris/iris/cube.html#iris.cube.Cube.units" title="iris.cube.Cube.units"><tt class="xref py py-attr docutils literal"><span class="pre">Cube.units</span></tt></a> respectively:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="n">cube</span><span class="o">.</span><span class="n">standard_name</span>
+<span class="k">print</span> <span class="n">cube</span><span class="o">.</span><span class="n">long_name</span>
+<span class="k">print</span> <span class="n">cube</span><span class="o">.</span><span class="n">units</span>
+</pre></div>
+</div>
+<p>Interrogating these with the standard <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#type" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">type()</span></tt></a> function will tell you that <tt class="docutils literal"><span class="pre">standard_name</span></tt> and <tt class="docutils literal"><span class="pre">long_name</span></tt> 
+are either a string or <tt class="docutils literal"><span class="pre">None</span></tt>, and <tt class="docutils literal"><span class="pre">units</span></tt> is an instance of <a class="reference internal" href="../iris/iris/unit.html#iris.unit.Unit" title="iris.unit.Unit"><tt class="xref py py-class docutils literal"><span class="pre">iris.unit.Unit</span></tt></a>.</p>
+<p>You can access a string representing the &#8220;name&#8221; of a cube with the <a class="reference internal" href="../iris/iris/cube.html#iris.cube.Cube.name" title="iris.cube.Cube.name"><tt class="xref py py-meth docutils literal"><span class="pre">Cube.name()</span></tt></a> method:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="n">cube</span><span class="o">.</span><span class="n">name</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The result of which is <strong>always</strong> a string.</p>
+<p>Each cube also has a <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/index.html#numpy" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-mod docutils literal"><span class="pre">numpy</span></tt></a> array which represents the phenomenon of the cube which can be accessed with the 
+<a class="reference internal" href="../iris/iris/cube.html#iris.cube.Cube.data" title="iris.cube.Cube.data"><tt class="xref py py-attr docutils literal"><span class="pre">Cube.data</span></tt></a> attribute. As you can see the type is a <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-class docutils literal"><span class="pre">numpy</span> <span class="pre">n-dimensional</span> <span class="pre">array</span></tt></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="nb">type</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>When loading some file formats in Iris, the data itself is not loaded until the <strong>first</strong> time that the data is requested. 
+Hence you may have noticed that running the previous command for the first time takes a little longer than it does for 
+subsequent calls.</p>
+<p>For this reason, when you have a large cube it is strongly recommended that you do not access the cube&#8217;s data unless 
+you need to. 
+For convenience <a class="reference internal" href="../iris/iris/cube.html#iris.cube.Cube.shape" title="iris.cube.Cube.shape"><tt class="xref py py-attr docutils literal"><span class="pre">shape</span></tt></a> and <a class="reference internal" href="../iris/iris/cube.html#iris.cube.Cube.ndim" title="iris.cube.Cube.ndim"><tt class="xref py py-attr docutils literal"><span class="pre">ndim</span></tt></a> attributes exists on a cube, which 
+can tell you the shape of the cube&#8217;s data without loading it:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="n">cube</span><span class="o">.</span><span class="n">shape</span>
+<span class="k">print</span> <span class="n">cube</span><span class="o">.</span><span class="n">ndim</span>
+</pre></div>
+</div>
+</div>
+<p>Some cubes represent a processed phenomenon which are represented with cell methods, these can be accessed on a 
+cube with the <a class="reference internal" href="../iris/iris/cube.html#iris.cube.Cube.cell_methods" title="iris.cube.Cube.cell_methods"><tt class="xref py py-attr docutils literal"><span class="pre">Cube.cell_methods</span></tt></a> attribute:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="n">cube</span><span class="o">.</span><span class="n">cell_methods</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="accessing-coordinates-on-the-cube">
+<h2>3.3. Accessing coordinates on the cube<a class="headerlink" href="#accessing-coordinates-on-the-cube" title="Permalink to this headline">¶</a></h2>
+<p>A cube&#8217;s coordinates can be retrieved via <a class="reference internal" href="../iris/iris/cube.html#iris.cube.Cube.coords" title="iris.cube.Cube.coords"><tt class="xref py py-meth docutils literal"><span class="pre">Cube.coords</span></tt></a>. 
+A simple for loop over the coords can print a coordinate&#8217;s <a class="reference internal" href="../iris/iris/coords.html#iris.coords.Coord.name" title="iris.coords.Coord.name"><tt class="xref py py-meth docutils literal"><span class="pre">name()</span></tt></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">coord</span> <span class="ow">in</span> <span class="n">cube</span><span class="o">.</span><span class="n">coords</span><span class="p">():</span>
+    <span class="k">print</span> <span class="n">coord</span><span class="o">.</span><span class="n">name</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Alternatively, we can use <em>list comprehension</em> to store the names in a list:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">coord_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">coord</span><span class="o">.</span><span class="n">name</span><span class="p">()</span> <span class="k">for</span> <span class="n">coord</span> <span class="ow">in</span> <span class="n">cube</span><span class="o">.</span><span class="n">coords</span><span class="p">()]</span>
+</pre></div>
+</div>
+<p>The result is a basic Python list which could be sorted alphabetically and joined together:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">coord_names</span><span class="p">))</span>
+<span class="go">forecast_period, grid_latitude, grid_longitude, source, time</span>
+</pre></div>
+</div>
+<p>To get an individual coordinate given its name, the <a class="reference internal" href="../iris/iris/cube.html#iris.cube.Cube.coord" title="iris.cube.Cube.coord"><tt class="xref py py-meth docutils literal"><span class="pre">Cube.coord</span></tt></a> method can be used:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">coord</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s">&#39;grid_latitude&#39;</span><span class="p">)</span>
+<span class="k">print</span> <span class="nb">type</span><span class="p">(</span><span class="n">coord</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Every coordinate has a <a class="reference internal" href="../iris/iris/coords.html#iris.coords.Coord.standard_name" title="iris.coords.Coord.standard_name"><tt class="xref py py-attr docutils literal"><span class="pre">Coord.standard_name</span></tt></a>, 
+<a class="reference internal" href="../iris/iris/coords.html#iris.coords.Coord.long_name" title="iris.coords.Coord.long_name"><tt class="xref py py-attr docutils literal"><span class="pre">Coord.long_name</span></tt></a>, and <a class="reference internal" href="../iris/iris/coords.html#iris.coords.Coord.units" title="iris.coords.Coord.units"><tt class="xref py py-attr docutils literal"><span class="pre">Coord.units</span></tt></a> attribute:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="n">coord</span><span class="o">.</span><span class="n">standard_name</span>
+<span class="k">print</span> <span class="n">coord</span><span class="o">.</span><span class="n">long_name</span>
+<span class="k">print</span> <span class="n">coord</span><span class="o">.</span><span class="n">units</span>
+</pre></div>
+</div>
+<p>Additionally every coordinate can provide its <a class="reference internal" href="../iris/iris/coords.html#iris.coords.Coord.points" title="iris.coords.Coord.points"><tt class="xref py py-attr docutils literal"><span class="pre">points</span></tt></a> and <a class="reference internal" href="../iris/iris/coords.html#iris.coords.Coord.bounds" title="iris.coords.Coord.bounds"><tt class="xref py py-attr docutils literal"><span class="pre">bounds</span></tt></a> 
+numpy array. If the coordinate has no bounds <tt class="docutils literal"><span class="pre">None</span></tt> will be returned:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="nb">type</span><span class="p">(</span><span class="n">coord</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+<span class="k">print</span> <span class="nb">type</span><span class="p">(</span><span class="n">coord</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="adding-metadata-to-a-cube">
+<h2>3.4. Adding metadata to a cube<a class="headerlink" href="#adding-metadata-to-a-cube" title="Permalink to this headline">¶</a></h2>
+<p>We can add and remove coordinates via <a class="reference internal" href="../iris/iris/cube.html#iris.cube.Cube.add_dim_coord" title="iris.cube.Cube.add_dim_coord"><tt class="xref py py-func docutils literal"><span class="pre">Cube.add_dim_coord</span></tt></a>, 
+<a class="reference internal" href="../iris/iris/cube.html#iris.cube.Cube.add_aux_coord" title="iris.cube.Cube.add_aux_coord"><tt class="xref py py-func docutils literal"><span class="pre">Cube.add_aux_coord</span></tt></a>, and <a class="reference internal" href="../iris/iris/cube.html#iris.cube.Cube.remove_coord" title="iris.cube.Cube.remove_coord"><tt class="xref py py-meth docutils literal"><span class="pre">Cube.remove_coord</span></tt></a>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.coords</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_coord</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">AuxCoord</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">long_name</span><span class="o">=</span><span class="s">&#39;my_custom_coordinate&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s">&#39;no_unit&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cube</span><span class="o">.</span><span class="n">add_aux_coord</span><span class="p">(</span><span class="n">new_coord</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">cube</span>
+<span class="go">air_pressure_at_sea_level           (grid_latitude: 432; grid_longitude: 720)</span>
+<span class="go">     Dimension coordinates:</span>
+<span class="go">          grid_latitude                           x                    -</span>
+<span class="go">          grid_longitude                          -                    x</span>
+<span class="go">     Scalar coordinates:</span>
+<span class="go">          forecast_period: 0.0 hours</span>
+<span class="go">          my_custom_coordinate: 1</span>
+<span class="go">          source: Data from Met Office Unified Model 6.01</span>
+<span class="go">          time: 319536.0 hours since 1970-01-01 00:00:00</span>
+<span class="go">     Attributes:</span>
+<span class="go">          STASH: m01s16i222</span>
+</pre></div>
+</div>
+<p>The coordinate <tt class="docutils literal"><span class="pre">my_custom_coordinate</span></tt> now exists on the cube and is listed under the non-dimensioned single valued scalar coordinates.</p>
+</div>
+<div class="section" id="adding-and-removing-metadata-to-the-cube-at-load-time">
+<h2>3.5. Adding and removing metadata to the cube at load time<a class="headerlink" href="#adding-and-removing-metadata-to-the-cube-at-load-time" title="Permalink to this headline">¶</a></h2>
+<p>Sometimes when loading a cube problems occur when the amount of meta-data is more or less than expected. 
+This is often caused by one of the following:</p>
+<blockquote>
+<div><ul class="simple">
+<li>The file does not contain enough meta-data, and therefore the cube cannot know everything about the file.</li>
+<li>Some of the meta-data of the file is contained in the filename, but is not part of the actual file.</li>
+<li>There is not enough metadata loaded from the original file as Iris has not handled the format fully. <em>(in which case, 
+please let us know about it)</em></li>
+</ul>
+</div></blockquote>
+<p>To solve this, both <a class="reference internal" href="../iris/iris.html#iris.load" title="iris.load"><tt class="xref py py-func docutils literal"><span class="pre">iris.load()</span></tt></a> and <a class="reference internal" href="../iris/iris.html#iris.load_strict" title="iris.load_strict"><tt class="xref py py-func docutils literal"><span class="pre">iris.load_strict()</span></tt></a> support a callback keyword.</p>
+<p>The callback is a user defined function which must have the calling sequence <tt class="docutils literal"><span class="pre">function(cube,</span> <span class="pre">field,</span> <span class="pre">filename)</span></tt> 
+which can make any modifications to the cube in-place.</p>
+<p>Suppose we wish to load a lagged ensemble dataset from the Met Office&#8217;s GloSea4 model. 
+The data for this example represents 13 ensemble members of 6 one month timesteps; the logistics of the 
+model mean that the run is spread over several days.</p>
+<p>If we try to load the data directly for air_temperature:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;GloSea4&#39;</span><span class="p">,</span> <span class="s">&#39;prodf*_???.pp&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">iris</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;precipitation_flux&#39;</span><span class="p">)</span>
+<span class="go">0: precipitation_flux                  (forecast_reference_time: 2; time: 6; latitude: 145; longitude: 192)</span>
+<span class="go">1: precipitation_flux                  (forecast_reference_time: 2; time: 6; latitude: 145; longitude: 192)</span>
+<span class="go">2: precipitation_flux                  (realization: 9; time: 6; latitude: 145; longitude: 192)</span>
+</pre></div>
+</div>
+<p>We get multiple cubes some with more dimensions than expected, some without a <tt class="docutils literal"><span class="pre">realization</span></tt> (i.e. ensemble member) dimension. 
+In this case, two of the PP files have been encoded without the appropriate <tt class="docutils literal"><span class="pre">realization</span></tt> number attribute, which means that
+the appropriate coordinate cannot be added to the resultant cube. Fortunately, the missing attribute has been encoded in the filename
+which, given the filename, we could extract:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;GloSea4&#39;</span><span class="p">,</span> <span class="s">&#39;prodf_op_sfc_cam_11_20110718_001.pp&#39;</span><span class="p">)</span>
+<span class="n">realization</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="o">-</span><span class="mi">6</span><span class="p">:</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span>
+<span class="k">print</span> <span class="n">realization</span>
+</pre></div>
+</div>
+<p>We can solve this problem by adding the appropriate metadata, on load, by using a callback function, which runs on a field
+by field basis <em>before</em> they are automatically merged together:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">iris</span>
+<span class="kn">import</span> <span class="nn">iris.coords</span> <span class="kn">as</span> <span class="nn">icoords</span>
+
+<span class="k">def</span> <span class="nf">lagged_ensemble_callback</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="c"># Add our own realization coordinate if it doesn&#39;t already exist.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cube</span><span class="o">.</span><span class="n">coords</span><span class="p">(</span><span class="s">&#39;realization&#39;</span><span class="p">):</span>
+        <span class="n">realization</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">filename</span><span class="p">[</span><span class="o">-</span><span class="mi">6</span><span class="p">:</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">ensemble_coord</span> <span class="o">=</span> <span class="n">icoords</span><span class="o">.</span><span class="n">AuxCoord</span><span class="p">(</span><span class="n">realization</span><span class="p">,</span> <span class="n">standard_name</span><span class="o">=</span><span class="s">&#39;realization&#39;</span><span class="p">)</span>
+        <span class="n">cube</span><span class="o">.</span><span class="n">add_aux_coord</span><span class="p">(</span><span class="n">ensemble_coord</span><span class="p">)</span>
+
+<span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;GloSea4&#39;</span><span class="p">,</span> <span class="s">&#39;prodf*_???.pp&#39;</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="n">iris</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;precipitation_flux&#39;</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">lagged_ensemble_callback</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The result is a single cube which represents the data in a form that was expected:</p>
+<div class="highlight-none"><div class="highlight"><pre>0: precipitation_flux                  (realization: 13; time: 6; latitude: 145; longitude: 192)
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="reducing_a_cube.html" title="4. Reducing a Cube"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="loading_iris_cubes.html" title="2. Loading Iris cubes"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="index.html" >Iris user guide</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

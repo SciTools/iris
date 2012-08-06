@@ -1,0 +1,191 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.iterate &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Iris reference documentation" href="../iris.html" />
+    <link rel="next" title="iris.palette" href="palette.html" />
+    <link rel="prev" title="iris.io.format_picker" href="io/format_picker.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="palette.html" title="iris.palette"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="io/format_picker.html" title="iris.io.format_picker"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" accesskey="U">Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="io/format_picker.html"
+                        title="previous chapter">iris.io.format_picker</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="palette.html"
+                        title="next chapter">iris.palette</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/iris/iris/iterate.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-iterate">
+<span id="id1"></span><h1>iris.iterate<a class="headerlink" href="#iris-iterate" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.iterate"></span><p>Cube functions for iteration in step</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.iterate.izip" title="iris.iterate.izip"><tt class="xref py py-obj docutils literal"><span class="pre">izip</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.iterate.izip">
+<tt class="descclassname">iris.iterate.</tt><tt class="descname">izip</tt><big>(</big><em>*cubes</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.iterate.izip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an iterator for iterating over a collection of cubes in step.</p>
+<p>Args:</p>
+<ul class="simple">
+<li>cubes : sequence of iris Cubes</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>coords (string, coord or a list of strings/coords): </dt>
+<dd><p class="first last">Coordinate names/coordinates of the desired sub cubes (i.e. the coords that are not iterated 
+over). They must all be orthogonal (i.e. point to different dimensions).</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>ordered (Boolean):</dt>
+<dd><p class="first last">If True (default), the order which the coords to slice are given will be the order in which
+they represent the data in the resulting slices</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>A tuple of iterators for the resulting slices.</dd>
+<dt>For example:</dt>
+<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">airtemp</span><span class="p">,</span> <span class="n">humidity</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;ukV2&#39;</span><span class="p">,</span> <span class="s">&#39;THOxayrk.pp&#39;</span><span class="p">),</span>
+<span class="gp">... </span>   <span class="p">[</span><span class="s">&#39;air_potential_temperature&#39;</span><span class="p">,</span> <span class="s">&#39;specific_humidity&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">tslice</span><span class="p">,</span> <span class="n">hslice</span> <span class="ow">in</span> <span class="n">iris</span><span class="o">.</span><span class="n">iterate</span><span class="o">.</span><span class="n">izip</span><span class="p">(</span><span class="n">airtemp</span><span class="p">,</span> <span class="n">humidity</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;grid_latitude&#39;</span><span class="p">,</span><span class="s">&#39;grid_longitude&#39;</span><span class="p">]):</span>
+<span class="gp">... </span>   <span class="k">pass</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="palette.html" title="iris.palette"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="io/format_picker.html" title="iris.io.format_picker"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" >Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

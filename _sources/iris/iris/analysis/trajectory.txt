@@ -1,0 +1,33 @@
+.. _iris.analysis.trajectory:
+
+========================
+iris.analysis.trajectory
+========================
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.analysis.trajectory
+
+In this module:
+
+ * :py:obj:`interpolate`
+ * :py:obj:`Trajectory`
+
+
+----------
+
+.. autofunction:: iris.analysis.trajectory.interpolate
+
+----------
+
+A series of given waypoints with pre-calculated sample points.
+
+..
+
+    .. autoclass:: iris.analysis.trajectory.Trajectory
+        :members:
+        :undoc-members:
+        :inherited-members:
+

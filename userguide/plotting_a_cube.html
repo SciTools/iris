@@ -1,0 +1,559 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>5. Introduction to plotting in Iris &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../index.html" />
+    <link rel="up" title="Iris user guide" href="index.html" />
+    <link rel="next" title="6. Cube statistics" href="cube_statistics.html" />
+    <link rel="prev" title="4. Reducing a Cube" href="reducing_a_cube.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../index.html"><img src="../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="cube_statistics.html" title="6. Cube statistics"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="reducing_a_cube.html" title="4. Reducing a Cube"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="index.html" accesskey="U">Iris user guide</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">5. Introduction to plotting in Iris</a><ul>
+<li><a class="reference internal" href="#matplotlib-s-pyplot-basics">5.1. Matplotlib&#8217;s pyplot basics</a><ul>
+<li><a class="reference internal" href="#interactive-plot-rendering">5.1.1. Interactive plot rendering</a></li>
+<li><a class="reference internal" href="#saving-a-plot">5.1.2. Saving a plot</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#iris-cube-plotting">5.2. Iris cube plotting</a><ul>
+<li><a class="reference internal" href="#plotting-1-dimensional-cubes">5.2.1. Plotting 1-dimensional cubes</a><ul>
+<li><a class="reference internal" href="#multi-line-plot">5.2.1.1. Multi-line plot</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#plotting-2-dimensional-cubes">5.2.2. Plotting 2-dimensional cubes</a><ul>
+<li><a class="reference internal" href="#creating-maps">5.2.2.1. Creating maps</a></li>
+<li><a class="reference internal" href="#cube-contour">5.2.2.2. Cube contour</a></li>
+<li><a class="reference internal" href="#cube-filled-contour">5.2.2.3. Cube filled contour</a></li>
+<li><a class="reference internal" href="#cube-block-plot">5.2.2.4. Cube block plot</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="reducing_a_cube.html"
+                        title="previous chapter">4. Reducing a Cube</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cube_statistics.html"
+                        title="next chapter">6. Cube statistics</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/userguide/plotting_a_cube.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="introduction-to-plotting-in-iris">
+<span id="id1"></span><h1>5. Introduction to plotting in Iris<a class="headerlink" href="#introduction-to-plotting-in-iris" title="Permalink to this headline">¶</a></h1>
+<p>Iris utilises the power of Python&#8217;s <a class="reference external" href="http://matplotlib.sourceforge.net/">Matplotlib</a> package in order to generate high 
+quality, production ready 1D and 2D plots. 
+The functionality of the Matplotlib <a class="reference external" href="http://matplotlib.sourceforge.net/api/pyplot_api.html">pyplot</a> module has been 
+extended within Iris to facilitate easy visualisation of a cube&#8217;s data.</p>
+<p>Matplotlib&#8217;s pyplot has been modelled on the MATLAB framework, therefore users of MATLAB may find a degree of 
+familiarity with the interface.</p>
+<div class="section" id="matplotlib-s-pyplot-basics">
+<h2>5.1. Matplotlib&#8217;s pyplot basics<a class="headerlink" href="#matplotlib-s-pyplot-basics" title="Permalink to this headline">¶</a></h2>
+<p>A simple line plot can created using the <a class="reference external" href="http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.plot" title="(in Matplotlib v1.1.1)"><tt class="xref py py-func docutils literal"><span class="pre">matplotlib.pyplot.plot()</span></tt></a> function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This code will automatically create a figure with appropriate axes for the plot and show it on screen. 
+The call to <strong>plt.plot([1, 2, 2.5])</strong> will create a line plot with appropriate axes for the data (x=0, y=1; x=1, y=2; x=2, y=2.5). 
+The call to <strong>plt.show()</strong> tells Matplotlib that you have finished with this plot and that you would like to visualise it in a window. 
+This is an example of using matplotlib in <em>non-interactive</em> mode.</p>
+<p>There are two modes of rendering within Matplotlib; <strong>interactive</strong> and <strong>non-interactive</strong>.</p>
+<div class="section" id="interactive-plot-rendering">
+<h3>5.1.1. Interactive plot rendering<a class="headerlink" href="#interactive-plot-rendering" title="Permalink to this headline">¶</a></h3>
+<p>The previous example was <em>non-interactive</em> as the figure is only rendered <em>after</em> the call to <a class="reference external" href="http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.show" title="(in Matplotlib v1.1.1)"><tt class="xref py py-func docutils literal"><span class="pre">plt.show()</span></tt></a>. 
+Rendering plots <em>interactively</em> can be achieved by changing the interactive mode:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">interactive</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>In this case the plot is rendered automatically with no need to explicitly call <a class="reference external" href="http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.show" title="(in Matplotlib v1.1.1)"><tt class="xref py py-func docutils literal"><span class="pre">matplotlib.pyplot.show()</span></tt></a> after <strong>plt.plot</strong>. 
+Subsequent changes to your figure will be automatically rendered in the window.</p>
+<p>The current rendering mode can be determined as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="k">print</span> <span class="n">plt</span><span class="o">.</span><span class="n">isinteractive</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>For clarity, each example includes all of the imports required to run on its own; when combining 
+examples such as the two above, it would not be necessary to repeat the import statement more than once:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">interactive</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">])</span>
+<span class="k">print</span> <span class="n">plt</span><span class="o">.</span><span class="n">isinteractive</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>Interactive mode does not clear out the figure buffer, so figures have to be explicitly closed when they are finished with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Interactive mode sometimes requires an extra draw command to update all changes, which can be done with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>For the remainder of this tutorial we will work in non-interactive mode, so ensure that interactive mode is turned off with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">plt</span><span class="o">.</span><span class="n">interactive</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="saving-a-plot">
+<h3>5.1.2. Saving a plot<a class="headerlink" href="#saving-a-plot" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference external" href="http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.savefig" title="(in Matplotlib v1.1.1)"><tt class="xref py py-func docutils literal"><span class="pre">matplotlib.pyplot.savefig()</span></tt></a> function is similar to <strong>plt.show()</strong> in that they are both <em>non-interactive</em> visualisation modes. 
+As you might expect, <strong>plt.savefig</strong> saves your figure as an image:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s">&#39;plot123.png&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The filename extension passed to the <a class="reference external" href="http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.savefig" title="(in Matplotlib v1.1.1)"><tt class="xref py py-func docutils literal"><span class="pre">matplotlib.pyplot.savefig()</span></tt></a> function can be used to control 
+the output file format of the plot (keywords can also be used to control this and other aspects, 
+see <a class="reference external" href="http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.savefig" title="(in Matplotlib v1.1.1)"><tt class="xref py py-func docutils literal"><span class="pre">matplotlib.pyplot.savefig()</span></tt></a>).</p>
+<p>Some of the formats which are supported by <strong>plt.savefig</strong>:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="7%" />
+<col width="7%" />
+<col width="85%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Format</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>EPS</td>
+<td>Vector</td>
+<td>Encapsulated PostScript</td>
+</tr>
+<tr class="row-odd"><td>PDF</td>
+<td>Vector</td>
+<td>Portable Document Format</td>
+</tr>
+<tr class="row-even"><td>PNG</td>
+<td>Raster</td>
+<td>Portable Network Graphics, a format with a lossless compression method</td>
+</tr>
+<tr class="row-odd"><td>PS</td>
+<td>Vector</td>
+<td>Post Script, ideal for printer output</td>
+</tr>
+<tr class="row-even"><td>SVG</td>
+<td>Vector</td>
+<td>Scalable Vector Graphics, XML based</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="iris-cube-plotting">
+<h2>5.2. Iris cube plotting<a class="headerlink" href="#iris-cube-plotting" title="Permalink to this headline">¶</a></h2>
+<p>The Iris modules <a class="reference internal" href="../iris/iris/quickplot.html#module-iris.quickplot" title="iris.quickplot"><tt class="xref py py-mod docutils literal"><span class="pre">iris.quickplot</span></tt></a> and <a class="reference internal" href="../iris/iris/plot.html#module-iris.plot" title="iris.plot"><tt class="xref py py-mod docutils literal"><span class="pre">iris.plot</span></tt></a> extend the Matplotlib pyplot interface 
+by implementing thin <em>wrapper</em> functions. 
+These wrapper functions simply bridge the gap between an Iris cube and the data expected by standard 
+Matplotlib pyplot functions. 
+This means that <em>all</em> Matplotlib pyplot functionality, including keyword options, are still available 
+through the Iris plotting wrapper functions.</p>
+<p>As a rule of thumb:</p>
+<blockquote>
+<div><ul class="simple">
+<li>if you wish to do a visualisation with a cube, use <tt class="docutils literal"><span class="pre">iris.plot</span></tt> or <tt class="docutils literal"><span class="pre">iris.quickplot</span></tt>.</li>
+<li>if you wish to show, save or manipulate <strong>any</strong> visualisation, including ones created with Iris, use <tt class="docutils literal"><span class="pre">matplotlib.pyplot</span></tt>.</li>
+<li>if you wish to create a non cube visualisation, also use <tt class="docutils literal"><span class="pre">matplotlib.pyplot</span></tt>.</li>
+</ul>
+</div></blockquote>
+<p>The <tt class="docutils literal"><span class="pre">iris.quickplot</span></tt> module is exactly the same as the <tt class="docutils literal"><span class="pre">iris.plot</span></tt> module, except that <tt class="docutils literal"><span class="pre">quickplot</span></tt> will add a 
+title, x and y labels and a colorbar where appropriate.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>In all subsequent examples the <tt class="docutils literal"><span class="pre">matplotlib.pyplot</span></tt>, <tt class="docutils literal"><span class="pre">iris.plot</span></tt> and <tt class="docutils literal"><span class="pre">iris.quickplot</span></tt> modules are 
+imported as <tt class="docutils literal"><span class="pre">plt</span></tt>, <tt class="docutils literal"><span class="pre">iplt</span></tt> and <tt class="docutils literal"><span class="pre">qplt</span></tt> respectively in order to make the code more readable.
+This is equivalent to:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">iris.plot</span> <span class="kn">as</span> <span class="nn">iplt</span>
+<span class="kn">import</span> <span class="nn">iris.quickplot</span> <span class="kn">as</span> <span class="nn">qplt</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="plotting-1-dimensional-cubes">
+<h3>5.2.1. Plotting 1-dimensional cubes<a class="headerlink" href="#plotting-1-dimensional-cubes" title="Permalink to this headline">¶</a></h3>
+<p>The simplest 1D plot is achieved with the <a class="reference internal" href="../iris/iris/plot.html#iris.plot.plot" title="iris.plot.plot"><tt class="xref py py-func docutils literal"><span class="pre">iris.plot.plot()</span></tt></a> function. The syntax is very similar to that 
+which you would provide to Matplotlib&#8217;s equivalent <a class="reference external" href="http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.plot" title="(in Matplotlib v1.1.1)"><tt class="xref py py-func docutils literal"><span class="pre">matplotlib.pyplot.plot()</span></tt></a> and indeed all of the 
+keyword arguments are equivalent:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="kn">import</span> <span class="nn">iris</span>
+<span class="kn">import</span> <span class="nn">iris.plot</span> <span class="kn">as</span> <span class="nn">iplt</span>
+
+<span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;aPPglob1&#39;</span><span class="p">,</span> <span class="s">&#39;global.pp&#39;</span><span class="p">)</span>
+<span class="n">temperature</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+
+<span class="c"># Take a 1d slice using array style indexing.</span>
+<span class="n">temperature_1d</span> <span class="o">=</span> <span class="n">temperature</span><span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="p">:]</span>
+
+<span class="n">iplt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">temperature_1d</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p id="d-simple">[<a class="reference external" href="../plot_directive/userguide/plotting_examples/1d_simple.py">source code</a>]</p>
+<blockquote>
+<div><div class="figure">
+<img alt="../_images/1d_simple.png" src="../_images/1d_simple.png" />
+</div>
+</div></blockquote>
+<p>For more information on how this example reduced the 2D cube to 1 dimension see the previous section 
+entitled <a class="reference internal" href="reducing_a_cube.html"><em>Reducing a Cube</em></a>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<dl class="last docutils">
+<dt>Axis labels and a plot title can be added using the <a class="reference external" href="http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.title" title="(in Matplotlib v1.1.1)"><tt class="xref py py-func docutils literal"><span class="pre">plt.title()</span></tt></a>, </dt>
+<dd><a class="reference external" href="http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.xlabel" title="(in Matplotlib v1.1.1)"><tt class="xref py py-func docutils literal"><span class="pre">plt.xlabel()</span></tt></a> and <a class="reference external" href="http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.ylabel" title="(in Matplotlib v1.1.1)"><tt class="xref py py-func docutils literal"><span class="pre">plt.ylabel</span></tt></a> functions.</dd>
+</dl>
+</div>
+<p>As well as providing simple Matplotlib wrappers, Iris also has a <a class="reference internal" href="../iris/iris/quickplot.html#module-iris.quickplot" title="iris.quickplot"><tt class="xref py py-mod docutils literal"><span class="pre">iris.quickplot</span></tt></a> module, which adds 
+extra cube based meta-data to a plot. 
+For example, the previous plot can be improved quickly by replacing <strong>iris.plot</strong> with <strong>iris.quickplot</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="kn">import</span> <span class="nn">iris</span>
+<span class="kn">import</span> <span class="nn">iris.quickplot</span> <span class="kn">as</span> <span class="nn">qplt</span>
+
+<span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;aPPglob1&#39;</span><span class="p">,</span> <span class="s">&#39;global.pp&#39;</span><span class="p">)</span>
+<span class="n">temperature</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+
+<span class="c"># Take a 1d slice using array style indexing.</span>
+<span class="n">temperature_1d</span> <span class="o">=</span> <span class="n">temperature</span><span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="p">:]</span>
+
+<span class="n">qplt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">temperature_1d</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p id="d-quickplot-simple">[<a class="reference external" href="../plot_directive/userguide/plotting_examples/1d_quickplot_simple.py">source code</a>]</p>
+<blockquote>
+<div><div class="figure">
+<img alt="../_images/1d_quickplot_simple.png" src="../_images/1d_quickplot_simple.png" />
+</div>
+</div></blockquote>
+<div class="section" id="multi-line-plot">
+<h4>5.2.1.1. Multi-line plot<a class="headerlink" href="#multi-line-plot" title="Permalink to this headline">¶</a></h4>
+<p>A multi-lined (or over-plotted) plot, with a legend, can be achieved easily by calling <a class="reference internal" href="../iris/iris/plot.html#iris.plot.plot" title="iris.plot.plot"><tt class="xref py py-func docutils literal"><span class="pre">iris.plot.plot()</span></tt></a> 
+or <a class="reference internal" href="../iris/iris/quickplot.html#iris.quickplot.plot" title="iris.quickplot.plot"><tt class="xref py py-func docutils literal"><span class="pre">iris.quickplot.plot()</span></tt></a> consecutively and providing the label keyword to identify it.
+Once all of the lines have been added the <a class="reference external" href="http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.legend" title="(in Matplotlib v1.1.1)"><tt class="xref py py-func docutils literal"><span class="pre">matplotlib.pyplot.legend()</span></tt></a> function can be called 
+to indicate that a legend is desired:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Multi-line temperature profile plot</span>
+<span class="sd">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span>
+
+<span class="sd">&quot;&quot;&quot;</span> 
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="kn">import</span> <span class="nn">iris</span>
+<span class="kn">import</span> <span class="nn">iris.quickplot</span> <span class="kn">as</span> <span class="nn">qplt</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;aPPglob1&#39;</span><span class="p">,</span> <span class="s">&#39;global.pp&#39;</span><span class="p">)</span>
+    
+    <span class="c"># Load exactly one cube from the given file</span>
+    <span class="n">temperature</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    
+    <span class="c"># We only want a small number of latitudes, so filter some out using &quot;extract&quot;.</span>
+    <span class="n">temperature</span> <span class="o">=</span> <span class="n">temperature</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="k">lambda</span> <span class="n">cell</span><span class="p">:</span> <span class="mi">68</span> <span class="o">&lt;=</span> <span class="n">cell</span> <span class="o">&lt;</span> <span class="mi">78</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">cube</span> <span class="ow">in</span> <span class="n">temperature</span><span class="o">.</span><span class="n">slices</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">):</span>  
+        
+        <span class="c"># Create a string label to identify this cube (i.e. latitude: value)</span>
+        <span class="n">cube_label</span> <span class="o">=</span> <span class="s">&#39;latitude: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">cube</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s">&#39;latitude&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="c"># Plot the cube, and associate it with a label</span>
+        <span class="n">qplt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">cube_label</span><span class="p">)</span>
+    
+    <span class="c"># Add the legend with 2 columns</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">ncol</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    
+    <span class="c"># Put a grid on the plot</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="c"># tell matplotlib not to extend the plot axes range to nicely rounded numbers.</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;tight&#39;</span><span class="p">)</span>
+
+    <span class="c"># Finally, show it.</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+<p id="lineplot-with-legend">[<a class="reference external" href="../plot_directive/../example_code/graphics/lineplot_with_legend.py">source code</a>]</p>
+<blockquote>
+<div><div class="figure">
+<img alt="../_images/lineplot_with_legend.png" src="../_images/lineplot_with_legend.png" />
+</div>
+</div></blockquote>
+<p>This example of consecutive <tt class="docutils literal"><span class="pre">qplt.plot</span></tt> calls coupled with the <a class="reference internal" href="../iris/iris/cube.html#iris.cube.Cube.slices" title="iris.cube.Cube.slices"><tt class="xref py py-func docutils literal"><span class="pre">Cube.slices()</span></tt></a> 
+method on a cube shows the temperature at some latitude cross-sections.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The previous example uses the <tt class="docutils literal"><span class="pre">if</span> <span class="pre">__name__</span> <span class="pre">==</span> <span class="pre">&quot;__main__&quot;</span></tt> style to run the desired code if and only if the 
+script is run from the command line.</p>
+<p>This is a good habit to get into when writing scripts in Python as it means that any useful functions or 
+variables defined within the script can be imported into other scripts without running all of the code and 
+thus creating an unwanted plot. This is discussed in more detail at <a class="reference external" href="http://effbot.org/pyfaq/tutor-what-is-if-name-main-for.htm">http://effbot.org/pyfaq/tutor-what-is-if-name-main-for.htm</a>.</p>
+<p class="last">In order to run this example, you will need to copy the code into a file and run it using <tt class="docutils literal"><span class="pre">python2.7</span> <span class="pre">my_file.py</span></tt>.</p>
+</div>
+</div>
+</div>
+<div class="section" id="plotting-2-dimensional-cubes">
+<h3>5.2.2. Plotting 2-dimensional cubes<a class="headerlink" href="#plotting-2-dimensional-cubes" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="creating-maps">
+<h4>5.2.2.1. Creating maps<a class="headerlink" href="#creating-maps" title="Permalink to this headline">¶</a></h4>
+<p>Whenever a 2D plot is created and the x and y coordinates are longitude and latitude a 
+<a class="reference external" href="http://matplotlib.github.com/basemap/api/basemap_api.html#mpl_toolkits.basemap.Basemap" title="(in Basemap Matplotlib Toolkit v1.0.3)"><tt class="xref py py-class docutils literal"><span class="pre">mpl_toolkits.basemap.Basemap</span></tt></a> instance is created which can be accessed with the <a class="reference internal" href="../iris/iris/plot.html#iris.plot.gcm" title="iris.plot.gcm"><tt class="xref py py-func docutils literal"><span class="pre">iris.plot.gcm()</span></tt></a> function.</p>
+<p>Given the current map, you can draw meridians, parallels and coastlines amongst other things.</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference external" href="http://matplotlib.github.com/basemap/api/basemap_api.html#mpl_toolkits.basemap.Basemap.drawmeridians" title="(in Basemap Matplotlib Toolkit v1.0.3)"><tt class="xref py py-meth docutils literal"><span class="pre">Basemap.drawmeridians()</span></tt></a>, 
+<a class="reference external" href="http://matplotlib.github.com/basemap/api/basemap_api.html#mpl_toolkits.basemap.Basemap.drawparallels" title="(in Basemap Matplotlib Toolkit v1.0.3)"><tt class="xref py py-meth docutils literal"><span class="pre">Basemap.drawparallels()</span></tt></a> and 
+<a class="reference external" href="http://matplotlib.github.com/basemap/api/basemap_api.html#mpl_toolkits.basemap.Basemap.drawcoastlines" title="(in Basemap Matplotlib Toolkit v1.0.3)"><tt class="xref py py-meth docutils literal"><span class="pre">Basemap.drawcoastlines()</span></tt></a>.</p>
+</div>
+</div>
+<div class="section" id="cube-contour">
+<h4>5.2.2.2. Cube contour<a class="headerlink" href="#cube-contour" title="Permalink to this headline">¶</a></h4>
+<p>A simple contour plot of a cube can be created with either the <a class="reference internal" href="../iris/iris/plot.html#iris.plot.contour" title="iris.plot.contour"><tt class="xref py py-func docutils literal"><span class="pre">iris.plot.contour()</span></tt></a> or <a class="reference internal" href="../iris/iris/quickplot.html#iris.quickplot.contour" title="iris.quickplot.contour"><tt class="xref py py-func docutils literal"><span class="pre">iris.quickplot.contour()</span></tt></a> functions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="kn">import</span> <span class="nn">iris</span>
+<span class="kn">import</span> <span class="nn">iris.plot</span> <span class="kn">as</span> <span class="nn">iplt</span>
+<span class="kn">import</span> <span class="nn">iris.quickplot</span> <span class="kn">as</span> <span class="nn">qplt</span>
+
+<span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;aPPglob1&#39;</span><span class="p">,</span> <span class="s">&#39;global.pp&#39;</span><span class="p">)</span>
+
+<span class="n">temperature_cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+
+<span class="c"># Add a contour, and put the result in a variable called contour.</span>
+<span class="n">contour</span> <span class="o">=</span> <span class="n">qplt</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">temperature_cube</span><span class="p">)</span>
+
+<span class="c"># Get the map created by contourf</span>
+<span class="n">current_map</span> <span class="o">=</span> <span class="n">iplt</span><span class="o">.</span><span class="n">gcm</span><span class="p">()</span>
+
+<span class="c"># Add coastlines to the map</span>
+<span class="n">current_map</span><span class="o">.</span><span class="n">drawcoastlines</span><span class="p">()</span>
+
+<span class="c"># Add contour labels based on the contour we have just created</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">clabel</span><span class="p">(</span><span class="n">contour</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p id="id2">[<a class="reference external" href="../plot_directive/userguide/plotting_examples/cube_contour.py">source code</a>]</p>
+<blockquote>
+<div><div class="figure">
+<img alt="../_images/cube_contour.png" src="../_images/cube_contour.png" />
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="cube-filled-contour">
+<h4>5.2.2.3. Cube filled contour<a class="headerlink" href="#cube-filled-contour" title="Permalink to this headline">¶</a></h4>
+<p>Similarly a filled contour plot of a cube can be created with the <a class="reference internal" href="../iris/iris/plot.html#iris.plot.contourf" title="iris.plot.contourf"><tt class="xref py py-func docutils literal"><span class="pre">iris.plot.contourf()</span></tt></a> or <a class="reference internal" href="../iris/iris/quickplot.html#iris.quickplot.contourf" title="iris.quickplot.contourf"><tt class="xref py py-func docutils literal"><span class="pre">iris.quickplot.contourf()</span></tt></a> functions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="kn">import</span> <span class="nn">iris</span>
+<span class="kn">import</span> <span class="nn">iris.quickplot</span> <span class="kn">as</span> <span class="nn">qplt</span>
+<span class="kn">import</span> <span class="nn">iris.plot</span> <span class="kn">as</span> <span class="nn">iplt</span>
+
+<span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;aPPglob1&#39;</span><span class="p">,</span> <span class="s">&#39;global.pp&#39;</span><span class="p">)</span>
+<span class="n">temperature_cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+
+<span class="c"># Draw the contour with 25 levels</span>
+<span class="n">qplt</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">temperature_cube</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+
+<span class="c"># Get the map created by contourf</span>
+<span class="n">current_map</span> <span class="o">=</span> <span class="n">iplt</span><span class="o">.</span><span class="n">gcm</span><span class="p">()</span>
+
+<span class="c"># Add coastlines to the map</span>
+<span class="n">current_map</span><span class="o">.</span><span class="n">drawcoastlines</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p id="cube-contourf">[<a class="reference external" href="../plot_directive/userguide/plotting_examples/cube_contourf.py">source code</a>]</p>
+<blockquote>
+<div><div class="figure">
+<img alt="../_images/cube_contourf.png" src="../_images/cube_contourf.png" />
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="cube-block-plot">
+<h4>5.2.2.4. Cube block plot<a class="headerlink" href="#cube-block-plot" title="Permalink to this headline">¶</a></h4>
+<p>Both <tt class="docutils literal"><span class="pre">contour</span></tt> and <tt class="docutils literal"><span class="pre">contourf</span></tt> are point based visualisations in that for both the x and y plot axes the 
+coordinates must have <a class="reference internal" href="../iris/iris/coords.html#iris.coords.Coord.points" title="iris.coords.Coord.points"><tt class="xref py py-attr docutils literal"><span class="pre">Coord.points</span></tt></a>. 
+In some situations the underlying coordinates are not point based and instead are better represented with a 
+continuous bounded coordinate, in which case a &#8220;block&#8221; plot may be more appropriate.
+Continuous block plots can be achieved with either <a class="reference internal" href="../iris/iris/plot.html#iris.plot.pcolormesh" title="iris.plot.pcolormesh"><tt class="xref py py-func docutils literal"><span class="pre">iris.plot.pcolormesh()</span></tt></a> or <a class="reference internal" href="../iris/iris/quickplot.html#iris.quickplot.pcolormesh" title="iris.quickplot.pcolormesh"><tt class="xref py py-func docutils literal"><span class="pre">iris.quickplot.pcolormesh()</span></tt></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="kn">import</span> <span class="nn">iris</span>
+<span class="kn">import</span> <span class="nn">iris.quickplot</span> <span class="kn">as</span> <span class="nn">qplt</span>
+<span class="kn">import</span> <span class="nn">iris.plot</span> <span class="kn">as</span> <span class="nn">iplt</span>
+
+<span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;aPPglob1&#39;</span><span class="p">,</span> <span class="s">&#39;global.pp&#39;</span><span class="p">)</span>
+<span class="n">temperature_cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+
+<span class="c"># put bounds on the latitude and longitude coordinates</span>
+<span class="n">temperature_cube</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s">&#39;latitude&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">guess_bounds</span><span class="p">()</span>
+<span class="n">temperature_cube</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">guess_bounds</span><span class="p">()</span>
+
+<span class="c"># Draw the contour with 25 levels</span>
+<span class="n">qplt</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">temperature_cube</span><span class="p">)</span>
+
+<span class="c"># Get the map created by pcolormesh</span>
+<span class="n">current_map</span> <span class="o">=</span> <span class="n">iplt</span><span class="o">.</span><span class="n">gcm</span><span class="p">()</span>
+
+<span class="c"># Add coastlines to the map</span>
+<span class="n">current_map</span><span class="o">.</span><span class="n">drawcoastlines</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p id="cube-blockplot">[<a class="reference external" href="../plot_directive/userguide/plotting_examples/cube_blockplot.py">source code</a>]</p>
+<blockquote>
+<div><div class="figure">
+<img alt="../_images/cube_blockplot.png" src="../_images/cube_blockplot.png" />
+</div>
+</div></blockquote>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="cube_statistics.html" title="6. Cube statistics"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="reducing_a_cube.html" title="4. Reducing a Cube"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="index.html" >Iris user guide</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

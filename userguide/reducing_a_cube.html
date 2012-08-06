@@ -1,0 +1,314 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>4. Reducing a Cube &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../index.html" />
+    <link rel="up" title="Iris user guide" href="index.html" />
+    <link rel="next" title="5. Introduction to plotting in Iris" href="plotting_a_cube.html" />
+    <link rel="prev" title="3. Navigating a cube" href="navigating_a_cube.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../index.html"><img src="../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="plotting_a_cube.html" title="5. Introduction to plotting in Iris"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="navigating_a_cube.html" title="3. Navigating a cube"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="index.html" accesskey="U">Iris user guide</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">4. Reducing a Cube</a><ul>
+<li><a class="reference internal" href="#cube-extraction">4.1. Cube extraction</a></li>
+<li><a class="reference internal" href="#cube-iteration">4.2. Cube iteration</a></li>
+<li><a class="reference internal" href="#cube-indexing">4.3. Cube indexing</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="navigating_a_cube.html"
+                        title="previous chapter">3. Navigating a cube</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="plotting_a_cube.html"
+                        title="next chapter">5. Introduction to plotting in Iris</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/userguide/reducing_a_cube.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="reducing-a-cube">
+<span id="id1"></span><h1>4. Reducing a Cube<a class="headerlink" href="#reducing-a-cube" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="loading_iris_cubes.html"><em>Loading Iris cubes</em></a> section of the user guide showed how to load data into multidimensional Iris cubes. 
+However it is often necessary to reduce the dimensionality of a cube down to something more appropriate.</p>
+<p>Iris provides several ways of reducing both the amount of data and/or the number of dimensions in your cube depending on the circumstance.
+In all cases <strong>the subset of a valid cube is itself a valid cube</strong>.</p>
+<div class="section" id="cube-extraction">
+<h2>4.1. Cube extraction<a class="headerlink" href="#cube-extraction" title="Permalink to this headline">¶</a></h2>
+<p>A subset of a cube can be &#8220;extracted&#8221; from a multi-dimensional cube in order to reduce its dimensionality:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;globClim1&#39;</span><span class="p">,</span> <span class="s">&#39;theta.pp&#39;</span><span class="p">)</span>
+<span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">cube</span>
+<span class="n">equator_slice</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span> 
+<span class="k">print</span> <span class="n">equator_slice</span>
+</pre></div>
+</div>
+<p>In this example we start with a 3 dimensional cube, with axes of <tt class="docutils literal"><span class="pre">z</span></tt>, <tt class="docutils literal"><span class="pre">y</span></tt> and <tt class="docutils literal"><span class="pre">x</span></tt>, and extract every point where 
+the latitude is 0, resulting in a 2d cube with axes of <tt class="docutils literal"><span class="pre">z</span></tt> and <tt class="docutils literal"><span class="pre">x</span></tt>.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>Caution is required when using equality constraints with floating point coordinates such as <tt class="docutils literal"><span class="pre">latitude</span></tt>. 
+Printing the points of a coordinate does not necessarily show the full precision of the underlying number and it 
+is very easy return no matches to a constraint when one was expected.
+This can be avoided by using a function as the argument to the constraint:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">near_zero</span><span class="p">(</span><span class="n">cell</span><span class="p">):</span>
+   <span class="sd">&quot;&quot;&quot;Returns true if the cell is between -0.1 and 0.1.&quot;&quot;&quot;</span>
+   <span class="k">return</span> <span class="o">-</span><span class="mf">0.1</span> <span class="o">&lt;</span> <span class="n">cell</span> <span class="o">&lt;</span> <span class="mf">0.1</span>
+
+<span class="n">equator_constraint</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="n">near_zero</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Often you will see this construct in shorthand using a lambda function definition:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="n">equator_constraint</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="k">lambda</span> <span class="n">cell</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.1</span> <span class="o">&lt;</span> <span class="n">cell</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>The extract method could be applied again to the <em>equator_slice</em> cube to get a further subset.</p>
+<p>For example to get a model_level_number of 10 at the equator the following line extends the previous example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">equator_model_level_10_slice</span> <span class="o">=</span> <span class="n">equator_slice</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">model_level_number</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
+<span class="k">print</span> <span class="n">equator_model_level_10_slice</span>
+</pre></div>
+</div>
+<p>The two steps required to get <tt class="docutils literal"><span class="pre">model_level_number</span></tt> of 10 at the equator can be simplified into a single constraint:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;globClim1&#39;</span><span class="p">,</span> <span class="s">&#39;theta.pp&#39;</span><span class="p">)</span>
+<span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+<span class="n">equator_model_level_10_slice</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">model_level_number</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
+<span class="k">print</span> <span class="n">equator_model_level_10_slice</span>
+</pre></div>
+</div>
+<p>As we saw in <a class="reference internal" href="loading_iris_cubes.html"><em>Loading Iris cubes</em></a> the result of <a class="reference internal" href="../iris/iris.html#iris.load" title="iris.load"><tt class="xref py py-func docutils literal"><span class="pre">iris.load()</span></tt></a> is a <a class="reference internal" href="../iris/iris/cube.html#iris.cube.CubeList" title="iris.cube.CubeList"><tt class="xref py py-class docutils literal"><span class="pre">CubeList</span></tt></a>. 
+The <tt class="docutils literal"><span class="pre">extract</span></tt> method also exists on a <a class="reference internal" href="../iris/iris/cube.html#iris.cube.CubeList" title="iris.cube.CubeList"><tt class="xref py py-class docutils literal"><span class="pre">CubeList</span></tt></a> and behaves in exactly the 
+same way as loading with constraints:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">air_temp_and_fp_6</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="s">&#39;air_potential_temperature&#39;</span><span class="p">,</span> <span class="n">forecast_period</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">level_10</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">model_level_number</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;ukV2&#39;</span><span class="p">,</span> <span class="s">&#39;THOxayrk.pp&#39;</span><span class="p">)</span>
+<span class="n">cubes</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">air_temp_and_fp_6</span> <span class="o">&amp;</span> <span class="n">level_10</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">cubes</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="cube-iteration">
+<h2>4.2. Cube iteration<a class="headerlink" href="#cube-iteration" title="Permalink to this headline">¶</a></h2>
+<p>A useful way of dealing with a Cube in its <strong>entirety</strong> is by iterating over its layers or slices. 
+For example, to deal with a 3 dimensional cube (z,y,x) you could iterate over all 2 dimensional slices in y and x 
+which make up the full 3d cube.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">iris</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;globClim1&#39;</span><span class="p">,</span> <span class="s">&#39;theta.pp&#39;</span><span class="p">)</span>
+<span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">cube</span>
+<span class="k">for</span> <span class="n">yx_slice</span> <span class="ow">in</span> <span class="n">cube</span><span class="o">.</span><span class="n">slices</span><span class="p">([</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="s">&#39;longitude&#39;</span><span class="p">]):</span>
+   <span class="k">print</span> <span class="nb">repr</span><span class="p">(</span><span class="n">yx_slice</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As the original cube had the shape (z: 38; y: 145; x: 192) there were 38 latitude longitude slices and hence the 
+line <tt class="docutils literal"><span class="pre">print</span> <span class="pre">repr(yx_slice)</span></tt> was run 38 times.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The order of latitude and longitude in the list is important; had they been swapped the resultant cube slices 
+would have been transposed.</p>
+<p class="last">For further information see <a class="reference internal" href="../iris/iris/cube.html#iris.cube.Cube.slices" title="iris.cube.Cube.slices"><tt class="xref py py-meth docutils literal"><span class="pre">Cube.slices</span></tt></a>.</p>
+</div>
+<p>This method can handle n-dimensional slices by providing more or fewer coordinate names in the list to <strong>slices</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">iris</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;globClim1&#39;</span><span class="p">,</span> <span class="s">&#39;theta.pp&#39;</span><span class="p">)</span>
+<span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">cube</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x_slice</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">slices</span><span class="p">([</span><span class="s">&#39;longitude&#39;</span><span class="p">])):</span>
+   <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">x_slice</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The Python function <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#enumerate" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">enumerate()</span></tt></a> is used in this example to provide an incrementing variable <strong>i</strong> which is 
+printed with the summary of each cube slice. Note that there were 5510 1d longitude cubes as a result of 
+slicing the 3 dimensional cube (z: 38; y: 145; x: 192) by longitude (i starts at 0 and 5510 = 38 * 145).</p>
+<div class="admonition hint">
+<p class="first admonition-title">Hint</p>
+<p>It is often useful to get a single 2d slice from a multidimensional cube in order to develop a 2d plot function, for example.
+This can be achieved by using the <tt class="docutils literal"><span class="pre">next()</span></tt> method on the result of slices:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">first_slice</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">slices</span><span class="p">([</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="s">&#39;longitude&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+</pre></div>
+</div>
+<p class="last">Once the your code can handle a 2d slice, it is then an easy step to loop over <strong>all</strong> 2d slices within the bigger 
+cube using the slices method.</p>
+</div>
+</div>
+<div class="section" id="cube-indexing">
+<h2>4.3. Cube indexing<a class="headerlink" href="#cube-indexing" title="Permalink to this headline">¶</a></h2>
+<p>In the same way that you would expect a numeric multidimensional array to be <strong>indexed</strong> to take a subset of your 
+original array, you can <strong>index</strong> a Cube for the same purpose.</p>
+<p>Here are some examples of array indexing in <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/index.html#numpy" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-mod docutils literal"><span class="pre">numpy</span></tt></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="c"># create an array of 12 consecutive integers starting from 0</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">a</span>
+
+<span class="k">print</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>       <span class="c"># first element of the array</span>
+
+<span class="k">print</span> <span class="n">a</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>       <span class="c"># last element of the array</span>
+
+<span class="k">print</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>       <span class="c"># first four elements of the array (this is the same as a[:4])</span>
+
+<span class="k">print</span> <span class="n">a</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span>       <span class="c"># last four elements of the array</span>
+
+<span class="k">print</span> <span class="n">a</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>       <span class="c"># gives all of the array, but backwards</span>
+
+<span class="c"># Make a 2d array by reshaping a</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">b</span>
+
+<span class="k">print</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>       <span class="c"># first element of the first and second dimensions</span>
+
+<span class="k">print</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>       <span class="c"># first element of the first dimension (+ every other dimension)</span>
+
+<span class="c"># get the second element of the first dimension and all of the second dimension</span>
+<span class="c"># in reverse, by steps of two.</span>
+<span class="k">print</span> <span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">::</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Similarly, Iris cubes have indexing capability:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">iris</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;globClim1&#39;</span><span class="p">,</span> <span class="s">&#39;theta.pp&#39;</span><span class="p">)</span>
+<span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="n">cube</span>
+
+<span class="c"># get the first element of the first dimension (+ every other dimension)</span>
+<span class="k">print</span> <span class="n">cube</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c"># get the last element of the first dimension (+ every other dimension)</span>
+<span class="k">print</span> <span class="n">cube</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="c"># get the first 4 elements of the first dimension (+ every other dimension)</span>
+<span class="k">print</span> <span class="n">cube</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
+
+<span class="c"># Get the first element of the first and third dimension (+ every other dimension)</span>
+<span class="k">print</span> <span class="n">cube</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>
+
+<span class="c"># Get the second element of the first dimension and all of the second dimension</span>
+<span class="c"># in reverse, by steps of two.</span>
+<span class="k">print</span> <span class="n">cube</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">::</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="plotting_a_cube.html" title="5. Introduction to plotting in Iris"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="navigating_a_cube.html" title="3. Navigating a cube"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="index.html" >Iris user guide</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

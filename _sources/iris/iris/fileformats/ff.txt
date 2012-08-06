@@ -1,0 +1,45 @@
+.. _iris.fileformats.ff:
+
+===================
+iris.fileformats.ff
+===================
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.fileformats.ff
+
+In this module:
+
+ * :py:obj:`load_cubes`
+ * :py:obj:`FF2PP`
+ * :py:obj:`FFHeader`
+
+
+----------
+
+.. autofunction:: iris.fileformats.ff.load_cubes
+
+----------
+
+A class to extract the individual PPFields from within a FieldsFile.
+
+..
+
+    .. autoclass:: iris.fileformats.ff.FF2PP
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+A class to represent the FIXED_LENGTH_HEADER section of a FieldsFile.
+
+..
+
+    .. autoclass:: iris.fileformats.ff.FFHeader
+        :members:
+        :undoc-members:
+        :inherited-members:
+

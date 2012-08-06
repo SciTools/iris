@@ -1,0 +1,476 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.io &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Iris reference documentation" href="../iris.html" />
+    <link rel="next" title="iris.io.format_picker" href="io/format_picker.html" />
+    <link rel="prev" title="iris.fileformats.um_cf_map" href="fileformats/um_cf_map.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="io/format_picker.html" title="iris.io.format_picker"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="fileformats/um_cf_map.html" title="iris.fileformats.um_cf_map"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" accesskey="U">Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="fileformats/um_cf_map.html"
+                        title="previous chapter">iris.fileformats.um_cf_map</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="io/format_picker.html"
+                        title="next chapter">iris.io.format_picker</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/iris/iris/io.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-io">
+<span id="id1"></span><h1>iris.io<a class="headerlink" href="#iris-io" title="Permalink to this headline">¶</a></h1>
+<div class="sidebar">
+<p class="first sidebar-title">Modules in this package</p>
+<div class="toctree-wrapper last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="io/format_picker.html">iris.io.format_picker</a></li>
+</ul>
+</div>
+</div>
+<span class="target" id="module-iris.io"></span><p>Provides an interface to manage URI scheme support in iris.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.io.add_saver" title="iris.io.add_saver"><tt class="xref py py-obj docutils literal"><span class="pre">add_saver</span></tt></a></li>
+<li><a class="reference internal" href="#iris.io.decode_uri" title="iris.io.decode_uri"><tt class="xref py py-obj docutils literal"><span class="pre">decode_uri</span></tt></a></li>
+<li><a class="reference internal" href="#iris.io.find_saver" title="iris.io.find_saver"><tt class="xref py py-obj docutils literal"><span class="pre">find_saver</span></tt></a></li>
+<li><a class="reference internal" href="#iris.io.load_files" title="iris.io.load_files"><tt class="xref py py-obj docutils literal"><span class="pre">load_files</span></tt></a></li>
+<li><a class="reference internal" href="#iris.io.run_callback" title="iris.io.run_callback"><tt class="xref py py-obj docutils literal"><span class="pre">run_callback</span></tt></a></li>
+<li><a class="reference internal" href="#iris.io.save" title="iris.io.save"><tt class="xref py py-obj docutils literal"><span class="pre">save</span></tt></a></li>
+<li><a class="reference internal" href="#iris.io.select_data_path" title="iris.io.select_data_path"><tt class="xref py py-obj docutils literal"><span class="pre">select_data_path</span></tt></a></li>
+<li><a class="reference internal" href="#iris.io.SaversDict" title="iris.io.SaversDict"><tt class="xref py py-obj docutils literal"><span class="pre">SaversDict</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.io.add_saver">
+<tt class="descclassname">iris.io.</tt><tt class="descname">add_saver</tt><big>(</big><em>file_extension</em>, <em>new_saver</em><big>)</big><a class="headerlink" href="#iris.io.add_saver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a custom saver to the Iris session.</p>
+<p>Args:</p>
+<blockquote>
+<div><ul class="simple">
+<li>file_extension - A string such as &#8220;pp&#8221; or &#8220;my_format&#8221;.</li>
+<li>new_saver      - A function of the form <tt class="docutils literal"><span class="pre">my_saver(cube,</span> <span class="pre">target)</span></tt>.</li>
+</ul>
+</div></blockquote>
+<p>See also <a class="reference internal" href="#iris.io.save" title="iris.io.save"><tt class="xref py py-func docutils literal"><span class="pre">iris.io.save()</span></tt></a></p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.io.decode_uri">
+<tt class="descclassname">iris.io.</tt><tt class="descname">decode_uri</tt><big>(</big><em>uri</em>, <em>default='file'</em><big>)</big><a class="headerlink" href="#iris.io.decode_uri" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decodes a single URI into scheme and scheme-specific parts.</p>
+<p>In addition to well-formed URIs, it also supports bare file paths.
+Both Windows and UNIX style paths are accepted.</p>
+<dl class="docutils">
+<dt>Examples:</dt>
+<dd><div class="first highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">iris.io</span> <span class="kn">import</span> <span class="n">decode_uri</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">decode_uri</span><span class="p">(</span><span class="s">&#39;http://www.thing.com:8080/resource?id=a:b&#39;</span><span class="p">)</span>
+<span class="go">(&#39;http&#39;, &#39;//www.thing.com:8080/resource?id=a:b&#39;)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">decode_uri</span><span class="p">(</span><span class="s">&#39;file:///data/local/dataZoo/...&#39;</span><span class="p">)</span>
+<span class="go">(&#39;file&#39;, &#39;///data/local/dataZoo/...&#39;)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">decode_uri</span><span class="p">(</span><span class="s">&#39;/data/local/dataZoo/...&#39;</span><span class="p">)</span>
+<span class="go">(&#39;file&#39;, &#39;/data/local/dataZoo/...&#39;)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">decode_uri</span><span class="p">(</span><span class="s">&#39;file:///C:\data\local\dataZoo\...&#39;</span><span class="p">)</span>
+<span class="go">(&#39;file&#39;, &#39;///C:\\data\\local\\dataZoo\\...&#39;)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">decode_uri</span><span class="p">(</span><span class="s">&#39;C:\data\local\dataZoo\...&#39;</span><span class="p">)</span>
+<span class="go">(&#39;file&#39;, &#39;C:\\data\\local\\dataZoo\\...&#39;)</span>
+</pre></div>
+</div>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">decode_uri</span><span class="p">(</span><span class="s">&#39;dataZoo/...&#39;</span><span class="p">)</span>
+<span class="go">(&#39;file&#39;, &#39;dataZoo/...&#39;)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.io.find_saver">
+<tt class="descclassname">iris.io.</tt><tt class="descname">find_saver</tt><big>(</big><em>filespec</em><big>)</big><a class="headerlink" href="#iris.io.find_saver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the saver function appropriate to the given filename or extension.</p>
+<p>Args:</p>
+<blockquote>
+<div><ul class="simple">
+<li>filespec - A string such as &#8220;my_file.pp&#8221; or &#8220;PP&#8221;.</li>
+</ul>
+</div></blockquote>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>A save function or None.
+Save functions can be passed to <a class="reference internal" href="#iris.io.save" title="iris.io.save"><tt class="xref py py-func docutils literal"><span class="pre">iris.io.save()</span></tt></a>.</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.io.load_files">
+<tt class="descclassname">iris.io.</tt><tt class="descname">load_files</tt><big>(</big><em>filenames</em>, <em>callback</em><big>)</big><a class="headerlink" href="#iris.io.load_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a list of filenames which may also be globs, and optionally a callback function, and returns a generator of Cubes from the given files.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Typically, this function should not be called directly; instead, the intended interface for loading is <a class="reference internal" href="../iris.html#iris.load" title="iris.load"><tt class="xref py py-func docutils literal"><span class="pre">iris.load()</span></tt></a>.</p>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.io.run_callback">
+<tt class="descclassname">iris.io.</tt><tt class="descname">run_callback</tt><big>(</big><em>callback</em>, <em>cube</em>, <em>field</em>, <em>filename</em><big>)</big><a class="headerlink" href="#iris.io.run_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the callback mechanism given the appropriate arguments.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>callback:</dt>
+<dd><dl class="first last docutils">
+<dt>A function to add metadata from the originating field and/or URI which obeys the following rules:</dt>
+<dd><ol class="first last arabic simple">
+<li>Function signature must be: <tt class="docutils literal"><span class="pre">(cube,</span> <span class="pre">field,</span> <span class="pre">filename)</span></tt></li>
+<li>Must not return any value - any alterations to the cube must be made by reference</li>
+<li>If the cube is to be rejected the callback must raise an <a class="reference internal" href="exceptions.html#iris.exceptions.IgnoreCubeException" title="iris.exceptions.IgnoreCubeException"><tt class="xref py py-class docutils literal"><span class="pre">iris.exceptions.IgnoreCubeException</span></tt></a></li>
+</ol>
+</dd>
+</dl>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It is possible that this function returns None for certain callbacks, the caller of this 
+function should handle this case.</p>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.io.save">
+<tt class="descclassname">iris.io.</tt><tt class="descname">save</tt><big>(</big><em>source</em>, <em>target</em>, <em>saver=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.io.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save one or more Cubes to file (or other writable).</p>
+<p>A custom saver can be provided, or Iris can select one based on filename.</p>
+<p>Args:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">source    - A <a class="reference internal" href="cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>, <a class="reference internal" href="cube.html#iris.cube.CubeList" title="iris.cube.CubeList"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.CubeList</span></tt></a> or sequence of cubes.</p>
+</li>
+<li><dl class="first docutils">
+<dt>target    - A filename (or writable, depending on file format).</dt>
+<dd><p class="first last">When given a filename or file, Iris can determine the file format.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<p>Kwargs:</p>
+<blockquote>
+<div><ul>
+<li><dl class="first docutils">
+<dt>saver     - Optional. Specifies the save function to use.</dt>
+<dd><p class="first">If omitted, Iris will attempt to determine the format.</p>
+<p class="last">This keyword can be used to implement a custom save format (see below).
+Function form must be: <tt class="docutils literal"><span class="pre">my_saver(cube,</span> <span class="pre">target)</span></tt> plus any custom keywords.
+It is assumed that a saver will accept an <tt class="docutils literal"><span class="pre">append</span></tt> keyword if it&#8217;s file format
+can handle multiple cubes. See also <a class="reference internal" href="#iris.io.add_saver" title="iris.io.add_saver"><tt class="xref py py-func docutils literal"><span class="pre">iris.io.add_saver()</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<p>All other keywords are passed through to the saver function.</p>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Save a cube to PP</span>
+<span class="n">iris</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">my_cube</span><span class="p">,</span> <span class="s">&quot;myfile.pp&quot;</span><span class="p">)</span>
+<span class="n">iris</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">my_cube_list</span><span class="p">,</span> <span class="s">&quot;myfile.pp&quot;</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c"># Save a cube to a custom file format and provide a format-specific argument.</span>
+<span class="c"># The walk keyword is passed through to my_spam_format.save.</span>
+<span class="kn">import</span> <span class="nn">my_spam_format</span>
+<span class="n">iris</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">my_cube</span><span class="p">,</span> <span class="s">&quot;my_file.spam&quot;</span><span class="p">,</span> <span class="n">saver</span><span class="o">=</span><span class="n">my_spam_format</span><span class="o">.</span><span class="n">save</span><span class="p">,</span> <span class="n">walk</span><span class="o">=</span><span class="s">&quot;silly&quot;</span><span class="p">)</span>
+
+<span class="c"># Add a custom file format to the Iris session and save a cube list.</span>
+<span class="c"># When saving a cube list, Iris passes an append keyword to the saver.</span>
+<span class="n">iris</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">add_saver</span><span class="p">(</span><span class="s">&quot;.spam&quot;</span><span class="p">,</span> <span class="n">my_spam_format</span><span class="o">.</span><span class="n">save</span><span class="p">)</span>            
+<span class="n">iris</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">my_cube_list</span><span class="p">,</span> <span class="s">&quot;myfile.spam&quot;</span><span class="p">,</span> <span class="n">walk</span><span class="o">=</span><span class="s">&quot;silly&quot;</span><span class="p">)</span>
+
+<span class="c"># Get help on the PP saver, for example to see it&#39;s accepted keywords.</span>
+<span class="n">help</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">find_saver</span><span class="p">(</span><span class="s">&quot;pp&quot;</span><span class="p">))</span>
+
+<span class="c"># Create and display a PNG image of a DOT graph representation of a cube.</span>
+<span class="n">iris</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">my_cube</span><span class="p">,</span> <span class="s">&quot;my_file.dotpng&quot;</span><span class="p">,</span> <span class="n">launch</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c"># Save a cube to netCDF, defaults to NETCDF4 file format</span>
+<span class="n">iris</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">my_cube</span><span class="p">,</span> <span class="s">&quot;myfile.nc&quot;</span><span class="p">)</span>
+
+<span class="c"># Save a cube to netCDF using NETCDF3 file format</span>
+<span class="n">iris</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">my_cube</span><span class="p">,</span> <span class="s">&quot;myfile.nc&quot;</span><span class="p">,</span> <span class="n">netcdf_format</span><span class="o">=</span><span class="s">&quot;NETCDF3_CLASSIC&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.io.select_data_path">
+<tt class="descclassname">iris.io.</tt><tt class="descname">select_data_path</tt><big>(</big><em>resources_subdir</em>, <em>rel_path</em><big>)</big><a class="headerlink" href="#iris.io.select_data_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a resource subdirectory and the resource file&#8217;s relative path return
+the fully qualified path of a resource.</p>
+<p>The function checks to see whether <tt class="xref py py-const docutils literal"><span class="pre">iris.config.MASTER_DATA_REPOSITORY</span></tt>
+exists, in which case it will check that each file also exists
+on <tt class="xref py py-const docutils literal"><span class="pre">iris.config.DATA_REPOSITORY</span></tt>, providing a warning and a printed
+message indicating how to resolve the divergent folders. The resultant path
+will always use the <tt class="xref py py-const docutils literal"><span class="pre">iris.config.DATA_REPOSITORY</span></tt> configuration value.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>resources_subdir</dt>
+<dd><p class="first last">The name of the subdirectory found in <tt class="xref py py-const docutils literal"><span class="pre">iris.config.DATA_REPOSITORY</span></tt></p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>rel_path</dt>
+<dd><p class="first last">The tuple representing the relative path from the resources_subdir of the desired resource.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<hr class="docutils" />
+<p>A dictionary that can only have string keys with no overlap.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.io.SaversDict">
+<em class="property">class </em><tt class="descclassname">iris.io.</tt><tt class="descname">SaversDict</tt><a class="headerlink" href="#iris.io.SaversDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary that can only have string keys with no overlap.</p>
+<dl class="method">
+<dt id="iris.io.SaversDict.clear">
+<tt class="descname">clear</tt><big>(</big><big>)</big> &rarr; None.  Remove all items from D.<a class="headerlink" href="#iris.io.SaversDict.clear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.io.SaversDict.copy">
+<tt class="descname">copy</tt><big>(</big><big>)</big> &rarr; a shallow copy of D<a class="headerlink" href="#iris.io.SaversDict.copy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="iris.io.SaversDict.fromkeys">
+<em class="property">static </em><tt class="descname">fromkeys</tt><big>(</big><em>S</em><span class="optional">[</span>, <em>v</em><span class="optional">]</span><big>)</big> &rarr; New dict with keys from S and values equal to v.<a class="headerlink" href="#iris.io.SaversDict.fromkeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>v defaults to None.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.io.SaversDict.get">
+<tt class="descname">get</tt><big>(</big><em>k</em><span class="optional">[</span>, <em>d</em><span class="optional">]</span><big>)</big> &rarr; D[k] if k in D, else d.  d defaults to None.<a class="headerlink" href="#iris.io.SaversDict.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.io.SaversDict.has_key">
+<tt class="descname">has_key</tt><big>(</big><em>k</em><big>)</big> &rarr; True if D has a key k, else False<a class="headerlink" href="#iris.io.SaversDict.has_key" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.io.SaversDict.items">
+<tt class="descname">items</tt><big>(</big><big>)</big> &rarr; list of D's (key, value) pairs, as 2-tuples<a class="headerlink" href="#iris.io.SaversDict.items" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.io.SaversDict.iteritems">
+<tt class="descname">iteritems</tt><big>(</big><big>)</big> &rarr; an iterator over the (key, value) items of D<a class="headerlink" href="#iris.io.SaversDict.iteritems" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.io.SaversDict.iterkeys">
+<tt class="descname">iterkeys</tt><big>(</big><big>)</big> &rarr; an iterator over the keys of D<a class="headerlink" href="#iris.io.SaversDict.iterkeys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.io.SaversDict.itervalues">
+<tt class="descname">itervalues</tt><big>(</big><big>)</big> &rarr; an iterator over the values of D<a class="headerlink" href="#iris.io.SaversDict.itervalues" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.io.SaversDict.keys">
+<tt class="descname">keys</tt><big>(</big><big>)</big> &rarr; list of D's keys<a class="headerlink" href="#iris.io.SaversDict.keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.io.SaversDict.pop">
+<tt class="descname">pop</tt><big>(</big><em>k</em><span class="optional">[</span>, <em>d</em><span class="optional">]</span><big>)</big> &rarr; v, remove specified key and return the corresponding value.<a class="headerlink" href="#iris.io.SaversDict.pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>If key is not found, d is returned if given, otherwise KeyError is raised</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.io.SaversDict.popitem">
+<tt class="descname">popitem</tt><big>(</big><big>)</big> &rarr; (k, v), remove and return some (key, value) pair as a<a class="headerlink" href="#iris.io.SaversDict.popitem" title="Permalink to this definition">¶</a></dt>
+<dd><p>2-tuple; but raise KeyError if D is empty.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.io.SaversDict.setdefault">
+<tt class="descname">setdefault</tt><big>(</big><em>k</em><span class="optional">[</span>, <em>d</em><span class="optional">]</span><big>)</big> &rarr; D.get(k,d), also set D[k]=d if k not in D<a class="headerlink" href="#iris.io.SaversDict.setdefault" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.io.SaversDict.update">
+<tt class="descname">update</tt><big>(</big><em>E</em>, <em>**F</em><big>)</big> &rarr; None.  Update D from dict/iterable E and F.<a class="headerlink" href="#iris.io.SaversDict.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>If E has a .keys() method, does:     for k in E: D[k] = E[k]
+If E lacks .keys() method, does:     for (k, v) in E: D[k] = v
+In either case, this is followed by: for k in F: D[k] = F[k]</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.io.SaversDict.values">
+<tt class="descname">values</tt><big>(</big><big>)</big> &rarr; list of D's values<a class="headerlink" href="#iris.io.SaversDict.values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.io.SaversDict.viewitems">
+<tt class="descname">viewitems</tt><big>(</big><big>)</big> &rarr; a set-like object providing a view on D's items<a class="headerlink" href="#iris.io.SaversDict.viewitems" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.io.SaversDict.viewkeys">
+<tt class="descname">viewkeys</tt><big>(</big><big>)</big> &rarr; a set-like object providing a view on D's keys<a class="headerlink" href="#iris.io.SaversDict.viewkeys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.io.SaversDict.viewvalues">
+<tt class="descname">viewvalues</tt><big>(</big><big>)</big> &rarr; an object providing a view on D's values<a class="headerlink" href="#iris.io.SaversDict.viewvalues" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="io/format_picker.html" title="iris.io.format_picker"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="fileformats/um_cf_map.html" title="iris.fileformats.um_cf_map"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" >Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

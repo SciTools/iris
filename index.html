@@ -1,0 +1,192 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Iris documentation homepage &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="#" />
+
+<script type="text/javascript" src="_static/jquery.cycle.all.latest.js"></script>
+
+<style type="text/css">
+#slideshow { width: 400px; }
+#sliderNav { margin-left: 295px; margin-top: 10px; margin-bottom: 75px; cursor:pointer;cursor:hand; }
+#sliderNav div { float: left; height: 17px; width: 20px; background: url("_static/bullet_on.png"); }
+#sliderNav div.activeSlide { background: url("_static/bullet_off.png"); }
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $('.slideshow').cycle({
+        fx:      'fade',
+        pager:   '#sliderNav',
+        pagerAnchorBuilder: pagerFactory
+    });
+
+    function pagerFactory(idx, slide) {
+        var s = ' style="background-image: url("_static/bullet_on.png"); width:20px; height;17px; display: block;';
+        return '<div><a href="#"><span></span></a></div>';
+    };
+
+});
+
+$(document).bind('keypress', function(e) {
+	if (e.keyCode == 37)
+		$('.slideshow').cycle('prev');
+	else if (e.keyCode == 39)
+		$('.slideshow').cycle('next');
+});
+
+</script>
+
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="#"><img src="_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="#">home</a>|&nbsp;</li>
+        <!-- <li><a href="search.html">search</a>|&nbsp;</li> -->
+        <li><a href="examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="contents.html">contents</a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+
+
+<p style="font-style: italic; font-size: larger;">
+Iris seeks to provide a powerful, easy to use, and community-driven Python library for analysing and visualising meteorological and oceanographic data sets.
+</p>
+<p>
+With Iris you can:
+<ul>
+    <li>Use a single API to work on your data, irrespective of its original format.
+    <li>Read and write (CF-)netCDF, GRIB, and PP files.</li>
+
+    <li>Easily produce graphs and maps via integration with matplotlib and Basemap.</li>
+</ul>
+</p>
+
+
+<div style="float: left;">
+	<ul style="list-style: none; margin-left: -15px; margin-right: 0px; margin-top: 50px;">
+	<li>
+		<p class="biglink"><a class="biglink" href="userguide/index.html">User guide</a><br/>
+         	<span class="linkdescr">an introduction to Iris and its core concepts</span></p>
+	</li>
+	<li>
+		<p class="biglink"><a class="biglink" href="iris/iris.html">Reference documentation</a><br/>
+		<span class="linkdescr">complete Iris package reference help</span></p>
+	</li>
+	<li>
+		<p class="biglink"><a class="biglink" href="gallery.html">Gallery</a><br/>
+		<span class="linkdescr">a collection of images produced using Iris</span></p>
+	</li>
+	<li>
+		<p class="biglink"><a class="biglink" href="whats_new/changes.html">Change Log</a><br/>
+		<span class="linkdescr">changes in Iris' capabilities</span></p>
+	</li>
+	</ul>
+</div>
+
+<div style="float:right; padding-top: 50px; padding-right: 10px;">
+	<div class="slideshow">
+                <a href="examples/graphics/COP_maps.html"><img src="_images/COP_maps.png" style="height: 250px;"/></a>
+                <a href="examples/graphics/custom_file_loading.html"><img src="_images/custom_file_loading.png" style="margin-left:130px; height: 300px;"/></a>
+                <a href="examples/graphics/COP_1d_plot.html"><img src="_images/COP_1d_plot.png" style="margin-left:130px; height: 300px;"/></a>
+                <a href="examples/graphics/hovmoller.html"><img src="_images/hovmoller.png" style="margin-left:130px; height: 300px;"/></a>
+                <a href="examples/graphics/TEC.html"><img src="_images/TEC.png" style="margin-left:130px; height: 300px;"/></a>
+        </div>
+        <div id="sliderNav" align="center"></div>
+</div>
+
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="#">home</a>|&nbsp;</li>
+        <!-- <li><a href="search.html">search</a>|&nbsp;</li> -->
+        <li><a href="examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="contents.html">contents</a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

@@ -1,0 +1,384 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>2. Loading Iris cubes &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../index.html" />
+    <link rel="up" title="Iris user guide" href="index.html" />
+    <link rel="next" title="3. Navigating a cube" href="navigating_a_cube.html" />
+    <link rel="prev" title="1. Introduction" href="iris_cubes.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../index.html"><img src="../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="navigating_a_cube.html" title="3. Navigating a cube"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="iris_cubes.html" title="1. Introduction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="index.html" accesskey="U">Iris user guide</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">2. Loading Iris cubes</a><ul>
+<li><a class="reference internal" href="#loading-multiple-files">2.1. Loading multiple files</a></li>
+<li><a class="reference internal" href="#constrained-loading">2.2. Constrained loading</a></li>
+<li><a class="reference internal" href="#strict-loading">2.3. Strict loading</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="iris_cubes.html"
+                        title="previous chapter">1. Introduction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="navigating_a_cube.html"
+                        title="next chapter">3. Navigating a cube</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/userguide/loading_iris_cubes.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="loading-iris-cubes">
+<span id="id1"></span><h1>2. Loading Iris cubes<a class="headerlink" href="#loading-iris-cubes" title="Permalink to this headline">¶</a></h1>
+<p>To load a single file into a <strong>list</strong> of Iris cubes the <a class="reference internal" href="../iris/iris.html#iris.load" title="iris.load"><tt class="xref py py-func docutils literal"><span class="pre">iris.load()</span></tt></a> function is used:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">iris</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;/path/to/file&#39;</span>
+<span class="n">cubes</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Iris will attempt to return <strong>as few cubes as possible</strong> by collecting together multiple fields with a shared standard 
+name into a single multidimensional cube.</p>
+<p>The <a class="reference internal" href="../iris/iris.html#iris.load" title="iris.load"><tt class="xref py py-func docutils literal"><span class="pre">iris.load()</span></tt></a> function automatically recognises the format of the given files and attempts
+to produce Iris Cubes from their contents.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Currently there is support for CF NetCDF, GRIB 1 &amp; 2, PP and FieldsFiles file formats with a framework
+for this to be extended to custom formats.</p>
+</div>
+<p>In order to find out what has been loaded, the result can be printed:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;ukV2&#39;</span><span class="p">,</span> <span class="s">&#39;THOxayrk.pp&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cubes</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">cubes</span>
+<span class="go">0: air_potential_temperature           (forecast_period: 3; level_height: 40; grid_latitude: 810; grid_longitude: 622)</span>
+<span class="go">1: specific_humidity                   (forecast_period: 3; level_height: 40; grid_latitude: 810; grid_longitude: 622)</span>
+<span class="go">2: surface_altitude                    (forecast_period: 3; grid_latitude: 810; grid_longitude: 622)</span>
+</pre></div>
+</div>
+<p>This shows that there were 3 cubes as a result of loading the file, they were: <tt class="docutils literal"><span class="pre">air_potential_temperature</span></tt>,
+<tt class="docutils literal"><span class="pre">specific_humidity</span></tt> and <tt class="docutils literal"><span class="pre">surface_altitude</span></tt>.</p>
+<dl class="docutils">
+<dt>The <tt class="docutils literal"><span class="pre">surface_altitude</span></tt> cube was 3 dimensional with: </dt>
+<dd><ul class="first last simple">
+<li>the first dimension representing <tt class="docutils literal"><span class="pre">forecast_period</span></tt> of which there are 3 distinct values.</li>
+<li>the second and third dimensions have extents of 810 and 622 respectively and are represented by the
+<tt class="docutils literal"><span class="pre">grid_latitude</span></tt> and <tt class="docutils literal"><span class="pre">grid_longitude</span></tt> coordinates.</li>
+</ul>
+</dd>
+</dl>
+<p>Similarly, both the <tt class="docutils literal"><span class="pre">air_potential_temperature</span></tt> and <tt class="docutils literal"><span class="pre">specific_humidity</span></tt> cubes were 4 dimensional with the added 
+dimension related to the <tt class="docutils literal"><span class="pre">level_height</span></tt> coordinate.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The result of <a class="reference internal" href="../iris/iris.html#iris.load" title="iris.load"><tt class="xref py py-func docutils literal"><span class="pre">iris.load()</span></tt></a> is <strong>always</strong> a <a class="reference internal" href="../iris/iris/cube.html#iris.cube.CubeList" title="iris.cube.CubeList"><tt class="xref py py-class docutils literal"><span class="pre">list</span> <span class="pre">of</span> <span class="pre">cubes</span></tt></a>. Anything that can be done with 
+a Python <tt class="xref py py-class docutils literal"><span class="pre">list</span></tt> can be done with the resultant list of cubes.</p>
+</div>
+<div class="admonition hint">
+<p class="first admonition-title">Hint</p>
+<p>Throughout this user guide you will see the function <tt class="docutils literal"><span class="pre">iris.sample_data_path</span></tt> being used to get the filename for 
+the resources used in the examples. The result of this function is just a string.</p>
+<p>Using this function allows us to provide examples which will work across platforms and 
+with data installed in different locations, however in practice you will want to use your own strings:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;/path/to/file&#39;</span>
+<span class="n">cubes</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>To get the air potential temperature cube from the list of cubes returned by <a class="reference internal" href="../iris/iris.html#iris.load" title="iris.load"><tt class="xref py py-func docutils literal"><span class="pre">iris.load()</span></tt></a> in the previous 
+example, list indexing <em>could</em> be used:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;ukV2&#39;</span><span class="p">,</span> <span class="s">&#39;THOxayrk.pp&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cubes</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># get the first cube (list indexing is 0 based)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">air_potential_temperature</span> <span class="o">=</span> <span class="n">cubes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">air_potential_temperature</span>
+<span class="go">air_potential_temperature           (forecast_period: 3; level_height: 40; grid_latitude: 810; grid_longitude: 622)</span>
+<span class="go">     Dimension coordinates:</span>
+<span class="go">          forecast_period                           x                -                  -                    -</span>
+<span class="go">          level_height                              -                x                  -                    -</span>
+<span class="go">          grid_latitude                             -                -                  x                    -</span>
+<span class="go">          grid_longitude                            -                -                  -                    x</span>
+<span class="go">     Auxiliary coordinates:</span>
+<span class="go">          time                                      x                -                  -                    -</span>
+<span class="go">          model_level_number                        -                x                  -                    -</span>
+<span class="go">          sigma                                     -                x                  -                    -</span>
+<span class="go">          surface_altitude                          -                -                  x                    x</span>
+<span class="go">     Derived coordinates:</span>
+<span class="go">          altitude                                  -                x                  x                    x</span>
+<span class="go">     Scalar coordinates:</span>
+<span class="go">          source: Data from Met Office Unified Model 7.03</span>
+<span class="go">     Attributes:</span>
+<span class="go">          STASH: m01s00i004</span>
+</pre></div>
+</div>
+<p>Notice that the result of printing a <strong>cube</strong> is a little more verbose than it was when printing a 
+<strong>list of cubes</strong>. In addition to the very short summary which is provided when printing a list of 
+cubes, information is provided on the coordinates which constitute the cube in question. 
+This was the output discussed at the end of the <a class="reference internal" href="iris_cubes.html"><em>Introduction</em></a> section.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Dimensioned coordinates will have a dimension marker <tt class="docutils literal"><span class="pre">x</span></tt> in the appropriate column for 
+each cube data dimension that they describe.</p>
+</div>
+<div class="section" id="loading-multiple-files">
+<h2>2.1. Loading multiple files<a class="headerlink" href="#loading-multiple-files" title="Permalink to this headline">¶</a></h2>
+<p>To load more than one file into a list of cubes, a list of filenames can be provided to <a class="reference internal" href="../iris/iris.html#iris.load" title="iris.load"><tt class="xref py py-func docutils literal"><span class="pre">iris.load()</span></tt></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;ukV2&#39;</span><span class="p">,</span> <span class="s">&#39;THOxayrk.pp&#39;</span><span class="p">),</span>
+             <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;aPPglob1&#39;</span><span class="p">,</span> <span class="s">&#39;global.pp&#39;</span><span class="p">)]</span>
+<span class="n">cubes</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It is also possible to load one or more files with wildcard substitution using the expansion rules 
+defined <a class="reference external" href="http://docs.python.org/2.7/library/fnmatch.html#fnmatch" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">fnmatch</span></tt></a>.</p>
+<p>For example, to match <strong>zero or more characters</strong> in the filename, star wildcards can be used:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;globClim1&#39;</span><span class="p">,</span> <span class="s">&#39;*_wind.pp&#39;</span><span class="p">)</span>
+<span class="n">cubes</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="constrained-loading">
+<h2>2.2. Constrained loading<a class="headerlink" href="#constrained-loading" title="Permalink to this headline">¶</a></h2>
+<p>Given a large dataset, it is possible to restrict or constrain the load to match specific Iris cube metadata. 
+Constrained loading provides the ability to generate a cube from a specific subset of data that is of particular interest.</p>
+<p>As we have seen, loading the following file creates several Cubes:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;ukV2&#39;</span><span class="p">,</span> <span class="s">&#39;THOxayrk.pp&#39;</span><span class="p">)</span>
+<span class="n">cubes</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Specifying a name as a constraint argument to <a class="reference internal" href="../iris/iris.html#iris.load" title="iris.load"><tt class="xref py py-func docutils literal"><span class="pre">iris.load()</span></tt></a> will mean only cubes with a
+matching <a class="reference internal" href="../iris/iris/cube.html#iris.cube.Cube.name" title="iris.cube.Cube.name"><tt class="xref py py-meth docutils literal"><span class="pre">name</span></tt></a> will be returned:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;NetCDF&#39;</span><span class="p">,</span> <span class="s">&#39;label_and_climate&#39;</span><span class="p">,</span> <span class="s">&#39;FC_167_mon_19601101.nc&#39;</span><span class="p">)</span>
+<span class="n">cubes</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;air_temperature&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To constrain the load to multiple distinct constraints, a list of constraints can be provided. 
+This is equivalent to running load once for each constraint but is likely to be more efficient:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;ukV2&#39;</span><span class="p">,</span> <span class="s">&#39;THOxayrk.pp&#39;</span><span class="p">)</span>
+<span class="n">cubes</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;air_potential_temperature&#39;</span><span class="p">,</span> <span class="s">&#39;specific_humidity&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The <a class="reference internal" href="../iris/iris.html#iris.Constraint" title="iris.Constraint"><tt class="xref py py-class docutils literal"><span class="pre">iris.Constraint</span></tt></a> class can be used to restrict coordinate values on load. For example, to constrain the load to
+match a specific <tt class="docutils literal"><span class="pre">model_level_number</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;ukV2&#39;</span><span class="p">,</span> <span class="s">&#39;THOxayrk.pp&#39;</span><span class="p">)</span>
+<span class="n">level_10</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">model_level_number</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">cubes</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">level_10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Constraints can be combined using <tt class="docutils literal"><span class="pre">&amp;</span></tt> to represent a more restrictive constraint to <tt class="docutils literal"><span class="pre">load</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;ukV2&#39;</span><span class="p">,</span> <span class="s">&#39;THOxayrk.pp&#39;</span><span class="p">)</span>
+<span class="n">forecast_6</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">forecast_period</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">level_10</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">model_level_number</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">cubes</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">forecast_6</span> <span class="o">&amp;</span> <span class="n">level_10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As well as being able to combine constraints using <tt class="docutils literal"><span class="pre">&amp;</span></tt>, the <a class="reference internal" href="../iris/iris.html#iris.Constraint" title="iris.Constraint"><tt class="xref py py-class docutils literal"><span class="pre">iris.Constraint</span></tt></a> class can accept multiple
+arguments, and a list of values can be given to constrain a coordinate to one of a collection of values:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;ukV2&#39;</span><span class="p">,</span> <span class="s">&#39;THOxayrk.pp&#39;</span><span class="p">)</span>
+<span class="n">level_10_or_12_fp_6</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">model_level_number</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span> <span class="n">forecast_period</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">cubes</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">level_10_or_12_fp_6</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A common requirement is to limit the value of a coordinate to a specific range, this can be achieved by passing the constraint
+a function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">bottom_20_levels</span><span class="p">(</span><span class="n">cell</span><span class="p">):</span>
+   <span class="c"># return True or False as to whether the cell in question should be kept</span>
+   <span class="k">return</span> <span class="n">cell</span> <span class="o">&lt;=</span> <span class="mi">20</span>
+
+<span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;ukV2&#39;</span><span class="p">,</span> <span class="s">&#39;THOxayrk.pp&#39;</span><span class="p">)</span>
+<span class="n">level_lt_20</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">model_level_number</span><span class="o">=</span><span class="n">bottom_20_levels</span><span class="p">)</span>
+<span class="n">cubes</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">level_lt_20</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>As with many of the examples later in this documentation, the simple function above can be conveniently written as a 
+lambda function on a single line:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="n">bottom_20_levels</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">cell</span><span class="p">:</span> <span class="n">cell</span> <span class="o">&lt;=</span> <span class="mi">20</span>
+</pre></div>
+</div>
+</div>
+<p>Cube attributes can also be part of the constraint criteria. Supposing a cube attribute of <tt class="docutils literal"><span class="pre">STASH</span></tt> existed, as is the case
+when loading <tt class="docutils literal"><span class="pre">PP</span></tt> files, then specific STASH codes can be filtered:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;ukV2&#39;</span><span class="p">,</span> <span class="s">&#39;THOxayrk.pp&#39;</span><span class="p">)</span>
+<span class="n">level_10_with_stash</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">AttributeConstraint</span><span class="p">(</span><span class="n">STASH</span><span class="o">=</span><span class="s">&#39;m01s00i004&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">model_level_number</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">cubes</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">level_10_with_stash</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">For advanced usage there are further examples in the <a class="reference internal" href="../iris/iris.html#iris.Constraint" title="iris.Constraint"><tt class="xref py py-class docutils literal"><span class="pre">iris.Constraint</span></tt></a> reference documentation. </p>
+</div>
+</div>
+<div class="section" id="strict-loading">
+<h2>2.3. Strict loading<a class="headerlink" href="#strict-loading" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="../iris/iris.html#iris.load_strict" title="iris.load_strict"><tt class="xref py py-func docutils literal"><span class="pre">iris.load_strict()</span></tt></a> function is similar to <a class="reference internal" href="../iris/iris.html#iris.load" title="iris.load"><tt class="xref py py-func docutils literal"><span class="pre">iris.load()</span></tt></a> except that it can only return <em>one cube per constraint</em>.
+Providing no constraints to <a class="reference internal" href="../iris/iris.html#iris.load_strict" title="iris.load_strict"><tt class="xref py py-func docutils literal"><span class="pre">iris.load_strict()</span></tt></a> is equivalent to requesting exactly one cube of any type.</p>
+<p>A single cube is loaded in the following example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;aPPglob1&#39;</span><span class="p">,</span> <span class="s">&#39;global.pp&#39;</span><span class="p">)</span>
+<span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">cube</span>
+</pre></div>
+</div>
+<p>However, when attempting to load data which would result in anything other than one cube, an exception is raised:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;ukV2&#39;</span><span class="p">,</span> <span class="s">&#39;THOxayrk.pp&#39;</span><span class="p">)</span>
+<span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><a class="reference internal" href="../iris/iris.html#iris.load_strict" title="iris.load_strict"><tt class="xref py py-func docutils literal"><span class="pre">iris.load_strict()</span></tt></a> and <a class="reference internal" href="../iris/iris.html#iris.load" title="iris.load"><tt class="xref py py-func docutils literal"><span class="pre">iris.load()</span></tt></a> share many of the same features, hence multiple 
+files could be loaded with wildcard filenames or by providing a list of filenames.</p>
+</div>
+<p>The strict nature of <a class="reference internal" href="../iris/iris.html#iris.load_strict" title="iris.load_strict"><tt class="xref py py-func docutils literal"><span class="pre">iris.load_strict()</span></tt></a> means that, when combined with constrained loading, it is 
+possible to ensure that precisely what was asked for on load is given - otherwise an exception is raised. 
+This fact can be utilised to make code only run successfully if the data provided has the expected criteria.</p>
+<p>For example, suppose that code needed &#8216;air_potential_temperature&#8217; in order to run:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">iris</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;ukV2&#39;</span><span class="p">,</span> <span class="s">&#39;THOxayrk.pp&#39;</span><span class="p">)</span>
+<span class="n">air_pot_temp</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;air_potential_temperature&#39;</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">air_pot_temp</span>
+</pre></div>
+</div>
+<p>Should the file not contain exactly one cube with a standard name of air potential temperature, an exception will be raised.</p>
+<p>Similarly, supposing a routine needed both &#8216;surface_altitude&#8217; and &#8216;specific_humidity&#8217; to be able to run:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">iris</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;ukV2&#39;</span><span class="p">,</span> <span class="s">&#39;THOxayrk.pp&#39;</span><span class="p">)</span>
+<span class="n">altitude_cube</span><span class="p">,</span> <span class="n">humidity_cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;surface_altitude&#39;</span><span class="p">,</span> <span class="s">&#39;specific_humidity&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The result of <a class="reference internal" href="../iris/iris.html#iris.load_strict" title="iris.load_strict"><tt class="xref py py-func docutils literal"><span class="pre">iris.load_strict()</span></tt></a> in this case will be a list of 2 cubes ordered by the constraints provided. 
+Multiple assignment has been used to put these two cubes into separate variables.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>In Python, lists of a pre-known length and order can be exploited using <em>multiple assignment</em>:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">number_one</span><span class="p">,</span> <span class="n">number_two</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">number_one</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">number_two</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="navigating_a_cube.html" title="3. Navigating a cube"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="iris_cubes.html" title="1. Introduction"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="index.html" >Iris user guide</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

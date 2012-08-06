@@ -1,0 +1,66 @@
+.. _iris.analysis.maths:
+
+===================
+iris.analysis.maths
+===================
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.analysis.maths
+
+In this module:
+
+ * :py:obj:`abs`
+ * :py:obj:`add`
+ * :py:obj:`divide`
+ * :py:obj:`exponentiate`
+ * :py:obj:`intersection_of_cubes`
+ * :py:obj:`log`
+ * :py:obj:`log10`
+ * :py:obj:`log2`
+ * :py:obj:`multiply`
+ * :py:obj:`subtract`
+
+
+----------
+
+.. autofunction:: iris.analysis.maths.abs
+
+----------
+
+.. autofunction:: iris.analysis.maths.add
+
+----------
+
+.. autofunction:: iris.analysis.maths.divide
+
+----------
+
+.. autofunction:: iris.analysis.maths.exponentiate
+
+----------
+
+.. autofunction:: iris.analysis.maths.intersection_of_cubes
+
+----------
+
+.. autofunction:: iris.analysis.maths.log
+
+----------
+
+.. autofunction:: iris.analysis.maths.log10
+
+----------
+
+.. autofunction:: iris.analysis.maths.log2
+
+----------
+
+.. autofunction:: iris.analysis.maths.multiply
+
+----------
+
+.. autofunction:: iris.analysis.maths.subtract
+

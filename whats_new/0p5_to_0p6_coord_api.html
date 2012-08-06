@@ -1,0 +1,233 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The new Coord API in release 0.6 &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../index.html" />
+    <link rel="up" title="Changes in Iris" href="changes.html" />
+    <link rel="next" title="Iris examples" href="../examples/index.html" />
+    <link rel="prev" title="Changes in Iris" href="changes.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../index.html"><img src="../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../examples/index.html" title="Iris examples"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="changes.html" title="Changes in Iris"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="changes.html" accesskey="U">Changes in Iris</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">The new Coord API in release 0.6</a><ul>
+<li><a class="reference internal" href="#examples-of-the-new-api">Examples of the new API</a></li>
+<li><a class="reference internal" href="#how-to-modify-existing-code">How to modify existing code</a><ul>
+<li><a class="reference internal" href="#add-a-coordinate-to-a-cube">Add a coordinate to a cube</a></li>
+<li><a class="reference internal" href="#retrieving-a-single-coordinate-from-a-cube">Retrieving a single coordinate from a cube</a></li>
+<li><a class="reference internal" href="#retrieving-multiple-coordinates-from-a-cube">Retrieving multiple coordinates from a cube</a></li>
+<li><a class="reference internal" href="#identifying-coordinate-data-dimensions-from-a-cube">Identifying coordinate data dimensions from a cube</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#further-help">Further help</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="changes.html"
+                        title="previous chapter">Changes in Iris</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../examples/index.html"
+                        title="next chapter">Iris examples</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/whats_new/0p5_to_0p6_coord_api.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-new-coord-api-in-release-0-6">
+<span id="new-coord-api"></span><h1>The new Coord API in release 0.6<a class="headerlink" href="#the-new-coord-api-in-release-0-6" title="Permalink to this headline">¶</a></h1>
+<p>In order to support some forthcoming Iris features, a new coordinate API has been designed to replace the old.
+Dictionary access to coordinates from a cube (via the <tt class="docutils literal"><span class="pre">cube.coords</span></tt> property), has been replaced by the 
+<tt class="docutils literal"><span class="pre">cube.coord</span></tt> and <tt class="docutils literal"><span class="pre">cube.coords</span></tt> methods.</p>
+<div class="section" id="examples-of-the-new-api">
+<h2>Examples of the new API<a class="headerlink" href="#examples-of-the-new-api" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Add a coord</span>
+<span class="n">level_coord</span> <span class="o">=</span> <span class="n">ExplicitCoord</span><span class="p">(</span><span class="s">&quot;level&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s">&quot;1&quot;</span><span class="p">,</span> <span class="n">points</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">])</span>
+<span class="n">cube</span><span class="o">.</span><span class="n">add_coord</span><span class="p">(</span><span class="n">level_coord</span><span class="p">)</span>
+
+<span class="c"># Retrieve the &quot;level&quot; coord (or fail if there is not exactly one found)</span>
+<span class="n">brian_coord</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s">&quot;level&quot;</span><span class="p">)</span>
+
+<span class="c"># Remove the &quot;level&quot; coord</span>
+<span class="n">cube</span><span class="o">.</span><span class="n">remove_coord</span><span class="p">(</span><span class="s">&quot;level&quot;</span><span class="p">)</span>
+
+<span class="c"># Retrieve a list of non-dimensional coords (may be an empty list)</span>
+<span class="n">coords</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">coords</span><span class="p">(</span><span class="n">dimensions</span><span class="o">=</span><span class="p">[])</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="how-to-modify-existing-code">
+<h2>How to modify existing code<a class="headerlink" href="#how-to-modify-existing-code" title="Permalink to this headline">¶</a></h2>
+<p>To update your Iris 0.5 code for the 0.6 API, the following guidelines will be of assistance.</p>
+<div class="section" id="add-a-coordinate-to-a-cube">
+<h3>Add a coordinate to a cube<a class="headerlink" href="#add-a-coordinate-to-a-cube" title="Permalink to this headline">¶</a></h3>
+<p>Iris version 0.5 allowed coordinate addition with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cube</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s">&quot;level&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">level_coord</span>
+</pre></div>
+</div>
+<p>As of Iris 0.6 a new method, <tt class="docutils literal"><span class="pre">cube.add_coord</span></tt> should be used instead:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cube</span><span class="o">.</span><span class="n">add_coord</span><span class="p">(</span><span class="n">level_coord</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="retrieving-a-single-coordinate-from-a-cube">
+<h3>Retrieving a single coordinate from a cube<a class="headerlink" href="#retrieving-a-single-coordinate-from-a-cube" title="Permalink to this headline">¶</a></h3>
+<p>Iris version 0.5 allowed coordinate retrieval with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">level_coord</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s">&quot;level&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>As of Iris 0.6 the new method, <tt class="docutils literal"><span class="pre">cube.coord</span></tt> should be used instead:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">level_coord</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s">&quot;level&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="retrieving-multiple-coordinates-from-a-cube">
+<h3>Retrieving multiple coordinates from a cube<a class="headerlink" href="#retrieving-multiple-coordinates-from-a-cube" title="Permalink to this headline">¶</a></h3>
+<p>In Iris version 0.5 it was possible to get all non-data describing coordinates with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">my_coords</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">query_coords</span><span class="p">(</span><span class="n">dimensions</span><span class="o">=</span><span class="p">[])</span>
+</pre></div>
+</div>
+<p>The new API&#8217;s equivalent is through using <tt class="docutils literal"><span class="pre">cube.coords</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">coords</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">coords</span><span class="p">(</span><span class="n">dimensions</span><span class="o">=</span><span class="p">[])</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="identifying-coordinate-data-dimensions-from-a-cube">
+<h3>Identifying coordinate data dimensions from a cube<a class="headerlink" href="#identifying-coordinate-data-dimensions-from-a-cube" title="Permalink to this headline">¶</a></h3>
+<p>In Iris version 0.5 it was possible to identify the data dimension of a coordinate with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">data_dim</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="n">level_coord</span><span class="o">.</span><span class="n">axis_name</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The new API&#8217;s equivalent is through using <tt class="docutils literal"><span class="pre">cube.coord_dims</span></tt>, which returns a list of data dimensions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">data_dims</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">coord_dims</span><span class="p">(</span><span class="n">level_coord</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="further-help">
+<h2>Further help<a class="headerlink" href="#further-help" title="Permalink to this headline">¶</a></h2>
+<p>Many of the changes should be a trivial search &amp; replace for <tt class="docutils literal"><span class="pre">.coords[</span></tt>, <tt class="docutils literal"><span class="pre">.axes</span></tt> and <tt class="docutils literal"><span class="pre">.query_coords</span></tt>. 
+If you have any complications in converting your code, please do not hesitate to contact the Iris team.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../examples/index.html" title="Iris examples"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="changes.html" title="Changes in Iris"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="changes.html" >Changes in Iris</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

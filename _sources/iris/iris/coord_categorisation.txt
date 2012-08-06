@@ -1,0 +1,91 @@
+.. _iris.coord_categorisation:
+
+=========================
+iris.coord_categorisation
+=========================
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.coord_categorisation
+
+In this module:
+
+ * :py:obj:`add_categorised_coord`
+ * :py:obj:`add_day_of_month`
+ * :py:obj:`add_month`
+ * :py:obj:`add_month_fullname`
+ * :py:obj:`add_month_number`
+ * :py:obj:`add_month_shortname`
+ * :py:obj:`add_season`
+ * :py:obj:`add_season_month_initials`
+ * :py:obj:`add_season_number`
+ * :py:obj:`add_season_year`
+ * :py:obj:`add_weekday`
+ * :py:obj:`add_weekday_fullname`
+ * :py:obj:`add_weekday_number`
+ * :py:obj:`add_weekday_shortname`
+ * :py:obj:`add_year`
+
+
+----------
+
+.. autofunction:: iris.coord_categorisation.add_categorised_coord
+
+----------
+
+.. autofunction:: iris.coord_categorisation.add_day_of_month
+
+----------
+
+.. autofunction:: iris.coord_categorisation.add_month
+
+----------
+
+.. autofunction:: iris.coord_categorisation.add_month_fullname
+
+----------
+
+.. autofunction:: iris.coord_categorisation.add_month_number
+
+----------
+
+.. autofunction:: iris.coord_categorisation.add_month_shortname
+
+----------
+
+.. autofunction:: iris.coord_categorisation.add_season
+
+----------
+
+.. autofunction:: iris.coord_categorisation.add_season_month_initials
+
+----------
+
+.. autofunction:: iris.coord_categorisation.add_season_number
+
+----------
+
+.. autofunction:: iris.coord_categorisation.add_season_year
+
+----------
+
+.. autofunction:: iris.coord_categorisation.add_weekday
+
+----------
+
+.. autofunction:: iris.coord_categorisation.add_weekday_fullname
+
+----------
+
+.. autofunction:: iris.coord_categorisation.add_weekday_number
+
+----------
+
+.. autofunction:: iris.coord_categorisation.add_weekday_shortname
+
+----------
+
+.. autofunction:: iris.coord_categorisation.add_year
+

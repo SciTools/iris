@@ -1,0 +1,293 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Configure git &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Git for development" href="git_development.html" />
+    <link rel="next" title="Development workflow" href="development_workflow.html" />
+    <link rel="prev" title="Set up your fork" href="set_up_fork.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="development_workflow.html" title="Development workflow"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="set_up_fork.html" title="Set up your fork"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris developer guide</a> &raquo;</li>
+          <li><a href="index.html" >Working with <em>iris</em> source code</a> &raquo;</li>
+          <li><a href="git_development.html" accesskey="U">Git for development</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Configure git</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#in-detail">In detail</a><ul>
+<li><a class="reference internal" href="#user-name-and-user-email">user.name and user.email</a></li>
+<li><a class="reference internal" href="#aliases">Aliases</a></li>
+<li><a class="reference internal" href="#editor">Editor</a></li>
+<li><a class="reference internal" href="#merging">Merging</a></li>
+<li><a class="reference internal" href="#fancy-log-output">Fancy log output</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="set_up_fork.html"
+                        title="previous chapter">Set up your fork</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="development_workflow.html"
+                        title="next chapter">Development workflow</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/developers_guide/gitwash/configure_git.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="configure-git">
+<span id="id1"></span><h1>Configure git<a class="headerlink" href="#configure-git" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<span id="git-config-basic"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>Your personal git configurations are saved in the <tt class="docutils literal"><span class="pre">.gitconfig</span></tt> file in
+your home directory.</p>
+<p>Here is an example <tt class="docutils literal"><span class="pre">.gitconfig</span></tt> file:</p>
+<div class="highlight-python"><pre>[user]
+        name = Your Name
+        email = you@yourdomain.example.com
+
+[alias]
+        ci = commit -a
+        co = checkout
+        st = status
+        stat = status
+        br = branch
+        wdiff = diff --color-words
+
+[core]
+        editor = vim
+
+[merge]
+        summary = true</pre>
+</div>
+<p>You can edit this file directly or you can use the <tt class="docutils literal"><span class="pre">git</span> <span class="pre">config</span> <span class="pre">--global</span></tt>
+command:</p>
+<div class="highlight-python"><pre>git config --global user.name "Your Name"
+git config --global user.email you@yourdomain.example.com
+git config --global alias.ci "commit -a"
+git config --global alias.co checkout
+git config --global alias.st "status -a"
+git config --global alias.stat "status -a"
+git config --global alias.br branch
+git config --global alias.wdiff "diff --color-words"
+git config --global core.editor vim
+git config --global merge.summary true</pre>
+</div>
+<p>To set up on another computer, you can copy your <tt class="docutils literal"><span class="pre">~/.gitconfig</span></tt> file,
+or run the commands above.</p>
+</div>
+<div class="section" id="in-detail">
+<h2>In detail<a class="headerlink" href="#in-detail" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="user-name-and-user-email">
+<h3>user.name and user.email<a class="headerlink" href="#user-name-and-user-email" title="Permalink to this headline">¶</a></h3>
+<p>It is good practice to tell <a class="reference external" href="http://git-scm.com/">git</a> who you are, for labeling any changes
+you make to the code.  The simplest way to do this is from the command
+line:</p>
+<div class="highlight-python"><pre>git config --global user.name "Your Name"
+git config --global user.email you@yourdomain.example.com</pre>
+</div>
+<p>This will write the settings into your git configuration file,  which
+should now contain a user section with your name and email:</p>
+<div class="highlight-python"><pre>[user]
+      name = Your Name
+      email = you@yourdomain.example.com</pre>
+</div>
+<p>Of course you&#8217;ll need to replace <tt class="docutils literal"><span class="pre">Your</span> <span class="pre">Name</span></tt> and <tt class="docutils literal"><span class="pre">you&#64;yourdomain.example.com</span></tt>
+with your actual name and email address.</p>
+</div>
+<div class="section" id="aliases">
+<h3>Aliases<a class="headerlink" href="#aliases" title="Permalink to this headline">¶</a></h3>
+<p>You might well benefit from some aliases to common commands.</p>
+<p>For example, you might well want to be able to shorten <tt class="docutils literal"><span class="pre">git</span> <span class="pre">checkout</span></tt>
+to <tt class="docutils literal"><span class="pre">git</span> <span class="pre">co</span></tt>.  Or you may want to alias <tt class="docutils literal"><span class="pre">git</span> <span class="pre">diff</span> <span class="pre">--color-words</span></tt>
+(which gives a nicely formatted output of the diff) to <tt class="docutils literal"><span class="pre">git</span> <span class="pre">wdiff</span></tt></p>
+<p>The following <tt class="docutils literal"><span class="pre">git</span> <span class="pre">config</span> <span class="pre">--global</span></tt> commands:</p>
+<div class="highlight-python"><pre>git config --global alias.ci "commit -a"
+git config --global alias.co checkout
+git config --global alias.st "status -a"
+git config --global alias.stat "status -a"
+git config --global alias.br branch
+git config --global alias.wdiff "diff --color-words"</pre>
+</div>
+<p>will create an <tt class="docutils literal"><span class="pre">alias</span></tt> section in your <tt class="docutils literal"><span class="pre">.gitconfig</span></tt> file with contents
+like this:</p>
+<div class="highlight-python"><pre>[alias]
+        ci = commit -a
+        co = checkout
+        st = status -a
+        stat = status -a
+        br = branch
+        wdiff = diff --color-words</pre>
+</div>
+</div>
+<div class="section" id="editor">
+<h3>Editor<a class="headerlink" href="#editor" title="Permalink to this headline">¶</a></h3>
+<p>You may also want to make sure that your editor of choice is used</p>
+<div class="highlight-python"><pre>git config --global core.editor vim</pre>
+</div>
+</div>
+<div class="section" id="merging">
+<h3>Merging<a class="headerlink" href="#merging" title="Permalink to this headline">¶</a></h3>
+<p>To enforce summaries when doing merges (<tt class="docutils literal"><span class="pre">~/.gitconfig</span></tt> file again):</p>
+<div class="highlight-python"><pre>[merge]
+   log = true</pre>
+</div>
+<p>Or from the command line:</p>
+<div class="highlight-python"><pre>git config --global merge.log true</pre>
+</div>
+</div>
+<div class="section" id="fancy-log-output">
+<span id="fancy-log"></span><h3>Fancy log output<a class="headerlink" href="#fancy-log-output" title="Permalink to this headline">¶</a></h3>
+<p>This is a very nice alias to get a fancy log output; it should go in the
+<tt class="docutils literal"><span class="pre">alias</span></tt> section of your <tt class="docutils literal"><span class="pre">.gitconfig</span></tt> file:</p>
+<div class="highlight-python"><pre>lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)[%an]%Creset' --abbrev-commit --date=relative</pre>
+</div>
+<p>You use the alias with:</p>
+<div class="highlight-python"><pre>git lg</pre>
+</div>
+<p>and it gives graph / text output something like this (but with color!):</p>
+<div class="highlight-python"><pre>* 6d8e1ee - (HEAD, origin/my-fancy-feature, my-fancy-feature) NF - a fancy file (45 minutes ago) [Matthew Brett]
+*   d304a73 - (origin/placeholder, placeholder) Merge pull request #48 from hhuuggoo/master (2 weeks ago) [Jonathan Terhorst]
+|\  
+| * 4aff2a8 - fixed bug 35, and added a test in test_bugfixes (2 weeks ago) [Hugo]
+|/  
+* a7ff2e5 - Added notes on discussion/proposal made during Data Array Summit. (2 weeks ago) [Corran Webster]
+* 68f6752 - Initial implimentation of AxisIndexer - uses 'index_by' which needs to be changed to a call on an Axes object - this is all very sketchy right now. (2 weeks ago) [Corr
+*   376adbd - Merge pull request #46 from terhorst/master (2 weeks ago) [Jonathan Terhorst]
+|\  
+| * b605216 - updated joshu example to current api (3 weeks ago) [Jonathan Terhorst]
+| * 2e991e8 - add testing for outer ufunc (3 weeks ago) [Jonathan Terhorst]
+| * 7beda5a - prevent axis from throwing an exception if testing equality with non-axis object (3 weeks ago) [Jonathan Terhorst]
+| * 65af65e - convert unit testing code to assertions (3 weeks ago) [Jonathan Terhorst]
+| *   956fbab - Merge remote-tracking branch 'upstream/master' (3 weeks ago) [Jonathan Terhorst]
+| |\  
+| |/</pre>
+</div>
+<p>Thanks to Yury V. Zaytsev for posting it.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="development_workflow.html" title="Development workflow"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="set_up_fork.html" title="Set up your fork"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris developer guide</a> &raquo;</li>
+          <li><a href="index.html" >Working with <em>iris</em> source code</a> &raquo;</li>
+          <li><a href="git_development.html" >Git for development</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

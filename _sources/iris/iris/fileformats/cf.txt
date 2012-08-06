@@ -1,0 +1,226 @@
+.. _iris.fileformats.cf:
+
+===================
+iris.fileformats.cf
+===================
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.fileformats.cf
+
+In this module:
+
+ * :py:obj:`CFAncillaryDataVariable`
+ * :py:obj:`CFAuxiliaryCoordinateVariable`
+ * :py:obj:`CFBoundaryVariable`
+ * :py:obj:`CFClimatologyVariable`
+ * :py:obj:`CFCoordinateVariable`
+ * :py:obj:`CFDataVariable`
+ * :py:obj:`CFGridMappingVariable`
+ * :py:obj:`CFGroup`
+ * :py:obj:`CFLabelVariable`
+ * :py:obj:`CFMeasureVariable`
+ * :py:obj:`CFReader`
+ * :py:obj:`CFVariable`
+
+
+----------
+
+A CF-netCDF ancillary data variable is a variable that provides metadata
+about the individual values of another data variable.
+
+Identified by the CF-netCDF variable attribute 'ancillary_variables'.
+
+Ref: [CF] Section 3.4. Ancillary Data.
+
+..
+
+    .. autoclass:: iris.fileformats.cf.CFAncillaryDataVariable
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+A CF-netCDF auxiliary coordinate variable is any netCDF variable that contains
+coordinate data, but is not a CF-netCDF coordinate variable by definition.
+
+There is no relationship between the name of a CF-netCDF auxiliary coordinate
+variable and the name(s) of its dimension(s).
+
+Identified by the CF-netCDF variable attribute 'coordinates'.
+Also see :class:`iris.fileformats.cf.CFLabelVariable`.
+
+Ref: [CF] Chapter 5. Coordinate Systems.
+     [CF] Section 6.2. Alternative Coordinates.
+
+..
+
+    .. autoclass:: iris.fileformats.cf.CFAuxiliaryCoordinateVariable
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+A CF-netCDF boundary variable is associated with a CF-netCDF variable that contains
+coordinate data. When a data value provides information about conditions in a cell
+occupying a region of space/time or some other dimension, the boundary variable
+provides a description of cell extent.
+
+A CF-netCDF boundary variable will have one more dimension than its associated
+CF-netCDF coordinate variable or CF-netCDF auxiliary coordinate variable.
+
+Identified by the CF-netCDF variable attribute 'bounds'.
+
+Ref: [CF] Section 7.1. Cell Boundaries.
+
+..
+
+    .. autoclass:: iris.fileformats.cf.CFBoundaryVariable
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+A CF-netCDF climatology variable is associated with a CF-netCDF variable that contains
+coordinate data. When a data value provides information about conditions in a cell
+occupying a region of space/time or some other dimension, the climatology variable
+provides a climatological description of cell extent.
+
+A CF-netCDF climatology variable will have one more dimension than its associated
+CF-netCDF coordinate variable.
+
+Identified by the CF-netCDF variable attribute 'climatology'.
+
+Ref: [CF] Section 7.4. Climatological Statistics
+
+..
+
+    .. autoclass:: iris.fileformats.cf.CFClimatologyVariable
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+A CF-netCDF coordinate variable is a one-dimensional variable with the same name
+as its dimension, and it is defined as a numeric data type with values that are
+ordered monotonically. Missing values are not allowed in CF-netCDF coordinate
+variables. Also see [NUG] Section 2.3.1.
+
+Identified by the above criterion, there is no associated CF-netCDF variable
+attribute.
+
+Ref: [CF] 1.2. Terminology.
+
+..
+
+    .. autoclass:: iris.fileformats.cf.CFCoordinateVariable
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+A CF-netCDF variable containing data pay-load that maps to an Iris :class:`iris.cube.Cube`.
+
+..
+
+    .. autoclass:: iris.fileformats.cf.CFDataVariable
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+A CF-netCDF grid mapping variable contains a list of specific attributes that
+define a particular grid mapping. A CF-netCDF grid mapping variable must contain
+the attribute 'grid_mapping_name'.
+
+Based on the value of the 'grid_mapping_name' attribute, there are associated
+standard names of CF-netCDF coordinate variables that contain the mapping's
+independent variables.
+
+Identified by the CF-netCDF variable attribute 'grid_mapping'.
+
+Ref: [CF] Section 5.6. Horizontal Coordinate Reference Systems, Grid Mappings, and Projections.
+     [CF] Appendix F. Grid Mappings.
+
+..
+
+    .. autoclass:: iris.fileformats.cf.CFGridMappingVariable
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Represents a collection of 'NetCDF Climate and Forecast (CF) Metadata
+Conventions' variables and netCDF global attributes.
+
+..
+
+    .. autoclass:: iris.fileformats.cf.CFGroup
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+A CF-netCDF CF label variable is any netCDF variable that contain string
+textual information, or labels.
+
+Identified by the CF-netCDF variable attribute 'coordinates'.
+Also see :class:`iris.fileformats.cf.CFAuxiliaryCoordinateVariable`.
+
+Ref: [CF] Section 6.1. Labels.
+
+..
+
+    .. autoclass:: iris.fileformats.cf.CFLabelVariable
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+A CF-netCDF measure variable is a variable that contains cell areas or volumes.
+
+Identified by the CF-netCDF variable attribute 'cell_measures'.
+
+Ref: [CF] Section 7.2. Cell Measures.
+
+..
+
+    .. autoclass:: iris.fileformats.cf.CFMeasureVariable
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+This class allows the contents of a netCDF file to be interpreted according 
+to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
+
+..
+
+    .. autoclass:: iris.fileformats.cf.CFReader
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Abstract base class wrapper for a CF-netCDF variable.
+
+..
+
+    .. autoclass:: iris.fileformats.cf.CFVariable
+        :members:
+        :undoc-members:
+        :inherited-members:
+

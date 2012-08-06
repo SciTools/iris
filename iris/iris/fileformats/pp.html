@@ -1,0 +1,488 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.fileformats.pp &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../../index.html" />
+    <link rel="up" title="iris.fileformats" href="../fileformats.html" />
+    <link rel="next" title="iris.fileformats.rules" href="rules.html" />
+    <link rel="prev" title="iris.fileformats.netcdf" href="netcdf.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../../index.html"><img src="../../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="rules.html" title="iris.fileformats.rules"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="netcdf.html" title="iris.fileformats.netcdf"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../fileformats.html" accesskey="U">iris.fileformats</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="netcdf.html"
+                        title="previous chapter">iris.fileformats.netcdf</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="rules.html"
+                        title="next chapter">iris.fileformats.rules</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/iris/iris/fileformats/pp.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-fileformats-pp">
+<span id="id1"></span><h1>iris.fileformats.pp<a class="headerlink" href="#iris-fileformats-pp" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.fileformats.pp"></span><p>Provides UK Met Office Post Process (PP) format specific capabilities.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.fileformats.pp.load" title="iris.fileformats.pp.load"><tt class="xref py py-obj docutils literal"><span class="pre">load</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.pp.save" title="iris.fileformats.pp.save"><tt class="xref py py-obj docutils literal"><span class="pre">save</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.pp.PPField" title="iris.fileformats.pp.PPField"><tt class="xref py py-obj docutils literal"><span class="pre">PPField</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.pp.add_load_rules" title="iris.fileformats.pp.add_load_rules"><tt class="xref py py-obj docutils literal"><span class="pre">add_load_rules</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.pp.reset_load_rules" title="iris.fileformats.pp.reset_load_rules"><tt class="xref py py-obj docutils literal"><span class="pre">reset_load_rules</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.pp.add_save_rules" title="iris.fileformats.pp.add_save_rules"><tt class="xref py py-obj docutils literal"><span class="pre">add_save_rules</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.pp.reset_save_rules" title="iris.fileformats.pp.reset_save_rules"><tt class="xref py py-obj docutils literal"><span class="pre">reset_save_rules</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.pp.STASH" title="iris.fileformats.pp.STASH"><tt class="xref py py-obj docutils literal"><span class="pre">STASH</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.pp.load">
+<tt class="descclassname">iris.fileformats.pp.</tt><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>read_data=False</em><big>)</big><a class="headerlink" href="#iris.fileformats.pp.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an iterator of PPFields given a filename.</p>
+<p>Args:</p>
+<ul class="simple">
+<li>filename - string of the filename to load.</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>read_data - boolean </dt>
+<dd><p class="first last">Flag whether or not the data should be read, if False an empty data manager
+will be provided which can subsequently load the data on demand. Default False.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>To iterate through all of the fields in a pp file:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">iris</span><span class="o">.</span><span class="n">fileformats</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="k">print</span> <span class="n">field</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.pp.save">
+<tt class="descclassname">iris.fileformats.pp.</tt><tt class="descname">save</tt><big>(</big><em>cube</em>, <em>target</em>, <em>append=False</em>, <em>field_coords=None</em><big>)</big><a class="headerlink" href="#iris.fileformats.pp.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use the PP saving rules (and any user rules) to save a cube to a PP file.</p>
+<p>Args:</p>
+<blockquote>
+<div><ul class="simple">
+<li>cube         - A <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>, <a class="reference internal" href="../cube.html#iris.cube.CubeList" title="iris.cube.CubeList"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.CubeList</span></tt></a> or list of cubes.</li>
+<li>target       - A filename or open file handle.</li>
+</ul>
+</div></blockquote>
+<p>Kwargs:</p>
+<blockquote>
+<div><ul>
+<li><dl class="first docutils">
+<dt>append       - Whether to start a new file afresh or add the cube(s) to the end of the file. </dt>
+<dd><p class="first last">Only applicable when target is a filename, not a file handle.
+Default is False.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>field_coords - list of 2 coords or coord names which are to be used for</dt>
+<dd><p class="first last">reducing the given cube into 2d slices, which will ultimately 
+determine the x and y coordinates of the resulting fields. 
+If None, the final two  dimensions are chosen for slicing.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<p>See also <a class="reference internal" href="../io.html#iris.io.save" title="iris.io.save"><tt class="xref py py-func docutils literal"><span class="pre">iris.io.save()</span></tt></a>.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<p>A generic class for PP fields - not specific to a particular header release number.</p>
+<p>A PPField instance can easily access the PP header &#8220;words&#8221; as attributes with some added useful capabilities:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">iris</span><span class="o">.</span><span class="n">fileformats</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="k">print</span> <span class="n">field</span><span class="o">.</span><span class="n">lbyr</span>
+    <span class="k">print</span> <span class="n">field</span><span class="o">.</span><span class="n">lbuser</span>
+    <span class="k">print</span> <span class="n">field</span><span class="o">.</span><span class="n">lbuser</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">print</span> <span class="n">field</span><span class="o">.</span><span class="n">lbtim</span>
+    <span class="k">print</span> <span class="n">field</span><span class="o">.</span><span class="n">lbtim</span><span class="o">.</span><span class="n">ia</span>
+    <span class="k">print</span> <span class="n">field</span><span class="o">.</span><span class="n">t1</span>
+</pre></div>
+</div>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.fileformats.pp.PPField">
+<em class="property">class </em><tt class="descclassname">iris.fileformats.pp.</tt><tt class="descname">PPField</tt><a class="headerlink" href="#iris.fileformats.pp.PPField" title="Permalink to this definition">¶</a></dt>
+<dd><p>PPField instances are always created empty, and attributes are added subsequently.</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">For PP field loading see <a class="reference internal" href="#iris.fileformats.pp.load" title="iris.fileformats.pp.load"><tt class="xref py py-func docutils literal"><span class="pre">load()</span></tt></a>.</p>
+</div>
+<dl class="method">
+<dt id="iris.fileformats.pp.PPField.horiz_coord_system">
+<tt class="descname">horiz_coord_system</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.fileformats.pp.PPField.horiz_coord_system" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a LatLonCS for this PPField.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>A LatLonCS with the appropriate earth shape, meridian and pole position.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.fileformats.pp.PPField.read_data">
+<tt class="descname">read_data</tt><big>(</big><em>ff_file</em>, <em>pp_data_depth</em>, <em>pp_data_shape</em>, <em>pp_data_type</em><big>)</big><a class="headerlink" href="#iris.fileformats.pp.PPField.read_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.fileformats.pp.PPField.regular_bounds">
+<tt class="descname">regular_bounds</tt><big>(</big><em>xy</em><big>)</big><a class="headerlink" href="#iris.fileformats.pp.PPField.regular_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return regular bounds from the PPField, or fail if not regular.</p>
+<p>Args:</p>
+<blockquote>
+<div><ul class="simple">
+<li>xy - a string, &#8220;x&#8221; or &#8220;y&#8221; to specify the dimension for which to return points.</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.fileformats.pp.PPField.regular_points">
+<tt class="descname">regular_points</tt><big>(</big><em>xy</em><big>)</big><a class="headerlink" href="#iris.fileformats.pp.PPField.regular_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return regular points from the PPField, or fail if not regular.</p>
+<p>Args:</p>
+<blockquote>
+<div><ul class="simple">
+<li>xy - a string, &#8220;x&#8221; or &#8220;y&#8221; to specify the dimension for which to return points.</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.fileformats.pp.PPField.save">
+<tt class="descname">save</tt><big>(</big><em>file_handle</em><big>)</big><a class="headerlink" href="#iris.fileformats.pp.PPField.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the PPField to the given file object (typically created with <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#open" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">open()</span></tt></a>).</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># to append the field to a file</span>
+<span class="n">a_pp_field</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;ab&#39;</span><span class="p">))</span>
+
+<span class="c"># to overwrite/create a file</span>
+<span class="n">a_pp_field</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;wb&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The fields which are automatically calculated are: &#8216;lbext&#8217;, &#8216;lblrec&#8217; and &#8216;lbuser[0]&#8217;.
+Some fields are not currently populated, these are: &#8216;lbegin&#8217;, &#8216;lbnrec&#8217;, &#8216;lbuser[1]&#8217;.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.fileformats.pp.PPField.time_unit">
+<tt class="descname">time_unit</tt><big>(</big><em>time_unit</em>, <em>epoch='epoch'</em><big>)</big><a class="headerlink" href="#iris.fileformats.pp.PPField.time_unit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.fileformats.pp.PPField.calendar">
+<tt class="descname">calendar</tt><a class="headerlink" href="#iris.fileformats.pp.PPField.calendar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the calendar of the field.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.fileformats.pp.PPField.data">
+<tt class="descname">data</tt><a class="headerlink" href="#iris.fileformats.pp.PPField.data" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></tt></a> representing the multidimensional data of the pp file</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.fileformats.pp.PPField.lbcode">
+<tt class="descname">lbcode</tt><a class="headerlink" href="#iris.fileformats.pp.PPField.lbcode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.fileformats.pp.PPField.lbproc">
+<tt class="descname">lbproc</tt><a class="headerlink" href="#iris.fileformats.pp.PPField.lbproc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.fileformats.pp.PPField.lbtim">
+<tt class="descname">lbtim</tt><a class="headerlink" href="#iris.fileformats.pp.PPField.lbtim" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.fileformats.pp.PPField.stash">
+<tt class="descname">stash</tt><a class="headerlink" href="#iris.fileformats.pp.PPField.stash" title="Permalink to this definition">¶</a></dt>
+<dd><p>A stash property giving access to the associated STASH object, now supporting __eq__</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.fileformats.pp.PPField.t1">
+<tt class="descname">t1</tt><a class="headerlink" href="#iris.fileformats.pp.PPField.t1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.fileformats.pp.PPField.t2">
+<tt class="descname">t2</tt><a class="headerlink" href="#iris.fileformats.pp.PPField.t2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.fileformats.pp.PPField.x_bounds">
+<tt class="descname">x_bounds</tt><a class="headerlink" href="#iris.fileformats.pp.PPField.x_bounds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.fileformats.pp.PPField.y_bounds">
+<tt class="descname">y_bounds</tt><a class="headerlink" href="#iris.fileformats.pp.PPField.y_bounds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.pp.add_load_rules">
+<tt class="descclassname">iris.fileformats.pp.</tt><tt class="descname">add_load_rules</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#iris.fileformats.pp.add_load_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a rules file for use during the PP load process.</p>
+<p>Registered files are processed after the standard conversion rules, and in
+the order they were registered.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.pp.reset_load_rules">
+<tt class="descclassname">iris.fileformats.pp.</tt><tt class="descname">reset_load_rules</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.fileformats.pp.reset_load_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the PP load process to use only the standard conversion rules.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.pp.add_save_rules">
+<tt class="descclassname">iris.fileformats.pp.</tt><tt class="descname">add_save_rules</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#iris.fileformats.pp.add_save_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a rules file for use during the PP save process.</p>
+<p>Registered files are processed after the standard conversion rules, and in
+the order they were registered.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.pp.reset_save_rules">
+<tt class="descclassname">iris.fileformats.pp.</tt><tt class="descname">reset_save_rules</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.fileformats.pp.reset_save_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the PP save process to use only the standard conversion rules.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<p>A class to hold a single STASH code.</p>
+<dl class="docutils">
+<dt>Create instances using:</dt>
+<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">section</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">my_stash</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">fileformats</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">STASH</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt>Access the sub-components via:</dt>
+<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">my_stash</span><span class="o">.</span><span class="n">model</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">my_stash</span><span class="o">.</span><span class="n">section</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">my_stash</span><span class="o">.</span><span class="n">item</span>
+<span class="go">3</span>
+</pre></div>
+</div>
+</dd>
+<dt>String conversion results in the MSI format:</dt>
+<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">iris</span><span class="o">.</span><span class="n">fileformats</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">STASH</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">203</span><span class="p">)</span>
+<span class="go">m01s16i203</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.fileformats.pp.STASH">
+<em class="property">class </em><tt class="descclassname">iris.fileformats.pp.</tt><tt class="descname">STASH</tt><big>(</big><em>model</em>, <em>section</em>, <em>item</em><big>)</big><a class="headerlink" href="#iris.fileformats.pp.STASH" title="Permalink to this definition">¶</a></dt>
+<dd><p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>model</dt>
+<dd><p class="first last">A positive integer less than 100, or None.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>section</dt>
+<dd><p class="first last">A non-negative integer less than 100, or None.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>item</dt>
+<dd><p class="first last">A positive integer less than 1000, or None.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="method">
+<dt id="iris.fileformats.pp.STASH.count">
+<tt class="descname">count</tt><big>(</big><em>value</em><big>)</big> &rarr; integer -- return number of occurrences of value<a class="headerlink" href="#iris.fileformats.pp.STASH.count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="iris.fileformats.pp.STASH.from_msi">
+<em class="property">static </em><tt class="descname">from_msi</tt><big>(</big><em>msi</em><big>)</big><a class="headerlink" href="#iris.fileformats.pp.STASH.from_msi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a STASH code MSI string to a STASH instance.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.fileformats.pp.STASH.index">
+<tt class="descname">index</tt><big>(</big><em>value</em><span class="optional">[</span>, <em>start</em><span class="optional">[</span>, <em>stop</em><span class="optional">]</span><span class="optional">]</span><big>)</big> &rarr; integer -- return first index of value.<a class="headerlink" href="#iris.fileformats.pp.STASH.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raises ValueError if the value is not present.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.fileformats.pp.STASH.is_valid">
+<tt class="descname">is_valid</tt><a class="headerlink" href="#iris.fileformats.pp.STASH.is_valid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.fileformats.pp.STASH.item">
+<tt class="descname">item</tt><a class="headerlink" href="#iris.fileformats.pp.STASH.item" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.fileformats.pp.STASH.model">
+<tt class="descname">model</tt><a class="headerlink" href="#iris.fileformats.pp.STASH.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.fileformats.pp.STASH.section">
+<tt class="descname">section</tt><a class="headerlink" href="#iris.fileformats.pp.STASH.section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="rules.html" title="iris.fileformats.rules"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="netcdf.html" title="iris.fileformats.netcdf"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../fileformats.html" >iris.fileformats</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

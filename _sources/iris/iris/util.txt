@@ -1,0 +1,96 @@
+.. _iris.util:
+
+=========
+iris.util
+=========
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.util
+
+In this module:
+
+ * :py:obj:`timers`
+ * :py:obj:`approx_equal`
+ * :py:obj:`array_equal`
+ * :py:obj:`between`
+ * :py:obj:`clip_string`
+ * :py:obj:`column_slices_generator`
+ * :py:obj:`create_temp_filename`
+ * :py:obj:`delta`
+ * :py:obj:`ensure_array`
+ * :py:obj:`guess_coord_axis`
+ * :py:obj:`monotonic`
+ * :py:obj:`reverse`
+ * :py:obj:`rolling_window`
+ * :py:obj:`Linear1dExtrapolator`
+
+
+----------
+
+
+.. autodata:: iris.util.timers
+
+----------
+
+.. autofunction:: iris.util.approx_equal
+
+----------
+
+.. autofunction:: iris.util.array_equal
+
+----------
+
+.. autofunction:: iris.util.between
+
+----------
+
+.. autofunction:: iris.util.clip_string
+
+----------
+
+.. autofunction:: iris.util.column_slices_generator
+
+----------
+
+.. autofunction:: iris.util.create_temp_filename
+
+----------
+
+.. autofunction:: iris.util.delta
+
+----------
+
+.. autofunction:: iris.util.ensure_array
+
+----------
+
+.. autofunction:: iris.util.guess_coord_axis
+
+----------
+
+.. autofunction:: iris.util.monotonic
+
+----------
+
+.. autofunction:: iris.util.reverse
+
+----------
+
+.. autofunction:: iris.util.rolling_window
+
+----------
+
+Extension class to :class:`scipy.interpolate.interp1d` to provide linear extrapolation.
+
+See also: :mod:`scipy.interpolate`.
+
+..
+
+    .. autoclass:: iris.util.Linear1dExtrapolator
+        :members:
+        :undoc-members:
+        :inherited-members:
+

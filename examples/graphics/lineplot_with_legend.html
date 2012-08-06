@@ -1,0 +1,196 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Multi-line temperature profile plot &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Visualisation examples" href="index.html" />
+    <link rel="next" title="Rotated pole mapping" href="rotated_pole_mapping.html" />
+    <link rel="prev" title="Seasonal ensemble model plots" href="lagged_ensemble.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="rotated_pole_mapping.html" title="Rotated pole mapping"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="lagged_ensemble.html" title="Seasonal ensemble model plots"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris examples</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Visualisation examples</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="lagged_ensemble.html"
+                        title="previous chapter">Seasonal ensemble model plots</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="rotated_pole_mapping.html"
+                        title="next chapter">Rotated pole mapping</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/examples/graphics/lineplot_with_legend.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="multi-line-temperature-profile-plot">
+<span id="graphics-lineplot-with-legend"></span><h1>Multi-line temperature profile plot<a class="headerlink" href="#multi-line-temperature-profile-plot" title="Permalink to this headline">¶</a></h1>
+<p id="lineplot-with-legend">[<a class="reference external" href="../../plot_directive/../example_code/graphics/lineplot_with_legend.py">source code</a>]</p>
+<blockquote>
+<div><div class="figure">
+<img alt="../../_images/lineplot_with_legend.png" src="../../_images/lineplot_with_legend.png" />
+</div>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Multi-line temperature profile plot</span>
+<span class="sd">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="kn">import</span> <span class="nn">iris</span>
+<span class="kn">import</span> <span class="nn">iris.quickplot</span> <span class="kn">as</span> <span class="nn">qplt</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;aPPglob1&#39;</span><span class="p">,</span> <span class="s">&#39;global.pp&#39;</span><span class="p">)</span>
+
+    <span class="c"># Load exactly one cube from the given file</span>
+    <span class="n">temperature</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+
+    <span class="c"># We only want a small number of latitudes, so filter some out using &quot;extract&quot;.</span>
+    <span class="n">temperature</span> <span class="o">=</span> <span class="n">temperature</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="k">lambda</span> <span class="n">cell</span><span class="p">:</span> <span class="mi">68</span> <span class="o">&lt;=</span> <span class="n">cell</span> <span class="o">&lt;</span> <span class="mi">78</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">cube</span> <span class="ow">in</span> <span class="n">temperature</span><span class="o">.</span><span class="n">slices</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">):</span>
+
+        <span class="c"># Create a string label to identify this cube (i.e. latitude: value)</span>
+        <span class="n">cube_label</span> <span class="o">=</span> <span class="s">&#39;latitude: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">cube</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s">&#39;latitude&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c"># Plot the cube, and associate it with a label</span>
+        <span class="n">qplt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">cube_label</span><span class="p">)</span>
+
+    <span class="c"># Add the legend with 2 columns</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">ncol</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c"># Put a grid on the plot</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="c"># tell matplotlib not to extend the plot axes range to nicely rounded numbers.</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;tight&#39;</span><span class="p">)</span>
+
+    <span class="c"># Finally, show it.</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="rotated_pole_mapping.html" title="Rotated pole mapping"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="lagged_ensemble.html" title="Seasonal ensemble model plots"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris examples</a> &raquo;</li>
+          <li><a href="index.html" >Visualisation examples</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

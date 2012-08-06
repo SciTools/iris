@@ -1,0 +1,652 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.analysis &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Iris reference documentation" href="../iris.html" />
+    <link rel="next" title="iris.analysis.calculus" href="analysis/calculus.html" />
+    <link rel="prev" title="Iris reference documentation" href="../iris.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="analysis/calculus.html" title="iris.analysis.calculus"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../iris.html" title="Iris reference documentation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" accesskey="U">Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../iris.html"
+                        title="previous chapter">Iris reference documentation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="analysis/calculus.html"
+                        title="next chapter">iris.analysis.calculus</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/iris/iris/analysis.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-analysis">
+<span id="id1"></span><h1>iris.analysis<a class="headerlink" href="#iris-analysis" title="Permalink to this headline">¶</a></h1>
+<div class="sidebar">
+<p class="first sidebar-title">Modules in this package</p>
+<div class="toctree-wrapper last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="analysis/calculus.html">iris.analysis.calculus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="analysis/cartography.html">iris.analysis.cartography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="analysis/geometry.html">iris.analysis.geometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="analysis/interpolate.html">iris.analysis.interpolate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="analysis/maths.html">iris.analysis.maths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="analysis/trajectory.html">iris.analysis.trajectory</a></li>
+</ul>
+</div>
+</div>
+<span class="target" id="module-iris.analysis"></span><p>A package providing various analysis facilities.</p>
+<p>Primarily, this module provides definitions of statistical operations, such as
+<a class="reference internal" href="#iris.analysis.MEAN" title="iris.analysis.MEAN"><tt class="xref py py-const docutils literal"><span class="pre">MEAN</span></tt></a> and <a class="reference internal" href="#iris.analysis.STD_DEV" title="iris.analysis.STD_DEV"><tt class="xref py py-const docutils literal"><span class="pre">STD_DEV</span></tt></a>, that can be applied to Cubes via methods
+such as: <a class="reference internal" href="cube.html#iris.cube.Cube.collapsed" title="iris.cube.Cube.collapsed"><tt class="xref py py-meth docutils literal"><span class="pre">iris.cube.Cube.collapsed()</span></tt></a> and
+<a class="reference internal" href="cube.html#iris.cube.Cube.aggregated_by" title="iris.cube.Cube.aggregated_by"><tt class="xref py py-meth docutils literal"><span class="pre">iris.cube.Cube.aggregated_by()</span></tt></a>.</p>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">These statistical operations define how to transform both the
+metadata and the data.</p>
+</div>
+</div></blockquote>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.analysis.COUNT" title="iris.analysis.COUNT"><tt class="xref py py-obj docutils literal"><span class="pre">COUNT</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.GMEAN" title="iris.analysis.GMEAN"><tt class="xref py py-obj docutils literal"><span class="pre">GMEAN</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.HMEAN" title="iris.analysis.HMEAN"><tt class="xref py py-obj docutils literal"><span class="pre">HMEAN</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.MAX" title="iris.analysis.MAX"><tt class="xref py py-obj docutils literal"><span class="pre">MAX</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.MEAN" title="iris.analysis.MEAN"><tt class="xref py py-obj docutils literal"><span class="pre">MEAN</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.MEDIAN" title="iris.analysis.MEDIAN"><tt class="xref py py-obj docutils literal"><span class="pre">MEDIAN</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.MIN" title="iris.analysis.MIN"><tt class="xref py py-obj docutils literal"><span class="pre">MIN</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.PERCENTILE" title="iris.analysis.PERCENTILE"><tt class="xref py py-obj docutils literal"><span class="pre">PERCENTILE</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.PROPORTION" title="iris.analysis.PROPORTION"><tt class="xref py py-obj docutils literal"><span class="pre">PROPORTION</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.STD_DEV" title="iris.analysis.STD_DEV"><tt class="xref py py-obj docutils literal"><span class="pre">STD_DEV</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.SUM" title="iris.analysis.SUM"><tt class="xref py py-obj docutils literal"><span class="pre">SUM</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.VARIANCE" title="iris.analysis.VARIANCE"><tt class="xref py py-obj docutils literal"><span class="pre">VARIANCE</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.coord_comparison" title="iris.analysis.coord_comparison"><tt class="xref py py-obj docutils literal"><span class="pre">coord_comparison</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.Aggregator" title="iris.analysis.Aggregator"><tt class="xref py py-obj docutils literal"><span class="pre">Aggregator</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.clear_phenomenon_identity" title="iris.analysis.clear_phenomenon_identity"><tt class="xref py py-obj docutils literal"><span class="pre">clear_phenomenon_identity</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="data">
+<dt id="iris.analysis.COUNT">
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">COUNT</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1bd94d0&gt;</em><a class="headerlink" href="#iris.analysis.COUNT" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of data that match the given function.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>function:</dt>
+<dd><p class="first last">A function which returns True or False given a value in the data array.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>For example, the number of ensembles with precipitation exceeding 10 (in cube data units) could be calculated with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">precip_cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;ensemble_member&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">COUNT</span><span class="p">,</span>
+                               <span class="n">function</span><span class="o">=</span><span class="k">lambda</span> <span class="n">data_value</span><span class="p">:</span> <span class="n">data_value</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#iris.analysis.PROPORTION" title="iris.analysis.PROPORTION"><tt class="xref py py-func docutils literal"><span class="pre">iris.analysis.PROPORTION()</span></tt></a></p>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="data">
+<dt id="iris.analysis.GMEAN">
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">GMEAN</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1be64d0&gt;</em><a class="headerlink" href="#iris.analysis.GMEAN" title="Permalink to this definition">¶</a></dt>
+<dd><p>The geometric mean, as computed by <a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.mstats.gmean.html#scipy.stats.mstats.gmean" title="(in SciPy v0.11.dev)"><tt class="xref py py-func docutils literal"><span class="pre">scipy.stats.mstats.gmean()</span></tt></a>.</p>
+<p>For example, to compute zonal geometric means:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">GMEAN</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="data">
+<dt id="iris.analysis.HMEAN">
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">HMEAN</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1be67d0&gt;</em><a class="headerlink" href="#iris.analysis.HMEAN" title="Permalink to this definition">¶</a></dt>
+<dd><p>The harmonic mean, as computed by <a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.mstats.hmean.html#scipy.stats.mstats.hmean" title="(in SciPy v0.11.dev)"><tt class="xref py py-func docutils literal"><span class="pre">scipy.stats.mstats.hmean()</span></tt></a>.</p>
+<p>For example, to compute zonal harmonic means:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">HMEAN</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The harmonic mean is only valid if all data values are greater than zero.</p>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="data">
+<dt id="iris.analysis.MAX">
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">MAX</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1be6810&gt;</em><a class="headerlink" href="#iris.analysis.MAX" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum, as computed by <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ma.max.html#numpy.ma.max" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-func docutils literal"><span class="pre">numpy.ma.max()</span></tt></a>.</p>
+<p>For example, to compute zonal maximums:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MAX</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="data">
+<dt id="iris.analysis.MEAN">
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">MEAN</tt><em class="property"> = &lt;iris.analysis.WeightedAggregator object at 0x1be6890&gt;</em><a class="headerlink" href="#iris.analysis.MEAN" title="Permalink to this definition">¶</a></dt>
+<dd><p>The mean, as computed by <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ma.average.html#numpy.ma.average" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-func docutils literal"><span class="pre">numpy.ma.average()</span></tt></a>.</p>
+<p>For example, to compute zonal means:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Additional kwargs available:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>weights</dt>
+<dd><p class="first">Optional array of floats. If supplied, the shape must match the cube.</p>
+<p class="last">LatLon area weights can be calculated using <a class="reference internal" href="analysis/cartography.html#iris.analysis.cartography.area_weights" title="iris.analysis.cartography.area_weights"><tt class="xref py py-func docutils literal"><span class="pre">iris.analysis.cartography.area_weights()</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>returned</dt>
+<dd><p class="first last">Set this to True to indicate the collapsed weights are to be returned
+along with the collapsed data. Defaults to False.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cube_out</span><span class="p">,</span> <span class="n">weights_out</span> <span class="o">=</span> <span class="n">cube_in</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="n">coord_names</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights_in</span><span class="p">,</span> <span class="n">returned</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="data">
+<dt id="iris.analysis.MEDIAN">
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">MEDIAN</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1d9e850&gt;</em><a class="headerlink" href="#iris.analysis.MEDIAN" title="Permalink to this definition">¶</a></dt>
+<dd><p>The median, as computed by <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ma.median.html#numpy.ma.median" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-func docutils literal"><span class="pre">numpy.ma.median()</span></tt></a>.</p>
+<p>For example, to compute zonal medians:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEDIAN</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="data">
+<dt id="iris.analysis.MIN">
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">MIN</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1d9e890&gt;</em><a class="headerlink" href="#iris.analysis.MIN" title="Permalink to this definition">¶</a></dt>
+<dd><p>The minimum, as computed by <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ma.min.html#numpy.ma.min" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-func docutils literal"><span class="pre">numpy.ma.min()</span></tt></a>.</p>
+<p>For example, to compute zonal minimums:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MIN</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="data">
+<dt id="iris.analysis.PERCENTILE">
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">PERCENTILE</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1d9e8d0&gt;</em><a class="headerlink" href="#iris.analysis.PERCENTILE" title="Permalink to this definition">¶</a></dt>
+<dd><p>The percentile, as computed by <a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.mstats.scoreatpercentile.html#scipy.stats.mstats.scoreatpercentile" title="(in SciPy v0.11.dev)"><tt class="xref py py-func docutils literal"><span class="pre">scipy.stats.mstats.scoreatpercentile()</span></tt></a>.</p>
+<p>Required kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>percent:</dt>
+<dd><p class="first last">Percentile rank at which to extract value. No default.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>For example, to compute the 90th percentile over time:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;time&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">PERCENTILE</span><span class="p">,</span> <span class="n">percent</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The default values of <tt class="docutils literal"><span class="pre">alphap</span></tt> and <tt class="docutils literal"><span class="pre">betap</span></tt> are both 1. For detailed meanings on
+these values see <a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.mstats.mquantiles.html#scipy.stats.mstats.mquantiles" title="(in SciPy v0.11.dev)"><tt class="xref py py-func docutils literal"><span class="pre">scipy.stats.mstats.mquantiles()</span></tt></a>.</p>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="data">
+<dt id="iris.analysis.PROPORTION">
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">PROPORTION</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1d9e910&gt;</em><a class="headerlink" href="#iris.analysis.PROPORTION" title="Permalink to this definition">¶</a></dt>
+<dd><p>The proportion, as a decimal, of data that match the given function.</p>
+<p>The proportion calculation takes into account masked values, therefore if the number of non-masked values is
+zero the result itself will be a masked array.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>function:</dt>
+<dd><p class="first last">A function which returns True or False given a value in the data array.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>For example, the probability of precipitation exceeding 10 (in cube data units) across ensemble members
+could be calculated with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">precip_cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;ensemble_member&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">PROPORTION</span><span class="p">,</span>
+                               <span class="n">function</span><span class="o">=</span><span class="k">lambda</span> <span class="n">data_value</span><span class="p">:</span> <span class="n">data_value</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Similarly, the proportion of times precipitation exceeded 10 (in cube data units) could be calculated with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">precip_cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;time&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">PROPORTION</span><span class="p">,</span>
+                               <span class="n">function</span><span class="o">=</span><span class="k">lambda</span> <span class="n">data_value</span><span class="p">:</span> <span class="n">data_value</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#iris.analysis.COUNT" title="iris.analysis.COUNT"><tt class="xref py py-func docutils literal"><span class="pre">iris.analysis.COUNT()</span></tt></a></p>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="data">
+<dt id="iris.analysis.STD_DEV">
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">STD_DEV</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1d9e950&gt;</em><a class="headerlink" href="#iris.analysis.STD_DEV" title="Permalink to this definition">¶</a></dt>
+<dd><p>The standard deviation, as computed by <tt class="xref py py-func docutils literal"><span class="pre">numpy.ma.std()</span></tt>.</p>
+<p>For example, to compute zonal standard deviations:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">STD_DEV</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Additional kwargs available:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>ddof:</dt>
+<dd><p class="first last">Delta degrees of freedom. The divisor used in calculations is N - ddof,
+where N represents the number of elements. By default ddof is one.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>For example, to obtain the biased standard deviation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="n">coord_to_collapse</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">STD_DEV</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="data">
+<dt id="iris.analysis.SUM">
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">SUM</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1d9e990&gt;</em><a class="headerlink" href="#iris.analysis.SUM" title="Permalink to this definition">¶</a></dt>
+<dd><p>The sum of a dataset, as computed by <tt class="xref py py-func docutils literal"><span class="pre">numpy.ma.sum()</span></tt>.</p>
+<p>For example, to compute an accumulation over time:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;time&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="data">
+<dt id="iris.analysis.VARIANCE">
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">VARIANCE</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1d9e9d0&gt;</em><a class="headerlink" href="#iris.analysis.VARIANCE" title="Permalink to this definition">¶</a></dt>
+<dd><p>The variance, as computed by <tt class="xref py py-func docutils literal"><span class="pre">numpy.ma.var()</span></tt>.</p>
+<p>For example, to compute zonal variance:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">VARIANCE</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Additional kwargs available:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>ddof:</dt>
+<dd><p class="first last">Delta degrees of freedom. The divisor used in calculations is N - ddof,
+where N represents the number of elements. By default ddof is one.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>For example, to obtain the biased variance:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="n">coord_to_collapse</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">VARIANCE</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.coord_comparison">
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">coord_comparison</tt><big>(</big><em>*cubes</em><big>)</big><a class="headerlink" href="#iris.analysis.coord_comparison" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience function to help compare coordinates on one or more cubes by their metadata.</p>
+<p>Return a dictionary where the key represents the statement, &#8220;Given these cubes list the coordinates 
+which, when grouped by metadata, are/have...&#8221;</p>
+<p>Keys:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>grouped_coords</dt>
+<dd><p class="first last">A list of coordinate groups of all the coordinates grouped together by their coordinate definition</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>ungroupable</dt>
+<dd><p class="first last">A list of coordinate groups which contain at least one None, meaning not all Cubes provide an equivalent coordinate</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>not_equal</dt>
+<dd><p class="first last">A list of coordinate groups of which not all are equal (superset of ungroupable)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>no_data_dimension</dt>
+<dd><p class="first last">A list of coordinate groups of which all have no data dimensions on their respective cubes</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>scalar</dt>
+<dd><p class="first last">A list of coordinate groups of which all have shape (1, )</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>non_equal_data_dimension</dt>
+<dd><p class="first last">A list of coordinate groups of which not all have the same data dimension on their respective cubes</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>non_equal_shape</dt>
+<dd><p class="first last">A list of coordinate groups of which not all have the same shape</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>equal_data_dimension</dt>
+<dd><p class="first last">A list of coordinate groups of which all have the same data dimension on their respective cubes</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>equal</dt>
+<dd><p class="first last">A list of coordinate groups of which all are equal</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>ungroupable_and_dimensioned</dt>
+<dd><p class="first last">A list of coordinate groups of which not all cubes had an equivalent (in metadata) coordinate which also describe a data dimension</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>dimensioned</dt>
+<dd><p class="first last">A list of coordinate groups of which all describe a data dimension on their respective cubes</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>ignorable</dt>
+<dd><p class="first last">A list of scalar, ungroupable non_equal coordinate groups</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>resamplable</dt>
+<dd><p class="first last">A list of equal, different data dimensioned coordinate groups</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>transposable</dt>
+<dd><p class="first last">A list of non equal, same data dimensioned, non scalar coordinate groups</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Example usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">coord_comparison</span><span class="p">(</span><span class="n">cube1</span><span class="p">,</span> <span class="n">cube2</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&#39;All equal coordinates: &#39;</span><span class="p">,</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;equal&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<p>Convenience class that supports common aggregation functionality.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.analysis.Aggregator">
+<em class="property">class </em><tt class="descclassname">iris.analysis.</tt><tt class="descname">Aggregator</tt><big>(</big><em>history</em>, <em>cell_method</em>, <em>call_func</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.analysis.Aggregator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an aggregator for the given call_func.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>history (string):</dt>
+<dd><p class="first last">History string that supports string format substitution.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>cell_method (string):</dt>
+<dd><p class="first last">Cell method string that supports string format substitution.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>call_func (callable):</dt>
+<dd><p class="first last">Data aggregation function.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>kwargs:</dt>
+<dd><p class="first last">Passed through to call_func.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="method">
+<dt id="iris.analysis.Aggregator.aggregate">
+<tt class="descname">aggregate</tt><big>(</big><em>data</em>, <em>axis</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.analysis.Aggregator.aggregate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the aggregation function given the data.</p>
+<p>Keyword arguments are passed through to the data aggregation function
+(for example, the &#8220;percent&#8221; keyword for a percentile aggregator).
+This function is usually used in conjunction with update_metadata(),
+which should be passed the same keyword arguments.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>The aggregated data.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.analysis.Aggregator.post_process">
+<tt class="descname">post_process</tt><big>(</big><em>collapsed_cube</em>, <em>data_result</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.analysis.Aggregator.post_process" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process the result from <a class="reference internal" href="#iris.analysis.Aggregator.aggregate" title="iris.analysis.Aggregator.aggregate"><tt class="xref py py-func docutils literal"><span class="pre">iris.analysis.Aggregator.aggregate()</span></tt></a>.</p>
+<p>Ensures data is an array, when collapsed to a single value.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>collapsed_cube</dt>
+<dd><p class="first last">A <a class="reference internal" href="cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>data_result</dt>
+<dd><p class="first last">Result from <a class="reference internal" href="#iris.analysis.Aggregator.aggregate" title="iris.analysis.Aggregator.aggregate"><tt class="xref py py-func docutils literal"><span class="pre">iris.analysis.Aggregator.aggregate()</span></tt></a></p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.analysis.Aggregator.update_metadata">
+<tt class="descname">update_metadata</tt><big>(</big><em>cube</em>, <em>coords</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.analysis.Aggregator.update_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update cube history and cell method metadata w.r.t the aggregation function.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube (<a class="reference internal" href="cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>):</dt>
+<dd><p class="first last">Source cube that requires metadata update.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>coords (<a class="reference internal" href="coords.html#iris.coords.Coord" title="iris.coords.Coord"><tt class="xref py py-class docutils literal"><span class="pre">iris.coords.Coord</span></tt></a>):</dt>
+<dd><p class="first last">The coords that were aggregated.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul class="simple">
+<li>This function is intended to be used in conjuction with aggregate() and should be
+passed the same keywords (for example, the &#8220;percent&#8221; keyword for a percentile aggregator).</li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.analysis.Aggregator.call_func">
+<tt class="descname">call_func</tt><em class="property"> = None</em><a class="headerlink" href="#iris.analysis.Aggregator.call_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Data aggregation function.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.analysis.Aggregator.cell_method">
+<tt class="descname">cell_method</tt><em class="property"> = None</em><a class="headerlink" href="#iris.analysis.Aggregator.cell_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cube cell method string.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.analysis.Aggregator.history">
+<tt class="descname">history</tt><em class="property"> = None</em><a class="headerlink" href="#iris.analysis.Aggregator.history" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cube history string that supports string format substitution.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.clear_phenomenon_identity">
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">clear_phenomenon_identity</tt><big>(</big><em>cube</em><big>)</big><a class="headerlink" href="#iris.analysis.clear_phenomenon_identity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function to clear the standard_name, attributes, and cell_methods of a cube.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="analysis/calculus.html" title="iris.analysis.calculus"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../iris.html" title="Iris reference documentation"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" >Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

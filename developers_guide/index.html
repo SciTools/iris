@@ -1,0 +1,191 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Iris developer guide &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../index.html" />
+    <link rel="next" title="Documentation in Iris" href="documenting/index.html" />
+    <link rel="prev" title="Rotated pole mapping" href="../examples/graphics/rotated_pole_mapping.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../index.html"><img src="../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="documenting/index.html" title="Documentation in Iris"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../examples/graphics/rotated_pole_mapping.html" title="Rotated pole mapping"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../contents.html">contents</a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../examples/graphics/rotated_pole_mapping.html"
+                        title="previous chapter">Rotated pole mapping</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="documenting/index.html"
+                        title="next chapter">Documentation in Iris</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/developers_guide/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="userguide-index"></span><div class="section" id="iris-developer-guide">
+<h1>Iris developer guide<a class="headerlink" href="#iris-developer-guide" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="documenting/index.html">Documentation in Iris</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="documenting/docstrings.html">Docstrings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="documenting/docstrings.html#single-line-docstrings">Single-line docstrings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="documenting/docstrings.html#multi-line-docstrings">Multi-line docstrings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="documenting/docstrings.html#documenting-classes">Documenting classes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="documenting/rest_guide.html">reST quickstart</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="documenting/rest_guide.html#creating-links">Creating links</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gitwash/index.html">Working with <em>iris</em> source code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gitwash/git_intro.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gitwash/git_install.html">Install git</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="gitwash/git_install.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gitwash/git_install.html#in-detail">In detail</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="gitwash/following_latest.html">Following the latest source</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="gitwash/following_latest.html#get-the-local-copy-of-the-code">Get the local copy of the code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gitwash/following_latest.html#updating-the-code">Updating the code</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="gitwash/patching.html">Making a patch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="gitwash/patching.html#making-patches">Making patches</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gitwash/patching.html#moving-from-patching-to-development">Moving from patching to development</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="gitwash/git_development.html">Git for development</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="gitwash/forking_hell.html">Making your own copy (fork) of iris</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gitwash/set_up_fork.html">Set up your fork</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gitwash/configure_git.html">Configure git</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gitwash/development_workflow.html">Development workflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gitwash/maintainer_workflow.html">Maintainer workflow</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="gitwash/git_resources.html">git resources</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="gitwash/git_resources.html#tutorials-and-summaries">Tutorials and summaries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gitwash/git_resources.html#advanced-git-workflow">Advanced git workflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gitwash/git_resources.html#manual-pages-online">Manual pages online</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="documenting/index.html" title="Documentation in Iris"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../examples/graphics/rotated_pole_mapping.html" title="Rotated pole mapping"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../contents.html">contents</a>|&nbsp;</li>
+ 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

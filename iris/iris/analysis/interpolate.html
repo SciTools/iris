@@ -1,0 +1,416 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.analysis.interpolate &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../../index.html" />
+    <link rel="up" title="iris.analysis" href="../analysis.html" />
+    <link rel="next" title="iris.analysis.maths" href="maths.html" />
+    <link rel="prev" title="iris.analysis.geometry" href="geometry.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../../index.html"><img src="../../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="maths.html" title="iris.analysis.maths"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="geometry.html" title="iris.analysis.geometry"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../analysis.html" accesskey="U">iris.analysis</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="geometry.html"
+                        title="previous chapter">iris.analysis.geometry</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="maths.html"
+                        title="next chapter">iris.analysis.maths</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/iris/iris/analysis/interpolate.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-analysis-interpolate">
+<span id="id1"></span><h1>iris.analysis.interpolate<a class="headerlink" href="#iris-analysis-interpolate" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.analysis.interpolate"></span><p>Interpolation and re-gridding routines.</p>
+<p>See also: <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/index.html#numpy" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-mod docutils literal"><span class="pre">NumPy</span></tt></a>, and <a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/py-modindex.html#" title="(in SciPy v0.11.dev)"><em class="xref std std-ref">SciPy</em></a>.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.analysis.interpolate.extract_nearest_neighbour" title="iris.analysis.interpolate.extract_nearest_neighbour"><tt class="xref py py-obj docutils literal"><span class="pre">extract_nearest_neighbour</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.interpolate.linear" title="iris.analysis.interpolate.linear"><tt class="xref py py-obj docutils literal"><span class="pre">linear</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.interpolate.nearest_neighbour_data_value" title="iris.analysis.interpolate.nearest_neighbour_data_value"><tt class="xref py py-obj docutils literal"><span class="pre">nearest_neighbour_data_value</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.interpolate.nearest_neighbour_indices" title="iris.analysis.interpolate.nearest_neighbour_indices"><tt class="xref py py-obj docutils literal"><span class="pre">nearest_neighbour_indices</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.interpolate.regrid" title="iris.analysis.interpolate.regrid"><tt class="xref py py-obj docutils literal"><span class="pre">regrid</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.interpolate.regrid_to_max_resolution" title="iris.analysis.interpolate.regrid_to_max_resolution"><tt class="xref py py-obj docutils literal"><span class="pre">regrid_to_max_resolution</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.interpolate.extract_nearest_neighbour">
+<tt class="descclassname">iris.analysis.interpolate.</tt><tt class="descname">extract_nearest_neighbour</tt><big>(</big><em>cube</em>, <em>sample_points</em><big>)</big><a class="headerlink" href="#iris.analysis.interpolate.extract_nearest_neighbour" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new cube using data value(s) closest to the given coordinate point values.</p>
+<p>The sample_points mapping does not have to include coordinate values corresponding to all data
+dimensions. Any dimensions unspecified will default to a full slice.</p>
+<dl class="docutils">
+<dt>For example:</dt>
+<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;globClim1&#39;</span><span class="p">,</span> <span class="s">&#39;theta.pp&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">extract_nearest_neighbour</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="p">[(</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)])</span>
+<span class="go">&lt;iris &#39;Cube&#39; of air_potential_temperature (level_height: 38)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">extract_nearest_neighbour</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="p">[(</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)])</span>
+<span class="go">&lt;iris &#39;Cube&#39; of air_potential_temperature (level_height: 38; longitude: 192)&gt;</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube:</dt>
+<dd><p class="first last">An <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>sample_points</dt>
+<dd><p class="first last">A list of tuple pairs mapping coordinate instances or unique coordinate names in the cube to point values.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>A cube that represents uninterpolated data as near to the given points as possible.</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.interpolate.linear">
+<tt class="descclassname">iris.analysis.interpolate.</tt><tt class="descname">linear</tt><big>(</big><em>cube</em>, <em>sample_points</em>, <em>extrapolation_mode='linear'</em><big>)</big><a class="headerlink" href="#iris.analysis.interpolate.linear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a cube of the linearly interpolated points given the desired
+sample points.</p>
+<p>Given a list of tuple pairs mapping coordinates to their desired
+values, return a cube with linearly interpolated values. If more
+than one coordinate is specified, the linear interpolation will be
+carried out in sequence, thus providing n-linear interpolation
+(bi-linear, tri-linear, etc.).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">By definition, linear interpolation requires all coordinates to
+be 1-dimensional.</p>
+</div>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube</dt>
+<dd><p class="first last">The cube to be interpolated.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>sample_points</dt>
+<dd><p class="first last">List of one or more tuple pairs mapping coordinate to desired
+points to interpolate. Points may be a scalar or a numpy array
+of values.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><p class="first">extrapolation_mode - string - one of &#8216;linear&#8217;, &#8216;nan&#8217; or &#8216;error&#8217;</p>
+<blockquote>
+<div><ul class="simple">
+<li>If &#8216;linear&#8217; the point will be calculated by extending the
+gradient of closest two points.</li>
+<li>If &#8216;nan&#8217; the extrapolation point will be put as a NAN.</li>
+<li>If &#8216;error&#8217; a value error will be raised notifying of the
+attempted extrapolation.</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The datatype of the resultant cube&#8217;s data and coordinates will
+updated to the data type of the incoming cube.</p>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.interpolate.nearest_neighbour_data_value">
+<tt class="descclassname">iris.analysis.interpolate.</tt><tt class="descname">nearest_neighbour_data_value</tt><big>(</big><em>cube</em>, <em>sample_points</em><big>)</big><a class="headerlink" href="#iris.analysis.interpolate.nearest_neighbour_data_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the data value closest to the given coordinate point values.</p>
+<p>The sample_points mapping must include coordinate values corresponding to all data
+dimensions.</p>
+<dl class="docutils">
+<dt>For example:</dt>
+<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;globClim1&#39;</span><span class="p">,</span> <span class="s">&#39;theta.pp&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">nearest_neighbour_data_value</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="p">[(</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;model_level_number&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)])</span>
+<span class="go">299.35156</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">nearest_neighbour_data_value</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="p">[(</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)])</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">ValueError</span>: <span class="n">The sample points [(&#39;latitude&#39;, 0)] was not specific enough to return a single value from the cube.</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube:</dt>
+<dd><p class="first last">An <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>sample_points</dt>
+<dd><p class="first last">A list of tuple pairs mapping coordinate instances or unique coordinate names in the cube to point values.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>The tuple of indices which will select the point in the cube closest to the supplied coordinate values.</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.interpolate.nearest_neighbour_indices">
+<tt class="descclassname">iris.analysis.interpolate.</tt><tt class="descname">nearest_neighbour_indices</tt><big>(</big><em>cube</em>, <em>sample_points</em><big>)</big><a class="headerlink" href="#iris.analysis.interpolate.nearest_neighbour_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the indices to select the data value(s) closest to the given coordinate point values.</p>
+<p>The sample_points mapping does not have to include coordinate values corresponding to all data
+dimensions. Any dimensions unspecified will default to a full slice.</p>
+<dl class="docutils">
+<dt>For example:</dt>
+<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;globClim1&#39;</span><span class="p">,</span> <span class="s">&#39;theta.pp&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">nearest_neighbour_indices</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="p">[(</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)])</span>
+<span class="go">(slice(None, None, None), 72, 5)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">nearest_neighbour_indices</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="p">[(</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)])</span>
+<span class="go">(slice(None, None, None), 72, slice(None, None, None))</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube:</dt>
+<dd><p class="first last">An <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>sample_points</dt>
+<dd><p class="first last">A list of tuple pairs mapping coordinate instances or unique coordinate names in the cube to point values.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>The tuple of indices which will select the point in the cube closest to the supplied coordinate values.</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.interpolate.regrid">
+<tt class="descclassname">iris.analysis.interpolate.</tt><tt class="descname">regrid</tt><big>(</big><em>source_cube</em>, <em>grid_cube</em>, <em>mode='bilinear'</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.analysis.interpolate.regrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new cube with values derived from the source_cube on the horizontal grid specified
+by the grid_cube.</p>
+<dl class="docutils">
+<dt>Fundamental input requirements:</dt>
+<dd><ol class="first last arabic simple">
+<li>Both cubes must have a HorizontalCS.</li>
+<li>The source &#8216;x&#8217; and &#8216;y&#8217; coordinates must not share data dimensions with any other coordinates.</li>
+</ol>
+</dd>
+<dt>In addition, the algorithm currently used requires:</dt>
+<dd><ol class="first last arabic" start="3">
+<li><dl class="first docutils">
+<dt>Both CS instances must be compatible:</dt>
+<dd><p class="first last">i.e. of the same type, with the same attribute values, and with compatible coordinates.</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">No new data dimensions can be created.</p>
+</li>
+</ol>
+</dd>
+</dl>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>source_cube:</dt>
+<dd><p class="first last">An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a> which supplies the source data and metadata.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>grid_cube:</dt>
+<dd><p class="first last">An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a> which supplies the horizontal grid definition.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>mode (string):</dt>
+<dd><p class="first">Regridding interpolation algorithm to be applied, which may be one of the following:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>&#8216;bilinear&#8217; for bi-linear interpolation (default), see <a class="reference internal" href="#iris.analysis.interpolate.linear" title="iris.analysis.interpolate.linear"><tt class="xref py py-func docutils literal"><span class="pre">iris.analysis.interpolate.linear()</span></tt></a>.</li>
+<li>&#8216;nearest&#8217; for nearest neighbour interpolation.</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>A new <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a> instance.</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.interpolate.regrid_to_max_resolution">
+<tt class="descclassname">iris.analysis.interpolate.</tt><tt class="descname">regrid_to_max_resolution</tt><big>(</big><em>cubes</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.analysis.interpolate.regrid_to_max_resolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all the cubes re-gridded to the highest horizontal resolution.</p>
+<p>Horizontal resolution is defined by the number of grid points/cells covering the horizontal plane.
+See <tt class="xref py py-func docutils literal"><span class="pre">iris.analysis.interpolation.regrid()</span></tt> regarding mode of interpolation.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cubes:</dt>
+<dd><p class="first last">An iterable of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a> instances.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>A list of new <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a> instances.</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="maths.html" title="iris.analysis.maths"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="geometry.html" title="iris.analysis.geometry"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../analysis.html" >iris.analysis</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

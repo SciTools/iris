@@ -1,0 +1,206 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Cross section plots &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Visualisation examples" href="index.html" />
+    <link rel="next" title="Loading a cube from a custom file format" href="custom_file_loading.html" />
+    <link rel="prev" title="Ionosphere space weather" href="TEC.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="custom_file_loading.html" title="Loading a cube from a custom file format"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="TEC.html" title="Ionosphere space weather"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris examples</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Visualisation examples</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="TEC.html"
+                        title="previous chapter">Ionosphere space weather</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="custom_file_loading.html"
+                        title="next chapter">Loading a cube from a custom file format</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/examples/graphics/cross_section.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="cross-section-plots">
+<span id="graphics-cross-section"></span><h1>Cross section plots<a class="headerlink" href="#cross-section-plots" title="Permalink to this headline">¶</a></h1>
+<p>This example demonstrates contour plots of a cross-sectioned multi-dimensional cube which features 
+a hybrid height vertical coordinate system.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The data is limited to the first fifteen model levels to emphasise the terrain-following 
+nature of the data.</p>
+</div>
+<p id="cross-section-00">[<a class="reference external" href="../../plot_directive/../example_code/graphics/cross_section.py">source code</a>]</p>
+<blockquote>
+<div><div class="figure">
+<img alt="../../_images/cross_section_00.png" src="../../_images/cross_section_00.png" />
+</div>
+</div></blockquote>
+<p id="cross-section-01">[<a class="reference external" href="../../plot_directive/../example_code/graphics/cross_section.py">source code</a>]</p>
+<blockquote>
+<div><div class="figure">
+<img alt="../../_images/cross_section_01.png" src="../../_images/cross_section_01.png" />
+</div>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Cross section plots</span>
+<span class="sd">===================</span>
+
+<span class="sd">This example demonstrates contour plots of a cross-sectioned multi-dimensional cube which features</span>
+<span class="sd">a hybrid height vertical coordinate system.</span>
+
+<span class="sd">.. note::</span>
+<span class="sd">   The data is limited to the first fifteen model levels to emphasise the terrain-following</span>
+<span class="sd">   nature of the data.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="kn">import</span> <span class="nn">iris</span>
+<span class="kn">import</span> <span class="nn">iris.quickplot</span> <span class="kn">as</span> <span class="nn">qplt</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;COLPEX&#39;</span><span class="p">,</span> <span class="s">&#39;theta_and_orog_subset.pp&#39;</span><span class="p">)</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&#39;air_potential_temperature&#39;</span><span class="p">)</span>
+
+    <span class="c"># Extract a height vs longitude cross-section. N.B. This could easily changed to</span>
+    <span class="c"># extract a specific slice, or even to loop over *all* cross section slices.</span>
+    <span class="n">cross_section</span> <span class="o">=</span> <span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="mi">15</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
+
+    <span class="n">qplt</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">cross_section</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="c"># Now do the equivalent plot, only against model level</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+
+    <span class="n">qplt</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">cross_section</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;grid_longitude&#39;</span><span class="p">,</span> <span class="s">&#39;model_level_number&#39;</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="custom_file_loading.html" title="Loading a cube from a custom file format"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="TEC.html" title="Ionosphere space weather"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris examples</a> &raquo;</li>
+          <li><a href="index.html" >Visualisation examples</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

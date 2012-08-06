@@ -1,0 +1,276 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.fileformats.netcdf &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../../index.html" />
+    <link rel="up" title="iris.fileformats" href="../fileformats.html" />
+    <link rel="next" title="iris.fileformats.pp" href="pp.html" />
+    <link rel="prev" title="iris.fileformats.manager" href="manager.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../../index.html"><img src="../../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="pp.html" title="iris.fileformats.pp"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="manager.html" title="iris.fileformats.manager"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../fileformats.html" accesskey="U">iris.fileformats</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="manager.html"
+                        title="previous chapter">iris.fileformats.manager</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pp.html"
+                        title="next chapter">iris.fileformats.pp</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/iris/iris/fileformats/netcdf.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-fileformats-netcdf">
+<span id="id1"></span><h1>iris.fileformats.netcdf<a class="headerlink" href="#iris-fileformats-netcdf" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.fileformats.netcdf"></span><p>Module to support the loading of a NetCDF file into an Iris cube.</p>
+<p>See also: <a class="reference external" href="http://code.google.com/p/netcdf4-python/">netCDF4 python</a>.</p>
+<p>Also refer to document &#8216;NetCDF Climate and Forecast (CF) Metadata Conventions&#8217;, Version 1.4, 27 February 2009.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.fileformats.netcdf.load_cubes" title="iris.fileformats.netcdf.load_cubes"><tt class="xref py py-obj docutils literal"><span class="pre">load_cubes</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.netcdf.save" title="iris.fileformats.netcdf.save"><tt class="xref py py-obj docutils literal"><span class="pre">save</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.netcdf.NetCDFDataProxy" title="iris.fileformats.netcdf.NetCDFDataProxy"><tt class="xref py py-obj docutils literal"><span class="pre">NetCDFDataProxy</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.netcdf.load_cubes">
+<tt class="descclassname">iris.fileformats.netcdf.</tt><tt class="descname">load_cubes</tt><big>(</big><em>filenames</em>, <em>callback=None</em><big>)</big><a class="headerlink" href="#iris.fileformats.netcdf.load_cubes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads cubes from a list of NetCDF filenames.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>filenames (string/list):</dt>
+<dd><p class="first last">One or more NetCDF filenames to load.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>callback (callable function):</dt>
+<dd><p class="first last">Function which can be passed on to <a class="reference internal" href="../io.html#iris.io.run_callback" title="iris.io.run_callback"><tt class="xref py py-func docutils literal"><span class="pre">iris.io.run_callback()</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>Generator of loaded NetCDF <tt class="xref py py-class docutils literal"><span class="pre">iris.cubes.Cube</span></tt>.</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.netcdf.save">
+<tt class="descclassname">iris.fileformats.netcdf.</tt><tt class="descname">save</tt><big>(</big><em>cube</em>, <em>filename</em>, <em>netcdf_format='NETCDF4'</em><big>)</big><a class="headerlink" href="#iris.fileformats.netcdf.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a cube to a netCDF file, given the cube and the filename.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube (<a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>):</dt>
+<dd><p class="first last">The <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a> to be saved to a netCDF file.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>filename (string):</dt>
+<dd><p class="first last">Name of the netCDF file to save the cube.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>netcdf_format (string):</dt>
+<dd><p class="first last">Underlying netCDF file format, one of &#8216;NETCDF4&#8217;, &#8216;NETCDF4_CLASSIC&#8217;, 
+&#8216;NETCDF3_CLASSIC&#8217; or &#8216;NETCDF3_64BIT&#8217;. Default is &#8216;NETCDF4&#8217; format.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>None.</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<p>A reference to the data payload of a single NetCDF file variable.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.fileformats.netcdf.NetCDFDataProxy">
+<em class="property">class </em><tt class="descclassname">iris.fileformats.netcdf.</tt><tt class="descname">NetCDFDataProxy</tt><big>(</big><em>path</em>, <em>variable_name</em><big>)</big><a class="headerlink" href="#iris.fileformats.netcdf.NetCDFDataProxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the data payload of a single NetCDF file variable.</p>
+<dl class="method">
+<dt id="iris.fileformats.netcdf.NetCDFDataProxy.load">
+<tt class="descname">load</tt><big>(</big><em>data_shape</em>, <em>data_type</em>, <em>mdi</em>, <em>deferred_slice</em><big>)</big><a class="headerlink" href="#iris.fileformats.netcdf.NetCDFDataProxy.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the corresponding proxy data item and perform any deferred slicing.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>data_shape (tuple of int):</dt>
+<dd><p class="first last">The data shape of the proxy data item.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>data_type (<a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-class docutils literal"><span class="pre">numpy.dtype</span></tt></a>):</dt>
+<dd><p class="first last">The data type of the proxy data item.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>mdi (float):</dt>
+<dd><p class="first last">The missing data indicator value.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>deferred_slice (tuple):</dt>
+<dd><p class="first last">The deferred slice to be applied to the proxy data item.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd><a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></tt></a></dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.fileformats.netcdf.NetCDFDataProxy.path">
+<tt class="descname">path</tt><a class="headerlink" href="#iris.fileformats.netcdf.NetCDFDataProxy.path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.fileformats.netcdf.NetCDFDataProxy.variable_name">
+<tt class="descname">variable_name</tt><a class="headerlink" href="#iris.fileformats.netcdf.NetCDFDataProxy.variable_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="pp.html" title="iris.fileformats.pp"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="manager.html" title="iris.fileformats.manager"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../fileformats.html" >iris.fileformats</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

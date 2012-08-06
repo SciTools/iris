@@ -1,0 +1,46 @@
+.. _iris.fileformats:
+
+================
+iris.fileformats
+================
+
+
+.. sidebar:: Modules in this package
+
+
+   .. toctree::
+      :maxdepth: 2
+      :titlesonly:
+      
+      _pyke_rules/compiled_krb.rst
+      fileformats/_pyke_rules.rst
+      fileformats/cf
+      fileformats/dot
+      fileformats/ff
+      fileformats/grib
+      fileformats/grib_save_rules
+      fileformats/manager
+      fileformats/netcdf
+      fileformats/pp
+      fileformats/rules
+      fileformats/um_cf_map
+
+   
+
+
+    
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.fileformats
+
+In this module:
+
+ * :py:obj:`FORMAT_AGENT`
+
+
+----------
+
+
+.. autodata:: iris.fileformats.FORMAT_AGENT
+

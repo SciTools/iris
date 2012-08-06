@@ -1,0 +1,175 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.fileformats &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Iris reference documentation" href="../iris.html" />
+    <link rel="next" title="iris.fileformats.cf" href="fileformats/cf.html" />
+    <link rel="prev" title="iris.exceptions" href="exceptions.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="fileformats/cf.html" title="iris.fileformats.cf"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="exceptions.html" title="iris.exceptions"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" accesskey="U">Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="exceptions.html"
+                        title="previous chapter">iris.exceptions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="fileformats/cf.html"
+                        title="next chapter">iris.fileformats.cf</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/iris/iris/fileformats.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-fileformats">
+<span id="id1"></span><h1>iris.fileformats<a class="headerlink" href="#iris-fileformats" title="Permalink to this headline">¶</a></h1>
+<div class="sidebar">
+<p class="first sidebar-title">Modules in this package</p>
+<div class="toctree-wrapper last compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformats/cf.html">iris.fileformats.cf</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fileformats/dot.html">iris.fileformats.dot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fileformats/ff.html">iris.fileformats.ff</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fileformats/grib.html">iris.fileformats.grib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fileformats/grib_save_rules.html">iris.fileformats.grib_save_rules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fileformats/manager.html">iris.fileformats.manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fileformats/netcdf.html">iris.fileformats.netcdf</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fileformats/pp.html">iris.fileformats.pp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fileformats/rules.html">iris.fileformats.rules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fileformats/um_cf_map.html">iris.fileformats.um_cf_map</a></li>
+</ul>
+</div>
+</div>
+<span class="target" id="module-iris.fileformats"></span><p>A package for converting cubes to and from specific file formats.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.fileformats.FORMAT_AGENT" title="iris.fileformats.FORMAT_AGENT"><tt class="xref py py-obj docutils literal"><span class="pre">FORMAT_AGENT</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="data">
+<dt id="iris.fileformats.FORMAT_AGENT">
+<tt class="descclassname">iris.fileformats.</tt><tt class="descname">FORMAT_AGENT</tt><em class="property"> = FormatAgent([FormatSpecification('UM Post Processing file (PP)', FileElement('32-bit magic number', &lt;function &lt;lambda&gt; at 0x1ef6d70&gt;), 256, handler=&lt;function load_cubes at 0x1f979b0&gt;, priority=5), FormatSpecification('UM Post Processing file (PP) little-endian', FileElement('32-bit magic number', &lt;function &lt;lambda&gt; at 0x1ef6d70&gt;), 65536, handler=&lt;function _pp_little_endian at 0x2044758&gt;, priority=5), FormatSpecification('GRIB', FileElement('32-bit magic number', &lt;function &lt;lambda&gt; at 0x1ef6d70&gt;), 1196575042, handler=&lt;function load_cubes at 0x1fd1d70&gt;, priority=5), FormatSpecification('NetCDF', FileElement('32-bit magic number', &lt;function &lt;lambda&gt; at 0x1ef6d70&gt;), 1128547841, handler=&lt;function load_cubes at 0x2044398&gt;, priority=5), FormatSpecification('NetCDF 64 bit offset format', FileElement('32-bit magic number', &lt;function &lt;lambda&gt; at 0x1ef6d70&gt;), 1128547842, handler=&lt;function load_cubes at 0x2044398&gt;, priority=5), FormatSpecification('NetCDF_v4', FileElement('64-bit magic number', &lt;function &lt;lambda&gt; at 0x1ef8758&gt;), 9892231649176459786L, handler=&lt;function load_cubes at 0x2044398&gt;, priority=5), FormatSpecification('UM Fields file (FF) pre v3.1', FileElement('64-bit magic number', &lt;function &lt;lambda&gt; at 0x1ef8758&gt;), 20, handler=&lt;function load_cubes at 0x1ef8aa0&gt;, priority=4), FormatSpecification('UM Fields file (FF) post v5.2', FileElement('64-bit magic number', &lt;function &lt;lambda&gt; at 0x1ef8758&gt;), 15, handler=&lt;function load_cubes at 0x1ef8aa0&gt;, priority=4), FormatSpecification('Name III', FileElement('Leading line', &lt;function &lt;lambda&gt; at 0x1ef8848&gt;), &lt;function &lt;lambda&gt; at 0x4a468c0&gt;, handler=&lt;function NAME_to_cube at 0x4a26410&gt;, priority=3)])</em><a class="headerlink" href="#iris.fileformats.FORMAT_AGENT" title="Permalink to this definition">¶</a></dt>
+<dd><p>The FORMAT_AGENT is responsible for identifying the format of a given URI. New formats can be added with the <strong>add_spec</strong> method.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="fileformats/cf.html" title="iris.fileformats.cf"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="exceptions.html" title="iris.exceptions"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" >Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

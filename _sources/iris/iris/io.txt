@@ -1,0 +1,76 @@
+.. _iris.io:
+
+=======
+iris.io
+=======
+
+
+.. sidebar:: Modules in this package
+
+
+   .. toctree::
+      :maxdepth: 2
+      :titlesonly:
+      
+      io/format_picker
+
+   
+
+
+    
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.io
+
+In this module:
+
+ * :py:obj:`add_saver`
+ * :py:obj:`decode_uri`
+ * :py:obj:`find_saver`
+ * :py:obj:`load_files`
+ * :py:obj:`run_callback`
+ * :py:obj:`save`
+ * :py:obj:`select_data_path`
+ * :py:obj:`SaversDict`
+
+
+----------
+
+.. autofunction:: iris.io.add_saver
+
+----------
+
+.. autofunction:: iris.io.decode_uri
+
+----------
+
+.. autofunction:: iris.io.find_saver
+
+----------
+
+.. autofunction:: iris.io.load_files
+
+----------
+
+.. autofunction:: iris.io.run_callback
+
+----------
+
+.. autofunction:: iris.io.save
+
+----------
+
+.. autofunction:: iris.io.select_data_path
+
+----------
+
+A dictionary that can only have string keys with no overlap.
+
+..
+
+    .. autoclass:: iris.io.SaversDict
+        :members:
+        :undoc-members:
+        :inherited-members:
+

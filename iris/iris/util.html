@@ -1,0 +1,565 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.util &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Iris reference documentation" href="../iris.html" />
+    <link rel="next" title="Changes in Iris" href="../../whats_new/changes.html" />
+    <link rel="prev" title="iris.unit" href="unit.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../whats_new/changes.html" title="Changes in Iris"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="unit.html" title="iris.unit"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" accesskey="U">Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="unit.html"
+                        title="previous chapter">iris.unit</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../../whats_new/changes.html"
+                        title="next chapter">Changes in Iris</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/iris/iris/util.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-util">
+<span id="id1"></span><h1>iris.util<a class="headerlink" href="#iris-util" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.util"></span><p>Miscellaneous utility functions.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.util.timers" title="iris.util.timers"><tt class="xref py py-obj docutils literal"><span class="pre">timers</span></tt></a></li>
+<li><a class="reference internal" href="#iris.util.approx_equal" title="iris.util.approx_equal"><tt class="xref py py-obj docutils literal"><span class="pre">approx_equal</span></tt></a></li>
+<li><a class="reference internal" href="#iris.util.array_equal" title="iris.util.array_equal"><tt class="xref py py-obj docutils literal"><span class="pre">array_equal</span></tt></a></li>
+<li><a class="reference internal" href="#iris.util.between" title="iris.util.between"><tt class="xref py py-obj docutils literal"><span class="pre">between</span></tt></a></li>
+<li><a class="reference internal" href="#iris.util.clip_string" title="iris.util.clip_string"><tt class="xref py py-obj docutils literal"><span class="pre">clip_string</span></tt></a></li>
+<li><a class="reference internal" href="#iris.util.column_slices_generator" title="iris.util.column_slices_generator"><tt class="xref py py-obj docutils literal"><span class="pre">column_slices_generator</span></tt></a></li>
+<li><a class="reference internal" href="#iris.util.create_temp_filename" title="iris.util.create_temp_filename"><tt class="xref py py-obj docutils literal"><span class="pre">create_temp_filename</span></tt></a></li>
+<li><a class="reference internal" href="#iris.util.delta" title="iris.util.delta"><tt class="xref py py-obj docutils literal"><span class="pre">delta</span></tt></a></li>
+<li><a class="reference internal" href="#iris.util.ensure_array" title="iris.util.ensure_array"><tt class="xref py py-obj docutils literal"><span class="pre">ensure_array</span></tt></a></li>
+<li><a class="reference internal" href="#iris.util.guess_coord_axis" title="iris.util.guess_coord_axis"><tt class="xref py py-obj docutils literal"><span class="pre">guess_coord_axis</span></tt></a></li>
+<li><a class="reference internal" href="#iris.util.monotonic" title="iris.util.monotonic"><tt class="xref py py-obj docutils literal"><span class="pre">monotonic</span></tt></a></li>
+<li><a class="reference internal" href="#iris.util.reverse" title="iris.util.reverse"><tt class="xref py py-obj docutils literal"><span class="pre">reverse</span></tt></a></li>
+<li><a class="reference internal" href="#iris.util.rolling_window" title="iris.util.rolling_window"><tt class="xref py py-obj docutils literal"><span class="pre">rolling_window</span></tt></a></li>
+<li><a class="reference internal" href="#iris.util.Linear1dExtrapolator" title="iris.util.Linear1dExtrapolator"><tt class="xref py py-obj docutils literal"><span class="pre">Linear1dExtrapolator</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="data">
+<dt id="iris.util.timers">
+<tt class="descclassname">iris.util.</tt><tt class="descname">timers</tt><em class="property"> = &lt;iris.util._Timers object at 0x1ca1190&gt;</em><a class="headerlink" href="#iris.util.timers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides multiple named timers, each composed of multiple named steps.</p>
+<p>Only one step is active at a time, so calling start(timer_name, step_name)
+will stop the current step and start the new one.</p>
+<p>Example Usage:</p>
+<blockquote>
+<div><p>from iris.util import timers</p>
+<p>def little_func(param):</p>
+<blockquote>
+<div><p>timers.restart(&#8220;little func&#8221;, &#8220;init&#8221;)
+init()</p>
+<p>timers.restart(&#8220;little func&#8221;, &#8220;main&#8221;)
+main(param)</p>
+<p>timers.restart(&#8220;little func&#8221;, &#8220;cleanup&#8221;)
+cleanup()</p>
+<p>timers.stop(&#8220;little func&#8221;)</p>
+</div></blockquote>
+<p>def my_big_func():</p>
+<blockquote>
+<div><p>timers.start(&#8220;big func&#8221;, &#8220;input&#8221;)
+input()</p>
+<p>timers.start(&#8220;big func&#8221;, &#8220;processing&#8221;)
+little_func(123)
+little_func(456)</p>
+<p>timers.start(&#8220;big func&#8221;, &#8220;output&#8221;)
+output()</p>
+<p>print timers.stop(&#8220;big func&#8221;)</p>
+<p>print timers.get(&#8220;little func&#8221;)</p>
+</div></blockquote>
+</div></blockquote>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.util.approx_equal">
+<tt class="descclassname">iris.util.</tt><tt class="descname">approx_equal</tt><big>(</big><em>a</em>, <em>b</em>, <em>max_absolute_error=1e-10</em>, <em>max_relative_error=1e-10</em><big>)</big><a class="headerlink" href="#iris.util.approx_equal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether two numbers are almost equal, allowing for the finite precision of floating point numbers.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.util.array_equal">
+<tt class="descclassname">iris.util.</tt><tt class="descname">array_equal</tt><big>(</big><em>array1</em>, <em>array2</em><big>)</big><a class="headerlink" href="#iris.util.array_equal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether two arrays have the same shape and elements.</p>
+<p>This provides the same functionality as <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.array_equal.html#numpy.array_equal" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-func docutils literal"><span class="pre">numpy.array_equal()</span></tt></a> but with
+additional support for arrays of strings.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.util.between">
+<tt class="descclassname">iris.util.</tt><tt class="descname">between</tt><big>(</big><em>lh</em>, <em>rh</em>, <em>lh_inclusive=True</em>, <em>rh_inclusive=True</em><big>)</big><a class="headerlink" href="#iris.util.between" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides a convenient way of defining a 3 element inequality such as <tt class="docutils literal"><span class="pre">a</span> <span class="pre">&lt;</span> <span class="pre">number</span> <span class="pre">&lt;</span> <span class="pre">b</span></tt>.</p>
+<p>Arguments:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>lh</dt>
+<dd><p class="first last">The left hand element of the inequality</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>rh</dt>
+<dd><p class="first last">The right hand element of the inequality</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Keywords:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>lh_inclusive - boolean</dt>
+<dd><p class="first last">Affects the left hand comparison operator to use in the inequality.
+True for <tt class="docutils literal"><span class="pre">&lt;=</span></tt> false for <tt class="docutils literal"><span class="pre">&lt;</span></tt>. Defaults to True.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>rh_inclusive - boolean</dt>
+<dd><p class="first last">Same as lh_inclusive but for right hand operator.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">between_3_and_6</span> <span class="o">=</span> <span class="n">between</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+   <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="n">between_3_and_6</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+
+<span class="n">between_3_and_6</span> <span class="o">=</span> <span class="n">between</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="n">rh_inclusive</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+   <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="n">between_3_and_6</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.util.clip_string">
+<tt class="descclassname">iris.util.</tt><tt class="descname">clip_string</tt><big>(</big><em>the_str</em>, <em>clip_length=70</em>, <em>rider='...'</em><big>)</big><a class="headerlink" href="#iris.util.clip_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a clipped version of the string based on the specified clip length and whether
+or not any graceful clip points can be found.</p>
+<p>If the string to be clipped is shorter than the specified clip length, the original string is returned.</p>
+<p>If the string is longer than the clip length, a graceful point (a space character) after the clip length
+is searched for. If a graceful point is found the string is clipped at this point and the rider is added.
+If no graceful point can be found, then the string is clipped exactly where the user requested and the
+rider is added.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>the_str</dt>
+<dd><p class="first last">The string to be clipped</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>clip_length</dt>
+<dd><p class="first last">The length in characters that the input string should be clipped to.
+Defaults to a preconfigured value if not specified.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>rider</dt>
+<dd><p class="first last">A series of characters appended at the end of the returned string to show it has been clipped.
+Defaults to a preconfigured value if not specified.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>The string clipped to the required length with a rider appended. If the clip length
+was greater than the orignal string, the original string is returned unaltered.</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.util.column_slices_generator">
+<tt class="descclassname">iris.util.</tt><tt class="descname">column_slices_generator</tt><big>(</big><em>full_slice</em>, <em>ndims</em><big>)</big><a class="headerlink" href="#iris.util.column_slices_generator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a full slice full of tuples, return a dictionary mapping old data dimensions to new and a generator which gives 
+the successive slices needed to index correctly (across columns).</p>
+<p>This routine deals with the special functionality for tuple based indexing e.g. [0, (3, 5), :, (1, 6, 8)]
+by first providing a slice which takes the non tuple slices out first i.e. [0, :, :, :]
+then subsequently iterates through each of the tuples taking out the appropriate slices
+i.e. [(3, 5), :, :] followed by [:, :, (1, 6, 8)]</p>
+<p>This method was developed as numpy does not support the direct approach of [(3, 5), : , (1, 6, 8)] for column based indexing.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.util.create_temp_filename">
+<tt class="descclassname">iris.util.</tt><tt class="descname">create_temp_filename</tt><big>(</big><em>suffix=''</em><big>)</big><a class="headerlink" href="#iris.util.create_temp_filename" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a temporary file name.</p>
+<p>Args:</p>
+<blockquote>
+<div><ul class="simple">
+<li>suffix  -  Optional filename extension.</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.util.delta">
+<tt class="descclassname">iris.util.</tt><tt class="descname">delta</tt><big>(</big><em>ndarray</em>, <em>dimension</em>, <em>circular=False</em><big>)</big><a class="headerlink" href="#iris.util.delta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the difference between values along a given dimension.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>ndarray:</dt>
+<dd><p class="first last">The array over which to do the difference.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>dimension:</dt>
+<dd><p class="first last">The dimension over which to do the difference on ndarray.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>circular:</dt>
+<dd><p class="first">If not False then return n results in the requested dimension
+with the delta between the last and first element included in
+the result otherwise the result will be of length n-1 (where n
+is the length of ndarray in the given dimension&#8217;s direction)</p>
+<p>If circular is numeric then the value of circular will be added
+to the last element of the given dimension if the last element
+is negative, otherwise the value of circular will be subtracted
+from the last element.</p>
+<p>The example below illustrates the process:</p>
+<div class="last highlight-python"><pre>original array              -180, -90,  0,    90
+delta (with circular=360):    90,  90, 90, -270+360</pre>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The difference algorithm implemented is forward difference:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.util</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">original</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">90</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iris</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">delta</span><span class="p">(</span><span class="n">original</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">array([90, 90, 90])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iris</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">delta</span><span class="p">(</span><span class="n">original</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">circular</span><span class="o">=</span><span class="mi">360</span><span class="p">)</span>
+<span class="go">array([90, 90, 90, 90])</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.util.ensure_array">
+<tt class="descclassname">iris.util.</tt><tt class="descname">ensure_array</tt><big>(</big><em>a</em><big>)</big><a class="headerlink" href="#iris.util.ensure_array" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.util.guess_coord_axis">
+<tt class="descclassname">iris.util.</tt><tt class="descname">guess_coord_axis</tt><big>(</big><em>coord</em><big>)</big><a class="headerlink" href="#iris.util.guess_coord_axis" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.util.monotonic">
+<tt class="descclassname">iris.util.</tt><tt class="descname">monotonic</tt><big>(</big><em>array</em>, <em>strict=False</em>, <em>return_direction=False</em><big>)</big><a class="headerlink" href="#iris.util.monotonic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return whether the given 1d array is monotonic.</p>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>strict (boolean)</dt>
+<dd><p class="first last">Flag to enable strict monotonic checking</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>return_direction (boolean)</dt>
+<dd><p class="first last">Flag to change return behaviour to return (monotonic_status, direction) 
+Direction will be 1 for positive or -1 for negative. The direction is meaningless
+if the array is not monotonic.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Returns:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>monotonic_status (boolean)</dt>
+<dd><p class="first">Whether the array was monotonic.</p>
+<dl class="last docutils">
+<dt>If the return_direction flag was given then the returned value will be:</dt>
+<dd><p class="first last"><tt class="docutils literal"><span class="pre">(monotonic_status,</span> <span class="pre">direction)</span></tt></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.util.reverse">
+<tt class="descclassname">iris.util.</tt><tt class="descname">reverse</tt><big>(</big><em>array</em>, <em>axes</em><big>)</big><a class="headerlink" href="#iris.util.reverse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reverse the array along the given axes.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>array</dt>
+<dd><p class="first last">The array to reverse</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>axes</dt>
+<dd><p class="first last">A single value or array of values of axes to reverse</p>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">a</span>
+<span class="go">[[[ 0  1  2  3]</span>
+<span class="go">  [ 4  5  6  7]</span>
+<span class="go">  [ 8  9 10 11]]</span>
+
+<span class="go"> [[12 13 14 15]</span>
+<span class="go">  [16 17 18 19]</span>
+<span class="go">  [20 21 22 23]]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">reverse</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">[[[ 8  9 10 11]</span>
+<span class="go">  [ 4  5  6  7]</span>
+<span class="go">  [ 0  1  2  3]]</span>
+
+<span class="go"> [[20 21 22 23]</span>
+<span class="go">  [16 17 18 19]</span>
+<span class="go">  [12 13 14 15]]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">reverse</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="go">[[[11 10  9  8]</span>
+<span class="go">  [ 7  6  5  4]</span>
+<span class="go">  [ 3  2  1  0]]</span>
+
+<span class="go"> [[23 22 21 20]</span>
+<span class="go">  [19 18 17 16]</span>
+<span class="go">  [15 14 13 12]]]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.util.rolling_window">
+<tt class="descclassname">iris.util.</tt><tt class="descname">rolling_window</tt><big>(</big><em>a</em>, <em>window=1</em>, <em>step=1</em>, <em>axis=-1</em><big>)</big><a class="headerlink" href="#iris.util.rolling_window" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make an ndarray with a rolling window of the last dimension</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>a <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
+<dd><p class="first last">Array to add rolling window to</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>window <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Size of rolling window</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>step <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Size of step between rolling windows</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>axis <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Axis to take the rolling window over</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Returns:</p>
+<blockquote>
+<div>Array that is a view of the original array with an added dimension
+of the size of the given window at axis + 1.</div></blockquote>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rolling_window</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="go">array([[[0, 1, 2], [1, 2, 3], [2, 3, 4]],</span>
+<span class="go">       [[5, 6, 7], [6, 7, 8], [7, 8, 9]]])</span>
+</pre></div>
+</div>
+<p>Calculate rolling mean of last dimension:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">rolling_window</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">array([[ 1.,  2.,  3.],</span>
+<span class="go">       [ 6.,  7.,  8.]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<p>Extension class to <a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.interp1d.html#scipy.interpolate.interp1d" title="(in SciPy v0.11.dev)"><tt class="xref py py-class docutils literal"><span class="pre">scipy.interpolate.interp1d</span></tt></a> to provide linear extrapolation.</p>
+<p>See also: <a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/interpolate.html#scipy.interpolate" title="(in SciPy v0.11.dev)"><tt class="xref py py-mod docutils literal"><span class="pre">scipy.interpolate</span></tt></a>.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.util.Linear1dExtrapolator">
+<em class="property">class </em><tt class="descclassname">iris.util.</tt><tt class="descname">Linear1dExtrapolator</tt><big>(</big><em>interpolator</em><big>)</big><a class="headerlink" href="#iris.util.Linear1dExtrapolator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an already created <a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.interp1d.html#scipy.interpolate.interp1d" title="(in SciPy v0.11.dev)"><tt class="xref py py-class docutils literal"><span class="pre">scipy.interpolate.interp1d</span></tt></a> instance, return a callable object
+which supports linear extrapolation.</p>
+<dl class="method">
+<dt id="iris.util.Linear1dExtrapolator.all_points_in_range">
+<tt class="descname">all_points_in_range</tt><big>(</big><em>requested_x</em><big>)</big><a class="headerlink" href="#iris.util.Linear1dExtrapolator.all_points_in_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given the x points, do all of the points sit inside the interpolation range.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.util.Linear1dExtrapolator.y">
+<tt class="descname">y</tt><em class="property"> = None</em><a class="headerlink" href="#iris.util.Linear1dExtrapolator.y" title="Permalink to this definition">¶</a></dt>
+<dd><p>The y values given to the interpolator object.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">These are stored with the interpolator.axis last.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../whats_new/changes.html" title="Changes in Iris"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="unit.html" title="iris.unit"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" >Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

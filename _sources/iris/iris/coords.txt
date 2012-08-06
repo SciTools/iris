@@ -1,0 +1,90 @@
+.. _iris.coords:
+
+===========
+iris.coords
+===========
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.coords
+
+In this module:
+
+ * :py:obj:`AuxCoord`
+ * :py:obj:`Cell`
+ * :py:obj:`CellMethod`
+ * :py:obj:`Coord`
+ * :py:obj:`CoordDefn`
+ * :py:obj:`DimCoord`
+
+
+----------
+
+A CF auxiliary coordinate.
+
+..
+
+    .. autoclass:: iris.coords.AuxCoord
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+An immutable representation of a single cell of a coordinate, including the sample point
+and/or boundary position.
+
+..
+
+    .. autoclass:: iris.coords.Cell
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Represents a sub-cell pre-processing operation.
+
+..
+
+    .. autoclass:: iris.coords.CellMethod
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Abstract superclass for coordinates.
+
+..
+
+    .. autoclass:: iris.coords.Coord
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Criterion for identifying a specific type of :class:`DimCoord` or :class:`AuxCoord`
+based on its metadata.
+
+..
+
+    .. autoclass:: iris.coords.CoordDefn
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+A coordinate that is 1D, numeric, and strictly monotonic.
+
+..
+
+    .. autoclass:: iris.coords.DimCoord
+        :members:
+        :undoc-members:
+        :inherited-members:
+

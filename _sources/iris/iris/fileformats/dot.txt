@@ -1,0 +1,31 @@
+.. _iris.fileformats.dot:
+
+====================
+iris.fileformats.dot
+====================
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.fileformats.dot
+
+In this module:
+
+ * :py:obj:`cube_text`
+ * :py:obj:`save`
+ * :py:obj:`save_png`
+
+
+----------
+
+.. autofunction:: iris.fileformats.dot.cube_text
+
+----------
+
+.. autofunction:: iris.fileformats.dot.save
+
+----------
+
+.. autofunction:: iris.fileformats.dot.save_png
+

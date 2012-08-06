@@ -1,0 +1,276 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Global average annual temperature plot &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Visualisation examples" href="index.html" />
+    <link rel="next" title="Global average annual temperature maps" href="COP_maps.html" />
+    <link rel="prev" title="Visualisation examples" href="index.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="COP_maps.html" title="Global average annual temperature maps"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Visualisation examples"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris examples</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Visualisation examples</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Global average annual temperature plot</a><ul>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Visualisation examples</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="COP_maps.html"
+                        title="next chapter">Global average annual temperature maps</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/examples/graphics/COP_1d_plot.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="global-average-annual-temperature-plot">
+<span id="graphics-cop-1d-plot"></span><h1>Global average annual temperature plot<a class="headerlink" href="#global-average-annual-temperature-plot" title="Permalink to this headline">¶</a></h1>
+<p>Produces a time-series plot of global temperature forecasts for various emission scenarios.
+It also demonstrates the use of a callback routine to include additional information about the data 
+into the cube meta-data.</p>
+<p>The data used comes from the HadGEM2-AO model simulations for the A1B and E1 scenarios, both of which 
+were derived using the IMAGE Integrated Assessment Model (Johns et al. 2010; Lowe et al. 2009).</p>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>Johns T.C., et al. (2010) Climate change under aggressive mitigation: The ENSEMBLES multi-model 
+experiment. Climate Dynamics (submitted)</p>
+<p>Lowe J.A., C.D. Hewitt, D.P. Van Vuuren, T.C. Johns, E. Stehfest, J-F. Royer, and P. van der Linden, 2009. 
+New Study For Climate Modeling, Analyses, and Scenarios. Eos Trans. AGU, Vol 90, No. 21.</p>
+</div></blockquote>
+<p id="cop-1d-plot">[<a class="reference external" href="../../plot_directive/../example_code/graphics/COP_1d_plot.py">source code</a>]</p>
+<blockquote>
+<div><div class="figure">
+<img alt="../../_images/COP_1d_plot.png" src="../../_images/COP_1d_plot.png" />
+</div>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Global average annual temperature plot</span>
+<span class="sd">======================================</span>
+
+<span class="sd">Produces a time-series plot of global temperature forecasts for various emission scenarios.</span>
+<span class="sd">It also demonstrates the use of a callback routine to include additional information about the data</span>
+<span class="sd">into the cube meta-data.</span>
+
+
+<span class="sd">The data used comes from the HadGEM2-AO model simulations for the A1B and E1 scenarios, both of which</span>
+<span class="sd">were derived using the IMAGE Integrated Assessment Model (Johns et al. 2010; Lowe et al. 2009).</span>
+
+<span class="sd">References</span>
+<span class="sd">----------</span>
+
+<span class="sd">   Johns T.C., et al. (2010) Climate change under aggressive mitigation: The ENSEMBLES multi-model</span>
+<span class="sd">   experiment. Climate Dynamics (submitted)</span>
+
+<span class="sd">   Lowe J.A., C.D. Hewitt, D.P. Van Vuuren, T.C. Johns, E. Stehfest, J-F. Royer, and P. van der Linden, 2009.</span>
+<span class="sd">   New Study For Climate Modeling, Analyses, and Scenarios. Eos Trans. AGU, Vol 90, No. 21.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">iris</span>
+<span class="kn">import</span> <span class="nn">iris.coords</span> <span class="kn">as</span> <span class="nn">coords</span>
+<span class="kn">import</span> <span class="nn">iris.plot</span> <span class="kn">as</span> <span class="nn">iplt</span>
+<span class="kn">import</span> <span class="nn">iris.quickplot</span> <span class="kn">as</span> <span class="nn">qplt</span>
+
+<span class="kn">import</span> <span class="nn">iris.analysis.calculus</span>
+<span class="kn">import</span> <span class="nn">matplotlib.dates</span> <span class="kn">as</span> <span class="nn">mdates</span>
+
+
+<span class="k">def</span> <span class="nf">cop_metadata_callback</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A function which adds an &quot;Experiment&quot; coordinate which comes from the filename.  &quot;&quot;&quot;</span>
+
+    <span class="c"># Extract the experiment name (such as a1b or e1) from the filename (in this case it is just the parent folder&#39;s name)</span>
+    <span class="n">containing_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">experiment_label</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">containing_folder</span><span class="p">)</span>
+
+    <span class="c"># Create a coordinate with the experiment label in it</span>
+    <span class="n">exp_coord</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">AuxCoord</span><span class="p">(</span><span class="n">experiment_label</span><span class="p">,</span> <span class="n">long_name</span><span class="o">=</span><span class="s">&#39;Experiment&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s">&#39;no_unit&#39;</span><span class="p">)</span>
+
+    <span class="c"># and add it to the cube</span>
+    <span class="n">cube</span><span class="o">.</span><span class="n">add_aux_coord</span><span class="p">(</span><span class="n">exp_coord</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="c"># Load data into three Cubes, one for each set of PP files</span>
+    <span class="n">e1</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;A1B-Image_E1&#39;</span><span class="p">,</span> <span class="s">&#39;E1&#39;</span><span class="p">,</span> <span class="s">&#39;*.pp&#39;</span><span class="p">),</span>
+                           <span class="n">callback</span><span class="o">=</span><span class="n">cop_metadata_callback</span><span class="p">)</span>
+
+    <span class="n">a1b</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;A1B-Image_E1&#39;</span><span class="p">,</span> <span class="s">&#39;A1B&#39;</span><span class="p">,</span> <span class="s">&#39;*.pp&#39;</span><span class="p">),</span>
+                            <span class="n">callback</span><span class="o">=</span><span class="n">cop_metadata_callback</span><span class="p">)</span>
+
+    <span class="n">global_avg</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;A1B-Image_E1&#39;</span><span class="p">,</span> <span class="s">&#39;pp_1859_1889_avg.pp&#39;</span><span class="p">))</span>
+
+    <span class="n">pre_industrial_mean</span> <span class="o">=</span> <span class="n">global_avg</span><span class="o">.</span><span class="n">collapsed</span><span class="p">([</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="s">&#39;longitude&#39;</span><span class="p">],</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">)</span>
+    <span class="n">e1_global_mean</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">collapsed</span><span class="p">([</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="s">&#39;longitude&#39;</span><span class="p">],</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">)</span>
+    <span class="n">a1b_global_mean</span> <span class="o">=</span> <span class="n">a1b</span><span class="o">.</span><span class="n">collapsed</span><span class="p">([</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="s">&#39;longitude&#39;</span><span class="p">],</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">)</span>
+
+    <span class="c"># Add a title</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s">&#39;Global Average Temperatures&#39;</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s">&#39;center&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+    <span class="n">bounds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">get_position</span><span class="p">()</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
+    <span class="n">bounds</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.78</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_position</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
+
+    <span class="c"># Show ticks 30 years apart</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">mdates</span><span class="o">.</span><span class="n">YearLocator</span><span class="p">(</span><span class="mi">30</span><span class="p">))</span>
+
+    <span class="c"># Label the ticks with year data</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">format_xdata</span> <span class="o">=</span> <span class="n">mdates</span><span class="o">.</span><span class="n">DateFormatter</span><span class="p">(</span><span class="s">&#39;%Y&#39;</span><span class="p">)</span>
+
+    <span class="c"># Plot the datasets</span>
+    <span class="n">qplt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">e1_global_mean</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;E1 scenario&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">)</span>
+    <span class="n">qplt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">a1b_global_mean</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;A1B-Image scenario&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+
+    <span class="c"># Draw a horizontal line showing the pre industrial mean</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">pre_industrial_mean</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;gray&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s">&#39;dashed&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;pre-industrial&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+
+    <span class="c"># Establish where r and t have the same data, i.e. the observations</span>
+    <span class="n">common</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">a1b_global_mean</span><span class="o">.</span><span class="n">data</span> <span class="o">==</span> <span class="n">e1_global_mean</span><span class="o">.</span><span class="n">data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">observed</span> <span class="o">=</span> <span class="n">a1b_global_mean</span><span class="p">[</span><span class="n">common</span><span class="p">]</span>
+
+    <span class="c"># Plot the observed data</span>
+    <span class="n">qplt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;observed&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+
+    <span class="c"># Add a legend</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s">&quot;upper left&quot;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Time / year&#39;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+
+    <span class="n">iplt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="COP_maps.html" title="Global average annual temperature maps"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Visualisation examples"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris examples</a> &raquo;</li>
+          <li><a href="index.html" >Visualisation examples</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

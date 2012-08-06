@@ -1,0 +1,8 @@
+Iris examples
+=============
+
+.. toctree::
+    :maxdepth: 2
+
+    graphics/index.rst
+

@@ -1,0 +1,46 @@
+.. _iris.analysis.interpolate:
+
+=========================
+iris.analysis.interpolate
+=========================
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.analysis.interpolate
+
+In this module:
+
+ * :py:obj:`extract_nearest_neighbour`
+ * :py:obj:`linear`
+ * :py:obj:`nearest_neighbour_data_value`
+ * :py:obj:`nearest_neighbour_indices`
+ * :py:obj:`regrid`
+ * :py:obj:`regrid_to_max_resolution`
+
+
+----------
+
+.. autofunction:: iris.analysis.interpolate.extract_nearest_neighbour
+
+----------
+
+.. autofunction:: iris.analysis.interpolate.linear
+
+----------
+
+.. autofunction:: iris.analysis.interpolate.nearest_neighbour_data_value
+
+----------
+
+.. autofunction:: iris.analysis.interpolate.nearest_neighbour_indices
+
+----------
+
+.. autofunction:: iris.analysis.interpolate.regrid
+
+----------
+
+.. autofunction:: iris.analysis.interpolate.regrid_to_max_resolution
+

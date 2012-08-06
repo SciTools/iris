@@ -1,0 +1,170 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>reST quickstart &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Documentation in Iris" href="index.html" />
+    <link rel="next" title="Working with iris source code" href="../gitwash/index.html" />
+    <link rel="prev" title="Docstrings" href="docstrings.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../gitwash/index.html" title="Working with iris source code"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="docstrings.html" title="Docstrings"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris developer guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Documentation in Iris</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">reST quickstart</a><ul>
+<li><a class="reference internal" href="#creating-links">Creating links</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="docstrings.html"
+                        title="previous chapter">Docstrings</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../gitwash/index.html"
+                        title="next chapter">Working with <em>iris</em> source code</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/developers_guide/documenting/rest_guide.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="rest-quickstart">
+<h1>reST quickstart<a class="headerlink" href="#rest-quickstart" title="Permalink to this headline">¶</a></h1>
+<p>reST (<a class="reference external" href="http://en.wikipedia.org/wiki/ReStructuredText">http://en.wikipedia.org/wiki/ReStructuredText</a>) is a lightweight markup language intended to be highly readable in source format. This guide will cover some of the more frequently used advanced reST markup syntaxes, for the basics of reST the following links may be useful:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="http://sphinx.pocoo.org/rest.html">http://sphinx.pocoo.org/rest.html</a></li>
+<li><a class="reference external" href="http://docs.geoserver.org/trunk/en/docguide/sphinx.html">http://docs.geoserver.org/trunk/en/docguide/sphinx.html</a></li>
+<li><a class="reference external" href="http://packages.python.org/an_example_pypi_project/sphinx.html">http://packages.python.org/an_example_pypi_project/sphinx.html</a></li>
+</ul>
+</div></blockquote>
+<p>Reference documentation for reST can be found at <a class="reference external" href="http://docutils.sourceforge.net/rst.html">http://docutils.sourceforge.net/rst.html</a>.</p>
+<div class="section" id="creating-links">
+<h2>Creating links<a class="headerlink" href="#creating-links" title="Permalink to this headline">¶</a></h2>
+<p>Basic links can be created with <tt class="docutils literal"><span class="pre">`Text</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">link</span> <span class="pre">&lt;http://example.com&gt;`_</span></tt> which will look like <a class="reference external" href="http://example.com">Text of the link</a></p>
+<p>Documents in the same project can be cross referenced with the syntax <tt class="docutils literal"><span class="pre">:doc:`document_name`</span></tt> for example, to reference the &#8220;docstrings&#8221; page <tt class="docutils literal"><span class="pre">:doc:`docstrings`</span></tt> creates the following link <a class="reference internal" href="docstrings.html"><em>Docstrings</em></a></p>
+<p>References can be created between sections by first making a &#8220;label&#8221; where you would like the link to point to <tt class="docutils literal"><span class="pre">..</span> <span class="pre">_name_of_reference::</span></tt> the appropriate link can now be created with <tt class="docutils literal"><span class="pre">:ref:`name_of_reference`</span></tt> (note the trailing underscore on the label)</p>
+<p>Cross referencing other reference documentation can be achieved with the syntax <tt class="docutils literal"><span class="pre">:py:class:`zipfile.ZipFile`</span></tt> which will result in links such as <a class="reference external" href="http://docs.python.org/2.7/library/zipfile.html#zipfile.ZipFile" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">zipfile.ZipFile</span></tt></a> and <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></tt></a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../gitwash/index.html" title="Working with iris source code"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="docstrings.html" title="Docstrings"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris developer guide</a> &raquo;</li>
+          <li><a href="index.html" >Documentation in Iris</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

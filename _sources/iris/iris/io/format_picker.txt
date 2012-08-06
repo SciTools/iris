@@ -1,0 +1,89 @@
+.. _iris.io.format_picker:
+
+=====================
+iris.io.format_picker
+=====================
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.io.format_picker
+
+In this module:
+
+ * :py:obj:`FILE_EXTENSION`
+ * :py:obj:`LEADING_LINE`
+ * :py:obj:`MAGIC_NUMBER_32_BIT`
+ * :py:obj:`MAGIC_NUMBER_64_BIT`
+ * :py:obj:`FileElement`
+ * :py:obj:`FormatAgent`
+ * :py:obj:`FormatSpecification`
+
+
+----------
+
+
+.. autodata:: iris.io.format_picker.FILE_EXTENSION
+
+----------
+
+
+.. autodata:: iris.io.format_picker.LEADING_LINE
+
+----------
+
+
+.. autodata:: iris.io.format_picker.MAGIC_NUMBER_32_BIT
+
+----------
+
+
+.. autodata:: iris.io.format_picker.MAGIC_NUMBER_64_BIT
+
+----------
+
+Represents a specific aspect of a FileFormat which can be identified using the given element getter function.
+
+..
+
+    .. autoclass:: iris.io.format_picker.FileElement
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+The FormatAgent class is the containing object which is responsible for identifying the format of a given file
+by interrogating its children FormatSpecification instances.
+
+Typically a FormatAgent will be created empty and then extended with the :meth:`FormatAgent.add_spec` method::
+
+    agent = FormatAgent()
+    agent.add_spec(NetCDF_specification)
+    
+Less commonly, this can also be written::
+
+    agent = FormatAgent(NetCDF_specification)
+
+..
+
+    .. autoclass:: iris.io.format_picker.FormatAgent
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Provides the base class for file type definition.
+
+Every FormatSpecification instance has a name which can be accessed with the :attr:`FormatSpecification.name` property and
+a FileElement, such as filename extension or 32-bit magic number, with an associated value for format identification.
+
+..
+
+    .. autoclass:: iris.io.format_picker.FormatSpecification
+        :members:
+        :undoc-members:
+        :inherited-members:
+

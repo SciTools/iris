@@ -1,0 +1,568 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.analysis.maths &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../../index.html" />
+    <link rel="up" title="iris.analysis" href="../analysis.html" />
+    <link rel="next" title="iris.analysis.trajectory" href="trajectory.html" />
+    <link rel="prev" title="iris.analysis.interpolate" href="interpolate.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../../index.html"><img src="../../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="trajectory.html" title="iris.analysis.trajectory"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="interpolate.html" title="iris.analysis.interpolate"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../analysis.html" accesskey="U">iris.analysis</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="interpolate.html"
+                        title="previous chapter">iris.analysis.interpolate</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="trajectory.html"
+                        title="next chapter">iris.analysis.trajectory</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/iris/iris/analysis/maths.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-analysis-maths">
+<span id="id1"></span><h1>iris.analysis.maths<a class="headerlink" href="#iris-analysis-maths" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.analysis.maths"></span><p>Basic mathematical and statistical operations.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.analysis.maths.abs" title="iris.analysis.maths.abs"><tt class="xref py py-obj docutils literal"><span class="pre">abs</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.maths.add" title="iris.analysis.maths.add"><tt class="xref py py-obj docutils literal"><span class="pre">add</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.maths.divide" title="iris.analysis.maths.divide"><tt class="xref py py-obj docutils literal"><span class="pre">divide</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.maths.exponentiate" title="iris.analysis.maths.exponentiate"><tt class="xref py py-obj docutils literal"><span class="pre">exponentiate</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.maths.intersection_of_cubes" title="iris.analysis.maths.intersection_of_cubes"><tt class="xref py py-obj docutils literal"><span class="pre">intersection_of_cubes</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.maths.log" title="iris.analysis.maths.log"><tt class="xref py py-obj docutils literal"><span class="pre">log</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.maths.log10" title="iris.analysis.maths.log10"><tt class="xref py py-obj docutils literal"><span class="pre">log10</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.maths.log2" title="iris.analysis.maths.log2"><tt class="xref py py-obj docutils literal"><span class="pre">log2</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.maths.multiply" title="iris.analysis.maths.multiply"><tt class="xref py py-obj docutils literal"><span class="pre">multiply</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.maths.subtract" title="iris.analysis.maths.subtract"><tt class="xref py py-obj docutils literal"><span class="pre">subtract</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.maths.abs">
+<tt class="descclassname">iris.analysis.maths.</tt><tt class="descname">abs</tt><big>(</big><em>cube</em>, <em>update_history=True</em>, <em>in_place=False</em><big>)</big><a class="headerlink" href="#iris.analysis.maths.abs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the absolute values of the data in the Cube provided.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube:</dt>
+<dd><p class="first last">An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>update_history:</dt>
+<dd><p class="first last">Whether to add an entry into the resulting cube&#8217;s &#8220;history&#8221; coordinate.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>in_place:</dt>
+<dd><p class="first last">Whether to create a new Cube, or alter the given &#8220;cube&#8221;.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>Cube of same dimensionality as Cube provided, with absolute data using <tt class="xref py py-func docutils literal"><span class="pre">numpy.abs()</span></tt>
+and additional metadata added.</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.maths.add">
+<tt class="descclassname">iris.analysis.maths.</tt><tt class="descname">add</tt><big>(</big><em>cube</em>, <em>other</em>, <em>dim=None</em>, <em>ignore=True</em>, <em>update_history=True</em>, <em>in_place=False</em><big>)</big><a class="headerlink" href="#iris.analysis.maths.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the sum of two cubes, or the sum of a cube and a coordinate or scalar
+value.</p>
+<p>When summing two cubes, they must both have the same coordinate systems &amp; data resolution.</p>
+<p>When adding a coordinate to a cube, they must both share the same number of elements
+along a shared axis.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube:</dt>
+<dd><p class="first last">An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>other:</dt>
+<dd><p class="first last">An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>, <a class="reference internal" href="../coords.html#iris.coords.Coord" title="iris.coords.Coord"><tt class="xref py py-class docutils literal"><span class="pre">iris.coords.Coord</span></tt></a>,
+or a scalar.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>dim:</dt>
+<dd><p class="first last">If supplying a coord with no match on the cube, you must supply the dimension to process.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>update_history:</dt>
+<dd><p class="first last">Whether to add an entry into the resulting cube&#8217;s &#8220;history&#8221; coordinate.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>in_place:</dt>
+<dd><p class="first last">Whether to create a new Cube, or alter the given &#8220;cube&#8221;.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.maths.divide">
+<tt class="descclassname">iris.analysis.maths.</tt><tt class="descname">divide</tt><big>(</big><em>cube</em>, <em>other</em>, <em>dim=None</em>, <em>update_history=True</em><big>)</big><a class="headerlink" href="#iris.analysis.maths.divide" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the division of a cube by a cube or coordinate.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube:</dt>
+<dd><p class="first last">An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>other:</dt>
+<dd><p class="first last">An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a> or <a class="reference internal" href="../coords.html#iris.coords.Coord" title="iris.coords.Coord"><tt class="xref py py-class docutils literal"><span class="pre">iris.coords.Coord</span></tt></a>, or a number.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>dim:</dt>
+<dd><p class="first last">If supplying a coord with no match on the cube, you must supply the dimension to process.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>update_history:</dt>
+<dd><p class="first last">Whether to add an entry into the resulting cube&#8217;s &#8220;history&#8221; coordinate.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.maths.exponentiate">
+<tt class="descclassname">iris.analysis.maths.</tt><tt class="descname">exponentiate</tt><big>(</big><em>cube</em>, <em>exponent</em>, <em>update_history=True</em>, <em>in_place=False</em><big>)</big><a class="headerlink" href="#iris.analysis.maths.exponentiate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the result of the given cube to the power of a scalar.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube:</dt>
+<dd><p class="first last">An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>exponent:</dt>
+<dd><p class="first">The integer or floating point exponent.</p>
+<div class="last admonition note">
+<p class="first admonition-title">Note</p>
+<p>When applied to the cube&#8217;s unit, the exponent must result in a unit
+that can be described using only integer powers of the basic units.</p>
+<p class="last">e.g. Unit(&#8216;meter^-2 kilogram second^-1&#8217;)</p>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>update_history:</dt>
+<dd><p class="first last">Whether to add an entry into the resulting cube&#8217;s &#8220;history&#8221; coordinate.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>in_place:</dt>
+<dd><p class="first last">Whether to create a new Cube, or alter the given &#8220;cube&#8221;.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.maths.intersection_of_cubes">
+<tt class="descclassname">iris.analysis.maths.</tt><tt class="descname">intersection_of_cubes</tt><big>(</big><em>cube</em>, <em>other_cube</em><big>)</big><a class="headerlink" href="#iris.analysis.maths.intersection_of_cubes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the two Cubes of intersection given two Cubes.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The intersection of cubes function will ignore all single valued
+coordinates in checking the intersection.</p>
+</div>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube:</dt>
+<dd><p class="first last">An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>other_cube:</dt>
+<dd><p class="first last">An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>A pair of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a> instances in a tuple corresponding
+to the original cubes restricted to their intersection.</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.maths.log">
+<tt class="descclassname">iris.analysis.maths.</tt><tt class="descname">log</tt><big>(</big><em>cube</em>, <em>update_history=True</em>, <em>in_place=False</em><big>)</big><a class="headerlink" href="#iris.analysis.maths.log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the natural logarithm (base-e logarithm) of the cube.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube:</dt>
+<dd><p class="first last">An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>update_history:</dt>
+<dd><p class="first last">Whether to add an entry into the resulting cube&#8217;s &#8220;history&#8221; coordinate.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>in_place:</dt>
+<dd><p class="first last">Whether to create a new Cube, or alter the given &#8220;cube&#8221;.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.maths.log10">
+<tt class="descclassname">iris.analysis.maths.</tt><tt class="descname">log10</tt><big>(</big><em>cube</em>, <em>update_history=True</em>, <em>in_place=False</em><big>)</big><a class="headerlink" href="#iris.analysis.maths.log10" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the base-10 logarithm of the cube.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube:</dt>
+<dd><p class="first last">An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>update_history:</dt>
+<dd><p class="first last">Whether to add an entry into the resulting cube&#8217;s &#8220;history&#8221; coordinate.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>in_place:</dt>
+<dd><p class="first last">Whether to create a new Cube, or alter the given &#8220;cube&#8221;.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.maths.log2">
+<tt class="descclassname">iris.analysis.maths.</tt><tt class="descname">log2</tt><big>(</big><em>cube</em>, <em>update_history=True</em>, <em>in_place=False</em><big>)</big><a class="headerlink" href="#iris.analysis.maths.log2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the base-2 logarithm of the cube.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube:</dt>
+<dd><p class="first last">An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>update_history:</dt>
+<dd><p class="first last">Whether to add an entry into the resulting cube&#8217;s &#8220;history&#8221; coordinate.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>in_place:</dt>
+<dd><p class="first last">Whether to create a new Cube, or alter the given &#8220;cube&#8221;.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.maths.multiply">
+<tt class="descclassname">iris.analysis.maths.</tt><tt class="descname">multiply</tt><big>(</big><em>cube</em>, <em>other</em>, <em>dim=None</em>, <em>update_history=True</em><big>)</big><a class="headerlink" href="#iris.analysis.maths.multiply" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the product of a cube and another cube or coordinate.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube:</dt>
+<dd><p class="first last">An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>other:</dt>
+<dd><p class="first last">An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a> or <a class="reference internal" href="../coords.html#iris.coords.Coord" title="iris.coords.Coord"><tt class="xref py py-class docutils literal"><span class="pre">iris.coords.Coord</span></tt></a>, or a number.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>dim:</dt>
+<dd><p class="first last">If supplying a coord with no match on the cube, you must supply the dimension to process.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>update_history:</dt>
+<dd><p class="first last">Whether to add an entry into the resulting cube&#8217;s &#8220;history&#8221; coordinate.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.maths.subtract">
+<tt class="descclassname">iris.analysis.maths.</tt><tt class="descname">subtract</tt><big>(</big><em>cube</em>, <em>other</em>, <em>dim=None</em>, <em>ignore=True</em>, <em>update_history=True</em>, <em>in_place=False</em><big>)</big><a class="headerlink" href="#iris.analysis.maths.subtract" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the difference between two cubes, or the difference between
+a cube and a coordinate or scalar value.</p>
+<p>When subtracting two cubes, they must both have the same coordinate systems &amp; data resolution.</p>
+<p>When subtracting a coordinate to a cube, they must both share the same number of elements
+along a shared axis.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube:</dt>
+<dd><p class="first last">An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>other:</dt>
+<dd><p class="first last">An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Coord</span></tt>,
+or a scalar.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>dim:</dt>
+<dd><p class="first last">If supplying a coord with no match on the cube, you must supply the dimension to process.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>update_history:</dt>
+<dd><p class="first last">Whether to add an entry into the resulting cube&#8217;s &#8220;history&#8221; coordinate.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>in_place:</dt>
+<dd><p class="first last">Whether to create a new Cube, or alter the given &#8220;cube&#8221;.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>An instance of <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="trajectory.html" title="iris.analysis.trajectory"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="interpolate.html" title="iris.analysis.interpolate"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../analysis.html" >iris.analysis</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

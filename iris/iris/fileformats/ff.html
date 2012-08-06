@@ -1,0 +1,307 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.fileformats.ff &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../../index.html" />
+    <link rel="up" title="iris.fileformats" href="../fileformats.html" />
+    <link rel="next" title="iris.fileformats.grib" href="grib.html" />
+    <link rel="prev" title="iris.fileformats.dot" href="dot.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../../index.html"><img src="../../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="grib.html" title="iris.fileformats.grib"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="dot.html" title="iris.fileformats.dot"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../fileformats.html" accesskey="U">iris.fileformats</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="dot.html"
+                        title="previous chapter">iris.fileformats.dot</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="grib.html"
+                        title="next chapter">iris.fileformats.grib</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/iris/iris/fileformats/ff.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-fileformats-ff">
+<span id="id1"></span><h1>iris.fileformats.ff<a class="headerlink" href="#iris-fileformats-ff" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.fileformats.ff"></span><p>Provides UK Met Office Fields File (FF) format specific capabilities.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.fileformats.ff.load_cubes" title="iris.fileformats.ff.load_cubes"><tt class="xref py py-obj docutils literal"><span class="pre">load_cubes</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.ff.FF2PP" title="iris.fileformats.ff.FF2PP"><tt class="xref py py-obj docutils literal"><span class="pre">FF2PP</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.ff.FFHeader" title="iris.fileformats.ff.FFHeader"><tt class="xref py py-obj docutils literal"><span class="pre">FFHeader</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.ff.load_cubes">
+<tt class="descclassname">iris.fileformats.ff.</tt><tt class="descname">load_cubes</tt><big>(</big><em>filenames</em>, <em>callback</em><big>)</big><a class="headerlink" href="#iris.fileformats.ff.load_cubes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads cubes from a list of fields files filenames.</p>
+<p>Args:</p>
+<ul class="simple">
+<li>filenames - list of fields files filenames to load</li>
+</ul>
+<p>Kwargs:</p>
+<ul class="simple">
+<li>callback - a function which can be passed on to <a class="reference internal" href="../io.html#iris.io.run_callback" title="iris.io.run_callback"><tt class="xref py py-func docutils literal"><span class="pre">iris.io.run_callback()</span></tt></a></li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The resultant cubes may not be in the order that they are in the file (order 
+is not preserved when there is a field with orography references).</p>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<p>A class to extract the individual PPFields from within a FieldsFile.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.fileformats.ff.FF2PP">
+<em class="property">class </em><tt class="descclassname">iris.fileformats.ff.</tt><tt class="descname">FF2PP</tt><big>(</big><em>filename</em>, <em>read_data=False</em><big>)</big><a class="headerlink" href="#iris.fileformats.ff.FF2PP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a FieldsFile to Post Process instance that returns a generator
+of PPFields contained within the FieldsFile.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>filename (string):</dt>
+<dd><p class="first last">Specify the name of the FieldsFile.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>read_data (boolean):</dt>
+<dd><p class="first last">Specify whether to read the associated PPField data within the FieldsFile.
+Default value is False.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>PPField generator.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.fileformats.ff</span> <span class="kn">as</span> <span class="nn">ff</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;ssps&#39;</span><span class="p">,</span> <span class="s">&#39;qtgl.ssps_006&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pp_fields</span> <span class="o">=</span> <span class="p">[</span><span class="n">pp_field</span> <span class="k">for</span> <span class="n">pp_field</span> <span class="ow">in</span> <span class="n">ff</span><span class="o">.</span><span class="n">FF2PP</span><span class="p">(</span><span class="n">filename</span><span class="p">)]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>A class to represent the FIXED_LENGTH_HEADER section of a FieldsFile.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.fileformats.ff.FFHeader">
+<em class="property">class </em><tt class="descclassname">iris.fileformats.ff.</tt><tt class="descname">FFHeader</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#iris.fileformats.ff.FFHeader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a FieldsFile header instance by reading the FIXED_LENGTH_HEADER section of the FieldsFile.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>filename (string):</dt>
+<dd><p class="first last">Specify the name of the FieldsFile.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>FFHeader object.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.fileformats.ff</span> <span class="kn">as</span> <span class="nn">ff</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;ssps&#39;</span><span class="p">,</span> <span class="s">&#39;qtgl.ssps_006&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ff_header</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">FFHeader</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="iris.fileformats.ff.FFHeader.address">
+<tt class="descname">address</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#iris.fileformats.ff.FFHeader.address" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the byte address of the FieldsFile FIXED_LENGTH_HEADER pointer attribute.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>name (string):</dt>
+<dd><p class="first last">Specify the name of the FIXED_LENGTH_HEADER attribute.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>int.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.fileformats.ff.FFHeader.shape">
+<tt class="descname">shape</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#iris.fileformats.ff.FFHeader.shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the dimension shape of the FieldsFile FIXED_LENGTH_HEADER pointer attribute.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>name (string):</dt>
+<dd><p class="first last">Specify the name of the FIXED_LENGTH_HEADER attribute.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>Dimension tuple.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.fileformats.ff.FFHeader.valid">
+<tt class="descname">valid</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#iris.fileformats.ff.FFHeader.valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether the FieldsFile FIXED_LENGTH_HEADER pointer attribute has a valid FieldsFile address.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>name (string):</dt>
+<dd><p class="first last">Specify the name of the FIXED_LENGTH_HEADER attribute.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>Boolean.</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.fileformats.ff.FFHeader.ff_filename">
+<tt class="descname">ff_filename</tt><em class="property"> = None</em><a class="headerlink" href="#iris.fileformats.ff.FFHeader.ff_filename" title="Permalink to this definition">¶</a></dt>
+<dd><p>File name of the FieldsFile.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="grib.html" title="iris.fileformats.grib"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="dot.html" title="iris.fileformats.dot"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../fileformats.html" >iris.fileformats</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

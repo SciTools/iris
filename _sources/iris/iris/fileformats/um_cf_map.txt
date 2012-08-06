@@ -1,0 +1,28 @@
+.. _iris.fileformats.um_cf_map:
+
+==========================
+iris.fileformats.um_cf_map
+==========================
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.fileformats.um_cf_map
+
+In this module:
+
+ * :py:obj:`CFname`
+
+
+----------
+
+CFname(cfname, unit)
+
+..
+
+    .. autoclass:: iris.fileformats.um_cf_map.CFname
+        :members:
+        :undoc-members:
+        :inherited-members:
+

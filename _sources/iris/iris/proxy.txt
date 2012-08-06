@@ -1,0 +1,33 @@
+.. _iris.proxy:
+
+==========
+iris.proxy
+==========
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.proxy
+
+In this module:
+
+ * :py:obj:`apply_proxy`
+ * :py:obj:`FakeModule`
+
+
+----------
+
+.. autofunction:: iris.proxy.apply_proxy
+
+----------
+
+None
+
+..
+
+    .. autoclass:: iris.proxy.FakeModule
+        :members:
+        :undoc-members:
+        :inherited-members:
+

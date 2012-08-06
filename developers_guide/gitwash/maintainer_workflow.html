@@ -1,0 +1,233 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Maintainer workflow &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Git for development" href="git_development.html" />
+    <link rel="next" title="git resources" href="git_resources.html" />
+    <link rel="prev" title="Development workflow" href="development_workflow.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="git_resources.html" title="git resources"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="development_workflow.html" title="Development workflow"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris developer guide</a> &raquo;</li>
+          <li><a href="index.html" >Working with <em>iris</em> source code</a> &raquo;</li>
+          <li><a href="git_development.html" accesskey="U">Git for development</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Maintainer workflow</a><ul>
+<li><a class="reference internal" href="#integrating-changes">Integrating changes</a><ul>
+<li><a class="reference internal" href="#a-few-commits">A few commits</a></li>
+<li><a class="reference internal" href="#a-long-series-of-commits">A long series of commits</a></li>
+<li><a class="reference internal" href="#check-the-history">Check the history</a></li>
+<li><a class="reference internal" href="#push-to-trunk">Push to trunk</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="development_workflow.html"
+                        title="previous chapter">Development workflow</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="git_resources.html"
+                        title="next chapter">git resources</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/developers_guide/gitwash/maintainer_workflow.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="maintainer-workflow">
+<span id="id1"></span><h1>Maintainer workflow<a class="headerlink" href="#maintainer-workflow" title="Permalink to this headline">¶</a></h1>
+<p>This page is for maintainers — those of us who merge our own or other
+peoples&#8217; changes into the upstream repository.</p>
+<p>Being as how you&#8217;re a maintainer, you are completely on top of the basic stuff
+in <a class="reference internal" href="development_workflow.html#development-workflow"><em>Development workflow</em></a>.</p>
+<p>The instructions in <a class="reference internal" href="set_up_fork.html#linking-to-upstream"><em>Linking your repository to the upstream repo</em></a> add a remote that has read-only
+access to the upstream repo.  Being a maintainer, you&#8217;ve got read-write access.</p>
+<p>It&#8217;s good to have your upstream remote have a scary name, to remind you that
+it&#8217;s a read-write remote:</p>
+<div class="highlight-python"><pre>git remote add upstream-rw git@github.com:SciTools/Iris.git
+git fetch upstream-rw</pre>
+</div>
+<div class="section" id="integrating-changes">
+<h2>Integrating changes<a class="headerlink" href="#integrating-changes" title="Permalink to this headline">¶</a></h2>
+<p>Let&#8217;s say you have some changes that need to go into trunk
+(<tt class="docutils literal"><span class="pre">upstream-rw/master</span></tt>).</p>
+<p>The changes are in some branch that you are currently on.  For example, you are
+looking at someone&#8217;s changes like this:</p>
+<div class="highlight-python"><pre>git remote add someone git://github.com/someone/Iris.git
+git fetch someone
+git branch cool-feature --track someone/cool-feature
+git checkout cool-feature</pre>
+</div>
+<p>So now you are on the branch with the changes to be incorporated upstream.  The
+rest of this section assumes you are on this branch.</p>
+<div class="section" id="a-few-commits">
+<h3>A few commits<a class="headerlink" href="#a-few-commits" title="Permalink to this headline">¶</a></h3>
+<p>If there are only a few commits, consider rebasing to upstream:</p>
+<div class="highlight-python"><pre># Fetch upstream changes
+git fetch upstream-rw
+# rebase
+git rebase upstream-rw/master</pre>
+</div>
+<p>Remember that, if you do a rebase, and push that, you&#8217;ll have to close any
+github pull requests manually, because github will not be able to detect the
+changes have already been merged.</p>
+</div>
+<div class="section" id="a-long-series-of-commits">
+<h3>A long series of commits<a class="headerlink" href="#a-long-series-of-commits" title="Permalink to this headline">¶</a></h3>
+<p>If there are a longer series of related commits, consider a merge instead:</p>
+<div class="highlight-python"><pre>git fetch upstream-rw
+git merge --no-ff upstream-rw/master</pre>
+</div>
+<p>The merge will be detected by github, and should close any related pull requests
+automatically.</p>
+<p>Note the <tt class="docutils literal"><span class="pre">--no-ff</span></tt> above.  This forces git to make a merge commit, rather than
+doing a fast-forward, so that these set of commits branch off trunk then rejoin
+the main history with a merge, rather than appearing to have been made directly
+on top of trunk.</p>
+</div>
+<div class="section" id="check-the-history">
+<h3>Check the history<a class="headerlink" href="#check-the-history" title="Permalink to this headline">¶</a></h3>
+<p>Now, in either case, you should check that the history is sensible and you have
+the right commits:</p>
+<div class="highlight-python"><pre>git log --oneline --graph
+git log -p upstream-rw/master..</pre>
+</div>
+<p>The first line above just shows the history in a compact way, with a text
+representation of the history graph. The second line shows the log of commits
+excluding those that can be reached from trunk (<tt class="docutils literal"><span class="pre">upstream-rw/master</span></tt>), and
+including those that can be reached from current HEAD (implied with the <tt class="docutils literal"><span class="pre">..</span></tt>
+at the end). So, it shows the commits unique to this branch compared to trunk.
+The <tt class="docutils literal"><span class="pre">-p</span></tt> option shows the diff for these commits in patch form.</p>
+</div>
+<div class="section" id="push-to-trunk">
+<h3>Push to trunk<a class="headerlink" href="#push-to-trunk" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><pre>git push upstream-rw my-new-feature:master</pre>
+</div>
+<p>This pushes the <tt class="docutils literal"><span class="pre">my-new-feature</span></tt> branch in this repository to the <tt class="docutils literal"><span class="pre">master</span></tt>
+branch in the <tt class="docutils literal"><span class="pre">upstream-rw</span></tt> repository.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="git_resources.html" title="git resources"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="development_workflow.html" title="Development workflow"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris developer guide</a> &raquo;</li>
+          <li><a href="index.html" >Working with <em>iris</em> source code</a> &raquo;</li>
+          <li><a href="git_development.html" >Git for development</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

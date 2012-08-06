@@ -1,0 +1,1048 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.unit &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Iris reference documentation" href="../iris.html" />
+    <link rel="next" title="iris.util" href="util.html" />
+    <link rel="prev" title="iris.symbols" href="symbols.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="util.html" title="iris.util"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="symbols.html" title="iris.symbols"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" accesskey="U">Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="symbols.html"
+                        title="previous chapter">iris.symbols</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="util.html"
+                        title="next chapter">iris.util</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/iris/iris/unit.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-unit">
+<span id="id1"></span><h1>iris.unit<a class="headerlink" href="#iris-unit" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.unit"></span><p>Units of measure.</p>
+<p>Provision of a wrapper class to support Unidata/UCAR UDUNITS-2, and the
+netcdftime calendar functionality.</p>
+<p>See also: <a class="reference external" href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html">UDUNITS-2</a>.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.unit.Unit" title="iris.unit.Unit"><tt class="xref py py-obj docutils literal"><span class="pre">Unit</span></tt></a></li>
+<li><a class="reference internal" href="#iris.unit.date2num" title="iris.unit.date2num"><tt class="xref py py-obj docutils literal"><span class="pre">date2num</span></tt></a></li>
+<li><a class="reference internal" href="#iris.unit.decode_time" title="iris.unit.decode_time"><tt class="xref py py-obj docutils literal"><span class="pre">decode_time</span></tt></a></li>
+<li><a class="reference internal" href="#iris.unit.encode_clock" title="iris.unit.encode_clock"><tt class="xref py py-obj docutils literal"><span class="pre">encode_clock</span></tt></a></li>
+<li><a class="reference internal" href="#iris.unit.encode_date" title="iris.unit.encode_date"><tt class="xref py py-obj docutils literal"><span class="pre">encode_date</span></tt></a></li>
+<li><a class="reference internal" href="#iris.unit.encode_time" title="iris.unit.encode_time"><tt class="xref py py-obj docutils literal"><span class="pre">encode_time</span></tt></a></li>
+<li><a class="reference internal" href="#iris.unit.num2date" title="iris.unit.num2date"><tt class="xref py py-obj docutils literal"><span class="pre">num2date</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<p>A class to represent S.I. units and support common operations to manipulate
+such units in a consistent manner as per UDUNITS-2.</p>
+<p>These operations include scaling the unit, offsetting the unit by a constant or time,
+inverting the unit, raising the unit by a power, taking a root of the unit, taking a
+log of the unit, multiplying the unit by a constant or another unit, dividing the unit
+by a constant or another unit, comparing units, copying units and converting unit data
+to single precision or double precision floating point numbers.</p>
+<p>This class also supports time and calendar defintion and manipulation.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.unit.Unit">
+<em class="property">class </em><tt class="descclassname">iris.unit.</tt><tt class="descname">Unit</tt><big>(</big><em>unit</em>, <em>calendar=None</em><big>)</big><a class="headerlink" href="#iris.unit.Unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a wrapper instance for UDUNITS-2.</p>
+<p>An optional calendar may be provided for a unit which defines a time reference of
+the form &#8216;&lt;time-unit&gt; since &lt;time-origin&gt;&#8217; i.e. unit=&#8217;days since 1970-01-01 00:00:00&#8217;.
+For a unit that is a time reference, the default calendar is &#8216;standard&#8217;.</p>
+<p>Accepted calendars are as follows,</p>
+<ul>
+<li><p class="first">&#8216;standard&#8217; or &#8216;gregorian&#8217; - Mixed Gregorian/Julian calendar as defined by udunits.</p>
+</li>
+<li><dl class="first docutils">
+<dt>&#8216;proleptic_gregorian&#8217; - A Gregorian calendar extended to dates before 1582-10-15. A year is a leap year if either,</dt>
+<dd><ol class="first last arabic simple">
+<li>It is divisible by 4 but not by 100, or</li>
+<li>It is divisible by 400.</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p class="first">&#8216;noleap&#8217; or &#8216;365_day&#8217; - A Gregorian calendar without leap years i.e. all years are 365 days long.</p>
+</li>
+<li><p class="first">&#8216;all_leap&#8217; or &#8216;366_day&#8217; - A Gregorian calendar with every year being a leap year i.e. all years are 366 days long.</p>
+</li>
+<li><p class="first">&#8216;360_day&#8217; - All years are 360 days divided into 30 day months.</p>
+</li>
+<li><p class="first">&#8216;julian&#8217; - Proleptic Julian calendar, extended to dates after 1582-10-5. A year is a leap year if it is divisible by 4.</p>
+</li>
+</ul>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>unit:</dt>
+<dd><p class="first last">Specify the unit as defined by UDUNITS-2.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>calendar (string):</dt>
+<dd><p class="first last">Describes the calendar used in time calculations. The default is &#8216;standard&#8217;
+or &#8216;gregorian&#8217; for a time reference unit.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Returns:</p>
+<blockquote>
+<div>Unit object.</div></blockquote>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;volts&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="iris.unit.Unit.convert">
+<tt class="descname">convert</tt><big>(</big><em>value</em>, <em>other</em>, <em>ctype=&lt;class 'ctypes.c_double'&gt;</em><big>)</big><a class="headerlink" href="#iris.unit.Unit.convert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a single value or numpy array of values from the current unit
+to the other target unit.</p>
+<p>If the units are not convertible, then no conversion will take place.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>value (int/float/long/numpy.ndarray):</dt>
+<dd><p class="first last">Value/s to be converted.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>other (string/Unit):</dt>
+<dd><p class="first last">Target unit to convert to.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>ctype (ctypes.c_float/ctypes.c_double):</dt>
+<dd><p class="first last">Floating point 32-bit single-precision (iris.unit.FLOAT32) or
+64-bit double-precision (iris.unit.FLOAT64) of conversion. The
+default is 64-bit double-precision conversion.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>float or numpy.ndarray of appropriate float type.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;deg_c&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;deg_f&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">c</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+<span class="go">32.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">unit</span><span class="o">.</span><span class="n">FLOAT32</span><span class="p">)</span>
+<span class="go">32.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a64</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">a64</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+<span class="go">array([ 32. ,  33.8,  35.6,  37.4,  39.2,  41. ,  42.8,  44.6,  46.4,  48.2])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a32</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">a32</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+<span class="go">array([ 32.        ,  33.79999924,  35.59999847,  37.40000153,</span>
+<span class="go">        39.20000076,  41.        ,  42.79999924,  44.59999847,</span>
+<span class="go">        46.40000153,  48.20000076], dtype=float32)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Conversion is done <em>in-place</em> for numpy arrays. Also note that, conversion between
+unit calendars is not permitted.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.unit.Unit.convertible">
+<tt class="descname">convertible</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#iris.unit.Unit.convertible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return whether two units are convertible.</p>
+<p>Args:</p>
+<ul class="simple">
+<li>other (Unit): Unit to be compared.</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>Boolean.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;meters&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;kilometers&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">convertible</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.unit.Unit.date2num">
+<tt class="descname">date2num</tt><big>(</big><em>date</em><big>)</big><a class="headerlink" href="#iris.unit.Unit.date2num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the numeric time value calculated from the datetime object using the current
+calendar and unit time reference.</p>
+<p>The current unit time reference must be of the form: &#8216;&lt;time-unit&gt; since &lt;time-origin&gt;&#8217;
+i.e. &#8216;hours since 1970-01-01 00:00:00&#8217;</p>
+<p>Works for scalars, sequences and numpy arrays. Returns a scalar if input is a scalar,
+else returns a numpy array.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>date (datetime):</dt>
+<dd><p class="first last">A datetime object or a sequence of datetime objects.
+The datetime objects should not include a time-zone offset.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>float or numpy.ndarray of float.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">datetime</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;hours since 1970-01-01 00:00:00&#39;</span><span class="p">,</span> <span class="n">calendar</span><span class="o">=</span><span class="n">unit</span><span class="o">.</span><span class="n">CALENDAR_STANDARD</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">date2num</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1970</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="go">5.00000000372529</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">date2num</span><span class="p">([</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1970</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1970</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">)])</span>
+<span class="go">array([ 5.,  6.])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.unit.Unit.format">
+<tt class="descname">format</tt><big>(</big><em>option=None</em><big>)</big><a class="headerlink" href="#iris.unit.Unit.format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a formatted string representation of the binary unit.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>option (iris.unit.UT_FORMATS):</dt>
+<dd><p class="first">Set the encoding option of the formatted string representation.
+Valid encoding options may be one of the following enumerations:</p>
+<ul class="simple">
+<li>Unit.UT_ASCII</li>
+<li>Unit.UT_ISO_8859_1</li>
+<li>Unit.UT_LATIN1</li>
+<li>Unit.UT_UTF8</li>
+<li>Unit.UT_NAMES</li>
+<li>Unit.UT_DEFINITION</li>
+</ul>
+<p class="last">Multiple options may be combined within a list. The default option is iris.unit.UT_ASCII.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>string.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;meters&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">format</span><span class="p">()</span>
+<span class="go">&#39;m&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">unit</span><span class="o">.</span><span class="n">UT_NAMES</span><span class="p">)</span>
+<span class="go">&#39;meter&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">unit</span><span class="o">.</span><span class="n">UT_DEFINITION</span><span class="p">)</span>
+<span class="go">&#39;m&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.unit.Unit.invert">
+<tt class="descname">invert</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.unit.Unit.invert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invert the unit i.e. find the reciprocal of the unit, and return the Unit result.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>Unit.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;meters&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">invert</span><span class="p">()</span>
+<span class="go">Unit(&#39;meter^-1&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.unit.Unit.is_time">
+<tt class="descname">is_time</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.unit.Unit.is_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether this unit is a related SI Unit of time.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>Boolean.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;hours&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">is_time</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;meter&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span><span class="o">.</span><span class="n">is_time</span><span class="p">()</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.unit.Unit.is_udunits">
+<tt class="descname">is_udunits</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.unit.Unit.is_udunits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return whether the unit is a vaild unit of UDUNITS.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.unit.Unit.is_vertical">
+<tt class="descname">is_vertical</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.unit.Unit.is_vertical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether the unit is a related SI Unit of pressure or distance.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>Boolean.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;millibar&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">is_vertical</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;km&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span><span class="o">.</span><span class="n">is_vertical</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.unit.Unit.log">
+<tt class="descname">log</tt><big>(</big><em>base</em><big>)</big><a class="headerlink" href="#iris.unit.Unit.log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the logorithmic unit corresponding to the given logorithmic base.</p>
+<p>Args:</p>
+<ul class="simple">
+<li>base (int/float/long): Value of the logorithmic base.</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>None.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;meters&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">Unit(&#39;lb(re 1 meter)&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.unit.Unit.num2date">
+<tt class="descname">num2date</tt><big>(</big><em>time_value</em><big>)</big><a class="headerlink" href="#iris.unit.Unit.num2date" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a datetime-like object calculated from the numeric time value using the
+current calendar and the unit time reference.</p>
+<p>The current unit time reference must be of the form: &#8216;&lt;time-unit&gt; since &lt;time-origin&gt;&#8217;
+i.e. &#8216;hours since 1970-01-01 00:00:00&#8217;</p>
+<p>The datetime objects returned are &#8216;real&#8217; Python datetime objects if the date falls in the
+Gregorian calendar (i.e. the calendar is &#8216;standard&#8217;, &#8216;gregorian&#8217;, or &#8216;proleptic_gregorian&#8217;
+and the date is after 1582-10-15). Otherwise a &#8216;phoney&#8217; datetime-like object (netcdftime.datetime)
+is returned which can handle dates that don&#8217;t exist in the Proleptic Gregorian calendar.</p>
+<p>Works for scalars, sequences and numpy arrays. Returns a scalar if input is a scalar,
+else returns a numpy array.</p>
+<p>Args:</p>
+<ul class="simple">
+<li>time_value (float): Numeric time value/s. Maximum resolution is 1 second.</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>datetime, or numpy.ndarray of datetime object.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;hours since 1970-01-01 00:00:00&#39;</span><span class="p">,</span> <span class="n">calendar</span><span class="o">=</span><span class="n">unit</span><span class="o">.</span><span class="n">CALENDAR_STANDARD</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">num2date</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<span class="go">datetime.datetime(1970, 1, 1, 6, 0)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">num2date</span><span class="p">([</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">])</span>
+<span class="go">array([1970-01-01 06:00:00, 1970-01-01 07:00:00], dtype=object)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.unit.Unit.offset_by_time">
+<tt class="descname">offset_by_time</tt><big>(</big><em>origin</em><big>)</big><a class="headerlink" href="#iris.unit.Unit.offset_by_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the time unit offset with respect to the time origin.</p>
+<p>Args:</p>
+<ul class="simple">
+<li>origin (float): Time origin as returned by the <a class="reference internal" href="#iris.unit.encode_time" title="iris.unit.encode_time"><tt class="xref py py-func docutils literal"><span class="pre">iris.unit.encode_time()</span></tt></a> method.</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>None.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;hours&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">offset_by_time</span><span class="p">(</span><span class="n">unit</span><span class="o">.</span><span class="n">encode_time</span><span class="p">(</span><span class="mi">1970</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="go">Unit(&#39;hour since 1970-01-01 00:00:00.0000000 UTC&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.unit.Unit.root">
+<tt class="descname">root</tt><big>(</big><em>root</em><big>)</big><a class="headerlink" href="#iris.unit.Unit.root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the given root of the unit.</p>
+<p>Args:</p>
+<ul class="simple">
+<li>root (int/long): Value by which the unit root is taken.</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>None.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;meters^2&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">root</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">Unit(&#39;meter&#39;)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Taking a fractional root of a unit is not supported.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.unit.Unit.title">
+<tt class="descname">title</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#iris.unit.Unit.title" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the unit value as a title string.</p>
+<p>Args:</p>
+<ul class="simple">
+<li>value (float): Unit value to be incorporated into title string.</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>string.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;hours since epoch&#39;</span><span class="p">,</span> <span class="n">calendar</span><span class="o">=</span><span class="n">unit</span><span class="o">.</span><span class="n">CALENDAR_STANDARD</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="go">&#39;1970-01-01 10:00:00&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.unit.Unit.utime">
+<tt class="descname">utime</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.unit.Unit.utime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a netcdftime.utime object which performs conversions of numeric
+time values to/from datetime objects given the current calendar and unit
+time reference.</p>
+<p>The current unit time reference must be of the form: &#8216;&lt;time-unit&gt; since &lt;time-origin&gt;&#8217;
+i.e. &#8216;hours since 1970-01-01 00:00:00&#8217;</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>netcdftime.utime.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;hours since 1970-01-01 00:00:00&#39;</span><span class="p">,</span> <span class="n">calendar</span><span class="o">=</span><span class="n">unit</span><span class="o">.</span><span class="n">CALENDAR_STANDARD</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ut</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">utime</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ut</span><span class="o">.</span><span class="n">num2date</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">datetime.datetime(1970, 1, 1, 2, 0)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.unit.Unit.calendar">
+<tt class="descname">calendar</tt><em class="property"> = None</em><a class="headerlink" href="#iris.unit.Unit.calendar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents the unit calendar name, see iris.unit.CALENDARS</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.unit.Unit.category">
+<tt class="descname">category</tt><em class="property"> = None</em><a class="headerlink" href="#iris.unit.Unit.category" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is this an unknown unit, a no-unit, or a UDUNITS-2 unit.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.unit.Unit.definition">
+<tt class="descname">definition</tt><a class="headerlink" href="#iris.unit.Unit.definition" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(read-only)</em> The symbolic decomposition of the unit.</p>
+<p>Formats the binary unit into a string representation using method <a class="reference internal" href="#iris.unit.Unit.format" title="iris.unit.Unit.format"><tt class="xref py py-func docutils literal"><span class="pre">iris.unit.Unit.format()</span></tt></a>
+with keyword argument option=iris.unit.UT_DEFINITION.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>string.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;watts&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">definition</span>
+<span class="go">&#39;m2.kg.s-3&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.unit.Unit.dimensionless">
+<tt class="descname">dimensionless</tt><a class="headerlink" href="#iris.unit.Unit.dimensionless" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(read-only)</em> Return whether the unit is dimensionless.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>Boolean.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;meters&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">dimensionless</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;1&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">dimensionless</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.unit.Unit.modulus">
+<tt class="descname">modulus</tt><a class="headerlink" href="#iris.unit.Unit.modulus" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(read-only)</em> Return the modulus value of the unit.</p>
+<dl class="docutils">
+<dt>Convenience method that returns the unit modulus value as follows,</dt>
+<dd><ul class="first last simple">
+<li>&#8216;radians&#8217; - pi*2</li>
+<li>&#8216;degrees&#8217; - 360.0</li>
+<li>Otherwise None.</li>
+</ul>
+</dd>
+<dt>Returns:</dt>
+<dd>float.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;degrees&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">modulus</span>
+<span class="go">360.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.unit.Unit.name">
+<tt class="descname">name</tt><a class="headerlink" href="#iris.unit.Unit.name" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(read-only)</em> The full name of the unit.</p>
+<p>Formats the binary unit into a string representation using method <a class="reference internal" href="#iris.unit.Unit.format" title="iris.unit.Unit.format"><tt class="xref py py-func docutils literal"><span class="pre">iris.unit.Unit.format()</span></tt></a>
+with keyword argument option=iris.unit.UT_NAMES.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>string.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;watts&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;watt&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.unit.Unit.no_unit">
+<tt class="descname">no_unit</tt><a class="headerlink" href="#iris.unit.Unit.no_unit" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(read-only)</em> Return whether the unit is defined to be a <em>no_unit</em> unit.</p>
+<p>Typically, a quantity such as a string, will have no associated unit to describe it. Such
+a class of quantity may be defined using the <em>no_unit</em> unit.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>Boolean.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;no unit&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">no_unit</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;meters&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">no_unit</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.unit.Unit.origin">
+<tt class="descname">origin</tt><em class="property"> = None</em><a class="headerlink" href="#iris.unit.Unit.origin" title="Permalink to this definition">¶</a></dt>
+<dd><p>The original string used to create this unit.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.unit.Unit.symbol">
+<tt class="descname">symbol</tt><a class="headerlink" href="#iris.unit.Unit.symbol" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(read-only)</em> The symbolic representation of the unit.</p>
+<p>Formats the binary unit into a string representation using method <a class="reference internal" href="#iris.unit.Unit.format" title="iris.unit.Unit.format"><tt class="xref py py-func docutils literal"><span class="pre">iris.unit.Unit.format()</span></tt></a>.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>string.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;watts&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">symbol</span>
+<span class="go">&#39;W&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.unit.Unit.time_reference">
+<tt class="descname">time_reference</tt><a class="headerlink" href="#iris.unit.Unit.time_reference" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(read-only)</em> Return whether the unit is a time reference unit of the form
+&#8216;&lt;time-unit&gt; since &lt;time-origin&gt;&#8217; i.e. unit=&#8217;days since 1970-01-01 00:00:00&#8217;</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>Boolean.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;days since epoch&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">time_reference</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.unit.Unit.unknown">
+<tt class="descname">unknown</tt><a class="headerlink" href="#iris.unit.Unit.unknown" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(read-only)</em> Return whether the unit is defined to be an <em>unknown</em> unit.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>Boolean.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;unknown&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">unknown</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s">&#39;meters&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">unknown</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.unit.Unit.ut_unit">
+<tt class="descname">ut_unit</tt><em class="property"> = None</em><a class="headerlink" href="#iris.unit.Unit.ut_unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reference to the ctypes quantity defining the UDUNITS-2 unit.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.unit.date2num">
+<tt class="descclassname">iris.unit.</tt><tt class="descname">date2num</tt><big>(</big><em>date</em>, <em>unit</em>, <em>calendar</em><big>)</big><a class="headerlink" href="#iris.unit.date2num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return numeric time value (resolution of 1 second) encoding of datetime object.</p>
+<p>The units of the numeric time values are described by the unit and
+calendar arguments. The datetime objects must be in UTC with no
+time-zone offset.  If there is a time-zone offset in unit, it will be applied
+to the returned numeric values.</p>
+<p>Like the <a class="reference external" href="http://matplotlib.sourceforge.net/api/dates_api.html#matplotlib.dates.date2num" title="(in Matplotlib v1.1.1)"><tt class="xref py py-func docutils literal"><span class="pre">matplotlib.dates.date2num()</span></tt></a> function, except that it allows
+for different units and calendars.  Behaves the same as if
+unit = &#8216;days since 0001-01-01 00:00:00&#8217; and
+calendar = &#8216;proleptic_gregorian&#8217;.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>date (datetime):</dt>
+<dd><p class="first last">A datetime object or a sequence of datetime objects.
+The datetime objects should not include a time-zone offset.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>unit (string):</dt>
+<dd><p class="first last">A string of the form &#8216;&lt;time-unit&gt; since &lt;time-origin&gt;&#8217; describing
+the time units. The &lt;time-unit&gt; can be days, hours, minutes or seconds.
+The &lt;time-origin&gt; is a date/time reference point. A valid choice
+would be unit=&#8217;hours since 1800-01-01 00:00:00 -6:00&#8217;.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>calendar (string):</dt>
+<dd><p class="first last">Name of the calendar, see iris.unit.CALENDARS.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>float, or numpy.ndarray of float.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">datetime</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dt1</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1970</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dt2</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1970</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">unit</span><span class="o">.</span><span class="n">date2num</span><span class="p">(</span><span class="n">dt1</span><span class="p">,</span> <span class="s">&#39;hours since 1970-01-01 00:00:00&#39;</span><span class="p">,</span> <span class="n">unit</span><span class="o">.</span><span class="n">CALENDAR_STANDARD</span><span class="p">)</span>
+<span class="go">6.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">unit</span><span class="o">.</span><span class="n">date2num</span><span class="p">([</span><span class="n">dt1</span><span class="p">,</span> <span class="n">dt2</span><span class="p">],</span> <span class="s">&#39;hours since 1970-01-01 00:00:00&#39;</span><span class="p">,</span> <span class="n">unit</span><span class="o">.</span><span class="n">CALENDAR_STANDARD</span><span class="p">)</span>
+<span class="go">array([ 6.,  7.])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.unit.decode_time">
+<tt class="descclassname">iris.unit.</tt><tt class="descname">decode_time</tt><big>(</big><em>time</em><big>)</big><a class="headerlink" href="#iris.unit.decode_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decode a double precision date/clock time value into its component parts and return as tuple.</p>
+<p>Decode time into it&#8217;s year, month, day, hour, minute, second, and resolution component parts.
+Where resolution is the uncertainty of the time in seconds.</p>
+<p>Args:</p>
+<ul class="simple">
+<li>time (float): Date/clock time encoded as a double precision value.</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>tuple of (year, month, day, hour, minute, second, resolution).</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">unit</span><span class="o">.</span><span class="n">decode_time</span><span class="p">(</span><span class="n">unit</span><span class="o">.</span><span class="n">encode_time</span><span class="p">(</span><span class="mi">1970</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="go">(1970, 1, 1, 0, 0, 0.0, 1.086139178596568e-07)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.unit.encode_clock">
+<tt class="descclassname">iris.unit.</tt><tt class="descname">encode_clock</tt><big>(</big><em>hour</em>, <em>minute</em>, <em>second</em><big>)</big><a class="headerlink" href="#iris.unit.encode_clock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return clock time encoded as a double precision value.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>hour (int):</dt>
+<dd><p class="first last">Hour value to be encoded.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>minute (int):</dt>
+<dd><p class="first last">Minute value to be encoded.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>second (int):</dt>
+<dd><p class="first last">Second value to be encoded.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>float.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">unit</span><span class="o">.</span><span class="n">encode_clock</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">0.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.unit.encode_date">
+<tt class="descclassname">iris.unit.</tt><tt class="descname">encode_date</tt><big>(</big><em>year</em>, <em>month</em>, <em>day</em><big>)</big><a class="headerlink" href="#iris.unit.encode_date" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return date encoded as a double precision value.</p>
+<p>Encoding performed using UDUNITS-2 hybrid Gergorian/Julian calendar.
+Dates on or after 1582-10-15 are assumed to be Gregorian dates; dates before that are assumed
+to be Julian dates. In particular, the year 1 BCE is immediately followed by the year 1 CE.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>year (int):</dt>
+<dd><p class="first last">Year value to be encoded.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>month (int):</dt>
+<dd><p class="first last">Month value to be encoded.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>day (int):</dt>
+<dd><p class="first last">Day value to be encoded.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>float.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">unit</span><span class="o">.</span><span class="n">encode_date</span><span class="p">(</span><span class="mi">1970</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">-978307200.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.unit.encode_time">
+<tt class="descclassname">iris.unit.</tt><tt class="descname">encode_time</tt><big>(</big><em>year</em>, <em>month</em>, <em>day</em>, <em>hour</em>, <em>minute</em>, <em>second</em><big>)</big><a class="headerlink" href="#iris.unit.encode_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return date/clock time encoded as a double precision value.</p>
+<p>Encoding performed using UDUNITS-2 hybrid Gregorian/Julian calendar.
+Dates on or after 1582-10-15 are assumed to be Gregorian dates; dates before that are assumed
+to be Julian dates. In particular, the year 1 BCE is immediately followed by the year 1 CE.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>year (int):</dt>
+<dd><p class="first last">Year value to be encoded.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>month (int):</dt>
+<dd><p class="first last">Month value to be encoded.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>day (int):</dt>
+<dd><p class="first last">Day value to be encoded.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>hour (int):</dt>
+<dd><p class="first last">Hour value to be encoded.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>minute (int):</dt>
+<dd><p class="first last">Minute value to be encoded.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>second (int):</dt>
+<dd><p class="first last">Second value to be encoded.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>float.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">unit</span><span class="o">.</span><span class="n">encode_time</span><span class="p">(</span><span class="mi">1970</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">-978307200.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.unit.num2date">
+<tt class="descclassname">iris.unit.</tt><tt class="descname">num2date</tt><big>(</big><em>time_value</em>, <em>unit</em>, <em>calendar</em><big>)</big><a class="headerlink" href="#iris.unit.num2date" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return datetime encoding of numeric time value (resolution of 1 second).</p>
+<p>The units of the numeric time value are described by the unit and
+calendar arguments. The returned datetime object represent UTC with
+no time-zone offset, even if the specified unit contain a time-zone
+offset.</p>
+<p>Like the <a class="reference external" href="http://matplotlib.sourceforge.net/api/dates_api.html#matplotlib.dates.num2date" title="(in Matplotlib v1.1.1)"><tt class="xref py py-func docutils literal"><span class="pre">matplotlib.dates.num2date()</span></tt></a> function, except that it allows
+for different units and calendars.  Behaves the same if
+unit = &#8216;days since 001-01-01 00:00:00&#8217;}
+calendar = &#8216;proleptic_gregorian&#8217;.</p>
+<p>The datetime instances returned are &#8216;real&#8217; python datetime
+objects if the date falls in the Gregorian calendar (i.e.
+calendar=&#8217;proleptic_gregorian&#8217;, or calendar = &#8216;standard&#8217; or &#8216;gregorian&#8217;
+and the date is after 1582-10-15). Otherwise, they are &#8216;phony&#8217; datetime
+objects which support some but not all the methods of &#8216;real&#8217; python
+datetime objects.  This is because the python datetime module cannot
+use the &#8216;proleptic_gregorian&#8217; calendar, even before the switch
+occured from the Julian calendar in 1582. The datetime instances
+do not contain a time-zone offset, even if the specified unit
+contains one.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>time_value (float):</dt>
+<dd><p class="first last">Numeric time value/s. Maximum resolution is 1 second.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>unit (sting):</dt>
+<dd><p class="first last">A string of the form &#8216;&lt;time-unit&gt; since &lt;time-origin&gt;&#8217; describing the time units.
+The &lt;time-unit&gt; can be days, hours, minutes or seconds. The &lt;time-origin&gt; is the date/time reference point.
+A valid choice would be unit=&#8217;hours since 1800-01-01 00:00:00 -6:00&#8217;.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>calendar (string):</dt>
+<dd><p class="first last">Name of the calendar, see iris.unit.CALENDARS.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>datetime, or numpy.ndarray of datetime object.</dd>
+</dl>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.unit</span> <span class="kn">as</span> <span class="nn">unit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">datetime</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">unit</span><span class="o">.</span><span class="n">num2date</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="s">&#39;hours since 1970-01-01 00:00:00&#39;</span><span class="p">,</span> <span class="n">unit</span><span class="o">.</span><span class="n">CALENDAR_STANDARD</span><span class="p">)</span>
+<span class="go">datetime.datetime(1970, 1, 1, 6, 0)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">unit</span><span class="o">.</span><span class="n">num2date</span><span class="p">([</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="s">&#39;hours since 1970-01-01 00:00:00&#39;</span><span class="p">,</span> <span class="n">unit</span><span class="o">.</span><span class="n">CALENDAR_STANDARD</span><span class="p">)</span>
+<span class="go">array([1970-01-01 06:00:00, 1970-01-01 07:00:00], dtype=object)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="util.html" title="iris.util"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="symbols.html" title="iris.symbols"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" >Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

@@ -1,0 +1,237 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.analysis.cartography &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../../index.html" />
+    <link rel="up" title="iris.analysis" href="../analysis.html" />
+    <link rel="next" title="iris.analysis.geometry" href="geometry.html" />
+    <link rel="prev" title="iris.analysis.calculus" href="calculus.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../../index.html"><img src="../../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="geometry.html" title="iris.analysis.geometry"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="calculus.html" title="iris.analysis.calculus"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../analysis.html" accesskey="U">iris.analysis</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="calculus.html"
+                        title="previous chapter">iris.analysis.calculus</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="geometry.html"
+                        title="next chapter">iris.analysis.geometry</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/iris/iris/analysis/cartography.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-analysis-cartography">
+<span id="id1"></span><h1>iris.analysis.cartography<a class="headerlink" href="#iris-analysis-cartography" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.analysis.cartography"></span><p>Various utilities and numeric transformations relevant to cartography.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.analysis.cartography.area_weights" title="iris.analysis.cartography.area_weights"><tt class="xref py py-obj docutils literal"><span class="pre">area_weights</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.cartography.get_lat_lon_contiguous_bounded_grids" title="iris.analysis.cartography.get_lat_lon_contiguous_bounded_grids"><tt class="xref py py-obj docutils literal"><span class="pre">get_lat_lon_contiguous_bounded_grids</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.cartography.get_lat_lon_grids" title="iris.analysis.cartography.get_lat_lon_grids"><tt class="xref py py-obj docutils literal"><span class="pre">get_lat_lon_grids</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.cartography.lat_lon_range" title="iris.analysis.cartography.lat_lon_range"><tt class="xref py py-obj docutils literal"><span class="pre">lat_lon_range</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.cartography.rotate_pole" title="iris.analysis.cartography.rotate_pole"><tt class="xref py py-obj docutils literal"><span class="pre">rotate_pole</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.cartography.unrotate_pole" title="iris.analysis.cartography.unrotate_pole"><tt class="xref py py-obj docutils literal"><span class="pre">unrotate_pole</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.cartography.wrap_lons" title="iris.analysis.cartography.wrap_lons"><tt class="xref py py-obj docutils literal"><span class="pre">wrap_lons</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.cartography.area_weights">
+<tt class="descclassname">iris.analysis.cartography.</tt><tt class="descname">area_weights</tt><big>(</big><em>cube</em><big>)</big><a class="headerlink" href="#iris.analysis.cartography.area_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an array of area weights, with the same dimensions as the cube.</p>
+<p>This is a 2D lat/lon area weights array, repeated over the non lat/lon dimensions.</p>
+<p>The cube must have coordinates &#8216;latitide&#8217; and &#8216;longitude&#8217; with contiguous bounds.</p>
+<p>Area weights are calculated for each lat/lon cell as:</p>
+<blockquote>
+<div><img src="../../../_images/mathmpl/math-9437489a79.png" class="center" /></div></blockquote>
+<p>Currently, only supports a spherical datum.
+Uses earth radius from the cube, if present and spherical.
+Defaults to iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.cartography.get_lat_lon_contiguous_bounded_grids">
+<tt class="descclassname">iris.analysis.cartography.</tt><tt class="descname">get_lat_lon_contiguous_bounded_grids</tt><big>(</big><em>cube</em><big>)</big><a class="headerlink" href="#iris.analysis.cartography.get_lat_lon_contiguous_bounded_grids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return 2d lat and lon bounds.</p>
+<p>Returns array of shape (n+1, m+1).</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">lats</span><span class="p">,</span> <span class="n">lons</span> <span class="o">=</span> <span class="n">cs</span><span class="o">.</span><span class="n">get_lat_lon_bounded_grids</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.cartography.get_lat_lon_grids">
+<tt class="descclassname">iris.analysis.cartography.</tt><tt class="descname">get_lat_lon_grids</tt><big>(</big><em>cube</em><big>)</big><a class="headerlink" href="#iris.analysis.cartography.get_lat_lon_grids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return 2d lat and lon points in the requested coordinate system.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">lats</span><span class="p">,</span> <span class="n">lons</span> <span class="o">=</span> <span class="n">get_lat_lon_grids</span><span class="p">(</span><span class="n">cube</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.cartography.lat_lon_range">
+<tt class="descclassname">iris.analysis.cartography.</tt><tt class="descname">lat_lon_range</tt><big>(</big><em>cube</em>, <em>mode=None</em><big>)</big><a class="headerlink" href="#iris.analysis.cartography.lat_lon_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the lat &amp; lon range of this Cube.</p>
+<p>If the coordinate has both points &amp; bounds, the mode keyword can be set to determine which should be
+used in the min/max calculation. (Must be one of iris.coords.POINT_MODE or iris.coords.BOUND_MODE)</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.cartography.rotate_pole">
+<tt class="descclassname">iris.analysis.cartography.</tt><tt class="descname">rotate_pole</tt><big>(</big><em>lons</em>, <em>lats</em>, <em>pole_lon</em>, <em>pole_lat</em><big>)</big><a class="headerlink" href="#iris.analysis.cartography.rotate_pole" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an array of lons and lats, convert to lons and lats with a rotated pole.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Uses proj.4 to perform the conversion.</p>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.cartography.unrotate_pole">
+<tt class="descclassname">iris.analysis.cartography.</tt><tt class="descname">unrotate_pole</tt><big>(</big><em>rotated_lons</em>, <em>rotated_lats</em>, <em>pole_lon</em>, <em>pole_lat</em><big>)</big><a class="headerlink" href="#iris.analysis.cartography.unrotate_pole" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an array of lons and lats with a rotated pole, convert to unrotated lons and lats.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Uses proj.4 to perform the conversion.</p>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.cartography.wrap_lons">
+<tt class="descclassname">iris.analysis.cartography.</tt><tt class="descname">wrap_lons</tt><big>(</big><em>lons</em>, <em>base</em>, <em>period</em><big>)</big><a class="headerlink" href="#iris.analysis.cartography.wrap_lons" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns given longitudes in the range between base and base + period.</p>
+<dl class="docutils">
+<dt>::</dt>
+<dd>wrapped_lon = wrap_lons(185, -180, 360)</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="geometry.html" title="iris.analysis.geometry"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="calculus.html" title="iris.analysis.calculus"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../analysis.html" >iris.analysis</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

@@ -1,0 +1,1223 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.coords &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Iris reference documentation" href="../iris.html" />
+    <link rel="next" title="iris.cube" href="cube.html" />
+    <link rel="prev" title="iris.coord_systems" href="coord_systems.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="cube.html" title="iris.cube"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="coord_systems.html" title="iris.coord_systems"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" accesskey="U">Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="coord_systems.html"
+                        title="previous chapter">iris.coord_systems</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cube.html"
+                        title="next chapter">iris.cube</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/iris/iris/coords.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-coords">
+<span id="id1"></span><h1>iris.coords<a class="headerlink" href="#iris-coords" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.coords"></span><p>Definitions of coordinates.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.coords.AuxCoord" title="iris.coords.AuxCoord"><tt class="xref py py-obj docutils literal"><span class="pre">AuxCoord</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coords.Cell" title="iris.coords.Cell"><tt class="xref py py-obj docutils literal"><span class="pre">Cell</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coords.CellMethod" title="iris.coords.CellMethod"><tt class="xref py py-obj docutils literal"><span class="pre">CellMethod</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coords.Coord" title="iris.coords.Coord"><tt class="xref py py-obj docutils literal"><span class="pre">Coord</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coords.CoordDefn" title="iris.coords.CoordDefn"><tt class="xref py py-obj docutils literal"><span class="pre">CoordDefn</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coords.DimCoord" title="iris.coords.DimCoord"><tt class="xref py py-obj docutils literal"><span class="pre">DimCoord</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<p>A CF auxiliary coordinate.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.coords.AuxCoord">
+<em class="property">class </em><tt class="descclassname">iris.coords.</tt><tt class="descname">AuxCoord</tt><big>(</big><em>points</em>, <em>standard_name=None</em>, <em>long_name=None</em>, <em>units='1'</em>, <em>bounds=None</em>, <em>attributes=None</em>, <em>coord_system=None</em><big>)</big><a class="headerlink" href="#iris.coords.AuxCoord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a single coordinate.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>points:</dt>
+<dd><p class="first last">The values (or value in the case of a scalar coordinate) of the coordinate for each cell.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>standard_name:</dt>
+<dd><p class="first last">CF standard name of coordinate</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>long_name:</dt>
+<dd><p class="first last">Descriptive name of coordinate</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>units</dt>
+<dd><p class="first last">Unit for coordinate&#8217;s values</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>bounds</dt>
+<dd><p class="first last">An array of values describing the bounds of each cell. The shape 
+of the array must be compatible with the points array.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>attributes</dt>
+<dd><p class="first last">A dictionary containing other cf and user-defined attributes.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>coord_system</dt>
+<dd><p class="first last">A CoordSystem, e.g a LatLonCS for a longitude Coord.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="method">
+<dt id="iris.coords.AuxCoord.cell">
+<tt class="descname">cell</tt><big>(</big><em>index</em><big>)</big><a class="headerlink" href="#iris.coords.AuxCoord.cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the single <a class="reference internal" href="#iris.coords.Cell" title="iris.coords.Cell"><tt class="xref py py-class docutils literal"><span class="pre">Cell</span></tt></a> instance which results from slicing the points/bounds with the given index.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.AuxCoord.cells">
+<tt class="descname">cells</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.AuxCoord.cells" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an iterable of Cell instances for this Coord.</p>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells</span><span class="p">():</span>
+   <span class="o">...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.AuxCoord.collapsed">
+<tt class="descname">collapsed</tt><big>(</big><em>dims_to_collapse=None</em><big>)</big><a class="headerlink" href="#iris.coords.AuxCoord.collapsed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a copy of this coordinate which has been collapsed along
+the specified dimensions.</p>
+<p>Replaces the points &amp; bounds with a simple bounded region.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.AuxCoord.contiguous_bounds">
+<tt class="descname">contiguous_bounds</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.AuxCoord.contiguous_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the N+1 bound values for a contiguous bounded coordinate of length N.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.AuxCoord.copy">
+<tt class="descname">copy</tt><big>(</big><em>points=None</em>, <em>bounds=None</em><big>)</big><a class="headerlink" href="#iris.coords.AuxCoord.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a copy of this coordinate.</p>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>points: A points array for the new coordinate. </dt>
+<dd><p class="first last">This may be a different shape to the points of the coordinate
+being copied.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>bounds: A bounds array for the new coordinate. </dt>
+<dd><p class="first last">This must be the compatible with the points array of the 
+coordinate being created.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the points argument is specified and bounds are not, the
+resulting coordinate will have no bounds.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.AuxCoord.cos">
+<tt class="descname">cos</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.AuxCoord.cos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a coordinate which represents cos(this coordinate).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If coordinate is in degrees then it is converted into radians
+before applying the cos() function.</p>
+</div>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="iris.coords.AuxCoord.from_coord">
+<em class="property">static </em><tt class="descname">from_coord</tt><big>(</big><em>coord</em><big>)</big><a class="headerlink" href="#iris.coords.AuxCoord.from_coord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new AuxCoord from the given coordinate.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.AuxCoord.guess_bounds">
+<tt class="descname">guess_bounds</tt><big>(</big><em>bound_position=0.5</em><big>)</big><a class="headerlink" href="#iris.coords.AuxCoord.guess_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to add bounds to this coordinate using the coordinate&#8217;s points.</p>
+<p>Kwargs:</p>
+<ul class="simple">
+<li>bound_position - The desired position of the bounds relative to the position of the points.</li>
+</ul>
+<p>This method only works for coordinates with <tt class="docutils literal"><span class="pre">coord.ndim</span> <span class="pre">==</span> <span class="pre">1</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.AuxCoord.has_bounds">
+<tt class="descname">has_bounds</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.AuxCoord.has_bounds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.AuxCoord.index">
+<tt class="descname">index</tt><big>(</big><em>cell</em><big>)</big><a class="headerlink" href="#iris.coords.AuxCoord.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the index of a given Cell in this Coord.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.AuxCoord.intersect">
+<tt class="descname">intersect</tt><big>(</big><em>other</em>, <em>return_indices=False</em><big>)</big><a class="headerlink" href="#iris.coords.AuxCoord.intersect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new coordinate from the intersection of two coordinates.</p>
+<p>Both coordinates must have the same metadata, i.e. standard_name, long_name,
+units, attributes and coord_system.</p>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>return_indices:</dt>
+<dd><p class="first last">If True, changes the return behaviour to return the intersection indices
+for the &#8220;self&#8221; coordinate.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.AuxCoord.is_contiguous">
+<tt class="descname">is_contiguous</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.AuxCoord.is_contiguous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if, and only if, this Coord is bounded with contiguous bounds.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.AuxCoord.is_monotonic">
+<tt class="descname">is_monotonic</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.AuxCoord.is_monotonic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if, and only if, this Coord is monotonic.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.AuxCoord.name">
+<tt class="descname">name</tt><big>(</big><em>default='unknown'</em><big>)</big><a class="headerlink" href="#iris.coords.AuxCoord.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a human-readable name.</p>
+<p>First it tries <a class="reference internal" href="#iris.coords.AuxCoord.standard_name" title="iris.coords.AuxCoord.standard_name"><tt class="xref py py-attr docutils literal"><span class="pre">standard_name</span></tt></a>, then it tries the &#8216;long_name&#8217;
+attributes, before falling back to the value of <cite>default</cite> (which
+itself defaults to &#8216;unknown&#8217;).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.AuxCoord.nearest_neighbour_index">
+<tt class="descname">nearest_neighbour_index</tt><big>(</big><em>point</em><big>)</big><a class="headerlink" href="#iris.coords.AuxCoord.nearest_neighbour_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the index of the cell nearest to the given point.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the coordinate contain bounds, these will be used to determine
+the nearest neighbour instead of the point values.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Does not take into account the circular attribute of a coordinate.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.AuxCoord.rename">
+<tt class="descname">rename</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#iris.coords.AuxCoord.rename" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.AuxCoord.sin">
+<tt class="descname">sin</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.AuxCoord.sin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a coordinate which represents sin(this coordinate).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If coordinate is in degrees then it is converted into radians
+before applying the sin() function.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.AuxCoord.unit_converted">
+<tt class="descname">unit_converted</tt><big>(</big><em>new_unit</em><big>)</big><a class="headerlink" href="#iris.coords.AuxCoord.unit_converted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a coordinate converted to a given unit.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.AuxCoord.xml_element">
+<tt class="descname">xml_element</tt><big>(</big><em>doc</em><big>)</big><a class="headerlink" href="#iris.coords.AuxCoord.xml_element" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a DOM element describing this Coord.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.AuxCoord.attributes">
+<tt class="descname">attributes</tt><a class="headerlink" href="#iris.coords.AuxCoord.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.AuxCoord.bounds">
+<tt class="descname">bounds</tt><a class="headerlink" href="#iris.coords.AuxCoord.bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Property containing the bound values, as a numpy array, 
+or None if no bound values are defined.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The shape of the bound array should be: <tt class="docutils literal"><span class="pre">points.shape</span> <span class="pre">+</span> <span class="pre">(n_bounds,</span> <span class="pre">)</span></tt>.</p>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.AuxCoord.dtype">
+<tt class="descname">dtype</tt><a class="headerlink" href="#iris.coords.AuxCoord.dtype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract property which returns the Numpy data type of the Coordinate.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.AuxCoord.nbounds">
+<tt class="descname">nbounds</tt><a class="headerlink" href="#iris.coords.AuxCoord.nbounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of bounds that this coordinate has (0 for no bounds).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.AuxCoord.ndim">
+<tt class="descname">ndim</tt><a class="headerlink" href="#iris.coords.AuxCoord.ndim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of dimensions of the coordinate (not including the bounded dimension).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.AuxCoord.points">
+<tt class="descname">points</tt><a class="headerlink" href="#iris.coords.AuxCoord.points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Property containing the points values as a numpy array</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.AuxCoord.shape">
+<tt class="descname">shape</tt><a class="headerlink" href="#iris.coords.AuxCoord.shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>The fundamental shape of the Coord, expressed as a tuple.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.AuxCoord.standard_name">
+<tt class="descname">standard_name</tt><a class="headerlink" href="#iris.coords.AuxCoord.standard_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The standard name for the Cube&#8217;s data.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.AuxCoord.unit">
+<tt class="descname">unit</tt><a class="headerlink" href="#iris.coords.AuxCoord.unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="unit.html#iris.unit.Unit" title="iris.unit.Unit"><tt class="xref py py-mod docutils literal"><span class="pre">iris.unit.Unit</span></tt></a> instance representing the unit of the phenomenon.</p>
+<p class="deprecated">
+<span class="versionmodified">Deprecated since version 0.9.</span></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.AuxCoord.units">
+<tt class="descname">units</tt><a class="headerlink" href="#iris.coords.AuxCoord.units" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="unit.html#iris.unit.Unit" title="iris.unit.Unit"><tt class="xref py py-mod docutils literal"><span class="pre">Unit</span></tt></a> instance of the phenomenon.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>An immutable representation of a single cell of a coordinate, including the sample point
+and/or boundary position.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.coords.Cell">
+<em class="property">class </em><tt class="descclassname">iris.coords.</tt><tt class="descname">Cell</tt><big>(</big><em>point=None</em>, <em>bound=None</em><big>)</big><a class="headerlink" href="#iris.coords.Cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a Cell from point or point-and-bound information.</p>
+<p>Notes on cell comparison:</p>
+<p>Cells can be compared in a number of ways depending on how they are configured and the data
+type they are being compared to.</p>
+<p>For equality comparison (i.e. checking that a cell is equal to something) the following rules apply:</p>
+<ol class="arabic simple">
+<li>When comparing to another cell, equality is determined by comparing tuples of attribute values from both objects.</li>
+<li>When comparing to a string value and cell point is also a string then comparison is done by string comparison.</li>
+<li>When comparing to an integer or float and there are bounds set on the cell then the comparison is True if the numeric value
+&#8216;other&#8217; is within the cells bounds. If no bounds are set on the cell then the comparison is performed on the cells point value.</li>
+</ol>
+<p>For rich comparisions i.e. (less than, greater than, less than or equals and greater than or equals) the following rules apply:</p>
+<ol class="arabic">
+<li><p class="first">When comparing to an integer, float or numpy.number and the cell is bounded, the comparison is performed 
+on the max or min of the cells bounds. If the cell is unbounded then the numeric value is compared with
+the cells point value.</p>
+</li>
+<li><p class="first">If both comparison objects are cells the following table describes how the objects are compared:</p>
+<p># TODO: This seem wrong, due to the inconsistency between the first two scenarios. See #1278.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="38%" />
+<col width="62%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><p class="first last">Primary and comparison cell styles</p>
+</th>
+<th class="head"><p class="first last">Comparison method</p>
+</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><p class="first last">Bounded vs unbounded</p>
+</td>
+<td><p class="first last">Comparison point is compared to primary bounds.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">Unbounded vs bounded</p>
+</td>
+<td><p class="first last">Point values are compared.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p class="first last">Bounded vs bounded</p>
+</td>
+<td><p class="first last">Points values and max or min of both bounds are compared</p>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ol>
+<dl class="method">
+<dt id="iris.coords.Cell.contains_point">
+<tt class="descname">contains_point</tt><big>(</big><em>point</em><big>)</big><a class="headerlink" href="#iris.coords.Cell.contains_point" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a bounded cell, returns whether the given point lies within the bounds.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The test carried out is equivalent to min(bound) &lt;= point &lt;= max(bound).</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>Represents a sub-cell pre-processing operation.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.coords.CellMethod">
+<em class="property">class </em><tt class="descclassname">iris.coords.</tt><tt class="descname">CellMethod</tt><big>(</big><em>method</em>, <em>coords=None</em>, <em>intervals=None</em>, <em>comments=None</em><big>)</big><a class="headerlink" href="#iris.coords.CellMethod" title="Permalink to this definition">¶</a></dt>
+<dd><p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>method:</dt>
+<dd><p class="first last">The name of the operation.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>coords:</dt>
+<dd><p class="first last">A single instance or sequence of <a class="reference internal" href="#iris.coords.Coord" title="iris.coords.Coord"><tt class="xref py py-class docutils literal"><span class="pre">Coord</span></tt></a> instances or coordinate names.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>intervals:</dt>
+<dd><p class="first last">A single string, or a sequence strings, describing the intervals within the cell method.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>comments:</dt>
+<dd><p class="first last">A single string, or a sequence strings, containing any additional comments.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="method">
+<dt id="iris.coords.CellMethod.xml_element">
+<tt class="descname">xml_element</tt><big>(</big><em>doc</em><big>)</big><a class="headerlink" href="#iris.coords.CellMethod.xml_element" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dom element describing itself</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.CellMethod.comments">
+<tt class="descname">comments</tt><em class="property"> = None</em><a class="headerlink" href="#iris.coords.CellMethod.comments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Additional comments.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.CellMethod.coord_names">
+<tt class="descname">coord_names</tt><em class="property"> = None</em><a class="headerlink" href="#iris.coords.CellMethod.coord_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>The tuple of coordinate names over which the operation was applied.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.CellMethod.intervals">
+<tt class="descname">intervals</tt><em class="property"> = None</em><a class="headerlink" href="#iris.coords.CellMethod.intervals" title="Permalink to this definition">¶</a></dt>
+<dd><p>A description of the original intervals over which the operation was applied.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.CellMethod.method">
+<tt class="descname">method</tt><em class="property"> = None</em><a class="headerlink" href="#iris.coords.CellMethod.method" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the operation that was applied. e.g. &#8220;mean&#8221;, &#8220;max&#8221;, etc.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>Abstract superclass for coordinates.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.coords.Coord">
+<em class="property">class </em><tt class="descclassname">iris.coords.</tt><tt class="descname">Coord</tt><big>(</big><em>points</em>, <em>standard_name=None</em>, <em>long_name=None</em>, <em>units='1'</em>, <em>bounds=None</em>, <em>attributes=None</em>, <em>coord_system=None</em><big>)</big><a class="headerlink" href="#iris.coords.Coord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a single coordinate.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>points:</dt>
+<dd><p class="first last">The values (or value in the case of a scalar coordinate) of the coordinate for each cell.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>standard_name:</dt>
+<dd><p class="first last">CF standard name of coordinate</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>long_name:</dt>
+<dd><p class="first last">Descriptive name of coordinate</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>units</dt>
+<dd><p class="first last">Unit for coordinate&#8217;s values</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>bounds</dt>
+<dd><p class="first last">An array of values describing the bounds of each cell. The shape 
+of the array must be compatible with the points array.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>attributes</dt>
+<dd><p class="first last">A dictionary containing other cf and user-defined attributes.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>coord_system</dt>
+<dd><p class="first last">A CoordSystem, e.g a LatLonCS for a longitude Coord.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="method">
+<dt id="iris.coords.Coord.cell">
+<tt class="descname">cell</tt><big>(</big><em>index</em><big>)</big><a class="headerlink" href="#iris.coords.Coord.cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the single <a class="reference internal" href="#iris.coords.Cell" title="iris.coords.Cell"><tt class="xref py py-class docutils literal"><span class="pre">Cell</span></tt></a> instance which results from slicing the points/bounds with the given index.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.Coord.cells">
+<tt class="descname">cells</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.Coord.cells" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an iterable of Cell instances for this Coord.</p>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells</span><span class="p">():</span>
+   <span class="o">...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.Coord.collapsed">
+<tt class="descname">collapsed</tt><big>(</big><em>dims_to_collapse=None</em><big>)</big><a class="headerlink" href="#iris.coords.Coord.collapsed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a copy of this coordinate which has been collapsed along
+the specified dimensions.</p>
+<p>Replaces the points &amp; bounds with a simple bounded region.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.Coord.contiguous_bounds">
+<tt class="descname">contiguous_bounds</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.Coord.contiguous_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the N+1 bound values for a contiguous bounded coordinate of length N.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.Coord.copy">
+<tt class="descname">copy</tt><big>(</big><em>points=None</em>, <em>bounds=None</em><big>)</big><a class="headerlink" href="#iris.coords.Coord.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a copy of this coordinate.</p>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>points: A points array for the new coordinate. </dt>
+<dd><p class="first last">This may be a different shape to the points of the coordinate
+being copied.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>bounds: A bounds array for the new coordinate. </dt>
+<dd><p class="first last">This must be the compatible with the points array of the 
+coordinate being created.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the points argument is specified and bounds are not, the
+resulting coordinate will have no bounds.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.Coord.cos">
+<tt class="descname">cos</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.Coord.cos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a coordinate which represents cos(this coordinate).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If coordinate is in degrees then it is converted into radians
+before applying the cos() function.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.Coord.guess_bounds">
+<tt class="descname">guess_bounds</tt><big>(</big><em>bound_position=0.5</em><big>)</big><a class="headerlink" href="#iris.coords.Coord.guess_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to add bounds to this coordinate using the coordinate&#8217;s points.</p>
+<p>Kwargs:</p>
+<ul class="simple">
+<li>bound_position - The desired position of the bounds relative to the position of the points.</li>
+</ul>
+<p>This method only works for coordinates with <tt class="docutils literal"><span class="pre">coord.ndim</span> <span class="pre">==</span> <span class="pre">1</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.Coord.has_bounds">
+<tt class="descname">has_bounds</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.Coord.has_bounds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.Coord.index">
+<tt class="descname">index</tt><big>(</big><em>cell</em><big>)</big><a class="headerlink" href="#iris.coords.Coord.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the index of a given Cell in this Coord.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.Coord.intersect">
+<tt class="descname">intersect</tt><big>(</big><em>other</em>, <em>return_indices=False</em><big>)</big><a class="headerlink" href="#iris.coords.Coord.intersect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new coordinate from the intersection of two coordinates.</p>
+<p>Both coordinates must have the same metadata, i.e. standard_name, long_name,
+units, attributes and coord_system.</p>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>return_indices:</dt>
+<dd><p class="first last">If True, changes the return behaviour to return the intersection indices
+for the &#8220;self&#8221; coordinate.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.Coord.is_contiguous">
+<tt class="descname">is_contiguous</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.Coord.is_contiguous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if, and only if, this Coord is bounded with contiguous bounds.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.Coord.is_monotonic">
+<tt class="descname">is_monotonic</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.Coord.is_monotonic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if, and only if, this Coord is monotonic.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.Coord.name">
+<tt class="descname">name</tt><big>(</big><em>default='unknown'</em><big>)</big><a class="headerlink" href="#iris.coords.Coord.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a human-readable name.</p>
+<p>First it tries <a class="reference internal" href="#iris.coords.Coord.standard_name" title="iris.coords.Coord.standard_name"><tt class="xref py py-attr docutils literal"><span class="pre">standard_name</span></tt></a>, then it tries the &#8216;long_name&#8217;
+attributes, before falling back to the value of <cite>default</cite> (which
+itself defaults to &#8216;unknown&#8217;).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.Coord.nearest_neighbour_index">
+<tt class="descname">nearest_neighbour_index</tt><big>(</big><em>point</em><big>)</big><a class="headerlink" href="#iris.coords.Coord.nearest_neighbour_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the index of the cell nearest to the given point.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the coordinate contain bounds, these will be used to determine
+the nearest neighbour instead of the point values.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Does not take into account the circular attribute of a coordinate.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.Coord.rename">
+<tt class="descname">rename</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#iris.coords.Coord.rename" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.Coord.sin">
+<tt class="descname">sin</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.Coord.sin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a coordinate which represents sin(this coordinate).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If coordinate is in degrees then it is converted into radians
+before applying the sin() function.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.Coord.unit_converted">
+<tt class="descname">unit_converted</tt><big>(</big><em>new_unit</em><big>)</big><a class="headerlink" href="#iris.coords.Coord.unit_converted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a coordinate converted to a given unit.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.Coord.xml_element">
+<tt class="descname">xml_element</tt><big>(</big><em>doc</em><big>)</big><a class="headerlink" href="#iris.coords.Coord.xml_element" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a DOM element describing this Coord.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.Coord.attributes">
+<tt class="descname">attributes</tt><a class="headerlink" href="#iris.coords.Coord.attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Other attributes, including user specified attributes that have no meaning to Iris.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.Coord.bounds">
+<tt class="descname">bounds</tt><a class="headerlink" href="#iris.coords.Coord.bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Property containing the bound values as a numpy array</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.Coord.coord_system">
+<tt class="descname">coord_system</tt><em class="property"> = None</em><a class="headerlink" href="#iris.coords.Coord.coord_system" title="Permalink to this definition">¶</a></dt>
+<dd><p>Relevant CoordSystem (if any).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.Coord.dtype">
+<tt class="descname">dtype</tt><a class="headerlink" href="#iris.coords.Coord.dtype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract property which returns the Numpy data type of the Coordinate.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.Coord.long_name">
+<tt class="descname">long_name</tt><em class="property"> = None</em><a class="headerlink" href="#iris.coords.Coord.long_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Descriptive name of the coordinate.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.Coord.nbounds">
+<tt class="descname">nbounds</tt><a class="headerlink" href="#iris.coords.Coord.nbounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of bounds that this coordinate has (0 for no bounds).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.Coord.ndim">
+<tt class="descname">ndim</tt><a class="headerlink" href="#iris.coords.Coord.ndim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of dimensions of the coordinate (not including the bounded dimension).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.Coord.points">
+<tt class="descname">points</tt><a class="headerlink" href="#iris.coords.Coord.points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Property containing the points values as a numpy array</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.Coord.shape">
+<tt class="descname">shape</tt><a class="headerlink" href="#iris.coords.Coord.shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>The fundamental shape of the Coord, expressed as a tuple.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.Coord.standard_name">
+<tt class="descname">standard_name</tt><a class="headerlink" href="#iris.coords.Coord.standard_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>CF standard name of the quantity that the coordinate represents.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.Coord.unit">
+<tt class="descname">unit</tt><a class="headerlink" href="#iris.coords.Coord.unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="unit.html#iris.unit.Unit" title="iris.unit.Unit"><tt class="xref py py-mod docutils literal"><span class="pre">iris.unit.Unit</span></tt></a> instance representing the unit of the phenomenon.</p>
+<p class="deprecated">
+<span class="versionmodified">Deprecated since version 0.9.</span></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.Coord.units">
+<tt class="descname">units</tt><a class="headerlink" href="#iris.coords.Coord.units" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unit of the quantity that the coordinate represents.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>Criterion for identifying a specific type of <a class="reference internal" href="#iris.coords.DimCoord" title="iris.coords.DimCoord"><tt class="xref py py-class docutils literal"><span class="pre">DimCoord</span></tt></a> or <a class="reference internal" href="#iris.coords.AuxCoord" title="iris.coords.AuxCoord"><tt class="xref py py-class docutils literal"><span class="pre">AuxCoord</span></tt></a>
+based on its metadata.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.coords.CoordDefn">
+<em class="property">class </em><tt class="descclassname">iris.coords.</tt><tt class="descname">CoordDefn</tt><big>(</big><em>_cls</em>, <em>standard_name</em>, <em>long_name</em>, <em>units</em>, <em>attributes</em>, <em>coord_system</em><big>)</big><a class="headerlink" href="#iris.coords.CoordDefn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create new instance of CoordDefn(standard_name, long_name, units, attributes, coord_system)</p>
+<dl class="method">
+<dt id="iris.coords.CoordDefn.count">
+<tt class="descname">count</tt><big>(</big><em>value</em><big>)</big> &rarr; integer -- return number of occurrences of value<a class="headerlink" href="#iris.coords.CoordDefn.count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.CoordDefn.index">
+<tt class="descname">index</tt><big>(</big><em>value</em><span class="optional">[</span>, <em>start</em><span class="optional">[</span>, <em>stop</em><span class="optional">]</span><span class="optional">]</span><big>)</big> &rarr; integer -- return first index of value.<a class="headerlink" href="#iris.coords.CoordDefn.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raises ValueError if the value is not present.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.CoordDefn.name">
+<tt class="descname">name</tt><big>(</big><em>default='unknown'</em><big>)</big><a class="headerlink" href="#iris.coords.CoordDefn.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a human-readable name.</p>
+<p>First it tries self.standard_name, then it tries the &#8216;long_name&#8217;
+attributes, before falling back to the value of <cite>default</cite> (which
+itself defaults to &#8216;unknown&#8217;).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.CoordDefn.attributes">
+<tt class="descname">attributes</tt><a class="headerlink" href="#iris.coords.CoordDefn.attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 3</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.CoordDefn.coord_system">
+<tt class="descname">coord_system</tt><a class="headerlink" href="#iris.coords.CoordDefn.coord_system" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 4</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.CoordDefn.long_name">
+<tt class="descname">long_name</tt><a class="headerlink" href="#iris.coords.CoordDefn.long_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.CoordDefn.standard_name">
+<tt class="descname">standard_name</tt><a class="headerlink" href="#iris.coords.CoordDefn.standard_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.CoordDefn.units">
+<tt class="descname">units</tt><a class="headerlink" href="#iris.coords.CoordDefn.units" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>A coordinate that is 1D, numeric, and strictly monotonic.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.coords.DimCoord">
+<em class="property">class </em><tt class="descclassname">iris.coords.</tt><tt class="descname">DimCoord</tt><big>(</big><em>points</em>, <em>standard_name=None</em>, <em>long_name=None</em>, <em>units='1'</em>, <em>bounds=None</em>, <em>attributes=None</em>, <em>coord_system=None</em>, <em>circular=False</em><big>)</big><a class="headerlink" href="#iris.coords.DimCoord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a 1D, numeric, and strictly monotonic Coord with read-only points and bounds.</p>
+<dl class="method">
+<dt id="iris.coords.DimCoord.cell">
+<tt class="descname">cell</tt><big>(</big><em>index</em><big>)</big><a class="headerlink" href="#iris.coords.DimCoord.cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the single <a class="reference internal" href="#iris.coords.Cell" title="iris.coords.Cell"><tt class="xref py py-class docutils literal"><span class="pre">Cell</span></tt></a> instance which results from slicing the points/bounds with the given index.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.DimCoord.cells">
+<tt class="descname">cells</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.DimCoord.cells" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an iterable of Cell instances for this Coord.</p>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells</span><span class="p">():</span>
+   <span class="o">...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.DimCoord.collapsed">
+<tt class="descname">collapsed</tt><big>(</big><em>dims_to_collapse=None</em><big>)</big><a class="headerlink" href="#iris.coords.DimCoord.collapsed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.DimCoord.contiguous_bounds">
+<tt class="descname">contiguous_bounds</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.DimCoord.contiguous_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the N+1 bound values for a contiguous bounded coordinate of length N.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.DimCoord.copy">
+<tt class="descname">copy</tt><big>(</big><em>points=None</em>, <em>bounds=None</em><big>)</big><a class="headerlink" href="#iris.coords.DimCoord.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a copy of this coordinate.</p>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>points: A points array for the new coordinate. </dt>
+<dd><p class="first last">This may be a different shape to the points of the coordinate
+being copied.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>bounds: A bounds array for the new coordinate. </dt>
+<dd><p class="first last">This must be the compatible with the points array of the 
+coordinate being created.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the points argument is specified and bounds are not, the
+resulting coordinate will have no bounds.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.DimCoord.cos">
+<tt class="descname">cos</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.DimCoord.cos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a coordinate which represents cos(this coordinate).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If coordinate is in degrees then it is converted into radians
+before applying the cos() function.</p>
+</div>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="iris.coords.DimCoord.from_coord">
+<em class="property">static </em><tt class="descname">from_coord</tt><big>(</big><em>coord</em><big>)</big><a class="headerlink" href="#iris.coords.DimCoord.from_coord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new DimCoord from the given coordinate.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.DimCoord.guess_bounds">
+<tt class="descname">guess_bounds</tt><big>(</big><em>bound_position=0.5</em><big>)</big><a class="headerlink" href="#iris.coords.DimCoord.guess_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to add bounds to this coordinate using the coordinate&#8217;s points.</p>
+<p>Kwargs:</p>
+<ul class="simple">
+<li>bound_position - The desired position of the bounds relative to the position of the points.</li>
+</ul>
+<p>This method only works for coordinates with <tt class="docutils literal"><span class="pre">coord.ndim</span> <span class="pre">==</span> <span class="pre">1</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.DimCoord.has_bounds">
+<tt class="descname">has_bounds</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.DimCoord.has_bounds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.DimCoord.index">
+<tt class="descname">index</tt><big>(</big><em>cell</em><big>)</big><a class="headerlink" href="#iris.coords.DimCoord.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the index of a given Cell in this Coord.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.DimCoord.intersect">
+<tt class="descname">intersect</tt><big>(</big><em>other</em>, <em>return_indices=False</em><big>)</big><a class="headerlink" href="#iris.coords.DimCoord.intersect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new coordinate from the intersection of two coordinates.</p>
+<p>Both coordinates must have the same metadata, i.e. standard_name, long_name,
+units, attributes and coord_system.</p>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>return_indices:</dt>
+<dd><p class="first last">If True, changes the return behaviour to return the intersection indices
+for the &#8220;self&#8221; coordinate.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.DimCoord.is_contiguous">
+<tt class="descname">is_contiguous</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.DimCoord.is_contiguous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if, and only if, this Coord is bounded with contiguous bounds.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.DimCoord.is_monotonic">
+<tt class="descname">is_monotonic</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.DimCoord.is_monotonic" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.DimCoord.name">
+<tt class="descname">name</tt><big>(</big><em>default='unknown'</em><big>)</big><a class="headerlink" href="#iris.coords.DimCoord.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a human-readable name.</p>
+<p>First it tries <a class="reference internal" href="#iris.coords.DimCoord.standard_name" title="iris.coords.DimCoord.standard_name"><tt class="xref py py-attr docutils literal"><span class="pre">standard_name</span></tt></a>, then it tries the &#8216;long_name&#8217;
+attributes, before falling back to the value of <cite>default</cite> (which
+itself defaults to &#8216;unknown&#8217;).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.DimCoord.nearest_neighbour_index">
+<tt class="descname">nearest_neighbour_index</tt><big>(</big><em>point</em><big>)</big><a class="headerlink" href="#iris.coords.DimCoord.nearest_neighbour_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the index of the cell nearest to the given point.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the coordinate contain bounds, these will be used to determine
+the nearest neighbour instead of the point values.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Does not take into account the circular attribute of a coordinate.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.DimCoord.rename">
+<tt class="descname">rename</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#iris.coords.DimCoord.rename" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.DimCoord.sin">
+<tt class="descname">sin</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.coords.DimCoord.sin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a coordinate which represents sin(this coordinate).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If coordinate is in degrees then it is converted into radians
+before applying the sin() function.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.DimCoord.unit_converted">
+<tt class="descname">unit_converted</tt><big>(</big><em>new_unit</em><big>)</big><a class="headerlink" href="#iris.coords.DimCoord.unit_converted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a coordinate converted to a given unit.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.coords.DimCoord.xml_element">
+<tt class="descname">xml_element</tt><big>(</big><em>doc</em><big>)</big><a class="headerlink" href="#iris.coords.DimCoord.xml_element" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a DOM element describing this Coord.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.DimCoord.attributes">
+<tt class="descname">attributes</tt><a class="headerlink" href="#iris.coords.DimCoord.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.DimCoord.bounds">
+<tt class="descname">bounds</tt><a class="headerlink" href="#iris.coords.DimCoord.bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>The bounds values as a read-only NumPy array, or None if no
+bounds have been set.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.DimCoord.circular">
+<tt class="descname">circular</tt><em class="property"> = None</em><a class="headerlink" href="#iris.coords.DimCoord.circular" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether the coordinate wraps by <tt class="docutils literal"><span class="pre">coord.units.modulus</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.DimCoord.dtype">
+<tt class="descname">dtype</tt><a class="headerlink" href="#iris.coords.DimCoord.dtype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract property which returns the Numpy data type of the Coordinate.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.DimCoord.nbounds">
+<tt class="descname">nbounds</tt><a class="headerlink" href="#iris.coords.DimCoord.nbounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of bounds that this coordinate has (0 for no bounds).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.DimCoord.ndim">
+<tt class="descname">ndim</tt><a class="headerlink" href="#iris.coords.DimCoord.ndim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of dimensions of the coordinate (not including the bounded dimension).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.DimCoord.points">
+<tt class="descname">points</tt><a class="headerlink" href="#iris.coords.DimCoord.points" title="Permalink to this definition">¶</a></dt>
+<dd><p>The local points values as a read-only NumPy array.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.DimCoord.shape">
+<tt class="descname">shape</tt><a class="headerlink" href="#iris.coords.DimCoord.shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>The fundamental shape of the Coord, expressed as a tuple.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.DimCoord.standard_name">
+<tt class="descname">standard_name</tt><a class="headerlink" href="#iris.coords.DimCoord.standard_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The standard name for the Cube&#8217;s data.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.DimCoord.unit">
+<tt class="descname">unit</tt><a class="headerlink" href="#iris.coords.DimCoord.unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="unit.html#iris.unit.Unit" title="iris.unit.Unit"><tt class="xref py py-mod docutils literal"><span class="pre">iris.unit.Unit</span></tt></a> instance representing the unit of the phenomenon.</p>
+<p class="deprecated">
+<span class="versionmodified">Deprecated since version 0.9.</span></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.coords.DimCoord.units">
+<tt class="descname">units</tt><a class="headerlink" href="#iris.coords.DimCoord.units" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="unit.html#iris.unit.Unit" title="iris.unit.Unit"><tt class="xref py py-mod docutils literal"><span class="pre">Unit</span></tt></a> instance of the phenomenon.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="cube.html" title="iris.cube"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="coord_systems.html" title="iris.coord_systems"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" >Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

@@ -1,0 +1,90 @@
+.. _iris:
+
+============================
+Iris reference documentation
+============================
+
+
+.. sidebar:: Modules in this package
+
+
+   .. toctree::
+      :maxdepth: 2
+      :titlesonly:
+      
+      _pyke_rules/compiled_krb.rst
+      fileformats/_pyke_rules.rst
+      iris/analysis.rst
+      iris/aux_factory
+      iris/config
+      iris/coord_categorisation
+      iris/coord_systems
+      iris/coords
+      iris/cube
+      iris/exceptions
+      iris/fileformats.rst
+      iris/io.rst
+      iris/iterate
+      iris/palette
+      iris/plot
+      iris/proxy
+      iris/quickplot
+      iris/std_names
+      iris/symbols
+      iris/unit
+      iris/util
+
+   
+
+
+    
+   
+.. currentmodule:: iris
+
+.. automodule:: iris
+
+In this module:
+
+ * :py:obj:`load`
+ * :py:obj:`load_strict`
+ * :py:obj:`save`
+ * :py:obj:`Constraint`
+ * :py:obj:`AttributeConstraint`
+
+
+----------
+
+.. autofunction:: iris.load
+
+----------
+
+.. autofunction:: iris.load_strict
+
+----------
+
+.. autofunction:: iris.save
+
+----------
+
+Constraints are the mechanism by which cubes can be pattern matched and filtered according to specific criteria. 
+
+Once a constraint has been defined, it can be applied to cubes using the :meth:`Constraint.extract` method.
+
+..
+
+    .. autoclass:: iris.Constraint
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Provides a simple Cube-attribute based :class:`Constraint`.
+
+..
+
+    .. autoclass:: iris.AttributeConstraint
+        :members:
+        :undoc-members:
+        :inherited-members:
+

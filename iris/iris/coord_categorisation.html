@@ -1,0 +1,317 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.coord_categorisation &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Iris reference documentation" href="../iris.html" />
+    <link rel="next" title="iris.coord_systems" href="coord_systems.html" />
+    <link rel="prev" title="iris.config" href="config.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="coord_systems.html" title="iris.coord_systems"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="config.html" title="iris.config"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" accesskey="U">Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="config.html"
+                        title="previous chapter">iris.config</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="coord_systems.html"
+                        title="next chapter">iris.coord_systems</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/iris/iris/coord_categorisation.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-coord-categorisation">
+<span id="id1"></span><h1>iris.coord_categorisation<a class="headerlink" href="#iris-coord-categorisation" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.coord_categorisation"></span><p>Cube functions for coordinate categorisation.</p>
+<dl class="docutils">
+<dt>All the functions provided here add a new coordinate to a cube.</dt>
+<dd><ul class="first last simple">
+<li>The function <a class="reference internal" href="#iris.coord_categorisation.add_categorised_coord" title="iris.coord_categorisation.add_categorised_coord"><tt class="xref py py-func docutils literal"><span class="pre">add_categorised_coord()</span></tt></a> performs a generic coordinate categorisation.</li>
+<li>The other functions all implement specific common cases (e.g. <a class="reference internal" href="#iris.coord_categorisation.add_day_of_month" title="iris.coord_categorisation.add_day_of_month"><tt class="xref py py-func docutils literal"><span class="pre">add_day_of_month()</span></tt></a>).
+Currently, these are all calendar functions, so they only apply to &#8220;Time coordinates&#8221;.</li>
+</ul>
+</dd>
+</dl>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.coord_categorisation.add_categorised_coord" title="iris.coord_categorisation.add_categorised_coord"><tt class="xref py py-obj docutils literal"><span class="pre">add_categorised_coord</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coord_categorisation.add_day_of_month" title="iris.coord_categorisation.add_day_of_month"><tt class="xref py py-obj docutils literal"><span class="pre">add_day_of_month</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coord_categorisation.add_month" title="iris.coord_categorisation.add_month"><tt class="xref py py-obj docutils literal"><span class="pre">add_month</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coord_categorisation.add_month_fullname" title="iris.coord_categorisation.add_month_fullname"><tt class="xref py py-obj docutils literal"><span class="pre">add_month_fullname</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coord_categorisation.add_month_number" title="iris.coord_categorisation.add_month_number"><tt class="xref py py-obj docutils literal"><span class="pre">add_month_number</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coord_categorisation.add_month_shortname" title="iris.coord_categorisation.add_month_shortname"><tt class="xref py py-obj docutils literal"><span class="pre">add_month_shortname</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coord_categorisation.add_season" title="iris.coord_categorisation.add_season"><tt class="xref py py-obj docutils literal"><span class="pre">add_season</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coord_categorisation.add_season_month_initials" title="iris.coord_categorisation.add_season_month_initials"><tt class="xref py py-obj docutils literal"><span class="pre">add_season_month_initials</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coord_categorisation.add_season_number" title="iris.coord_categorisation.add_season_number"><tt class="xref py py-obj docutils literal"><span class="pre">add_season_number</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coord_categorisation.add_season_year" title="iris.coord_categorisation.add_season_year"><tt class="xref py py-obj docutils literal"><span class="pre">add_season_year</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coord_categorisation.add_weekday" title="iris.coord_categorisation.add_weekday"><tt class="xref py py-obj docutils literal"><span class="pre">add_weekday</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coord_categorisation.add_weekday_fullname" title="iris.coord_categorisation.add_weekday_fullname"><tt class="xref py py-obj docutils literal"><span class="pre">add_weekday_fullname</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coord_categorisation.add_weekday_number" title="iris.coord_categorisation.add_weekday_number"><tt class="xref py py-obj docutils literal"><span class="pre">add_weekday_number</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coord_categorisation.add_weekday_shortname" title="iris.coord_categorisation.add_weekday_shortname"><tt class="xref py py-obj docutils literal"><span class="pre">add_weekday_shortname</span></tt></a></li>
+<li><a class="reference internal" href="#iris.coord_categorisation.add_year" title="iris.coord_categorisation.add_year"><tt class="xref py py-obj docutils literal"><span class="pre">add_year</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.coord_categorisation.add_categorised_coord">
+<tt class="descclassname">iris.coord_categorisation.</tt><tt class="descname">add_categorised_coord</tt><big>(</big><em>cube</em>, <em>name</em>, <em>from_coord</em>, <em>category_function</em>, <em>units='1'</em><big>)</big><a class="headerlink" href="#iris.coord_categorisation.add_categorised_coord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a new coordinate to a cube, by categorising an existing one.</p>
+<p>Make a new <a class="reference internal" href="coords.html#iris.coords.AuxCoord" title="iris.coords.AuxCoord"><tt class="xref py py-class docutils literal"><span class="pre">iris.coords.AuxCoord</span></tt></a> from mapped values, and add it to the cube.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube (<a class="reference internal" href="cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>):</dt>
+<dd><p class="first last">the cube containing &#8216;from_coord&#8217;.  The new coord will be added into it.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>name (string):</dt>
+<dd><p class="first last">name of the created coordinate</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>from_coord (<a class="reference internal" href="coords.html#iris.coords.Coord" title="iris.coords.Coord"><tt class="xref py py-class docutils literal"><span class="pre">iris.coords.Coord</span></tt></a> or string):</dt>
+<dd><p class="first last">coordinate in &#8216;cube&#8217;, or the name of one</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>category_function (callable):</dt>
+<dd><p class="first last">function(coordinate, value), returning a category value for a coordinate point-value</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>units:</dt>
+<dd><p class="first last">units of the category value, typically &#8216;no_unit&#8217; or &#8216;1&#8217;.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.coord_categorisation.add_day_of_month">
+<tt class="descclassname">iris.coord_categorisation.</tt><tt class="descname">add_day_of_month</tt><big>(</big><em>cube</em>, <em>coord</em>, <em>name='day'</em><big>)</big><a class="headerlink" href="#iris.coord_categorisation.add_day_of_month" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a categorical day-of-month coordinate, values 1..31.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.coord_categorisation.add_month">
+<tt class="descclassname">iris.coord_categorisation.</tt><tt class="descname">add_month</tt><big>(</big><em>cube</em>, <em>coord</em>, <em>name='month'</em><big>)</big><a class="headerlink" href="#iris.coord_categorisation.add_month" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for <a class="reference internal" href="#iris.coord_categorisation.add_month_shortname" title="iris.coord_categorisation.add_month_shortname"><tt class="xref py py-func docutils literal"><span class="pre">add_month_shortname()</span></tt></a>.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.coord_categorisation.add_month_fullname">
+<tt class="descclassname">iris.coord_categorisation.</tt><tt class="descname">add_month_fullname</tt><big>(</big><em>cube</em>, <em>coord</em>, <em>name='month'</em><big>)</big><a class="headerlink" href="#iris.coord_categorisation.add_month_fullname" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a categorical month coordinate, values &#8216;January&#8217;..&#8217;December&#8217;.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.coord_categorisation.add_month_number">
+<tt class="descclassname">iris.coord_categorisation.</tt><tt class="descname">add_month_number</tt><big>(</big><em>cube</em>, <em>coord</em>, <em>name='month'</em><big>)</big><a class="headerlink" href="#iris.coord_categorisation.add_month_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a categorical month coordinate, values 1..12.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.coord_categorisation.add_month_shortname">
+<tt class="descclassname">iris.coord_categorisation.</tt><tt class="descname">add_month_shortname</tt><big>(</big><em>cube</em>, <em>coord</em>, <em>name='month'</em><big>)</big><a class="headerlink" href="#iris.coord_categorisation.add_month_shortname" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a categorical month coordinate, values &#8216;jan&#8217;..&#8217;dec&#8217;.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.coord_categorisation.add_season">
+<tt class="descclassname">iris.coord_categorisation.</tt><tt class="descname">add_season</tt><big>(</big><em>cube</em>, <em>coord</em>, <em>name='season'</em><big>)</big><a class="headerlink" href="#iris.coord_categorisation.add_season" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for <a class="reference internal" href="#iris.coord_categorisation.add_season_month_initials" title="iris.coord_categorisation.add_season_month_initials"><tt class="xref py py-func docutils literal"><span class="pre">add_season_month_initials()</span></tt></a>.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.coord_categorisation.add_season_month_initials">
+<tt class="descclassname">iris.coord_categorisation.</tt><tt class="descname">add_season_month_initials</tt><big>(</big><em>cube</em>, <em>coord</em>, <em>name='season'</em><big>)</big><a class="headerlink" href="#iris.coord_categorisation.add_season_month_initials" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a categorical season-of-year coordinate, values &#8216;djf&#8217;..&#8217;son&#8217;.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.coord_categorisation.add_season_number">
+<tt class="descclassname">iris.coord_categorisation.</tt><tt class="descname">add_season_number</tt><big>(</big><em>cube</em>, <em>coord</em>, <em>name='season'</em><big>)</big><a class="headerlink" href="#iris.coord_categorisation.add_season_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a categorical season-of-year coordinate, values 0..3  [0=djf, 1=mam, ...].</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.coord_categorisation.add_season_year">
+<tt class="descclassname">iris.coord_categorisation.</tt><tt class="descname">add_season_year</tt><big>(</big><em>cube</em>, <em>coord</em>, <em>name='year'</em><big>)</big><a class="headerlink" href="#iris.coord_categorisation.add_season_year" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a categorical year-of-season coordinate (e.g. Aug&#8216;01 -&gt; 1, but Dec&#8216;01 -&gt; 2).</p>
+<p>Differs from calendar year, because December belongs to a season in the <em>following</em> year.&#8217;</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.coord_categorisation.add_weekday">
+<tt class="descclassname">iris.coord_categorisation.</tt><tt class="descname">add_weekday</tt><big>(</big><em>cube</em>, <em>coord</em>, <em>name='weekday'</em><big>)</big><a class="headerlink" href="#iris.coord_categorisation.add_weekday" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for <a class="reference internal" href="#iris.coord_categorisation.add_weekday_shortname" title="iris.coord_categorisation.add_weekday_shortname"><tt class="xref py py-func docutils literal"><span class="pre">add_weekday_shortname()</span></tt></a>.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.coord_categorisation.add_weekday_fullname">
+<tt class="descclassname">iris.coord_categorisation.</tt><tt class="descname">add_weekday_fullname</tt><big>(</big><em>cube</em>, <em>coord</em>, <em>name='weekday'</em><big>)</big><a class="headerlink" href="#iris.coord_categorisation.add_weekday_fullname" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a categorical weekday coordinate, values &#8216;Monday&#8217;..&#8217;Sunday&#8217;.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.coord_categorisation.add_weekday_number">
+<tt class="descclassname">iris.coord_categorisation.</tt><tt class="descname">add_weekday_number</tt><big>(</big><em>cube</em>, <em>coord</em>, <em>name='weekday'</em><big>)</big><a class="headerlink" href="#iris.coord_categorisation.add_weekday_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a categorical weekday coordinate, values 0..6  [0=Monday].</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.coord_categorisation.add_weekday_shortname">
+<tt class="descclassname">iris.coord_categorisation.</tt><tt class="descname">add_weekday_shortname</tt><big>(</big><em>cube</em>, <em>coord</em>, <em>name='weekday'</em><big>)</big><a class="headerlink" href="#iris.coord_categorisation.add_weekday_shortname" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a categorical weekday coordinate, values &#8216;Mon&#8217;..&#8217;Sun&#8217;.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.coord_categorisation.add_year">
+<tt class="descclassname">iris.coord_categorisation.</tt><tt class="descname">add_year</tt><big>(</big><em>cube</em>, <em>coord</em>, <em>name='year'</em><big>)</big><a class="headerlink" href="#iris.coord_categorisation.add_year" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a categorical calendar-year coordinate.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="coord_systems.html" title="iris.coord_systems"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="config.html" title="iris.config"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" >Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

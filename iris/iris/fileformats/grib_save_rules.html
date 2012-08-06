@@ -1,0 +1,344 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.fileformats.grib_save_rules &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../../index.html" />
+    <link rel="up" title="iris.fileformats" href="../fileformats.html" />
+    <link rel="next" title="iris.fileformats.manager" href="manager.html" />
+    <link rel="prev" title="iris.fileformats.grib" href="grib.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../../index.html"><img src="../../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="manager.html" title="iris.fileformats.manager"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="grib.html" title="iris.fileformats.grib"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../fileformats.html" accesskey="U">iris.fileformats</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="grib.html"
+                        title="previous chapter">iris.fileformats.grib</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="manager.html"
+                        title="next chapter">iris.fileformats.manager</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/iris/iris/fileformats/grib_save_rules.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-fileformats-grib-save-rules">
+<span id="id1"></span><h1>iris.fileformats.grib_save_rules<a class="headerlink" href="#iris-fileformats-grib-save-rules" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.fileformats.grib_save_rules"></span><p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.background_process_id" title="iris.fileformats.grib_save_rules.background_process_id"><tt class="xref py py-obj docutils literal"><span class="pre">background_process_id</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.centre" title="iris.fileformats.grib_save_rules.centre"><tt class="xref py py-obj docutils literal"><span class="pre">centre</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.data" title="iris.fileformats.grib_save_rules.data"><tt class="xref py py-obj docutils literal"><span class="pre">data</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.dx_dy" title="iris.fileformats.grib_save_rules.dx_dy"><tt class="xref py py-obj docutils literal"><span class="pre">dx_dy</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.generating_process_id" title="iris.fileformats.grib_save_rules.generating_process_id"><tt class="xref py py-obj docutils literal"><span class="pre">generating_process_id</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.generating_process_type" title="iris.fileformats.grib_save_rules.generating_process_type"><tt class="xref py py-obj docutils literal"><span class="pre">generating_process_type</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.gribbability_check" title="iris.fileformats.grib_save_rules.gribbability_check"><tt class="xref py py-obj docutils literal"><span class="pre">gribbability_check</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.grid_dims" title="iris.fileformats.grib_save_rules.grid_dims"><tt class="xref py py-obj docutils literal"><span class="pre">grid_dims</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.grid_template" title="iris.fileformats.grib_save_rules.grid_template"><tt class="xref py py-obj docutils literal"><span class="pre">grid_template</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.hybrid_surfaces" title="iris.fileformats.grib_save_rules.hybrid_surfaces"><tt class="xref py py-obj docutils literal"><span class="pre">hybrid_surfaces</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.identification" title="iris.fileformats.grib_save_rules.identification"><tt class="xref py py-obj docutils literal"><span class="pre">identification</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.latlon_common" title="iris.fileformats.grib_save_rules.latlon_common"><tt class="xref py py-obj docutils literal"><span class="pre">latlon_common</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.latlon_first_last" title="iris.fileformats.grib_save_rules.latlon_first_last"><tt class="xref py py-obj docutils literal"><span class="pre">latlon_first_last</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.non_hybrid_surfaces" title="iris.fileformats.grib_save_rules.non_hybrid_surfaces"><tt class="xref py py-obj docutils literal"><span class="pre">non_hybrid_surfaces</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.obs_time_after_cutoff" title="iris.fileformats.grib_save_rules.obs_time_after_cutoff"><tt class="xref py py-obj docutils literal"><span class="pre">obs_time_after_cutoff</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.param_code" title="iris.fileformats.grib_save_rules.param_code"><tt class="xref py py-obj docutils literal"><span class="pre">param_code</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.product_common" title="iris.fileformats.grib_save_rules.product_common"><tt class="xref py py-obj docutils literal"><span class="pre">product_common</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.product_template" title="iris.fileformats.grib_save_rules.product_template"><tt class="xref py py-obj docutils literal"><span class="pre">product_template</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.reference_time" title="iris.fileformats.grib_save_rules.reference_time"><tt class="xref py py-obj docutils literal"><span class="pre">reference_time</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.rotated_pole" title="iris.fileformats.grib_save_rules.rotated_pole"><tt class="xref py py-obj docutils literal"><span class="pre">rotated_pole</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.run" title="iris.fileformats.grib_save_rules.run"><tt class="xref py py-obj docutils literal"><span class="pre">run</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.scanning_mode_flags" title="iris.fileformats.grib_save_rules.scanning_mode_flags"><tt class="xref py py-obj docutils literal"><span class="pre">scanning_mode_flags</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.shape_of_the_earth" title="iris.fileformats.grib_save_rules.shape_of_the_earth"><tt class="xref py py-obj docutils literal"><span class="pre">shape_of_the_earth</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.surfaces" title="iris.fileformats.grib_save_rules.surfaces"><tt class="xref py py-obj docutils literal"><span class="pre">surfaces</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.time_processing_period" title="iris.fileformats.grib_save_rules.time_processing_period"><tt class="xref py py-obj docutils literal"><span class="pre">time_processing_period</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.time_range" title="iris.fileformats.grib_save_rules.time_range"><tt class="xref py py-obj docutils literal"><span class="pre">time_range</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.grib_save_rules.type_of_statistical_processing" title="iris.fileformats.grib_save_rules.type_of_statistical_processing"><tt class="xref py py-obj docutils literal"><span class="pre">type_of_statistical_processing</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.background_process_id">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">background_process_id</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.background_process_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.centre">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">centre</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.centre" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.data">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">data</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.dx_dy">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">dx_dy</tt><big>(</big><em>x_coord</em>, <em>y_coord</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.dx_dy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.generating_process_id">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">generating_process_id</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.generating_process_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.generating_process_type">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">generating_process_type</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.generating_process_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.gribbability_check">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">gribbability_check</tt><big>(</big><em>cube</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.gribbability_check" title="Permalink to this definition">¶</a></dt>
+<dd><p>We always need the following things for grib saving.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.grid_dims">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">grid_dims</tt><big>(</big><em>x_coord</em>, <em>y_coord</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.grid_dims" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.grid_template">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">grid_template</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.grid_template" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.hybrid_surfaces">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">hybrid_surfaces</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.hybrid_surfaces" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.identification">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">identification</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.identification" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.latlon_common">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">latlon_common</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.latlon_common" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.latlon_first_last">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">latlon_first_last</tt><big>(</big><em>x_coord</em>, <em>y_coord</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.latlon_first_last" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.non_hybrid_surfaces">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">non_hybrid_surfaces</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.non_hybrid_surfaces" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.obs_time_after_cutoff">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">obs_time_after_cutoff</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.obs_time_after_cutoff" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.param_code">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">param_code</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.param_code" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.product_common">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">product_common</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.product_common" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.product_template">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">product_template</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.product_template" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.reference_time">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">reference_time</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.reference_time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.rotated_pole">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">rotated_pole</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.rotated_pole" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.run">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">run</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.scanning_mode_flags">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">scanning_mode_flags</tt><big>(</big><em>x_coord</em>, <em>y_coord</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.scanning_mode_flags" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.shape_of_the_earth">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">shape_of_the_earth</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.shape_of_the_earth" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.surfaces">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">surfaces</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.surfaces" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.time_processing_period">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">time_processing_period</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.time_processing_period" title="Permalink to this definition">¶</a></dt>
+<dd><p>For template 4.8 (time mean, time max, etc)</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.time_range">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">time_range</tt><big>(</big><em>cube</em>, <em>grib</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.time_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Grib encoding of forecast_period.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.grib_save_rules.type_of_statistical_processing">
+<tt class="descclassname">iris.fileformats.grib_save_rules.</tt><tt class="descname">type_of_statistical_processing</tt><big>(</big><em>cube</em>, <em>grib</em>, <em>coord</em><big>)</big><a class="headerlink" href="#iris.fileformats.grib_save_rules.type_of_statistical_processing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search for processing over the given coord.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="manager.html" title="iris.fileformats.manager"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="grib.html" title="iris.fileformats.grib"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../fileformats.html" >iris.fileformats</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

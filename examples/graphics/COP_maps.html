@@ -1,0 +1,306 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Global average annual temperature maps &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Visualisation examples" href="index.html" />
+    <link rel="next" title="Ionosphere space weather" href="TEC.html" />
+    <link rel="prev" title="Global average annual temperature plot" href="COP_1d_plot.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="TEC.html" title="Ionosphere space weather"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="COP_1d_plot.html" title="Global average annual temperature plot"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris examples</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Visualisation examples</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Global average annual temperature maps</a><ul>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="COP_1d_plot.html"
+                        title="previous chapter">Global average annual temperature plot</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="TEC.html"
+                        title="next chapter">Ionosphere space weather</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/examples/graphics/COP_maps.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="global-average-annual-temperature-maps">
+<span id="graphics-cop-maps"></span><h1>Global average annual temperature maps<a class="headerlink" href="#global-average-annual-temperature-maps" title="Permalink to this headline">¶</a></h1>
+<p>Produces maps of global temperature forecasts from the A1B and E1 scenarios.</p>
+<p>The data used comes from the HadGEM2-AO model simulations for the A1B and E1 scenarios, both of which were derived using the IMAGE
+Integrated Assessment Model (Johns et al. 2010; Lowe et al. 2009).</p>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>Johns T.C., et al. (2010) Climate change under aggressive mitigation: The ENSEMBLES multi-model experiment. Climate 
+Dynamics (submitted)</p>
+<p>Lowe J.A., C.D. Hewitt, D.P. Van Vuuren, T.C. Johns, E. Stehfest, J-F. Royer, and P. van der Linden, 2009. New 
+Study For Climate Modeling, Analyses, and Scenarios. Eos Trans. AGU, Vol 90, No. 21.</p>
+</div></blockquote>
+<p id="cop-maps">[<a class="reference external" href="../../plot_directive/../example_code/graphics/COP_maps.py">source code</a>]</p>
+<blockquote>
+<div><div class="figure">
+<img alt="../../_images/COP_maps.png" src="../../_images/COP_maps.png" />
+</div>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Global average annual temperature maps</span>
+<span class="sd">======================================</span>
+
+<span class="sd">Produces maps of global temperature forecasts from the A1B and E1 scenarios.</span>
+
+<span class="sd">The data used comes from the HadGEM2-AO model simulations for the A1B and E1 scenarios, both of which were derived using the IMAGE</span>
+<span class="sd">Integrated Assessment Model (Johns et al. 2010; Lowe et al. 2009).</span>
+
+<span class="sd">References</span>
+<span class="sd">----------</span>
+
+<span class="sd">    Johns T.C., et al. (2010) Climate change under aggressive mitigation: The ENSEMBLES multi-model experiment. Climate</span>
+<span class="sd">    Dynamics (submitted)</span>
+
+<span class="sd">    Lowe J.A., C.D. Hewitt, D.P. Van Vuuren, T.C. Johns, E. Stehfest, J-F. Royer, and P. van der Linden, 2009. New</span>
+<span class="sd">    Study For Climate Modeling, Analyses, and Scenarios. Eos Trans. AGU, Vol 90, No. 21.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">import</span> <span class="nn">iris</span>
+<span class="kn">import</span> <span class="nn">iris.coords</span> <span class="kn">as</span> <span class="nn">coords</span>
+<span class="kn">import</span> <span class="nn">iris.plot</span> <span class="kn">as</span> <span class="nn">iplt</span>
+
+
+<span class="k">def</span> <span class="nf">cop_metadata_callback</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A function which adds an &quot;Experiment&quot; coordinate which comes from the filename. &quot;&quot;&quot;</span>
+
+    <span class="c"># Extract the experiment name (such as a1b or e1) from the filename (in this case it is just the parent folder&#39;s name)</span>
+    <span class="n">containing_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">experiment_label</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">containing_folder</span><span class="p">)</span>
+
+    <span class="c"># Create a coordinate with the experiment label in it</span>
+    <span class="n">exp_coord</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">AuxCoord</span><span class="p">(</span><span class="n">experiment_label</span><span class="p">,</span> <span class="n">long_name</span><span class="o">=</span><span class="s">&#39;Experiment&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s">&#39;no_unit&#39;</span><span class="p">)</span>
+
+    <span class="c"># and add it to the cube</span>
+    <span class="n">cube</span><span class="o">.</span><span class="n">add_aux_coord</span><span class="p">(</span><span class="n">exp_coord</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="c"># Load e1 and a1 using the callback to update the metadata</span>
+    <span class="n">e1</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;A1B-Image_E1&#39;</span><span class="p">,</span> <span class="s">&#39;E1&#39;</span><span class="p">,</span> <span class="s">&#39;*.pp&#39;</span><span class="p">),</span>
+                           <span class="n">callback</span><span class="o">=</span><span class="n">cop_metadata_callback</span><span class="p">)</span>
+    <span class="n">a1b</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;A1B-Image_E1&#39;</span><span class="p">,</span> <span class="s">&#39;A1B&#39;</span><span class="p">,</span> <span class="s">&#39;*.pp&#39;</span><span class="p">),</span>
+                            <span class="n">callback</span><span class="o">=</span><span class="n">cop_metadata_callback</span><span class="p">)</span>
+
+    <span class="c"># For the purposes of this example, take the final timestep of the data we have just loaded</span>
+    <span class="n">e1</span> <span class="o">=</span> <span class="n">e1</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+    <span class="n">a1b</span> <span class="o">=</span> <span class="n">a1b</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+
+    <span class="c"># Load the global average data and add an &#39;Experiment&#39; coord it</span>
+    <span class="n">global_avg</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;A1B-Image_E1&#39;</span><span class="p">,</span> <span class="s">&#39;pp_1859_1889_avg.pp&#39;</span><span class="p">))</span>
+
+    <span class="c"># Define evenly spaced contour levels: -2.5, -1.5, ... 15.5, 16.5 with the specific colours</span>
+    <span class="n">levels</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="o">-</span> <span class="mf">2.5</span>
+    <span class="n">red</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">221</span><span class="p">,</span> <span class="mi">239</span><span class="p">,</span> <span class="mi">229</span><span class="p">,</span> <span class="mi">217</span><span class="p">,</span> <span class="mi">239</span><span class="p">,</span> <span class="mi">234</span><span class="p">,</span> <span class="mi">228</span><span class="p">,</span> <span class="mi">222</span><span class="p">,</span> <span class="mi">205</span><span class="p">,</span> <span class="mi">196</span><span class="p">,</span> <span class="mi">161</span><span class="p">,</span> <span class="mi">137</span><span class="p">,</span> <span class="mi">116</span><span class="p">,</span> <span class="mi">89</span><span class="p">,</span> <span class="mi">77</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">51</span><span class="p">])</span> <span class="o">/</span> <span class="mf">256.</span>
+    <span class="n">green</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">16</span><span class="p">,</span> <span class="mi">217</span><span class="p">,</span> <span class="mi">242</span><span class="p">,</span> <span class="mi">243</span><span class="p">,</span> <span class="mi">235</span><span class="p">,</span> <span class="mi">225</span><span class="p">,</span> <span class="mi">190</span><span class="p">,</span> <span class="mi">160</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">87</span><span class="p">,</span> <span class="mi">72</span><span class="p">,</span> <span class="mi">59</span><span class="p">,</span> <span class="mi">33</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">29</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">29</span><span class="p">,</span> <span class="mi">26</span><span class="p">])</span> <span class="o">/</span> <span class="mf">256.</span>
+    <span class="n">blue</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">243</span><span class="p">,</span> <span class="mi">169</span><span class="p">,</span> <span class="mi">99</span><span class="p">,</span> <span class="mi">51</span><span class="p">,</span> <span class="mi">63</span><span class="p">,</span> <span class="mi">37</span><span class="p">,</span> <span class="mi">39</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">29</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">22</span><span class="p">])</span> <span class="o">/</span> <span class="mf">256.</span>
+
+    <span class="c"># Put those colours into an array which can be passed to conourf as the specific colours for each level</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">red</span><span class="p">,</span> <span class="n">green</span><span class="p">,</span> <span class="n">blue</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="c"># Subtract the global</span>
+
+
+    <span class="c"># Iterate over each latitude longitude slice for both e1 and a1b scenarios simultaneously</span>
+    <span class="k">for</span> <span class="n">e1_slice</span><span class="p">,</span> <span class="n">a1b_slice</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">izip</span><span class="p">(</span><span class="n">e1</span><span class="o">.</span><span class="n">slices</span><span class="p">([</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="s">&#39;longitude&#39;</span><span class="p">]),</span> <span class="n">a1b</span><span class="o">.</span><span class="n">slices</span><span class="p">([</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="s">&#39;longitude&#39;</span><span class="p">])):</span>
+
+        <span class="n">time_coord</span> <span class="o">=</span> <span class="n">a1b_slice</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s">&#39;time&#39;</span><span class="p">)</span>
+
+        <span class="c"># Calculate the difference from the mean</span>
+        <span class="n">delta_e1</span> <span class="o">=</span> <span class="n">e1_slice</span> <span class="o">-</span> <span class="n">global_avg</span>
+        <span class="n">delta_a1b</span> <span class="o">=</span> <span class="n">a1b_slice</span> <span class="o">-</span> <span class="n">global_avg</span>
+
+        <span class="c"># Make a wider than normal figure to house two maps side-by-side</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+        <span class="c"># Get the time datetime from the coordinate</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">time_coord</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">num2date</span><span class="p">(</span><span class="n">time_coord</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="c"># Set a title for the entire figure, giving the time in a nice format of &quot;MonthName Year&quot;. Also, set the y value for the</span>
+        <span class="c"># title so that it is not tight to the top of the plot.</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s">&#39;Annual Temperature Predictions for &#39;</span> <span class="o">+</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%B %Y&quot;</span><span class="p">),</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+
+        <span class="c"># Add the first subplot showing the E1 scenario</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;HadGEM2 E1 Scenario&#39;</span><span class="p">,</span>  <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">iplt</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">delta_e1</span><span class="p">,</span> <span class="n">levels</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">extend</span><span class="o">=</span><span class="s">&#39;both&#39;</span><span class="p">)</span>
+        <span class="n">current_map</span> <span class="o">=</span> <span class="n">iplt</span><span class="o">.</span><span class="n">gcm</span><span class="p">()</span>
+        <span class="n">current_map</span><span class="o">.</span><span class="n">drawcoastlines</span><span class="p">()</span>
+        <span class="c"># get the current axes&#39; subplot for use later on</span>
+        <span class="n">plt1_ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+
+        <span class="c"># Add the second subplot showing the A1B scenario</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;HadGEM2 A1B-Image Scenario&#39;</span><span class="p">,</span>  <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">contour_result</span> <span class="o">=</span> <span class="n">iplt</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">delta_a1b</span><span class="p">,</span> <span class="n">levels</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">extend</span><span class="o">=</span><span class="s">&#39;both&#39;</span><span class="p">)</span>
+        <span class="n">current_map</span> <span class="o">=</span> <span class="n">iplt</span><span class="o">.</span><span class="n">gcm</span><span class="p">()</span>
+        <span class="n">current_map</span><span class="o">.</span><span class="n">drawcoastlines</span><span class="p">()</span>
+        <span class="c"># get the current axes&#39; subplot for use later on</span>
+        <span class="n">plt2_ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+
+
+        <span class="c"># Now add a colourbar who&#39;s leftmost point is the same as the leftmost point of the left hand plot</span>
+        <span class="c"># and rightmost point is the rightmost point of the right hand plot</span>
+
+        <span class="c"># Get the positions of the 2nd plot and the left position of the 1st plot</span>
+        <span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">plt2_ax</span><span class="o">.</span><span class="n">get_position</span><span class="p">()</span><span class="o">.</span><span class="n">bounds</span>
+        <span class="n">first_plot_left</span> <span class="o">=</span> <span class="n">plt1_ax</span><span class="o">.</span><span class="n">get_position</span><span class="p">()</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c"># the width of the colorbar should now be simple</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="n">left</span> <span class="o">-</span> <span class="n">first_plot_left</span> <span class="o">+</span> <span class="n">width</span>
+
+        <span class="c"># Add axes to the figure, to place the colour bar</span>
+        <span class="n">colorbar_axes</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">([</span><span class="n">first_plot_left</span><span class="p">,</span> <span class="n">bottom</span> <span class="o">+</span> <span class="mf">0.07</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">])</span>
+
+        <span class="c"># Add the colour bar</span>
+        <span class="n">cbar</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">contour_result</span><span class="p">,</span> <span class="n">colorbar_axes</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s">&#39;horizontal&#39;</span><span class="p">)</span>
+
+        <span class="c"># Label the colour bar and add ticks</span>
+        <span class="n">cbar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="n">e1_slice</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+        <span class="n">cbar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="TEC.html" title="Ionosphere space weather"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="COP_1d_plot.html" title="Global average annual temperature plot"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris examples</a> &raquo;</li>
+          <li><a href="index.html" >Visualisation examples</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

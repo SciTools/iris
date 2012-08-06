@@ -1,0 +1,228 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.analysis.trajectory &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../../index.html" />
+    <link rel="up" title="iris.analysis" href="../analysis.html" />
+    <link rel="next" title="iris.aux_factory" href="../aux_factory.html" />
+    <link rel="prev" title="iris.analysis.maths" href="maths.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../../index.html"><img src="../../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../aux_factory.html" title="iris.aux_factory"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="maths.html" title="iris.analysis.maths"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../analysis.html" accesskey="U">iris.analysis</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="maths.html"
+                        title="previous chapter">iris.analysis.maths</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../aux_factory.html"
+                        title="next chapter">iris.aux_factory</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/iris/iris/analysis/trajectory.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-analysis-trajectory">
+<span id="id1"></span><h1>iris.analysis.trajectory<a class="headerlink" href="#iris-analysis-trajectory" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.analysis.trajectory"></span><p>Defines a Trajectory class, and a routine to extract a sub-cube along a trajectory.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.analysis.trajectory.interpolate" title="iris.analysis.trajectory.interpolate"><tt class="xref py py-obj docutils literal"><span class="pre">interpolate</span></tt></a></li>
+<li><a class="reference internal" href="#iris.analysis.trajectory.Trajectory" title="iris.analysis.trajectory.Trajectory"><tt class="xref py py-obj docutils literal"><span class="pre">Trajectory</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.analysis.trajectory.interpolate">
+<tt class="descclassname">iris.analysis.trajectory.</tt><tt class="descname">interpolate</tt><big>(</big><em>cube</em>, <em>sample_points</em>, <em>method=None</em><big>)</big><a class="headerlink" href="#iris.analysis.trajectory.interpolate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract a sub-cube at the given n-dimensional points.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube</dt>
+<dd><p class="first last">The source Cube.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>sample_points </dt>
+<dd><p class="first last">A sequence of coordinate (name) - values pairs.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>method</dt>
+<dd><p class="first last">Request &#8220;linear&#8221; interpolation (default) or &#8220;nearest&#8221; neighbour.
+Only nearest neighbour is available when specifying multi-dimensional coordinates.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>For example::</dt>
+<dd>sample_points = [(&#8216;latitude&#8217;, [45, 45, 45]), (&#8216;longitude&#8217;, [-60, -50, -40])]
+interpolated_cube = interpolate(cube, sample_points)</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<p>A series of given waypoints with pre-calculated sample points.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.analysis.trajectory.Trajectory">
+<em class="property">class </em><tt class="descclassname">iris.analysis.trajectory.</tt><tt class="descname">Trajectory</tt><big>(</big><em>waypoints</em>, <em>sample_count=10</em><big>)</big><a class="headerlink" href="#iris.analysis.trajectory.Trajectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines a trajectory using a sequence of waypoints.</p>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">waypoints</span> <span class="o">=</span> <span class="p">[{</span><span class="s">&#39;latitude&#39;</span><span class="p">:</span> <span class="mi">45</span><span class="p">,</span> <span class="s">&#39;longitude&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">60</span><span class="p">},</span> <span class="p">{</span><span class="s">&#39;latitude&#39;</span><span class="p">:</span> <span class="mi">45</span><span class="p">,</span> <span class="s">&#39;longitude&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}]</span>
+<span class="n">Trajectory</span><span class="p">(</span><span class="n">waypoints</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">All the waypoint dictionaries must contain the same coordinate names.</p>
+</div>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>waypoints</dt>
+<dd><p class="first last">A sequence of dictionaries, mapping coordinate names to values.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>sample_count</dt>
+<dd><p class="first last">The number of sample positions to use along the trajectory.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+</div></blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../aux_factory.html" title="iris.aux_factory"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="maths.html" title="iris.analysis.maths"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../analysis.html" >iris.analysis</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

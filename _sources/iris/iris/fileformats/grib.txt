@@ -1,0 +1,48 @@
+.. _iris.fileformats.grib:
+
+=====================
+iris.fileformats.grib
+=====================
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.fileformats.grib
+
+In this module:
+
+ * :py:obj:`add_load_rules`
+ * :py:obj:`load_cubes`
+ * :py:obj:`reset_load_rules`
+ * :py:obj:`save_grib2`
+ * :py:obj:`GribWrapper`
+
+
+----------
+
+.. autofunction:: iris.fileformats.grib.add_load_rules
+
+----------
+
+.. autofunction:: iris.fileformats.grib.load_cubes
+
+----------
+
+.. autofunction:: iris.fileformats.grib.reset_load_rules
+
+----------
+
+.. autofunction:: iris.fileformats.grib.save_grib2
+
+----------
+
+Contains a pygrib object plus some extra keys of our own.
+
+..
+
+    .. autoclass:: iris.fileformats.grib.GribWrapper
+        :members:
+        :undoc-members:
+        :inherited-members:
+

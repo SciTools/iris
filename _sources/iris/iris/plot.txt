@@ -1,0 +1,88 @@
+.. _iris.plot:
+
+=========
+iris.plot
+=========
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.plot
+
+In this module:
+
+ * :py:obj:`contour`
+ * :py:obj:`contourf`
+ * :py:obj:`gcm`
+ * :py:obj:`map_setup`
+ * :py:obj:`orography_at_bounds`
+ * :py:obj:`orography_at_points`
+ * :py:obj:`outline`
+ * :py:obj:`pcolor`
+ * :py:obj:`pcolormesh`
+ * :py:obj:`plot`
+ * :py:obj:`points`
+ * :py:obj:`symbols`
+ * :py:obj:`PlotDefn`
+
+
+----------
+
+.. autofunction:: iris.plot.contour
+
+----------
+
+.. autofunction:: iris.plot.contourf
+
+----------
+
+.. autofunction:: iris.plot.gcm
+
+----------
+
+.. autofunction:: iris.plot.map_setup
+
+----------
+
+.. autofunction:: iris.plot.orography_at_bounds
+
+----------
+
+.. autofunction:: iris.plot.orography_at_points
+
+----------
+
+.. autofunction:: iris.plot.outline
+
+----------
+
+.. autofunction:: iris.plot.pcolor
+
+----------
+
+.. autofunction:: iris.plot.pcolormesh
+
+----------
+
+.. autofunction:: iris.plot.plot
+
+----------
+
+.. autofunction:: iris.plot.points
+
+----------
+
+.. autofunction:: iris.plot.symbols
+
+----------
+
+PlotDefn(coords, transpose)
+
+..
+
+    .. autoclass:: iris.plot.PlotDefn
+        :members:
+        :undoc-members:
+        :inherited-members:
+

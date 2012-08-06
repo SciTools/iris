@@ -1,0 +1,38 @@
+.. _iris.palette:
+
+============
+iris.palette
+============
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.palette
+
+In this module:
+
+ * :py:obj:`auto_palette`
+ * :py:obj:`cmap_norm`
+ * :py:obj:`SymmetricNormalize`
+
+
+----------
+
+.. autofunction:: iris.palette.auto_palette
+
+----------
+
+.. autofunction:: iris.palette.cmap_norm
+
+----------
+
+Provides a symmetric normalization class around a given pivot point.
+
+..
+
+    .. autoclass:: iris.palette.SymmetricNormalize
+        :members:
+        :undoc-members:
+        :inherited-members:
+

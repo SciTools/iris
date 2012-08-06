@@ -1,0 +1,336 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.io.format_picker &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../../index.html" />
+    <link rel="up" title="iris.io" href="../io.html" />
+    <link rel="next" title="iris.iterate" href="../iterate.html" />
+    <link rel="prev" title="iris.io" href="../io.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../../index.html"><img src="../../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../iterate.html" title="iris.iterate"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../io.html" title="iris.io"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../io.html" accesskey="U">iris.io</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../io.html"
+                        title="previous chapter">iris.io</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../iterate.html"
+                        title="next chapter">iris.iterate</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/iris/iris/io/format_picker.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-io-format-picker">
+<span id="id1"></span><h1>iris.io.format_picker<a class="headerlink" href="#iris-io-format-picker" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.io.format_picker"></span><p>A module to provide convenient file format identification through a combination of filename extension 
+and file based <em>magic</em> numbers.</p>
+<p>To manage a collection of FormatSpecifications for loading:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">format_picker</span> <span class="kn">as</span> <span class="nn">fp</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="n">fagent</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">FormatAgent</span><span class="p">()</span>
+<span class="n">png_spec</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">FormatSpecification</span><span class="p">(</span><span class="s">&#39;PNG image&#39;</span><span class="p">,</span> <span class="n">fp</span><span class="o">.</span><span class="n">MAGIC_NUMBER_64_BIT</span><span class="p">,</span> <span class="mh">0x89504E470D0A1A0A</span><span class="p">,</span> 
+                                  <span class="n">handler</span><span class="o">=</span><span class="k">lambda</span> <span class="n">filename</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span>
+                                  <span class="n">priority</span><span class="o">=</span><span class="mi">5</span>
+                                  <span class="p">)</span>
+<span class="n">fagent</span><span class="o">.</span><span class="n">add_spec</span><span class="p">(</span><span class="n">png_spec</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To identify a specific format from a file:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">handling_spec</span> <span class="o">=</span> <span class="n">fagent</span><span class="o">.</span><span class="n">get_spec</span><span class="p">(</span><span class="n">png_filename</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">png_filename</span><span class="p">,</span> <span class="s">&#39;rb&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>In the example, handling_spec will now be the png_spec previously added to the agent.</p>
+<p>Now that a specification has been found, if a handler has been given with the specification, then the file can be handled:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">handler</span> <span class="o">=</span> <span class="n">handling_spec</span><span class="o">.</span><span class="n">handler</span>
+<span class="k">if</span> <span class="n">handler</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+   <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;File cannot be handled.&#39;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+   <span class="n">result</span> <span class="o">=</span> <span class="n">handler</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The calling sequence of handler is dependent on the function given in the original specification and can be customised to your project&#8217;s needs.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.io.format_picker.FILE_EXTENSION" title="iris.io.format_picker.FILE_EXTENSION"><tt class="xref py py-obj docutils literal"><span class="pre">FILE_EXTENSION</span></tt></a></li>
+<li><a class="reference internal" href="#iris.io.format_picker.LEADING_LINE" title="iris.io.format_picker.LEADING_LINE"><tt class="xref py py-obj docutils literal"><span class="pre">LEADING_LINE</span></tt></a></li>
+<li><a class="reference internal" href="#iris.io.format_picker.MAGIC_NUMBER_32_BIT" title="iris.io.format_picker.MAGIC_NUMBER_32_BIT"><tt class="xref py py-obj docutils literal"><span class="pre">MAGIC_NUMBER_32_BIT</span></tt></a></li>
+<li><a class="reference internal" href="#iris.io.format_picker.MAGIC_NUMBER_64_BIT" title="iris.io.format_picker.MAGIC_NUMBER_64_BIT"><tt class="xref py py-obj docutils literal"><span class="pre">MAGIC_NUMBER_64_BIT</span></tt></a></li>
+<li><a class="reference internal" href="#iris.io.format_picker.FileElement" title="iris.io.format_picker.FileElement"><tt class="xref py py-obj docutils literal"><span class="pre">FileElement</span></tt></a></li>
+<li><a class="reference internal" href="#iris.io.format_picker.FormatAgent" title="iris.io.format_picker.FormatAgent"><tt class="xref py py-obj docutils literal"><span class="pre">FormatAgent</span></tt></a></li>
+<li><a class="reference internal" href="#iris.io.format_picker.FormatSpecification" title="iris.io.format_picker.FormatSpecification"><tt class="xref py py-obj docutils literal"><span class="pre">FormatSpecification</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="data">
+<dt id="iris.io.format_picker.FILE_EXTENSION">
+<tt class="descclassname">iris.io.format_picker.</tt><tt class="descname">FILE_EXTENSION</tt><em class="property"> = FileElement('File extension', &lt;function &lt;lambda&gt; at 0x1ef87d0&gt;)</em><a class="headerlink" href="#iris.io.format_picker.FILE_EXTENSION" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a specific aspect of a FileFormat which can be identified using the given element getter function.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="data">
+<dt id="iris.io.format_picker.LEADING_LINE">
+<tt class="descclassname">iris.io.format_picker.</tt><tt class="descname">LEADING_LINE</tt><em class="property"> = FileElement('Leading line', &lt;function &lt;lambda&gt; at 0x1ef8848&gt;)</em><a class="headerlink" href="#iris.io.format_picker.LEADING_LINE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a specific aspect of a FileFormat which can be identified using the given element getter function.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="data">
+<dt id="iris.io.format_picker.MAGIC_NUMBER_32_BIT">
+<tt class="descclassname">iris.io.format_picker.</tt><tt class="descname">MAGIC_NUMBER_32_BIT</tt><em class="property"> = FileElement('32-bit magic number', &lt;function &lt;lambda&gt; at 0x1ef6d70&gt;)</em><a class="headerlink" href="#iris.io.format_picker.MAGIC_NUMBER_32_BIT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a specific aspect of a FileFormat which can be identified using the given element getter function.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="data">
+<dt id="iris.io.format_picker.MAGIC_NUMBER_64_BIT">
+<tt class="descclassname">iris.io.format_picker.</tt><tt class="descname">MAGIC_NUMBER_64_BIT</tt><em class="property"> = FileElement('64-bit magic number', &lt;function &lt;lambda&gt; at 0x1ef8758&gt;)</em><a class="headerlink" href="#iris.io.format_picker.MAGIC_NUMBER_64_BIT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a specific aspect of a FileFormat which can be identified using the given element getter function.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<p>Represents a specific aspect of a FileFormat which can be identified using the given element getter function.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.io.format_picker.FileElement">
+<em class="property">class </em><tt class="descclassname">iris.io.format_picker.</tt><tt class="descname">FileElement</tt><big>(</big><em>name</em>, <em>element_getter_fn</em><big>)</big><a class="headerlink" href="#iris.io.format_picker.FileElement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a new FileElement given a name and a file element getter function.</p>
+<p>Args:</p>
+<ul>
+<li><p class="first">name - The name (string) of what the element is representing</p>
+</li>
+<li><dl class="first docutils">
+<dt>element_getter_fn - Function which takes a buffer object and returns the value of the FileElement. The </dt>
+<dd><p class="first last">function must accept a single argument of a file buffer.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>An example of a FileElement would be a &#8220;32-bit magic number&#8221; which can be created with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">FileElement</span><span class="p">(</span><span class="s">&#39;32-bit magic number&#39;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">buffer_obj</span><span class="p">:</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s">&#39;&gt;L&#39;</span><span class="p">,</span> <span class="n">buffer_obj</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">))[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The given file buffer will always be at the start of the buffer (i.e. have tell() of 0).</p>
+</div>
+<dl class="method">
+<dt id="iris.io.format_picker.FileElement.get_element">
+<tt class="descname">get_element</tt><big>(</big><em>basename</em>, <em>file_handle</em><big>)</big><a class="headerlink" href="#iris.io.format_picker.FileElement.get_element" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when identifying the element of a file that this FileElement is representing.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.io.format_picker.FileElement.name">
+<tt class="descname">name</tt><a class="headerlink" href="#iris.io.format_picker.FileElement.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of this element. (Read only)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>The FormatAgent class is the containing object which is responsible for identifying the format of a given file
+by interrogating its children FormatSpecification instances.</p>
+<p>Typically a FormatAgent will be created empty and then extended with the <a class="reference internal" href="#iris.io.format_picker.FormatAgent.add_spec" title="iris.io.format_picker.FormatAgent.add_spec"><tt class="xref py py-meth docutils literal"><span class="pre">FormatAgent.add_spec()</span></tt></a> method:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">agent</span> <span class="o">=</span> <span class="n">FormatAgent</span><span class="p">()</span>
+<span class="n">agent</span><span class="o">.</span><span class="n">add_spec</span><span class="p">(</span><span class="n">NetCDF_specification</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Less commonly, this can also be written:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">agent</span> <span class="o">=</span> <span class="n">FormatAgent</span><span class="p">(</span><span class="n">NetCDF_specification</span><span class="p">)</span>
+</pre></div>
+</div>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.io.format_picker.FormatAgent">
+<em class="property">class </em><tt class="descclassname">iris.io.format_picker.</tt><tt class="descname">FormatAgent</tt><big>(</big><em>format_specs=None</em><big>)</big><a class="headerlink" href="#iris.io.format_picker.FormatAgent" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="iris.io.format_picker.FormatAgent.add_spec">
+<tt class="descname">add_spec</tt><big>(</big><em>format_spec</em><big>)</big><a class="headerlink" href="#iris.io.format_picker.FormatAgent.add_spec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a FormatSpecification instance to this agent for format consideration.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.io.format_picker.FormatAgent.get_spec">
+<tt class="descname">get_spec</tt><big>(</big><em>basename</em>, <em>buffer_obj</em><big>)</big><a class="headerlink" href="#iris.io.format_picker.FormatAgent.get_spec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pick the first FormatSpecification which can handle the given filename and file/buffer object.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+<hr class="docutils" />
+<p>Provides the base class for file type definition.</p>
+<p>Every FormatSpecification instance has a name which can be accessed with the <a class="reference internal" href="#iris.io.format_picker.FormatSpecification.name" title="iris.io.format_picker.FormatSpecification.name"><tt class="xref py py-attr docutils literal"><span class="pre">FormatSpecification.name</span></tt></a> property and
+a FileElement, such as filename extension or 32-bit magic number, with an associated value for format identification.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.io.format_picker.FormatSpecification">
+<em class="property">class </em><tt class="descclassname">iris.io.format_picker.</tt><tt class="descname">FormatSpecification</tt><big>(</big><em>format_name</em>, <em>file_element</em>, <em>file_element_value</em>, <em>handler=None</em>, <em>priority=0</em><big>)</big><a class="headerlink" href="#iris.io.format_picker.FormatSpecification" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a new FormatSpecification given the format_name and particular FileElements</p>
+<p>Args:</p>
+<ul class="simple">
+<li>format_name - string name of fileformat being described</li>
+<li>file_element - FileElement instance of the element which identifies this FormatSpecification</li>
+<li>file_element_value - The value that the file_element should take if a file matches this FormatSpecification</li>
+</ul>
+<p>Kwargs:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>handler - function which will be called when the specification has been identified and is required to handler a format.</dt>
+<dd><p class="first last">If None, then the file can still be identified but no handling can be done.</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">priority - Integer giving a priority for considering this specification where higher priority means sooner consideration.</p>
+</li>
+</ul>
+<dl class="attribute">
+<dt id="iris.io.format_picker.FormatSpecification.file_element">
+<tt class="descname">file_element</tt><a class="headerlink" href="#iris.io.format_picker.FormatSpecification.file_element" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.io.format_picker.FormatSpecification.file_element_value">
+<tt class="descname">file_element_value</tt><a class="headerlink" href="#iris.io.format_picker.FormatSpecification.file_element_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.io.format_picker.FormatSpecification.handler">
+<tt class="descname">handler</tt><a class="headerlink" href="#iris.io.format_picker.FormatSpecification.handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>The handler function of this FileFormat. (Read only)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.io.format_picker.FormatSpecification.name">
+<tt class="descname">name</tt><a class="headerlink" href="#iris.io.format_picker.FormatSpecification.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of this FileFormat. (Read only)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../iterate.html" title="iris.iterate"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../io.html" title="iris.io"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../io.html" >iris.io</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

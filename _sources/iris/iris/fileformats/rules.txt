@@ -1,0 +1,200 @@
+.. _iris.fileformats.rules:
+
+======================
+iris.fileformats.rules
+======================
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.fileformats.rules
+
+In this module:
+
+ * :py:obj:`is_regular`
+ * :py:obj:`log`
+ * :py:obj:`regular_step`
+ * :py:obj:`scalar_cell_method`
+ * :py:obj:`scalar_coord`
+ * :py:obj:`vector_coord`
+ * :py:obj:`CMAttribute`
+ * :py:obj:`CMCustomAttribute`
+ * :py:obj:`CoordAndDims`
+ * :py:obj:`DebugString`
+ * :py:obj:`Factory`
+ * :py:obj:`FunctionRule`
+ * :py:obj:`ObjectReturningRule`
+ * :py:obj:`ProcedureRule`
+ * :py:obj:`Reference`
+ * :py:obj:`Rule`
+ * :py:obj:`RuleResult`
+ * :py:obj:`RulesContainer`
+
+
+----------
+
+.. autofunction:: iris.fileformats.rules.is_regular
+
+----------
+
+.. autofunction:: iris.fileformats.rules.log
+
+----------
+
+.. autofunction:: iris.fileformats.rules.regular_step
+
+----------
+
+.. autofunction:: iris.fileformats.rules.scalar_cell_method
+
+----------
+
+.. autofunction:: iris.fileformats.rules.scalar_coord
+
+----------
+
+.. autofunction:: iris.fileformats.rules.vector_coord
+
+----------
+
+Used by the rules for defining attributes on the Cube in a consistent manner.
+
+..
+
+    .. autoclass:: iris.fileformats.rules.CMAttribute
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Used by the rules for defining custom attributes on the Cube in a consistent manner.
+
+..
+
+    .. autoclass:: iris.fileformats.rules.CMCustomAttribute
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Used within rules to represent a mapping of coordinate to data dimensions. 
+
+..
+
+    .. autoclass:: iris.fileformats.rules.CoordAndDims
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Used by the rules for debug purposes
+
+..
+
+    .. autoclass:: iris.fileformats.rules.DebugString
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Factory(factory_class, args)
+
+..
+
+    .. autoclass:: iris.fileformats.rules.Factory
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+A Rule with values returned by its actions.
+
+..
+
+    .. autoclass:: iris.fileformats.rules.FunctionRule
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+A rule which returns a list of objects when its actions are run.
+
+..
+
+    .. autoclass:: iris.fileformats.rules.ObjectReturningRule
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+A Rule with nothing returned by its actions.
+
+..
+
+    .. autoclass:: iris.fileformats.rules.ProcedureRule
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+None
+
+..
+
+    .. autoclass:: iris.fileformats.rules.Reference
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+A collection of condition expressions and their associated action expressions.
+
+Example rule::
+
+    IF
+        f.lbuser[6] == 2
+        f.lbuser[3] == 101
+    THEN
+        CMAttribute('standard_name', 'sea_water_potential_temperature')
+        CMAttribute('units', 'Celsius')
+
+..
+
+    .. autoclass:: iris.fileformats.rules.Rule
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+RuleResult(cube, matching_rules, factories)
+
+..
+
+    .. autoclass:: iris.fileformats.rules.RuleResult
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+A collection of :class:`Rule` instances, with the ability to read rule
+definitions from files and run the rules against given fields.
+
+..
+
+    .. autoclass:: iris.fileformats.rules.RulesContainer
+        :members:
+        :undoc-members:
+        :inherited-members:
+

@@ -1,0 +1,68 @@
+.. _iris.aux_factory:
+
+================
+iris.aux_factory
+================
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.aux_factory
+
+In this module:
+
+ * :py:obj:`AuxCoordFactory`
+ * :py:obj:`HybridHeightFactory`
+ * :py:obj:`LazyArray`
+
+
+----------
+
+Represents a "factory" which can manufacture an additional auxiliary
+coordinate on demand, by combining the values of other coordinates.
+
+Each concrete subclass represents a specific formula for deriving
+values from other coordinates.
+
+The `standard_name`, `long_name`, `units`, `attributes` and 
+`coord_system` of the factory are used to set the corresponding 
+properties of the resulting auxiliary coordinates.
+
+..
+
+    .. autoclass:: iris.aux_factory.AuxCoordFactory
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Defines a hybrid-height coordinate factory with the formula:
+    z = a + b * orog
+
+..
+
+    .. autoclass:: iris.aux_factory.HybridHeightFactory
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Represents a simplified NumPy array which is only computed on demand.
+
+It provides the :meth:`view()` and :meth:`reshape()` methods so it
+can be used in place of a standard NumPy array under some
+circumstances.
+
+The first use of either of these methods causes the array to be
+computed and cached for any subsequent access.
+
+..
+
+    .. autoclass:: iris.aux_factory.LazyArray
+        :members:
+        :undoc-members:
+        :inherited-members:
+

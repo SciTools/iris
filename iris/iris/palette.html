@@ -1,0 +1,254 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.palette &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Iris reference documentation" href="../iris.html" />
+    <link rel="next" title="iris.plot" href="plot.html" />
+    <link rel="prev" title="iris.iterate" href="iterate.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="plot.html" title="iris.plot"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="iterate.html" title="iris.iterate"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" accesskey="U">Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="iterate.html"
+                        title="previous chapter">iris.iterate</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="plot.html"
+                        title="next chapter">iris.plot</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/iris/iris/palette.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-palette">
+<span id="id1"></span><h1>iris.palette<a class="headerlink" href="#iris-palette" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.palette"></span><p>Load, configure and register color map palettes and initialise
+color map meta-data mappings.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.palette.auto_palette" title="iris.palette.auto_palette"><tt class="xref py py-obj docutils literal"><span class="pre">auto_palette</span></tt></a></li>
+<li><a class="reference internal" href="#iris.palette.cmap_norm" title="iris.palette.cmap_norm"><tt class="xref py py-obj docutils literal"><span class="pre">cmap_norm</span></tt></a></li>
+<li><a class="reference internal" href="#iris.palette.SymmetricNormalize" title="iris.palette.SymmetricNormalize"><tt class="xref py py-obj docutils literal"><span class="pre">SymmetricNormalize</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.palette.auto_palette">
+<tt class="descclassname">iris.palette.</tt><tt class="descname">auto_palette</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#iris.palette.auto_palette" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator wrapper function to control the default behaviour of the matplotlib 
+cmap and norm keyword arguments.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>func (callable):</dt>
+<dd><p class="first last">Callable function to be wrapped by the decorator.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>Closure wrapper function.</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.palette.cmap_norm">
+<tt class="descclassname">iris.palette.</tt><tt class="descname">cmap_norm</tt><big>(</big><em>cube</em><big>)</big><a class="headerlink" href="#iris.palette.cmap_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the default <a class="reference external" href="http://matplotlib.sourceforge.net/api/colors_api.html#matplotlib.colors.LinearSegmentedColormap" title="(in Matplotlib v1.1.1)"><tt class="xref py py-class docutils literal"><span class="pre">matplotlib.colors.LinearSegmentedColormap</span></tt></a> and
+<a class="reference internal" href="#iris.palette.SymmetricNormalize" title="iris.palette.SymmetricNormalize"><tt class="xref py py-class docutils literal"><span class="pre">iris.palette.SymmetricNormalize</span></tt></a> instances associated with the cube.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>cube (<a class="reference internal" href="cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>):</dt>
+<dd><p class="first last">Source cube to generate default palette from.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>Tuple of <a class="reference external" href="http://matplotlib.sourceforge.net/api/colors_api.html#matplotlib.colors.LinearSegmentedColormap" title="(in Matplotlib v1.1.1)"><tt class="xref py py-class docutils literal"><span class="pre">matplotlib.colors.LinearSegmentedColormap</span></tt></a> and <a class="reference internal" href="#iris.palette.SymmetricNormalize" title="iris.palette.SymmetricNormalize"><tt class="xref py py-class docutils literal"><span class="pre">iris.palette.SymmetricNormalize</span></tt></a></dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<p>Provides a symmetric normalization class around a given pivot point.</p>
+<blockquote>
+<div><dl class="class">
+<dt id="iris.palette.SymmetricNormalize">
+<em class="property">class </em><tt class="descclassname">iris.palette.</tt><tt class="descname">SymmetricNormalize</tt><big>(</big><em>pivot</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#iris.palette.SymmetricNormalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides a symmetric normalization class around a given pivot point.</p>
+<dl class="method">
+<dt id="iris.palette.SymmetricNormalize.autoscale">
+<tt class="descname">autoscale</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#iris.palette.SymmetricNormalize.autoscale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set <em>vmin</em>, <em>vmax</em> to min, max of <em>A</em>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.palette.SymmetricNormalize.autoscale_None">
+<tt class="descname">autoscale_None</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#iris.palette.SymmetricNormalize.autoscale_None" title="Permalink to this definition">¶</a></dt>
+<dd><p>autoscale only None-valued vmin or vmax</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.palette.SymmetricNormalize.inverse">
+<tt class="descname">inverse</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#iris.palette.SymmetricNormalize.inverse" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="iris.palette.SymmetricNormalize.process_value">
+<em class="property">static </em><tt class="descname">process_value</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#iris.palette.SymmetricNormalize.process_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Homogenize the input <em>value</em> for easy and efficient normalization.</p>
+<p><em>value</em> can be a scalar or sequence.</p>
+<p>Returns <em>result</em>, <em>is_scalar</em>, where <em>result</em> is a
+masked array matching <em>value</em>.  Float dtypes are preserved;
+integer types with two bytes or smaller are converted to
+np.float32, and larger types are converted to np.float.
+Preserving float32 when possible, and using in-place operations,
+can greatly improve speed for large arrays.</p>
+<p>Experimental; we may want to add an option to force the
+use of float32.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="iris.palette.SymmetricNormalize.scaled">
+<tt class="descname">scaled</tt><big>(</big><big>)</big><a class="headerlink" href="#iris.palette.SymmetricNormalize.scaled" title="Permalink to this definition">¶</a></dt>
+<dd><p>return true if vmin and vmax set</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="iris.palette.SymmetricNormalize.vmax">
+<tt class="descname">vmax</tt><a class="headerlink" href="#iris.palette.SymmetricNormalize.vmax" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="iris.palette.SymmetricNormalize.vmin">
+<tt class="descname">vmin</tt><a class="headerlink" href="#iris.palette.SymmetricNormalize.vmin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div></blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="plot.html" title="iris.plot"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="iterate.html" title="iris.iterate"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../iris.html" >Iris reference documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

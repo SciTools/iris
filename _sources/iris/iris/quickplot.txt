@@ -1,0 +1,51 @@
+.. _iris.quickplot:
+
+==============
+iris.quickplot
+==============
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.quickplot
+
+In this module:
+
+ * :py:obj:`contour`
+ * :py:obj:`contourf`
+ * :py:obj:`outline`
+ * :py:obj:`pcolor`
+ * :py:obj:`pcolormesh`
+ * :py:obj:`plot`
+ * :py:obj:`points`
+
+
+----------
+
+.. autofunction:: iris.quickplot.contour
+
+----------
+
+.. autofunction:: iris.quickplot.contourf
+
+----------
+
+.. autofunction:: iris.quickplot.outline
+
+----------
+
+.. autofunction:: iris.quickplot.pcolor
+
+----------
+
+.. autofunction:: iris.quickplot.pcolormesh
+
+----------
+
+.. autofunction:: iris.quickplot.plot
+
+----------
+
+.. autofunction:: iris.quickplot.points
+

@@ -1,0 +1,29 @@
+.. _iris.fileformats.manager:
+
+========================
+iris.fileformats.manager
+========================
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.fileformats.manager
+
+In this module:
+
+ * :py:obj:`DataManager`
+
+
+----------
+
+Holds the context that allows a corresponding array of DataProxy objects to be
+converted into a real data array.
+
+..
+
+    .. autoclass:: iris.fileformats.manager.DataManager
+        :members:
+        :undoc-members:
+        :inherited-members:
+

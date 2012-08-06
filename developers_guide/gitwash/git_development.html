@@ -1,0 +1,180 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Git for development &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Working with iris source code" href="index.html" />
+    <link rel="next" title="Making your own copy (fork) of iris" href="forking_hell.html" />
+    <link rel="prev" title="Making a patch" href="patching.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="forking_hell.html" title="Making your own copy (fork) of iris"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="patching.html" title="Making a patch"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris developer guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Working with <em>iris</em> source code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="patching.html"
+                        title="previous chapter">Making a patch</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="forking_hell.html"
+                        title="next chapter">Making your own copy (fork) of iris</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/developers_guide/gitwash/git_development.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="git-for-development">
+<span id="git-development"></span><h1>Git for development<a class="headerlink" href="#git-for-development" title="Permalink to this headline">¶</a></h1>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="forking_hell.html">Making your own copy (fork) of iris</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="forking_hell.html#set-up-and-configure-a-github-account">Set up and configure a github account</a></li>
+<li class="toctree-l2"><a class="reference internal" href="forking_hell.html#create-your-own-forked-copy-of-iris">Create your own forked copy of iris</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="set_up_fork.html">Set up your fork</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="set_up_fork.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="set_up_fork.html#in-detail">In detail</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configure_git.html">Configure git</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configure_git.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configure_git.html#in-detail">In detail</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="development_workflow.html">Development workflow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="development_workflow.html#workflow-summary">Workflow summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development_workflow.html#consider-deleting-your-master-branch">Consider deleting your master branch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development_workflow.html#update-the-mirror-of-trunk">Update the mirror of trunk</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development_workflow.html#make-a-new-feature-branch">Make a new feature branch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development_workflow.html#the-editing-workflow">The editing workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development_workflow.html#ask-for-your-changes-to-be-reviewed-or-merged">Ask for your changes to be reviewed or merged</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development_workflow.html#some-other-things-you-might-want-to-do">Some other things you might want to do</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="maintainer_workflow.html">Maintainer workflow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="maintainer_workflow.html#integrating-changes">Integrating changes</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="forking_hell.html" title="Making your own copy (fork) of iris"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="patching.html" title="Making a patch"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris developer guide</a> &raquo;</li>
+          <li><a href="index.html" >Working with <em>iris</em> source code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

@@ -1,0 +1,128 @@
+.. _iris.analysis:
+
+=============
+iris.analysis
+=============
+
+
+.. sidebar:: Modules in this package
+
+
+   .. toctree::
+      :maxdepth: 2
+      :titlesonly:
+      
+      analysis/calculus
+      analysis/cartography
+      analysis/geometry
+      analysis/interpolate
+      analysis/maths
+      analysis/trajectory
+
+   
+
+
+    
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.analysis
+
+In this module:
+
+ * :py:obj:`COUNT`
+ * :py:obj:`GMEAN`
+ * :py:obj:`HMEAN`
+ * :py:obj:`MAX`
+ * :py:obj:`MEAN`
+ * :py:obj:`MEDIAN`
+ * :py:obj:`MIN`
+ * :py:obj:`PERCENTILE`
+ * :py:obj:`PROPORTION`
+ * :py:obj:`STD_DEV`
+ * :py:obj:`SUM`
+ * :py:obj:`VARIANCE`
+ * :py:obj:`coord_comparison`
+ * :py:obj:`Aggregator`
+ * :py:obj:`clear_phenomenon_identity`
+
+
+----------
+
+
+.. autodata:: iris.analysis.COUNT
+
+----------
+
+
+.. autodata:: iris.analysis.GMEAN
+
+----------
+
+
+.. autodata:: iris.analysis.HMEAN
+
+----------
+
+
+.. autodata:: iris.analysis.MAX
+
+----------
+
+
+.. autodata:: iris.analysis.MEAN
+
+----------
+
+
+.. autodata:: iris.analysis.MEDIAN
+
+----------
+
+
+.. autodata:: iris.analysis.MIN
+
+----------
+
+
+.. autodata:: iris.analysis.PERCENTILE
+
+----------
+
+
+.. autodata:: iris.analysis.PROPORTION
+
+----------
+
+
+.. autodata:: iris.analysis.STD_DEV
+
+----------
+
+
+.. autodata:: iris.analysis.SUM
+
+----------
+
+
+.. autodata:: iris.analysis.VARIANCE
+
+----------
+
+.. autofunction:: iris.analysis.coord_comparison
+
+----------
+
+Convenience class that supports common aggregation functionality.
+
+..
+
+    .. autoclass:: iris.analysis.Aggregator
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+.. autofunction:: iris.analysis.clear_phenomenon_identity
+

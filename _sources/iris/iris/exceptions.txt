@@ -1,0 +1,152 @@
+.. _iris.exceptions:
+
+===============
+iris.exceptions
+===============
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.exceptions
+
+In this module:
+
+ * :py:obj:`ConstraintMismatchError`
+ * :py:obj:`CoordinateCollapseError`
+ * :py:obj:`CoordinateMultiDimError`
+ * :py:obj:`CoordinateNotFoundError`
+ * :py:obj:`CoordinateNotRegularError`
+ * :py:obj:`DuplicateDataError`
+ * :py:obj:`IgnoreCubeException`
+ * :py:obj:`InvalidCubeError`
+ * :py:obj:`IrisError`
+ * :py:obj:`NotYetImplementedError`
+ * :py:obj:`TranslationError`
+
+
+----------
+
+Raised when a constraint operation has failed to find the correct number 
+of results.
+
+..
+
+    .. autoclass:: iris.exceptions.ConstraintMismatchError
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Raised when a requested coordinate cannot be collapsed.
+
+..
+
+    .. autoclass:: iris.exceptions.CoordinateCollapseError
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Raised when a routine doesn't support multi-dimensional coordinates.
+
+..
+
+    .. autoclass:: iris.exceptions.CoordinateMultiDimError
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Raised when a search yields no coordinates.
+
+..
+
+    .. autoclass:: iris.exceptions.CoordinateNotFoundError
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Raised when a coordinate is unexpectedly irregular.
+
+..
+
+    .. autoclass:: iris.exceptions.CoordinateNotRegularError
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Raised when merging two or more cubes that have identical metadata.
+
+..
+
+    .. autoclass:: iris.exceptions.DuplicateDataError
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Raised from a callback function when a cube should be ignored on load.
+
+..
+
+    .. autoclass:: iris.exceptions.IgnoreCubeException
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Raised when a Cube validation check fails.
+
+..
+
+    .. autoclass:: iris.exceptions.InvalidCubeError
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Base class for errors in the Iris package.
+
+..
+
+    .. autoclass:: iris.exceptions.IrisError
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Raised by missing functionality.
+
+Different meaning to NotImplementedError, which is for abstract methods.
+   
+
+..
+
+    .. autoclass:: iris.exceptions.NotYetImplementedError
+        :members:
+        :undoc-members:
+        :inherited-members:
+
+----------
+
+Raised when Iris is unable to translate format-specific codes.
+
+..
+
+    .. autoclass:: iris.exceptions.TranslationError
+        :members:
+        :undoc-members:
+        :inherited-members:
+

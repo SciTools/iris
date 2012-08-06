@@ -1,0 +1,21 @@
+.. _iris.analysis.geometry:
+
+======================
+iris.analysis.geometry
+======================
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.analysis.geometry
+
+In this module:
+
+ * :py:obj:`geometry_area_weights`
+
+
+----------
+
+.. autofunction:: iris.analysis.geometry.geometry_area_weights
+

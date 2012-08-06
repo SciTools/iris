@@ -1,0 +1,26 @@
+.. _iris.config:
+
+===========
+iris.config
+===========
+
+
+   
+.. currentmodule:: iris
+
+.. automodule:: iris.config
+
+In this module:
+
+ * :py:obj:`get_dir_option`
+ * :py:obj:`get_option`
+
+
+----------
+
+.. autofunction:: iris.config.get_dir_option
+
+----------
+
+.. autofunction:: iris.config.get_option
+

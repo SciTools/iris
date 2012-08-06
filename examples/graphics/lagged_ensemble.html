@@ -1,0 +1,316 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Seasonal ensemble model plots &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="up" title="Visualisation examples" href="index.html" />
+    <link rel="next" title="Multi-line temperature profile plot" href="lineplot_with_legend.html" />
+    <link rel="prev" title="Hovmoller diagram of monthly surface temperature" href="hovmoller.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="lineplot_with_legend.html" title="Multi-line temperature profile plot"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="hovmoller.html" title="Hovmoller diagram of monthly surface temperature"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris examples</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Visualisation examples</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="hovmoller.html"
+                        title="previous chapter">Hovmoller diagram of monthly surface temperature</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="lineplot_with_legend.html"
+                        title="next chapter">Multi-line temperature profile plot</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/examples/graphics/lagged_ensemble.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="seasonal-ensemble-model-plots">
+<span id="graphics-lagged-ensemble"></span><h1>Seasonal ensemble model plots<a class="headerlink" href="#seasonal-ensemble-model-plots" title="Permalink to this headline">¶</a></h1>
+<p>This example demonstrates the loading of a lagged ensemble dataset from the GloSea4 model, which is then used to
+produce two types of plot:</p>
+<blockquote>
+<div><ul class="simple">
+<li>The first shows the &#8220;postage stamp&#8221; style image with an array of 14 images, one for each ensemble member with 
+a shared colorbar. (The missing image in this example represents ensemble member number 6 which was a failed run)</li>
+<li>The second plot shows the data limited to a region of interest, in this case a region defined for forecasting 
+ENSO (El Nino-Southern Oscillation), which, for the purposes of this example, has had the ensemble mean subtracted
+from each ensemble member to give an anomaly surface temperature. In practice a better approach would be to take the
+climatological mean, calibrated to the model, from each ensemble member.</li>
+</ul>
+</div></blockquote>
+<p id="lagged-ensemble-00">[<a class="reference external" href="../../plot_directive/../example_code/graphics/lagged_ensemble.py">source code</a>]</p>
+<blockquote>
+<div><div class="figure">
+<img alt="../../_images/lagged_ensemble_00.png" src="../../_images/lagged_ensemble_00.png" />
+</div>
+</div></blockquote>
+<p id="lagged-ensemble-01">[<a class="reference external" href="../../plot_directive/../example_code/graphics/lagged_ensemble.py">source code</a>]</p>
+<blockquote>
+<div><div class="figure">
+<img alt="../../_images/lagged_ensemble_01.png" src="../../_images/lagged_ensemble_01.png" />
+</div>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Seasonal ensemble model plots</span>
+<span class="sd">=============================</span>
+
+<span class="sd">This example demonstrates the loading of a lagged ensemble dataset from the GloSea4 model, which is then used to</span>
+<span class="sd">produce two types of plot:</span>
+
+<span class="sd"> * The first shows the &quot;postage stamp&quot; style image with an array of 14 images, one for each ensemble member with</span>
+<span class="sd">   a shared colorbar. (The missing image in this example represents ensemble member number 6 which was a failed run)</span>
+
+<span class="sd"> * The second plot shows the data limited to a region of interest, in this case a region defined for forecasting</span>
+<span class="sd">   ENSO (El Nino-Southern Oscillation), which, for the purposes of this example, has had the ensemble mean subtracted</span>
+<span class="sd">   from each ensemble member to give an anomaly surface temperature. In practice a better approach would be to take the</span>
+<span class="sd">   climatological mean, calibrated to the model, from each ensemble member.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">import</span> <span class="nn">iris</span>
+<span class="kn">import</span> <span class="nn">iris.plot</span> <span class="kn">as</span> <span class="nn">iplt</span>
+
+
+<span class="k">def</span> <span class="nf">lagged_ensemble_metadata</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A function which modifies the cube&#39;s metadata to adds an ensemble member coordinate from the filename if one</span>
+<span class="sd">    doesn&#39;t already exist in the cube.</span>
+
+<span class="sd">    Additionally, to reduce the resulting dimensionality of the loaded cube, the forecast reference time and forecast period</span>
+<span class="sd">    are discarded.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># add an ensemble member coordinate if one doesn&#39;t already exist</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cube</span><span class="o">.</span><span class="n">coords</span><span class="p">(</span><span class="s">&#39;realization&#39;</span><span class="p">):</span>
+        <span class="c"># the ensemble member is encoded in the filename as *_???.pp where ??? is the ensemble member</span>
+        <span class="n">ensemble_member</span> <span class="o">=</span> <span class="n">fname</span><span class="p">[</span><span class="o">-</span><span class="mi">6</span><span class="p">:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+
+        <span class="kn">import</span> <span class="nn">iris.coords</span>
+        <span class="n">ensemble_coord</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">AuxCoord</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">ensemble_member</span><span class="p">),</span> <span class="s">&#39;realization&#39;</span><span class="p">)</span>
+        <span class="n">cube</span><span class="o">.</span><span class="n">add_aux_coord</span><span class="p">(</span><span class="n">ensemble_coord</span><span class="p">)</span>
+
+    <span class="n">cube</span><span class="o">.</span><span class="n">remove_coord</span><span class="p">(</span><span class="s">&#39;forecast_period&#39;</span><span class="p">)</span>
+    <span class="n">cube</span><span class="o">.</span><span class="n">remove_coord</span><span class="p">(</span><span class="s">&#39;forecast_reference_time&#39;</span><span class="p">)</span>
+
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="c"># extract surface temperature cubes which have an ensemble member coordinate, adding appropriate lagged ensemble metadata</span>
+    <span class="n">surface_temp</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;GloSea4&#39;</span><span class="p">,</span> <span class="s">&#39;prodf*_???.pp&#39;</span><span class="p">),</span>
+                  <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="s">&#39;surface_temperature&#39;</span><span class="p">,</span> <span class="n">realization</span><span class="o">=</span><span class="k">lambda</span> <span class="n">value</span><span class="p">:</span> <span class="bp">True</span><span class="p">),</span>
+                  <span class="n">callback</span><span class="o">=</span><span class="n">lagged_ensemble_metadata</span><span class="p">,</span>
+                  <span class="p">)</span>
+
+    <span class="c"># ----------------------------------------------------------------------------------------------------------------</span>
+    <span class="c"># Plot #1: Ensemble postage stamps</span>
+    <span class="c"># ----------------------------------------------------------------------------------------------------------------</span>
+
+    <span class="c"># for the purposes of this example, take the last time element of the cube</span>
+    <span class="n">last_timestep</span> <span class="o">=</span> <span class="n">surface_temp</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+
+    <span class="c"># Make 50 evenly spaced levels which span the dataset</span>
+    <span class="n">contour_levels</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">last_timestep</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">last_timestep</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="mi">50</span><span class="p">)</span>
+
+    <span class="c"># Create a wider than normal figure to support our many plots</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+    <span class="c"># Also manually adjust the spacings which are used when creating subplots</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="mf">0.075</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">0.925</span><span class="p">)</span>
+
+    <span class="c"># iterate over all possible latitude longitude slices</span>
+    <span class="k">for</span> <span class="n">cube</span> <span class="ow">in</span> <span class="n">last_timestep</span><span class="o">.</span><span class="n">slices</span><span class="p">([</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="s">&#39;longitude&#39;</span><span class="p">]):</span>
+
+        <span class="c"># get the ensemble member number from the ensemble coordinate</span>
+        <span class="n">ens_member</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s">&#39;realization&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c"># plot the data in a 4x4 grid, with each plot&#39;s position in the grid being determined by ensemble member number</span>
+        <span class="c"># the special case for the 13th ensemble member is to have the plot at the bottom right</span>
+        <span class="k">if</span> <span class="n">ens_member</span> <span class="o">==</span> <span class="mi">13</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">ens_member</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">cf</span> <span class="o">=</span> <span class="n">iplt</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">contour_levels</span><span class="p">)</span>
+
+        <span class="c"># add coastlines</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">iplt</span><span class="o">.</span><span class="n">gcm</span><span class="p">()</span>
+        <span class="n">m</span><span class="o">.</span><span class="n">drawcoastlines</span><span class="p">()</span>
+
+    <span class="c"># make an axes to put the shared colorbar in</span>
+    <span class="n">colorbar_axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">add_axes</span><span class="p">([</span><span class="mf">0.35</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">])</span>
+    <span class="n">colorbar</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cf</span><span class="p">,</span> <span class="n">colorbar_axes</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s">&#39;horizontal&#39;</span><span class="p">)</span>
+    <span class="n">colorbar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">last_timestep</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+
+    <span class="c"># limit the colorbar to 8 tick marks</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.ticker</span>
+    <span class="n">colorbar</span><span class="o">.</span><span class="n">locator</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">ticker</span><span class="o">.</span><span class="n">MaxNLocator</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+    <span class="n">colorbar</span><span class="o">.</span><span class="n">update_ticks</span><span class="p">()</span>
+
+    <span class="c"># get the time for the entire plot</span>
+    <span class="n">time_coord</span> <span class="o">=</span> <span class="n">last_timestep</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s">&#39;time&#39;</span><span class="p">)</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">time_coord</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">num2date</span><span class="p">(</span><span class="n">time_coord</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c"># set a global title for the postage stamps with the date formated by &quot;monthname year&quot;</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s">&#39;Surface temperature ensemble forecasts for </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&#39;%B %Y&#39;</span><span class="p">))</span>
+
+    <span class="n">iplt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+    <span class="c"># ----------------------------------------------------------------------------------------------------------------</span>
+    <span class="c"># Plot #2: ENSO plumes</span>
+    <span class="c"># ----------------------------------------------------------------------------------------------------------------</span>
+
+    <span class="c"># Nino 3.4 lies between: 170W and 120W, 5N and 5S, so define a constraint which matches this</span>
+    <span class="n">nino_3_4_constraint</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">longitude</span><span class="o">=</span><span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="o">-</span><span class="mi">170</span><span class="o">+</span><span class="mi">360</span> <span class="o">&lt;=</span> <span class="n">v</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="mi">120</span><span class="o">+</span><span class="mi">360</span><span class="p">,</span> <span class="n">latitude</span><span class="o">=</span><span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="o">-</span><span class="mi">5</span> <span class="o">&lt;=</span> <span class="n">v</span> <span class="o">&lt;=</span> <span class="mi">5</span><span class="p">)</span>
+
+    <span class="n">nino_cube</span> <span class="o">=</span> <span class="n">surface_temp</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">nino_3_4_constraint</span><span class="p">)</span>
+
+    <span class="c"># Subsetting a circular longitude coordinate always results in a circular coordinate, so set the coordinate to be non-circular</span>
+    <span class="n">nino_cube</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">circular</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="c"># Calculate the horizontal mean for the nino region</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">nino_cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">([</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="s">&#39;longitude&#39;</span><span class="p">],</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">)</span>
+
+    <span class="c"># Calculate the ensemble mean of the horizontal mean</span>
+    <span class="n">ensemble_mean</span> <span class="o">=</span> <span class="n">mean</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;realization&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">)</span>
+
+    <span class="c"># take the ensemble mean from each ensemble member</span>
+    <span class="n">mean</span> <span class="o">-=</span> <span class="n">ensemble_mean</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">ensemble_member</span> <span class="ow">in</span> <span class="n">mean</span><span class="o">.</span><span class="n">slices</span><span class="p">([</span><span class="s">&#39;time&#39;</span><span class="p">]):</span>
+        <span class="c"># draw each ensemble member as a dashed line in black</span>
+        <span class="n">iplt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ensemble_member</span><span class="p">,</span> <span class="s">&#39;--k&#39;</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">])</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Mean temperature anomaly for ENSO 3.4 region&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Time&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;Temperature anomaly / K&#39;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="lineplot_with_legend.html" title="Multi-line temperature profile plot"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="hovmoller.html" title="Hovmoller diagram of monthly surface temperature"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../index.html" >Iris examples</a> &raquo;</li>
+          <li><a href="index.html" >Visualisation examples</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

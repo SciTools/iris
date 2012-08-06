@@ -1,0 +1,210 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iris.fileformats.dot &mdash; Iris 0.89 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.89',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="top" title="Iris 0.89 documentation" href="../../../index.html" />
+    <link rel="up" title="iris.fileformats" href="../fileformats.html" />
+    <link rel="next" title="iris.fileformats.ff" href="ff.html" />
+    <link rel="prev" title="iris.fileformats.cf" href="cf.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
+  </head>
+  <body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<!-- Enable this to insert a logo...
+<a href="../../../index.html"><img src="../../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
+-->
+
+<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.89
+</p>
+
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="ff.html" title="iris.fileformats.ff"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cf.html" title="iris.fileformats.cf"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../fileformats.html" accesskey="U">iris.fileformats</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cf.html"
+                        title="previous chapter">iris.fileformats.cf</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ff.html"
+                        title="next chapter">iris.fileformats.ff</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/iris/iris/fileformats/dot.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="iris-fileformats-dot">
+<span id="id1"></span><h1>iris.fileformats.dot<a class="headerlink" href="#iris-fileformats-dot" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-iris.fileformats.dot"></span><p>Provides Creation and saving of DOT graphs for a <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</p>
+<p>In this module:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#iris.fileformats.dot.cube_text" title="iris.fileformats.dot.cube_text"><tt class="xref py py-obj docutils literal"><span class="pre">cube_text</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.dot.save" title="iris.fileformats.dot.save"><tt class="xref py py-obj docutils literal"><span class="pre">save</span></tt></a></li>
+<li><a class="reference internal" href="#iris.fileformats.dot.save_png" title="iris.fileformats.dot.save_png"><tt class="xref py py-obj docutils literal"><span class="pre">save_png</span></tt></a></li>
+</ul>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.dot.cube_text">
+<tt class="descclassname">iris.fileformats.dot.</tt><tt class="descname">cube_text</tt><big>(</big><em>cube</em><big>)</big><a class="headerlink" href="#iris.fileformats.dot.cube_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a DOT text representation a <cite>iris.cube.Cube</cite>.</p>
+<p>Args:</p>
+<blockquote>
+<div><ul class="simple">
+<li>cube  -  The cube for which to create DOT text.</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.dot.save">
+<tt class="descclassname">iris.fileformats.dot.</tt><tt class="descname">save</tt><big>(</big><em>cube</em>, <em>target</em><big>)</big><a class="headerlink" href="#iris.fileformats.dot.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a dot representation of the cube.</p>
+<p>Args:</p>
+<blockquote>
+<div><ul class="simple">
+<li>cube   - A <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>.</li>
+<li>target - A filename or open file handle.</li>
+</ul>
+</div></blockquote>
+<p>See also <a class="reference internal" href="../io.html#iris.io.save" title="iris.io.save"><tt class="xref py py-func docutils literal"><span class="pre">iris.io.save()</span></tt></a>.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
+<dt id="iris.fileformats.dot.save_png">
+<tt class="descclassname">iris.fileformats.dot.</tt><tt class="descname">save_png</tt><big>(</big><em>source</em>, <em>target</em>, <em>launch=False</em><big>)</big><a class="headerlink" href="#iris.fileformats.dot.save_png" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a &#8220;dot&#8221; instance diagram by calling dot and optionally launching the resulting image.</p>
+<p>Args:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">source - A <a class="reference internal" href="../cube.html#iris.cube.Cube" title="iris.cube.Cube"><tt class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></tt></a>, or dot filename.</p>
+</li>
+<li><dl class="first docutils">
+<dt>target - A filename or open file handle.</dt>
+<dd><p class="first last">If passing a file handle, take care to open it for binary output.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<p>Kwargs:</p>
+<blockquote>
+<div><ul class="simple">
+<li>launch - Display the image. Default is False.</li>
+</ul>
+</div></blockquote>
+<p>See also <a class="reference internal" href="../io.html#iris.io.save" title="iris.io.save"><tt class="xref py py-func docutils literal"><span class="pre">iris.io.save()</span></tt></a>.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="ff.html" title="iris.fileformats.ff"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cf.html" title="iris.fileformats.cf"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
+        <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
+
+          <li><a href="../../iris.html" >Iris reference documentation</a> &raquo;</li>
+          <li><a href="../fileformats.html" >iris.fileformats</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../../copyright.html">British Crown Copyright</a> 2010 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>
