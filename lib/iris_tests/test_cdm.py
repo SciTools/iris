@@ -288,7 +288,7 @@ class TestCubeStringRepresentations(IrisDotTest):
         self.assertString(str(cube), ('cdm', 'string_representations', 'cell_methods.__str__.txt'))            
 
     def test_cube_summary_alignment(self):
-        '''Test the cube summary dimension alignment and coord name clipping'''
+        # Test the cube summary dimension alignment and coord name clipping
         cube = iris.tests.stock.simple_1d()
         aux = iris.coords.AuxCoord(range(11), long_name='This is a really, really, really long long_name that requires to be clipped because it is too long')
         cube.add_aux_coord(aux, 0)
