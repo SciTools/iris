@@ -1,28 +1,47 @@
 <?xml version="1.0" ?>
-<cubes xmlns="urn:x-iris:cubeml-0.1">
-  <cube standard_name="air_temperature" unit="kelvin">
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube standard_name="air_temperature" units="kelvin">
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" name="forecast_period" points="[-28587]" unit="Unit('hours')" value_type="int64"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[-28587]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="73" name="latitude" start="-89.999938" step="2.499999" unit="Unit('degrees')" value_type="float64">
+        <DimCoord id="95f615fae348902" points="[-89.999938, -87.499939, -84.99994, -82.499941,
+		-79.999942, -77.499943, -74.999944, -72.499945,
+		-69.999946, -67.499947, -64.999948, -62.499949,
+		-59.99995, -57.499951, -54.999952, -52.499953,
+		-49.999954, -47.499955, -44.999956, -42.499957,
+		-39.999958, -37.499959, -34.99996, -32.499961,
+		-29.999962, -27.499963, -24.999964, -22.499965,
+		-19.999966, -17.499967, -14.999968, -12.499969,
+		-9.99997, -7.499971, -4.999972, -2.499973,
+		2.59999999912e-05, 2.500025, 5.000024, 7.500023,
+		10.000022, 12.500021, 15.00002, 17.500019,
+		20.000018, 22.500017, 25.000016, 27.500015,
+		30.000014, 32.500013, 35.000012, 37.500011,
+		40.00001, 42.500009, 45.000008, 47.500007,
+		50.000006, 52.500005, 55.000004, 57.500003,
+		60.000002, 62.500001, 65.0, 67.499999,
+		69.999998, 72.499997, 74.999996, 77.499995,
+		79.999994, 82.499993, 84.999992, 87.499991,
+		89.99999]" shape="(73,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6367470.0, semi_minor_axis=6367470.0, flattening=0.0, unit='m')" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" count="96" name="longitude" start="0.0" step="3.749998" unit="Unit('degrees')" value_type="float64">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 3.749998, 7.499996, ..., 348.749814,
+		352.499812, 356.24981]" shape="(96,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6367470.0, semi_minor_axis=6367470.0, flattening=0.0, unit='m')" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="originating_centre" name="originating_centre" points="['U.K. Met Office - Exeter']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="originating_centre" points="[U.K. Met Office - Exeter]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" name="pressure" points="[100000.0]" unit="Unit('Pa')" value_type="float64"/>
+        <DimCoord id="432d42454e1413e1" long_name="pressure" points="[100000.0]" shape="(1,)" units="Unit('Pa')" value_type="float64"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[218400.0, 253464.0]]" name="time" points="[235932.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[218400.0, 253464.0]]" id="559b95abfcdf35de" points="[235932.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>

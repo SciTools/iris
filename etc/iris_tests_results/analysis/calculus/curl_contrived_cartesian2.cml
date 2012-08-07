@@ -1,66 +1,102 @@
 <?xml version="1.0" ?>
-<cubes xmlns="urn:x-iris:cubeml-0.1">
-  <cube standard_name="u curl of wind" unit="0.277777777777778 hertz">
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube long_name="u curl of wind" units="0.277777777777778 hertz">
     <attributes>
       <attribute name="history" value="u cmpt of the curl of u_wind, v_wind and w_wind"/>
     </attributes>
     <coords>
       <coord datadims="[2]">
-        <regularCoord axis="x" count="49" name="x" start="3.105" step="2.21" unit="Unit('meters')" value_type="float32">
+        <DimCoord id="2d89fa2153812c6" long_name="x" points="[3.105, 5.315, 7.525, 9.735, 11.945, 14.155,
+		16.365, 18.575, 20.785, 22.995, 25.205, 27.415,
+		29.625, 31.835, 34.045, 36.255, 38.465, 40.675,
+		42.885, 45.095, 47.305, 49.515, 51.725, 53.935,
+		56.145, 58.355, 60.565, 62.775, 64.985, 67.195,
+		69.405, 71.615, 73.825, 76.035, 78.245, 80.455,
+		82.665, 84.875, 87.085, 89.295, 91.505, 93.715,
+		95.925, 98.135, 100.345, 102.555, 104.765,
+		106.975, 109.185]" shape="(49,)" units="Unit('meters')" value_type="float32">
           <horizontalCS cs_type="cartesian" datum="Cartesian Datum?"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="y" count="25" name="y" start="-50.0" step="25.0" unit="Unit('meters')" value_type="float32">
+        <DimCoord id="2d89fa2153812c6" long_name="y" points="[-50.0, -25.0, 0.0, 25.0, 50.0, 75.0, 100.0,
+		125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0,
+		300.0, 325.0, 350.0, 375.0, 400.0, 425.0, 450.0,
+		475.0, 500.0, 525.0, 550.0]" shape="(25,)" units="Unit('meters')" value_type="float32">
           <horizontalCS cs_type="cartesian" datum="Cartesian Datum?"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="z" count="10" name="z" start="0.0" step="2.0" unit="Unit('meters')" value_type="float32"/>
+        <DimCoord id="2d89fa2153812c6" long_name="z" points="[0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0,
+		18.0]" shape="(10,)" units="Unit('meters')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods/>
     <data dtype="float64" shape="(10, 25, 49)" state="loaded"/>
   </cube>
-  <cube standard_name="v curl of wind" unit="0.277777777777778 hertz">
+  <cube long_name="v curl of wind" units="0.277777777777778 hertz">
     <attributes>
       <attribute name="history" value="v cmpt of the curl of u_wind, v_wind and w_wind"/>
     </attributes>
     <coords>
       <coord datadims="[2]">
-        <regularCoord axis="x" count="49" name="x" start="3.105" step="2.21" unit="Unit('meters')" value_type="float32">
+        <DimCoord id="2d89fa2153812c6" long_name="x" points="[3.105, 5.315, 7.525, 9.735, 11.945, 14.155,
+		16.365, 18.575, 20.785, 22.995, 25.205, 27.415,
+		29.625, 31.835, 34.045, 36.255, 38.465, 40.675,
+		42.885, 45.095, 47.305, 49.515, 51.725, 53.935,
+		56.145, 58.355, 60.565, 62.775, 64.985, 67.195,
+		69.405, 71.615, 73.825, 76.035, 78.245, 80.455,
+		82.665, 84.875, 87.085, 89.295, 91.505, 93.715,
+		95.925, 98.135, 100.345, 102.555, 104.765,
+		106.975, 109.185]" shape="(49,)" units="Unit('meters')" value_type="float32">
           <horizontalCS cs_type="cartesian" datum="Cartesian Datum?"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="y" count="25" name="y" start="-50.0" step="25.0" unit="Unit('meters')" value_type="float32">
+        <DimCoord id="2d89fa2153812c6" long_name="y" points="[-50.0, -25.0, 0.0, 25.0, 50.0, 75.0, 100.0,
+		125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0,
+		300.0, 325.0, 350.0, 375.0, 400.0, 425.0, 450.0,
+		475.0, 500.0, 525.0, 550.0]" shape="(25,)" units="Unit('meters')" value_type="float32">
           <horizontalCS cs_type="cartesian" datum="Cartesian Datum?"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="z" count="10" name="z" start="0.0" step="2.0" unit="Unit('meters')" value_type="float32"/>
+        <DimCoord id="2d89fa2153812c6" long_name="z" points="[0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0,
+		18.0]" shape="(10,)" units="Unit('meters')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods/>
     <data dtype="float64" shape="(10, 25, 49)" state="loaded"/>
   </cube>
-  <cube standard_name="w curl of wind" unit="0.277777777777778 hertz">
+  <cube long_name="w curl of wind" units="0.277777777777778 hertz">
     <attributes>
       <attribute name="history" value="w cmpt of the curl of u_wind, v_wind and w_wind"/>
     </attributes>
     <coords>
       <coord datadims="[2]">
-        <regularCoord axis="x" count="49" name="x" start="3.105" step="2.21" unit="Unit('meters')" value_type="float32">
+        <DimCoord id="2d89fa2153812c6" long_name="x" points="[3.105, 5.315, 7.525, 9.735, 11.945, 14.155,
+		16.365, 18.575, 20.785, 22.995, 25.205, 27.415,
+		29.625, 31.835, 34.045, 36.255, 38.465, 40.675,
+		42.885, 45.095, 47.305, 49.515, 51.725, 53.935,
+		56.145, 58.355, 60.565, 62.775, 64.985, 67.195,
+		69.405, 71.615, 73.825, 76.035, 78.245, 80.455,
+		82.665, 84.875, 87.085, 89.295, 91.505, 93.715,
+		95.925, 98.135, 100.345, 102.555, 104.765,
+		106.975, 109.185]" shape="(49,)" units="Unit('meters')" value_type="float32">
           <horizontalCS cs_type="cartesian" datum="Cartesian Datum?"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="y" count="25" name="y" start="-50.0" step="25.0" unit="Unit('meters')" value_type="float32">
+        <DimCoord id="2d89fa2153812c6" long_name="y" points="[-50.0, -25.0, 0.0, 25.0, 50.0, 75.0, 100.0,
+		125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0,
+		300.0, 325.0, 350.0, 375.0, 400.0, 425.0, 450.0,
+		475.0, 500.0, 525.0, 550.0]" shape="(25,)" units="Unit('meters')" value_type="float32">
           <horizontalCS cs_type="cartesian" datum="Cartesian Datum?"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="z" count="10" name="z" start="0.0" step="2.0" unit="Unit('meters')" value_type="float32"/>
+        <DimCoord id="2d89fa2153812c6" long_name="z" points="[0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0,
+		18.0]" shape="(10,)" units="Unit('meters')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods/>

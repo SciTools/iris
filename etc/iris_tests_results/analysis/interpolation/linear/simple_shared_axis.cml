@@ -1,18 +1,18 @@
 <?xml version="1.0" ?>
-<cubes xmlns="urn:x-iris:cubeml-0.1">
-  <cube standard_name="test 2d dimensional cube" unit="kelvin">
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube long_name="test 2d dimensional cube" units="kelvin">
     <coords>
       <coord>
-        <explicitCoord axis="t" name="an_other" points="[3.0]" unit="Unit('1')" value_type="float64"/>
+        <AuxCoord id="5634c91ba5717382" long_name="an_other" points="[3.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="4" name="dim1" start="3.0" step="2.0" unit="Unit('1')" value_type="float32"/>
+        <DimCoord id="5634c91ba5717382" long_name="dim1" points="[3.0, 5.0, 7.0, 9.0]" shape="(4,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <explicitCoord axis="x" name="dim2" points="[3.5, 3.25]" unit="Unit('1')" value_type="float32"/>
+        <AuxCoord id="5634c91ba5717382" long_name="dim2" points="[3.5, 3.25]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <explicitCoord axis="x" name="shared_x_coord" points="[9.0, 7.0]" unit="Unit('1')" value_type="float64"/>
+        <AuxCoord id="5634c91ba5717382" long_name="shared_x_coord" points="[9.0, 7.0]" shape="(2,)" units="Unit('1')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>

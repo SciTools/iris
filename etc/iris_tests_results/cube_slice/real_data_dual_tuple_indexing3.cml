@@ -1,28 +1,28 @@
 <?xml version="1.0" ?>
-<cubes xmlns="urn:x-iris:cubeml-0.1">
-  <cube standard_name="air_pressure_at_sea_level" unit="Pa">
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube standard_name="air_pressure_at_sea_level" units="Pa">
     <attributes>
       <attribute name="STASH" value="m01s16i222"/>
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[0.0, 3.9999999962747097, 5.0000000037252903, 2.0000000037252903]" unit="Unit('hours')" value_type="float64"/>
+        <AuxCoord id="fc2e5e733b5cf4c" points="[0.0, 3.99999999627, 5.00000000373, 2.00000000373]" shape="(4,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
-        <regularCoord axis="y" count="1" name="grid_latitude" start="-22.49" step="0.0" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="25a5f42bc937b908" points="[-22.49]" shape="(1,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <explicitCoord axis="x" definitive="true" name="grid_longitude" points="[313.34998, 313.56998, 313.56998]" unit="Unit('degrees')" value_type="float32">
+        <AuxCoord id="3bf28623a9db078e" points="[313.35, 313.57, 313.57]" shape="(3,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </AuxCoord>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.01']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.01]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[319536.0, 319539.99999999627, 319541.00000000373, 319538.00000000373]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <AuxCoord id="559b95abfcdf35de" points="[319536.0, 319540.0, 319541.0, 319538.0]" shape="(4,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>

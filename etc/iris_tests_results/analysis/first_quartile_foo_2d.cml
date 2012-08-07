@@ -1,17 +1,17 @@
 <?xml version="1.0" ?>
-<cubes xmlns="urn:x-iris:cubeml-0.1">
-  <cube standard_name="thingness" unit="1">
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube long_name="thingness" units="1">
     <attributes>
       <attribute name="history" value="Percentile (25%) of thingness over foo"/>
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <explicitCoord axis="y" bounds="[[0, 5],
+        <DimCoord bounds="[[0, 5],
 		[5, 10],
-		[10, 15]]" name="bar" points="[2.5, 7.5, 12.5]" unit="Unit('1')" value_type="float64"/>
+		[10, 15]]" id="5634c91ba5717382" long_name="bar" points="[2.5, 7.5, 12.5]" shape="(3,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord>
-        <explicitCoord axis="x" bounds="[[-15, 45]]" name="foo" points="[15.0]" unit="Unit('1')" value_type="float64"/>
+        <DimCoord bounds="[[-15, 45]]" id="5634c91ba5717382" long_name="foo" points="[15.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>

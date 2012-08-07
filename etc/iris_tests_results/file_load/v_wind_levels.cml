@@ -1,46 +1,45 @@
 <?xml version="1.0" ?>
-<cubes xmlns="urn:x-iris:cubeml-0.1">
-  <cube standard_name="northward_wind" unit="unknown">
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.0, 20.000338]]" definitive="true" name="level_height" points="[9.9982061]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[0.0, 20.0003]]" id="15ab29dba89f8865" long_name="level_height" points="[9.99821]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[1]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[1]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[1.0, 0.99771649]]" name="sigma" points="[0.99885815]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[1.0, 0.997716]]" id="5634c91ba5717382" long_name="sigma" points="[0.998858]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -50,47 +49,46 @@
     </cellMethods>
     <data checksum="0x50e427ed" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[20.000338, 80.00135]]" definitive="true" name="level_height" points="[49.998882]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[20.0003, 80.0014]]" id="15ab29dba89f8865" long_name="level_height" points="[49.9989]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[2]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[2]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.99771649, 0.9908815]]" name="sigma" points="[0.99429625]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.997716, 0.990882]]" id="5634c91ba5717382" long_name="sigma" points="[0.994296]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -100,47 +98,46 @@
     </cellMethods>
     <data checksum="-0x5ba6c241" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[80.00135, 179.99911]]" definitive="true" name="level_height" points="[130.00023]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[80.0014, 179.999]]" id="15ab29dba89f8865" long_name="level_height" points="[130.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[3]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[3]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.9908815, 0.97954255]]" name="sigma" points="[0.98520386]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.990882, 0.979543]]" id="5634c91ba5717382" long_name="sigma" points="[0.985204]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -150,47 +147,46 @@
     </cellMethods>
     <data checksum="0xff91f2" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[179.99911, 320.00146]]" definitive="true" name="level_height" points="[249.99834]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[179.999, 320.001]]" id="15ab29dba89f8865" long_name="level_height" points="[249.998]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[4]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[4]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.97954255, 0.96377707]]" name="sigma" points="[0.97164404]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.979543, 0.963777]]" id="5634c91ba5717382" long_name="sigma" points="[0.971644]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -200,47 +196,46 @@
     </cellMethods>
     <data checksum="-0x5fcb6d40" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[320.00146, 500.00058]]" definitive="true" name="level_height" points="[410.00104]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[320.001, 500.001]]" id="15ab29dba89f8865" long_name="level_height" points="[410.001]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[5]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[5]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.96377707, 0.94369549]]" name="sigma" points="[0.95370984]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.963777, 0.943695]]" id="5634c91ba5717382" long_name="sigma" points="[0.95371]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -250,47 +245,46 @@
     </cellMethods>
     <data checksum="-0x39ec974d" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[500.00058, 720.00037]]" definitive="true" name="level_height" points="[610.00049]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[500.001, 720.0]]" id="15ab29dba89f8865" long_name="level_height" points="[610.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[6]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[6]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.94369549, 0.91943836]]" name="sigma" points="[0.93152744]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.943695, 0.919438]]" id="5634c91ba5717382" long_name="sigma" points="[0.931527]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -300,47 +294,46 @@
     </cellMethods>
     <data checksum="-0x65df1a3a" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[720.00037, 980.00085]]" definitive="true" name="level_height" points="[850.00061]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[720.0, 980.001]]" id="15ab29dba89f8865" long_name="level_height" points="[850.001]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[7]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[7]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.91943836, 0.89117801]]" name="sigma" points="[0.90525305]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.919438, 0.891178]]" id="5634c91ba5717382" long_name="sigma" points="[0.905253]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -350,47 +343,46 @@
     </cellMethods>
     <data checksum="-0x434d56a" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[980.00085, 1279.998]]" definitive="true" name="level_height" points="[1130.0015]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[980.001, 1280.0]]" id="15ab29dba89f8865" long_name="level_height" points="[1130.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[8]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[8]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.89117801, 0.85911834]]" name="sigma" points="[0.87507457]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.891178, 0.859118]]" id="5634c91ba5717382" long_name="sigma" points="[0.875075]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -400,47 +392,46 @@
     </cellMethods>
     <data checksum="0x31c19cd4" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[1279.998, 1619.9999]]" definitive="true" name="level_height" points="[1449.999]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[1280.0, 1620.0]]" id="15ab29dba89f8865" long_name="level_height" points="[1450.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[9]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[9]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.85911834, 0.82349348]]" name="sigma" points="[0.84121162]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.859118, 0.823493]]" id="5634c91ba5717382" long_name="sigma" points="[0.841212]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -450,47 +441,46 @@
     </cellMethods>
     <data checksum="0x6b0cc25a" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[1619.9999, 1999.9984]]" definitive="true" name="level_height" points="[1810.0011]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[1620.0, 2000.0]]" id="15ab29dba89f8865" long_name="level_height" points="[1810.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[10]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[10]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.82349348, 0.78457052]]" name="sigma" points="[0.80391401]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.823493, 0.784571]]" id="5634c91ba5717382" long_name="sigma" points="[0.803914]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -500,47 +490,46 @@
     </cellMethods>
     <data checksum="0x31d04486" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[1999.9984, 2420.0017]]" definitive="true" name="level_height" points="[2210.0]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[2000.0, 2420.0]]" id="15ab29dba89f8865" long_name="level_height" points="[2210.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[11]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[11]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.78457052, 0.74264622]]" name="sigma" points="[0.76346451]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.784571, 0.742646]]" id="5634c91ba5717382" long_name="sigma" points="[0.763465]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -550,47 +539,46 @@
     </cellMethods>
     <data checksum="0x7e2cc5b6" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[2420.0017, 2880.0015]]" definitive="true" name="level_height" points="[2649.9995]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[2420.0, 2880.0]]" id="15ab29dba89f8865" long_name="level_height" points="[2650.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[12]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[12]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.74264622, 0.6980502]]" name="sigma" points="[0.7201758]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.742646, 0.69805]]" id="5634c91ba5717382" long_name="sigma" points="[0.720176]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -600,47 +588,46 @@
     </cellMethods>
     <data checksum="0x26741d4b" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[2880.0015, 3379.9983]]" definitive="true" name="level_height" points="[3129.9998]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[2880.0, 3380.0]]" id="15ab29dba89f8865" long_name="level_height" points="[3130.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[13]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[13]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.6980502, 0.65114272]]" name="sigma" points="[0.67439252]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.69805, 0.651143]]" id="5634c91ba5717382" long_name="sigma" points="[0.674393]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -650,47 +637,46 @@
     </cellMethods>
     <data checksum="0x2c2d97dd" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[3379.9983, 3919.9995]]" definitive="true" name="level_height" points="[3650.0007]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[3380.0, 3920.0]]" id="15ab29dba89f8865" long_name="level_height" points="[3650.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[14]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[14]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.65114272, 0.60231441]]" name="sigma" points="[0.62649053]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.651143, 0.602314]]" id="5634c91ba5717382" long_name="sigma" points="[0.626491]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -700,47 +686,46 @@
     </cellMethods>
     <data checksum="0x6a294180" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[3919.9995, 4500.0015]]" definitive="true" name="level_height" points="[4209.9985]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[3920.0, 4500.0]]" id="15ab29dba89f8865" long_name="level_height" points="[4210.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[15]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[15]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.60231441, 0.55198872]]" name="sigma" points="[0.57687736]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.602314, 0.551989]]" id="5634c91ba5717382" long_name="sigma" points="[0.576877]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -750,47 +735,46 @@
     </cellMethods>
     <data checksum="-0x6d14954c" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[4500.0015, 5120.0]]" definitive="true" name="level_height" points="[4810.001]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[4500.0, 5120.0]]" id="15ab29dba89f8865" long_name="level_height" points="[4810.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[16]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[16]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.55198872, 0.50061995]]" name="sigma" points="[0.52599078]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.551989, 0.50062]]" id="5634c91ba5717382" long_name="sigma" points="[0.525991]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -800,47 +784,46 @@
     </cellMethods>
     <data checksum="0x39456c40" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[5120.0, 5779.9995]]" definitive="true" name="level_height" points="[5450.0]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[5120.0, 5780.0]]" id="15ab29dba89f8865" long_name="level_height" points="[5450.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[17]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[17]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.50061995, 0.44869339]]" name="sigma" points="[0.47430137]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.50062, 0.448693]]" id="5634c91ba5717382" long_name="sigma" points="[0.474301]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -850,47 +833,46 @@
     </cellMethods>
     <data checksum="0x4963cfd6" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[5779.9995, 6479.9995]]" definitive="true" name="level_height" points="[6129.9995]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[5780.0, 6480.0]]" id="15ab29dba89f8865" long_name="level_height" points="[6130.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[18]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[18]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.44869339, 0.39672577]]" name="sigma" points="[0.42230991]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.448693, 0.396726]]" id="5634c91ba5717382" long_name="sigma" points="[0.42231]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -900,47 +882,46 @@
     </cellMethods>
     <data checksum="-0x17e17419" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[6479.9995, 7220.0]]" definitive="true" name="level_height" points="[6850.0]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[6480.0, 7220.0]]" id="15ab29dba89f8865" long_name="level_height" points="[6850.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[19]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[19]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.39672577, 0.34526527]]" name="sigma" points="[0.37054887]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.396726, 0.345265]]" id="5634c91ba5717382" long_name="sigma" points="[0.370549]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -950,47 +931,46 @@
     </cellMethods>
     <data checksum="-0x464f12a" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[7220.0, 8000.0015]]" definitive="true" name="level_height" points="[7610.001]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[7220.0, 8000.0]]" id="15ab29dba89f8865" long_name="level_height" points="[7610.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[20]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[20]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.34526527, 0.29489139]]" name="sigma" points="[0.31958207]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.345265, 0.294891]]" id="5634c91ba5717382" long_name="sigma" points="[0.319582]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -1000,47 +980,46 @@
     </cellMethods>
     <data checksum="0x2057f49e" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[8000.0015, 8820.0]]" definitive="true" name="level_height" points="[8409.999]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[8000.0, 8820.0]]" id="15ab29dba89f8865" long_name="level_height" points="[8410.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[21]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[21]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.29489139, 0.24621508]]" name="sigma" points="[0.27000487]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.294891, 0.246215]]" id="5634c91ba5717382" long_name="sigma" points="[0.270005]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -1050,47 +1029,46 @@
     </cellMethods>
     <data checksum="-0x6449fdf6" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[8820.0, 9679.999]]" definitive="true" name="level_height" points="[9250.001]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[8820.0, 9680.0]]" id="15ab29dba89f8865" long_name="level_height" points="[9250.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[22]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[22]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.24621508, 0.19987822]]" name="sigma" points="[0.22244327]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.246215, 0.199878]]" id="5634c91ba5717382" long_name="sigma" points="[0.222443]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -1100,47 +1078,46 @@
     </cellMethods>
     <data checksum="0x5970b5d" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[9679.999, 10579.998]]" definitive="true" name="level_height" points="[10130.0]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[9680.0, 10580.0]]" id="15ab29dba89f8865" long_name="level_height" points="[10130.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[23]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[23]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.19987822, 0.15655422]]" name="sigma" points="[0.17755543]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.199878, 0.156554]]" id="5634c91ba5717382" long_name="sigma" points="[0.177555]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -1150,47 +1127,46 @@
     </cellMethods>
     <data checksum="-0x4fecc764" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[10579.998, 11519.998]]" definitive="true" name="level_height" points="[11050.0]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[10580.0, 11520.0]]" id="15ab29dba89f8865" long_name="level_height" points="[11050.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[24]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[24]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.15655422, 0.11694787]]" name="sigma" points="[0.13603023]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.156554, 0.116948]]" id="5634c91ba5717382" long_name="sigma" points="[0.13603]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -1200,47 +1176,46 @@
     </cellMethods>
     <data checksum="0x208fa829" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[11519.998, 12499.999]]" definitive="true" name="level_height" points="[12010.001]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[11520.0, 12500.0]]" id="15ab29dba89f8865" long_name="level_height" points="[12010.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[25]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[25]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.11694787, 0.081795238]]" name="sigma" points="[0.098588109]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.116948, 0.0817952]]" id="5634c91ba5717382" long_name="sigma" points="[0.0985881]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -1250,47 +1225,46 @@
     </cellMethods>
     <data checksum="-0x1da7d443" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[12499.999, 13520.001]]" definitive="true" name="level_height" points="[13010.002]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[12500.0, 13520.0]]" id="15ab29dba89f8865" long_name="level_height" points="[13010.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[26]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[26]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.081795238, 0.051863715]]" name="sigma" points="[0.065980785]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.0817952, 0.0518637]]" id="5634c91ba5717382" long_name="sigma" points="[0.0659808]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -1300,47 +1274,46 @@
     </cellMethods>
     <data checksum="-0x469b4829" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[13520.001, 14580.8]]" definitive="true" name="level_height" points="[14050.4]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[13520.0, 14580.8]]" id="15ab29dba89f8865" long_name="level_height" points="[14050.4]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[27]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[27]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.051863715, 0.027936818]]" name="sigma" points="[0.038982391]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.0518637, 0.0279368]]" id="5634c91ba5717382" long_name="sigma" points="[0.0389824]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -1350,47 +1323,46 @@
     </cellMethods>
     <data checksum="-0x375a46a2" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[14580.8, 15694.64]]" definitive="true" name="level_height" points="[15137.72]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[14580.8, 15694.6]]" id="15ab29dba89f8865" long_name="level_height" points="[15137.7]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[28]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[28]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.027936818, 0.010716479]]" name="sigma" points="[0.018314688]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.0279368, 0.0107165]]" id="5634c91ba5717382" long_name="sigma" points="[0.0183147]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -1400,47 +1372,46 @@
     </cellMethods>
     <data checksum="0x4bd4eae9" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[15694.64, 16875.311]]" definitive="true" name="level_height" points="[16284.974]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[15694.6, 16875.3]]" id="15ab29dba89f8865" long_name="level_height" points="[16285.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[29]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[29]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.010716479, 0.0013017909]]" name="sigma" points="[0.0048721093]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.0107165, 0.00130179]]" id="5634c91ba5717382" long_name="sigma" points="[0.00487211]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -1450,47 +1421,46 @@
     </cellMethods>
     <data checksum="-0x1fab64f7" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[16875.311, 18138.627]]" definitive="true" name="level_height" points="[17506.969]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[16875.3, 18138.6]]" id="15ab29dba89f8865" long_name="level_height" points="[17507.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[30]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[30]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.0013017909, 0.0]]" name="sigma" points="[0.0]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.00130179, 0.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -1500,47 +1470,46 @@
     </cellMethods>
     <data checksum="-0x91cab93" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[18138.627, 19503.01]]" definitive="true" name="level_height" points="[18820.82]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[18138.6, 19503.0]]" id="15ab29dba89f8865" long_name="level_height" points="[18820.8]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[31]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[31]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.0, 0.0]]" name="sigma" points="[0.0]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.0, 0.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -1550,47 +1519,46 @@
     </cellMethods>
     <data checksum="0x5525ab2a" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[19503.01, 20990.188]]" definitive="true" name="level_height" points="[20246.6]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[19503.0, 20990.2]]" id="15ab29dba89f8865" long_name="level_height" points="[20246.6]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[32]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[32]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.0, 0.0]]" name="sigma" points="[0.0]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.0, 0.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -1600,47 +1568,46 @@
     </cellMethods>
     <data checksum="-0x4b73a14f" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[20990.188, 22626.082]]" definitive="true" name="level_height" points="[21808.137]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[20990.2, 22626.1]]" id="15ab29dba89f8865" long_name="level_height" points="[21808.1]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[33]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[33]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.0, 0.0]]" name="sigma" points="[0.0]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.0, 0.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -1650,47 +1617,46 @@
     </cellMethods>
     <data checksum="-0x304d70f3" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[22626.082, 24458.285]]" definitive="true" name="level_height" points="[23542.184]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[22626.1, 24458.3]]" id="15ab29dba89f8865" long_name="level_height" points="[23542.2]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[34]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[34]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.0, 0.0]]" name="sigma" points="[0.0]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.0, 0.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -1700,47 +1666,46 @@
     </cellMethods>
     <data checksum="0x4290df26" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[24458.285, 26583.641]]" definitive="true" name="level_height" points="[25520.961]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[24458.3, 26583.6]]" id="15ab29dba89f8865" long_name="level_height" points="[25521.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[35]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[35]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.0, 0.0]]" name="sigma" points="[0.0]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.0, 0.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -1750,47 +1715,46 @@
     </cellMethods>
     <data checksum="-0x7d3f26ad" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[26583.641, 29219.08]]" definitive="true" name="level_height" points="[27901.357]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[26583.6, 29219.1]]" id="15ab29dba89f8865" long_name="level_height" points="[27901.4]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[36]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[36]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.0, 0.0]]" name="sigma" points="[0.0]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.0, 0.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -1800,47 +1764,46 @@
     </cellMethods>
     <data checksum="0x49202448" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[29219.08, 32908.691]]" definitive="true" name="level_height" points="[31063.889]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[29219.1, 32908.7]]" id="15ab29dba89f8865" long_name="level_height" points="[31063.9]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[37]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[37]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.0, 0.0]]" name="sigma" points="[0.0]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.0, 0.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -1850,47 +1813,46 @@
     </cellMethods>
     <data checksum="0x4b1c44c" dtype="float32" shape="(144, 192)"/>
   </cube>
-  <cube standard_name="northward_wind" unit="unknown">
+  <cube standard_name="northward_wind" units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[26280]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[306816.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="y" count="144" name="latitude" start="-89.375" step="1.25" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[32908.691, 39254.832]]" definitive="true" name="level_height" points="[36081.762]" unit="Unit('m')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <DimCoord bounds="[[32908.7, 39254.8]]" id="15ab29dba89f8865" long_name="level_height" points="[36081.8]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="x" circular="True" count="192" name="longitude" start="0.0" step="1.875" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level" points="[38]" unit="Unit('1')" value_type="int32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord id="5634c91ba5717382" long_name="model_level" points="[38]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.0, 0.0]]" name="sigma" points="[0.0]" unit="Unit('1')" value_type="float32">
-          <hybridHeightCS orography="None"/>
-        </explicitCoord>
+        <AuxCoord bounds="[[0.0, 0.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 6.06']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[332352.0, 333096.0]]" definitive="true" name="time" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>

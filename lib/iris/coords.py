@@ -866,13 +866,14 @@ class Coord(CFVariableMixin):
         if hasattr(self.points, 'to_xml_attr'):
             element.setAttribute('points', self.points.to_xml_attr())
         else:
-            element.setAttribute('points', self._array_for_xml(self.points))
+            element.setAttribute('points', iris.util.format_array(self.points))
+            
         if self.bounds is not None:
             if hasattr(self.bounds, 'to_xml_attr'):
                 element.setAttribute('bounds', self.bounds.to_xml_attr())
             else:
-                element.setAttribute('bounds', self._array_for_xml(self.bounds))
-
+                element.setAttribute('bounds', iris.util.format_array(self.bounds))
+            
         return element
 
     def _xml_id(self):
@@ -881,36 +882,6 @@ class Coord(CFVariableMixin):
         unique_value = (self.standard_name or 0, str(self.units),
                         tuple(self.attributes.iteritems()))
         return str(hex(hash(unique_value))).lstrip('-0x')
-
-    def _array_for_xml(self, array):
-        """Returns a string representation of the array appropriate for inclusion in the XML for this coord.
-
-        numpy.arange(4) -> "[0, 1, 2, 3]"
-        numpy.arange(7) -> "[0, 1, 2, 3, 4,\n\t\t5, 6]"
-        numpy.arange(8).reshape((4, 2)) -> "[[0, 1],\n\t\t[2, 3],\n\t\t[4, 5],\n\t\t[6, 7]]"
-
-        """
-        NEW_LINE = ',\n\t\t'
-        if array.ndim == 1:
-            if self.name() == 'history' and array.dtype.kind == 'S' and len(array) == 1:
-                # remove "nn\nn\nn nn:nn:nn Iris: " leading any string type coordinates such as history
-                s = re.sub("[\d\/]{8} [\d\:]{8} Iris\: ", '', array[0]) 
-                s = `'\n'.join(s.split('\n'))`
-            else:
-                # Bundle the repr versions of the data into groups of N
-                # (See the docs for itertools.izip for more detail on the bundling idiom)
-                N = 5
-                items = [repr(v) for v in array]
-                items = chain(items, [None] * (N - 1))
-                groups = izip(*([items] * N))
-                # Filter out any None values from the last tuple
-                groups = [[x for x in group if x is not None] for group in groups]
-                # Convert to comma separated strings
-                lines = [', '.join(group) for group in groups]
-                s = NEW_LINE.join(lines)
-        else:
-            s = NEW_LINE.join([self._array_for_xml(a) for a in array])
-        return '[' + s + ']'
 
     def _value_type_name(self):
         """A simple, readable name for the data type of the Coord point/bound values."""

@@ -1,21 +1,21 @@
 <?xml version="1.0" ?>
-<cubes xmlns="urn:x-iris:cubeml-0.1">
-  <cube standard_name="" unit="unknown">
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube units="unknown">
     <coords>
       <coord datadims="[0]">
-        <explicitCoord axis="a" name="a" points="[0, 1, 2]" unit="Unit('1')" value_type="int32"/>
+        <DimCoord id="5634c91ba5717382" long_name="a" points="[0, 1, 2]" shape="(3,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord datadims="[1]">
-        <explicitCoord axis="b" name="b" points="[0, 1]" unit="Unit('1')" value_type="int32"/>
+        <DimCoord id="5634c91ba5717382" long_name="b" points="[0, 1]" shape="(2,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord datadims="[2]">
-        <explicitCoord axis="c" name="c" points="[0, 1]" unit="Unit('1')" value_type="int32"/>
+        <DimCoord id="5634c91ba5717382" long_name="c" points="[0, 1]" shape="(2,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord datadims="[4]">
-        <explicitCoord axis="x" name="x" points="[0, 1, 2, 3, 4]" unit="Unit('1')" value_type="int32"/>
+        <DimCoord id="5634c91ba5717382" long_name="x" points="[0, 1, 2, 3, 4]" shape="(5,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord datadims="[3]">
-        <explicitCoord axis="y" name="y" points="[0, 1, 2, 3]" unit="Unit('1')" value_type="int32"/>
+        <DimCoord id="5634c91ba5717382" long_name="y" points="[0, 1, 2, 3]" shape="(4,)" units="Unit('1')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods/>

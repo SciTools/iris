@@ -829,3 +829,20 @@ Example Usage:
         print timers.get("little func")
 """
 
+
+def format_array(arr):
+    """
+    Returns the given array as a string, using the python builtin str function on a piecewise basis.
+    
+    Useful for xml representation of arrays. 
+    
+    For customisations, use the :mod:`numpy.core.arrayprint` directly.
+    """    
+    if arr.size > 85:
+        summary_insert = "..., "
+    else:
+        summary_insert = ""
+    ffunc = str
+    return numpy.core.arrayprint._formatArray(arr, ffunc, len(arr.shape), max_line_len=50,
+                                              next_line_prefix='\t\t', separator=', ',
+                                              edge_items=3, summary_insert=summary_insert)[:-1]

@@ -90,8 +90,8 @@ class TestMixin(object):
         self.dec_path = tests.get_data_path(['PP', 'globClim1', 'dec_subset.pp'])
         self.theta_path = tests.get_data_path(['PP', 'globClim1', 'theta.pp'])
 
-        self.theta = iris.Constraint(SN_AIR_POTENTIAL_TEMPERATURE)
         self.humidity = iris.Constraint(SN_SPECIFIC_HUMIDITY)
+        self.theta = iris.Constraint(SN_AIR_POTENTIAL_TEMPERATURE)
 
         # Coord based constraints
         self.level_10 = iris.Constraint(model_level_number=10)
@@ -114,6 +114,17 @@ class TestMixin(object):
 
 
 class RelaxedConstraintMixin(TestMixin):
+    @staticmethod
+    def fixup_sigma_to_be_aux(cubes):
+        # XXX Fix the cubes such that the sigma coordinate is always an AuxCoord. Pending gh issue #18
+        if isinstance(cubes, iris.cube.Cube):
+            cubes = [cubes]
+            
+        for cube in cubes:
+            sigma = cube.coord('sigma')
+            sigma = iris.coords.AuxCoord.from_coord(sigma)
+            cube.replace_coord(sigma)
+    
     def assertCML(self, cubes, filename):
         filename = "%s_%s.cml" % (filename, self.suffix)
         tests.IrisTest.assertCML(self, cubes, ('constrained_load', filename))
@@ -123,18 +134,21 @@ class RelaxedConstraintMixin(TestMixin):
         
     def test_single_atomic_constraint(self):
         cubes = self.load_match(self.dec_path, self.level_10)
+        self.fixup_sigma_to_be_aux(cubes)
         self.assertCML(cubes, 'all_10')
 
         cubes = self.load_match(self.dec_path, self.theta)
         self.assertCML(cubes, 'theta')
         
         cubes = self.load_match(self.dec_path, self.model_level_number_10_22)
+        self.fixup_sigma_to_be_aux(cubes) 
         workaround_pending_1262(cubes)
         self.assertCML(cubes, 'all_ml_10_22')
         
         # Check that it didn't matter that we provided sets & tuples to the model_level
         for constraint in [iris.Constraint(model_level_number=set([10, 22])), iris.Constraint(model_level_number=tuple([10, 22]))]:
             cubes = self.load_match(self.dec_path, constraint)
+            self.fixup_sigma_to_be_aux(cubes)
             workaround_pending_1262(cubes)
             self.assertCML(cubes, 'all_ml_10_22')          
     
@@ -149,6 +163,7 @@ class RelaxedConstraintMixin(TestMixin):
         self.assertCML(cubes, 'theta')
     
         cubes = self.load_match(self.dec_path, iris.Constraint(SN_AIR_POTENTIAL_TEMPERATURE, model_level_number=10))
+        self.fixup_sigma_to_be_aux(cubes)
         self.assertCML(cubes, 'theta_10')
     
     def test_latitude_constraint(self):
@@ -160,21 +175,26 @@ class RelaxedConstraintMixin(TestMixin):
         
     def test_single_expression_constraint(self):
         cubes = self.load_match(self.theta_path, self.theta & self.level_10)
+        self.fixup_sigma_to_be_aux(cubes)
         self.assertCML(cubes, 'theta_10')
         
         cubes = self.load_match(self.theta_path, self.level_10 & self.theta)
+        self.fixup_sigma_to_be_aux(cubes)
         self.assertCML(cubes, 'theta_10')
 
     def test_dual_atomic_constraint(self):
         cubes = self.load_match(self.dec_path, [self.theta, self.level_10])
+        self.fixup_sigma_to_be_aux(cubes)
         self.assertCML(cubes, 'theta_and_all_10')
     
     def test_dual_repeated_constraint(self):
         cubes = self.load_match(self.dec_path, [self.theta, self.theta])
+        self.fixup_sigma_to_be_aux(cubes)
         self.assertCML(cubes, 'theta_and_theta')
 
     def test_dual_expression_constraint(self):
         cubes = self.load_match(self.dec_path, [self.theta & self.level_10, self.level_gt_30_le_3 & self.theta])
+        self.fixup_sigma_to_be_aux(cubes)
         self.assertCML(cubes, 'theta_10_and_theta_level_gt_30_le_3')
 
     def test_invalid_constraint(self):
@@ -195,6 +215,7 @@ class StrictConstraintMixin(RelaxedConstraintMixin):
         self.assertCML(cubes, 'theta')
         
         cubes = self.load_match(self.theta_path, self.level_10)
+        self.fixup_sigma_to_be_aux(cubes)
         self.assertCML(cubes, 'theta_10')
     
     def test_invalid_constraint(self):
@@ -202,6 +223,7 @@ class StrictConstraintMixin(RelaxedConstraintMixin):
     
     def test_dual_atomic_constraint(self):
         cubes = self.load_match(self.dec_path, [self.theta, self.level_10 & self.theta])
+        self.fixup_sigma_to_be_aux(cubes)
         self.assertCML(cubes, 'theta_and_theta_10')
 
 

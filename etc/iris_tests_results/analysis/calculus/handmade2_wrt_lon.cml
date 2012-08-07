@@ -1,19 +1,33 @@
 <?xml version="1.0" ?>
-<cubes xmlns="urn:x-iris:cubeml-0.1">
-  <cube standard_name="derivative_of_x_wind_wrt_longitude" unit="15.9154943091895 meter-second^-1-radian^-1">
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube long_name="derivative_of_x_wind_wrt_longitude" units="15.9154943091895 meter-second^-1-radian^-1">
     <attributes>
       <attribute name="history" value="differential of x_wind wrt to longitude"/>
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <regularCoord axis="y" count="50" name="latitude" start="-90.0" step="4.5" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-90.0, -85.5, -81.0, -76.5, -72.0, -67.5, -63.0,
+		-58.5, -54.0, -49.5, -45.0, -40.5, -36.0, -31.5,
+		-27.0, -22.5, -18.0, -13.5, -9.0, -4.5, 0.0,
+		4.5, 9.0, 13.5, 18.0, 22.5, 27.0, 31.5, 36.0,
+		40.5, 45.0, 49.5, 54.0, 58.5, 63.0, 67.5, 72.0,
+		76.5, 81.0, 85.5, 90.0, 94.5, 99.0, 103.5,
+		108.0, 112.5, 117.0, 121.5, 126.0, 130.5]" shape="(50,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='undefined spheroid', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="reference_longitude?"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <regularCoord axis="x" count="49" name="longitude" start="-177.75" step="4.5" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[-177.75, -173.25, -168.75, -164.25, -159.75,
+		-155.25, -150.75, -146.25, -141.75, -137.25,
+		-132.75, -128.25, -123.75, -119.25, -114.75,
+		-110.25, -105.75, -101.25, -96.75, -92.25,
+		-87.75, -83.25, -78.75, -74.25, -69.75, -65.25,
+		-60.75, -56.25, -51.75, -47.25, -42.75, -38.25,
+		-33.75, -29.25, -24.75, -20.25, -15.75, -11.25,
+		-6.75, -2.25, 2.25, 6.75, 11.25, 15.75, 20.25,
+		24.75, 29.25, 33.75, 38.25]" shape="(49,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='undefined spheroid', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="reference_longitude?"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
     </coords>
     <cellMethods/>

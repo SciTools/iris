@@ -1,23 +1,25 @@
 <?xml version="1.0" ?>
-<cubes xmlns="urn:x-iris:cubeml-0.1">
-  <cube standard_name="air_temperature" unit="K">
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube standard_name="air_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s03i236"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="height" points="[1.5]" unit="Unit('m')" value_type="float64">
-          <attributes positive="up"/>
-        </explicitCoord>
+        <DimCoord id="6f10044df896f684" points="[1.5]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="site_number" count="1" name="site_number" start="1.0" step="0.0" unit="Unit('1')" value_type="float32"/>
+        <DimCoord id="5634c91ba5717382" long_name="site_number" points="[1.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" unit="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32"/>
+        <DimCoord id="4289202fb9980552" points="[756690.0, 763890.0, 771090.0, 778290.0]" shape="(4,)" standard_name="time" units="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods>
