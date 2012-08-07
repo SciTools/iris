@@ -3,32 +3,41 @@ import glob
 import iris
 import os
 
-remove = ["prodf_op_sfc_cam_11_20110718_001.pp",
-		  "prodf_op_sfc_cam_11_20110719_002.pp",
-		  "prodf_op_sfc_cam_11_20110719_003.pp",
-		  "prodf_op_sfc_cam_11_20110720_004.pp",
-		  "prodf_op_sfc_cam_11_20110720_005.pp",
-		  "prodf_op_sfc_cam_11_20110722_008.pp",
-		  "prodf_op_sfc_cam_11_20110722_009.pp",
-		  "prodf_op_sfc_cam_11_20110722_010.pp",
-		  "prodf_op_sfc_cam_11_20110723_011.pp",
-		  "prodf_op_sfc_cam_11_20110724_012.pp"]
-		  
-for f in remove:
-	os.remove(f)
-
 fnames = glob.glob("*.pp")
 for fname in fnames:
 
-	pps = iris.fileformats.pp.load(fname)
 	
+#	# t0, param24
+#	p24t0 = [pp for pp in pps if pp.lbuser[3] == 24]
+#	p24t0 = [pp for pp in pps if str(pp.t1) == '2012-01-01 00:00:00']
+#	
+#	out_fname = fname.rsplit(".")[0] + "_p24t0subset.pp"
+#	outfile = open(out_fname, "wb")
+#
+#	for pp in p24t0:
+#		pp.save(outfile)
+#			
+#	outfile.close()
+
+	pps = iris.fileformats.pp.load(fname)
+
+	# reduce xy down to 10x10
 	out_fname = fname.rsplit(".")[0] + "_subset.pp"
 	outfile = open(out_fname, "wb")
 
-	for pp in pps:	
-		if pp.lbuser[3] in [24, 5216]:
+	for pp in pps:
+		if pp.lbuser[3] == 24:
+			pp.data = pp.data[::2, ::5]
+			pp.bdy *= 2
+			pp.bdx *= 5
+			pp.lbnpt = pp.data.shape[1]
+			pp.lbrow = pp.data.shape[0]
 			pp.save(outfile)
 			
 	outfile.close()
+
+
 	
 	os.remove(fname)
+
+
