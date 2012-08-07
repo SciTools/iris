@@ -221,6 +221,16 @@ save = iris.io.save
 
 
 def sample_data_path(*path_to_join):
-    """Given the sample file data zoo location, returns the full path to the file."""
-    return os.path.join('/data/local/itbb/new_examples_data', *path_to_join)    
-    return iris.io.select_data_path('sample_data', path_to_join)
+    """Given the sample file relative location, returns the full path to the file.
+    
+    Example:
+    
+        full_path = iris.sample_data_path('PP', 'globClim1', 'theta.pp')
+        cube = iris.load_strict(full_path)
+    
+    """
+    import iris
+    iris_path = iris.__file__.rsplit("lib", 1)[0]
+    return os.path.join(iris_path, "docs", "iris", "example_data", *path_to_join)
+
+
