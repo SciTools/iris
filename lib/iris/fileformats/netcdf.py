@@ -488,9 +488,16 @@ def _create_cf_variable(dataset, cube, dimension_names, coord, factory_defn):
 
     # Add any other custom coordinate attributes.
     for name in sorted(coord.attributes):
+        value = coord.attributes[name]
+
+        if name == 'STASH':
+            # Adopting provisional Metadata Conventions for representing MO Scientific Data encoded in NetCDF Format.
+            name = 'ukmo__um_stash_source'
+            value = str(value)
+
         # Don't clobber existing attributes.
         if not hasattr(cf_var, name):
-            setattr(cf_var, name, coord.attributes[name])
+            setattr(cf_var, name, value)
 
     return cf_name
 

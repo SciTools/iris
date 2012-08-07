@@ -129,20 +129,6 @@ class AuxCoordFactory(CFVariableMixin):
         return defn
 
     @abstractmethod
-    def derived_dims(self, coord_dims_func):
-        """
-        Returns the virtual dim-mapping for the derived coordinate.
-
-        Args:
-
-        * coord_dims_func:
-            A callable which can return the list of dimensions relevant
-            to a given coordinate. 
-            See :meth:`iris.cube.Cube.coord_dims()`.
-        
-        """
-
-    @abstractmethod
     def make_coord(self, coord_dims_func):
         """
         Returns a new :class:`iris.coords.AuxCoord` as defined by this
@@ -187,75 +173,69 @@ class AuxCoordFactory(CFVariableMixin):
 
         """
 
-    @abstractmethod
-    def xml_element(self, doc):
-        """Returns a DOM element describing this factory."""
+    def __repr__(self):
+        def arg_text(item):
+            key, coord = item
+            return '{}={}'.format(key, str(coord and repr(coord.name())))
+        items = self.dependencies.items()
+        items.sort(key=lambda item: item[0])
+        args = map(arg_text, items)
+        return '<{}({})>'.format(type(self).__name__, ', '.join(args))
 
-        
-
-class HybridHeightFactory(AuxCoordFactory):
-    """
-    Defines a hybrid-height coordinate factory with the formula:
-        z = a + b * orog
-
-    """
-
-    def __init__(self, delta=None, sigma=None, orography=None):
+    def derived_dims(self, coord_dims_func):
         """
-        Creates a hybrid-height coordinate factory with the formula:
-            z = a + b * orog
-
-        At least one of `delta` or `orography` must be provided.
+        Returns the virtual dim-mapping for the derived coordinate.
 
         Args:
 
-        * delta: Coord
-            The coordinate providing the `a` term.
-        * sigma: Coord
-            The coordinate providing the `b` term.
-        * orography: Coord
-            The coordinate providing the `orog` term.
+        * coord_dims_func:
+            A callable which can return the list of dimensions relevant
+            to a given coordinate. 
+            See :meth:`iris.cube.Cube.coord_dims()`.
+        
+        """
+        # Which dimensions are relevant?
+        # e.g. If sigma -> [1] and orog -> [2, 3] then result = [1, 2, 3]
+        derived_dims = set()
+        for coord in self.dependencies.itervalues():
+            if coord:
+                derived_dims.update(coord_dims_func(coord))
+
+        # Apply a fixed order so we know how to map dependency dims to
+        # our own dims (and so the Cube can map them to Cube dims).
+        derived_dims = tuple(sorted(derived_dims))
+        return derived_dims
+
+    def updated(self, new_coord_mapping):
+        """
+        Creates a new instance of this factory where the dependencies
+        are replaced according to the given mapping.
+
+        Args:
+
+        * new_coord_mapping:
+            A dictionary mapping from the object IDs potentially used
+            by this factory, to the coordinate objects that should be
+            used instead.
 
         """
-        super(HybridHeightFactory, self).__init__()
+        new_dependencies = {}
+        for key, coord in self.dependencies.iteritems():
+            if coord:
+                coord = new_coord_mapping[id(coord)]
+            new_dependencies[key] = coord
+        return type(self)(**new_dependencies)
 
-        if delta and delta.nbounds not in (0, 2):
-            raise ValueError('Invalid delta coordinate: must have either 0 or'
-                             ' 2 bounds.')
-        if sigma and sigma.nbounds not in (0, 2):
-            raise ValueError('Invalid sigma coordinate: must have either 0 or'
-                             ' 2 bounds.')
-        if orography and orography.nbounds:
-            warnings.warn('Orography coordinate {!r} has bounds.'
-                          'These will be disregarded.'.format(orography.name()), 
-                          UserWarning, stacklevel=2)
-
-        self.delta = delta
-        self.sigma = sigma
-        self.orography = orography
-
-        self.standard_name = 'altitude'
-        if delta is None and orography is None:
-            raise ValueError('Unable to determine units: no delta or orography'
-                             ' available.')
-        self.units = (delta and delta.units) or orography.units
-        self.attributes = {'positive': 'up'}
-
-    def __repr__(self):
-        def safe_name(coord):
-            return str(coord and `coord.name()`)
-        return "<HybridHeightFactory(%s, %s, %s)>" % (safe_name(self.delta),
-                                                      safe_name(self.sigma),
-                                                      safe_name(self.orography))
-
-    @property
-    def dependencies(self):
+    def xml_element(self, doc):
         """
-        Returns a dictionary mapping from constructor argument names to
-        the corresponding coordinates.
+        Returns a DOM element describing this coordinate factory.
 
         """
-        return {'delta': self.delta, 'sigma': self.sigma, 'orography': self.orography}
+        element = doc.createElement('coordFactory')
+        for key, coord in self.dependencies.iteritems():
+            element.setAttribute(key, coord._xml_id())
+        element.appendChild(self.make_coord().xml_element(doc))
+        return element
 
     def _dependency_dims(self, coord_dims_func):
         dependency_dims = {}
@@ -393,8 +373,9 @@ class HybridHeightFactory(AuxCoordFactory):
         return nd_values_by_key
 
     def _shape(self, nd_values_by_key):
-        shape = list(nd_values_by_key['delta'].shape)
-        for array in (nd_values_by_key['sigma'], nd_values_by_key['orography']):
+        nd_values = nd_values_by_key.values()
+        shape = list(nd_values.pop().shape)
+        for array in nd_values:
             for i, size in enumerate(array.shape):
                 if size > 1:
                     # NB. If there's an inconsistency it can only come
@@ -407,32 +388,72 @@ class HybridHeightFactory(AuxCoordFactory):
                     shape[i] = size
         return shape
 
-    def derived_dims(self, coord_dims_func):
+
+class HybridHeightFactory(AuxCoordFactory):
+    """
+    Defines a hybrid-height coordinate factory with the formula:
+        z = a + b * orog
+
+    """
+
+    def __init__(self, delta=None, sigma=None, orography=None):
         """
-        Returns the virtual dim-mapping for the derived coordinate.
+        Creates a hybrid-height coordinate factory with the formula:
+            z = a + b * orog
+
+        At least one of `delta` or `orography` must be provided.
 
         Args:
 
-        * coord_dims_func:
-            A callable which can return the list of dimensions relevant
-            to a given coordinate. 
-            See :meth:`iris.cube.Cube.coord_dims()`.
-        
+        * delta: Coord
+            The coordinate providing the `a` term.
+        * sigma: Coord
+            The coordinate providing the `b` term.
+        * orography: Coord
+            The coordinate providing the `orog` term.
+
         """
-        # Which dimensions are relevant?
-        # e.g. If sigma -> [1] and orog -> [2, 3] then result = [1, 2, 3]
-        derived_dims = set()
-        for coord in self.dependencies.itervalues():
-            if coord:
-                derived_dims |= set(coord_dims_func(coord))
+        super(HybridHeightFactory, self).__init__()
 
-        # Apply a fixed order so we know how to map dependency dims to
-        # our own dims (and so the Cube can map them to Cube dims).
-        derived_dims = tuple(sorted(derived_dims))
-        return derived_dims
+        if delta and delta.nbounds not in (0, 2):
+            raise ValueError('Invalid delta coordinate: must have either 0 or'
+                             ' 2 bounds.')
+        if sigma and sigma.nbounds not in (0, 2):
+            raise ValueError('Invalid sigma coordinate: must have either 0 or'
+                             ' 2 bounds.')
+        if orography and orography.nbounds:
+            warnings.warn('Orography coordinate {!r} has bounds.'
+                          'These will be disregarded.'.format(orography.name()), 
+                          UserWarning, stacklevel=2)
 
-    def _derive(self, delta, sigma, orography):
-        temp = delta + sigma * orography
+        self.delta = delta
+        self.sigma = sigma
+        self.orography = orography
+
+        self.standard_name = 'altitude'
+        if delta is None and orography is None:
+            raise ValueError('Unable to determine units: no delta or orography'
+                             ' available.')
+        if delta and orography and delta.units != orography.units:
+            raise ValueError('Incompatible units: delta and orography must have'
+                             ' the same units.')
+        self.units = (delta and delta.units) or orography.units
+        if not self.units.convertible('m'):
+            raise ValueError('Invalid units: delta and/or orography'
+                             ' must be expressed in length units.')
+        self.attributes = {'positive': 'up'}
+
+    @property
+    def dependencies(self):
+        """
+        Returns a dictionary mapping from constructor argument names to
+        the corresponding coordinates.
+
+        """
+        return {'delta': self.delta, 'sigma': self.sigma, 'orography': self.orography}
+
+    def _derive(self, delta, sigma, surface_pressure):
+        temp = delta + sigma * surface_pressure
         return temp
 
     def make_coord(self, coord_dims_func):
@@ -448,9 +469,6 @@ class HybridHeightFactory(AuxCoordFactory):
             See :meth:`iris.cube.Cube.coord_dims()`.
         
         """
-        # NB. Any exceptions raised in this routine will prevent
-        # Cube.coord()/coords() from working. Hence, defer if possible.
-
         # Which dimensions are relevant?
         derived_dims = self.derived_dims(coord_dims_func)
 
@@ -528,41 +546,161 @@ class HybridHeightFactory(AuxCoordFactory):
                               UserWarning, stacklevel=2)
             self.orography = new_coord
 
-    def updated(self, new_coord_mapping):
+
+class HybridPressureFactory(AuxCoordFactory):
+    """
+    Defines a hybrid-pressure coordinate factory with the formula:
+        p = ap + b * ps
+
+    """
+
+    def __init__(self, delta=None, sigma=None, surface_pressure=None):
         """
-        Creates a new instance of this factory where the dependencies
-        are replaced according to the given mapping.
+        Creates a hybrid-height coordinate factory with the formula:
+            p = ap + b * ps
+
+        At least one of `delta` or `surface_pressure` must be provided.
 
         Args:
 
-        * new_coord_mapping:
-            A dictionary mapping from the object IDs potentially used
-            by this factory, to the coordinate objects that should be
-            used instead.
+        * delta: Coord
+            The coordinate providing the `ap` term.
+        * sigma: Coord
+            The coordinate providing the `b` term.
+        * surface_pressure: Coord
+            The coordinate providing the `ps` term.
 
         """
-        if self.delta:
-            delta = new_coord_mapping[id(self.delta)]
-        if self.sigma:
-            sigma = new_coord_mapping[id(self.sigma)]
-        if self.orography:
-            orography = new_coord_mapping[id(self.orography)]
-        return HybridHeightFactory(delta, sigma, orography)
+        super(HybridPressureFactory, self).__init__()
 
-    def xml_element(self, doc):
+        if delta and delta.nbounds not in (0, 2):
+            raise ValueError('Invalid delta coordinate: must have either 0 or'
+                             ' 2 bounds.')
+        if sigma and sigma.nbounds not in (0, 2):
+            raise ValueError('Invalid sigma coordinate: must have either 0 or'
+                             ' 2 bounds.')
+        if surface_pressure and surface_pressure.nbounds:
+            warnings.warn('Surface pressure coordinate {!r} has bounds.'
+                          'These will be disregarded.'.format(surface_pressure.name()),
+                          UserWarning, stacklevel=2)
+
+        self.delta = delta
+        self.sigma = sigma
+        self.surface_pressure = surface_pressure
+
+        self.standard_name = 'air_pressure'
+        if delta is None and surface_pressure is None:
+            raise ValueError('Unable to determine units: no delta or'
+                             ' surface_pressure available.')
+        if delta and surface_pressure and delta.units != surface_pressure.units:
+            raise ValueError('Incompatible units: delta and surface_pressure'
+                             ' must have the same units.')
+        self.units = (delta and delta.units) or surface_pressure.units
+        if not self.units.convertible('Pa'):
+            raise ValueError('Invalid units: delta and/or surface_pressure'
+                             ' must be expressed in pressure units.')
+        self.attributes = {}
+
+    @property
+    def dependencies(self):
         """
-        Returns a DOM element describing this coordinate factory.
+        Returns a dictionary mapping from constructor argument names to
+        the corresponding coordinates.
 
         """
-        element = doc.createElement('coordFactory')
+        return {'delta': self.delta, 'sigma': self.sigma,
+                'surface_pressure': self.surface_pressure}
 
-        if self.delta:
-            element.setAttribute('delta', self.delta._xml_id())
-        if self.sigma:
-            element.setAttribute('sigma', self.sigma._xml_id())
-        if self.orography:
-            element.setAttribute('orography', self.orography._xml_id())
+    def _derive(self, delta, sigma, surface_pressure):
+        temp = delta + sigma * surface_pressure
+        return temp
 
-        element.appendChild(self.make_coord().xml_element(doc))
+    def make_coord(self, coord_dims_func):
+        """
+        Returns a new :class:`iris.coords.AuxCoord` as defined by this
+        factory.
 
-        return element
+        Args:
+
+        * coord_dims_func:
+            A callable which can return the list of dimensions relevant
+            to a given coordinate. 
+            See :meth:`iris.cube.Cube.coord_dims()`.
+        
+        """
+        # Which dimensions are relevant?
+        derived_dims = self.derived_dims(coord_dims_func)
+
+        dependency_dims = self._dependency_dims(coord_dims_func)
+
+        # Build a "lazy" points array.
+        nd_points_by_key = self._remap(dependency_dims, derived_dims)
+        # Define the function here to obtain a closure.
+        def calc_points():
+            return self._derive(nd_points_by_key['delta'],
+                                nd_points_by_key['sigma'],
+                                nd_points_by_key['surface_pressure'])
+        shape = self._shape(nd_points_by_key)
+        points = LazyArray(shape, calc_points)
+
+        bounds = None
+        if ((self.delta and self.delta.nbounds) or
+                (self.sigma and self.sigma.nbounds)):
+            # Build a "lazy" bounds array.
+            nd_values_by_key = self._remap_with_bounds(dependency_dims, derived_dims)
+            # Define the function here to obtain a closure.
+            def calc_bounds():
+                delta = nd_values_by_key['delta']
+                sigma = nd_values_by_key['sigma']
+                surface_pressure = nd_values_by_key['surface_pressure']
+                ok_bound_shapes = [(), (1,), (2,)]
+                if delta.shape[-1:] not in ok_bound_shapes:
+                    raise ValueError('Invalid delta coordinate bounds.')
+                if sigma.shape[-1:] not in ok_bound_shapes:
+                    raise ValueError('Invalid sigma coordinate bounds.')
+                if surface_pressure.shape[-1:] not in [(), (1,)]:
+                    warnings.warn('Surface pressure coordinate has bounds. '
+                                  'These are being disregarded.')
+                    surface_pressure_pts_shape = list(nd_points_by_key['surface_pressure'].shape)
+                    surface_pressure = nd_points_by_key['surface_pressure'].reshape(surface_pressure_pts_shape.append(1))
+                return self._derive(delta, sigma, surface_pressure)
+            b_shape = self._shape(nd_values_by_key)
+            bounds = LazyArray(b_shape, calc_bounds)
+
+        hybrid_pressure = iris.coords.AuxCoord(points,
+                                               standard_name=self.standard_name,
+                                               long_name=self.long_name,
+                                               units=self.units,
+                                               bounds=bounds,
+                                               attributes=self.attributes,
+                                               coord_system=self.coord_system)
+        return hybrid_pressure
+
+    def update(self, old_coord, new_coord=None):
+        """
+        Notifies the factory of the removal/replacement of a coordinate
+        which might be a dependency.
+
+        Args:
+
+        * old_coord:
+            The coordinate to be removed/replaced.
+        * new_coord:
+            If None, any dependency using old_coord is removed, othewise
+            any dependency using old_coord is updated to use new_coord.
+
+        """
+        if self.delta is old_coord:
+            if new_coord and new_coord.nbounds not in (0, 2):
+                raise ValueError('Invalid delta coordinate: must have either 0 or 2 bounds.')
+            self.delta = new_coord
+        elif self.sigma is old_coord:
+            if new_coord and new_coord.nbounds not in (0, 2):
+                raise ValueError('Invalid sigma coordinate: must have either 0 or 2 bounds.')
+            self.sigma = new_coord
+        elif self.surface_pressure is old_coord:
+            if new_coord and new_coord.nbounds:
+                warnings.warn('Surface pressure coordinate {!r} has bounds. '
+                              'These will be disregarded.'.format(new_coord.name()),
+                              UserWarning, stacklevel=2)
+            self.surface_pressure = new_coord

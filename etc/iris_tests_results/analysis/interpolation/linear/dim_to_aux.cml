@@ -6,13 +6,16 @@
         <AuxCoord id="5634c91ba5717382" long_name="an_other" points="[3.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <DimCoord id="5634c91ba5717382" long_name="dim1" points="[-1.0, 1.0, 10.0, 11.0]" shape="(4,)" units="Unit('1')" value_type="float32"/>
+        <AuxCoord id="5634c91ba5717382" long_name="dim1" points="[7.0, 3.0, 5.0]" shape="(3,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
         <AuxCoord id="5634c91ba5717382" long_name="dim2" points="[3.0, 3.5, 6.0]" shape="(3,)" units="Unit('1')" value_type="float64"/>
       </coord>
+      <coord datadims="[0]">
+        <AuxCoord id="5634c91ba5717382" long_name="was_dim" points="[3.0, 1.0, 2.0]" shape="(3,)" units="Unit('1')" value_type="float64"/>
+      </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x77b4c96c" dtype="float32" shape="(4, 3)"/>
+    <data checksum="0x7b6fee44" dtype="float32" shape="(3, 3)"/>
   </cube>
 </cubes>

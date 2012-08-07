@@ -484,7 +484,7 @@
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0]" shape="(70,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[2, 3]">
-        <AuxCoord id="cf20c06c74c057c" points="[[110.742, 136.728, 174.916, ..., 51.326, 52.346,
+        <AuxCoord id="dab9356f4d07915" points="[[110.742, 136.728, 174.916, ..., 51.326, 52.346,
  		50.7854],
 		[101.13, 118.558, 155.847, ..., 50.4832,
  		55.6483, 58.1083],
@@ -496,7 +496,12 @@
 		[334.015, 364.968, 397.844, ..., 117.883,
  		118.507, 118.111],
 		[364.028, 404.372, 436.014, ..., 125.827,
- 		125.901, 125.843]]" shape="(412, 412)" standard_name="surface_altitude" units="Unit('m')" value_type="float32"/>
+ 		125.901, 125.843]]" shape="(412, 412)" standard_name="surface_altitude" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="STASH" value="m01s00i033"/>
+            <attribute name="source" value="Data from Met Office Unified Model 7.04"/>
+          </attributes>
+        </AuxCoord>
       </coord>
       <coord datadims="[0]">
         <DimCoord id="559b95abfcdf35de" points="[347921.166667, 347921.333333, 347921.5,
