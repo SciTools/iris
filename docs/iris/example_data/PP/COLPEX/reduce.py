@@ -11,16 +11,14 @@ import iris
 
 pps = list(iris.fileformats.pp.load("theta_and_orog_subset.pp"))
 
-param = 4
 times = ['2009-09-09 17:10:00', '2009-09-09 17:40:00']
-
-pps = [pp for pp in pps if pp.lbuser[3] == param]
-pps = [pp for pp in pps if str(pp.t1) in times]
-pps = [pp for pp in pps if (pp.lblev%10)==0]
 
 with open("theta_and_orog_subset_b.pp", "wb") as outfile:
 	for pp in pps:
-		pp.save(outfile)
+		if str(pp.t1) in times:
+#			if (pp.lblev%10)==0 or pp.lbuser[3]==33:
+			if ((pp.lblev%2)==0 and pp.lblev<=16) or pp.lbuser[3]==33:
+				pp.save(outfile)
 
 
 
