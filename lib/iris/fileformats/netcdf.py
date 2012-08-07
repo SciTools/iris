@@ -204,6 +204,18 @@ def _pyke_stats(engine, cf_name):
                 print '\t%s%s' % (key, arg)
 
 
+def _set_attributes(attributes, key, value):
+    """Set the attributes dictionary, converting unicode strings appropriately."""
+
+    if isinstance(value, unicode):
+        try:
+            attributes[str(key)] = str(value)
+        except UnicodeEncodeError:
+            attributes[str(key)] = value
+    else:
+        attributes[str(key)] = value
+
+
 def _load_cube(engine, cf, cf_var, filename):
     """Create the cube associated with the CF-netCDF data variable."""
      
@@ -241,16 +253,11 @@ def _load_cube(engine, cf, cf_var, filename):
  
     for coord, cf_var_name in coordinates:
         for attr_name, attr_value in itertools.ifilter(attribute_predicate, cf.cf_group[cf_var_name].cf_attrs_unused()):
-            coord.attributes[str(attr_name)] = str(attr_value) if isinstance(attr_value, basestring) else attr_value
+            _set_attributes(coord.attributes, attr_name, attr_value)
                 
     # Attach untouched attributes of the associated CF-netCDF data variable to the cube.
     for attr_name, attr_value in itertools.ifilter(attribute_predicate, cf_var.cf_attrs_unused()):
-        cube.attributes[str(attr_name)] = str(attr_value) if isinstance(attr_value, basestring) else attr_value
-
-#    TODO - put this back in for new merge
-#    # Move any length 1 dimension coordinates to the aux_coords container, minimising the data dimensionality
-#    slices = [slice(None,None) if dim_len > 1 else 0 for dim_len in cube.shape]
-#    cube = cube[tuple(slices)]
+        _set_attributes(cube.attributes, attr_name, attr_value)
 
     # Deal with special case of "source" attribute.
     # Convert the attribute to a coordinate (meta-data hook for PP save).
