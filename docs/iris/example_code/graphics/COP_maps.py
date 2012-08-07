@@ -44,9 +44,9 @@ def cop_metadata_callback(cube, field, filename):
 
 def main():
     # Load e1 and a1 using the callback to update the metadata
-    e1 = iris.load_strict(iris.sample_data_path('PP', 'A1B-Image_E1', 'E1', '*.pp'), 
+    e1 = iris.load_strict(iris.sample_data_path('PP', 'A1B-Image_E1', 'E1_subset', '*.pp'), 
                            callback=cop_metadata_callback)
-    a1b = iris.load_strict(iris.sample_data_path('PP', 'A1B-Image_E1', 'A1B', '*.pp'), 
+    a1b = iris.load_strict(iris.sample_data_path('PP', 'A1B-Image_E1', 'A1B_subset', '*.pp'), 
                             callback=cop_metadata_callback)
     
     # For the purposes of this example, take the final timestep of the data we have just loaded

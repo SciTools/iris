@@ -20,7 +20,7 @@ Calculating the difference between two cubes
 
 Let's load some data which represents air pressure on the first model level of a single model run::
 
-    filename = iris.sample_data_path('PP', 'COLPEX', 'air_potential_and_air_pressure.pp')
+    filename = iris.sample_data_path('PP', 'COLPEX', 'air_potential_and_air_pressure_subset_b.pp')
     air_press_lev1 = iris.Constraint('air_pressure', model_level_number=1)
     air_press = iris.load_strict(filename, air_press_lev1)
 
@@ -31,7 +31,7 @@ We can now get the first and last time slices using indexing (see :doc:`reducing
 
 .. testsetup::
 
-    filename = iris.sample_data_path('PP', 'COLPEX', 'air_potential_and_air_pressure.pp')
+    filename = iris.sample_data_path('PP', 'COLPEX', 'air_potential_and_air_pressure_subset_b.pp')
     cube = iris.load_strict(filename, iris.Constraint('air_pressure', model_level_number=1))
     t_first = cube[0, :, :]
     t_last = cube[1, :, :]
@@ -72,7 +72,7 @@ reference pressure and :math:`T` is temperature.
 
 First, let's load pressure and potential temperature cubes::
 
-    filename = iris.sample_data_path('PP', 'COLPEX', 'air_potential_and_air_pressure.pp')
+    filename = iris.sample_data_path('PP', 'COLPEX', 'air_potential_and_air_pressure_subset_b.pp')
     phenomenon_names = ['air_potential_temperature', 'air_pressure']
     pot_temperature, pressure = iris.load_strict(filename, phenomenon_names)
 

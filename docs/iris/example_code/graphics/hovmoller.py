@@ -32,7 +32,7 @@ def first_day_of_month(cube):
       
 
 def main():
-    fname = iris.sample_data_path('PP', 'ostia', 'ostia_sst_200604_201009_N216.pp')
+    fname = iris.sample_data_path('PP', 'ostia', 'ostia_sst_200604_201009_N216_subset.pp')
     
     # load a single cube of surface temperature between +/- 5 latitude, where each constituent field was the first day
     # of the month

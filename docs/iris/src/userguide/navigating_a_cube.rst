@@ -193,7 +193,7 @@ In this case, two of the PP files have been encoded without the appropriate ``re
 the appropriate coordinate cannot be added to the resultant cube. Fortunately, the missing attribute has been encoded in the filename
 which, given the filename, we could extract::
 
-    filename = iris.sample_data_path('PP', 'GloSea4', 'prodf_op_sfc_cam_11_20110718_001.pp')
+    filename = iris.sample_data_path('PP', 'GloSea4', 'prodf_op_sfc_cam_11_20110718_001_subset.pp')
     realization = int(filename[-6:-3])
     print realization
 

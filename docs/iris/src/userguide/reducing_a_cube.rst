@@ -62,7 +62,7 @@ same way as loading with constraints::
 
 	air_temp_and_fp_6 = iris.Constraint('air_potential_temperature', forecast_period=6)
 	level_10 = iris.Constraint(model_level_number=10)
-	filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
+	filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk_subset.pp')
 	cubes = iris.load(filename).extract(air_temp_and_fp_6 & level_10)
 	print cubes
 

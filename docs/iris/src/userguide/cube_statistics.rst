@@ -133,7 +133,7 @@ First, let's create two coordinates on a cube which represent the climatological
     import iris
     import iris.coord_categorisation
 
-    filename = iris.sample_data_path('PP', 'decadal', 'ajnuqa.pm*.pp')
+    filename = iris.sample_data_path('PP', 'decadal_subset', 'ajnuqa.pm*.pp')
     cube = iris.load_strict(filename, 'air_temperature')
 
     iris.coord_categorisation.add_season(cube, 'time', name='clim_season')
@@ -144,7 +144,7 @@ First, let's create two coordinates on a cube which represent the climatological
 
     import iris
 
-    filename = iris.sample_data_path('PP', 'decadal', 'ajnuqa.pm*.pp')
+    filename = iris.sample_data_path('PP', 'decadal_subset', 'ajnuqa.pm*.pp')
     cube = iris.load_strict(filename, 'air_temperature')
 
     import iris.coord_categorisation

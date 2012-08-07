@@ -25,7 +25,7 @@ to produce Iris Cubes from their contents.
 In order to find out what has been loaded, the result can be printed:
 
      >>> import iris
-     >>> filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
+     >>> filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk_subset.pp')
      >>> cubes = iris.load(filename)
      >>> print cubes
      0: air_potential_temperature           (forecast_period: 3; level_height: 40; grid_latitude: 810; grid_longitude: 622)
@@ -62,7 +62,7 @@ To get the air potential temperature cube from the list of cubes returned by :py
 example, list indexing *could* be used:
 
      >>> import iris
-     >>> filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
+     >>> filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk_subset.pp')
      >>> cubes = iris.load(filename)
      >>> # get the first cube (list indexing is 0 based)
      >>> air_potential_temperature = cubes[0]
@@ -100,7 +100,7 @@ Loading multiple files
 
 To load more than one file into a list of cubes, a list of filenames can be provided to :py:func:`iris.load`::
 
-     filenames = [iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp'),
+     filenames = [iris.sample_data_path('PP', 'ukV2', 'THOxayrk_subset.pp'),
                   iris.sample_data_path('PP', 'aPPglob1', 'global.pp')]
      cubes = iris.load(filenames)
 
@@ -121,7 +121,7 @@ Constrained loading provides the ability to generate a cube from a specific subs
 
 As we have seen, loading the following file creates several Cubes::
 
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
+     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk_subset.pp')
      cubes = iris.load(filename)
 
 Specifying a name as a constraint argument to :py:func:`iris.load` will mean only cubes with a
@@ -133,19 +133,19 @@ matching :meth:`name <iris.cube.Cube.name>` will be returned::
 To constrain the load to multiple distinct constraints, a list of constraints can be provided. 
 This is equivalent to running load once for each constraint but is likely to be more efficient::
 
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
+     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk_subset_subset.pp')
      cubes = iris.load(filename, ['air_potential_temperature', 'specific_humidity'])
 
 The :class:`iris.Constraint` class can be used to restrict coordinate values on load. For example, to constrain the load to
 match a specific ``model_level_number``::
 
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
+     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk_subset.pp')
      level_10 = iris.Constraint(model_level_number=10)
      cubes = iris.load(filename, level_10)
 
 Constraints can be combined using ``&`` to represent a more restrictive constraint to ``load``::
 
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
+     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk_subset.pp')
      forecast_6 = iris.Constraint(forecast_period=6)
      level_10 = iris.Constraint(model_level_number=10)
      cubes = iris.load(filename, forecast_6 & level_10)
@@ -153,7 +153,7 @@ Constraints can be combined using ``&`` to represent a more restrictive constrai
 As well as being able to combine constraints using ``&``, the :class:`iris.Constraint` class can accept multiple
 arguments, and a list of values can be given to constrain a coordinate to one of a collection of values::
 
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
+     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk_subset.pp')
      level_10_or_12_fp_6 = iris.Constraint(model_level_number=[10, 12], forecast_period=6)
      cubes = iris.load(filename, level_10_or_12_fp_6)
 
@@ -164,7 +164,7 @@ a function::
         # return True or False as to whether the cell in question should be kept
         return cell <= 20
 
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
+     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk_subset.pp')
      level_lt_20 = iris.Constraint(model_level_number=bottom_20_levels)
      cubes = iris.load(filename, level_lt_20)
      
@@ -177,7 +177,7 @@ a function::
 Cube attributes can also be part of the constraint criteria. Supposing a cube attribute of ``STASH`` existed, as is the case
 when loading ``PP`` files, then specific STASH codes can be filtered::
 
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
+     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk_subset.pp')
      level_10_with_stash = iris.AttributeConstraint(STASH='m01s00i004') & iris.Constraint(model_level_number=10)
      cubes = iris.load(filename, level_10_with_stash)
 
@@ -199,7 +199,7 @@ A single cube is loaded in the following example::
 
 However, when attempting to load data which would result in anything other than one cube, an exception is raised::
 
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
+     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk_subset.pp')
      cube = iris.load_strict(filename)
 
 .. note::
@@ -214,7 +214,7 @@ This fact can be utilised to make code only run successfully if the data provide
 For example, suppose that code needed 'air_potential_temperature' in order to run::
 
      import iris
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
+     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk_subset.pp')
      air_pot_temp = iris.load_strict(filename, 'air_potential_temperature')
      print air_pot_temp
 
@@ -223,7 +223,7 @@ Should the file not contain exactly one cube with a standard name of air potenti
 Similarly, supposing a routine needed both 'surface_altitude' and 'specific_humidity' to be able to run::
 
      import iris
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
+     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk_subset.pp')
      altitude_cube, humidity_cube = iris.load_strict(filename, ['surface_altitude', 'specific_humidity'])
 
 The result of :func:`iris.load_strict` in this case will be a list of 2 cubes ordered by the constraints provided. 

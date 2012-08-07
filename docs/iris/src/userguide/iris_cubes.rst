@@ -150,7 +150,7 @@ output as this is the quickest way of inspecting the contents of a cube. Here is
      :hide:
 
      import iris
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
+     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk_subset.pp')
      # NOTE: Every time the output of this cube changes, the full list of deductions below should be re-assessed. 
      print iris.load_strict(filename, 'air_potential_temperature')
      

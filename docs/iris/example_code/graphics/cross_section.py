@@ -18,7 +18,7 @@ import iris.quickplot as qplt
 
 
 def main():
-    fname = iris.sample_data_path('PP', 'COLPEX', 'theta_and_orog_subset.pp')
+    fname = iris.sample_data_path('PP', 'COLPEX', 'theta_and_orog_subset_b.pp')
     theta = iris.load_strict(fname, 'air_potential_temperature')
     
     # Extract a height vs longitude cross-section. N.B. This could easily changed to

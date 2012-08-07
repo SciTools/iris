@@ -49,10 +49,10 @@ def cop_metadata_callback(cube, field, filename):
 
 def main():
     # Load data into three Cubes, one for each set of PP files
-    e1 = iris.load_strict(iris.sample_data_path('PP', 'A1B-Image_E1', 'E1', '*.pp'),
+    e1 = iris.load_strict(iris.sample_data_path('PP', 'A1B-Image_E1', 'E1_subset', '*.pp'),
                            callback=cop_metadata_callback)
     
-    a1b = iris.load_strict(iris.sample_data_path('PP', 'A1B-Image_E1', 'A1B', '*.pp'), 
+    a1b = iris.load_strict(iris.sample_data_path('PP', 'A1B-Image_E1', 'A1B_subset', '*.pp'), 
                             callback=cop_metadata_callback)
     
     global_avg = iris.load_strict(iris.sample_data_path('PP', 'A1B-Image_E1', 'pp_1859_1889_avg.pp'))
