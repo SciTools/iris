@@ -650,11 +650,7 @@ fc_extras
                     cube.long_name = standard_name
                 
         # Determine the cube units.
-        attr_units = getattr(cf_var, CF_ATTR_UNITS, iris.unit._UNKNOWN_UNIT_STRING)
-
-        if np.issubdtype(cf_var.dtype, np.str):
-            attr_units = iris.unit._NO_UNIT_STRING
-
+        attr_units = get_attr_units(cf_var, cube.attributes)
         cube.units = attr_units
 
         # Incorporate cell methods
@@ -663,7 +659,13 @@ fc_extras
 
         # Set the cube global attributes. 
         for attr_name, attr_value in cf_var.cf_group.global_attributes.iteritems():
-            cube.attributes[str(attr_name)] = str(attr_value) if isinstance(attr_value, basestring) else attr_value
+            if isinstance(attr_value, unicode):
+                try:
+                    cube.attributes[str(attr_name)] = str(attr_value)
+                except UnicodeEncodeError:
+                    cube.attributes[str(attr_name)] = attr_value
+            else:
+                cube.attributes[str(attr_name)] = attr_value
 
 
     ################################################################################
@@ -688,19 +690,27 @@ fc_extras
 
 
     ################################################################################
-    def get_attr_units(cf_coord_var):
-        attr_units = getattr(cf_coord_var, CF_ATTR_UNITS, iris.unit._UNKNOWN_UNIT_STRING)
+    def get_attr_units(cf_var, attributes):
+        attr_units = getattr(cf_var, CF_ATTR_UNITS, iris.unit._UNKNOWN_UNIT_STRING)
+
+        # Graceful loading of invalid units.
+        try:
+            iris.unit.as_unit(attr_units)
+        except ValueError:
+            warnings.warn('Ignoring netCDF variable %r invalid units %r' % (cf_var.cf_name, attr_units))
+            attributes['invalid_units'] = attr_units
+            attr_units = iris.unit._UNKNOWN_UNIT_STRING
 
         # Sanitise lat/lon units.
         if attr_units in UD_UNITS_LAT or attr_units in UD_UNITS_LON:
             attr_units = 'degrees'
 
-        if np.issubdtype(cf_coord_var.dtype, np.str):
+        if np.issubdtype(cf_var.dtype, np.str):
             attr_units = iris.unit._NO_UNIT_STRING
 
         # Get any assoicated calendar for a time reference coordinate.
         if iris.unit.as_unit(attr_units).time_reference:
-            attr_calendar = getattr(cf_coord_var, CF_ATTR_CALENDAR, None)
+            attr_calendar = getattr(cf_var, CF_ATTR_CALENDAR, None)
 
             if attr_calendar:
                 attr_units = iris.unit.Unit(attr_units, calendar=attr_calendar)
@@ -751,7 +761,7 @@ fc_extras
         cube = engine.cube
         attributes = {}
 
-        attr_units = get_attr_units(cf_coord_var)
+        attr_units = get_attr_units(cf_coord_var, attributes)
         points_data = cf_coord_var[:]
 
         # Get any coordinate bounds.
@@ -825,9 +835,9 @@ fc_extras
         cf_var = engine.cf_var
         cube = engine.cube
         attributes = {}
-        
+
         # Get units
-        attr_units = get_attr_units(cf_coord_var)
+        attr_units = get_attr_units(cf_coord_var, attributes)
 
         # Get any coordinate point data.
         if isinstance(cf_coord_var, cf.CFLabelVariable):
@@ -939,7 +949,10 @@ fc_extras
 
         attr_std_name = getattr(cf_var, CF_ATTR_STD_NAME, None)
         attr_axis = getattr(cf_var, CF_ATTR_AXIS, '')
-        is_time_reference = iris.unit.Unit(attr_units or 1).time_reference
+        try:
+            is_time_reference = iris.unit.Unit(attr_units or 1).time_reference
+        except ValueError:
+            is_time_reference = False
         
         return is_time_reference and (attr_std_name=='time' or attr_axis.lower()==CF_VALUE_AXIS_T)
 
@@ -952,7 +965,10 @@ fc_extras
         attr_units = getattr(cf_var, CF_ATTR_UNITS, None)
 
         if attr_units is not None:
-            is_valid = iris.unit.is_time(attr_units)
+            try:
+                is_valid = iris.unit.is_time(attr_units)
+            except ValueError:
+                is_valid = False
 
         return is_valid
 
@@ -1010,7 +1026,7 @@ fc_extras
             for m in CM_PARSE.finditer(nc_cell_methods):
                 d = m.groupdict()
                 if d[CM_METHOD].lower() not in CM_KNOWN_METHODS:
-                    warnings.warn('NCDF variable "%s" contains unknown cell method "%s"' % (cf_var_name, d[CM_METHOD]))
+                    warnings.warn('NetCDF variable "%s" contains unknown cell method "%s"' % (cf_var_name, d[CM_METHOD]))
                 name = d[CM_NAME]
                 name = name.replace(' ', '')
                 name = name.rstrip(':')

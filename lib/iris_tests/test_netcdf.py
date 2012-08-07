@@ -128,7 +128,7 @@ class TestNetCDFLoad(tests.IrisTest):
         self.assertCML(cube, ('netcdf', 'netcdf_rotated_xyt_precipitation.cml'))
 
     def test_cell_methods(self):
-        # Test excercising CF-netCDF cell method parsing.
+        # Test exercising CF-netCDF cell method parsing.
         cubes = iris.load(tests.get_data_path(('NetCDF', 'testing', 'cell_methods.nc')))
 
         for cube in cubes:
@@ -168,6 +168,13 @@ class TestNetCDFLoad(tests.IrisTest):
         self.assertCML(cube[0:20:2][(9, 5, 8, 0), ][3], ('netcdf', 'netcdf_deferred_mix_0.cml'))
         self.assertCML(cube[(2, 7, 3, 4, 5, 0, 9, 10), ][2:6][3], ('netcdf', 'netcdf_deferred_mix_0.cml'))
         self.assertCML(cube[0][(0, 2), (1, 3)], ('netcdf', 'netcdf_deferred_mix_1.cml'))
+
+    def test_units(self):
+        # Test exercising graceful cube and coordinate units loading.
+        cube0, cube1 = iris.load(tests.get_data_path(('NetCDF', 'testing', 'units.nc')))
+
+        self.assertCML(cube0, ('netcdf', 'netcdf_units_0.nc'))
+        self.assertCML(cube1, ('netcdf', 'netcdf_units_1.nc'))
 
 
 class TestSave(tests.IrisTest):

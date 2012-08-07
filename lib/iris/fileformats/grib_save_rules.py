@@ -413,7 +413,7 @@ def reference_time(cube, grib):
     pt = pt_coord.bounds[0,0] if pt_coord.has_bounds() else pt_coord.points[0]  # always in hours
     ft = cube.coord("forecast_period").points[0]   # always in hours
     rt = pt - ft
-    rt = iris.unit.num2date(rt, pt_coord.units.name, pt_coord.unit.calendar)
+    rt = iris.unit.num2date(rt, pt_coord.units.name, pt_coord.units.calendar)
     
     gribapi.grib_set_long(grib, "dataDate", "%04d%02d%02d" % (rt.year, rt.month, rt.day))
     gribapi.grib_set_long(grib, "dataTime", "%02d%02d" % (rt.hour, rt.minute))
