@@ -16,6 +16,12 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
 
+"""
+This system test module is useful to identify if some of the key components required for Iris are available.
+
+The system tests can be run with ``python setup.py test --system-tests``.
+
+"""
 # import iris tests first so that some things can be initialised before importing anything else
 import sys
 
@@ -32,19 +38,25 @@ import iris.unit
 class SystemInitialTest(tests.IrisTest):
 
     def system_test_supported_filetypes(self):
-        dataarray = np.arange(60*60).reshape(60,60).astype(np.dtype('>f4'))
+        nx, ny = 60, 60
+        dataarray = np.arange(nx * ny, dtype='>f4').reshape(nx, ny)
 
-        laty = [float(x) for x in range(0, 0 + 60)]
-        lonx = [float(x) for x in range(30, 30 + 60)]
+        laty = np.linspace(0, 59, ny)
+        lonx = np.linspace(30, 89, nx)
 
-        cm = iris.cube.Cube(data=dataarray)
+        horiz_cs = lambda : iris.coord_systems.LatLonCS(
+                        iris.coord_systems.SpheroidDatum("spherical", 6371229.0, flattening=0.0, units=iris.unit.Unit('m')),
+                        iris.coord_systems.PrimeMeridian(label="Greenwich", value=0.0),
+                        iris.coord_systems.GeoPosition(90.0, 0.0), 0.0)
+
+        cm = iris.cube.Cube(data=dataarray, long_name="System test data", units='m s-1')
         cm.add_dim_coord(
             iris.coords.DimCoord(laty, 'latitude', units='degrees',
-                                 coord_system=self._horiz_coord_system()),
+                                 coord_system=horiz_cs()),
             0)
         cm.add_dim_coord(
             iris.coords.DimCoord(lonx, 'longitude', units='degrees',
-                coord_system=self._horiz_coord_system()),
+                coord_system=horiz_cs()),
             1)
         cm.add_aux_coord(iris.coords.AuxCoord(9, 'forecast_period', units='hours'))
         hours_since_epoch = iris.unit.Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)
@@ -59,31 +71,7 @@ class SystemInitialTest(tests.IrisTest):
 
             new_cube = iris.load_strict(saved_tmpfile)
         
-            new_cube.coord('forecast_period')._TEST_COMPAT_override_axis = 'forecast_period'
-            if filetype == '.nc':
-                new_cube.coord('pressure')._TEST_COMPAT_override_axis = 'pressure'
-                new_cube.coord('latitude')._TEST_COMPAT_force_explicit = True
-                new_cube.coord('longitude')._TEST_COMPAT_force_explicit = True
-            elif filetype == '.grib2':
-                new_cube.coord('pressure')._TEST_COMPAT_definitive = False
-                new_cube.coord('time')._TEST_COMPAT_definitive = False
-                new_cube.coord('forecast_period')._TEST_COMPAT_definitive = False
-                new_cube.coord('originating_centre')._TEST_COMPAT_definitive = False
-                new_cube.coord('originating_centre')._TEST_COMPAT_override_axis = 'originating_centre'
-
             self.assertCML(new_cube, ('system', 'supported_filetype_%s.cml' % filetype))
-
-    def _horiz_coord_system(self):
-        """Return a LatLonCS for this PPField.
-    
-        Returns:
-            A LatLonCS with the appropriate earth shape, meridian and pole position.
-    
-        """
-        return iris.coord_systems.LatLonCS(
-                        iris.coord_systems.SpheroidDatum("spherical", 6371229.0, flattening=0.0, units=iris.unit.Unit('m')),
-                        iris.coord_systems.PrimeMeridian(label="Greenwich", value=0.0),
-                        iris.coord_systems.GeoPosition(90.0, 0.0), 0.0)
 
     def system_test_grib_patch(self):
         import gribapi

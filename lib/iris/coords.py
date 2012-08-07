@@ -59,7 +59,7 @@ class CoordDefn(collections.namedtuple('CoordDefn',
         return self.standard_name or self.long_name or default
 
 
-USE_OLD_XML = True
+USE_OLD_XML = False
 
 # Coordinate cell styles. Used in plot and cartography.
 POINT_MODE = 0

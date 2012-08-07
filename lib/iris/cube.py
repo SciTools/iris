@@ -48,7 +48,7 @@ import iris.util
 from iris._cube_coord_common import CFVariableMixin, LimitedAttributeDict
 
 
-USE_OLD_XML = True
+USE_OLD_XML = False
 
 
 __all__ = ['Cube', 'CubeList', 'CubeMetadata']
@@ -75,7 +75,7 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
 
 
 # The XML namespace to use for CubeML documents
-XML_NAMESPACE_URI = "urn:x-iris:cubeml-0.1"
+XML_NAMESPACE_URI = "urn:x-iris:cubeml-0.2"
 
 
 class CubeList(list):
