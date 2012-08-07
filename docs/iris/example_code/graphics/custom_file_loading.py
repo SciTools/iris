@@ -211,7 +211,15 @@ iris.fileformats.FORMAT_AGENT.add_spec(_NAME_III_spec)
 # ---------------------------------------------
 
 def main():
-    fname = iris.sample_data_path('ascii', 'NAME', '20100509_18Z_variablesource_12Z_VAAC_subset', 'Fields_grid1_201005110600.txt')
+
+    # The ascii file is zipped.    
+    import zipfile
+    import tempfile
+    import os
+    zip = zipfile.ZipFile(iris.sample_data_path('ascii', 'NAME', '20100509_18Z_variablesource_12Z_VAAC_subset', 'Fields_grid1_201005110600.zip'))
+    temp_dir = tempfile.mkdtemp()
+    zip.extractall(temp_dir)
+    fname = os.path.join(temp_dir, 'Fields_grid1_201005110600.txt')
 
     boundary_volc_ash_constraint = iris.Constraint('VOLCANIC_ASH_AIR_CONCENTRATION', flight_level='Boundary layer')
 
@@ -234,6 +242,9 @@ def main():
 
     plt.show()
 
+    os.remove(fname)
+    os.rmdir(temp_dir)
+    
 
 if __name__ == '__main__':
     main()

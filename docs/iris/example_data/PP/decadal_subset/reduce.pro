@@ -18,12 +18,9 @@ pro reduce
 		print, fname
 		
 		pps = ppa(fname, "f.lbuser[3] eq 3236")
-
-;		dots = STRSPLIT(fname, '.', extract=0)
-;		last_dot = dots[size(dots, /n_el)-1]
-;		fname = STRMID(fname, 0, last_dot-1) + "_subset.pp"
-;		print, fname
 		
+		; TODO: We could reduce the res here too
+
 		ppw, pps, fname
 	END
 	
