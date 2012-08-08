@@ -726,6 +726,7 @@ def clip_string(the_str, clip_length=70, rider = "..."):
     Returns:
         The string clipped to the required length with a rider appended. If the clip length
         was greater than the orignal string, the original string is returned unaltered.
+        
     """
 
     if clip_length >= len(the_str) or clip_length <=0:
@@ -827,6 +828,7 @@ Example Usage:
         print timers.stop("big func")
         
         print timers.get("little func")
+        
 """
 
 
@@ -837,6 +839,7 @@ def format_array(arr):
     Useful for xml representation of arrays. 
     
     For customisations, use the :mod:`numpy.core.arrayprint` directly.
+    
     """    
     if arr.size > 85:
         summary_insert = "..., "
