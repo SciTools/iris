@@ -26,7 +26,9 @@
         </explicitCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level_number" points="[1]" unit="Unit('1')" value_type="int32"/>
+        <explicitCoord axis="z" definitive="true" name="model_level_number" points="[1]" unit="Unit('1')" value_type="int32">
+          <attributes positive="up"/>
+        </explicitCoord>
       </coord>
       <coord>
         <explicitCoord axis="z" bounds="[[1.0, 0.9994238]]" name="sigma" points="[0.99971187]" unit="Unit('1')" value_type="float32"/>

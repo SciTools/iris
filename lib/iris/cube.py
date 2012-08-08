@@ -177,7 +177,7 @@ class CubeList(list):
         """        
         return self.extract(constraints, strict=True)
 
-    def merge(self, unique=True, hint=None):
+    def merge(self, unique=True, hints=None):
         """
         Returns the :class:`CubeList` resulting from merging this
         :class:`CubeList`.
@@ -188,7 +188,7 @@ class CubeList(list):
             If True, raises `iris.exceptions.DuplicateDataError` if
             duplicate cubes are detected.
 
-        * hint:
+        * hints:
             One or more coordinate names that have user preference
             to be a dimension coordinate.
 
@@ -213,7 +213,7 @@ class CubeList(list):
         merged_cubes = CubeList()
         for name in sorted(proto_cubes_by_name):
             for proto_cube in proto_cubes_by_name[name]:
-                merged_cubes.extend(proto_cube.merge(unique=unique, hint=hint))
+                merged_cubes.extend(proto_cube.merge(unique=unique, hints=hints))
 
         return merged_cubes
 
@@ -1956,32 +1956,32 @@ class Cube(CFVariableMixin):
             >>> fname = iris.sample_data_path('PP', 'COLPEX', 'air_potential_and_air_pressure.pp')
             >>> air_press = iris.load_strict(fname, 'air_pressure')
             >>> print air_press
-            air_pressure                        (forecast_period: 6; level_height: 10; grid_latitude: 412; grid_longitude: 412)
+            air_pressure                        (time: 6; level_height: 10; grid_latitude: 412; grid_longitude: 412)
                  Dimension coordinates:
-                      forecast_period                           x                -                  -                    -
-                      level_height                              -                x                  -                    -
-                      grid_latitude                             -                -                  x                    -
-                      grid_longitude                            -                -                  -                    x
+                      time                           x                -                  -                    -
+                      level_height                   -                x                  -                    -
+                      grid_latitude                  -                -                  x                    -
+                      grid_longitude                 -                -                  -                    x
                  Auxiliary coordinates:
-                      time                                      x                -                  -                    -
-                      model_level_number                        -                x                  -                    -
-                      sigma                                     -                x                  -                    -
+                      forecast_period                x                -                  -                    -
+                      model_level_number             -                x                  -                    -
+                      sigma                          -                x                  -                    -
                  Scalar coordinates:
                       source: Data from Met Office Unified Model 7.04
                  Attributes:
                       STASH: m01s00i408
 
             >>> print air_press.rolling_window('forecast_period', iris.analysis.MEAN, 3)
-            air_pressure                        (forecast_period: 4; level_height: 10; grid_latitude: 412; grid_longitude: 412)
+            air_pressure                        (time: 4; level_height: 10; grid_latitude: 412; grid_longitude: 412)
                  Dimension coordinates:
-                      forecast_period                           x                -                  -                    -
-                      level_height                              -                x                  -                    -
-                      grid_latitude                             -                -                  x                    -
-                      grid_longitude                            -                -                  -                    x
+                      time                           x                -                  -                    -
+                      level_height                   -                x                  -                    -
+                      grid_latitude                  -                -                  x                    -
+                      grid_longitude                 -                -                  -                    x
                  Auxiliary coordinates:
-                      time                                      x                -                  -                    -
-                      model_level_number                        -                x                  -                    -
-                      sigma                                     -                x                  -                    -
+                      forecast_period                x                -                  -                    -
+                      model_level_number             -                x                  -                    -
+                      sigma                          -                x                  -                    -
                  Scalar coordinates:
                       source: Data from Met Office Unified Model 7.04
                  Attributes:

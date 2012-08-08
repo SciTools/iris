@@ -238,7 +238,9 @@
 		51, 52, 53, 54, 55,
 		56, 57, 58, 59, 60,
 		61, 62, 63, 64, 65,
-		66, 67, 68, 69, 70]" unit="Unit('1')" value_type="int32"/>
+		66, 67, 68, 69, 70]" unit="Unit('1')" value_type="int32">
+          <attributes positive="up"/>
+        </explicitCoord>
       </coord>
       <coord datadims="[0]">
         <explicitCoord axis="z" bounds="[[1.0, 0.99846387],

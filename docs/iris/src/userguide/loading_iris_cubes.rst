@@ -28,16 +28,16 @@ In order to find out what has been loaded, the result can be printed:
      >>> filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
      >>> cubes = iris.load(filename)
      >>> print cubes
-     0: air_potential_temperature           (forecast_period: 3; level_height: 40; grid_latitude: 810; grid_longitude: 622)
-     1: specific_humidity                   (forecast_period: 3; level_height: 40; grid_latitude: 810; grid_longitude: 622)
-     2: surface_altitude                    (forecast_period: 3; grid_latitude: 810; grid_longitude: 622)
+     0: air_potential_temperature           (time: 3; level_height: 40; grid_latitude: 810; grid_longitude: 622)
+     1: specific_humidity                   (time: 3; level_height: 40; grid_latitude: 810; grid_longitude: 622)
+     2: surface_altitude                    (time: 3; grid_latitude: 810; grid_longitude: 622)
 
 
 This shows that there were 3 cubes as a result of loading the file, they were: ``air_potential_temperature``,
 ``specific_humidity`` and ``surface_altitude``. 
 
 The ``surface_altitude`` cube was 3 dimensional with: 
- * the first dimension representing ``forecast_period`` of which there are 3 distinct values.
+ * the first dimension representing ``time`` of which there are 3 distinct values.
  * the second and third dimensions have extents of 810 and 622 respectively and are represented by the
    ``grid_latitude`` and ``grid_longitude`` coordinates.
 
@@ -67,19 +67,19 @@ example, list indexing *could* be used:
      >>> # get the first cube (list indexing is 0 based)
      >>> air_potential_temperature = cubes[0]
      >>> print air_potential_temperature
-     air_potential_temperature           (forecast_period: 3; level_height: 40; grid_latitude: 810; grid_longitude: 622)
+     air_potential_temperature           (time: 3; level_height: 40; grid_latitude: 810; grid_longitude: 622)
           Dimension coordinates:
-               forecast_period                           x                -                  -                    -
-               level_height                              -                x                  -                    -
-               grid_latitude                             -                -                  x                    -
-               grid_longitude                            -                -                  -                    x
+               time                           x                -                  -                    -
+               level_height                   -                x                  -                    -
+               grid_latitude                  -                -                  x                    -
+               grid_longitude                 -                -                  -                    x
           Auxiliary coordinates:
-               time                                      x                -                  -                    -
-               model_level_number                        -                x                  -                    -
-               sigma                                     -                x                  -                    -
-               surface_altitude                          -                -                  x                    x
+               forecast_period                x                -                  -                    -
+               model_level_number             -                x                  -                    -
+               sigma                          -                x                  -                    -
+               surface_altitude               -                -                  x                    x
           Derived coordinates:
-               altitude                                  -                x                  x                    x
+               altitude                       -                x                  x                    x
           Scalar coordinates:
                source: Data from Met Office Unified Model 7.03
           Attributes:

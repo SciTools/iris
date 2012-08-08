@@ -27,7 +27,9 @@
         </regularCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level_number" points="[10]" unit="Unit('1')" value_type="int32"/>
+        <explicitCoord axis="z" definitive="true" name="model_level_number" points="[10]" unit="Unit('1')" value_type="int32">
+          <attributes positive="up"/>
+        </explicitCoord>
       </coord>
       <coord>
         <explicitCoord axis="z" bounds="[[0.80391401, 0.76346451]]" name="sigma" points="[0.78457052]" unit="Unit('1')" value_type="float32"/>
@@ -73,7 +75,9 @@
         </regularCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level_number" points="[10]" unit="Unit('1')" value_type="int32"/>
+        <explicitCoord axis="z" definitive="true" name="model_level_number" points="[10]" unit="Unit('1')" value_type="int32">
+          <attributes positive="up"/>
+        </explicitCoord>
       </coord>
       <coord>
         <explicitCoord axis="z" bounds="[[0.82349348, 0.78457052]]" name="sigma" points="[0.80391401]" unit="Unit('1')" value_type="float32"/>
@@ -119,7 +123,9 @@
         </regularCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level_number" points="[10]" unit="Unit('1')" value_type="int32"/>
+        <explicitCoord axis="z" definitive="true" name="model_level_number" points="[10]" unit="Unit('1')" value_type="int32">
+          <attributes positive="up"/>
+        </explicitCoord>
       </coord>
       <coord>
         <explicitCoord axis="z" bounds="[[0.82349348, 0.78457052]]" name="sigma" points="[0.80391401]" unit="Unit('1')" value_type="float32"/>
@@ -165,7 +171,9 @@
         </regularCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="model_level_number" points="[10]" unit="Unit('1')" value_type="int32"/>
+        <explicitCoord axis="z" definitive="true" name="model_level_number" points="[10]" unit="Unit('1')" value_type="int32">
+          <attributes positive="up"/>
+        </explicitCoord>
       </coord>
       <coord>
         <explicitCoord axis="z" bounds="[[0.80391401, 0.76346451]]" name="sigma" points="[0.78457052]" unit="Unit('1')" value_type="float32"/>

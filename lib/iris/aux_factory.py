@@ -20,6 +20,7 @@ Definitions of derived coordinates.
 """
 
 from abc import ABCMeta, abstractmethod, abstractproperty
+from collections import Iterable
 import warnings
 import zlib
 
@@ -106,6 +107,7 @@ class AuxCoordFactory(CFVariableMixin):
     
     """
     __metaclass__ = ABCMeta
+    _dimensional_names = None
 
     def __init__(self):
         self.long_name = None
@@ -113,6 +115,38 @@ class AuxCoordFactory(CFVariableMixin):
 
         self.coord_system = None
         """Coordinate system (if any) of the coordinate made by the factory"""
+
+    @property
+    def dimensional(self):
+        """
+        Returns a list containing the names of coordinates participating
+        in the auxiliary factory that are candidate dimension coordinates.
+
+        The names are sequenced in preferred priority order.
+
+        """
+        result = []
+        if self._dimensional_names is not None:
+            if not isinstance(self._dimensional_names, Iterable):
+                self._dimensional_names = [self._dimensional_names]
+
+            for name in self._dimensional_names:
+                coord = getattr(self, name, None)
+                if coord is not None and isinstance(coord, iris.coords.Coord):
+                    if isinstance(coord, iris.coords.DimCoord):
+                        result.append(coord.name())
+                    else:
+                        try:
+                            # Determine whether this auxiliary coordinate could be a dimension coordinate.
+                            iris.coords.DimCoord(coord.points, standard_name=coord.standard_name,
+                                                 long_name=coord.long_name, units=coord.units,
+                                                 bounds=coord.bounds, attributes=coord.attributes,
+                                                 coord_system=coord.coord_system)
+                            result.append(coord.name())
+                        except ValueError:
+                            pass
+
+        return result
 
     @abstractproperty
     def dependencies(self):
@@ -191,7 +225,6 @@ class AuxCoordFactory(CFVariableMixin):
     def xml_element(self, doc):
         """Returns a DOM element describing this factory."""
 
-        
 
 class HybridHeightFactory(AuxCoordFactory):
     """
@@ -199,6 +232,7 @@ class HybridHeightFactory(AuxCoordFactory):
         z = a + b * orog
 
     """
+    _dimensional_names = ['delta', 'sigma']
 
     def __init__(self, delta=None, sigma=None, orography=None):
         """
