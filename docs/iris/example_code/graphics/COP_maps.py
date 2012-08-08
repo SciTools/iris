@@ -44,14 +44,10 @@ def cop_metadata_callback(cube, field, filename):
 
 def main():
     # Load e1 and a1 using the callback to update the metadata
-    e1 = iris.load_strict(iris.sample_data_path('PP', 'A1B-Image_E1', 'E1_subset', '*.pp'), 
+    e1 = iris.load_strict(iris.sample_data_path('PP', 'A1B-Image_E1', 'E1_subset', '*_full.pp'), 
                            callback=cop_metadata_callback)
-    a1b = iris.load_strict(iris.sample_data_path('PP', 'A1B-Image_E1', 'A1B_subset', '*.pp'), 
+    a1b = iris.load_strict(iris.sample_data_path('PP', 'A1B-Image_E1', 'A1B_subset', '*_full.pp'), 
                             callback=cop_metadata_callback)
-    
-    # For the purposes of this example, take the final timestep of the data we have just loaded
-    e1 = e1[-1, :, :]
-    a1b = a1b[-1, :, :]
     
     # Load the global average data and add an 'Experiment' coord it
     global_avg = iris.load_strict(iris.sample_data_path('PP', 'A1B-Image_E1', 'pp_1859_1889_avg.pp'))
@@ -72,7 +68,7 @@ def main():
     for e1_slice, a1b_slice in itertools.izip(e1.slices(['latitude', 'longitude']), a1b.slices(['latitude', 'longitude'])):
     
         time_coord = a1b_slice.coord('time')
-    
+        print `e1_slice`, `global_avg`
         # Calculate the difference from the mean
         delta_e1 = e1_slice - global_avg 
         delta_a1b = a1b_slice - global_avg
