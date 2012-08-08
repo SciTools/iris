@@ -1,22 +1,22 @@
 <?xml version="1.0" ?>
-<cubes xmlns="urn:x-iris:cubeml-0.1">
-  <cube standard_name="test_data" unit="1">
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube long_name="test_data" units="1">
     <attributes>
       <attribute name="history" value="Mean of test_data over lat"/>
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <regularCoord axis="x" count="3" name="dummy" start="0.0" step="1.0" unit="Unit('1')" value_type="float32"/>
+        <AuxCoord id="5634c91ba5717382" long_name="dummy" points="[0.0, 1.0, 2.0]" shape="(3,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="y" bounds="[[1.0, 3.0]]" definitive="true" name="lat" points="[2.0]" unit="Unit('1')" value_type="float32">
+        <DimCoord bounds="[[1.0, 3.0]]" id="5634c91ba5717382" long_name="lat" points="[2.0]" shape="(1,)" units="Unit('1')" value_type="float32">
           <horizontalCS cs_type="cartesian" datum="SpheroidDatum(label='undefined spheroid', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="x" definitive="true" name="lon" points="[1.0, 2.0, 3.0]" unit="Unit('1')" value_type="float32">
+        <DimCoord id="5634c91ba5717382" long_name="lon" points="[1.0, 2.0, 3.0]" shape="(3,)" units="Unit('1')" value_type="float32">
           <horizontalCS cs_type="cartesian" datum="SpheroidDatum(label='undefined spheroid', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
     </coords>
     <cellMethods>

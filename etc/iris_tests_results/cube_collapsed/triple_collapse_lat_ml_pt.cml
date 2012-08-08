@@ -1,158 +1,49 @@
 <?xml version="1.0" ?>
-<cubes xmlns="urn:x-iris:cubeml-0.1">
-  <cube standard_name="air_potential_temperature" unit="K">
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="history" value="Mean of air_potential_temperature over grid_latitude, model_level_number, time"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[0.0]" unit="Unit('hours')" value_type="float64"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[0.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
-        <explicitCoord axis="y" bounds="[[-0.12825, -0.038249999]]" definitive="true" name="grid_latitude" points="[-0.083250001]" unit="Unit('degrees')" value_type="float32">
+        <DimCoord bounds="[[-0.12825, -0.03825]]" id="25a5f42bc937b908" points="[-0.08325]" shape="(1,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="x" bounds="[[359.57916, 359.58005],
-		[359.58005, 359.58096],
-		[359.58096, 359.58185],
-		[359.58185, 359.58276],
-		[359.58276, 359.58365],
-		[359.58365, 359.58456],
-		[359.58456, 359.58545],
-		[359.58545, 359.58636],
-		[359.58636, 359.58725],
-		[359.58725, 359.58813],
-		[359.58813, 359.58905],
-		[359.58905, 359.58994],
-		[359.58994, 359.59085],
-		[359.59085, 359.59174],
-		[359.59174, 359.59265],
-		[359.59265, 359.59354],
-		[359.59354, 359.59445],
-		[359.59445, 359.59534],
-		[359.59534, 359.59625],
-		[359.59625, 359.59714],
-		[359.59714, 359.59805],
-		[359.59805, 359.59894],
-		[359.59894, 359.59985],
-		[359.59985, 359.60074],
-		[359.60074, 359.60165],
-		[359.60165, 359.60254],
-		[359.60254, 359.60345],
-		[359.60345, 359.60434],
-		[359.60434, 359.60526],
-		[359.60526, 359.60614],
-		[359.60614, 359.60706],
-		[359.60706, 359.60794],
-		[359.60794, 359.60886],
-		[359.60886, 359.60974],
-		[359.60974, 359.61066],
-		[359.61066, 359.61154],
-		[359.61154, 359.61246],
-		[359.61246, 359.61334],
-		[359.61334, 359.61426],
-		[359.61426, 359.61514],
-		[359.61514, 359.61606],
-		[359.61606, 359.61694],
-		[359.61694, 359.61786],
-		[359.61786, 359.61874],
-		[359.61874, 359.61966],
-		[359.61966, 359.62054],
-		[359.62054, 359.62146],
-		[359.62146, 359.62234],
-		[359.62234, 359.62326],
-		[359.62326, 359.62415],
-		[359.62415, 359.62506],
-		[359.62506, 359.62595],
-		[359.62595, 359.62686],
-		[359.62686, 359.62775],
-		[359.62775, 359.62866],
-		[359.62866, 359.62955],
-		[359.62955, 359.63046],
-		[359.63046, 359.63135],
-		[359.63135, 359.63226],
-		[359.63226, 359.63315],
-		[359.63315, 359.63406],
-		[359.63406, 359.63495],
-		[359.63495, 359.63586],
-		[359.63586, 359.63675],
-		[359.63675, 359.63766],
-		[359.63766, 359.63855],
-		[359.63855, 359.63943],
-		[359.63943, 359.64035],
-		[359.64035, 359.64124],
-		[359.64124, 359.64215],
-		[359.64215, 359.64304],
-		[359.64304, 359.64395],
-		[359.64395, 359.64484],
-		[359.64484, 359.64575],
-		[359.64575, 359.64664],
-		[359.64664, 359.64755],
-		[359.64755, 359.64844],
-		[359.64844, 359.64935],
-		[359.64935, 359.65024],
-		[359.65024, 359.65115],
-		[359.65115, 359.65204],
-		[359.65204, 359.65295],
-		[359.65295, 359.65384],
-		[359.65384, 359.65475],
-		[359.65475, 359.65564],
-		[359.65564, 359.65656],
-		[359.65656, 359.65744],
-		[359.65744, 359.65836],
-		[359.65836, 359.65924],
-		[359.65924, 359.66016],
-		[359.66016, 359.66104],
-		[359.66104, 359.66196],
-		[359.66196, 359.66284],
-		[359.66284, 359.66376],
-		[359.66376, 359.66464],
-		[359.66464, 359.66556],
-		[359.66556, 359.66644],
-		[359.66644, 359.66736],
-		[359.66736, 359.66824],
-		[359.66824, 359.66916]]" definitive="true" name="grid_longitude" points="[359.57959, 359.58051, 359.58139, 359.58231, 359.58319,
-		359.58411, 359.58499, 359.58591, 359.58679, 359.58771,
-		359.58859, 359.58951, 359.59039, 359.59131, 359.59219,
-		359.59311, 359.59399, 359.59491, 359.59579, 359.59671,
-		359.5976, 359.59851, 359.5994, 359.60031, 359.6012,
-		359.60211, 359.603, 359.60391, 359.6048, 359.60571,
-		359.6066, 359.60751, 359.6084, 359.60931, 359.6102,
-		359.61111, 359.612, 359.61292, 359.6138, 359.61469,
-		359.6156, 359.61649, 359.6174, 359.61829, 359.6192,
-		359.62009, 359.621, 359.62189, 359.6228, 359.62369,
-		359.6246, 359.62549, 359.6264, 359.62729, 359.6282,
-		359.62909, 359.63, 359.63089, 359.63181, 359.63269,
-		359.63361, 359.63449, 359.63541, 359.63629, 359.63721,
-		359.63809, 359.63901, 359.63989, 359.64081, 359.64169,
-		359.64261, 359.64349, 359.64441, 359.64529, 359.64621,
-		359.64709, 359.64801, 359.6489, 359.64981, 359.6507,
-		359.65161, 359.6525, 359.65341, 359.6543, 359.65521,
-		359.6561, 359.65701, 359.6579, 359.65881, 359.6597,
-		359.66061, 359.6615, 359.66241, 359.6633, 359.66422,
-		359.6651, 359.66599, 359.6669, 359.66779, 359.6687]" unit="Unit('degrees')" value_type="float32">
+        <DimCoord bounds="[[359.579, 359.58],
+		[359.58, 359.581],
+		[359.581, 359.582],
+		..., 
+		[359.666, 359.667],
+		[359.667, 359.668],
+		[359.668, 359.669]]" id="3bf28623a9db078e" points="[359.58, 359.581, 359.581, ..., 359.667, 359.668,
+		359.669]" shape="(100,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.0, 42077.5]]" definitive="true" name="level_height" points="[21038.75]" unit="Unit('m')" value_type="float32">
-          <attributes positive="up"/>
-        </explicitCoord>
+        <DimCoord bounds="[[0.0, 42077.5]]" id="15ab29dba89f8865" long_name="level_height" points="[21038.8]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[1, 70]]" definitive="true" name="model_level_number" points="[35]" unit="Unit('1')" value_type="int32"/>
+        <DimCoord bounds="[[1, 70]]" id="45dad63840fafae8" points="[35]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.0, 1.0]]" definitive="true" name="sigma" points="[0.5]" unit="Unit('1')" value_type="float32"/>
+        <AuxCoord bounds="[[0.0, 1.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.5]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 7.04']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 7.04]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[347921.16666667163, 347922.0]]" definitive="true" name="time" points="[347921.58333333582]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord bounds="[[347921.166667, 347922.0]]" id="559b95abfcdf35de" points="[347921.583333]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>

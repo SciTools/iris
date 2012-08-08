@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
-<cubes xmlns="urn:x-iris:cubeml-0.1">
-  <cube standard_name="air_potential_temperature" unit="K">
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="history" value="Mean of air_potential_temperature over model_level_number
@@ -8,153 +8,44 @@ Mean of air_potential_temperature over grid_longitude"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[0.0]" unit="Unit('hours')" value_type="float64"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[0.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord datadims="[1]">
-        <explicitCoord axis="y" bounds="[[-0.12825, -0.12735],
+        <DimCoord bounds="[[-0.12825, -0.12735],
 		[-0.12735, -0.12645],
 		[-0.12645, -0.12555],
-		[-0.12555, -0.12465],
-		[-0.12465, -0.12375],
-		[-0.12375, -0.12285],
-		[-0.12285, -0.12195],
-		[-0.12195, -0.12105],
-		[-0.12105, -0.12015],
-		[-0.12015, -0.11925],
-		[-0.11925, -0.11835],
-		[-0.11835, -0.11745],
-		[-0.11745, -0.11655],
-		[-0.11655, -0.11565],
-		[-0.11565, -0.11475],
-		[-0.11475, -0.11385],
-		[-0.11385, -0.11295],
-		[-0.11295, -0.11205],
-		[-0.11205, -0.11115],
-		[-0.11115, -0.11025],
-		[-0.11025, -0.10935],
-		[-0.10935, -0.10845],
-		[-0.10845, -0.10755],
-		[-0.10755, -0.10665],
-		[-0.10665, -0.10575],
-		[-0.10575, -0.10485],
-		[-0.10485, -0.10395],
-		[-0.10395, -0.10305],
-		[-0.10305, -0.10215],
-		[-0.10215, -0.10125],
-		[-0.10125, -0.10035],
-		[-0.10035, -0.09945],
-		[-0.09945, -0.098549999],
-		[-0.098549999, -0.097649999],
-		[-0.097649999, -0.096749999],
-		[-0.096749999, -0.095849998],
-		[-0.095849998, -0.094949998],
-		[-0.094949998, -0.094049998],
-		[-0.094049998, -0.093149997],
-		[-0.093149997, -0.092249997],
-		[-0.092249997, -0.091349997],
-		[-0.091349997, -0.090449996],
-		[-0.090449996, -0.089550003],
-		[-0.089550003, -0.088650003],
-		[-0.088650003, -0.087750003],
-		[-0.087750003, -0.086850002],
-		[-0.086850002, -0.085950002],
-		[-0.085950002, -0.085050002],
-		[-0.085050002, -0.084150001],
-		[-0.084150001, -0.083250001],
-		[-0.083250001, -0.082350001],
-		[-0.082350001, -0.08145],
-		[-0.08145, -0.08055],
-		[-0.08055, -0.07965],
-		[-0.07965, -0.078749999],
-		[-0.078749999, -0.077849999],
-		[-0.077849999, -0.076949999],
-		[-0.076949999, -0.076049998],
-		[-0.076049998, -0.075149998],
-		[-0.075149998, -0.074249998],
-		[-0.074249998, -0.073349997],
-		[-0.073349997, -0.072449997],
-		[-0.072449997, -0.071549997],
-		[-0.071549997, -0.070649996],
-		[-0.070649996, -0.069750004],
-		[-0.069750004, -0.068850003],
-		[-0.068850003, -0.067950003],
-		[-0.067950003, -0.067050003],
-		[-0.067050003, -0.066150002],
-		[-0.066150002, -0.065250002],
-		[-0.065250002, -0.064350002],
-		[-0.064350002, -0.063450001],
-		[-0.063450001, -0.062550001],
-		[-0.062550001, -0.061650001],
-		[-0.061650001, -0.06075],
-		[-0.06075, -0.05985],
-		[-0.05985, -0.05895],
-		[-0.05895, -0.058049999],
-		[-0.058049999, -0.057149999],
-		[-0.057149999, -0.056249999],
-		[-0.056249999, -0.055349998],
-		[-0.055349998, -0.054450002],
-		[-0.054450002, -0.053550001],
-		[-0.053550001, -0.052650001],
-		[-0.052650001, -0.051750001],
-		[-0.051750001, -0.05085],
-		[-0.05085, -0.04995],
-		[-0.04995, -0.04905],
-		[-0.04905, -0.048149999],
-		[-0.048149999, -0.047249999],
-		[-0.047249999, -0.046349999],
-		[-0.046349999, -0.045449998],
-		[-0.045449998, -0.044550002],
-		[-0.044550002, -0.043650001],
-		[-0.043650001, -0.042750001],
-		[-0.042750001, -0.041850001],
-		[-0.041850001, -0.04095],
+		..., 
 		[-0.04095, -0.04005],
 		[-0.04005, -0.03915],
-		[-0.03915, -0.038249999]]" definitive="true" name="grid_latitude" points="[-0.1278, -0.1269, -0.126, -0.1251, -0.1242,
-		-0.1233, -0.1224, -0.1215, -0.1206, -0.1197,
-		-0.1188, -0.1179, -0.117, -0.1161, -0.1152,
-		-0.1143, -0.1134, -0.1125, -0.1116, -0.1107,
-		-0.1098, -0.1089, -0.108, -0.1071, -0.1062,
-		-0.1053, -0.1044, -0.1035, -0.1026, -0.1017,
-		-0.1008, -0.0999, -0.098999999, -0.098099999, -0.097199999,
-		-0.096299998, -0.095399998, -0.094499998, -0.093599997, -0.092699997,
-		-0.091799997, -0.090899996, -0.090000004, -0.089100003, -0.088200003,
-		-0.087300003, -0.086400002, -0.085500002, -0.084600002, -0.083700001,
-		-0.082800001, -0.081900001, -0.081, -0.0801, -0.0792,
-		-0.078299999, -0.077399999, -0.076499999, -0.075599998, -0.074699998,
-		-0.073799998, -0.072899997, -0.071999997, -0.071099997, -0.070200004,
-		-0.069300003, -0.068400003, -0.067500003, -0.066600002, -0.065700002,
-		-0.064800002, -0.063900001, -0.063000001, -0.062100001, -0.0612,
-		-0.0603, -0.0594, -0.058499999, -0.057599999, -0.056699999,
-		-0.055799998, -0.054900002, -0.054000001, -0.053100001, -0.052200001,
-		-0.0513, -0.0504, -0.0495, -0.048599999, -0.047699999,
-		-0.046799999, -0.045899998, -0.045000002, -0.044100001, -0.043200001,
-		-0.042300001, -0.0414, -0.0405, -0.0396, -0.038699999]" unit="Unit('degrees')" value_type="float32">
+		[-0.03915, -0.03825]]" id="25a5f42bc937b908" points="[-0.1278, -0.1269, -0.126, ..., -0.0405, -0.0396,
+		-0.0387]" shape="(100,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="x" bounds="[[359.57916, 359.66916]]" definitive="true" name="grid_longitude" points="[359.62415]" unit="Unit('degrees')" value_type="float32">
+        <DimCoord bounds="[[359.579, 359.669]]" id="3bf28623a9db078e" points="[359.624]" shape="(1,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.0, 42077.5]]" definitive="true" name="level_height" points="[21038.75]" unit="Unit('m')" value_type="float32">
-          <attributes positive="up"/>
-        </explicitCoord>
+        <DimCoord bounds="[[0.0, 42077.5]]" id="15ab29dba89f8865" long_name="level_height" points="[21038.8]" shape="(1,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[1, 70]]" definitive="true" name="model_level_number" points="[35]" unit="Unit('1')" value_type="int32"/>
+        <DimCoord bounds="[[1, 70]]" id="45dad63840fafae8" points="[35]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" bounds="[[0.0, 1.0]]" definitive="true" name="sigma" points="[0.5]" unit="Unit('1')" value_type="float32"/>
+        <AuxCoord bounds="[[0.0, 1.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.5]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 7.04']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 7.04]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[347921.16666667163, 347921.33333332837, 347921.49999999627, 347921.66666666418, 347921.83333333209,
-		347922.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="559b95abfcdf35de" points="[347921.166667, 347921.333333, 347921.5,
+		347921.666667, 347921.833333, 347922.0]" shape="(6,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>

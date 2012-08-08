@@ -1,118 +1,84 @@
 <?xml version="1.0" ?>
-<cubes xmlns="urn:x-iris:cubeml-0.1">
-  <cube standard_name="test cube" unit="metres">
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube long_name="test cube" units="metres">
     <coords>
       <coord datadims="[0]">
-        <explicitCoord axis="t" name="day" points="[1, 28, 24, 23, 19,
-		16, 12, 9, 5, 1,
-		28, 25, 21, 18, 14,
-		10, 9, 5, 2, 29,
-		25, 22, 18]" unit="Unit('1')" value_type="int64"/>
+        <AuxCoord id="5634c91ba5717382" long_name="day" points="[1, 28, 24, 23, 19, 16, 12, 9, 5, 1, 28, 25, 21,
+		18, 14, 10, 9, 5, 2, 29, 25, 22, 18]" shape="(23,)" units="Unit('1')" value_type="int64"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" name="month" points="['Jan', 'Jan', 'Feb', 'Mar', 'Apr',
-		'May', 'Jun', 'Jul', 'Aug', 'Sep',
-		'Sep', 'Oct', 'Nov', 'Dec', 'Jan',
-		'Feb', 'Mar', 'Apr', 'May', 'May',
-		'Jun', 'Jul', 'Aug']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="month" points="[Jan, Jan, Feb, Mar, Apr, May, Jun, Jul, Aug,
+		Sep, Sep, Oct, Nov, Dec, Jan, Feb, Mar, Apr,
+		May, May, Jun, Jul, Aug]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" name="month_full" points="['January', 'January', 'February', 'March', 'April',
-		'May', 'June', 'July', 'August', 'September',
-		'September', 'October', 'November', 'December', 'January',
-		'February', 'March', 'April', 'May', 'May',
-		'June', 'July', 'August']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="month_full" points="[January, January, February, March, April, May,
+		June, July, August, September, September,
+		October, November, December, January, February,
+		March, April, May, May, June, July, August]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" name="month_in_quarter" points="[0, 0, 1, 2, 0,
-		1, 2, 0, 1, 2,
-		2, 0, 1, 2, 0,
-		1, 2, 0, 1, 1,
-		2, 0, 1]" unit="Unit('1')" value_type="int64"/>
+        <AuxCoord id="5634c91ba5717382" long_name="month_in_quarter" points="[0, 0, 1, 2, 0, 1, 2, 0, 1, 2, 2, 0, 1, 2, 0, 1,
+		2, 0, 1, 1, 2, 0, 1]" shape="(23,)" units="Unit('1')" value_type="int64"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" name="month_number" points="[1, 1, 2, 3, 4,
-		5, 6, 7, 8, 9,
-		9, 10, 11, 12, 1,
-		2, 3, 4, 5, 5,
-		6, 7, 8]" unit="Unit('1')" value_type="int64"/>
+        <AuxCoord id="5634c91ba5717382" long_name="month_number" points="[1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 10, 11, 12, 1,
+		2, 3, 4, 5, 5, 6, 7, 8]" shape="(23,)" units="Unit('1')" value_type="int64"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" name="month_short" points="['Jan', 'Jan', 'Feb', 'Mar', 'Apr',
-		'May', 'Jun', 'Jul', 'Aug', 'Sep',
-		'Sep', 'Oct', 'Nov', 'Dec', 'Jan',
-		'Feb', 'Mar', 'Apr', 'May', 'May',
-		'Jun', 'Jul', 'Aug']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="month_short" points="[Jan, Jan, Feb, Mar, Apr, May, Jun, Jul, Aug,
+		Sep, Sep, Oct, Nov, Dec, Jan, Feb, Mar, Apr,
+		May, May, Jun, Jul, Aug]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" name="season" points="['djf', 'djf', 'djf', 'mam', 'mam',
-		'mam', 'jja', 'jja', 'jja', 'son',
-		'son', 'son', 'son', 'djf', 'djf',
-		'djf', 'mam', 'mam', 'mam', 'mam',
-		'jja', 'jja', 'jja']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="season" points="[djf, djf, djf, mam, mam, mam, jja, jja, jja,
+		son, son, son, son, djf, djf, djf, mam, mam,
+		mam, mam, jja, jja, jja]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" name="season_months" points="['djf', 'djf', 'djf', 'mam', 'mam',
-		'mam', 'jja', 'jja', 'jja', 'son',
-		'son', 'son', 'son', 'djf', 'djf',
-		'djf', 'mam', 'mam', 'mam', 'mam',
-		'jja', 'jja', 'jja']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="season_months" points="[djf, djf, djf, mam, mam, mam, jja, jja, jja,
+		son, son, son, son, djf, djf, djf, mam, mam,
+		mam, mam, jja, jja, jja]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" name="season_number" points="[0, 0, 0, 1, 1,
-		1, 2, 2, 2, 3,
-		3, 3, 3, 0, 0,
-		0, 1, 1, 1, 1,
-		2, 2, 2]" unit="Unit('1')" value_type="int64"/>
+        <AuxCoord id="5634c91ba5717382" long_name="season_number" points="[0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 0, 0, 0,
+		1, 1, 1, 1, 2, 2, 2]" shape="(23,)" units="Unit('1')" value_type="int64"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0, 27, 54, 81, 108,
-		135, 162, 189, 216, 243,
-		270, 297, 324, 351, 378,
-		405, 432, 459, 486, 513,
-		540, 567, 594]" unit="Unit('days since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="2729253a10ba8483" points="[0, 27, 54, 81, 108, 135, 162, 189, 216, 243,
+		270, 297, 324, 351, 378, 405, 432, 459, 486,
+		513, 540, 567, 594]" shape="(23,)" standard_name="time" units="Unit('days since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" name="weekday" points="['Thu', 'Wed', 'Tue', 'Mon', 'Sun',
-		'Sat', 'Fri', 'Thu', 'Wed', 'Tue',
-		'Mon', 'Sun', 'Sat', 'Fri', 'Thu',
-		'Wed', 'Tue', 'Mon', 'Sun', 'Sat',
-		'Fri', 'Thu', 'Wed']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="weekday" points="[Thu, Wed, Tue, Mon, Sun, Sat, Fri, Thu, Wed,
+		Tue, Mon, Sun, Sat, Fri, Thu, Wed, Tue, Mon,
+		Sun, Sat, Fri, Thu, Wed]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" name="weekday_full" points="['Thursday', 'Wednesday', 'Tuesday', 'Monday', 'Sunday',
-		'Saturday', 'Friday', 'Thursday', 'Wednesday', 'Tuesday',
-		'Monday', 'Sunday', 'Saturday', 'Friday', 'Thursday',
-		'Wednesday', 'Tuesday', 'Monday', 'Sunday', 'Saturday',
-		'Friday', 'Thursday', 'Wednesday']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="weekday_full" points="[Thursday, Wednesday, Tuesday, Monday, Sunday,
+		Saturday, Friday, Thursday, Wednesday, Tuesday,
+		Monday, Sunday, Saturday, Friday, Thursday,
+		Wednesday, Tuesday, Monday, Sunday, Saturday,
+		Friday, Thursday, Wednesday]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" name="weekday_number" points="[3, 2, 1, 0, 6,
-		5, 4, 3, 2, 1,
-		0, 6, 5, 4, 3,
-		2, 1, 0, 6, 5,
-		4, 3, 2]" unit="Unit('1')" value_type="int64"/>
+        <AuxCoord id="5634c91ba5717382" long_name="weekday_number" points="[3, 2, 1, 0, 6, 5, 4, 3, 2, 1, 0, 6, 5, 4, 3, 2,
+		1, 0, 6, 5, 4, 3, 2]" shape="(23,)" units="Unit('1')" value_type="int64"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" name="weekday_short" points="['Thu', 'Wed', 'Tue', 'Mon', 'Sun',
-		'Sat', 'Fri', 'Thu', 'Wed', 'Tue',
-		'Mon', 'Sun', 'Sat', 'Fri', 'Thu',
-		'Wed', 'Tue', 'Mon', 'Sun', 'Sat',
-		'Fri', 'Thu', 'Wed']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="weekday_short" points="[Thu, Wed, Tue, Mon, Sun, Sat, Fri, Thu, Wed,
+		Tue, Mon, Sun, Sat, Fri, Thu, Wed, Tue, Mon,
+		Sun, Sat, Fri, Thu, Wed]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" name="year" points="[1970, 1970, 1970, 1970, 1970,
-		1970, 1970, 1970, 1970, 1970,
-		1970, 1970, 1970, 1970, 1971,
-		1971, 1971, 1971, 1971, 1971,
-		1971, 1971, 1971]" unit="Unit('1')" value_type="int64"/>
+        <AuxCoord id="5634c91ba5717382" long_name="year" points="[1970, 1970, 1970, 1970, 1970, 1970, 1970, 1970,
+		1970, 1970, 1970, 1970, 1970, 1970, 1971, 1971,
+		1971, 1971, 1971, 1971, 1971, 1971, 1971]" shape="(23,)" units="Unit('1')" value_type="int64"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" name="year_ofseason" points="[1970, 1970, 1970, 1970, 1970,
-		1970, 1970, 1970, 1970, 1970,
-		1970, 1970, 1970, 1971, 1971,
-		1971, 1971, 1971, 1971, 1971,
-		1971, 1971, 1971]" unit="Unit('1')" value_type="int64"/>
+        <AuxCoord id="5634c91ba5717382" long_name="year_ofseason" points="[1970, 1970, 1970, 1970, 1970, 1970, 1970, 1970,
+		1970, 1970, 1970, 1970, 1970, 1971, 1971, 1971,
+		1971, 1971, 1971, 1971, 1971, 1971, 1971]" shape="(23,)" units="Unit('1')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>

@@ -1,2 +1,0 @@
-<?xml version="1.0" ?>
-<explicitCoord axis="foo" circular="True" definitive="true" name="change_in_foo" points="[90.0, 90.0, 90.0, -270.0]" unit="Unit('meter')" value_type="float32"/>

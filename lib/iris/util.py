@@ -726,6 +726,7 @@ def clip_string(the_str, clip_length=70, rider = "..."):
     Returns:
         The string clipped to the required length with a rider appended. If the clip length
         was greater than the orignal string, the original string is returned unaltered.
+        
     """
 
     if clip_length >= len(the_str) or clip_length <=0:
@@ -827,5 +828,24 @@ Example Usage:
         print timers.stop("big func")
         
         print timers.get("little func")
+        
 """
 
+
+def format_array(arr):
+    """
+    Returns the given array as a string, using the python builtin str function on a piecewise basis.
+    
+    Useful for xml representation of arrays. 
+    
+    For customisations, use the :mod:`numpy.core.arrayprint` directly.
+    
+    """    
+    if arr.size > 85:
+        summary_insert = "..., "
+    else:
+        summary_insert = ""
+    ffunc = str
+    return numpy.core.arrayprint._formatArray(arr, ffunc, len(arr.shape), max_line_len=50,
+                                              next_line_prefix='\t\t', separator=', ',
+                                              edge_items=3, summary_insert=summary_insert)[:-1]

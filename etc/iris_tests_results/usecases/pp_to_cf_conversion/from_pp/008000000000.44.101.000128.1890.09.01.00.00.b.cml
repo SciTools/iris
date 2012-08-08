@@ -1,26 +1,28 @@
 <?xml version="1.0" ?>
-<cubes xmlns="urn:x-iris:cubeml-0.1">
-  <cube standard_name="" unit="unknown">
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube units="unknown">
     <attributes>
       <attribute name="STASH" value="m??s44i101"/>
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <explicitCoord axis="z" definitive="true" name="depth" points="[5.0, 15.0, 25.0, 35.099991, 47.849991,
-		66.999985, 95.749985, 138.89999, 203.7, 300.99927,
-		447.04932, 666.29932, 995.54932, 1500.8499, 2116.1499,
-		2731.3999, 3346.6499, 3961.8999, 4577.1484, 5192.4492]" unit="Unit('m')" value_type="float32">
-          <attributes positive="down"/>
-        </explicitCoord>
+        <DimCoord id="36a9239d96e62de6" points="[5.0, 15.0, 25.0, 35.1, 47.85, 67.0, 95.75,
+		138.9, 203.7, 300.999, 447.049, 666.299,
+		995.549, 1500.85, 2116.15, 2731.4, 3346.65,
+		3961.9, 4577.15, 5192.45]" shape="(20,)" standard_name="depth" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="down"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[1]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[681540.0, 683340.0, 685140.0, 686940.0, 688740.0,
-		690540.0, 692340.0, 694140.0, 695940.0, 697740.0,
-		699540.0, 701340.0, 703140.0, 704940.0, 706740.0,
-		708540.0]" unit="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32"/>
+        <DimCoord id="4289202fb9980552" points="[681540.0, 683340.0, 685140.0, 686940.0,
+		688740.0, 690540.0, 692340.0, 694140.0,
+		695940.0, 697740.0, 699540.0, 701340.0,
+		703140.0, 704940.0, 706740.0, 708540.0]" shape="(16,)" standard_name="time" units="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods>
