@@ -1,80 +1,53 @@
 <?xml version="1.0" ?>
-<cubes xmlns="urn:x-iris:cubeml-0.1">
-  <cube standard_name="sea_water_potential_temperature" unit="degC">
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube standard_name="sea_water_potential_temperature" units="degC">
     <attributes>
       <attribute name="Conventions" value="CF-1.5"/>
       <attribute name="STASH" value="m02s00i101"/>
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <explicitCoord axis="z" bounds="[[0.0, 10.0],
+        <DimCoord bounds="[[0.0, 10.0],
 		[10.0, 20.0],
 		[20.0, 30.0],
-		[30.0, 40.199997],
-		[40.199997, 55.5],
+		[30.0, 40.2],
+		[40.2, 55.5],
 		[55.5, 78.5],
 		[78.5, 113.0],
 		[113.0, 164.8],
-		[164.8, 242.60001],
-		[242.60001, 359.3999],
-		[359.3999, 534.69995],
-		[534.69995, 797.8999],
-		[797.8999, 1193.2],
+		[164.8, 242.6],
+		[242.6, 359.4],
+		[359.4, 534.7],
+		[534.7, 797.9],
+		[797.9, 1193.2],
 		[1193.2, 1808.5],
 		[1808.5, 2423.8],
 		[2423.8, 3039.0],
 		[3039.0, 3654.3],
 		[3654.3, 4269.5],
-		[4269.5, 4884.8008],
-		[4884.8008, 5500.1016]]" definitive="true" name="depth" points="[5.0, 15.0, 25.0, 35.100006, 47.850006,
-		67.0, 95.75, 138.89999, 203.7, 301.0,
-		447.05005, 666.30005, 995.55005, 1500.8501, 2116.1499,
-		2731.3999, 3346.6499, 3961.8999, 4577.1484, 5192.4492]" unit="Unit('m')" value_type="float32"/>
+		[4269.5, 4884.8],
+		[4884.8, 5500.1]]" id="4d6b3ca20d6b9350" points="[5.0, 15.0, 25.0, 35.1, 47.85, 67.0, 95.75,
+		138.9, 203.7, 301.0, 447.05, 666.3, 995.55,
+		1500.85, 2116.15, 2731.4, 3346.65, 3961.9,
+		4577.15, 5192.45]" shape="(20,)" standard_name="depth" units="Unit('m')" value_type="float32"/>
       </coord>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[172800]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[172800]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[949680.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[949680.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
       </coord>
       <coord datadims="[1]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[-89.375, -88.125, -86.875, -85.625, -84.375,
-		-83.125, -81.875, -80.625, -79.375, -78.125,
-		-76.875, -75.625, -74.375, -73.125, -71.875,
-		-70.625, -69.375, -68.125, -66.875, -65.625,
-		-64.375, -63.125, -61.875, -60.625, -59.375,
-		-58.125, -56.875, -55.625, -54.375, -53.125,
-		-51.875, -50.625, -49.375, -48.125, -46.875,
-		-45.625, -44.375, -43.125, -41.875, -40.625,
-		-39.375, -38.125, -36.875, -35.625, -34.375,
-		-33.125, -31.875, -30.625, -29.375, -28.125,
-		-26.875, -25.625, -24.375, -23.125, -21.875,
-		-20.625, -19.375, -18.125, -16.875, -15.625,
-		-14.375, -13.125, -11.875, -10.625, -9.375,
-		-8.125, -6.875, -5.625, -4.375, -3.125,
-		-1.875, -0.625, 0.625, 1.875, 3.125,
-		4.375, 5.625, 6.875, 8.125, 9.375,
-		10.625, 11.875, 13.125, 14.375, 15.625,
-		16.875, 18.125, 19.375, 20.625, 21.875,
-		23.125, 24.375, 25.625, 26.875, 28.125,
-		29.375, 30.625, 31.875, 33.125, 34.375,
-		35.625, 36.875, 38.125, 39.375, 40.625,
-		41.875, 43.125, 44.375, 45.625, 46.875,
-		48.125, 49.375, 50.625, 51.875, 53.125,
-		54.375, 55.625, 56.875, 58.125, 59.375,
-		60.625, 61.875, 63.125, 64.375, 65.625,
-		66.875, 68.125, 69.375, 70.625, 71.875,
-		73.125, 74.375, 75.625, 76.875, 78.125,
-		79.375, 80.625, 81.875, 83.125, 84.375,
-		85.625, 86.875, 88.125, 89.375]" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[-951120.0, 1122480.0]]" definitive="true" name="time" points="[85680.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+        <DimCoord bounds="[[-951120.0, 1122480.0]]" id="559b95abfcdf35de" points="[85680.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>

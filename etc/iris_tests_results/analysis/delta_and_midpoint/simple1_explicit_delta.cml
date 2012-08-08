@@ -1,2 +1,0 @@
-<?xml version="1.0" ?>
-<explicitCoord axis="foo" circular="True" definitive="true" name="change_in_foo" points="[90.0, 90.0, 90.0, 90.0]" unit="Unit('degrees')" value_type="float32"/>

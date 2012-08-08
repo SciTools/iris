@@ -1,64 +1,41 @@
 <?xml version="1.0" ?>
-<cubes xmlns="urn:x-iris:cubeml-0.1">
-  <cube standard_name="land_binary_mask" unit="1">
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube standard_name="land_binary_mask" units="1">
     <attributes>
       <attribute name="Conventions" value="CF-1.5"/>
     </attributes>
     <coords>
       <coord>
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[43200]" unit="Unit('hours')" value_type="int32"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[43200]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
-        <explicitCoord axis="rt" definitive="true" name="forecast_reference_time" points="[135360.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+        <DimCoord id="5a80d060b964cced" points="[135360.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[89.999985, 87.499985, 84.999985, 82.499985, 79.999985,
-		77.499992, 74.999992, 72.499992, 69.999992, 67.499992,
-		64.999992, 62.499996, 59.999996, 57.499996, 55.0,
-		52.5, 50.0, 47.5, 45.0, 42.500004,
-		40.000004, 37.500004, 35.000008, 32.500008, 30.000008,
-		27.500008, 25.000008, 22.500008, 20.000015, 17.500015,
-		15.000015, 12.500015, 10.000015, 7.5000153, 5.0000153,
-		2.5000153, 1.5258789e-05, -2.4999771, -4.9999771, -7.4999771,
-		-9.9999771, -12.499977, -14.999977, -17.499977, -19.999969,
-		-22.499969, -24.999969, -27.499969, -29.999969, -32.499969,
-		-34.999969, -37.499969, -39.999969, -42.499969, -44.999969,
-		-47.499969, -49.999954, -52.499954, -54.999954, -57.499954,
-		-59.999954, -62.499954, -64.999954, -67.499954, -69.999954,
-		-72.499954, -74.999954, -77.499954, -79.999954, -82.499954,
-		-84.999954, -87.499954, -89.999954]" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[90.0, 87.5, 85.0, 82.5, 80.0, 77.5, 75.0, 72.5,
+		70.0, 67.5, 65.0, 62.5, 60.0, 57.5, 55.0, 52.5,
+		50.0, 47.5, 45.0, 42.5, 40.0, 37.5, 35.0, 32.5,
+		30.0, 27.5, 25.0, 22.5, 20.0, 17.5, 15.0, 12.5,
+		10.0, 7.50002, 5.00002, 2.50002, 1.52588e-05,
+		-2.49998, -4.99998, -7.49998, -9.99998, -12.5,
+		-15.0, -17.5, -20.0, -22.5, -25.0, -27.5, -30.0,
+		-32.5, -35.0, -37.5, -40.0, -42.5, -45.0, -47.5,
+		-50.0, -52.5, -55.0, -57.5, -60.0, -62.5, -65.0,
+		-67.5, -70.0, -72.5, -75.0, -77.5, -80.0, -82.5,
+		-85.0, -87.5, -90.0]" shape="(73,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <explicitCoord axis="x" circular="True" definitive="true" name="longitude" points="[0.0, 3.749999, 7.4999981, 11.249997, 14.999996,
-		18.749996, 22.499994, 26.249992, 29.999992, 33.749992,
-		37.499992, 41.249989, 44.999989, 48.749989, 52.499985,
-		56.249985, 59.999985, 63.749985, 67.499985, 71.249985,
-		74.999985, 78.749977, 82.499977, 86.249977, 89.999977,
-		93.749977, 97.499977, 101.24998, 104.99997, 108.74997,
-		112.49997, 116.24997, 119.99997, 123.74997, 127.49997,
-		131.24997, 134.99997, 138.74997, 142.49997, 146.24997,
-		149.99997, 153.74995, 157.49995, 161.24995, 164.99995,
-		168.74995, 172.49995, 176.24995, 179.99995, 183.74995,
-		187.49995, 191.24995, 194.99995, 198.74995, 202.49995,
-		206.24995, 209.99994, 213.74994, 217.49994, 221.24994,
-		224.99994, 228.74994, 232.49994, 236.24994, 239.99994,
-		243.74994, 247.49994, 251.24994, 254.99994, 258.74994,
-		262.49994, 266.24994, 269.99994, 273.74994, 277.49994,
-		281.24994, 284.99994, 288.74994, 292.49994, 296.24994,
-		299.99994, 303.74991, 307.49991, 311.24991, 314.99991,
-		318.74991, 322.49991, 326.24991, 329.99991, 333.74991,
-		337.49991, 341.24991, 344.99991, 348.74991, 352.49991,
-		356.24991]" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 3.75, 7.5, ..., 348.75, 352.5, 356.25]" shape="(96,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <explicitCoord axis="t" bounds="[[-944640.0, 178560.0]]" definitive="true" name="time" points="[-383040.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+        <DimCoord bounds="[[-944640.0, 178560.0]]" id="559b95abfcdf35de" points="[-383040.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>

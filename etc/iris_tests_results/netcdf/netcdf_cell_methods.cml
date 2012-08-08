@@ -1,19 +1,19 @@
 <?xml version="1.0" ?>
-<cubes xmlns="urn:x-iris:cubeml-0.1">
-  <cube standard_name="cube_axes_0" unit="unknown">
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube long_name="cube_axes_0" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[2]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -24,20 +24,20 @@
     </cellMethods>
     <data checksum="0x3701e7ba" dtype="int32" mask_checksum="-0x9d92c67" shape="(1, 2, 2)"/>
   </cube>
-  <cube standard_name="cube_axes_1" unit="unknown">
+  <cube long_name="cube_axes_1" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[2]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -49,20 +49,20 @@
     </cellMethods>
     <data checksum="0x3701e7ba" dtype="int32" mask_checksum="-0x9d92c67" shape="(1, 2, 2)"/>
   </cube>
-  <cube standard_name="cube_axes_2" unit="unknown">
+  <cube long_name="cube_axes_2" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[2]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -78,20 +78,20 @@
     </cellMethods>
     <data checksum="0x3701e7ba" dtype="int32" mask_checksum="-0x9d92c67" shape="(1, 2, 2)"/>
   </cube>
-  <cube standard_name="cube_axes_3" unit="unknown">
+  <cube long_name="cube_axes_3" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[2]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -105,20 +105,20 @@
     </cellMethods>
     <data checksum="0x3701e7ba" dtype="int32" mask_checksum="-0x9d92c67" shape="(1, 2, 2)"/>
   </cube>
-  <cube standard_name="cube_axes_4" unit="unknown">
+  <cube long_name="cube_axes_4" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[2]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -132,20 +132,20 @@
     </cellMethods>
     <data checksum="0x3701e7ba" dtype="int32" mask_checksum="-0x9d92c67" shape="(1, 2, 2)"/>
   </cube>
-  <cube standard_name="cube_comment_0" unit="unknown">
+  <cube long_name="cube_comment_0" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[2]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -155,20 +155,20 @@
     </cellMethods>
     <data checksum="0x3701e7ba" dtype="int32" mask_checksum="-0x9d92c67" shape="(1, 2, 2)"/>
   </cube>
-  <cube standard_name="cube_comment_1" unit="unknown">
+  <cube long_name="cube_comment_1" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[2]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -178,20 +178,20 @@
     </cellMethods>
     <data checksum="0x3701e7ba" dtype="int32" mask_checksum="-0x9d92c67" shape="(1, 2, 2)"/>
   </cube>
-  <cube standard_name="cube_comment_2" unit="unknown">
+  <cube long_name="cube_comment_2" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[2]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -202,20 +202,20 @@
     </cellMethods>
     <data checksum="0x3701e7ba" dtype="int32" mask_checksum="-0x9d92c67" shape="(1, 2, 2)"/>
   </cube>
-  <cube standard_name="cube_comment_3" unit="unknown">
+  <cube long_name="cube_comment_3" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[2]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -226,20 +226,20 @@
     </cellMethods>
     <data checksum="0x3701e7ba" dtype="int32" mask_checksum="-0x9d92c67" shape="(1, 2, 2)"/>
   </cube>
-  <cube standard_name="cube_comment_4" unit="unknown">
+  <cube long_name="cube_comment_4" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[2]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -253,20 +253,20 @@
     </cellMethods>
     <data checksum="0x3701e7ba" dtype="int32" mask_checksum="-0x9d92c67" shape="(1, 2, 2)"/>
   </cube>
-  <cube standard_name="cube_interval_0" unit="unknown">
+  <cube long_name="cube_interval_0" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[2]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -276,20 +276,20 @@
     </cellMethods>
     <data checksum="0x3701e7ba" dtype="int32" mask_checksum="-0x9d92c67" shape="(1, 2, 2)"/>
   </cube>
-  <cube standard_name="cube_interval_1" unit="unknown">
+  <cube long_name="cube_interval_1" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[2]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -300,20 +300,20 @@
     </cellMethods>
     <data checksum="0x3701e7ba" dtype="int32" mask_checksum="-0x9d92c67" shape="(1, 2, 2)"/>
   </cube>
-  <cube standard_name="cube_interval_2" unit="unknown">
+  <cube long_name="cube_interval_2" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[2]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -324,20 +324,20 @@
     </cellMethods>
     <data checksum="0x3701e7ba" dtype="int32" mask_checksum="-0x9d92c67" shape="(1, 2, 2)"/>
   </cube>
-  <cube standard_name="cube_interval_3" unit="unknown">
+  <cube long_name="cube_interval_3" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[2]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -351,20 +351,20 @@
     </cellMethods>
     <data checksum="0x3701e7ba" dtype="int32" mask_checksum="-0x9d92c67" shape="(1, 2, 2)"/>
   </cube>
-  <cube standard_name="cube_interval_4" unit="unknown">
+  <cube long_name="cube_interval_4" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[2]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -380,10 +380,10 @@
     </cellMethods>
     <data checksum="0x3701e7ba" dtype="int32" mask_checksum="-0x9d92c67" shape="(1, 2, 2)"/>
   </cube>
-  <cube standard_name="cube_maximum" unit="unknown">
+  <cube long_name="cube_maximum" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -393,10 +393,10 @@
     </cellMethods>
     <data checksum="0x74403b59" dtype="int32" mask_checksum="-0x5afa20e5" shape="(1,)"/>
   </cube>
-  <cube standard_name="cube_mean" unit="unknown">
+  <cube long_name="cube_mean" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -406,10 +406,10 @@
     </cellMethods>
     <data checksum="0x74403b59" dtype="int32" mask_checksum="-0x5afa20e5" shape="(1,)"/>
   </cube>
-  <cube standard_name="cube_median" unit="unknown">
+  <cube long_name="cube_median" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -419,10 +419,10 @@
     </cellMethods>
     <data checksum="0x74403b59" dtype="int32" mask_checksum="-0x5afa20e5" shape="(1,)"/>
   </cube>
-  <cube standard_name="cube_mid_range" unit="unknown">
+  <cube long_name="cube_mid_range" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -432,10 +432,10 @@
     </cellMethods>
     <data checksum="0x74403b59" dtype="int32" mask_checksum="-0x5afa20e5" shape="(1,)"/>
   </cube>
-  <cube standard_name="cube_minimum" unit="unknown">
+  <cube long_name="cube_minimum" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -445,20 +445,20 @@
     </cellMethods>
     <data checksum="0x74403b59" dtype="int32" mask_checksum="-0x5afa20e5" shape="(1,)"/>
   </cube>
-  <cube standard_name="cube_mix_0" unit="unknown">
+  <cube long_name="cube_mix_0" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[2]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -468,20 +468,20 @@
     </cellMethods>
     <data checksum="0x3701e7ba" dtype="int32" mask_checksum="-0x9d92c67" shape="(1, 2, 2)"/>
   </cube>
-  <cube standard_name="cube_mix_1" unit="unknown">
+  <cube long_name="cube_mix_1" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[2]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -492,20 +492,20 @@
     </cellMethods>
     <data checksum="0x3701e7ba" dtype="int32" mask_checksum="-0x9d92c67" shape="(1, 2, 2)"/>
   </cube>
-  <cube standard_name="cube_mix_2" unit="unknown">
+  <cube long_name="cube_mix_2" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[0, 1]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[2]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[0, 1]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -519,10 +519,10 @@
     </cellMethods>
     <data checksum="0x3701e7ba" dtype="int32" mask_checksum="-0x9d92c67" shape="(1, 2, 2)"/>
   </cube>
-  <cube standard_name="cube_mode" unit="unknown">
+  <cube long_name="cube_mode" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -532,10 +532,10 @@
     </cellMethods>
     <data checksum="0x74403b59" dtype="int32" mask_checksum="-0x5afa20e5" shape="(1,)"/>
   </cube>
-  <cube standard_name="cube_point" unit="unknown">
+  <cube long_name="cube_point" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -545,10 +545,10 @@
     </cellMethods>
     <data checksum="0x74403b59" dtype="int32" mask_checksum="-0x5afa20e5" shape="(1,)"/>
   </cube>
-  <cube standard_name="cube_standard_deviation" unit="unknown">
+  <cube long_name="cube_standard_deviation" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -558,10 +558,10 @@
     </cellMethods>
     <data checksum="0x74403b59" dtype="int32" mask_checksum="-0x5afa20e5" shape="(1,)"/>
   </cube>
-  <cube standard_name="cube_sum" unit="unknown">
+  <cube long_name="cube_sum" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -571,10 +571,10 @@
     </cellMethods>
     <data checksum="0x74403b59" dtype="int32" mask_checksum="-0x5afa20e5" shape="(1,)"/>
   </cube>
-  <cube standard_name="cube_variance" unit="unknown">
+  <cube long_name="cube_variance" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[0]" unit="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <DimCoord id="194313fc6fc06bb4" points="[0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-1-1 00:00:00', calendar='gregorian')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods>

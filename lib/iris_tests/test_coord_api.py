@@ -167,7 +167,7 @@ class TestCoordXML(unittest.TestCase):
         
         doc.appendChild(coord_xml_element)
         
-        r = '<?xml version="1.0" ?>\n<explicitCoord axis="test" definitive="true" name="test" points="[0, 1, 2, 3, 4,\n\t\t5, 6, 7, 8, 9]" unit="Unit(\'meter\')" value_type="int32"/>\n'
+        r = '<?xml version="1.0" ?>\n<AuxCoord id="17eb9ae9fe32de24" long_name="test" points="[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]" shape="(10,)" units="Unit(\'meter\')" value_type="int32"/>\n'
         t = doc.toprettyxml(indent="  ")
         self.assertEqual(r, t)
 
@@ -183,7 +183,7 @@ class TestCoordXML(unittest.TestCase):
         
         doc.appendChild(coord_xml_element)
         
-        r = '<?xml version="1.0" ?>\n<regularCoord axis="test" bound_position="0.5" count="4" name="test" start="0.0" step="2.0" unit="Unit(\'meter\')" value_type="float32"/>\n'
+        r = '<?xml version="1.0" ?>\n<DimCoord bounds="[[-1.0, 1.0],\n\t\t[1.0, 3.0],\n\t\t[3.0, 5.0],\n\t\t[5.0, 7.0]]" id="17eb9ae9fe32de24" long_name="test" points="[0.0, 2.0, 4.0, 6.0]" shape="(4,)" units="Unit(\'meter\')" value_type="float32"/>\n'
         t = doc.toprettyxml(indent="  ")
         self.assertEqual(r, t)
 

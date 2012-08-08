@@ -1,51 +1,48 @@
 <?xml version="1.0" ?>
-<cubes xmlns="urn:x-iris:cubeml-0.1">
-  <cube standard_name="" unit="unknown">
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube units="unknown">
     <coords>
       <coord datadims="[0]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[-2, -1, 0, 1, 2]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[-2, -1, 0, 1, 2]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="datum" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="pm" reference_longitude="0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[-2, -1, 0, 1, 2,
-		3]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[-2, -1, 0, 1, 2, 3]" shape="(6,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="datum" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="pm" reference_longitude="0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
     </coords>
     <cellMethods/>
     <data dtype="int64" shape="(5, 6)" state="loaded"/>
   </cube>
-  <cube standard_name="" unit="unknown">
+  <cube units="unknown">
     <coords>
       <coord datadims="[0]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[-2, -1, 0, 1, 2]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[-2, -1, 0, 1, 2]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="datum" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="pm" reference_longitude="0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[-2, -1, 0, 1, 2,
-		3]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[-2, -1, 0, 1, 2, 3]" shape="(6,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="datum" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="pm" reference_longitude="0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
     </coords>
     <cellMethods/>
     <data dtype="int64" shape="(5, 6)" state="loaded"/>
   </cube>
-  <cube standard_name="" unit="unknown">
+  <cube units="unknown">
     <coords>
       <coord datadims="[0]">
-        <explicitCoord axis="y" definitive="true" name="latitude" points="[-2, -1, 0, 1, 2]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="95f615fae348902" points="[-2, -1, 0, 1, 2]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="datum" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="pm" reference_longitude="0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <explicitCoord axis="x" definitive="true" name="longitude" points="[-2, -1, 0, 1, 2,
-		3]" unit="Unit('degrees')" value_type="int32">
+        <DimCoord id="3207b04384adbdec" points="[-2, -1, 0, 1, 2, 3]" shape="(6,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <latLonCS cs_type="spherical" datum="datum" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="pm" reference_longitude="0"/>
-        </explicitCoord>
+        </DimCoord>
       </coord>
     </coords>
     <cellMethods/>

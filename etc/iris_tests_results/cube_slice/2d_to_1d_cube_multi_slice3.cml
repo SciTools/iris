@@ -1,15 +1,15 @@
 <?xml version="1.0" ?>
-<cubes xmlns="urn:x-iris:cubeml-0.1">
-  <cube standard_name="test 2d dimensional cube" unit="meters">
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube long_name="test 2d dimensional cube" units="meters">
     <coords>
       <coord>
-        <explicitCoord axis="t" name="an_other" points="[3.0]" unit="Unit('meters')" value_type="float64"/>
+        <AuxCoord id="2d89fa2153812c6" long_name="an_other" points="[3.0]" shape="(1,)" units="Unit('meters')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="y" definitive="true" name="dim1" points="[3.0, 13.2]" unit="Unit('meters')" value_type="float32"/>
+        <DimCoord id="2d89fa2153812c6" long_name="dim1" points="[3.0, 13.2]" shape="(2,)" units="Unit('meters')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <explicitCoord axis="x" bounds="[[0, 1],
+        <DimCoord bounds="[[0, 1],
 		[2, 3],
 		[4, 5],
 		[6, 7],
@@ -18,33 +18,31 @@
 		[12, 13],
 		[14, 15],
 		[16, 17],
-		[18, 19]]" name="dim2" points="[0, 1, 2, 3, 4,
-		5, 6, 7, 8, 9]" unit="Unit('meters')" value_type="int32"/>
+		[18, 19]]" id="2d89fa2153812c6" long_name="dim2" points="[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]" shape="(10,)" units="Unit('meters')" value_type="int32"/>
       </coord>
       <coord datadims="[0, 1]">
-        <explicitCoord axis="foo" bounds="[[[0, 1, 2, 3],
-		[4, 5, 6, 7],
-		[8, 9, 10, 11],
-		[12, 13, 14, 15],
-		[16, 17, 18, 19],
-		[20, 21, 22, 23],
-		[24, 25, 26, 27],
-		[28, 29, 30, 31],
-		[32, 33, 34, 35],
-		[36, 37, 38, 39]],
+        <AuxCoord bounds="[[[0, 1, 2, 3],
+ 		[4, 5, 6, 7],
+ 		[8, 9, 10, 11],
+ 		[12, 13, 14, 15],
+ 		[16, 17, 18, 19],
+ 		[20, 21, 22, 23],
+ 		[24, 25, 26, 27],
+ 		[28, 29, 30, 31],
+ 		[32, 33, 34, 35],
+ 		[36, 37, 38, 39]],
+
 		[[80, 81, 82, 83],
-		[84, 85, 86, 87],
-		[88, 89, 90, 91],
-		[92, 93, 94, 95],
-		[96, 97, 98, 99],
-		[100, 101, 102, 103],
-		[104, 105, 106, 107],
-		[108, 109, 110, 111],
-		[112, 113, 114, 115],
-		[116, 117, 118, 119]]]" name="my_multi_dim_coord" points="[[0, 1, 2, 3, 4,
-		5, 6, 7, 8, 9],
-		[20, 21, 22, 23, 24,
-		25, 26, 27, 28, 29]]" unit="Unit('1')" value_type="int32"/>
+ 		[84, 85, 86, 87],
+ 		[88, 89, 90, 91],
+ 		[92, 93, 94, 95],
+ 		[96, 97, 98, 99],
+ 		[100, 101, 102, 103],
+ 		[104, 105, 106, 107],
+ 		[108, 109, 110, 111],
+ 		[112, 113, 114, 115],
+ 		[116, 117, 118, 119]]]" id="5634c91ba5717382" long_name="my_multi_dim_coord" points="[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+		[20, 21, 22, 23, 24, 25, 26, 27, 28, 29]]" shape="(2, 10)" units="Unit('1')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods/>

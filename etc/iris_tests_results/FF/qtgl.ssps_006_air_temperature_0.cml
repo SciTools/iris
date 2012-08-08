@@ -1,33 +1,37 @@
 <?xml version="1.0" ?>
-<cubes xmlns="urn:x-iris:cubeml-0.1">
-  <cube standard_name="air_temperature" unit="K">
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube standard_name="air_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s03i236"/>
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <explicitCoord axis="forecast_period" definitive="true" name="forecast_period" points="[0.0, 3.0, 6.0]" unit="Unit('hours')" value_type="float64"/>
+        <DimCoord id="fc2e5e733b5cf4c" points="[0.0, 3.0, 6.0]" shape="(3,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
-        <explicitCoord axis="z" definitive="true" name="height" points="[1.5]" unit="Unit('m')" value_type="float64">
-          <attributes positive="up"/>
-        </explicitCoord>
+        <DimCoord id="6f10044df896f684" points="[1.5]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[1]">
-        <regularCoord axis="y" count="769" name="latitude" start="-90.0" step="0.234375" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="95f615fae348902" points="[-90.0, -89.7656, -89.5312, ..., 89.5312,
+		89.7656, 90.0]" shape="(769,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord datadims="[2]">
-        <regularCoord axis="x" circular="True" count="1024" name="longitude" start="0.0" step="0.351562" unit="Unit('degrees')" value_type="float32">
+        <DimCoord id="3207b04384adbdec" points="[0.0, 0.351562, 0.703125, ..., 358.945, 359.297,
+		359.648]" shape="(1024,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
-        </regularCoord>
+        </DimCoord>
       </coord>
       <coord>
-        <explicitCoord axis="source" name="source" points="['Data from Met Office Unified Model 7.07']" unit="Unit('no_unit')" value_type="string"/>
+        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 7.07]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="t" definitive="true" name="time" points="[361980.0, 361983.0, 361986.0]" unit="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <DimCoord id="559b95abfcdf35de" points="[361980.0, 361983.0, 361986.0]" shape="(3,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
