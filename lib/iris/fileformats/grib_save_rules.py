@@ -179,7 +179,7 @@ def param_code(cube, grib):
     gribapi.grib_set_long(grib, "discipline", 0)
     gribapi.grib_set_long(grib, "parameterCategory", 0)
     gribapi.grib_set_long(grib, "parameterNumber", 0)
-    warnings.warn("Not yet translating standard name into grib param codes. \n"
+    warnings.warn("Not yet translating standard name into grib param codes.\n"
                   "discipline, parameterCategory and parameterNumber have been zeroed.")
     
     
