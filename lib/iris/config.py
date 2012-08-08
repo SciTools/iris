@@ -76,6 +76,17 @@ config.read([os.path.join(CONFIG_PATH, 'site.cfg')])
 _RESOURCE_SECTION = 'Resources'
 
 
+# Determine the default location to look for the sample data
+_split_token = os.path.join("iris", "lib", "iris", "config.py")
+_iris_parent_path = __file__.split(_split_token)[0]
+_default_sample_data_path = os.path.join(_iris_parent_path, "iris_sample_data")
+
+SAMPLE_DATA_DIR = get_dir_option(_RESOURCE_SECTION, 'iris_sample_data',
+                                 _default_sample_data_path)
+"""The full path to the sample data directory (required to build the documentation)."""
+
+
+
 RESOURCE_DIR = get_dir_option(_RESOURCE_SECTION, 'dir',
                               os.path.join(ROOT_PATH, 'resources'))
 """The full path to the Iris resource directory."""

@@ -228,7 +228,13 @@ def sample_data_path(*path_to_join):
         full_path = iris.sample_data_path('PP', 'globClim1', 'theta_subset.pp')
         cube = iris.load_strict(full_path)
     
+    Note: The iris_sample_data repository can be found at git@github.com:bblay/iris_sample_data.git
+    Tell Iris where to find in etc/site.cfg, or clone it next to the Iris root folder.   
+    TODO: Update this link when it's in SciTools.
+    
     """
-    import iris
-    iris_path = iris.__file__.rsplit("lib", 1)[0]
-    return os.path.join(iris_path, "sample_data", *path_to_join)
+    if not os.path.exists(config.SAMPLE_DATA_DIR):
+        # TODO: Update this link when it's in SciTools.
+        warnings.warn("The sample data folder was not found (available from git@github.com:bblay/iris_sample_data.git)")
+
+    return os.path.join(config.SAMPLE_DATA_DIR, *path_to_join)
