@@ -959,7 +959,8 @@ class Cube(CFVariableMixin):
             dimension_header = '; '.join([', '.join(dim_names[dim] or ['*ANONYMOUS*']) + 
                                          ': %d' % dim_shape for dim, dim_shape in enumerate(self.shape)])
                 
-        summary = cube_header = '%-*s (%s)' % (name_padding, self.name() or 'unknown', dimension_header)
+        cube_header = '%-*s (%s)' % (name_padding, self.name() or 'unknown', dimension_header)
+        summary = ''
         
         # Generate full cube textual summary.
         if not shorten:
@@ -997,7 +998,7 @@ class Cube(CFVariableMixin):
             #
             # Generate textual summary of cube vector coordinates.
             #
-            def vector_summary(vector_coords, cube_header):
+            def vector_summary(vector_coords, cube_header, max_line_offset):
                 """
                 Generates a list of suitably aligned strings containing coord names 
                 and dimensions indicated by one or more 'x' symbols.
@@ -1013,15 +1014,14 @@ class Cube(CFVariableMixin):
                     
                     # Generate basic textual summary for each vector coordinate - WITHOUT dimension markers.
                     for coord in vector_coords:
-                        vector_summary.append('%*s%s' % (indent, ' ', coord.name()))
+                        vector_summary.append('%*s%s' % (indent, ' ', iris.util.clip_string(str(coord.name()))))
                         
-                    max_line = max([len(line) for line in vector_summary])
                     min_alignment = min(alignment)
                     
                     # Determine whether the cube header requires realignment due to
                     # one or more longer vector coordinate summaries.
-                    if max_line >= min_alignment:
-                        delta = max_line - min_alignment + 5
+                    if max_line_offset >= min_alignment:
+                        delta = max_line_offset - min_alignment + 5
                         cube_header = '%-*s (%s)' % (int(name_padding + delta), self.name() or 'unknown', dimension_header)
                         alignment += delta
         
@@ -1036,16 +1036,21 @@ class Cube(CFVariableMixin):
 
                 return vector_summary, cube_header
            
+            # Calculate the maximum line offset.
+            max_line_offset = 0
+            for coord in all_coords:
+                max_line_offset = max(max_line_offset, len('%*s%s' % (indent, ' ', iris.util.clip_string(str(coord.name())))))
+
             if vector_dim_coords:
-                dim_coord_summary, cube_header = vector_summary(vector_dim_coords, cube_header)
+                dim_coord_summary, cube_header = vector_summary(vector_dim_coords, cube_header, max_line_offset)
                 summary += '\n     Dimension coordinates:\n' + '\n'.join(dim_coord_summary)
 
             if vector_aux_coords:
-                aux_coord_summary, cube_header = vector_summary(vector_aux_coords, cube_header)
+                aux_coord_summary, cube_header = vector_summary(vector_aux_coords, cube_header, max_line_offset)
                 summary += '\n     Auxiliary coordinates:\n' + '\n'.join(aux_coord_summary)
 
             if vector_derived_coords:
-                derived_coord_summary, cube_header = vector_summary(vector_derived_coords, cube_header)
+                derived_coord_summary, cube_header = vector_summary(vector_derived_coords, cube_header, max_line_offset)
                 summary += '\n     Derived coordinates:\n' + '\n'.join(derived_coord_summary)
                         
             #
@@ -1110,6 +1115,9 @@ class Cube(CFVariableMixin):
                 for cm in self.cell_methods:
                     cm_lines.append('%*s%s' % (indent, ' ', str(cm)))
                 summary += '\n'.join(cm_lines)
+
+        # Construct the final cube summary.
+        summary = cube_header + summary
 
         return summary
 
