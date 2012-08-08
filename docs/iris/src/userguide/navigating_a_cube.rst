@@ -209,7 +209,7 @@ by field basis *before* they are automatically merged together:
     def lagged_ensemble_callback(cube, field, filename):
         # Add our own realization coordinate if it doesn't already exist.
         if not cube.coords('realization'):
-            realization = numpy.int32(filename[-13:-10)
+            realization = numpy.int32(filename[-13:-10])
             ensemble_coord = icoords.AuxCoord(realization, standard_name='realization')
             cube.add_aux_coord(ensemble_coord)
 

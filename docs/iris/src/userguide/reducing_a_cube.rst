@@ -15,7 +15,7 @@ Cube extraction
 ^^^^^^^^^^^^^^^^
 A subset of a cube can be "extracted" from a multi-dimensional cube in order to reduce its dimensionality::
 
-	filename = iris.sample_data_path('PP', 'globClim1', 'theta.pp')
+	filename = iris.sample_data_path('PP', 'globClim1', 'theta_subset.pp')
 	cube = iris.load_strict(filename)
 	print cube
         equator_slice = cube.extract(iris.Constraint(latitude=0)) 
@@ -51,7 +51,7 @@ For example to get a model_level_number of 10 at the equator the following line 
 
 The two steps required to get ``model_level_number`` of 10 at the equator can be simplified into a single constraint::
 
-	filename = iris.sample_data_path('PP', 'globClim1', 'theta.pp')
+	filename = iris.sample_data_path('PP', 'globClim1', 'theta_subset.pp')
 	cube = iris.load_strict(filename)
 	equator_model_level_10_slice = cube.extract(iris.Constraint(latitude=0, model_level_number=10))
 	print equator_model_level_10_slice
@@ -74,7 +74,7 @@ For example, to deal with a 3 dimensional cube (z,y,x) you could iterate over al
 which make up the full 3d cube.::
 
 	import iris
-	filename = iris.sample_data_path('PP', 'globClim1', 'theta.pp')
+	filename = iris.sample_data_path('PP', 'globClim1', 'theta_subset.pp')
 	cube = iris.load_strict(filename)
 	print cube
 	for yx_slice in cube.slices(['latitude', 'longitude']):
@@ -93,7 +93,7 @@ line ``print repr(yx_slice)`` was run 38 times.
 This method can handle n-dimensional slices by providing more or fewer coordinate names in the list to **slices**:: 
 
 	import iris
-	filename = iris.sample_data_path('PP', 'globClim1', 'theta.pp')
+	filename = iris.sample_data_path('PP', 'globClim1', 'theta_subset.pp')
 	cube = iris.load_strict(filename)
 	print cube
 	for i, x_slice in enumerate(cube.slices(['longitude'])):
@@ -152,7 +152,7 @@ Here are some examples of array indexing in :py:mod:`numpy`::
 Similarly, Iris cubes have indexing capability::
 
 	import iris
-        filename = iris.sample_data_path('PP', 'globClim1', 'theta.pp')
+        filename = iris.sample_data_path('PP', 'globClim1', 'theta_subset.pp')
 	cube = iris.load_strict(filename)
 
 	print cube

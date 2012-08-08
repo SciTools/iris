@@ -822,7 +822,7 @@ class Cube(CFVariableMixin):
             To obtain the shape of the data without causing it to be loaded, use the Cube.shape attribute.
 
         Example::
-            >>> fname = iris.sample_data_path('PP', 'COLPEX', 'air_potential_and_air_pressure.pp')
+            >>> fname = iris.sample_data_path('PP', 'COLPEX', 'air_potential_and_air_pressure_subset_b.pp')
             >>> cube = iris.load_strict(fname, 'air_pressure')  # cube.data does not yet have a value.
             >>> print cube.shape                                # cube.data still does not have a value.
             (6, 10, 412, 412)
@@ -1720,7 +1720,7 @@ class Cube(CFVariableMixin):
 
             >>> import iris
             >>> import iris.analysis
-            >>> cube = iris.load_strict(iris.sample_data_path('PP', 'globClim1', 'theta.pp'))
+            >>> cube = iris.load_strict(iris.sample_data_path('PP', 'globClim1', 'theta_subset.pp'))
             >>> new_cube = cube.collapsed('longitude', iris.analysis.MEAN)
             >>> print new_cube
             air_potential_temperature           (level_height: 38; latitude: 145)
@@ -1945,7 +1945,7 @@ class Cube(CFVariableMixin):
         For example:
 
             >>> import iris, iris.analysis
-            >>> fname = iris.sample_data_path('PP', 'COLPEX', 'air_potential_and_air_pressure.pp')
+            >>> fname = iris.sample_data_path('PP', 'COLPEX', 'air_potential_and_air_pressure_subset_b.pp')
             >>> air_press = iris.load_strict(fname, 'air_pressure')
             >>> print air_press
             air_pressure                        (forecast_period: 6; level_height: 10; grid_latitude: 412; grid_longitude: 412)

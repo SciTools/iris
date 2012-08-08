@@ -9,7 +9,7 @@ Collapsing entire data dimensions
 .. testsetup::
 
     import iris
-    filename = iris.sample_data_path('PP', 'globClim1', 'theta.pp')
+    filename = iris.sample_data_path('PP', 'globClim1', 'theta_subset.pp')
     cube = iris.load_strict(filename)
 
     import iris.analysis.cartography
@@ -22,7 +22,7 @@ In the section :doc:`reducing_a_cube` we saw how to extract a subset of a cube i
 Instead of downsampling the data, a similar goal can be achieved using statistical operations over *all* of the data. Suppose we have a cube:
 
     >>> import iris
-    >>> filename = iris.sample_data_path('PP', 'globClim1', 'theta.pp')
+    >>> filename = iris.sample_data_path('PP', 'globClim1', 'theta_subset.pp')
     >>> cube = iris.load_strict(filename)
     >>> print cube
     air_potential_temperature           (level_height: 38; latitude: 145; longitude: 192)

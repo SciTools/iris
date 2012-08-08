@@ -225,7 +225,7 @@ def sample_data_path(*path_to_join):
     
     Example:
     
-        full_path = iris.sample_data_path('PP', 'globClim1', 'theta.pp')
+        full_path = iris.sample_data_path('PP', 'globClim1', 'theta_subset.pp')
         cube = iris.load_strict(full_path)
     
     """
