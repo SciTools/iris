@@ -68,7 +68,6 @@ def main():
     for e1_slice, a1b_slice in itertools.izip(e1.slices(['latitude', 'longitude']), a1b.slices(['latitude', 'longitude'])):
     
         time_coord = a1b_slice.coord('time')
-        print `e1_slice`, `global_avg`
         # Calculate the difference from the mean
         delta_e1 = e1_slice - global_avg 
         delta_a1b = a1b_slice - global_avg
