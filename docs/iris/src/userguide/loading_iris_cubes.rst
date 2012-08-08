@@ -133,7 +133,7 @@ matching :meth:`name <iris.cube.Cube.name>` will be returned::
 To constrain the load to multiple distinct constraints, a list of constraints can be provided. 
 This is equivalent to running load once for each constraint but is likely to be more efficient::
 
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk_subset_subset.pp')
+     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk_subset.pp')
      cubes = iris.load(filename, ['air_potential_temperature', 'specific_humidity'])
 
 The :class:`iris.Constraint` class can be used to restrict coordinate values on load. For example, to constrain the load to

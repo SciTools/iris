@@ -232,5 +232,3 @@ def sample_data_path(*path_to_join):
     import iris
     iris_path = iris.__file__.rsplit("lib", 1)[0]
     return os.path.join(iris_path, "docs", "iris", "example_data", *path_to_join)
-
-
