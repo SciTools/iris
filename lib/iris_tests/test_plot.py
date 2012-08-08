@@ -436,10 +436,10 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
                                                              cube.coord('grid_longitude'),
                                                              cube.coord('grid_longitude')])
         
-    def test_non_cube_coordate(self):
+    def test_non_cube_coordinate(self):
         cube = self.cube[0, :, :, 0]
         pts = -100 + numpy.arange(cube.shape[1]) * 13
-        x = coords.DimCoord(pts, 'model_level_number')
+        x = coords.DimCoord(pts, 'model_level_number', attributes={'positive': 'up'})
         self.draw('contourf', cube, coords=['grid_latitude', x])
 
 

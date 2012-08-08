@@ -28,7 +28,9 @@
         </regularCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="z" definitive="true" name="model_level_number" points="[10, 22]" unit="Unit('1')" value_type="int32"/>
+        <explicitCoord axis="z" definitive="true" name="model_level_number" points="[10, 22]" unit="Unit('1')" value_type="int32">
+          <attributes positive="up"/>
+        </explicitCoord>
       </coord>
       <coord datadims="[0]">
         <explicitCoord axis="z" bounds="[[0.80391401, 0.76346451],
@@ -76,7 +78,9 @@
         </regularCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="z" definitive="true" name="model_level_number" points="[10, 22]" unit="Unit('1')" value_type="int32"/>
+        <explicitCoord axis="z" definitive="true" name="model_level_number" points="[10, 22]" unit="Unit('1')" value_type="int32">
+          <attributes positive="up"/>
+        </explicitCoord>
       </coord>
       <coord datadims="[0]">
         <explicitCoord axis="z" bounds="[[0.82349348, 0.78457052],
@@ -124,7 +128,9 @@
         </regularCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="z" definitive="true" name="model_level_number" points="[10, 22]" unit="Unit('1')" value_type="int32"/>
+        <explicitCoord axis="z" definitive="true" name="model_level_number" points="[10, 22]" unit="Unit('1')" value_type="int32">
+          <attributes positive="up"/>
+        </explicitCoord>
       </coord>
       <coord datadims="[0]">
         <explicitCoord axis="z" bounds="[[0.82349348, 0.78457052],
@@ -172,7 +178,9 @@
         </regularCoord>
       </coord>
       <coord datadims="[0]">
-        <explicitCoord axis="z" definitive="true" name="model_level_number" points="[10, 22]" unit="Unit('1')" value_type="int32"/>
+        <explicitCoord axis="z" definitive="true" name="model_level_number" points="[10, 22]" unit="Unit('1')" value_type="int32">
+          <attributes positive="up"/>
+        </explicitCoord>
       </coord>
       <coord datadims="[0]">
         <explicitCoord axis="z" bounds="[[0.80391401, 0.76346451],

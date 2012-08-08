@@ -18,10 +18,6 @@ WARNING (3): No standard_name or long_name attribute specified
 INFO (3.1): No units attribute set.  Please consider adding a units attribute for completeness.
 
 ------------------
-Checking variable: grid_latitude
-------------------
-
-------------------
 Checking variable: pseudo_level
 ------------------
 
@@ -35,6 +31,10 @@ Checking variable: time
 
 ------------------
 Checking variable: forecast_reference_time
+------------------
+
+------------------
+Checking variable: grid_latitude
 ------------------
 
 ------------------

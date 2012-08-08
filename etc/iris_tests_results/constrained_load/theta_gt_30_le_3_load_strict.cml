@@ -41,7 +41,9 @@
       <coord datadims="[0]">
         <explicitCoord axis="z" definitive="true" name="model_level_number" points="[1, 2, 3, 31, 32,
 		33, 34, 35, 36, 37,
-		38]" unit="Unit('1')" value_type="int32"/>
+		38]" unit="Unit('1')" value_type="int32">
+          <attributes positive="up"/>
+        </explicitCoord>
       </coord>
       <coord datadims="[0]">
         <explicitCoord axis="z" bounds="[[1.0, 0.99429625],

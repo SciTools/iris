@@ -41,6 +41,7 @@ variables:
 	int model_level_number(level_height) ;
 		model_level_number:units = "1" ;
 		model_level_number:standard_name = "model_level_number" ;
+		model_level_number:positive = "up" ;
 	float sigma(level_height) ;
 		sigma:bounds = "sigma_bnds" ;
 		sigma:units = "1" ;

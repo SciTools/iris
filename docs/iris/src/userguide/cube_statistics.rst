@@ -159,15 +159,15 @@ Printing this cube now shows that two extra coordinates exist on the cube:
 .. doctest:: aggregation
 
     >>> print cube
-    air_temperature                     (forecast_period: 192; latitude: 145; longitude: 192)
+    air_temperature                     (time: 192; latitude: 145; longitude: 192)
          Dimension coordinates:
-              forecast_period                           x              -               -
-              latitude                                  -              x               -
-              longitude                                 -              -               x
+              time                           x              -               -
+              latitude                       -              x               -
+              longitude                      -              -               x
          Auxiliary coordinates:
-              clim_season                               x              -               -
-              season_year                               x              -               -
-              time                                      x              -               -
+              clim_season                    x              -               -
+              forecast_period                x              -               -
+              season_year                    x              -               -
          Scalar coordinates:
               forecast_reference_time: -959040.0 hours since 1970-01-01 00:00:00
               height: 1.5 m
@@ -176,7 +176,6 @@ Printing this cube now shows that two extra coordinates exist on the cube:
               STASH: m01s03i236
          Cell methods:
               mean: time (1 hour)
-
 
 These two coordinates can now be used as *groups* over which to do an aggregation:
 

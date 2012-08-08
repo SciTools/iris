@@ -1,16 +1,16 @@
 dimensions:
-	forecast_period = 6 ;
+	time = 6 ;
 	level_height = 70 ;
 	grid_latitude = 412 ;
 	grid_longitude = 412 ;
 	bnds = 2 ;
 variables:
-	float air_potential_temperature(forecast_period, level_height, grid_latitude, grid_longitude) ;
+	float air_potential_temperature(time, level_height, grid_latitude, grid_longitude) ;
 		air_potential_temperature:standard_name = "air_potential_temperature" ;
 		air_potential_temperature:units = "K" ;
 		air_potential_temperature:ukmo__um_stash_source = "m01s00i004" ;
 		air_potential_temperature:grid_mapping = "rotated_latitude_longitude" ;
-		air_potential_temperature:coordinates = "model_level_number sigma surface_altitude time" ;
+		air_potential_temperature:coordinates = "forecast_period model_level_number sigma surface_altitude" ;
 	int rotated_latitude_longitude ;
 		rotated_latitude_longitude:grid_mapping_name = "rotated_latitude_longitude" ;
 		rotated_latitude_longitude:longitude_of_prime_meridian = 0. ;
@@ -19,9 +19,11 @@ variables:
 		rotated_latitude_longitude:grid_north_pole_latitude = 37.5f ;
 		rotated_latitude_longitude:grid_north_pole_longitude = 177.5f ;
 		rotated_latitude_longitude:north_pole_grid_longitude = 0. ;
-	double forecast_period(forecast_period) ;
-		forecast_period:units = "hours" ;
-		forecast_period:standard_name = "forecast_period" ;
+	double time(time) ;
+		time:axis = "T" ;
+		time:units = "hours since 1970-01-01 00:00:00" ;
+		time:standard_name = "time" ;
+		time:calendar = "gregorian" ;
 	float level_height(level_height) ;
 		level_height:bounds = "level_height_bnds" ;
 		level_height:axis = "Z" ;
@@ -43,9 +45,13 @@ variables:
 		grid_longitude:units = "degrees" ;
 		grid_longitude:standard_name = "grid_longitude" ;
 	float grid_longitude_bnds(grid_longitude, bnds) ;
+	double forecast_period(time) ;
+		forecast_period:units = "hours" ;
+		forecast_period:standard_name = "forecast_period" ;
 	int model_level_number(level_height) ;
 		model_level_number:units = "1" ;
 		model_level_number:standard_name = "model_level_number" ;
+		model_level_number:positive = "up" ;
 	float sigma(level_height) ;
 		sigma:bounds = "sigma_bnds" ;
 		sigma:units = "1" ;
@@ -54,10 +60,6 @@ variables:
 	float surface_altitude(grid_latitude, grid_longitude) ;
 		surface_altitude:units = "m" ;
 		surface_altitude:standard_name = "surface_altitude" ;
-	double time(forecast_period) ;
-		time:units = "hours since 1970-01-01 00:00:00" ;
-		time:standard_name = "time" ;
-		time:calendar = "gregorian" ;
 
 // global attributes:
 		:Conventions = "CF-1.5" ;
