@@ -173,12 +173,13 @@ setup(
     packages=find_package_tree('lib/iris', 'iris'),
     package_dir={'': 'lib'},
     package_data={
-        'iris': ['LICENCE', 'resources/logos/*.png'] + \
+        'iris': ['resources/logos/*.png'] + \
                 list(file_walk_relative('lib/iris/etc', remove='lib/iris/')) + \
                 ['fileformats/_pyke_rules/*.k?b'] + \
                 list(file_walk_relative('lib/iris/tests/results', remove='lib/iris/'))
               ,
         },
+    data_files=[('iris', ['CHANGES', 'COPYING', 'COPYING.LESSER'])],
     tests_require=['nose'],
     features={
         'unpack': setuptools.Feature(
