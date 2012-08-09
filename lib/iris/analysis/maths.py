@@ -25,10 +25,9 @@ import math
 import numpy
 
 import iris.analysis
-import iris.exceptions
 import iris.coords
 import iris.cube
-from iris.analysis import coord_comparison
+import iris.exceptions
 
 
 def abs(cube, update_history=True, in_place=False):
@@ -273,9 +272,9 @@ def _add_subtract_common(operation_function, operation_symbol, operation_noun, o
         # Deal with cube addition/subtraction by cube
         
         # get a coordinate comparison of this cube and the cube to do the operation with
-        coord_comparison = iris.analysis.coord_comparison(cube, other)
+        coord_comp = iris.analysis.coord_comparison(cube, other)
         
-        if coord_comparison['transposable']:
+        if coord_comp['transposable']:
             raise ValueError('Cubes cannot be %s, differing axes. '
                                  'cube.transpose() may be required to re-order the axes.' % operation_past_tense)
         
@@ -284,7 +283,7 @@ def _add_subtract_common(operation_function, operation_symbol, operation_noun, o
             warnings.warn('The "ignore" keyword has been deprecated in add/subtract. This functionality is now automatic. '
                           'The provided value to "ignore" has been ignored, and has been automatically calculated.')
 
-        bad_coord_grps = (coord_comparison['ungroupable_and_dimensioned'] + coord_comparison['resamplable'])
+        bad_coord_grps = (coord_comp['ungroupable_and_dimensioned'] + coord_comp['resamplable'])
         if bad_coord_grps:
             raise ValueError('This operation cannot be performed as there are differing coordinates (%s) remaining '
                              'which cannot be ignored.' % ', '.join({coord_grp.name() for coord_grp in bad_coord_grps}))
@@ -296,7 +295,7 @@ def _add_subtract_common(operation_function, operation_symbol, operation_noun, o
             new_cube = cube.copy(data=operation_function(cube.data, other.data))
 
         # If a coordinate is to be ignored - remove it
-        ignore = filter(None, [coord_grp[0] for coord_grp in coord_comparison['ignorable']])
+        ignore = filter(None, [coord_grp[0] for coord_grp in coord_comp['ignorable']])
         if not ignore:
             ignore_string = ''
         else:
