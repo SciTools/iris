@@ -438,7 +438,10 @@ class TestCoordMaths(tests.IrisTest):
         self.count = 20
         self._build_coord()
         
-       
+
+# TODO - Remove this test class and results files when Coord.cos() and Coord.sin() are removed.
+# This class tests two deprecated Coord methods. These methods are now private functions in
+# analysis/calculus.py and corresponding tests are in test_analysis_calculus.py.
 class TestCoordTrig(TestCoordMaths):    
     def test_sin(self): 
         sin_of_coord = self.lon.sin()
