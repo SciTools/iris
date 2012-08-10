@@ -1,0 +1,102 @@
+
+**********
+Installing
+**********
+
+Installing Iris requires you to build it from source.  The dependencies must be 
+in place to suport this process.
+
+.. _install_from_source:
+
+Installing from source
+======================
+
+The latest  release file from `github <https://github.com/scitools/iris>
+, or if you want to, obtain the latest git version.
+
+Once you have satisfied the requirements detailed below 
+you can build Iris::
+
+  cd Iris
+  python setup.py build
+  python setup.py install
+
+
+.. _install_requirements:
+
+Build requirements
+==================
+
+These are external packages which you will need to install before
+installing Iris. 
+
+
+Many of these packages are available in Linux package management systems,
+such as python-numpy for Debian and Ubuntu
+
+If you are installing dependencies with a package manager on Linux, 
+you may need to install the development packages (look for a "-dev" postfix) 
+in addition to the libraries themselves.
+
+
+:term:`python` 2.7 (or later but not python3)
+    Iris requires python 2.7 or later (`download <http://www.python.org/download/>`__)
+
+:term:`numpy` 1.6 (or later)
+    array support for python (`download
+    <http://pypi.python.org/packages/source/n/numpy>`__)
+
+:term:`scipy` 0.10 or later
+    scientific analysis (`download
+    <http://pypi.python.org/packages/source/s/scipy>`__)
+
+:term:`udunits2` 2.1.24 or later
+    (`downloads <ftp://ftp.unidata.ucar.edu/pub/udunits/udunits-2.1.24.tar.gz>`__)
+
+:term:`netcdf4-python` 0.9.9 or later
+    (`download <http://netcdf4-python.googlecode.com/files/netCDF4-0.9.9.tar.gz>`__)
+
+:term:`PyKE` 1.1.1 or later
+    (`download <http://downloads.sourceforge.net/project/pyke/pyke/>`__)
+
+:term:`setuptools` 0.6c11 or later
+    (`download <http://pypi.python.org/packages/source/s/setuptools/>`__)
+
+**Optional**
+
+These are optional packages which you may want to install to use
+Iris with different file formats and to enable plotting functionality.
+All of these are required for the Iris test suite to run. 
+
+
+:term:`grib-api` 1.9.9 or later
+    (`download <http://www.ecmwf.int/products/data/software/download/software_files>`__)
+
+:term:`matplotlib` 1.1.0
+    (`download <http://downloads.sourceforge.net/project/matplotlib/matplotlib>`__)
+
+:term:`basemap` 1.0
+    (`download <http://downloads.sourceforge.net/project/matplotlib/matplotlib-toolkits/basemap-1.0>`__)
+
+:term:`PythonImagingLibrary` 1.1.7
+    (`download <http://effbot.org/downloads/Imaging-1.1.7.tar.gz>`__)
+
+:term:`graphviz` 2.18
+    (`download <http://www.graphviz.org/pub/graphviz/stable/SOURCES/>`__)
+
+:term:`nose` 1.1.2
+    (`download <http://pypi.python.org/packages/source/n/nose/>`__)
+
+:term:`shapely` 1.2.14
+    (`download <http://pypi.python.org/packages/source/S/Shapely>`__)
+
+
+Packaged Distributions
+=======================
+
+The Enthought Python Distribution `(EPD)
+<http://www.enthought.com/products/epd.php>`_ for Windows, OS X or
+Redhat provides some of the dependencies for Iris as does `Python (x, y)
+<http://www.pythonxy.com/foreword.php>`_ which tends to be updated a
+bit more frequently.  
+
