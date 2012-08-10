@@ -1,1 +1,3 @@
 include CHANGES COPYING COPYING.LESSER
+# Additonal files from package_data not automatically added to source distributions
+include lib/iris/fileformats/_pyke_rules/*.k?b
