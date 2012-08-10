@@ -71,11 +71,6 @@ class TestCategorisations(tests.IrisTest):
         for coord_name in ['month_number', 'month_in_quarter', 'weekday_number', 'season_number', 'year_ofseason', 'year', 'day']:
             cube.coord(coord_name).points = cube.coord(coord_name).points.astype(np.int64)
 
-        # XXX Fake the axes for the CML
-        for coord in cube.coords():
-            coord._TEST_COMPAT_override_axis = 't'
-        cube.coord('time')._TEST_COMPAT_force_explicit = True
-
         #check values
         self.assertCML(cube, ('categorisation', 'quickcheck.cml'))
 

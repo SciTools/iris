@@ -96,16 +96,12 @@ class TestCoordIntersection(tests.IrisTest):
            [ 24.75,  27.75],
            [ 27.75,  30.75]], dtype=numpy.float32)
         self.b = iris.coords.AuxCoord(pts, long_name='foo', units='meter', bounds=bnds)
-        self.b._TEST_COMPAT_override_axis = 'foobar'
-        self.b._TEST_COMPAT_force_explicit = True
     
     def test_basic_intersection(self):
         inds = self.a.intersect(self.b, return_indices=True)
         self.assertEqual((0, 1, 2, 3, 4, 5, 6, 7), tuple(inds))
             
         c = self.a.intersect(self.b)
-        c._TEST_COMPAT_force_explicit = True
-        c._TEST_COMPAT_override_axis = 'foobar'
         self.assertXMLElement(c, ('coord_api', 'intersection.xml'))
     
     def test_intersection_reverse(self):
@@ -113,8 +109,6 @@ class TestCoordIntersection(tests.IrisTest):
         self.assertEqual((7, 6, 5, 4, 3, 2, 1, 0), tuple(inds))
         
         c = self.a.intersect(self.b[::-1])
-        c._TEST_COMPAT_force_explicit = True
-        c._TEST_COMPAT_override_axis = 'foobar'
         self.assertXMLElement(c, ('coord_api', 'intersection_reversed.xml'))
     
     def test_no_intersection_on_points(self):    
@@ -125,7 +119,6 @@ class TestCoordIntersection(tests.IrisTest):
     def test_intersection_one_fewer_upper_bound_than_lower(self):
         self.b.bounds[4, 1] = self.b.bounds[0, 1]        
         c = self.a.intersect(self.b)
-        c._TEST_COMPAT_override_axis = 'foobar'
         self.assertXMLElement(c, ('coord_api', 'intersection_missing.xml'))
         
     def test_no_intersection_on_bounds(self):        
@@ -157,32 +150,19 @@ class TestCoordIntersection(tests.IrisTest):
 class TestCoordXML(unittest.TestCase):
     def test_aux_xml(self):
         doc = Document()
-        
-        
         coord = iris.coords.AuxCoord(numpy.arange(10, dtype=numpy.int32), long_name='test', units='meter')
-        coord._TEST_COMPAT_override_axis = 'test'
-        coord._TEST_COMPAT_force_explicit = True
-        
         coord_xml_element = coord.xml_element(doc)
-        
         doc.appendChild(coord_xml_element)
-        
         r = '<?xml version="1.0" ?>\n<AuxCoord id="17eb9ae9fe32de24" long_name="test" points="[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]" shape="(10,)" units="Unit(\'meter\')" value_type="int32"/>\n'
         t = doc.toprettyxml(indent="  ")
         self.assertEqual(r, t)
 
     def test_dim_xml(self):
         doc = Document()
-        
         coord = iris.coords.DimCoord(numpy.arange(4, dtype=numpy.float32) * 2, long_name='test', units='meter')
         coord.guess_bounds(0.5)
-        coord._TEST_COMPAT_override_axis = 'test'
-        coord._TEST_COMPAT_definitive = False
-        
         coord_xml_element = coord.xml_element(doc)
-        
         doc.appendChild(coord_xml_element)
-        
         r = '<?xml version="1.0" ?>\n<DimCoord bounds="[[-1.0, 1.0],\n\t\t[1.0, 3.0],\n\t\t[3.0, 5.0],\n\t\t[5.0, 7.0]]" id="17eb9ae9fe32de24" long_name="test" points="[0.0, 2.0, 4.0, 6.0]" shape="(4,)" units="Unit(\'meter\')" value_type="float32"/>\n'
         t = doc.toprettyxml(indent="  ")
         self.assertEqual(r, t)
@@ -452,27 +432,12 @@ class TestCoordMaths(tests.IrisTest):
         self.lon = iris.coords.AuxCoord(points, 'latitude',  units='degrees', bounds=bounds)
         self.rlon = iris.coords.AuxCoord(numpy.deg2rad(points), 'latitude',  units='radians', bounds=numpy.deg2rad(bounds))
 
-        # compatibility attributes
-        self.lon._TEST_COMPAT_override_axis = 'X'
-        self.rlon._TEST_COMPAT_override_axis = 'X'
-        self.lon._TEST_COMPAT_force_explicit = True
-        self.rlon._TEST_COMPAT_force_explicit = True
-        self.lon._TEST_COMPAT_value_type = 'float32'
-        self.rlon._TEST_COMPAT_value_type = 'float32'
-
     def setUp(self):
         self.start = 0
         self.step = 2.3
         self.count = 20
         self._build_coord()
         
-    def assertXMLElement(self, coord, reference_filename):
-        coord._TEST_COMPAT_force_explicit = True
-        coord.points = coord.points.astype(numpy.float32)
-        if coord.bounds is not None:
-            coord.bounds = coord.bounds.astype(numpy.float32)
-        tests.IrisTest.assertXMLElement(self, coord, reference_filename)
-
        
 class TestCoordTrig(TestCoordMaths):    
     def test_sin(self): 
@@ -508,10 +473,7 @@ class TestCoordTrig(TestCoordMaths):
         cos_of_coord_radians._points = numpy.array([1], dtype=numpy.float32)
         cos_of_coord_radians._bounds = None
 
-        cos_of_coord._TEST_COMPAT_override_axis = 'x'        
         self.assertXMLElement(cos_of_coord, ('coord_api', 'coord_maths', 'cos_simple.xml'))
-        
-        cos_of_coord_radians._TEST_COMPAT_override_axis = 'x'
         self.assertXMLElement(cos_of_coord_radians, ('coord_api', 'coord_maths', 'cos_simple_radians.xml'))
                 
     
@@ -586,9 +548,7 @@ class TestCoordMultDivide(TestCoordMaths):
 class TestCoordCollapsed(tests.IrisTest):
     def create_1d_coord(self, bounds=None, points=None, units='meter'):
         coord = iris.coords.DimCoord(points, long_name='test', units=units, 
-                                              bounds=bounds
-                                              )
-        coord._TEST_COMPAT_definitive = True
+                                     bounds=bounds)
         return coord
         
     def test_explicit(self):

@@ -58,49 +58,6 @@ def truipp_filename_callback(cube, field, filename):
 
 @iris.tests.skip_data
 class TestCallbacks(tests.IrisTest):
-    def assertCML(self, cube, path, *args, **kwargs):
-        try:
-            coord = cube.coord('pressure')
-            #coord._TEST_COMPAT_definitive = False
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('time')
-            #coord._TEST_COMPAT_definitive = False
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('experiment_id')
-            coord._TEST_COMPAT_override_axis = 'experiment_id'
-            coord._TEST_COMPAT_definitive = False
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('forecast_period')
-            coord._TEST_COMPAT_force_explicit = True
-            coord._TEST_COMPAT_override_axis = 'forecast_period'
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('random element')
-            coord._TEST_COMPAT_override_axis = 'random element'
-            coord._TEST_COMPAT_definitive = False
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('source')
-            coord._TEST_COMPAT_override_axis = 'source'
-            coord._TEST_COMPAT_definitive = False
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('originating_centre')
-            coord._TEST_COMPAT_override_axis = 'originating_centre'
-            coord._TEST_COMPAT_definitive = False
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        super(TestCallbacks, self).assertCML(cube, path, *args, **kwargs)
-
     def test_invalid_signature_callback(self):
         def invalid_callback(cube, ):
             # should never get here

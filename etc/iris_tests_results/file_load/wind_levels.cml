@@ -30,7 +30,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[1]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[1]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -83,7 +83,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[2]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[2]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -136,7 +136,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[3]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[3]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -189,7 +189,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[4]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[4]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -242,7 +242,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[5]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[5]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -295,7 +295,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[6]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[6]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -348,7 +348,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[7]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[7]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -401,7 +401,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[8]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[8]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -454,7 +454,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[9]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[9]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -507,7 +507,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[10]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[10]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -560,7 +560,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[11]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[11]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -613,7 +613,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[12]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[12]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -666,7 +666,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[13]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[13]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -719,7 +719,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[14]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[14]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -772,7 +772,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[15]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[15]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -825,7 +825,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[16]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[16]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -878,7 +878,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[17]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[17]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -931,7 +931,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[18]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[18]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -984,7 +984,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[19]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[19]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -1037,7 +1037,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[20]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[20]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -1090,7 +1090,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[21]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[21]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -1143,7 +1143,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[22]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[22]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -1196,7 +1196,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[23]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[23]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -1249,7 +1249,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[24]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[24]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -1302,7 +1302,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[25]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[25]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -1355,7 +1355,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[26]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[26]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -1408,7 +1408,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[27]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[27]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -1461,7 +1461,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[28]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[28]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -1514,7 +1514,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[29]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[29]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -1567,7 +1567,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[30]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[30]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -1620,7 +1620,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[31]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[31]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -1673,7 +1673,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[32]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[32]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -1726,7 +1726,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[33]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[33]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -1779,7 +1779,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[34]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[34]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -1832,7 +1832,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[35]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[35]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -1885,7 +1885,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[36]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[36]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -1938,7 +1938,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[37]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[37]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -1991,7 +1991,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[38]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[38]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -2044,7 +2044,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[1]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[1]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -2097,7 +2097,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[2]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[2]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -2150,7 +2150,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[3]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[3]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -2203,7 +2203,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[4]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[4]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -2256,7 +2256,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[5]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[5]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -2309,7 +2309,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[6]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[6]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -2362,7 +2362,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[7]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[7]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -2415,7 +2415,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[8]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[8]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -2468,7 +2468,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[9]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[9]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -2521,7 +2521,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[10]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[10]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -2574,7 +2574,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[11]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[11]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -2627,7 +2627,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[12]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[12]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -2680,7 +2680,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[13]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[13]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -2733,7 +2733,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[14]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[14]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -2786,7 +2786,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[15]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[15]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -2839,7 +2839,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[16]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[16]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -2892,7 +2892,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[17]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[17]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -2945,7 +2945,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[18]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[18]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -2998,7 +2998,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[19]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[19]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -3051,7 +3051,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[20]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[20]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -3104,7 +3104,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[21]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[21]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -3157,7 +3157,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[22]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[22]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -3210,7 +3210,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[23]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[23]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -3263,7 +3263,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[24]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[24]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -3316,7 +3316,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[25]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[25]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -3369,7 +3369,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[26]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[26]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -3422,7 +3422,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[27]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[27]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -3475,7 +3475,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[28]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[28]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -3528,7 +3528,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[29]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[29]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -3581,7 +3581,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[30]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[30]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -3634,7 +3634,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[31]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[31]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -3687,7 +3687,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[32]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[32]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -3740,7 +3740,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[33]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[33]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -3793,7 +3793,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[34]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[34]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -3846,7 +3846,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[35]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[35]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -3899,7 +3899,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[36]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[36]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -3952,7 +3952,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[37]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[37]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -4005,7 +4005,7 @@
         </DimCoord>
       </coord>
       <coord>
-        <AuxCoord id="1e9752adbbf65679" long_name="model_level" points="[38]" shape="(1,)" units="Unit('1')" value_type="int32">
+        <AuxCoord id="685d4ee5312aad95" points="[38]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>

@@ -26,44 +26,6 @@ import iris
 
 @iris.tests.skip_data
 class TestFileload_strict(tests.IrisTest):
-    def assertCML(self, cube, path, *args, **kwargs):
-        if isinstance(cube, iris.cube.Cube):
-            cubes = [cube]
-        else:
-            cubes = cube
-        for cube in cubes:
-            try:
-                coord = cube.coord('forecast_reference_time')
-                coord._TEST_COMPAT_override_axis = 'rt'
-            except iris.exceptions.CoordinateNotFoundError:
-                pass
-            try:
-                coord = cube.coord('sigma')
-                coord._TEST_COMPAT_override_axis = 'z'
-                coord._TEST_COMPAT_definitive = False
-                coord._TEST_COMPAT_hybrid = 'None'
-            except iris.exceptions.CoordinateNotFoundError:
-                pass
-            try:
-                coord = cube.coord('model_level_number')
-                coord.rename('model_level')
-                coord._TEST_COMPAT_force_explicit = True
-                coord._TEST_COMPAT_override_axis = 'z'
-                coord._TEST_COMPAT_hybrid = 'None'
-            except iris.exceptions.CoordinateNotFoundError:
-                pass
-            try:
-                coord = cube.coord('level_height')
-                coord._TEST_COMPAT_hybrid = 'None'
-            except iris.exceptions.CoordinateNotFoundError:
-                pass
-            try:
-                coord = cube.coord('time')
-                coord._TEST_COMPAT_points = False
-            except iris.exceptions.CoordinateNotFoundError:
-                pass
-        super(TestFileload_strict, self).assertCML(cubes, path, *args, **kwargs)
-
     def _test_file(self, src_path, reference_filename):
         """
         Checks the result of loading the given file spec, or creates the
@@ -72,7 +34,6 @@ class TestFileload_strict(tests.IrisTest):
         NB. The direct use of :func:`iris._load_common` bypasses the cube merge process.
         
         """
-        
         cubes = iris._load_common(tests.get_data_path(src_path), constraints=None, strict=False, unique=True, merge=False)
         self.assertCML(cubes, ['file_load', reference_filename])
 

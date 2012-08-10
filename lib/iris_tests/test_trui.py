@@ -30,14 +30,6 @@ import iris.util
 
 @iris.tests.skip_data
 class TestTrui(IrisPPTest):
-    def assertCML(self, cube, path, *args, **kwargs):
-        try:
-            coord = cube.coord('time')
-            coord._TEST_COMPAT_force_explicit = True
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        super(TestTrui, self).assertCML(cube, path, *args, **kwargs)
-
     def test_mean_save(self):
         files = ['200812011200', '200812021200', '200812031200', '200812041200',
                  '200812051200', '200812061200', '200812071200', '200812081200']

@@ -30,31 +30,21 @@ import iris.exceptions
 import iris.tests.stock
 
 
-def old_style_coords(c, *coord_names):
-    for coord_name in coord_names:
-        c.coord(coord_name)._TEST_COMPAT_override_axis = coord_name
-        if coord_name == "source":
-            c.coord(coord_name)._TEST_COMPAT_definitive = False
-
-
 @iris.tests.skip_data
 class TestBasicMaths(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()
         self.cube.data = self.cube.data - 260
-        old_style_coords(self.cube, "forecast_period", "source")
     
     def test_abs(self):  
         a = self.cube                      
         
         b = iris.analysis.maths.abs(a, in_place=False)
         self.assertCML(a, ('analysis', 'maths_original.cml'))
-        old_style_coords(b, "forecast_period", "source")
         self.assertCML(b, ('analysis', 'abs.cml'))
         
         iris.analysis.maths.abs(a, in_place=True)
         self.assertCML(b, ('analysis', 'abs.cml'))
-        old_style_coords(a, "forecast_period", "source")
         self.assertCML(a, ('analysis', 'abs.cml'))
 
     def test_minus(self):
@@ -65,14 +55,12 @@ class TestBasicMaths(tests.IrisTest):
         self.assertCML(a, ('analysis', 'maths_original.cml'))
 
         d = a - a
-        old_style_coords(d, "forecast_period", "source")
         self.assertCML(d, ('analysis', 'subtract.cml'))
 
         # Check that the subtraction has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
         
         c = iris.analysis.maths.subtract(e, e)
-        old_style_coords(c, "forecast_period", "source")
         self.assertCML(c, ('analysis', 'subtract.cml'))
                         
         # Check that the subtraction has had no effect on the original
@@ -100,7 +88,6 @@ class TestBasicMaths(tests.IrisTest):
         self.assertCML(a, ('analysis', 'maths_original.cml'))
         
         b = a - 200
-        old_style_coords(b, "forecast_period", "source")
         self.assertCML(b, ('analysis', 'subtract_scalar.cml'))
         # Check that the subtraction has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
@@ -115,7 +102,6 @@ class TestBasicMaths(tests.IrisTest):
         # subtract an array of exactly the same shape as the original
         b = a - data_array        
         self.assertArrayEqual(b.data, numpy.array(0, dtype=numpy.float32))
-        old_style_coords(b, "forecast_period", "source")
         self.assertCML(b, ('analysis', 'subtract_array.cml'), checksum=False)
 
         # subtract an array of the same number of dimensions, but with one of the dimensions having len 1
@@ -146,13 +132,11 @@ class TestBasicMaths(tests.IrisTest):
         self.assertCML(a, ('analysis', 'maths_original.cml'))
         
         b = iris.analysis.maths.subtract(a, c_x, dim=1)
-        old_style_coords(b, "forecast_period", "source")
         self.assertCML(b, ('analysis', 'subtract_coord_x.cml'))
         # Check that the subtraction has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
         
         b = iris.analysis.maths.subtract(a, c_y, dim=0)
-        old_style_coords(b, "forecast_period", "source")
         self.assertCML(b, ('analysis', 'subtract_coord_y.cml'))
         # Check that the subtraction has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
@@ -163,7 +147,6 @@ class TestBasicMaths(tests.IrisTest):
         self.assertCML(a, ('analysis', 'maths_original.cml'))
         
         b = a + 200
-        old_style_coords(b, "forecast_period", "source")
         self.assertCML(b, ('analysis', 'addition_scalar.cml'))
         # Check that the addition has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
@@ -179,13 +162,11 @@ class TestBasicMaths(tests.IrisTest):
         self.assertCML(a, ('analysis', 'maths_original.cml'))
         
         b = iris.analysis.maths.add(a, c_x, dim=1)
-        old_style_coords(b, "forecast_period", "source")
         self.assertCML(b, ('analysis', 'addition_coord_x.cml'))
         # Check that the addition has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
         
         b = iris.analysis.maths.add(a, c_y, dim=0)
-        old_style_coords(b, "forecast_period", "source")
         self.assertCML(b, ('analysis', 'addition_coord_y.cml'))
         # Check that the addition has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
@@ -194,7 +175,6 @@ class TestBasicMaths(tests.IrisTest):
         a = self.cube
 
         c = a + a
-        old_style_coords(c, "forecast_period", "source")
         self.assertCML(c, ('analysis', 'addition.cml'))
         # Check that the addition has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
@@ -204,7 +184,6 @@ class TestBasicMaths(tests.IrisTest):
         b = self.cube.copy()
         b.rename('my cube data')
         c = a + b        
-        old_style_coords(c, "forecast_period", "source")
         self.assertCML(c, ('analysis', 'addition_different_std_name.cml'), checksum=False)
         
     def test_addition_fail(self):
@@ -223,7 +202,6 @@ class TestBasicMaths(tests.IrisTest):
 
         b = iris.analysis.maths.add(a, self.cube, in_place=True)
         self.assertTrue(b is a)
-        old_style_coords(a, "forecast_period", "source")
         self.assertCML(a, ('analysis', 'addition_in_place.cml'))
 
     def test_addition_in_place_coord(self):
@@ -232,7 +210,6 @@ class TestBasicMaths(tests.IrisTest):
         # scalar is promoted to a coordinate internally
         b = iris.analysis.maths.add(a, 1000, in_place=True)
         self.assertTrue(b is a)
-        old_style_coords(a, "forecast_period", "source")
         self.assertCML(a, ('analysis', 'addition_in_place_coord.cml'))
         
     def test_addition_different_attributes(self):
@@ -249,7 +226,6 @@ class TestDivideAndMultiply(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()
         self.cube.data = self.cube.data - 260
-        old_style_coords(self.cube, "forecast_period", "source")
 
     def test_divide(self):
         a = self.cube
@@ -257,7 +233,6 @@ class TestDivideAndMultiply(tests.IrisTest):
         c = a / a
         
         numpy.testing.assert_array_almost_equal(a.data / a.data, c.data)
-        old_style_coords(c, "forecast_period", "source")
         self.assertCML(c, ('analysis', 'division.cml'), checksum=False)
 
         # Check that the division has had no effect on the original
@@ -269,7 +244,6 @@ class TestDivideAndMultiply(tests.IrisTest):
         c = a / 10
         
         numpy.testing.assert_array_almost_equal(a.data / 10, c.data)
-        old_style_coords(c, "forecast_period", "source")
         self.assertCML(c, ('analysis', 'division_scalar.cml'), checksum=False)
 
         # Check that the division has had no effect on the original
@@ -279,7 +253,6 @@ class TestDivideAndMultiply(tests.IrisTest):
         a = self.cube
                 
         c = a / a.coord('latitude')
-        old_style_coords(c, "forecast_period", "source")
         self.assertCML(c, ('analysis', 'division_by_latitude.cml'))
         
         # Check that the division has had no effect on the original
@@ -292,7 +265,6 @@ class TestDivideAndMultiply(tests.IrisTest):
         # test division by exactly the same shape data
         c = a / data_array 
         self.assertArrayEqual(c.data, numpy.array(1, dtype=numpy.float32))
-        old_style_coords(c, "forecast_period", "source")
         self.assertCML(c, ('analysis', 'division_by_array.cml'), checksum=False)
         
         # test division by array of fewer dimensions
@@ -313,7 +285,6 @@ class TestDivideAndMultiply(tests.IrisTest):
         a.coord('longitude').points = a.coord('longitude').points + 0.5 
 
         c = a / a.coord('longitude')
-        old_style_coords(c, "forecast_period", "source")
         self.assertCML(c, ('analysis', 'division_by_longitude.cml'))
 
         # Reset to allow comparison with original
@@ -327,7 +298,6 @@ class TestDivideAndMultiply(tests.IrisTest):
         
         coord = iris.coords.DimCoord(points=2, long_name='foo', units='1')
         c = iris.analysis.maths.divide(a, coord)
-        old_style_coords(c, "forecast_period", "source")
         self.assertCML(c, ('analysis', 'division_by_singular_coord.cml'))
         
         # Check that the division is equivalent to dividing the whole of the data by 2 
@@ -344,7 +314,6 @@ class TestDivideAndMultiply(tests.IrisTest):
         a = self.cube
         
         c = a * a
-        old_style_coords(c, "forecast_period", "source")
         self.assertCML(c, ('analysis', 'multiply.cml'))
         
         # Check that the multiplication has had no effect on the original
@@ -355,7 +324,6 @@ class TestDivideAndMultiply(tests.IrisTest):
         b = self.cube.copy()
         b.rename('my cube data')
         c = a * b        
-        old_style_coords(c, "forecast_period", "source")
         self.assertCML(c, ('analysis', 'multiply_different_std_name.cml'), checksum=False)
         
     def test_multiplication_different_attributes(self):
@@ -372,13 +340,11 @@ class TestExponentiate(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()
         self.cube.data = self.cube.data - 260
-        old_style_coords(self.cube, "forecast_period", "source")
 
     def test_exponentiate(self):
         a = self.cube
         a.data = a.data.astype(numpy.float64)
         e = pow(a, 4)
-        old_style_coords(e, "forecast_period", "source")
         self.assertCMLApproxData(e, ('analysis', 'exponentiate.cml'))
 
     def test_square_root(self):
@@ -389,7 +355,6 @@ class TestExponentiate(tests.IrisTest):
 
         e = a ** 0.5
 
-        old_style_coords(e, "forecast_period", "source")
         self.assertCML(e, ('analysis', 'sqrt.cml'))
         self.assertArrayEqual(e.data, a.data ** 0.5)
         self.assertRaises(ValueError, iris.analysis.maths.exponentiate, a, 0.3)
@@ -399,21 +364,17 @@ class TestExponentiate(tests.IrisTest):
 class TestLog(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()
-        old_style_coords(self.cube, "forecast_period", "source")
 
     def test_log(self):
         e = iris.analysis.maths.log(self.cube)
-        old_style_coords(e, "forecast_period", "source")
         self.assertCMLApproxData(e, ('analysis', 'log.cml'))
 
     def test_log2(self):
         e = iris.analysis.maths.log2(self.cube)
-        old_style_coords(e, "forecast_period", "source")
         self.assertCMLApproxData(e, ('analysis', 'log2.cml'))
 
     def test_log10(self):
         e = iris.analysis.maths.log10(self.cube)
-        old_style_coords(e, "forecast_period", "source")
         self.assertCMLApproxData(e, ('analysis', 'log10.cml'))
 
 

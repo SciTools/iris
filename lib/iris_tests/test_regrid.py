@@ -29,25 +29,22 @@ from iris.coords import DimCoord
 from iris.coord_systems import LatLonCS, GeoPosition
 
 
-def old_style(cube):
-    cube.coord("model_level_number")._TEST_COMPAT_override_axis = "z"
-    cube.coord("model_level_number")._TEST_COMPAT_definitive = True
-    cube.coord("model_level_number")._TEST_COMPAT_force_explicit = True
-    cube.coord("sigma")._TEST_COMPAT_override_axis = "z"
-    cube.coord("sigma")._TEST_COMPAT_definitive = False
-    cube.coord("grid_latitude")._TEST_COMPAT_definitive = True
-    cube.coord("grid_latitude")._TEST_COMPAT_force_explicit = True
-    cube.coord("grid_longitude")._TEST_COMPAT_definitive = True
-    cube.coord("grid_longitude")._TEST_COMPAT_force_explicit = True
-    # TODO: Workaround until regrid can handle factories
-    cube.remove_aux_factory(cube.aux_factories[0])
-    cube.remove_coord("surface_altitude")
-    
-    return cube
-
-
 @iris.tests.skip_data
 class TestRegrid(tests.IrisTest):
+    @staticmethod
+    def patch_data(cube):
+        # Workaround until regrid can handle factories
+        for factory in cube.aux_factories:
+            cube.remove_aux_factory(factory)
+
+        # Remove coords that share lat/lon dimensions
+        dim = cube.coord_dims(cube.coord('grid_longitude'))[0]
+        for coord in cube.coords(contains_dimension=dim, dim_coords=False):
+            cube.remove_coord(coord)
+        dim = cube.coord_dims(cube.coord('grid_latitude'))[0]
+        for coord in cube.coords(contains_dimension=dim, dim_coords=False):
+            cube.remove_coord(coord)
+
     def setUp(self):
         self.theta_path = tests.get_data_path(('PP', 'COLPEX', 'theta_and_orog.pp'))
         self.uwind_path = tests.get_data_path(('PP', 'COLPEX', 'uwind_and_orog.pp'))
@@ -56,13 +53,13 @@ class TestRegrid(tests.IrisTest):
         self.level_constraint = iris.Constraint(model_level_number=1)
         self.multi_level_constraint = iris.Constraint(model_level_number=lambda c: 1 <= c < 6)
         self.forecast_constraint = iris.Constraint(forecast_period=1.5)
-        
+
     def test_regrid_low_dimensional(self):
         theta = load_strict(self.theta_path, self.theta_constraint & self.level_constraint & self.forecast_constraint)
         uwind = load_strict(self.uwind_path, self.uwind_constraint & self.level_constraint & self.forecast_constraint)
-        theta = old_style(theta)
-        uwind = old_style(uwind)
-        
+        TestRegrid.patch_data(theta)
+        TestRegrid.patch_data(uwind)
+
         # 0-dimensional
         theta0 = theta[0, 0]
         uwind0 = uwind[0, 0]
@@ -84,8 +81,8 @@ class TestRegrid(tests.IrisTest):
     def test_regrid_3d(self):
         theta = load_strict(self.theta_path, self.theta_constraint & self.multi_level_constraint & self.forecast_constraint)
         uwind = load_strict(self.uwind_path, self.uwind_constraint & self.multi_level_constraint & self.forecast_constraint)
-        theta = old_style(theta)
-        uwind = old_style(uwind)
+        TestRegrid.patch_data(theta)
+        TestRegrid.patch_data(uwind)
 
         theta = theta[:, 1:3, 1:4]
         uwind = uwind[:, 0:4, 0:4]
@@ -97,28 +94,16 @@ class TestRegrid(tests.IrisTest):
         cs = LatLonCS('datum', 'pm', GeoPosition(90, 0), 0)
         low.add_dim_coord(DimCoord(numpy.array([-1, 0, 1], dtype=numpy.int32), 'latitude', units='degrees', coord_system=cs), 0)
         low.add_dim_coord(DimCoord(numpy.array([-1, 0, 1, 2], dtype=numpy.int32), 'longitude', units='degrees', coord_system=cs), 1)
-        low.coord("latitude")._TEST_COMPAT_force_explicit = True
-        low.coord("latitude")._TEST_COMPAT_definitive = True
-        low.coord("longitude")._TEST_COMPAT_force_explicit = True
-        low.coord("longitude")._TEST_COMPAT_definitive = True
 
         med = Cube(numpy.arange(20).reshape((4, 5)))
         cs = LatLonCS('datum', 'pm', GeoPosition(90, 0), 0)
         med.add_dim_coord(DimCoord(numpy.array([-1, 0, 1, 2], dtype=numpy.int32), 'latitude', units='degrees', coord_system=cs), 0)
         med.add_dim_coord(DimCoord(numpy.array([-2, -1, 0, 1, 2], dtype=numpy.int32), 'longitude', units='degrees', coord_system=cs), 1)
-        med.coord("latitude")._TEST_COMPAT_force_explicit = True
-        med.coord("latitude")._TEST_COMPAT_definitive = True
-        med.coord("longitude")._TEST_COMPAT_force_explicit = True
-        med.coord("longitude")._TEST_COMPAT_definitive = True
 
         high = Cube(numpy.arange(30).reshape((5, 6)))
         cs = LatLonCS('datum', 'pm', GeoPosition(90, 0), 0)
         high.add_dim_coord(DimCoord(numpy.array([-2, -1, 0, 1, 2], dtype=numpy.int32), 'latitude', units='degrees', coord_system=cs), 0)
         high.add_dim_coord(DimCoord(numpy.array([-2, -1, 0, 1, 2, 3], dtype=numpy.int32), 'longitude', units='degrees', coord_system=cs), 1)
-        high.coord("latitude")._TEST_COMPAT_force_explicit = True
-        high.coord("latitude")._TEST_COMPAT_definitive = True
-        high.coord("longitude")._TEST_COMPAT_force_explicit = True
-        high.coord("longitude")._TEST_COMPAT_definitive = True
 
         cubes = regrid_to_max_resolution([low, med, high], mode='nearest')
         self.assertCMLApproxData(cubes, ('regrid', 'low_med_high.cml'))
@@ -133,10 +118,6 @@ class TestRegridBilinear(tests.IrisTest):
         cube.units = '1'
         cube.add_dim_coord(DimCoord(numpy.array([1, 2, 3]), 'latitude', units='degrees', coord_system=self.cs), 0)
         cube.add_dim_coord(DimCoord(numpy.array([1, 2, 3, 4]), 'longitude', units='degrees', coord_system=self.cs), 1)
-        cube.coord("latitude")._TEST_COMPAT_force_explicit = True
-        cube.coord("latitude")._TEST_COMPAT_definitive = True
-        cube.coord("longitude")._TEST_COMPAT_force_explicit = True
-        cube.coord("longitude")._TEST_COMPAT_definitive = True
         self.source = cube
         
         # Cube with a smaller grid in latitude and longitude than the source grid by taking the coordinate mid-points.
@@ -144,10 +125,6 @@ class TestRegridBilinear(tests.IrisTest):
         cube.units = '1'
         cube.add_dim_coord(DimCoord(numpy.array([1.5, 2.5]), 'latitude', units='degrees', coord_system=self.cs), 0)
         cube.add_dim_coord(DimCoord(numpy.array([1.5, 2.5, 3.5]), 'longitude', units='degrees', coord_system=self.cs), 1)
-        cube.coord("latitude")._TEST_COMPAT_force_explicit = True
-        cube.coord("latitude")._TEST_COMPAT_definitive = True
-        cube.coord("longitude")._TEST_COMPAT_force_explicit = True
-        cube.coord("longitude")._TEST_COMPAT_definitive = True
         self.smaller = cube
         
         # Cube with a larger grid in latitude and longitude than the source grid by taking the coordinate mid-points and extrapolating at extremes.
@@ -155,10 +132,6 @@ class TestRegridBilinear(tests.IrisTest):
         cube.units = '1'
         cube.add_dim_coord(DimCoord(numpy.array([0.5, 1.5, 2.5, 3.5]), 'latitude', units='degrees', coord_system=self.cs), 0)
         cube.add_dim_coord(DimCoord(numpy.array([0.5, 1.5, 2.5, 3.5, 4.5]), 'longitude', units='degrees', coord_system=self.cs), 1)
-        cube.coord("latitude")._TEST_COMPAT_force_explicit = True
-        cube.coord("latitude")._TEST_COMPAT_definitive = True
-        cube.coord("longitude")._TEST_COMPAT_force_explicit = True
-        cube.coord("longitude")._TEST_COMPAT_definitive = True
         self.larger = cube
 
     def test_bilinear_smaller_lon_left(self):

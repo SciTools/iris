@@ -95,64 +95,6 @@ class TestAll(tests.IrisTest, pp.PPTest):
         else:
             fname_name = name
         
-        for cube in cubes:
-            if cube.coords('forecast_period'):
-                cube.coord('forecast_period')._TEST_COMPAT_force_explicit = True
-                cube.coord('forecast_period')._TEST_COMPAT_override_axis = 'forecast_period'
-            if cube.coords('forecast_reference_time'):
-                cube.coord('forecast_reference_time')._TEST_COMPAT_override_axis = 'rt'
-            if cube.coords('pseudo_level'):
-                cube.coord('pseudo_level')._TEST_COMPAT_force_explicit = True
-                cube.coord('pseudo_level')._TEST_COMPAT_override_axis = 'pseudo_level'
-                cube.coord('pseudo_level')._TEST_COMPAT_definitive = False
-            if cube.coords('source'):
-                cube.coord('source')._TEST_COMPAT_override_axis = 'source'
-                cube.coord('source')._TEST_COMPAT_definitive = False
-            if cube.coords('time'):
-                cube.coord('time')._TEST_COMPAT_force_explicit = True
-                if name != 'aaxzc_time_press.b.pp' and name != '008000000000.44.101.000128.1890.09.01.00.00.b.pp' and name != 'HadCM2_ts_SAT_ann_18602100.b.pp':
-                    cube.coord('time')._TEST_COMPAT_points = False
-            if cube.coords('longitude'):
-                if name == 'st30211.b.pp':
-                    cube.coord('longitude')._TEST_COMPAT_definitive = False
-                    cube.coord('longitude')._TEST_COMPAT_force_regular_scalar = True
-                elif name == '001000000000.00.000.000000.1860.01.01.00.00.f.b.pp':
-                    cube.coord('longitude')._TEST_COMPAT_definitive = True
-                    cube.coord('longitude')._TEST_COMPAT_force_explicit = True
-                elif name == 'HadCM2_ts_SAT_ann_18602100.b.pp':
-                    cube.coord('longitude')._TEST_COMPAT_definitive = True
-                    cube.coord('longitude')._TEST_COMPAT_force_explicit = True
-                    cube.coord('longitude')._TEST_COMPAT_points= False
-            if cube.coords('latitude'):
-                if name == 'HadCM2_ts_SAT_ann_18602100.b.pp':
-                    cube.coord('latitude')._TEST_COMPAT_definitive = True
-                    cube.coord('latitude')._TEST_COMPAT_force_explicit = True
-                    cube.coord('latitude')._TEST_COMPAT_points = False
-
-
-            if cube.coords('depth'):
-                cube.coord('depth')._TEST_COMPAT_override_axis = 'z'
-            if cube.coords('height'):
-                cube.coord('height')._TEST_COMPAT_override_axis = 'z'                
-            if cube.coords('pressure'):
-                if name == 'model.b.pp' or name == 'aaxzc_lon_lat_press_orig.b.pp' or name == '000003000000.16.202.000128.1860.09.01.00.00.b.pp':
-                    cube.coord('pressure')._TEST_COMPAT_definitive = True
-                else:
-                    cube.coord('pressure')._TEST_COMPAT_definitive = False
-                cube.coord('pressure')._TEST_COMPAT_override_axis = 'z'
-            if cube.coords('site_number'):
-                if name == 'aaxzc_tseries.b.pp':
-                    cube.coord('site_number')._TEST_COMPAT_definitive = False
-                    cube.coord('site_number')._TEST_COMPAT_override_axis = 'site_number'
-                    cube.coord('site_number')._TEST_COMPAT_force_regular_scalar = True
-            if cube.coords('model_level_number'):
-                cube.coord('model_level_number')._TEST_COMPAT_definitive = True
-                cube.coord('model_level_number')._TEST_COMPAT_override_axis = 'z'
-                cube.coord('model_level_number')._TEST_COMPAT_force_explicit = True
-            if cube.coords('sigma'):
-                cube.coord('sigma')._TEST_COMPAT_override_axis = 'z'
-
-        
         self.assertCML(cubes, self._ref_dir + ('from_pp', fname_name + '.cml',))
 
         # 2) Save the Cube and check the netCDF
@@ -199,48 +141,6 @@ class TestAll(tests.IrisTest, pp.PPTest):
         for index, nc_filename in enumerate(nc_filenames):
             # Read netCDF to Cube.
             cube = iris.load_strict(nc_filename)
-
-            if cube.coords('forecast_period'):
-                cube.coord('forecast_period')._TEST_COMPAT_force_explicit = True
-                cube.coord('forecast_period')._TEST_COMPAT_override_axis = 'forecast_period'
-            if cube.coords('forecast_reference_time'):
-                cube.coord('forecast_reference_time')._TEST_COMPAT_override_axis = 'rt'
-            if cube.coords('pseudo_level'):
-                cube.coord('pseudo_level')._TEST_COMPAT_force_explicit = True
-                cube.coord('pseudo_level')._TEST_COMPAT_override_axis = 'pseudo_level'
-            if cube.coords('source'):
-                cube.coord('source')._TEST_COMPAT_override_axis = 'source'
-                cube.coord('source')._TEST_COMPAT_definitive = False
-            if cube.coords('time'):
-                cube.coord('time')._TEST_COMPAT_force_explicit = True
-            if cube.coords('latitude'):
-                cube.coord('latitude')._TEST_COMPAT_force_explicit = True
-                if os.path.basename(nc_filename) == 'HadCM2_ts_SAT_ann_18602100.b_0.nc':
-                    cube.coord('latitude')._TEST_COMPAT_override_axis = 'site_number'
-            if cube.coords('longitude'):
-                cube.coord('longitude')._TEST_COMPAT_force_explicit = True
-                if os.path.basename(nc_filename) == 'HadCM2_ts_SAT_ann_18602100.b_0.nc':
-                    cube.coord('longitude')._TEST_COMPAT_override_axis = 'site_number'
-            if cube.coords('grid_latitude'):
-                cube.coord('grid_latitude')._TEST_COMPAT_force_explicit = True
-            if cube.coords('depth'):
-                cube.coord('depth')._TEST_COMPAT_override_axis = 'z'
-            if cube.coords('height'):
-                cube.coord('height')._TEST_COMPAT_override_axis = 'z'
-            if cube.coords('site_number'):
-                cube.coord('site_number')._TEST_COMPAT_override_axis = 'site_number'
-                if os.path.basename(nc_filename) == 'HadCM2_ts_SAT_ann_18602100.b_0.nc':
-                    cube.coord('site_number')._TEST_COMPAT_force_explicit = True
-                    cube.coord('site_number')._TEST_COMPAT_definitive = True
-            if cube.coords('model_level_number'):
-                cube.coord('model_level_number')._TEST_COMPAT_definitive = True
-                cube.coord('model_level_number')._TEST_COMPAT_override_axis = 'z'
-                cube.coord('model_level_number')._TEST_COMPAT_force_explicit = True
-            if cube.coords('sigma'):
-                cube.coord('sigma')._TEST_COMPAT_override_axis = 'z'
-            if cube.coords('level_height'):
-                cube.coord('level_height')._TEST_COMPAT_override_axis = 'z'
-
             self.assertCML(cube, self._ref_dir + ('from_netcdf', '%s_%d.cml' % (fname_name, index)))
             os.remove(nc_filename)
 
