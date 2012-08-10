@@ -150,7 +150,7 @@ Ask for your changes to be reviewed or merged
 When you are ready to ask for someone to review your code and consider a merge:
 
 #. Go to the URL of your forked repo, say
-   ``http://github.com/your-user-name/Iris``.
+   ``http://github.com/your-user-name/iris``.
 #. Use the 'Switch Branches' dropdown menu near the top left of the page to
    select the branch with your changes:
 
@@ -195,7 +195,7 @@ share it via github.
 First fork iris into your account, as from :ref:`forking`.
 
 Then, go to your forked repository github page, say
-``http://github.com/your-user-name/Iris``
+``http://github.com/your-user-name/iris``
 
 Click on the 'Admin' button, and add anyone else to the repo as a
 collaborator:
@@ -204,7 +204,7 @@ collaborator:
 
 Now all those people can do::
 
-    git clone git@githhub.com:your-user-name/Iris.git
+    git clone git@githhub.com:your-user-name/iris.git
 
 Remember that links starting with ``git@`` use the ssh protocol and are
 read-write; links starting with ``git://`` are read-only.
