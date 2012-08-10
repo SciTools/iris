@@ -1,3 +1,4 @@
 # The following command generated the gitwash subdirectory.
+# Note: gitwash_dumper.py can be found here: https://github.com/matthew-brett/gitwash
 
-python gitwash_dumper.py --repo-name=Iris --github-user=SciTools --gitwash-url=https://github.com/matthew-brett/gitwash.git --project-url=https://Iris.github.com --project-ml-url=TBD ./gitwash iris
+python gitwash_dumper.py --repo-name=iris --github-user=SciTools --gitwash-url=https://github.com/matthew-brett/gitwash.git --project-url=http://scitools.github.com/iris --project-ml-url=TBD ./ iris
