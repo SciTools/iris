@@ -90,6 +90,10 @@ as the master for the :const:`DATA_REPOSITORY`."""
 DATA_REPOSITORY = get_dir_option(_RESOURCE_SECTION, 'data_repository')
 """Local directory where test and sample data resources exist."""
 
+SAMPLE_DATA_DIR = get_dir_option(_RESOURCE_SECTION, 'sample_data_dir',
+                                 default=os.path.join(os.path.dirname(__file__), 'sample_data'))
+"""Local directory where sample data exists. Defaults to the iris source root."""
+
 # Override the data repository if the appropriate environment variable has been set
 # This is used in setup.py in the TestRunner command to enable us to simulate the absence of external data
 if os.environ.get("override_data_repository"):

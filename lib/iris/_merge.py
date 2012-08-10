@@ -1195,9 +1195,16 @@ class ProtoCube(object):
 
         # Build the dimension coordinates.
         for template in self._dim_templates:
-            dim_coords_and_dims.append(_CoordAndDims(iris.coords.DimCoord(template.points, 
-                                                                          bounds=template.bounds, 
-                                                                          **template.kwargs), template.dims))
+            # Attempt to build a DimCoord and add it to the cube. If this fails e.g it's
+            # non-numeric, then build an AuxCoord.
+            try:
+                dim_coords_and_dims.append(_CoordAndDims(iris.coords.DimCoord(template.points,
+                                                                              bounds=template.bounds,
+                                                                              **template.kwargs), template.dims))
+            except ValueError:
+                aux_coords_and_dims.append(_CoordAndDims(iris.coords.AuxCoord(template.points,
+                                                                              bounds=template.bounds,
+                                                                              **template.kwargs), template.dims))
 
         # Build the auxiliary coordinates.
         for template in self._aux_templates:

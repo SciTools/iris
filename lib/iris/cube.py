@@ -223,7 +223,7 @@ class Cube(CFVariableMixin):
 
     For example:
 
-        >>> cube = iris.load_strict(iris.sample_data_path('PP', 'aPPglob1', 'global.pp'))
+        >>> cube = iris.load_strict(iris.sample_data_path('air_temp.pp'))
         >>> print cube
         air_temperature                     (latitude: 73; longitude: 96)
              Dimension coordinates:
@@ -476,6 +476,7 @@ class Cube(CFVariableMixin):
 
         # Check compatibility with the shape of the data
         if dim_coord.shape[0] != self.shape[data_dim]:
+            print dim_coord.shape[0], self.shape[data_dim]
             raise ValueError('The length of %r does not match the length of cube dimension %d' % (dim_coord, data_dim))
 
         self._dim_coords_and_dims.append([dim_coord, int(data_dim)])
@@ -818,13 +819,14 @@ class Cube(CFVariableMixin):
             To obtain the shape of the data without causing it to be loaded, use the Cube.shape attribute.
 
         Example::
-            >>> fname = iris.sample_data_path('PP', 'COLPEX', 'air_potential_and_air_pressure.pp')
-            >>> cube = iris.load_strict(fname, 'air_pressure')  # cube.data does not yet have a value.
+            >>> fname = iris.sample_data_path('air_temp.pp')
+            >>> cube = iris.load_strict(fname, 'air_temperature')  # cube.data does not yet have a value.
             >>> print cube.shape                                # cube.data still does not have a value.
-            (6, 10, 412, 412)
+            (73, 96)
+            >>> cube = cube[:10, :20]                           # cube.data still does not have a value.
             >>> data = cube.data                                # Only now is the data loaded.
             >>> print data.shape
-            (6, 10, 412, 412)
+            (10, 20)
         
         """
         # Cache the real data on first use
@@ -1724,38 +1726,36 @@ class Cube(CFVariableMixin):
 
             >>> import iris
             >>> import iris.analysis
-            >>> cube = iris.load_strict(iris.sample_data_path('PP', 'globClim1', 'theta.pp'))
+            >>> cube = iris.load_strict(iris.sample_data_path('ostia_monthly.nc'))
             >>> new_cube = cube.collapsed('longitude', iris.analysis.MEAN)
             >>> print new_cube
-            air_potential_temperature           (model_level_number: 38; latitude: 145)
+            surface_temperature                 (time: 54; latitude: 18)
                  Dimension coordinates:
-                      model_level_number                           x             -
-                      latitude                                     -             x
+                      time                           x             -
+                      latitude                       -             x
                  Auxiliary coordinates:
-                      level_height                                 x             -
-                      sigma                                        x             -
+                      forecast_reference_time        x             -
                  Scalar coordinates:
-                      forecast_period: 26280 hours
-                      forecast_reference_time: 306816.0 hours since 1970-01-01 00:00:00
+                      forecast_period: 0 hours
                       longitude: Cell(point=180.0, bound=(0.0, 360.0)) degrees
-                      source: Data from Met Office Unified Model 6.06
-                      time: Cell(point=332724.0, bound=(332352.0, 333096.0)) hours since 1970-01-01 00:00:00
                  Attributes:
-                      STASH: m01s00i004
-                      history: Mean of air_potential_temperature over longitude
+                      Conventions: CF-1.5
+                      STASH: m01s00i024
+                      history: Mean of surface_temperature aggregated over month, year
+            Mean of surface_temperature...
                  Cell methods:
-                      mean: time (1 hour)
+                      mean: month, year
                       mean: longitude
 
 
         .. note::
             Some aggregations are not commutative and hence the order of processing is important i.e.::
             
-                cube.collapsed('ensemble', iris.analysis.VARIANCE).collapsed('height', iris.analysis.VARIANCE)
+                cube.collapsed('realization', iris.analysis.VARIANCE).collapsed('height', iris.analysis.VARIANCE)
                 
             is not necessarily the same result as::
             
-                result2 = cube.collapsed('height', iris.analysis.VARIANCE).collapsed('ensemble', iris.analysis.VARIANCE)
+                result2 = cube.collapsed('height', iris.analysis.VARIANCE).collapsed('realization', iris.analysis.VARIANCE)
             
             Conversely operations which operate on more than one coordinate at the same time are commutative as they are combined
             internally into a single operation. Hence the order of the coordinates supplied in the list does not matter::
@@ -1838,26 +1838,29 @@ class Cube(CFVariableMixin):
             >>> import iris
             >>> import iris.analysis
             >>> import iris.coord_categorisation as cat
-            >>> fname = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
-            >>> cube = iris.load_strict(fname, 'surface_altitude')
-            >>> cat.add_month_number(cube, 'time', name='month_number')
-            >>> new_cube = cube.aggregated_by('month_number', iris.analysis.MEAN)
+            >>> fname = iris.sample_data_path('ostia_monthly.nc')
+            >>> cube = iris.load_strict(fname, 'surface_temperature')
+            >>> cat.add_year(cube, 'time', name='year')
+            >>> new_cube = cube.aggregated_by('year', iris.analysis.MEAN)
             >>> print new_cube
-            surface_altitude                    (*ANONYMOUS*: 1; grid_latitude: 810; grid_longitude: 622)
+            surface_temperature                 (*ANONYMOUS*: 5; latitude: 18; longitude: 432)
                  Dimension coordinates:
-                      grid_latitude                         -                 x                    -
-                      grid_longitude                        -                 -                    x
+                      latitude                              -            x              -
+                      longitude                             -            -              x
                  Auxiliary coordinates:
-                      forecast_period                       x                 -                    -
-                      month_number                          x                 -                    -
-                      time                                  x                 -                    -
+                      forecast_reference_time               x            -              -
+                      time                                  x            -              -
+                      year                                  x            -              -
                  Scalar coordinates:
-                      source: Data from Met Office Unified Model 7.03
+                      forecast_period: 0 hours
                  Attributes:
-                      STASH: m01s00i033
-                      history: Mean of surface_altitude aggregated over month_number
+                      Conventions: CF-1.5
+                      STASH: m01s00i024
+                      history: Mean of surface_temperature aggregated over month, year
+            Mean of surface_temperature...
                  Cell methods:
-                      mean: month_number
+                      mean: month, year
+                      mean: year
 
         """
         groupby_coords = []
@@ -1933,7 +1936,7 @@ class Cube(CFVariableMixin):
         Args:
 
         * coord (string/:class:`iris.coords.Coord`):
-            The coordinate over which to perform the rolling window aggregation.
+            The coordinate over which to perform the rolling window aggregation. Cannot currently be bounded.
         * aggregator (:class:`iris.analysis.Aggregator`):
             Aggregator to be applied to the data.
         * window (int):
@@ -1950,8 +1953,8 @@ class Cube(CFVariableMixin):
         For example:
 
             >>> import iris, iris.analysis
-            >>> fname = iris.sample_data_path('PP', 'COLPEX', 'air_potential_and_air_pressure.pp')
-            >>> air_press = iris.load_strict(fname, 'air_pressure')
+            >>> fname = iris.sample_data_path('GloSea4', 'ensemble_010.pp')
+            >>> air_press = iris.load_strict(fname, 'surface_temperature')
             >>> print air_press
             air_pressure                        (time: 6; model_level_number: 10; grid_latitude: 412; grid_longitude: 412)
                  Dimension coordinates:
@@ -1963,29 +1966,30 @@ class Cube(CFVariableMixin):
                       forecast_period                x                      -                  -                    -
                       level_height                   -                      x                  -                    -
                       sigma                          -                      x                  -                    -
-                 Scalar coordinates:
-                      source: Data from Met Office Unified Model 7.04
-                 Attributes:
-                      STASH: m01s00i408
-
-            >>> print air_press.rolling_window('forecast_period', iris.analysis.MEAN, 3)
-            air_pressure                        (time: 4; model_level_number: 10; grid_latitude: 412; grid_longitude: 412)
-                 Dimension coordinates:
-                      time                           x                      -                  -                    -
-                      model_level_number             -                      x                  -                    -
-                      grid_latitude                  -                      -                  x                    -
-                      grid_longitude                 -                      -                  -                    x
+                      latitude                                  -            x               -
+                      longitude                                 -            -               x
                  Auxiliary coordinates:
-                      forecast_period                x                      -                  -                    -
-                      level_height                   -                      x                  -                    -
-                      sigma                          -                      x                  -                    -
+                      time                                      x            -               -
+
+            >>> print air_press.rolling_window('time', iris.analysis.MEAN, 3)
+            surface_temperature                 (forecast_period: 4; latitude: 145; longitude: 192)
+                 Dimension coordinates:
+                      forecast_period                           x            -               -
+                      latitude                                  -            x               -
+                      longitude                                 -            -               x
+                 Auxiliary coordinates:
+                      time                                      x            -               -
                  Scalar coordinates:
-                      source: Data from Met Office Unified Model 7.04
+                      forecast_reference_time: 364272.0 hours since 1970-01-01 00:00:00
+                      realization: 10
+                      source: Data from Met Office Unified Model 7.06
                  Attributes:
-                      STASH: m01s00i408
-                      history: Mean of air_pressure with a rolling window of length 3 over forecast_p...
+                      STASH: m01s00i024
+                      history: Mean of surface_temperature with a rolling window of length 3 over tim...
                  Cell methods:
-                      mean: forecast_period
+                      mean: time (1 hour)
+                      mean: time
+
 
 
             Notice that the forecast_period dimension now represents the 4 possible windows of size 3 from the original cube. 
@@ -2008,7 +2012,8 @@ class Cube(CFVariableMixin):
 
         dimension = self.coord_dims(coord)
         if len(dimension) != 1:
-            raise iris.exceptions.CoordinateCollapseError('Cannot perform rolling window with coordinate "%s", must map to one data dimension.'  % coord.name())
+            raise iris.exceptions.CoordinateCollapseError('Cannot perform rolling window with coordinate "%s", '
+                                                          'must map to one data dimension.'  % coord.name())
         dimension = dimension[0]
 
         # Use indexing to get a result-cube of the correct shape.
@@ -2029,8 +2034,8 @@ class Cube(CFVariableMixin):
         # now update all of the coordinates to reflect the aggregation
         for coord_ in self.coords(dimensions=dimension):
             if coord_.has_bounds():
-                raise ValueError('Cannot calculate the rolling window of %s as it is a '
-                                 'bounded coordinate.' % coord_.name())
+                warnings.warn('The bounds of coordinate %r were ignored in the rolling '
+                              'window operation.' % coord_.name())
 
             if coord_.ndim != 1:
                 raise ValueError('Cannot calculate the rolling window of %s as it is a '

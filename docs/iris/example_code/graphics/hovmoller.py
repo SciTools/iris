@@ -18,27 +18,11 @@ import iris.quickplot as qplt
 import iris.unit
 
 
-def first_day_of_month(cube):
-    """
-    Returns true if the given cube's time bound is the first day of a month
-    """
-    time = cube.coord('time')
-
-    # get a datetime object for the time coordinate's lower bound
-    dt = time.units.num2date(time.bounds[0, 0])
-
-    # return true if the day of month is 1
-    return dt.day == 1
-      
-
 def main():
-    fname = iris.sample_data_path('PP', 'ostia', 'ostia_sst_200604_201009_N216.pp')
+    fname = iris.sample_data_path('ostia_monthly.nc')
     
-    # load a single cube of surface temperature between +/- 5 latitude, where each constituent field was the first day
-    # of the month
-    cube = iris.load_strict(fname, iris.Constraint('surface_temperature', latitude=lambda v: -5 < v < 5) &
-                                     iris.Constraint(cube_func=first_day_of_month)
-                            )
+    # load a single cube of surface temperature between +/- 5 latitude
+    cube = iris.load_strict(fname, iris.Constraint('surface_temperature', latitude=lambda v: -5 < v < 5))
     
     # Take the mean over latitude
     cube = cube.collapsed('latitude', iris.analysis.MEAN)

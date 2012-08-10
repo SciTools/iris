@@ -793,6 +793,8 @@ class _Groupby(object):
                     self._slices_by_key.setdefault(key, []).append(slice(start, stop))
                     # Prepare for the next group slice construction over the group-by coordinates.
                     for item_index, item in enumerate(items):
+                        if item is None:
+                            continue
                         # Get coordinate current group slice.
                         groupby_slice = item.groupby_slice
                         # Determine whether coordinate has spanned all its groups i.e. its full length
@@ -888,7 +890,13 @@ class _Groupby(object):
             
             # Now create the new bounded group shared coordinate.
             new_points = numpy.array(new_bounds).mean(-1)
-            self.coords.append(coord.copy(points=new_points, bounds=new_bounds))
+
+            try:
+                self.coords.append(coord.copy(points=new_points, bounds=new_bounds))
+            except ValueError:
+                # non monotonic points/bounds
+                self.coords.append(iris.coords.AuxCoord.from_coord(coord).copy(points=new_points, bounds=new_bounds))
+
 
     def __len__(self):
         """Calculate the number of groups given the group-by coordinates."""

@@ -21,34 +21,27 @@ import iris
 import iris.plot as iplt
 
 
-def lagged_ensemble_metadata(cube, field, fname):
+def realization_metadata(cube, field, fname):
     """
-    A function which modifies the cube's metadata to adds an ensemble member coordinate from the filename if one
+    A function which modifies the cube's metadata to adds a "realization" (ensemble member) coordinate from the filename if one
     doesn't already exist in the cube.
-
-    Additionally, to reduce the resulting dimensionality of the loaded cube, the forecast reference time and forecast period
-    are discarded.
 
     """
     # add an ensemble member coordinate if one doesn't already exist
     if not cube.coords('realization'):
         # the ensemble member is encoded in the filename as *_???.pp where ??? is the ensemble member
-        ensemble_member = fname[-6:-3]
+        realization_number = fname[-6:-3]
 
         import iris.coords
-        ensemble_coord = iris.coords.AuxCoord(numpy.int32(ensemble_member), 'realization')
-        cube.add_aux_coord(ensemble_coord) 
-
-    cube.remove_coord('forecast_period')
-    cube.remove_coord('forecast_reference_time')
-
+        realization_coord = iris.coords.AuxCoord(numpy.int32(realization_number), 'realization')
+        cube.add_aux_coord(realization_coord)
 
 
 def main():
     # extract surface temperature cubes which have an ensemble member coordinate, adding appropriate lagged ensemble metadata
-    surface_temp = iris.load_strict(iris.sample_data_path('PP', 'GloSea4', 'prodf*_???.pp'), 
+    surface_temp = iris.load_strict(iris.sample_data_path('GloSea4', 'ensemble_???.pp'),
                   iris.Constraint('surface_temperature', realization=lambda value: True),
-                  callback=lagged_ensemble_metadata,
+                  callback=realization_metadata,
                   )
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -121,7 +114,10 @@ def main():
     # Calculate the horizontal mean for the nino region
     mean = nino_cube.collapsed(['latitude', 'longitude'], iris.analysis.MEAN)
     
-    # Calculate the ensemble mean of the horizontal mean
+    # Calculate the ensemble mean of the horizontal mean. To do this, remove the "forecast_period" and
+    # "forecast_reference_time" coordinates which span both "relalization" and "time".
+    mean.remove_coord("forecast_reference_time")
+    mean.remove_coord("forecast_period")
     ensemble_mean = mean.collapsed('realization', iris.analysis.MEAN)
     
     # take the ensemble mean from each ensemble member

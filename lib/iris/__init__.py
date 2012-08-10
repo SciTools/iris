@@ -219,7 +219,6 @@ def load(uris, constraints=None, unique=False, callback=None):
 
 save = iris.io.save
 
-
 def sample_data_path(*path_to_join):
-    """Given the sample file data zoo location, returns the full path to the file."""    
-    return iris.io.select_data_path('sample_data', path_to_join)
+    """Given the sample data resource, returns the full path to the file."""
+    return os.path.join(iris.config.SAMPLE_DATA_DIR, *path_to_join)

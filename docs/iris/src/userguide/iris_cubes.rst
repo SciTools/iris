@@ -150,12 +150,13 @@ output as this is the quickest way of inspecting the contents of a cube. Here is
      :hide:
 
      import iris
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
+     filename = iris.sample_data_path('uk_hires.pp')
      # NOTE: Every time the output of this cube changes, the full list of deductions below should be re-assessed. 
      print iris.load_strict(filename, 'air_potential_temperature')
      
 .. testoutput::
 
+<<<<<<< HEAD
     air_potential_temperature           (time: 3; model_level_number: 40; grid_latitude: 810; grid_longitude: 622)
          Dimension coordinates:
               time                           x                      -                  -                    -
@@ -169,6 +170,21 @@ output as this is the quickest way of inspecting the contents of a cube. Here is
               surface_altitude               -                      -                  x                    x
          Derived coordinates:
               altitude                       -                      x                  x                    x
+=======
+    air_potential_temperature           (forecast_period: 3; level_height: 7; grid_latitude: 204; grid_longitude: 187)
+         Dimension coordinates:
+              forecast_period                           x                -                 -                    -
+              level_height                              -                x                 -                    -
+              grid_latitude                             -                -                 x                    -
+              grid_longitude                            -                -                 -                    x
+         Auxiliary coordinates:
+              time                                      x                -                 -                    -
+              model_level_number                        -                x                 -                    -
+              sigma                                     -                x                 -                    -
+              surface_altitude                          -                -                 x                    x
+         Derived coordinates:
+              altitude                                  -                x                 x                    x
+>>>>>>> Fully working sample data usage.
          Scalar coordinates:
               source: Data from Met Office Unified Model 7.03
          Attributes:
@@ -178,6 +194,7 @@ output as this is the quickest way of inspecting the contents of a cube. Here is
 Using this output we can deduce that:
 
  * The cube represents air potential temperature.
+<<<<<<< HEAD
  * There are 4 data dimensions, and the data has a shape of ``(3, 40, 810, 622)``
  * The 4 data dimensions are mapped to the ``time``, ``model_level_number``, 
    ``grid_latitude``, ``grid_longitude`` coordinates respectively
@@ -186,6 +203,16 @@ Using this output we can deduce that:
  * There are 40 distinct values in the ``model_level_number`` coordinate. Similar inferences can 
    be made for the other dimension coordinates.
  * There are 40, not necessarily distinct, values in the ``level_height`` coordinate.
+=======
+ * There are 4 data dimensions, and the data has a shape of ``(3, 7, 204, 187)``
+ * The 4 data dimensions are mapped to the ``forecast_period``, ``level_height``, 
+   ``grid_latitude``, ``grid_longitude`` coordinates respectively
+ * There are three 1d auxiliary coordinates and one 2d auxiliary (``surface_altitude``) 
+ * There is a single ``altitude`` derived coordinate, which spans 3 data dimensions
+ * There are 7 distinct values in the "level_height" coordinate. Similar inferences can
+   be made for the other dimension coordinates.
+ * There are 7, not necessarily distinct, values in the ``model_level_number`` coordinate.
+>>>>>>> Fully working sample data usage.
  * There is 1 coordinate (``source``) which represents a scalar value over all of the data dimensions.
  * The cube has one further attribute relating to the  phenomenon. 
    In this case the originating file format, PP, encodes information in a STASH code which in some cases can

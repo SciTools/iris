@@ -9,7 +9,7 @@ import iris
 import iris.quickplot as qplt
 
 def main():
-    fname = iris.sample_data_path('PP', 'aPPglob1', 'global.pp')
+    fname = iris.sample_data_path('air_temp.pp')
     
     # Load exactly one cube from the given file
     temperature = iris.load_strict(fname)

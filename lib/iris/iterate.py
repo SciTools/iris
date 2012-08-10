@@ -51,9 +51,9 @@ def izip(*cubes, **kwargs):
         A tuple of iterators for the resulting slices.
     
     For example:
-        >>> airtemp, humidity = iris.load_strict(iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp'),
-        ...    ['air_potential_temperature', 'specific_humidity'])
-        >>> for tslice, hslice in iris.iterate.izip(airtemp, humidity, coords=['grid_latitude','grid_longitude']):
+        >>> e_content, e_density = iris.load_strict(iris.sample_data_path('space_weather.nc'),
+        ...    ['total electron content', 'electron density'])
+        >>> for tslice, hslice in iris.iterate.izip(e_content, e_density, coords=['grid_latitude','grid_longitude']):
         ...    pass
 
     """
