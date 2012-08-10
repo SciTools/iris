@@ -2,13 +2,13 @@
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube units="unknown">
     <coords>
-      <coord datadims="[0]">
+      <coord datadims="[2]">
         <DimCoord id="3316428756571014" points="[0, 1]" shape="(2,)" standard_name="forecast_period" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="2677e59f61d90a1a" points="[10, 11]" shape="(2,)" standard_name="forecast_reference_time" units="Unit('1')" value_type="int32"/>
       </coord>
-      <coord datadims="[2]">
+      <coord datadims="[0]">
         <DimCoord id="364d5f35b0b86f55" points="[10, 11]" shape="(2,)" standard_name="time" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord datadims="[4]">

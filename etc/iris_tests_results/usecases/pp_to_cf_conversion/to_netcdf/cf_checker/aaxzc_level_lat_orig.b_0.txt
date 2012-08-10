@@ -8,10 +8,6 @@ Checking variable: time_bnds
 ------------------
 
 ------------------
-Checking variable: latitude
-------------------
-
-------------------
 Checking variable: latitude_longitude
 ------------------
 
@@ -24,11 +20,15 @@ Checking variable: forecast_period
 ------------------
 
 ------------------
+Checking variable: forecast_reference_time
+------------------
+
+------------------
 Checking variable: time
 ------------------
 
 ------------------
-Checking variable: forecast_reference_time
+Checking variable: latitude
 ------------------
 
 ------------------

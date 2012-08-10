@@ -57,7 +57,7 @@ digraph CubeGraph{
             label = "DimCoord|standard_name: None\nlong_name: level_height\nunits: m\ncircular: False\npositive: up"
         ]
         "Coord_5" [
-            label = "DimCoord|standard_name: model_level_number\nlong_name: None\nunits: 1\ncircular: False"
+            label = "DimCoord|standard_name: model_level_number\nlong_name: None\nunits: 1\ncircular: False\npositive: up"
         ]
         "Coord_6" [
             label = "AuxCoord|standard_name: None\nlong_name: sigma\nunits: 1"

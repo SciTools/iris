@@ -8,7 +8,7 @@ It is advised that you now go back to the :doc:`start <iris_cubes>` and try expe
 
 Iris gallery
 ------------
-It can be very daunting to start a code project with an empty file, that is why you will find many in-depth 
+It can be very daunting to start coding a project from an empty file, that is why you will find many in-depth 
 examples in the Iris gallery which can be used as a goal driven reference to producing your own visualisations. 
 
 If you produce a visualisation which you think would add value to the gallery, please get in touch with us and 

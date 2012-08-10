@@ -30,7 +30,11 @@
         </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <DimCoord id="45dad63840fafae8" points="[10, 22]" shape="(2,)" standard_name="model_level_number" units="Unit('1')" value_type="int32"/>
+        <DimCoord id="685d4ee5312aad95" points="[10, 22]" shape="(2,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
         <AuxCoord bounds="[[0.803914, 0.763465],
@@ -81,7 +85,11 @@
         </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <DimCoord id="45dad63840fafae8" points="[10, 22]" shape="(2,)" standard_name="model_level_number" units="Unit('1')" value_type="int32"/>
+        <DimCoord id="685d4ee5312aad95" points="[10, 22]" shape="(2,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
         <AuxCoord bounds="[[0.823493, 0.784571],
@@ -132,7 +140,11 @@
         </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <DimCoord id="45dad63840fafae8" points="[10, 22]" shape="(2,)" standard_name="model_level_number" units="Unit('1')" value_type="int32"/>
+        <DimCoord id="685d4ee5312aad95" points="[10, 22]" shape="(2,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
         <AuxCoord bounds="[[0.823493, 0.784571],
@@ -182,7 +194,11 @@
         </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <DimCoord id="45dad63840fafae8" points="[10, 22]" shape="(2,)" standard_name="model_level_number" units="Unit('1')" value_type="int32"/>
+        <DimCoord id="685d4ee5312aad95" points="[10, 22]" shape="(2,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
         <AuxCoord bounds="[[0.803914, 0.763465],

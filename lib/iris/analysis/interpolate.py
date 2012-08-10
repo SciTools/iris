@@ -297,9 +297,9 @@ def extract_nearest_neighbour(cube, sample_points):
     For example:
         >>> cube = iris.load_strict(iris.sample_data_path('PP', 'globClim1', 'theta.pp'))
         >>> iris.analysis.interpolate.extract_nearest_neighbour(cube, [('latitude', 0), ('longitude', 10)])
-        <iris 'Cube' of air_potential_temperature (level_height: 38)>
+        <iris 'Cube' of air_potential_temperature (model_level_number: 38)>
         >>> iris.analysis.interpolate.extract_nearest_neighbour(cube, [('latitude', 0)])
-        <iris 'Cube' of air_potential_temperature (level_height: 38; longitude: 192)>
+        <iris 'Cube' of air_potential_temperature (model_level_number: 38; longitude: 192)>
     
     Args:
 

@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube standard_name="air_temperature" units="kelvin">
+    <coords>
+      <coord>
+        <DimCoord id="3627f5e5467c1149" points="[100]" shape="(1,)" standard_name="height" units="Unit('meters')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
+        <DimCoord id="31397bf41c7f010" points="[0, 1, 2, 3, 4]" shape="(5,)" standard_name="time" units="Unit('unknown')" value_type="int32">
+          <attributes>
+            <attribute name="invalid_units" value="wibble"/>
+          </attributes>
+        </DimCoord>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="-0xb1c17f" dtype="int32" shape="(5,)"/>
+  </cube>
+</cubes>
