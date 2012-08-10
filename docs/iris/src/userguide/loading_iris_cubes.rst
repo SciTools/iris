@@ -24,36 +24,17 @@ to produce Iris Cubes from their contents.
 
 In order to find out what has been loaded, the result can be printed:
 
-<<<<<<< HEAD
-     >>> import iris
-     >>> filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
-     >>> cubes = iris.load(filename)
-     >>> print cubes
-     0: air_potential_temperature           (time: 3; model_level_number: 40; grid_latitude: 810; grid_longitude: 622)
-     1: specific_humidity                   (time: 3; model_level_number: 40; grid_latitude: 810; grid_longitude: 622)
-     2: surface_altitude                    (time: 3; grid_latitude: 810; grid_longitude: 622)
-=======
     >>> import iris
     >>> filename = iris.sample_data_path('uk_hires.pp')
     >>> cubes = iris.load(filename)
     >>> print cubes
-    0: air_potential_temperature           (forecast_period: 3; level_height: 7; grid_latitude: 204; grid_longitude: 187)
+    0: air_potential_temperature           (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
     1: surface_altitude                    (grid_latitude: 204; grid_longitude: 187)
 
->>>>>>> Fully working sample data usage.
 
 This shows that there were 2 cubes as a result of loading the file, they were: ``air_potential_temperature``
 and ``surface_altitude``.
 
-<<<<<<< HEAD
-The ``surface_altitude`` cube was 3 dimensional with: 
- * the first dimension representing ``time`` of which there are 3 distinct values.
- * the second and third dimensions have extents of 810 and 622 respectively and are represented by the
-   ``grid_latitude`` and ``grid_longitude`` coordinates.
-
-Similarly, both the ``air_potential_temperature`` and ``specific_humidity`` cubes were 4 dimensional with the added 
-dimension related to the ``model_level_number`` coordinate.
-=======
 The ``surface_altitude`` cube was 2 dimensional with:
  * the two dimensions have extents of 204 and 187 respectively and are represented by the
    ``grid_latitude`` and ``grid_longitude`` coordinates.
@@ -61,8 +42,7 @@ The ``surface_altitude`` cube was 2 dimensional with:
 The ``air_potential_temperature`` cubes was 4 dimensional with:
  * the same length ``grid_latitude`` and ``grid_longitude`` dimensions as ``surface_altitide``
  * a ``forecast_period`` dimension of length 3
- * a ``level_height`` dimension of length 7
->>>>>>> Fully working sample data usage.
+ * a ``model_level_number`` dimension of length 7
 
 .. note::
      The result of :func:`iris.load` is **always** a :class:`list of cubes <iris.cube.CubeList>`. Anything that can be done with 
@@ -81,56 +61,30 @@ The ``air_potential_temperature`` cubes was 4 dimensional with:
 To get the air potential temperature cube from the list of cubes returned by :py:func:`iris.load` in the previous 
 example, list indexing *could* be used:
 
-<<<<<<< HEAD
-     >>> import iris
-     >>> filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
-     >>> cubes = iris.load(filename)
-     >>> # get the first cube (list indexing is 0 based)
-     >>> air_potential_temperature = cubes[0]
-     >>> print air_potential_temperature
-     air_potential_temperature           (time: 3; model_level_number: 40; grid_latitude: 810; grid_longitude: 622)
-          Dimension coordinates:
-               time                           x                      -                  -                    -
-               model_level_number             -                      x                  -                    -
-               grid_latitude                  -                      -                  x                    -
-               grid_longitude                 -                      -                  -                    x
-          Auxiliary coordinates:
-               forecast_period                x                      -                  -                    -
-               level_height                   -                      x                  -                    -
-               sigma                          -                      x                  -                    -
-               surface_altitude               -                      -                  x                    x
-          Derived coordinates:
-               altitude                       -                      x                  x                    x
-          Scalar coordinates:
-               source: Data from Met Office Unified Model 7.03
-          Attributes:
-               STASH: m01s00i004
-=======
+
     >>> import iris
     >>> filename = iris.sample_data_path('uk_hires.pp')
     >>> cubes = iris.load(filename)
     >>> # get the first cube (list indexing is 0 based)
     >>> air_potential_temperature = cubes[0]
     >>> print air_potential_temperature
-    air_potential_temperature           (forecast_period: 3; level_height: 7; grid_latitude: 204; grid_longitude: 187)
+    air_potential_temperature           (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
          Dimension coordinates:
-              forecast_period                           x                -                 -                    -
-              level_height                              -                x                 -                    -
-              grid_latitude                             -                -                 x                    -
-              grid_longitude                            -                -                 -                    x
+              time                           x                      -                 -                    -
+              model_level_number             -                      x                 -                    -
+              grid_latitude                  -                      -                 x                    -
+              grid_longitude                 -                      -                 -                    x
          Auxiliary coordinates:
-              time                                      x                -                 -                    -
-              model_level_number                        -                x                 -                    -
-              sigma                                     -                x                 -                    -
-              surface_altitude                          -                -                 x                    x
+              forecast_period                x                      -                 -                    -
+              level_height                   -                      x                 -                    -
+              sigma                          -                      x                 -                    -
+              surface_altitude               -                      -                 x                    x
          Derived coordinates:
-              altitude                                  -                x                 x                    x
+              altitude                       -                      x                 x                    x
          Scalar coordinates:
               source: Data from Met Office Unified Model 7.03
          Attributes:
               STASH: m01s00i004
-
->>>>>>> Fully working sample data usage.
 
 
 Notice that the result of printing a **cube** is a little more verbose than it was when printing a 

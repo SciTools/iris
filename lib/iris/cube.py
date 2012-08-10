@@ -1956,29 +1956,30 @@ class Cube(CFVariableMixin):
             >>> fname = iris.sample_data_path('GloSea4', 'ensemble_010.pp')
             >>> air_press = iris.load_strict(fname, 'surface_temperature')
             >>> print air_press
-            air_pressure                        (time: 6; model_level_number: 10; grid_latitude: 412; grid_longitude: 412)
+            surface_temperature                 (time: 6; latitude: 145; longitude: 192)
                  Dimension coordinates:
-                      time                           x                      -                  -                    -
-                      model_level_number             -                      x                  -                    -
-                      grid_latitude                  -                      -                  x                    -
-                      grid_longitude                 -                      -                  -                    x
+                      time                           x            -               -
+                      latitude                       -            x               -
+                      longitude                      -            -               x
                  Auxiliary coordinates:
-                      forecast_period                x                      -                  -                    -
-                      level_height                   -                      x                  -                    -
-                      sigma                          -                      x                  -                    -
-                      latitude                                  -            x               -
-                      longitude                                 -            -               x
-                 Auxiliary coordinates:
-                      time                                      x            -               -
+                      forecast_period                x            -               -
+                 Scalar coordinates:
+                      forecast_reference_time: 364272.0 hours since 1970-01-01 00:00:00
+                      realization: 10
+                      source: Data from Met Office Unified Model 7.06
+                 Attributes:
+                      STASH: m01s00i024
+                 Cell methods:
+                      mean: time (1 hour)
 
             >>> print air_press.rolling_window('time', iris.analysis.MEAN, 3)
-            surface_temperature                 (forecast_period: 4; latitude: 145; longitude: 192)
+            surface_temperature                 (time: 4; latitude: 145; longitude: 192)
                  Dimension coordinates:
-                      forecast_period                           x            -               -
-                      latitude                                  -            x               -
-                      longitude                                 -            -               x
+                      time                           x            -               -
+                      latitude                       -            x               -
+                      longitude                      -            -               x
                  Auxiliary coordinates:
-                      time                                      x            -               -
+                      forecast_period                x            -               -
                  Scalar coordinates:
                       forecast_reference_time: 364272.0 hours since 1970-01-01 00:00:00
                       realization: 10
@@ -1989,8 +1990,6 @@ class Cube(CFVariableMixin):
                  Cell methods:
                       mean: time (1 hour)
                       mean: time
-
-
 
             Notice that the forecast_period dimension now represents the 4 possible windows of size 3 from the original cube. 
 

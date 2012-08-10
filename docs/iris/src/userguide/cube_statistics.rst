@@ -25,23 +25,24 @@ Instead of downsampling the data, a similar goal can be achieved using statistic
     >>> filename = iris.sample_data_path('uk_hires.pp')
     >>> cube = iris.load_strict(filename, 'air_potential_temperature')
     >>> print cube
-    air_potential_temperature           (forecast_period: 3; level_height: 7; grid_latitude: 204; grid_longitude: 187)
+    air_potential_temperature           (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
          Dimension coordinates:
-              forecast_period                           x                -                 -                    -
-              level_height                              -                x                 -                    -
-              grid_latitude                             -                -                 x                    -
-              grid_longitude                            -                -                 -                    x
+              time                           x                      -                 -                    -
+              model_level_number             -                      x                 -                    -
+              grid_latitude                  -                      -                 x                    -
+              grid_longitude                 -                      -                 -                    x
          Auxiliary coordinates:
-              time                                      x                -                 -                    -
-              model_level_number                        -                x                 -                    -
-              sigma                                     -                x                 -                    -
-              surface_altitude                          -                -                 x                    x
+              forecast_period                x                      -                 -                    -
+              level_height                   -                      x                 -                    -
+              sigma                          -                      x                 -                    -
+              surface_altitude               -                      -                 x                    x
          Derived coordinates:
-              altitude                                  -                x                 x                    x
+              altitude                       -                      x                 x                    x
          Scalar coordinates:
               source: Data from Met Office Unified Model 7.03
          Attributes:
               STASH: m01s00i004
+
 
 
 
@@ -51,16 +52,16 @@ name and the aggregation definition to the :meth:`Cube.collapsed() <iris.cube.Cu
     >>> import iris.analysis
     >>> vertical_mean = cube.collapsed('model_level_number', iris.analysis.MEAN)
     >>> print vertical_mean
-    air_potential_temperature           (forecast_period: 3; grid_latitude: 204; grid_longitude: 187)
+    air_potential_temperature           (time: 3; grid_latitude: 204; grid_longitude: 187)
          Dimension coordinates:
-              forecast_period                           x                 -                    -
-              grid_latitude                             -                 x                    -
-              grid_longitude                            -                 -                    x
+              time                           x                 -                    -
+              grid_latitude                  -                 x                    -
+              grid_longitude                 -                 -                    x
          Auxiliary coordinates:
-              time                                      x                 -                    -
-              surface_altitude                          -                 x                    x
+              forecast_period                x                 -                    -
+              surface_altitude               -                 x                    x
          Derived coordinates:
-              altitude                                  -                 x                    x
+              altitude                       -                 x                    x
          Scalar coordinates:
               level_height: Cell(point=696.66663, bound=(0.0, 1393.3333)) m
               model_level_number: Cell(point=10, bound=(1, 19))
@@ -97,12 +98,16 @@ These areas can now be passed to the ``collapsed`` method as weights:
 
     >>> new_cube = cube.collapsed(['grid_longitude', 'grid_latitude'], iris.analysis.MEAN, weights=grid_areas)
     >>> print new_cube
-    air_potential_temperature           (model_level_number: 38)
+    air_potential_temperature           (time: 3; model_level_number: 7)
          Dimension coordinates:
-              model_level_number                           x
+              time                           x                      -
+              model_level_number             -                      x
          Auxiliary coordinates:
-              level_height                                 x
-              sigma                                        x
+              forecast_period                x                      -
+              level_height                   -                      x
+              sigma                          -                      x
+         Derived coordinates:
+              altitude                       -                      x
          Scalar coordinates:
               grid_latitude: Cell(point=1.5145501, bound=(0.14430022, 2.8848)) degrees
               grid_longitude: Cell(point=358.74948, bound=(357.49399, 360.00497)) degrees
@@ -113,6 +118,7 @@ These areas can now be passed to the ``collapsed`` method as weights:
               history: Mean of air_potential_temperature over grid_longitude, grid_latitude
          Cell methods:
               mean: grid_longitude, grid_latitude
+
 
 
 
@@ -170,7 +176,14 @@ Printing this cube now shows that two extra coordinates exist on the cube:
               clim_season                    x             -              -
               forecast_reference_time        x             -              -
               season_year                    x             -              -
-
+         Scalar coordinates:
+              forecast_period: 0 hours
+         Attributes:
+              Conventions: CF-1.5
+              STASH: m01s00i024
+              history: Mean of surface_temperature aggregated over month, year
+         Cell methods:
+              mean: month, year
 
 
 These two coordinates can now be used as *groups* over which to do an aggregation:

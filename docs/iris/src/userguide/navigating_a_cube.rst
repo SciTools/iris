@@ -184,19 +184,13 @@ model mean that the run is spread over several days.
 
 If we try to load the data directly for ``surface_temperature``:
 
-<<<<<<< HEAD
-   >>> filename = iris.sample_data_path('PP', 'GloSea4', 'prodf*_???.pp')
-   >>> print iris.load(filename, 'precipitation_flux')
-   0: precipitation_flux                  (time: 6; forecast_reference_time: 2; latitude: 145; longitude: 192)
-   1: precipitation_flux                  (time: 6; forecast_reference_time: 2; latitude: 145; longitude: 192)
-   2: precipitation_flux                  (realization: 9; time: 6; latitude: 145; longitude: 192)
-=======
-   >>> filename = iris.sample_data_path('GloSea4', '*.pp')
-   >>> print iris.load(filename, 'surface_temperature')
-   0: surface_temperature                 (forecast_reference_time: 2; time: 6; latitude: 145; longitude: 192)
-   1: surface_temperature                 (forecast_reference_time: 2; time: 6; latitude: 145; longitude: 192)
-   2: surface_temperature                 (realization: 9; time: 6; latitude: 145; longitude: 192)
->>>>>>> Fully working sample data usage.
+    >>> filename = iris.sample_data_path('GloSea4', '*.pp')
+    >>> print iris.load(filename, 'surface_temperature')
+    0: surface_temperature                 (time: 6; forecast_reference_time: 2; latitude: 145; longitude: 192)
+    1: surface_temperature                 (time: 6; forecast_reference_time: 2; latitude: 145; longitude: 192)
+    2: surface_temperature                 (realization: 9; time: 6; latitude: 145; longitude: 192)
+
+
 
 
 We get multiple cubes some with more dimensions than expected, some without a ``realization`` (i.e. ensemble member) dimension. 
