@@ -29,6 +29,7 @@ import iris.cube
 import iris.coords
 import iris.exceptions
 import iris.unit
+import iris.util
 
 
 #
@@ -623,7 +624,7 @@ def _derive_separable_consistent_groups(relation_matrix, separable_group):
     return result
 
 
-def _build_separable_group(space, group, separable_consistent_groups, positions, function_matrix, hint=None):
+def _build_separable_group(space, group, separable_consistent_groups, positions, function_matrix):
     """
     Update the space with the first separable consistent group that satisfies a valid 
     functional relationship with all other candidate dimensions in the group.
@@ -653,28 +654,13 @@ def _build_separable_group(space, group, separable_consistent_groups, positions,
         The function mapping dictionary for each candidate dimension that
         participates in a functional relationship.
 
-    Kwargs:
-
-    * hint:
-        List of one or more candidate dimension names that have user
-        preference to be a dimension coordinate.
-
     Returns:
         None.
 
     """
     valid = False
 
-    # Sort the separable consistent groups into user prefered order.
-    if hint is not None:
-        if isinstance(hint, basestring) or not isinstance(hint, Iterable):
-            hint = [hint]
-        hint = set(hint)
-        separable_consistent_groups = sorted(separable_consistent_groups,
-                                             key=lambda group: len(hint & set(group)),
-                                             reverse=True)
-
-    for independent in separable_consistent_groups:
+    for independent in sorted(separable_consistent_groups):
         dependent = list(group - set(independent))
         dependent_function_matrix = {}
 
@@ -700,7 +686,7 @@ def _build_separable_group(space, group, separable_consistent_groups, positions,
         raise iris.exceptions.NotYetImplementedError('No functional relationship between separable and inseparable candidate dimensions.')
 
 
-def _build_inseparable_group(space, group, positions, function_matrix, hint=None):
+def _build_inseparable_group(space, group, positions, function_matrix):
     """
     Update the space with the first valid scalar functional relationship between
     a candidate dimension within the group and all other candidate dimensions.
@@ -730,29 +716,13 @@ def _build_inseparable_group(space, group, positions, function_matrix, hint=None
         The function mapping dictionary for each candidate dimension that
         participates in a functional relationship.
 
-    Kwargs:
-
-    * hint:
-        List of one or more candidate dimension names that have user
-        preference to be a dimension coordinate.
-
     Returns:
         Boolean.
 
     """
     scalar = False
-    group = list(group)
 
-    # Sort the group into user prefered order.
-    if hint is not None:
-        if isinstance(hint, basestring) or not isinstance(hint, Iterable):
-            hint = [hint]
-        hint_dict = {name: i for i, name in enumerate(hint[::-1])}
-        group = sorted(group, key=lambda name: hint_dict.get(name, -1), reverse=True)
-    else:
-        group.sort()
-
-    for name in group:
+    for name in sorted(group):
         independent = set([name])
         dependent = set(group) - independent
         valid = False
@@ -828,7 +798,7 @@ def _build_combination_group(space, group, positions, function_matrix):
             function_matrix[name][cell] = position[name]
 
 
-def derive_space(groups, relation_matrix, positions, function_matrix=None, hint=None):
+def derive_space(groups, relation_matrix, positions, function_matrix=None):
     """
     Determine the relationship between all the candidate dimensions.
 
@@ -848,10 +818,6 @@ def derive_space(groups, relation_matrix, positions, function_matrix=None, hint=
           The function mapping dictionary for each candidate dimension that
           participates in a functional relationship.
 
-      * hint:
-          One or more candidate dimension names that have user preference
-          to be a dimension coordinate.
-
     Returns:
         A space dictionary describing the relationship between each candidate dimension. 
 
@@ -869,12 +835,12 @@ def derive_space(groups, relation_matrix, positions, function_matrix=None, hint=
             # Determine the largest combination of the candidate dimensions 
             # in the separable group that are consistently separable.
             separable_consistent_groups = _derive_separable_consistent_groups(relation_matrix, separable_group)
-            _build_separable_group(space, group, separable_consistent_groups, positions, function_matrix, hint=hint)
+            _build_separable_group(space, group, separable_consistent_groups, positions, function_matrix)
         else:
             # Determine whether there is a scalar relationship between one of
             # the candidate dimensions and each of the other candidate dimensions 
             # in this inseparable group.
-            if not _build_inseparable_group(space, group, positions, function_matrix, hint=hint):
+            if not _build_inseparable_group(space, group, positions, function_matrix):
                 # There is no relationship between any of the candidate dimensions in this 
                 # inseparable group, so merge them together into a new combined dimension of the space.
                 _build_combination_group(space, group, positions, function_matrix)
@@ -888,6 +854,9 @@ class ProtoCube(object):
     def __init__(self, cube):
         """Create a new ProtoCube from the given cube and record the cube as a source-cube."""
 
+        # Default hint ordering for candidate dimension coordinates.
+        self._hints = ['time', 'forecast_reference_time', 'forecast_period', 'model_level_number']
+
         # The cube signature is metadata that defines this ProtoCube.
         self._cube_signature = self._build_signature(cube)
 
@@ -897,10 +866,6 @@ class ProtoCube(object):
         # The coordinate signature defines the scalar and vector coordinates of this ProtoCube.
         self._coord_signature = coord_payload.as_signature()
         self._coord_metadata = coord_payload.scalar.metadata
-
-        # Build scalar index by name (for hint support).
-        defns = self._coord_signature.scalar_defns
-        self._scalar_index_by_name = {defn.name(default='unknown_%d' % i).lower(): i for i, defn in enumerate(defns)}
 
         # The list of stripped-down source-cubes relevant to this ProtoCube.
         self._skeletons = []
@@ -916,7 +881,7 @@ class ProtoCube(object):
         self._vector_dim_coords_dims = []  # Dims offset by merged space higher dimensionality.
         self._vector_aux_coords_dims = []  # Dims offset by merged space higher dimensionality.
 
-    def merge(self, unique=True, hint=None):
+    def merge(self, unique=True):
         """
         Returns the list of cubes resulting from merging the registered source-cubes.
 
@@ -926,12 +891,8 @@ class ProtoCube(object):
             If True, raises `iris.exceptions.DuplicateDataError` if
             duplicate cubes are detected.
 
-        * hint:
-            One or more coordinate names that have user preference
-            to be a dimension coordinate.
-
         Returns:
-            A a :class:`iris.cube.CubeList` of merged cubes.
+            A :class:`iris.cube.CubeList` of merged cubes.
 
         """
         positions = [{i: v for i, v in enumerate(skeleton.scalar_values)} for skeleton in self._skeletons]
@@ -939,20 +900,8 @@ class ProtoCube(object):
         relation_matrix = derive_relation_matrix(indexes)
         groups = derive_groups(relation_matrix)
 
-        # TODO: default hint = ['time', 'forecast_reference_time', 'level_height']
-
-        # Translate coordinate "names" into candidate dimesions names.
-        hint_names = []
-        if hint is not None:
-            if isinstance(hint, basestring) or not isinstance(hint, Iterable):
-                hint = [hint]
-            for name in hint:
-                index = self._scalar_index_by_name.get(name)
-                if index is not None:
-                    hint_names.append(index)
-
         function_matrix = {}
-        space = derive_space(groups, relation_matrix, positions, function_matrix=function_matrix, hint=hint_names)
+        space = derive_space(groups, relation_matrix, positions, function_matrix=function_matrix)
         self._define_space(space, positions, indexes, function_matrix)
         self._build_coordinates()
 
@@ -1049,33 +998,27 @@ class ProtoCube(object):
         Returns a "best guess" axis name of the candidate dimension.
 
         Heuristic categoration of the candidate dimension (i.e. scalar_defn index)
-        into either label 't', 'z', 'y', 'x' or the "name" based on the standard_name
-        or long_name.
+        into either label 'T', 'Z', 'Y', 'X' or None.
 
         Based on the associated scalar coordinate definition rather than the 
         scalar coordinate itself.
 
+        Args:
+
+        * name:
+            The candidate dimension.
+
+        Returns:
+            'T', 'Z', 'Y', 'X', or None.
+
         """
-        alias = None
+        axis = None
 
         if not _is_combination(name):
             defn = self._coord_signature.scalar_defns[name]
-            alias = name = defn.name().lower()
-            units = iris.unit.as_unit(defn.units)
+            axis = iris.util.guess_coord_axis(defn)
 
-            if 'longitude' in name or defn.standard_name in ['projection_x_coordinate']:
-                alias = 'x'
-            elif 'latitude' in name or defn.standard_name in ['projection_y_coordinate']:
-                alias = 'y'
-            elif 'height' in name or 'depth' in name or \
-                    defn.attributes.get('positive') in ['up', 'down'] or \
-                    units.is_vertical():
-                alias = 'z'
-            # TODO: remove is_time()
-            elif units.time_reference or units.is_time():
-                alias = 't'
-
-        return alias
+        return axis
 
     def _define_space(self, space, positions, indexes, function_matrix):
         """
@@ -1102,7 +1045,7 @@ class ProtoCube(object):
         """
         # Heuristic reordering of coordinate defintion indexes into preferred dimension order.
         names = sorted(space, 
-                       key=lambda name: ({'t':1, 'z':2, 'y':3, 'x':4}.get(self._guess_axis(name), 0), self._guess_axis(name)))
+                       key=lambda name: ({'T':1, 'Z':2, 'Y':3, 'X':4}.get(self._guess_axis(name), 0), name))
         dim_by_name = {}
 
         metadata = self._coord_metadata
@@ -1321,10 +1264,20 @@ class ProtoCube(object):
         vector_dim_coords_and_dims = []
         vector_aux_coords_and_dims = []
 
-        key_func = lambda coord: coord._as_defn()
+        coords = cube.dim_coords + cube.aux_coords
+        
+        # Coordinate hint ordering dictionary - from most preferred to least.
+        # Copes with duplicate hint entries, where the most preferred is king.
+        hint_dict = {name: i for i, name in zip(range(len(self._hints), 0, -1), self._hints[::-1])}
+        # Coordinate axis ordering dictionary.
+        axis_dict = {'T': 0, 'Z': 1, 'Y': 2, 'X': 3}
+        # Coordinate sort function - by coordinate hint, then by guessed coordinate axis, then
+        # by coordinate definition, in ascending order.
+        key_func = lambda coord: (hint_dict.get(coord.name(), len(hint_dict) + 1),
+                                  axis_dict.get(iris.util.guess_coord_axis(coord), len(axis_dict) + 1),
+                                  coord._as_defn())
 
-        # Ensure to filter out any missing coordinates (=None) for a dimension.
-        coords = filter(None, cube.dim_coords) + cube.aux_coords
+        # Order the coordinates by hints, axis, and definition.
         for coord in sorted(coords, key=key_func):
             if not cube.coord_dims(coord) and coord.shape == (1,):
                 # Extract the scalar coordinate data and metadata.
@@ -1342,7 +1295,7 @@ class ProtoCube(object):
                     vector_dim_coords_and_dims.append(_CoordAndDims(coord, tuple(cube.coord_dims(coord))))
  
         factory_defns = []
-        for factory in sorted(cube.aux_factories, key=key_func):
+        for factory in sorted(cube.aux_factories, key=lambda factory: factory._as_defn()):
             dependency_defns = []
             dependencies = factory.dependencies
             for key in sorted(dependencies):

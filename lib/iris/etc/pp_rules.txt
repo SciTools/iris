@@ -337,7 +337,7 @@ f.lbvc == 65
 THEN
 #need orography field to calculate 3D array height coord
 ###,  coord_system=HybridHeightCS(Reference('orography')))
-CoordAndDims(AuxCoord(f.lblev, 'model_level_number'))
+CoordAndDims(AuxCoord(f.lblev, standard_name='model_level_number', attributes={'positive': 'up'}))
 CoordAndDims(DimCoord(f.blev, long_name='level_height', units='m', bounds=[f.brlev, f.brsvd[0]], attributes={'positive': 'up'}))
 CoordAndDims(AuxCoord(f.bhlev, long_name='sigma', bounds=[f.bhrlev, f.brsvd[1]]))
 Factory(HybridHeightFactory, [{'long_name': 'level_height'}, {'long_name': 'sigma'}, Reference('orography')])

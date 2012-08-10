@@ -1,24 +1,28 @@
 dimensions:
-	forecast_period = 360 ;
+	time = 360 ;
 	latitude = 73 ;
 	longitude = 96 ;
 	bnds = 2 ;
 variables:
-	float air_temperature(forecast_period, latitude, longitude) ;
+	float air_temperature(time, latitude, longitude) ;
 		air_temperature:standard_name = "air_temperature" ;
 		air_temperature:units = "K" ;
 		air_temperature:ukmo__um_stash_source = "m01s03i236" ;
 		air_temperature:cell_methods = "time: maximum (interval: 1 hour)" ;
 		air_temperature:grid_mapping = "latitude_longitude" ;
-		air_temperature:coordinates = "forecast_reference_time height time" ;
+		air_temperature:coordinates = "forecast_period forecast_reference_time height" ;
 	int latitude_longitude ;
 		latitude_longitude:grid_mapping_name = "latitude_longitude" ;
 		latitude_longitude:longitude_of_prime_meridian = 0. ;
 		latitude_longitude:semi_major_axis = 6371229. ;
 		latitude_longitude:semi_minor_axis = 6371229. ;
-	int forecast_period(forecast_period) ;
-		forecast_period:units = "hours" ;
-		forecast_period:standard_name = "forecast_period" ;
+	double time(time) ;
+		time:axis = "T" ;
+		time:bounds = "time_bnds" ;
+		time:units = "hours since 1970-01-01 00:00:00" ;
+		time:standard_name = "time" ;
+		time:calendar = "360_day" ;
+	double time_bnds(time, bnds) ;
 	float latitude(latitude) ;
 		latitude:axis = "Y" ;
 		latitude:units = "degrees_north" ;
@@ -27,6 +31,9 @@ variables:
 		longitude:axis = "X" ;
 		longitude:units = "degrees_east" ;
 		longitude:standard_name = "longitude" ;
+	int forecast_period(time) ;
+		forecast_period:units = "hours" ;
+		forecast_period:standard_name = "forecast_period" ;
 	double forecast_reference_time ;
 		forecast_reference_time:units = "hours since 1970-01-01 00:00:00" ;
 		forecast_reference_time:standard_name = "forecast_reference_time" ;
@@ -35,12 +42,6 @@ variables:
 		height:units = "m" ;
 		height:standard_name = "height" ;
 		height:positive = "up" ;
-	double time(forecast_period) ;
-		time:bounds = "time_bnds" ;
-		time:units = "hours since 1970-01-01 00:00:00" ;
-		time:standard_name = "time" ;
-		time:calendar = "360_day" ;
-	double time_bnds(forecast_period, bnds) ;
 
 // global attributes:
 		:Conventions = "CF-1.5" ;

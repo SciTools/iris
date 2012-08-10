@@ -260,7 +260,7 @@ class TestTimeTripleMerging(tests.IrisTest):
 
     def test_successive_forecasts(self):
         # Three forecast series from successively later reference times
-        # => fp, t: 4; rt, t: 3
+        # => rt, t: 3; fp, t: 4
         triples = (
             (0, 10, 10), (1, 10, 11), (2, 10, 12), (3, 10, 13),
             (0, 11, 11), (1, 11, 12), (2, 11, 13), (3, 11, 14),
@@ -269,7 +269,7 @@ class TestTimeTripleMerging(tests.IrisTest):
         self._test_triples(triples, 'successive_forecasts')
 
     def test_time_vs_ref_time(self):
-        # => fp, rt: 3; fp, t: 4
+        # => fp, t: 4; fp, rt: 3
         triples = (
             (2, 10, 12), (3, 10, 13), (4, 10, 14), (5, 10, 15),
             (1, 11, 12), (2, 11, 13), (3, 11, 14), (4, 11, 15),
@@ -278,7 +278,7 @@ class TestTimeTripleMerging(tests.IrisTest):
         self._test_triples(triples, 'time_vs_ref_time')
 
     def test_time_vs_forecast(self):
-        # => fp, rt: 3; rt, t: 4
+        # => rt, t: 4, fp, rt: 3
         triples = (
             (0, 10, 10), (0, 11, 11), (0, 12, 12), (0, 13, 13),
             (1,  9, 10), (1, 10, 11), (1, 11, 12), (1, 12, 13),
