@@ -9,7 +9,7 @@ Collapsing entire data dimensions
 .. testsetup::
 
     import iris
-    filename = iris.sample_data_path('PP', 'globClim1', 'theta.pp')
+    filename = iris.sample_data_path('PP', 'globClim1', 'theta_subset.pp')
     cube = iris.load_strict(filename)
 
     import iris.analysis.cartography
@@ -22,7 +22,7 @@ In the section :doc:`reducing_a_cube` we saw how to extract a subset of a cube i
 Instead of downsampling the data, a similar goal can be achieved using statistical operations over *all* of the data. Suppose we have a cube:
 
     >>> import iris
-    >>> filename = iris.sample_data_path('PP', 'globClim1', 'theta.pp')
+    >>> filename = iris.sample_data_path('PP', 'globClim1', 'theta_subset.pp')
     >>> cube = iris.load_strict(filename)
     >>> print cube
     air_potential_temperature           (model_level_number: 38; latitude: 145; longitude: 192)
@@ -134,7 +134,7 @@ First, let's create two coordinates on a cube which represent the climatological
     import iris
     import iris.coord_categorisation
 
-    filename = iris.sample_data_path('PP', 'decadal', 'ajnuqa.pm*.pp')
+    filename = iris.sample_data_path('PP', 'decadal_subset', 'ajnuqa.pm*.pp')
     cube = iris.load_strict(filename, 'air_temperature')
 
     iris.coord_categorisation.add_season(cube, 'time', name='clim_season')
@@ -145,7 +145,7 @@ First, let's create two coordinates on a cube which represent the climatological
 
     import iris
 
-    filename = iris.sample_data_path('PP', 'decadal', 'ajnuqa.pm*.pp')
+    filename = iris.sample_data_path('PP', 'decadal_subset', 'ajnuqa.pm*.pp')
     cube = iris.load_strict(filename, 'air_temperature')
 
     import iris.coord_categorisation

@@ -221,5 +221,20 @@ save = iris.io.save
 
 
 def sample_data_path(*path_to_join):
-    """Given the sample file data zoo location, returns the full path to the file."""    
-    return iris.io.select_data_path('sample_data', path_to_join)
+    """Given the sample file relative location, returns the full path to the file.
+    
+    Example:
+    
+        full_path = iris.sample_data_path('PP', 'globClim1', 'theta_subset.pp')
+        cube = iris.load_strict(full_path)
+    
+    Note: The iris_sample_data repository can be found at git@github.com:bblay/iris_sample_data.git
+    Tell Iris where to find in etc/site.cfg, or clone it next to the Iris root folder.   
+    TODO: Update this link when it's in SciTools.
+    
+    """
+    if not os.path.exists(config.SAMPLE_DATA_DIR):
+        # TODO: Update this link when it's in SciTools.
+        warnings.warn("The sample data folder was not found (available from git@github.com:bblay/iris_sample_data.git)")
+
+    return os.path.join(config.SAMPLE_DATA_DIR, *path_to_join)

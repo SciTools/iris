@@ -93,7 +93,7 @@ def nearest_neighbour_indices(cube, sample_points):
     dimensions. Any dimensions unspecified will default to a full slice.
 
     For example:
-        >>> cube = iris.load_strict(iris.sample_data_path('PP', 'globClim1', 'theta.pp'))
+        >>> cube = iris.load_strict(iris.sample_data_path('PP', 'globClim1', 'theta_subset.pp'))
         >>> iris.analysis.interpolate.nearest_neighbour_indices(cube, [('latitude', 0), ('longitude', 10)])
         (slice(None, None, None), 72, 5)
         >>> iris.analysis.interpolate.nearest_neighbour_indices(cube, [('latitude', 0)])
@@ -295,7 +295,7 @@ def extract_nearest_neighbour(cube, sample_points):
     dimensions. Any dimensions unspecified will default to a full slice.
 
     For example:
-        >>> cube = iris.load_strict(iris.sample_data_path('PP', 'globClim1', 'theta.pp'))
+        >>> cube = iris.load_strict(iris.sample_data_path('PP', 'globClim1', 'theta_subset.pp'))
         >>> iris.analysis.interpolate.extract_nearest_neighbour(cube, [('latitude', 0), ('longitude', 10)])
         <iris 'Cube' of air_potential_temperature (model_level_number: 38)>
         >>> iris.analysis.interpolate.extract_nearest_neighbour(cube, [('latitude', 0)])
@@ -323,7 +323,7 @@ def nearest_neighbour_data_value(cube, sample_points):
     dimensions.
 
     For example:
-        >>> cube = iris.load_strict(iris.sample_data_path('PP', 'globClim1', 'theta.pp'))
+        >>> cube = iris.load_strict(iris.sample_data_path('PP', 'globClim1', 'theta_subset.pp'))
         >>> iris.analysis.interpolate.nearest_neighbour_data_value(cube, [('latitude', 0), ('longitude', 10), ('model_level_number', 1)])
         299.35156
         >>> iris.analysis.interpolate.nearest_neighbour_data_value(cube, [('latitude', 0)])

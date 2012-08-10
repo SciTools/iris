@@ -26,7 +26,7 @@ def limit_colorbar_ticks(contour_object):
 
 
 def main():
-    fname = iris.sample_data_path('PP', 'COLPEX', 'air_potential_and_air_pressure.pp')
+    fname = iris.sample_data_path('PP', 'COLPEX', 'air_potential_and_air_pressure_subset_b.pp')
     
     # the list of phenomena of interest
     phenomena = ['air_potential_temperature', 'air_pressure']

@@ -33,7 +33,7 @@ def lagged_ensemble_metadata(cube, field, fname):
     # add an ensemble member coordinate if one doesn't already exist
     if not cube.coords('realization'):
         # the ensemble member is encoded in the filename as *_???.pp where ??? is the ensemble member
-        ensemble_member = fname[-6:-3]
+        ensemble_member = fname[-13:-10]
 
         import iris.coords
         ensemble_coord = iris.coords.AuxCoord(numpy.int32(ensemble_member), 'realization')
@@ -46,7 +46,7 @@ def lagged_ensemble_metadata(cube, field, fname):
 
 def main():
     # extract surface temperature cubes which have an ensemble member coordinate, adding appropriate lagged ensemble metadata
-    surface_temp = iris.load_strict(iris.sample_data_path('PP', 'GloSea4', 'prodf*_???.pp'), 
+    surface_temp = iris.load_strict(iris.sample_data_path('PP', 'GloSea4', 'prodf*_???_subset.pp'), 
                   iris.Constraint('surface_temperature', realization=lambda value: True),
                   callback=lagged_ensemble_metadata,
                   )

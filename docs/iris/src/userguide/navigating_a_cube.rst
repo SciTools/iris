@@ -182,7 +182,7 @@ model mean that the run is spread over several days.
 
 If we try to load the data directly for air_temperature:
 
-   >>> filename = iris.sample_data_path('PP', 'GloSea4', 'prodf*_???.pp')
+   >>> filename = iris.sample_data_path('PP', 'GloSea4', 'prodf*_???_subset.pp')
    >>> print iris.load(filename, 'precipitation_flux')
    0: precipitation_flux                  (time: 6; forecast_reference_time: 2; latitude: 145; longitude: 192)
    1: precipitation_flux                  (time: 6; forecast_reference_time: 2; latitude: 145; longitude: 192)
@@ -194,8 +194,8 @@ In this case, two of the PP files have been encoded without the appropriate ``re
 the appropriate coordinate cannot be added to the resultant cube. Fortunately, the missing attribute has been encoded in the filename
 which, given the filename, we could extract::
 
-    filename = iris.sample_data_path('PP', 'GloSea4', 'prodf_op_sfc_cam_11_20110718_001.pp')
-    realization = int(filename[-6:-3])
+    filename = iris.sample_data_path('PP', 'GloSea4', 'prodf_op_sfc_cam_11_20110718_001_subset.pp')
+    realization = int(filename[-13:-10])
     print realization
 
 We can solve this problem by adding the appropriate metadata, on load, by using a callback function, which runs on a field
@@ -210,11 +210,11 @@ by field basis *before* they are automatically merged together:
     def lagged_ensemble_callback(cube, field, filename):
         # Add our own realization coordinate if it doesn't already exist.
         if not cube.coords('realization'):
-            realization = numpy.int32(filename[-6:-3])
+            realization = numpy.int32(filename[-13:-10])
             ensemble_coord = icoords.AuxCoord(realization, standard_name='realization')
             cube.add_aux_coord(ensemble_coord)
 
-    filename = iris.sample_data_path('PP', 'GloSea4', 'prodf*_???.pp')
+    filename = iris.sample_data_path('PP', 'GloSea4', 'prodf*_???_subset.pp')
 
     print iris.load(filename, 'precipitation_flux', callback=lagged_ensemble_callback)
 
