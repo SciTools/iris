@@ -148,8 +148,8 @@ Loading multiple files
 
 To load more than one file into a list of cubes, a list of filenames can be provided to :py:func:`iris.load`::
 
-    filenames = [iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp'),
-                 iris.sample_data_path('PP', 'aPPglob1', 'global.pp')]
+    filenames = [iris.sample_data_path('uk_hires.pp'),
+                 iris.sample_data_path('air_temp.pp')]
     cubes = iris.load(filenames)
 
 
@@ -158,7 +158,7 @@ defined :py:mod:`fnmatch`.
 
 For example, to match **zero or more characters** in the filename, star wildcards can be used::
 
-    filename = iris.sample_data_path('PP', 'globClim1', '*_wind.pp')
+    filename = iris.sample_data_path('GloSea4', '*.pp')
     cubes = iris.load(filename)
 
 
@@ -175,8 +175,8 @@ As we have seen, loading the following file creates several Cubes::
 Specifying a name as a constraint argument to :py:func:`iris.load` will mean only cubes with a
 matching :meth:`name <iris.cube.Cube.name>` will be returned::
 
-    filename = iris.sample_data_path('space_weather.nc')
-    cubes = iris.load(filename, 'electron_density')
+    filename = iris.sample_data_path('uk_hires.pp')
+    cubes = iris.load(filename, 'specific_humidity')
 
 To constrain the load to multiple distinct constraints, a list of constraints can be provided. 
 This is equivalent to running load once for each constraint but is likely to be more efficient::
@@ -202,25 +202,25 @@ As well as being able to combine constraints using ``&``, the :class:`iris.Const
 arguments, and a list of values can be given to constrain a coordinate to one of a collection of values::
 
     filename = iris.sample_data_path('uk_hires.pp')
-    level_10_or_12_fp_6 = iris.Constraint(model_level_number=[10, 12], forecast_period=6)
-    cubes = iris.load(filename, level_10_or_12_fp_6)
+    level_10_or_12_fp_6 = iris.Constraint(model_level_number=[10, 16], forecast_period=6)
+    cubes = iris.load(filename, level_10_or_16_fp_6)
 
 A common requirement is to limit the value of a coordinate to a specific range, this can be achieved by passing the constraint
 a function::
 
-    def bottom_20_levels(cell):
+    def bottom_16_levels(cell):
        # return True or False as to whether the cell in question should be kept
-       return cell <= 20
+       return cell <= 16
 
     filename = iris.sample_data_path('uk_hires.pp')
-    level_lt_20 = iris.Constraint(model_level_number=bottom_20_levels)
-    cubes = iris.load(filename, level_lt_20)
+    level_lt_16 = iris.Constraint(model_level_number=bottom_16_levels)
+    cubes = iris.load(filename, level_lt_16)
      
 .. note::
     As with many of the examples later in this documentation, the simple function above can be conveniently written as a 
     lambda function on a single line::
 
-        bottom_20_levels = lambda cell: cell <= 20
+        bottom_16_levels = lambda cell: cell <= 16
 
 Cube attributes can also be part of the constraint criteria. Supposing a cube attribute of ``STASH`` existed, as is the case
 when loading ``PP`` files, then specific STASH codes can be filtered::

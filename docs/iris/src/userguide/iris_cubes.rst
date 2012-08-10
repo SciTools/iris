@@ -73,7 +73,6 @@ A cube consists of:
  * a list of coordinate "factories" used for deriving coordinates from the values of other coordinates in the cube 
 
 
-
 Cubes in practice
 -----------------
 

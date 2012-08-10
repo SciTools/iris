@@ -3,11 +3,8 @@ Hovmoller diagram of monthly surface temperature
 ================================================
 
 This example demonstrates the creation of a Hovmoller diagram with fine control over plot ticks and labels.
-The data file being loaded is daily SST from the Met Office OSTIA project. As the plot is designed to show
-annual variability, monthly data would be sufficient, therefore a constraint is used to filter all data which
-does not fall on the first day of the month. A more sophisticated filtering scheme could be applied in practice,
-perhaps taking the monthly mean as the data to plot.
-
+The data comes from the Met Office OSTIA project and has been pre-processed to calculate the monthly mean sea
+surface temperature.
 
 """
 import matplotlib.pyplot as plt

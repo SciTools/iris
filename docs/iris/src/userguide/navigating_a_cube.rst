@@ -182,7 +182,7 @@ Suppose we wish to load a lagged ensemble dataset from the Met Office's GloSea4 
 The data for this example represents 13 ensemble members of 6 one month timesteps; the logistics of the 
 model mean that the run is spread over several days. 
 
-If we try to load the data directly for air_temperature:
+If we try to load the data directly for ``surface_temperature``:
 
 <<<<<<< HEAD
    >>> filename = iris.sample_data_path('PP', 'GloSea4', 'prodf*_???.pp')

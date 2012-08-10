@@ -5,10 +5,6 @@ Cross section plots
 This example demonstrates contour plots of a cross-sectioned multi-dimensional cube which features 
 a hybrid height vertical coordinate system.
 
-.. note:: 
-   The data is limited to the first fifteen model levels to emphasise the terrain-following 
-   nature of the data.
-
 """
 
 import matplotlib.pyplot as plt
