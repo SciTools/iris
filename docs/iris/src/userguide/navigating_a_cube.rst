@@ -45,7 +45,7 @@ Similarly there exist other standard functions for interrogating your variable: 
     print type(cube)
 
 Other, more verbose, functions also exist which give information on **what** you can do with *any* given 
-variable. In most cases it is reasonable to ignore anything starting with ``_`` or ``__``::
+variable. In most cases it is reasonable to ignore anything starting with a "``_``" (underscore) or a "``__``" (double underscore)::
 
     dir(cube)
     help(cube)
@@ -184,9 +184,10 @@ If we try to load the data directly for air_temperature:
 
    >>> filename = iris.sample_data_path('PP', 'GloSea4', 'prodf*_???.pp')
    >>> print iris.load(filename, 'precipitation_flux')
-   0: precipitation_flux                  (forecast_reference_time: 2; time: 6; latitude: 145; longitude: 192)
-   1: precipitation_flux                  (forecast_reference_time: 2; time: 6; latitude: 145; longitude: 192)
+   0: precipitation_flux                  (time: 6; forecast_reference_time: 2; latitude: 145; longitude: 192)
+   1: precipitation_flux                  (time: 6; forecast_reference_time: 2; latitude: 145; longitude: 192)
    2: precipitation_flux                  (realization: 9; time: 6; latitude: 145; longitude: 192)
+
 
 We get multiple cubes some with more dimensions than expected, some without a ``realization`` (i.e. ensemble member) dimension. 
 In this case, two of the PP files have been encoded without the appropriate ``realization`` number attribute, which means that

@@ -32,7 +32,11 @@
         </DimCoord>
       </coord>
       <coord>
-        <DimCoord id="45dad63840fafae8" points="[1]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32"/>
+        <DimCoord id="685d4ee5312aad95" points="[1]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord>
         <DimCoord bounds="[[1.0, 0.998464]]" id="5634c91ba5717382" long_name="sigma" points="[0.999424]" shape="(1,)" units="Unit('1')" value_type="float32"/>

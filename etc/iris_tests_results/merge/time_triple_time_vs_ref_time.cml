@@ -3,14 +3,15 @@
   <cube units="unknown">
     <coords>
       <coord datadims="[0, 1]">
-        <AuxCoord id="3316428756571014" points="[[2, 3, 4, 5],
-		[1, 2, 3, 4],
-		[0, 1, 2, 3]]" shape="(3, 4)" standard_name="forecast_period" units="Unit('1')" value_type="int32"/>
-      </coord>
-      <coord datadims="[0]">
-        <DimCoord id="2677e59f61d90a1a" points="[10, 11, 12]" shape="(3,)" standard_name="forecast_reference_time" units="Unit('1')" value_type="int32"/>
+        <AuxCoord id="3316428756571014" points="[[2, 1, 0],
+		[3, 2, 1],
+		[4, 3, 2],
+		[5, 4, 3]]" shape="(4, 3)" standard_name="forecast_period" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord datadims="[1]">
+        <DimCoord id="2677e59f61d90a1a" points="[10, 11, 12]" shape="(3,)" standard_name="forecast_reference_time" units="Unit('1')" value_type="int32"/>
+      </coord>
+      <coord datadims="[0]">
         <DimCoord id="364d5f35b0b86f55" points="[12, 13, 14, 15]" shape="(4,)" standard_name="time" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord datadims="[3]">
@@ -21,6 +22,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data dtype="float32" shape="(3, 4, 4, 5)" state="loaded"/>
+    <data dtype="float32" shape="(4, 3, 4, 5)" state="loaded"/>
   </cube>
 </cubes>

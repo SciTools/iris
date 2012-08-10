@@ -7,7 +7,7 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <DimCoord id="fc2e5e733b5cf4c" points="[8636, 17276, 25916, 34556, 43196, 51836, 60476,
+        <AuxCoord id="fc2e5e733b5cf4c" points="[8636, 17276, 25916, 34556, 43196, 51836, 60476,
 		69116, 77756, 86396, 95036, 103676, 112316,
 		120956, 129596, 138236, 146876, 155516, 164156,
 		172796, 181436, 190076]" shape="(22,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -43,7 +43,7 @@
         <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <AuxCoord bounds="[[40320.0, 48960.0],
+        <DimCoord bounds="[[40320.0, 48960.0],
 		[48960.0, 57600.0],
 		[57600.0, 66240.0],
 		[66240.0, 74880.0],

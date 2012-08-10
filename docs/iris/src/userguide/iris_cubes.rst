@@ -156,35 +156,36 @@ output as this is the quickest way of inspecting the contents of a cube. Here is
      
 .. testoutput::
 
-    air_potential_temperature           (forecast_period: 3; level_height: 40; grid_latitude: 810; grid_longitude: 622)
+    air_potential_temperature           (time: 3; model_level_number: 40; grid_latitude: 810; grid_longitude: 622)
          Dimension coordinates:
-              forecast_period                           x                -                  -                    -
-              level_height                              -                x                  -                    -
-              grid_latitude                             -                -                  x                    -
-              grid_longitude                            -                -                  -                    x
+              time                           x                      -                  -                    -
+              model_level_number             -                      x                  -                    -
+              grid_latitude                  -                      -                  x                    -
+              grid_longitude                 -                      -                  -                    x
          Auxiliary coordinates:
-              time                                      x                -                  -                    -
-              model_level_number                        -                x                  -                    -
-              sigma                                     -                x                  -                    -
-              surface_altitude                          -                -                  x                    x
+              forecast_period                x                      -                  -                    -
+              level_height                   -                      x                  -                    -
+              sigma                          -                      x                  -                    -
+              surface_altitude               -                      -                  x                    x
          Derived coordinates:
-              altitude                                  -                x                  x                    x
+              altitude                       -                      x                  x                    x
          Scalar coordinates:
               source: Data from Met Office Unified Model 7.03
          Attributes:
               STASH: m01s00i004
 
+
 Using this output we can deduce that:
 
  * The cube represents air potential temperature.
  * There are 4 data dimensions, and the data has a shape of ``(3, 40, 810, 622)``
- * The 4 data dimensions are mapped to the ``forecast_period``, ``level_height``, 
+ * The 4 data dimensions are mapped to the ``time``, ``model_level_number``, 
    ``grid_latitude``, ``grid_longitude`` coordinates respectively
  * There are three 1d auxiliary coordinates and one 2d auxiliary (``surface_altitude``) 
  * There is a single ``altitude`` derived coordinate, which spans 3 data dimensions
- * There are 40 distinct values in the "level_height" coordinate. Similar inferences can 
+ * There are 40 distinct values in the ``model_level_number`` coordinate. Similar inferences can 
    be made for the other dimension coordinates.
- * There are 40, not necessarily distinct, values in the ``model_level_number`` coordinate.
+ * There are 40, not necessarily distinct, values in the ``level_height`` coordinate.
  * There is 1 coordinate (``source``) which represents a scalar value over all of the data dimensions.
  * The cube has one further attribute relating to the  phenomenon. 
    In this case the originating file format, PP, encodes information in a STASH code which in some cases can

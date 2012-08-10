@@ -173,8 +173,8 @@ class TestNetCDFLoad(tests.IrisTest):
         # Test exercising graceful cube and coordinate units loading.
         cube0, cube1 = iris.load(tests.get_data_path(('NetCDF', 'testing', 'units.nc')))
 
-        self.assertCML(cube0, ('netcdf', 'netcdf_units_0.nc'))
-        self.assertCML(cube1, ('netcdf', 'netcdf_units_1.nc'))
+        self.assertCML(cube0, ('netcdf', 'netcdf_units_0.cml'))
+        self.assertCML(cube1, ('netcdf', 'netcdf_units_1.cml'))
 
 
 class TestSave(tests.IrisTest):

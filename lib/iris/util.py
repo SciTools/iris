@@ -88,12 +88,31 @@ def delta(ndarray, dimension, circular=False):
 
 
 def guess_coord_axis(coord):
+    """
+    Returns a "best guess" axis name of the coordinate.
+    
+    Heuristic categoration of the coordinate into either label
+    'T', 'Z', 'Y', 'X' or None.
+    
+    Args:
+
+    * coord:
+        The :class:`iris.coords.Coord`.
+
+    Returns:
+        'T', 'Z', 'Y', 'X', or None.
+    
+    """
     axis = None
+    name = coord.name().lower()
+
     if coord.standard_name in ('longitude', 'grid_longitude', 'projection_x_coordinate'):
         axis = 'X'
     elif coord.standard_name in ('latitude', 'grid_latitude', 'projection_y_coordinate'):
         axis = 'Y'
-    elif coord.units.convertible('hPa') or coord.attributes.get('positive') in ('up', 'down'):
+    elif 'height' in name or 'depth' in name or \
+            coord.units.convertible('hPa') or \
+            coord.attributes.get('positive') in ('up', 'down'):
         axis = 'Z'
     elif coord.units.time_reference:    
         axis = 'T'

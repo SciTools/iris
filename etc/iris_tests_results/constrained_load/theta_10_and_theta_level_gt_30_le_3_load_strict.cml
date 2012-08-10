@@ -29,7 +29,11 @@
         </DimCoord>
       </coord>
       <coord>
-        <DimCoord id="45dad63840fafae8" points="[10]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32"/>
+        <DimCoord id="685d4ee5312aad95" points="[10]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord>
         <AuxCoord bounds="[[0.803914, 0.763465]]" id="5634c91ba5717382" long_name="sigma" points="[0.784571]" shape="(1,)" units="Unit('1')" value_type="float32"/>
@@ -89,7 +93,11 @@
         </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <DimCoord id="45dad63840fafae8" points="[1, 2, 3, 31, 32, 33, 34, 35, 36, 37, 38]" shape="(11,)" standard_name="model_level_number" units="Unit('1')" value_type="int32"/>
+        <DimCoord id="685d4ee5312aad95" points="[1, 2, 3, 31, 32, 33, 34, 35, 36, 37, 38]" shape="(11,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
       <coord datadims="[0]">
         <AuxCoord bounds="[[1.0, 0.994296],

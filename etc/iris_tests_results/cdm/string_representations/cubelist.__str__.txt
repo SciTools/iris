@@ -1,2 +1,2 @@
-0: eastward_wind                       (forecast_period: 6; level_height: 70; grid_latitude: 412; grid_longitude: 412)
-1: surface_altitude                    (forecast_period: 6; grid_latitude: 412; grid_longitude: 412)
+0: eastward_wind                       (time: 6; model_level_number: 70; grid_latitude: 412; grid_longitude: 412)
+1: surface_altitude                    (time: 6; grid_latitude: 412; grid_longitude: 412)

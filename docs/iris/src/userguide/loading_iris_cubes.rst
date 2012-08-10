@@ -28,21 +28,20 @@ In order to find out what has been loaded, the result can be printed:
      >>> filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
      >>> cubes = iris.load(filename)
      >>> print cubes
-     0: air_potential_temperature           (forecast_period: 3; level_height: 40; grid_latitude: 810; grid_longitude: 622)
-     1: specific_humidity                   (forecast_period: 3; level_height: 40; grid_latitude: 810; grid_longitude: 622)
-     2: surface_altitude                    (forecast_period: 3; grid_latitude: 810; grid_longitude: 622)
-
+     0: air_potential_temperature           (time: 3; model_level_number: 40; grid_latitude: 810; grid_longitude: 622)
+     1: specific_humidity                   (time: 3; model_level_number: 40; grid_latitude: 810; grid_longitude: 622)
+     2: surface_altitude                    (time: 3; grid_latitude: 810; grid_longitude: 622)
 
 This shows that there were 3 cubes as a result of loading the file, they were: ``air_potential_temperature``,
 ``specific_humidity`` and ``surface_altitude``. 
 
 The ``surface_altitude`` cube was 3 dimensional with: 
- * the first dimension representing ``forecast_period`` of which there are 3 distinct values.
+ * the first dimension representing ``time`` of which there are 3 distinct values.
  * the second and third dimensions have extents of 810 and 622 respectively and are represented by the
    ``grid_latitude`` and ``grid_longitude`` coordinates.
 
 Similarly, both the ``air_potential_temperature`` and ``specific_humidity`` cubes were 4 dimensional with the added 
-dimension related to the ``level_height`` coordinate.
+dimension related to the ``model_level_number`` coordinate.
 
 .. note::
      The result of :func:`iris.load` is **always** a :class:`list of cubes <iris.cube.CubeList>`. Anything that can be done with 
@@ -67,23 +66,24 @@ example, list indexing *could* be used:
      >>> # get the first cube (list indexing is 0 based)
      >>> air_potential_temperature = cubes[0]
      >>> print air_potential_temperature
-     air_potential_temperature           (forecast_period: 3; level_height: 40; grid_latitude: 810; grid_longitude: 622)
+     air_potential_temperature           (time: 3; model_level_number: 40; grid_latitude: 810; grid_longitude: 622)
           Dimension coordinates:
-               forecast_period                           x                -                  -                    -
-               level_height                              -                x                  -                    -
-               grid_latitude                             -                -                  x                    -
-               grid_longitude                            -                -                  -                    x
+               time                           x                      -                  -                    -
+               model_level_number             -                      x                  -                    -
+               grid_latitude                  -                      -                  x                    -
+               grid_longitude                 -                      -                  -                    x
           Auxiliary coordinates:
-               time                                      x                -                  -                    -
-               model_level_number                        -                x                  -                    -
-               sigma                                     -                x                  -                    -
-               surface_altitude                          -                -                  x                    x
+               forecast_period                x                      -                  -                    -
+               level_height                   -                      x                  -                    -
+               sigma                          -                      x                  -                    -
+               surface_altitude               -                      -                  x                    x
           Derived coordinates:
-               altitude                                  -                x                  x                    x
+               altitude                       -                      x                  x                    x
           Scalar coordinates:
                source: Data from Met Office Unified Model 7.03
           Attributes:
                STASH: m01s00i004
+
 
 Notice that the result of printing a **cube** is a little more verbose than it was when printing a 
 **list of cubes**. In addition to the very short summary which is provided when printing a list of 

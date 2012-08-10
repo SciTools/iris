@@ -1,16 +1,16 @@
-eastward_wind                       (forecast_period: 6; level_height: 70; grid_latitude: 412; grid_longitude: 412)
+eastward_wind                       (time: 6; model_level_number: 70; grid_latitude: 412; grid_longitude: 412)
      Dimension coordinates:
-          forecast_period                           x                -                  -                    -
-          level_height                              -                x                  -                    -
-          grid_latitude                             -                -                  x                    -
-          grid_longitude                            -                -                  -                    x
+          time                           x                      -                  -                    -
+          model_level_number             -                      x                  -                    -
+          grid_latitude                  -                      -                  x                    -
+          grid_longitude                 -                      -                  -                    x
      Auxiliary coordinates:
-          time                                      x                -                  -                    -
-          model_level_number                        -                x                  -                    -
-          sigma                                     -                x                  -                    -
-          surface_altitude                          -                -                  x                    x
+          forecast_period                x                      -                  -                    -
+          level_height                   -                      x                  -                    -
+          sigma                          -                      x                  -                    -
+          surface_altitude               -                      -                  x                    x
      Derived coordinates:
-          altitude                                  -                x                  x                    x
+          altitude                       -                      x                  x                    x
      Scalar coordinates:
           source: Data from Met Office Unified Model 7.04
      Attributes:
