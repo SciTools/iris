@@ -18,19 +18,19 @@ Get the local copy of the code
 
 From the command line::
 
-   git clone git://github.com/SciTools/Iris.git
+   git clone git://github.com/SciTools/iris.git
 
-You now have a copy of the code tree in the new ``Iris`` directory.
+You now have a copy of the code tree in the new ``iris`` directory.
 
 Updating the code
 =================
 
 From time to time you may want to pull down the latest code.  Do this with::
 
-   cd Iris
+   cd iris
    git pull
 
-The tree in ``Iris`` will now have the latest changes from the initial
+The tree in ``iris`` will now have the latest changes from the initial
 repository.
 
 .. include:: links.inc
