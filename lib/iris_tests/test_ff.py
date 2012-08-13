@@ -128,29 +128,6 @@ class TestFF2PP2Cube(tests.IrisTest):
     def setUp(self):
         self.filename = tests.get_data_path(('ssps', 'qtgl.ssps_006'))
 
-    def assertCML(self, cube, path, *args, **kwargs):
-        try:
-            coord = cube.coord('forecast_period')
-            coord._TEST_COMPAT_force_explicit = True
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('time')
-            coord._TEST_COMPAT_force_explicit = True
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('model_level_number')
-            coord._TEST_COMPAT_force_explicit = True
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('height')
-            coord._TEST_COMPAT_override_axis = 'z'
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        super(TestFF2PP2Cube, self).assertCML(cube, path, *args, **kwargs)
-
     def test_unit_pass_0(self):
         """Test FieldsFile to PPFields cube load."""
         # Adding the surface_altitude to all 4000(?) fields causes a

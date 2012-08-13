@@ -43,14 +43,6 @@ class TestMixin(object):
         self.assertEqual(len(cubes), self._num_cubes)
         names = ['forecast_period', 'forecast_reference_time', 'level_height', 'model_level_number', 'sigma', 'source']
         axes = ['forecast_period', 'rt', 'z', 'z', 'z', 'source']
-        for cube in cubes:
-            for name, axis in zip(names, axes):
-                cube.coord(name)._TEST_COMPAT_override_axis = axis
-
-            cube.coord('model_level_number')._TEST_COMPAT_force_explicit = True
-            cube.coord('source')._TEST_COMPAT_definitive = False
-            cube.coord('time')._TEST_COMPAT_points = False
-
         self.assertCML(cubes, ['merge', self._prefix + '.cml'])
         
     def test_remerge(self):
@@ -107,21 +99,6 @@ class TestColpex(tests.IrisTest):
     def test_colpex(self):
         cubes = iris.load(self._data_path)
         self.assertEqual(len(cubes), 2)
-        names = ['forecast_period', 'level_height', 'model_level_number', 'sigma', 'source', 'time']
-        axes = ['forecast_period', 'z', 'z', 'z', 'source', 't']
-        for name, axis in zip(names, axes):
-            cubes[0].coord(name)._TEST_COMPAT_force_explicit = True
-            cubes[0].coord(name)._TEST_COMPAT_override_axis = axis
-        cubes[0].coord('source')._TEST_COMPAT_definitive = False
-        cubes[0].coord('surface_altitude')._TEST_COMPAT_points = False
-
-        names = ['forecast_period', 'source', 'time']
-        axes = ['forecast_period', 'source', 't']
-        for name, axis in zip(names, axes):
-            cubes[1].coord(name)._TEST_COMPAT_force_explicit = True
-            cubes[1].coord(name)._TEST_COMPAT_override_axis = axis
-        cubes[1].coord('source')._TEST_COMPAT_definitive = False
-
         self.assertCML(cubes, ('COLPEX', 'uwind_and_orog.cml'))
 
 
@@ -139,12 +116,6 @@ class TestDataMerge(tests.IrisTest):
         
         # Merge the two halves
         cubes = iris.cube.CubeList([cube1, cube2]).merge(True)
-        names = ['forecast_period', 'model_level_number', 'sigma', 'time']
-        axes = ['forecast_period', 'z', 'z', 't']
-        for cube in cubes:
-            for name, axis in zip(names, axes):
-                cube.coord(name)._TEST_COMPAT_force_explicit = True
-                cube.coord(name)._TEST_COMPAT_override_axis = axis
         self.assertCML(cubes, ('merge', 'theta_two_forecast_periods.cml'))
 
         # Make sure we get the same result directly from load
@@ -158,14 +129,6 @@ class TestDataMerge(tests.IrisTest):
         for cube in cubes:
             data = cube.data
         cubes = cubes.merge()
-        names = ['forecast_period', 'forecast_reference_time', 'level_height', 'model_level_number', 'sigma', 'source']
-        axes = ['forecast_period', 'rt', 'z', 'z', 'z', 'source']
-        for cube in cubes:
-             for name, axis in zip(names, axes):
-                cube.coord(name)._TEST_COMPAT_override_axis = axis
-             cube.coord('model_level_number')._TEST_COMPAT_force_explicit = True
-             cube.coord('source')._TEST_COMPAT_definitive = False
-             cube.coord('time')._TEST_COMPAT_points = False
         self.assertCML(cubes, ['merge', 'theta.cml'])
 
 
@@ -191,12 +154,6 @@ class TestDimensionSplitting(tests.IrisTest):
         cubes.append(self._make_cube(2, 0, 4, 4))
         cubes.append(self._make_cube(2, 1, 5, 5))
         cube = iris.cube.CubeList(cubes).merge()
-
-        for name in 'abcxy':
-            cube[0].coord(name)._TEST_COMPAT_force_explicit = True
-            cube[0].coord(name)._TEST_COMPAT_override_axis = name
-            cube[0].coord(name)._TEST_COMPAT_definitive = False
-        
         self.assertCML(cube, ('merge', 'single_split.cml'))
 
     def test_multi_split(self):
@@ -215,12 +172,6 @@ class TestDimensionSplitting(tests.IrisTest):
         cubes.append(self._make_cube(2, 1, 0, 10))
         cubes.append(self._make_cube(2, 1, 1, 11))
         cube = iris.cube.CubeList(cubes).merge()
-
-        for name in 'abcxy':
-            cube[0].coord(name)._TEST_COMPAT_force_explicit = True
-            cube[0].coord(name)._TEST_COMPAT_override_axis = name
-            cube[0].coord(name)._TEST_COMPAT_definitive = False
-
         self.assertCML(cube, ('merge', 'multi_split.cml'))
 
 
@@ -236,18 +187,9 @@ class TestTimeTripleMerging(tests.IrisTest):
         cube.add_aux_coord(DimCoord(numpy.array([c], dtype=numpy.int32), standard_name='time', units='1'))
         return cube
     
-    def _test_compat(self, cube):
-        names = ['forecast_period', 'forecast_reference_time', 'time', 'x', 'y']
-        axes = ['forecast_period', 'rt', 't', 'x', 'y']
-        for name, axis in zip(names, axes):
-            cube.coord(name)._TEST_COMPAT_force_explicit = True
-            cube.coord(name)._TEST_COMPAT_override_axis = axis
-            cube.coord(name)._TEST_COMPAT_definitive = False
-            
     def _test_triples(self, triples, filename):
         cubes = [self._make_cube(fp, rt, t) for fp, rt, t in triples]
         cube = iris.cube.CubeList(cubes).merge()
-        self._test_compat(cube[0])
         self.assertCML(cube, ('merge', 'time_triple_' + filename + '.cml'), checksum=False)
                           
     def test_single_forecast(self):
@@ -325,8 +267,6 @@ class TestTimeTripleMerging(tests.IrisTest):
             iris.cube.CubeList([cube1, cube2, cube3]).merge()
         
         cubes = iris.cube.CubeList([cube1, cube2, cube3]).merge(unique=False)
-        for cube in cubes:
-            self._test_compat(cube)
         self.assertCML(cubes, ('merge', 'time_triple_duplicate_data.cml'), checksum=False)
     
     def test_simple1(self):
@@ -334,7 +274,6 @@ class TestTimeTripleMerging(tests.IrisTest):
         cube2 = self._make_cube(1, 20, 1)
         cube3 = self._make_cube(2, 20, 0)
         cube = iris.cube.CubeList([cube1, cube2, cube3]).merge()
-        self._test_compat(cube[0])
         self.assertCML(cube, ('merge', 'time_triple_merging1.cml'), checksum=False)
         
     def test_simple2(self):
@@ -347,12 +286,10 @@ class TestTimeTripleMerging(tests.IrisTest):
                                     self._make_cube(2, 1, 5),
                                    ])
         cube = cubes.merge()[0]
-        self._test_compat(cube)
         self.assertCML(cube, ('merge', 'time_triple_merging2.cml'), checksum=False)
         self.assertIsNone(cube.assert_valid())
         
         cube = iris.cube.CubeList(cubes[:-1]).merge()[0]
-        self._test_compat(cube)
         self.assertCML(cube, ('merge', 'time_triple_merging3.cml'), checksum=False)
         self.assertIsNone(cube.assert_valid())
         
@@ -366,12 +303,10 @@ class TestTimeTripleMerging(tests.IrisTest):
                                     self._make_cube(1, 2, 5),
                                    ])
         cube = cubes.merge()[0]
-        self._test_compat(cube)
         self.assertCML(cube, ('merge', 'time_triple_merging4.cml'), checksum=False)
         self.assertIsNone(cube.assert_valid())
         
         cube = iris.cube.CubeList(cubes[:-1]).merge()[0]
-        self._test_compat(cube)
         self.assertCML(cube, ('merge', 'time_triple_merging5.cml'), checksum=False)
         self.assertIsNone(cube.assert_valid())
 
@@ -385,7 +320,6 @@ class TestCubeMergeTheoretical(tests.IrisTest):
         cube2.add_aux_coord(DimCoord(numpy.int32(11), long_name='pressure', units='Pa'))
         
         r = iris.cube.CubeList([cube1, cube2]).merge()
-        r[0].coord('pressure')._TEST_COMPAT_force_explicit = True
         self.assertCML(r, ('cube_merge', 'test_simple_bound_merge.cml'))
         
     def test_simple_multidim_merge(self):
@@ -396,14 +330,12 @@ class TestCubeMergeTheoretical(tests.IrisTest):
         cube2.add_aux_coord(DimCoord(numpy.int32(11), long_name='pressure', units='Pa'))
 
         r = iris.cube.CubeList([cube1, cube2]).merge()[0]
-        r.coord('pressure')._TEST_COMPAT_force_explicit = True
         self.assertCML(r, ('cube_merge', 'multidim_coord_merge.cml'))
         
         # try transposing the cubes first
         cube1.transpose([1, 0])
         cube2.transpose([1, 0])
         r = iris.cube.CubeList([cube1, cube2]).merge()[0]
-        r.coord('pressure')._TEST_COMPAT_force_explicit = True
         self.assertCML(r, ('cube_merge', 'multidim_coord_merge_transpose.cml'))
         
     def test_simple_points_merge(self):
@@ -414,7 +346,6 @@ class TestCubeMergeTheoretical(tests.IrisTest):
         cube2.add_aux_coord(DimCoord(numpy.int32(11), long_name='pressure', units='Pa'))
         
         r = iris.cube.CubeList([cube1, cube2]).merge()
-        r[0].coord('pressure')._TEST_COMPAT_force_explicit = True
         self.assertCML(r, ('cube_merge', 'test_simple_merge.cml'))
         
         # check that the unique merging raises a Duplicate data error 
@@ -439,7 +370,6 @@ class TestCubeMergeTheoretical(tests.IrisTest):
         cube2.attributes['my_attr1'] = 'foo'
         r = iris.cube.CubeList([cube1, cube2]).merge()
         # result should be 1 cube
-        r[0].coord('pressure')._TEST_COMPAT_force_explicit = True
         self.assertCML(r, ('cube_merge', 'test_simple_attributes3.cml'))
 
 

@@ -63,48 +63,6 @@ class TestLinear1dInterpolation(tests.IrisTest):
         c4.add_dim_coord(g, 1)
         self.simple2d_cube_circular = c4
 
-    def assertCML(self, cube, path, *args, **kwargs):
-        try:
-            coord = cube.coord('shared_x_coord')
-            coord._TEST_COMPAT_force_explicit = True
-            coord._TEST_COMPAT_definitive = False
-            coord._TEST_COMPAT_override_axis = 'x'
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('an_other')
-            coord._TEST_COMPAT_definitive = False
-            coord._TEST_COMPAT_override_axis = 't'
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('dim1')
-            coord._TEST_COMPAT_override_axis = 'y'
-            if isinstance(coord, iris.coords.AuxCoord):
-                coord._TEST_COMPAT_force_explicit = True
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('dim2')
-            coord._TEST_COMPAT_override_axis = 'x'
-            coord._TEST_COMPAT_definitive = False
-            coord._TEST_COMPAT_force_explicit = coord.shape == (2,)
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('r')
-            coord._TEST_COMPAT_override_axis = 'r'
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('theta')
-            coord._TEST_COMPAT_force_explicit = True
-            coord._TEST_COMPAT_definitive = False
-            coord._TEST_COMPAT_override_axis = 'theta'
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        super(TestLinear1dInterpolation, self).assertCML(cube, path, *args, **kwargs)
-
     def test_integer_interpol(self):
         c = self.simple2d_cube
         c.data = c.data.astype(numpy.int16)
@@ -230,25 +188,6 @@ class TestNearestLinearInterpolRealData(tests.IrisTest):
         file = tests.get_data_path(('PP', 'globClim1', 'theta.pp'))
         self.cube = iris.load_strict(file)
 
-    def assertCML(self, cube, path, *args, **kwargs):
-        try:
-            coord = cube.coord('forecast_reference_time')
-            coord._TEST_COMPAT_override_axis = 'rt'
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('model_level_number')
-            coord._TEST_COMPAT_force_explicit = True
-            coord._TEST_COMPAT_override_axis = 'z'
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('sigma')
-            coord._TEST_COMPAT_override_axis = 'z'
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        super(TestNearestLinearInterpolRealData, self).assertCML(cube, path, *args, **kwargs)
-        
     def test_slice(self):
         r = iris.analysis.interpolate.linear(self.cube, [('latitude', 0)])
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'real_2dslice.cml'))
@@ -274,26 +213,6 @@ class TestNearestNeighbour(tests.IrisTest):
         points = numpy.arange(self.cube.coord('latitude').shape[0], dtype=numpy.float32)
         coord_to_add = iris.coords.DimCoord(points, long_name='i', units='meters')
         self.cube.add_aux_coord(coord_to_add, 0)
-
-    def assertCML(self, cube, path, *args, **kwargs):
-        try:
-            coord = cube.coord('i')
-            coord._TEST_COMPAT_override_axis = 'y'
-            coord._TEST_COMPAT_value_type = 'float32'
-            coord._TEST_COMPAT_force_regular_scalar = True
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('latitude')
-            coord._TEST_COMPAT_force_regular_scalar = True
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('longitude')
-            coord._TEST_COMPAT_force_regular_scalar = True
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        super(TestNearestNeighbour, self).assertCML(cube, path, *args, **kwargs)
 
     def test_nearest_neighbour(self):
         point_spec = [('latitude', 40), ('longitude', 39)]

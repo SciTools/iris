@@ -99,47 +99,6 @@ class TestAggregateBy(tests.IrisTest):
                                         [[15., 30., 45.], [60., 75., 90.], [105., 120., 135.]],
                                         [[16.5, 33., 49.5], [66., 82.5, 99.], [115.5, 132., 148.5]]], dtype=np.float64)
     
-    def assertCML(self, cube, path, *args, **kwargs):
-        try:
-            coord = cube.coord('height')
-            coord._TEST_COMPAT_force_explicit = True
-            coord._TEST_COMPAT_definitive = False
-            coord._TEST_COMPAT_override_axis = 'z'
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('model_level')
-            coord._TEST_COMPAT_override_axis = 'z'
-            coord._TEST_COMPAT_definitive = False
-            coord._TEST_COMPAT_points = False
-            coord._TEST_COMPAT_value_type = 'int32'
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('level')
-            coord._TEST_COMPAT_override_axis = 'z'
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('gamma')
-            coord._TEST_COMPAT_force_explicit = True
-            coord._TEST_COMPAT_override_axis = 'z'
-            coord._TEST_COMPAT_definitive = False
-            coord._TEST_COMPAT_points = False
-            coord._TEST_COMPAT_value_type = 'int32'
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('sigma')
-            coord._TEST_COMPAT_force_explicit = True
-            coord._TEST_COMPAT_override_axis = 'z'
-            coord._TEST_COMPAT_definitive = False
-            coord._TEST_COMPAT_points = False
-            coord._TEST_COMPAT_value_type = 'int32'
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        super(TestAggregateBy, self).assertCML(cube, path, *args, **kwargs)
-
     def test_single(self):
         # group-by with single coordinate name.
         aggregateby_cube = self.cube_single.aggregated_by('height', iris.analysis.MEAN)
@@ -230,9 +189,6 @@ class TestAggregateBy(tests.IrisTest):
         #
         aggregateby_cube = cube.aggregated_by('longitude', iris.analysis.MEAN)
         np.testing.assert_almost_equal(aggregateby_cube.data, np.array([[8., 15.], [10., 17.], [15., 8.]], dtype=np.float32))
-        coord = aggregateby_cube.coord('longitude')
-        coord._TEST_COMPAT_force_explicit = True
-        coord._TEST_COMPAT_definitive = False
         self.assertCML(aggregateby_cube, ('analysis', 'aggregated_by', 'easy.cml'), checksum=False)
 
         aggregateby_cube = cube.aggregated_by('latitude', iris.analysis.MEAN)

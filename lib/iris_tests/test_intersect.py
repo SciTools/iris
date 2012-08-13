@@ -43,11 +43,6 @@ class TestCubeIntersectTheoretical(tests.IrisTest):
         cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(5, dtype=numpy.float32) * 90 - 180, 'longitude', units='degrees', coord_system=lonlat_cs), 1)
         cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(5, dtype=numpy.float32) * 45 - 90, 'latitude', units='degrees', coord_system=lonlat_cs), 0)
         cube.add_aux_coord(iris.coords.DimCoord(points=numpy.int32(11), long_name='pressure', units='Pa'))
-        
-        cube.coord("longitude")._TEST_COMPAT_definitive = True
-        cube.coord("longitude")._TEST_COMPAT_force_explicit = True
-        cube.coord("pressure")._TEST_COMPAT_definitive = False
-        
         cube.rename("temperature")
         cube.units = "K"
     
@@ -62,11 +57,6 @@ class TestCubeIntersectTheoretical(tests.IrisTest):
         cube2.add_dim_coord(iris.coords.DimCoord(numpy.arange(5, dtype=numpy.float32) * 90, 'longitude', units='degrees', coord_system=lonlat_cs), 1)
         cube2.add_dim_coord(iris.coords.DimCoord(numpy.arange(5, dtype=numpy.float32) * 45 - 90, 'latitude', units='degrees', coord_system=lonlat_cs), 0)
         cube2.add_aux_coord(iris.coords.DimCoord(points=numpy.int32(11), long_name='pressure', units='Pa'))
-
-        cube2.coord("longitude")._TEST_COMPAT_definitive = True
-        cube2.coord("longitude")._TEST_COMPAT_force_explicit = True
-        cube2.coord("pressure")._TEST_COMPAT_definitive = False
-        
         cube2.rename("")
     
         r = iris.analysis.maths.intersection_of_cubes(cube, cube2)

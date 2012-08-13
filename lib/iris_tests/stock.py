@@ -60,14 +60,8 @@ def global_pp():
     return cube
 
 def simple_pp():
-
     filename = tests.get_data_path(['PP', 'simple_pp', 'global.pp'])   # Differs from global_pp()
     cube = iris.load_strict(filename)
-    
-    cube.coord("forecast_period")._TEST_COMPAT_override_axis = "forecast_period" 
-    cube.coord("source")._TEST_COMPAT_override_axis = "source" 
-    cube.coord("source")._TEST_COMPAT_definitive = False 
-    
     return cube
 
 
@@ -121,14 +115,6 @@ def simple_2d(with_bounds=True):
     x_bounds = numpy.array([[-15, 0], [0, 15], [15, 30], [30, 45]], dtype=numpy.int32)
     x_coord = iris.coords.DimCoord(x_points, long_name='foo', units='1', bounds=x_bounds if with_bounds else None)
 
-    # TEMPORARY compat fixes
-    y_coord._TEST_COMPAT_force_explicit = True
-    y_coord._TEST_COMPAT_definitive = False
-    y_coord._TEST_COMPAT_override_axis = 'y'
-    x_coord._TEST_COMPAT_force_explicit = True
-    x_coord._TEST_COMPAT_definitive = False
-    x_coord._TEST_COMPAT_override_axis = 'x'
-    
     cube.add_dim_coord(y_coord, 0)
     cube.add_dim_coord(x_coord, 1)
     return cube
@@ -196,12 +182,7 @@ def simple_3d_w_multidim_coords(with_bounds=True):
                             [[-25, 0], [0, 8], [8, 45], [45, 50]],
                             [[-5, 10], [10, 18],  [18, 55], [18, 70]]], dtype=numpy.int32)
     x_coord = iris.coords.AuxCoord(points=x_points, long_name='foo', units='1', bounds=x_bounds if with_bounds else None)
-    
     wibble_coord = iris.coords.DimCoord(numpy.array([ 10.,  30.], dtype=numpy.float32), long_name='wibble', units='1')
-    x_coord._TEST_COMPAT_override_axis = 'x'
-    x_coord._TEST_COMPAT_definitive = False
-    y_coord._TEST_COMPAT_override_axis = 'y'
-    wibble_coord._TEST_COMPAT_override_axis = 'w'
 
     cube.add_dim_coord(wibble_coord, [0])
     cube.add_aux_coord(y_coord, [1, 2])
@@ -254,19 +235,6 @@ def simple_2d_w_multidim_and_scalars():
     my_multi_dim_coord = iris.coords.AuxCoord(numpy.arange(50, dtype=numpy.int32).reshape(5, 10), 
                                               long_name='my_multi_dim_coord', units='1', 
                                               bounds=numpy.arange(200, dtype=numpy.int32).reshape(5, 10, 4))
-    
-
-    dim1._TEST_COMPAT_override_axis = 'y'
-    dim1._TEST_COMPAT_definitive = False
-    dim2._TEST_COMPAT_override_axis = 'x'
-    dim2._TEST_COMPAT_definitive = False
-    dim2._TEST_COMPAT_force_explicit = True
-    an_other._TEST_COMPAT_override_axis = 't'
-    an_other._TEST_COMPAT_definitive = False
-    an_other._TEST_COMPAT_force_explicit = True
-    my_multi_dim_coord._TEST_COMPAT_override_axis = 'foo'
-    my_multi_dim_coord._TEST_COMPAT_definitive = False
-    my_multi_dim_coord._TEST_COMPAT_force_explicit = True
 
     cube.add_dim_coord(dim1, 0)
     cube.add_dim_coord(dim2, 1)

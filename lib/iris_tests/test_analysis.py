@@ -113,46 +113,18 @@ class TestAnalysisWeights(tests.IrisTest):
         cube.add_dim_coord(lat_coord, 0) 
         cube.add_dim_coord(lon_coord, 1) 
         cube.add_aux_coord(iris.coords.AuxCoord(numpy.arange(3, dtype=numpy.float32), long_name="dummy", units=1), 1)
-        
-        cube.coord("dummy")._TEST_COMPAT_override_axis = "x"  
-        cube.coord("lon")._TEST_COMPAT_override_axis = "x"  
-        cube.coord("lon")._TEST_COMPAT_force_explicit = True  
-        cube.coord("lat")._TEST_COMPAT_override_axis = "y"  
-        cube.coord("lat")._TEST_COMPAT_force_explicit = True  
-
         self.assertCML(cube, ('analysis', 'weighted_mean_source.cml'))
 
         a = cube.collapsed('lat', iris.analysis.MEAN, weights=weights)
-        
-        a.coord("dummy")._TEST_COMPAT_override_axis = "x"  
-        a.coord("lon")._TEST_COMPAT_override_axis = "x"  
-        a.coord("lon")._TEST_COMPAT_force_explicit = True  
-        a.coord("lat")._TEST_COMPAT_override_axis = "y"  
-        a.coord("lat")._TEST_COMPAT_force_explicit = True  
-        
         self.assertCMLApproxData(a, ('analysis', 'weighted_mean_lat.cml'))
         
         b = cube.collapsed(lon_coord, iris.analysis.MEAN, weights=weights)
         b.data = numpy.asarray(b.data)
-        
-        b.coord("dummy")._TEST_COMPAT_override_axis = "x"  
-        b.coord("lon")._TEST_COMPAT_override_axis = "x"  
-        b.coord("lon")._TEST_COMPAT_force_explicit = True  
-        b.coord("lat")._TEST_COMPAT_override_axis = "y"  
-        b.coord("lat")._TEST_COMPAT_force_explicit = True  
-        
         self.assertCMLApproxData(b, ('analysis', 'weighted_mean_lon.cml'))
         self.assertEquals(b.coord("dummy").shape, (1,))
 
         # test collapsing multiple coordinates (and the fact that one of the coordinates isn't the same coordinate instance as on the cube)
         c = cube.collapsed([lat_coord[:], lon_coord], iris.analysis.MEAN, weights=weights)
-        
-        c.coord("dummy")._TEST_COMPAT_override_axis = "x"  
-        c.coord("lon")._TEST_COMPAT_override_axis = "x"  
-        c.coord("lon")._TEST_COMPAT_force_explicit = True  
-        c.coord("lat")._TEST_COMPAT_override_axis = "y"  
-        c.coord("lat")._TEST_COMPAT_force_explicit = True  
-        
         self.assertCMLApproxData(c, ('analysis', 'weighted_mean_latlon.cml'))
         self.assertEquals(c.coord("dummy").shape, (1,))
         
@@ -213,14 +185,6 @@ class TestAnalysisBasic(tests.IrisTest):
         file = tests.get_data_path(('PP', 'aPProt1', 'rotatedMHtimecube.pp'))
         cubes = iris.load(file)        
         self.cube = cubes[0]
-        
-        self.cube.coord("forecast_period")._TEST_COMPAT_force_explicit = True
-#        self.cube.coord("forecast_period")._TEST_COMPAT_definitive = False
-        self.cube.coord("forecast_period")._TEST_COMPAT_override_axis = "forecast_period" 
-        self.cube.coord("source")._TEST_COMPAT_definitive = False
-        self.cube.coord("source")._TEST_COMPAT_override_axis = "source"
-        self.cube.coord("time")._TEST_COMPAT_force_explicit = True
-        
         self.assertCML(self.cube, ('analysis', 'original.cml'))
         
     def _common(self, name, aggregate, original_name='original_common.cml', *args, **kwargs):
@@ -325,15 +289,6 @@ class TestMissingData(tests.IrisTest):
 
 
 class TestAggregators(tests.IrisTest):
-    def assertCML(self, cube, path, *args, **kwargs):
-        try:
-            coord = cube.coord('foo')
-            coord._TEST_COMPAT_definitive = False
-            coord._TEST_COMPAT_override_axis = 'x'
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        super(TestAggregators, self).assertCML(cube, path, *args, **kwargs)
-
     def test_percentile_1d(self):
         cube = tests.stock.simple_1d()
 
@@ -498,21 +453,6 @@ class TestRollingWindow(tests.IrisTest):
         cube.add_dim_coord(iris.coords.DimCoord(numpy.array([0, 2, 4, 6], dtype=numpy.float64), 'longitude', units='degrees'), 1)
 
         self.cube = cube
-
-    def assertCML(self, cube, path, *args, **kwargs):
-        try:
-            coord = cube.coord('longitude')
-            coord._TEST_COMPAT_force_explicit = True
-            coord._TEST_COMPAT_definitive = False
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('latitude')
-            coord._TEST_COMPAT_force_explicit = True
-            coord._TEST_COMPAT_definitive = False
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        super(TestRollingWindow, self).assertCML(cube, path, *args, **kwargs)
 
     def test_non_mean_operator(self):
         res_cube = self.cube.rolling_window('longitude', iris.analysis.MAX, window=2)

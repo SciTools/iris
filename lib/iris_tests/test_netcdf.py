@@ -35,73 +35,19 @@ import stock
 
 @iris.tests.skip_data
 class TestNetCDFLoad(tests.IrisTest):
-    def setUp(self):
-        pass
-
-    def apply_TEST_COMPAT_attributes(self, cube):
-        def apply_TEST_COMPAT_coord_attributes(coord):
-            try:
-                cube.coord(coord)._TEST_COMPAT_force_explicit = True
-                cube.coord(coord)._TEST_COMPAT_definitive = True
-            except iris.exceptions.CoordinateNotFoundError:
-                pass
-
-        coords = ['time', 'longitude', 'longitude', 'latitude', 'levelist', 'grid_longitude', 'grid_latitude', 'model_level_number']
-        for coord in coords:
-            apply_TEST_COMPAT_coord_attributes(coord)
-        # Special cases 
-        try:
-            cube.coord('source')._TEST_COMPAT_override_axis = 'source'
-            cube.coord('source')._TEST_COMPAT_definitive = False
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        
-        try:
-            cube.coord('levelist')._TEST_COMPAT_override_axis = 'levelist'
-            #cube.coord('levelist')._TEST_COMPAT_definitive = False
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-
-        try:
-            cube.coord('model_level_number')._TEST_COMPAT_override_axis = 'model_level_number'
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-
-        if cube.coords('grid_longitude'):
-            try:
-                cube.coord('latitude')._TEST_COMPAT_override_axis = 'lat'
-                cube.coord('latitude')._TEST_COMPAT_definitive = False
-                cube.coord('longitude')._TEST_COMPAT_override_axis = 'lon'
-                cube.coord('longitude')._TEST_COMPAT_definitive = False
-            except iris.exceptions.CoordinateNotFoundError:
-                pass
-
-        if cube.coords('height'):
-            try:
-                cube.coord('height')._TEST_COMPAT_override_axis = 'z'
-            except iris.exceptions.CoordinateNotFoundError:
-                pass
-
-
-
-
     def test_load_global_xyt_total(self):
         # Test loading single xyt CF-netCDF file.
         cube = iris.load_strict(tests.get_data_path(('NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc')))
-        self.apply_TEST_COMPAT_attributes(cube)
         self.assertCML(cube, ('netcdf', 'netcdf_global_xyt_total.cml')) 
 
     def test_load_global_xyt_hires(self):
         # Test loading another single xyt CF-netCDF file.
         cube = iris.load_strict(tests.get_data_path(('NetCDF', 'global', 'xyt', 'SMALL_hires_wind_u_for_ipcc4.nc')))
-        self.apply_TEST_COMPAT_attributes(cube)
         self.assertCML(cube, ('netcdf', 'netcdf_global_xyt_hires.cml'))
 
     def test_load_global_xyzt_gems(self):
         # Test loading single xyzt CF-netCDF file (multi-cube).
         cubes = iris.load(tests.get_data_path(('NetCDF', 'global', 'xyz_t', 'GEMS_CO2_Apr2006.nc')))
-        for cube in cubes:
-            self.apply_TEST_COMPAT_attributes(cube)        
         self.assertCML(cubes, ('netcdf', 'netcdf_global_xyzt_gems.cml'))
         
         # Check the masked array fill value is propogated through the data manager loading.
@@ -112,27 +58,21 @@ class TestNetCDFLoad(tests.IrisTest):
     def test_load_global_xyzt_gems_iter(self):
         # Test loading stepped single xyzt CF-netCDF file (multi-cube).
         for i, cube in enumerate(iris.load(tests.get_data_path(('NetCDF', 'global', 'xyz_t', 'GEMS_CO2_Apr2006.nc')))):
-            self.apply_TEST_COMPAT_attributes(cube)
             self.assertCML(cube, ('netcdf', 'netcdf_global_xyzt_gems_iter_%d.cml' % i))
 
     def test_load_rotated_xy_land(self):
         # Test loading single xy rotated pole CF-netCDF file.
         cube = iris.load_strict(tests.get_data_path(('NetCDF', 'rotated', 'xy', 'rotPole_landAreaFraction.nc')))
-        self.apply_TEST_COMPAT_attributes(cube)
         self.assertCML(cube, ('netcdf', 'netcdf_rotated_xy_land.cml'))
 
     def test_load_rotated_xyt_precipitation(self):
         # Test loading single xyt rotated pole CF-netCDF file.
         cube = iris.load_strict(tests.get_data_path(('NetCDF', 'rotated', 'xyt', 'new_rotPole_precipitation.nc')))
-        self.apply_TEST_COMPAT_attributes(cube)        
         self.assertCML(cube, ('netcdf', 'netcdf_rotated_xyt_precipitation.cml'))
 
     def test_cell_methods(self):
         # Test exercising CF-netCDF cell method parsing.
         cubes = iris.load(tests.get_data_path(('NetCDF', 'testing', 'cell_methods.nc')))
-
-        for cube in cubes:
-            self.apply_TEST_COMPAT_attributes(cube)
 
         # TEST_COMPAT mod - new cube merge doesn't sort in the same way - test can pass by manual sorting...
         cubes = iris.cube.CubeList(sorted(cubes, key=lambda cube:cube.name()))
@@ -143,8 +83,6 @@ class TestNetCDFLoad(tests.IrisTest):
         # Test exercising CF-netCDF deferred loading and deferred slicing.
         # shape (31, 161, 320)
         cube = iris.load_strict(tests.get_data_path(('NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc')))
-        self.apply_TEST_COMPAT_attributes(cube)
-
         
         # Consecutive index on same dimension.
         self.assertCML(cube[0], ('netcdf', 'netcdf_deferred_index_0.cml'))
@@ -160,8 +98,6 @@ class TestNetCDFLoad(tests.IrisTest):
         self.assertCML(cube[(0, 8, 4, 2, 14, 12), ], ('netcdf', 'netcdf_deferred_tuple_0.cml'))
         self.assertCML(cube[(0, 8, 4, 2, 14, 12), ][(0, 2, 4, 1), ], ('netcdf', 'netcdf_deferred_tuple_1.cml'))
         subcube = cube[(0, 8, 4, 2, 14, 12), ][(0, 2, 4, 1), ][(1, 3), ]
-        subcube.coord('time')._TEST_COMPAT_force_explicit = True
-        subcube.coord('time')._TEST_COMPAT_definitive = True
         self.assertCML(subcube, ('netcdf', 'netcdf_deferred_tuple_2.cml'))
         
         # Consecutive mixture on same dimension.
@@ -295,22 +231,12 @@ class TestNetCDFSave(tests.IrisTest):
         # Read netCDF file.
         cube = iris.load_strict(file_out)
         coord = cube.coord('time')
-        coord._TEST_COMPAT_force_explicit = True
         coord = cube.coord('forecast_period')
-        coord._TEST_COMPAT_force_explicit = True
-        coord._TEST_COMPAT_override_axis = 'forecast_period'
         coord = cube.coord('source')
-        coord._TEST_COMPAT_override_axis = 'source'
-        coord._TEST_COMPAT_definitive = False
         coord = cube.coord('sigma')
-        coord._TEST_COMPAT_override_axis = 'z'
         coord = cube.coord('atmosphere_hybrid_height_coordinate')
-        coord._TEST_COMPAT_override_axis = 'z'
         coord = cube.coord('model_level_number')
-        coord._TEST_COMPAT_override_axis = 'z'
-        coord._TEST_COMPAT_force_explicit = True
         coord = cube.coord('surface_altitude')
-        coord._TEST_COMPAT_points = False
 
         # Check the PP read, netCDF write, netCDF read mechanism.
         self.assertCML(cube, ('netcdf', 'netcdf_save_load_hybrid_height.cml'))
@@ -334,14 +260,6 @@ class TestNetCDFSave(tests.IrisTest):
         cube = iris.load_strict(file_out)
 
         # Check the netCDF read, write, read mechanism.
-        cube.coord('time')._TEST_COMPAT_force_explicit = True
-        cube.coord('grid_latitude')._TEST_COMPAT_force_explicit = True
-        cube.coord('grid_longitude')._TEST_COMPAT_force_explicit = True
-        cube.coord('latitude')._TEST_COMPAT_override_axis = 'latitude'
-        cube.coord('longitude')._TEST_COMPAT_override_axis = 'longitude'
-        cube.coord('source')._TEST_COMPAT_override_axis = 'source'
-        cube.coord('source')._TEST_COMPAT_definitive = False
-
         self.assertCML(cube, ('netcdf', 'netcdf_save_load_ndim_auxiliary.cml'))
 
         os.remove(file_out)
