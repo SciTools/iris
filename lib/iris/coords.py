@@ -1007,7 +1007,7 @@ class DimCoord(Coord):
     def __init__(self, points, standard_name=None, long_name=None, units='1',
                  bounds=None, attributes=None, coord_system=None, circular=False):
         """
-        Create a 1D, numeric, and strictly monotonic Coord with read-only points and bounds.
+        Create a 1D, numeric, and strictly monotonic :class:`Coord` with read-only points and bounds.
 
         """
         Coord.__init__(self, points, standard_name=standard_name, long_name=long_name, 

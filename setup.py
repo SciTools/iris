@@ -166,8 +166,8 @@ class PostBuildExtRunner(build_ext.build_ext):
 
 setup(
     name='Iris',
-    version='0.8-dev',
-    url='https://github.com/SciTools/Iris',
+    version='0.9-dev',
+    url='http://SciTools.github.com/iris',
     author='UK Met Office',
 
     packages=find_package_tree('lib/iris', 'iris'),
