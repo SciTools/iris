@@ -17,7 +17,7 @@ def main():
     fname = iris.sample_data_path('hybrid_height.nc')
     theta = iris.load_strict(fname)
     
-    # Extract a single height vs longitude cross-section. N.B. This could easily changed to
+    # Extract a single height vs longitude cross-section. N.B. This could easily be changed to
     # extract a specific slice, or even to loop over *all* cross section slices.
     cross_section = theta.slices(['grid_longitude', 'model_level_number']).next()
     

@@ -476,7 +476,6 @@ class Cube(CFVariableMixin):
 
         # Check compatibility with the shape of the data
         if dim_coord.shape[0] != self.shape[data_dim]:
-            print dim_coord.shape[0], self.shape[data_dim]
             raise ValueError('The length of %r does not match the length of cube dimension %d' % (dim_coord, data_dim))
 
         self._dim_coords_and_dims.append([dim_coord, int(data_dim)])
@@ -1936,7 +1935,7 @@ class Cube(CFVariableMixin):
         Args:
 
         * coord (string/:class:`iris.coords.Coord`):
-            The coordinate over which to perform the rolling window aggregation. Cannot currently be bounded.
+            The coordinate over which to perform the rolling window aggregation.
         * aggregator (:class:`iris.analysis.Aggregator`):
             Aggregator to be applied to the data.
         * window (int):

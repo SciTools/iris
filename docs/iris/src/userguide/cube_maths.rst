@@ -33,7 +33,7 @@ We could now get the first and last time slices using indexing (see :doc:`reduci
     filename = iris.sample_data_path('E1_north_america.nc')
     cube = iris.load_strict(filename, 'air_temperature')
     t_first = cube[0, :, :]
-    t_last = cube[1, :, :]
+    t_last = cube[-1, :, :]
 
 And finally we can subtract the two. The result is a cube of the same size as the original two time slices, but with the 
 data representing their difference:
