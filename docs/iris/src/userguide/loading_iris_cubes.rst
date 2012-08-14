@@ -41,7 +41,7 @@ The ``surface_altitude`` cube was 2 dimensional with:
 
 The ``air_potential_temperature`` cubes was 4 dimensional with:
  * the same length ``grid_latitude`` and ``grid_longitude`` dimensions as ``surface_altitide``
- * a ``forecast_period`` dimension of length 3
+ * a ``time`` dimension of length 3
  * a ``model_level_number`` dimension of length 7
 
 .. note::
