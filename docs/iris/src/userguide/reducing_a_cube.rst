@@ -15,14 +15,14 @@ Cube extraction
 ^^^^^^^^^^^^^^^^
 A subset of a cube can be "extracted" from a multi-dimensional cube in order to reduce its dimensionality::
 
-	filename = iris.sample_data_path('PP', 'globClim1', 'theta.pp')
-	cube = iris.load_strict(filename)
-	print cube
-        equator_slice = cube.extract(iris.Constraint(latitude=0)) 
-	print equator_slice
+    filename = iris.sample_data_path('hybrid_height.pp')
+    cube = iris.load_strict(filename)
+    print cube
+    equator_slice = cube.extract(iris.Constraint(grid_latitude=0))
+    print equator_slice
 
-In this example we start with a 3 dimensional cube, with axes of ``z``, ``y`` and ``x``, and extract every point where 
-the latitude is 0, resulting in a 2d cube with axes of ``z`` and ``x``.
+In this example we start with a 3 dimensional cube, with dimensions of ``height``, ``latitude`` and ``longitude``,
+and extract every point where the latitude is 0, resulting in a 2d cube with axes of ``height`` and ``longitude``.
 
 
 .. warning:: 
@@ -35,16 +35,16 @@ the latitude is 0, resulting in a 2d cube with axes of ``z`` and ``x``.
           """Returns true if the cell is between -0.1 and 0.1."""
           return -0.1 < cell < 0.1
 
-       equator_constraint = iris.Constraint(latitude=near_zero)
+       equator_constraint = iris.Constraint(grid_latitude=near_zero)
 
     Often you will see this construct in shorthand using a lambda function definition::
 
-        equator_constraint = iris.Constraint(latitude=lambda cell: -0.1 < cell < 0.1)
+        equator_constraint = iris.Constraint(grid_latitude=lambda cell: -0.1 < cell < 0.1)
 
 
 The extract method could be applied again to the *equator_slice* cube to get a further subset. 
 
-For example to get a model_level_number of 10 at the equator the following line extends the previous example::
+For example to get a ``model_level_number`` of 10 at the equator the following line extends the previous example::
 	
 	equator_model_level_10_slice = equator_slice.extract(iris.Constraint(model_level_number=10))
 	print equator_model_level_10_slice
@@ -53,7 +53,7 @@ The two steps required to get ``model_level_number`` of 10 at the equator can be
 
 	filename = iris.sample_data_path('PP', 'globClim1', 'theta.pp')
 	cube = iris.load_strict(filename)
-	equator_model_level_10_slice = cube.extract(iris.Constraint(latitude=0, model_level_number=10))
+	equator_model_level_10_slice = cube.extract(iris.Constraint(grid_latitude=0, model_level_number=10))
 	print equator_model_level_10_slice
 
 As we saw in :doc:`loading_iris_cubes` the result of :func:`iris.load` is a :class:`CubeList <iris.cube.CubeList>`. 
@@ -62,7 +62,7 @@ same way as loading with constraints::
 
 	air_temp_and_fp_6 = iris.Constraint('air_potential_temperature', forecast_period=6)
 	level_10 = iris.Constraint(model_level_number=10)
-	filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
+	filename = iris.sample_data_path('uk_hires.pp')
 	cubes = iris.load(filename).extract(air_temp_and_fp_6 & level_10)
 	print cubes
 
@@ -74,14 +74,14 @@ For example, to deal with a 3 dimensional cube (z,y,x) you could iterate over al
 which make up the full 3d cube.::
 
 	import iris
-	filename = iris.sample_data_path('PP', 'globClim1', 'theta.pp')
+	filename = iris.sample_data_path('hybrid_height.nc')
 	cube = iris.load_strict(filename)
 	print cube
-	for yx_slice in cube.slices(['latitude', 'longitude']):
+	for yx_slice in cube.slices(['grid_latitude', 'grid_longitude']):
 	   print repr(yx_slice)
 
-As the original cube had the shape (z: 38; y: 145; x: 192) there were 38 latitude longitude slices and hence the 
-line ``print repr(yx_slice)`` was run 38 times.
+As the original cube had the shape (15, 100, 100) there were 15 latitude longitude slices and hence the
+line ``print repr(yx_slice)`` was run 15 times.
 
 .. note:: 
 	The order of latitude and longitude in the list is important; had they been swapped the resultant cube slices 
@@ -93,21 +93,21 @@ line ``print repr(yx_slice)`` was run 38 times.
 This method can handle n-dimensional slices by providing more or fewer coordinate names in the list to **slices**:: 
 
 	import iris
-	filename = iris.sample_data_path('PP', 'globClim1', 'theta.pp')
+	filename = iris.sample_data_path('hybrid_height.nc')
 	cube = iris.load_strict(filename)
 	print cube
-	for i, x_slice in enumerate(cube.slices(['longitude'])):
+	for i, x_slice in enumerate(cube.slices(['grid_longitude'])):
 	   print i, repr(x_slice)
 
 The Python function :py:func:`enumerate` is used in this example to provide an incrementing variable **i** which is 
-printed with the summary of each cube slice. Note that there were 5510 1d longitude cubes as a result of 
-slicing the 3 dimensional cube (z: 38; y: 145; x: 192) by longitude (i starts at 0 and 5510 = 38 * 145).
+printed with the summary of each cube slice. Note that there were 1500 1d longitude cubes as a result of
+slicing the 3 dimensional cube (15, 100, 100) by longitude (i starts at 0 and 1500 = 15 * 100).
 
 .. hint::
     It is often useful to get a single 2d slice from a multidimensional cube in order to develop a 2d plot function, for example.
     This can be achieved by using the ``next()`` method on the result of slices::
 
-         first_slice = cube.slices(['latitude', 'longitude']).next()
+         first_slice = cube.slices(['grid_latitude', 'grid_longitude']).next()
 
     Once the your code can handle a 2d slice, it is then an easy step to loop over **all** 2d slices within the bigger 
     cube using the slices method.
@@ -152,7 +152,7 @@ Here are some examples of array indexing in :py:mod:`numpy`::
 Similarly, Iris cubes have indexing capability::
 
 	import iris
-        filename = iris.sample_data_path('PP', 'globClim1', 'theta.pp')
+        filename = iris.sample_data_path('hybrid_height.nc')
 	cube = iris.load_strict(filename)
 
 	print cube

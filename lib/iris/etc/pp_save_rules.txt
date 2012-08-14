@@ -595,6 +595,24 @@ THEN
     pp.blev = scalar_coord(cm, 'pressure').points[0]
 
 
+# single hybrid_height level (reversed from the equivalent load rule)
+IF
+    scalar_coord(cm, 'model_level_number') is not None
+    scalar_coord(cm, 'model_level_number').bounds is None
+    scalar_coord(cm, 'level_height') is not None
+    scalar_coord(cm, 'level_height').bounds is not None
+    scalar_coord(cm, 'sigma') is not None
+    scalar_coord(cm, 'sigma').bounds is not None
+THEN
+    pp.lbvc = 65
+    pp.lblev = scalar_coord(cm, 'model_level_number').points[0]
+    pp.blev = scalar_coord(cm, 'level_height').points[0]
+    pp.brlev = scalar_coord(cm, 'level_height').bounds[0, 0]
+    pp.brsvd[0] = scalar_coord(cm, 'level_height').bounds[0, 1]
+    pp.bhlev = scalar_coord(cm, 'sigma').points[0]
+    pp.bhrlev = scalar_coord(cm, 'sigma').bounds[0, 0]
+    pp.brsvd[1] = scalar_coord(cm, 'sigma').bounds[0, 1]
+
 
 #MDI
 IF

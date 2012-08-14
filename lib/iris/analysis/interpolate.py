@@ -93,11 +93,11 @@ def nearest_neighbour_indices(cube, sample_points):
     dimensions. Any dimensions unspecified will default to a full slice.
 
     For example:
-        >>> cube = iris.load_strict(iris.sample_data_path('PP', 'globClim1', 'theta.pp'))
+        >>> cube = iris.load_strict(iris.sample_data_path('ostia_monthly.nc'))
         >>> iris.analysis.interpolate.nearest_neighbour_indices(cube, [('latitude', 0), ('longitude', 10)])
-        (slice(None, None, None), 72, 5)
+        (slice(None, None, None), 9, 12)
         >>> iris.analysis.interpolate.nearest_neighbour_indices(cube, [('latitude', 0)])
-        (slice(None, None, None), 72, slice(None, None, None))
+        (slice(None, None, None), 9, slice(None, None, None))
     
     Args:
 
@@ -295,11 +295,11 @@ def extract_nearest_neighbour(cube, sample_points):
     dimensions. Any dimensions unspecified will default to a full slice.
 
     For example:
-        >>> cube = iris.load_strict(iris.sample_data_path('PP', 'globClim1', 'theta.pp'))
+        >>> cube = iris.load_strict(iris.sample_data_path('ostia_monthly.nc'))
         >>> iris.analysis.interpolate.extract_nearest_neighbour(cube, [('latitude', 0), ('longitude', 10)])
-        <iris 'Cube' of air_potential_temperature (model_level_number: 38)>
+        <iris 'Cube' of surface_temperature (time: 54)>
         >>> iris.analysis.interpolate.extract_nearest_neighbour(cube, [('latitude', 0)])
-        <iris 'Cube' of air_potential_temperature (model_level_number: 38; longitude: 192)>
+        <iris 'Cube' of surface_temperature (time: 54; longitude: 432)>
     
     Args:
 
@@ -323,9 +323,9 @@ def nearest_neighbour_data_value(cube, sample_points):
     dimensions.
 
     For example:
-        >>> cube = iris.load_strict(iris.sample_data_path('PP', 'globClim1', 'theta.pp'))
-        >>> iris.analysis.interpolate.nearest_neighbour_data_value(cube, [('latitude', 0), ('longitude', 10), ('model_level_number', 1)])
-        299.35156
+        >>> cube = iris.load_strict(iris.sample_data_path('air_temp.pp'))
+        >>> iris.analysis.interpolate.nearest_neighbour_data_value(cube, [('latitude', 0), ('longitude', 10)])
+        299.21564
         >>> iris.analysis.interpolate.nearest_neighbour_data_value(cube, [('latitude', 0)])
         Traceback (most recent call last):
         ...

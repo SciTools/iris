@@ -25,13 +25,8 @@ def total_electron_content_filter(cube, field, filename):
 
 def main():
     # Load the "total electron content" cube.
-    filename = iris.sample_data_path('NetCDF', 'space_weather', 'Test.nc')
-    cube = iris.load_strict(filename, callback=total_electron_content_filter)
-
-    # For the purposes of this example slice away the top latitude data,
-    # as matplotlib currently does not correctly plot rotated pole data
-    # extending to/over the north pole.
-    cube = cube[:-1, :]
+    filename = iris.sample_data_path('space_weather.nc')
+    cube = iris.load_strict(filename, 'total electron content')
 
     # Explicitly mask negative electron content.
     cube.data = np.ma.masked_less(cube.data, 0)

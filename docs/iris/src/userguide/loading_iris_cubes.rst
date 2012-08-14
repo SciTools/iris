@@ -6,9 +6,9 @@ Loading Iris cubes
 
 To load a single file into a **list** of Iris cubes the :py:func:`iris.load` function is used::
 
-     import iris
-     filename = '/path/to/file'
-     cubes = iris.load(filename)
+    import iris
+    filename = '/path/to/file'
+    cubes = iris.load(filename)
 
 Iris will attempt to return **as few cubes as possible** by collecting together multiple fields with a shared standard 
 name into a single multidimensional cube. 
@@ -24,24 +24,25 @@ to produce Iris Cubes from their contents.
 
 In order to find out what has been loaded, the result can be printed:
 
-     >>> import iris
-     >>> filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
-     >>> cubes = iris.load(filename)
-     >>> print cubes
-     0: air_potential_temperature           (time: 3; model_level_number: 40; grid_latitude: 810; grid_longitude: 622)
-     1: specific_humidity                   (time: 3; model_level_number: 40; grid_latitude: 810; grid_longitude: 622)
-     2: surface_altitude                    (time: 3; grid_latitude: 810; grid_longitude: 622)
+    >>> import iris
+    >>> filename = iris.sample_data_path('uk_hires.pp')
+    >>> cubes = iris.load(filename)
+    >>> print cubes
+    0: air_potential_temperature           (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
+    1: surface_altitude                    (grid_latitude: 204; grid_longitude: 187)
 
-This shows that there were 3 cubes as a result of loading the file, they were: ``air_potential_temperature``,
-``specific_humidity`` and ``surface_altitude``. 
 
-The ``surface_altitude`` cube was 3 dimensional with: 
- * the first dimension representing ``time`` of which there are 3 distinct values.
- * the second and third dimensions have extents of 810 and 622 respectively and are represented by the
+This shows that there were 2 cubes as a result of loading the file, they were: ``air_potential_temperature``
+and ``surface_altitude``.
+
+The ``surface_altitude`` cube was 2 dimensional with:
+ * the two dimensions have extents of 204 and 187 respectively and are represented by the
    ``grid_latitude`` and ``grid_longitude`` coordinates.
 
-Similarly, both the ``air_potential_temperature`` and ``specific_humidity`` cubes were 4 dimensional with the added 
-dimension related to the ``model_level_number`` coordinate.
+The ``air_potential_temperature`` cubes was 4 dimensional with:
+ * the same length ``grid_latitude`` and ``grid_longitude`` dimensions as ``surface_altitide``
+ * a ``time`` dimension of length 3
+ * a ``model_level_number`` dimension of length 7
 
 .. note::
      The result of :func:`iris.load` is **always** a :class:`list of cubes <iris.cube.CubeList>`. Anything that can be done with 
@@ -60,29 +61,30 @@ dimension related to the ``model_level_number`` coordinate.
 To get the air potential temperature cube from the list of cubes returned by :py:func:`iris.load` in the previous 
 example, list indexing *could* be used:
 
-     >>> import iris
-     >>> filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
-     >>> cubes = iris.load(filename)
-     >>> # get the first cube (list indexing is 0 based)
-     >>> air_potential_temperature = cubes[0]
-     >>> print air_potential_temperature
-     air_potential_temperature           (time: 3; model_level_number: 40; grid_latitude: 810; grid_longitude: 622)
-          Dimension coordinates:
-               time                           x                      -                  -                    -
-               model_level_number             -                      x                  -                    -
-               grid_latitude                  -                      -                  x                    -
-               grid_longitude                 -                      -                  -                    x
-          Auxiliary coordinates:
-               forecast_period                x                      -                  -                    -
-               level_height                   -                      x                  -                    -
-               sigma                          -                      x                  -                    -
-               surface_altitude               -                      -                  x                    x
-          Derived coordinates:
-               altitude                       -                      x                  x                    x
-          Scalar coordinates:
-               source: Data from Met Office Unified Model 7.03
-          Attributes:
-               STASH: m01s00i004
+
+    >>> import iris
+    >>> filename = iris.sample_data_path('uk_hires.pp')
+    >>> cubes = iris.load(filename)
+    >>> # get the first cube (list indexing is 0 based)
+    >>> air_potential_temperature = cubes[0]
+    >>> print air_potential_temperature
+    air_potential_temperature           (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
+         Dimension coordinates:
+              time                           x                      -                 -                    -
+              model_level_number             -                      x                 -                    -
+              grid_latitude                  -                      -                 x                    -
+              grid_longitude                 -                      -                 -                    x
+         Auxiliary coordinates:
+              forecast_period                x                      -                 -                    -
+              level_height                   -                      x                 -                    -
+              sigma                          -                      x                 -                    -
+              surface_altitude               -                      -                 x                    x
+         Derived coordinates:
+              altitude                       -                      x                 x                    x
+         Scalar coordinates:
+              source: Data from Met Office Unified Model 7.03
+         Attributes:
+              STASH: m01s00i004
 
 
 Notice that the result of printing a **cube** is a little more verbose than it was when printing a 
@@ -100,9 +102,9 @@ Loading multiple files
 
 To load more than one file into a list of cubes, a list of filenames can be provided to :py:func:`iris.load`::
 
-     filenames = [iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp'),
-                  iris.sample_data_path('PP', 'aPPglob1', 'global.pp')]
-     cubes = iris.load(filenames)
+    filenames = [iris.sample_data_path('uk_hires.pp'),
+                 iris.sample_data_path('air_temp.pp')]
+    cubes = iris.load(filenames)
 
 
 It is also possible to load one or more files with wildcard substitution using the expansion rules 
@@ -110,8 +112,8 @@ defined :py:mod:`fnmatch`.
 
 For example, to match **zero or more characters** in the filename, star wildcards can be used::
 
-     filename = iris.sample_data_path('PP', 'globClim1', '*_wind.pp')
-     cubes = iris.load(filename)
+    filename = iris.sample_data_path('GloSea4', '*.pp')
+    cubes = iris.load(filename)
 
 
 Constrained loading
@@ -121,67 +123,68 @@ Constrained loading provides the ability to generate a cube from a specific subs
 
 As we have seen, loading the following file creates several Cubes::
 
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
-     cubes = iris.load(filename)
+    filename = iris.sample_data_path('uk_hires.pp')
+    cubes = iris.load(filename)
 
 Specifying a name as a constraint argument to :py:func:`iris.load` will mean only cubes with a
 matching :meth:`name <iris.cube.Cube.name>` will be returned::
 
-     filename = iris.sample_data_path('NetCDF', 'label_and_climate', 'FC_167_mon_19601101.nc')
-     cubes = iris.load(filename, 'air_temperature')
+    filename = iris.sample_data_path('uk_hires.pp')
+    cubes = iris.load(filename, 'specific_humidity')
 
 To constrain the load to multiple distinct constraints, a list of constraints can be provided. 
 This is equivalent to running load once for each constraint but is likely to be more efficient::
 
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
-     cubes = iris.load(filename, ['air_potential_temperature', 'specific_humidity'])
+    filename = iris.sample_data_path('uk_hires.pp')
+    cubes = iris.load(filename, ['air_potential_temperature', 'specific_humidity'])
 
 The :class:`iris.Constraint` class can be used to restrict coordinate values on load. For example, to constrain the load to
 match a specific ``model_level_number``::
 
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
-     level_10 = iris.Constraint(model_level_number=10)
-     cubes = iris.load(filename, level_10)
+    filename = iris.sample_data_path('uk_hires.pp')
+    level_10 = iris.Constraint(model_level_number=10)
+    cubes = iris.load(filename, level_10)
 
 Constraints can be combined using ``&`` to represent a more restrictive constraint to ``load``::
 
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
-     forecast_6 = iris.Constraint(forecast_period=6)
-     level_10 = iris.Constraint(model_level_number=10)
-     cubes = iris.load(filename, forecast_6 & level_10)
+    filename = iris.sample_data_path('uk_hires.pp')
+    forecast_6 = iris.Constraint(forecast_period=6)
+    level_10 = iris.Constraint(model_level_number=10)
+    cubes = iris.load(filename, forecast_6 & level_10)
 
 As well as being able to combine constraints using ``&``, the :class:`iris.Constraint` class can accept multiple
 arguments, and a list of values can be given to constrain a coordinate to one of a collection of values::
 
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
-     level_10_or_12_fp_6 = iris.Constraint(model_level_number=[10, 12], forecast_period=6)
-     cubes = iris.load(filename, level_10_or_12_fp_6)
+    filename = iris.sample_data_path('uk_hires.pp')
+    level_10_or_12_fp_6 = iris.Constraint(model_level_number=[10, 16], forecast_period=6)
+    cubes = iris.load(filename, level_10_or_16_fp_6)
 
 A common requirement is to limit the value of a coordinate to a specific range, this can be achieved by passing the constraint
 a function::
 
-     def bottom_20_levels(cell):
-        # return True or False as to whether the cell in question should be kept
-        return cell <= 20
+    def bottom_16_levels(cell):
+       # return True or False as to whether the cell in question should be kept
+       return cell <= 16
 
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
-     level_lt_20 = iris.Constraint(model_level_number=bottom_20_levels)
-     cubes = iris.load(filename, level_lt_20)
+    filename = iris.sample_data_path('uk_hires.pp')
+    level_lt_16 = iris.Constraint(model_level_number=bottom_16_levels)
+    cubes = iris.load(filename, level_lt_16)
      
 .. note::
     As with many of the examples later in this documentation, the simple function above can be conveniently written as a 
     lambda function on a single line::
 
-     bottom_20_levels = lambda cell: cell <= 20
+        bottom_16_levels = lambda cell: cell <= 16
 
 Cube attributes can also be part of the constraint criteria. Supposing a cube attribute of ``STASH`` existed, as is the case
 when loading ``PP`` files, then specific STASH codes can be filtered::
 
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
-     level_10_with_stash = iris.AttributeConstraint(STASH='m01s00i004') & iris.Constraint(model_level_number=10)
-     cubes = iris.load(filename, level_10_with_stash)
+    filename = iris.sample_data_path('uk_hires.pp')
+    level_10_with_stash = iris.AttributeConstraint(STASH='m01s00i004') & iris.Constraint(model_level_number=10)
+    cubes = iris.load(filename, level_10_with_stash)
 
 .. seealso::
+
     For advanced usage there are further examples in the :class:`iris.Constraint` reference documentation. 
 
 
@@ -193,47 +196,48 @@ Providing no constraints to :func:`iris.load_strict` is equivalent to requesting
 
 A single cube is loaded in the following example::
 
-     filename = iris.sample_data_path('PP', 'aPPglob1', 'global.pp')
-     cube = iris.load_strict(filename)
-     print cube
+    filename = iris.sample_data_path('air_temp.pp')
+    cube = iris.load_strict(filename)
+    print cube
 
 However, when attempting to load data which would result in anything other than one cube, an exception is raised::
 
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
-     cube = iris.load_strict(filename)
+    filename = iris.sample_data_path('uk_hires.pp')
+    cube = iris.load_strict(filename)
 
 .. note::
  
-     :func:`iris.load_strict` and :py:func:`iris.load` share many of the same features, hence multiple 
-     files could be loaded with wildcard filenames or by providing a list of filenames.
+    :func:`iris.load_strict` and :py:func:`iris.load` share many of the same features, hence multiple
+    files could be loaded with wildcard filenames or by providing a list of filenames.
 
 The strict nature of :py:func:`iris.load_strict` means that, when combined with constrained loading, it is 
 possible to ensure that precisely what was asked for on load is given - otherwise an exception is raised. 
 This fact can be utilised to make code only run successfully if the data provided has the expected criteria.
 
-For example, suppose that code needed 'air_potential_temperature' in order to run::
+For example, suppose that code needed ``air_potential_temperature`` in order to run::
 
-     import iris
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
-     air_pot_temp = iris.load_strict(filename, 'air_potential_temperature')
-     print air_pot_temp
+    import iris
+    filename = iris.sample_data_path('uk_hires.pp')
+    air_pot_temp = iris.load_strict(filename, 'air_potential_temperature')
+    print air_pot_temp
 
 Should the file not contain exactly one cube with a standard name of air potential temperature, an exception will be raised.
 
-Similarly, supposing a routine needed both 'surface_altitude' and 'specific_humidity' to be able to run::
+Similarly, supposing a routine needed both 'surface_altitude' and 'air_potential_temperature' to be able to run::
 
-     import iris
-     filename = iris.sample_data_path('PP', 'ukV2', 'THOxayrk.pp')
-     altitude_cube, humidity_cube = iris.load_strict(filename, ['surface_altitude', 'specific_humidity'])
+    import iris
+    filename = iris.sample_data_path('uk_hires.pp')
+    altitude_cube, pot_temp_cube = iris.load_strict(filename, ['surface_altitude', 'air_potential_temperature'])
 
 The result of :func:`iris.load_strict` in this case will be a list of 2 cubes ordered by the constraints provided. 
 Multiple assignment has been used to put these two cubes into separate variables.
 
-.. note:: 
-     In Python, lists of a pre-known length and order can be exploited using *multiple assignment*:
+.. note::
 
-          >>> number_one, number_two = [1, 2]
-          >>> print number_one
-          1
-          >>> print number_two
-          2
+    In Python, lists of a pre-known length and order can be exploited using *multiple assignment*:
+
+        >>> number_one, number_two = [1, 2]
+        >>> print number_one
+        1
+        >>> print number_two
+        2

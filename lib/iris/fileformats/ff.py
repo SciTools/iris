@@ -108,12 +108,6 @@ class FFHeader(object):
         Returns:
             FFHeader object.
             
-        For example:
-        
-            >>> import iris.fileformats.ff as ff
-            >>> filename = iris.sample_data_path('ssps', 'qtgl.ssps_006')
-            >>> ff_header = ff.FFHeader(filename)
-        
         """
         
         self.ff_filename = filename
@@ -220,11 +214,10 @@ class FF2PP(object):
         Returns:
             PPField generator.
         
-        For example:
+        For example::
     
-            >>> import iris.fileformats.ff as ff
-            >>> filename = iris.sample_data_path('ssps', 'qtgl.ssps_006')
-            >>> pp_fields = [pp_field for pp_field in ff.FF2PP(filename)]
+            >>> for field in ff.FF2PP(filename):
+            ...     print field
             
         """
         

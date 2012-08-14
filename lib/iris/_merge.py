@@ -1072,14 +1072,18 @@ class ProtoCube(object):
                     kwargs = dict(zip(iris.coords.CoordDefn._fields, defns[name]))
                     kwargs.update(metadata[name].kwargs)
 
-                    if len(cells) == 1 and not any([name in independents for independents in space.itervalues() if independents is not None]):
+                    if len(cells) == 1 and not any([name in independents for independents in 
+                                                    space.itervalues() if independents is not None]):
                         # A scalar coordinate not participating in a function dependency.
                         self._aux_templates.append(_Template((), points, bounds, kwargs))
                     else:
-                        # Dimension coordinate.
+                        # Dimension coordinate (or aux if the data is string like).
                         dim_by_name[name] = dim = len(self._shape)
                         self._nd_names.append(name)
-                        self._dim_templates.append(_Template(dim, points, bounds, kwargs))
+                        if metadata[name].points_dtype.kind == 'S':
+                            self._aux_templates.append(_Template(dim, points, bounds, kwargs))
+                        else:
+                            self._dim_templates.append(_Template(dim, points, bounds, kwargs))
                         self._shape.append(len(cells))
                         self._cache_by_name[name] = {cell:index for index, cell in enumerate(cells)}
 
@@ -1195,9 +1199,9 @@ class ProtoCube(object):
 
         # Build the dimension coordinates.
         for template in self._dim_templates:
-            dim_coords_and_dims.append(_CoordAndDims(iris.coords.DimCoord(template.points, 
-                                                                          bounds=template.bounds, 
-                                                                          **template.kwargs), template.dims))
+            dim_coords_and_dims.append(_CoordAndDims(iris.coords.DimCoord(template.points,
+                                                                              bounds=template.bounds,
+                                                                              **template.kwargs), template.dims))
 
         # Build the auxiliary coordinates.
         for template in self._aux_templates:
