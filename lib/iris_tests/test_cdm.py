@@ -454,15 +454,11 @@ class Test2dIndexing(TestCube2d):
         self.assertCML([self.t[0, numpy.array([0, 1])]], ('cube_slice', '2d_to_1d_cube_multi_slice.cml'))
     
     def test_cube_indexing_1d_multi_slice2(self):
-        self.t.coord('dim1')._TEST_COMPAT_force_explicit = True
-        self.t.coord('dim1')._TEST_COMPAT_definitive = True        
         self.assertCML([self.t[(0, 2), (0, 1, 3)]], ('cube_slice', '2d_to_1d_cube_multi_slice2.cml'))
         self.assertCML([self.t[numpy.array([0, 2]), (0, 1, 3)]], ('cube_slice', '2d_to_1d_cube_multi_slice2.cml'))
         self.assertCML([self.t[numpy.array([0, 2]), numpy.array([0, 1, 3])]], ('cube_slice', '2d_to_1d_cube_multi_slice2.cml'))
         
     def test_cube_indexing_1d_multi_slice3(self):
-        self.t.coord('dim1')._TEST_COMPAT_force_explicit = True
-        self.t.coord('dim1')._TEST_COMPAT_definitive = True        
         self.assertCML([self.t[(0, 2), :]], ('cube_slice', '2d_to_1d_cube_multi_slice3.cml'))
         self.assertCML([self.t[numpy.array([0, 2]), :]], ('cube_slice', '2d_to_1d_cube_multi_slice3.cml'))
 
@@ -490,8 +486,6 @@ class Test2dIndexing(TestCube2d):
         self.assertCML([self.t[0, Ellipsis, 0]], ('cube_slice', '2d_to_0d_cube_slice.cml'))
         self.assertCML([self.t[0, 0, Ellipsis]], ('cube_slice', '2d_to_0d_cube_slice.cml'))
         
-        self.t.coord('dim1')._TEST_COMPAT_force_explicit = True
-        self.t.coord('dim1')._TEST_COMPAT_definitive = True        
         self.assertCML([self.t[Ellipsis, (0, 2), :]], ('cube_slice', '2d_to_1d_cube_multi_slice3.cml'))
         self.assertCML([self.t[(0, 2), Ellipsis, :]], ('cube_slice', '2d_to_1d_cube_multi_slice3.cml'))
         self.assertCML([self.t[(0, 2), :, Ellipsis]], ('cube_slice', '2d_to_1d_cube_multi_slice3.cml'))
@@ -556,21 +550,10 @@ class Test2dExtractionByCoord(TestCube2d):
 class TestCubeExtract(tests.IrisTest):
     def setUp(self):
         self.single_cube = iris.load_strict(tests.get_data_path(('PP', 'globClim1', 'theta.pp')), 'air_potential_temperature')
-        self.single_cube.coord('forecast_period')._TEST_COMPAT_override_axis = 'forecast_period'
-        self.single_cube.coord('forecast_reference_time')._TEST_COMPAT_override_axis = 'rt'
-        self.single_cube.coord('source')._TEST_COMPAT_override_axis = 'source'        
-        self.single_cube.coord('source')._TEST_COMPAT_definitive = False       
-        self.single_cube.coord('model_level_number')._TEST_COMPAT_force_explicit = True
-        self.single_cube.coord('model_level_number')._TEST_COMPAT_override_axis = 'z'
-        self.single_cube.coord('level_height')._TEST_COMPAT_override_axis = 'z'
-        self.single_cube.coord('sigma')._TEST_COMPAT_override_axis = 'z'
-        self.single_cube.coord('time')._TEST_COMPAT_points = False
-        
 
     def test_simple(self):
         constraint = iris.Constraint(latitude=10)
         cube = self.single_cube.extract(constraint)
-        cube.coord('latitude')._TEST_COMPAT_force_regular_scalar = True
         self.assertCML(cube, ('cdm', 'extract', 'lat_eq_10.cml'))
         constraint = iris.Constraint(latitude=lambda c: c > 10)
         self.assertCML(self.single_cube.extract(constraint), ('cdm', 'extract', 'lat_gt_10.cml'))
@@ -802,25 +785,13 @@ class TestDataManagerIndexing(TestCube2d):
         numpy.testing.assert_array_equal(r_data, c.data)
         
     def test_real_data_cube_indexing(self):
-        self.cube.coord('source')._TEST_COMPAT_force_explicit = True
-        self.cube.coord('source')._TEST_COMPAT_override_axis = 'source'
-        self.cube.coord('source')._TEST_COMPAT_definitive = False
-        
         cube = self.cube[(0, 4, 5, 2), 0, 0]
-        cube.coord('forecast_period')._TEST_COMPAT_override_axis = 'forecast_period'
-        cube.coord('grid_longitude')._TEST_COMPAT_force_regular_scalar = True
-        cube.coord('grid_latitude')._TEST_COMPAT_force_regular_scalar = True
         self.assertCML(cube, ('cube_slice', 'real_data_dual_tuple_indexing1.cml'))
 
         cube = self.cube[0, (0, 4, 5, 2), (3, 5, 5)]
-        cube.coord('forecast_period')._TEST_COMPAT_override_axis = 'forecast_period'
-        cube.coord('grid_longitude')._TEST_COMPAT_definitive = True
         self.assertCML(cube, ('cube_slice', 'real_data_dual_tuple_indexing2.cml'))
         
         cube = self.cube[(0, 4, 5, 2), 0, (3, 5, 5)]
-        cube.coord('forecast_period')._TEST_COMPAT_override_axis = 'forecast_period'
-        cube.coord('grid_longitude')._TEST_COMPAT_definitive = True
-        cube.coord('grid_latitude')._TEST_COMPAT_force_regular_scalar = True
         self.assertCML(cube, ('cube_slice', 'real_data_dual_tuple_indexing3.cml'))
 
         self.assertRaises(IndexError, self.cube.__getitem__, ((0, 4, 5, 2), (3, 5, 5), 0, 0, 4) )
@@ -856,15 +827,6 @@ class TestCubeCollapsed(tests.IrisTest):
     @iris.tests.skip_data
     def test_multi_d(self):
         cube = iris.load(tests.get_data_path(('PP', 'COLPEX', 'theta_and_orog_subset.pp')))[0]
-        cube.coord('forecast_period')._TEST_COMPAT_override_axis = 'forecast_period'
-        cube.coord('time')._TEST_COMPAT_force_explicit = True
-        cube.coord('grid_latitude')._TEST_COMPAT_force_explicit = True
-        cube.coord('source')._TEST_COMPAT_override_axis = 'source'        
-        cube.coord('source')._TEST_COMPAT_definitive = False       
-        cube.coord('model_level_number')._TEST_COMPAT_force_explicit = True
-        cube.coord('model_level_number')._TEST_COMPAT_override_axis = 'z'
-        cube.coord('level_height')._TEST_COMPAT_override_axis = 'z'
-        cube.coord('sigma')._TEST_COMPAT_override_axis = 'z'
 
         # TODO: Re-instate surface_altitude & hybrid-height once we're
         # using the post-CF test results.
@@ -946,12 +908,6 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
     def test_missing_file(self):
         cube = self._load_3d_cube()
         self.assertTrue(isinstance(cube.data, numpy.ma.core.MaskedArray), "Expected a numpy.ma.core.MaskedArray")
-        cube.coord('forecast_period')._TEST_COMPAT_override_axis = 'forecast_period'
-        cube.coord('source')._TEST_COMPAT_override_axis = 'source'
-        cube.coord('forecast_period')._TEST_COMPAT_definitive = True
-        cube.coord('pressure')._TEST_COMPAT_definitive = True
-        cube.coord('time')._TEST_COMPAT_definitive = True
-        cube.coord('source')._TEST_COMPAT_definitive = False
         self.assertCML(cube, ('cdm', 'masked_cube.cml'))
         
     def test_slicing(self):

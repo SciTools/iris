@@ -59,8 +59,6 @@ class CoordDefn(collections.namedtuple('CoordDefn',
         return self.standard_name or self.long_name or default
 
 
-USE_OLD_XML = False
-
 # Coordinate cell styles. Used in plot and cartography.
 POINT_MODE = 0
 BOUND_MODE = 1
@@ -892,102 +890,6 @@ class Coord(CFVariableMixin):
         elif self.points.dtype.kind == 'U':
             value_type_name = 'unicode'
         return value_type_name
-
-    if USE_OLD_XML:
-        def xml_element(self, doc):
-            """Return a DOM element describing this Coord."""
-            # Create the xml element
-            element = doc.createElement(self._xml_element_name())
-            self._xml_element_basic_attributes(element)
-
-            if getattr(self, '_TEST_COMPAT_hybrid', False):
-                hybrid = doc.createElement('hybridHeightCS')
-                hybrid.setAttribute('orography', self._TEST_COMPAT_hybrid)
-                element.appendChild(hybrid)
-            else:
-                # Add a user-attributes sub-element?
-                if len(self.attributes) > 0:
-                    attributes_element = doc.createElement("attributes")
-                    for k, v in self.attributes.items():
-                        attributes_element.setAttribute(k, str(v))
-                    element.appendChild(attributes_element)
-
-            # Add a coord system sub-element?
-            if self.coord_system:
-                element.appendChild(self.coord_system.xml_element(doc))
-            
-            return element
-
-        def _xml_element_name(self):
-            """Get xml CS name from class name."""
-            name = "explicitCoord"
-            from iris.fileformats.rules import is_regular
-            if is_regular(self) and not (getattr(self, '_TEST_COMPAT_force_explicit', False)):
-                name = "regularCoord"
-            if self.shape == (1,) and getattr(self, '_TEST_COMPAT_force_regular_scalar', False):
-                name = "regularCoord"                
-            return name
-            
-        def _xml_element_basic_attributes(self, element):
-            """Add atomic, non-structural attributes to the xml element."""
-            # Common
-            element.setAttribute('name', self.name())
-            element.setAttribute('unit', repr(self.units))
-            if hasattr(self, '_TEST_COMPAT_override_axis'):
-                axis = self._TEST_COMPAT_override_axis
-            elif self.name() == 'forecast_reference_time':
-                axis = 'rt'
-            elif self.name() in ('level_height', 'sigma', 'model_level_number'):
-                axis = 'z'
-            else:
-                axis = str(iris.util.guess_coord_axis(self) or self.name())
-            element.setAttribute('axis', axis.lower())
-            # approximation to definitive
-            definitive = False
-            if hasattr(self, '_TEST_COMPAT_definitive'):
-                definitive = self._TEST_COMPAT_definitive
-            elif self._xml_element_name() != 'regularCoord':
-                definitive = (numpy.unique(self.points).size == self.points.size and
-                              self.name() != 'history' and self.name() != 'source')
-            if definitive:
-                element.setAttribute('definitive', 'true')
-            value_type = getattr(self, '_TEST_COMPAT_value_type', self._value_type_name())
-            element.setAttribute('value_type', str(value_type))
-            if getattr(self, "circular", False):
-                element.setAttribute('circular', str(self.circular))
-    
-            # Regular
-            from iris.fileformats.rules import is_regular, regular_step
-            if is_regular(self) and not (getattr(self, '_TEST_COMPAT_force_explicit', False)):
-                element.setAttribute('start', str(self.points[0]))
-                element.setAttribute('step', str(regular_step(self)))
-                element.setAttribute('count', str(len(self.points)))
-                if self.bounds is not None:
-                    if regular_step(self) == 0:
-                        bp = 0.5 # undefined so set to default value
-                    else:
-                        bp = (self.points[0] - self.bounds[0][0]) / (self.bounds[0][1] - self.bounds[0][0])
-                    element.setAttribute('bound_position', str(bp))
-            # Scalar
-            elif self.shape == (1,) and getattr(self, '_TEST_COMPAT_force_regular_scalar', False):
-                element.setAttribute('start', str(self.points[0]))
-                element.setAttribute('step', str(0.0))
-                element.setAttribute('count', str(len(self.points)))
-                if self.bounds is not None:
-                    bp = (self.points[0] - self.bounds[0][0]) / (self.bounds[0][1] - self.bounds[0][0])
-                    element.setAttribute('bound_position', str(bp))
-            # Explicit
-            else:
-                if getattr(self, '_TEST_COMPAT_points', True) and self.standard_name != 'surface_altitude':
-                    if hasattr(self._points, 'to_xml_attr'):
-                        element.setAttribute('points', self._points.to_xml_attr())
-                    else:
-                        element.setAttribute('points', self._array_for_xml(self.points))
-                if self._bounds is not None:
-                    if hasattr(self._bounds, 'to_xml_attr'):
-                        element.setAttribute('bounds', self._bounds.to_xml_attr())
-                    else:
-                        element.setAttribute('bounds', self._array_for_xml(self.bounds))
 
 
 class DimCoord(Coord):

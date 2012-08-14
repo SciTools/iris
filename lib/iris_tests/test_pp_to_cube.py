@@ -54,9 +54,6 @@ class TestPPLoadRules(tests.IrisTest):
         # Set up standard name and T+24 constraint
         constraint = iris.Constraint('air_temperature', forecast_period=24)
         cubes = iris.load(data_path, constraint)
-        for cube in cubes:
-            if cube.coords("height"):
-                cube.coord("height")._TEST_COMPAT_override_axis = "z" 
         cubes = iris.cube.CubeList([cubes[0], cubes[3], cubes[1], cubes[2], cubes[4]]) 
         self.assertCML(cubes, ('pp_rules', 'lbproc_mean_max_min.cml'))
 

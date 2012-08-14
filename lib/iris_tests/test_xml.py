@@ -31,24 +31,12 @@ import iris.tests.stock
 import iris.unit
 
 
-def old_style_coords_TEST_COMPAT(c, *coord_names):
-    for coord_name in coord_names:
-        c.coord(coord_name)._TEST_COMPAT_override_axis = coord_name
-        if coord_name == "pressure":
-            c.coord(coord_name)._TEST_COMPAT_override_axis = "z"
-        if coord_name in ["source", "pressure", "time", "forecast_period"]:
-            c.coord(coord_name)._TEST_COMPAT_definitive = False
-
-
 class TestXML(tests.IrisTest):
 
     @iris.tests.skip_data
     def test_pp(self):
         # Test xml output of a cube loaded from pp.
         cubes = iris.cube.CubeList([iris.tests.stock.simple_pp()])
-        old_style_coords_TEST_COMPAT(cubes[0], "forecast_period", "source")
-        cubes[0].coord("forecast_period")._TEST_COMPAT_definitive = True
-
         self.assertCML(cubes, ('xml', 'pp.cml'))
 
     def test_handmade(self):
@@ -82,21 +70,17 @@ class TestXML(tests.IrisTest):
                         cube.add_dim_coord(coords.DimCoord(numpy.array([-90, -45, 0, 45, 90], dtype=ll_dtype), 
                                            'latitude', units='degrees', coord_system=lonlat_cs), 0)
                         
-                        if ll_dtype == numpy.int32:
-                            cube.coord("latitude")._TEST_COMPAT_force_explicit = True
-                            cube.coord("longitude")._TEST_COMPAT_force_explicit = True
-                        
                         # height
                         cube.add_aux_coord(coords.AuxCoord(numpy.array([1000], dtype=numpy.int32), 
                                                            long_name='pressure', units='Pa'))
-                        
+
                         # phenom
                         cube.rename("temperature")
                         cube.units = "K"
-                        
+
                         # source
                         cube.add_aux_coord(coords.AuxCoord(points=["itbb"], long_name='source', units="no_unit"))
-                        
+
                         # forecast dates
                         if forecast_or_time_mean == "forecast":
                             unit = iris.unit.Unit('hours since epoch', calendar=iris.unit.CALENDAR_GREGORIAN)
@@ -105,7 +89,7 @@ class TestXML(tests.IrisTest):
                                                                standard_name='forecast_period', units='hours'))
                             cube.add_aux_coord(coords.AuxCoord(numpy.array([unit.date2num(dt)], dtype=numpy.float64), 
                                                                standard_name='time', units=unit))
-                            
+
                         # time mean dates
                         if forecast_or_time_mean == "time_mean":
                             unit = iris.unit.Unit('hours since epoch', calendar=iris.unit.CALENDAR_GREGORIAN)
@@ -119,12 +103,7 @@ class TestXML(tests.IrisTest):
                                                                bounds=numpy.array([unit.date2num(dt1), unit.date2num(dt2)], 
                                                                                   dtype=numpy.float64)))
                             cube.add_cell_method(coords.CellMethod('mean', cube.coord('forecast_period')))
-                        
-                        old_style_coords_TEST_COMPAT(cube, "forecast_period", "source", "time", "pressure")
-                        
-                        cube.coord("latitude")._TEST_COMPAT_definitive = False
-                        cube.coord("longitude")._TEST_COMPAT_definitive = False
-                        
+
                         cubes.append(cube)
         
         # Now we've made all sorts of cube, check the xml...

@@ -31,45 +31,6 @@ import iris
 
 
 class TestPickle(tests.IrisTest):
-    def assertCML(self, cube, path, *args, **kwargs):
-        if isinstance(cube, iris.cube.Cube):
-            cubes = [cube]
-        else:
-            cubes = cube
-        for cube in cubes:
-            try:
-                coord = cube.coord('forecast_reference_time')
-                coord._TEST_COMPAT_override_axis = 'rt'
-            except iris.exceptions.CoordinateNotFoundError:
-                pass
-            try:
-                coord = cube.coord('time')
-                coord._TEST_COMPAT_force_explicit = True
-            except iris.exceptions.CoordinateNotFoundError:
-                pass
-            try:
-                coord = cube.coord('grid_latitude')
-                coord._TEST_COMPAT_force_explicit = True
-            except iris.exceptions.CoordinateNotFoundError:
-                pass
-            try:
-                coord = cube.coord('grid_longitude')
-                coord._TEST_COMPAT_force_explicit = True
-            except iris.exceptions.CoordinateNotFoundError:
-                pass
-            try:
-                coord = cube.coord('model_level_number')
-                coord._TEST_COMPAT_override_axis = 'z'
-                coord._TEST_COMPAT_force_explicit = True
-            except iris.exceptions.CoordinateNotFoundError:
-                pass
-            try:
-                coord = cube.coord('sigma')
-                coord._TEST_COMPAT_override_axis = 'z'
-            except iris.exceptions.CoordinateNotFoundError:
-                pass
-        super(TestPickle, self).assertCML(cubes, path, *args, **kwargs)
-
     def pickle_then_unpickle(self, obj):
         """Returns a generator of ("cpickle protocol number", object) tuples.""" 
         for protocol in xrange(1 + cPickle.HIGHEST_PROTOCOL):

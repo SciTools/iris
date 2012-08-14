@@ -36,36 +36,6 @@ class TestSimple(tests.IrisTest):
 
 
 class TestTrajectory(tests.IrisTest):
-    def assertCML(self, cube, path, *args, **kwargs):
-        try:
-            coord = cube.coord('model_level_number')
-            coord._TEST_COMPAT_force_explicit = True
-            coord._TEST_COMPAT_override_axis = 'z'
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('sigma')
-            coord._TEST_COMPAT_override_axis = 'z'
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('grid_latitude')
-            coord._TEST_COMPAT_force_explicit = True
-            coord._TEST_COMPAT_definitive = True
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('time')
-            coord._TEST_COMPAT_force_explicit = True
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        try:
-            coord = cube.coord('surface_altitude')
-            coord._TEST_COMPAT_points = False
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-        super(TestTrajectory, self).assertCML(cube, path, *args, **kwargs)
-
     def test_trajectory_definition(self):
         # basic 2-seg line along x
         waypoints = [ {'lat':0, 'lon':0}, {'lat':0, 'lon':1}, {'lat':0, 'lon':2} ]
@@ -149,12 +119,6 @@ class TestTrajectory(tests.IrisTest):
 
         # extract
         sampled_cube = iris.analysis.trajectory.interpolate(cube, sample_points)
-        coord = sampled_cube.coord('longitude')
-        coord._TEST_COMPAT_override_axis = 'nav_lon'
-        coord = sampled_cube.coord('latitude')
-        coord._TEST_COMPAT_override_axis = 'nav_lat'
-        coord = sampled_cube.coord('depth')
-        coord._TEST_COMPAT_override_axis = 'z'
         self.assertCML(sampled_cube, ('trajectory', 'tri_polar_latitude_slice.cml'))
 
         # turn it upside down for the visualisation

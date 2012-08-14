@@ -29,19 +29,6 @@ SN_AIR_POTENTIAL_TEMPERATURE = 'air_potential_temperature'
 SN_SPECIFIC_HUMIDITY = 'specific_humidity'
 
 
-def old_style_coords(cube):
-    cube.coord("forecast_period")._TEST_COMPAT_override_axis = "forecast_period"
-    cube.coord("forecast_period")._TEST_COMPAT_definitive = True
-    cube.coord("forecast_reference_time")._TEST_COMPAT_override_axis = "rt"
-    cube.coord("source")._TEST_COMPAT_override_axis = "source" 
-    cube.coord("source")._TEST_COMPAT_definitive = False
-    cube.coord("model_level_number")._TEST_COMPAT_force_explicit = True 
-    cube.coord("model_level_number")._TEST_COMPAT_override_axis = "z" 
-    cube.coord("sigma")._TEST_COMPAT_override_axis = "z" 
-    cube.coord("sigma")._TEST_COMPAT_force_explicit = True
-    cube.coord("sigma")._TEST_COMPAT_definitive = False
-    cube.coord("level_height")._TEST_COMPAT_force_explicit = True 
-
 # TODO: Workaround, pending #1262
 def workaround_pending_1262(cubes):
     """Reverse the cube if sigma was chosen as a dim_coord."""
@@ -235,8 +222,6 @@ class TestCubeLoadConstraint(RelaxedConstraintMixin, tests.IrisTest):
         cubes = iris.load(files, constraints)
         if not isinstance(cubes, iris.cube.CubeList):
             raise Exception("NOT A CUBE LIST! " + str(type(cubes)))
-        for cube in cubes:
-            old_style_coords(cube)
         return cubes 
     
 
@@ -248,8 +233,6 @@ class TestCubeListConstraint(RelaxedConstraintMixin, tests.IrisTest):
         cubes = iris.load(files).extract(constraints)
         if not isinstance(cubes, iris.cube.CubeList):
             raise Exception("NOT A CUBE LIST! " + str(type(cubes)))
-        for cube in cubes:
-            old_style_coords(cube)
         return cubes 
     
 
@@ -259,11 +242,6 @@ class TestCubeLoadStrictConstraint(StrictConstraintMixin, tests.IrisTest):
     
     def load_match(self, files, constraints):
         cubes = iris.load_strict(files, constraints)    
-        if isinstance(cubes, iris.cube.Cube):
-            old_style_coords(cubes)
-        else:
-            for cube in cubes:
-                old_style_coords(cube)
         return cubes 
 
 
@@ -273,11 +251,6 @@ class TestCubeListStrictConstraint(StrictConstraintMixin, tests.IrisTest):
     
     def load_match(self, files, constraints):
         cubes = iris.load(files).extract_strict(constraints)
-        if isinstance(cubes, iris.cube.Cube):
-            old_style_coords(cubes)
-        else:
-            for cube in cubes:
-                old_style_coords(cube)
         return cubes 
 
 
@@ -286,7 +259,6 @@ class TestCubeExtract(TestMixin, tests.IrisTest):
     def setUp(self):
         TestMixin.setUp(self)
         self.cube = iris.load_strict(self.theta_path)
-        old_style_coords(self.cube)
 
     def test_attribute_constraint(self):
         # there is no my_attribute attribute on the cube, so ensure it returns None

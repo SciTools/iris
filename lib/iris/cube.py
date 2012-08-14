@@ -48,9 +48,6 @@ import iris.util
 from iris._cube_coord_common import CFVariableMixin, LimitedAttributeDict
 
 
-USE_OLD_XML = False
-
-
 __all__ = ['Cube', 'CubeList', 'CubeMetadata']
 
 
@@ -1509,70 +1506,6 @@ class Cube(CFVariableMixin):
             cube_xml_element.appendChild(data_xml_element)
 
         return cube_xml_element
-
-    if USE_OLD_XML:
-        def _xml_element(self, doc, checksum=False):
-            cube_xml_element = doc.createElement("cube")
-
-            cube_xml_element.setAttribute('standard_name', self.name(''))
-            cube_xml_element.setAttribute('unit', str(self.units))
-
-            if self.attributes:
-                attributes_element = doc.createElement('attributes')
-                for name in sorted(self.attributes.iterkeys()):
-                    attribute_element = doc.createElement('attribute')
-                    attribute_element.setAttribute('name', name)
-                    if name == 'history':
-                        value = re.sub("[\d\/]{8} [\d\:]{8} Iris\: ", '', str(self.attributes[name]))
-                    else:
-                        value = str(self.attributes[name])
-                    attribute_element.setAttribute('value', value)
-                    attributes_element.appendChild(attribute_element)
-                cube_xml_element.appendChild(attributes_element)
-
-            coords_xml_element = doc.createElement("coords")
-            coords = self.dim_coords + self.aux_coords
-            for coord in sorted(coords, key=lambda coord: coord.name()):
-                coord_xml_element_wrapper = doc.createElement("coord")
-                if self.coord_dims(coord):
-                    coord_xml_element_wrapper.setAttribute('datadims', str(self.coord_dims(coord)))
-                coord_xml_element = coord.xml_element(doc)
-                coord_xml_element_wrapper.appendChild(coord_xml_element)
-                coords_xml_element.appendChild(coord_xml_element_wrapper)
-
-            cube_xml_element.appendChild(coords_xml_element)
-
-            # cell methods (no sorting!)
-            cell_methods_xml_element = doc.createElement("cellMethods")
-            for cm in self.cell_methods:
-                cell_method_xml_element = cm.xml_element(doc)
-                cell_methods_xml_element.appendChild(cell_method_xml_element)
-            cube_xml_element.appendChild(cell_methods_xml_element)
-
-            if self._data is not None:
-                data_xml_element = doc.createElement("data")
-
-                data_xml_element.setAttribute("shape", str(self.shape))
-
-                # Add the datatype
-                if self._data_manager is not None:
-                    data_xml_element.setAttribute("dtype", self._data_manager.data_type.name)
-                else:
-                    data_xml_element.setAttribute("dtype", self._data.dtype.name)
-
-                # getting a checksum triggers any deferred loading
-                if checksum:
-                    data_xml_element.setAttribute("checksum", hex(zlib.crc32(self.data)))
-                    if isinstance(self.data, numpy.ma.core.MaskedArray):
-                        data_xml_element.setAttribute("mask_checksum", hex(zlib.crc32(self.data.mask)))
-                elif self._data_manager is not None:
-                    data_xml_element.setAttribute("state", "deferred")
-                else:
-                    data_xml_element.setAttribute("state", "loaded")
-
-                cube_xml_element.appendChild(data_xml_element)
-
-            return cube_xml_element
 
     def copy(self, data=None):
         """

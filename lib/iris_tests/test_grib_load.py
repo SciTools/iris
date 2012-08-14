@@ -37,52 +37,17 @@ class TestGribLoad(tests.GraphicsTest):
     def test_load(self):
                 
         cubes = iris.load(tests.get_data_path(('GRIB', 'rotated_uk', "uk_wrongparam.grib1")))
-        cubes[0].coord("forecast_period")._TEST_COMPAT_override_axis = "forecast_period"
-        cubes[0].coord("forecast_period")._TEST_COMPAT_definitive = True 
-        cubes[0].coord("originating_centre")._TEST_COMPAT_override_axis = "originating_centre"
-        cubes[0].coord("originating_centre")._TEST_COMPAT_definitive = False 
-        cubes[0].coord("pressure")._TEST_COMPAT_definitive = False 
         self.assertCML(cubes, ("grib_load", "rotated.cml"))
         
         cubes = iris.load(tests.get_data_path(('GRIB', "time_processed", "time_bound.grib2")))
-        cubes[0].coord("forecast_period")._TEST_COMPAT_override_axis = "forecast_period"
-        cubes[0].coord("forecast_period")._TEST_COMPAT_definitive = False 
-        cubes[0].coord("originating_centre")._TEST_COMPAT_override_axis = "originating_centre"
-        cubes[0].coord("originating_centre")._TEST_COMPAT_definitive = False 
-        cubes[0].coord("pressure")._TEST_COMPAT_definitive = False 
-        cubes[0].coord("time")._TEST_COMPAT_definitive = False 
         self.assertCML(cubes, ("grib_load", "time_bound.cml"))
         
         cubes = iris.load(tests.get_data_path(('GRIB', "3_layer_viz", "3_layer.grib2")))
         cubes = iris.cube.CubeList([cubes[1], cubes[0], cubes[2]])
-        cubes[0].coord("forecast_period")._TEST_COMPAT_override_axis = "forecast_period"
-        cubes[0].coord("forecast_period")._TEST_COMPAT_definitive = False 
-        cubes[0].coord("originating_centre")._TEST_COMPAT_override_axis = "originating_centre"
-        cubes[0].coord("originating_centre")._TEST_COMPAT_definitive = False 
-        cubes[0].coord("pressure")._TEST_COMPAT_definitive = False 
-        cubes[0].coord("time")._TEST_COMPAT_definitive = False 
-        cubes[1].coord("forecast_period")._TEST_COMPAT_override_axis = "forecast_period"
-        cubes[1].coord("forecast_period")._TEST_COMPAT_definitive = False 
-        cubes[1].coord("originating_centre")._TEST_COMPAT_override_axis = "originating_centre"
-        cubes[1].coord("originating_centre")._TEST_COMPAT_definitive = False 
-        cubes[1].coord("pressure")._TEST_COMPAT_definitive = False 
-        cubes[1].coord("time")._TEST_COMPAT_definitive = False 
-        cubes[2].coord("forecast_period")._TEST_COMPAT_override_axis = "forecast_period"
-        cubes[2].coord("forecast_period")._TEST_COMPAT_definitive = False 
-        cubes[2].coord("originating_centre")._TEST_COMPAT_override_axis = "originating_centre"
-        cubes[2].coord("originating_centre")._TEST_COMPAT_definitive = False 
-        cubes[2].coord("pressure")._TEST_COMPAT_definitive = False 
-        cubes[2].coord("time")._TEST_COMPAT_definitive = False 
         self.assertCML(cubes, ("grib_load", "3_layer.cml"))
         
     def test_y_fastest(self):
         cubes = iris.load(tests.get_data_path(("GRIB", "y_fastest", "y_fast.grib2")))
-        cubes[0].coord("forecast_period")._TEST_COMPAT_override_axis = "forecast_period"
-        cubes[0].coord("forecast_period")._TEST_COMPAT_definitive = False 
-        cubes[0].coord("originating_centre")._TEST_COMPAT_override_axis = "originating_centre"
-        cubes[0].coord("originating_centre")._TEST_COMPAT_definitive = False 
-        cubes[0].coord("pressure")._TEST_COMPAT_definitive = False 
-        cubes[0].coord("time")._TEST_COMPAT_definitive = False 
         self.assertCML(cubes, ("grib_load", "y_fastest.cml"))
         iplt.contourf(cubes[0])
         iplt.gcm(cubes[0]).drawcoastlines()
@@ -93,12 +58,6 @@ class TestGribLoad(tests.GraphicsTest):
         
         def old_compat_load(name):
             cube = iris.load(tests.get_data_path(('GRIB', 'ij_directions', name)))[0]
-            cube.coord("forecast_period")._TEST_COMPAT_override_axis = "forecast_period"
-            cube.coord("forecast_period")._TEST_COMPAT_definitive = False 
-            cube.coord("originating_centre")._TEST_COMPAT_override_axis = "originating_centre"
-            cube.coord("originating_centre")._TEST_COMPAT_definitive = False 
-            cube.coord("pressure")._TEST_COMPAT_definitive = False 
-            cube.coord("time")._TEST_COMPAT_definitive = False 
             return [cube]
         
         cubes = old_compat_load("ipos_jpos.grib2")
@@ -133,12 +92,6 @@ class TestGribLoad(tests.GraphicsTest):
         
         def old_compat_load(name):
             cube = iris.load(tests.get_data_path(('GRIB', 'shape_of_earth', name)))[0]
-            cube.coord("forecast_period")._TEST_COMPAT_override_axis = "forecast_period"
-            cube.coord("forecast_period")._TEST_COMPAT_definitive = False 
-            cube.coord("originating_centre")._TEST_COMPAT_override_axis = "originating_centre"
-            cube.coord("originating_centre")._TEST_COMPAT_definitive = False 
-            cube.coord("pressure")._TEST_COMPAT_definitive = False 
-            cube.coord("time")._TEST_COMPAT_definitive = False 
             return cube
         
         #pre-defined sphere
@@ -175,8 +128,6 @@ class TestGribLoad(tests.GraphicsTest):
 
         #grib1 - same as grib2 shape 6, above
         cube = old_compat_load("global.grib1")
-        cube.coord("forecast_period")._TEST_COMPAT_definitive = True 
-        cube.coord("time")._TEST_COMPAT_definitive = True 
         self.assertCML(cube, ("grib_load", "earth_shape_grib1.cml"))
 
     def test_custom_rules(self):

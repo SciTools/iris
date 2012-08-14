@@ -51,90 +51,65 @@ class TestDeltaAndMidpoint(tests.IrisTest):
     def test_simple1_delta_midpoint(self):
         a = iris.coords.DimCoord((numpy.arange(4, dtype=numpy.float32) * 90) - 180, long_name='foo', 
                                  units='degrees', circular=True)
-        a._TEST_COMPAT_override_axis = 'foo'
-        a._TEST_COMPAT_definitive = False
         self.assertXMLElement(a, self._simple_filename('1'))
 
         delta = iris.analysis.calculus._construct_delta_coord(a)
-        delta._TEST_COMPAT_override_axis = 'foo'
         self.assertXMLElement(delta, self._simple_filename('1_delta'))
         
         midpoint = iris.analysis.calculus._construct_midpoint_coord(a)
-        midpoint._TEST_COMPAT_override_axis = 'foo'
-        midpoint._TEST_COMPAT_definitive = False
         self.assertXMLElement(midpoint, self._simple_filename('1_midpoint'))
         
     def test_simple2_delta_midpoint(self):
         a = iris.coords.DimCoord((numpy.arange(4, dtype=numpy.float32) * -90) + 180, long_name='foo', 
                                  units='degrees', circular=True)
-        a._TEST_COMPAT_override_axis = 'foo'
-        a._TEST_COMPAT_definitive = False
         self.assertXMLElement(a, self._simple_filename('2'))
 
         delta = iris.analysis.calculus._construct_delta_coord(a)
-        delta._TEST_COMPAT_override_axis = 'foo'
         self.assertXMLElement(delta, self._simple_filename('2_delta'))
         
         midpoint = iris.analysis.calculus._construct_midpoint_coord(a)
-        midpoint._TEST_COMPAT_override_axis = 'foo'
-        midpoint._TEST_COMPAT_definitive = False
         self.assertXMLElement(midpoint, self._simple_filename('2_midpoint'))
 
     def test_simple3_delta_midpoint(self):
         a = iris.coords.DimCoord((numpy.arange(4, dtype=numpy.float32) * 90) - 180, long_name='foo', 
                                  units='degrees', circular=True)
         a.guess_bounds(0.5)    
-        a._TEST_COMPAT_override_axis = 'foo'
-        a._TEST_COMPAT_definitive = False
         self.assertXMLElement(a, self._simple_filename('3'))
         
         delta = iris.analysis.calculus._construct_delta_coord(a)
-        delta._TEST_COMPAT_override_axis = 'foo'
         self.assertXMLElement(delta, self._simple_filename('3_delta'))
         
         midpoint = iris.analysis.calculus._construct_midpoint_coord(a)
-        midpoint._TEST_COMPAT_override_axis = 'foo'
-        midpoint._TEST_COMPAT_definitive = False
         self.assertXMLElement(midpoint, self._simple_filename('3_midpoint'))
         
     def test_simple4_delta_midpoint(self):
         a = iris.coords.AuxCoord(numpy.arange(4, dtype=numpy.float32) * 90 - 180, long_name='foo', units='degrees')
         a.guess_bounds()
-        a._TEST_COMPAT_definitive = False
-        a._TEST_COMPAT_override_axis = 'foo'
         b = a.copy()
         self.assertXMLElement(b, self._simple_filename('4'))
         
         delta = iris.analysis.calculus._construct_delta_coord(b)
-        delta._TEST_COMPAT_override_axis = 'foo'
         self.assertXMLElement(delta, self._simple_filename('4_delta'))
         
         midpoint = iris.analysis.calculus._construct_midpoint_coord(b)
-        midpoint._TEST_COMPAT_override_axis = 'foo'
         self.assertXMLElement(midpoint, self._simple_filename('4_midpoint'))
         
     def test_simple5_not_degrees_delta_midpoint(self):
         # Not sure it makes sense to have a circular coordinate which does not have a modulus but test it anyway.
         a = iris.coords.DimCoord(numpy.arange(4, dtype=numpy.float32) * 90 - 180, 
                                  long_name='foo', units='meter', circular=True)
-        a._TEST_COMPAT_override_axis = 'foo'
         self.assertXMLElement(a, self._simple_filename('5'))
         
         delta = iris.analysis.calculus._construct_delta_coord(a)
-        delta._TEST_COMPAT_override_axis = 'foo'
-        delta._TEST_COMPAT_definitive = True
         self.assertXMLElement(delta, self._simple_filename('5_delta'))
         
         midpoints = iris.analysis.calculus._construct_midpoint_coord(a)
-        midpoints._TEST_COMPAT_override_axis = 'foo'
-        midpoints._TEST_COMPAT_definitive = True
         self.assertXMLElement(midpoints, self._simple_filename('5_midpoint'))
         
     def test_simple6_delta_midpoint(self):
         a = iris.coords.DimCoord(numpy.arange(5, dtype=numpy.float32), long_name='foo', 
                                  units='count', circular=True)
         midpoints = iris.analysis.calculus._construct_midpoint_coord(a)
-        midpoints._TEST_COMPAT_override_axis = 'foo'        
         self.assertXMLElement(midpoints, self._simple_filename('6'))
     
     def test_singular_delta(self):
@@ -142,8 +117,6 @@ class TestDeltaAndMidpoint(tests.IrisTest):
         lon = iris.coords.DimCoord(numpy.float32(-180.), 'latitude', units='degrees', circular=True)
         
         r_expl = iris.analysis.calculus._construct_delta_coord(lon)
-        r_expl._TEST_COMPAT_force_explicit = True
-        r_expl._TEST_COMPAT_override_axis = 'x'
         self.assertXMLElement(r_expl, ('analysis', 'delta_and_midpoint', 'delta_one_element_explicit.xml'))
         
         # Test single valued coordinate mid-points when not circular
@@ -156,7 +129,6 @@ class TestDeltaAndMidpoint(tests.IrisTest):
         lon = iris.coords.DimCoord(numpy.float32(-180.), 'latitude',  units='degrees', circular=True)
         
         r_expl = iris.analysis.calculus._construct_midpoint_coord(lon)
-        r_expl._TEST_COMPAT_override_axis = 'x'
         self.assertXMLElement(r_expl, ('analysis', 'delta_and_midpoint', 'midpoint_one_element_explicit.xml'))
         
         # Test single valued coordinate mid-points when not circular
@@ -207,7 +179,6 @@ class TestCalculusSimple2(tests.IrisTest):
         
     def test_diff_wrt_x(self):
         t = iris.analysis.calculus.differentiate(self.cube, 'x')
-        t.coord("x")._TEST_COMPAT_definitive = True
         self.assertCMLApproxData(t, ('analysis', 'calculus', 'handmade_wrt_x.cml'))
         
     def test_diff_wrt_y(self):
@@ -216,7 +187,6 @@ class TestCalculusSimple2(tests.IrisTest):
         
     def test_diff_wrt_lon(self):
         t = iris.analysis.calculus.differentiate(self.cube, 'longitude')
-        t.coord("x")._TEST_COMPAT_definitive = True
         self.assertCMLApproxData(t, ('analysis', 'calculus', 'handmade_wrt_lon.cml'))
         
     def test_diff_wrt_lat(self):
@@ -225,7 +195,6 @@ class TestCalculusSimple2(tests.IrisTest):
                 
     def test_delta_wrt_x(self):
         t = iris.analysis.calculus.cube_delta(self.cube, 'x')
-        t.coord("x")._TEST_COMPAT_definitive = True
         self.assertCMLApproxData(t, ('analysis', 'calculus', 'delta_handmade_wrt_x.cml'))
         
     def test_delta_wrt_y(self):
@@ -234,7 +203,6 @@ class TestCalculusSimple2(tests.IrisTest):
         
     def test_delta_wrt_lon(self):
         t = iris.analysis.calculus.cube_delta(self.cube, 'longitude')
-        t.coord("x")._TEST_COMPAT_definitive = True
         self.assertCMLApproxData(t, ('analysis', 'calculus', 'delta_handmade_wrt_lon.cml'))
         
     def test_delta_wrt_lat(self):
@@ -470,10 +438,6 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         result = r.copy(data=r.data * 0)
         
         numpy.testing.assert_array_almost_equal(result.data[5:-5], r.data[5:-5], decimal=1)
-        
-        r.coord("latitude")._TEST_COMPAT_force_explicit = True
-        r.coord("longitude")._TEST_COMPAT_force_explicit = True
-        
         self.assertCML(r, ('analysis', 'calculus', 'grad_contrived1.cml'), checksum=False)
 
     def test_contrived_sphrical_curl2(self):
@@ -511,10 +475,6 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         result = r.copy(data=2*cos_x_pts*cos_y_pts)
         
         numpy.testing.assert_array_almost_equal(result.data[30:-30, :], r.data[30:-30, :], decimal=1)
-
-        r.coord("latitude")._TEST_COMPAT_force_explicit = True
-        r.coord("longitude")._TEST_COMPAT_force_explicit = True
-        
         self.assertCML(r, ('analysis', 'calculus', 'grad_contrived2.cml'), checksum=False)
 
 
