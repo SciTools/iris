@@ -641,7 +641,7 @@ class Coord(CFVariableMixin):
             dims_to_collapse = set(range(self.ndim))
         else:
             if set(range(self.ndim)) != set(dims_to_collapse):
-                raise ValueError('Cannot partially collapse a coordinate.')
+                raise ValueError('Cannot partially collapse a coordinate (%s).' % self.name())
         
         # Warn about non-contiguity.
         if not self.is_contiguous():

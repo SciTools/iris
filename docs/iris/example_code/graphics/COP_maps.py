@@ -44,17 +44,13 @@ def cop_metadata_callback(cube, field, filename):
 
 def main():
     # Load e1 and a1 using the callback to update the metadata
-    e1 = iris.load_strict(iris.sample_data_path('PP', 'A1B-Image_E1', 'E1', '*.pp'), 
+    e1 = iris.load_strict(iris.sample_data_path('E1.2098.pp'),
                            callback=cop_metadata_callback)
-    a1b = iris.load_strict(iris.sample_data_path('PP', 'A1B-Image_E1', 'A1B', '*.pp'), 
+    a1b = iris.load_strict(iris.sample_data_path('A1B.2098.pp'),
                             callback=cop_metadata_callback)
     
-    # For the purposes of this example, take the final timestep of the data we have just loaded
-    e1 = e1[-1, :, :]
-    a1b = a1b[-1, :, :]
-    
     # Load the global average data and add an 'Experiment' coord it
-    global_avg = iris.load_strict(iris.sample_data_path('PP', 'A1B-Image_E1', 'pp_1859_1889_avg.pp'))
+    global_avg = iris.load_strict(iris.sample_data_path('pre-industrial.pp'))
     
     # Define evenly spaced contour levels: -2.5, -1.5, ... 15.5, 16.5 with the specific colours
     levels = numpy.arange(20) - 2.5
@@ -84,7 +80,7 @@ def main():
         time = time_coord.units.num2date(time_coord.points[0])
         # Set a title for the entire figure, giving the time in a nice format of "MonthName Year". Also, set the y value for the
         # title so that it is not tight to the top of the plot.
-        fig.suptitle('Annual Temperature Predictions for ' + time.strftime("%B %Y"), y=0.9, fontsize=18)
+        fig.suptitle('Annual Temperature Predictions for ' + time.strftime("%Y"), y=0.9, fontsize=18)
     
         # Add the first subplot showing the E1 scenario
         plt.subplot(121)

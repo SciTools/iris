@@ -5,7 +5,7 @@ Navigating a cube
 .. testsetup::
 
         import iris
-        filename = iris.sample_data_path('PP', 'aPProt1', 'rotated.pp')
+        filename = iris.sample_data_path('rotated_pole.nc')
         # pot_temp = iris.load_strict(filename, 'air_potential_temperature')
         cube = iris.load_strict(filename)
         coord_names = [coord.name() for coord in cube.coords()]
@@ -21,19 +21,20 @@ Cube string representations
 We have already seen a basic string representation of a cube when printing:
 
     >>> import iris
-    >>> filename = iris.sample_data_path('PP', 'aPProt1', 'rotated.pp')
+    >>> filename = iris.sample_data_path('rotated_pole.nc')
     >>> cube = iris.load_strict(filename)
     >>> print cube
-    air_pressure_at_sea_level           (grid_latitude: 432; grid_longitude: 720)
+    air_pressure_at_sea_level           (grid_latitude: 22; grid_longitude: 36)
          Dimension coordinates:
-              grid_latitude                           x                    -
-              grid_longitude                          -                    x
+              grid_latitude                           x                   -
+              grid_longitude                          -                   x
          Scalar coordinates:
               forecast_period: 0.0 hours
               source: Data from Met Office Unified Model 6.01
               time: 319536.0 hours since 1970-01-01 00:00:00
          Attributes:
               STASH: m01s16i222
+              Conventions: CF-1.5
 
 
 This representation is equivalent to passing the cube to the :func:`str` function.  This function can be used on 
@@ -144,10 +145,10 @@ We can add and remove coordinates via :func:`Cube.add_dim_coord<iris.cube.Cube.a
     >>> new_coord = iris.coords.AuxCoord(1, long_name='my_custom_coordinate', units='no_unit')
     >>> cube.add_aux_coord(new_coord)
     >>> print cube
-    air_pressure_at_sea_level           (grid_latitude: 432; grid_longitude: 720)
+    air_pressure_at_sea_level           (grid_latitude: 22; grid_longitude: 36)
          Dimension coordinates:
-              grid_latitude                           x                    -
-              grid_longitude                          -                    x
+              grid_latitude                           x                   -
+              grid_longitude                          -                   x
          Scalar coordinates:
               forecast_period: 0.0 hours
               my_custom_coordinate: 1
@@ -155,6 +156,7 @@ We can add and remove coordinates via :func:`Cube.add_dim_coord<iris.cube.Cube.a
               time: 319536.0 hours since 1970-01-01 00:00:00
          Attributes:
               STASH: m01s16i222
+              Conventions: CF-1.5
 
 
 The coordinate ``my_custom_coordinate`` now exists on the cube and is listed under the non-dimensioned single valued scalar coordinates.
@@ -180,13 +182,15 @@ Suppose we wish to load a lagged ensemble dataset from the Met Office's GloSea4 
 The data for this example represents 13 ensemble members of 6 one month timesteps; the logistics of the 
 model mean that the run is spread over several days. 
 
-If we try to load the data directly for air_temperature:
+If we try to load the data directly for ``surface_temperature``:
 
-   >>> filename = iris.sample_data_path('PP', 'GloSea4', 'prodf*_???.pp')
-   >>> print iris.load(filename, 'precipitation_flux')
-   0: precipitation_flux                  (time: 6; forecast_reference_time: 2; latitude: 145; longitude: 192)
-   1: precipitation_flux                  (time: 6; forecast_reference_time: 2; latitude: 145; longitude: 192)
-   2: precipitation_flux                  (realization: 9; time: 6; latitude: 145; longitude: 192)
+    >>> filename = iris.sample_data_path('GloSea4', '*.pp')
+    >>> print iris.load(filename, 'surface_temperature')
+    0: surface_temperature                 (time: 6; forecast_reference_time: 2; latitude: 145; longitude: 192)
+    1: surface_temperature                 (time: 6; forecast_reference_time: 2; latitude: 145; longitude: 192)
+    2: surface_temperature                 (realization: 9; time: 6; latitude: 145; longitude: 192)
+
+
 
 
 We get multiple cubes some with more dimensions than expected, some without a ``realization`` (i.e. ensemble member) dimension. 
@@ -194,7 +198,7 @@ In this case, two of the PP files have been encoded without the appropriate ``re
 the appropriate coordinate cannot be added to the resultant cube. Fortunately, the missing attribute has been encoded in the filename
 which, given the filename, we could extract::
 
-    filename = iris.sample_data_path('PP', 'GloSea4', 'prodf_op_sfc_cam_11_20110718_001.pp')
+    filename = iris.sample_data_path('GloSea4', 'ensemble_001.pp')
     realization = int(filename[-6:-3])
     print realization
 
@@ -214,13 +218,13 @@ by field basis *before* they are automatically merged together:
             ensemble_coord = icoords.AuxCoord(realization, standard_name='realization')
             cube.add_aux_coord(ensemble_coord)
 
-    filename = iris.sample_data_path('PP', 'GloSea4', 'prodf*_???.pp')
+    filename = iris.sample_data_path('GloSea4', '*.pp')
 
-    print iris.load(filename, 'precipitation_flux', callback=lagged_ensemble_callback)
+    print iris.load(filename, 'surface_temperature', callback=lagged_ensemble_callback)
 
 
 The result is a single cube which represents the data in a form that was expected:
 
 .. testoutput::
 
-    0: precipitation_flux                  (realization: 13; time: 6; latitude: 145; longitude: 192)
+    0: surface_temperature                 (realization: 13; time: 6; latitude: 145; longitude: 192)

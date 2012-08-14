@@ -292,5 +292,17 @@ man_pages = [
     ('index', 'iris', u'Iris Documentation', _authors, 1)
 ]
 
+##########################
+# plot directive options #
+##########################
+
+plot_formats = [('png', 100),
+                #('hires.png', 200), ('pdf', 250)
+                ]
+
+
+
+
+
 # Delete the temporary value.
 del _authors
