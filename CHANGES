@@ -1,3 +1,27 @@
+Release 0.9 (14 Aug, 2012)
+==========================
+ 
+Features added
+--------------
+* Iris is now an open source project. See `Iris on github <https://github.com/SciTools/iris>`_.
+* Hybrid vertical coordinates are implemented with the new :class:`~iris.aux_factory.AuxCoordFactory`.
+* More graceful loading of units. See `here <https://github.com/SciTools/iris/pull/17>`_ for more details.
+ 
+Incompatible changes
+--------------------
+* The Iris data model is now fully aligned with the `CF data model <http://cf-pcmdi.llnl.gov/documents/cf-conventions/>`_ .
+  Iris remains file-format independent, as is the underlying CF data model.
+* Cube merging has been re-written for the new CF data model with the benefit that some corner cases are now better handled. 
+  Some users may find that their cubes, once merged, now have a smaller total shape and more intelligent handling of dimension coordinate picking.
+
+Deprecations
+------------
+* None
+
+
+----------------------------
+
+
 Release 0.8 (29 May, 2012)
 ==========================
  
@@ -7,7 +31,7 @@ Features added
 * Support cube arithmetic with masked array data.
 * PP loading now utilises improved field-code to standard_name/unit mapping.
 * Upgraded to use centrally installed and managed version 2 of PP packing library.
- 
+
 Incompatible changes
 --------------------
 * The ability to add UK Met Office branding to plots has been moved to

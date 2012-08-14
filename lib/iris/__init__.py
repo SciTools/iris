@@ -36,7 +36,7 @@ import iris.io
 
 
 # Iris revision.
-__version__ = '0.8-dev'
+__version__ = '0.9-dev'
 
 # Restrict the names imported when using "from iris import *"
 __all__ = ['load', 'load_strict', 'save', 'Constraint', 'AttributeConstraint']
