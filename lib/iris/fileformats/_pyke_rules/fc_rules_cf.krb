@@ -697,7 +697,7 @@ fc_extras
         try:
             iris.unit.as_unit(attr_units)
         except ValueError:
-            warnings.warn('Ignoring netCDF variable %r invalid units %r' % (cf_var.cf_name, attr_units))
+            warnings.warn('Ignoring netCDF variable {!r} invalid units {!r}'.format('{}'.format(cf_var.cf_name), '{}'.format(attr_units)))
             attributes['invalid_units'] = attr_units
             attr_units = iris.unit._UNKNOWN_UNIT_STRING
 
@@ -1026,7 +1026,7 @@ fc_extras
             for m in CM_PARSE.finditer(nc_cell_methods):
                 d = m.groupdict()
                 if d[CM_METHOD].lower() not in CM_KNOWN_METHODS:
-                    warnings.warn('NetCDF variable "%s" contains unknown cell method "%s"' % (cf_var_name, d[CM_METHOD]))
+                    warnings.warn('NetCDF variable {!r} contains unknown cell method {!r}'.format('{}'.format(cf_var_name), '{}'.format(d[CM_METHOD])))
                 name = d[CM_NAME]
                 name = name.replace(' ', '')
                 name = name.rstrip(':')
