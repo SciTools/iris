@@ -115,7 +115,7 @@ Features added
 Incompatible changes
 --------------------
 * The ``cube.coords`` dictionary has been replaced with the ``cube.coord`` and ``cube.coords`` methods 
-  for easier identification of coordinates. Full details of this change can be found in :doc:`0p5_to_0p6_coord_api`.
+  for easier identification of coordinates.
 * ``iris.cdm.coords`` has been moved and separated to ``iris.coords and`` ``iris.coord_systems``.
 * CF-netCDF global attributes are now put in the cube "attributes" dictionary rather than
   as scalar cube coordinates. Additionally any "unused" CF-netCDF variable attributes are also put in the 
