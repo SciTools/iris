@@ -10,6 +10,7 @@ variables:
 		precipitation_flux:units = "kg m-2 s-1" ;
 		precipitation_flux:experiment = "ER3" ;
 		precipitation_flux:institution = "DMI" ;
+		precipitation_flux:source = "HIRHAM" ;
 		precipitation_flux:cell_methods = "time: mean" ;
 		precipitation_flux:grid_mapping = "rotated_latitude_longitude" ;
 		precipitation_flux:coordinates = "latitude longitude" ;
@@ -50,5 +51,4 @@ variables:
 
 // global attributes:
 		:Conventions = "CF-1.5" ;
-		:source = "HIRHAM" ;
 }

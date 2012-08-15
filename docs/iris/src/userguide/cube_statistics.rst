@@ -38,12 +38,9 @@ Instead of downsampling the data, a similar goal can be achieved using statistic
               surface_altitude               -                      -                 x                    x
          Derived coordinates:
               altitude                       -                      x                 x                    x
-         Scalar coordinates:
-              source: Data from Met Office Unified Model 7.03
          Attributes:
               STASH: m01s00i004
-
-
+              source: Data from Met Office Unified Model 7.03
 
 
 In this case we have a 4 dimensional cube; to mean the vertical (z) dimension down to a single valued extent we can pass the coordinate
@@ -66,10 +63,10 @@ name and the aggregation definition to the :meth:`Cube.collapsed() <iris.cube.Cu
               level_height: Cell(point=696.66663, bound=(0.0, 1393.3333)) m
               model_level_number: Cell(point=10, bound=(1, 19))
               sigma: Cell(point=0.92292976, bound=(0.84585959, 1.0))
-              source: Data from Met Office Unified Model 7.03
          Attributes:
               STASH: m01s00i004
               history: Mean of air_potential_temperature over model_level_number
+              source: Data from Met Office Unified Model 7.03
          Cell methods:
               mean: model_level_number
 
@@ -111,15 +108,13 @@ These areas can now be passed to the ``collapsed`` method as weights:
          Scalar coordinates:
               grid_latitude: Cell(point=1.5145501, bound=(0.14430022, 2.8848)) degrees
               grid_longitude: Cell(point=358.74948, bound=(357.49399, 360.00497)) degrees
-              source: Data from Met Office Unified Model 7.03
               surface_altitude: Cell(point=399.625, bound=(-14.0, 813.25)) m
          Attributes:
               STASH: m01s00i004
               history: Mean of air_potential_temperature over grid_longitude, grid_latitude
+              source: Data from Met Office Unified Model 7.03
          Cell methods:
               mean: grid_longitude, grid_latitude
-
-
 
 
 

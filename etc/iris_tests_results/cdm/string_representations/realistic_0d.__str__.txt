@@ -7,6 +7,7 @@ air_potential_temperature           (scalar cube)
           level_height: Cell(point=5.0, bound=(0.0, 13.333332)) m
           model_level_number: 1
           sigma: Cell(point=0.9994238, bound=(1.0, 0.99846387))
-          source: Iris test case
           surface_altitude: 413.937 m
           time: 347921.166667 hours since 1970-01-01 00:00:00
+     Attributes:
+          source: Iris test case

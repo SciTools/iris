@@ -3,6 +3,7 @@
   <cube standard_name="air_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s03i236"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
     </attributes>
     <coords>
       <coord>
@@ -36,9 +37,6 @@
         <DimCoord id="3207b04384adbdec" points="[0.0, 3.75, 7.5, ..., 348.75, 352.5, 356.25]" shape="(96,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
         </DimCoord>
-      </coord>
-      <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
         <DimCoord bounds="[[183336.0, 185496.0]]" id="559b95abfcdf35de" points="[184416.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>

@@ -81,10 +81,9 @@ example, list indexing *could* be used:
               surface_altitude               -                      -                 x                    x
          Derived coordinates:
               altitude                       -                      x                 x                    x
-         Scalar coordinates:
-              source: Data from Met Office Unified Model 7.03
          Attributes:
               STASH: m01s00i004
+              source: Data from Met Office Unified Model 7.03
 
 
 Notice that the result of printing a **cube** is a little more verbose than it was when printing a 

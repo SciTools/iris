@@ -259,11 +259,6 @@ def _load_cube(engine, cf, cf_var, filename):
     for attr_name, attr_value in itertools.ifilter(attribute_predicate, cf_var.cf_attrs_unused()):
         _set_attributes(cube.attributes, attr_name, attr_value)
 
-    # Deal with special case of "source" attribute.
-    # Convert the attribute to a coordinate (meta-data hook for PP save).
-    if 'source' in cube.attributes and not cube.coords('source'):
-        cube.add_aux_coord(iris.coords.AuxCoord(points=str(cube.attributes.pop('source')), long_name='source', units='no_unit'))
-
     # Show pyke session statistics.
     _pyke_stats(engine, cf_var.cf_name)
     
@@ -410,13 +405,6 @@ def _create_cf_variable(dataset, cube, dimension_names, coord, factory_defn):
         The string name of the associated CF-netCDF variable saved.
     
     """
-    # Deal with special case of "source" coordinate.
-    # This coordinate is never saved as a netCDF variable.
-    if coord.name() == 'source' and coord.points.ndim == 1: 
-        # Translate the coordinate into a netCDF global attribute.
-        dataset.source = coord.points[0]
-        return None
-   
     cf_name = coord.name()
 
     # Derive the data dimension names for the coordinate.

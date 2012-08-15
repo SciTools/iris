@@ -14,6 +14,7 @@
       <attribute name="project_id" value="IPCC Fourth Assessment"/>
       <attribute name="realization" value="1"/>
       <attribute name="references" value="K-1 Coupled GCM Description (K-1 Technical Report No.1) in preparation"/>
+      <attribute name="source" value="MIROC3.2 (2004): atmosphere: AGCM (AGCM5.7b, T106 L56); ocean &amp; sea ice: COCO (COCO3.3, T106 4x6 tiling L48); land: MATSIRO (T106 2x2 tiling)"/>
       <attribute name="table_id" value="Table A2 (17 November 2004)"/>
       <attribute name="title" value="CCSR/NIES/FRCGC  model output prepared for IPCC Fourth Assessment 720 ppm stabilization experiment (SRES A1B)"/>
     </attributes>
@@ -43,9 +44,6 @@
 		[358.3125, 359.4375]]" id="3207b04384adbdec" long_name="longitude" points="[0.0, 1.125, 2.25, ..., 356.625, 357.75, 358.875]" shape="(320,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
         </DimCoord>
-      </coord>
-      <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[	MIROC3.2 (2004): atmosphere: AGCM (AGCM5.7b, T106 L56); ocean &amp; sea ice: COCO (COCO3.3, T106 4x6 tiling L48); land: MATSIRO (T106 2x2 tiling)]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
         <DimCoord bounds="[[71588.0, 71589.0],

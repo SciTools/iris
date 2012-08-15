@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube standard_name="air_potential_temperature" units="K">
+    <attributes>
+      <attribute name="source" value="Iris test case"/>
+    </attributes>
     <coords>
       <coord datadims="(0, 1, 2)">
         <AuxCoord bounds="[[[[413.937, 426.634],
@@ -478,9 +481,6 @@
 		0.0767339, 0.0525319, 0.0305214, 0.0126308,
 		0.00167859, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 		0.0, 0.0]" shape="(70,)" units="Unit('1')" value_type="float32"/>
-      </coord>
-      <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Iris test case]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[1, 0]">
         <AuxCoord id="cf20c06c74c057c" points="[[413.937, 417.817, 412.334, ..., 312.72, 317.89,

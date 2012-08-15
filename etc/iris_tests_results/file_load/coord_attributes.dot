@@ -13,7 +13,7 @@ digraph CubeGraph{
 
 #   Nodes
     ":Cube" [
-        label = "Cube|STASH: m01s16i203\nmy_attribute: foobar"
+        label = "Cube|STASH: m01s16i203\nmy_attribute: foobar\nsource: Data from Met Office Unified Model"
     ]
 
     
@@ -46,9 +46,6 @@ digraph CubeGraph{
             label = "DimCoord|standard_name: None\nlong_name: pressure\nunits: hPa\ncircular: False"
         ]
         "Coord_4" [
-            label = "AuxCoord|standard_name: None\nlong_name: source\nunits: no_unit"
-        ]
-        "Coord_5" [
             label = "DimCoord|standard_name: time\nlong_name: None\nunits: hours since 1970-01-01 00:00:00\ncircular: False\nbrain: hurts\nmonty: python"
         ]
 
@@ -78,7 +75,6 @@ digraph CubeGraph{
     ":Cube" -> "Coord_2"
     ":Cube" -> "Coord_3"
     ":Cube" -> "Coord_4"
-    ":Cube" -> "Coord_5"
     edge [
         style="dashed"
         arrowhead = "onormal"

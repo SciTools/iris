@@ -342,7 +342,6 @@ def realistic_4d():
     sigma = icoords.AuxCoord(sigma_pts, long_name='sigma', units='1', bounds=sigma_bnds)
     orography = icoords.AuxCoord(orography, standard_name='surface_altitude', units='m')
     time = icoords.DimCoord(time_pts, standard_name='time', units='hours since 1970-01-01 00:00:00')
-    source = icoords.AuxCoord(['Iris test case'], long_name='source', units='no unit')
     forecast_period = icoords.DimCoord(forecast_period_pts, standard_name='forecast_period', units='hours')
     
     hybrid_height = iris.aux_factory.HybridHeightFactory(level_height, sigma, orography)
@@ -350,7 +349,8 @@ def realistic_4d():
     cube = iris.cube.Cube(data, standard_name='air_potential_temperature', units='K',
                           dim_coords_and_dims=[(time, 0), (model_level, 1), (lat, 2), (lon, 3)],
                           aux_coords_and_dims=[(orography, (2, 3)), (level_height, 1), (sigma, 1),
-                                               (source, None), (forecast_period, None)],
+                                               (forecast_period, None)],
+                          attributes={'source': 'Iris test case'},
                           aux_factories=[hybrid_height])
     return cube
 

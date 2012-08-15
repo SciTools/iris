@@ -5,6 +5,7 @@
       <attribute name="Conventions" value="CF-1.0"/>
       <attribute name="experiment" value="ER3"/>
       <attribute name="institution" value="DMI"/>
+      <attribute name="source" value="HIRHAM"/>
     </attributes>
     <coords>
       <coord datadims="[1]">
@@ -46,9 +47,6 @@
  		58.4633, 58.907],
 		[-34.421, -34.0711, -33.7182, ..., 58.3201,
  		58.7689, 59.214]]" shape="(190, 174)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
-      </coord>
-      <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[HIRHAM]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
         <DimCoord bounds="[[2922.5, 2923.5],

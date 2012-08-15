@@ -264,10 +264,6 @@ class TestCubeStringRepresentations(IrisDotTest):
         lat2.attributes['test'] = 'True'
         cube.add_aux_coord(lat2, [0])
 
-        src = cube.coord('source').copy()
-        src.attributes['reliability'] = 'low'
-        cube.add_aux_coord(src)
-
         self.assertString(str(cube), ('cdm', 'string_representations', 'similar.__str__.txt'))
 
     def test_cube_summary_cell_methods(self):

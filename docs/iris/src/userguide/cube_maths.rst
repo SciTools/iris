@@ -46,9 +46,9 @@ data representing their difference:
          Scalar coordinates:
               forecast_reference_time: -953274.0 hours since 1970-01-01 00:00:00
               height: 1.5 m
-              source: Data from Met Office Unified Model 6.05
          Attributes:
               history: air_temperature - air_temperature (ignoring forecast_period, time)
+
 
 .. note::
     Notice that the coordinates "time" and "forecast_period" have been removed from the resultant cube; this 

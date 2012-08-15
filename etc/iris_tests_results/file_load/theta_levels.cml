@@ -3,6 +3,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -39,9 +40,6 @@
         <AuxCoord bounds="[[1.0, 0.994296]]" id="5634c91ba5717382" long_name="sigma" points="[0.997716]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -55,6 +53,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -91,9 +90,6 @@
         <AuxCoord bounds="[[0.994296, 0.985204]]" id="5634c91ba5717382" long_name="sigma" points="[0.990882]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -107,6 +103,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -143,9 +140,6 @@
         <AuxCoord bounds="[[0.985204, 0.971644]]" id="5634c91ba5717382" long_name="sigma" points="[0.979543]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -159,6 +153,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -195,9 +190,6 @@
         <AuxCoord bounds="[[0.971644, 0.95371]]" id="5634c91ba5717382" long_name="sigma" points="[0.963777]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -211,6 +203,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -247,9 +240,6 @@
         <AuxCoord bounds="[[0.95371, 0.931527]]" id="5634c91ba5717382" long_name="sigma" points="[0.943695]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -263,6 +253,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -299,9 +290,6 @@
         <AuxCoord bounds="[[0.931527, 0.905253]]" id="5634c91ba5717382" long_name="sigma" points="[0.919438]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -315,6 +303,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -351,9 +340,6 @@
         <AuxCoord bounds="[[0.905253, 0.875075]]" id="5634c91ba5717382" long_name="sigma" points="[0.891178]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -367,6 +353,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -403,9 +390,6 @@
         <AuxCoord bounds="[[0.875075, 0.841212]]" id="5634c91ba5717382" long_name="sigma" points="[0.859118]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -419,6 +403,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -455,9 +440,6 @@
         <AuxCoord bounds="[[0.841212, 0.803914]]" id="5634c91ba5717382" long_name="sigma" points="[0.823493]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -471,6 +453,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -507,9 +490,6 @@
         <AuxCoord bounds="[[0.803914, 0.763465]]" id="5634c91ba5717382" long_name="sigma" points="[0.784571]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -523,6 +503,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -559,9 +540,6 @@
         <AuxCoord bounds="[[0.763465, 0.720176]]" id="5634c91ba5717382" long_name="sigma" points="[0.742646]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -575,6 +553,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -611,9 +590,6 @@
         <AuxCoord bounds="[[0.720176, 0.674393]]" id="5634c91ba5717382" long_name="sigma" points="[0.69805]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -627,6 +603,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -663,9 +640,6 @@
         <AuxCoord bounds="[[0.674393, 0.626491]]" id="5634c91ba5717382" long_name="sigma" points="[0.651143]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -679,6 +653,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -715,9 +690,6 @@
         <AuxCoord bounds="[[0.626491, 0.576877]]" id="5634c91ba5717382" long_name="sigma" points="[0.602314]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -731,6 +703,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -767,9 +740,6 @@
         <AuxCoord bounds="[[0.576877, 0.525991]]" id="5634c91ba5717382" long_name="sigma" points="[0.551989]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -783,6 +753,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -819,9 +790,6 @@
         <AuxCoord bounds="[[0.525991, 0.474301]]" id="5634c91ba5717382" long_name="sigma" points="[0.50062]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -835,6 +803,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -871,9 +840,6 @@
         <AuxCoord bounds="[[0.474301, 0.42231]]" id="5634c91ba5717382" long_name="sigma" points="[0.448693]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -887,6 +853,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -923,9 +890,6 @@
         <AuxCoord bounds="[[0.42231, 0.370549]]" id="5634c91ba5717382" long_name="sigma" points="[0.396726]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -939,6 +903,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -975,9 +940,6 @@
         <AuxCoord bounds="[[0.370549, 0.319582]]" id="5634c91ba5717382" long_name="sigma" points="[0.345265]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -991,6 +953,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -1027,9 +990,6 @@
         <AuxCoord bounds="[[0.319582, 0.270005]]" id="5634c91ba5717382" long_name="sigma" points="[0.294891]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -1043,6 +1003,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -1079,9 +1040,6 @@
         <AuxCoord bounds="[[0.270005, 0.222443]]" id="5634c91ba5717382" long_name="sigma" points="[0.246215]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -1095,6 +1053,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -1131,9 +1090,6 @@
         <AuxCoord bounds="[[0.222443, 0.177555]]" id="5634c91ba5717382" long_name="sigma" points="[0.199878]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -1147,6 +1103,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -1183,9 +1140,6 @@
         <AuxCoord bounds="[[0.177555, 0.13603]]" id="5634c91ba5717382" long_name="sigma" points="[0.156554]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -1199,6 +1153,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -1235,9 +1190,6 @@
         <AuxCoord bounds="[[0.13603, 0.0985881]]" id="5634c91ba5717382" long_name="sigma" points="[0.116948]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -1251,6 +1203,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -1287,9 +1240,6 @@
         <AuxCoord bounds="[[0.0985881, 0.0659808]]" id="5634c91ba5717382" long_name="sigma" points="[0.0817952]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -1303,6 +1253,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -1339,9 +1290,6 @@
         <AuxCoord bounds="[[0.0659808, 0.0389824]]" id="5634c91ba5717382" long_name="sigma" points="[0.0518637]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -1355,6 +1303,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -1391,9 +1340,6 @@
         <AuxCoord bounds="[[0.0389824, 0.0183147]]" id="5634c91ba5717382" long_name="sigma" points="[0.0279368]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -1407,6 +1353,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -1443,9 +1390,6 @@
         <AuxCoord bounds="[[0.0183147, 0.00487211]]" id="5634c91ba5717382" long_name="sigma" points="[0.0107165]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -1459,6 +1403,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -1495,9 +1440,6 @@
         <AuxCoord bounds="[[0.00487211, 0.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.00130179]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -1511,6 +1453,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -1547,9 +1490,6 @@
         <AuxCoord bounds="[[0.0, 0.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -1563,6 +1503,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -1599,9 +1540,6 @@
         <AuxCoord bounds="[[0.0, 0.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -1615,6 +1553,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -1651,9 +1590,6 @@
         <AuxCoord bounds="[[0.0, 0.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -1667,6 +1603,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -1703,9 +1640,6 @@
         <AuxCoord bounds="[[0.0, 0.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -1719,6 +1653,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -1755,9 +1690,6 @@
         <AuxCoord bounds="[[0.0, 0.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -1771,6 +1703,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -1807,9 +1740,6 @@
         <AuxCoord bounds="[[0.0, 0.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -1823,6 +1753,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -1859,9 +1790,6 @@
         <AuxCoord bounds="[[0.0, 0.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -1875,6 +1803,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -1911,9 +1840,6 @@
         <AuxCoord bounds="[[0.0, 0.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
-      </coord>
-      <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
@@ -1927,6 +1853,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -1961,9 +1888,6 @@
       </coord>
       <coord>
         <AuxCoord bounds="[[0.0, 0.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
-      </coord>
-      <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
