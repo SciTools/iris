@@ -3,6 +3,7 @@
   <cube standard_name="geopotential_height" units="m">
     <attributes>
       <attribute name="STASH" value="m01s16i202"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
     </attributes>
     <coords>
       <coord datadims="[0]">
@@ -34,9 +35,6 @@
         <DimCoord id="411a2ed4ea259990" long_name="pressure" points="[10.0, 30.0, 50.0, 100.0, 150.0, 200.0, 250.0,
 		300.0, 400.0, 500.0, 600.0, 700.0, 850.0, 950.0,
 		1000.0]" shape="(15,)" units="Unit('hPa')" value_type="float32"/>
-      </coord>
-      <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
         <DimCoord bounds="[[1053360.0, 1226160.0],

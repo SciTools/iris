@@ -9,6 +9,7 @@ variables:
 		air_potential_temperature:standard_name = "air_potential_temperature" ;
 		air_potential_temperature:units = "K" ;
 		air_potential_temperature:ukmo__um_stash_source = "m01s00i004" ;
+		air_potential_temperature:source = "Data from Met Office Unified Model 7.04" ;
 		air_potential_temperature:grid_mapping = "rotated_latitude_longitude" ;
 		air_potential_temperature:coordinates = "forecast_period level_height sigma surface_altitude" ;
 	int rotated_latitude_longitude ;
@@ -64,5 +65,4 @@ variables:
 
 // global attributes:
 		:Conventions = "CF-1.5" ;
-		:source = "Data from Met Office Unified Model 7.04" ;
 }

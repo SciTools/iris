@@ -4,6 +4,7 @@
     <attributes>
       <attribute name="STASH" value="m01s16i222"/>
       <attribute name="history" value="Harmonic mean of air_pressure_at_sea_level over grid_latitude"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.01"/>
     </attributes>
     <coords>
       <coord datadims="[0]">
@@ -21,9 +22,6 @@
 		392.11]" shape="(720,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
         </DimCoord>
-      </coord>
-      <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.01]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
         <DimCoord id="559b95abfcdf35de" points="[319536.0, 319537.0, 319538.0, 319539.0,

@@ -168,10 +168,9 @@ output as this is the quickest way of inspecting the contents of a cube. Here is
               surface_altitude               -                      -                 x                    x
          Derived coordinates:
               altitude                       -                      x                 x                    x
-         Scalar coordinates:
-              source: Data from Met Office Unified Model 7.03
          Attributes:
               STASH: m01s00i004
+              source: Data from Met Office Unified Model 7.03
 
 
 Using this output we can deduce that:
@@ -185,7 +184,6 @@ Using this output we can deduce that:
  * There are 7 distinct values in the "model_level_number" coordinate. Similar inferences can
    be made for the other dimension coordinates.
  * There are 7, not necessarily distinct, values in the ``level_height`` coordinate.
- * There is 1 coordinate (``source``) which represents a scalar value over all of the data dimensions.
  * The cube has one further attribute relating to the  phenomenon. 
    In this case the originating file format, PP, encodes information in a STASH code which in some cases can
    be useful for identifying advanced experiment information relating to the phenomenon.

@@ -3,6 +3,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -126,9 +127,6 @@
 		0.156554, 0.116948, 0.0817952, 0.0518637,
 		0.0279368, 0.0107165, 0.00130179, 0.0, 0.0, 0.0,
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0]" shape="(38,)" units="Unit('1')" value_type="float32"/>
-      </coord>
-      <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
@@ -144,6 +142,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
     </attributes>
     <coords>
       <coord>
@@ -267,9 +266,6 @@
 		0.156554, 0.116948, 0.0817952, 0.0518637,
 		0.0279368, 0.0107165, 0.00130179, 0.0, 0.0, 0.0,
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0]" shape="(38,)" units="Unit('1')" value_type="float32"/>
-      </coord>
-      <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.06]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
         <DimCoord bounds="[[332352.0, 333096.0]]" id="559b95abfcdf35de" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>

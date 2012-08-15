@@ -5,6 +5,7 @@
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="history" value="Mean of air_potential_temperature over grid_longitude
 Mean of air_potential_temperature over grid_latitude"/>
+      <attribute name="source" value="Data from Met Office Unified Model 7.04"/>
     </attributes>
     <coords>
       <coord>
@@ -81,9 +82,6 @@ Mean of air_potential_temperature over grid_latitude"/>
 		0.0767339, 0.0525319, 0.0305214, 0.0126308,
 		0.00167859, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 		0.0, 0.0]" shape="(70,)" units="Unit('1')" value_type="float32"/>
-      </coord>
-      <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 7.04]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
         <DimCoord id="559b95abfcdf35de" points="[347921.166667, 347921.333333, 347921.5,

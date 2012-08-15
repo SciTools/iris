@@ -8,6 +8,7 @@ variables:
 		precipitation_flux:standard_name = "precipitation_flux" ;
 		precipitation_flux:units = "kg m-2 s-1" ;
 		precipitation_flux:ukmo__um_stash_source = "m01s05i216" ;
+		precipitation_flux:source = "Data from Met Office Unified Model" ;
 		precipitation_flux:cell_methods = "time: mean (interval: 1 hour)" ;
 		precipitation_flux:grid_mapping = "latitude_longitude" ;
 		precipitation_flux:coordinates = "forecast_period forecast_reference_time" ;
@@ -41,5 +42,4 @@ variables:
 
 // global attributes:
 		:Conventions = "CF-1.5" ;
-		:source = "Data from Met Office Unified Model" ;
 }

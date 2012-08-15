@@ -374,15 +374,13 @@ IF
 (f.lbsrce % 10000) == 1111
 (f.lbsrce / 10000) / 100.0 > 0
 THEN
-#CMCustomAttribute('source', 'Data from Met Office Unified Model %4.2f' % ((f.lbsrce / 10000) / 100.0))
-CoordAndDims(AuxCoord('Data from Met Office Unified Model %4.2f' % ((f.lbsrce / 10000) / 100.0), long_name='source', units="no_unit"))
+CMCustomAttribute('source', 'Data from Met Office Unified Model %4.2f' % ((f.lbsrce / 10000) / 100.0))
 
 IF
 (f.lbsrce % 10000) == 1111
 (f.lbsrce / 10000) / 100.0 == 0
 THEN
-#CMCustomAttribute('source', 'Data from Met Office Unified Model')
-CoordAndDims(AuxCoord('Data from Met Office Unified Model', long_name='source', units="no_unit"))
+CMCustomAttribute('source', 'Data from Met Office Unified Model')
 
 IF
 f.lbuser[6] != 0 or (f.lbuser[3] / 1000) != 0 or (f.lbuser[3] % 1000) != 0

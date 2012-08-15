@@ -9,6 +9,7 @@
       <attribute name="institution" value="MPI-M"/>
       <attribute name="project_id" value="ENSEMBLES"/>
       <attribute name="realization" value="1"/>
+      <attribute name="source" value="REMO"/>
     </attributes>
     <coords>
       <coord datadims="[0]">
@@ -63,9 +64,6 @@
  		56.4394, 57.3444],
 		[-33.3788, -32.6612, -31.9316, ..., 56.1045,
  		57.0309, 57.9421]]" shape="(95, 85)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
-      </coord>
-      <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[REMO]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
     </coords>
     <cellMethods/>

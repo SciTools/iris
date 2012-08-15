@@ -33,19 +33,19 @@ THEN
 
 #UM - no version number
 IF
-    scalar_coord(cm, 'source') is not None
-    len(scalar_coord(cm, 'source').points[0].rsplit("Data from Met Office Unified Model", 1)) > 1
-    len(scalar_coord(cm, 'source').points[0].rsplit("Data from Met Office Unified Model", 1)[1]) == 0
+    'source' in cm.attributes
+    len(cm.attributes['source'].rsplit("Data from Met Office Unified Model", 1)) > 1
+    len(cm.attributes['source'].rsplit("Data from Met Office Unified Model", 1)[1]) == 0
 THEN
     pp.lbsrce = 1111
 
 #UM - with version number
 IF
-    scalar_coord(cm, 'source') is not None
-    len(scalar_coord(cm, 'source').points[0].rsplit("Data from Met Office Unified Model", 1)) > 1
-    len(scalar_coord(cm, 'source').points[0].rsplit("Data from Met Office Unified Model", 1)[1]) > 0
+    'source' in cm.attributes
+    len(cm.attributes['source'].rsplit("Data from Met Office Unified Model", 1)) > 1
+    len(cm.attributes['source'].rsplit("Data from Met Office Unified Model", 1)[1]) > 0
 THEN
-    pp.lbsrce = int(float(scalar_coord(cm, 'source').points[0].rsplit("Data from Met Office Unified Model", 1)[1]) * 1000000) + 1111  # UM version
+    pp.lbsrce = int(float(cm.attributes['source'].rsplit("Data from Met Office Unified Model", 1)[1]) * 1000000) + 1111  # UM version
 
 IF
     'STASH' in cm.attributes

@@ -11,5 +11,6 @@ air_potential_temperature           (model_level_number: 70; grid_latitude: 100;
           altitude                                     x                  x                    x
      Scalar coordinates:
           forecast_period: 0.0 hours
-          source: Iris test case
           time: 347921.166667 hours since 1970-01-01 00:00:00
+     Attributes:
+          source: Iris test case

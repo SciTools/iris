@@ -30,11 +30,11 @@ We have already seen a basic string representation of a cube when printing:
               grid_longitude                          -                   x
          Scalar coordinates:
               forecast_period: 0.0 hours
-              source: Data from Met Office Unified Model 6.01
               time: 319536.0 hours since 1970-01-01 00:00:00
          Attributes:
-              STASH: m01s16i222
               Conventions: CF-1.5
+              STASH: m01s16i222
+              source: Data from Met Office Unified Model 6.01
 
 
 This representation is equivalent to passing the cube to the :func:`str` function.  This function can be used on 
@@ -113,7 +113,7 @@ Alternatively, we can use *list comprehension* to store the names in a list::
 The result is a basic Python list which could be sorted alphabetically and joined together:
 
      >>> print ', '.join(sorted(coord_names))
-     forecast_period, grid_latitude, grid_longitude, source, time
+     forecast_period, grid_latitude, grid_longitude, time
 
 To get an individual coordinate given its name, the :meth:`Cube.coord <iris.cube.Cube.coord>` method can be used::
 
@@ -152,11 +152,11 @@ We can add and remove coordinates via :func:`Cube.add_dim_coord<iris.cube.Cube.a
          Scalar coordinates:
               forecast_period: 0.0 hours
               my_custom_coordinate: 1
-              source: Data from Met Office Unified Model 6.01
               time: 319536.0 hours since 1970-01-01 00:00:00
          Attributes:
-              STASH: m01s16i222
               Conventions: CF-1.5
+              STASH: m01s16i222
+              source: Data from Met Office Unified Model 6.01
 
 
 The coordinate ``my_custom_coordinate`` now exists on the cube and is listed under the non-dimensioned single valued scalar coordinates.

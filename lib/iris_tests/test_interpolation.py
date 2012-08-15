@@ -282,7 +282,7 @@ class TestNearestNeighbour(tests.IrisTest):
         self.assertCML(b, ('analysis', 'interpolation', 'nearest_neighbour_extract_bounded_mid_point.cml'))
     
     def test_nearest_neighbour_locator_style_coord(self):
-        point_spec = [('latitude', 39), ('source', 38)]
+        point_spec = [('latitude', 39)]
         
         b = iris.analysis.interpolate.extract_nearest_neighbour(self.cube, point_spec) 
         self.assertCML(b, ('analysis', 'interpolation', 'nearest_neighbour_extract_latitude.cml'))

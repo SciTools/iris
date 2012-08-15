@@ -3,6 +3,7 @@
   <cube standard_name="tendency_of_upward_air_velocity_due_to_advection" units="m s-1">
     <attributes>
       <attribute name="STASH" value="m01s12i187"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.01"/>
     </attributes>
     <coords>
       <coord>
@@ -126,9 +127,6 @@
 		0.156554, 0.116948, 0.0817952, 0.0518637,
 		0.0279368, 0.0107165, 0.00130179, 0.0, 0.0, 0.0,
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0]" shape="(38,)" units="Unit('1')" value_type="float32"/>
-      </coord>
-      <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.01]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
         <DimCoord bounds="[[163440.0, 165600.0]]" id="559b95abfcdf35de" points="[164520.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>

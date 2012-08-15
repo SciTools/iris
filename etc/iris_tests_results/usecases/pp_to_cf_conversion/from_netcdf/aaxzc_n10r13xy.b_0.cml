@@ -3,6 +3,7 @@
   <cube units="unknown">
     <attributes>
       <attribute name="Conventions" value="CF-1.5"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
     </attributes>
     <coords>
       <coord datadims="[0]">
@@ -25,9 +26,6 @@
 		30.0, 33.75]" shape="(10,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
         </DimCoord>
-      </coord>
-      <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
         <DimCoord bounds="[[1053360.0, 1055520.0],

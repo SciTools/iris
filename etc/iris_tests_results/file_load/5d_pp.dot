@@ -13,7 +13,7 @@ digraph CubeGraph{
 
 #   Nodes
     ":Cube" [
-        label = "Cube|STASH: m01s00i002"
+        label = "Cube|STASH: m01s00i002\nsource: Data from Met Office Unified Model 7.04"
     ]
 
     
@@ -63,12 +63,9 @@ digraph CubeGraph{
             label = "AuxCoord|standard_name: None\nlong_name: sigma\nunits: 1"
         ]
         "Coord_7" [
-            label = "AuxCoord|standard_name: None\nlong_name: source\nunits: no_unit"
-        ]
-        "Coord_8" [
             label = "AuxCoord|standard_name: surface_altitude\nlong_name: None\nunits: m"
         ]
-        "Coord_9" [
+        "Coord_8" [
             label = "DimCoord|standard_name: time\nlong_name: None\nunits: hours since 1970-01-01 00:00:00\ncircular: False"
         ]
 
@@ -102,7 +99,6 @@ digraph CubeGraph{
     ":Cube" -> "Coord_6"
     ":Cube" -> "Coord_7"
     ":Cube" -> "Coord_8"
-    ":Cube" -> "Coord_9"
     edge [
         style="dashed"
         arrowhead = "onormal"
@@ -119,8 +115,8 @@ digraph CubeGraph{
     "Coord_4" -> "CubeDimension_1":w
     "Coord_5" -> "CubeDimension_1":w
     "Coord_6" -> "CubeDimension_1":w
-    "Coord_8" -> "CubeDimension_2":w
-    "Coord_8" -> "CubeDimension_3":w
-    "Coord_9" -> "CubeDimension_0":w
+    "Coord_7" -> "CubeDimension_2":w
+    "Coord_7" -> "CubeDimension_3":w
+    "Coord_8" -> "CubeDimension_0":w
 }
     

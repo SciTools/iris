@@ -3,6 +3,7 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 7.04"/>
     </attributes>
     <coords>
       <coord>
@@ -48,9 +49,6 @@
 		[0.996162, 0.993097],
 		[0.993097, 0.989272],
 		[0.989272, 0.984692]]" id="5634c91ba5717382" long_name="sigma" points="[0.999424, 0.997504, 0.99482, 0.991375, 0.987171]" shape="(5,)" units="Unit('1')" value_type="float32"/>
-      </coord>
-      <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 7.04]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
         <DimCoord id="559b95abfcdf35de" points="[347921.5]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>

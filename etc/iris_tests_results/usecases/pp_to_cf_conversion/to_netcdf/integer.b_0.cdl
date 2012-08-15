@@ -6,6 +6,7 @@ variables:
 	int land_binary_mask(latitude, longitude) ;
 		land_binary_mask:standard_name = "land_binary_mask" ;
 		land_binary_mask:units = "1" ;
+		land_binary_mask:source = "Data from Met Office Unified Model" ;
 		land_binary_mask:cell_methods = "time: mean" ;
 		land_binary_mask:grid_mapping = "latitude_longitude" ;
 		land_binary_mask:coordinates = "forecast_period forecast_reference_time time" ;
@@ -38,5 +39,4 @@ variables:
 
 // global attributes:
 		:Conventions = "CF-1.5" ;
-		:source = "Data from Met Office Unified Model" ;
 }

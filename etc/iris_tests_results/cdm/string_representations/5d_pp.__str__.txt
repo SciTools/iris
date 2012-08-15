@@ -11,8 +11,7 @@ eastward_wind                       (time: 6; model_level_number: 70; grid_latit
           surface_altitude               -                      -                  x                    x
      Derived coordinates:
           altitude                       -                      x                  x                    x
-     Scalar coordinates:
-          source: Data from Met Office Unified Model 7.04
      Attributes:
-          my_attribute: foobar
           STASH: m01s00i002
+          my_attribute: foobar
+          source: Data from Met Office Unified Model 7.04

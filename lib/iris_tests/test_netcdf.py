@@ -230,13 +230,6 @@ class TestNetCDFSave(tests.IrisTest):
 
         # Read netCDF file.
         cube = iris.load_strict(file_out)
-        coord = cube.coord('time')
-        coord = cube.coord('forecast_period')
-        coord = cube.coord('source')
-        coord = cube.coord('sigma')
-        coord = cube.coord('atmosphere_hybrid_height_coordinate')
-        coord = cube.coord('model_level_number')
-        coord = cube.coord('surface_altitude')
 
         # Check the PP read, netCDF write, netCDF read mechanism.
         self.assertCML(cube, ('netcdf', 'netcdf_save_load_hybrid_height.cml'))
