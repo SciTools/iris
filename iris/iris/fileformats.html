@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>iris.fileformats &mdash; Iris 0.89 documentation</title>
+    <title>iris.fileformats &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../../index.html" />
     <link rel="up" title="Iris reference documentation" href="../iris.html" />
     <link rel="next" title="iris.fileformats.cf" href="fileformats/cf.html" />
     <link rel="prev" title="iris.exceptions" href="exceptions.html" />
@@ -40,8 +40,8 @@
 <a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="exceptions.html" title="iris.exceptions"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>
@@ -131,7 +130,7 @@ Iris 0.89
 <hr class="docutils" />
 <dl class="data">
 <dt id="iris.fileformats.FORMAT_AGENT">
-<tt class="descclassname">iris.fileformats.</tt><tt class="descname">FORMAT_AGENT</tt><em class="property"> = FormatAgent([FormatSpecification('UM Post Processing file (PP)', FileElement('32-bit magic number', &lt;function &lt;lambda&gt; at 0x1ef6d70&gt;), 256, handler=&lt;function load_cubes at 0x1f979b0&gt;, priority=5), FormatSpecification('UM Post Processing file (PP) little-endian', FileElement('32-bit magic number', &lt;function &lt;lambda&gt; at 0x1ef6d70&gt;), 65536, handler=&lt;function _pp_little_endian at 0x2044758&gt;, priority=5), FormatSpecification('GRIB', FileElement('32-bit magic number', &lt;function &lt;lambda&gt; at 0x1ef6d70&gt;), 1196575042, handler=&lt;function load_cubes at 0x1fd1d70&gt;, priority=5), FormatSpecification('NetCDF', FileElement('32-bit magic number', &lt;function &lt;lambda&gt; at 0x1ef6d70&gt;), 1128547841, handler=&lt;function load_cubes at 0x2044398&gt;, priority=5), FormatSpecification('NetCDF 64 bit offset format', FileElement('32-bit magic number', &lt;function &lt;lambda&gt; at 0x1ef6d70&gt;), 1128547842, handler=&lt;function load_cubes at 0x2044398&gt;, priority=5), FormatSpecification('NetCDF_v4', FileElement('64-bit magic number', &lt;function &lt;lambda&gt; at 0x1ef8758&gt;), 9892231649176459786L, handler=&lt;function load_cubes at 0x2044398&gt;, priority=5), FormatSpecification('UM Fields file (FF) pre v3.1', FileElement('64-bit magic number', &lt;function &lt;lambda&gt; at 0x1ef8758&gt;), 20, handler=&lt;function load_cubes at 0x1ef8aa0&gt;, priority=4), FormatSpecification('UM Fields file (FF) post v5.2', FileElement('64-bit magic number', &lt;function &lt;lambda&gt; at 0x1ef8758&gt;), 15, handler=&lt;function load_cubes at 0x1ef8aa0&gt;, priority=4), FormatSpecification('Name III', FileElement('Leading line', &lt;function &lt;lambda&gt; at 0x1ef8848&gt;), &lt;function &lt;lambda&gt; at 0x4a468c0&gt;, handler=&lt;function NAME_to_cube at 0x4a26410&gt;, priority=3)])</em><a class="headerlink" href="#iris.fileformats.FORMAT_AGENT" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">iris.fileformats.</tt><tt class="descname">FORMAT_AGENT</tt><em class="property"> = FormatAgent([FormatSpecification('UM Post Processing file (PP)', FileElement('32-bit magic number', &lt;function &lt;lambda&gt; at 0x1bc37d0&gt;), 256, handler=&lt;function load_cubes at 0x1c3d1b8&gt;, priority=5), FormatSpecification('UM Post Processing file (PP) little-endian', FileElement('32-bit magic number', &lt;function &lt;lambda&gt; at 0x1bc37d0&gt;), 65536, handler=&lt;function _pp_little_endian at 0x1d16de8&gt;, priority=5), FormatSpecification('GRIB', FileElement('32-bit magic number', &lt;function &lt;lambda&gt; at 0x1bc37d0&gt;), 1196575042, handler=&lt;function load_cubes at 0x1c9c578&gt;, priority=5), FormatSpecification('NetCDF', FileElement('32-bit magic number', &lt;function &lt;lambda&gt; at 0x1bc37d0&gt;), 1128547841, handler=&lt;function load_cubes at 0x1d16a28&gt;, priority=5), FormatSpecification('NetCDF 64 bit offset format', FileElement('32-bit magic number', &lt;function &lt;lambda&gt; at 0x1bc37d0&gt;), 1128547842, handler=&lt;function load_cubes at 0x1d16a28&gt;, priority=5), FormatSpecification('NetCDF_v4', FileElement('64-bit magic number', &lt;function &lt;lambda&gt; at 0x1bc71b8&gt;), 9892231649176459786L, handler=&lt;function load_cubes at 0x1d16a28&gt;, priority=5), FormatSpecification('UM Fields file (FF) pre v3.1', FileElement('64-bit magic number', &lt;function &lt;lambda&gt; at 0x1bc71b8&gt;), 20, handler=&lt;function load_cubes at 0x1bc7500&gt;, priority=4), FormatSpecification('UM Fields file (FF) post v5.2', FileElement('64-bit magic number', &lt;function &lt;lambda&gt; at 0x1bc71b8&gt;), 15, handler=&lt;function load_cubes at 0x1bc7500&gt;, priority=4), FormatSpecification('Name III', FileElement('Leading line', &lt;function &lt;lambda&gt; at 0x1bc72a8&gt;), &lt;function &lt;lambda&gt; at 0x5537f50&gt;, handler=&lt;function NAME_to_cube at 0x527c7d0&gt;, priority=3)])</em><a class="headerlink" href="#iris.fileformats.FORMAT_AGENT" title="Permalink to this definition">¶</a></dt>
 <dd><p>The FORMAT_AGENT is responsible for identifying the format of a given URI. New formats can be added with the <strong>add_spec</strong> method.</p>
 </dd></dl>
 
@@ -156,7 +155,6 @@ Iris 0.89
           <a href="exceptions.html" title="iris.exceptions"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>

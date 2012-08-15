@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>iris.cube &mdash; Iris 0.89 documentation</title>
+    <title>iris.cube &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../../index.html" />
     <link rel="up" title="Iris reference documentation" href="../iris.html" />
     <link rel="next" title="iris.exceptions" href="exceptions.html" />
     <link rel="prev" title="iris.coords" href="coords.html" />
@@ -40,8 +40,8 @@
 <a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="coords.html" title="iris.coords"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>
@@ -118,7 +117,7 @@ Iris 0.89
 <p>Typically obtained from <a class="reference internal" href="../iris.html#iris.load" title="iris.load"><tt class="xref py py-func docutils literal"><span class="pre">iris.load()</span></tt></a>, <a class="reference internal" href="../iris.html#iris.load_strict" title="iris.load_strict"><tt class="xref py py-func docutils literal"><span class="pre">iris.load_strict()</span></tt></a>, or
 from the manipulation of existing cubes.</p>
 <p>For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;aPPglob1&#39;</span><span class="p">,</span> <span class="s">&#39;global.pp&#39;</span><span class="p">))</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;air_temp.pp&#39;</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">cube</span>
 <span class="go">air_temperature                     (latitude: 73; longitude: 96)</span>
 <span class="go">     Dimension coordinates:</span>
@@ -345,26 +344,29 @@ identified over all the group-by coordinates is collapsed using the provided agg
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.analysis</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.coord_categorisation</span> <span class="kn">as</span> <span class="nn">cat</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;ukV2&#39;</span><span class="p">,</span> <span class="s">&#39;THOxayrk.pp&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&#39;surface_altitude&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cat</span><span class="o">.</span><span class="n">add_month_number</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="s">&#39;time&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;month_number&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">new_cube</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">aggregated_by</span><span class="p">(</span><span class="s">&#39;month_number&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;ostia_monthly.nc&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&#39;surface_temperature&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cat</span><span class="o">.</span><span class="n">add_year</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="s">&#39;time&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;year&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_cube</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">aggregated_by</span><span class="p">(</span><span class="s">&#39;year&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">new_cube</span>
-<span class="go">surface_altitude                    (*ANONYMOUS*: 1; grid_latitude: 810; grid_longitude: 622)</span>
+<span class="go">surface_temperature                 (*ANONYMOUS*: 5; latitude: 18; longitude: 432)</span>
 <span class="go">     Dimension coordinates:</span>
-<span class="go">          grid_latitude                         -                 x                    -</span>
-<span class="go">          grid_longitude                        -                 -                    x</span>
+<span class="go">          latitude                              -            x              -</span>
+<span class="go">          longitude                             -            -              x</span>
 <span class="go">     Auxiliary coordinates:</span>
-<span class="go">          forecast_period                       x                 -                    -</span>
-<span class="go">          month_number                          x                 -                    -</span>
-<span class="go">          time                                  x                 -                    -</span>
+<span class="go">          forecast_reference_time               x            -              -</span>
+<span class="go">          time                                  x            -              -</span>
+<span class="go">          year                                  x            -              -</span>
 <span class="go">     Scalar coordinates:</span>
-<span class="go">          source: Data from Met Office Unified Model 7.03</span>
+<span class="go">          forecast_period: 0 hours</span>
 <span class="go">     Attributes:</span>
-<span class="go">          STASH: m01s00i033</span>
-<span class="go">          history: Mean of surface_altitude aggregated over month_number</span>
+<span class="go">          Conventions: CF-1.5</span>
+<span class="go">          STASH: m01s00i024</span>
+<span class="go">          history: Mean of surface_temperature aggregated over month, year</span>
+<span class="go">Mean of surface_temperature...</span>
 <span class="go">     Cell methods:</span>
-<span class="go">          mean: month_number</span>
+<span class="go">          mean: month, year</span>
+<span class="go">          mean: year</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -446,38 +448,36 @@ factory being matched, an
 <p>For example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.analysis</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;globClim1&#39;</span><span class="p">,</span> <span class="s">&#39;theta.pp&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;ostia_monthly.nc&#39;</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">new_cube</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">new_cube</span>
-<span class="go">air_potential_temperature           (level_height: 38; latitude: 145)</span>
+<span class="go">surface_temperature                 (time: 54; latitude: 18)</span>
 <span class="go">     Dimension coordinates:</span>
-<span class="go">          level_height                           x             -</span>
-<span class="go">          latitude                               -             x</span>
+<span class="go">          time                           x             -</span>
+<span class="go">          latitude                       -             x</span>
 <span class="go">     Auxiliary coordinates:</span>
-<span class="go">          model_level_number                     x             -</span>
-<span class="go">          sigma                                  x             -</span>
+<span class="go">          forecast_reference_time        x             -</span>
 <span class="go">     Scalar coordinates:</span>
-<span class="go">          forecast_period: 26280 hours</span>
-<span class="go">          forecast_reference_time: 306816.0 hours since 1970-01-01 00:00:00</span>
+<span class="go">          forecast_period: 0 hours</span>
 <span class="go">          longitude: Cell(point=180.0, bound=(0.0, 360.0)) degrees</span>
-<span class="go">          source: Data from Met Office Unified Model 6.06</span>
-<span class="go">          time: Cell(point=332724.0, bound=(332352.0, 333096.0)) hours since 1970-01-01 00:00:00</span>
 <span class="go">     Attributes:</span>
-<span class="go">          STASH: m01s00i004</span>
-<span class="go">          history: Mean of air_potential_temperature over longitude</span>
+<span class="go">          Conventions: CF-1.5</span>
+<span class="go">          STASH: m01s00i024</span>
+<span class="go">          history: Mean of surface_temperature aggregated over month, year</span>
+<span class="go">Mean of surface_temperature...</span>
 <span class="go">     Cell methods:</span>
-<span class="go">          mean: time (1 hour)</span>
+<span class="go">          mean: month, year</span>
 <span class="go">          mean: longitude</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>Some aggregations are not commutative and hence the order of processing is important i.e.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;ensemble&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">VARIANCE</span><span class="p">)</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;height&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">VARIANCE</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;realization&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">VARIANCE</span><span class="p">)</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;height&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">VARIANCE</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>is not necessarily the same result as:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">result2</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;height&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">VARIANCE</span><span class="p">)</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;ensemble&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">VARIANCE</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">result2</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;height&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">VARIANCE</span><span class="p">)</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;realization&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">VARIANCE</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Conversely operations which operate on more than one coordinate at the same time are commutative as they are combined
@@ -757,43 +757,44 @@ by the grid_cube.</p>
 <p>For example:</p>
 <blockquote>
 <div><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris</span><span class="o">,</span> <span class="nn">iris.analysis</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;COLPEX&#39;</span><span class="p">,</span> <span class="s">&#39;air_potential_and_air_pressure.pp&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">air_press</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&#39;air_pressure&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;GloSea4&#39;</span><span class="p">,</span> <span class="s">&#39;ensemble_010.pp&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">air_press</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&#39;surface_temperature&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">air_press</span>
-<span class="go">air_pressure                        (forecast_period: 6; level_height: 10; grid_latitude: 412; grid_longitude: 412)</span>
+<span class="go">surface_temperature                 (time: 6; latitude: 145; longitude: 192)</span>
 <span class="go">     Dimension coordinates:</span>
-<span class="go">          forecast_period                           x                -                  -                    -</span>
-<span class="go">          level_height                              -                x                  -                    -</span>
-<span class="go">          grid_latitude                             -                -                  x                    -</span>
-<span class="go">          grid_longitude                            -                -                  -                    x</span>
+<span class="go">          time                           x            -               -</span>
+<span class="go">          latitude                       -            x               -</span>
+<span class="go">          longitude                      -            -               x</span>
 <span class="go">     Auxiliary coordinates:</span>
-<span class="go">          time                                      x                -                  -                    -</span>
-<span class="go">          model_level_number                        -                x                  -                    -</span>
-<span class="go">          sigma                                     -                x                  -                    -</span>
+<span class="go">          forecast_period                x            -               -</span>
 <span class="go">     Scalar coordinates:</span>
-<span class="go">          source: Data from Met Office Unified Model 7.04</span>
+<span class="go">          forecast_reference_time: 364272.0 hours since 1970-01-01 00:00:00</span>
+<span class="go">          realization: 10</span>
+<span class="go">          source: Data from Met Office Unified Model 7.06</span>
 <span class="go">     Attributes:</span>
-<span class="go">          STASH: m01s00i408</span>
+<span class="go">          STASH: m01s00i024</span>
+<span class="go">     Cell methods:</span>
+<span class="go">          mean: time (1 hour)</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">air_press</span><span class="o">.</span><span class="n">rolling_window</span><span class="p">(</span><span class="s">&#39;forecast_period&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-<span class="go">air_pressure                        (forecast_period: 4; level_height: 10; grid_latitude: 412; grid_longitude: 412)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">air_press</span><span class="o">.</span><span class="n">rolling_window</span><span class="p">(</span><span class="s">&#39;time&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="go">surface_temperature                 (time: 4; latitude: 145; longitude: 192)</span>
 <span class="go">     Dimension coordinates:</span>
-<span class="go">          forecast_period                           x                -                  -                    -</span>
-<span class="go">          level_height                              -                x                  -                    -</span>
-<span class="go">          grid_latitude                             -                -                  x                    -</span>
-<span class="go">          grid_longitude                            -                -                  -                    x</span>
+<span class="go">          time                           x            -               -</span>
+<span class="go">          latitude                       -            x               -</span>
+<span class="go">          longitude                      -            -               x</span>
 <span class="go">     Auxiliary coordinates:</span>
-<span class="go">          time                                      x                -                  -                    -</span>
-<span class="go">          model_level_number                        -                x                  -                    -</span>
-<span class="go">          sigma                                     -                x                  -                    -</span>
+<span class="go">          forecast_period                x            -               -</span>
 <span class="go">     Scalar coordinates:</span>
-<span class="go">          source: Data from Met Office Unified Model 7.04</span>
+<span class="go">          forecast_reference_time: 364272.0 hours since 1970-01-01 00:00:00</span>
+<span class="go">          realization: 10</span>
+<span class="go">          source: Data from Met Office Unified Model 7.06</span>
 <span class="go">     Attributes:</span>
-<span class="go">          STASH: m01s00i408</span>
-<span class="go">          history: Mean of air_pressure with a rolling window of length 3 over forecast_p...</span>
+<span class="go">          STASH: m01s00i024</span>
+<span class="go">          history: Mean of surface_temperature with a rolling window of length 3 over tim...</span>
 <span class="go">     Cell methods:</span>
-<span class="go">          mean: forecast_period</span>
+<span class="go">          mean: time (1 hour)</span>
+<span class="go">          mean: time</span>
 </pre></div>
 </div>
 <p>Notice that the forecast_period dimension now represents the 4 possible windows of size 3 from the original cube.</p>
@@ -900,7 +901,7 @@ to the values given.</dd>
 <dl class="attribute">
 <dt id="iris.cube.Cube.data">
 <tt class="descname">data</tt><a class="headerlink" href="#iris.cube.Cube.data" title="Permalink to this definition">¶</a></dt>
-<dd><p>The <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></tt></a> representing the multi-dimensional data of the cube.</p>
+<dd><p>The <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.8.dev-63cd8f3)"><tt class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></tt></a> representing the multi-dimensional data of the cube.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>Cubes obtained from netCDF, PP, and FieldsFile files will only populate this attribute on
@@ -909,13 +910,14 @@ its first use.</p>
 </div>
 <dl class="docutils">
 <dt>Example::</dt>
-<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;COLPEX&#39;</span><span class="p">,</span> <span class="s">&#39;air_potential_and_air_pressure.pp&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&#39;air_pressure&#39;</span><span class="p">)</span>  <span class="c"># cube.data does not yet have a value.</span>
+<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;air_temp.pp&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&#39;air_temperature&#39;</span><span class="p">)</span>  <span class="c"># cube.data does not yet have a value.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">cube</span><span class="o">.</span><span class="n">shape</span>                                <span class="c"># cube.data still does not have a value.</span>
-<span class="go">(6, 10, 412, 412)</span>
+<span class="go">(73, 96)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cube</span> <span class="o">=</span> <span class="n">cube</span><span class="p">[:</span><span class="mi">10</span><span class="p">,</span> <span class="p">:</span><span class="mi">20</span><span class="p">]</span>                           <span class="c"># cube.data still does not have a value.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">data</span>                                <span class="c"># Only now is the data loaded.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span>
-<span class="go">(6, 10, 412, 412)</span>
+<span class="go">(10, 20)</span>
 </pre></div>
 </div>
 </dd>
@@ -1059,7 +1061,7 @@ constraint.</p>
 
 <dl class="method">
 <dt id="iris.cube.CubeList.merge">
-<tt class="descname">merge</tt><big>(</big><em>unique=True</em>, <em>hint=None</em><big>)</big><a class="headerlink" href="#iris.cube.CubeList.merge" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">merge</tt><big>(</big><em>unique=True</em><big>)</big><a class="headerlink" href="#iris.cube.CubeList.merge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the <a class="reference internal" href="#iris.cube.CubeList" title="iris.cube.CubeList"><tt class="xref py py-class docutils literal"><span class="pre">CubeList</span></tt></a> resulting from merging this
 <a class="reference internal" href="#iris.cube.CubeList" title="iris.cube.CubeList"><tt class="xref py py-class docutils literal"><span class="pre">CubeList</span></tt></a>.</p>
 <p>Kwargs:</p>
@@ -1068,13 +1070,6 @@ constraint.</p>
 <dt>unique:</dt>
 <dd><p class="first last">If True, raises <cite>iris.exceptions.DuplicateDataError</cite> if
 duplicate cubes are detected.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>hint:</dt>
-<dd><p class="first last">One or more coordinate names that have user preference
-to be a dimension coordinate.</p>
 </dd>
 </dl>
 </li>
@@ -1197,7 +1192,6 @@ itself defaults to &#8216;unknown&#8217;).</p>
           <a href="coords.html" title="iris.coords"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>

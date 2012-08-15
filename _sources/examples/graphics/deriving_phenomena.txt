@@ -12,7 +12,7 @@ a plot.
 
 
 
-.. plot:: /net/home/h02/itpe/fcm/iris/iris/branches/dev/itpe/iris_git/docs/iris/example_code/graphics/deriving_phenomena.py
+.. plot:: /net/home/h06/ecamp/nounpack_iris/docs/iris/example_code/graphics/deriving_phenomena.py
 
 ::
 
@@ -44,7 +44,7 @@ a plot.
     
     
     def main():
-        fname = iris.sample_data_path('PP', 'COLPEX', 'air_potential_and_air_pressure.pp')
+        fname = iris.sample_data_path('colpex.pp')
     
         # the list of phenomena of interest
         phenomena = ['air_potential_temperature', 'air_pressure']

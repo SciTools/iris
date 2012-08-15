@@ -21,6 +21,7 @@ In this module:
  * :py:obj:`create_temp_filename`
  * :py:obj:`delta`
  * :py:obj:`ensure_array`
+ * :py:obj:`format_array`
  * :py:obj:`guess_coord_axis`
  * :py:obj:`monotonic`
  * :py:obj:`reverse`
@@ -64,6 +65,10 @@ In this module:
 ----------
 
 .. autofunction:: iris.util.ensure_array
+
+----------
+
+.. autofunction:: iris.util.format_array
 
 ----------
 

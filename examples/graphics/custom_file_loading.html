@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Loading a cube from a custom file format &mdash; Iris 0.89 documentation</title>
+    <title>Loading a cube from a custom file format &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../../index.html" />
     <link rel="up" title="Visualisation examples" href="index.html" />
     <link rel="next" title="Deriving Exner Pressure and Air Temperature" href="deriving_phenomena.html" />
     <link rel="prev" title="Cross section plots" href="cross_section.html" />
@@ -40,8 +40,8 @@
 <a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="cross_section.html" title="Cross section plots"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>
@@ -359,9 +358,9 @@ invokes the <tt class="docutils literal"><span class="pre">FormatSpecification</
 <span class="c"># ---------------------------------------------</span>
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;ascii&#39;</span><span class="p">,</span> <span class="s">&#39;NAME&#39;</span><span class="p">,</span> <span class="s">&#39;20100509_18Z_variablesource_12Z_VAAC&#39;</span><span class="p">,</span> <span class="s">&#39;Fields_grid1_201005110600.txt&#39;</span><span class="p">)</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;NAME_output.txt&#39;</span><span class="p">)</span>
 
-    <span class="n">boundary_volc_ash_constraint</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="s">&#39;VOLCANIC_ASH_AIR_CONCENTRATION&#39;</span><span class="p">,</span> <span class="n">flight_level</span><span class="o">=</span><span class="s">&#39;Boundary layer&#39;</span><span class="p">)</span>
+    <span class="n">boundary_volc_ash_constraint</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="s">&#39;VOLCANIC_ASH_AIR_CONCENTRATION&#39;</span><span class="p">,</span> <span class="n">flight_level</span><span class="o">=</span><span class="s">&#39;From FL000 - FL200&#39;</span><span class="p">)</span>
 
     <span class="c"># Callback shown as None to illustrate where a cube-level callback function would be used if required</span>
     <span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">boundary_volc_ash_constraint</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
@@ -371,7 +370,7 @@ invokes the <tt class="docutils literal"><span class="pre">FormatSpecification</
     <span class="nb">map</span><span class="o">.</span><span class="n">drawcoastlines</span><span class="p">()</span>
 
     <span class="n">iplt</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span>
-                        <span class="n">levels</span><span class="o">=</span><span class="p">(</span><span class="mf">1e-17</span><span class="p">,</span> <span class="mf">1e-16</span><span class="p">,</span> <span class="mf">2e-16</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                        <span class="n">levels</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0002</span><span class="p">,</span> <span class="mf">0.002</span><span class="p">,</span> <span class="mf">0.004</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
                         <span class="n">colors</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;#80ffff&#39;</span><span class="p">,</span> <span class="s">&#39;#939598&#39;</span><span class="p">,</span> <span class="s">&#39;#e00404&#39;</span><span class="p">),</span>
                         <span class="n">extend</span><span class="o">=</span><span class="s">&#39;max&#39;</span>
                   <span class="p">)</span>
@@ -408,7 +407,6 @@ invokes the <tt class="docutils literal"><span class="pre">FormatSpecification</
           <a href="cross_section.html" title="Cross section plots"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>

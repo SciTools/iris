@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Global average annual temperature plot &mdash; Iris 0.89 documentation</title>
+    <title>Global average annual temperature plot &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../../index.html" />
     <link rel="up" title="Visualisation examples" href="index.html" />
     <link rel="next" title="Global average annual temperature maps" href="COP_maps.html" />
     <link rel="prev" title="Visualisation examples" href="index.html" />
@@ -40,8 +40,8 @@
 <a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="index.html" title="Visualisation examples"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>
@@ -113,9 +112,8 @@ Iris 0.89
             
   <div class="section" id="global-average-annual-temperature-plot">
 <span id="graphics-cop-1d-plot"></span><h1>Global average annual temperature plot<a class="headerlink" href="#global-average-annual-temperature-plot" title="Permalink to this headline">¶</a></h1>
-<p>Produces a time-series plot of global temperature forecasts for various emission scenarios.
-It also demonstrates the use of a callback routine to include additional information about the data 
-into the cube meta-data.</p>
+<p>Produces a time-series plot of North American temperature forecasts for 2 different emission scenarios.
+Constraining data to a limited spatial area also features in this example.</p>
 <p>The data used comes from the HadGEM2-AO model simulations for the A1B and E1 scenarios, both of which 
 were derived using the IMAGE Integrated Assessment Model (Johns et al. 2010; Lowe et al. 2009).</p>
 <div class="section" id="references">
@@ -136,10 +134,8 @@ New Study For Climate Modeling, Analyses, and Scenarios. Eos Trans. AGU, Vol 90,
 <span class="sd">Global average annual temperature plot</span>
 <span class="sd">======================================</span>
 
-<span class="sd">Produces a time-series plot of global temperature forecasts for various emission scenarios.</span>
-<span class="sd">It also demonstrates the use of a callback routine to include additional information about the data</span>
-<span class="sd">into the cube meta-data.</span>
-
+<span class="sd">Produces a time-series plot of North American temperature forecasts for 2 different emission scenarios.</span>
+<span class="sd">Constraining data to a limited spatial area also features in this example.</span>
 
 <span class="sd">The data used comes from the HadGEM2-AO model simulations for the A1B and E1 scenarios, both of which</span>
 <span class="sd">were derived using the IMAGE Integrated Assessment Model (Johns et al. 2010; Lowe et al. 2009).</span>
@@ -167,39 +163,25 @@ New Study For Climate Modeling, Analyses, and Scenarios. Eos Trans. AGU, Vol 90,
 <span class="kn">import</span> <span class="nn">matplotlib.dates</span> <span class="kn">as</span> <span class="nn">mdates</span>
 
 
-<span class="k">def</span> <span class="nf">cop_metadata_callback</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; A function which adds an &quot;Experiment&quot; coordinate which comes from the filename.  &quot;&quot;&quot;</span>
-
-    <span class="c"># Extract the experiment name (such as a1b or e1) from the filename (in this case it is just the parent folder&#39;s name)</span>
-    <span class="n">containing_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="n">experiment_label</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">containing_folder</span><span class="p">)</span>
-
-    <span class="c"># Create a coordinate with the experiment label in it</span>
-    <span class="n">exp_coord</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">AuxCoord</span><span class="p">(</span><span class="n">experiment_label</span><span class="p">,</span> <span class="n">long_name</span><span class="o">=</span><span class="s">&#39;Experiment&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s">&#39;no_unit&#39;</span><span class="p">)</span>
-
-    <span class="c"># and add it to the cube</span>
-    <span class="n">cube</span><span class="o">.</span><span class="n">add_aux_coord</span><span class="p">(</span><span class="n">exp_coord</span><span class="p">)</span>
-
-
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="c"># Load data into three Cubes, one for each set of PP files</span>
-    <span class="n">e1</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;A1B-Image_E1&#39;</span><span class="p">,</span> <span class="s">&#39;E1&#39;</span><span class="p">,</span> <span class="s">&#39;*.pp&#39;</span><span class="p">),</span>
-                           <span class="n">callback</span><span class="o">=</span><span class="n">cop_metadata_callback</span><span class="p">)</span>
+    <span class="n">e1</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;E1_north_america.nc&#39;</span><span class="p">))</span>
 
-    <span class="n">a1b</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;A1B-Image_E1&#39;</span><span class="p">,</span> <span class="s">&#39;A1B&#39;</span><span class="p">,</span> <span class="s">&#39;*.pp&#39;</span><span class="p">),</span>
-                            <span class="n">callback</span><span class="o">=</span><span class="n">cop_metadata_callback</span><span class="p">)</span>
+    <span class="n">a1b</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;A1B_north_america.nc&#39;</span><span class="p">))</span>
 
-    <span class="n">global_avg</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;A1B-Image_E1&#39;</span><span class="p">,</span> <span class="s">&#39;pp_1859_1889_avg.pp&#39;</span><span class="p">))</span>
+    <span class="c"># load in the global pre-industrial mean temperature, and limit the domain to</span>
+    <span class="c"># the same North American region that e1 and a1b are at.</span>
+    <span class="n">north_america</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span>
+                                    <span class="n">longitude</span><span class="o">=</span><span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="mi">225</span> <span class="o">&lt;=</span> <span class="n">v</span> <span class="o">&lt;=</span> <span class="mi">315</span><span class="p">,</span>
+                                    <span class="n">latitude</span><span class="o">=</span><span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="mi">15</span> <span class="o">&lt;=</span> <span class="n">v</span> <span class="o">&lt;=</span> <span class="mi">60</span><span class="p">,</span>
+                                    <span class="p">)</span>
+    <span class="n">pre_industrial</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;pre-industrial.pp&#39;</span><span class="p">),</span>
+                                  <span class="n">north_america</span>
+                                  <span class="p">)</span>
 
-    <span class="n">pre_industrial_mean</span> <span class="o">=</span> <span class="n">global_avg</span><span class="o">.</span><span class="n">collapsed</span><span class="p">([</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="s">&#39;longitude&#39;</span><span class="p">],</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">)</span>
-    <span class="n">e1_global_mean</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">collapsed</span><span class="p">([</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="s">&#39;longitude&#39;</span><span class="p">],</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">)</span>
-    <span class="n">a1b_global_mean</span> <span class="o">=</span> <span class="n">a1b</span><span class="o">.</span><span class="n">collapsed</span><span class="p">([</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="s">&#39;longitude&#39;</span><span class="p">],</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">)</span>
-
-    <span class="c"># Add a title</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s">&#39;Global Average Temperatures&#39;</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s">&#39;center&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
-    <span class="n">bounds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">get_position</span><span class="p">()</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
-    <span class="n">bounds</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.78</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_position</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
+    <span class="n">pre_industrial_mean</span> <span class="o">=</span> <span class="n">pre_industrial</span><span class="o">.</span><span class="n">collapsed</span><span class="p">([</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="s">&#39;longitude&#39;</span><span class="p">],</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">)</span>
+    <span class="n">e1_mean</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">collapsed</span><span class="p">([</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="s">&#39;longitude&#39;</span><span class="p">],</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">)</span>
+    <span class="n">a1b_mean</span> <span class="o">=</span> <span class="n">a1b</span><span class="o">.</span><span class="n">collapsed</span><span class="p">([</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="s">&#39;longitude&#39;</span><span class="p">],</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">)</span>
 
     <span class="c"># Show ticks 30 years apart</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">mdates</span><span class="o">.</span><span class="n">YearLocator</span><span class="p">(</span><span class="mi">30</span><span class="p">))</span>
@@ -208,21 +190,22 @@ New Study For Climate Modeling, Analyses, and Scenarios. Eos Trans. AGU, Vol 90,
     <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">format_xdata</span> <span class="o">=</span> <span class="n">mdates</span><span class="o">.</span><span class="n">DateFormatter</span><span class="p">(</span><span class="s">&#39;%Y&#39;</span><span class="p">)</span>
 
     <span class="c"># Plot the datasets</span>
-    <span class="n">qplt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">e1_global_mean</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;E1 scenario&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">)</span>
-    <span class="n">qplt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">a1b_global_mean</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;A1B-Image scenario&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+    <span class="n">qplt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">e1_mean</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;E1 scenario&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">)</span>
+    <span class="n">qplt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">a1b_mean</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;A1B-Image scenario&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
 
     <span class="c"># Draw a horizontal line showing the pre industrial mean</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">pre_industrial_mean</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;gray&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s">&#39;dashed&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;pre-industrial&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
 
     <span class="c"># Establish where r and t have the same data, i.e. the observations</span>
-    <span class="n">common</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">a1b_global_mean</span><span class="o">.</span><span class="n">data</span> <span class="o">==</span> <span class="n">e1_global_mean</span><span class="o">.</span><span class="n">data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">observed</span> <span class="o">=</span> <span class="n">a1b_global_mean</span><span class="p">[</span><span class="n">common</span><span class="p">]</span>
+    <span class="n">common</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">a1b_mean</span><span class="o">.</span><span class="n">data</span> <span class="o">==</span> <span class="n">e1_mean</span><span class="o">.</span><span class="n">data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">observed</span> <span class="o">=</span> <span class="n">a1b_mean</span><span class="p">[</span><span class="n">common</span><span class="p">]</span>
 
     <span class="c"># Plot the observed data</span>
     <span class="n">qplt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;observed&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
 
-    <span class="c"># Add a legend</span>
+    <span class="c"># Add a legend and title</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s">&quot;upper left&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;North American mean air temperature&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
 
     <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Time / year&#39;</span><span class="p">)</span>
 
@@ -256,7 +239,6 @@ New Study For Climate Modeling, Analyses, and Scenarios. Eos Trans. AGU, Vol 90,
           <a href="index.html" title="Visualisation examples"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>

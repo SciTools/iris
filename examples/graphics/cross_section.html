@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Cross section plots &mdash; Iris 0.89 documentation</title>
+    <title>Cross section plots &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../../index.html" />
     <link rel="up" title="Visualisation examples" href="index.html" />
     <link rel="next" title="Loading a cube from a custom file format" href="custom_file_loading.html" />
     <link rel="prev" title="Ionosphere space weather" href="TEC.html" />
@@ -40,8 +40,8 @@
 <a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="TEC.html" title="Ionosphere space weather"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>
@@ -107,11 +106,6 @@ Iris 0.89
 <span id="graphics-cross-section"></span><h1>Cross section plots<a class="headerlink" href="#cross-section-plots" title="Permalink to this headline">¶</a></h1>
 <p>This example demonstrates contour plots of a cross-sectioned multi-dimensional cube which features 
 a hybrid height vertical coordinate system.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">The data is limited to the first fifteen model levels to emphasise the terrain-following 
-nature of the data.</p>
-</div>
 <p id="cross-section-00">[<a class="reference external" href="../../plot_directive/../example_code/graphics/cross_section.py">source code</a>]</p>
 <blockquote>
 <div><div class="figure">
@@ -131,10 +125,6 @@ nature of the data.</p>
 <span class="sd">This example demonstrates contour plots of a cross-sectioned multi-dimensional cube which features</span>
 <span class="sd">a hybrid height vertical coordinate system.</span>
 
-<span class="sd">.. note::</span>
-<span class="sd">   The data is limited to the first fifteen model levels to emphasise the terrain-following</span>
-<span class="sd">   nature of the data.</span>
-
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
@@ -144,14 +134,14 @@ nature of the data.</p>
 
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;COLPEX&#39;</span><span class="p">,</span> <span class="s">&#39;theta_and_orog_subset.pp&#39;</span><span class="p">)</span>
-    <span class="n">theta</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&#39;air_potential_temperature&#39;</span><span class="p">)</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;hybrid_height.nc&#39;</span><span class="p">)</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
 
-    <span class="c"># Extract a height vs longitude cross-section. N.B. This could easily changed to</span>
+    <span class="c"># Extract a single height vs longitude cross-section. N.B. This could easily be changed to</span>
     <span class="c"># extract a specific slice, or even to loop over *all* cross section slices.</span>
-    <span class="n">cross_section</span> <span class="o">=</span> <span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="mi">15</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">cross_section</span> <span class="o">=</span> <span class="n">theta</span><span class="o">.</span><span class="n">slices</span><span class="p">([</span><span class="s">&#39;grid_longitude&#39;</span><span class="p">,</span> <span class="s">&#39;model_level_number&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
 
-    <span class="n">qplt</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">cross_section</span><span class="p">)</span>
+    <span class="n">qplt</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">cross_section</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;grid_longitude&#39;</span><span class="p">,</span> <span class="s">&#39;altitude&#39;</span><span class="p">])</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
     <span class="c"># Now do the equivalent plot, only against model level</span>
@@ -186,7 +176,6 @@ nature of the data.</p>
           <a href="TEC.html" title="Ionosphere space weather"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>

@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>iris.iterate &mdash; Iris 0.89 documentation</title>
+    <title>iris.iterate &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../../index.html" />
     <link rel="up" title="Iris reference documentation" href="../iris.html" />
     <link rel="next" title="iris.palette" href="palette.html" />
     <link rel="prev" title="iris.io.format_picker" href="io/format_picker.html" />
@@ -40,8 +40,8 @@
 <a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="io/format_picker.html" title="iris.io.format_picker"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>
@@ -141,9 +140,9 @@ they represent the data in the resulting slices</p>
 <dt>Returns:</dt>
 <dd>A tuple of iterators for the resulting slices.</dd>
 <dt>For example:</dt>
-<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">airtemp</span><span class="p">,</span> <span class="n">humidity</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;ukV2&#39;</span><span class="p">,</span> <span class="s">&#39;THOxayrk.pp&#39;</span><span class="p">),</span>
-<span class="gp">... </span>   <span class="p">[</span><span class="s">&#39;air_potential_temperature&#39;</span><span class="p">,</span> <span class="s">&#39;specific_humidity&#39;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">tslice</span><span class="p">,</span> <span class="n">hslice</span> <span class="ow">in</span> <span class="n">iris</span><span class="o">.</span><span class="n">iterate</span><span class="o">.</span><span class="n">izip</span><span class="p">(</span><span class="n">airtemp</span><span class="p">,</span> <span class="n">humidity</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;grid_latitude&#39;</span><span class="p">,</span><span class="s">&#39;grid_longitude&#39;</span><span class="p">]):</span>
+<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">e_content</span><span class="p">,</span> <span class="n">e_density</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;space_weather.nc&#39;</span><span class="p">),</span>
+<span class="gp">... </span>   <span class="p">[</span><span class="s">&#39;total electron content&#39;</span><span class="p">,</span> <span class="s">&#39;electron density&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">tslice</span><span class="p">,</span> <span class="n">hslice</span> <span class="ow">in</span> <span class="n">iris</span><span class="o">.</span><span class="n">iterate</span><span class="o">.</span><span class="n">izip</span><span class="p">(</span><span class="n">e_content</span><span class="p">,</span> <span class="n">e_density</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;grid_latitude&#39;</span><span class="p">,</span><span class="s">&#39;grid_longitude&#39;</span><span class="p">]):</span>
 <span class="gp">... </span>   <span class="k">pass</span>
 </pre></div>
 </div>
@@ -172,7 +171,6 @@ they represent the data in the resulting slices</p>
           <a href="io/format_picker.html" title="iris.io.format_picker"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>

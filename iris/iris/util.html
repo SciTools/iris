@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>iris.util &mdash; Iris 0.89 documentation</title>
+    <title>iris.util &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../../index.html" />
     <link rel="up" title="Iris reference documentation" href="../iris.html" />
     <link rel="next" title="Changes in Iris" href="../../whats_new/changes.html" />
     <link rel="prev" title="iris.unit" href="unit.html" />
@@ -40,8 +40,8 @@
 <a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="unit.html" title="iris.unit"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>
@@ -117,6 +116,7 @@ Iris 0.89
 <li><a class="reference internal" href="#iris.util.create_temp_filename" title="iris.util.create_temp_filename"><tt class="xref py py-obj docutils literal"><span class="pre">create_temp_filename</span></tt></a></li>
 <li><a class="reference internal" href="#iris.util.delta" title="iris.util.delta"><tt class="xref py py-obj docutils literal"><span class="pre">delta</span></tt></a></li>
 <li><a class="reference internal" href="#iris.util.ensure_array" title="iris.util.ensure_array"><tt class="xref py py-obj docutils literal"><span class="pre">ensure_array</span></tt></a></li>
+<li><a class="reference internal" href="#iris.util.format_array" title="iris.util.format_array"><tt class="xref py py-obj docutils literal"><span class="pre">format_array</span></tt></a></li>
 <li><a class="reference internal" href="#iris.util.guess_coord_axis" title="iris.util.guess_coord_axis"><tt class="xref py py-obj docutils literal"><span class="pre">guess_coord_axis</span></tt></a></li>
 <li><a class="reference internal" href="#iris.util.monotonic" title="iris.util.monotonic"><tt class="xref py py-obj docutils literal"><span class="pre">monotonic</span></tt></a></li>
 <li><a class="reference internal" href="#iris.util.reverse" title="iris.util.reverse"><tt class="xref py py-obj docutils literal"><span class="pre">reverse</span></tt></a></li>
@@ -127,7 +127,7 @@ Iris 0.89
 <hr class="docutils" />
 <dl class="data">
 <dt id="iris.util.timers">
-<tt class="descclassname">iris.util.</tt><tt class="descname">timers</tt><em class="property"> = &lt;iris.util._Timers object at 0x1ca1190&gt;</em><a class="headerlink" href="#iris.util.timers" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">iris.util.</tt><tt class="descname">timers</tt><em class="property"> = &lt;iris.util._Timers object at 0x1957e50&gt;</em><a class="headerlink" href="#iris.util.timers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provides multiple named timers, each composed of multiple named steps.</p>
 <p>Only one step is active at a time, so calling start(timer_name, step_name)
 will stop the current step and start the new one.</p>
@@ -171,7 +171,7 @@ output()</p>
 <dt id="iris.util.array_equal">
 <tt class="descclassname">iris.util.</tt><tt class="descname">array_equal</tt><big>(</big><em>array1</em>, <em>array2</em><big>)</big><a class="headerlink" href="#iris.util.array_equal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns whether two arrays have the same shape and elements.</p>
-<p>This provides the same functionality as <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.array_equal.html#numpy.array_equal" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-func docutils literal"><span class="pre">numpy.array_equal()</span></tt></a> but with
+<p>This provides the same functionality as <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.array_equal.html#numpy.array_equal" title="(in NumPy v1.8.dev-63cd8f3)"><tt class="xref py py-func docutils literal"><span class="pre">numpy.array_equal()</span></tt></a> but with
 additional support for arrays of strings.</p>
 </dd></dl>
 
@@ -351,9 +351,34 @@ delta (with circular=360):    90,  90, 90, -270+360</pre>
 
 <hr class="docutils" />
 <dl class="function">
+<dt id="iris.util.format_array">
+<tt class="descclassname">iris.util.</tt><tt class="descname">format_array</tt><big>(</big><em>arr</em><big>)</big><a class="headerlink" href="#iris.util.format_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the given array as a string, using the python builtin str function on a piecewise basis.</p>
+<p>Useful for xml representation of arrays.</p>
+<p>For customisations, use the <tt class="xref py py-mod docutils literal"><span class="pre">numpy.core.arrayprint</span></tt> directly.</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="function">
 <dt id="iris.util.guess_coord_axis">
 <tt class="descclassname">iris.util.</tt><tt class="descname">guess_coord_axis</tt><big>(</big><em>coord</em><big>)</big><a class="headerlink" href="#iris.util.guess_coord_axis" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns a &#8220;best guess&#8221; axis name of the coordinate.</p>
+<p>Heuristic categoration of the coordinate into either label
+&#8216;T&#8217;, &#8216;Z&#8217;, &#8216;Y&#8217;, &#8216;X&#8217; or None.</p>
+<p>Args:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>coord:</dt>
+<dd><p class="first last">The <a class="reference internal" href="coords.html#iris.coords.Coord" title="iris.coords.Coord"><tt class="xref py py-class docutils literal"><span class="pre">iris.coords.Coord</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>&#8216;T&#8217;, &#8216;Z&#8217;, &#8216;Y&#8217;, &#8216;X&#8217;, or None.</dd>
+</dl>
+</dd></dl>
 
 <hr class="docutils" />
 <dl class="function">
@@ -546,7 +571,6 @@ which supports linear extrapolation.</p>
           <a href="unit.html" title="iris.unit"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>

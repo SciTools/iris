@@ -14,7 +14,7 @@ import iris.quickplot as qplt
 
 
 def main():
-    fname = iris.sample_data_path('PP', 'aPPglob1', 'global.pp')
+    fname = iris.sample_data_path('air_temp.pp')
     temperature = iris.load_strict(fname)
     
     qplt.contourf(temperature, 15)

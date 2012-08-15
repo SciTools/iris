@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Global average annual temperature maps &mdash; Iris 0.89 documentation</title>
+    <title>Global average annual temperature maps &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../../index.html" />
     <link rel="up" title="Visualisation examples" href="index.html" />
     <link rel="next" title="Ionosphere space weather" href="TEC.html" />
     <link rel="prev" title="Global average annual temperature plot" href="COP_1d_plot.html" />
@@ -40,8 +40,8 @@
 <a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="COP_1d_plot.html" title="Global average annual temperature plot"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>
@@ -176,17 +175,13 @@ Study For Climate Modeling, Analyses, and Scenarios. Eos Trans. AGU, Vol 90, No.
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="c"># Load e1 and a1 using the callback to update the metadata</span>
-    <span class="n">e1</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;A1B-Image_E1&#39;</span><span class="p">,</span> <span class="s">&#39;E1&#39;</span><span class="p">,</span> <span class="s">&#39;*.pp&#39;</span><span class="p">),</span>
+    <span class="n">e1</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;E1.2098.pp&#39;</span><span class="p">),</span>
                            <span class="n">callback</span><span class="o">=</span><span class="n">cop_metadata_callback</span><span class="p">)</span>
-    <span class="n">a1b</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;A1B-Image_E1&#39;</span><span class="p">,</span> <span class="s">&#39;A1B&#39;</span><span class="p">,</span> <span class="s">&#39;*.pp&#39;</span><span class="p">),</span>
+    <span class="n">a1b</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;A1B.2098.pp&#39;</span><span class="p">),</span>
                             <span class="n">callback</span><span class="o">=</span><span class="n">cop_metadata_callback</span><span class="p">)</span>
 
-    <span class="c"># For the purposes of this example, take the final timestep of the data we have just loaded</span>
-    <span class="n">e1</span> <span class="o">=</span> <span class="n">e1</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
-    <span class="n">a1b</span> <span class="o">=</span> <span class="n">a1b</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
-
     <span class="c"># Load the global average data and add an &#39;Experiment&#39; coord it</span>
-    <span class="n">global_avg</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;A1B-Image_E1&#39;</span><span class="p">,</span> <span class="s">&#39;pp_1859_1889_avg.pp&#39;</span><span class="p">))</span>
+    <span class="n">global_avg</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;pre-industrial.pp&#39;</span><span class="p">))</span>
 
     <span class="c"># Define evenly spaced contour levels: -2.5, -1.5, ... 15.5, 16.5 with the specific colours</span>
     <span class="n">levels</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="o">-</span> <span class="mf">2.5</span>
@@ -216,7 +211,7 @@ Study For Climate Modeling, Analyses, and Scenarios. Eos Trans. AGU, Vol 90, No.
         <span class="n">time</span> <span class="o">=</span> <span class="n">time_coord</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">num2date</span><span class="p">(</span><span class="n">time_coord</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="c"># Set a title for the entire figure, giving the time in a nice format of &quot;MonthName Year&quot;. Also, set the y value for the</span>
         <span class="c"># title so that it is not tight to the top of the plot.</span>
-        <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s">&#39;Annual Temperature Predictions for &#39;</span> <span class="o">+</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%B %Y&quot;</span><span class="p">),</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s">&#39;Annual Temperature Predictions for &#39;</span> <span class="o">+</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y&quot;</span><span class="p">),</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
 
         <span class="c"># Add the first subplot showing the E1 scenario</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
@@ -286,7 +281,6 @@ Study For Climate Modeling, Analyses, and Scenarios. Eos Trans. AGU, Vol 90, No.
           <a href="COP_1d_plot.html" title="Global average annual temperature plot"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>

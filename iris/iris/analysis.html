@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>iris.analysis &mdash; Iris 0.89 documentation</title>
+    <title>iris.analysis &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../../index.html" />
     <link rel="up" title="Iris reference documentation" href="../iris.html" />
     <link rel="next" title="iris.analysis.calculus" href="analysis/calculus.html" />
     <link rel="prev" title="Iris reference documentation" href="../iris.html" />
@@ -40,8 +40,8 @@
 <a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="../iris.html" title="Iris reference documentation"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>
@@ -152,7 +151,7 @@ metadata and the data.</p>
 <hr class="docutils" />
 <dl class="data">
 <dt id="iris.analysis.COUNT">
-<tt class="descclassname">iris.analysis.</tt><tt class="descname">COUNT</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1bd94d0&gt;</em><a class="headerlink" href="#iris.analysis.COUNT" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">COUNT</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x18bb410&gt;</em><a class="headerlink" href="#iris.analysis.COUNT" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of data that match the given function.</p>
 <p>Args:</p>
 <ul>
@@ -177,7 +176,7 @@ metadata and the data.</p>
 <hr class="docutils" />
 <dl class="data">
 <dt id="iris.analysis.GMEAN">
-<tt class="descclassname">iris.analysis.</tt><tt class="descname">GMEAN</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1be64d0&gt;</em><a class="headerlink" href="#iris.analysis.GMEAN" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">GMEAN</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x18c81d0&gt;</em><a class="headerlink" href="#iris.analysis.GMEAN" title="Permalink to this definition">¶</a></dt>
 <dd><p>The geometric mean, as computed by <a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.mstats.gmean.html#scipy.stats.mstats.gmean" title="(in SciPy v0.11.dev)"><tt class="xref py py-func docutils literal"><span class="pre">scipy.stats.mstats.gmean()</span></tt></a>.</p>
 <p>For example, to compute zonal geometric means:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">GMEAN</span><span class="p">)</span>
@@ -188,7 +187,7 @@ metadata and the data.</p>
 <hr class="docutils" />
 <dl class="data">
 <dt id="iris.analysis.HMEAN">
-<tt class="descclassname">iris.analysis.</tt><tt class="descname">HMEAN</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1be67d0&gt;</em><a class="headerlink" href="#iris.analysis.HMEAN" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">HMEAN</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x18c84d0&gt;</em><a class="headerlink" href="#iris.analysis.HMEAN" title="Permalink to this definition">¶</a></dt>
 <dd><p>The harmonic mean, as computed by <a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.mstats.hmean.html#scipy.stats.mstats.hmean" title="(in SciPy v0.11.dev)"><tt class="xref py py-func docutils literal"><span class="pre">scipy.stats.mstats.hmean()</span></tt></a>.</p>
 <p>For example, to compute zonal harmonic means:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">HMEAN</span><span class="p">)</span>
@@ -203,8 +202,8 @@ metadata and the data.</p>
 <hr class="docutils" />
 <dl class="data">
 <dt id="iris.analysis.MAX">
-<tt class="descclassname">iris.analysis.</tt><tt class="descname">MAX</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1be6810&gt;</em><a class="headerlink" href="#iris.analysis.MAX" title="Permalink to this definition">¶</a></dt>
-<dd><p>The maximum, as computed by <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ma.max.html#numpy.ma.max" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-func docutils literal"><span class="pre">numpy.ma.max()</span></tt></a>.</p>
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">MAX</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x18c8510&gt;</em><a class="headerlink" href="#iris.analysis.MAX" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum, as computed by <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ma.max.html#numpy.ma.max" title="(in NumPy v1.8.dev-63cd8f3)"><tt class="xref py py-func docutils literal"><span class="pre">numpy.ma.max()</span></tt></a>.</p>
 <p>For example, to compute zonal maximums:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MAX</span><span class="p">)</span>
 </pre></div>
@@ -214,8 +213,8 @@ metadata and the data.</p>
 <hr class="docutils" />
 <dl class="data">
 <dt id="iris.analysis.MEAN">
-<tt class="descclassname">iris.analysis.</tt><tt class="descname">MEAN</tt><em class="property"> = &lt;iris.analysis.WeightedAggregator object at 0x1be6890&gt;</em><a class="headerlink" href="#iris.analysis.MEAN" title="Permalink to this definition">¶</a></dt>
-<dd><p>The mean, as computed by <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ma.average.html#numpy.ma.average" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-func docutils literal"><span class="pre">numpy.ma.average()</span></tt></a>.</p>
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">MEAN</tt><em class="property"> = &lt;iris.analysis.WeightedAggregator object at 0x18c8590&gt;</em><a class="headerlink" href="#iris.analysis.MEAN" title="Permalink to this definition">¶</a></dt>
+<dd><p>The mean, as computed by <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ma.average.html#numpy.ma.average" title="(in NumPy v1.8.dev-63cd8f3)"><tt class="xref py py-func docutils literal"><span class="pre">numpy.ma.average()</span></tt></a>.</p>
 <p>For example, to compute zonal means:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">)</span>
 </pre></div>
@@ -246,8 +245,8 @@ along with the collapsed data. Defaults to False.</p>
 <hr class="docutils" />
 <dl class="data">
 <dt id="iris.analysis.MEDIAN">
-<tt class="descclassname">iris.analysis.</tt><tt class="descname">MEDIAN</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1d9e850&gt;</em><a class="headerlink" href="#iris.analysis.MEDIAN" title="Permalink to this definition">¶</a></dt>
-<dd><p>The median, as computed by <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ma.median.html#numpy.ma.median" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-func docutils literal"><span class="pre">numpy.ma.median()</span></tt></a>.</p>
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">MEDIAN</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1aee590&gt;</em><a class="headerlink" href="#iris.analysis.MEDIAN" title="Permalink to this definition">¶</a></dt>
+<dd><p>The median, as computed by <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ma.median.html#numpy.ma.median" title="(in NumPy v1.8.dev-63cd8f3)"><tt class="xref py py-func docutils literal"><span class="pre">numpy.ma.median()</span></tt></a>.</p>
 <p>For example, to compute zonal medians:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEDIAN</span><span class="p">)</span>
 </pre></div>
@@ -257,8 +256,8 @@ along with the collapsed data. Defaults to False.</p>
 <hr class="docutils" />
 <dl class="data">
 <dt id="iris.analysis.MIN">
-<tt class="descclassname">iris.analysis.</tt><tt class="descname">MIN</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1d9e890&gt;</em><a class="headerlink" href="#iris.analysis.MIN" title="Permalink to this definition">¶</a></dt>
-<dd><p>The minimum, as computed by <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ma.min.html#numpy.ma.min" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-func docutils literal"><span class="pre">numpy.ma.min()</span></tt></a>.</p>
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">MIN</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1aee5d0&gt;</em><a class="headerlink" href="#iris.analysis.MIN" title="Permalink to this definition">¶</a></dt>
+<dd><p>The minimum, as computed by <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ma.min.html#numpy.ma.min" title="(in NumPy v1.8.dev-63cd8f3)"><tt class="xref py py-func docutils literal"><span class="pre">numpy.ma.min()</span></tt></a>.</p>
 <p>For example, to compute zonal minimums:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MIN</span><span class="p">)</span>
 </pre></div>
@@ -268,7 +267,7 @@ along with the collapsed data. Defaults to False.</p>
 <hr class="docutils" />
 <dl class="data">
 <dt id="iris.analysis.PERCENTILE">
-<tt class="descclassname">iris.analysis.</tt><tt class="descname">PERCENTILE</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1d9e8d0&gt;</em><a class="headerlink" href="#iris.analysis.PERCENTILE" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">PERCENTILE</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1aee610&gt;</em><a class="headerlink" href="#iris.analysis.PERCENTILE" title="Permalink to this definition">¶</a></dt>
 <dd><p>The percentile, as computed by <a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.mstats.scoreatpercentile.html#scipy.stats.mstats.scoreatpercentile" title="(in SciPy v0.11.dev)"><tt class="xref py py-func docutils literal"><span class="pre">scipy.stats.mstats.scoreatpercentile()</span></tt></a>.</p>
 <p>Required kwargs:</p>
 <ul>
@@ -293,7 +292,7 @@ these values see <a class="reference external" href="http://docs.scipy.org/doc/s
 <hr class="docutils" />
 <dl class="data">
 <dt id="iris.analysis.PROPORTION">
-<tt class="descclassname">iris.analysis.</tt><tt class="descname">PROPORTION</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1d9e910&gt;</em><a class="headerlink" href="#iris.analysis.PROPORTION" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">PROPORTION</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1aee650&gt;</em><a class="headerlink" href="#iris.analysis.PROPORTION" title="Permalink to this definition">¶</a></dt>
 <dd><p>The proportion, as a decimal, of data that match the given function.</p>
 <p>The proportion calculation takes into account masked values, therefore if the number of non-masked values is
 zero the result itself will be a masked array.</p>
@@ -326,7 +325,7 @@ could be calculated with:</p>
 <hr class="docutils" />
 <dl class="data">
 <dt id="iris.analysis.STD_DEV">
-<tt class="descclassname">iris.analysis.</tt><tt class="descname">STD_DEV</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1d9e950&gt;</em><a class="headerlink" href="#iris.analysis.STD_DEV" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">STD_DEV</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1aee690&gt;</em><a class="headerlink" href="#iris.analysis.STD_DEV" title="Permalink to this definition">¶</a></dt>
 <dd><p>The standard deviation, as computed by <tt class="xref py py-func docutils literal"><span class="pre">numpy.ma.std()</span></tt>.</p>
 <p>For example, to compute zonal standard deviations:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">STD_DEV</span><span class="p">)</span>
@@ -351,7 +350,7 @@ where N represents the number of elements. By default ddof is one.</p>
 <hr class="docutils" />
 <dl class="data">
 <dt id="iris.analysis.SUM">
-<tt class="descclassname">iris.analysis.</tt><tt class="descname">SUM</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1d9e990&gt;</em><a class="headerlink" href="#iris.analysis.SUM" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">SUM</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1aee6d0&gt;</em><a class="headerlink" href="#iris.analysis.SUM" title="Permalink to this definition">¶</a></dt>
 <dd><p>The sum of a dataset, as computed by <tt class="xref py py-func docutils literal"><span class="pre">numpy.ma.sum()</span></tt>.</p>
 <p>For example, to compute an accumulation over time:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;time&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
@@ -362,7 +361,7 @@ where N represents the number of elements. By default ddof is one.</p>
 <hr class="docutils" />
 <dl class="data">
 <dt id="iris.analysis.VARIANCE">
-<tt class="descclassname">iris.analysis.</tt><tt class="descname">VARIANCE</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1d9e9d0&gt;</em><a class="headerlink" href="#iris.analysis.VARIANCE" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">iris.analysis.</tt><tt class="descname">VARIANCE</tt><em class="property"> = &lt;iris.analysis.Aggregator object at 0x1aee710&gt;</em><a class="headerlink" href="#iris.analysis.VARIANCE" title="Permalink to this definition">¶</a></dt>
 <dd><p>The variance, as computed by <tt class="xref py py-func docutils literal"><span class="pre">numpy.ma.var()</span></tt>.</p>
 <p>For example, to compute zonal variance:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">result</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">VARIANCE</span><span class="p">)</span>
@@ -633,7 +632,6 @@ passed the same keywords (for example, the &#8220;percent&#8221; keyword for a p
           <a href="../iris.html" title="Iris reference documentation"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>

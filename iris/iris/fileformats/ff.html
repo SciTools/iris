@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>iris.fileformats.ff &mdash; Iris 0.89 documentation</title>
+    <title>iris.fileformats.ff &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../../../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../../../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../../../index.html" />
     <link rel="up" title="iris.fileformats" href="../fileformats.html" />
     <link rel="next" title="iris.fileformats.grib" href="grib.html" />
     <link rel="prev" title="iris.fileformats.dot" href="dot.html" />
@@ -40,8 +40,8 @@
 <a href="../../../index.html"><img src="../../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="dot.html" title="iris.fileformats.dot"
              accesskey="P">previous</a> |</li>
         <li><a href="../../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
@@ -166,9 +165,8 @@ Default value is False.</p>
 <dd>PPField generator.</dd>
 </dl>
 <p>For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.fileformats.ff</span> <span class="kn">as</span> <span class="nn">ff</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;ssps&#39;</span><span class="p">,</span> <span class="s">&#39;qtgl.ssps_006&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pp_fields</span> <span class="o">=</span> <span class="p">[</span><span class="n">pp_field</span> <span class="k">for</span> <span class="n">pp_field</span> <span class="ow">in</span> <span class="n">ff</span><span class="o">.</span><span class="n">FF2PP</span><span class="p">(</span><span class="n">filename</span><span class="p">)]</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">ff</span><span class="o">.</span><span class="n">FF2PP</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="n">field</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -194,12 +192,6 @@ Default value is False.</p>
 <dt>Returns:</dt>
 <dd>FFHeader object.</dd>
 </dl>
-<p>For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">iris.fileformats.ff</span> <span class="kn">as</span> <span class="nn">ff</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;ssps&#39;</span><span class="p">,</span> <span class="s">&#39;qtgl.ssps_006&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ff_header</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">FFHeader</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-</pre></div>
-</div>
 <dl class="method">
 <dt id="iris.fileformats.ff.FFHeader.address">
 <tt class="descname">address</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#iris.fileformats.ff.FFHeader.address" title="Permalink to this definition">¶</a></dt>
@@ -287,7 +279,6 @@ Default value is False.</p>
           <a href="dot.html" title="iris.fileformats.dot"
              >previous</a> |</li>
         <li><a href="../../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../../contents.html">contents</a>|&nbsp;</li>

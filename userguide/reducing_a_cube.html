@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4. Reducing a Cube &mdash; Iris 0.89 documentation</title>
+    <title>4. Reducing a Cube &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../index.html" />
     <link rel="up" title="Iris user guide" href="index.html" />
     <link rel="next" title="5. Introduction to plotting in Iris" href="plotting_a_cube.html" />
     <link rel="prev" title="3. Navigating a cube" href="navigating_a_cube.html" />
@@ -40,8 +40,8 @@
 <a href="../index.html"><img src="../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="navigating_a_cube.html" title="3. Navigating a cube"
              accesskey="P">previous</a> |</li>
         <li><a href="../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../contents.html">contents</a>|&nbsp;</li>
@@ -121,15 +120,15 @@ In all cases <strong>the subset of a valid cube is itself a valid cube</strong>.
 <div class="section" id="cube-extraction">
 <h2>4.1. Cube extraction<a class="headerlink" href="#cube-extraction" title="Permalink to this headline">¶</a></h2>
 <p>A subset of a cube can be &#8220;extracted&#8221; from a multi-dimensional cube in order to reduce its dimensionality:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;globClim1&#39;</span><span class="p">,</span> <span class="s">&#39;theta.pp&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;hybrid_height.pp&#39;</span><span class="p">)</span>
 <span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
 <span class="k">print</span> <span class="n">cube</span>
-<span class="n">equator_slice</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span> 
+<span class="n">equator_slice</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">grid_latitude</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
 <span class="k">print</span> <span class="n">equator_slice</span>
 </pre></div>
 </div>
-<p>In this example we start with a 3 dimensional cube, with axes of <tt class="docutils literal"><span class="pre">z</span></tt>, <tt class="docutils literal"><span class="pre">y</span></tt> and <tt class="docutils literal"><span class="pre">x</span></tt>, and extract every point where 
-the latitude is 0, resulting in a 2d cube with axes of <tt class="docutils literal"><span class="pre">z</span></tt> and <tt class="docutils literal"><span class="pre">x</span></tt>.</p>
+<p>In this example we start with a 3 dimensional cube, with dimensions of <tt class="docutils literal"><span class="pre">height</span></tt>, <tt class="docutils literal"><span class="pre">latitude</span></tt> and <tt class="docutils literal"><span class="pre">longitude</span></tt>,
+and extract every point where the latitude is 0, resulting in a 2d cube with axes of <tt class="docutils literal"><span class="pre">height</span></tt> and <tt class="docutils literal"><span class="pre">longitude</span></tt>.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p>Caution is required when using equality constraints with floating point coordinates such as <tt class="docutils literal"><span class="pre">latitude</span></tt>. 
@@ -140,16 +139,16 @@ This can be avoided by using a function as the argument to the constraint:</p>
    <span class="sd">&quot;&quot;&quot;Returns true if the cell is between -0.1 and 0.1.&quot;&quot;&quot;</span>
    <span class="k">return</span> <span class="o">-</span><span class="mf">0.1</span> <span class="o">&lt;</span> <span class="n">cell</span> <span class="o">&lt;</span> <span class="mf">0.1</span>
 
-<span class="n">equator_constraint</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="n">near_zero</span><span class="p">)</span>
+<span class="n">equator_constraint</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">grid_latitude</span><span class="o">=</span><span class="n">near_zero</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Often you will see this construct in shorthand using a lambda function definition:</p>
-<div class="last highlight-python"><div class="highlight"><pre><span class="n">equator_constraint</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="k">lambda</span> <span class="n">cell</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.1</span> <span class="o">&lt;</span> <span class="n">cell</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">)</span>
+<div class="last highlight-python"><div class="highlight"><pre><span class="n">equator_constraint</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">grid_latitude</span><span class="o">=</span><span class="k">lambda</span> <span class="n">cell</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.1</span> <span class="o">&lt;</span> <span class="n">cell</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <p>The extract method could be applied again to the <em>equator_slice</em> cube to get a further subset.</p>
-<p>For example to get a model_level_number of 10 at the equator the following line extends the previous example:</p>
+<p>For example to get a <tt class="docutils literal"><span class="pre">model_level_number</span></tt> of 10 at the equator the following line extends the previous example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">equator_model_level_10_slice</span> <span class="o">=</span> <span class="n">equator_slice</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">model_level_number</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
 <span class="k">print</span> <span class="n">equator_model_level_10_slice</span>
 </pre></div>
@@ -157,7 +156,7 @@ This can be avoided by using a function as the argument to the constraint:</p>
 <p>The two steps required to get <tt class="docutils literal"><span class="pre">model_level_number</span></tt> of 10 at the equator can be simplified into a single constraint:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;globClim1&#39;</span><span class="p">,</span> <span class="s">&#39;theta.pp&#39;</span><span class="p">)</span>
 <span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-<span class="n">equator_model_level_10_slice</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">model_level_number</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">equator_model_level_10_slice</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">grid_latitude</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">model_level_number</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
 <span class="k">print</span> <span class="n">equator_model_level_10_slice</span>
 </pre></div>
 </div>
@@ -166,7 +165,7 @@ The <tt class="docutils literal"><span class="pre">extract</span></tt> method al
 same way as loading with constraints:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">air_temp_and_fp_6</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="s">&#39;air_potential_temperature&#39;</span><span class="p">,</span> <span class="n">forecast_period</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 <span class="n">level_10</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">model_level_number</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-<span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;ukV2&#39;</span><span class="p">,</span> <span class="s">&#39;THOxayrk.pp&#39;</span><span class="p">)</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;uk_hires.pp&#39;</span><span class="p">)</span>
 <span class="n">cubes</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">air_temp_and_fp_6</span> <span class="o">&amp;</span> <span class="n">level_10</span><span class="p">)</span>
 <span class="k">print</span> <span class="n">cubes</span>
 </pre></div>
@@ -178,15 +177,15 @@ same way as loading with constraints:</p>
 For example, to deal with a 3 dimensional cube (z,y,x) you could iterate over all 2 dimensional slices in y and x 
 which make up the full 3d cube.:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">iris</span>
-<span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;globClim1&#39;</span><span class="p">,</span> <span class="s">&#39;theta.pp&#39;</span><span class="p">)</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;hybrid_height.nc&#39;</span><span class="p">)</span>
 <span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
 <span class="k">print</span> <span class="n">cube</span>
-<span class="k">for</span> <span class="n">yx_slice</span> <span class="ow">in</span> <span class="n">cube</span><span class="o">.</span><span class="n">slices</span><span class="p">([</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="s">&#39;longitude&#39;</span><span class="p">]):</span>
+<span class="k">for</span> <span class="n">yx_slice</span> <span class="ow">in</span> <span class="n">cube</span><span class="o">.</span><span class="n">slices</span><span class="p">([</span><span class="s">&#39;grid_latitude&#39;</span><span class="p">,</span> <span class="s">&#39;grid_longitude&#39;</span><span class="p">]):</span>
    <span class="k">print</span> <span class="nb">repr</span><span class="p">(</span><span class="n">yx_slice</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>As the original cube had the shape (z: 38; y: 145; x: 192) there were 38 latitude longitude slices and hence the 
-line <tt class="docutils literal"><span class="pre">print</span> <span class="pre">repr(yx_slice)</span></tt> was run 38 times.</p>
+<p>As the original cube had the shape (15, 100, 100) there were 15 latitude longitude slices and hence the
+line <tt class="docutils literal"><span class="pre">print</span> <span class="pre">repr(yx_slice)</span></tt> was run 15 times.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>The order of latitude and longitude in the list is important; had they been swapped the resultant cube slices 
@@ -195,21 +194,21 @@ would have been transposed.</p>
 </div>
 <p>This method can handle n-dimensional slices by providing more or fewer coordinate names in the list to <strong>slices</strong>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">iris</span>
-<span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;globClim1&#39;</span><span class="p">,</span> <span class="s">&#39;theta.pp&#39;</span><span class="p">)</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;hybrid_height.nc&#39;</span><span class="p">)</span>
 <span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
 <span class="k">print</span> <span class="n">cube</span>
-<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x_slice</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">slices</span><span class="p">([</span><span class="s">&#39;longitude&#39;</span><span class="p">])):</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x_slice</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">slices</span><span class="p">([</span><span class="s">&#39;grid_longitude&#39;</span><span class="p">])):</span>
    <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">x_slice</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The Python function <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#enumerate" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">enumerate()</span></tt></a> is used in this example to provide an incrementing variable <strong>i</strong> which is 
-printed with the summary of each cube slice. Note that there were 5510 1d longitude cubes as a result of 
-slicing the 3 dimensional cube (z: 38; y: 145; x: 192) by longitude (i starts at 0 and 5510 = 38 * 145).</p>
+printed with the summary of each cube slice. Note that there were 1500 1d longitude cubes as a result of
+slicing the 3 dimensional cube (15, 100, 100) by longitude (i starts at 0 and 1500 = 15 * 100).</p>
 <div class="admonition hint">
 <p class="first admonition-title">Hint</p>
 <p>It is often useful to get a single 2d slice from a multidimensional cube in order to develop a 2d plot function, for example.
 This can be achieved by using the <tt class="docutils literal"><span class="pre">next()</span></tt> method on the result of slices:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">first_slice</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">slices</span><span class="p">([</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="s">&#39;longitude&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">first_slice</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">slices</span><span class="p">([</span><span class="s">&#39;grid_latitude&#39;</span><span class="p">,</span> <span class="s">&#39;grid_longitude&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
 </pre></div>
 </div>
 <p class="last">Once the your code can handle a 2d slice, it is then an easy step to loop over <strong>all</strong> 2d slices within the bigger 
@@ -220,7 +219,7 @@ cube using the slices method.</p>
 <h2>4.3. Cube indexing<a class="headerlink" href="#cube-indexing" title="Permalink to this headline">¶</a></h2>
 <p>In the same way that you would expect a numeric multidimensional array to be <strong>indexed</strong> to take a subset of your 
 original array, you can <strong>index</strong> a Cube for the same purpose.</p>
-<p>Here are some examples of array indexing in <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/index.html#numpy" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-mod docutils literal"><span class="pre">numpy</span></tt></a>:</p>
+<p>Here are some examples of array indexing in <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/index.html#numpy" title="(in NumPy v1.8.dev-63cd8f3)"><tt class="xref py py-mod docutils literal"><span class="pre">numpy</span></tt></a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span>
 <span class="c"># create an array of 12 consecutive integers starting from 0</span>
 <span class="n">a</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
@@ -251,7 +250,7 @@ original array, you can <strong>index</strong> a Cube for the same purpose.</p>
 </div>
 <p>Similarly, Iris cubes have indexing capability:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">iris</span>
-<span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;globClim1&#39;</span><span class="p">,</span> <span class="s">&#39;theta.pp&#39;</span><span class="p">)</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;hybrid_height.nc&#39;</span><span class="p">)</span>
 <span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
 
 <span class="k">print</span> <span class="n">cube</span>
@@ -295,7 +294,6 @@ original array, you can <strong>index</strong> a Cube for the same purpose.</p>
           <a href="navigating_a_cube.html" title="3. Navigating a cube"
              >previous</a> |</li>
         <li><a href="../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../contents.html">contents</a>|&nbsp;</li>

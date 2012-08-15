@@ -13,7 +13,7 @@ This example uses several visualisation methods to achieve an array of differing
 
 
 
-.. plot:: /net/home/h02/itpe/fcm/iris/iris/branches/dev/itpe/iris_git/docs/iris/example_code/graphics/rotated_pole_mapping.py
+.. plot:: /net/home/h06/ecamp/nounpack_iris/docs/iris/example_code/graphics/rotated_pole_mapping.py
 
 ::
 
@@ -39,11 +39,8 @@ This example uses several visualisation methods to achieve an array of differing
     
     
     def main():
-        fname = iris.sample_data_path('PP', 'aPProt1', 'rotated.pp')
+        fname = iris.sample_data_path('rotated_pole.nc')
         temperature = iris.load_strict(fname)
-    
-        # For the purposes of this example, subset the data taking just 1/20th of the data in both x and y
-        temperature = temperature[::20, ::20]
     
         # Calculate the lat lon range and buffer it by 10 degrees
         lat_range, lon_range = iris.analysis.cartography.lat_lon_range(temperature)

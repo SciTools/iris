@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Set up your fork &mdash; Iris 0.89 documentation</title>
+    <title>Set up your fork &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../../index.html" />
     <link rel="up" title="Git for development" href="git_development.html" />
     <link rel="next" title="Configure git" href="configure_git.html" />
     <link rel="prev" title="Making your own copy (fork) of iris" href="forking_hell.html" />
@@ -40,8 +40,8 @@
 <a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="forking_hell.html" title="Making your own copy (fork) of iris"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>
@@ -122,9 +121,9 @@ Iris 0.89
 <p>First you follow the instructions for <a class="reference internal" href="forking_hell.html#forking"><em>Making your own copy (fork) of iris</em></a>.</p>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>git clone git@github.com:your-user-name/Iris.git
-cd Iris
-git remote add upstream git://github.com/SciTools/Iris.git</pre>
+<div class="highlight-python"><pre>git clone git@github.com:your-user-name/iris.git
+cd iris
+git remote add upstream git://github.com/SciTools/iris.git</pre>
 </div>
 </div>
 <div class="section" id="in-detail">
@@ -133,9 +132,9 @@ git remote add upstream git://github.com/SciTools/Iris.git</pre>
 <h3>Clone your fork<a class="headerlink" href="#clone-your-fork" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic">
 <li><p class="first">Clone your fork to the local computer with <tt class="docutils literal"><span class="pre">git</span> <span class="pre">clone</span>
-<span class="pre">git&#64;github.com:your-user-name/Iris.git</span></tt></p>
+<span class="pre">git&#64;github.com:your-user-name/iris.git</span></tt></p>
 </li>
-<li><p class="first">Investigate.  Change directory to your new repo: <tt class="docutils literal"><span class="pre">cd</span> <span class="pre">Iris</span></tt>. Then
+<li><p class="first">Investigate.  Change directory to your new repo: <tt class="docutils literal"><span class="pre">cd</span> <span class="pre">iris</span></tt>. Then
 <tt class="docutils literal"><span class="pre">git</span> <span class="pre">branch</span> <span class="pre">-a</span></tt> to show you all branches.  You&#8217;ll get something
 like:</p>
 <div class="highlight-python"><pre>* master
@@ -145,28 +144,28 @@ remotes/origin/master</pre>
 that you also have a <tt class="docutils literal"><span class="pre">remote</span></tt> connection to <tt class="docutils literal"><span class="pre">origin/master</span></tt>.
 What remote repository is <tt class="docutils literal"><span class="pre">remote/origin</span></tt>? Try <tt class="docutils literal"><span class="pre">git</span> <span class="pre">remote</span> <span class="pre">-v</span></tt> to
 see the URLs for the remote.  They will point to your github fork.</p>
-<p>Now you want to connect to the upstream <a class="reference external" href="http://github.com/SciTools/Iris">iris github</a> repository, so
+<p>Now you want to connect to the upstream <a class="reference external" href="http://github.com/SciTools/iris">iris github</a> repository, so
 you can merge in changes from trunk.</p>
 </li>
 </ol>
 </div>
 <div class="section" id="linking-your-repository-to-the-upstream-repo">
 <span id="linking-to-upstream"></span><h3>Linking your repository to the upstream repo<a class="headerlink" href="#linking-your-repository-to-the-upstream-repo" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><pre>cd Iris
-git remote add upstream git://github.com/SciTools/Iris.git</pre>
+<div class="highlight-python"><pre>cd iris
+git remote add upstream git://github.com/SciTools/iris.git</pre>
 </div>
 <p><tt class="docutils literal"><span class="pre">upstream</span></tt> here is just the arbitrary name we&#8217;re using to refer to the
-main <a class="reference external" href="https://Iris.github.com">iris</a> repository at <a class="reference external" href="http://github.com/SciTools/Iris">iris github</a>.</p>
+main <a class="reference external" href="http://scitools.github.com/iris">iris</a> repository at <a class="reference external" href="http://github.com/SciTools/iris">iris github</a>.</p>
 <p>Note that we&#8217;ve used <tt class="docutils literal"><span class="pre">git://</span></tt> for the URL rather than <tt class="docutils literal"><span class="pre">git&#64;</span></tt>.  The
 <tt class="docutils literal"><span class="pre">git://</span></tt> URL is read only.  This means we that we can&#8217;t accidentally
 (or deliberately) write to the upstream repo, and we are only going to
 use it to merge into our own code.</p>
 <p>Just for your own satisfaction, show yourself that you now have a new
 &#8216;remote&#8217;, with <tt class="docutils literal"><span class="pre">git</span> <span class="pre">remote</span> <span class="pre">-v</span> <span class="pre">show</span></tt>, giving you something like:</p>
-<div class="highlight-python"><pre>upstream     git://github.com/SciTools/Iris.git (fetch)
-upstream     git://github.com/SciTools/Iris.git (push)
-origin       git@github.com:your-user-name/Iris.git (fetch)
-origin       git@github.com:your-user-name/Iris.git (push)</pre>
+<div class="highlight-python"><pre>upstream     git://github.com/SciTools/iris.git (fetch)
+upstream     git://github.com/SciTools/iris.git (push)
+origin       git@github.com:your-user-name/iris.git (fetch)
+origin       git@github.com:your-user-name/iris.git (push)</pre>
 </div>
 </div>
 </div>
@@ -191,7 +190,6 @@ origin       git@github.com:your-user-name/Iris.git (push)</pre>
           <a href="forking_hell.html" title="Making your own copy (fork) of iris"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>

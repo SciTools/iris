@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>1. Introduction &mdash; Iris 0.89 documentation</title>
+    <title>1. Introduction &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../index.html" />
     <link rel="up" title="Iris user guide" href="index.html" />
     <link rel="next" title="2. Loading Iris cubes" href="loading_iris_cubes.html" />
     <link rel="prev" title="Iris user guide" href="index.html" />
@@ -40,8 +40,8 @@
 <a href="../index.html"><img src="../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="index.html" title="Iris user guide"
              accesskey="P">previous</a> |</li>
         <li><a href="../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../contents.html">contents</a>|&nbsp;</li>
@@ -293,19 +292,19 @@ a collection of &#8220;ensembles&#8221; (i.e. multiple model runs).</p>
 <h3>1.2.2. Printing a cube<a class="headerlink" href="#printing-a-cube" title="Permalink to this headline">¶</a></h3>
 <p>Every Iris cube can be printed to screen as you will see later in the user guide. It is worth familiarising yourself with the
 output as this is the quickest way of inspecting the contents of a cube. Here is the result of printing a real life cube:</p>
-<div class="highlight-none"><div class="highlight"><pre>air_potential_temperature           (forecast_period: 3; level_height: 40; grid_latitude: 810; grid_longitude: 622)
+<div class="highlight-none"><div class="highlight"><pre>air_potential_temperature           (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
      Dimension coordinates:
-          forecast_period                           x                -                  -                    -
-          level_height                              -                x                  -                    -
-          grid_latitude                             -                -                  x                    -
-          grid_longitude                            -                -                  -                    x
+          time                           x                      -                 -                    -
+          model_level_number             -                      x                 -                    -
+          grid_latitude                  -                      -                 x                    -
+          grid_longitude                 -                      -                 -                    x
      Auxiliary coordinates:
-          time                                      x                -                  -                    -
-          model_level_number                        -                x                  -                    -
-          sigma                                     -                x                  -                    -
-          surface_altitude                          -                -                  x                    x
+          forecast_period                x                      -                 -                    -
+          level_height                   -                      x                 -                    -
+          sigma                          -                      x                 -                    -
+          surface_altitude               -                      -                 x                    x
      Derived coordinates:
-          altitude                                  -                x                  x                    x
+          altitude                       -                      x                 x                    x
      Scalar coordinates:
           source: Data from Met Office Unified Model 7.03
      Attributes:
@@ -316,14 +315,14 @@ output as this is the quickest way of inspecting the contents of a cube. Here is
 <blockquote>
 <div><ul class="simple">
 <li>The cube represents air potential temperature.</li>
-<li>There are 4 data dimensions, and the data has a shape of <tt class="docutils literal"><span class="pre">(3,</span> <span class="pre">40,</span> <span class="pre">810,</span> <span class="pre">622)</span></tt></li>
-<li>The 4 data dimensions are mapped to the <tt class="docutils literal"><span class="pre">forecast_period</span></tt>, <tt class="docutils literal"><span class="pre">level_height</span></tt>, 
+<li>There are 4 data dimensions, and the data has a shape of <tt class="docutils literal"><span class="pre">(3,</span> <span class="pre">7,</span> <span class="pre">204,</span> <span class="pre">187)</span></tt></li>
+<li>The 4 data dimensions are mapped to the <tt class="docutils literal"><span class="pre">time</span></tt>, <tt class="docutils literal"><span class="pre">model_level_number</span></tt>, 
 <tt class="docutils literal"><span class="pre">grid_latitude</span></tt>, <tt class="docutils literal"><span class="pre">grid_longitude</span></tt> coordinates respectively</li>
 <li>There are three 1d auxiliary coordinates and one 2d auxiliary (<tt class="docutils literal"><span class="pre">surface_altitude</span></tt>)</li>
 <li>There is a single <tt class="docutils literal"><span class="pre">altitude</span></tt> derived coordinate, which spans 3 data dimensions</li>
-<li>There are 40 distinct values in the &#8220;level_height&#8221; coordinate. Similar inferences can 
+<li>There are 7 distinct values in the &#8220;model_level_number&#8221; coordinate. Similar inferences can
 be made for the other dimension coordinates.</li>
-<li>There are 40, not necessarily distinct, values in the <tt class="docutils literal"><span class="pre">model_level_number</span></tt> coordinate.</li>
+<li>There are 7, not necessarily distinct, values in the <tt class="docutils literal"><span class="pre">level_height</span></tt> coordinate.</li>
 <li>There is 1 coordinate (<tt class="docutils literal"><span class="pre">source</span></tt>) which represents a scalar value over all of the data dimensions.</li>
 <li>The cube has one further attribute relating to the  phenomenon. 
 In this case the originating file format, PP, encodes information in a STASH code which in some cases can
@@ -353,7 +352,6 @@ be useful for identifying advanced experiment information relating to the phenom
           <a href="index.html" title="Iris user guide"
              >previous</a> |</li>
         <li><a href="../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../contents.html">contents</a>|&nbsp;</li>

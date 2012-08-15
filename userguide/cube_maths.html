@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7. Basic cube mathematics &mdash; Iris 0.89 documentation</title>
+    <title>7. Basic cube mathematics &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../index.html" />
     <link rel="up" title="Iris user guide" href="index.html" />
     <link rel="next" title="8. End of the user guide" href="end_of_userguide.html" />
     <link rel="prev" title="6. Cube statistics" href="cube_statistics.html" />
@@ -40,8 +40,8 @@
 <a href="../index.html"><img src="../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="cube_statistics.html" title="6. Cube statistics"
              accesskey="P">previous</a> |</li>
         <li><a href="../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../contents.html">contents</a>|&nbsp;</li>
@@ -126,13 +125,12 @@ the cube is no longer what was intended, therefore this example could be rectifi
 subtraction, division, and multiplication can be applied directly to any cube.</p>
 <div class="section" id="calculating-the-difference-between-two-cubes">
 <h2>7.1. Calculating the difference between two cubes<a class="headerlink" href="#calculating-the-difference-between-two-cubes" title="Permalink to this headline">¶</a></h2>
-<p>Let&#8217;s load some data which represents air pressure on the first model level of a single model run:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;COLPEX&#39;</span><span class="p">,</span> <span class="s">&#39;air_potential_and_air_pressure.pp&#39;</span><span class="p">)</span>
-<span class="n">air_press_lev1</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="s">&#39;air_pressure&#39;</span><span class="p">,</span> <span class="n">model_level_number</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">air_press</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">air_press_lev1</span><span class="p">)</span>
+<p>Let&#8217;s load some air temperature which runs from 1860 to 2100:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;E1_north_america.nc&#39;</span><span class="p">)</span>
+<span class="n">air_temp</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;air_temperature&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We can now get the first and last time slices using indexing (see <a class="reference internal" href="reducing_a_cube.html"><em>Reducing a Cube</em></a> for a reminder):</p>
+<p>We could now get the first and last time slices using indexing (see <a class="reference internal" href="reducing_a_cube.html"><em>Reducing a Cube</em></a> for a reminder):</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">t_first</span> <span class="o">=</span> <span class="n">air_press</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
 <span class="n">t_last</span> <span class="o">=</span> <span class="n">air_press</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
 </pre></div>
@@ -140,17 +138,16 @@ subtraction, division, and multiplication can be applied directly to any cube.</
 <p>And finally we can subtract the two. The result is a cube of the same size as the original two time slices, but with the 
 data representing their difference:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">t_last</span> <span class="o">-</span> <span class="n">t_first</span>
-<span class="go">unknown                             (grid_latitude: 412; grid_longitude: 412)</span>
+<span class="go">unknown                             (latitude: 37; longitude: 49)</span>
 <span class="go">     Dimension coordinates:</span>
-<span class="go">          grid_latitude                           x                    -</span>
-<span class="go">          grid_longitude                          -                    x</span>
+<span class="go">          latitude                           x              -</span>
+<span class="go">          longitude                          -              x</span>
 <span class="go">     Scalar coordinates:</span>
-<span class="go">          level_height: Cell(point=5.0, bound=(0.0, 13.333332)) m</span>
-<span class="go">          model_level_number: 1</span>
-<span class="go">          sigma: Cell(point=0.9994238, bound=(1.0, 0.99846387))</span>
-<span class="go">          source: Data from Met Office Unified Model 7.04</span>
+<span class="go">          forecast_reference_time: -953274.0 hours since 1970-01-01 00:00:00</span>
+<span class="go">          height: 1.5 m</span>
+<span class="go">          source: Data from Met Office Unified Model 6.05</span>
 <span class="go">     Attributes:</span>
-<span class="go">          history: air_pressure - air_pressure (ignoring forecast_period, time)</span>
+<span class="go">          history: air_temperature - air_temperature (ignoring forecast_period, time)</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -163,17 +160,17 @@ should be automatically ignored <a class="reference internal" href="../iris/iris
 <div class="section" id="combining-multiple-phenomenon-to-calculate-another">
 <h2>7.2. Combining multiple phenomenon to calculate another<a class="headerlink" href="#combining-multiple-phenomenon-to-calculate-another" title="Permalink to this headline">¶</a></h2>
 <p>Combining cubes of potential temperature and pressure we can calculate the associated temperature using the equation:</p>
-<img src="../_images/mathmpl/math-d56229f700.png" class="center" /><p>Where <img src="../_images/mathmpl/math-fb97a8c47a.png" style="position: relative; bottom: -7px"/> is pressure, <img src="../_images/mathmpl/math-5dc8912759.png" style="position: relative; bottom: -3px"/> is potential temperature, <img src="../_images/mathmpl/math-e76b349545.png" style="position: relative; bottom: -7px"/> is the potential temperature 
+<img src="../_images/mathmpl/math-d56229f700.png" class="center" /><p>Where <img src="../_images/mathmpl/math-fb97a8c47a.png" style="position: relative; bottom: -7px"/> is pressure, <img src="../_images/mathmpl/math-5dc8912759.png" style="position: relative; bottom: -3px"/> is potential temperature, <img src="../_images/mathmpl/math-e76b349545.png" style="position: relative; bottom: -8px"/> is the potential temperature 
 reference pressure and <img src="../_images/mathmpl/math-fa4ff731d3.png" style="position: relative; bottom: -3px"/> is temperature.</p>
 <p>First, let&#8217;s load pressure and potential temperature cubes:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;COLPEX&#39;</span><span class="p">,</span> <span class="s">&#39;air_potential_and_air_pressure.pp&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;colpex.pp&#39;</span><span class="p">)</span>
 <span class="n">phenomenon_names</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;air_potential_temperature&#39;</span><span class="p">,</span> <span class="s">&#39;air_pressure&#39;</span><span class="p">]</span>
 <span class="n">pot_temperature</span><span class="p">,</span> <span class="n">pressure</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">phenomenon_names</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>In order to calculate <img src="../_images/mathmpl/math-179dee9bcd.png" style="position: relative; bottom: -10px"/> we can define a coordinate which represents the standard reference pressure of 1000 hPa:</p>
+<p>In order to calculate <img src="../_images/mathmpl/math-179dee9bcd.png" style="position: relative; bottom: -11px"/> we can define a coordinate which represents the standard reference pressure of 1000 hPa:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">iris.coords</span>
-<span class="n">p0</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">ExplicitCoord</span><span class="p">(</span><span class="s">&#39;reference_pressure&#39;</span><span class="p">,</span> <span class="s">&#39;hPa&#39;</span><span class="p">,</span> <span class="n">points</span><span class="o">=</span><span class="mf">1000.</span><span class="p">)</span>
+<span class="n">p0</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">AuxCoord</span><span class="p">(</span><span class="mf">1000.</span><span class="p">,</span> <span class="n">long_name</span><span class="o">=</span><span class="s">&#39;reference_pressure&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s">&#39;hPa&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>We must ensure that the units of <tt class="docutils literal"><span class="pre">pressure</span></tt> and <tt class="docutils literal"><span class="pre">p0</span></tt> are the same, so convert the newly created coordinate using 
@@ -213,7 +210,6 @@ A very similar example to this can be found in <a class="reference internal" hre
           <a href="cube_statistics.html" title="6. Cube statistics"
              >previous</a> |</li>
         <li><a href="../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../contents.html">contents</a>|&nbsp;</li>

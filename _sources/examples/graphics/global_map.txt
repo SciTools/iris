@@ -9,7 +9,7 @@ The plot title and the labels for the axes are automatically derived from the me
 
 
 
-.. plot:: /net/home/h02/itpe/fcm/iris/iris/branches/dev/itpe/iris_git/docs/iris/example_code/graphics/global_map.py
+.. plot:: /net/home/h06/ecamp/nounpack_iris/docs/iris/example_code/graphics/global_map.py
 
 ::
 
@@ -29,7 +29,7 @@ The plot title and the labels for the axes are automatically derived from the me
     
     
     def main():
-        fname = iris.sample_data_path('PP', 'aPPglob1', 'global.pp')
+        fname = iris.sample_data_path('air_temp.pp')
         temperature = iris.load_strict(fname)
     
         qplt.contourf(temperature, 15)
