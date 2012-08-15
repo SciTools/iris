@@ -66,7 +66,7 @@ class TestFileFormatPicker(tests.IrisTest):
                   ['GRIB', 'jpeg2000', 'file.grib2'], # GRIB2
                   ['PP', 'uk4', 'uk4par09.pp'], # PP
 #                  ['BUFR', 'mss', 'BUFR_Samples', 'JUPV78_EGRR_121200_00002501'], # BUFFR
-#                  ['NIMROD', 'uk2km', 'WO0000000003452', '201007021200_u1096_ng_ey08_visibility0360_screen_2km'], # nimrod 
+                  ['NIMROD', 'uk2km', 'WO0000000003452', '201007020900_u1096_ng_ey00_visibility0180_screen_2km'], # nimrod 
 #                  ['NAME', '20100509_18Z_variablesource_12Z_VAAC', 'Fields_grid1_201005110000.txt'], # NAME
               ]
         
