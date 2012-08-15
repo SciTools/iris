@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import iris
 import iris.plot as iplt
 
-fname = iris.sample_data_path('PP', 'aPPglob1', 'global.pp')
+fname = iris.sample_data_path('air_temp.pp')
 temperature = iris.load_strict(fname)
 
 # Take a 1d slice using array style indexing.

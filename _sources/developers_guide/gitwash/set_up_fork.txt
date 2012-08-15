@@ -11,9 +11,9 @@ Overview
 
 ::
 
-   git clone git@github.com:your-user-name/Iris.git
-   cd Iris
-   git remote add upstream git://github.com/SciTools/Iris.git
+   git clone git@github.com:your-user-name/iris.git
+   cd iris
+   git remote add upstream git://github.com/SciTools/iris.git
 
 In detail
 =========
@@ -22,8 +22,8 @@ Clone your fork
 ---------------
 
 #. Clone your fork to the local computer with ``git clone
-   git@github.com:your-user-name/Iris.git``
-#. Investigate.  Change directory to your new repo: ``cd Iris``. Then
+   git@github.com:your-user-name/iris.git``
+#. Investigate.  Change directory to your new repo: ``cd iris``. Then
    ``git branch -a`` to show you all branches.  You'll get something
    like::
 
@@ -45,8 +45,8 @@ Linking your repository to the upstream repo
 
 ::
 
-   cd Iris
-   git remote add upstream git://github.com/SciTools/Iris.git
+   cd iris
+   git remote add upstream git://github.com/SciTools/iris.git
 
 ``upstream`` here is just the arbitrary name we're using to refer to the
 main `iris`_ repository at `iris github`_.
@@ -59,10 +59,10 @@ use it to merge into our own code.
 Just for your own satisfaction, show yourself that you now have a new
 'remote', with ``git remote -v show``, giving you something like::
 
-   upstream	git://github.com/SciTools/Iris.git (fetch)
-   upstream	git://github.com/SciTools/Iris.git (push)
-   origin	git@github.com:your-user-name/Iris.git (fetch)
-   origin	git@github.com:your-user-name/Iris.git (push)
+   upstream	git://github.com/SciTools/iris.git (fetch)
+   upstream	git://github.com/SciTools/iris.git (push)
+   origin	git@github.com:your-user-name/iris.git (fetch)
+   origin	git@github.com:your-user-name/iris.git (push)
 
 .. include:: links.inc
 

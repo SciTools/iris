@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Development workflow &mdash; Iris 0.89 documentation</title>
+    <title>Development workflow &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../../index.html" />
     <link rel="up" title="Git for development" href="git_development.html" />
     <link rel="next" title="Maintainer workflow" href="maintainer_workflow.html" />
     <link rel="prev" title="Configure git" href="configure_git.html" />
@@ -40,8 +40,8 @@
 <a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="configure_git.html" title="Configure git"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>
@@ -132,7 +131,7 @@ Iris 0.89
             
   <div class="section" id="development-workflow">
 <span id="id1"></span><h1>Development workflow<a class="headerlink" href="#development-workflow" title="Permalink to this headline">¶</a></h1>
-<p>You already have your own forked copy of the <a class="reference external" href="https://Iris.github.com">iris</a> repository, by
+<p>You already have your own forked copy of the <a class="reference external" href="http://scitools.github.com/iris">iris</a> repository, by
 following <a class="reference internal" href="forking_hell.html#forking"><em>Making your own copy (fork) of iris</em></a>. You have <a class="reference internal" href="set_up_fork.html#set-up-fork"><em>Set up your fork</em></a>. You have configured
 git by following <a class="reference internal" href="configure_git.html#configure-git"><em>Configure git</em></a>.  Now you are ready for some real work.</p>
 <div class="section" id="workflow-summary">
@@ -192,7 +191,7 @@ git branch my-new-feature upstream/master
 git checkout my-new-feature</pre>
 </div>
 <p>Generally, you will want to keep your feature branches on your public <a class="reference external" href="http://github.com">github</a>
-fork of <a class="reference external" href="https://Iris.github.com">iris</a>.  To do this, you <a class="reference external" href="http://schacon.github.com/git/git-push.html">git push</a> this new branch up to your
+fork of <a class="reference external" href="http://scitools.github.com/iris">iris</a>.  To do this, you <a class="reference external" href="http://schacon.github.com/git/git-push.html">git push</a> this new branch up to your
 github repo.  Generally (if you followed the instructions in these pages, and by
 default), git will have a link to your github repo, called <tt class="docutils literal"><span class="pre">origin</span></tt>.  You push
 up to your own repo on github with:</p>
@@ -260,7 +259,7 @@ page might also be useful.</p>
 <p>When you are ready to ask for someone to review your code and consider a merge:</p>
 <ol class="arabic">
 <li><p class="first">Go to the URL of your forked repo, say
-<tt class="docutils literal"><span class="pre">http://github.com/your-user-name/Iris</span></tt>.</p>
+<tt class="docutils literal"><span class="pre">http://github.com/your-user-name/iris</span></tt>.</p>
 </li>
 <li><p class="first">Use the &#8216;Switch Branches&#8217; dropdown menu near the top left of the page to
 select the branch with your changes:</p>
@@ -297,14 +296,14 @@ committing into the same repository, or even the same branch, then just
 share it via github.</p>
 <p>First fork iris into your account, as from <a class="reference internal" href="forking_hell.html#forking"><em>Making your own copy (fork) of iris</em></a>.</p>
 <p>Then, go to your forked repository github page, say
-<tt class="docutils literal"><span class="pre">http://github.com/your-user-name/Iris</span></tt></p>
+<tt class="docutils literal"><span class="pre">http://github.com/your-user-name/iris</span></tt></p>
 <p>Click on the &#8216;Admin&#8217; button, and add anyone else to the repo as a
 collaborator:</p>
 <blockquote>
 <div><img alt="../../_images/pull_button.png" src="../../_images/pull_button.png" />
 </div></blockquote>
 <p>Now all those people can do:</p>
-<div class="highlight-python"><pre>git clone git@githhub.com:your-user-name/Iris.git</pre>
+<div class="highlight-python"><pre>git clone git@githhub.com:your-user-name/iris.git</pre>
 </div>
 <p>Remember that links starting with <tt class="docutils literal"><span class="pre">git&#64;</span></tt> use the ssh protocol and are
 read-write; links starting with <tt class="docutils literal"><span class="pre">git://</span></tt> are read-only.</p>
@@ -500,7 +499,6 @@ Successfully rebased and updated refs/heads/my-feature-branch.</pre>
           <a href="configure_git.html" title="Configure git"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>

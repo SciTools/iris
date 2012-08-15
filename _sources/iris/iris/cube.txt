@@ -26,7 +26,7 @@ from the manipulation of existing cubes.
 
 For example:
 
-    >>> cube = iris.load_strict(iris.sample_data_path('PP', 'aPPglob1', 'global.pp'))
+    >>> cube = iris.load_strict(iris.sample_data_path('air_temp.pp'))
     >>> print cube
     air_temperature                     (latitude: 73; longitude: 96)
          Dimension coordinates:

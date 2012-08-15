@@ -4,10 +4,8 @@
 Global average annual temperature plot
 ======================================
 
-Produces a time-series plot of global temperature forecasts for various emission scenarios.
-It also demonstrates the use of a callback routine to include additional information about the data 
-into the cube meta-data.
-
+Produces a time-series plot of North American temperature forecasts for 2 different emission scenarios.
+Constraining data to a limited spatial area also features in this example.
 
 The data used comes from the HadGEM2-AO model simulations for the A1B and E1 scenarios, both of which 
 were derived using the IMAGE Integrated Assessment Model (Johns et al. 2010; Lowe et al. 2009).
@@ -23,7 +21,7 @@ References
 
 
 
-.. plot:: /net/home/h02/itpe/fcm/iris/iris/branches/dev/itpe/iris_git/docs/iris/example_code/graphics/COP_1d_plot.py
+.. plot:: /net/home/h06/ecamp/nounpack_iris/docs/iris/example_code/graphics/COP_1d_plot.py
 
 ::
 
@@ -31,10 +29,8 @@ References
     Global average annual temperature plot
     ======================================
     
-    Produces a time-series plot of global temperature forecasts for various emission scenarios.
-    It also demonstrates the use of a callback routine to include additional information about the data
-    into the cube meta-data.
-    
+    Produces a time-series plot of North American temperature forecasts for 2 different emission scenarios.
+    Constraining data to a limited spatial area also features in this example.
     
     The data used comes from the HadGEM2-AO model simulations for the A1B and E1 scenarios, both of which
     were derived using the IMAGE Integrated Assessment Model (Johns et al. 2010; Lowe et al. 2009).
@@ -62,39 +58,25 @@ References
     import matplotlib.dates as mdates
     
     
-    def cop_metadata_callback(cube, field, filename):
-        """ A function which adds an "Experiment" coordinate which comes from the filename.  """
-    
-        # Extract the experiment name (such as a1b or e1) from the filename (in this case it is just the parent folder's name)
-        containing_folder = os.path.dirname(filename)
-        experiment_label = os.path.basename(containing_folder)
-    
-        # Create a coordinate with the experiment label in it
-        exp_coord = coords.AuxCoord(experiment_label, long_name='Experiment', units='no_unit')
-    
-        # and add it to the cube
-        cube.add_aux_coord(exp_coord)
-    
-    
     def main():
         # Load data into three Cubes, one for each set of PP files
-        e1 = iris.load_strict(iris.sample_data_path('PP', 'A1B-Image_E1', 'E1', '*.pp'),
-                               callback=cop_metadata_callback)
+        e1 = iris.load_strict(iris.sample_data_path('E1_north_america.nc'))
     
-        a1b = iris.load_strict(iris.sample_data_path('PP', 'A1B-Image_E1', 'A1B', '*.pp'),
-                                callback=cop_metadata_callback)
+        a1b = iris.load_strict(iris.sample_data_path('A1B_north_america.nc'))
     
-        global_avg = iris.load_strict(iris.sample_data_path('PP', 'A1B-Image_E1', 'pp_1859_1889_avg.pp'))
+        # load in the global pre-industrial mean temperature, and limit the domain to
+        # the same North American region that e1 and a1b are at.
+        north_america = iris.Constraint(
+                                        longitude=lambda v: 225 <= v <= 315,
+                                        latitude=lambda v: 15 <= v <= 60,
+                                        )
+        pre_industrial = iris.load_strict(iris.sample_data_path('pre-industrial.pp'),
+                                      north_america
+                                      )
     
-        pre_industrial_mean = global_avg.collapsed(['latitude', 'longitude'], iris.analysis.MEAN)
-        e1_global_mean = e1.collapsed(['latitude', 'longitude'], iris.analysis.MEAN)
-        a1b_global_mean = a1b.collapsed(['latitude', 'longitude'], iris.analysis.MEAN)
-    
-        # Add a title
-        plt.gcf().suptitle('Global Average Temperatures', horizontalalignment='center', fontsize=18)
-        bounds = list(plt.gca().get_position().bounds)
-        bounds[3] = 0.78
-        plt.gca().set_position(bounds)
+        pre_industrial_mean = pre_industrial.collapsed(['latitude', 'longitude'], iris.analysis.MEAN)
+        e1_mean = e1.collapsed(['latitude', 'longitude'], iris.analysis.MEAN)
+        a1b_mean = a1b.collapsed(['latitude', 'longitude'], iris.analysis.MEAN)
     
         # Show ticks 30 years apart
         plt.gca().xaxis.set_major_locator(mdates.YearLocator(30))
@@ -103,21 +85,22 @@ References
         plt.gca().format_xdata = mdates.DateFormatter('%Y')
     
         # Plot the datasets
-        qplt.plot(e1_global_mean, coords=['time'], label='E1 scenario', lw=1.5, color='blue')
-        qplt.plot(a1b_global_mean, coords=['time'], label='A1B-Image scenario', lw=1.5, color='red')
+        qplt.plot(e1_mean, coords=['time'], label='E1 scenario', lw=1.5, color='blue')
+        qplt.plot(a1b_mean, coords=['time'], label='A1B-Image scenario', lw=1.5, color='red')
     
         # Draw a horizontal line showing the pre industrial mean
         plt.axhline(y=pre_industrial_mean.data, color='gray', linestyle='dashed', label='pre-industrial', lw=1.5)
     
         # Establish where r and t have the same data, i.e. the observations
-        common = numpy.where(a1b_global_mean.data == e1_global_mean.data)[0]
-        observed = a1b_global_mean[common]
+        common = numpy.where(a1b_mean.data == e1_mean.data)[0]
+        observed = a1b_mean[common]
     
         # Plot the observed data
         qplt.plot(observed, coords=['time'], label='observed', color='black', lw=1.5)
     
-        # Add a legend
+        # Add a legend and title
         plt.legend(loc="upper left")
+        plt.title('North American mean air temperature', fontsize=18)
     
         plt.xlabel('Time / year')
     

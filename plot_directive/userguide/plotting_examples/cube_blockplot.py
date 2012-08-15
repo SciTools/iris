@@ -4,7 +4,7 @@ import iris
 import iris.quickplot as qplt
 import iris.plot as iplt
 
-fname = iris.sample_data_path('PP', 'aPPglob1', 'global.pp')
+fname = iris.sample_data_path('air_temp.pp')
 temperature_cube = iris.load_strict(fname)
 
 # put bounds on the latitude and longitude coordinates

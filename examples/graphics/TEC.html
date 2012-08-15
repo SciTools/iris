@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Ionosphere space weather &mdash; Iris 0.89 documentation</title>
+    <title>Ionosphere space weather &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../../index.html" />
     <link rel="up" title="Visualisation examples" href="index.html" />
     <link rel="next" title="Cross section plots" href="cross_section.html" />
     <link rel="prev" title="Global average annual temperature maps" href="COP_maps.html" />
@@ -40,8 +40,8 @@
 <a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="COP_maps.html" title="Global average annual temperature maps"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>
@@ -141,13 +140,8 @@ The plot shows aggregated vertical electron content in the ionosphere.</p>
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="c"># Load the &quot;total electron content&quot; cube.</span>
-    <span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;NetCDF&#39;</span><span class="p">,</span> <span class="s">&#39;space_weather&#39;</span><span class="p">,</span> <span class="s">&#39;Test.nc&#39;</span><span class="p">)</span>
-    <span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">total_electron_content_filter</span><span class="p">)</span>
-
-    <span class="c"># For the purposes of this example slice away the top latitude data,</span>
-    <span class="c"># as matplotlib currently does not correctly plot rotated pole data</span>
-    <span class="c"># extending to/over the north pole.</span>
-    <span class="n">cube</span> <span class="o">=</span> <span class="n">cube</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;space_weather.nc&#39;</span><span class="p">)</span>
+    <span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;total electron content&#39;</span><span class="p">)</span>
 
     <span class="c"># Explicitly mask negative electron content.</span>
     <span class="n">cube</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_less</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -192,7 +186,6 @@ The plot shows aggregated vertical electron content in the ionosphere.</p>
           <a href="COP_maps.html" title="Global average annual temperature maps"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>

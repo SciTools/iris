@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Making a patch &mdash; Iris 0.89 documentation</title>
+    <title>Making a patch &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../../index.html" />
     <link rel="up" title="Working with iris source code" href="index.html" />
     <link rel="next" title="Git for development" href="git_development.html" />
     <link rel="prev" title="Following the latest source" href="following_latest.html" />
@@ -40,8 +40,8 @@
 <a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="following_latest.html" title="Following the latest source"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>
@@ -119,7 +118,7 @@ Iris 0.89
   <div class="section" id="making-a-patch">
 <h1>Making a patch<a class="headerlink" href="#making-a-patch" title="Permalink to this headline">¶</a></h1>
 <p>You&#8217;ve discovered a bug or something else you want to change
-in <a class="reference external" href="https://Iris.github.com">iris</a> .. — excellent!</p>
+in <a class="reference external" href="http://scitools.github.com/iris">iris</a> .. — excellent!</p>
 <p>You&#8217;ve worked out a way to fix it — even better!</p>
 <p>You want to tell us about it — best of all!</p>
 <p>The easiest way is to make a <em>patch</em> or set of patches.  Here
@@ -135,9 +134,9 @@ quick things, please consider following the
 git config --global user.email you@yourdomain.example.com
 git config --global user.name "Your Name Comes Here"
 # get the repository if you don't have it
-git clone git://github.com/SciTools/Iris.git
+git clone git://github.com/SciTools/iris.git
 # make a branch for your patching
-cd Iris
+cd iris
 git branch the-fix-im-thinking-of
 git checkout the-fix-im-thinking-of
 # hack, hack, hack
@@ -163,9 +162,9 @@ git config --global user.name "Your Name Comes Here"</pre>
 </div>
 </li>
 <li><p class="first">If you don&#8217;t already have one, clone a copy of the
-<a class="reference external" href="https://Iris.github.com">iris</a> repository:</p>
-<div class="highlight-python"><pre>git clone git://github.com/SciTools/Iris.git
-cd Iris</pre>
+<a class="reference external" href="http://scitools.github.com/iris">iris</a> repository:</p>
+<div class="highlight-python"><pre>git clone git://github.com/SciTools/iris.git
+cd iris</pre>
 </div>
 </li>
 <li><p class="first">Make a &#8216;feature branch&#8217;.  This will be where you work on
@@ -218,7 +217,7 @@ code, just return to the <tt class="docutils literal"><span class="pre">master</
 more feature branches, you will probably want to switch to
 development mode.  You can do this with the repository you
 have.</p>
-<p>Fork the <a class="reference external" href="https://Iris.github.com">iris</a> repository on github — <a class="reference internal" href="forking_hell.html#forking"><em>Making your own copy (fork) of iris</em></a>.
+<p>Fork the <a class="reference external" href="http://scitools.github.com/iris">iris</a> repository on github — <a class="reference internal" href="forking_hell.html#forking"><em>Making your own copy (fork) of iris</em></a>.
 Then:</p>
 <div class="highlight-python"><pre># checkout and refresh master branch from main repo
 git checkout master
@@ -226,7 +225,7 @@ git pull origin master
 # rename pointer to main repository to 'upstream'
 git remote rename origin upstream
 # point your repo to default read / write to your fork on github
-git remote add origin git@github.com:your-user-name/Iris.git
+git remote add origin git@github.com:your-user-name/iris.git
 # push up any branches you've made and want to keep
 git push origin the-fix-im-thinking-of</pre>
 </div>
@@ -254,7 +253,6 @@ git push origin the-fix-im-thinking-of</pre>
           <a href="following_latest.html" title="Following the latest source"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>

@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Maintainer workflow &mdash; Iris 0.89 documentation</title>
+    <title>Maintainer workflow &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../../index.html" />
     <link rel="up" title="Git for development" href="git_development.html" />
     <link rel="next" title="git resources" href="git_resources.html" />
     <link rel="prev" title="Development workflow" href="development_workflow.html" />
@@ -40,8 +40,8 @@
 <a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="development_workflow.html" title="Development workflow"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>
@@ -128,7 +127,7 @@ in <a class="reference internal" href="development_workflow.html#development-wor
 access to the upstream repo.  Being a maintainer, you&#8217;ve got read-write access.</p>
 <p>It&#8217;s good to have your upstream remote have a scary name, to remind you that
 it&#8217;s a read-write remote:</p>
-<div class="highlight-python"><pre>git remote add upstream-rw git@github.com:SciTools/Iris.git
+<div class="highlight-python"><pre>git remote add upstream-rw git@github.com:SciTools/iris.git
 git fetch upstream-rw</pre>
 </div>
 <div class="section" id="integrating-changes">
@@ -137,7 +136,7 @@ git fetch upstream-rw</pre>
 (<tt class="docutils literal"><span class="pre">upstream-rw/master</span></tt>).</p>
 <p>The changes are in some branch that you are currently on.  For example, you are
 looking at someone&#8217;s changes like this:</p>
-<div class="highlight-python"><pre>git remote add someone git://github.com/someone/Iris.git
+<div class="highlight-python"><pre>git remote add someone git://github.com/someone/iris.git
 git fetch someone
 git branch cool-feature --track someone/cool-feature
 git checkout cool-feature</pre>
@@ -212,7 +211,6 @@ branch in the <tt class="docutils literal"><span class="pre">upstream-rw</span><
           <a href="development_workflow.html" title="Development workflow"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>

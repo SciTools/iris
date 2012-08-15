@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Changes in Iris &mdash; Iris 0.89 documentation</title>
+    <title>Changes in Iris &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,8 +26,8 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../index.html" />
-    <link rel="next" title="The new Coord API in release 0.6" href="0p5_to_0p6_coord_api.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../index.html" />
+    <link rel="next" title="Iris examples" href="../examples/index.html" />
     <link rel="prev" title="iris.util" href="../iris/iris/util.html" />
  
 <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
@@ -39,8 +39,8 @@
 <a href="../index.html"><img src="../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -52,13 +52,12 @@ Iris 0.89
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="0p5_to_0p6_coord_api.html" title="The new Coord API in release 0.6"
+          <a href="../examples/index.html" title="Iris examples"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="../iris/iris/util.html" title="iris.util"
              accesskey="P">previous</a> |</li>
         <li><a href="../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../contents.html">contents</a>|&nbsp;</li>
@@ -71,9 +70,30 @@ Iris 0.89
   <h3><a href="../contents.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Changes in Iris</a><ul>
-<li><a class="reference internal" href="#release-0-8-29-may-2012">Release 0.8 (29 May, 2012)</a></li>
-<li><a class="reference internal" href="#release-0-7-23-mar-2012">Release 0.7 (23 Mar, 2012)</a></li>
-<li><a class="reference internal" href="#release-0-6-20-jan-2012">Release 0.6 (20 Jan, 2012)</a></li>
+<li><a class="reference internal" href="#release-0-9-14-aug-2012">Release 0.9 (14 Aug, 2012)</a><ul>
+<li><a class="reference internal" href="#features-added">Features added</a></li>
+<li><a class="reference internal" href="#incompatible-changes">Incompatible changes</a></li>
+<li><a class="reference internal" href="#deprecations">Deprecations</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#release-0-8-29-may-2012">Release 0.8 (29 May, 2012)</a><ul>
+<li><a class="reference internal" href="#id1">Features added</a></li>
+<li><a class="reference internal" href="#id2">Incompatible changes</a></li>
+<li><a class="reference internal" href="#id3">Deprecations</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#release-0-7-23-mar-2012">Release 0.7 (23 Mar, 2012)</a><ul>
+<li><a class="reference internal" href="#id4">Features added</a></li>
+<li><a class="reference internal" href="#id6">Incompatible changes</a></li>
+<li><a class="reference internal" href="#id7">Deprecations</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#release-0-6-20-jan-2012">Release 0.6 (20 Jan, 2012)</a><ul>
+<li><a class="reference internal" href="#id8">Features added</a></li>
+<li><a class="reference internal" href="#id9">Incompatible changes</a></li>
+<li><a class="reference internal" href="#id10">Deprecations</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#release-0-5-31-oct-2011">Release 0.5 (31 Oct, 2011)</a></li>
 </ul>
 </li>
@@ -83,8 +103,8 @@ Iris 0.89
   <p class="topless"><a href="../iris/iris/util.html"
                         title="previous chapter">iris.util</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="0p5_to_0p6_coord_api.html"
-                        title="next chapter">The new Coord API in release 0.6</a></p>
+  <p class="topless"><a href="../examples/index.html"
+                        title="next chapter">Iris examples</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/whats_new/changes.txt"
@@ -111,28 +131,25 @@ Iris 0.89
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="toctree-wrapper compound">
-</div>
-<div class="section" id="changes-in-iris">
+  <div class="section" id="changes-in-iris">
 <h1>Changes in Iris<a class="headerlink" href="#changes-in-iris" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="release-0-8-29-may-2012">
-<h2>Release 0.8 (29 May, 2012)<a class="headerlink" href="#release-0-8-29-may-2012" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="release-0-9-14-aug-2012">
+<h2>Release 0.9 (14 Aug, 2012)<a class="headerlink" href="#release-0-9-14-aug-2012" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="features-added">
 <h3>Features added<a class="headerlink" href="#features-added" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Cube trajectory extraction now supports irregular grids (ORCA2) using nearest-neighbour interpolation.</li>
-<li>Support cube arithmetic with masked array data.</li>
-<li>PP loading now utilises improved field-code to standard_name/unit mapping.</li>
-<li>Upgraded to use centrally installed and managed version 2 of PP packing library.</li>
+<li>Iris is now an open source project. See <a class="reference external" href="https://github.com/SciTools/iris">Iris on github</a>.</li>
+<li>Hybrid vertical coordinates are implemented with the new <a class="reference internal" href="../iris/iris/aux_factory.html#iris.aux_factory.AuxCoordFactory" title="iris.aux_factory.AuxCoordFactory"><tt class="xref py py-class docutils literal"><span class="pre">AuxCoordFactory</span></tt></a>.</li>
+<li>More graceful loading of units. See <a class="reference external" href="https://github.com/SciTools/iris/pull/17">here</a> for more details.</li>
 </ul>
 </div>
 <div class="section" id="incompatible-changes">
 <h3>Incompatible changes<a class="headerlink" href="#incompatible-changes" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>The ability to add UK Met Office branding to plots has been moved to
-the UK Met Office&#8217;s internal <cite>monty</cite> library.</li>
-<li>The ability to read colour palettes from the UKMO IDL library has been
-moved to the UK Met Office&#8217;s internal <cite>monty</cite> library.</li>
+<li>The Iris data model is now fully aligned with the <a class="reference external" href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/">CF data model</a> .
+Iris remains file-format independent, as is the underlying CF data model.</li>
+<li>Cube merging has been re-written for the new CF data model with the benefit that some corner cases are now better handled. 
+Some users may find that their cubes, once merged, now have a smaller total shape and more intelligent handling of dimension coordinate picking.</li>
 </ul>
 </div>
 <div class="section" id="deprecations">
@@ -143,10 +160,38 @@ moved to the UK Met Office&#8217;s internal <cite>monty</cite> library.</li>
 </div>
 </div>
 <hr class="docutils" />
-<div class="section" id="release-0-7-23-mar-2012">
-<h2>Release 0.7 (23 Mar, 2012)<a class="headerlink" href="#release-0-7-23-mar-2012" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="release-0-8-29-may-2012">
+<h2>Release 0.8 (29 May, 2012)<a class="headerlink" href="#release-0-8-29-may-2012" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id1">
 <h3>Features added<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Cube trajectory extraction now supports irregular grids (ORCA2) using nearest-neighbour interpolation.</li>
+<li>Support cube arithmetic with masked array data.</li>
+<li>PP loading now utilises improved field-code to standard_name/unit mapping.</li>
+<li>Upgraded to use centrally installed and managed version 2 of PP packing library.</li>
+</ul>
+</div>
+<div class="section" id="id2">
+<h3>Incompatible changes<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>The ability to add UK Met Office branding to plots has been moved to
+the UK Met Office&#8217;s internal <cite>monty</cite> library.</li>
+<li>The ability to read colour palettes from the UKMO IDL library has been
+moved to the UK Met Office&#8217;s internal <cite>monty</cite> library.</li>
+</ul>
+</div>
+<div class="section" id="id3">
+<h3>Deprecations<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>None</li>
+</ul>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="release-0-7-23-mar-2012">
+<h2>Release 0.7 (23 Mar, 2012)<a class="headerlink" href="#release-0-7-23-mar-2012" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id4">
+<h3>Features added<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Cubes can now have missing data in the form of numpy masked arrays. All plotting and aggregating routines
 should now support masked data handling without any user code changes necessary.</li>
@@ -168,8 +213,8 @@ up to <a class="reference external" href="http://matplotlib.sourceforge.net/user
 some plot element placements.</li>
 </ul>
 </div>
-<div class="section" id="id3">
-<h3>Incompatible changes<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id6">
+<h3>Incompatible changes<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>The call signature for custom loader functions handled via <a class="reference internal" href="../iris/iris/io/format_picker.html#iris.io.format_picker.FormatSpecification" title="iris.io.format_picker.FormatSpecification"><tt class="xref py py-class docutils literal"><span class="pre">FormatSpecification</span></tt></a> has changed.  
 Previously the signature was <tt class="docutils literal"><span class="pre">loader(filename,</span> <span class="pre">callback)</span></tt> and now looks like <tt class="docutils literal"><span class="pre">loader(filenames,</span> <span class="pre">callback)</span></tt> where <tt class="docutils literal"><span class="pre">filenames</span></tt>
@@ -182,8 +227,8 @@ Further work is planned to support field code translation which should provide m
 <li>For parity with the CF-NetCDF community &#8216;phenomenon_time&#8217; has now become &#8216;time&#8217;.</li>
 </ul>
 </div>
-<div class="section" id="id4">
-<h3>Deprecations<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id7">
+<h3>Deprecations<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Callback functions to <tt class="docutils literal"><span class="pre">iris.load</span></tt> and <tt class="docutils literal"><span class="pre">iris.load_strict</span></tt> should no longer return a value.
 Updated documentation can be found at <a class="reference internal" href="../iris/iris.html#iris.load" title="iris.load"><tt class="xref py py-func docutils literal"><span class="pre">iris.load()</span></tt></a>.</li>
@@ -193,8 +238,8 @@ Updated documentation can be found at <a class="reference internal" href="../iri
 <hr class="docutils" />
 <div class="section" id="release-0-6-20-jan-2012">
 <h2>Release 0.6 (20 Jan, 2012)<a class="headerlink" href="#release-0-6-20-jan-2012" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id5">
-<h3>Features added<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id8">
+<h3>Features added<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>The PP loader now supports PP fields with a header release number of 3.
 (As used by the UM version 8.1)</li>
@@ -207,19 +252,19 @@ scalar).</li>
 <li>Provide support for CF-netCDF label variables and 1-D auxiliary coordinate variables.</li>
 </ul>
 </div>
-<div class="section" id="id6">
-<h3>Incompatible changes<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id9">
+<h3>Incompatible changes<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>The <tt class="docutils literal"><span class="pre">cube.coords</span></tt> dictionary has been replaced with the <tt class="docutils literal"><span class="pre">cube.coord</span></tt> and <tt class="docutils literal"><span class="pre">cube.coords</span></tt> methods 
-for easier identification of coordinates. Full details of this change can be found in <a class="reference internal" href="0p5_to_0p6_coord_api.html"><em>The new Coord API in release 0.6</em></a>.</li>
+for easier identification of coordinates.</li>
 <li><tt class="docutils literal"><span class="pre">iris.cdm.coords</span></tt> has been moved and separated to <tt class="docutils literal"><span class="pre">iris.coords</span> <span class="pre">and</span></tt> <tt class="docutils literal"><span class="pre">iris.coord_systems</span></tt>.</li>
 <li>CF-netCDF global attributes are now put in the cube &#8220;attributes&#8221; dictionary rather than
 as scalar cube coordinates. Additionally any &#8220;unused&#8221; CF-netCDF variable attributes are also put in the 
 cube &#8220;attributes&#8221; dictionary.</li>
 </ul>
 </div>
-<div class="section" id="id7">
-<h3>Deprecations<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id10">
+<h3>Deprecations<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><tt class="docutils literal"><span class="pre">cube.axes</span></tt> is now deprecated and read-only. A coordinate&#8217;s dimensions on a cube can be  
 found with the <tt class="docutils literal"><span class="pre">cube.coord_dims</span></tt> method. An interim cube convenience property
@@ -266,13 +311,12 @@ optimisation purposes only as pickle files will not be compatible across release
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="0p5_to_0p6_coord_api.html" title="The new Coord API in release 0.6"
+          <a href="../examples/index.html" title="Iris examples"
              >next</a> |</li>
         <li class="right" >
           <a href="../iris/iris/util.html" title="iris.util"
              >previous</a> |</li>
         <li><a href="../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../contents.html">contents</a>|&nbsp;</li>

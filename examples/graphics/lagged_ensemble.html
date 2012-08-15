@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Seasonal ensemble model plots &mdash; Iris 0.89 documentation</title>
+    <title>Seasonal ensemble model plots &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../../index.html" />
     <link rel="up" title="Visualisation examples" href="index.html" />
     <link rel="next" title="Multi-line temperature profile plot" href="lineplot_with_legend.html" />
     <link rel="prev" title="Hovmoller diagram of monthly surface temperature" href="hovmoller.html" />
@@ -40,8 +40,8 @@
 <a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="hovmoller.html" title="Hovmoller diagram of monthly surface temperature"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>
@@ -152,34 +151,27 @@ climatological mean, calibrated to the model, from each ensemble member.</li>
 <span class="kn">import</span> <span class="nn">iris.plot</span> <span class="kn">as</span> <span class="nn">iplt</span>
 
 
-<span class="k">def</span> <span class="nf">lagged_ensemble_metadata</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">realization_metadata</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A function which modifies the cube&#39;s metadata to adds an ensemble member coordinate from the filename if one</span>
+<span class="sd">    A function which modifies the cube&#39;s metadata to add a &quot;realization&quot; (ensemble member) coordinate from the filename if one</span>
 <span class="sd">    doesn&#39;t already exist in the cube.</span>
-
-<span class="sd">    Additionally, to reduce the resulting dimensionality of the loaded cube, the forecast reference time and forecast period</span>
-<span class="sd">    are discarded.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c"># add an ensemble member coordinate if one doesn&#39;t already exist</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">cube</span><span class="o">.</span><span class="n">coords</span><span class="p">(</span><span class="s">&#39;realization&#39;</span><span class="p">):</span>
         <span class="c"># the ensemble member is encoded in the filename as *_???.pp where ??? is the ensemble member</span>
-        <span class="n">ensemble_member</span> <span class="o">=</span> <span class="n">fname</span><span class="p">[</span><span class="o">-</span><span class="mi">6</span><span class="p">:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">realization_number</span> <span class="o">=</span> <span class="n">fname</span><span class="p">[</span><span class="o">-</span><span class="mi">6</span><span class="p">:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
 
         <span class="kn">import</span> <span class="nn">iris.coords</span>
-        <span class="n">ensemble_coord</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">AuxCoord</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">ensemble_member</span><span class="p">),</span> <span class="s">&#39;realization&#39;</span><span class="p">)</span>
-        <span class="n">cube</span><span class="o">.</span><span class="n">add_aux_coord</span><span class="p">(</span><span class="n">ensemble_coord</span><span class="p">)</span>
-
-    <span class="n">cube</span><span class="o">.</span><span class="n">remove_coord</span><span class="p">(</span><span class="s">&#39;forecast_period&#39;</span><span class="p">)</span>
-    <span class="n">cube</span><span class="o">.</span><span class="n">remove_coord</span><span class="p">(</span><span class="s">&#39;forecast_reference_time&#39;</span><span class="p">)</span>
-
+        <span class="n">realization_coord</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">AuxCoord</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">realization_number</span><span class="p">),</span> <span class="s">&#39;realization&#39;</span><span class="p">)</span>
+        <span class="n">cube</span><span class="o">.</span><span class="n">add_aux_coord</span><span class="p">(</span><span class="n">realization_coord</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="c"># extract surface temperature cubes which have an ensemble member coordinate, adding appropriate lagged ensemble metadata</span>
-    <span class="n">surface_temp</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;GloSea4&#39;</span><span class="p">,</span> <span class="s">&#39;prodf*_???.pp&#39;</span><span class="p">),</span>
+    <span class="n">surface_temp</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;GloSea4&#39;</span><span class="p">,</span> <span class="s">&#39;ensemble_???.pp&#39;</span><span class="p">),</span>
                   <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="s">&#39;surface_temperature&#39;</span><span class="p">,</span> <span class="n">realization</span><span class="o">=</span><span class="k">lambda</span> <span class="n">value</span><span class="p">:</span> <span class="bp">True</span><span class="p">),</span>
-                  <span class="n">callback</span><span class="o">=</span><span class="n">lagged_ensemble_metadata</span><span class="p">,</span>
+                  <span class="n">callback</span><span class="o">=</span><span class="n">realization_metadata</span><span class="p">,</span>
                   <span class="p">)</span>
 
     <span class="c"># ----------------------------------------------------------------------------------------------------------------</span>
@@ -252,7 +244,10 @@ climatological mean, calibrated to the model, from each ensemble member.</li>
     <span class="c"># Calculate the horizontal mean for the nino region</span>
     <span class="n">mean</span> <span class="o">=</span> <span class="n">nino_cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">([</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="s">&#39;longitude&#39;</span><span class="p">],</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">)</span>
 
-    <span class="c"># Calculate the ensemble mean of the horizontal mean</span>
+    <span class="c"># Calculate the ensemble mean of the horizontal mean. To do this, remove the &quot;forecast_period&quot; and</span>
+    <span class="c"># &quot;forecast_reference_time&quot; coordinates which span both &quot;relalization&quot; and &quot;time&quot;.</span>
+    <span class="n">mean</span><span class="o">.</span><span class="n">remove_coord</span><span class="p">(</span><span class="s">&quot;forecast_reference_time&quot;</span><span class="p">)</span>
+    <span class="n">mean</span><span class="o">.</span><span class="n">remove_coord</span><span class="p">(</span><span class="s">&quot;forecast_period&quot;</span><span class="p">)</span>
     <span class="n">ensemble_mean</span> <span class="o">=</span> <span class="n">mean</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;realization&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">)</span>
 
     <span class="c"># take the ensemble mean from each ensemble member</span>
@@ -296,7 +291,6 @@ climatological mean, calibrated to the model, from each ensemble member.</li>
           <a href="hovmoller.html" title="Hovmoller diagram of monthly surface temperature"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>

@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Hovmoller diagram of monthly surface temperature &mdash; Iris 0.89 documentation</title>
+    <title>Hovmoller diagram of monthly surface temperature &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../../index.html" />
     <link rel="up" title="Visualisation examples" href="index.html" />
     <link rel="next" title="Seasonal ensemble model plots" href="lagged_ensemble.html" />
     <link rel="prev" title="Quickplot of a 2d cube on a map" href="global_map.html" />
@@ -40,8 +40,8 @@
 <a href="../../index.html"><img src="../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="global_map.html" title="Quickplot of a 2d cube on a map"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>
@@ -106,10 +105,8 @@ Iris 0.89
   <div class="section" id="hovmoller-diagram-of-monthly-surface-temperature">
 <span id="graphics-hovmoller"></span><h1>Hovmoller diagram of monthly surface temperature<a class="headerlink" href="#hovmoller-diagram-of-monthly-surface-temperature" title="Permalink to this headline">¶</a></h1>
 <p>This example demonstrates the creation of a Hovmoller diagram with fine control over plot ticks and labels.
-The data file being loaded is daily SST from the Met Office OSTIA project. As the plot is designed to show
-annual variability, monthly data would be sufficient, therefore a constraint is used to filter all data which
-does not fall on the first day of the month. A more sophisticated filtering scheme could be applied in practice,
-perhaps taking the monthly mean as the data to plot.</p>
+The data comes from the Met Office OSTIA project and has been pre-processed to calculate the monthly mean sea
+surface temperature.</p>
 <p id="hovmoller">[<a class="reference external" href="../../plot_directive/../example_code/graphics/hovmoller.py">source code</a>]</p>
 <blockquote>
 <div><div class="figure">
@@ -121,11 +118,8 @@ perhaps taking the monthly mean as the data to plot.</p>
 <span class="sd">================================================</span>
 
 <span class="sd">This example demonstrates the creation of a Hovmoller diagram with fine control over plot ticks and labels.</span>
-<span class="sd">The data file being loaded is daily SST from the Met Office OSTIA project. As the plot is designed to show</span>
-<span class="sd">annual variability, monthly data would be sufficient, therefore a constraint is used to filter all data which</span>
-<span class="sd">does not fall on the first day of the month. A more sophisticated filtering scheme could be applied in practice,</span>
-<span class="sd">perhaps taking the monthly mean as the data to plot.</span>
-
+<span class="sd">The data comes from the Met Office OSTIA project and has been pre-processed to calculate the monthly mean sea</span>
+<span class="sd">surface temperature.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
@@ -136,27 +130,11 @@ perhaps taking the monthly mean as the data to plot.</p>
 <span class="kn">import</span> <span class="nn">iris.unit</span>
 
 
-<span class="k">def</span> <span class="nf">first_day_of_month</span><span class="p">(</span><span class="n">cube</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Returns true if the given cube&#39;s time bound is the first day of a month</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">time</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s">&#39;time&#39;</span><span class="p">)</span>
-
-    <span class="c"># get a datetime object for the time coordinate&#39;s lower bound</span>
-    <span class="n">dt</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">num2date</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-
-    <span class="c"># return true if the day of month is 1</span>
-    <span class="k">return</span> <span class="n">dt</span><span class="o">.</span><span class="n">day</span> <span class="o">==</span> <span class="mi">1</span>
-
-
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;ostia&#39;</span><span class="p">,</span> <span class="s">&#39;ostia_sst_200604_201009_N216.pp&#39;</span><span class="p">)</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;ostia_monthly.nc&#39;</span><span class="p">)</span>
 
-    <span class="c"># load a single cube of surface temperature between +/- 5 latitude, where each constituent field was the first day</span>
-    <span class="c"># of the month</span>
-    <span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="s">&#39;surface_temperature&#39;</span><span class="p">,</span> <span class="n">latitude</span><span class="o">=</span><span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="o">-</span><span class="mi">5</span> <span class="o">&lt;</span> <span class="n">v</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">)</span> <span class="o">&amp;</span>
-                                     <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">cube_func</span><span class="o">=</span><span class="n">first_day_of_month</span><span class="p">)</span>
-                            <span class="p">)</span>
+    <span class="c"># load a single cube of surface temperature between +/- 5 latitude</span>
+    <span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="s">&#39;surface_temperature&#39;</span><span class="p">,</span> <span class="n">latitude</span><span class="o">=</span><span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="o">-</span><span class="mi">5</span> <span class="o">&lt;</span> <span class="n">v</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">))</span>
 
     <span class="c"># Take the mean over latitude</span>
     <span class="n">cube</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">MEAN</span><span class="p">)</span>
@@ -205,7 +183,6 @@ perhaps taking the monthly mean as the data to plot.</p>
           <a href="global_map.html" title="Quickplot of a 2d cube on a map"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../index.html">examples</a>|&nbsp;</li>
         <li><a href="../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../contents.html">contents</a>|&nbsp;</li>

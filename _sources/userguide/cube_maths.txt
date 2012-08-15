@@ -18,39 +18,37 @@ subtraction, division, and multiplication can be applied directly to any cube.
 Calculating the difference between two cubes
 --------------------------------------------
 
-Let's load some data which represents air pressure on the first model level of a single model run::
+Let's load some air temperature which runs from 1860 to 2100::
 
-    filename = iris.sample_data_path('PP', 'COLPEX', 'air_potential_and_air_pressure.pp')
-    air_press_lev1 = iris.Constraint('air_pressure', model_level_number=1)
-    air_press = iris.load_strict(filename, air_press_lev1)
+    filename = iris.sample_data_path('E1_north_america.nc')
+    air_temp = iris.load_strict(filename, 'air_temperature')
 
-We can now get the first and last time slices using indexing (see :doc:`reducing_a_cube` for a reminder)::
+We could now get the first and last time slices using indexing (see :doc:`reducing_a_cube` for a reminder)::
 
     t_first = air_press[0, :, :]
     t_last = air_press[-1, :, :]
 
 .. testsetup::
 
-    filename = iris.sample_data_path('PP', 'COLPEX', 'air_potential_and_air_pressure.pp')
-    cube = iris.load_strict(filename, iris.Constraint('air_pressure', model_level_number=1))
+    filename = iris.sample_data_path('E1_north_america.nc')
+    cube = iris.load_strict(filename, 'air_temperature')
     t_first = cube[0, :, :]
-    t_last = cube[1, :, :]
+    t_last = cube[-1, :, :]
 
 And finally we can subtract the two. The result is a cube of the same size as the original two time slices, but with the 
 data representing their difference:
 
     >>> print t_last - t_first
-    unknown                             (grid_latitude: 412; grid_longitude: 412)
+    unknown                             (latitude: 37; longitude: 49)
          Dimension coordinates:
-              grid_latitude                           x                    -
-              grid_longitude                          -                    x
+              latitude                           x              -
+              longitude                          -              x
          Scalar coordinates:
-              level_height: Cell(point=5.0, bound=(0.0, 13.333332)) m
-              model_level_number: 1
-              sigma: Cell(point=0.9994238, bound=(1.0, 0.99846387))
-              source: Data from Met Office Unified Model 7.04
+              forecast_reference_time: -953274.0 hours since 1970-01-01 00:00:00
+              height: 1.5 m
+              source: Data from Met Office Unified Model 6.05
          Attributes:
-              history: air_pressure - air_pressure (ignoring forecast_period, time)
+              history: air_temperature - air_temperature (ignoring forecast_period, time)
 
 .. note::
     Notice that the coordinates "time" and "forecast_period" have been removed from the resultant cube; this 
@@ -72,14 +70,14 @@ reference pressure and :math:`T` is temperature.
 
 First, let's load pressure and potential temperature cubes::
 
-    filename = iris.sample_data_path('PP', 'COLPEX', 'air_potential_and_air_pressure.pp')
+    filename = iris.sample_data_path('colpex.pp')
     phenomenon_names = ['air_potential_temperature', 'air_pressure']
     pot_temperature, pressure = iris.load_strict(filename, phenomenon_names)
 
 In order to calculate :math:`\frac{p}{p_0}` we can define a coordinate which represents the standard reference pressure of 1000 hPa::
 
     import iris.coords
-    p0 = iris.coords.ExplicitCoord('reference_pressure', 'hPa', points=1000.)
+    p0 = iris.coords.AuxCoord(1000., long_name='reference_pressure', units='hPa')
 
 We must ensure that the units of ``pressure`` and ``p0`` are the same, so convert the newly created coordinate using 
 the :meth:`iris.coords.Coord.unit_converted` method::

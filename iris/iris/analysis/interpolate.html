@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>iris.analysis.interpolate &mdash; Iris 0.89 documentation</title>
+    <title>iris.analysis.interpolate &mdash; Iris 0.9-dev documentation</title>
     
     <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.89',
+        VERSION:     '0.9-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="../../../copyright.html" />
-    <link rel="top" title="Iris 0.89 documentation" href="../../../index.html" />
+    <link rel="top" title="Iris 0.9-dev documentation" href="../../../index.html" />
     <link rel="up" title="iris.analysis" href="../analysis.html" />
     <link rel="next" title="iris.analysis.maths" href="maths.html" />
     <link rel="prev" title="iris.analysis.geometry" href="geometry.html" />
@@ -40,8 +40,8 @@
 <a href="../../../index.html"><img src="../../../_static/logo.png" style="float:right; clear:left; margin-right: 40px; " border="0" alt="Logo"/></a>
 -->
 
-<p style="margin-left: 15px; height:20px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-Iris 0.89
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+Iris 0.9
 </p>
 
 </div>
@@ -59,7 +59,6 @@ Iris 0.89
           <a href="geometry.html" title="iris.analysis.geometry"
              accesskey="P">previous</a> |</li>
         <li><a href="../../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../../contents.html">contents</a>|&nbsp;</li>
@@ -106,7 +105,7 @@ Iris 0.89
   <div class="section" id="iris-analysis-interpolate">
 <span id="id1"></span><h1>iris.analysis.interpolate<a class="headerlink" href="#iris-analysis-interpolate" title="Permalink to this headline">¶</a></h1>
 <span class="target" id="module-iris.analysis.interpolate"></span><p>Interpolation and re-gridding routines.</p>
-<p>See also: <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/index.html#numpy" title="(in NumPy v1.8.dev-fcdbcac)"><tt class="xref py py-mod docutils literal"><span class="pre">NumPy</span></tt></a>, and <a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/py-modindex.html#" title="(in SciPy v0.11.dev)"><em class="xref std std-ref">SciPy</em></a>.</p>
+<p>See also: <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/index.html#numpy" title="(in NumPy v1.8.dev-63cd8f3)"><tt class="xref py py-mod docutils literal"><span class="pre">NumPy</span></tt></a>, and <a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/py-modindex.html#" title="(in SciPy v0.11.dev)"><em class="xref std std-ref">SciPy</em></a>.</p>
 <p>In this module:</p>
 <blockquote>
 <div><ul class="simple">
@@ -127,11 +126,11 @@ Iris 0.89
 dimensions. Any dimensions unspecified will default to a full slice.</p>
 <dl class="docutils">
 <dt>For example:</dt>
-<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;globClim1&#39;</span><span class="p">,</span> <span class="s">&#39;theta.pp&#39;</span><span class="p">))</span>
+<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;ostia_monthly.nc&#39;</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">extract_nearest_neighbour</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="p">[(</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)])</span>
-<span class="go">&lt;iris &#39;Cube&#39; of air_potential_temperature (level_height: 38)&gt;</span>
+<span class="go">&lt;iris &#39;Cube&#39; of surface_temperature (time: 54)&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">extract_nearest_neighbour</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="p">[(</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)])</span>
-<span class="go">&lt;iris &#39;Cube&#39; of air_potential_temperature (level_height: 38; longitude: 192)&gt;</span>
+<span class="go">&lt;iris &#39;Cube&#39; of surface_temperature (time: 54; longitude: 432)&gt;</span>
 </pre></div>
 </div>
 </dd>
@@ -220,9 +219,9 @@ updated to the data type of the incoming cube.</p>
 dimensions.</p>
 <dl class="docutils">
 <dt>For example:</dt>
-<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;globClim1&#39;</span><span class="p">,</span> <span class="s">&#39;theta.pp&#39;</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">nearest_neighbour_data_value</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="p">[(</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;model_level_number&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)])</span>
-<span class="go">299.35156</span>
+<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;air_temp.pp&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">nearest_neighbour_data_value</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="p">[(</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)])</span>
+<span class="go">299.21564</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">nearest_neighbour_data_value</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="p">[(</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)])</span>
 <span class="gt">Traceback (most recent call last):</span>
 <span class="c">...</span>
@@ -261,11 +260,11 @@ dimensions.</p>
 dimensions. Any dimensions unspecified will default to a full slice.</p>
 <dl class="docutils">
 <dt>For example:</dt>
-<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;PP&#39;</span><span class="p">,</span> <span class="s">&#39;globClim1&#39;</span><span class="p">,</span> <span class="s">&#39;theta.pp&#39;</span><span class="p">))</span>
+<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_strict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;ostia_monthly.nc&#39;</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">nearest_neighbour_indices</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="p">[(</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;longitude&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)])</span>
-<span class="go">(slice(None, None, None), 72, 5)</span>
+<span class="go">(slice(None, None, None), 9, 12)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">iris</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">nearest_neighbour_indices</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="p">[(</span><span class="s">&#39;latitude&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)])</span>
-<span class="go">(slice(None, None, None), 72, slice(None, None, None))</span>
+<span class="go">(slice(None, None, None), 9, slice(None, None, None))</span>
 </pre></div>
 </div>
 </dd>
@@ -396,7 +395,6 @@ See <tt class="xref py py-func docutils literal"><span class="pre">iris.analysis
           <a href="geometry.html" title="iris.analysis.geometry"
              >previous</a> |</li>
         <li><a href="../../../index.html">home</a>|&nbsp;</li>
-        <!-- <li><a href="../../../search.html">search</a>|&nbsp;</li> -->
         <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
         <li><a href="../../../contents.html">contents</a>|&nbsp;</li>

@@ -29,9 +29,9 @@ Overview
    git config --global user.email you@yourdomain.example.com
    git config --global user.name "Your Name Comes Here"
    # get the repository if you don't have it
-   git clone git://github.com/SciTools/Iris.git
+   git clone git://github.com/SciTools/iris.git
    # make a branch for your patching
-   cd Iris
+   cd iris
    git branch the-fix-im-thinking-of
    git checkout the-fix-im-thinking-of
    # hack, hack, hack
@@ -59,8 +59,8 @@ In detail
 #. If you don't already have one, clone a copy of the
    `iris`_ repository::
 
-      git clone git://github.com/SciTools/Iris.git
-      cd Iris
+      git clone git://github.com/SciTools/iris.git
+      cd iris
 
 #. Make a 'feature branch'.  This will be where you work on
    your bug fix.  It's nice and safe and leaves you with
@@ -124,7 +124,7 @@ Then::
    # rename pointer to main repository to 'upstream'
    git remote rename origin upstream
    # point your repo to default read / write to your fork on github
-   git remote add origin git@github.com:your-user-name/Iris.git
+   git remote add origin git@github.com:your-user-name/iris.git
    # push up any branches you've made and want to keep
    git push origin the-fix-im-thinking-of
 
