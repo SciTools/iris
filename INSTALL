@@ -43,18 +43,16 @@ python 2.7 (or later but not python3)
     Iris requires python 2.7 or later (`download <http://www.python.org/download/>`__)
 
 numpy 1.6 (or later)
-    array support for python (`download
-    <http://numpy.scipy.org/>`__)
+    array support for python (`download <http://numpy.scipy.org/>`__)
 
 scipy 0.10 or later
-    scientific analysis (`download
-    <www.scipy.org>`__)
+    scientific analysis (`download <http://www.scipy.org>`__)
 
 udunits2 2.1.24 or later
-    (`downloads <ftp://ftp.unidata.ucar.edu/pub/udunits/udunits-2.1.24.tar.gz>`__)
+    (`downloads <ftp://ftp.unidata.ucar.edu/pub/udunits/>`__)
 
 netcdf4-python 0.9.9 or later
-    (`download <http://netcdf4-python.googlecode.com/files/netCDF4-0.9.9.tar.gz>`__)
+    (`download <http://netcdf4-python.googlecode.com/>`__)
 
 PyKE 1.1.1 or later
     (`download <http://downloads.sourceforge.net/project/pyke/pyke/>`__)
@@ -70,16 +68,19 @@ All of these are required for the Iris test suite to run.
 
 
 grib-api 1.9.9 or later
-    (`download <http://www.ecmwf.int/products/data/software/download/software_files>`__)
+    (`download <http://www.ecmwf.int/products/data/software/download/grib_api.html>`__)
+
+    A compression library such as Jasper is required to read JPEG2000 compressed GRIB2 files.
 
 matplotlib 1.1.0
-    (`download <http://downloads.sourceforge.net/project/matplotlib/matplotlib>`__)
+    (`download <http://sourceforge.net/projects/matplotlib/files/matplotlib/>`__)
 
 basemap 1.0
-    (`download <http://downloads.sourceforge.net/project/matplotlib/matplotlib-toolkits/basemap-1.0>`__)
+    (`download <http://sourceforge.net/projects/matplotlib/files/matplotlib-toolkits/>`__)
+
 
 PythonImagingLibrary 1.1.7
-    (`download <http://effbot.org/downloads/Imaging-1.1.7.tar.gz>`__)
+    (`download <http://effbot.org/downloads/>`__)
 
 graphviz 2.18
     (`download <http://www.graphviz.org/pub/graphviz/stable/SOURCES/>`__)
