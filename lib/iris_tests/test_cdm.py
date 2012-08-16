@@ -308,15 +308,6 @@ class TestValidity(tests.IrisTest):
         with self.assertRaises(ValueError):
             self.cube_2d.add_dim_coord(wobble, 99)
 
-    def test_invalid_coord_system(self):
-        cs = self.cube_2d.coord('latitude').coord_system
-        old_cs_type = cs.cs_type
-        cs.cs_type = -999
-        try:
-            self.assertRaises(iris.exceptions.InvalidCubeError, cs.assert_valid)
-        finally:
-            cs.cs_type = old_cs_type
-
 
 class TestQueryCoord(tests.IrisTest):
     def setUp(self):

@@ -24,136 +24,28 @@ from abc import ABCMeta
 
 import numpy
 
-import iris.cube
-import iris.exceptions
-import iris.util
-
-
-# Define Horizontal coordinate type constants
-CARTESIAN_CS = 'cartesian'
-SPHERICAL_CS = 'spherical'
-# maintain a tuple of valid CS types
-_VALID_CS_TYPES = (CARTESIAN_CS, SPHERICAL_CS)
-
-
-USE_OLD_XML = True
-
-
-class SpheroidDatum(iris.util._OrderedHashable):
-    """Defines the shape of the Earth."""
-
-    # Declare the attribute names relevant to the _OrderedHashable behaviour.
-    _names = ('label', 'semi_major_axis', 'semi_minor_axis', 'flattening', 'units')
-
-    label = None
-    """The name of this spheroid definition."""
-
-    semi_major_axis = None
-    """The length of the semi-major axis, :math:`a`."""
-
-    semi_minor_axis = None
-    """The length of the semi-minor axis, :math:`b`."""
-
-    flattening = None
-    """The flattening, :math:`f`, or ellipticity. Defined as :math:`f = 1-\\frac{b}{a}`."""
-
-    units = None
-    """The unit of measure for the axes."""
-
-    def __init__(self, label='undefined spheroid', semi_major_axis=None, semi_minor_axis=None,
-                        flattening=None, units='no unit'):
-        """
-        If all three of semi_major_axis, semi_minor_axis, and flattening are None then
-        it defaults to a perfect sphere using the radius 6371229m.
-
-        Otherwise, at least two of semi_major_axis, semi_minor_axis, and flattening
-        must be given.
-
-        """
-        #if radius/flattening are not specified, use defaults.
-        if (semi_major_axis is None) and (semi_minor_axis is None) and (flattening is None):
-            #Use the UM radius from  http://fcm2/projects/UM/browser/UM/trunk/src/constants/earth_constants_mod.F90
-            semi_major_axis = 6371229.0
-            semi_minor_axis = 6371229.0
-            flattening = 0.0
-            units = iris.unit.Unit('m')
-
-        #calculate the missing element (if any) from the major/minor/flattening triplet
-        else:
-            if semi_major_axis is None:
-                if semi_minor_axis is None or flattening is None:
-                    raise ValueError("Must have at least two of the major/minor/flattening triplet")
-                semi_major_axis = semi_minor_axis / (1.0-flattening)
-
-            elif semi_minor_axis is None:
-                if semi_major_axis is None or flattening is None:
-                    raise ValueError("Must have at least two of the major/minor/flattening triplet")
-                semi_minor_axis = (1.0-flattening) * semi_major_axis
-
-            elif flattening is None:
-                if semi_major_axis is None or semi_minor_axis is None:
-                    raise ValueError("Must have at least two of the major/minor/flattening triplet")
-                flattening = 1.0 - (semi_minor_axis/semi_major_axis)
-
-        self._init(label, semi_major_axis, semi_minor_axis, flattening, units)
-
-    def is_spherical(self):
-        """Returns whether this datum describes a perfect sphere."""
-        return self.flattening == 0.0
-
-
-class PrimeMeridian(iris.util._OrderedHashable):
-    """Defines the origin of the coordinate system."""
-
-    # Declare the attribute names relevant to the _OrderedHashable behaviour.
-    _names = ('label', 'value')
-
-    label = None
-    """The name of the specific location which defines the reference point."""
-
-    value = None
-    """The longitude of the reference point."""
-
-    def __init__(self, label="Greenwich", value=0.0):
-        """ """
-        self._init(label, value)
-
-
-class GeoPosition(iris.util._OrderedHashable):
-    """Defines a geographic coordinate latitude/longitude pair."""
-
-    # Declare the attribute names relevant to the _OrderedHashable behaviour.
-    _names = ('latitude', 'longitude')
-
-    latitude = None
-    """The latitude of the position in degrees."""
-
-    longitude = None
-    """The longitude of the position in degrees."""
+import iris
+import iris.unit
 
 
 class CoordSystem(object):
     """Abstract base class for coordinate systems.
-
-    A Coord holds an optional CoordSystem, which can be used to indicate
-    several Coords are defined to be 'in the same system'.
-    E.g lat and lon coords will hold a shared or identical LatLonCS.
+    
     """
     __metaclass__ = ABCMeta
 
+    name = None
+    """CF: grid_mapping_name."""
+
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.__dict__ == other.__dict__
-        
-    def __ne__(self, other):
-        # Must supply __ne__, Python does not defer to __eq__ for negative equality
-        return not (self == other)
 
-    def assert_valid(self):
-        """Check the CS is in a valid state (else raises error)."""
-        pass
+    def __ne__(self, other):
+        return not (self == other)
 
     def xml_element(self, doc):
         """Default behaviour for coord systems."""
+        
         xml_element_name = type(self).__name__
         # lower case the first char
         xml_element_name = xml_element_name.replace(xml_element_name[0], xml_element_name[0].lower(), 1)
@@ -162,14 +54,7 @@ class CoordSystem(object):
         
         attrs = []
         for k, v in self.__dict__.iteritems():
-            if isinstance(v, iris.cube.Cube):
-                attrs.append([k, 'defined'])
-            else:
-                if USE_OLD_XML:    
-                    v = str(v).replace("units", "unit")
-                    attrs.append([k, v])
-                else:
-                    attrs.append([k, v])
+            attrs.append([k, v])
 
         attrs.sort(key=lambda attr: attr[0])     
 
@@ -178,179 +63,295 @@ class CoordSystem(object):
         
         return coord_system_xml_element
     
+#     # TODO: Is there value in defining the units this coord system uses? Perhaps for validation purposes.
+#     def units(self):
+#        raise NotImplementedError() 
+
+    def _to_cartopy(self):
+        """Create a representation of ourself using a cartopy object."""
+        raise NotImplementedError()
+
+
+class GeogCS(CoordSystem):
+    """An geographic (ellipsoidal) coordinate system, defined by the shape of the Earth and a prime meridian."""
     
-class HorizontalCS(CoordSystem):
-    """Abstract CoordSystem for holding horizontal grid information."""
+    name = "latitude_longitude"
+    
+    # TODO: Consider including a label, but don't currently see the need.
+    def __init__(self, semi_major_axis=None, semi_minor_axis=None, inverse_flattening=None, units=None,
+                 longitude_of_prime_meridian=None):
+        """Creates a new GeogCS.
+        
+        Kwargs:
+        
+            * semi_major_axis              -  of ellipsoid
+            * semi_minor_axis              -  of ellipsoid
+            * inverse_flattening           -  of ellipsoid 
+            * units                        -  of measure of the radii
+            * longitude_of_prime_meridian  -  Can be used to specify the prime meridian on the ellipsoid.
+                                              Default = 0.  
+        
+        If all three of semi_major_axis, semi_minor_axis, and inverse_flattening are None then
+        it defaults to a perfect sphere using the radius 6371229m.
+        
+        If just semi_major_axis is set, with no semi_minor_axis or inverse_flattening then
+        a perfect sphere is created from the given radius.
 
-    def __init__(self, datum):
-        """ """
-        CoordSystem.__init__(self)
+        If just two of semi_major_axis, semi_minor_axis, and inverse_flattening are given
+        the missing element is calulated from the formula:      
+        :math:
+        
+            flattening = (semi_major_axis - semi_minor_axis) / semi_major_axis
+        
+        Examples:
+        
+            default_cs = GeogCS()
+            airy1830 = GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909, inverse_flattening=299.3249646, units="m")
+            airy1830 = GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909, units="m")
+            custom_cs = GeogCS(6400, 6300, units="km")
 
-        self.datum = datum
-        self.cs_type = CARTESIAN_CS
-
-    def __repr__(self):
-        return "HorizontalCS(%r, %r)" % (self.datum, self.cs_type)
-
-    def assert_valid(self):
-        if self.cs_type not in _VALID_CS_TYPES:
-            raise iris.exceptions.InvalidCubeError('"%s" is not a valid coordinate system type.' % self.cs_type)
-        CoordSystem.assert_valid(self)
-
-
-class LatLonCS(HorizontalCS):
-    """Holds latitude/longitude grid information for both regular and rotated coordinates."""
-
-    def __init__(self, datum, prime_meridian, n_pole, reference_longitude):
         """
-        Args:
+        # Default (no ellipsoid parmas)
+        if (semi_major_axis is None) and (semi_minor_axis is None) and (inverse_flattening is None):
+            DEFAULT_RADII = 6371229.0
+            semi_major_axis = DEFAULT_RADII
+            semi_minor_axis = DEFAULT_RADII
+            inverse_flattening = 0.0
+            units = iris.unit.Unit('m')
 
-        * datum:
-            An instance of :class:`iris.coord_systems.SpheroidDatum`.
-        * prime_meridian:
-            An instance of :class:`iris.coord_systems.PrimeMeridian`.
-        * n_pole:
-            An instance of :class:`iris.coord_systems.GeoPosition` containing the geographic
-            location of the, possibly rotated, North pole.
-        * reference_longitude:
-            The longitude of the standard North pole within the possibly rotated
-            coordinate system.
+        # Sphere (major axis only)
+        elif semi_major_axis is not None and (semi_minor_axis is None and inverse_flattening is None):
+            semi_minor_axis = semi_major_axis
+            inverse_flattening = 0.0
+
+        # Calculate missing param?
+        elif semi_major_axis is None:
+            if semi_minor_axis is None or inverse_flattening is None:
+                raise ValueError("Must have at least two of semi_major_axis, semi_minor_axis and inverse_flattening")
+            semi_major_axis = -semi_minor_axis / ((1.0 - inverse_flattening) / inverse_flattening)
+
+        elif semi_minor_axis is None:
+            if semi_major_axis is None or inverse_flattening is None:
+                raise ValueError("Must have at least two of semi_major_axis, semi_minor_axis and inverse_flattening")
+            semi_minor_axis = semi_major_axis - (1.0 / inverse_flattening) * semi_major_axis
+
+        elif inverse_flattening is None:
+            if semi_major_axis is None or semi_minor_axis is None:
+                raise ValueError("Must have at least two of semi_major_axis, semi_minor_axis and inverse_flattening")
+            if semi_major_axis == semi_minor_axis:
+                inverse_flattening = 0.0
+            else:
+                inverse_flattening = 1.0 / ((semi_major_axis - semi_minor_axis) / semi_major_axis)
             
-        Example creation::
-        
-            cs = LatLonCS(datum=SpheroidDatum(), 
-                          prime_meridian=PrimeMeridian(label="Greenwich", value=0.0), 
-                          n_pole=GeoPosition(90, 0), 
-                          reference_longitude=0.0
-                         )
-        
-        """
-        if n_pole is not None and not isinstance(n_pole, GeoPosition):
-            raise TypeError("n_pole must be an instance of GeoPosition")
+#        # Validate 3 given ellipsoid params 
+#        else:
+#            rdiff = (semi_major_axis - semi_minor_axis)
+#            if rdiff:
+#                result = 1.0 / (rdiff / semi_major_axis)
+#                # TODO: assert_almost_equal is not helpful here,
+#                # it compares to n decimal places,
+#                # not n significant digits.
+#                numpy.testing.assert_almost_equal(result, inverse_flattening)
+#            elif semi_major_axis == 0.0:
+#                raise ValueError("Sphere cannot have zero radius") 
+#            elif inverse_flattening != 0.0:
+#                raise ValueError("Expected zero inverse_flattening for sphere") 
 
-        HorizontalCS.__init__(self, datum)
+        self.semi_major_axis = float(semi_major_axis)
+        """Major radius of the ellipsoid."""
+        
+        self.semi_minor_axis = float(semi_minor_axis)
+        """Minor radius of the ellipsoid."""
 
-        self.datum = datum
-        self.prime_meridian = prime_meridian
-        self.n_pole = n_pole
-        self.reference_longitude = reference_longitude
-        self.cs_type = SPHERICAL_CS
+        self.inverse_flattening = float(inverse_flattening)
+        """:math:`1/f` where :math:`f = (a-b)/a`"""
+        
+        self.units = iris.unit.Unit(units)
+        """Unit of measure of radii."""
+        
+        self.longitude_of_prime_meridian = float(longitude_of_prime_meridian) if longitude_of_prime_meridian else 0.0
+        """Describes 'zero' on the ellipsoid."""
 
     def __repr__(self):
-        return "LatLonCS(%r, %r, %r, %r)" % (self.datum, self.prime_meridian, self.n_pole, self.reference_longitude)
+        return "GeogCS(semi_major_axis=%r, semi_minor_axis=%r, inverse_flattening=%r, units='%r', longitude_of_prime_meridian=%r)" % \
+                    (self.semi_major_axis, self.semi_minor_axis, self.inverse_flattening,
+                     self.units, self.longitude_of_prime_meridian)
 
-    def has_rotated_pole(self):
-        return self.n_pole != GeoPosition(90, 0)
+    def __str__(self):
+        return "GeogCS(semi_major_axis=%s, semi_minor_axis=%s, inverse_flattening=%s, units=%s, longitude_of_prime_meridian=%s)" % \
+                    (self.semi_major_axis, self.semi_minor_axis, self.inverse_flattening,
+                     self.units, self.longitude_of_prime_meridian)
+
+#    def units(self):
+#        return "degrees"
+        
+    def _to_cartopy(self):
+        """Create a representation of ourself using a cartopy object."""
+        raise NotImplementedError("Cartopy integration not yet implemented")
+        
 
 
-class HybridHeightCS(CoordSystem):
-    """CoordSystem for holding hybrid height information."""
-
-    def __init__(self, orography):
-        """ """
-        CoordSystem.__init__(self)
-        self.orography = orography
-
-    def __repr__(self):
-        return "HybridHeightCS(%r)" % self.orography
+class GeoPos(object):
+    """Store the position of the pole, for prettier code."""
+    def __init__(self, lat, lon):
+        self.lat = float(lat)
+        self.lon = float(lon)
     
-    def __deepcopy__(self, memo):
-        """DON'T duplicate the orography amongst instances - share it."""
-        return HybridHeightCS(self.orography)
+    def __repr__(self):
+        return "GeoPos(%r, %r)" % (self.lat, self.lon)
+    
+    def __eq__(self, b):
+        return self.__class__ == b.__class__ and self.__dict__ == b.__dict__
+
+    def __ne__(self, b):
+        return not (self == b)
+
+
+class RotatedGeogCS(GeogCS):
+    """A :class:`GeogCS` with rotated pole."""
+    
+    name = "rotated_latitude_longitude"
+    
+    def __init__(self, semi_major_axis=None, semi_minor_axis=None, inverse_flattening=None, units=None,
+                 longitude_of_prime_meridian=None, grid_north_pole=None, north_pole_lon=0):
+        """For :class:`GeogCS` parameters see :func:`GeogCS.__init__.`
+
+        Args:
         
-    def orography_at_points(self, cube):
-        """ Return a 2D array (YxX) of orography heights for the given cube."""
-        if self.orography is None:
-            raise TypeError("Regridding cannot be performed as the Orography does not exist (is None).")
-        return self.orography.regridded(cube, mode='nearest').data
-
-    def orography_at_xy_corners(self, cube):
-        """Return (n, m, 4) array of orography at the 4 lon/lat corners of each cell."""
-        # NB. If there are multiple definitive coordinates for an axis it doesn't matter which we use.
-        x_coord = cube.coord(axis='x', definitive=True)
-        y_coord = cube.coord(axis='y', definitive=True)
-        if (not x_coord.has_bounds()) or (not y_coord.has_bounds()):
-            raise iris.exceptions.IrisError("x or y coord without bounds")
-        if x_coord.ndim != 1:
-            raise iris.exceptions.CoordinateMultiDimError(x_coord)
-        if y_coord.ndim != 1:
-            raise iris.exceptions.CoordinateMultiDimError(y_coord)
-        orography = numpy.empty((y_coord.shape[0], x_coord.shape[0], 4))  # y, x, xyb
-        for iy, y_bound in enumerate(y_coord.bounds):
-            for ix, x_bound in enumerate(x_coord.bounds):
-                # Get the orography at the ll corners for this cell
-                interp_value = iris.analysis.interpolate.nearest_neighbour_data_value
-                orography[iy, ix, 0] = interp_value(self.orography, {x_coord.name: x_bound[0], y_coord.name: y_bound[0]})
-                orography[iy, ix, 1] = interp_value(self.orography, {x_coord.name: x_bound[0], y_coord.name: y_bound[1]})
-                orography[iy, ix, 2] = interp_value(self.orography, {x_coord.name: x_bound[1], y_coord.name: y_bound[1]})
-                orography[iy, ix, 3] = interp_value(self.orography, {x_coord.name: x_bound[1], y_coord.name: y_bound[0]})
-        return orography
-
-    def orography_at_contiguous_corners(self, cube, use_x_bounds, use_y_bounds):
-        """Return an (n+1, m), (n, m+1), or (n+1, m+1) array of orography for cell corners/bounds."""
-        x_coord = cube.coord(axis='x', definitive=True)
-        y_coord = cube.coord(axis='y', definitive=True)
+            * grid_north_pole  -  The true latlon position of the rotated pole: tuple(lat, lon).
+                                  CF: (grid_north_pole_latitude, grid_north_ple_longitude).
+            
+        Kwargs:
         
-        if use_x_bounds:
-            x_values = x_coord.contiguous_bounds()
-        else:
-            x_values = x_coord.points
-        if use_y_bounds:
-            y_values = y_coord.contiguous_bounds()
-        else:
-            y_values = y_coord.points
+            * north_pole_lon   -  Longitude of true north pole in rotated grid. Default = 0.
+                                  CF: north_pole_grid_longitude
 
-        interp_value = iris.analysis.interpolate.nearest_neighbour_data_value
+        Example:
+        
+            rotated_cs = RotatedGeogCS(grid_north_pole=(30,30))
+            another_cs = RotatedGeogCS(6400, 6300, units="km", grid_north_pole=(30,30))
 
-        orography = numpy.empty((len(y_values), len(x_values)), dtype=self.orography.data.dtype)
-        for iy, y in enumerate(y_values):
-            for ix, x in enumerate(x_values):
-                orography[iy, ix] = interp_value(self.orography, [(x_coord, x), (y_coord, y)])
-        return orography
+        """        
+        GeogCS.__init__(self, semi_major_axis, semi_minor_axis, inverse_flattening, units,
+                       longitude_of_prime_meridian)
 
-    def _height_3d(self, orography, level_height, sigma):
-        """Given a (Y, X) array of orography, return (Z, Y, X) array of heights."""
-        # Re-shape the level_height and sigma values so we can use NumPy broadcasting
-        # to get our answer in one easy step.
-        level_height = numpy.reshape(level_height, (-1, 1, 1))  # z, -, -
-        sigma = numpy.reshape(sigma, (-1, 1, 1))  # z, -, -
-        return level_height + sigma * orography
+        if grid_north_pole is None:
+            raise ValueError("No grid_north_pole specified")
+        elif not isinstance(grid_north_pole, GeoPos):
+            grid_north_pole = GeoPos(grid_north_pole[0], grid_north_pole[1])
 
-    def heights(self, level_height, sigma, cube=None, _orography=None):
+
+        self.grid_north_pole = grid_north_pole
+        """A :class:`~GeoPos` describing the true latlon position of the rotated pole."""
+        
+        # TODO: Confirm CF's "north_pole_lon" is the same as our old "reference longitude"
+        self.north_pole_lon = float(north_pole_lon)
+        """Longitude of true north pole in rotated grid."""
+
+    @classmethod
+    def from_geocs(cls, geocs, grid_north_pole, north_pole_lon=0):
+        """Construct a RotatedGeogCS from a GeogCS. See also :func:`RotatedGeogCS.__init__`"""
+        return RotatedGeogCS(geocs.semi_major_axis, geocs.semi_minor_axis, geocs.inverse_flattening, geocs.units,
+                            geocs.longitude_of_prime_meridian, grid_north_pole=grid_north_pole, north_pole_lon=north_pole_lon)
+
+    def __repr__(self):
+            return "RotatedGeogCS(semi_major_axis=%r, semi_minor_axis=%r, inverse_flattening=%r, units='%r', longitude_of_prime_meridian=%r, grid_north_pole=%r, north_pole_lon=%r)" % \
+                        (self.semi_major_axis, self.semi_minor_axis, self.inverse_flattening,
+                         self.units, self.longitude_of_prime_meridian,
+                         self.grid_north_pole, self.north_pole_lon)
+
+    def __str__(self):
+            return "RotatedGeogCS(semi_major_axis=%s, semi_minor_axis=%s, inverse_flattening=%s, units=%s, longitude_of_prime_meridian=%s, grid_north_pole=%s, north_pole_lon=%s)" % \
+                        (self.semi_major_axis, self.semi_minor_axis, self.inverse_flattening,
+                         self.units, self.longitude_of_prime_meridian,
+                         self.grid_north_pole, self.north_pole_lon)
+
+#    def units(self):
+#        return "degrees"
+
+    def _to_cartopy(self):
+        """Create a representation of ourself using a cartopy object."""
+        raise NotImplementedError("Cartopy integration not yet implemented")
+
+
+class MapProjection(CoordSystem):
+    """Abstract base class for map projections.
+    
+    Describes a transformation from a :class:`GeogCS` to a plane, for mapping.
+    A planar coordinate system is produced by the transformation.
+    
+    """
+    __metaclass__ = ABCMeta
+    
+    def __init__(self, geocs):
+        """Creates a MapProjection.
+        
+        Args:
+        
+            * geocs  -  A :class:`GeoCs` that describes the Earth, from which we project.
+            
         """
-        Returns a 3-D array (ZxYxX) of heights above the geoid for the given cube points.
+        self.geocs = geocs
 
-        cube       - defines the points at which we want heights
-        _orography - internal optimisation, array of precalculated orography at cube points
+#     def units(self):
+#        raise NotImplementedError() 
+
+    def _to_cartopy(self):
+        """Create a representation of ourself using a cartopy object."""
+        raise NotImplementedError("Cartopy integration not yet implemented")
+
+
+
+class TransverseMercator(MapProjection):
+    """A cylindrical map projection, with XY coordinates measured in meters."""
+
+    name = "transverse_mercator" 
+
+    def __init__(self, geocs, origin, false_origin, scale_factor):
+        """Constructs a TransverseMercator object.
+        
+        Args:
+        
+            * geocs         -  A :class:`GeoCs` that describes the Earth, from which we project.
+            * origin        -  True latlon point of planar origin: tuple(lat, lon) in degrees.
+                               CF: (latitude_of_projection_origin, longitude_of_central_meridian).
+            * false_origin  -  Offset from planar origin: (x, y) in meters.
+                               Used to elliminate negative numbers in the area of interest.
+                               CF: (false_easting, false_northing).
+            * scale_factor  -  Reduces the cylinder to slice through the ellipsoid (secant form).
+                               Used to provide TWO longitudes of zero distortion in the area of interest.
+                               CF: scale_factor_at_central_meridian.
+
+        Example:
+        
+            airy1830 = GeogCS(6377563.396, 6356256.910, 299.3249646, "m")
+            osgb = TransverseMercator(airy1830, (49,-2), (40000,-10000), 0.9996012717)
 
         """
+        MapProjection.__init__(self, geocs)
 
-        #check params
-        if (cube is None) and (_orography is None):
-            raise ValueError("No cube specified")
-        if (cube is not None) and (_orography is not None):
-            raise ValueError("Cannot accept cube and _orography together")
+        if not isinstance(origin, GeoPos):
+            origin = GeoPos(origin[0], origin[1])
 
-        # Get the orography height for the cell points
-        if _orography is None:
-            #regrid the orography to the cube's ll grid
-            orography = self.orography_at_points(cube)  # y, x
-        else:
-            #it has already been calculated
-            if _orography.ndim != 2:
-                raise ValueError("_orography must be 2D")
-            orography = _orography
+        self.geocs = geocs
+        
+        self.origin = origin
+        """True latlon point of planar origin: tuple(lat, lon) in degrees."""
+        
+        # TODO: Update GeoPos to not just be latlon
+        self.false_origin = (float(false_origin[0]), float(false_origin[1]))  
+        """Offset from planar origin: (x, y) in meters."""
+        
+        self.scale_factor = float(scale_factor)
+        """Reduces the cylinder to slice through the ellipsoid."""
 
-        return self._height_3d(orography, level_height.points, sigma.points)
+    def __repr__(self):
+        return "TransverseMercator(origin=%r, false_origin=%r, scale_factor=%r, geos=%r)" % \
+                    (self.origin, self.false_origin, self.scale_factor, self.geocs)
 
-    def heights_at_contiguous_corners(self, level_height, sigma, cube, use_x_bounds, use_y_bounds):
-        """
-        Returns a 3-D array (ZxYxX) of heights above the geoid for the given cube points.
+#    def units(self):
+#        return "meters"
 
-        cube         - defines the points at which we want heights
-        use_x_bounds - whether we should use point or bound positions along the x axis
-        use_y_bounds - whether we should use point or bound positions along the y axis
-
-        """
-        orography = self.orography_at_contiguous_corners(cube, use_x_bounds, use_y_bounds) # y, x
-        return self._height_3d(orography, level_height.contiguous_bounds(), sigma.contiguous_bounds())
+    def _to_cartopy(self):
+        """Create a representation of ourself using a cartopy object."""
+        raise NotImplementedError("Cartopy integration not yet implemented")

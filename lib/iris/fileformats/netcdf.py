@@ -345,16 +345,16 @@ def _cf_coord_identity(coord):
     
     # Special cases
     # i) Rotated pole
-    if isinstance(coord.coord_system, iris.coord_systems.LatLonCS):
+    if isinstance(coord.coord_system, iris.coord_systems.GeogCS):
         if coord.name() in ['latitude', 'grid_latitude']:
-            if coord.coord_system.has_rotated_pole():
+            if isinstance(coord.coord_system, iris.coord_systems.RotatedGeogCS):
                 standard_name = 'grid_latitude'
                 units = 'degrees'
             else:
                 units = 'degrees_north'
 
         if coord.name() in ['longitude', 'grid_longitude']:
-            if coord.coord_system.has_rotated_pole():
+            if isinstance(coord.coord_system, iris.coord_systems.RotatedGeogCS):
                 standard_name = 'grid_longitude'
                 units = 'degrees'
             else:
@@ -533,28 +533,24 @@ def _create_cf_grid_mapping(dataset, cube, cf_var):
     data variable grid mapping attribute. 
     
     """
-    cs = cube.coord_system('HorizontalCS')
+    cs = cube.coord_system('CoordSystem')
     
     if cs is not None:
-        if isinstance(cs, iris.coord_systems.LatLonCS):
-            cf_grid_name = 'rotated_latitude_longitude' if cs.has_rotated_pole() else 'latitude_longitude'
+        if isinstance(cs, iris.coord_systems.GeogCS):
+            cf_grid_name = 'rotated_latitude_longitude' if isinstance(cs, iris.coord_systems.RotatedGeogCS) else 'latitude_longitude'
             
             if cf_grid_name not in dataset.variables:
                 cf_var.grid_mapping = cf_grid_name
                 cf_var_grid = dataset.createVariable(cf_grid_name, np.int32)
                 cf_var_grid.grid_mapping_name = cf_grid_name
                 cf_var_grid.longitude_of_prime_meridian = 0.0
+                cf_var_grid.semi_major_axis = cs.semi_major_axis
+                cf_var_grid.semi_minor_axis = cs.semi_minor_axis
     
-                if cs.datum:
-                    cf_var_grid.semi_major_axis = cs.datum.semi_major_axis
-                    cf_var_grid.semi_minor_axis = cs.datum.semi_minor_axis
-                
-                if cs.has_rotated_pole():
-                    if cs.n_pole:
-                        cf_var_grid.grid_north_pole_latitude = cs.n_pole.latitude
-                        cf_var_grid.grid_north_pole_longitude = cs.n_pole.longitude
-                        
-                    cf_var_grid.north_pole_grid_longitude = cs.reference_longitude
+                if isinstance(cs, iris.coord_systems.RotatedGeogCS):
+                    cf_var_grid.grid_north_pole_latitude = cs.grid_north_pole.lat
+                    cf_var_grid.grid_north_pole_longitude = cs.grid_north_pole.lon
+                    cf_var_grid.north_pole_grid_longitude = cs.north_pole_lon
             else:
                 # Reference previously created grid mapping
                 cf_var.grid_mapping = cf_grid_name
