@@ -173,12 +173,12 @@ class TestCoordRepr(unittest.TestCase):
         self.lat = iris.tests.stock.realistic_4d().coord('grid_latitude')
         
     def test_DimCoord(self):
-        result = "DimCoord(array([-0.1278, -0.1269, -0.126 , -0.1251, -0.1242, -0.1233, -0.1224,\n       -0.1215, -0.1206, -0.1197], dtype=float32), bounds=array([[-0.12825, -0.12735],\n       [-0.12735, -0.12645],\n       [-0.12645, -0.12555],\n       [-0.12555, -0.12465],\n       [-0.12465, -0.12375],\n       [-0.12375, -0.12285],\n       [-0.12285, -0.12195],\n       [-0.12195, -0.12105],\n       [-0.12105, -0.12015],\n       [-0.12015, -0.11925]], dtype=float32), standard_name='grid_latitude', units=Unit('degrees'), coord_system=LatLonCS(SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, units='m'), PrimeMeridian(label='Greenwich', value=0.0), GeoPosition(latitude=37.5, longitude=177.5), 0.0))"
+        result = "DimCoord(array([-0.1278, -0.1269, -0.126 , -0.1251, -0.1242, -0.1233, -0.1224,\n       -0.1215, -0.1206, -0.1197], dtype=float32), bounds=array([[-0.12825, -0.12735],\n       [-0.12735, -0.12645],\n       [-0.12645, -0.12555],\n       [-0.12555, -0.12465],\n       [-0.12465, -0.12375],\n       [-0.12375, -0.12285],\n       [-0.12285, -0.12195],\n       [-0.12195, -0.12105],\n       [-0.12105, -0.12015],\n       [-0.12015, -0.11925]], dtype=float32), standard_name='grid_latitude', units=Unit('degrees'), coord_system=RotatedGeogCS(semi_major_axis=6371229.0, semi_minor_axis=6371229.0, inverse_flattening=0.0, units=m, longitude_of_prime_meridian=0.0, grid_north_pole=GeoPos(37.5, 177.5), north_pole_lon=0.0))"
         self.maxDiff = None
         self.assertMultiLineEqual(result, repr(self.lat[:10]))
         
     def test_AuxCoord(self):
-        result = "AuxCoord(array([-0.1278, -0.1269, -0.126 , -0.1251, -0.1242, -0.1233, -0.1224,\n       -0.1215, -0.1206, -0.1197], dtype=float32), bounds=array([[-0.12825, -0.12735],\n       [-0.12735, -0.12645],\n       [-0.12645, -0.12555],\n       [-0.12555, -0.12465],\n       [-0.12465, -0.12375],\n       [-0.12375, -0.12285],\n       [-0.12285, -0.12195],\n       [-0.12195, -0.12105],\n       [-0.12105, -0.12015],\n       [-0.12015, -0.11925]], dtype=float32), standard_name='grid_latitude', units=Unit('degrees'), coord_system=LatLonCS(SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, units='m'), PrimeMeridian(label='Greenwich', value=0.0), GeoPosition(latitude=37.5, longitude=177.5), 0.0))"
+        result = "AuxCoord(array([-0.1278, -0.1269, -0.126 , -0.1251, -0.1242, -0.1233, -0.1224,\n       -0.1215, -0.1206, -0.1197], dtype=float32), bounds=array([[-0.12825, -0.12735],\n       [-0.12735, -0.12645],\n       [-0.12645, -0.12555],\n       [-0.12555, -0.12465],\n       [-0.12465, -0.12375],\n       [-0.12375, -0.12285],\n       [-0.12285, -0.12195],\n       [-0.12195, -0.12105],\n       [-0.12105, -0.12015],\n       [-0.12015, -0.11925]], dtype=float32), standard_name='grid_latitude', units=Unit('degrees'), coord_system=RotatedGeogCS(semi_major_axis=6371229.0, semi_minor_axis=6371229.0, inverse_flattening=0.0, units=m, longitude_of_prime_meridian=0.0, grid_north_pole=GeoPos(37.5, 177.5), north_pole_lon=0.0))"
         coord = iris.coords.AuxCoord.from_coord(self.lat[:10])
         self.maxDiff = None
         self.assertMultiLineEqual(result, repr(coord))
@@ -205,8 +205,8 @@ class TestAuxCoordCreation(unittest.TestCase):
             a.attributes.update({'standard_name': 'whoopsy'})
 
     def test_coord_system(self):
-        a = iris.coords.AuxCoord(range(10), 'air_temperature', units='kelvin', coord_system=iris.coord_systems.HorizontalCS(None))
-        result = "AuxCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), standard_name='air_temperature', units=Unit('kelvin'), coord_system=HorizontalCS(None, 'cartesian'))"
+        a = iris.coords.AuxCoord(range(10), 'air_temperature', units='kelvin', coord_system=iris.coord_systems.GeogCS(6000, units="m"))
+        result = "AuxCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), standard_name='air_temperature', units=Unit('kelvin'), coord_system=GeogCS(semi_major_axis=6000.0, semi_minor_axis=6000.0, inverse_flattening=0.0, units=m, longitude_of_prime_meridian=0.0))"
         self.assertEqual(result, str(a))
         
     def test_bounded(self):
@@ -244,8 +244,8 @@ class TestDimCoordCreation(unittest.TestCase):
             a.attributes.update({'standard_name': 'whoopsy'})
 
     def test_coord_system(self):
-        a = iris.coords.DimCoord(range(10), 'air_temperature', units='kelvin', coord_system=iris.coord_systems.HorizontalCS(None))
-        result = "DimCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), standard_name='air_temperature', units=Unit('kelvin'), coord_system=HorizontalCS(None, 'cartesian'))"
+        a = iris.coords.DimCoord(range(10), 'air_temperature', units='kelvin', coord_system=iris.coord_systems.GeogCS(6000, units="m"))
+        result = "DimCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), standard_name='air_temperature', units=Unit('kelvin'), coord_system=GeogCS(semi_major_axis=6000.0, semi_minor_axis=6000.0, inverse_flattening=0.0, units=m, longitude_of_prime_meridian=0.0))"
         self.assertEqual(result, str(a))
         
     def test_bounded(self):

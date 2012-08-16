@@ -148,15 +148,15 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
 
         self.add_coords_to_cube_and_test(
             iris.coords.DimCoord(f.z, long_name='air_pressure', units='hPa', bounds=f.z_bounds),
-            iris.coords.DimCoord(f.y, standard_name='latitude', units='degrees', bounds=f.y_bounds, coord_system=f.horiz_coord_system()))
+            iris.coords.DimCoord(f.y, standard_name='latitude', units='degrees', bounds=f.y_bounds, coord_system=f.geocs()))
             
         self.add_coords_to_cube_and_test(
             iris.coords.DimCoord(f.z, long_name='depth', units='m', bounds=f.z_bounds),
-            iris.coords.DimCoord(f.y, standard_name='latitude', units='degrees', bounds=f.y_bounds, coord_system=f.horiz_coord_system()))
+            iris.coords.DimCoord(f.y, standard_name='latitude', units='degrees', bounds=f.y_bounds, coord_system=f.geocs()))
             
         self.add_coords_to_cube_and_test(
             iris.coords.DimCoord(f.z, long_name='eta', units='1', bounds=f.z_bounds),
-            iris.coords.DimCoord(f.y, standard_name='latitude', units='degrees', bounds=f.y_bounds, coord_system=f.horiz_coord_system()))
+            iris.coords.DimCoord(f.y, standard_name='latitude', units='degrees', bounds=f.y_bounds, coord_system=f.geocs()))
             
         self.add_coords_to_cube_and_test(
             iris.coords.DimCoord(f.z, long_name='air_pressure', units='hPa', bounds=f.z_bounds),
@@ -174,17 +174,13 @@ class fakePPEnvironment(object):
     y_bounds = [[0.9,1.1], [1.9,2.1], [2.9,3.1], [3.9,4.1]]
     z_bounds = [[110.9,111.1], [221.9,222.1], [332.9,333.1], [443.9,444.1]]
 
-    def horiz_coord_system(self):
-        """Return a LatLonCS for this PPField.
+    def geocs(self):
+        """Return a GeogCS for this PPField.
 
         Returns:
-            A LatLonCS with the appropriate earth shape, meridian and pole position.
+            A GeogCS with the appropriate earth shape, meridian and pole position.
         """
-        return iris.coord_systems.LatLonCS(
-                   iris.coord_systems.SpheroidDatum("spherical", 6371229.0, 
-                        flattening=0.0, units=iris.unit.Unit('m')),
-                   iris.coord_systems.PrimeMeridian(label="Greenwich", value=0.0),
-                   iris.coord_systems.GeoPosition(90.0, 0.0), 0.0)
+        return iris.coord_systems.GeogCS(6371229.0, units=iris.unit.Unit('m'))
 
 
 @iris.tests.skip_data

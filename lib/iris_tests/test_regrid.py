@@ -26,7 +26,7 @@ from iris import load_strict
 from iris.analysis.interpolate import regrid_to_max_resolution
 from iris.cube import Cube
 from iris.coords import DimCoord
-from iris.coord_systems import LatLonCS, GeoPosition
+from iris.coord_systems import GeogCS
 
 
 @iris.tests.skip_data
@@ -91,17 +91,17 @@ class TestRegrid(tests.IrisTest):
 
     def test_regrid_max_resolution(self):
         low = Cube(numpy.arange(12).reshape((3, 4)))
-        cs = LatLonCS('datum', 'pm', GeoPosition(90, 0), 0)
+        cs = GeogCS()
         low.add_dim_coord(DimCoord(numpy.array([-1, 0, 1], dtype=numpy.int32), 'latitude', units='degrees', coord_system=cs), 0)
         low.add_dim_coord(DimCoord(numpy.array([-1, 0, 1, 2], dtype=numpy.int32), 'longitude', units='degrees', coord_system=cs), 1)
 
         med = Cube(numpy.arange(20).reshape((4, 5)))
-        cs = LatLonCS('datum', 'pm', GeoPosition(90, 0), 0)
+        cs = GeogCS()
         med.add_dim_coord(DimCoord(numpy.array([-1, 0, 1, 2], dtype=numpy.int32), 'latitude', units='degrees', coord_system=cs), 0)
         med.add_dim_coord(DimCoord(numpy.array([-2, -1, 0, 1, 2], dtype=numpy.int32), 'longitude', units='degrees', coord_system=cs), 1)
 
         high = Cube(numpy.arange(30).reshape((5, 6)))
-        cs = LatLonCS('datum', 'pm', GeoPosition(90, 0), 0)
+        cs = GeogCS()
         high.add_dim_coord(DimCoord(numpy.array([-2, -1, 0, 1, 2], dtype=numpy.int32), 'latitude', units='degrees', coord_system=cs), 0)
         high.add_dim_coord(DimCoord(numpy.array([-2, -1, 0, 1, 2, 3], dtype=numpy.int32), 'longitude', units='degrees', coord_system=cs), 1)
 
@@ -111,7 +111,7 @@ class TestRegrid(tests.IrisTest):
 
 class TestRegridBilinear(tests.IrisTest):
     def setUp(self):
-        self.cs = LatLonCS(None, None, GeoPosition(90, 0), 0)
+        self.cs = GeogCS()
         
         # Source cube candidate for regridding.
         cube = Cube(numpy.arange(12, dtype=numpy.float32).reshape(3, 4), long_name='unknown')

@@ -110,7 +110,7 @@ def lat_lon_range(cube, mode=None):
     """
     # get the lat and lon coords (might have "grid_" at the start of the name, if rotated).
     lat_coord, lon_coord = _get_lat_lon_coords(cube)
-    cs = cube.coord_system('LatLonCS')
+    cs = cube.coord_system('GeogCS')
     
     if lon_coord.has_bounds() != lat_coord.has_bounds():
         raise ValueError('Cannot get the range of the latitude and longitude coordinates if they do '
@@ -123,7 +123,7 @@ def lat_lon_range(cube, mode=None):
     else:
         _mode = iris.coords.POINT_MODE
     
-    if cs.has_rotated_pole():
+    if isinstance(cs, iris.coord_systems.RotatedGeogCS):
         if _mode == iris.coords.POINT_MODE:
             lats, lons = get_lat_lon_grids(cube)
         else:
@@ -154,7 +154,7 @@ def get_lat_lon_grids(cube):
     """
     # get the lat and lon coords (might have "grid_" at the start of the name, if rotated).
     lat_coord, lon_coord = _get_lat_lon_coords(cube)
-    cs = cube.coord_system('LatLonCS')
+    cs = cube.coord_system('GeogCS')
     
     if lon_coord.units != 'degrees':
         lon_coord = lon_coord.unit_converted('degrees')
@@ -168,8 +168,8 @@ def get_lat_lon_grids(cube):
     lons, lats = numpy.meshgrid(lons, lats)
     
     # if the pole was rotated, then un-rotate it
-    if cs.has_rotated_pole():
-        lons, lats = unrotate_pole(lons, lats, cs.n_pole.longitude, cs.n_pole.latitude)
+    if isinstance(cs, iris.coord_systems.RotatedGeogCS):
+        lons, lats = unrotate_pole(lons, lats, cs.grid_north_pole.lon, cs.grid_north_pole.lat)
             
     return (lats, lons)
 
@@ -186,7 +186,7 @@ def get_lat_lon_contiguous_bounded_grids(cube):
     """
     # get the lat and lon coords (might have "grid_" at the start of the name, if rotated).
     lat_coord, lon_coord = _get_lat_lon_coords(cube)
-    cs = cube.coord_system('LatLonCS')
+    cs = cube.coord_system('GeogCS')
     
     if lon_coord.units != 'degrees':
         lon_coord = lon_coord.unit_converted('degrees')
@@ -196,8 +196,8 @@ def get_lat_lon_contiguous_bounded_grids(cube):
     lons = lon_coord.contiguous_bounds()
     lats = lat_coord.contiguous_bounds()
     lons, lats = numpy.meshgrid(lons, lats)
-    if cs.has_rotated_pole():
-        lons, lats = iris.analysis.cartography.unrotate_pole(lons, lats, cs.n_pole.longitude, cs.n_pole.latitude)
+    if isinstance(cs, iris.coord_systems.RotatedGeogCS):
+        lons, lats = iris.analysis.cartography.unrotate_pole(lons, lats, cs.grid_north_pole.lon, cs.grid_north_pole.lat)
     return (lats, lons)
 
 
@@ -254,9 +254,9 @@ def area_weights(cube):
     
     """
     # Get the radius of the earth
-    latlon_cs = cube.coord_system(iris.coord_systems.LatLonCS)
-    if latlon_cs and latlon_cs.datum.is_spherical():
-        radius_of_earth = latlon_cs.datum.semi_major_axis
+    latlon_cs = cube.coord_system(iris.coord_systems.GeogCS)
+    if latlon_cs:
+        radius_of_earth = latlon_cs.semi_major_axis
     else:
         warnings.warn("Using DEFAULT_SPHERICAL_EARTH_RADIUS.")
         radius_of_earth = DEFAULT_SPHERICAL_EARTH_RADIUS

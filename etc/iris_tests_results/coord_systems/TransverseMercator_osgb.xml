@@ -1,0 +1,2 @@
+<?xml version="1.0" ?>
+<transverseMercator false_origin="(-400.0, 100.0)" geocs="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909, inverse_flattening=299.3249646, units=m, longitude_of_prime_meridian=0.0)" origin="GeoPos(49.0, -2.0)" scale_factor="0.9996012717"/>
