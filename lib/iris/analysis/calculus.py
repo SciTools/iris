@@ -342,6 +342,58 @@ def _curl_change_z(src_cube, z_coord, prototype_diff):
     return result
 
 
+def _coord_sin(coord):
+    """
+    Return a coordinate which represents sin(coord).
+
+    Args:
+
+    * coord
+        Coord instance with values in either degrees or radians
+
+    """
+    return _trig_method(coord, numpy.sin)
+
+
+def _coord_cos(coord):
+    """
+    Return a coordinate which represents cos(coord).
+
+    Args:
+
+    * coord
+        Coord instance with values in either degrees or radians
+
+    """
+    return _trig_method(coord, numpy.cos)
+
+
+def _trig_method(coord, trig_function):
+    """
+    Return a coordinate which represents trig_function(coord).
+
+    Args:
+
+    * coord
+        Coord instance with points values in either degrees or radians
+    * trig_function
+        Reference to a trigonometric function e.g. numpy.sin
+
+    """
+    # If we are in degrees convert our coordinate to radians.
+    if coord.units == 'degrees':
+        coord = coord.unit_converted('radians')
+
+    trig_coord = iris.coords.AuxCoord.from_coord(coord)
+    trig_coord.points = trig_function(coord.points)
+    if coord.has_bounds():
+        trig_coord.bounds = trig_function(coord.bounds)
+    trig_coord.units = '1'
+    trig_coord.rename('{}({})'.format(trig_function.__name__, coord.name()))
+
+    return trig_coord
+
+
 def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
     r'''
     Calculate the 3d curl of the given vector of cubes.
@@ -485,13 +537,10 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
         if y_coord.name() != 'latitude' or x_coord.name() != 'longitude':
             raise ValueError('Expecting latitude as the y coord and longitude as the x coord for spherical curl.')
         
-        lat_coord = y_coord.unit_converted('radians')
-        # TODO: Can the use of lat_coord.cos() be replaced with lat_coord.nd_points.cos()?
-        # Then we can get rid of Coord.sin() and Coord.cos().
-        lat_cos_coord = lat_coord.cos()
-        
         lon_coord = x_coord.unit_converted('radians')
-        
+        lat_coord = y_coord.unit_converted('radians')
+        lat_cos_coord = _coord_cos(lat_coord)
+
         # TODO Implement some mechanism for conforming to a common grid
         temp = iris.analysis.maths.multiply(i_cube, lat_cos_coord, y_dim)
         dicos_dtheta = _curl_differentiate(temp, lat_coord)
@@ -499,15 +548,11 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
         
         # r curl component:  1/ ( r * cos(lat) ) * ( dicos_dtheta - d_j_cube_dphi )
         # Since prototype_diff == dicos_dtheta we don't need to recalculate dicos_dtheta
-#        dicos_dtheta = _curl_differentiate(i_cube * lat_cos_coord, lat_coord)
-#        prototype_diff = dicos_dtheta
-#        dicos_dtheta = _curl_regrid(dicos_dtheta, prototype_diff)
         d_j_cube_dphi = _curl_differentiate(j_cube, lon_coord)
         d_j_cube_dphi = _curl_regrid(d_j_cube_dphi, prototype_diff)
-        
-        new_lat_cos_coord = d_j_cube_dphi.coord(name='latitude').cos()
-        lat_dim = d_j_cube_dphi.coord_dims(d_j_cube_dphi.coord(name='latitude'))[0]
-         
+        new_lat_coord = d_j_cube_dphi.coord(name='latitude')
+        new_lat_cos_coord = _coord_cos(new_lat_coord)
+        lat_dim = d_j_cube_dphi.coord_dims(new_lat_coord)[0]
         r_cmpt = iris.analysis.maths.divide(_curl_subtract(dicos_dtheta, d_j_cube_dphi), r * new_lat_cos_coord, dim=lat_dim)
         r_cmpt.units = r_cmpt.units / r_unit
         d_j_cube_dphi = dicos_dtheta = None
