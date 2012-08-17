@@ -155,14 +155,20 @@ class PostBuildExtRunner(build_ext.build_ext):
         # Call parent
         build_ext.build_ext.run(self)
 
-        # Add our new build dir to the start of the path to pick up the KE rules
-        sys.path.insert(0, self.build_lib)
+        # Temporarily add our new build dir to the start of the path to 
+        # pick up the KE rules
+        if self.inplace == 1:
+            sys.path.insert(0, 'lib')
+        else:
+            sys.path.insert(0, self.build_lib)
         
         # Compile the pyke rules
         from pyke import knowledge_engine
         import iris.fileformats._pyke_rules
         e = knowledge_engine.engine(iris.fileformats._pyke_rules)
 
+        # Remove temporary addition to path
+        del sys.path[0]
 
 setup(
     name='Iris',
@@ -173,12 +179,12 @@ setup(
     packages=find_package_tree('lib/iris', 'iris'),
     package_dir={'': 'lib'},
     package_data={
-        'iris': ['LICENCE', 'resources/logos/*.png'] + \
-                list(file_walk_relative('lib/iris/etc', remove='lib/iris/')) + \
+        'iris': list(file_walk_relative('lib/iris/etc', remove='lib/iris/')) + \
+                list(file_walk_relative('lib/iris/tests/results', remove='lib/iris/')) + \
                 ['fileformats/_pyke_rules/*.k?b'] + \
-                list(file_walk_relative('lib/iris/tests/results', remove='lib/iris/'))
-              ,
+                ['tests/stock*.npz']
         },
+    data_files=[('iris', ['CHANGES', 'COPYING', 'COPYING.LESSER'])],
     tests_require=['nose'],
     features={
         'unpack': setuptools.Feature(
