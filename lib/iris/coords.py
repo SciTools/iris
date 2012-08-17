@@ -30,6 +30,7 @@ import warnings
 
 import numpy
 
+import iris.analysis.calculus
 import iris.analysis.interpolate
 import iris.aux_factory
 import iris.exceptions
@@ -781,43 +782,23 @@ class Coord(CFVariableMixin):
         """
         Return a coordinate which represents sin(this coordinate).
 
-        .. note:: If coordinate is in degrees then it is converted into radians
-              before applying the sin() function.
+        .. deprecated::
+            This method has been deprecated.
 
         """
-        return self._trig_method(numpy.sin)
+        warnings.warn('Coord.sin() has been deprecated.') 
+        return iris.analysis.calculus._coord_sin(self)
 
     def cos(self):
         """
         Return a coordinate which represents cos(this coordinate).
 
-        .. note:: If coordinate is in degrees then it is converted into radians
-              before applying the cos() function.
+        .. deprecated::
+            This method has been deprecated.
 
         """
-        return self._trig_method(numpy.cos)
-
-    def _trig_method(self, trig_function):
-        """
-        Return a coordinate which represents trig_function(this coordinate).
-
-        trig_function - a reference to the appropriate function (e.g. numpy.sin)
-
-        """
-        # If we are in degrees convert our coordinate to radians.
-        if self.units == 'degrees':
-            coord = self.unit_converted('radians')
-        else:
-            coord = self
-        
-        points = trig_function(coord.points)
-        bounds = trig_function(coord.bounds) if coord.bounds is not None else None
-        
-        # TODO: Does this imply AuxCoord should be a superclass of DimCoord?
-        coord = iris.coords.AuxCoord.from_coord(coord).copy(points=points, bounds=bounds)
-        coord.units = '1'
-        coord.rename('%s(%s)' % (trig_function.__name__, coord.name())) 
-        return coord
+        warnings.warn('Coord.cos() has been deprecated.') 
+        return iris.analysis.calculus._coord_cos(self)
 
     def unit_converted(self, new_unit):
         """Return a coordinate converted to a given unit."""

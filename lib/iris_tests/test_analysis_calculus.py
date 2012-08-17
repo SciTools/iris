@@ -42,7 +42,7 @@ class TestCubeDelta(tests.IrisTest):
             t = iris.analysis.calculus.cube_delta(cube, 'altitude')
         with self.assertRaises(ValueError):
             t = iris.analysis.calculus.cube_delta(cube, 'forecast_period')
-            
+
 
 class TestDeltaAndMidpoint(tests.IrisTest):
     def _simple_filename(self, suffix):
@@ -135,6 +135,49 @@ class TestDeltaAndMidpoint(tests.IrisTest):
         lon.circular = False
         with self.assertRaises(ValueError):
             iris.analysis.calculus._construct_midpoint_coord(lon)
+
+
+class TestCoordTrig(tests.IrisTest):
+    def setUp(self):
+        points = numpy.arange(20, dtype=numpy.float32) * 2.3
+        bounds = numpy.concatenate([[points - 0.5 * 2.3],
+                                    [points + 0.5 * 2.3]]).T
+        self.lat = iris.coords.AuxCoord(points, 'latitude',  units='degrees', bounds=bounds)
+        self.rlat = iris.coords.AuxCoord(numpy.deg2rad(points), 'latitude',  units='radians', bounds=numpy.deg2rad(bounds))
+
+    def test_sin(self):
+        sin_of_coord = iris.analysis.calculus._coord_sin(self.lat)
+        sin_of_coord_radians = iris.analysis.calculus._coord_sin(self.rlat)
+
+        # Check the values are correct (within a tolerance)
+        numpy.testing.assert_array_almost_equal(numpy.sin(self.rlat.points), sin_of_coord.points)
+        numpy.testing.assert_array_almost_equal(numpy.sin(self.rlat.bounds), sin_of_coord.bounds)
+
+        # Check that the results of the sin function are almost equal when operating on a coord with degrees and radians
+        numpy.testing.assert_array_almost_equal(sin_of_coord.points, sin_of_coord_radians.points)
+        numpy.testing.assert_array_almost_equal(sin_of_coord.bounds, sin_of_coord_radians.bounds)
+
+        self.assertEqual(sin_of_coord.name(), 'sin(latitude)')
+        self.assertEqual(sin_of_coord.units, '1')
+
+    def test_cos(self):
+        cos_of_coord = iris.analysis.calculus._coord_cos(self.lat)
+        cos_of_coord_radians = iris.analysis.calculus._coord_cos(self.rlat)
+
+        # Check the values are correct (within a tolerance)
+        numpy.testing.assert_array_almost_equal(numpy.cos(self.rlat.points), cos_of_coord.points)
+        numpy.testing.assert_array_almost_equal(numpy.cos(self.rlat.bounds), cos_of_coord.bounds)
+
+        # Check that the results of the cos function are almost equal when operating on a coord with degrees and radians
+        numpy.testing.assert_array_almost_equal(cos_of_coord.points, cos_of_coord_radians.points)
+        numpy.testing.assert_array_almost_equal(cos_of_coord.bounds, cos_of_coord_radians.bounds)
+
+        # Now that we have tested the points & bounds, remove them and just test the xml
+        cos_of_coord = cos_of_coord.copy(points=numpy.array([1], dtype=numpy.float32))
+        cos_of_coord_radians = cos_of_coord_radians.copy(points=numpy.array([1], dtype=numpy.float32))
+
+        self.assertXMLElement(cos_of_coord, ('analysis', 'calculus', 'cos_simple.xml'))
+        self.assertXMLElement(cos_of_coord_radians, ('analysis', 'calculus', 'cos_simple_radians.xml'))
 
 
 class TestCalculusSimple3(tests.IrisTest):
@@ -310,13 +353,17 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         y = cube.coord('latitude')
         y_dim = cube.coord_dims(y)[0]
 
-        cos_x_pts = x.cos().points.reshape(1, x.shape[0])
-        cos_y_pts = y.cos().points.reshape(y.shape[0], 1)
+        cos_x_pts = numpy.cos(numpy.radians(x.points)).reshape(1, x.shape[0])
+        cos_y_pts = numpy.cos(numpy.radians(y.points)).reshape(y.shape[0], 1)
     
         cube.data = cos_y_pts * cos_x_pts
     
         lon_coord = x.unit_converted('radians')
-        cos_lat_coord = y.cos()
+        lat_coord = y.unit_converted('radians')
+        cos_lat_coord = iris.coords.AuxCoord.from_coord(lat_coord)
+        cos_lat_coord.points = numpy.cos(lat_coord.points)
+        cos_lat_coord.units = '1'
+        cos_lat_coord.rename('cos({})'.format(lat_coord.name()))
         
         temp = iris.analysis.calculus.differentiate(cube, lon_coord)
         df_dlon = iris.analysis.maths.divide(temp, cos_lat_coord, y_dim)
@@ -324,7 +371,7 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         x = df_dlon.coord('longitude')
         y = df_dlon.coord('latitude')
         
-        sin_x_pts = x.sin().points.reshape(1, x.shape[0])
+        sin_x_pts = numpy.sin(numpy.radians(x.points)).reshape(1, x.shape[0])
         y_ones = numpy.ones((y.shape[0] , 1))
         
         data = - sin_x_pts * y_ones
@@ -349,7 +396,7 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         
         numpy.testing.assert_array_almost_equal(result.data, r.data, decimal=6)
 
-    def test_contrived_non_sphrical_curl1(self):
+    def test_contrived_non_spherical_curl1(self):
         # testing :
         # F(x, y, z) = (y, 0, 0)
         # curl( F(x, y, z) ) = (0, 0, -1)
@@ -370,7 +417,7 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         self.assertEqual(r[1], None)
         self.assertCML(r[2], ('analysis', 'calculus', 'grad_contrived_non_spherical1.cml'))
         
-    def test_contrived_non_sphrical_curl2(self):
+    def test_contrived_non_spherical_curl2(self):
         # testing :
         # F(x, y, z) = (z^3, x+2, y^2)
         # curl( F(x, y, z) ) = (2y, 3z^2, 1)
@@ -409,7 +456,7 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
  
         self.assertCML(r, ('analysis', 'calculus', 'curl_contrived_cartesian2.cml'), checksum=False)
 
-    def test_contrived_sphrical_curl1(self):
+    def test_contrived_spherical_curl1(self):
         # testing:
         # F(lon, lat, r) = (- r sin(lon), -r cos(lon) sin(lat), 0)
         # curl( F(x, y, z) ) = (0, 0, 0)
@@ -419,19 +466,16 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         x = cube.coord('longitude')
         y = cube.coord('latitude')
 
-        cos_x_pts = x.cos().points.reshape(1, x.shape[0])
-        sin_x_pts = x.sin().points.reshape(1, x.shape[0])
-        cos_y_pts = y.cos().points.reshape(y.shape[0], 1)
-        sin_y_pts = y.sin().points.reshape(y.shape[0], 1)
+        cos_x_pts = numpy.cos(numpy.radians(x.points)).reshape(1, x.shape[0])
+        sin_x_pts = numpy.sin(numpy.radians(x.points)).reshape(1, x.shape[0])
+        cos_y_pts = numpy.cos(numpy.radians(y.points)).reshape(y.shape[0], 1)
+        sin_y_pts = numpy.sin(numpy.radians(y.points)).reshape(y.shape[0], 1)
         y_ones = numpy.ones((cube.shape[0], 1))
     
         u = cube.copy(data=-sin_x_pts * y_ones * radius)
         v = cube.copy(data=-cos_x_pts * sin_y_pts * radius)
         u.rename('u_wind')
         v.rename('v_wind')
-        
-#        lon_coord = x.unit_converted('radians')
-#        cos_lat_coord = y.cos()
         
         r = iris.analysis.calculus.curl(u, v)[2]
     
@@ -450,10 +494,10 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         x = cube.coord('longitude')
         y = cube.coord('latitude')
 
-        cos_x_pts = x.cos().points.reshape(1, x.shape[0])
-        sin_x_pts = x.sin().points.reshape(1, x.shape[0])
-        cos_y_pts = y.cos().points.reshape(y.shape[0], 1)
-        sin_y_pts = y.sin().points.reshape(y.shape[0], 1)
+        cos_x_pts = numpy.cos(numpy.radians(x.points)).reshape(1, x.shape[0])
+        sin_x_pts = numpy.sin(numpy.radians(x.points)).reshape(1, x.shape[0])
+        cos_y_pts = numpy.cos(numpy.radians(y.points)).reshape(y.shape[0], 1)
+        sin_y_pts = numpy.sin(numpy.radians(y.points)).reshape(y.shape[0], 1)
         y_ones = numpy.ones((cube.shape[0] , 1))
     
         u = cube.copy(data=sin_y_pts * cos_x_pts * radius)
@@ -462,15 +506,19 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         v.rename('v_wind')
     
         lon_coord = x.unit_converted('radians')
-        cos_lat_coord = y.cos()
-        
+        lat_coord = y.unit_converted('radians')
+        cos_lat_coord = iris.coords.AuxCoord.from_coord(lat_coord)
+        cos_lat_coord.points = numpy.cos(lat_coord.points)
+        cos_lat_coord.units = '1'
+        cos_lat_coord.rename('cos({})'.format(lat_coord.name()))
+
         r = iris.analysis.calculus.curl(u, v)[2]
     
         x = r.coord('longitude')
         y = r.coord('latitude')
         
-        cos_x_pts = x.cos().points.reshape(1, x.shape[0])
-        cos_y_pts = y.cos().points.reshape(y.shape[0], 1)
+        cos_x_pts = numpy.cos(numpy.radians(x.points)).reshape(1, x.shape[0])
+        cos_y_pts = numpy.cos(numpy.radians(y.points)).reshape(y.shape[0], 1)
         
         result = r.copy(data=2*cos_x_pts*cos_y_pts)
         
