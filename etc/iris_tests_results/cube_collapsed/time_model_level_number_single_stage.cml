@@ -4,6 +4,7 @@
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="history" value="Mean of air_potential_temperature over time, model_level_number"/>
+      <attribute name="source" value="Data from Met Office Unified Model 7.04"/>
     </attributes>
     <coords>
       <coord>
@@ -49,9 +50,6 @@
       </coord>
       <coord>
         <AuxCoord bounds="[[0.0, 1.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.5]" shape="(1,)" units="Unit('1')" value_type="float32"/>
-      </coord>
-      <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 7.04]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
         <DimCoord bounds="[[347921.166667, 347922.0]]" id="559b95abfcdf35de" points="[347921.583333]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>

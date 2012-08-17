@@ -3,6 +3,7 @@
   <cube units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s03i463"/>
+      <attribute name="source" value="Data from Met Office Unified Model 6.04"/>
     </attributes>
     <coords>
       <coord>
@@ -21,9 +22,6 @@
       </coord>
       <coord>
         <DimCoord id="411a2ed4ea259990" long_name="pressure" points="[-1.0]" shape="(1,)" units="Unit('hPa')" value_type="float32"/>
-      </coord>
-      <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 6.04]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
         <DimCoord id="559b95abfcdf35de" points="[333627.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>

@@ -8,6 +8,7 @@ variables:
 	float air_potential_temperature(time, model_level_number, grid_latitude, grid_longitude) ;
 		air_potential_temperature:standard_name = "air_potential_temperature" ;
 		air_potential_temperature:units = "K" ;
+		air_potential_temperature:source = "Iris test case" ;
 		air_potential_temperature:grid_mapping = "rotated_latitude_longitude" ;
 		air_potential_temperature:coordinates = "forecast_period level_height sigma surface_altitude" ;
 	int rotated_latitude_longitude ;
@@ -63,5 +64,4 @@ variables:
 
 // global attributes:
 		:Conventions = "CF-1.5" ;
-		:source = "Iris test case" ;
 }

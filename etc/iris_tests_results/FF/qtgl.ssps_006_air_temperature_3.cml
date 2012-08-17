@@ -3,6 +3,7 @@
   <cube standard_name="air_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s16i004"/>
+      <attribute name="source" value="Data from Met Office Unified Model 7.07"/>
     </attributes>
     <coords>
       <coord datadims="(1, 2, 3)">
@@ -477,9 +478,6 @@
 		0.000575306328556, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0]" shape="(70,)" units="Unit('1')" value_type="float64"/>
-      </coord>
-      <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="source" points="[Data from Met Office Unified Model 7.07]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[2, 3]">
         <AuxCoord id="cf20c06c74c057c" points="[[2776.62, 2776.62, 2776.62, ..., 2776.62,

@@ -9,6 +9,7 @@ variables:
 		air_temperature:standard_name = "air_temperature" ;
 		air_temperature:units = "K" ;
 		air_temperature:ukmo__um_stash_source = "m01s16i203" ;
+		air_temperature:source = "Data from Met Office Unified Model" ;
 		air_temperature:cell_methods = "time: mean (interval: 4 hour)" ;
 		air_temperature:grid_mapping = "latitude_longitude" ;
 		air_temperature:coordinates = "forecast_period forecast_reference_time" ;
@@ -46,5 +47,4 @@ variables:
 
 // global attributes:
 		:Conventions = "CF-1.5" ;
-		:source = "Data from Met Office Unified Model" ;
 }

@@ -6,6 +6,7 @@ variables:
 	float unknown(depth, latitude) ;
 		unknown:_FillValue = -1.e+30f ;
 		unknown:ukmo__um_stash_source = "m??s44i101" ;
+		unknown:source = "Data from Met Office Unified Model" ;
 		unknown:ukmo__process_flags = "Mean_over_an_ensemble_of_parallel_runs Time_mean_field" ;
 		unknown:grid_mapping = "latitude_longitude" ;
 		unknown:coordinates = "forecast_period forecast_reference_time time" ;
@@ -39,5 +40,4 @@ variables:
 
 // global attributes:
 		:Conventions = "CF-1.5" ;
-		:source = "Data from Met Office Unified Model" ;
 }

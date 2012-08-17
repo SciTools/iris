@@ -229,10 +229,10 @@ class Cube(CFVariableMixin):
              Scalar coordinates:
                   forecast_period: 6477 hours
                   pressure: 1000.0 hPa
-                  source: Data from Met Office Unified Model
                   time: Cell(point=232560.0, bound=(215280.0, 249840.0)) hours since 1970-01-01 00:00:00
              Attributes:
                   STASH: m01s16i203
+                  source: Data from Met Office Unified Model
              Cell methods:
                   mean: time
 
@@ -1091,7 +1091,7 @@ class Cube(CFVariableMixin):
             #
             if self.attributes:
                 attribute_summary = []
-                for name, value in self.attributes.iteritems():
+                for name, value in sorted(self.attributes.iteritems()):
                     if name == 'history':
                         value = re.sub("[\d\/]{8} [\d\:]{8} Iris\: ", '', str(value))
                     else:
@@ -1898,11 +1898,12 @@ class Cube(CFVariableMixin):
                  Scalar coordinates:
                       forecast_reference_time: 364272.0 hours since 1970-01-01 00:00:00
                       realization: 10
-                      source: Data from Met Office Unified Model 7.06
                  Attributes:
                       STASH: m01s00i024
+                      source: Data from Met Office Unified Model 7.06
                  Cell methods:
                       mean: time (1 hour)
+
 
             >>> print air_press.rolling_window('time', iris.analysis.MEAN, 3)
             surface_temperature                 (time: 4; latitude: 145; longitude: 192)
@@ -1915,13 +1916,14 @@ class Cube(CFVariableMixin):
                  Scalar coordinates:
                       forecast_reference_time: 364272.0 hours since 1970-01-01 00:00:00
                       realization: 10
-                      source: Data from Met Office Unified Model 7.06
                  Attributes:
                       STASH: m01s00i024
                       history: Mean of surface_temperature with a rolling window of length 3 over tim...
+                      source: Data from Met Office Unified Model 7.06
                  Cell methods:
                       mean: time (1 hour)
                       mean: time
+
 
             Notice that the forecast_period dimension now represents the 4 possible windows of size 3 from the original cube. 
 
