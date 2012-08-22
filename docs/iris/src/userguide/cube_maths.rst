@@ -25,8 +25,8 @@ Let's load some air temperature which runs from 1860 to 2100::
 
 We could now get the first and last time slices using indexing (see :doc:`reducing_a_cube` for a reminder)::
 
-    t_first = air_press[0, :, :]
-    t_last = air_press[-1, :, :]
+    t_first = air_temp[0, :, :]
+    t_last = air_temp[-1, :, :]
 
 .. testsetup::
 
