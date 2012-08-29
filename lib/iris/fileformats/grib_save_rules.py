@@ -30,16 +30,12 @@ from iris.fileformats.rules import is_regular, regular_step
 def gribbability_check(cube):
     "We always need the following things for grib saving."
 
-    # LatLonCS exists?
+    # GeogCS exists?
     cs0 = cube.coord(dimensions=[0]).coord_system
     cs1 = cube.coord(dimensions=[1]).coord_system
-    if not (isinstance(cs0, iris.coord_systems.LatLonCS) and isinstance(cs1, iris.coord_systems.LatLonCS)):
-        raise iris.exceptions.TranslationError("LatLonCS not present")
+    if not (isinstance(cs0, iris.coord_systems.GeogCS) and isinstance(cs1, iris.coord_systems.GeogCS)):
+        raise iris.exceptions.TranslationError("GeogCS not present")
     
-    # LatLonCS has a datum?
-    if not isinstance(cs0.datum, iris.coord_systems.SpheroidDatum):
-        raise iris.exceptions.TranslationError("LatLonCS does not have a datum")
-
     # Regular?
     y_coord = cube.coord(dimensions=[0])
     x_coord = cube.coord(dimensions=[1])
@@ -61,7 +57,7 @@ def gribbability_check(cube):
 
 def shape_of_the_earth(cube, grib):
     
-    # assume LatLonCS
+    # assume latlon
     cs = cube.coord(dimensions=[0]).coord_system
 
     # Turn them all missing to start with
@@ -72,17 +68,17 @@ def shape_of_the_earth(cube, grib):
     gribapi.grib_set_long(grib, "scaleFactorOfEarthMinorAxis", 255)
     gribapi.grib_set_long(grib, "scaledValueOfEarthMinorAxis", -1)
 
-    if cs.datum.flattening == 0.0:
+    if cs.inverse_flattening == 0.0:
         gribapi.grib_set_long(grib, "shapeOfTheEarth", 1)
         gribapi.grib_set_long(grib, "scaleFactorOfRadiusOfSphericalEarth", 0)
-        gribapi.grib_set_long(grib, "scaledValueOfRadiusOfSphericalEarth", cs.datum.semi_major_axis)
+        gribapi.grib_set_long(grib, "scaledValueOfRadiusOfSphericalEarth", cs.semi_major_axis)
         
     else:
         gribapi.grib_set_long(grib, "shapeOfTheEarth", 7)
         gribapi.grib_set_long(grib, "scaleFactorOfEarthMajorAxis", 0)
-        gribapi.grib_set_long(grib, "scaledValueOfEarthMajorAxis", cs.datum.semi_major_axis)
+        gribapi.grib_set_long(grib, "scaledValueOfEarthMajorAxis", cs.semi_major_axis)
         gribapi.grib_set_long(grib, "scaleFactorOfEarthMinorAxis", 0)
-        gribapi.grib_set_long(grib, "scaledValueOfEarthMinorAxis", cs.datum.semi_minor_axis)
+        gribapi.grib_set_long(grib, "scaledValueOfEarthMinorAxis", cs.semi_minor_axis)
         
 
 def grid_dims(x_coord, y_coord, grib):
@@ -145,8 +141,8 @@ def rotated_pole(cube, grib):
 #    gribapi.grib_set_double(grib, "longitudeOfSouthernPoleInDegrees", float(cs.n_pole.longitude))
 #    gribapi.grib_set_double(grib, "angleOfRotationInDegrees", 0)
 # WORKAROUND
-    gribapi.grib_set_long(grib, "latitudeOfSouthernPole", -int(cs.n_pole.latitude*1000000))
-    gribapi.grib_set_long(grib, "longitudeOfSouthernPole", int(((cs.n_pole.longitude+180)%360)*1000000))
+    gribapi.grib_set_long(grib, "latitudeOfSouthernPole", -int(cs.grid_north_pole.lat*1000000))
+    gribapi.grib_set_long(grib, "longitudeOfSouthernPole", int(((cs.grid_north_pole.lon+180)%360)*1000000))
     gribapi.grib_set_long(grib, "angleOfRotation", 0)
     
 
@@ -155,7 +151,7 @@ def grid_template(cube, grib):
     cs0 = cube.coord(dimensions=[0]).coord_system
     cs1 = cube.coord(dimensions=[1]).coord_system
         
-    if not cs0.has_rotated_pole():
+    if not isinstance(cs0, iris.coord_systems.RotatedGeogCS):
         
         # template 3.0
         gribapi.grib_set_long(grib, "gridDefinitionTemplateNumber", 0)

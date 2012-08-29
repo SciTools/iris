@@ -1073,29 +1073,30 @@ class PPField(object):
     def time_unit(self, time_unit, epoch='epoch'):
         return iris.unit.Unit('%s since %s' % (time_unit, epoch), calendar=self.calendar)
 
-    def horiz_coord_system(self):
-        """Return a LatLonCS for this PPField.
+    def geocs(self):
+        """Return a GeogCS for this PPField.
     
         Returns:
-            A LatLonCS with the appropriate earth shape, meridian and pole position.
+            A GeogCS or RotatedGeogCS.
     
         """
-        return iris.coord_systems.LatLonCS(
-                        iris.coord_systems.SpheroidDatum("spherical", 6371229.0, flattening=0.0, units=iris.unit.Unit('m')), 
-                        iris.coord_systems.PrimeMeridian(label="Greenwich", value=0.0), 
-                        iris.coord_systems.GeoPosition(self.bplat, self.bplon), 0.0)
+        geocs =  iris.coord_systems.GeogCS(6371229.0, units='m')
+        if self.bplat != 90.0 or self.bplon != 0.0:
+            geocs = iris.coord_systems.RotatedGeogCS.from_geocs(geocs, grid_north_pole=(self.bplat, self.bplon))
+        
+        return geocs
 
     def _x_coord_name(self):
         # TODO: Remove once we have the ability to derive this in the rules.
         x_name = "longitude"
-        if self.horiz_coord_system().has_rotated_pole():
+        if isinstance(self.geocs(), iris.coord_systems.RotatedGeogCS):
             x_name = "grid_longitude"
         return x_name
 
     def _y_coord_name(self):
         # TODO: Remove once we have the ability to derive this in the rules.
         y_name = "latitude"
-        if self.horiz_coord_system().has_rotated_pole():
+        if isinstance(self.geocs(), iris.coord_systems.RotatedGeogCS):
             y_name = "grid_latitude"
         return y_name
     
@@ -1477,8 +1478,12 @@ def _grid_defn(cube):
             pass
     defn = None
     if ok:
-        defn = _GridDefn(tuple(x.points), tuple(y.points),
-                         x.coord_system.n_pole)
+        if isinstance(x.coord_system, iris.coord_systems.RotatedGeogCS):
+            defn = _GridDefn(tuple(x.points), tuple(y.points),
+                             x.coord_system.grid_north_pole)
+        else:
+            defn = _GridDefn(tuple(x.points), tuple(y.points),
+                             iris.coord_systems.GeoPos(90, 0))
     return defn
 
 
