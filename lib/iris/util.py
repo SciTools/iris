@@ -104,7 +104,6 @@ def guess_coord_axis(coord):
     
     """
     axis = None
-    name = coord.name().lower()
 
     if coord.standard_name in ('longitude', 'grid_longitude', 'projection_x_coordinate'):
         axis = 'X'
@@ -114,13 +113,6 @@ def guess_coord_axis(coord):
         axis = 'Z'
     elif coord.units.time_reference:    
         axis = 'T'
-
-    if coord.name().upper() == "X":
-        axis = "X"
-    if coord.name().upper() == "Y":
-        axis = "Y"
-    if coord.name().upper() == "Z":
-        axis = "Z"
 
     return axis
 
