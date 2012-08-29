@@ -28,7 +28,11 @@ w cmpt of the curl of u_wind and v_wind"/>
         </DimCoord>
       </coord>
       <coord>
-        <DimCoord id="2d89fa2153812c6" long_name="z" points="[10.0]" shape="(1,)" units="Unit('meters')" value_type="float32"/>
+        <DimCoord id="6a8b6bb324d609d3" long_name="z" points="[10.0]" shape="(1,)" units="Unit('meters')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </DimCoord>
       </coord>
     </coords>
     <cellMethods/>

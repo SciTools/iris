@@ -300,13 +300,13 @@ def build_cube(data, spherical=False):
 
     else:
         hcs = iris.coord_systems.HorizontalCS("Cartesian Datum?")
-        cube.add_dim_coord(DimCoord(numpy.arange(nx, dtype=numpy.float32) * 2.21 + 2, long_name='x', units='meters', coord_system=hcs), dimx) 
-        cube.add_dim_coord(DimCoord(numpy.arange(ny, dtype=numpy.float32) * 25 -50, long_name='y', units='meters', coord_system=hcs), dimy)
+        cube.add_dim_coord(DimCoord(numpy.arange(nx, dtype=numpy.float32) * 2.21 + 2, 'projection_x_coordinate', units='meters', coord_system=hcs), dimx) 
+        cube.add_dim_coord(DimCoord(numpy.arange(ny, dtype=numpy.float32) * 25 -50, 'projection_y_coordinate', units='meters', coord_system=hcs), dimy)
 
     if nz is None:
-        cube.add_aux_coord(DimCoord(numpy.array([10], dtype=numpy.float32), long_name='z', units='meters'))
+        cube.add_aux_coord(DimCoord(numpy.array([10], dtype=numpy.float32), long_name='z', units='meters', attributes={"positive":"up"}))
     else:
-        cube.add_dim_coord(DimCoord(numpy.arange(nz, dtype=numpy.float32) * 2, long_name='z', units='meters'), dimz)
+        cube.add_dim_coord(DimCoord(numpy.arange(nz, dtype=numpy.float32) * 2, long_name='z', units='meters', attributes={"positive":"up"}), dimz)
     
     return cube    
 
@@ -389,7 +389,7 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         
         w = cube.copy(data=z_ones * x_ones * pow(y_pts, 2.))
     
-        r = iris.analysis.calculus.differentiate(w, 'y')
+        r = iris.analysis.calculus.differentiate(w, 'projection_y_coordinate')
 
         x_pts, x_ones, y_pts, y_ones, z_pts, z_ones = self.get_coord_pts(r)
         result = r.copy(data = y_pts * 2. * x_ones * z_ones)
