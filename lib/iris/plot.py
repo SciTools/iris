@@ -422,7 +422,7 @@ def contour(cube, *args, **kwargs):
     
     Args:
     
-    * Coords: list of coords or coordinate names
+    * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the given coordinates
         indicates which axis to use for each, where the first element is the horizontal axis of
         the plot and the second element is the vertical axis of the plot.
@@ -440,7 +440,7 @@ def contourf(cube, *args, **kwargs):
     
     Args:
     
-    * Coords: list of coords or coordinate names
+    * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the given coordinates
         indicates which axis to use for each, where the first element is the horizontal axis of
         the plot and the second element is the vertical axis of the plot.
@@ -659,7 +659,7 @@ def outline(cube, coords=None):
     
     Args:
     
-    * Coords: list of coords or coordinate names
+    * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the given coordinates
         indicates which axis to use for each, where the first element is the horizontal axis of
         the plot and the second element is the vertical axis of the plot.
@@ -675,7 +675,7 @@ def pcolor(cube, *args, **kwargs):
     
     Args:
     
-    * Coords: list of coords or coordinate names
+    * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the given coordinates
         indicates which axis to use for each, where the first element is the horizontal axis of
         the plot and the second element is the vertical axis of the plot.
@@ -694,7 +694,7 @@ def pcolormesh(cube, *args, **kwargs):
     
     Args:
     
-    * Coords: list of coords or coordinate names
+    * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the given coordinates
         indicates which axis to use for each, where the first element is the horizontal axis of
         the plot and the second element is the vertical axis of the plot.
@@ -711,7 +711,7 @@ def points(cube, *args, **kwargs):
     
     Args:
     
-    * Coords: list of coords or coordinate names
+    * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the given coordinates
         indicates which axis to use for each, where the first element is the horizontal axis of
         the plot and the second element is the vertical axis of the plot.
@@ -729,7 +729,7 @@ def plot(cube, *args, **kwargs):
     
     Args:
     
-    * Coords: list of coords or coordinate names
+    * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the given coordinates
         indicates which axis to use for each, where the first element is the horizontal axis of
         the plot and the second element is the vertical axis of the plot. 
