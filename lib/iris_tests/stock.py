@@ -208,12 +208,12 @@ def track_1d(duplicate_x=False):
     cube = Cube(numpy.arange(11, dtype=numpy.int32), standard_name='air_temperature', units='K')
     bounds = numpy.column_stack([numpy.arange(11, dtype=numpy.int32), numpy.arange(11, dtype=numpy.int32) + 1])
     pts = bounds[:, 1]
-    coord = iris.coords.AuxCoord(pts, long_name='x', units='1', bounds=bounds)
+    coord = iris.coords.AuxCoord(pts, 'projection_x_coordinate', units='1', bounds=bounds)
     cube.add_aux_coord(coord, [0])
     if duplicate_x:
-        coord = iris.coords.AuxCoord(pts, long_name='x', units='1', bounds=bounds)
+        coord = iris.coords.AuxCoord(pts, 'projection_x_coordinate', units='1', bounds=bounds)
         cube.add_aux_coord(coord, [0])
-    coord = iris.coords.AuxCoord(pts * 2, long_name='y', units='1', bounds=bounds * 2)
+    coord = iris.coords.AuxCoord(pts * 2, 'projection_y_coordinate', units='1', bounds=bounds * 2)
     cube.add_aux_coord(coord, 0)
     return cube
 
