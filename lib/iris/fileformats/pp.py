@@ -43,7 +43,11 @@ import iris.proxy
 iris.proxy.apply_proxy('iris.fileformats.pp_packing', globals())
 
 
-__all__ = ['load', 'save', 'PPField', 'add_load_rules', 'reset_load_rules', 'add_save_rules', 'reset_save_rules', 'STASH']
+__all__ = ['load', 'save', 'PPField', 'add_load_rules', 'reset_load_rules', 
+           'add_save_rules', 'reset_save_rules', 'STASH', 'EARTH_RADIUS']
+
+
+EARTH_RADIUS = 6371229.0
 
 
 # PP->Cube and Cube->PP rules are loaded on first use
@@ -1073,30 +1077,30 @@ class PPField(object):
     def time_unit(self, time_unit, epoch='epoch'):
         return iris.unit.Unit('%s since %s' % (time_unit, epoch), calendar=self.calendar)
 
-    def geocs(self):
-        """Return a GeogCS for this PPField.
+    def coord_system(self):
+        """Return a CoordSystem for this PPField.
     
         Returns:
-            A GeogCS or RotatedGeogCS.
+            Currently, a :class:`~iris.coord_systems.GeogCS` or :class:`~iris.coord_systems.RotatedGeogCS`.
     
         """
-        geocs =  iris.coord_systems.GeogCS(6371229.0, units='m')
+        geog_cs =  iris.coord_systems.GeogCS(EARTH_RADIUS)
         if self.bplat != 90.0 or self.bplon != 0.0:
-            geocs = iris.coord_systems.RotatedGeogCS.from_geocs(geocs, grid_north_pole=(self.bplat, self.bplon))
+            geog_cs = iris.coord_systems.RotatedGeogCS(self.bplat, self.bplon, ellipsoid=geog_cs)
         
-        return geocs
+        return geog_cs
 
     def _x_coord_name(self):
         # TODO: Remove once we have the ability to derive this in the rules.
         x_name = "longitude"
-        if isinstance(self.geocs(), iris.coord_systems.RotatedGeogCS):
+        if isinstance(self.coord_system(), iris.coord_systems.RotatedGeogCS):
             x_name = "grid_longitude"
         return x_name
 
     def _y_coord_name(self):
         # TODO: Remove once we have the ability to derive this in the rules.
         y_name = "latitude"
-        if isinstance(self.geocs(), iris.coord_systems.RotatedGeogCS):
+        if isinstance(self.coord_system(), iris.coord_systems.RotatedGeogCS):
             y_name = "grid_latitude"
         return y_name
     
@@ -1480,10 +1484,10 @@ def _grid_defn(cube):
     if ok:
         if isinstance(x.coord_system, iris.coord_systems.RotatedGeogCS):
             defn = _GridDefn(tuple(x.points), tuple(y.points),
-                             x.coord_system.grid_north_pole)
+                             (x.coord_system.grid_north_pole_latitude,
+                             x.coord_system.grid_north_pole_longitude))
         else:
-            defn = _GridDefn(tuple(x.points), tuple(y.points),
-                             iris.coord_systems.GeoPos(90, 0))
+            defn = _GridDefn(tuple(x.points), tuple(y.points), (90.0, 0.0))
     return defn
 
 

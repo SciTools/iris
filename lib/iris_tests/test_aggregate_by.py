@@ -34,7 +34,7 @@ class TestAggregateBy(tests.IrisTest):
         #
         # common
         #
-        cs_latlon = iris.coord_systems.GeogCS()
+        cs_latlon = iris.coord_systems.GeogCS(6371229)
         points = np.arange(3, dtype=np.float32) * 3
         coord_lat = iris.coords.DimCoord(points, 'latitude', units='degrees', coord_system=cs_latlon)
         coord_lon = iris.coords.DimCoord(points, 'longitude', units='degrees', coord_system=cs_latlon)
@@ -173,7 +173,7 @@ class TestAggregateBy(tests.IrisTest):
         data = np.array([[6, 10, 12, 18], [8, 12, 14, 20], [18, 12, 10, 6]], dtype=np.float32)
         cube = iris.cube.Cube(data, long_name='temperature', units='kelvin')
 
-        llcs = iris.coord_systems.GeogCS()
+        llcs = iris.coord_systems.GeogCS(6371229)
         cube.add_aux_coord(iris.coords.AuxCoord(np.array([0, 0, 10], dtype=np.float32),
                                                 'latitude', units='degrees', coord_system=llcs), 0)
         cube.add_aux_coord(iris.coords.AuxCoord(np.array([0, 0, 10, 10], dtype=np.float32), 

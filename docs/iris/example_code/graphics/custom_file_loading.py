@@ -164,7 +164,7 @@ def NAME_to_cube(filenames, callback):
             cube.add_aux_coord(time_coord)
 
             # build a coordinate system which can be referenced by latitude and longitude coordinates
-            lat_lon_coord_system = icoord_systems.GeogCS(6371229.0, units='m')
+            lat_lon_coord_system = icoord_systems.GeogCS(6371229)
             
             # build regular latitude and longitude coordinates which have bounds
             start = header['X grid origin'] + header['X grid resolution']

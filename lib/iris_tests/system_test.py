@@ -43,7 +43,7 @@ class SystemInitialTest(tests.IrisTest):
         laty = np.linspace(0, 59, ny)
         lonx = np.linspace(30, 89, nx)
 
-        horiz_cs = lambda : iris.coord_systems.GeogCS(6371229.0, units='m')
+        horiz_cs = lambda : iris.coord_systems.GeogCS(6371229)
 
         cm = iris.cube.Cube(data=dataarray, long_name="System test data", units='m s-1')
         cm.add_dim_coord(

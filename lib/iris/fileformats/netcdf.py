@@ -338,29 +338,23 @@ def load_cubes(filenames, callback=None):
 
 def _cf_coord_identity(coord):
     """Return (standard_name, long_name, unit) of the given :class:`iris.coords.Coord` instance."""
-    # Default behaviour
-    standard_name = coord.standard_name
-    long_name = coord.long_name
+
     units = str(coord.units)
-    
-    # Special cases
-    # i) Rotated pole
+
+    # TODO: Use #61 to get the units.     
     if isinstance(coord.coord_system, iris.coord_systems.GeogCS):
-        if coord.name() in ['latitude', 'grid_latitude']:
-            if isinstance(coord.coord_system, iris.coord_systems.RotatedGeogCS):
-                standard_name = 'grid_latitude'
-                units = 'degrees'
-            else:
-                units = 'degrees_north'
+        if "latitude" in coord.standard_name:
+            units = 'degrees_north'
+        elif "longitude" in coord.standard_name:
+            units = 'degrees_east'
+            
+    elif isinstance(coord.coord_system, iris.coord_systems.RotatedGeogCS):
+        units = 'degrees'
 
-        if coord.name() in ['longitude', 'grid_longitude']:
-            if isinstance(coord.coord_system, iris.coord_systems.RotatedGeogCS):
-                standard_name = 'grid_longitude'
-                units = 'degrees'
-            else:
-                units = 'degrees_east'
-
-    return standard_name, long_name, units
+    elif isinstance(coord.coord_system, iris.coord_systems.TransverseMercator):
+        units = 'm'
+        
+    return coord.standard_name, coord.long_name, units
 
 
 def _create_bounds(dataset, coord, cf_var, cf_name):
@@ -533,29 +527,41 @@ def _create_cf_grid_mapping(dataset, cube, cf_var):
     data variable grid mapping attribute. 
     
     """
+    # TODO: What if there's more than one CoordSystem?
     cs = cube.coord_system('CoordSystem')
-    
     if cs is not None:
-        if isinstance(cs, iris.coord_systems.GeogCS):
-            cf_grid_name = 'rotated_latitude_longitude' if isinstance(cs, iris.coord_systems.RotatedGeogCS) else 'latitude_longitude'
-            
-            if cf_grid_name not in dataset.variables:
-                cf_var.grid_mapping = cf_grid_name
-                cf_var_grid = dataset.createVariable(cf_grid_name, np.int32)
-                cf_var_grid.grid_mapping_name = cf_grid_name
-                cf_var_grid.longitude_of_prime_meridian = 0.0
+
+        # Grid var not yet created?
+        if cs.grid_mapping_name not in dataset.variables:
+            cf_var_grid = dataset.createVariable(cs.grid_mapping_name, np.int32)
+            cf_var_grid.grid_mapping_name = cs.grid_mapping_name
+
+            # latlon
+            if isinstance(cs, iris.coord_systems.GeogCS):
+                cf_var_grid.longitude_of_prime_meridian = cs.longitude_of_prime_meridian
                 cf_var_grid.semi_major_axis = cs.semi_major_axis
                 cf_var_grid.semi_minor_axis = cs.semi_minor_axis
-    
-                if isinstance(cs, iris.coord_systems.RotatedGeogCS):
-                    cf_var_grid.grid_north_pole_latitude = cs.grid_north_pole.lat
-                    cf_var_grid.grid_north_pole_longitude = cs.grid_north_pole.lon
-                    cf_var_grid.north_pole_grid_longitude = cs.north_pole_lon
+
+            # rotated latlon
+            elif isinstance(cs, iris.coord_systems.RotatedGeogCS):
+                if cs.ellipsoid:
+                    cf_var_grid.longitude_of_prime_meridian = cs.ellipsoid.longitude_of_prime_meridian
+                    cf_var_grid.semi_major_axis = cs.ellipsoid.semi_major_axis
+                    cf_var_grid.semi_minor_axis = cs.ellipsoid.semi_minor_axis
+                cf_var_grid.grid_north_pole_latitude = cs.grid_north_pole_latitude
+                cf_var_grid.grid_north_pole_longitude = cs.grid_north_pole_longitude
+                cf_var_grid.north_pole_grid_longitude = cs.north_pole_grid_longitude
+
+            # tmerc
+            elif isinstance(cs, iris.coord_systems.TransverseMercator):
+                warnings.warn('TransverseMercator coordinate system not yet handled')
+            
+            # other
             else:
-                # Reference previously created grid mapping
-                cf_var.grid_mapping = cf_grid_name
-        else:
-            warnings.warn('Unable to represent the horizontal coordinate system. The coordinate system type %r is not yet implemented.' % type(cs))
+                warnings.warn('Unable to represent the horizontal coordinate system. The coordinate system type %r is not yet implemented.' % type(cs))
+
+        # Refer to grid var
+        cf_var.grid_mapping = cs.grid_mapping_name
 
 
 def _create_cf_data_variable(dataset, cube, dimension_names):

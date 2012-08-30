@@ -75,11 +75,9 @@ def _pretend_unrotated(cube):
     lat = cube.coord('grid_latitude')
     lon = cube.coord('grid_longitude')
     rcs = lat.coord_system
-    cs = iris.coord_systems.GeogCS(rcs.semi_major_axis, rcs.semi_minor_axis,
-                                  rcs.inverse_flattening, rcs.units,
-                                  rcs.longitude_of_prime_meridian)
-    lat.coord_system = cs
-    lon.coord_system = cs
+
+    lat.coord_system = rcs.ellipsoid
+    lon.coord_system = rcs.ellipsoid
     lat.standard_name = "latitude"
     lon.standard_name = "longitude"
     

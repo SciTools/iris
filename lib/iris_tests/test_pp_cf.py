@@ -42,10 +42,8 @@ def callback_HadCM2_ts_SAT_ann_18602100_b_pp(cube, field, filename):
     def reset_pole(coord_name):
         coord = cube.coord(coord_name)
         coord.rename(coord.name().replace('grid_', ''))
-        cs = coord.coord_system
-        coord.coord_system = iris.coord_systems.GeogCS(cs.semi_major_axis, cs.semi_minor_axis, 
-                                                      cs.inverse_flattening, cs.units,
-                                                      cs.longitude_of_prime_meridian)
+        coord.coord_system = coord.coord_system.ellipsoid
+        
     reset_pole('grid_latitude')
     reset_pole('grid_longitude')
     cube.standard_name = 'air_temperature'

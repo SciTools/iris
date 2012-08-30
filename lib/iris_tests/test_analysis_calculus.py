@@ -186,7 +186,7 @@ class TestCalculusSimple3(tests.IrisTest):
         data = numpy.arange(2500, dtype=numpy.float32).reshape(50, 50)
         cube = iris.cube.Cube(data, standard_name="x_wind", units="km/h")
         
-        self.lonlat_cs = iris.coord_systems.GeogCS()
+        self.lonlat_cs = iris.coord_systems.GeogCS(6371229)
         cube.add_dim_coord(DimCoord(numpy.arange(50, dtype=numpy.float32) * 4.5 -180, 'longitude', units='degrees', coord_system=self.lonlat_cs), 0)
         cube.add_dim_coord(DimCoord(numpy.arange(50, dtype=numpy.float32) * 4.5 -90,  'latitude', units='degrees', coord_system=self.lonlat_cs), 1)
     
@@ -211,7 +211,7 @@ class TestCalculusSimple2(tests.IrisTest):
                              [4, 5, 6, 7, 9]], dtype=numpy.float32)
         cube = iris.cube.Cube(data, standard_name="x_wind", units="km/h")
         
-        self.lonlat_cs = iris.coord_systems.GeogCS()
+        self.lonlat_cs = iris.coord_systems.GeogCS(6371229)
         cube.add_dim_coord(DimCoord(numpy.arange(4, dtype=numpy.float32) * 90 -180, 'longitude', units='degrees', circular=True, coord_system=self.lonlat_cs), 0)
         cube.add_dim_coord(DimCoord(numpy.arange(5, dtype=numpy.float32) * 45 -90, 'latitude', units='degrees', coord_system=self.lonlat_cs), 1)
     
@@ -293,7 +293,7 @@ def build_cube(data, spherical=False):
     dimz = data.ndim - 3  if data.ndim > 2 else None
    
     if spherical:
-        hcs = iris.coord_systems.GeogCS(semi_major_axis=6321, units="m")
+        hcs = iris.coord_systems.GeogCS(6321)
         cube.add_dim_coord(DimCoord(numpy.arange(-180, 180, 360./nx, dtype=numpy.float32), 'longitude', units='degrees', coord_system=hcs, circular=True), dimx) 
         cube.add_dim_coord(DimCoord(numpy.arange(-90, 90, 180./ny, dtype=numpy.float32), 'latitude', units='degrees',coord_system=hcs), dimy)
 

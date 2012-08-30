@@ -38,7 +38,7 @@ def lat_lon_cube():
     
     """
     cube = Cube(numpy.arange(12, dtype=numpy.int32).reshape((3, 4)))
-    cs = GeogCS()
+    cs = GeogCS(6371229)
     cube.add_dim_coord(iris.coords.DimCoord(points=numpy.array([-1, 0, 1], dtype=numpy.int32), standard_name='latitude', units='degrees', coord_system=cs), 0)
     cube.add_dim_coord(iris.coords.DimCoord(points=numpy.array([-1, 0, 1, 2], dtype=numpy.int32), standard_name='longitude', units='degrees', coord_system=cs), 1)
     return cube
@@ -325,8 +325,7 @@ def realistic_4d():
     _source_pts, forecast_period_pts, data, orography = arrays
     
     
-    ll_cs = RotatedGeogCS(semi_major_axis=6371229.0, semi_minor_axis=6371229.0, 
-                  inverse_flattening=0.0, units='m', grid_north_pole=(37.5, 177.5))
+    ll_cs = RotatedGeogCS(37.5, 177.5, ellipsoid=GeogCS(6371229.0))
     
     lat = icoords.DimCoord(lat_pts, standard_name='grid_latitude', units='degrees', 
                            bounds=lat_bnds, coord_system=ll_cs)
@@ -375,7 +374,7 @@ def realistic_4d_w_missing_data():
 
     # sort the arrays based on the order they were originally given. The names given are of the form 'arr_1' or 'arr_10'
     
-    ll_cs = GeogCS(semi_major_axis=6371229.0, units='m')
+    ll_cs = GeogCS(6371229)
     
     lat = iris.coords.DimCoord(numpy.arange(20, dtype=numpy.float32), standard_name='grid_latitude', 
                                units='degrees', coord_system=ll_cs)

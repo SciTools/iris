@@ -25,7 +25,7 @@ THEN
     pp.lbproc = 0                # Processing. Start at 0.
 
 IF
-    cm.coord_system("RotatedGeogCS") is None
+    cm.coord_system("GeogCS") is not None
 THEN
     pp.bplat = 90
     pp.bplon = 0
@@ -33,8 +33,8 @@ THEN
 IF
     cm.coord_system("RotatedGeogCS") is not None
 THEN
-    pp.bplat = cm.coord_system("RotatedGeogCS").grid_north_pole.lat
-    pp.bplon = cm.coord_system("RotatedGeogCS").grid_north_pole.lon
+    pp.bplat = cm.coord_system("RotatedGeogCS").grid_north_pole_latitude
+    pp.bplon = cm.coord_system("RotatedGeogCS").grid_north_pole_longitude
     
 
 #UM - no version number
@@ -389,8 +389,7 @@ THEN
 #rotated?
 IF
 #    iris.fileformats.pp.is_cross_section(cm) == False
-    cm.coord_system("GeogCS") is not None
-    isinstance(cm.coord_system("GeogCS"), iris.coord_systems.RotatedGeogCS)
+    cm.coord_system("RotatedGeogCS") is not None
 THEN
     pp.lbcode = int(pp.lbcode) + 100
 

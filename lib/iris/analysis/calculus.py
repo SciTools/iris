@@ -440,18 +440,6 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
         ignore = None
         warnings.warn('The ignore keyword to iris.analysis.calculus.curl is deprecated, ignoring is now done automatically.')
     
-    # get the radius of the earth
-    latlon_cs = i_cube.coord_system(iris.coord_systems.GeogCS)
-    if latlon_cs and isinstance(latlon_cs, iris.coord_systems.RotatedGeogCS):
-        # TODO: Add a test for this
-        # TODO: This assumes spherical for an ellipsoid?
-        r = latlon_cs.semi_major_axis
-        r_unit = latlon_cs.units
-    else:
-        r = iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS
-        r_unit = iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS_UNIT
-
-
     # Get the vector quantity names (i.e. ['easterly', 'northerly', 'vertical'])
     vector_quantity_names, phenomenon_name = spatial_vectors_with_phenom_name(i_cube, j_cube, k_cube)
     
@@ -483,7 +471,8 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
     horiz_cs = i_cube.coord_system('CoordSystem')
         
     # Planar (non spherical) coords?
-    if horiz_cs is None or isinstance(horiz_cs, iris.coord_systems.MapProjection):
+    ellipsoidal = isinstance(horiz_cs, iris.coord_systems.GeogCS) or isinstance(horiz_cs, iris.coord_systems.RotatedGeogCS)
+    if not ellipsoidal:
         
         # TODO Implement some mechanism for conforming to a common grid
         dj_dx = _curl_differentiate(j_cube, x_coord)
@@ -526,8 +515,8 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
         
         result = [i_cmpt, j_cmpt, k_cmpt]
     
-    # Spherical coords.
-    elif isinstance(horiz_cs, iris.coord_systems.GeogCS):
+    # Spherical coords (GeogCS or RotatedGeogCS).
+    else:
         # A_\phi = i ; A_\theta = j ; A_\r = k
         # theta = lat ; phi = long ;
         # r_cmpt = 1/ ( r * cos(lat) ) * ( d/dtheta ( i_cube * sin( lat ) ) - d_j_cube_dphi )
@@ -535,6 +524,21 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
         # theta_cmpt = 1/r * ( 1/cos(lat) * d_k_cube_dphi - d/dr (r * i_cube)
         if y_coord.name() != 'latitude' or x_coord.name() != 'longitude':
             raise ValueError('Expecting latitude as the y coord and longitude as the x coord for spherical curl.')
+
+        # Get the radius of the earth - and check for sphericity
+        if isinstance(horiz_cs, iris.coord_systems.RotatedGeogCS):
+            # TODO: Add a test for this
+            # TODO: This assumes spherical for an ellipsoid?
+            r = latlon_cs.semi_major_axis
+            r_unit = latlon_cs.units
+            spherical = (horiz_cs.inverse_flattening == 0.0)
+        else:
+            r = iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS
+            r_unit = iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS_UNIT
+            spherical = True
+            
+        if not spherical:
+            raise Exception("Cannot take the curl over a non-spherical ellipsoid.")
         
         lon_coord = x_coord.unit_converted('radians')
         lat_coord = y_coord.unit_converted('radians')
@@ -589,9 +593,6 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
         
         result = [phi_cmpt, theta_cmpt, r_cmpt]
 
-    else:
-        raise ValueError("Uknown cs type")
-    
     for direction, cube in zip(vector_quantity_names, result):
         if cube is not None:
             cube.rename('%s curl of %s' % (direction, phenomenon_name))
