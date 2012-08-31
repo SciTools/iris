@@ -17,8 +17,8 @@ variables:
 		rotated_latitude_longitude:longitude_of_prime_meridian = 0. ;
 		rotated_latitude_longitude:semi_major_axis = 6371229. ;
 		rotated_latitude_longitude:semi_minor_axis = 6371229. ;
-		rotated_latitude_longitude:grid_north_pole_latitude = 37.5f ;
-		rotated_latitude_longitude:grid_north_pole_longitude = 177.5f ;
+		rotated_latitude_longitude:grid_north_pole_latitude = 37.5 ;
+		rotated_latitude_longitude:grid_north_pole_longitude = 177.5 ;
 		rotated_latitude_longitude:north_pole_grid_longitude = 0. ;
 	double time(time) ;
 		time:axis = "T" ;

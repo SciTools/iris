@@ -407,7 +407,7 @@
 		[0.35145, 0.36495],
 		[0.36495, 0.37845]]" id="25a5f42bc937b908" points="[-0.5274, -0.5139, -0.5004, ..., 0.3447, 0.3582,
 		0.3717]" shape="(412,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </DimCoord>
       </coord>
       <coord datadims="[3]">
@@ -419,7 +419,7 @@
 		[360.066, 360.079],
 		[360.079, 360.093]]" id="3bf28623a9db078e" points="[359.187, 359.2, 359.214, ..., 360.059, 360.072,
 		360.086]" shape="(412,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
@@ -525,7 +525,7 @@
 		[0.35145, 0.36495],
 		[0.36495, 0.37845]]" id="25a5f42bc937b908" points="[-0.5274, -0.5139, -0.5004, ..., 0.3447, 0.3582,
 		0.3717]" shape="(412,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </DimCoord>
       </coord>
       <coord datadims="[2]">
@@ -537,7 +537,7 @@
 		[360.059, 360.072],
 		[360.072, 360.086]]" id="3bf28623a9db078e" points="[359.18, 359.194, 359.207, ..., 360.052, 360.066,
 		360.079]" shape="(412,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </DimCoord>
       </coord>
       <coord datadims="[0]">

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="w curl of wind" units="0.277777777777778 second^-1-radian^-1">
+  <cube long_name="w curl of wind" units="0.000277777777777778 second^-1-radian^-1">
     <attributes>
       <attribute name="history" value="unknown / cos(latitude)
 w cmpt of the curl of u_wind and v_wind"/>
@@ -22,13 +22,13 @@ w cmpt of the curl of u_wind and v_wind"/>
 		55.2856, 57.857, 60.4284, 62.9999, 65.5713,
 		68.1427, 70.7141, 73.2856, 75.857, 78.4284,
 		80.9999, 83.5713, 86.1427]" shape="(69,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='Tiny Earth', semi_major_axis=6321, semi_minor_axis=6321.0, flattening=0.0, unit='m')" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6321.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3207b04384adbdec" points="[-180.0, -177.6, -175.2, ..., 172.799, 175.199,
 		177.599]" shape="(150,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='Tiny Earth', semi_major_axis=6321, semi_minor_axis=6321.0, flattening=0.0, unit='m')" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6321.0"/>
         </DimCoord>
       </coord>
       <coord>

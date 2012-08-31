@@ -14,7 +14,7 @@
 		56.25, 60.75, 65.25, 69.75, 74.25, 78.75, 83.25,
 		87.75, 92.25, 96.75, 101.25, 105.75, 110.25,
 		114.75, 119.25, 123.75, 128.25]" shape="(49,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='undefined spheroid', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[0]">
@@ -26,7 +26,7 @@
 		-36.0, -31.5, -27.0, -22.5, -18.0, -13.5, -9.0,
 		-4.5, 0.0, 4.5, 9.0, 13.5, 18.0, 22.5, 27.0,
 		31.5, 36.0, 40.5]" shape="(50,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='undefined spheroid', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
     </coords>

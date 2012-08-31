@@ -9,12 +9,12 @@
     <coords>
       <coord>
         <DimCoord id="95f615fae348902" long_name="latitude" points="[90.0]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[0]">
         <DimCoord id="3207b04384adbdec" long_name="longitude" points="[0.0, 1.125, 2.25, ..., 356.625, 357.75, 358.875]" shape="(320,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord>
