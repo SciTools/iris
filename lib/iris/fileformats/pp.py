@@ -1382,6 +1382,53 @@ def load_cubes(filenames, callback=None):
     return _load_cubes_variable_loader(filenames, callback, load)
 
 
+class _ReferenceError(Exception):
+    """Signals an invalid/missing reference field."""
+    pass
+
+
+def _dereference_args(factory, reference_cubes, regrid_cache, cube):
+    """Converts all the arguments for a factory into concrete coordinates."""
+    args = []
+    for arg in factory.args:
+        if isinstance(arg, iris.fileformats.rules.Reference):
+            if arg.name in reference_cubes:
+                # Merge the reference cubes to allow for
+                # time-varying surface pressure in hybrid-presure.
+                if len(reference_cubes[arg.name]) > 1:
+                    ref_cubes = iris.cube.CubeList(reference_cubes[arg.name])
+                    merged = ref_cubes.merge()
+                    if len(merged) > 1:
+                        warnings.warn('Multiple reference cubes for {}'
+                                      .format(arg.name))
+                    reference_cubes[arg.name] = merged[-1:]
+                src = reference_cubes[arg.name][0]
+                # If necessary, regrid the reference cube to
+                # match the grid of this cube.
+                src = _ensure_aligned(regrid_cache, src, cube)
+                if src is not None:
+                    new_coord = iris.coords.AuxCoord(src.data,
+                                                     src.standard_name,
+                                                     src.long_name,
+                                                     src.units,
+                                                     attributes=src.attributes)
+                    dims = [cube.coord_dims(src_coord)[0]
+                                for src_coord in src.dim_coords]
+                    cube.add_aux_coord(new_coord, dims)
+                    args.append(new_coord)
+                else:
+                    raise _ReferenceError('Unable to regrid reference for'
+                                          ' {!r}'.format(arg.name))
+            else:
+                raise _ReferenceError("The file(s) {{filenames}} don't contain"
+                                      " field(s) for {!r}.".format(arg.name))
+        else:
+            # If it wasn't a Reference, then arg is a dictionary
+            # of keyword arguments for cube.coord(...).
+            args.append(cube.coord(**arg))
+    return args
+
+
 def _load_cubes_variable_loader(filenames, callback, loading_function):
     _ensure_load_rules_loaded()
     
@@ -1421,65 +1468,36 @@ def _load_cubes_variable_loader(filenames, callback, loading_function):
     for result in results_needing_reference:
         cube = result.cube
         for factory in result.factories:
-            args = []
-            err_msg = None
-            for arg in factory.args:
-                if isinstance(arg, iris.fileformats.rules.Reference):
-                    if arg.name in reference_cubes:
-                        # TODO: Merge the reference cubes to allow for
-                        # time-varying surface pressure in hybrid-presure.
-                        src = reference_cubes[arg.name][-1]
-                        # If necessary, regrid the reference cube to
-                        # match the grid of this cube.
-                        src = _ensure_aligned(regrid_cache, src, cube)
-                        if src is not None:
-                            new_coord = iris.coords.AuxCoord(src.data,
-                                                             src.standard_name,
-                                                             units=src.units)
-                            cube.add_aux_coord(new_coord, [0, 1])
-                            args.append(new_coord)
-                        else:
-                            err_msg = 'Unable to regrid reference for {arg}'
-                            break
-                    else:
-                        err_msg = ("The file(s) {filenames} don't contain"
-                                   " field(s) for {arg}.")
-                        break
-                else:
-                    # If it wasn't a Reference, then arg is a dictionary
-                    # of keyword arguments for cube.coord(...).
-                    args.append(cube.coord(**arg))
-            if err_msg:
-                err_msg = 'Unable to create instance of {factory}. ' + err_msg
+            try:
+                args = _dereference_args(factory, reference_cubes,
+                                         regrid_cache, cube)
+            except _ReferenceError as e:
+                msg = 'Unable to create instance of {factory}. ' + e.message
                 factory_name = factory.factory_class.__name__
-                warnings.warn(err_msg.format(arg=arg.name, filenames=filenames,
-                                             factory=factory_name))
+                warnings.warn(msg.format(filenames=filenames,
+                                         factory=factory_name))
             else:
                 aux_factory = factory.factory_class(*args)
                 cube.add_aux_factory(aux_factory)
         yield cube
 
 
-_GridDefn = collections.namedtuple('_GridDefn', 'x_points y_points n_pole')
+def _regrid_to_target(src_cube, target_coords, target_cube):
+    # Interpolate onto the target grid.
+    sample_points = [(coord, coord.points) for coord in target_coords]
+    result_cube = iris.analysis.interpolate.linear(src_cube, sample_points)
 
-
-def _grid_defn(cube):
-    x = y = None
-    pairs = [('longitude', 'latitude'), ('grid_longitude', 'grid_latitude')]
-    ok = False
-    for x_name, y_name in pairs:
-        try:
-            x = cube.coord(x_name, dimensions=1)
-            y = cube.coord(y_name, dimensions=0)
-            ok = True
-            break
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-    defn = None
-    if ok:
-        defn = _GridDefn(tuple(x.points), tuple(y.points),
-                         x.coord_system.n_pole)
-    return defn
+    # Any scalar coords on the target_cube will have become vector
+    # coords on the resample src_cube (i.e. result_cube).
+    # These unwanted vector coords need to be pushed back to scalars.
+    index = [slice(None, None)] * result_cube.ndim
+    for target_coord in target_coords:
+        if not target_cube.coord_dims(target_coord):
+            result_dim = result_cube.coord_dims(target_coord)[0]
+            index[result_dim] = 0
+    if not all(key == slice(None, None) for key in index):
+        result_cube = result_cube[tuple(index)]
+    return result_cube
 
 
 def _ensure_aligned(regrid_cache, src_cube, target_cube):
@@ -1488,31 +1506,48 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
     on `target_cube`, or None if no version can be made.
 
     """
-    # Get a dict of all the versions of `src_cube`.
-    key = id(src_cube)
-    if key not in regrid_cache:
-        src_grid_defn = _grid_defn(src_cube)
-        if src_grid_defn is None:
-            # Flag that this `src_cube` can't be re-gridded.
-            regrid_cache[key] = None
-        else:
-            # We can cache the no-regrid-required version straight away.
-            results_by_grid = {src_grid_defn: src_cube}
-            regrid_cache[key] = results_by_grid
-    results_by_grid = regrid_cache[key]
+    result_cube = None
 
-    # Check if the required version of `src_cube` has already been made.
-    result = None
-    if results_by_grid is not None:
-        target_grid_defn = _grid_defn(target_cube)
-        if target_grid_defn is not None:
-            result = results_by_grid.get(target_grid_defn, None)
-            if result is None:
-                # No suitable version of `src_cube` available - so make
-                # and save it.
-                result = iris.analysis.interpolate.regrid(src_cube, target_cube)
-                results_by_grid[target_grid_defn] = result
-    return result
+    # Check that each of src_cube's dim_coords matches up with a single
+    # coord on target_cube.
+    try:
+        target_coords = []
+        for dim_coord in src_cube.dim_coords:
+            target_coords.append(target_cube.coord(coord=dim_coord))
+    except iris.exceptions.CoordinateNotFoundError:
+        # One of the src_cube's dim_coords didn't exist on the
+        # target_cube... so we can't regrid (i.e. just return None).
+        pass
+    else:
+        # So we can use `iris.analysis.interpolate.linear()` later,
+        # ensure each target coord is either a scalar or maps to a
+        # single, distinct dimension.
+        target_dims = [target_cube.coord_dims(coord) for coord in target_coords]
+        target_dims = filter(None, target_dims)
+        unique_dims = set()
+        for dims in target_dims:
+            unique_dims.update(dims)
+        compatible = len(target_dims) == len(unique_dims)
+
+        if compatible:
+            cache_key = id(src_cube)
+            if cache_key not in regrid_cache:
+                regrid_cache[cache_key] = ([src_cube.dim_coords], [src_cube])
+            grids, cubes = regrid_cache[cache_key]
+
+            try:
+                # Look for this set of target coordinates in the cache.
+                i = grids.index(target_coords)
+                result_cube = cubes[i]
+            except ValueError:
+                # Not already cached, so do the hard work of interpolating.
+                result_cube = _regrid_to_target(src_cube, target_coords,
+                                                target_cube)
+                # Add it to the cache.
+                grids.append(target_coords)
+                cubes.append(result_cube)
+
+    return result_cube
 
 
 def save(cube, target, append=False, field_coords=None):

@@ -9,10 +9,10 @@
         <DimCoord id="5634c91ba5717382" long_name="dim1" points="[4.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="5634c91ba5717382" long_name="dim2" points="[3.5]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+        <AuxCoord id="5634c91ba5717382" long_name="dim2" points="[3.5]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
-    <data dtype="float64" shape="()" state="loaded"/>
+    <data dtype="float32" shape="()" state="loaded"/>
   </cube>
 </cubes>

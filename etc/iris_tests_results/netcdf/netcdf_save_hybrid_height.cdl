@@ -62,6 +62,8 @@ variables:
 	float surface_altitude(grid_latitude, grid_longitude) ;
 		surface_altitude:units = "m" ;
 		surface_altitude:standard_name = "surface_altitude" ;
+		surface_altitude:ukmo__um_stash_source = "m01s00i033" ;
+		surface_altitude:source = "Data from Met Office Unified Model 7.04" ;
 
 // global attributes:
 		:Conventions = "CF-1.5" ;
