@@ -63,7 +63,7 @@ digraph CubeGraph{
             label = "AuxCoord|standard_name: None\nlong_name: sigma\nunits: 1"
         ]
         "Coord_7" [
-            label = "AuxCoord|standard_name: surface_altitude\nlong_name: None\nunits: m"
+            label = "AuxCoord|standard_name: surface_altitude\nlong_name: None\nunits: m\nSTASH: m01s00i033\nsource: Data from Met Office Unified Model 7.04"
         ]
         "Coord_8" [
             label = "DimCoord|standard_name: time\nlong_name: None\nunits: hours since 1970-01-01 00:00:00\ncircular: False"

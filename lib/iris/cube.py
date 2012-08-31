@@ -407,9 +407,11 @@ class Cube(CFVariableMixin):
             # Check compatibility with the shape of the data
             for i, dim in enumerate(data_dims):
                 if coord.shape[i] != self.shape[dim]:
-                    raise ValueError('The %dth dimension of coord %r does not'
-                                     ' match the length of cube dimension %d.' %
-                                        (i, coord.name(), dim))
+                    msg = 'Unequal lengths. Cube dimension {} => {};' \
+                          ' coord {!r} dimension {} => {}.'
+                    raise ValueError(msg.format(dim, self.shape[dim],
+                                                coord.name(), i,
+                                                coord.shape[i]))
         elif coord.shape != (1,):
             raise ValueError('You must supply the data-dimensions for multi-valued coordinates.')
 
@@ -473,7 +475,10 @@ class Cube(CFVariableMixin):
 
         # Check compatibility with the shape of the data
         if dim_coord.shape[0] != self.shape[data_dim]:
-            raise ValueError('The length of %r does not match the length of cube dimension %d' % (dim_coord, data_dim))
+            msg = 'Unequal lengths. Cube dimension {} => {}; coord {!r} => {}.'
+            raise ValueError(msg.format(data_dim, self.shape[data_dim],
+                                        dim_coord.name(),
+                                        len(dim_coord.points)))
 
         self._dim_coords_and_dims.append([dim_coord, int(data_dim)])
 
