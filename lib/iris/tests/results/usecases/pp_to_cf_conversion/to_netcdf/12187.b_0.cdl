@@ -1,5 +1,5 @@
 dimensions:
-	model_level_number = 38 ;
+	model_level_number = UNLIMITED ; // (38 currently)
 	latitude = 145 ;
 	longitude = 192 ;
 	bnds = 2 ;
