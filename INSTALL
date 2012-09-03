@@ -1,0 +1,103 @@
+
+Installing Iris currently requires you to build it from source.  The dependencies must be 
+in place to suport this process.
+
+.. _install_from_source:
+
+Installing from source
+======================
+
+The latest release is available from `github <https://github.com/SciTools/iris>`__
+
+Once you have satisfied the requirements detailed below 
+you can build Iris::
+
+  cd iris
+  python setup.py install
+
+
+To get help with setup::
+
+  python setup.py --help
+  python setup.py --help-commands
+
+
+.. _install_requirements:
+
+Build requirements
+==================
+
+These are external packages which you will need to install before
+installing Iris. 
+
+
+Many of these packages are available in Linux package management systems,
+such as python-numpy for Debian and Ubuntu
+
+If you are installing dependencies with a package manager on Linux, 
+you may need to install the development packages (look for a "-dev" postfix) 
+in addition to the libraries themselves.
+
+
+python 2.7 (or later but not python3)
+    Iris requires python 2.7 or later (`download <http://www.python.org/download/>`__)
+
+numpy 1.6 (or later)
+    array support for python (`download <http://numpy.scipy.org/>`__)
+
+scipy 0.10 or later
+    scientific analysis (`download <http://www.scipy.org>`__)
+
+udunits2 2.1.24 or later
+    (`downloads <ftp://ftp.unidata.ucar.edu/pub/udunits/>`__)
+
+netcdf4-python 0.9.9 or later
+    (`download <http://netcdf4-python.googlecode.com/>`__)
+
+PyKE 1.1.1 or later
+    (`download <http://downloads.sourceforge.net/project/pyke/pyke/>`__)
+
+setuptools 0.6c11 or later
+    (`download <http://pypi.python.org/packages/source/s/setuptools/>`__)
+
+**Optional**
+
+These are optional packages which you may want to install to use
+Iris with different file formats and to enable plotting functionality.
+All of these are required for the Iris test suite to run. 
+
+
+grib-api 1.9.9 or later
+    (`download <http://www.ecmwf.int/products/data/software/download/grib_api.html>`__)
+
+    A compression library such as Jasper is required to read JPEG2000 compressed GRIB2 files.
+
+matplotlib 1.1.0
+    (`download <http://sourceforge.net/projects/matplotlib/files/matplotlib/>`__)
+
+basemap 1.0
+    (`download <http://sourceforge.net/projects/matplotlib/files/matplotlib-toolkits/>`__)
+
+
+PythonImagingLibrary 1.1.7
+    (`download <http://effbot.org/downloads/>`__)
+
+graphviz 2.18
+    (`download <http://www.graphviz.org/pub/graphviz/stable/SOURCES/>`__)
+
+nose 1.1.2
+    (`download <http://pypi.python.org/packages/source/n/nose/>`__)
+
+shapely 1.2.14
+    (`download <http://pypi.python.org/packages/source/S/Shapely>`__)
+
+
+Packaged Distributions
+=======================
+
+The Enthought Python Distribution `(EPD)
+<http://www.enthought.com/products/epd.php>`_ for Windows, OS X or
+Redhat provides some of the dependencies for Iris as does `Python (x, y)
+<http://www.pythonxy.com/foreword.php>`_ which tends to be updated a
+bit more frequently.  
+
