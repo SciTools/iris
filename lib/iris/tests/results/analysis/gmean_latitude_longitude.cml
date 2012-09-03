@@ -15,12 +15,12 @@ Geometric mean of air_pressure_at_sea_level over grid_longitude"/>
       </coord>
       <coord>
         <DimCoord bounds="[[-22.49, 24.92]]" id="25a5f42bc937b908" points="[1.215]" shape="(1,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </DimCoord>
       </coord>
       <coord>
         <DimCoord bounds="[[313.02, 392.11]]" id="3bf28623a9db078e" points="[352.565]" shape="(1,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </DimCoord>
       </coord>
       <coord datadims="[0]">

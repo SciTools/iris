@@ -8,13 +8,13 @@
       <coord datadims="[0]">
         <DimCoord id="25a5f42bc937b908" points="[-20.069997, -19.959999, -19.850001, ...,
 		19.199289, 19.309287, 19.419285]" shape="(360,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float64">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6367470.0, semi_minor_axis=6367470.0, flattening=0.0, unit='m')" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+          <rotatedGeogCS ellipsoid="GeogCS(6367470.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3bf28623a9db078e" points="[326.219965, 326.329959, 326.439953, ...,
 		391.886383, 391.996377, 392.106371]" shape="(600,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float64">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6367470.0, semi_minor_axis=6367470.0, flattening=0.0, unit='m')" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+          <rotatedGeogCS ellipsoid="GeogCS(6367470.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </DimCoord>
       </coord>
       <coord>
@@ -55,13 +55,13 @@
 		-67.499954, -69.999953, -72.499952, -74.999951,
 		-77.49995, -79.999949, -82.499948, -84.999947,
 		-87.499946, -89.999945]" shape="(73,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6367470.0, semi_minor_axis=6367470.0, flattening=0.0, unit='m')" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+          <geogCS earth_radius="6367470.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3207b04384adbdec" points="[0.0, 3.749998, 7.499996, ..., 348.749814,
 		352.499812, 356.24981]" shape="(96,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6367470.0, semi_minor_axis=6367470.0, flattening=0.0, unit='m')" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+          <geogCS earth_radius="6367470.0"/>
         </DimCoord>
       </coord>
       <coord>
@@ -89,13 +89,13 @@
       <coord datadims="[0]">
         <DimCoord id="25a5f42bc937b908" points="[-4.451997, -4.415998, -4.379999, ..., 8.399646,
 		8.435645, 8.471644]" shape="(360,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float64">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6367470.0, semi_minor_axis=6367470.0, flattening=0.0, unit='m')" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+          <rotatedGeogCS ellipsoid="GeogCS(6367470.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3bf28623a9db078e" points="[354.299926, 354.335925, 354.371924, ...,
 		364.559641, 364.59564, 364.631639]" shape="(288,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float64">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6367470.0, semi_minor_axis=6367470.0, flattening=0.0, unit='m')" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+          <rotatedGeogCS ellipsoid="GeogCS(6367470.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </DimCoord>
       </coord>
       <coord>

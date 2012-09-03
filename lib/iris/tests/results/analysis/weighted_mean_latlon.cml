@@ -10,12 +10,12 @@
       </coord>
       <coord>
         <DimCoord bounds="[[1.0, 3.0]]" id="5634c91ba5717382" long_name="lat" points="[2.0]" shape="(1,)" units="Unit('1')" value_type="float32">
-          <horizontalCS cs_type="cartesian" datum="SpheroidDatum(label='undefined spheroid', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord>
         <DimCoord bounds="[[1.0, 3.0]]" id="5634c91ba5717382" long_name="lon" points="[2.0]" shape="(1,)" units="Unit('1')" value_type="float32">
-          <horizontalCS cs_type="cartesian" datum="SpheroidDatum(label='undefined spheroid', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
     </coords>
