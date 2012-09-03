@@ -1,0 +1,5 @@
+****************
+Installing Iris
+****************
+
+.. include:: ../../../INSTALL

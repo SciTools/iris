@@ -20,5 +20,6 @@ Iris documentation table of contents
    whats_new/changes.rst
    examples/index.rst
    developers_guide/index.rst
+   installing.rst
    copyright.rst
 
