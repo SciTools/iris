@@ -1,0 +1,20 @@
+# Top-level files
+include CHANGES COPYING COPYING.LESSER
+
+# Files from setup.py package_data that are not automatically added to source distributions
+recursive-include lib/iris/tests/results *.cml *.cdl *.txt *.xml
+include lib/iris/fileformats/_pyke_rules/*.k?b
+include lib/iris/tests/stock*.npz
+
+# File required to build docs
+recursive-include docs Makefile *.js *.png *.py *.rst
+recursive-exclude docs/iris/build *
+
+# Files required to build std_names module
+include tools/generate_std_names.py
+include etc/cf-standard-name-table.xml
+
+# Extension source
+recursive-include src *.c *.cc *.cpp *.h
+
+
