@@ -43,7 +43,11 @@ import iris.proxy
 iris.proxy.apply_proxy('iris.fileformats.pp_packing', globals())
 
 
-__all__ = ['load', 'save', 'PPField', 'add_load_rules', 'reset_load_rules', 'add_save_rules', 'reset_save_rules', 'STASH']
+__all__ = ['load', 'save', 'PPField', 'add_load_rules', 'reset_load_rules', 
+           'add_save_rules', 'reset_save_rules', 'STASH', 'EARTH_RADIUS']
+
+
+EARTH_RADIUS = 6371229.0
 
 
 # PP->Cube and Cube->PP rules are loaded on first use
@@ -1073,29 +1077,30 @@ class PPField(object):
     def time_unit(self, time_unit, epoch='epoch'):
         return iris.unit.Unit('%s since %s' % (time_unit, epoch), calendar=self.calendar)
 
-    def horiz_coord_system(self):
-        """Return a LatLonCS for this PPField.
+    def coord_system(self):
+        """Return a CoordSystem for this PPField.
     
         Returns:
-            A LatLonCS with the appropriate earth shape, meridian and pole position.
+            Currently, a :class:`~iris.coord_systems.GeogCS` or :class:`~iris.coord_systems.RotatedGeogCS`.
     
         """
-        return iris.coord_systems.LatLonCS(
-                        iris.coord_systems.SpheroidDatum("spherical", 6371229.0, flattening=0.0, units=iris.unit.Unit('m')), 
-                        iris.coord_systems.PrimeMeridian(label="Greenwich", value=0.0), 
-                        iris.coord_systems.GeoPosition(self.bplat, self.bplon), 0.0)
+        geog_cs =  iris.coord_systems.GeogCS(EARTH_RADIUS)
+        if self.bplat != 90.0 or self.bplon != 0.0:
+            geog_cs = iris.coord_systems.RotatedGeogCS(self.bplat, self.bplon, ellipsoid=geog_cs)
+        
+        return geog_cs
 
     def _x_coord_name(self):
         # TODO: Remove once we have the ability to derive this in the rules.
         x_name = "longitude"
-        if self.horiz_coord_system().has_rotated_pole():
+        if isinstance(self.coord_system(), iris.coord_systems.RotatedGeogCS):
             x_name = "grid_longitude"
         return x_name
 
     def _y_coord_name(self):
         # TODO: Remove once we have the ability to derive this in the rules.
         y_name = "latitude"
-        if self.horiz_coord_system().has_rotated_pole():
+        if isinstance(self.coord_system(), iris.coord_systems.RotatedGeogCS):
             y_name = "grid_latitude"
         return y_name
     

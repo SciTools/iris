@@ -50,7 +50,7 @@ class TestAnalysisCubeCoordComparison(tests.IrisTest):
         
     def test_coord_comparison(self):
         cube1 = iris.cube.Cube(numpy.zeros((41, 41)))
-        lonlat_cs = iris.coord_systems.LatLonCS("datum?", "prime_meridian?", iris.coord_systems.GeoPosition(90, 0), "reference_longitude?")
+        lonlat_cs = iris.coord_systems.GeogCS(6371229)
         lon_points1 = -180 + 4.5 * numpy.arange(41, dtype=numpy.float32) 
         lat_points = -90 + 4.5 * numpy.arange(41, dtype=numpy.float32) 
         cube1.add_dim_coord(iris.coords.DimCoord(lon_points1, 'longitude', units='degrees', coord_system=lonlat_cs), 0) 
@@ -59,7 +59,7 @@ class TestAnalysisCubeCoordComparison(tests.IrisTest):
         cube1.add_aux_coord(iris.coords.AuxCoord(['foobar'], long_name='f', units='no_unit')) 
     
         cube2 = iris.cube.Cube(numpy.zeros((41, 41, 5)))
-        lonlat_cs = iris.coord_systems.LatLonCS("datum?", "prime_meridian?", iris.coord_systems.GeoPosition(90, 0), "reference_longitude?")
+        lonlat_cs = iris.coord_systems.GeogCS(6371229)
         lon_points2 = -160 + 4.5 * numpy.arange(41, dtype=numpy.float32)
         cube2.add_dim_coord(iris.coords.DimCoord(lon_points2, 'longitude', units='degrees', coord_system=lonlat_cs), 0) 
         cube2.add_dim_coord(iris.coords.DimCoord(lat_points, 'latitude', units='degrees', coord_system=lonlat_cs), 1)
@@ -107,7 +107,7 @@ class TestAnalysisWeights(tests.IrisTest):
         weights = numpy.array([[9, 8, 7],[6, 5, 4],[3, 2, 1]], dtype=numpy.float32)
         
         cube = iris.cube.Cube(data, long_name="test_data", units="1") 
-        hcs = iris.coord_systems.HorizontalCS(iris.coord_systems.SpheroidDatum())
+        hcs = iris.coord_systems.GeogCS(6371229)
         lat_coord = iris.coords.DimCoord(numpy.array([1, 2, 3], dtype=numpy.float32), long_name="lat", units="1", coord_system=hcs) 
         lon_coord = iris.coords.DimCoord(numpy.array([1, 2, 3], dtype=numpy.float32), long_name="lon", units="1", coord_system=hcs)
         cube.add_dim_coord(lat_coord, 0) 
@@ -372,8 +372,9 @@ class TestRotatedPole(tests.IrisTest):
         plt.scatter(lons, lats)
         self.check_graphic()
 
-        n_pole = cube.coord_system('LatLonCS').n_pole
-        rlons, rlats = iris.analysis.cartography.rotate_pole(lons, lats, n_pole.longitude, n_pole.latitude)
+        grid_north_pole_latitude = cube.coord_system('RotatedGeogCS').grid_north_pole_latitude
+        grid_north_pole_longitude = cube.coord_system('RotatedGeogCS').grid_north_pole_longitude
+        rlons, rlats = iris.analysis.cartography.rotate_pole(lons, lats, grid_north_pole_longitude, grid_north_pole_latitude)
         plt.scatter(rlons, rlats)
         self.check_graphic()
 

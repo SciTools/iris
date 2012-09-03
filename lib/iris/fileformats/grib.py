@@ -212,11 +212,8 @@ class GribWrapper(object):
             '_firstLevelTypeUnits':unknown_string, '_firstLevel':-1.0,
             '_secondLevelTypeName':unknown_string, '_secondLevel':-1.0,
             '_originatingCentre':unknown_string, '_forecastTimeUnit':unknown_string,
-            '_spheroid_datum':coord_systems.SpheroidDatum(),  # default spheroid
-            '_prime_meridian':coord_systems.PrimeMeridian(),  # defaults to greenwhich
-            '_x_coord_name':unknown_string, '_y_coord_name':unknown_string,
-            # We won't be accessing these if we're regular_ll.
-            '_northPole':None, '_reference_longitude':None}
+            '_geogCS':None,
+            '_x_coord_name':unknown_string, '_y_coord_name':unknown_string}
 
         #reference date
         self.extra_keys['_referenceDateTime'] = datetime.datetime(int(self.year), int(self.month), int(self.day), int(self.hour), int(self.minute))
@@ -238,51 +235,45 @@ class GribWrapper(object):
         else:
             self.extra_keys['_phenomenonDateTime'] = self._get_verification_date()
 
-        #rotated pole
-        gridType = gribapi.grib_get_string(self.grib_message, "gridType")
-        if gridType == 'rotated_ll':
-            southPoleLon = longitudeOfSouthernPoleInDegrees
-            southPoleLat = latitudeOfSouthernPoleInDegrees
-            self.extra_keys['_northPole'] = coord_systems.GeoPosition(-southPoleLat, math.fmod(southPoleLon + 180.0, 360.0))
-            self.extra_keys['_reference_longitude'] =  self.angleOfRotation
-        #else leave as default
         
         #shape of the earth
 
         #pre-defined sphere
         if self.shapeOfTheEarth == 0:
-            self.extra_keys['_spheroid_datum'] = coord_systems.SpheroidDatum(label='spherical', units='m', flattening=0.0,
-                                                                      semi_major_axis=6367470.0)
+            self.extra_keys['_geogCS'] = coord_systems.GeogCS(semi_major_axis=6367470)
+            
         #custom sphere
         elif self.shapeOfTheEarth == 1:
-            self.extra_keys['_spheroid_datum'] = coord_systems.SpheroidDatum(label='spherical', units='m', flattening=0.0,
-                semi_major_axis=self.scaledValueOfRadiusOfSphericalEarth * self.scaleFactorOfRadiusOfSphericalEarth)
+            self.extra_keys['_geogCS'] = \
+                coord_systems.GeogCS(self.scaledValueOfRadiusOfSphericalEarth * \
+                                     self.scaleFactorOfRadiusOfSphericalEarth)
                     
         #IAU65 oblate sphere
         elif self.shapeOfTheEarth == 2:
-            self.extra_keys['_spheroid_datum'] = coord_systems.SpheroidDatum(label='IAU65', flattening=1.0/297.0, units='m',
-                                                                      semi_major_axis=6378160.0)
+            self.extra_keys['_geogCS'] = coord_systems.GeogCS(6378160, inverse_flattening=297.0)
+                
         #custom oblate spheroid (km)
         elif self.shapeOfTheEarth == 3:
-            self.extra_keys['_spheroid_datum'] = coord_systems.SpheroidDatum(label='spherical', units='km',
-                semi_major_axis=self.scaledValueOfEarthMajorAxis * self.scaleFactorOfEarthMajorAxis,
-                semi_minor_axis=self.scaledValueOfEarthMinorAxis * self.scaleFactorOfEarthMinorAxis)
+            self.extra_keys['_geogCS'] = coord_systems.GeogCS(
+                semi_major_axis=self.scaledValueOfEarthMajorAxis * self.scaleFactorOfEarthMajorAxis * 1000.0,
+                semi_minor_axis=self.scaledValueOfEarthMinorAxis * self.scaleFactorOfEarthMinorAxis * 1000.0)
             
         #IAG-GRS80 oblate spheroid
         elif self.shapeOfTheEarth == 4:
-            self.extra_keys['_spheroid_datum'] = coord_systems.SpheroidDatum(label='IAG-GRS80', units='m', flattening=1.0/298.257222101,
-                                                                      semi_major_axis=6378137.0)
+            self.extra_keys['_geogCS'] = coord_systems.GeogCS(6378137, None, 298.257222101)
+
         #WGS84
         elif self.shapeOfTheEarth == 5:
-            self.extra_keys['_spheroid_datum'] = coord_systems.SpheroidDatum(label='WGS84', units='m', flattening=1.0/298.257223563,
-                                                                      semi_major_axis=6378137.0)
+            self.extra_keys['_geogCS'] = \
+                coord_systems.GeogCS(6378137, inverse_flattening=298.257223563)
+        
         #pre-defined sphere
         elif self.shapeOfTheEarth == 6:
-            self.extra_keys['_spheroid_datum'] = coord_systems.SpheroidDatum(label='spherical', units='m', flattening=0.0,
-                                                                      semi_major_axis=6371229.0)
+            self.extra_keys['_geogCS'] = coord_systems.GeogCS(6371229)
+        
         #custom oblate spheroid (m)
         elif self.shapeOfTheEarth == 7:
-            self.extra_keys['_spheroid_datum'] = coord_systems.SpheroidDatum(label='spherical', units='m',
+            self.extra_keys['_geogCS'] = coord_systems.GeogCS(
                 semi_major_axis=self.scaledValueOfEarthMajorAxis * self.scaleFactorOfEarthMajorAxis,
                 semi_minor_axis=self.scaledValueOfEarthMinorAxis * self.scaleFactorOfEarthMinorAxis)
         
@@ -291,6 +282,19 @@ class GribWrapper(object):
         
         else:
             raise ValueError("undefined shape of earth")
+
+
+        #rotated pole
+        gridType = gribapi.grib_get_string(self.grib_message, "gridType")
+        if gridType == 'rotated_ll':
+            # Replace the llcs with a rotated one
+            southPoleLon = longitudeOfSouthernPoleInDegrees
+            southPoleLat = latitudeOfSouthernPoleInDegrees
+            # TODO: Confirm the translation from angleOfRotation to north_pole_lon (usually 0 for both)
+            self.extra_keys['_geogCS'] = \
+                iris.coord_systems.RotatedGeogCS(-southPoleLat, math.fmod(southPoleLon + 180.0, 360.0),
+                                                 self.angleOfRotation, self.extra_keys['_geogCS']) 
+
         
         #originating centre
         #TODO #574 Expand to include sub-centre

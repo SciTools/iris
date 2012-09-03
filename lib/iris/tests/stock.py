@@ -29,7 +29,7 @@ import iris.aux_factory
 import iris.coords
 import iris.coords as icoords
 import iris.tests as tests
-from iris.coord_systems import LatLonCS, GeoPosition, SpheroidDatum, PrimeMeridian
+from iris.coord_systems import GeogCS, RotatedGeogCS
 
 
 def lat_lon_cube():
@@ -38,7 +38,7 @@ def lat_lon_cube():
     
     """
     cube = Cube(numpy.arange(12, dtype=numpy.int32).reshape((3, 4)))
-    cs = LatLonCS(None, 'pm', GeoPosition(90, 0), 0)
+    cs = GeogCS(6371229)
     cube.add_dim_coord(iris.coords.DimCoord(points=numpy.array([-1, 0, 1], dtype=numpy.int32), standard_name='latitude', units='degrees', coord_system=cs), 0)
     cube.add_dim_coord(iris.coords.DimCoord(points=numpy.array([-1, 0, 1, 2], dtype=numpy.int32), standard_name='longitude', units='degrees', coord_system=cs), 1)
     return cube
@@ -326,10 +326,7 @@ def realistic_4d():
     _source_pts, forecast_period_pts, data, orography = arrays
     
     
-    ll_cs = LatLonCS(SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, 
-                                   flattening=0.0, units='m'), PrimeMeridian(label='Greenwich', value=0.0), 
-                     GeoPosition(latitude=37.5, longitude=177.5), 
-                     0.0)
+    ll_cs = RotatedGeogCS(37.5, 177.5, ellipsoid=GeogCS(6371229.0))
     
     lat = icoords.DimCoord(lat_pts, standard_name='grid_latitude', units='degrees', 
                            bounds=lat_bnds, coord_system=ll_cs)
@@ -379,10 +376,7 @@ def realistic_4d_w_missing_data():
 
     # sort the arrays based on the order they were originally given. The names given are of the form 'arr_1' or 'arr_10'
     
-    ll_cs = LatLonCS(SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, 
-                                   flattening=0.0, units='m'), PrimeMeridian(label='Greenwich', value=0.0), 
-                     GeoPosition(latitude=0.0, longitude=90.0),
-                     0.0)
+    ll_cs = GeogCS(6371229)
     
     lat = iris.coords.DimCoord(numpy.arange(20, dtype=numpy.float32), standard_name='grid_latitude', 
                                units='degrees', coord_system=ll_cs)

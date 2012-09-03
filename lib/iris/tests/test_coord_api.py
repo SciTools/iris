@@ -153,7 +153,8 @@ class TestCoordXML(unittest.TestCase):
         coord = iris.coords.AuxCoord(numpy.arange(10, dtype=numpy.int32), long_name='test', units='meter')
         coord_xml_element = coord.xml_element(doc)
         doc.appendChild(coord_xml_element)
-        r = '<?xml version="1.0" ?>\n<AuxCoord id="17eb9ae9fe32de24" long_name="test" points="[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]" shape="(10,)" units="Unit(\'meter\')" value_type="int32"/>\n'
+        r = '<?xml version="1.0" ?>\n<AuxCoord id="17eb9ae9fe32de24" long_name="test" points="[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]" '\
+            'shape="(10,)" units="Unit(\'meter\')" value_type="int32"/>\n'
         t = doc.toprettyxml(indent="  ")
         self.assertEqual(r, t)
 
@@ -163,7 +164,8 @@ class TestCoordXML(unittest.TestCase):
         coord.guess_bounds(0.5)
         coord_xml_element = coord.xml_element(doc)
         doc.appendChild(coord_xml_element)
-        r = '<?xml version="1.0" ?>\n<DimCoord bounds="[[-1.0, 1.0],\n\t\t[1.0, 3.0],\n\t\t[3.0, 5.0],\n\t\t[5.0, 7.0]]" id="17eb9ae9fe32de24" long_name="test" points="[0.0, 2.0, 4.0, 6.0]" shape="(4,)" units="Unit(\'meter\')" value_type="float32"/>\n'
+        r = '<?xml version="1.0" ?>\n<DimCoord bounds="[[-1.0, 1.0],\n\t\t[1.0, 3.0],\n\t\t[3.0, 5.0],\n\t\t[5.0, 7.0]]" '\
+            'id="17eb9ae9fe32de24" long_name="test" points="[0.0, 2.0, 4.0, 6.0]" shape="(4,)" units="Unit(\'meter\')" value_type="float32"/>\n'
         t = doc.toprettyxml(indent="  ")
         self.assertEqual(r, t)
 
@@ -173,12 +175,24 @@ class TestCoordRepr(unittest.TestCase):
         self.lat = iris.tests.stock.realistic_4d().coord('grid_latitude')
         
     def test_DimCoord(self):
-        result = "DimCoord(array([-0.1278, -0.1269, -0.126 , -0.1251, -0.1242, -0.1233, -0.1224,\n       -0.1215, -0.1206, -0.1197], dtype=float32), bounds=array([[-0.12825, -0.12735],\n       [-0.12735, -0.12645],\n       [-0.12645, -0.12555],\n       [-0.12555, -0.12465],\n       [-0.12465, -0.12375],\n       [-0.12375, -0.12285],\n       [-0.12285, -0.12195],\n       [-0.12195, -0.12105],\n       [-0.12105, -0.12015],\n       [-0.12015, -0.11925]], dtype=float32), standard_name='grid_latitude', units=Unit('degrees'), coord_system=LatLonCS(SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, units='m'), PrimeMeridian(label='Greenwich', value=0.0), GeoPosition(latitude=37.5, longitude=177.5), 0.0))"
+        result = "DimCoord(array([-0.1278, -0.1269, -0.126 , -0.1251, -0.1242, -0.1233, -0.1224,\n       "\
+                 "-0.1215, -0.1206, -0.1197], dtype=float32), bounds=array([[-0.12825, -0.12735],\n       "\
+                 "[-0.12735, -0.12645],\n       [-0.12645, -0.12555],\n       [-0.12555, -0.12465],\n       "\
+                 "[-0.12465, -0.12375],\n       [-0.12375, -0.12285],\n       [-0.12285, -0.12195],\n       "\
+                 "[-0.12195, -0.12105],\n       [-0.12105, -0.12015],\n       [-0.12015, -0.11925]], dtype=float32), "\
+                 "standard_name='grid_latitude', units=Unit('degrees'), coord_system=RotatedGeogCS(37.5, 177.5, "\
+                 "ellipsoid=GeogCS(6371229.0)))"
         self.maxDiff = None
         self.assertMultiLineEqual(result, repr(self.lat[:10]))
         
     def test_AuxCoord(self):
-        result = "AuxCoord(array([-0.1278, -0.1269, -0.126 , -0.1251, -0.1242, -0.1233, -0.1224,\n       -0.1215, -0.1206, -0.1197], dtype=float32), bounds=array([[-0.12825, -0.12735],\n       [-0.12735, -0.12645],\n       [-0.12645, -0.12555],\n       [-0.12555, -0.12465],\n       [-0.12465, -0.12375],\n       [-0.12375, -0.12285],\n       [-0.12285, -0.12195],\n       [-0.12195, -0.12105],\n       [-0.12105, -0.12015],\n       [-0.12015, -0.11925]], dtype=float32), standard_name='grid_latitude', units=Unit('degrees'), coord_system=LatLonCS(SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, units='m'), PrimeMeridian(label='Greenwich', value=0.0), GeoPosition(latitude=37.5, longitude=177.5), 0.0))"
+        result = "AuxCoord(array([-0.1278, -0.1269, -0.126 , -0.1251, -0.1242, -0.1233, -0.1224,\n       "\
+                 "-0.1215, -0.1206, -0.1197], dtype=float32), bounds=array([[-0.12825, -0.12735],\n       "\
+                 "[-0.12735, -0.12645],\n       [-0.12645, -0.12555],\n       [-0.12555, -0.12465],\n       "\
+                 "[-0.12465, -0.12375],\n       [-0.12375, -0.12285],\n       [-0.12285, -0.12195],\n       "\
+                 "[-0.12195, -0.12105],\n       [-0.12105, -0.12015],\n       [-0.12015, -0.11925]], dtype=float32), "\
+                 "standard_name='grid_latitude', units=Unit('degrees'), coord_system=RotatedGeogCS(37.5, 177.5, "\
+                 "ellipsoid=GeogCS(6371229.0)))"
         coord = iris.coords.AuxCoord.from_coord(self.lat[:10])
         self.maxDiff = None
         self.assertMultiLineEqual(result, repr(coord))
@@ -205,14 +219,16 @@ class TestAuxCoordCreation(unittest.TestCase):
             a.attributes.update({'standard_name': 'whoopsy'})
 
     def test_coord_system(self):
-        a = iris.coords.AuxCoord(range(10), 'air_temperature', units='kelvin', coord_system=iris.coord_systems.HorizontalCS(None))
-        result = "AuxCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), standard_name='air_temperature', units=Unit('kelvin'), coord_system=HorizontalCS(None, 'cartesian'))"
+        a = iris.coords.AuxCoord(range(10), 'air_temperature', units='kelvin', coord_system=iris.coord_systems.GeogCS(6000))
+        result = "AuxCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), standard_name='air_temperature', units=Unit('kelvin'), "\
+                 "coord_system=GeogCS(6000.0))"
         self.assertEqual(result, str(a))
         
     def test_bounded(self):
         a = iris.coords.AuxCoord(range(10), 'air_temperature', units='kelvin', bounds=numpy.arange(0, 20).reshape(10, 2))
         result = ("AuxCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])"
-                  ", bounds=array([[ 0,  1],\n       [ 2,  3],\n       [ 4,  5],\n       [ 6,  7],\n       [ 8,  9],\n       [10, 11],\n       [12, 13],\n       [14, 15],\n       [16, 17],\n       [18, 19]])"
+                  ", bounds=array([[ 0,  1],\n       [ 2,  3],\n       [ 4,  5],\n       [ 6,  7],\n       [ 8,  9],\n       "\
+                  "[10, 11],\n       [12, 13],\n       [14, 15],\n       [16, 17],\n       [18, 19]])"
                   ", standard_name='air_temperature', units=Unit('kelvin'))"
                   )
         self.assertEqual(result, str(a))
@@ -244,14 +260,16 @@ class TestDimCoordCreation(unittest.TestCase):
             a.attributes.update({'standard_name': 'whoopsy'})
 
     def test_coord_system(self):
-        a = iris.coords.DimCoord(range(10), 'air_temperature', units='kelvin', coord_system=iris.coord_systems.HorizontalCS(None))
-        result = "DimCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), standard_name='air_temperature', units=Unit('kelvin'), coord_system=HorizontalCS(None, 'cartesian'))"
+        a = iris.coords.DimCoord(range(10), 'air_temperature', units='kelvin', coord_system=iris.coord_systems.GeogCS(6000))
+        result = "DimCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), standard_name='air_temperature', units=Unit('kelvin'), "\
+                 "coord_system=GeogCS(6000.0))"
         self.assertEqual(result, str(a))
         
     def test_bounded(self):
         a = iris.coords.DimCoord(range(10), 'air_temperature', units='kelvin', bounds=numpy.arange(0, 20).reshape(10, 2))
         result = ("DimCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])"
-                  ", bounds=array([[ 0,  1],\n       [ 2,  3],\n       [ 4,  5],\n       [ 6,  7],\n       [ 8,  9],\n       [10, 11],\n       [12, 13],\n       [14, 15],\n       [16, 17],\n       [18, 19]])"
+                  ", bounds=array([[ 0,  1],\n       [ 2,  3],\n       [ 4,  5],\n       [ 6,  7],\n       [ 8,  9],\n       "\
+                  "[10, 11],\n       [12, 13],\n       [14, 15],\n       [16, 17],\n       [18, 19]])"
                   ", standard_name='air_temperature', units=Unit('kelvin'))"
                   )
         self.assertEqual(result, str(a))      

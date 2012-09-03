@@ -186,7 +186,7 @@ class TestCalculusSimple3(tests.IrisTest):
         data = numpy.arange(2500, dtype=numpy.float32).reshape(50, 50)
         cube = iris.cube.Cube(data, standard_name="x_wind", units="km/h")
         
-        self.lonlat_cs = iris.coord_systems.LatLonCS(iris.coord_systems.SpheroidDatum(), iris.coord_systems.PrimeMeridian(), iris.coord_systems.GeoPosition(90, 0), "reference_longitude?")
+        self.lonlat_cs = iris.coord_systems.GeogCS(6371229)
         cube.add_dim_coord(DimCoord(numpy.arange(50, dtype=numpy.float32) * 4.5 -180, 'longitude', units='degrees', coord_system=self.lonlat_cs), 0)
         cube.add_dim_coord(DimCoord(numpy.arange(50, dtype=numpy.float32) * 4.5 -90,  'latitude', units='degrees', coord_system=self.lonlat_cs), 1)
     
@@ -211,7 +211,7 @@ class TestCalculusSimple2(tests.IrisTest):
                              [4, 5, 6, 7, 9]], dtype=numpy.float32)
         cube = iris.cube.Cube(data, standard_name="x_wind", units="km/h")
         
-        self.lonlat_cs = iris.coord_systems.LatLonCS(iris.coord_systems.SpheroidDatum(), iris.coord_systems.PrimeMeridian(), iris.coord_systems.GeoPosition(90, 0), "reference_longitude?")
+        self.lonlat_cs = iris.coord_systems.GeogCS(6371229)
         cube.add_dim_coord(DimCoord(numpy.arange(4, dtype=numpy.float32) * 90 -180, 'longitude', units='degrees', circular=True, coord_system=self.lonlat_cs), 0)
         cube.add_dim_coord(DimCoord(numpy.arange(5, dtype=numpy.float32) * 45 -90, 'latitude', units='degrees', coord_system=self.lonlat_cs), 1)
     
@@ -293,15 +293,13 @@ def build_cube(data, spherical=False):
     dimz = data.ndim - 3  if data.ndim > 2 else None
    
     if spherical:
-        hcs = iris.coord_systems.LatLonCS( iris.coord_systems.SpheroidDatum(label="Tiny Earth", semi_major_axis=6321, flattening=0.0, units="m"),
-                                        iris.coord_systems.PrimeMeridian(), iris.coord_systems.GeoPosition(90, 0), "reference_longitude?")
+        hcs = iris.coord_systems.GeogCS(6321)
         cube.add_dim_coord(DimCoord(numpy.arange(-180, 180, 360./nx, dtype=numpy.float32), 'longitude', units='degrees', coord_system=hcs, circular=True), dimx) 
         cube.add_dim_coord(DimCoord(numpy.arange(-90, 90, 180./ny, dtype=numpy.float32), 'latitude', units='degrees',coord_system=hcs), dimy)
 
     else:
-        hcs = iris.coord_systems.HorizontalCS("Cartesian Datum?")
-        cube.add_dim_coord(DimCoord(numpy.arange(nx, dtype=numpy.float32) * 2.21 + 2, 'projection_x_coordinate', units='meters', coord_system=hcs), dimx) 
-        cube.add_dim_coord(DimCoord(numpy.arange(ny, dtype=numpy.float32) * 25 -50, 'projection_y_coordinate', units='meters', coord_system=hcs), dimy)
+        cube.add_dim_coord(DimCoord(numpy.arange(nx, dtype=numpy.float32) * 2.21 + 2, 'projection_x_coordinate', units='meters'), dimx) 
+        cube.add_dim_coord(DimCoord(numpy.arange(ny, dtype=numpy.float32) * 25 -50, 'projection_y_coordinate', units='meters'), dimy)
 
     if nz is None:
         cube.add_aux_coord(DimCoord(numpy.array([10], dtype=numpy.float32), long_name='z', units='meters', attributes={"positive":"up"}))
