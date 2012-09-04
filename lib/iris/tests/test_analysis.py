@@ -239,20 +239,10 @@ class TestAnalysisBasic(tests.IrisTest):
     def test_duplicate_coords(self):
         self.assertRaises(ValueError, tests.stock.track_1d, duplicate_x=True)
 
-    def test_lat_lon_range(self):
-        # Test with non-circular longitude
-        result_non_circ = iris.analysis.cartography.lat_lon_range(self.cube)
-        numpy.testing.assert_array_almost_equal(result_non_circ, ((15, 77), (-88, 72)), decimal=0)
-
-        # Set longitude to be circular
-        self.cube.coord('grid_longitude').circular = True
-        result_circ = iris.analysis.cartography.lat_lon_range(self.cube)
-        
-        # lon range of circular coord grid_longitude will be approx -88 + 360 = 272
-        numpy.testing.assert_array_almost_equal(result_circ, ((15, 77), (-88, 272)), decimal=0)
-        
-        # Test with non geodetic coords 
-
+    def test_xy_range(self):
+        result_non_circ = iris.analysis.cartography.xy_range(self.cube)
+        self.assertEqual(self.cube.coord('grid_longitude').circular, False)
+        numpy.testing.assert_array_almost_equal(result_non_circ, ((313.02, 392.11), (-22.49, 24.92)), decimal=0)
 
 class TestMissingData(tests.IrisTest):
     def setUp(self):
@@ -370,13 +360,14 @@ class TestAggregators(tests.IrisTest):
 @iris.tests.skip_data
 class TestRotatedPole(tests.IrisTest):
     def _check_both_conversions(self, cube):
-        lats, lons = iris.analysis.cartography.get_lat_lon_grids(cube)
-        plt.scatter(lons, lats)
+        rlons, rlats = iris.analysis.cartography.get_xy_grids(cube)
+        rcs = cube.coord_system('RotatedGeogCS')
+        x, y = iris.analysis.cartography.unrotate_pole(rlons, rlats,
+                                                       rcs.grid_north_pole_longitude,
+                                                       rcs.grid_north_pole_latitude)
+        plt.scatter(x, y)
         self.check_graphic()
 
-        grid_north_pole_latitude = cube.coord_system('RotatedGeogCS').grid_north_pole_latitude
-        grid_north_pole_longitude = cube.coord_system('RotatedGeogCS').grid_north_pole_longitude
-        rlons, rlats = iris.analysis.cartography.rotate_pole(lons, lats, grid_north_pole_longitude, grid_north_pole_latitude)
         plt.scatter(rlons, rlats)
         self.check_graphic()
 

@@ -10,10 +10,7 @@ temperature_cube = iris.load_strict(fname)
 # Draw the contour with 25 levels
 qplt.contourf(temperature_cube, 25)
 
-# Get the map created by contourf
-current_map = iplt.gcm()
-
-# Add coastlines to the map
-current_map.drawcoastlines()
+# Add coastlines to the map created by contourf
+plt.gca().coastlines()
 
 plt.show()
