@@ -40,8 +40,6 @@ def file_walk_relative(top, remove=''):
 
     """
     for root, dirs, files in os.walk(top):
-       if '.svn' in dirs:
-           dirs.remove('.svn')
        for file in files:
            yield os.path.join(root, file).replace(remove, '')
 

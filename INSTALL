@@ -89,20 +89,23 @@ shapely 1.2.14 (https://github.com/Toblerity/Shapely)
     Python package for the manipulation and analysis of planar geometric objects.
 
 
-Packed PP - libmo_unpack
-========================
-This library is property of the UK Met Office and licensed separately. It can 
-be used by Iris for decoding/unpacking PP files or Fields files that use an 
-lbpack value of 1 or 4.
+Packed PP
+=========
+The libmo_unpack library can be used by Iris for decoding/unpacking 
+PP files or Fields files that use an lbpack value of 1 or 4. This 
+library is open source, licensed under the 2-clause BSD licence. 
+It can be obtained from http://puma.nerc.ac.uk/trac/UM_TOOLS/wiki/unpack.
 
-Use of this library is not enabled by default. If this library is available 
-its use can be enabled by installing Iris with the following command::
+Use of this library is not enabled by default. If this library is 
+available its use can be enabled by installing Iris with the following 
+command::
 
   python setup.py --with-unpack install
 
 Note that if this library and/or its associated header files are installed 
-in a custom location then additional compiler arguments may need to be passed 
-in to ensure that the Python extension module linking against it builds correctly::
+in a custom location then additional compiler arguments may need to be 
+passed in to ensure that the Python extension module linking against it 
+builds correctly::
 
   python setup.py --with-unpack build_ext -I <custom include dir> \ 
         -L <custom link-time libdir> -R <custom runtime libdir> install
