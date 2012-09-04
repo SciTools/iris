@@ -67,6 +67,7 @@ class TestCmapNorm(tests.IrisTest):
 
     def test_norm_override(self):
         self.cube.standard_name += '_anomaly'
+        # The data range is 245 to 305
         norm = iris.palette.SymmetricNormalize(pivot=200)
         iplt.contourf(self.cube, norm=norm)
         self.check_graphic()

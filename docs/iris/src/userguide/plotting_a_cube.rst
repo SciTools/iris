@@ -207,15 +207,15 @@ Plotting 2-dimensional cubes
 
 Creating maps
 -------------
-Whenever a 2D plot is created and the x and y coordinates are longitude and latitude a 
-:class:`mpl_toolkits.basemap.Basemap` instance is created which can be accessed with the :func:`iris.plot.gcm` function. 
+Whenever a 2D plot is created using an :class:`iris.coord_systems.CoordSystem` a 
+cartopy :class:`~cartopy.mpl_integration.GenericProjectionAxes` instance is created
+which can be accessed with the :func:`matplotlib.pyplot.gca` function. 
 
-Given the current map, you can draw meridians, parallels and coastlines amongst other things. 
+Given the current map, you can draw gridlines and coastlines amongst other things. 
 
 .. seealso:: 
-	:meth:`Basemap.drawmeridians() <mpl_toolkits.basemap.Basemap.drawmeridians>`, 
-	:meth:`Basemap.drawparallels() <mpl_toolkits.basemap.Basemap.drawparallels>` and 
-	:meth:`Basemap.drawcoastlines() <mpl_toolkits.basemap.Basemap.drawcoastlines>`.
+	:meth:`cartopy's gridlines() <cartopy.mpl_integration.GenericProjectionAxes.gridlines>`, 
+	:meth:`cartopy's coastlines() <cartopy.mpl_integration.GenericProjectionAxes.coastlines>`.
 
 
 Cube contour

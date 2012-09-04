@@ -20,8 +20,10 @@ Definitions of coordinate systems.
 """
 
 from __future__ import division
+from abc import ABCMeta, abstractmethod
 
 import numpy
+import cartopy.crs
 
 import iris
 import iris.unit
@@ -32,6 +34,8 @@ class CoordSystem(object):
     Abstract base class for coordinate systems.
     
     """
+    __metaclass__ = ABCMeta
+
     grid_mapping_name = None
 
     def __eq__(self, other):
@@ -59,8 +63,29 @@ class CoordSystem(object):
             coord_system_xml_element.setAttribute(name, str(value))
         
         return coord_system_xml_element
-    
 
+    @abstractmethod
+    def cartopy_crs(self):
+        """Return a cartopy projection representing our native coordinate system."""
+        pass
+
+    @abstractmethod
+    def cartopy_map(self, centre=None):
+        """
+        Return a cartopy projection representing our native map.
+        
+        This will be the same as the :func:`~CoordSystem.cartopy_crs` for map projections
+        but for spherical coord systems (which are not map projections)
+        we use a map projection, such as PlateCarree.
+        
+        """
+        pass
+
+    def _has_variable_centre_map(self):
+        # Can the map, from self.cartopy_map(), be centred around an arbitrary point?
+        return False
+    
+        
 class GeogCS(CoordSystem):
     """A geographic (ellipsoidal) coordinate system, defined by the shape of the Earth and a prime meridian."""
     
@@ -172,6 +197,16 @@ class GeogCS(CoordSystem):
             attrs = [("earth_radius", self.semi_major_axis)]
 
         return CoordSystem.xml_element(self, doc, attrs)
+    
+    def cartopy_crs(self):
+        return cartopy.crs.Geodetic()
+
+    def cartopy_map(self, centre=None):
+        central_longitude = centre[0] if centre else None
+        return cartopy.crs.PlateCarree(central_longitude=central_longitude)
+
+    def _has_variable_centre_map(self):
+        return True
         
 
 class RotatedGeogCS(CoordSystem):
@@ -238,6 +273,13 @@ class RotatedGeogCS(CoordSystem):
 
     def xml_element(self, doc):
         return CoordSystem.xml_element(self, doc, self._pretty_attrs())
+
+    def cartopy_crs(self):
+        return cartopy.crs.RotatedGeodetic(self.grid_north_pole_longitude, self.grid_north_pole_latitude)
+
+    def cartopy_map(self, centre=None):
+        # TODO: Use centre lon for an alternative map centre. The default is pole_lon + 180.
+        return cartopy.crs.RotatedPole(self.grid_north_pole_longitude, self.grid_north_pole_latitude)
 
 
 class TransverseMercator(CoordSystem):
@@ -306,6 +348,19 @@ class TransverseMercator(CoordSystem):
                 self.false_easting, self.false_northing,
                 self.scale_factor_at_central_meridian, self.ellipsoid)
 
+    def cartopy_crs(self):
+        warnings.warn("Cartopy currently under-defines transverse mercator.")
+        return cartopy.crs.TransverseMercator(self.longitude_of_central_meridian)
+
+    def cartopy_map(self, centre=None):
+        warnings.warn("Cartopy currently under-defines transverse mercator.")
+        return cartopy.crs.TransverseMercator(self.longitude_of_central_meridian)
+        # TODO: Add these params to cartopy's TransverseMercator.
+#        return cartopy.crs.TransverseMercator(self.latitude_of_projection_origin,
+#                                              self.longitude_of_central_meridian,
+#                                              self.false_easting, self.false_northing,
+#                                              self.scale_factor_at_central_meridian)
+
 
 class OSGB(TransverseMercator):
     """A Specific transverse mercator projection on a specific ellipsoid."""
@@ -313,5 +368,8 @@ class OSGB(TransverseMercator):
         TransverseMercator.__init__(self, 49, -2, -400000, 100000, 0.9996012717,
                                     GeogCS(6377563.396, 6356256.909))
         
-    def _as_cartopy_projection(self):
+    def cartopy_crs(self):
+        return cartopy.crs.OSGB()
+
+    def cartopy_map(self, centre=None):
         return cartopy.crs.OSGB()
