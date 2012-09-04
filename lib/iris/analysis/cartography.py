@@ -22,8 +22,9 @@ Various utilities and numeric transformations relevant to cartography.
 import math
 import warnings
 
-from mpl_toolkits.basemap import pyproj
+import pyproj
 import numpy
+import cartopy.crs
 
 import iris.analysis
 import iris.coords
@@ -95,18 +96,26 @@ def _get_lat_lon_coords(cube):
     lat_coords = filter(lambda coord: "latitude" in coord.name(), cube.coords())
     lon_coords = filter(lambda coord: "longitude" in coord.name(), cube.coords())
     if len(lat_coords) > 1 or len(lon_coords) > 1:
-        raise ValueError("Calling lat_lon_range() with multiple lat or lon coords is currently disallowed")
+        raise ValueError("Calling _get_lat_lon_coords() with multiple lat or lon coords is currently disallowed")
     lat_coord = lat_coords[0]
     lon_coord = lon_coords[0]
     return (lat_coord, lon_coord)
 
 
-def lat_lon_range(cube, mode=None):
+def xy_range(cube, mode=None, projection=None):
     """
-    Return the lat & lon range of this Cube.
+    Return the x & y range of this Cube.
     
-    If the coordinate has both points & bounds, the mode keyword can be set to determine which should be
-    used in the min/max calculation. (Must be one of iris.coords.POINT_MODE or iris.coords.BOUND_MODE)
+    Args:
+    
+        * cube - The cube for which to calculate xy extents.
+        
+    Kwargs:
+    
+        * mode - If the coordinate has bounds, use the mode keyword to specify the
+                 min/max calculation (iris.coords.POINT_MODE or iris.coords.BOUND_MODE).
+
+        * projection - Calculate the xy range in an alternative projection. 
             
     """
     # Helpful error if we have an inappropriate CoordSystem
@@ -114,73 +123,79 @@ def lat_lon_range(cube, mode=None):
     if cs is not None and not isinstance(cs, (iris.coord_systems.GeogCS, iris.coord_systems.RotatedGeogCS)):
         raise ValueError("Latlon coords cannot be found with {0}.".format(type(cs)))
     
-    # get the lat and lon coords (might have "grid_" at the start of the name, if rotated).
-    lat_coord, lon_coord = _get_lat_lon_coords(cube)
+    x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
     cs = cube.coord_system('CoordSystem')
     
-    if lon_coord.has_bounds() != lat_coord.has_bounds():
-        raise ValueError('Cannot get the range of the latitude and longitude coordinates if they do '
+    if x_coord.has_bounds() != x_coord.has_bounds():
+        raise ValueError('Cannot get the range of the x and y coordinates if they do '
                          'not have the same presence of bounds.')
     
-    if lon_coord.has_bounds():
+    if x_coord.has_bounds():
         if mode not in [iris.coords.POINT_MODE, iris.coords.BOUND_MODE]:
             raise ValueError('When the coordinate has bounds, please specify "mode".')
         _mode = mode
     else:
         _mode = iris.coords.POINT_MODE
     
+    # Get the x and y grids
     if isinstance(cs, iris.coord_systems.RotatedGeogCS):
         if _mode == iris.coords.POINT_MODE:
-            lats, lons = get_lat_lon_grids(cube)
+            x, y = get_xy_grids(cube)
         else:
-            lats, lons = get_lat_lon_contiguous_bounded_grids(cube)
+            x, y = get_xy_contiguous_bounded_grids(cube)
     else:
         if _mode == iris.coords.POINT_MODE:
-            lons = lon_coord.points
-            lats = lat_coord.points
+            x = x_coord.points
+            y = y_coord.points
         else:
-            lons = lon_coord.bounds
-            lats = lat_coord.bounds
+            x = x_coord.bounds
+            y = y_coord.bounds
+            
+    if projection:
+        # source projection
+        source_cs = cube.coord_system("CoordSystem")
+        if source_cs is not None:
+            source_proj = source_cs.as_cartopy_projection()
+        else:
+            #source_proj = cartopy.crs.PlateCarree()
+            raise Exception('Unknown source coordinate system')
+            
+        if source_proj != projection:
+            # TODO: Ensure there is a test for this
+            x, y = projection.transform_points(x=x, y=y, src_crs=source_proj)
     
-    if getattr(lon_coord, 'circular', False):
-        lon_range = (numpy.min(lons), numpy.min(lons) + lon_coord.units.modulus)
+    # Get the x and y range
+    if getattr(x_coord, 'circular', False):
+        x_range = (numpy.min(x), numpy.min(x) + x_coord.units.modulus)
     else: 
-        lon_range = (numpy.min(lons), numpy.max(lons))
-    
-    return ( (numpy.min(lats), numpy.max(lats)), lon_range )
+        x_range = (numpy.min(x), numpy.max(x))
+
+    y_range = (numpy.min(y), numpy.max(y))
+
+    return (x_range, y_range)
 
 
-def get_lat_lon_grids(cube):
+def get_xy_grids(cube):
     """
-    Return 2d lat and lon points in the requested coordinate system.
+    Return 2d x and y points in the native coordinate system.
     ::
     
-        lats, lons = get_lat_lon_grids(cube)
+        x, y = get_xy_grids(cube)
     
     """
-    # get the lat and lon coords (might have "grid_" at the start of the name, if rotated).
-    lat_coord, lon_coord = _get_lat_lon_coords(cube)
+    x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
     cs = cube.coord_system('CoordSystem')
     
-    if lon_coord.units != 'degrees':
-        lon_coord = lon_coord.unit_converted('degrees')
-    if lat_coord.units != 'degrees':
-        lat_coord = lat_coord.unit_converted('degrees')
-    
-    lons = lon_coord.points
-    lats = lat_coord.points
+    x = x_coord.points
+    y = y_coord.points
     
     # Convert to 2 x 2d grid of data
-    lons, lats = numpy.meshgrid(lons, lats)
-    
-    # if the pole was rotated, then un-rotate it
-    if isinstance(cs, iris.coord_systems.RotatedGeogCS):
-        lons, lats = unrotate_pole(lons, lats, cs.grid_north_pole_longitude, cs.grid_north_pole_latitude)
-            
-    return (lats, lons)
+    x, y = numpy.meshgrid(x, y)
+
+    return (x, y)
 
 
-def get_lat_lon_contiguous_bounded_grids(cube):
+def get_xy_contiguous_bounded_grids(cube):
     """
     Return 2d lat and lon bounds.
     
@@ -190,21 +205,14 @@ def get_lat_lon_contiguous_bounded_grids(cube):
         lats, lons = cs.get_lat_lon_bounded_grids()
     
     """
-    # get the lat and lon coords (might have "grid_" at the start of the name, if rotated).
-    lat_coord, lon_coord = _get_lat_lon_coords(cube)
+    x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
     cs = cube.coord_system('CoordSystem')
     
-    if lon_coord.units != 'degrees':
-        lon_coord = lon_coord.unit_converted('degrees')
-    if lat_coord.units != 'degrees':
-        lat_coord = lat_coord.unit_converted('degrees')
-    
-    lons = lon_coord.contiguous_bounds()
-    lats = lat_coord.contiguous_bounds()
-    lons, lats = numpy.meshgrid(lons, lats)
-    if isinstance(cs, iris.coord_systems.RotatedGeogCS):
-        lons, lats = iris.analysis.cartography.unrotate_pole(lons, lats, cs.grid_north_pole_longitude, cs.grid_north_pole_latitude)
-    return (lats, lons)
+    x = x_coord.contiguous_bounds()
+    y = y_coord.contiguous_bounds()
+    x, y = numpy.meshgrid(x, y)
+
+    return (x, y)
 
 
 def _quadrant_area(radian_colat_bounds, radian_lon_bounds, radius_of_earth):

@@ -174,7 +174,7 @@ class SymmetricNormalize(mpl_colors.Normalize, object):
     
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.pivot)
-    
+
     def _update(self, val, update_min=True, update_max=True):
         # Update both _vmin and _vmax from given value.
         val_diff = numpy.abs(val - self.pivot)
