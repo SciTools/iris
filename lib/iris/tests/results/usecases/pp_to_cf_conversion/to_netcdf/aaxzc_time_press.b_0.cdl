@@ -1,5 +1,5 @@
 dimensions:
-	pressure = 15 ;
+	pressure = UNLIMITED ; // (15 currently)
 	time = 4 ;
 variables:
 	float geopotential_height(pressure, time) ;

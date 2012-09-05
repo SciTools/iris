@@ -1,5 +1,5 @@
 dimensions:
-	time = 1096 ;
+	time = UNLIMITED ; // (1096 currently)
 	grid_latitude = 190 ;
 	grid_longitude = 174 ;
 	bnds = 2 ;

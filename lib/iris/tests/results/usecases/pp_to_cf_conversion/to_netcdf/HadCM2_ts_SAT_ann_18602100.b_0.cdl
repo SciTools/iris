@@ -1,5 +1,5 @@
 dimensions:
-	time = 240 ;
+	time = UNLIMITED ; // (240 currently)
 	site_number = 3 ;
 	bnds = 2 ;
 variables:

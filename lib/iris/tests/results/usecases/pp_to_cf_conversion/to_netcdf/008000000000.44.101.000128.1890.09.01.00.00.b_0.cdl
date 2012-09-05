@@ -1,5 +1,5 @@
 dimensions:
-	depth = 20 ;
+	depth = UNLIMITED ; // (20 currently)
 	time = 16 ;
 variables:
 	float unknown(depth, time) ;

@@ -1,5 +1,5 @@
 dimensions:
-	pseudo_level = 4 ;
+	pseudo_level = UNLIMITED ; // (4 currently)
 	time = 4 ;
 	depth = 20 ;
 	grid_latitude = 143 ;
