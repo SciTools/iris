@@ -26,6 +26,7 @@ When importing this module, sys.argv is inspected to identify the flags ``-d`` a
 
 """
 import collections
+import contextlib
 import difflib
 import filecmp
 import logging
@@ -292,6 +293,12 @@ class IrisTest(unittest.TestCase):
                     value = str(value)
             return result
         return self.assertEqual(attr_filter(attr1), attr_filter(attr2)) 
+
+    @contextlib.contextmanager
+    def temp_filename(self, suffix=''):
+        filename = iris.util.create_temp_filename(suffix)
+        yield filename
+        os.remove(filename)
 
     def file_checksum(self, file_path):
         """

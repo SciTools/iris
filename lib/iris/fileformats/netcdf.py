@@ -681,7 +681,8 @@ def save(cube, filename, netcdf_format='NETCDF4'):
 
     # Create the CF-netCDF data dimensions.
     # Make the outermost dimension an unlimited dimension.
-    dataset.createDimension(dimension_names[0])
+    if dimension_names:
+        dataset.createDimension(dimension_names[0])
     for dim_name, dim_len in zip(dimension_names, cube.shape)[1:]:
         dataset.createDimension(dim_name, dim_len)
 
