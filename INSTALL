@@ -9,7 +9,16 @@ extract the iris source package, cd to the new directory, and enter::
   python setup.py install
 
 
-Details of the setup.py options and commands can be found by entering::
+In-place build - an alternative for developers
+==============================================
+We strongly encourage people to contribute to Iris and for this type of 
+development activity an in-place build can be useful. Once you've cloned 
+the Iris git repository you can perform an in-place build by entering::
+
+  python setup.py std_names
+  python setup.py build_ext --inplace
+
+Details of other setup.py options and commands can be found by entering::
 
   python setup.py --help
 
@@ -18,14 +27,11 @@ and::
   python setup.py --help-commands
 
 
-.. _install_requirements:
 
 Build requirements
 ==================
-
 These are external packages which you will need to install before
 installing Iris. 
-
 
 Many of these packages are available in Linux package managers
 such as aptitude and yum. For example, it may be possible to install 
@@ -35,8 +41,7 @@ Numpy using::
 
 If you are installing dependencies with a package manager on Linux, 
 you may need to install the development packages (look for a "-dev" 
-postfix) in addition to the core packages.
-
+postfix) in addition to the core packages.  
 
 python 2.7 or later (http://www.python.org/)
     Iris requires Python 2.7 or later, but is not currently compatible with Python 3.
@@ -59,11 +64,11 @@ PyKE 1.1.1 or later (http://pyke.sourceforge.net/)
 setuptools 0.6c11 or later (http://pypi.python.org/pypi/setuptools/)
     Python package for installing/removing python packages.
 
-**Optional**
-
+Optional
+--------
 These are optional packages which you may want to install to use
 Iris with different file formats and to enable plotting functionality.
-All of these are required for the Iris test suite to run. 
+All of these are required for the Iris test suite to run.
 
 grib-api 1.9.16 or later (http://www.ecmwf.int/products/data/software/download/grib_api.html)
     API for the encoding and decoding WMO FM-92 GRIB edition 1 and 
@@ -111,9 +116,8 @@ builds correctly::
         -L <custom link-time libdir> -R <custom runtime libdir> install
 
 
-Packaged Distributions
-=======================
-
+Packaged distributions
+======================
 The Enthought Python Distribution `(EPD)
 <http://www.enthought.com/products/epd.php>`_ for Windows, OS X or
 Redhat provides some of the dependencies for Iris as does `Python (x, y)
