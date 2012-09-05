@@ -164,7 +164,7 @@ def load_strict(uris, constraints=None, callback=None):
     return cubes
 
 
-def load(uris, constraints=None, unique=False, callback=None):
+def load(uris, constraints=None, unique=False, callback=None, merge=True):
     """
     Loads cubes.
     
@@ -201,19 +201,22 @@ def load(uris, constraints=None, unique=False, callback=None):
     * constraints:
         An iterable of constraints.
     * unique:
-        If true, raise an error if duplicate cubes are detected.
+        If set to True, raise an error if duplicate cubes are detected (ignored if merge is False)
     * callback:
          A function to add metadata from the originating field and/or URI which obeys the following rules:
             1. Function signature must be: ``(cube, field, filename)``
             2. Must not return any value - any alterations to the cube must be made by reference
             3. If the cube is to be rejected the callback must raise an :class:`iris.exceptions.IgnoreCubeException`
+    * merge:
+        If set to False, make no attempt to merge the resulting cubes. Note that if True (default) and 
+        an iterable of constraints is provided, a separate merge is performed for each constraint.
 
     Returns:
         An :class:`iris.cube.CubeList`.
 
     """    
-    # Load zero or more merged Cubes from each constraint.
-    cubes = _load_common(uris, constraints, strict=False, unique=unique, callback=callback)
+    # Load zero or more Cubes from each constraint.
+    cubes = _load_common(uris, constraints, strict=False, unique=unique, callback=callback, merge=merge)
     return cubes
 
 
