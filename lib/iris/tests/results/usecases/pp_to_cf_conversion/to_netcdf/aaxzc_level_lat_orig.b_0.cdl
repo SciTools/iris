@@ -1,5 +1,5 @@
 dimensions:
-	time = 2 ;
+	time = UNLIMITED ; // (2 currently)
 	pressure = 15 ;
 	latitude = 73 ;
 	bnds = 2 ;

@@ -680,7 +680,10 @@ def save(cube, filename, netcdf_format='NETCDF4'):
             dimension_names.append('dim%d' % dim)
 
     # Create the CF-netCDF data dimensions.
-    for dim_name, dim_len in zip(dimension_names, cube.shape):
+    # Make the outermost dimension an unlimited dimension.
+    if dimension_names:
+        dataset.createDimension(dimension_names[0])
+    for dim_name, dim_len in zip(dimension_names, cube.shape)[1:]:
         dataset.createDimension(dim_name, dim_len)
 
     # Identify the collection of coordinates that represent CF-netCDF coordinate variables.

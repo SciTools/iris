@@ -1,5 +1,5 @@
 dimensions:
-	pressure = 3 ;
+	pressure = UNLIMITED ; // (3 currently)
 	latitude = 73 ;
 	longitude = 96 ;
 	bnds = 2 ;

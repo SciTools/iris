@@ -1,5 +1,5 @@
 dimensions:
-	time = 14 ;
+	time = UNLIMITED ; // (14 currently)
 	latitude = 73 ;
 	longitude = 96 ;
 	bnds = 2 ;

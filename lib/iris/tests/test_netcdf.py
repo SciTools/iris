@@ -137,6 +137,13 @@ class TestSave(tests.IrisTest):
         self.assertCDL(file_out, ('netcdf', 'netcdf_save_realistic_4d_no_hybrid.cdl'))
         os.remove(file_out)
 
+    def test_scalar_cube(self):
+        cube = stock.realistic_4d()[0, 0, 0, 0]
+
+        with self.temp_filename(suffix='.nc') as filename:
+            iris.save(cube, filename, netcdf_format='NETCDF3_CLASSIC')
+            self.assertCDL(filename, ('netcdf', 'netcdf_save_realistic_0d.cdl'))
+
 
 @iris.tests.skip_data
 class TestNetCDFSave(tests.IrisTest):

@@ -1,5 +1,5 @@
 dimensions:
-	time = 6 ;
+	time = UNLIMITED ; // (6 currently)
 	model_level_number = 70 ;
 	grid_latitude = 100 ;
 	grid_longitude = 100 ;

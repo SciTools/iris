@@ -1,5 +1,5 @@
 dimensions:
-	time = 4 ;
+	time = UNLIMITED ; // (4 currently)
 	site_number = 1 ;
 variables:
 	float air_temperature(time, site_number) ;
