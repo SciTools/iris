@@ -1,17 +1,18 @@
-Custom Builds/Installs of Iris
-==============================
+Iris is a powerful, easy to use, community-driven Python library for 
+analysing and visualising meteorological and oceanographic data sets.
 
-Optional library: libmo_unpack
+Provided all of the dependencies are satisfied, Iris can be installed using 
+the following command:
 
-This library is property of the MetOffice and licensed separately.
-It is used for decoding/unpacking PP files or Fields files that use an lbpack of 1 or 4.
+  python setup.py install
 
-If this library is not available, then Iris can be installed without it by using the following command:
+For more detailed instructions, including details of the dependencies, please 
+see INSTALL.
 
-  python setup.py --without-unpack install
+More information, including a user guide, example code and the latest development 
+version, is available from our git repository:
 
-If this library is available but installed in a custom location
-then additional compiler arguments can be passed in to ensure that the Python extension
-module linking against it builds correctly:
+http://github.com/scitools/iris
 
-  python setup.py build_ext -I <custom include path> -L <custom static libdir> -R <custom runtime libdir> install
+
+

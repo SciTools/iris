@@ -1,103 +1,126 @@
+Installing Iris currently requires you to build it from source. The 
+latest release is available from https://github.com/scitools/iris.
 
-Installing Iris currently requires you to build it from source.  The dependencies must be 
-in place to suport this process.
+Iris makes use a range of other libraries and python modules. These 
+dependencies must be in place before you can successfully install 
+Iris. Once you have satisfied the requirements detailed below, 
+extract the iris source package, cd to the new directory, and enter::
 
-.. _install_from_source:
-
-Installing from source
-======================
-
-The latest release is available from `github <https://github.com/SciTools/iris>`__
-
-Once you have satisfied the requirements detailed below 
-you can build Iris::
-
-  cd iris
   python setup.py install
 
 
-To get help with setup::
+In-place build - an alternative for developers
+==============================================
+We strongly encourage people to contribute to Iris and for this type of 
+development activity an in-place build can be useful. Once you've cloned 
+the Iris git repository you can perform an in-place build by entering::
+
+  python setup.py std_names
+  python setup.py build_ext --inplace
+
+Details of other setup.py options and commands can be found by entering::
 
   python setup.py --help
+
+and::
+
   python setup.py --help-commands
 
 
-.. _install_requirements:
 
 Build requirements
 ==================
-
 These are external packages which you will need to install before
 installing Iris. 
 
+Many of these packages are available in Linux package managers
+such as aptitude and yum. For example, it may be possible to install 
+Numpy using::
 
-Many of these packages are available in Linux package management systems,
-such as python-numpy for Debian and Ubuntu
+  apt-get install python-numpy
 
 If you are installing dependencies with a package manager on Linux, 
-you may need to install the development packages (look for a "-dev" postfix) 
-in addition to the libraries themselves.
+you may need to install the development packages (look for a "-dev" 
+postfix) in addition to the core packages.  
 
+python 2.7 or later (http://www.python.org/)
+    Iris requires Python 2.7 or later, but is not currently compatible with Python 3.
 
-python 2.7 (or later but not python3)
-    Iris requires python 2.7 or later (`download <http://www.python.org/download/>`__)
+numpy 1.6 or later (http://numpy.scipy.org/)
+    Python package for scientific computing including a powerful N-dimensional array object.
 
-numpy 1.6 (or later)
-    array support for python (`download <http://numpy.scipy.org/>`__)
+scipy 0.10 or later (http://www.scipy.org/)
+    Python package for scientific computing.
 
-scipy 0.10 or later
-    scientific analysis (`download <http://www.scipy.org>`__)
+udunits2 2.1.24 or later (http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html)
+    C library for units of physical quantities.
 
-udunits2 2.1.24 or later
-    (`downloads <ftp://ftp.unidata.ucar.edu/pub/udunits/>`__)
+netcdf4-python 0.9.9 or later (http://netcdf4-python.googlecode.com/)
+    Python interface to the netCDF version 4 C library.
 
-netcdf4-python 0.9.9 or later
-    (`download <http://netcdf4-python.googlecode.com/>`__)
+PyKE 1.1.1 or later (http://pyke.sourceforge.net/)
+    Python knowledge-based inference engine.
 
-PyKE 1.1.1 or later
-    (`download <http://downloads.sourceforge.net/project/pyke/pyke/>`__)
+setuptools 0.6c11 or later (http://pypi.python.org/pypi/setuptools/)
+    Python package for installing/removing python packages.
 
-setuptools 0.6c11 or later
-    (`download <http://pypi.python.org/packages/source/s/setuptools/>`__)
-
-**Optional**
-
+Optional
+--------
 These are optional packages which you may want to install to use
 Iris with different file formats and to enable plotting functionality.
-All of these are required for the Iris test suite to run. 
+All of these are required for the Iris test suite to run.
+
+grib-api 1.9.16 or later (http://www.ecmwf.int/products/data/software/download/grib_api.html)
+    API for the encoding and decoding WMO FM-92 GRIB edition 1 and 
+    edition 2 messages. A compression library such as Jasper is required 
+    to read JPEG2000 compressed GRIB2 files.
+
+matplotlib 1.1.0 (http://matplotlib.sourceforge.net/)
+    Python package for 2D plotting.  
+
+basemap 1.0 or later (http://matplotlib.github.com/basemap/)
+    Toolkit for matplotlib providing map functionality.
+
+PythonImagingLibrary 1.1.7 or later (http://effbot.org/zone/pil-index.htm)
+    Python package for image processing.
+
+graphviz 2.18 or later (http://www.graphviz.org/)
+    Graph visualisation software.
+
+nose 1.1.2 or later (http://nose.readthedocs.org/en/latest/)
+    Python package for software testing. Iris is not compatible with nose2. 
+
+shapely 1.2.14 (https://github.com/Toblerity/Shapely)
+    Python package for the manipulation and analysis of planar geometric objects.
 
 
-grib-api 1.9.9 or later
-    (`download <http://www.ecmwf.int/products/data/software/download/grib_api.html>`__)
+Packed PP
+=========
+The libmo_unpack library can be used by Iris for decoding/unpacking 
+PP files or Fields files that use an lbpack value of 1 or 4. This 
+library is open source, licensed under the 2-clause BSD licence. 
+It can be obtained from http://puma.nerc.ac.uk/trac/UM_TOOLS/wiki/unpack.
 
-    A compression library such as Jasper is required to read JPEG2000 compressed GRIB2 files.
+Use of this library is not enabled by default. If this library is 
+available its use can be enabled by installing Iris with the following 
+command::
 
-matplotlib 1.1.0
-    (`download <http://sourceforge.net/projects/matplotlib/files/matplotlib/>`__)
+  python setup.py --with-unpack install
 
-basemap 1.0
-    (`download <http://sourceforge.net/projects/matplotlib/files/matplotlib-toolkits/>`__)
+Note that if this library and/or its associated header files are installed 
+in a custom location then additional compiler arguments may need to be 
+passed in to ensure that the Python extension module linking against it 
+builds correctly::
 
-
-PythonImagingLibrary 1.1.7
-    (`download <http://effbot.org/downloads/>`__)
-
-graphviz 2.18
-    (`download <http://www.graphviz.org/pub/graphviz/stable/SOURCES/>`__)
-
-nose 1.1.2
-    (`download <http://pypi.python.org/packages/source/n/nose/>`__)
-
-shapely 1.2.14
-    (`download <http://pypi.python.org/packages/source/S/Shapely>`__)
+  python setup.py --with-unpack build_ext -I <custom include dir> \ 
+        -L <custom link-time libdir> -R <custom runtime libdir> install
 
 
-Packaged Distributions
-=======================
-
+Packaged distributions
+======================
 The Enthought Python Distribution `(EPD)
 <http://www.enthought.com/products/epd.php>`_ for Windows, OS X or
 Redhat provides some of the dependencies for Iris as does `Python (x, y)
-<http://www.pythonxy.com/foreword.php>`_ which tends to be updated a
-bit more frequently.  
+<http://www.pythonxy.com/>`_ which tends to be updated a
+bit more frequently.
 
