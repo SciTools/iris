@@ -479,7 +479,8 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
     
         result = r.copy(data=r.data * 0)
         
-        numpy.testing.assert_array_almost_equal(result.data[5:-5], r.data[5:-5], decimal=1)
+        # Note: This numerical comparison was created when the radius was 1000 times smaller
+        numpy.testing.assert_array_almost_equal(result.data[5:-5], r.data[5:-5]/1000.0, decimal=1)
         self.assertCML(r, ('analysis', 'calculus', 'grad_contrived1.cml'), checksum=False)
 
     def test_contrived_sphrical_curl2(self):
@@ -520,7 +521,8 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         
         result = r.copy(data=2*cos_x_pts*cos_y_pts)
         
-        numpy.testing.assert_array_almost_equal(result.data[30:-30, :], r.data[30:-30, :], decimal=1)
+        # Note: This numerical comparison was created when the radius was 1000 times smaller
+        numpy.testing.assert_array_almost_equal(result.data[30:-30, :], r.data[30:-30, :]/1000.0, decimal=1)
         self.assertCML(r, ('analysis', 'calculus', 'grad_contrived2.cml'), checksum=False)
 
 

@@ -84,18 +84,16 @@ class GeogCS(CoordSystem):
 
         If just two of semi_major_axis, semi_minor_axis, and inverse_flattening are given
         the missing element is calulated from the formula:      
-        :math:
-        
-            flattening = (semi_major_axis - semi_minor_axis) / semi_major_axis
+        :math:`flattening = (major - minor) / major`
         
         Currently, Iris will not allow over-specification (all three ellipsoid paramaters).
         
-        Examples:
+        Examples::
         
             cs = GeogCS(6371229)
             pp_cs = GeogCS(iris.fileformats.pp.EARTH_RADIUS)
-            airy1830 = GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909, inverse_flattening=299.3249646)
             airy1830 = GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909)
+            airy1830 = GeogCS(semi_major_axis=6377563.396, inverse_flattening=299.3249646)
             custom_cs = GeogCS(6400000, 6300000)
 
         """
@@ -197,7 +195,7 @@ class RotatedGeogCS(CoordSystem):
                                           in degrees. Default = 0.
             * ellipsoid                 - Optional :class:`GeogCS` defining the ellipsoid.
 
-        Example:
+        Examples::
         
             rotated_cs = RotatedGeogCS(30, 30)
             another_cs = RotatedGeogCS(30, 30, ellipsoid=GeogCS(6400000, 6300000))
@@ -276,10 +274,10 @@ class TransverseMercator(CoordSystem):
             * ellipsoid
                     Optional :class:`GeogCS` defining the ellipsoid.
 
-        Example:
+        Example::
         
             airy1830 = GeogCS(6377563.396, 6356256.910)
-            osgb = TransverseMercator(airy1830, 49, -2, 40000, -10000, 0.9996012717)
+            osgb = TransverseMercator(49, -2, 40000, -10000, 0.9996012717, ellipsoid=airy1830)
 
         """
         self.latitude_of_projection_origin = float(latitude_of_projection_origin)

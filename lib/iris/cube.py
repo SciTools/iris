@@ -760,7 +760,8 @@ class Cube(CFVariableMixin):
         Args:
 
         * spec
-            The the name or type of a CoordSystem subclass. E.g
+            The the name or type of a CoordSystem subclass. E.g ::
+            
                 cube.coord_system("GeogCS")
                 cube.coord_system(iris.coord_systems.GeogCS)
 

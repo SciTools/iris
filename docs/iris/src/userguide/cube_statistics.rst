@@ -108,7 +108,7 @@ These areas can now be passed to the ``collapsed`` method as weights:
          Scalar coordinates:
               grid_latitude: Cell(point=1.5145501, bound=(0.14430022, 2.8848)) degrees
               grid_longitude: Cell(point=358.74948, bound=(357.49399, 360.00497)) degrees
-              surface_altitude: Cell(point=399.625, bound=(-14.0, 813.25)) m
+              surface_altitude: Cell(point=399.625, bound=(-14.000001, 813.25)) m
          Attributes:
               STASH: m01s00i004
               history: Mean of air_potential_temperature over grid_longitude, grid_latitude
