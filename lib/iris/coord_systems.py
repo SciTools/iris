@@ -20,7 +20,6 @@ Definitions of coordinate systems.
 """
 
 from __future__ import division
-from abc import ABCMeta
 
 import numpy
 
@@ -29,11 +28,10 @@ import iris.unit
 
 
 class CoordSystem(object):
-    """Abstract base class for coordinate systems.
+    """
+    Abstract base class for coordinate systems.
     
     """
-    __metaclass__ = ABCMeta
-
     grid_mapping_name = None
 
     def __eq__(self, other):
@@ -64,11 +62,10 @@ class CoordSystem(object):
     
 
 class GeogCS(CoordSystem):
-    """An geographic (ellipsoidal) coordinate system, defined by the shape of the Earth and a prime meridian."""
+    """A geographic (ellipsoidal) coordinate system, defined by the shape of the Earth and a prime meridian."""
     
     grid_mapping_name = "latitude_longitude"
     
-    # TODO: Consider including a label, but don't currently see the need.
     def __init__(self, semi_major_axis=None, semi_minor_axis=None, inverse_flattening=None,
                  longitude_of_prime_meridian=0):
         """
@@ -76,11 +73,11 @@ class GeogCS(CoordSystem):
         
         Kwargs:
         
-            * semi_major_axis              -  of ellipsoid
-            * semi_minor_axis              -  of ellipsoid
+            * semi_major_axis              -  of ellipsoid in meters
+            * semi_minor_axis              -  of ellipsoid in meters
             * inverse_flattening           -  of ellipsoid 
-            * longitude_of_prime_meridian  -  Can be used to specify the prime meridian on the ellipsoid.
-                                              Default = 0.  
+            * longitude_of_prime_meridian  -  Can be used to specify the prime meridian on the ellipsoid
+                                              in degrees. Default = 0.  
         
         If just semi_major_axis is set, with no semi_minor_axis or inverse_flattening, then
         a perfect sphere is created from the given radius.
@@ -135,16 +132,16 @@ class GeogCS(CoordSystem):
             raise ValueError("Insufficient ellipsoid specification")
 
         self.semi_major_axis = float(semi_major_axis)
-        """Major radius of the ellipsoid."""
+        """Major radius of the ellipsoid in meters."""
         
         self.semi_minor_axis = float(semi_minor_axis)
-        """Minor radius of the ellipsoid."""
+        """Minor radius of the ellipsoid in meters."""
 
         self.inverse_flattening = float(inverse_flattening)
         """:math:`1/f` where :math:`f = (a-b)/a`"""
         
         self.longitude_of_prime_meridian = float(longitude_of_prime_meridian)
-        """Describes 'zero' on the ellipsoid."""
+        """Describes 'zero' on the ellipsoid in degrees."""
         
     def _pretty_attrs(self):
         attrs = [("semi_major_axis", self.semi_major_axis)]
@@ -180,23 +177,24 @@ class GeogCS(CoordSystem):
         
 
 class RotatedGeogCS(CoordSystem):
-    """A :class:`GeogCS` with rotated pole."""
+    """A coordinate system with rotated pole, on an optional :class:`GeogCS`."""
     
     grid_mapping_name = "rotated_latitude_longitude"
     
     def __init__(self, grid_north_pole_latitude, grid_north_pole_longitude,
                  north_pole_grid_longitude=0, ellipsoid=None):
-        """For :class:`GeogCS` parameters see :func:`GeogCS.__init__.`
+        """
+        Constructs a coordinate system with rotated pole, on an optional :class:`GeogCS`.
 
         Args:
 
-            * grid_north_pole_latitude  - The true latitude of the rotated pole.
-            * grid_north_pole_longitude - The true longitude of the rotated pole.
+            * grid_north_pole_latitude  - The true latitude of the rotated pole in degrees.
+            * grid_north_pole_longitude - The true longitude of the rotated pole in degrees.
             
         Kwargs:
         
-            * north_pole_grid_longitude - Longitude of true north pole in rotated grid.
-                                          Default = 0.
+            * north_pole_grid_longitude - Longitude of true north pole in rotated grid
+                                          in degrees. Default = 0.
             * ellipsoid                 - Optional :class:`GeogCS` defining the ellipsoid.
 
         Example:
@@ -206,13 +204,13 @@ class RotatedGeogCS(CoordSystem):
 
         """ 
         self.grid_north_pole_latitude = float(grid_north_pole_latitude)
-        """The true latitude of the rotated pole."""
+        """The true latitude of the rotated pole in degrees."""
 
         self.grid_north_pole_longitude = float(grid_north_pole_longitude)
-        """The true longitude of the rotated pole."""
+        """The true longitude of the rotated pole in degrees."""
         
         self.north_pole_grid_longitude = float(north_pole_grid_longitude)
-        """Longitude of true north pole in rotated grid."""
+        """Longitude of true north pole in rotated grid in degrees."""
 
         self.ellipsoid = ellipsoid
         """Ellipsoid definition."""
@@ -252,7 +250,8 @@ class TransverseMercator(CoordSystem):
     def __init__(self, latitude_of_projection_origin, longitude_of_central_meridian,
                  false_easting, false_northing, scale_factor_at_central_meridian,
                  ellipsoid=None):
-        """Constructs a TransverseMercator object.
+        """
+        Constructs a TransverseMercator object.
         
         Args:
         

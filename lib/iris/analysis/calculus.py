@@ -471,7 +471,7 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
     horiz_cs = i_cube.coord_system('CoordSystem')
         
     # Planar (non spherical) coords?
-    ellipsoidal = isinstance(horiz_cs, iris.coord_systems.GeogCS) or isinstance(horiz_cs, iris.coord_systems.RotatedGeogCS)
+    ellipsoidal = isinstance(horiz_cs, (iris.coord_systems.GeogCS, iris.coord_systems.RotatedGeogCS))
     if not ellipsoidal:
         
         # TODO Implement some mechanism for conforming to a common grid
@@ -526,19 +526,21 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
             raise ValueError('Expecting latitude as the y coord and longitude as the x coord for spherical curl.')
 
         # Get the radius of the earth - and check for sphericity
+        ellipsoid = horiz_cs
         if isinstance(horiz_cs, iris.coord_systems.RotatedGeogCS):
+            ellipsoid = horiz_cs.ellipsoid
+        if ellipsoid:
             # TODO: Add a test for this
-            # TODO: This assumes spherical for an ellipsoid?
-            r = latlon_cs.semi_major_axis
-            r_unit = latlon_cs.units
-            spherical = (horiz_cs.inverse_flattening == 0.0)
+            r = ellipsoid.semi_major_axis
+            r_unit = iris.unit.Unit("m")
+            spherical = (ellipsoid.inverse_flattening == 0.0)
         else:
             r = iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS
             r_unit = iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS_UNIT
             spherical = True
             
         if not spherical:
-            raise Exception("Cannot take the curl over a non-spherical ellipsoid.")
+            raise ValueError("Cannot take the curl over a non-spherical ellipsoid.")
         
         lon_coord = x_coord.unit_converted('radians')
         lat_coord = y_coord.unit_converted('radians')

@@ -2021,7 +2021,6 @@ class ClassDict(object, UserDict.DictMixin):
         # Find all the superclasses of the given object, starting with the object's
         # class and continuing up to, but not including, the top-level superclass.
         superclasses = type.mro(type(object_))
-        #superclasses = superclasses[:superclasses.index(self._superclass)]
         if not replace:
             # Ensure nothing else is already registered against those superclasses.
             # NB. This implies the _basic_map will also be empty for this object.

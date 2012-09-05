@@ -105,14 +105,18 @@ class Test_GeogCS_construction(tests.IrisTest):
 
     def test_invalid_ellipsoid_params(self):
         # no params
-        self.assertRaises(ValueError, GeogCS)
+        with self.assertRaises(ValueError):
+            GeogCS()
         
         # over specified
-        self.assertRaises(ValueError, GeogCS, 6543210, 6500000, 151.42814163388104)
+        with self.assertRaises(ValueError):
+            GeogCS(6543210, 6500000, 151.42814163388104)
         
         # under specified 
-        self.assertRaises(ValueError, GeogCS, None, 6500000, None)
-        self.assertRaises(ValueError, GeogCS, None, None, 151.42814163388104)
+        with self.assertRaises(ValueError):
+            GeogCS(None, 6500000, None)
+        with self.assertRaises(ValueError):
+            GeogCS(None, None, 151.42814163388104)
 
 
 class Test_GeogCS_repr(tests.IrisTest):

@@ -32,9 +32,10 @@ import iris.exceptions
 import iris.unit
 
 
-#This value is used as a fall-back if the cube does not define the earth 
-DEFAULT_SPHERICAL_EARTH_RADIUS = 6367.47
-DEFAULT_SPHERICAL_EARTH_RADIUS_UNIT = iris.unit.Unit('kilometres')
+# This value is used as a fall-back if the cube does not define the earth 
+DEFAULT_SPHERICAL_EARTH_RADIUS = 6367470
+# TODO: This should not be necessary, as CF is always in meters
+DEFAULT_SPHERICAL_EARTH_RADIUS_UNIT = iris.unit.Unit('m')
 
 
 def wrap_lons(lons, base, period):
@@ -108,6 +109,11 @@ def lat_lon_range(cube, mode=None):
     used in the min/max calculation. (Must be one of iris.coords.POINT_MODE or iris.coords.BOUND_MODE)
             
     """
+    # Helpful error if we have an inappropriate CoordSystem
+    cs = cube.coord_system("CoordSystem")
+    if cs is not None and not isinstance(cs, (iris.coord_systems.GeogCS, iris.coord_systems.RotatedGeogCS)):
+        raise ValueError("Latlon coords cannot be found with {0}.".format(type(cs)))
+    
     # get the lat and lon coords (might have "grid_" at the start of the name, if rotated).
     lat_coord, lon_coord = _get_lat_lon_coords(cube)
     cs = cube.coord_system('CoordSystem')

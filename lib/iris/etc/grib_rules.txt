@@ -24,29 +24,29 @@ IF
 grib.gridType=="regular_ll"
 grib.jPointsAreConsecutive == 0
 THEN
-CoordAndDims(DimCoord(numpy.arange(grib.Nj, dtype=numpy.float64) * grib.jDirectionIncrementInDegrees * (grib.jScansPositively*2-1) + grib.latitudeOfFirstGridPointInDegrees, grib._y_coord_name, units='degrees', coord_system=grib._geogCS), 0)
-CoordAndDims(DimCoord(numpy.arange(grib.Ni) * grib.iDirectionIncrementInDegrees * (grib.iScansNegatively*(-2)+1) + grib.longitudeOfFirstGridPointInDegrees, grib._x_coord_name, units='degrees', coord_system=grib._geogCS), 1)
+CoordAndDims(DimCoord(numpy.arange(grib.Nj, dtype=numpy.float64) * grib.jDirectionIncrementInDegrees * (grib.jScansPositively*2-1) + grib.latitudeOfFirstGridPointInDegrees, grib._y_coord_name, units='degrees', coord_system=grib._coord_system), 0)
+CoordAndDims(DimCoord(numpy.arange(grib.Ni) * grib.iDirectionIncrementInDegrees * (grib.iScansNegatively*(-2)+1) + grib.longitudeOfFirstGridPointInDegrees, grib._x_coord_name, units='degrees', coord_system=grib._coord_system), 1)
 
 IF
 grib.gridType=="regular_ll"
 grib.jPointsAreConsecutive == 1
 THEN
-CoordAndDims(DimCoord(numpy.arange(grib.Nj, dtype=numpy.float64) * grib.jDirectionIncrementInDegrees * (grib.jScansPositively*2-1) + grib.latitudeOfFirstGridPointInDegrees, grib._y_coord_name, units='degrees', coord_system=grib._geogCS), 1)
-CoordAndDims(DimCoord(numpy.arange(grib.Ni, dtype=numpy.float64) * grib.iDirectionIncrementInDegrees * (grib.iScansNegatively*(-2)+1) + grib.longitudeOfFirstGridPointInDegrees, grib._x_coord_name, units='degrees', coord_system=grib._geogCS), 0)
+CoordAndDims(DimCoord(numpy.arange(grib.Nj, dtype=numpy.float64) * grib.jDirectionIncrementInDegrees * (grib.jScansPositively*2-1) + grib.latitudeOfFirstGridPointInDegrees, grib._y_coord_name, units='degrees', coord_system=grib._coord_system), 1)
+CoordAndDims(DimCoord(numpy.arange(grib.Ni, dtype=numpy.float64) * grib.iDirectionIncrementInDegrees * (grib.iScansNegatively*(-2)+1) + grib.longitudeOfFirstGridPointInDegrees, grib._x_coord_name, units='degrees', coord_system=grib._coord_system), 0)
 
 IF
 grib.gridType=="rotated_ll"
 grib.jPointsAreConsecutive == 0
 THEN
-CoordAndDims(DimCoord(numpy.arange(grib.Nj, dtype=numpy.float64) * grib.jDirectionIncrementInDegrees * (grib.jScansPositively*2-1) + grib.latitudeOfFirstGridPointInDegrees, grib._y_coord_name, units='degrees', coord_system=grib._geogCS), 0)
-CoordAndDims(DimCoord(numpy.arange(grib.Ni, dtype=numpy.float64) * grib.iDirectionIncrementInDegrees * (grib.iScansNegatively*(-2)+1) + grib.longitudeOfFirstGridPointInDegrees, grib._x_coord_name, units='degrees', coord_system=grib._geogCS), 1)
+CoordAndDims(DimCoord(numpy.arange(grib.Nj, dtype=numpy.float64) * grib.jDirectionIncrementInDegrees * (grib.jScansPositively*2-1) + grib.latitudeOfFirstGridPointInDegrees, grib._y_coord_name, units='degrees', coord_system=grib._coord_system), 0)
+CoordAndDims(DimCoord(numpy.arange(grib.Ni, dtype=numpy.float64) * grib.iDirectionIncrementInDegrees * (grib.iScansNegatively*(-2)+1) + grib.longitudeOfFirstGridPointInDegrees, grib._x_coord_name, units='degrees', coord_system=grib._coord_system), 1)
 
 IF
 grib.gridType=="rotated_ll"
 grib.jPointsAreConsecutive == 1
 THEN
-CoordAndDims(DimCoord(numpy.arange(grib.Nj, dtype=numpy.float64) * grib.jDirectionIncrementInDegrees * (grib.jScansPositively*2-1) + grib.latitudeOfFirstGridPointInDegrees, grib._y_coord_name, units='degrees', coord_system=grib._geogCS), 1)
-CoordAndDims(DimCoord(numpy.arange(grib.Ni, dtype=numpy.float64) * grib.iDirectionIncrementInDegrees * (grib.iScansNegatively*(-2)+1) + grib.longitudeOfFirstGridPointInDegrees, grib._x_coord_name, units='degrees', coord_system=grib._geogCS), 0)
+CoordAndDims(DimCoord(numpy.arange(grib.Nj, dtype=numpy.float64) * grib.jDirectionIncrementInDegrees * (grib.jScansPositively*2-1) + grib.latitudeOfFirstGridPointInDegrees, grib._y_coord_name, units='degrees', coord_system=grib._coord_system), 1)
+CoordAndDims(DimCoord(numpy.arange(grib.Ni, dtype=numpy.float64) * grib.iDirectionIncrementInDegrees * (grib.iScansNegatively*(-2)+1) + grib.longitudeOfFirstGridPointInDegrees, grib._x_coord_name, units='degrees', coord_system=grib._coord_system), 0)
 
 
 

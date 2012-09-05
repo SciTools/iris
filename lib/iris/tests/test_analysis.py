@@ -250,6 +250,8 @@ class TestAnalysisBasic(tests.IrisTest):
         
         # lon range of circular coord grid_longitude will be approx -88 + 360 = 272
         numpy.testing.assert_array_almost_equal(result_circ, ((15, 77), (-88, 272)), decimal=0)
+        
+        # Test with non geodetic coords 
 
 
 class TestMissingData(tests.IrisTest):
@@ -421,29 +423,29 @@ class TestAreaWeights(tests.IrisTest):
         lats = numpy.array([lat2radcolat([-80, -70])])
         lons = numpy.array([lon2radlon([0, 10])])
         area = iris.analysis.cartography._quadrant_area(lats, lons, iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS)
-        self.assertAlmostEquals(area, [[319251.84598076]])
+        self.assertAlmostEquals(area, [[319251845980.763671875]])
     
         lats = numpy.array([lat2radcolat([0, 10])])
         lons = numpy.array([lon2radlon([0, 10])])
         area = iris.analysis.cartography._quadrant_area(lats, lons, iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS)
-        self.assertAlmostEquals(area, [[1228800.59385144]])
+        self.assertAlmostEquals(area, [[1228800593851.443115234375]])
 
         lats = numpy.array([lat2radcolat([10, 0])])
         lons = numpy.array([lon2radlon([0, 10])])
         area = iris.analysis.cartography._quadrant_area(lats, lons, iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS)
-        self.assertAlmostEquals(area, [[1228800.59385144]])
+        self.assertAlmostEquals(area, [[1228800593851.443115234375]])
     
         lats = numpy.array([lat2radcolat([70, 80])])
         lons = numpy.array([lon2radlon([0, 10])])
         area = iris.analysis.cartography._quadrant_area(lats, lons, iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS)
-        self.assertAlmostEquals(area, [[319251.84598076]])
+        self.assertAlmostEquals(area, [[319251845980.7646484375]])
     
         lats = numpy.array([lat2radcolat([-80, -70]), lat2radcolat([0, 10]), lat2radcolat([70, 80])])
         lons = numpy.array([lon2radlon([0, 10])])
         area = iris.analysis.cartography._quadrant_area(lats, lons, iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS)
-        self.assertAlmostEquals(area[0], [319251.84598076])
-        self.assertAlmostEquals(area[1], [1228800.59385144])
-        self.assertAlmostEquals(area[2], [319251.84598076])
+        self.assertAlmostEquals(area[0], [319251845980.763671875])
+        self.assertAlmostEquals(area[1], [1228800593851.443115234375])
+        self.assertAlmostEquals(area[2], [319251845980.7646484375])
 
 
 class TestRollingWindow(tests.IrisTest):
