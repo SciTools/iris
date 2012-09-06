@@ -59,6 +59,7 @@ def global_pp():
     cube = iris.load_strict(path, callback=callback_global_pp)
     return cube
 
+
 def simple_pp():
     filename = tests.get_data_path(['PP', 'simple_pp', 'global.pp'])   # Differs from global_pp()
     cube = iris.load_strict(filename)
@@ -369,6 +370,7 @@ def realistic_4d_no_derived():
     cube._aux_factories = []
 
     return cube
+
 
 def realistic_4d_w_missing_data():
     data_path = os.path.join(os.path.dirname(__file__), 'stock_mdi_arrays.npz')
