@@ -13,7 +13,7 @@ digraph CubeGraph{
 
 #   Nodes
     ":Cube" [
-        label = "Cube|STASH: m01s00i002\nsource: Data from Met Office Unified Model 7.04"
+        label = "Cube|source: Iris test case"
     ]
 
     
@@ -29,11 +29,11 @@ digraph CubeGraph{
         ]
 
         "CubeDimension_2" [
-            label = "2|len: 412"
+            label = "2|len: 100"
         ]
 
         "CubeDimension_3" [
-            label = "3|len: 412"
+            label = "3|len: 100"
         ]
 
     }
@@ -63,7 +63,7 @@ digraph CubeGraph{
             label = "AuxCoord|standard_name: None\nlong_name: sigma\nunits: 1"
         ]
         "Coord_7" [
-            label = "AuxCoord|standard_name: surface_altitude\nlong_name: None\nunits: m\nSTASH: m01s00i033\nsource: Data from Met Office Unified Model 7.04"
+            label = "AuxCoord|standard_name: surface_altitude\nlong_name: None\nunits: m"
         ]
         "Coord_8" [
             label = "DimCoord|standard_name: time\nlong_name: None\nunits: hours since 1970-01-01 00:00:00\ncircular: False"
@@ -75,7 +75,7 @@ digraph CubeGraph{
     subgraph clusterCoordSystems {
         label = "CoordSystems"
         "CoordSystem_LatLonCS_0" [
-            label = "LatLonCS|cs_type: spherical\ndatum: SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, units=Unit('m'))\nn_pole: GeoPosition(latitude=37.5, longitude=177.5)\nprime_meridian: PrimeMeridian(label='Greenwich', value=0.0)\nreference_longitude: 0.0"
+            label = "LatLonCS|cs_type: spherical\ndatum: SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, units='m')\nn_pole: GeoPosition(latitude=37.5, longitude=177.5)\nprime_meridian: PrimeMeridian(label='Greenwich', value=0.0)\nreference_longitude: 0.0"
         ]
 
     }
@@ -109,7 +109,6 @@ digraph CubeGraph{
     "Coord_0" -> "CubeDimension_1":w
     "Coord_0" -> "CubeDimension_2":w
     "Coord_0" -> "CubeDimension_3":w
-    "Coord_1" -> "CubeDimension_0":w
     "Coord_2" -> "CubeDimension_2":w
     "Coord_3" -> "CubeDimension_3":w
     "Coord_4" -> "CubeDimension_1":w
