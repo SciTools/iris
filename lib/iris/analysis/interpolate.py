@@ -388,7 +388,7 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
     # Condition 1
     source_cs = source_cube.coord_system(iris.coord_systems.CoordSystem)
     grid_cs = grid_cube.coord_system(iris.coord_systems.CoordSystem)
-    if source_cs==None != grid_cs==None:
+    if (source_cs is None) != (grid_cs is None):
         raise ValueError("The source and grid cubes must both have a CoordSystem or both have None.")
 
     # Condition 2: We can only have one x coordinate and one y coordinate with the source CoordSystem, and those coordinates 

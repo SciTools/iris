@@ -2019,8 +2019,7 @@ class ClassDict(object, UserDict.DictMixin):
         '''Add an object to the dictionary.'''
         if not isinstance(object_, self._superclass):
             raise TypeError("Only subclasses of '%s' are allowed as values." % self._superclass.__name__)
-        # Find all the superclasses of the given object, starting with the object's
-        # class and continuing up to, but not including, the top-level superclass.
+        # Find all the superclasses of the given object, starting with the object's class.
         superclasses = type.mro(type(object_))
         if not replace:
             # Ensure nothing else is already registered against those superclasses.
