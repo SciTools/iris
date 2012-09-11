@@ -853,4 +853,8 @@ class CFReader(object):
         for nc_var_name in self.dataset.variables.iterkeys():
             self.cf_group[nc_var_name].cf_attrs_reset()
 
+    def __del__(self):
+        # Explicitly close dataset to prevent file remaining open.
+        self.dataset.close()
+
 
