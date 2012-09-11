@@ -92,7 +92,7 @@ def _pretend_unrotated(cube):
 class TestMappingSubRegion(tests.IrisTest):
     def setUp(self):
         cube_path = tests.get_data_path(('PP', 'aPProt1', 'rotatedMHtimecube.pp'))
-        cube = iris.load_strict(cube_path)[0]
+        cube = iris.load_cube(cube_path)[0]
         # make the data slighly smaller to speed things up...
         self.cube = cube[::10, ::10]
 
@@ -181,7 +181,7 @@ class TestBoundedCube(tests.IrisTest):
 class TestLimitedAreaCube(tests.IrisTest):
     def setUp(self):
         cube_path = tests.get_data_path(('PP', 'aPProt1', 'rotated.pp'))
-        self.cube = iris.load_strict(cube_path)[::20, ::20]
+        self.cube = iris.load_cube(cube_path)[::20, ::20]
         self.cube.coord('grid_latitude').guess_bounds()
         self.cube.coord('grid_longitude').guess_bounds()
 

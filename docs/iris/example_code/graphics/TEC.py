@@ -26,7 +26,7 @@ def total_electron_content_filter(cube, field, filename):
 def main():
     # Load the "total electron content" cube.
     filename = iris.sample_data_path('space_weather.nc')
-    cube = iris.load_strict(filename, 'total electron content')
+    cube = iris.load_cube(filename, 'total electron content')
 
     # Explicitly mask negative electron content.
     cube.data = np.ma.masked_less(cube.data, 0)

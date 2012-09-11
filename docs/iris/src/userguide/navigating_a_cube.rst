@@ -6,8 +6,8 @@ Navigating a cube
 
         import iris
         filename = iris.sample_data_path('rotated_pole.nc')
-        # pot_temp = iris.load_strict(filename, 'air_potential_temperature')
-        cube = iris.load_strict(filename)
+        # pot_temp = iris.load_cube(filename, 'air_potential_temperature')
+        cube = iris.load_cube(filename)
         coord_names = [coord.name() for coord in cube.coords()]
         coord = cube.coord('grid_latitude')
 
@@ -22,7 +22,7 @@ We have already seen a basic string representation of a cube when printing:
 
     >>> import iris
     >>> filename = iris.sample_data_path('rotated_pole.nc')
-    >>> cube = iris.load_strict(filename)
+    >>> cube = iris.load_cube(filename)
     >>> print cube
     air_pressure_at_sea_level           (grid_latitude: 22; grid_longitude: 36)
          Dimension coordinates:
@@ -173,7 +173,7 @@ This is often caused by one of the following:
  * There is not enough metadata loaded from the original file as Iris has not handled the format fully. *(in which case, 
    please let us know about it)*
 
-To solve this, both :func:`iris.load` and :func:`iris.load_strict` support a callback keyword. 
+To solve this, all of :func:`iris.load`, :func:`iris.load_cube`, and :func:`iris.load_cubes` support a callback keyword. 
 
 The callback is a user defined function which must have the calling sequence ``function(cube, field, filename)`` 
 which can make any modifications to the cube in-place.

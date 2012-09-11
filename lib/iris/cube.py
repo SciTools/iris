@@ -75,6 +75,102 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
 XML_NAMESPACE_URI = "urn:x-iris:cubeml-0.2"
 
 
+class _CubeFilter(object):
+    """
+    A constraint, paired with a list of cubes matching that constraint.
+
+    """
+    def __init__(self, constraint, cubes=None):
+        self.constraint = constraint
+        if cubes is None:
+            cubes = CubeList()
+        self.cubes = cubes
+
+    def __len__(self):
+        return len(self.cubes)
+
+    def add(self, cube):
+        """
+        Adds the appropriate (sub)cube to the list of cubes where it
+        matches the constraint.
+
+        """
+        sub_cube = self.constraint.extract(cube)
+        if sub_cube is not None:
+            self.cubes.append(sub_cube)
+
+    def merged(self, unique=False):
+        """
+        Returns a new :class:`_CubeFilter` by merging the list of
+        cubes.
+
+        Kwargs:
+
+        * unique:
+            If True, raises `iris.exceptions.DuplicateDataError` if
+            duplicate cubes are detected.
+
+        """
+        return _CubeFilter(self.constraint, self.cubes.merge(unique))
+
+
+class _CubeFilterCollection(object):
+    """
+    A list of _CubeFilter instances.
+
+    """
+    @staticmethod
+    def from_cubes(cubes, constraints=None):
+        """
+        Creates a new collection from an iterable of cubes, and some
+        optional constraints.
+        
+        """
+        constraints = iris._constraints.list_of_constraints(constraints)
+        pairs = [_CubeFilter(constraint) for constraint in constraints]
+        collection = _CubeFilterCollection(pairs)
+        for cube in cubes:
+            collection.add_cube(cube)
+        return collection
+
+    def __init__(self, pairs):
+        self.pairs = pairs
+
+    def add_cube(self, cube):
+        """
+        Adds the given :class:`~iris.cube.Cube` to all of the relevant
+        constraint pairs.
+
+        """
+        for pair in self.pairs:
+            pair.add(cube)
+
+    def cubes(self):
+        """
+        Returns all the cubes in this collection concatenated into a
+        single :class:`CubeList`.
+
+        """
+        result = CubeList()
+        for pair in self.pairs:
+            result.extend(pair.cubes)
+        return result
+
+    def merged(self, unique=False):
+        """
+        Returns a new :class:`_CubeFilterCollection` by merging all the cube
+        lists of this collection.
+
+        Kwargs:
+
+        * unique:
+            If True, raises `iris.exceptions.DuplicateDataError` if
+            duplicate cubes are detected.
+
+        """
+        return _CubeFilterCollection([pair.merged(unique) for pair in self.pairs])
+
+
 class CubeList(list):
     """All the functionality of a standard :class:`list` with added "Cube" context."""
 
@@ -215,12 +311,12 @@ class Cube(CFVariableMixin):
     """
     A single Iris cube of data and metadata.
 
-    Typically obtained from :func:`iris.load`, :func:`iris.load_strict`, or
-    from the manipulation of existing cubes.
+    Typically obtained from :func:`iris.load`, :func:`iris.load_cube`,
+    :func:`iris.load_cubes`, or from the manipulation of existing cubes.
 
     For example:
 
-        >>> cube = iris.load_strict(iris.sample_data_path('air_temp.pp'))
+        >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
         >>> print cube
         air_temperature                     (latitude: 73; longitude: 96)
              Dimension coordinates:
@@ -824,7 +920,7 @@ class Cube(CFVariableMixin):
 
         Example::
             >>> fname = iris.sample_data_path('air_temp.pp')
-            >>> cube = iris.load_strict(fname, 'air_temperature')  # cube.data does not yet have a value.
+            >>> cube = iris.load_cube(fname, 'air_temperature')  # cube.data does not yet have a value.
             >>> print cube.shape                                # cube.data still does not have a value.
             (73, 96)
             >>> cube = cube[:10, :20]                           # cube.data still does not have a value.
@@ -1681,7 +1777,7 @@ class Cube(CFVariableMixin):
 
             >>> import iris
             >>> import iris.analysis
-            >>> cube = iris.load_strict(iris.sample_data_path('ostia_monthly.nc'))
+            >>> cube = iris.load_cube(iris.sample_data_path('ostia_monthly.nc'))
             >>> new_cube = cube.collapsed('longitude', iris.analysis.MEAN)
             >>> print new_cube
             surface_temperature                 (time: 54; latitude: 18)
@@ -1794,7 +1890,7 @@ class Cube(CFVariableMixin):
             >>> import iris.analysis
             >>> import iris.coord_categorisation as cat
             >>> fname = iris.sample_data_path('ostia_monthly.nc')
-            >>> cube = iris.load_strict(fname, 'surface_temperature')
+            >>> cube = iris.load_cube(fname, 'surface_temperature')
             >>> cat.add_year(cube, 'time', name='year')
             >>> new_cube = cube.aggregated_by('year', iris.analysis.MEAN)
             >>> print new_cube
@@ -1909,7 +2005,7 @@ class Cube(CFVariableMixin):
 
             >>> import iris, iris.analysis
             >>> fname = iris.sample_data_path('GloSea4', 'ensemble_010.pp')
-            >>> air_press = iris.load_strict(fname, 'surface_temperature')
+            >>> air_press = iris.load_cube(fname, 'surface_temperature')
             >>> print air_press
             surface_temperature                 (time: 6; latitude: 145; longitude: 192)
                  Dimension coordinates:

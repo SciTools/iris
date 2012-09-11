@@ -16,7 +16,7 @@ Cube extraction
 A subset of a cube can be "extracted" from a multi-dimensional cube in order to reduce its dimensionality::
 
     filename = iris.sample_data_path('hybrid_height.pp')
-    cube = iris.load_strict(filename)
+    cube = iris.load_cube(filename)
     print cube
     equator_slice = cube.extract(iris.Constraint(grid_latitude=0))
     print equator_slice
@@ -52,7 +52,7 @@ For example to get a ``model_level_number`` of 10 at the equator the following l
 The two steps required to get ``model_level_number`` of 10 at the equator can be simplified into a single constraint::
 
 	filename = iris.sample_data_path('PP', 'globClim1', 'theta.pp')
-	cube = iris.load_strict(filename)
+	cube = iris.load_cube(filename)
 	equator_model_level_10_slice = cube.extract(iris.Constraint(grid_latitude=0, model_level_number=10))
 	print equator_model_level_10_slice
 
@@ -75,7 +75,7 @@ which make up the full 3d cube.::
 
 	import iris
 	filename = iris.sample_data_path('hybrid_height.nc')
-	cube = iris.load_strict(filename)
+	cube = iris.load_cube(filename)
 	print cube
 	for yx_slice in cube.slices(['grid_latitude', 'grid_longitude']):
 	   print repr(yx_slice)
@@ -94,7 +94,7 @@ This method can handle n-dimensional slices by providing more or fewer coordinat
 
 	import iris
 	filename = iris.sample_data_path('hybrid_height.nc')
-	cube = iris.load_strict(filename)
+	cube = iris.load_cube(filename)
 	print cube
 	for i, x_slice in enumerate(cube.slices(['grid_longitude'])):
 	   print i, repr(x_slice)
@@ -153,7 +153,7 @@ Similarly, Iris cubes have indexing capability::
 
 	import iris
         filename = iris.sample_data_path('hybrid_height.nc')
-	cube = iris.load_strict(filename)
+	cube = iris.load_cube(filename)
 
 	print cube
 

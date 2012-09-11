@@ -375,7 +375,7 @@ class TestLinear1dInterpolation(tests.IrisTest):
 class TestNearestLinearInterpolRealData(tests.IrisTest):
     def setUp(self):
         file = tests.get_data_path(('PP', 'globClim1', 'theta.pp'))
-        self.cube = iris.load_strict(file)
+        self.cube = iris.load_cube(file)
 
     def test_slice(self):
         r = iris.analysis.interpolate.linear(self.cube, [('latitude', 0)])

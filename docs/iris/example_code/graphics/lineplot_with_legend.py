@@ -12,7 +12,7 @@ def main():
     fname = iris.sample_data_path('air_temp.pp')
     
     # Load exactly one cube from the given file
-    temperature = iris.load_strict(fname)
+    temperature = iris.load_cube(fname)
     
     # We only want a small number of latitudes, so filter some out using "extract".
     temperature = temperature.extract(iris.Constraint(latitude=lambda cell: 68 <= cell < 78))

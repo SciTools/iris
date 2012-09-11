@@ -36,7 +36,7 @@ To create a format specification we need to define the following:
 In the following example, the function :func:`load_NAME_III` has been defined to handle the loading of the raw data from the custom file format.
 This function is called from :func:`NAME_to_cube` which uses this data to create and yield Iris cubes.
 
-In the ``main()`` function the filenames are loaded via the ``iris.load_strict`` function which automatically
+In the ``main()`` function the filenames are loaded via the ``iris.load_cube`` function which automatically
 invokes the ``FormatSpecification`` we defined. The cube returned from the load function is then used to produce a plot.
 
 """
@@ -213,7 +213,7 @@ def main():
     boundary_volc_ash_constraint = iris.Constraint('VOLCANIC_ASH_AIR_CONCENTRATION', flight_level='From FL000 - FL200')
 
     # Callback shown as None to illustrate where a cube-level callback function would be used if required
-    cube = iris.load_strict(fname, boundary_volc_ash_constraint, callback=None)
+    cube = iris.load_cube(fname, boundary_volc_ash_constraint, callback=None)
 
     iplt.map_setup(xlim=(-70, 20), ylim=(20, 75))
     plt.gca().coastlines()

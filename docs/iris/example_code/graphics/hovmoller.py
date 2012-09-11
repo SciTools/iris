@@ -19,7 +19,7 @@ def main():
     fname = iris.sample_data_path('ostia_monthly.nc')
     
     # load a single cube of surface temperature between +/- 5 latitude
-    cube = iris.load_strict(fname, iris.Constraint('surface_temperature', latitude=lambda v: -5 < v < 5))
+    cube = iris.load_cube(fname, iris.Constraint('surface_temperature', latitude=lambda v: -5 < v < 5))
     
     # Take the mean over latitude
     cube = cube.collapsed('latitude', iris.analysis.MEAN)

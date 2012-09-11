@@ -58,8 +58,8 @@ def save_by_filehandle(filehandle1, filehandle2, cube, fn_saver, binary_mode = T
 class TestSaveMethods(tests.IrisTest):
     """ Base class for file saving tests. Loads data and creates/deletes tempfiles"""
     def setUp(self):
-        self.cube1 = iris.load_strict(tests.get_data_path(('PP', 'aPPglob1', 'global.pp')))
-        self.cube2 = iris.load_strict(tests.get_data_path(('PP', 'aPPglob1', 'global_t_forecast.pp')))
+        self.cube1 = iris.load_cube(tests.get_data_path(('PP', 'aPPglob1', 'global.pp')))
+        self.cube2 = iris.load_cube(tests.get_data_path(('PP', 'aPPglob1', 'global_t_forecast.pp')))
         self.temp_filename1 = iris.util.create_temp_filename(self.ext)
         self.temp_filename2 = iris.util.create_temp_filename(self.ext)
 

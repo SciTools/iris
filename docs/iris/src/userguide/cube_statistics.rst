@@ -10,7 +10,7 @@ Collapsing entire data dimensions
 
     import iris
     filename = iris.sample_data_path('uk_hires.pp')
-    cube = iris.load_strict(filename, 'air_potential_temperature')
+    cube = iris.load_cube(filename, 'air_potential_temperature')
 
     import iris.analysis.cartography
     cube.coord('grid_latitude').guess_bounds()
@@ -23,7 +23,7 @@ Instead of downsampling the data, a similar goal can be achieved using statistic
 
     >>> import iris
     >>> filename = iris.sample_data_path('uk_hires.pp')
-    >>> cube = iris.load_strict(filename, 'air_potential_temperature')
+    >>> cube = iris.load_cube(filename, 'air_potential_temperature')
     >>> print cube
     air_potential_temperature           (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
          Dimension coordinates:
@@ -137,7 +137,7 @@ First, let's create two coordinates on a cube which represent the climatological
     import iris.coord_categorisation
 
     filename = iris.sample_data_path('ostia_monthly.nc')
-    cube = iris.load_strict(filename, 'surface_temperature')
+    cube = iris.load_cube(filename, 'surface_temperature')
 
     iris.coord_categorisation.add_season(cube, 'time', name='clim_season')
     iris.coord_categorisation.add_season_year(cube, 'time', name='season_year')
@@ -148,7 +148,7 @@ First, let's create two coordinates on a cube which represent the climatological
     import iris
 
     filename = iris.sample_data_path('ostia_monthly.nc')
-    cube = iris.load_strict(filename, 'surface_temperature')
+    cube = iris.load_cube(filename, 'surface_temperature')
 
     import iris.coord_categorisation
     iris.coord_categorisation.add_season(cube, 'time', name='clim_season')

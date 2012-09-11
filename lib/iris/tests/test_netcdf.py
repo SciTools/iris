@@ -37,12 +37,12 @@ import stock
 class TestNetCDFLoad(tests.IrisTest):
     def test_load_global_xyt_total(self):
         # Test loading single xyt CF-netCDF file.
-        cube = iris.load_strict(tests.get_data_path(('NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc')))
+        cube = iris.load_cube(tests.get_data_path(('NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc')))
         self.assertCML(cube, ('netcdf', 'netcdf_global_xyt_total.cml')) 
 
     def test_load_global_xyt_hires(self):
         # Test loading another single xyt CF-netCDF file.
-        cube = iris.load_strict(tests.get_data_path(('NetCDF', 'global', 'xyt', 'SMALL_hires_wind_u_for_ipcc4.nc')))
+        cube = iris.load_cube(tests.get_data_path(('NetCDF', 'global', 'xyt', 'SMALL_hires_wind_u_for_ipcc4.nc')))
         self.assertCML(cube, ('netcdf', 'netcdf_global_xyt_hires.cml'))
 
     def test_load_global_xyzt_gems(self):
@@ -62,12 +62,12 @@ class TestNetCDFLoad(tests.IrisTest):
 
     def test_load_rotated_xy_land(self):
         # Test loading single xy rotated pole CF-netCDF file.
-        cube = iris.load_strict(tests.get_data_path(('NetCDF', 'rotated', 'xy', 'rotPole_landAreaFraction.nc')))
+        cube = iris.load_cube(tests.get_data_path(('NetCDF', 'rotated', 'xy', 'rotPole_landAreaFraction.nc')))
         self.assertCML(cube, ('netcdf', 'netcdf_rotated_xy_land.cml'))
 
     def test_load_rotated_xyt_precipitation(self):
         # Test loading single xyt rotated pole CF-netCDF file.
-        cube = iris.load_strict(tests.get_data_path(('NetCDF', 'rotated', 'xyt', 'new_rotPole_precipitation.nc')))
+        cube = iris.load_cube(tests.get_data_path(('NetCDF', 'rotated', 'xyt', 'new_rotPole_precipitation.nc')))
         self.assertCML(cube, ('netcdf', 'netcdf_rotated_xyt_precipitation.cml'))
 
     def test_cell_methods(self):
@@ -82,7 +82,7 @@ class TestNetCDFLoad(tests.IrisTest):
     def test_deferred_loading(self):
         # Test exercising CF-netCDF deferred loading and deferred slicing.
         # shape (31, 161, 320)
-        cube = iris.load_strict(tests.get_data_path(('NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc')))
+        cube = iris.load_cube(tests.get_data_path(('NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc')))
         
         # Consecutive index on same dimension.
         self.assertCML(cube[0], ('netcdf', 'netcdf_deferred_index_0.cml'))
@@ -153,7 +153,7 @@ class TestNetCDFSave(tests.IrisTest):
     def test_netcdf_save_format(self):
         # Read netCDF input file.
         file_in = tests.get_data_path(('NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc'))
-        cube = iris.load_strict(file_in)
+        cube = iris.load_cube(file_in)
 
         file_out = iris.util.create_temp_filename(suffix='.nc')
 
@@ -191,7 +191,7 @@ class TestNetCDFSave(tests.IrisTest):
         # Test saving a single CF-netCDF file.
         # Read PP input file. 
         file_in = tests.get_data_path(('PP', 'cf_processing', '000003000000.03.236.000128.1990.12.01.00.00.b.pp'))
-        cube = iris.load_strict(file_in)
+        cube = iris.load_cube(file_in)
         
         # Write Cube to netCDF file.
         file_out = iris.util.create_temp_filename(suffix='.nc')
@@ -226,7 +226,7 @@ class TestNetCDFSave(tests.IrisTest):
         # Test saving a CF-netCDF file which contains an atmosphere hybrid height (dimensionless vertical) coordinate.
         # Read PP input file.
         file_in = tests.get_data_path(('PP', 'COLPEX', 'theta_and_orog.pp'))
-        cube = iris.load_strict(file_in, 'air_potential_temperature')
+        cube = iris.load_cube(file_in, 'air_potential_temperature')
 
         # Write Cube to netCDF file.
         file_out = iris.util.create_temp_filename(suffix='.nc')
@@ -236,7 +236,7 @@ class TestNetCDFSave(tests.IrisTest):
         self.assertCDL(file_out, ('netcdf', 'netcdf_save_hybrid_height.cdl'))
 
         # Read netCDF file.
-        cube = iris.load_strict(file_out)
+        cube = iris.load_cube(file_out)
 
         # Check the PP read, netCDF write, netCDF read mechanism.
         self.assertCML(cube, ('netcdf', 'netcdf_save_load_hybrid_height.cml'))
@@ -247,7 +247,7 @@ class TestNetCDFSave(tests.IrisTest):
         # Test saving a CF-netCDF file with multi-dimensional auxiliary coordinates.
         # Read netCDF input file.
         file_in = tests.get_data_path(('NetCDF', 'rotated', 'xyt', 'new_rotPole_precipitation.nc'))
-        cube = iris.load_strict(file_in)
+        cube = iris.load_cube(file_in)
         
         # Write Cube to nerCDF file.
         file_out = iris.util.create_temp_filename(suffix='.nc')
@@ -257,7 +257,7 @@ class TestNetCDFSave(tests.IrisTest):
         self.assertCDL(file_out, ('netcdf', 'netcdf_save_ndim_auxiliary.cdl'))
 
         # Read the netCDF file.
-        cube = iris.load_strict(file_out)
+        cube = iris.load_cube(file_out)
 
         # Check the netCDF read, write, read mechanism.
         self.assertCML(cube, ('netcdf', 'netcdf_save_load_ndim_auxiliary.cml'))
@@ -292,7 +292,7 @@ class TestNetCDFUKmoProcessFlags(tests.IrisTest):
             iris.save(ll_cube, temp_filename)
 
             # Reload cube     
-            cube = iris.load_strict(temp_filename)
+            cube = iris.load_cube(temp_filename)
             
             
             # Check correct number and type of flags
@@ -318,7 +318,7 @@ class TestNetCDFUKmoProcessFlags(tests.IrisTest):
             iris.save(ll_cube, temp_filename)
             
             # Reload cube     
-            cube = iris.load_strict(temp_filename)
+            cube = iris.load_cube(temp_filename)
             
             # Check correct number and type of flags
             process_flags = cube.attributes["ukmo__process_flags"]

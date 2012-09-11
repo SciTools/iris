@@ -141,7 +141,7 @@ class TestAll(tests.IrisTest, pp.PPTest):
         # 3) Load the netCDF and check the Cube
         for index, nc_filename in enumerate(nc_filenames):
             # Read netCDF to Cube.
-            cube = iris.load_strict(nc_filename)
+            cube = iris.load_cube(nc_filename)
             self.assertCML(cube, self._ref_dir + ('from_netcdf', '%s_%d.cml' % (fname_name, index)))
             os.remove(nc_filename)
 
