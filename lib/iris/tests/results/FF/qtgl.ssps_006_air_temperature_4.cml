@@ -12,13 +12,13 @@
       <coord datadims="[1]">
         <DimCoord id="95f615fae348902" points="[-90.0, -89.7656, -89.5312, ..., 89.5312,
 		89.7656, 90.0]" shape="(769,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[2]">
         <DimCoord id="3207b04384adbdec" points="[0.0, 0.351562, 0.703125, ..., 358.945, 359.297,
 		359.648]" shape="(1024,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit=Unit('m'))" n_pole="GeoPosition(latitude=90.0, longitude=0.0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord>

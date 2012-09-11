@@ -4,12 +4,12 @@
     <coords>
       <coord datadims="[0]">
         <DimCoord id="95f615fae348902" points="[-90.0, -45.0, 0.0, 45.0, 90.0]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=10, longitude=20)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <rotatedGeogCS grid_north_pole_latitude="10.0" grid_north_pole_longitude="20.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3207b04384adbdec" points="[0.0, 90.0, 180.0]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=10, longitude=20)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <rotatedGeogCS grid_north_pole_latitude="10.0" grid_north_pole_longitude="20.0"/>
         </DimCoord>
       </coord>
       <coord>
@@ -23,12 +23,12 @@
     <coords>
       <coord datadims="[0]">
         <DimCoord id="95f615fae348902" points="[-90.0, -45.0, 0.0, 45.0, 90.0]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=10, longitude=20)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <rotatedGeogCS grid_north_pole_latitude="10.0" grid_north_pole_longitude="20.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3207b04384adbdec" points="[0.0, 90.0, 180.0]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=10, longitude=20)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <rotatedGeogCS grid_north_pole_latitude="10.0" grid_north_pole_longitude="20.0"/>
         </DimCoord>
       </coord>
       <coord>

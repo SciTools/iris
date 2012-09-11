@@ -287,7 +287,7 @@ class Coord(CFVariableMixin):
         * attributes
             A dictionary containing other cf and user-defined attributes.
         * coord_system
-            A CoordSystem, e.g a LatLonCS for a longitude Coord.
+            A :class:`~iris.coord_systems.CoordSystem`, e.g a :class:`~iris.coord_systems.GeogCS` for a longitude Coord.
 
         """
         self.standard_name = standard_name

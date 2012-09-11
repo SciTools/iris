@@ -760,9 +760,10 @@ class Cube(CFVariableMixin):
         Args:
 
         * spec
-            The the name or type of a CoordSystem subclass. E.g
-                cube.coord_system("LatLonCS")
-                cube.coord_system(iris.coord_systems.LatLonCS)
+            The the name or type of a CoordSystem subclass. E.g ::
+            
+                cube.coord_system("GeogCS")
+                cube.coord_system(iris.coord_systems.GeogCS)
 
         If spec is provided as a type it can be a superclass of any CoordSystems found. 
 
@@ -2018,10 +2019,8 @@ class ClassDict(object, UserDict.DictMixin):
         '''Add an object to the dictionary.'''
         if not isinstance(object_, self._superclass):
             raise TypeError("Only subclasses of '%s' are allowed as values." % self._superclass.__name__)
-        # Find all the superclasses of the given object, starting with the object's
-        # class and continuing up to, but not including, the top-level superclass.
+        # Find all the superclasses of the given object, starting with the object's class.
         superclasses = type.mro(type(object_))
-        superclasses = superclasses[:superclasses.index(self._superclass)]
         if not replace:
             # Ensure nothing else is already registered against those superclasses.
             # NB. This implies the _basic_map will also be empty for this object.

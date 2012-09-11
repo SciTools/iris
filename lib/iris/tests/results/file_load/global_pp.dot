@@ -54,8 +54,8 @@ digraph CubeGraph{
     
     subgraph clusterCoordSystems {
         label = "CoordSystems"
-        "CoordSystem_LatLonCS_0" [
-            label = "LatLonCS|cs_type: spherical\ndatum: SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, units=Unit('m'))\nn_pole: GeoPosition(latitude=90.0, longitude=0.0)\nprime_meridian: PrimeMeridian(label='Greenwich', value=0.0)\nreference_longitude: 0.0"
+        "CoordSystem_GeogCS_0" [
+            label = "GeogCS|inverse_flattening: 0.0\nlongitude_of_prime_meridian: 0.0\nsemi_major_axis: 6371229.0\nsemi_minor_axis: 6371229.0"
         ]
 
     }
@@ -69,9 +69,9 @@ digraph CubeGraph{
 #   Containment
     
     ":Cube" -> "Coord_0"
-    "Coord_1" -> "CoordSystem_LatLonCS_0"
+    "Coord_1" -> "CoordSystem_GeogCS_0"
     ":Cube" -> "Coord_1"
-    "Coord_2" -> "CoordSystem_LatLonCS_0"
+    "Coord_2" -> "CoordSystem_GeogCS_0"
     ":Cube" -> "Coord_2"
     ":Cube" -> "Coord_3"
     ":Cube" -> "Coord_4"

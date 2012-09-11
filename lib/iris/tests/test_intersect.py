@@ -38,8 +38,7 @@ class TestCubeIntersectTheoretical(tests.IrisTest):
                                            [4,5,6,7,8],
                                            [5,6,7,8,9]], dtype=numpy.int32))
         
-        lonlat_cs = iris.coord_systems.LatLonCS("datum?", "prime_meridian?",
-                                             iris.coord_systems.GeoPosition(10, 20), "reference_longitude?")
+        lonlat_cs = iris.coord_systems.RotatedGeogCS(10, 20)
         cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(5, dtype=numpy.float32) * 90 - 180, 'longitude', units='degrees', coord_system=lonlat_cs), 1)
         cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(5, dtype=numpy.float32) * 45 - 90, 'latitude', units='degrees', coord_system=lonlat_cs), 0)
         cube.add_aux_coord(iris.coords.DimCoord(points=numpy.int32(11), long_name='pressure', units='Pa'))
@@ -52,8 +51,7 @@ class TestCubeIntersectTheoretical(tests.IrisTest):
                                             [4,5,6,7,8],
                                             [5,6,7,8,50]], dtype=numpy.int32))
     
-        lonlat_cs = iris.coord_systems.LatLonCS("datum?", "prime_meridian?",
-                            iris.coord_systems.GeoPosition(10, 20), "reference_longitude?")
+        lonlat_cs = iris.coord_systems.RotatedGeogCS(10, 20)
         cube2.add_dim_coord(iris.coords.DimCoord(numpy.arange(5, dtype=numpy.float32) * 90, 'longitude', units='degrees', coord_system=lonlat_cs), 1)
         cube2.add_dim_coord(iris.coords.DimCoord(numpy.arange(5, dtype=numpy.float32) * 45 - 90, 'latitude', units='degrees', coord_system=lonlat_cs), 0)
         cube2.add_aux_coord(iris.coords.DimCoord(points=numpy.int32(11), long_name='pressure', units='Pa'))

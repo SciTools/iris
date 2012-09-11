@@ -131,7 +131,7 @@ class TestGribLoad(tests.GraphicsTest):
         self.assertCML(cube, ("grib_load", "earth_shape_grib1.cml"))
 
     def test_custom_rules(self):
-        """Test custom rule evaluation."""
+        # Test custom rule evaluation.
         # Default behaviour
 #        data_path = tests.get_data_path(('GRIB', 'global_t', 'global.grib2'))
 #        cube = iris.load_strict(data_path)

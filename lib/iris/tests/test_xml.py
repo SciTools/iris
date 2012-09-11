@@ -60,11 +60,10 @@ class TestXML(tests.IrisTest):
                         cube.attributes['my_attribute'] = 'foobar'
                         
                         if rotated == False:
-                            pole_pos = coord_systems.GeoPosition(90, 0)
+                            lonlat_cs = coord_systems.GeogCS(6371229)
                         else:
-                            pole_pos = coord_systems.GeoPosition(30, 150)
+                            lonlat_cs = coord_systems.RotatedGeogCS(30, 150)
 
-                        lonlat_cs = coord_systems.LatLonCS("datum?", "prime_meridian?", pole_pos, "reference_longitude?")
                         cube.add_dim_coord(coords.DimCoord(numpy.array([-180, -90, 0, 90, 180], dtype=ll_dtype), 
                                            'longitude', units='degrees', coord_system=lonlat_cs), 1)
                         cube.add_dim_coord(coords.DimCoord(numpy.array([-90, -45, 0, 45, 90], dtype=ll_dtype), 

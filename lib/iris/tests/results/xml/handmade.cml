@@ -10,12 +10,12 @@
       </coord>
       <coord datadims="[0]">
         <DimCoord id="95f615fae348902" points="[-90.0, -45.0, 0.0, 45.0, 90.0]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3207b04384adbdec" points="[-180.0, -90.0, 0.0, 90.0, 180.0]" shape="(5,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord>
@@ -41,12 +41,12 @@
       </coord>
       <coord datadims="[0]">
         <DimCoord id="95f615fae348902" points="[-90.0, -45.0, 0.0, 45.0, 90.0]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3207b04384adbdec" points="[-180.0, -90.0, 0.0, 90.0, 180.0]" shape="(5,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord>
@@ -72,12 +72,12 @@
       </coord>
       <coord datadims="[0]">
         <DimCoord id="95f615fae348902" points="[-90.0, -45.0, 0.0, 45.0, 90.0]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3207b04384adbdec" points="[-180.0, -90.0, 0.0, 90.0, 180.0]" shape="(5,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord>
@@ -107,12 +107,12 @@
       </coord>
       <coord datadims="[0]">
         <DimCoord id="95f615fae348902" points="[-90.0, -45.0, 0.0, 45.0, 90.0]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3207b04384adbdec" points="[-180.0, -90.0, 0.0, 90.0, 180.0]" shape="(5,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord>
@@ -142,12 +142,12 @@
       </coord>
       <coord datadims="[0]">
         <DimCoord id="95f615fae348902" points="[-90.0, -45.0, 0.0, 45.0, 90.0]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <rotatedGeogCS grid_north_pole_latitude="30.0" grid_north_pole_longitude="150.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3207b04384adbdec" points="[-180.0, -90.0, 0.0, 90.0, 180.0]" shape="(5,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <rotatedGeogCS grid_north_pole_latitude="30.0" grid_north_pole_longitude="150.0"/>
         </DimCoord>
       </coord>
       <coord>
@@ -173,12 +173,12 @@
       </coord>
       <coord datadims="[0]">
         <DimCoord id="95f615fae348902" points="[-90.0, -45.0, 0.0, 45.0, 90.0]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <rotatedGeogCS grid_north_pole_latitude="30.0" grid_north_pole_longitude="150.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3207b04384adbdec" points="[-180.0, -90.0, 0.0, 90.0, 180.0]" shape="(5,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <rotatedGeogCS grid_north_pole_latitude="30.0" grid_north_pole_longitude="150.0"/>
         </DimCoord>
       </coord>
       <coord>
@@ -204,12 +204,12 @@
       </coord>
       <coord datadims="[0]">
         <DimCoord id="95f615fae348902" points="[-90.0, -45.0, 0.0, 45.0, 90.0]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <rotatedGeogCS grid_north_pole_latitude="30.0" grid_north_pole_longitude="150.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3207b04384adbdec" points="[-180.0, -90.0, 0.0, 90.0, 180.0]" shape="(5,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <rotatedGeogCS grid_north_pole_latitude="30.0" grid_north_pole_longitude="150.0"/>
         </DimCoord>
       </coord>
       <coord>
@@ -239,12 +239,12 @@
       </coord>
       <coord datadims="[0]">
         <DimCoord id="95f615fae348902" points="[-90.0, -45.0, 0.0, 45.0, 90.0]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <rotatedGeogCS grid_north_pole_latitude="30.0" grid_north_pole_longitude="150.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3207b04384adbdec" points="[-180.0, -90.0, 0.0, 90.0, 180.0]" shape="(5,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <rotatedGeogCS grid_north_pole_latitude="30.0" grid_north_pole_longitude="150.0"/>
         </DimCoord>
       </coord>
       <coord>
@@ -274,12 +274,12 @@
       </coord>
       <coord datadims="[0]">
         <DimCoord id="95f615fae348902" points="[-90, -45, 0, 45, 90]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3207b04384adbdec" points="[-180, -90, 0, 90, 180]" shape="(5,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord>
@@ -305,12 +305,12 @@
       </coord>
       <coord datadims="[0]">
         <DimCoord id="95f615fae348902" points="[-90, -45, 0, 45, 90]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3207b04384adbdec" points="[-180, -90, 0, 90, 180]" shape="(5,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord>
@@ -336,12 +336,12 @@
       </coord>
       <coord datadims="[0]">
         <DimCoord id="95f615fae348902" points="[-90, -45, 0, 45, 90]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3207b04384adbdec" points="[-180, -90, 0, 90, 180]" shape="(5,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord>
@@ -371,12 +371,12 @@
       </coord>
       <coord datadims="[0]">
         <DimCoord id="95f615fae348902" points="[-90, -45, 0, 45, 90]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3207b04384adbdec" points="[-180, -90, 0, 90, 180]" shape="(5,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6371229.0"/>
         </DimCoord>
       </coord>
       <coord>
@@ -406,12 +406,12 @@
       </coord>
       <coord datadims="[0]">
         <DimCoord id="95f615fae348902" points="[-90, -45, 0, 45, 90]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <rotatedGeogCS grid_north_pole_latitude="30.0" grid_north_pole_longitude="150.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3207b04384adbdec" points="[-180, -90, 0, 90, 180]" shape="(5,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <rotatedGeogCS grid_north_pole_latitude="30.0" grid_north_pole_longitude="150.0"/>
         </DimCoord>
       </coord>
       <coord>
@@ -437,12 +437,12 @@
       </coord>
       <coord datadims="[0]">
         <DimCoord id="95f615fae348902" points="[-90, -45, 0, 45, 90]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <rotatedGeogCS grid_north_pole_latitude="30.0" grid_north_pole_longitude="150.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3207b04384adbdec" points="[-180, -90, 0, 90, 180]" shape="(5,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <rotatedGeogCS grid_north_pole_latitude="30.0" grid_north_pole_longitude="150.0"/>
         </DimCoord>
       </coord>
       <coord>
@@ -468,12 +468,12 @@
       </coord>
       <coord datadims="[0]">
         <DimCoord id="95f615fae348902" points="[-90, -45, 0, 45, 90]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <rotatedGeogCS grid_north_pole_latitude="30.0" grid_north_pole_longitude="150.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3207b04384adbdec" points="[-180, -90, 0, 90, 180]" shape="(5,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <rotatedGeogCS grid_north_pole_latitude="30.0" grid_north_pole_longitude="150.0"/>
         </DimCoord>
       </coord>
       <coord>
@@ -503,12 +503,12 @@
       </coord>
       <coord datadims="[0]">
         <DimCoord id="95f615fae348902" points="[-90, -45, 0, 45, 90]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <rotatedGeogCS grid_north_pole_latitude="30.0" grid_north_pole_longitude="150.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="3207b04384adbdec" points="[-180, -90, 0, 90, 180]" shape="(5,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
-          <latLonCS cs_type="spherical" datum="datum?" n_pole="GeoPosition(latitude=30, longitude=150)" prime_meridian="prime_meridian?" reference_longitude="reference_longitude?"/>
+          <rotatedGeogCS grid_north_pole_latitude="30.0" grid_north_pole_longitude="150.0"/>
         </DimCoord>
       </coord>
       <coord>

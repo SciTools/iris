@@ -14,17 +14,13 @@
 		69.405, 71.615, 73.825, 76.035, 78.245, 80.455,
 		82.665, 84.875, 87.085, 89.295, 91.505, 93.715,
 		95.925, 98.135, 100.345, 102.555, 104.765,
-		106.975, 109.185]" shape="(49,)" standard_name="projection_x_coordinate" units="Unit('meters')" value_type="float32">
-          <horizontalCS cs_type="cartesian" datum="Cartesian Datum?"/>
-        </DimCoord>
+		106.975, 109.185]" shape="(49,)" standard_name="projection_x_coordinate" units="Unit('meters')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
         <DimCoord id="4d8433e6007baa7" points="[-50.0, -25.0, 0.0, 25.0, 50.0, 75.0, 100.0,
 		125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0,
 		300.0, 325.0, 350.0, 375.0, 400.0, 425.0, 450.0,
-		475.0, 500.0, 525.0, 550.0]" shape="(25,)" standard_name="projection_y_coordinate" units="Unit('meters')" value_type="float32">
-          <horizontalCS cs_type="cartesian" datum="Cartesian Datum?"/>
-        </DimCoord>
+		475.0, 500.0, 525.0, 550.0]" shape="(25,)" standard_name="projection_y_coordinate" units="Unit('meters')" value_type="float32"/>
       </coord>
       <coord>
         <DimCoord id="6a8b6bb324d609d3" long_name="z" points="[10.0]" shape="(1,)" units="Unit('meters')" value_type="float32">
