@@ -765,18 +765,17 @@ class CFReader(object):
         
         self.cf_group = CFGroup()
         '''Collection of CF-netCDF variables associated with this netCDF file'''
-        self.dataset = netCDF4.Dataset(self._filename)
-        '''netCDF4 module Dataset instance of the netCDF file'''
+
+        self._dataset = netCDF4.Dataset(self._filename, mode='r')
 
         # Issue load optimisation warning.
-        if warn and self.dataset.file_format in ['NETCDF3_CLASSIC', 'NETCDF3_64BIT']:
+        if warn and self._dataset.file_format in ['NETCDF3_CLASSIC', 'NETCDF3_64BIT']:
             warnings.warn('Optimise CF-netCDF loading by converting data from NetCDF3 ' \
                           'to NetCDF4 file format using the "nccopy" command.')
         
-        if self.dataset:
-            self._translate()
-            self._build_cf_groups()
-            self._reset()
+        self._translate()
+        self._build_cf_groups()
+        self._reset()
 
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self._filename)
@@ -784,23 +783,24 @@ class CFReader(object):
     def _translate(self):
         """Classify the netCDF variables into CF-netCDF variables."""
         
-        netcdf_variable_names = self.dataset.variables.keys()
+        netcdf_variable_names = self._dataset.variables.keys()
 
         # Identify all CF coordinate variables first. This must be done
         # first as, by CF convention, the definition of a CF auxiliary
         # coordinate variable may include a scalar CF coordinate variable,
         # whereas we want these two types of variables to be mutually exclusive.
-        self.cf_group.update(CFCoordinateVariable.identify(self.dataset.variables))
+        self.cf_group.update(CFCoordinateVariable.identify(self._dataset.variables))
         coordinate_names = self.cf_group.coordinates.keys()
 
         # Identify all CF variables EXCEPT for the "special cases".
         for variable_type in self._variable_types:
             # Prevent grid mapping variables being mis-identified as CF coordinate variables.
             ignore = None if issubclass(variable_type, CFGridMappingVariable) else coordinate_names
-            self.cf_group.update(variable_type.identify(self.dataset.variables, ignore=ignore))
+            self.cf_group.update(variable_type.identify(self._dataset.variables, ignore=ignore))
 
         # Identify global netCDF attributes.
-        attr_dict = dict(((attr_name, getattr(self.dataset, attr_name, '')) for attr_name in self.dataset.ncattrs()))
+        attr_dict = {attr_name: getattr(self._dataset, attr_name, '') for
+                        attr_name in self._dataset.ncattrs()}
         self.cf_group.global_attributes.update(attr_dict)
 
         # Determine the CF data variables.
@@ -811,10 +811,10 @@ class CFReader(object):
                               set(self.cf_group.cell_measures)
 
         for name in data_variable_names:
-            self.cf_group[name] = CFDataVariable(name, self.dataset.variables[name])
+            self.cf_group[name] = CFDataVariable(name, self._dataset.variables[name])
 
         # Identify and register all CF formula terms with the relevant CF variables.
-        formula_terms = _CFFormulaTermsVariable.identify(self.dataset.variables)
+        formula_terms = _CFFormulaTermsVariable.identify(self._dataset.variables)
         for cf_var in formula_terms.itervalues():
             if cf_var.cf_name in self.cf_group:
                 self.cf_group[cf_var.cf_name].add_formula_term(cf_var.cf_root, cf_var.cf_term)
@@ -829,9 +829,11 @@ class CFReader(object):
 
             # Build CF variable relationships.
             for variable_type in self._variable_types:
-                # Prevent grid mapping variables being mis-identified as CF coordinate variables.
+                # Prevent grid mapping variables being mis-identified as
+                # CF coordinate variables.
                 ignore = None if issubclass(variable_type, CFGridMappingVariable) else coordinate_names
-                match = variable_type.identify(self.dataset.variables, ignore=ignore, target=cf_variable.cf_name, warn=False)
+                match = variable_type.identify(self._dataset.variables, ignore=ignore,
+                                               target=cf_variable.cf_name, warn=False)
                 cf_group.update({name: self.cf_group[name] for name in match.iterkeys()})
 
             # Build CF data variable relationships.
@@ -839,10 +841,14 @@ class CFReader(object):
                 # Add global netCDF attributes.
                 cf_group.global_attributes.update(self.cf_group.global_attributes)
                 # Add appropriate "dimensioned" CF coordinate variables.
-                cf_group.update({cf_name: self.cf_group[cf_name] for cf_name in cf_variable.dimensions if cf_name in self.cf_group.coordinates})
+                cf_group.update({cf_name: self.cf_group[cf_name] for cf_name
+                                    in cf_variable.dimensions if cf_name in
+                                    self.cf_group.coordinates})
                 # Add appropriate "dimensionless" CF coordinate variables.
                 coordinates_attr = getattr(cf_variable, 'coordinates', '')
-                cf_group.update({cf_name: self.cf_group[cf_name] for cf_name in coordinates_attr.split() if cf_name in self.cf_group.coordinates})
+                cf_group.update({cf_name: self.cf_group[cf_name] for cf_name
+                                    in coordinates_attr.split() if cf_name in
+                                    self.cf_group.coordinates})
 
             # Add the CF group to the variable.
             cf_variable.cf_group = cf_group
@@ -850,7 +856,11 @@ class CFReader(object):
     def _reset(self):
         """Reset the attribute touch history of each variable."""
         
-        for nc_var_name in self.dataset.variables.iterkeys():
+        for nc_var_name in self._dataset.variables.iterkeys():
             self.cf_group[nc_var_name].cf_attrs_reset()
+
+    def __del__(self):
+        # Explicitly close dataset to prevent file remaining open.
+        self._dataset.close()
 
 
