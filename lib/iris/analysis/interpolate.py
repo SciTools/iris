@@ -358,7 +358,7 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
     by the grid_cube.
 
     Fundamental input requirements:
-        1) Both cubes must have a HorizontalCS.
+        1) Both cubes must have a CoordSystem.
         2) The source 'x' and 'y' coordinates must not share data dimensions with any other coordinates.
        
     In addition, the algorithm currently used requires:
@@ -386,12 +386,12 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
 
     """
     # Condition 1
-    source_cs = source_cube.coord_system(iris.coord_systems.HorizontalCS)
-    grid_cs = grid_cube.coord_system(iris.coord_systems.HorizontalCS)
-    if source_cs is None or grid_cs is None:
-        raise ValueError("The source and grid cubes must contain a HorizontalCS.")
+    source_cs = source_cube.coord_system(iris.coord_systems.CoordSystem)
+    grid_cs = grid_cube.coord_system(iris.coord_systems.CoordSystem)
+    if (source_cs is None) != (grid_cs is None):
+        raise ValueError("The source and grid cubes must both have a CoordSystem or both have None.")
 
-    # Condition 2: We can only have one x coordinate and one y coordinate with the source HorizontalCS, and those coordinates 
+    # Condition 2: We can only have one x coordinate and one y coordinate with the source CoordSystem, and those coordinates 
     # must be the only ones occupying their respective dimension 
     source_x = source_cube.coord(axis='x', coord_system=source_cs)
     source_y = source_cube.coord(axis='y', coord_system=source_cs)

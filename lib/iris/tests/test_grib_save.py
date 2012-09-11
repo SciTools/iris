@@ -140,7 +140,7 @@ class TestHandmade(tests.IrisTest):
     def _lat_lon_cube_no_time(self):
         """Returns a cube with a latitude and longitude suitable for testing saving to PP/NetCDF etc."""
         cube = iris.cube.Cube(numpy.arange(12, dtype=numpy.int32).reshape((3, 4))) 
-        cs = iris.coord_systems.LatLonCS(iris.coord_systems.SpheroidDatum(), 'pm', iris.coord_systems.GeoPosition(90, 0), 0)
+        cs = iris.coord_systems.GeogCS(6371229)
         cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(4) * 90 + -180, 'longitude', units='degrees', coord_system=cs), 1) 
         cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(3) * 45 + -90, 'latitude', units='degrees', coord_system=cs), 0) 
         

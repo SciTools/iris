@@ -19,12 +19,12 @@ Mean of air_potential_temperature over model_level_number"/>
 		[-0.04005, -0.03915],
 		[-0.03915, -0.03825]]" id="25a5f42bc937b908" points="[-0.1278, -0.1269, -0.126, ..., -0.0405, -0.0396,
 		-0.0387]" shape="(100,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit='m')" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </DimCoord>
       </coord>
       <coord>
         <DimCoord bounds="[[359.579, 359.669]]" id="3bf28623a9db078e" points="[359.624]" shape="(1,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='spherical', semi_major_axis=6371229.0, semi_minor_axis=6371229.0, flattening=0.0, unit='m')" n_pole="GeoPosition(latitude=37.5, longitude=177.5)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="0.0"/>
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </DimCoord>
       </coord>
       <coord>

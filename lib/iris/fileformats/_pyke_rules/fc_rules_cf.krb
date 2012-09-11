@@ -51,9 +51,8 @@ fc_default_grid_mapping_latitude_longitude
         notany
             facts_cf.grid_mapping($_)
     assert
-        python datum = iris.coord_systems.SpheroidDatum(label='spherical')
-        python meridian = iris.coord_systems.PrimeMeridian()
-        python coordinate_system = iris.coord_systems.LatLonCS(datum, meridian, iris.coord_systems.GeoPosition(90.0, 0.0), 0.0)
+    	# TODO: Discuss/confirm this default ellipsoid.
+        python coordinate_system = iris.coord_systems.GeogCS(6371229)
         python engine.provides['coordinate_system'] = coordinate_system
         facts_cf.provides(coordinate_system, latitude_longitude)
         python engine.rule_triggered.add(rule.name)
@@ -73,7 +72,7 @@ fc_provides_grid_mapping_rotated_latitude_longitude
         check is_grid_mapping(engine, $grid_mapping, CF_GRID_MAPPING_ROTATED_LAT_LON)
     assert
         python cf_grid_var = engine.cf_var.cf_group.grid_mappings[$grid_mapping]
-        python coordinate_system = build_coordinate_system(engine, cf_grid_var)
+        python coordinate_system = build_rotated_coordinate_system(engine, cf_grid_var)
         python engine.provides['coordinate_system'] = coordinate_system
         facts_cf.provides(coordinate_system, rotated_latitude_longitude)
         python engine.rule_triggered.add(rule.name)
@@ -674,19 +673,38 @@ fc_extras
         
         major = getattr(cf_grid_var, CF_ATTR_GRID_SEMI_MAJOR_AXIS, None)
         minor = getattr(cf_grid_var, CF_ATTR_GRID_SEMI_MINOR_AXIS, None)
-        inverse = getattr(cf_grid_var, CF_ATTR_GRID_INVERSE_FLATTENING, None)
-        flattening = 1 / inverse if inverse else None
-        datum = iris.coord_systems.SpheroidDatum(label='spherical', semi_major_axis=major, semi_minor_axis=minor, flattening=flattening, units=iris.unit.Unit('m'))
+        inverse_flattening = getattr(cf_grid_var, CF_ATTR_GRID_INVERSE_FLATTENING, None)
+        # Avoid over-specification exception
+        if major is not None and minor is not None:
+        	inverse_flattening = None
 
-        prime_meridian = iris.coord_systems.PrimeMeridian()
+        return iris.coord_systems.GeogCS(major, minor, inverse_flattening)
+
+    def build_rotated_coordinate_system(engine, cf_grid_var):
+        """Create a rotated coordinate system from the CF-netCDF grid mapping variable."""
+        
+        major = getattr(cf_grid_var, CF_ATTR_GRID_SEMI_MAJOR_AXIS, None)
+        minor = getattr(cf_grid_var, CF_ATTR_GRID_SEMI_MINOR_AXIS, None)
+        inverse_flattening = getattr(cf_grid_var, CF_ATTR_GRID_INVERSE_FLATTENING, None)
+        # Avoid over-specification exception
+        if major is not None and minor is not None:
+        	inverse_flattening = None
 
         north_pole_latitude = getattr(cf_grid_var, CF_ATTR_GRID_NORTH_POLE_LAT, 90.0)
         north_pole_longitude = getattr(cf_grid_var, CF_ATTR_GRID_NORTH_POLE_LON, 0.0)
-        geo_position = iris.coord_systems.GeoPosition(north_pole_latitude, north_pole_longitude)
+        if north_pole_latitude is None or north_pole_longitude is None:
+        	warnings.warn('Rotated pole position is not fully specified')
 
-        reference_longitude = getattr(cf_grid_var, CF_ATTR_GRID_NORTH_POLE_GRID_LON, 0.0)
+        north_pole_grid_lon = getattr(cf_grid_var, CF_ATTR_GRID_NORTH_POLE_GRID_LON, 0.0)
+        
+        ellipsoid = None
+        if major is not None or minor is not None or inverse_flattening is not None:
+        	ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
+        
+        rcs = iris.coord_systems.RotatedGeogCS(north_pole_latitude, north_pole_longitude,
+        						north_pole_grid_lon, ellipsoid)
                 
-        return iris.coord_systems.LatLonCS(datum, prime_meridian, geo_position, reference_longitude)
+        return rcs
 
 
     ################################################################################

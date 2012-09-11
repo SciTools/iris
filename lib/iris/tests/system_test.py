@@ -34,7 +34,6 @@ import iris.fileformats.pp as pp
 import iris.tests as tests
 import iris.unit
 
-
 class SystemInitialTest(tests.IrisTest):
 
     def system_test_supported_filetypes(self):
@@ -44,10 +43,7 @@ class SystemInitialTest(tests.IrisTest):
         laty = np.linspace(0, 59, ny)
         lonx = np.linspace(30, 89, nx)
 
-        horiz_cs = lambda : iris.coord_systems.LatLonCS(
-                        iris.coord_systems.SpheroidDatum("spherical", 6371229.0, flattening=0.0, units=iris.unit.Unit('m')),
-                        iris.coord_systems.PrimeMeridian(label="Greenwich", value=0.0),
-                        iris.coord_systems.GeoPosition(90.0, 0.0), 0.0)
+        horiz_cs = lambda : iris.coord_systems.GeogCS(6371229)
 
         cm = iris.cube.Cube(data=dataarray, long_name="System test data", units='m s-1')
         cm.add_dim_coord(

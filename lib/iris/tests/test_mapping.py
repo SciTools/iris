@@ -59,9 +59,8 @@ class TestUnmappable(tests.IrisTest):
 
         # Make a cube that can't be located on the globe.
         cube = iris.cube.Cube(src_cube.data)
-        cs = iris.coord_systems.HorizontalCS(None)
-        cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(96, dtype=numpy.float32) * 100, long_name='x', units='m', coord_system=cs), 1)
-        cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(73, dtype=numpy.float32) * 100, long_name='y', units='m', coord_system=cs), 0)
+        cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(96, dtype=numpy.float32) * 100, long_name='x', units='m'), 1)
+        cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(73, dtype=numpy.float32) * 100, long_name='y', units='m'), 0)
         cube.standard_name = 'air_temperature'
         cube.units = 'K'
         cube.assert_valid()
@@ -75,8 +74,10 @@ class TestUnmappable(tests.IrisTest):
 def _pretend_unrotated(cube):
     lat = cube.coord('grid_latitude')
     lon = cube.coord('grid_longitude')
-    lat.coord_system.n_pole = iris.coord_systems.GeoPosition(90, 0)
-    lon.coord_system.n_pole = iris.coord_systems.GeoPosition(90, 0)
+    rcs = lat.coord_system
+
+    lat.coord_system = rcs.ellipsoid
+    lon.coord_system = rcs.ellipsoid
     lat.standard_name = "latitude"
     lon.standard_name = "longitude"
     

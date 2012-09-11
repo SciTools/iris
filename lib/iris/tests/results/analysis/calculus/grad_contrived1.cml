@@ -11,7 +11,7 @@ w cmpt of the curl of u_wind and v_wind"/>
 		-45.0, -39.0, -33.0, -27.0, -21.0, -15.0, -9.0,
 		-3.0, 3.0, 9.0, 15.0, 21.0, 27.0, 33.0, 39.0,
 		45.0, 51.0, 57.0, 63.0, 69.0, 75.0, 81.0]" shape="(29,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='Tiny Earth', semi_major_axis=6321, semi_minor_axis=6321.0, flattening=0.0, unit='m')" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6321.0"/>
         </DimCoord>
       </coord>
       <coord datadims="[1]">
@@ -24,7 +24,7 @@ w cmpt of the curl of u_wind and v_wind"/>
 		60.0, 66.0, 72.0, 78.0, 84.0, 90.0, 96.0, 102.0,
 		108.0, 114.0, 120.0, 126.0, 132.0, 138.0, 144.0,
 		150.0, 156.0, 162.0, 168.0, 174.0]" shape="(60,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
-          <latLonCS cs_type="spherical" datum="SpheroidDatum(label='Tiny Earth', semi_major_axis=6321, semi_minor_axis=6321.0, flattening=0.0, unit='m')" n_pole="GeoPosition(latitude=90, longitude=0)" prime_meridian="PrimeMeridian(label='Greenwich', value=0.0)" reference_longitude="reference_longitude?"/>
+          <geogCS earth_radius="6321.0"/>
         </DimCoord>
       </coord>
       <coord>

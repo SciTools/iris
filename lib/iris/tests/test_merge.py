@@ -28,7 +28,6 @@ import iris
 import iris.cube
 import iris.exceptions
 from iris.coords import DimCoord, AuxCoord
-from iris.coord_systems import LatLonCS, GeoPosition
 import iris.coords
 import iris.tests.stock
 

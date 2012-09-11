@@ -412,7 +412,7 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
 
     Return (i_cmpt_curl_cube, j_cmpt_curl_cube, k_cmpt_curl_cube)
     
-    The calculation of curl is dependent on the type of :func:`iris.coord_systems.HorizontalCS` in the cube:
+    The calculation of curl is dependent on the type of :func:`iris.coord_systems.CoordSystem` in the cube:
     
         Cartesian curl
         
@@ -440,16 +440,6 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
         ignore = None
         warnings.warn('The ignore keyword to iris.analysis.calculus.curl is deprecated, ignoring is now done automatically.')
     
-    # get the radius of the earth
-    latlon_cs = i_cube.coord_system(iris.coord_systems.LatLonCS)
-    if latlon_cs and latlon_cs.datum.is_spherical():
-        r = latlon_cs.datum.semi_major_axis
-        r_unit = latlon_cs.datum.units
-    else:
-        r = iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS
-        r_unit = iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS_UNIT
-
-
     # Get the vector quantity names (i.e. ['easterly', 'northerly', 'vertical'])
     vector_quantity_names, phenomenon_name = spatial_vectors_with_phenom_name(i_cube, j_cube, k_cube)
     
@@ -478,11 +468,11 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
     
     y_dim = i_cube.coord_dims(y_coord)[0]
    
-    horiz_cs = i_cube.coord_system('HorizontalCS')
-    if horiz_cs is None:
-        raise ValueError('Could not get the horizontal CS of the cubes provided.')
+    horiz_cs = i_cube.coord_system('CoordSystem')
         
-    if horiz_cs.cs_type == iris.coord_systems.CARTESIAN_CS:
+    # Planar (non spherical) coords?
+    ellipsoidal = isinstance(horiz_cs, (iris.coord_systems.GeogCS, iris.coord_systems.RotatedGeogCS))
+    if not ellipsoidal:
         
         # TODO Implement some mechanism for conforming to a common grid
         dj_dx = _curl_differentiate(j_cube, x_coord)
@@ -525,17 +515,32 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
         
         result = [i_cmpt, j_cmpt, k_cmpt]
     
-    elif horiz_cs.cs_type == iris.coord_systems.SPHERICAL_CS:
+    # Spherical coords (GeogCS or RotatedGeogCS).
+    else:
         # A_\phi = i ; A_\theta = j ; A_\r = k
         # theta = lat ; phi = long ;
         # r_cmpt = 1/ ( r * cos(lat) ) * ( d/dtheta ( i_cube * sin( lat ) ) - d_j_cube_dphi )
         # phi_cmpt = 1/r * ( d/dr (r * j_cube) - d_k_cube_dtheta)
         # theta_cmpt = 1/r * ( 1/cos(lat) * d_k_cube_dphi - d/dr (r * i_cube)
-        if not horiz_cs.datum.is_spherical():
-            raise NotImplementedError('Cannot take the curl over a non-spherical datum.')
-        
         if y_coord.name() != 'latitude' or x_coord.name() != 'longitude':
             raise ValueError('Expecting latitude as the y coord and longitude as the x coord for spherical curl.')
+
+        # Get the radius of the earth - and check for sphericity
+        ellipsoid = horiz_cs
+        if isinstance(horiz_cs, iris.coord_systems.RotatedGeogCS):
+            ellipsoid = horiz_cs.ellipsoid
+        if ellipsoid:
+            # TODO: Add a test for this
+            r = ellipsoid.semi_major_axis
+            r_unit = iris.unit.Unit("m")
+            spherical = (ellipsoid.inverse_flattening == 0.0)
+        else:
+            r = iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS
+            r_unit = iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS_UNIT
+            spherical = True
+            
+        if not spherical:
+            raise ValueError("Cannot take the curl over a non-spherical ellipsoid.")
         
         lon_coord = x_coord.unit_converted('radians')
         lat_coord = y_coord.unit_converted('radians')
@@ -589,11 +594,7 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
         d_k_cube_dphi = dri_dr = None
         
         result = [phi_cmpt, theta_cmpt, r_cmpt]
-    
-    else:
-        raise ValueError("Horizontal coord system neither cartesian nor spherical spheroid: %s %s (%s)" \
-                         % (type(horiz_cs), horiz_cs.cs_type, horiz_cs.datum))
-    
+
     for direction, cube in zip(vector_quantity_names, result):
         if cube is not None:
             cube.rename('%s curl of %s' % (direction, phenomenon_name))
