@@ -90,16 +90,10 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
             iris.save(cube, temp_pp_path)                # Replace file
 
     def test_pp_append_lists(self):
-        # Test pp append saving - lists of cubes.
-        
-        # Locate the first 4 files from the analysis dataset
-        names = ['2008120%d1200__qwqu12ff.initanl.pp' % i for i in range(1, 5)]
-        prefix = ['PP', 'trui', 'air_temp_init']
-        paths = [tests.get_data_path(prefix + [name]) for name in names]
-
-        # Grab the first two levels from each file
-        cubes = [iris.load_strict(path, callback=itab_callback) for path in paths]
-        cubes = [cube[:2] for cube in cubes]
+        # Test PP append saving - lists of cubes.
+        # Convert the 4D cube into a list of 3D cubes
+        cube_4d = stock.realistic_4d()
+        cubes = [cube[:2] for cube in cube_4d][:4]
 
         reference_txt_path = tests.get_result_path(('cube_to_pp', 'append_multi.txt'))
         with self.cube_save_test(reference_txt_path, reference_cubes=cubes) as temp_pp_path:
@@ -118,7 +112,6 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
 
         cm.add_dim_coord(coord1, 0)
         cm.add_dim_coord(coord2, 1)
-        cm.assert_valid()
         
         # TODO: This is the desired line of code...
         # reference_txt_path = tests.get_result_path(('cube_to_pp', '%s.%s.pp.txt' % (coord1.name(), coord2.name())))
@@ -144,7 +137,7 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
         #    'pressure.time',
         #    'depth.time',
 
-        f = fakePPEnvironment()
+        f = FakePPEnvironment()
 
         self.add_coords_to_cube_and_test(
             iris.coords.DimCoord(f.z, long_name='air_pressure', units='hPa', bounds=f.z_bounds),
@@ -167,7 +160,7 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
             iris.coords.DimCoord(f.y, standard_name='time', units=iris.unit.Unit('days since 0000-01-01 00:00:00', calendar=iris.unit.CALENDAR_360_DAY), bounds=f.y_bounds))
 
             
-class fakePPEnvironment(object):
+class FakePPEnvironment(object):
     ''' fake a minimal PP environment for use in cross-section coords, as in PP save rules '''
     y = [1,2,3,4]
     z = [111,222,333,444]
