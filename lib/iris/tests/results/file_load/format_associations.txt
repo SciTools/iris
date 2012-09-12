@@ -6,3 +6,4 @@ UM Fields file (FF) pre v3.1 - ssps/qtgl.ssps_006
 GRIB - GRIB/grib1_second_order_packing/GRIB_00008_FRANX01
 GRIB - GRIB/jpeg2000/file.grib2
 UM Post Processing file (PP) - PP/uk4/uk4par09.pp
+NIMROD - NIMROD/uk2km/WO0000000003452/201007020900_u1096_ng_ey00_visibility0180_screen_2km
