@@ -24,6 +24,7 @@ import pp
 import ff
 import grib
 import netcdf
+import nimrod
 
 
 __all__ = ['FORMAT_AGENT']
@@ -99,3 +100,10 @@ _FF_5p2_spec = fp.FormatSpecification('UM Fields file (FF) post v5.2',
                                   priority=4,                              
                                   )
 FORMAT_AGENT.add_spec(_FF_5p2_spec)
+
+_NIMROD_spec = fp.FormatSpecification('NIMROD', 
+                                  fp.MAGIC_NUMBER_32_BIT, 0x00000200,
+                                  nimrod.load_cubes,
+                                  priority=5,
+                                  )
+FORMAT_AGENT.add_spec(_NIMROD_spec)

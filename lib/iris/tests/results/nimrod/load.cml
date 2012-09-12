@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube long_name="Visibility" units="unknown">
+    <attributes>
+      <attribute name="field_code" value="155"/>
+      <attribute name="invalid_units" value="m/2-25k"/>
+      <attribute name="nimrod_version" value="2"/>
+      <attribute name="num_model_levels" value="1"/>
+      <attribute name="source" value="UM?"/>
+    </attributes>
+    <coords>
+      <coord>
+        <DimCoord id="49db77bb88e9d046" points="[355014.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord>
+        <DimCoord id="1662d746c6dee381" points="[9999.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32"/>
+      </coord>
+      <coord>
+        <DimCoord id="7655d345fead4375" points="[355017.0]" shape="(1,)" standard_name="time" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord datadims="[1]">
+        <DimCoord id="27983361be3021ee" long_name="x" points="[-238000.015625, -236000.015625, -234000.015625,
+		..., 851999.984375, 853999.984375, 855999.984375]" shape="(548,)" units="Unit('m')" value_type="float64">
+          <oSGB ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909)" false_easting="-400000.0" false_northing="100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
+        </DimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <DimCoord id="27983361be3021ee" long_name="y" points="[1222000.0, 1224000.0, 1226000.0, ..., 2624000.0,
+		2626000.0, 2628000.0]" shape="(704,)" units="Unit('m')" value_type="float64">
+          <oSGB ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909)" false_easting="-400000.0" false_northing="100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
+        </DimCoord>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x5b74cee2" dtype="int16" shape="(704, 548)"/>
+  </cube>
+</cubes>

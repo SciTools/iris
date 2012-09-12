@@ -276,8 +276,8 @@ class TransverseMercator(CoordSystem):
 
         Example::
         
-            airy1830 = GeogCS(6377563.396, 6356256.910)
-            osgb = TransverseMercator(49, -2, 40000, -10000, 0.9996012717, ellipsoid=airy1830)
+            airy1830 = GeogCS(6377563.396, 6356256.909)
+            osgb = TransverseMercator(49, -2, 400000, -100000, 0.9996012717, ellipsoid=airy1830)
 
         """
         self.latitude_of_projection_origin = float(latitude_of_projection_origin)
@@ -305,3 +305,13 @@ class TransverseMercator(CoordSystem):
                (self.latitude_of_projection_origin, self.longitude_of_central_meridian,
                 self.false_easting, self.false_northing,
                 self.scale_factor_at_central_meridian, self.ellipsoid)
+
+
+class OSGB(TransverseMercator):
+    """A Specific transverse mercator projection on a specific ellipsoid."""
+    def __init__(self):
+        TransverseMercator.__init__(self, 49, -2, -400000, 100000, 0.9996012717,
+                                    GeogCS(6377563.396, 6356256.909))
+        
+    def _as_cartopy_projection(self):
+        return cartopy.crs.OSGB()
