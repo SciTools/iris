@@ -13,7 +13,7 @@
         <DimCoord id="49db77bb88e9d046" points="[355014.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
-        <DimCoord id="27983361be3021ee" long_name="height" points="[9999.0]" shape="(1,)" units="Unit('m')" value_type="float32"/>
+        <DimCoord id="1662d746c6dee381" points="[9999.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32"/>
       </coord>
       <coord>
         <DimCoord id="7655d345fead4375" points="[355017.0]" shape="(1,)" standard_name="time" units="Unit('hours')" value_type="float64"/>

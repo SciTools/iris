@@ -29,8 +29,12 @@ import iris.plot as iplt
 class TestGribLoad(tests.GraphicsTest):
     
     def test_load(self):
-        cube = iris.load(tests.get_data_path(('NIMROD', 'uk2km', 'WO0000000003452', '201007020900_u1096_ng_ey00_visibility0180_screen_2km')))[0]
+        cube = iris.load(tests.get_data_path(('NIMROD', 'uk2km', 'WO0000000003452',
+                        '201007020900_u1096_ng_ey00_visibility0180_screen_2km')))[0]
         self.assertCML(cube, ("nimrod", "load.cml"))
+        
+        plt.contourf(cube.data)
+        self.check_graphic()
         
         # TODO: #84
 #        iplt.contourf(cube)

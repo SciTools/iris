@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-
+"""Provides NIMROD file format capabilities."""
 
 import glob
 import netcdftime
@@ -24,14 +24,13 @@ import struct
 import sys
 import warnings
 
-
 import iris
 from iris.coord_systems import OSGB
-from iris.coords import DimCoord, AuxCoord
+from iris.coords import DimCoord
 from iris.exceptions import TranslationError
 
 
-# general header (int16) elements 1-31 (bytes 1-62)
+# general header (int16) elements
 general_header_int16s = ("vt_year", "vt_month", "vt_day", "vt_hour", "vt_minute", "vt_second",
                         "dt_year", "dt_month", "dt_day", "dt_hour", "dt_minute",
                         "datum_type", "datum_len", "experiment_num", "horizontal_grid_type",
@@ -42,7 +41,7 @@ general_header_int16s = ("vt_year", "vt_month", "vt_day", "vt_hour", "vt_minute"
                         "proj_biaxial_ellipsoid", "ensemble_member", "spare1", "spare2")
 
 
-# general header (float32) elements 32-59 (bytes 63-174)
+# general header (float32) elements
 general_header_float32s = ("vertical_coord", "reference_vertical_coord",
                            "y_origin", "row_step", "x_origin", "column_step",
                            "float32_mdi", "MKS_data_scaling", "data_offset",
@@ -51,12 +50,12 @@ general_header_float32s = ("vertical_coord", "reference_vertical_coord",
                            "true_origin_northing", "tm_meridian_scaling")
 
 
-# data specific header (float32) elements 60-104 (bytes 175-354)
+# data specific header (float32) elements
 data_header_float32s = ("tl_y", "tl_x", "tr_y", "ty_x", "br_y", "br_x", "bl_y", "bl_x",
                         "sat_calib", "sat_space_count", "ducting_index", "elevation_angle")
 
 
-# data specific header (int16) elements 108- (bytes 411-512)
+# data specific header (int16) elements
 data_header_int16s = ("radar_num", "radars_bitmask", "more_radars_bitmask",
                       "clutter_map_num", "calibration_type", "bright_band_height",
                       "bright_band_intensity", "bright_band_test1", "bright_band_test2",
@@ -112,7 +111,6 @@ class NimrodField(object):
         
     def _read_header(self, infile):
         """Load the 512 byte header (surrounded by 4-byte length, at start and end)."""
-        # TODO: For future optimisation, use numpy.fromfile or similar block loading
         
         leading_length = struct.unpack(">L", infile.read(4))[0]
         if leading_length != 512:
@@ -183,15 +181,16 @@ class NimrodField(object):
         if leading_length != num_data_bytes:
             raise TranslationError("Expected data leading_length of %d" % num_data_bytes)
         
-        self.data = struct.unpack(data_format_string, infile.read(num_data_bytes))
-        self.data = numpy.array(self.data, dtype=numpy_dtype)
+        self.data = numpy.fromfile(infile, dtype=numpy_dtype, count=num_data)
+        if sys.byteorder == "little":
+            self.data.byteswap(True)
         
         trailing_length = struct.unpack(">L", infile.read(4))[0]
         if trailing_length != leading_length:
             raise TranslationError("Expected data trailing_length of %d" % num_data_bytes)
         
         # TODO: Confirm the MKS scaling factor does not need to be applied.
-        # TODO: Confiem the data offset only applies when converting to MKS too.
+        # TODO: Confirm the data offset only applies when converting to MKS too.
         
         # form the correct shape
         self.data = self.data.reshape(self.num_rows, self.num_cols)
@@ -225,14 +224,14 @@ class NimrodField(object):
                                          self.vt_hour, self.vt_minute, self.vt_second)
         time_coord = DimCoord(iris.unit.date2num(valid_date, 'hours since 1970-01-01 00:00:00', 
                                                  iris.unit.CALENDAR_STANDARD), 
-                              standard_name='time', units="hours")
+                              standard_name='time', units='hours')
         cube.add_aux_coord(time_coord)
     
         data_date = netcdftime.datetime(self.dt_year, self.dt_month, self.dt_day, 
                                         self.dt_hour, self.dt_minute)
         ref_time_coord = DimCoord(iris.unit.date2num(data_date, 'hours since 1970-01-01 00:00:00', 
                                                      iris.unit.CALENDAR_STANDARD), 
-                                  standard_name='forecast_reference_time', units="hours")
+                                  standard_name='forecast_reference_time', units='hours')
         cube.add_aux_coord(ref_time_coord)
         
         if self.period_minutes != MISSING_INT:
@@ -241,12 +240,11 @@ class NimrodField(object):
         
         # experiment
         if self.experiment_num != MISSING_INT:
-            cube.add_aux_coord(DimCoord(self.experiment_num, long_name="experiment_number",
-                                        units="1"))
+            cube.add_aux_coord(DimCoord(self.experiment_num, long_name="experiment_number"))
             
         # horizontal grid
         if self.proj_biaxial_ellipsoid != MISSING_INT:
-            raise TranslationError("Biaxial ellipoid %d not yet handled" % \
+            raise TranslationError("Biaxial ellipoid %d not yet handled" %
                                    self.proj_biaxial_ellipsoid)
         
         if self.tm_meridian_scaling != MISSING_INT:
@@ -256,13 +254,13 @@ class NimrodField(object):
             # "NG", means osgb grid.
             osgb_cs = iris.coord_systems.OSGB()
             cube.add_dim_coord(
-                DimCoord(numpy.arange(self.num_cols)*self.column_step+self.x_origin,
+                DimCoord(numpy.arange(self.num_cols) * self.column_step + self.x_origin,
                          long_name="x", units="m", coord_system=osgb_cs), 1)
             cube.add_dim_coord(
-                DimCoord(numpy.arange(self.num_rows)*self.row_step+self.y_origin,
+                DimCoord(numpy.arange(self.num_rows) * self.row_step + self.y_origin,
                          long_name="y", units="m", coord_system=osgb_cs), 0)
         else:
-            raise TranslationError("Grid type %d not yet implemented" % \
+            raise TranslationError("Grid type %d not yet implemented" %
                                    self.horizontal_grid_type)
         
         # vertical
@@ -271,17 +269,17 @@ class NimrodField(object):
                 if self.reference_vertical_coord_type == MISSING_INT or \
                    self.reference_vertical_coord == MISSING_FLOAT:
                     cube.add_aux_coord(DimCoord(self.vertical_coord,
-                                        long_name="height", units="m"))
+                                        standard_name="height", units="m"))
                 else:
                     raise TranslationError("Bounded vertical not yet implemented")
             else:
-                raise TranslationError("Vertical coord type %d currently unhanded" % \
+                raise TranslationError("Vertical coord type %d currently unhanded" %
                                        self.vertical_coord_type)
     
         # add other stuff, if present
         ensemble_member = getattr(self, "ensemble_member")
         if ensemble_member != MISSING_INT:
-            cube.add_aux_coord(DimCoord(ensemble_member, "realization", units="1"))
+            cube.add_aux_coord(DimCoord(ensemble_member, "realization"))
             
         def add_attr(name):
             value = getattr(self, name)
@@ -334,7 +332,6 @@ def load_cubes(filespecs, callback=None):
     if isinstance(filespecs, basestring):
         filespecs=[filespecs]
         
-    cubes = []
     for filespec in filespecs:
         for filename in glob.glob(filespec):
             with open(filename, "rb") as infile:
