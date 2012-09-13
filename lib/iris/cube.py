@@ -1063,15 +1063,29 @@ class Cube(CFVariableMixin):
                     if coord.units in ['1', 'no_unit', 'unknown']:
                         unit = ''
                     else:
-                        unit = ' %s' % coord.units
+                        unit = ' {!s}'.format(coord.units)
+
+                    # Format cell depending on type of point and whether it
+                    # has a bound
                     coord_cell = coord.cell(0)
-
-                    # indent string type coordinates
                     if isinstance(coord_cell.point, basestring):
-                        coord_cell_split = [iris.util.clip_string(str(item)) for item in coord_cell.point.split('\n')]
-                        coord_cell = ('\n%*s%*s' % (indent, ' ', len(coord.name()) + 2, ' ')).join(coord_cell_split)
+                        # indent string type coordinates
+                        coord_cell_split = [iris.util.clip_string(str(item)) for
+                                            item in coord_cell.point.split('\n')]
+                        line_sep = '\n{pad:{width}}'.format(pad=' ', width=indent +
+                                                            len(coord.name()) + 2)
+                        coord_cell_str = line_sep.join(coord_cell_split) + unit
+                    else:
+                        coord_cell_str = '{!s}{}'.format(coord_cell.point, unit)
+                        if coord_cell.bound is not None:
+                            bound = '({})'.format(', '.join(str(val) for val in
+                                                            coord_cell.bound))
+                            coord_cell_str += ', bound={}{}'.format(bound, unit)
 
-                    scalar_summary.append('%*s%s: %s%s' % (indent, ' ', coord.name(), coord_cell, unit))
+                    scalar_summary.append('{pad:{width}}{name}: {cell}'.format(pad=' ',
+                                                                               width=indent,
+                                                                               name=coord.name(),
+                                                                               cell=coord_cell_str))
 
                 # Interleave any extra lines that are needed to distinguish the coordinates.
                 scalar_summary = self._summary_extra(scalar_coords, scalar_summary, extra_indent)
