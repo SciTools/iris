@@ -229,7 +229,7 @@ class Cube(CFVariableMixin):
              Scalar coordinates:
                   forecast_period: 6477 hours
                   pressure: 1000.0 hPa
-                  time: Cell(point=232560.0, bound=(215280.0, 249840.0)) hours since 1970-01-01 00:00:00
+                  time: 232560.0 hours since 1970-01-01 00:00:00, bound=(215280.0, 249840.0) hours since 1970-01-01 00:00:00
              Attributes:
                   STASH: m01s16i203
                   source: Data from Met Office Unified Model
@@ -1689,7 +1689,7 @@ class Cube(CFVariableMixin):
                       forecast_reference_time        x             -
                  Scalar coordinates:
                       forecast_period: 0 hours
-                      longitude: Cell(point=180.0, bound=(0.0, 360.0)) degrees
+                      longitude: 180.0 degrees, bound=(0.0, 360.0) degrees
                  Attributes:
                       Conventions: CF-1.5
                       STASH: m01s00i024
