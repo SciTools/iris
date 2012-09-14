@@ -91,9 +91,10 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
 
     def test_pp_append_lists(self):
         # Test PP append saving - lists of cubes.
-        # Convert the 4D cube into a list of 3D cubes
+        # For each of the first four time-steps in the 4D cube,
+        # pull out the bottom two levels.
         cube_4d = stock.realistic_4d()
-        cubes = [cube[:2] for cube in cube_4d][:4]
+        cubes = [cube_4d[i, :2, :, :] for i in range(4)]
 
         reference_txt_path = tests.get_result_path(('cube_to_pp', 'append_multi.txt'))
         with self.cube_save_test(reference_txt_path, reference_cubes=cubes) as temp_pp_path:
