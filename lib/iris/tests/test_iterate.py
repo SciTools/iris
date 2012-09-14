@@ -18,7 +18,8 @@
 Test the iteration of cubes in step.
 
 """
-# import iris tests first so that some things can be initialised before importing anything else
+# import iris tests first so that some things can be initialised before
+# importing anything else
 import iris.tests as tests
 
 import operator
@@ -29,132 +30,160 @@ import numpy
 
 import iris
 import iris.analysis
-import iris.fileformats.pp
 import iris.iterate
+import iris.tests.stock
 
 
-@iris.tests.skip_data
 class TestIterateFunctions(tests.IrisTest):
 
     def setUp(self):
-        self.airtemp, self.humidity = iris.load_strict(iris.tests.get_data_path(('PP', 'globClim1', 'dec_subset.pp')), 
-                                                       ['air_potential_temperature', 'specific_humidity'])
-        # Reduce the size of cubes to make tests run a bit quicker
-        self.airtemp = self.airtemp[0:5, 0:10, 0:12]
-        self.humidity = self.humidity[0:5, 0:10, 0:12]
-        self.coords = ['latitude', 'longitude']
-    
+        self.cube_a = iris.tests.stock.realistic_4d()[0, 0:5, 0:10, 0:12]
+        self.cube_b = iris.tests.stock.realistic_4d()[1, 0:5, 0:10, 0:12]
+        self.coord_names = ['grid_latitude', 'grid_longitude']
+
+        # Modify elements of cube_b to introduce additional differences
+        self.cube_b.attributes['source'] = 'Iris iterate test case'
+        self.cube_b.add_aux_coord(iris.coords.AuxCoord(23, long_name='other'))
+
     def test_izip_no_args(self):
         with self.assertRaises(TypeError):
             iris.iterate.izip()
         with self.assertRaises(TypeError):
-            iris.iterate.izip(coords=self.coords)
+            iris.iterate.izip(coords=self.coord_names)
         with self.assertRaises(TypeError):
-            iris.iterate.izip(coords=self.coords, ordered=False)
+            iris.iterate.izip(coords=self.coord_names, ordered=False)
 
     def test_izip_input_collections(self):
         # Should work with one or more cubes as args
-        iris.iterate.izip(self.airtemp, coords=self.coords)
-        iris.iterate.izip(self.airtemp, self.airtemp, coords=self.coords)
-        iris.iterate.izip(self.airtemp, self.humidity, coords=self.coords)
-        iris.iterate.izip(self.airtemp, self.humidity, self.airtemp, coords=self.coords)
+        iris.iterate.izip(self.cube_a, coords=self.coord_names)
+        iris.iterate.izip(self.cube_a, self.cube_a, coords=self.coord_names)
+        iris.iterate.izip(self.cube_a, self.cube_b, coords=self.coord_names)
+        iris.iterate.izip(self.cube_a, self.cube_b, self.cube_a,
+                          coords=self.coord_names)
         # Check unpacked collections
-        cubes = [self.airtemp]*10
-        iris.iterate.izip(*cubes, coords=self.coords)
+        cubes = [self.cube_a] * 10
+        iris.iterate.izip(*cubes, coords=self.coord_names)
         cubes = tuple(cubes)
-        iris.iterate.izip(*cubes, coords=self.coords)
+        iris.iterate.izip(*cubes, coords=self.coord_names)
     
     def test_izip_returns_iterable(self):
         try:
-            iter(iris.iterate.izip(self.airtemp, coords=self.coords))    # Raises an exception if arg is not iterable
+            # Raises an exception if arg is not iterable
+            iter(iris.iterate.izip(self.cube_a, coords=self.coord_names))
         except TypeError:
             self.fail('iris.iterate.izip is not returning an iterable')
 
     def test_izip_unequal_slice_coords(self):
-        # Has latitude and longitude coords, but they differ from airtemp's
-        other_cube = iris.load_strict(iris.tests.get_data_path(('PP', 'ocean_rle', 'ocean_rle.pp')), 
-                                      iris.AttributeConstraint(STASH=iris.fileformats.pp.STASH(02, 30, 248)))
-        nslices = self.airtemp.shape[0]
+        # Create a cube with grid_latitude and grid_longitude coords
+        # that differ in size from cube_a's
+        other_cube = self.cube_a[0, 0:3, 0:3]
+        nslices = self.cube_a.shape[0]
         i = 0
-        for air_slice, cube_slice in iris.iterate.izip(self.airtemp, other_cube, coords=['latitude', 'longitude']):
-            air_slice_truth = self.airtemp[i, :, :]
-            cube_slice_truth = other_cube
-            self.assertEqual(air_slice_truth, air_slice)
-            self.assertEqual(cube_slice_truth, cube_slice)
+        for slice_a, slice_other in iris.iterate.izip(self.cube_a, other_cube,
+                                                      coords=self.coord_names):
+            slice_a_truth = self.cube_a[i, :, :]
+            slice_other_truth = other_cube
+            self.assertEqual(slice_a_truth, slice_a)
+            self.assertEqual(slice_other_truth, slice_other)
             i += 1
         self.assertEqual(i, nslices)
-        # Attempting to iterate over these incompatible coords should raise an exception
+        # Attempting to iterate over these incompatible coords should
+        # raise an exception
         with self.assertRaises(ValueError):
-            iris.iterate.izip(self.airtemp, other_cube)
+            iris.iterate.izip(self.cube_a, other_cube)
     
     def test_izip_missing_slice_coords(self):
         # Remove latitude coordinate from one of the cubes
-        self.humidity.remove_coord('latitude')
+        other_cube = self.cube_b.copy()
+        other_cube.remove_coord('grid_latitude')
         with self.assertRaises(iris.exceptions.CoordinateNotFoundError):
-            iris.iterate.izip(self.airtemp, self.humidity, coords=self.coords)
-        # Use a cube with grid_latitude and grid_longitude rather than latitude and longitude
-        othercube = iris.load_strict(iris.tests.get_data_path(('PP', 'uk4', 'uk4par09.pp')), 'air_temperature')
+            iris.iterate.izip(self.cube_a, other_cube, coords=self.coord_names)
+        # Create a cube with latitude and longitude rather than grid_latitude
+        # and grid_longitude
+        self.cube_b.coord('grid_latitude').rename('latitude')
+        self.cube_b.coord('grid_longitude').rename('longitude')
         with self.assertRaises(iris.exceptions.CoordinateNotFoundError):
-            iris.iterate.izip(self.airtemp, othercube, coords=self.coords)
+            iris.iterate.izip(self.cube_a, self.cube_b, coords=self.coord_names)
 
     def test_izip_onecube(self):
-        # Should do the same as slices() but bearing in mind izip.next() returns a tuple of cubes
+        # Should do the same as slices() but bearing in mind izip.next()
+        # returns a tuple of cubes
+
         # Empty list as coords
-        slice_iterator = self.humidity.slices([])
-        zip_iterator = iris.iterate.izip(self.humidity, coords=[])
+        slice_iterator = self.cube_b.slices([])
+        zip_iterator = iris.iterate.izip(self.cube_b, coords=[])
         for cube_slice in slice_iterator:
-            zip_slice = zip_iterator.next()[0]    # First element of tuple: (extractedcube, )
+            # First element of tuple: (extractedcube, )
+            zip_slice = zip_iterator.next()[0]
             self.assertEqual(cube_slice, zip_slice)
         with self.assertRaises(StopIteration):
-            zip_iterator.next()    # Should raise exception if we continue to try to iterate
+            zip_iterator.next()    # Should raise exception if we continue
+                                   # to try to iterate
         # Two coords
-        slice_iterator = self.humidity.slices(['latitude', 'longitude'])
-        zip_iterator = iris.iterate.izip(self.humidity, coords=['latitude', 'longitude'])
+        slice_iterator = self.cube_b.slices(self.coord_names)
+        zip_iterator = iris.iterate.izip(self.cube_b, coords=self.coord_names)
         for cube_slice in slice_iterator:
-            zip_slice = zip_iterator.next()[0]    # First element of tuple: (extractedcube, )
+            # First element of tuple: (extractedcube, )
+            zip_slice = zip_iterator.next()[0]
             self.assertEqual(cube_slice, zip_slice)
         with self.assertRaises(StopIteration):
-            zip_iterator.next()    # Should raise exception if we continue to try to iterate
+            zip_iterator.next()    # Should raise exception if we continue
+                                   #to try to iterate
         # One coord
-        slice_iterator = self.humidity.slices('latitude')
-        zip_iterator = iris.iterate.izip(self.humidity, coords='latitude')
+        slice_iterator = self.cube_b.slices('grid_latitude')
+        zip_iterator = iris.iterate.izip(self.cube_b, coords='grid_latitude')
         for cube_slice in slice_iterator:
-            zip_slice = zip_iterator.next()[0]    # First element of tuple: (extractedcube, )
+            # First element of tuple: (extractedcube, )
+            zip_slice = zip_iterator.next()[0]
             self.assertEqual(cube_slice, zip_slice)
         with self.assertRaises(StopIteration):
-            zip_iterator.next()    # Should raise exception if we continue to try to iterate
+            zip_iterator.next()    # Should raise exception if we continue
+                                   # to try to iterate
         # All coords
-        slice_iterator = self.humidity.slices(['level_height', 'latitude', 'longitude'])
-        zip_iterator = iris.iterate.izip(self.humidity, coords=['level_height', 'latitude', 'longitude'])
+        slice_iterator = self.cube_b.slices(['level_height', 'grid_latitude',
+                                             'grid_longitude'])
+        zip_iterator = iris.iterate.izip(self.cube_b, coords=['level_height',
+                                                              'grid_latitude',
+                                                              'grid_longitude'])
         for cube_slice in slice_iterator:
-            zip_slice = zip_iterator.next()[0]    # First element of tuple: (extractedcube, )
+            # First element of tuple: (extractedcube, )
+            zip_slice = zip_iterator.next()[0]
             self.assertEqual(cube_slice, zip_slice)
         with self.assertRaises(StopIteration):
-            zip_iterator.next()    # Should raise exception if we continue to try to iterate
+            zip_iterator.next()    # Should raise exception if we continue
+                                   #to try to iterate
 
     def test_izip_same_cube(self):
-        nslices = self.humidity.shape[0]
-        slice_iterator = self.humidity.slices(['latitude', 'longitude'])
+        nslices = self.cube_b.shape[0]
+        slice_iterator = self.cube_b.slices(self.coord_names)
         count = 0
-        for slice_first, slice_second in iris.iterate.izip(self.humidity, self.humidity, coords=['latitude', 'longitude']):
+        for slice_first, slice_second in iris.iterate.izip(self.cube_b,
+                                                           self.cube_b,
+                                                           coords=self.coord_names):
             self.assertEqual(slice_first, slice_second)  # Equal to each other
             self.assertEqual(slice_first, slice_iterator.next()) # Equal to the truth (from slice())
             count += 1
         self.assertEqual(count, nslices)
         # Another case
-        nslices = self.airtemp.shape[0] * self.airtemp.shape[2] # Calc product of dimensions excluding the latitude (2nd data dim)
-        slice_iterator = self.airtemp.slices('latitude')
+        nslices = self.cube_a.shape[0] * self.cube_a.shape[2] # Calc product of dimensions
+                                                              # excluding the latitude
+                                                              # (2nd data dim)
+        slice_iterator = self.cube_a.slices('grid_latitude')
         count = 0
-        for slice_first, slice_second in iris.iterate.izip(self.airtemp, self.airtemp, coords=['latitude']):
+        for slice_first, slice_second in iris.iterate.izip(self.cube_a,
+                                                           self.cube_a,
+                                                           coords=['grid_latitude']):
             self.assertEqual(slice_first, slice_second)
             self.assertEqual(slice_first, slice_iterator.next()) # Equal to the truth (from slice())
             count += 1
         self.assertEqual(count, nslices)
         # third case - full iteration
-        nslices = reduce(operator.mul, self.humidity.shape)
-        slice_iterator = self.humidity.slices([])
+        nslices = reduce(operator.mul, self.cube_b.shape)
+        slice_iterator = self.cube_b.slices([])
         count = 0
-        for slice_first, slice_second in iris.iterate.izip(self.humidity, self.humidity, coords=[]):
+        for slice_first, slice_second in iris.iterate.izip(self.cube_b,
+                                                           self.cube_b,
+                                                           coords=[]):
             self.assertEqual(slice_first, slice_second)
             self.assertEqual(slice_first, slice_iterator.next()) # Equal to the truth (from slice())
             count += 1
@@ -162,14 +191,17 @@ class TestIterateFunctions(tests.IrisTest):
 
     def test_izip_subcube_of_same(self):
         for _ in xrange(3):
-            super_cube = self.airtemp
-            k = random.randint(0, super_cube.shape[0]-1)   # Random int to pick coord value to calc subcube
+            super_cube = self.cube_a
+            # Random int to pick coord value to calc subcube
+            k = random.randint(0, super_cube.shape[0]-1)
             sub_cube = super_cube[k, :, :]
-            super_slice_iterator = super_cube.slices(['latitude', 'longitude'])
+            super_slice_iterator = super_cube.slices(self.coord_names)
             j = 0
-            for super_slice, sub_slice in iris.iterate.izip(super_cube, sub_cube , coords=['latitude', 'longitude']):
-                self.assertEqual(sub_slice, sub_cube)    # This cube should not change as lat and long are 
-                                                         # the only data dimensions in this cube)
+            for super_slice, sub_slice in iris.iterate.izip(super_cube, sub_cube,
+                                                            coords=self.coord_names):
+                self.assertEqual(sub_slice, sub_cube)    # This cube should not change
+                                                         # as lat and long are the only
+                                                         # data dimensions in this cube)
                 self.assertEqual(super_slice, super_slice_iterator.next())
                 if j == k:
                     self.assertEqual(super_slice, sub_slice)
@@ -181,44 +213,52 @@ class TestIterateFunctions(tests.IrisTest):
 
     def test_izip_same_dims(self):
         # Check single coords slice
-        nslices = reduce(operator.mul, self.airtemp.shape[1:])
+        nslices = reduce(operator.mul, self.cube_a.shape[1:])
         nslices_to_check = 20       # This is only approximate as we use random to select slices
-        check_eq_probability = max(0.0, min(1.0, float(nslices_to_check)/nslices))    # Fraction of slices to check
-        ij_iterator = numpy.ndindex(self.airtemp.shape[1], self.airtemp.shape[2])
+        # Fraction of slices to check
+        check_eq_probability = max(0.0, min(1.0, float(nslices_to_check)/nslices))
+
+        ij_iterator = numpy.ndindex(self.cube_a.shape[1], self.cube_a.shape[2])
         count = 0
-        for air_slice, hum_slice in iris.iterate.izip(self.airtemp, self.humidity, coords='level_height'):
+        for slice_a, slice_b in iris.iterate.izip(self.cube_a, self.cube_b,
+                                                      coords='level_height'):
             i, j = ij_iterator.next()
-            if random.random() <  check_eq_probability:     # Check these slices
-                air_slice_truth = self.airtemp[:, i, j]
-                hum_slice_truth = self.humidity[:, i, j]
-                self.assertEqual(air_slice_truth, air_slice)
-                self.assertEqual(hum_slice_truth, hum_slice)
+            if random.random() <  check_eq_probability: # Check these slices
+                slice_a_truth = self.cube_a[:, i, j]
+                slice_b_truth = self.cube_b[:, i, j]
+                self.assertEqual(slice_a_truth, slice_a)
+                self.assertEqual(slice_b_truth, slice_b)
             count += 1
         self.assertEqual(count, nslices)
         # Two coords
-        nslices = self.airtemp.shape[0]        
-        i_iterator = iter(xrange(self.airtemp.shape[0]))
+        nslices = self.cube_a.shape[0]
+        i_iterator = iter(xrange(self.cube_a.shape[0]))
         count = 0
-        for air_slice, hum_slice in iris.iterate.izip(self.airtemp, self.humidity, coords=['latitude', 'longitude']):
+        for slice_a, slice_b in iris.iterate.izip(self.cube_a, self.cube_b,
+                                                      coords=self.coord_names):
             i = i_iterator.next()
-            air_slice_truth = self.airtemp[i, :, :]
-            hum_slice_truth = self.humidity[i, :, :]
-            self.assertEqual(air_slice_truth, air_slice)
-            self.assertEqual(hum_slice_truth, hum_slice)
+            slice_a_truth = self.cube_a[i, :, :]
+            slice_b_truth = self.cube_b[i, :, :]
+            self.assertEqual(slice_a_truth, slice_a)
+            self.assertEqual(slice_b_truth, slice_b)
             count += 1
         self.assertEqual(count, nslices)
     
     def test_izip_extra_dim(self):
-        big_cube = self.airtemp
+        big_cube = self.cube_a
         # Remove first data dimension and associated coords
-        little_cube = self.humidity[0]  
+        little_cube = self.cube_b.copy()
+        for factory in little_cube.aux_factories:
+            little_cube.remove_aux_factory(factory)
+        little_cube = little_cube[0]
         little_cube.remove_coord('model_level_number')
         little_cube.remove_coord('level_height')
         little_cube.remove_coord('sigma')
         # little_slice should remain the same as there are no other data dimensions 
         little_slice_truth = little_cube
         i = 0
-        for big_slice, little_slice in iris.iterate.izip(big_cube, little_cube, coords=['latitude', 'longitude']):
+        for big_slice, little_slice in iris.iterate.izip(big_cube, little_cube,
+                                                         coords=self.coord_names):
             big_slice_truth = big_cube[i, :, :]
             self.assertEqual(little_slice_truth, little_slice)
             self.assertEqual(big_slice_truth, big_slice)
@@ -227,18 +267,20 @@ class TestIterateFunctions(tests.IrisTest):
         self.assertEqual(nslices, i)
             
         # Leave middle coord but move it from a data dimension to a scalar coord by slicing
-        little_cube = self.humidity[:, 0, :]
+        little_cube = self.cube_b[:, 0, :]
 
         # Now remove associated coord
-        little_cube.remove_coord('latitude')
+        little_cube.remove_coord('grid_latitude')
         # Check we raise an exception if we request coords one of the cubes doesn't have
         with self.assertRaises(iris.exceptions.CoordinateNotFoundError):
-            iris.iterate.izip(big_cube, little_cube, coords=['latitude', 'longitude'])
+            iris.iterate.izip(big_cube, little_cube, coords=self.coord_names)
 
         #little_slice should remain the same as there are no other data dimensions 
         little_slice_truth = little_cube
         i = 0
-        for big_slice, little_slice in iris.iterate.izip(big_cube, little_cube, coords=['model_level_number', 'longitude']):
+        for big_slice, little_slice in iris.iterate.izip(big_cube, little_cube,
+                                                         coords=['model_level_number',
+                                                                 'grid_longitude']):
             big_slice_truth = big_cube[:, i, :]
             self.assertEqual(little_slice_truth, little_slice)
             self.assertEqual(big_slice_truth, big_slice)
@@ -247,15 +289,17 @@ class TestIterateFunctions(tests.IrisTest):
         self.assertEqual(nslices, i)
 
         # Take a random slice reducing it to a 1d cube
-        p = random.randint(0, self.humidity.shape[0]-1)
-        q = random.randint(0, self.humidity.shape[2]-1)
-        little_cube = self.humidity[p, :, q]         
+        p = random.randint(0, self.cube_b.shape[0]-1)
+        q = random.randint(0, self.cube_b.shape[2]-1)
+        little_cube = self.cube_b[p, :, q]
         nslices = big_cube.shape[0]*big_cube.shape[2]
         nslices_to_check = 20   # This is only approximate as we use random to select slices
-        check_eq_probability = max(0.0, min(1.0, float(nslices_to_check)/nslices))    # Fraction of slices to check
+        # Fraction of slices to check
+        check_eq_probability = max(0.0, min(1.0, float(nslices_to_check)/nslices))
         ij_iterator = numpy.ndindex(big_cube.shape[0], big_cube.shape[2])
         count = 0
-        for big_slice, little_slice in iris.iterate.izip(big_cube, little_cube, coords='latitude'):
+        for big_slice, little_slice in iris.iterate.izip(big_cube, little_cube,
+                                                         coords='grid_latitude'):
             i, j = ij_iterator.next()
             if random.random() <  check_eq_probability:
                 big_slice_truth = big_cube[i, :, j]
@@ -266,70 +310,84 @@ class TestIterateFunctions(tests.IrisTest):
         self.assertEqual(count, nslices)
 
     def test_izip_different_shaped_coords(self): 
-        other = self.humidity[0:-1]
+        other = self.cube_b[0:-1]
         # Different 'z' coord shape - expect a ValueError
         with self.assertRaises(ValueError):
-            iris.iterate.izip(self.airtemp, other, coords=['latitude', 'longitude'])
+            iris.iterate.izip(self.cube_a, other, coords=self.coord_names)
 
     def test_izip_different_valued_coords(self):
         # Change a value in one of the coord points arrays so they are no longer identical
-        new_points = self.humidity.coord('model_level_number').points.copy()
+        new_points = self.cube_b.coord('model_level_number').points.copy()
         new_points[0] = 0
-        self.humidity.coord('model_level_number').points = new_points
+        self.cube_b.coord('model_level_number').points = new_points
         # slice coords
-        latitude = self.humidity.coord('latitude')
-        longitude = self.humidity.coord('longitude')
+        latitude = self.cube_b.coord('grid_latitude')
+        longitude = self.cube_b.coord('grid_longitude')
         # Same coord metadata and shape, but different values - check it produces a warning
         with warnings.catch_warnings():
             warnings.simplefilter("error")    # Cause all warnings to raise Exceptions
             with self.assertRaises(UserWarning):
-                iris.iterate.izip(self.airtemp, self.humidity, coords=['latitude', 'longitude'])
+                iris.iterate.izip(self.cube_a, self.cube_b,
+                                  coords=self.coord_names)
             # Call with coordinates, rather than names
             with self.assertRaises(UserWarning):
-                iris.iterate.izip(self.airtemp, self.humidity, coords=[latitude, longitude])
+                iris.iterate.izip(self.cube_a, self.cube_b, coords=[latitude,
+                                                                    longitude])
         # Check it still iterates through as expected
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            nslices = self.airtemp.shape[0]
+            nslices = self.cube_a.shape[0]
             i = 0
-            for air_slice, hum_slice in iris.iterate.izip(self.airtemp, self.humidity, coords=['latitude', 'longitude']):
-                air_slice_truth = self.airtemp[i, :, :]
-                hum_slice_truth = self.humidity[i, :, :]
-                self.assertEqual(air_slice_truth, air_slice)
-                self.assertEqual(hum_slice_truth, hum_slice)
-                self.assertNotEqual(hum_slice, None)
+            for slice_a, slice_b in iris.iterate.izip(self.cube_a, self.cube_b,
+                                                          coords=self.coord_names):
+                slice_a_truth = self.cube_a[i, :, :]
+                slice_b_truth = self.cube_b[i, :, :]
+                self.assertEqual(slice_a_truth, slice_a)
+                self.assertEqual(slice_b_truth, slice_b)
+                self.assertNotEqual(slice_b, None)
                 i += 1
             self.assertEqual(i, nslices)
             # Call with coordinate instances rather than coord names
             i = 0
-            for air_slice, hum_slice in iris.iterate.izip(self.airtemp, self.humidity, coords=[latitude, longitude]):
-                air_slice_truth = self.airtemp[i, :, :]
-                hum_slice_truth = self.humidity[i, :, :]
-                self.assertEqual(air_slice_truth, air_slice)
-                self.assertEqual(hum_slice_truth, hum_slice)
+            for slice_a, slice_b in iris.iterate.izip(self.cube_a, self.cube_b,
+                                                          coords=[latitude,
+                                                                  longitude]):
+                slice_a_truth = self.cube_a[i, :, :]
+                slice_b_truth = self.cube_b[i, :, :]
+                self.assertEqual(slice_a_truth, slice_a)
+                self.assertEqual(slice_b_truth, slice_b)
                 i += 1
             self.assertEqual(i, nslices)
 
     def test_izip_ordered(self):
-        cube = self.humidity.copy()
+        # Remove coordinate that spans grid_latitude and
+        # grid_longitude dimensions as this will be common between
+        # the resulting cubes but differ in shape
+        self.cube_b.remove_coord('surface_altitude')
+        cube = self.cube_b.copy()
         cube.transpose([0, 2, 1])     #switch order of lat and lon
-        nslices = self.humidity.shape[0]        
+        nslices = self.cube_b.shape[0]
         # Default behaviour: ordered = True 
         i = 0
-        for hum_slice, cube_slice in iris.iterate.izip(self.humidity, cube, coords=['latitude', 'longitude'], ordered=True):
-            hum_slice_truth = self.humidity[i, :, :]
+        for slice_b, cube_slice in iris.iterate.izip(self.cube_b, cube,
+                                                     coords=self.coord_names,
+                                                     ordered=True):
+            slice_b_truth = self.cube_b[i, :, :]
             cube_slice_truth = cube[i, :, :]
-            cube_slice_truth.transpose()    # izip should transpose the slice to ensure order is [lat, lon]
-            self.assertEqual(hum_slice_truth, hum_slice)
+            # izip should transpose the slice to ensure order is [lat, lon]
+            cube_slice_truth.transpose()
+            self.assertEqual(slice_b_truth, slice_b)
             self.assertEqual(cube_slice_truth, cube_slice)
             i += 1
         self.assertEqual(i, nslices)
         # Alternative behaviour: ordered=False (retain original ordering)
         i = 0
-        for hum_slice, cube_slice in iris.iterate.izip(self.humidity, cube, coords=['latitude', 'longitude'], ordered=False):
-            hum_slice_truth = self.humidity[i, :, :]
+        for slice_b, cube_slice in iris.iterate.izip(self.cube_b, cube,
+                                                     coords=self.coord_names,
+                                                     ordered=False):
+            slice_b_truth = self.cube_b[i, :, :]
             cube_slice_truth = cube[i, :, :]
-            self.assertEqual(hum_slice_truth, hum_slice)
+            self.assertEqual(slice_b_truth, slice_b)
             self.assertEqual(cube_slice_truth, cube_slice)
             i += 1
         self.assertEqual(i, nslices)
@@ -338,37 +396,46 @@ class TestIterateFunctions(tests.IrisTest):
         # Calculate mean, collapsing vertical dimension
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            vertical_mean = self.humidity.collapsed('model_level_number', iris.analysis.MEAN)
-        nslices = self.humidity.shape[0]
+            vertical_mean = self.cube_b.collapsed('model_level_number',
+                                                  iris.analysis.MEAN)
+        nslices = self.cube_b.shape[0]
         i = 0
-        for hum_slice, mean_slice in iris.iterate.izip(self.humidity, vertical_mean, coords=['latitude', 'longitude']):
-            hum_slice_truth = self.humidity[i, :, :]
-            self.assertEqual(hum_slice_truth, hum_slice)
-            self.assertEqual(vertical_mean, mean_slice) # Should return same cube in each iteration
+        for slice_b, mean_slice in iris.iterate.izip(self.cube_b, vertical_mean,
+                                                     coords=self.coord_names):
+            slice_b_truth = self.cube_b[i, :, :]
+            self.assertEqual(slice_b_truth, slice_b)
+            # Should return same cube in each iteration
+            self.assertEqual(vertical_mean, mean_slice)
             i += 1
         self.assertEqual(i, nslices)
         
     def test_izip_nd_non_ortho(self):
-        cube1 = iris.cube.Cube(numpy.zeros((5,5,5)))
-        cube1.add_aux_coord(iris.coords.AuxCoord(numpy.arange(5), long_name="z"), [0])
-        cube1.add_aux_coord(iris.coords.AuxCoord(numpy.arange(25).reshape(5,5), long_name="y"), [1,2])
-        cube1.add_aux_coord(iris.coords.AuxCoord(numpy.arange(25).reshape(5,5), long_name="x"), [1,2])
+        cube1 = iris.cube.Cube(numpy.zeros((5, 5, 5)))
+        cube1.add_aux_coord(iris.coords.AuxCoord(numpy.arange(5),
+                                                 long_name='z'), [0])
+        cube1.add_aux_coord(iris.coords.AuxCoord(numpy.arange(25).reshape(5, 5),
+                                                 long_name='y'), [1, 2])
+        cube1.add_aux_coord(iris.coords.AuxCoord(numpy.arange(25).reshape(5, 5),
+                                                 long_name='x'), [1, 2])
         cube2 = cube1.copy()
 
         # The two coords are not orthogonal so we cannot use them with izip
         with self.assertRaises(ValueError):
-            iris.iterate.izip(cube1, cube2, coords=["y", "x"])
+            iris.iterate.izip(cube1, cube2, coords=['y', 'x'])
 
     def test_izip_nd_ortho(self):
-        cube1 = iris.cube.Cube(numpy.zeros((5,5,5,5,5)))
-        cube1.add_dim_coord(iris.coords.AuxCoord(numpy.arange(5), long_name="z"), [0])
-        cube1.add_aux_coord(iris.coords.AuxCoord(numpy.arange(25).reshape(5,5), long_name="y"), [1,2])
-        cube1.add_aux_coord(iris.coords.AuxCoord(numpy.arange(25).reshape(5,5), long_name="x"), [3,4])
+        cube1 = iris.cube.Cube(numpy.zeros((5, 5, 5, 5, 5)))
+        cube1.add_dim_coord(iris.coords.AuxCoord(numpy.arange(5),
+                                                 long_name='z'), [0])
+        cube1.add_aux_coord(iris.coords.AuxCoord(numpy.arange(25).reshape(5, 5),
+                                                 long_name='y'), [1,2])
+        cube1.add_aux_coord(iris.coords.AuxCoord(numpy.arange(25).reshape(5, 5),
+                                                 long_name='x'), [3, 4])
         cube2 = cube1.copy()
         
         # The two coords are orthogonal so we can use them with izip
-        iter = iris.iterate.izip(cube1, cube2, coords=["y", "x"])
-        cubes = list(numpy.array(list(iter)).flatten()) 
+        it = iris.iterate.izip(cube1, cube2, coords=['y', 'x'])
+        cubes = list(numpy.array(list(it)).flatten()) 
         self.assertCML(cubes, ('iterate', 'izip_nd_ortho.cml'))
         
 
