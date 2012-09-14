@@ -206,7 +206,8 @@ class StrictConstraintMixin(RelaxedConstraintMixin):
         self.assertCML(cubes, 'theta_10')
     
     def test_invalid_constraint(self):
-        self.assertRaises(iris.exceptions.ConstraintMismatchError, self.load_match, self.theta_path, self.pressure_950)
+        with self.assertRaises(iris.exceptions.ConstraintMismatchError):
+            self.load_match(self.theta_path, self.pressure_950)
     
     def test_dual_atomic_constraint(self):
         cubes = self.load_match(self.dec_path, [self.theta, self.level_10 & self.theta])

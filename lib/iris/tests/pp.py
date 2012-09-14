@@ -92,7 +92,7 @@ class PPTest(object):
             pp_field.data
 
         # Clear any header words we don't use
-        unused = ('lbexp', 'lbegin', 'lbnrec', 'lbproj', 'lbtyp', 'lblev')
+        unused = ('lbexp', 'lbegin', 'lbnrec', 'lbproj', 'lbtyp')
         for pp_field in pp_fields:
             for word_name in unused:
                 setattr(pp_field, word_name, 0)
