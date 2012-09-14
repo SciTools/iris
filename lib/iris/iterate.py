@@ -129,10 +129,10 @@ def izip(*cubes, **kwargs):
             coord_b = (coord for coord in dimensioned_iter_coords_b if definition_coord == coord).next()
             if coord_a.shape != coord_b.shape:
                 raise ValueError("Shape of common dimensioned coordinate '%s' does not match across all "\
-                                 "cubes. Unable to iterate over this coordinate in step." % coord_a.name)
+                                 "cubes. Unable to iterate over this coordinate in step." % coord_a.name())
             if coord_a != coord_b:
                 warnings.warn("Iterating over coordinate '%s' in step whose definitions match but whose "\
-                              "values differ." % coord_a.name)
+                              "values differ." % coord_a.name())
     
     return _ZipSlicesIterator(cubes, requested_dims_by_cube, ordered, coords_by_cube)
 
