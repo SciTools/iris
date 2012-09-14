@@ -7,10 +7,10 @@ air_potential_temperature           (grid_longitude: 100)
           altitude                                 x
      Scalar coordinates:
           forecast_period: 0.0 hours
-          grid_latitude: Cell(point=-0.1278, bound=(-0.12825, -0.12735)) degrees
-          level_height: Cell(point=5.0, bound=(0.0, 13.333332)) m
+          grid_latitude: -0.1278 degrees, bound=(-0.12825, -0.12735) degrees
+          level_height: 5.0 m, bound=(0.0, 13.3333) m
           model_level_number: 1
-          sigma: Cell(point=0.9994238, bound=(1.0, 0.99846387))
+          sigma: 0.999424, bound=(1.0, 0.998464)
           time: 347921.166667 hours since 1970-01-01 00:00:00
      Attributes:
           source: Iris test case

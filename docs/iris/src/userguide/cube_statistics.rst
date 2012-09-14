@@ -60,9 +60,9 @@ name and the aggregation definition to the :meth:`Cube.collapsed() <iris.cube.Cu
          Derived coordinates:
               altitude                       -                 x                    x
          Scalar coordinates:
-              level_height: Cell(point=696.66663, bound=(0.0, 1393.3333)) m
-              model_level_number: Cell(point=10, bound=(1, 19))
-              sigma: Cell(point=0.92292976, bound=(0.84585959, 1.0))
+              level_height: 696.667 m, bound=(0.0, 1393.33) m
+              model_level_number: 10, bound=(1, 19)
+              sigma: 0.92293, bound=(0.84586, 1.0)
          Attributes:
               STASH: m01s00i004
               history: Mean of air_potential_temperature over model_level_number
@@ -106,9 +106,9 @@ These areas can now be passed to the ``collapsed`` method as weights:
          Derived coordinates:
               altitude                       -                      x
          Scalar coordinates:
-              grid_latitude: Cell(point=1.5145501, bound=(0.14430022, 2.8848)) degrees
-              grid_longitude: Cell(point=358.74948, bound=(357.49399, 360.00497)) degrees
-              surface_altitude: Cell(point=399.625, bound=(-14.000001, 813.25)) m
+              grid_latitude: 1.51455 degrees, bound=(0.1443, 2.8848) degrees
+              grid_longitude: 358.749 degrees, bound=(357.494, 360.005) degrees
+              surface_altitude: 399.625 m, bound=(-14.0, 813.25) m
          Attributes:
               STASH: m01s00i004
               history: Mean of air_potential_temperature over grid_longitude, grid_latitude

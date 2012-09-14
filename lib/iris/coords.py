@@ -230,7 +230,7 @@ class Cell(iris.util._OrderedHashable):
         if self.bound is not None:
             return repr(self)
         else:
-            return '%s' % self.point
+            return str(self.point)
 
     def contains_point(self, point):
         """
