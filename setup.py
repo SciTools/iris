@@ -130,6 +130,7 @@ class MakeStdNames(Command):
         cmd = std_name_cmd('lib')
         self.spawn(cmd)
 
+
 class MissingHeaderError(Exception):
     """
     Raised when one or more files do not have the required copyright
@@ -137,6 +138,7 @@ class MissingHeaderError(Exception):
 
     """
     pass
+
 
 class HeaderCheck(Command):
     """
