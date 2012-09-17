@@ -142,7 +142,7 @@ def lat_lon_range(cube, mode=None):
             lons = lon_coord.bounds
             lats = lat_coord.bounds
     
-    if lon_coord.circular:
+    if getattr(lon_coord, 'circular', False):
         lon_range = (numpy.min(lons), numpy.min(lons) + lon_coord.units.modulus)
     else: 
         lon_range = (numpy.min(lons), numpy.max(lons))
