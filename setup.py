@@ -130,6 +130,13 @@ class MakeStdNames(Command):
         cmd = std_name_cmd('lib')
         self.spawn(cmd)
 
+class MissingHeaderError(Exception):
+    """
+    Raised when one or more files do not have the required copyright
+    and licence header.
+
+    """
+    pass
 
 class HeaderCheck(Command):
     """
@@ -142,6 +149,8 @@ class HeaderCheck(Command):
     user_options = []
 
     exclude_patterns = ('./setup.py',
+                        './build/*',
+                        './dist/*',
                         './docs/iris/example_code/graphics/*.py',
                         './docs/iris/src/developers_guide/documenting/*.py',
                         './docs/iris/src/sphinxext/gen_gallery.py',
@@ -171,7 +180,7 @@ class HeaderCheck(Command):
 
         bad_paths = filter(self._header_bad, check_paths)
         if bad_paths:
-            raise StandardError(bad_paths)
+            raise MissingHeaderError(bad_paths)
 
     def _header_bad(self, path):
         target = '(C) British Crown Copyright 2010 - 2012, Met Office'
