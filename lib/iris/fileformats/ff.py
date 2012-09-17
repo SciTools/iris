@@ -69,10 +69,13 @@ UM_FIXED_LENGTH_HEADER = [
         ('total_prognostic_fields',    (153, )),
         ('data',                       (160, 161, 162, )), ]
 
-# Offset value to convert from UM_FIXED_LENGTH_HEADER positions to FF_HEADER offsets.
+# Offset value to convert from UM_FIXED_LENGTH_HEADER positions to
+# FF_HEADER offsets.
 UM_TO_FF_HEADER_OFFSET = 1
 # Offset the UM_FIXED_LENGTH_HEADER positions to FF_HEADER offsets.
-FF_HEADER = [(name, tuple([position - UM_TO_FF_HEADER_OFFSET for position in positions])) for name, positions in UM_FIXED_LENGTH_HEADER]
+FF_HEADER = [
+    (name, tuple(position - UM_TO_FF_HEADER_OFFSET for position in positions))
+        for name, positions in UM_FIXED_LENGTH_HEADER]
 
 # UM marker to signify a null pointer address.
 _FF_HEADER_POINTER_NULL = 0
@@ -98,7 +101,8 @@ class FFHeader(object):
     
     def __init__(self, filename):
         """
-        Create a FieldsFile header instance by reading the FIXED_LENGTH_HEADER section of the FieldsFile.
+        Create a FieldsFile header instance by reading the
+        FIXED_LENGTH_HEADER section of the FieldsFile.
         
         Args:
         
@@ -113,23 +117,27 @@ class FFHeader(object):
         self.ff_filename = filename
         '''File name of the FieldsFile.'''
         # Read the FF header data
-        ff_file = open(filename, 'rb')
-        header_data = np.fromfile(ff_file, dtype='>i8', count=FF_HEADER_DEPTH)  # 64-bit words.
-        header_data = tuple(header_data)
-        # Create FF instance attributes
+        with open(filename, 'rb') as ff_file:
+            # 64-bit words (aka. int64)
+            header_data = np.fromfile(ff_file, dtype='>i8',
+                                      count=FF_HEADER_DEPTH)
+            header_data = tuple(header_data)
+            # Create FF instance attributes
+            for name, offsets in FF_HEADER:
+                if len(offsets) == 1:
+                    value = header_data[offsets[0]]
+                else:
+                    value = header_data[offsets[0]:offsets[-1] + 1]
+                setattr(self, name, value)
+
+    def __str__(self):
+        attributes = []
         for name, offsets in FF_HEADER:
-            if len(offsets) == 1:
-                value = header_data[offsets[0]]
-            else:
-                value = header_data[offsets[0]:offsets[-1]+1]
-            setattr(self, name, value)
-        ff_file.close()
+            attributes.append('    {}: {}'.format(name, getattr(self, name)))
+        return 'FF Header:\n' + '\n'.join(attributes)
 
     def __repr__(self):
-        attribute_offset = dict([(name, offsets[0]) for name, offsets in FF_HEADER])
-        attribute_name_value = [(name, getattr(self, name)) for name, offsets in FF_HEADER if getattr(self, name, None) is not None]
-        attributes = sorted(attribute_name_value, key=lambda name_value: attribute_offset[name_value[0]])
-        return 'FF Header:' + ''.join(['\n    %s:  %s' % (name, value) for name, value in attributes])
+        return '{}({!r})'.format(type(self).__name__, self.ff_filename)
 
     def valid(self, name):
         """
