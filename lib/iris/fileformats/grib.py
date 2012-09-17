@@ -39,6 +39,7 @@ import grib_save_rules
 
 # rules for converting a grib message to a cm cube
 _load_rules = None
+_cross_reference_rules = None
 
 CENTRE_TITLES = {'egrr': 'U.K. Met Office - Exeter',
                  'ecmf': 'European Centre for Medium Range Weather Forecasts',
@@ -64,12 +65,18 @@ unknown_string = "???"
 def _ensure_load_rules_loaded():
     """Makes sure the standard conversion rules are loaded."""
 
-    # Uses this module-level variable
-    global _load_rules
+    # Uses this module-level variables
+    global _load_rules, _cross_reference_rules
 
     if _load_rules is None:
         rules_path = os.path.join(iris.config.CONFIG_PATH, 'grib_rules.txt')
         _load_rules = iris.fileformats.rules.RulesContainer(rules_path)
+
+    if _cross_reference_rules is None:
+        basepath = iris.config.CONFIG_PATH
+        _cross_reference_rules = iris.fileformats.rules.RulesContainer(
+            os.path.join(basepath, 'grib_cross_reference_rules.txt'),
+            rule_type=iris.fileformats.rules.ObjectReturningRule)
 
 
 def add_load_rules(filename):
@@ -437,44 +444,29 @@ class GribWrapper(object):
         return [unit.date2num(self._periodStartDateTime), unit.date2num(self._periodEndDateTime)]
 
 
+def grib_generator(filename):
+    """Returns a generator of GribWrapper fields from the given filename."""
+    with open(filename, 'rb') as grib_file:
+        while True:
+            grib_message = gribapi.grib_new_from_file(grib_file)
+            if grib_message is None:
+                break
+
+            grib_wrapper = GribWrapper(grib_message)
+
+            yield grib_wrapper
+
+            # finished with the grib message - claimed by the ecmwf c library.
+            gribapi.grib_release(grib_message)
+
+
 def load_cubes(filenames, callback=None):
     """Returns a generator of cubes from the given list of filenames."""
-    
     _ensure_load_rules_loaded()
-
-    if isinstance(filenames, basestring):
-        filenames = [filenames]
-
-    # try to add each message to the pools
-    for filename in filenames:
-        with open(filename) as grib_file:
-            while True:
-                grib_message = gribapi.grib_new_from_file(grib_file)
-                if grib_message is None:
-                    break
-
-                # Convert the GRIB message to a Cube, recording the rules that were used
-                grib_wrapper = GribWrapper(grib_message)
-                rules_result = _load_rules.result(grib_wrapper)
-                cube = rules_result.cube
-                result_rules_ran = rules_result.matching_rules 
-                
-                # Log the rules used
-                iris.fileformats.rules.log('GRIB_LOAD', filename, result_rules_ran)
-
-                cube = iris.io.run_callback(callback, cube, grib_wrapper, filename)
-
-                # finished with the grib message - claimed by the ecmwf c library.
-                gribapi.grib_release(grib_message)
-                
-                # make sure the wrapper is not used, as the grib message is now gone
-                grib_wrapper = None
-                
-                # cube can be none from the callback mechanism
-                if cube is None:
-                    continue
-                
-                yield cube
+    rules = iris.fileformats.rules
+    grib_loader = rules.Loader(grib_generator, _load_rules,
+                               _cross_reference_rules, 'GRIB_LOAD')
+    return rules.load_cubes(filenames, callback, grib_loader)
 
 
 def save_grib2(cube, target, append=False, **kwargs):
