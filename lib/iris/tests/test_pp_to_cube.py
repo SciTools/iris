@@ -41,7 +41,8 @@ class TestReferences(tests.IrisTest):
         # If the target cube is missing one of the source dimension
         # coords, ensure the re-grid fails nicely - i.e. returns None.
         self.target.remove_coord('bar')
-        new_ref = iris.fileformats.pp._ensure_aligned({}, self.ref, self.target)
+        new_ref = iris.fileformats.rules._ensure_aligned({}, self.ref,
+                                                         self.target)
         self.assertIsNone(new_ref)
 
     def test_regrid_codimension(self):
@@ -52,11 +53,13 @@ class TestReferences(tests.IrisTest):
         new_foo = self.target.coord('bar').copy()
         new_foo.rename('foo')
         self.target.add_aux_coord(new_foo, 0)
-        new_ref = iris.fileformats.pp._ensure_aligned({}, self.ref, self.target)
+        new_ref = iris.fileformats.rules._ensure_aligned({}, self.ref,
+                                                         self.target)
         self.assertIsNone(new_ref)
 
     def test_regrid_identity(self):
-        new_ref = iris.fileformats.pp._ensure_aligned({}, self.ref, self.target)
+        new_ref = iris.fileformats.rules._ensure_aligned({}, self.ref,
+                                                         self.target)
         # Bounds don't make it through the re-grid process
         self.ref.coord('bar').bounds = None
         self.ref.coord('foo').bounds = None
