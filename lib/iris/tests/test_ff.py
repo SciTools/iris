@@ -23,138 +23,160 @@ Test the Fieldsfile file loading plugin and FFHeader.
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
+import collections
 import os.path
 
 import iris
 import iris.fileformats.ff as ff
 
 
+class TestFF_HEADER(tests.IrisTest):
+    def test_initialisation(self):
+        self.assertEqual(ff.FF_HEADER[0], ('data_set_format_version', (0,)))
+        self.assertEqual(ff.FF_HEADER[17], ('integer_constants', (99, 100)))
+
+    def test_size(self):
+        self.assertEqual(len(ff.FF_HEADER), 31)
+
+
 @iris.tests.skip_data
-class TestFFHeaderGet(tests.IrisTest):
+class TestFFHeader(tests.IrisTest):
     def setUp(self):
-        self.filename = tests.get_data_path(('ssps', 'qtgl.ssps_006'))
+        self.filename = tests.get_data_path(('FF', 'n48_multi_field'))
         self.ff_header = ff.FFHeader(self.filename)
+        self.valid_headers = (
+            'integer_constants', 'real_constants', 'level_dependent_constants',
+            'lookup_table', 'data'
+        )
+        self.invalid_headers = (
+            'row_dependent_constants', 'column_dependent_constants',
+            'fields_of_constants', 'extra_constants', 'temp_historyfile',
+            'compressed_field_index1', 'compressed_field_index2',
+            'compressed_field_index3'
+        )
 
-    def test_unit_pass_0(self):
-        """Test FieldsFile header attribute offset."""
-        ff_header_index = [(name, tuple([position-ff.UM_TO_FF_HEADER_OFFSET for position in positions])) for name, positions in ff.UM_FIXED_LENGTH_HEADER]
-        self.assertEqual(ff.FF_HEADER, ff_header_index)
-
-    def test_unit_pass_1(self):
+    def test_constructor(self):
         """Test FieldsFile header attribute lookup."""
         self.assertEqual(self.ff_header.data_set_format_version, 20)
         self.assertEqual(self.ff_header.sub_model, 1)
         self.assertEqual(self.ff_header.vert_coord_type, 5)
         self.assertEqual(self.ff_header.horiz_grid_type, 0)
         self.assertEqual(self.ff_header.dataset_type, 3)
-        self.assertEqual(self.ff_header.run_identifier, 1)
+        self.assertEqual(self.ff_header.run_identifier, 0)
         self.assertEqual(self.ff_header.experiment_number, -32768)
         self.assertEqual(self.ff_header.calendar, 1)
         self.assertEqual(self.ff_header.grid_staggering, 3)
         self.assertEqual(self.ff_header.time_type, -32768)
         self.assertEqual(self.ff_header.projection_number, -32768)
-        self.assertEqual(self.ff_header.model_version, 707)
+        self.assertEqual(self.ff_header.model_version, 802)
         self.assertEqual(self.ff_header.obs_file_type, -32768)
         self.assertEqual(self.ff_header.last_fieldop_type, -32768)
-        self.assertEqual(self.ff_header.first_validity_time, (2011, 4, 18, 6, 0, 0, 108))
-        self.assertEqual(self.ff_header.last_validity_time, (2011, 4, 18, 9, 0, 0, 108))
-        self.assertEqual(self.ff_header.misc_validity_time, (2011, 4, 18, 12, 59, 19, -32768))
+        self.assertEqual(self.ff_header.first_validity_time,
+                         (2011, 7, 10, 18, 0, 0, 191))
+        self.assertEqual(self.ff_header.last_validity_time,
+                         (2011, 7, 10, 21, 0, 0, 191))
+        self.assertEqual(self.ff_header.misc_validity_time,
+                         (2012, 4, 30, 18, 12, 13, -32768))
         self.assertEqual(self.ff_header.integer_constants, (257, 46))
         self.assertEqual(self.ff_header.real_constants, (303, 38))
         self.assertEqual(self.ff_header.level_dependent_constants, (341, 71, 8))
-        self.assertEqual(self.ff_header.row_dependent_constants, (0, -1073741824, -1073741824))
-        self.assertEqual(self.ff_header.column_dependent_constants, (0, -1073741824, -1073741824))
-        self.assertEqual(self.ff_header.fields_of_constants, (0, -1073741824, -1073741824))
+        self.assertEqual(self.ff_header.row_dependent_constants,
+                         (0, -1073741824, -1073741824))
+        self.assertEqual(self.ff_header.column_dependent_constants,
+                         (0, -1073741824, -1073741824))
+        self.assertEqual(self.ff_header.fields_of_constants,
+                         (0, -1073741824, -1073741824))
         self.assertEqual(self.ff_header.extra_constants, (0, -1073741824))
         self.assertEqual(self.ff_header.temp_historyfile, (0, -1073741824))
-        self.assertEqual(self.ff_header.compressed_field_index1, (0, -1073741824))
-        self.assertEqual(self.ff_header.compressed_field_index2, (0, -1073741824))
-        self.assertEqual(self.ff_header.compressed_field_index3, (0, -1073741824))
-        self.assertEqual(self.ff_header.lookup_table, (909, 64, 4096))
-        self.assertEqual(self.ff_header.total_prognostic_fields, 2970)
-        self.assertEqual(self.ff_header.data, (264193, 2477557843, -32768))
+        self.assertEqual(self.ff_header.compressed_field_index1,
+                         (0, -1073741824))
+        self.assertEqual(self.ff_header.compressed_field_index2,
+                         (0, -1073741824))
+        self.assertEqual(self.ff_header.compressed_field_index3,
+                         (0, -1073741824))
+        self.assertEqual(self.ff_header.lookup_table, (909, 64, 5))
+        self.assertEqual(self.ff_header.total_prognostic_fields, 3119)
+        self.assertEqual(self.ff_header.data, (2049, 2961, -32768))
 
-    def test_unit_pass_2(self):
-        """Test FieldsFile header for valid pointer attributes."""
-        self.assertTrue(self.ff_header.valid('integer_constants'))
-        self.assertTrue(self.ff_header.valid('real_constants'))
-        self.assertTrue(self.ff_header.valid('level_dependent_constants'))
-        self.assertFalse(self.ff_header.valid('row_dependent_constants'))
-        self.assertFalse(self.ff_header.valid('column_dependent_constants'))
-        self.assertFalse(self.ff_header.valid('fields_of_constants'))
-        self.assertFalse(self.ff_header.valid('extra_constants'))
-        self.assertFalse(self.ff_header.valid('temp_historyfile'))
-        self.assertFalse(self.ff_header.valid('compressed_field_index1'))
-        self.assertFalse(self.ff_header.valid('compressed_field_index2'))
-        self.assertFalse(self.ff_header.valid('compressed_field_index3'))
-        self.assertTrue(self.ff_header.valid('lookup_table'))
-        self.assertTrue(self.ff_header.valid('data'))
+    def test_str(self):
+        target = """FF Header:
+    data_set_format_version: 20
+    sub_model: 1
+    vert_coord_type: 5
+    horiz_grid_type: 0
+    dataset_type: 3
+    run_identifier: 0
+    experiment_number: -32768
+    calendar: 1
+    grid_staggering: 3
+    time_type: -32768
+    projection_number: -32768
+    model_version: 802
+    obs_file_type: -32768
+    last_fieldop_type: -32768
+    first_validity_time: (2011, 7, 10, 18, 0, 0, 191)
+    last_validity_time: (2011, 7, 10, 21, 0, 0, 191)
+    misc_validity_time: (2012, 4, 30, 18, 12, 13, -32768)
+    integer_constants: (257, 46)
+    real_constants: (303, 38)
+    level_dependent_constants: (341, 71, 8)
+    row_dependent_constants: (0, -1073741824, -1073741824)
+    column_dependent_constants: (0, -1073741824, -1073741824)
+    fields_of_constants: (0, -1073741824, -1073741824)
+    extra_constants: (0, -1073741824)
+    temp_historyfile: (0, -1073741824)
+    compressed_field_index1: (0, -1073741824)
+    compressed_field_index2: (0, -1073741824)
+    compressed_field_index3: (0, -1073741824)
+    lookup_table: (909, 64, 5)
+    total_prognostic_fields: 3119
+    data: (2049, 2961, -32768)"""
+        self.assertEqual(str(self.ff_header), target)
 
-    def test_unit_pass_3(self):
-        """Test FieldsFile header pointer attribute addresses."""
-        self.assertEqual(self.ff_header.address('integer_constants'), self.ff_header.integer_constants[0] * ff.FF_WORD_DEPTH)
-        self.assertEqual(self.ff_header.address('real_constants'), self.ff_header.real_constants[0] * ff.FF_WORD_DEPTH)
-        self.assertEqual(self.ff_header.address('level_dependent_constants'), self.ff_header.level_dependent_constants[0] * ff.FF_WORD_DEPTH)
-        self.assertEqual(self.ff_header.address('row_dependent_constants'), self.ff_header.row_dependent_constants[0] * ff.FF_WORD_DEPTH)
-        self.assertEqual(self.ff_header.address('column_dependent_constants'), self.ff_header.column_dependent_constants[0] * ff.FF_WORD_DEPTH)
-        self.assertEqual(self.ff_header.address('fields_of_constants'), self.ff_header.fields_of_constants[0] * ff.FF_WORD_DEPTH)
-        self.assertEqual(self.ff_header.address('extra_constants'), self.ff_header.extra_constants[0] * ff.FF_WORD_DEPTH)
-        self.assertEqual(self.ff_header.address('temp_historyfile'), self.ff_header.temp_historyfile[0] * ff.FF_WORD_DEPTH)
-        self.assertEqual(self.ff_header.address('compressed_field_index1'), self.ff_header.compressed_field_index1[0] * ff.FF_WORD_DEPTH)
-        self.assertEqual(self.ff_header.address('compressed_field_index2'), self.ff_header.compressed_field_index2[0] * ff.FF_WORD_DEPTH)
-        self.assertEqual(self.ff_header.address('compressed_field_index3'), self.ff_header.compressed_field_index3[0] * ff.FF_WORD_DEPTH)
-        self.assertEqual(self.ff_header.address('lookup_table'), self.ff_header.lookup_table[0] * ff.FF_WORD_DEPTH)
-        self.assertEqual(self.ff_header.address('data'), self.ff_header.data[0] * ff.FF_WORD_DEPTH)
+    def test_repr(self):
+        target = "FFHeader('" + self.filename + "')"
+        self.assertEqual(repr(self.ff_header), target)
 
-    def test_unit_pass_4(self):
-        """Test FieldsFile header pointer attribute shape."""
-        self.assertEqual(self.ff_header.shape('integer_constants'), self.ff_header.integer_constants[1:])
-        self.assertEqual(self.ff_header.shape('real_constants'), self.ff_header.real_constants[1:])
-        self.assertEqual(self.ff_header.shape('level_dependent_constants'), self.ff_header.level_dependent_constants[1:])
-        self.assertEqual(self.ff_header.shape('row_dependent_constants'), self.ff_header.row_dependent_constants[1:])
-        self.assertEqual(self.ff_header.shape('column_dependent_constants'), self.ff_header.column_dependent_constants[1:])
-        self.assertEqual(self.ff_header.shape('fields_of_constants'), self.ff_header.fields_of_constants[1:])
-        self.assertEqual(self.ff_header.shape('extra_constants'), self.ff_header.extra_constants[1:])
-        self.assertEqual(self.ff_header.shape('temp_historyfile'), self.ff_header.temp_historyfile[1:])
-        self.assertEqual(self.ff_header.shape('compressed_field_index1'), self.ff_header.compressed_field_index1[1:])
-        self.assertEqual(self.ff_header.shape('compressed_field_index2'), self.ff_header.compressed_field_index2[1:])
-        self.assertEqual(self.ff_header.shape('compressed_field_index3'), self.ff_header.compressed_field_index3[1:])
-        self.assertEqual(self.ff_header.shape('lookup_table'), self.ff_header.lookup_table[1:])
-        self.assertEqual(self.ff_header.shape('data'), self.ff_header.data[1:])
+    def test_valid(self):
+        for header in self.valid_headers:
+            self.assertTrue(self.ff_header.valid(header))
+        for header in self.invalid_headers:
+            self.assertFalse(self.ff_header.valid(header))
+        with self.assertRaises(AttributeError):
+            self.ff_header.valid('foobar')
+
+    def test_address_coverage(self):
+        for header in self.valid_headers + self.invalid_headers:
+            self.assertIsInstance(self.ff_header.address(header), int)
+        with self.assertRaises(AttributeError):
+            self.ff_header.address('not_a_real_header')
+
+    def test_address_value(self):
+        self.assertEqual(self.ff_header.address('integer_constants'), 2056)
+        for header in self.invalid_headers:
+            self.assertEqual(self.ff_header.address(header), 0)
+
+    def test_shape(self):
+        self.assertEqual(self.ff_header.shape('integer_constants'), (46,))
+        self.assertEqual(self.ff_header.shape('data'), (2961, -32768))
 
 
 @iris.tests.skip_data
 class TestFF2PP2Cube(tests.IrisTest):
     def setUp(self):
-        self.filename = tests.get_data_path(('ssps', 'qtgl.ssps_006'))
+        self.filename = tests.get_data_path(('FF', 'n48_multi_field'))
 
     def test_unit_pass_0(self):
         """Test FieldsFile to PPFields cube load."""
-        # Adding the surface_altitude to all 4000(?) fields causes a
-        # massive memory overhead - so until that's resolved, throw
-        # away all the cubes we're not interested.
-        standard_names = ['air_temperature', 'soil_temperature']
-        def callback(cube, field, filename):
-            if cube.standard_name not in standard_names + ['surface_altitude']:
-                raise iris.exceptions.IgnoreCubeException
-        #
-        # CML comparision causes packed cube data to be read from disk,
-        # so we must constrain the load otherwise this test will
-        # take a _very_ long time to execute!
-        #
-        cube_by_name = {}
-        cubes = iris.load(self.filename, standard_names, callback=callback)
-        # Re-order to match the old cube-merge order.
-        cubes = [cubes[0], cubes[3], cubes[2], cubes[4], cubes[1]] + cubes[5:]
+        cube_by_name = collections.defaultdict(int)
+        cubes = iris.load(self.filename)
         while cubes:
             cube = cubes.pop(0)
             standard_name = cube.standard_name
-            v = cube_by_name.setdefault(standard_name, None)
-            if v is None:
-                cube_by_name[standard_name] = 0
-            else:
-                cube_by_name[standard_name] += 1
-            self.assertCML(cube, ('FF', '%s_%s_%d.cml' % (os.path.basename(self.filename), standard_name, cube_by_name[standard_name])))
+            cube_by_name[standard_name] += 1
+            filename = '{}_{}.cml'.format(standard_name,
+                                             cube_by_name[standard_name])
+            self.assertCML(cube, ('FF', filename))
 
 
 if __name__ == '__main__':
