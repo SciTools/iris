@@ -1954,7 +1954,7 @@ class Cube(CFVariableMixin):
 
         coord = self._as_list_of_coords(coord)[0]
 
-        if coord.circular:
+        if getattr(coord, 'circular', False):
             raise iris.exceptions.NotYetImplementedError('Rolling window over a circular coordinate.')
 
         if window < 2:

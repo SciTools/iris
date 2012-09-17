@@ -355,7 +355,7 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
     # NOTE: if it is found that this block of code is useful in anywhere other than this plotting routine, it  	  	 
     # may be better placed in the CS.
     lon_coord = filter(lambda coord: coord.standard_name in ["longitude", "grid_longitude"], cube.coords())[0]
-    if lon_coord.circular:
+    if getattr(lon_coord, 'circular', False):
         lats = numpy.append(lats, lats[:, 0:1], axis=1)
         lons = numpy.append(lons, lons[:, 0:1] + 360, axis=1)
         data = numpy.ma.concatenate([data, data[:, 0:1]], axis=1)
