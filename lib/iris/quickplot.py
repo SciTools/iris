@@ -36,8 +36,15 @@ def _title(cube_or_coord, with_units):
         title = ''
     else:
         title = cube_or_coord.name().replace('_', ' ').capitalize()
-        if with_units:
-            title += ' / {}'.format(cube_or_coord.units)
+        units = cube_or_coord.units
+        if with_units and not (units.unknown or
+                               units.no_unit or
+                               units == iris.unit.Unit('1')):
+            # Use shortest unit representation e.g. prefer 'K' over
+            # over 'kelvin', but not '0.0174532925199433 rad' over 'degrees'
+            if len(units.symbol) < len(str(units)):
+                units = units.symbol
+            title += ' / {}'.format(units)
     return title
 
 
@@ -48,8 +55,15 @@ def _label(cube, mode, result=None, ndims=2, coords=None):
 
     if result is not None:
         draw_edges = mode == iris.coords.POINT_MODE
-        bar = plt.colorbar(result, orientation='horizontal', drawedges=draw_edges)
-        bar.set_label(cube.units)
+        bar = plt.colorbar(result, orientation='horizontal',
+                           drawedges=draw_edges)
+        has_known_units = not (cube.units.unknown or cube.units.no_unit)
+        if has_known_units and cube.units != iris.unit.Unit('1'):
+            # Use shortest unit representation
+            if len(cube.units.symbol) < len(str(cube.units)):
+                bar.set_label(cube.units.symbol)
+            else:
+                bar.set_label(cube.units)
         # Remove the tick which is put on the colorbar by default.
         bar.ax.tick_params(length=0)
     
