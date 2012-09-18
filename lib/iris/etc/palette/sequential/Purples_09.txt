@@ -1,0 +1,29 @@
+# Apache-Style Software License for ColorBrewer software and ColorBrewer Color Schemes
+# 
+# Copyright (c) 2002 Cynthia Brewer, Mark Harrower, and The Pennsylvania State University.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+# http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software distributed
+# under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+# CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
+# 
+# name:         Purples_09
+# scheme:       sequential
+# interpolate:  off
+# source:       http://colorbrewer.org/
+# type:         RGB
+#
+   0.988235 0.984314 0.992157
+   0.937255 0.929412 0.960784
+   0.854902 0.854902 0.921569
+   0.737255 0.741176 0.862745
+   0.619608 0.603922 0.784314
+   0.501961 0.490196 0.729412
+   0.415686 0.317647 0.639216
+   0.329412 0.152941 0.560784
+   0.247059 0.000000 0.490196

@@ -1,0 +1,32 @@
+# Apache-Style Software License for ColorBrewer software and ColorBrewer Color Schemes
+# 
+# Copyright (c) 2002 Cynthia Brewer, Mark Harrower, and The Pennsylvania State University.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+# http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software distributed
+# under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+# CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
+# 
+# name:         RdYlBu_11
+# scheme:       diverging
+# keyword:      anomaly
+# interpolate:  off
+# source:       http://colorbrewer.org/
+# type:         RGB
+#
+   0.647059 0.000000 0.149020
+   0.843137 0.188235 0.152941
+   0.956863 0.427451 0.262745
+   0.992157 0.682353 0.380392
+   0.996078 0.878431 0.564706
+   1.000000 1.000000 0.749020
+   0.878431 0.952941 0.972549
+   0.670588 0.850980 0.913725
+   0.454902 0.678431 0.819608
+   0.270588 0.458824 0.705882
+   0.192157 0.211765 0.584314

@@ -1,0 +1,32 @@
+# Apache-Style Software License for ColorBrewer software and ColorBrewer Color Schemes
+# 
+# Copyright (c) 2002 Cynthia Brewer, Mark Harrower, and The Pennsylvania State University.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+# http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software distributed
+# under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+# CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
+# 
+# name:         Spectral_11
+# scheme:       diverging
+# keyword:      anomaly
+# interpolate:  off
+# source:       http://colorbrewer.org/
+# type:         RGB
+#
+   0.619608 0.003922 0.258824
+   0.835294 0.243137 0.309804
+   0.956863 0.427451 0.262745
+   0.992157 0.682353 0.380392
+   0.996078 0.878431 0.545098
+   1.000000 1.000000 0.749020
+   0.901961 0.960784 0.596078
+   0.670588 0.866667 0.643137
+   0.400000 0.760784 0.647059
+   0.196078 0.533333 0.741176
+   0.368627 0.309804 0.635294

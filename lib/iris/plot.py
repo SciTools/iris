@@ -31,6 +31,7 @@ import matplotlib.dates as mpl_dates
 import matplotlib.transforms as mpl_transforms
 import matplotlib.pyplot as plt
 import mpl_toolkits.basemap as basemap
+from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
 import numpy
 
 import iris.cube
@@ -43,6 +44,9 @@ import iris.unit
 
 # Used to provide a "current" Basemap instance, in the style of pyplot.gcf() and pyplot.gca()
 _CURRENT_MAP = None
+
+# Cynthia Brewer citation text.
+_BREWER = 'Colours based on ColorBrewer.org'
 
 
 PlotDefn = collections.namedtuple('PlotDefn', ('coords', 'transpose'))
@@ -430,7 +434,10 @@ def contour(cube, *args, **kwargs):
     See :func:`matplotlib.pyplot.contour` for details of other valid keyword arguments.
     
     """
-    return _draw_2d_from_points('contour', None, cube, *args, **kwargs)
+    result =_draw_2d_from_points('contour', None, cube, *args, **kwargs)
+    if iris.palette.brewer(kwargs.get('cmap')):
+        citation(_BREWER)
+    return result
 
 
 @iris.palette.auto_palette
@@ -451,6 +458,9 @@ def contourf(cube, *args, **kwargs):
     coords = kwargs.get('coords')
     kwargs.setdefault('antialiased', True)
     result = _draw_2d_from_points('contourf', None, cube, *args, **kwargs)
+
+    if iris.palette.brewer(kwargs.get('cmap')):
+        citation(_BREWER)
     
     # Matplotlib produces visible seams between anti-aliased polygons.
     # But if the polygons are virtually opaque then we can cover the seams
@@ -684,7 +694,10 @@ def pcolor(cube, *args, **kwargs):
     
     """
     kwargs.setdefault('antialiased', True)
-    return _draw_2d_from_bounds('pcolor', cube, *args, **kwargs)
+    result = _draw_2d_from_bounds('pcolor', cube, *args, **kwargs)
+    if iris.palette.brewer(kwargs.get('cmap')):
+        citation(_BREWER)
+    return result
 
 
 @iris.palette.auto_palette
@@ -702,7 +715,10 @@ def pcolormesh(cube, *args, **kwargs):
     See :func:`matplotlib.pyplot.pcolormesh` for details of other valid keyword arguments.
     
     """
-    return _draw_2d_from_bounds('pcolormesh', cube, *args, **kwargs)
+    result = _draw_2d_from_bounds('pcolormesh', cube, *args, **kwargs)
+    if iris.palette.brewer(kwargs.get('cmap')):
+        citation(_BREWER)
+    return result
 
 
 def points(cube, *args, **kwargs):
@@ -801,3 +817,36 @@ def symbols(x, y, symbols, size, axes=None, units='inches'):
 
     axes.add_collection(pc)
     axes.autoscale_view()
+
+
+def citation(text, figure=None):
+    """
+    Add a text citation to a plot.
+
+    Places an anchored text citation in the bottom right
+    hand corner of the plot.
+
+    Args:
+
+    * text:
+        Citation text to be plotted. 
+
+    Kwargs:
+
+    * figure:
+        Target :class:`matplotlib.figure.Figure` instance. Defaults
+        to the current figure if none provided.
+
+    """
+
+    if text is not None and len(text):
+        if figure is None:
+            figure = plt.gcf()
+        anchor = AnchoredText(text, prop=dict(size=6), frameon=True, loc=4)
+        anchor.patch.set_boxstyle('round, pad=0, rounding_size=0.2')
+        figure.gca().add_artist(anchor)
+
+
+    
+    
+
