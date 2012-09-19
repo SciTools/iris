@@ -635,7 +635,7 @@ def _dereference_args(factory, reference_targets, regrid_cache, cube):
     """Converts all the arguments for a factory into concrete coordinates."""
     args = []
     for arg in factory.args:
-        if isinstance(arg, iris.fileformats.rules.Reference):
+        if isinstance(arg, Reference):
             if arg.name in reference_targets:
                 src = reference_targets[arg.name].as_cube()
                 # If necessary, regrid the reference cube to
@@ -764,12 +764,11 @@ def load_cubes(filenames, user_callback, loader):
                 name = reference.name
                 # Register this cube as a source cube for the named
                 # reference.
-                concrete_reference_target = concrete_reference_targets.get(name)
-                if concrete_reference_target is None:
-                    concrete_reference_target = ConcreteReferenceTarget(
-                        name, reference.transform)
-                    concrete_reference_targets[name] = concrete_reference_target
-                concrete_reference_target.add_cube(cube)
+                target = concrete_reference_targets.get(name)
+                if target is None:
+                    target = ConcreteReferenceTarget(name, reference.transform)
+                    concrete_reference_targets[name] = target
+                target.add_cube(cube)
 
             if rules_result.factories:
                 results_needing_reference.append(rules_result)
