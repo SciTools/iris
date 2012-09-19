@@ -21,9 +21,7 @@ import iris.tests as tests
 
 import unittest
 
-# Import updated sys.path for example_code.
-import example_code_path 
-import global_map
+import iris.examples.global_map as global_map
 import override_mpl_show
 
 

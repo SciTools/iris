@@ -23,7 +23,7 @@ import unittest
 
 # Import updated sys.path for example_code.
 import example_code_path
-import cross_section 
+import iris.examples.cross_section as cross_section
 import override_mpl_show
 
 

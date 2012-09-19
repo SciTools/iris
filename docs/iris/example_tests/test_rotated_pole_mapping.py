@@ -24,7 +24,7 @@ import unittest
 # Import updated sys.path for example_code.
 import example_code_path
 import override_mpl_show
-import rotated_pole_mapping 
+import iris.examples.rotated_pole_mapping as rotated_pole_mapping
 
 
 class TestRotatedPoleMapping(tests.GraphicsTest):

@@ -23,7 +23,7 @@ import unittest
 
 # Import updated sys.path for example_code.
 import example_code_path
-import lagged_ensemble 
+import iris.examples.lagged_ensemble as lagged_ensemble
 import override_mpl_show
 
 

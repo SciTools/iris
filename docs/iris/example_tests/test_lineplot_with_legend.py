@@ -23,7 +23,7 @@ import unittest
 
 # Import updated sys.path for example_code.
 import example_code_path
-import lineplot_with_legend 
+import iris.examples.lineplot_with_legend as lineplot_with_legend
 import override_mpl_show
 
 

@@ -23,7 +23,7 @@ import unittest
 
 # Import updated sys.path for example_code.
 import example_code_path
-import hovmoller 
+import iris.examples.hovmoller as hovmoller
 import override_mpl_show
 
 

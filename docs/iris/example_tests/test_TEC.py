@@ -22,9 +22,8 @@ import iris.tests as tests
 import unittest
 
 # Import updated sys.path for example_code.
-import example_code_path
 import override_mpl_show
-import TEC 
+import iris.examples.TEC as TEC
 
 
 class TestTEC(tests.GraphicsTest):

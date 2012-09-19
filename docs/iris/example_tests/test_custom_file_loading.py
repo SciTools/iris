@@ -23,7 +23,7 @@ import unittest
 
 # Import updated sys.path for example_code.
 import example_code_path
-import custom_file_loading 
+import iris.examples.custom_file_loading as custom_file_loading
 import override_mpl_show
 
 
