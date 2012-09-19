@@ -21,8 +21,6 @@ import iris.tests as tests
 
 import unittest
 
-# Import updated sys.path for example_code.
-import example_code_path
 import iris.examples.deriving_phenomena as deriving_phenomena
 import override_mpl_show
 

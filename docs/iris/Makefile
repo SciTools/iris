@@ -42,6 +42,6 @@ doctest:
 
 extest:
 	@echo
-	@echo "Running \"example_code/graphics\" tests..."
+	@echo "Running \"example\" tests..."
 	@echo
 	python -m unittest discover -v -t . 

@@ -21,8 +21,6 @@ import iris.tests as tests
 
 import unittest
 
-# Import updated sys.path for example_code.
-import example_code_path
 import iris.examples.COP_1d_plot as COP_1d_plot
 import override_mpl_show 
 
