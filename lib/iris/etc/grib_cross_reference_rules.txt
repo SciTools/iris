@@ -15,4 +15,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
-# PLACEHOLDER
+# Equivalent to grib.paramId == 152
+IF
+grib.edition == 2
+grib.centre == 'ecmf'
+grib.discipline == 0
+grib.parameterCategory == 3
+grib.parameterNumber == 25
+grib.typeOfFirstFixedSurface == 105
+THEN
+ReferenceTarget('surface_pressure', lambda cube: {'standard_name': 'surface_air_pressure', 'units': 'Pa', 'data': numpy.exp(cube.data)})

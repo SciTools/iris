@@ -582,16 +582,18 @@ CoordAndDims(DimCoord(points=0.5*(grib.scaledValueOfFirstFixedSurface/(10.0**gri
 #ExplicitCoord("model_level", "1", 'z', points=grib.scaledValueOfFirstFixedSurface)
 #ExplicitCoord('level_height', 'm', 'z', points=grib.pv[grib.scaledValueOfFirstFixedSurface], definitive=True, coord_system=HybridHeightCS(Reference('orography')))
 #ExplicitCoord('sigma', '1', 'z', points=grib.pv[grib.numberOfVerticalCoordinateValues/2 + grib.scaledValueOfFirstFixedSurface], coord_system=HybridHeightCS(Reference('orography')))
-#
-# hybrid pressure.105 deprecated for 119.
-#IF
-#grib.edition == 2
-#grib.typeOfFirstFixedSurface in [105, 119]
-#grib.numberOfCoordinatesValues > 0
-#THEN
-#ExplicitCoord("model_level", "1", 'z', points=grib.scaledValueOfFirstFixedSurface)
-#ExplicitCoord('level_height', 'm', 'z', points=grib.pv[grib.scaledValueOfFirstFixedSurface], definitive=True, coord_system=HybridPressureCS(Reference('surface_pressure')))
-#ExplicitCoord('sigma', '1', 'z', points=grib.pv[grib.numberOfPoints/2 + grib.scaledValueOfFirstFixedSurface], coord_system=HybridPressureCS(Reference('surface_pressure')))
+
+
+# hybrid pressure. 105 deprecated for 119.
+IF
+grib.edition == 2
+grib.typeOfFirstFixedSurface in [105, 119]
+grib.numberOfCoordinatesValues > 0
+THEN
+CoordAndDims(AuxCoord(grib.scaledValueOfFirstFixedSurface, standard_name='model_level_number', attributes={'positive': 'up'}))
+CoordAndDims(DimCoord(grib.pv[grib.scaledValueOfFirstFixedSurface], long_name='level_pressure', units='Pa'))
+CoordAndDims(AuxCoord(grib.pv[grib.numberOfCoordinatesValues/2 + grib.scaledValueOfFirstFixedSurface], long_name='sigma'))
+Factory(HybridPressureFactory, [{'long_name': 'level_pressure'}, {'long_name': 'sigma'}, Reference('surface_pressure')])
 
 
 

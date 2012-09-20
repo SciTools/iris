@@ -19,4 +19,4 @@
 IF
 f.lbuser[3] == 33
 THEN
-Reference('orography',)
+ReferenceTarget('orography', None)
