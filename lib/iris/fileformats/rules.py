@@ -42,6 +42,46 @@ import iris.unit
 
 RuleResult = collections.namedtuple('RuleResult', ['cube', 'matching_rules', 'factories'])
 Factory = collections.namedtuple('Factory', ['factory_class', 'args'])
+ReferenceTarget = collections.namedtuple('ReferenceTarget',
+                                         ('name', 'transform'))
+
+
+class ConcreteReferenceTarget(object):
+    """Everything you need to make a real Cube for a named reference."""
+
+    def __init__(self, name, transform=None):
+        self.name = name
+        """The name used to connect references with referencees."""
+        self.transform = transform
+        """An optional transformation to apply to the cubes."""
+        self._src_cubes = iris.cube.CubeList()
+        self._final_cube = None
+
+    def add_cube(self, cube):
+        self._src_cubes.append(cube)
+
+    def as_cube(self):
+        if self._final_cube is None:
+            src_cubes = self._src_cubes
+            if len(src_cubes) > 1:
+                # Merge the reference cubes to allow for
+                # time-varying surface pressure in hybrid-presure.
+                src_cubes = src_cubes.merge()
+                if len(src_cubes) > 1:
+                    warnings.warn('Multiple reference cubes for {}'
+                                  .format(self.name))
+            src_cube = src_cubes[-1]
+
+            if self.transform is None:
+                self._final_cube = src_cube
+            else:
+                final_cube = src_cube.copy()
+                attributes = self.transform(final_cube)
+                for name, value in attributes.iteritems():
+                    setattr(final_cube, name, value)
+                self._final_cube = final_cube
+
+        return self._final_cube
 
 
 # Controls the deferred import of all the symbols from iris.coords.
@@ -343,7 +383,7 @@ class Rule(object):
             except AttributeError, err:
                 print >> sys.stderr, 'Failed to get value (%(error)s) to execute: %(command)s' % {'command':action, 'error': err}
             except Exception, err:
-                print >> sys.stderr, 'Failed (msg:%(error)s) to run: %(command)s\nFrom the rule:%(me)r' % {'me':self, 'command':action, 'error': err}
+                print >> sys.stderr, 'Failed (msg:%(error)s) to run:\n    %(command)s\nFrom the rule:\n%(me)r' % {'me':self, 'command':action, 'error': err}
                 raise err
         return factories
 
@@ -591,22 +631,13 @@ class _ReferenceError(Exception):
     pass
 
 
-def _dereference_args(factory, reference_cubes, regrid_cache, cube):
+def _dereference_args(factory, reference_targets, regrid_cache, cube):
     """Converts all the arguments for a factory into concrete coordinates."""
     args = []
     for arg in factory.args:
-        if isinstance(arg, iris.fileformats.rules.Reference):
-            if arg.name in reference_cubes:
-                # Merge the reference cubes to allow for
-                # time-varying surface pressure in hybrid-presure.
-                if len(reference_cubes[arg.name]) > 1:
-                    ref_cubes = iris.cube.CubeList(reference_cubes[arg.name])
-                    merged = ref_cubes.merge()
-                    if len(merged) > 1:
-                        warnings.warn('Multiple reference cubes for {}'
-                                      .format(arg.name))
-                    reference_cubes[arg.name] = merged[-1:]
-                src = reference_cubes[arg.name][0]
+        if isinstance(arg, Reference):
+            if arg.name in reference_targets:
+                src = reference_targets[arg.name].as_cube()
                 # If necessary, regrid the reference cube to
                 # match the grid of this cube.
                 src = _ensure_aligned(regrid_cache, src, cube)
@@ -708,7 +739,7 @@ Loader = collections.namedtuple('Loader',
 
 
 def load_cubes(filenames, user_callback, loader):
-    reference_cubes = {}
+    concrete_reference_targets = {}
     results_needing_reference = []
 
     if isinstance(filenames, basestring):
@@ -730,7 +761,14 @@ def load_cubes(filenames, user_callback, loader):
             rules = loader.cross_ref_rules.matching_rules(field)
             for rule in rules:
                 reference, = rule.run_actions(cube, field)
-                reference_cubes.setdefault(reference.name, []).append(cube)
+                name = reference.name
+                # Register this cube as a source cube for the named
+                # reference.
+                target = concrete_reference_targets.get(name)
+                if target is None:
+                    target = ConcreteReferenceTarget(name, reference.transform)
+                    concrete_reference_targets[name] = target
+                target.add_cube(cube)
 
             if rules_result.factories:
                 results_needing_reference.append(rules_result)
@@ -742,7 +780,7 @@ def load_cubes(filenames, user_callback, loader):
         cube = result.cube
         for factory in result.factories:
             try:
-                args = _dereference_args(factory, reference_cubes,
+                args = _dereference_args(factory, concrete_reference_targets,
                                          regrid_cache, cube)
             except _ReferenceError as e:
                 msg = 'Unable to create instance of {factory}. ' + e.message
