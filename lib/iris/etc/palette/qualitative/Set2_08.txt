@@ -1,0 +1,28 @@
+# Apache-Style Software License for ColorBrewer software and ColorBrewer Color Schemes
+# 
+# Copyright (c) 2002 Cynthia Brewer, Mark Harrower, and The Pennsylvania State University.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+# http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software distributed
+# under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+# CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
+# 
+# name:         Set2_08
+# scheme:       qualitative
+# interpolate:  off
+# source:       http://colorbrewer.org/
+# type:         RGB
+#
+   0.400000 0.760784 0.647059
+   0.988235 0.552941 0.384314
+   0.552941 0.627451 0.796078
+   0.905882 0.541176 0.764706
+   0.650980 0.847059 0.329412
+   1.000000 0.850980 0.184314
+   0.898039 0.768627 0.580392
+   0.701961 0.701961 0.701961
