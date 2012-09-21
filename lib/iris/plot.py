@@ -435,7 +435,7 @@ def contour(cube, *args, **kwargs):
     
     """
     result =_draw_2d_from_points('contour', None, cube, *args, **kwargs)
-    if iris.palette.brewer(kwargs.get('cmap')):
+    if iris.palette.is_brewer(kwargs.get('cmap')):
         citation(_BREWER)
     return result
 
@@ -459,7 +459,7 @@ def contourf(cube, *args, **kwargs):
     kwargs.setdefault('antialiased', True)
     result = _draw_2d_from_points('contourf', None, cube, *args, **kwargs)
 
-    if iris.palette.brewer(kwargs.get('cmap')):
+    if iris.palette.is_brewer(kwargs.get('cmap')):
         citation(_BREWER)
     
     # Matplotlib produces visible seams between anti-aliased polygons.
@@ -695,7 +695,7 @@ def pcolor(cube, *args, **kwargs):
     """
     kwargs.setdefault('antialiased', True)
     result = _draw_2d_from_bounds('pcolor', cube, *args, **kwargs)
-    if iris.palette.brewer(kwargs.get('cmap')):
+    if iris.palette.is_brewer(kwargs.get('cmap')):
         citation(_BREWER)
     return result
 
@@ -716,7 +716,7 @@ def pcolormesh(cube, *args, **kwargs):
     
     """
     result = _draw_2d_from_bounds('pcolormesh', cube, *args, **kwargs)
-    if iris.palette.brewer(kwargs.get('cmap')):
+    if iris.palette.is_brewer(kwargs.get('cmap')):
         citation(_BREWER)
     return result
 

@@ -25,6 +25,7 @@ from __future__ import with_statement
 from functools import wraps
 import os
 import os.path
+import re
 
 import matplotlib.cm as mpl_cm
 import matplotlib.colors as mpl_colors
@@ -48,23 +49,23 @@ _MISSING_KWARG_CMAP = 'missing kwarg cmap'
 _MISSING_KWARG_NORM = 'missing kwarg norm'
 
 
-def brewer(cmap):
-   """
-   Determine whether the color map is a Cynthia Brewer color map.
+def is_brewer(cmap):
+    """
+    Determine whether the color map is a Cynthia Brewer color map.
 
-   Args:
+    Args:
 
-   * cmap:
-       The color map instance.
+    * cmap:
+        The color map instance.
 
-   Returns:
-       Boolean.
+    Returns:
+        Boolean.
 
-   """
-   result = False
-   if cmap is not None:
-       result = cmap.name in _CMAP_BREWER
-   return result
+    """
+    result = False
+    if cmap is not None:
+        result = cmap.name in _CMAP_BREWER
+    return result
 
 
 def _default_cmap_norm(args, kwargs):
@@ -253,7 +254,7 @@ def _load_palette():
         
         # Read the file header.
         with open(filename) as file_handle:
-            header = filter(lambda line: line.startswith('#') and ': ' in line, file_handle.readlines())
+            header = filter(lambda line: re.match('^\s*#.*:\s+.*$', line), file_handle.readlines())
         
         # Extract the file header metadata.
         for line in header:
