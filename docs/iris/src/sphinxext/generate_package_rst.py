@@ -165,11 +165,11 @@ def do_package(package_name):
             
             # skip some non-relevant files
             if ( fname.startswith('.') or fname.startswith('#') or re.search("^_[^_]", fname) or 
-                 fname.find('.svn')>=0 or not (ext in ['.py', '.so']) ):
+                 not (ext in ['.py', '.so']) ):
                 continue
             
             rel_path = root_package + os.path.join(root, fname).split(rootdir)[-1]
-            mod_folder = root_package + os.path.join(root).split(rootdir)[-1].replace('/','.')
+            mod_folder = root_package + os.path.join(root).split(rootdir)[-1].replace('/', '.')
 
             # only add to package folder list if it contains an __init__ script
             if name == '__init__':
@@ -181,7 +181,7 @@ def do_package(package_name):
         os.makedirs(out_dir)
         
     for package, package_path in package_folder:
-       if '._' in package or 'test' in package:
+       if '._' in package or 'test' in package or 'examples' in package:
             continue
 
        sub_packages = (spackage for spackage, spackage_path in package_folder if spackage != package and spackage.startswith(package))
@@ -196,14 +196,14 @@ def do_package(package_name):
            
        out_path = package_dir + '.rst'
        if not os.path.exists(out_path) or doc != ''.join(file(out_path, 'r').readlines()):
-            print 'creating out of date/non-existant document %s' % out_path
+            print 'creating out of date/non-existent document %s' % out_path
             file(out_path, 'w').write(doc)
 
        for import_name, module_path in module_folders.get(package, []):
          doc = auto_doc_module(module_path, import_name, root_package)
          out_path = out_dir + import_name.replace('.', os.path.sep) + '.rst'
          if not os.path.exists(out_path) or doc != ''.join(file(out_path, 'r').readlines()):
-            print 'creating out of date/non-existant document %s' % out_path
+            print 'creating out of date/non-existent document %s' % out_path
             file(out_path, 'w').write(doc)
 
 
