@@ -184,9 +184,9 @@ or :func:`iris.quickplot.plot` consecutively and providing the label keyword to 
 Once all of the lines have been added the :func:`matplotlib.pyplot.legend` function can be called 
 to indicate that a legend is desired: 
 
-.. literalinclude:: ../../example_code/graphics/lineplot_with_legend.py
+.. literalinclude:: ../../../lib/iris/examples/lineplot_with_legend.py
 
-.. plot:: ../example_code/graphics/lineplot_with_legend.py
+.. plot:: ../../../lib/iris/examples/lineplot_with_legend.py
 
 This example of consecutive ``qplt.plot`` calls coupled with the :func:`Cube.slices() <iris.cube.Cube.slices>` 
 method on a cube shows the temperature at some latitude cross-sections. 

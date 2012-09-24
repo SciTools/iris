@@ -35,7 +35,7 @@ def gen_gallery(app, doctree):
 
     outdir = app.builder.outdir
 
-    rootdir = os.path.join('plot_directive','example_code')
+    rootdir = os.path.join('plot_directive', 'plot_directive', 'lib', 'iris')
 
     # images we want to skip for the gallery because they are an unusual
     # size that doesn't layout well in a table, or because they may be
@@ -50,7 +50,7 @@ def gen_gallery(app, doctree):
     data = []
     thumbnails = {}
     
-    for subdir in ('graphics', ):
+    for subdir in ('examples', ):
         origdir = os.path.join(os.path.dirname(outdir), rootdir, subdir)
         thumbdir = os.path.join(outdir, rootdir, subdir, 'thumbnails')
         if not os.path.exists(thumbdir):

@@ -329,7 +329,8 @@ def _plot_directive(plot_path, basedir, function_name, plot_code, caption,
     # the temporary directory, and then sphinx moves the file to
     # build/html/_images for us later.
     rstdir, rstfile = os.path.split(state_machine.document.attributes['source'])
-    outdir = os.path.join('plot_directive', basedir)
+    # relative to the root of the repository
+    outdir = os.path.join('plot_directive', os.path.relpath(basedir, '../../../'))
     reldir = relpath(setup.confdir, rstdir)
     linkdir = os.path.join(reldir, outdir)
 

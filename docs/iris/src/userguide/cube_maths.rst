@@ -96,7 +96,7 @@ Finally, the cube we have created needs to have its standard name and units set 
 The result could now be plotted using the guidance provided in the :doc:`plotting_a_cube` section.
 
 .. htmlonly::
-    A very similar example to this can be found in :doc:`/examples/graphics/deriving_phenomena`.
+    A very similar example to this can be found in :doc:`/examples/examples/deriving_phenomena`.
 
 .. latexonly::
     A very similar example to this can be found in the examples section, with the title "Deriving Exner Pressure and Air Temperature".

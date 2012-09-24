@@ -46,7 +46,8 @@ noplot_regex = re.compile(r"#\s*-\*-\s*noplot\s*-\*-")
 
 def generate_example_rst(app):
     # example code can be found at the same level as the documentation src folder
-    rootdir = os.path.join(os.path.dirname(app.builder.srcdir), 'example_code')
+    import iris.examples
+    rootdir = os.path.dirname(iris.examples.__file__)
 
     # examples are build as a subfolder of the src folder
     exampledir = os.path.join(app.builder.srcdir, 'examples')
