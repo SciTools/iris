@@ -44,6 +44,7 @@ import xml.dom.minidom
 import zlib
 
 import matplotlib
+import matplotlib.testing.compare as mcompare
 # NB pyplot is imported after main() so that a backend can be defined.
 # import matplotlib.pyplot as plt
 import numpy
@@ -361,7 +362,7 @@ class IrisTest(unittest.TestCase):
             open(checksum_result_path, 'w').writelines(str(checksum))
         return checksum
     
-    def check_graphic(self):
+    def check_graphic(self, tol=0):
         """Checks the CRC matches for the current matplotlib.pyplot figure, and closes the figure."""
 
         unique_id = self._unique_id()
@@ -369,6 +370,28 @@ class IrisTest(unittest.TestCase):
         figure = plt.gcf()
         
         try:
+            expected_fname = os.path.join(os.path.dirname(__file__), 'results', 'visual_tests', unique_id + '.png') 
+            
+            if not os.path.isdir(os.path.dirname(expected_fname)):
+                os.makedirs(os.path.dirname(expected_fname))
+            
+            result_fname = os.path.join(os.path.dirname(__file__), 'result_image_comparison', 'result-' + unique_id + '.png')
+            
+            if not os.path.isdir(os.path.dirname(result_fname)):
+                os.makedirs(os.path.dirname(result_fname)) 
+            
+            figure.savefig(result_fname)
+            
+            if not os.path.exists(expected_fname):
+                warnings.warn('Created image for test %s' % unique_id)
+                shutil.copy2(result_fname, expected_fname)
+            
+            err = mcompare.compare_images(expected_fname, result_fname, tol=tol)
+            
+            assert not err, 'Image comparison failed. Message: %s' % err
+        
+            # Old checksum stuff. Still passing. Will be removed.
+        
             suffix = '.png'
             if _SAVE_FIGURES:
                 file_path = os.path.join('image_results', unique_id) + suffix
