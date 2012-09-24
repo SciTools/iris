@@ -44,9 +44,11 @@ import xml.dom.minidom
 import zlib
 
 import matplotlib
+matplotlib.use('agg')
+
 import matplotlib.testing.compare as mcompare
-# NB pyplot is imported after main() so that a backend can be defined.
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
+
 import numpy
 
 import iris.cube
@@ -71,30 +73,6 @@ else:
 logger = logging.getLogger('tests')
 
 
-# Whether to display matplotlib output to the screen.
-_DISPLAY_FIGURES = False
-
-# Whether to save matplotlib output to files.
-_SAVE_FIGURES = False
-
-if '-d' in sys.argv:
-    sys.argv.remove('-d')
-    matplotlib.use('tkagg')
-    _DISPLAY_FIGURES = True
-else:
-    matplotlib.use('agg')
-
-# Imported now so that matplotlib.use can work 
-import matplotlib.pyplot as plt
-
-if '-sf' in sys.argv or os.environ.get('IRIS_TEST_SAVE_FIGURES', '') == '1':
-    if '-sf' in sys.argv: sys.argv.remove('-sf')
-    _SAVE_FIGURES = True
-
-
-_PLATFORM = '%s_%s' % (''.join(platform.dist()[:2]), platform.architecture()[0])
-
-
 def main():
     """A wrapper for unittest.main() which adds iris.test specific options to the help (-h) output."""
     if '-h' in sys.argv or '--help' in sys.argv:
@@ -108,9 +86,6 @@ def main():
             sys.stdout = stdout
             lines = buff.getvalue().split('\n')
             lines.insert(9, 'Iris-specific options:')
-            lines.insert(10, '  -d                   Display matplotlib figures (uses tkagg)')
-            lines.insert(11, '  -sf                  Save matplotlib figures to subfolder "image_results"')
-            lines.insert(12, '                       Note: Compare branches with iris_tests/idiff.py')
             lines.insert(13, '  --data-files-used    Save a list of files used to a temporary file')
             print '\n'.join(lines)
     else:
@@ -350,18 +325,6 @@ class IrisTest(unittest.TestCase):
             logger.warning('Creating folder: %s', dir_path)
             os.makedirs(dir_path)
     
-    def _get_image_checksum(self, unique_id, resultant_checksum):
-        checksum_result_path = get_result_path(('image_checksums', _PLATFORM, unique_id + '.txt'))
-        if os.path.isfile(checksum_result_path):
-            with open(checksum_result_path, 'r') as checksum_file:
-                checksum = int(checksum_file.readline().strip())
-        else:
-            self._ensure_folder(checksum_result_path)
-            logger.warning('Creating image checksum result file: %s', checksum_result_path)
-            checksum = resultant_checksum
-            open(checksum_result_path, 'w').writelines(str(checksum))
-        return checksum
-    
     def check_graphic(self, tol=0):
         """Checks the CRC matches for the current matplotlib.pyplot figure, and closes the figure."""
 
@@ -393,32 +356,7 @@ class IrisTest(unittest.TestCase):
             err = mcompare.compare_images(expected_fname, result_fname, tol=tol)
             
             assert not err, 'Image comparison failed. Message: %s' % err
-        
-            # Old checksum stuff. Still passing. Will be removed.
-        
-            suffix = '.png'
-            if _SAVE_FIGURES:
-                file_path = os.path.join('image_results', unique_id) + suffix
-                dir_path = os.path.dirname(file_path)
-                if not os.path.isdir(dir_path):
-                    os.makedirs(dir_path)
-            else:
-                file_path = iris.util.create_temp_filename(suffix)
-
-            figure.savefig(file_path)
-            resultant_checksum = self.file_checksum(file_path)
-            
-            if not _SAVE_FIGURES:
-                os.remove(file_path)
-
-            checksum = self._get_image_checksum(unique_id, resultant_checksum)
-
-            if _DISPLAY_FIGURES:
-                if resultant_checksum != checksum:
-                    print 'Test would have failed (new checksum: %s ; old checksum: %s)' % (resultant_checksum, checksum)
-                plt.show()
-            else:
-                self.assertEqual(resultant_checksum, checksum, 'Image checksums not equal for %s' % unique_id)
+ 
         finally:
             plt.close()
 
