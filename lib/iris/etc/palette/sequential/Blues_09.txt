@@ -1,0 +1,30 @@
+# Apache-Style Software License for ColorBrewer software and ColorBrewer Color Schemes
+# 
+# Copyright (c) 2002 Cynthia Brewer, Mark Harrower, and The Pennsylvania State University.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+# http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software distributed
+# under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+# CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
+# 
+# name:         Blues_09
+# scheme:       sequential
+# keyword:      lwe_precipitation, convective_precipitation, stratiform_precipitation, precipitation_amount
+# interpolate:  off
+# source:       http://colorbrewer.org/
+# type:         RGB
+#
+   0.968627 0.984314 1.000000
+   0.870588 0.921569 0.968627
+   0.776471 0.858824 0.937255
+   0.619608 0.792157 0.882353
+   0.419608 0.682353 0.839216
+   0.258824 0.572549 0.776471
+   0.129412 0.443137 0.709804
+   0.031373 0.317647 0.611765
+   0.031373 0.188235 0.419608

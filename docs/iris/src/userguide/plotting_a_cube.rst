@@ -12,6 +12,29 @@ extended within Iris to facilitate easy visualisation of a cube's data.
 Matplotlib's pyplot has been modelled on the MATLAB framework, therefore users of MATLAB may find a degree of 
 familiarity with the interface.
 
+.. note::
+   Iris includes colour specifications and designs developed by `Cynthia Brewer <http://colorbrewer.org/>`_.
+   These colour schemes are freely available under the following licence::
+
+      Apache-Style Software License for ColorBrewer software and ColorBrewer Color Schemes
+  
+      Copyright (c) 2002 Cynthia Brewer, Mark Harrower, and The Pennsylvania State University.
+  
+      Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+      Unless required by applicable law or agreed to in writing, software distributed
+      under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+      CONDITIONS OF ANY KIND, either express or implied. See the License for the
+      specific language governing permissions and limitations under the License.
+
+   Citations to Cynthia Brewer can be easily added to plots using the :func:`iris.plot.citation` function.
+
+   To include a reference in a journal article or report please refer to `section 5 <http://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html>`_
+   in the citation guidance provided by Cynthia Brewer.
+
 
 ***************************
 Matplotlib's pyplot basics

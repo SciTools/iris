@@ -25,6 +25,7 @@ from __future__ import with_statement
 from functools import wraps
 import os
 import os.path
+import re
 
 import matplotlib.cm as mpl_cm
 import matplotlib.colors as mpl_colors
@@ -38,14 +39,33 @@ import iris.unit
 # Symmetric normalization function pivot points by SI unit.
 PIVOT_BY_UNIT = {iris.unit.Unit('K') : 273.15}
 
-
 # Color map names by palette file metadata field value.
+_CMAP_BREWER = set()
 _CMAP_BY_SCHEME = None
 _CMAP_BY_KEYWORD = None
 _CMAP_BY_STD_NAME = None
 
 _MISSING_KWARG_CMAP = 'missing kwarg cmap'
 _MISSING_KWARG_NORM = 'missing kwarg norm'
+
+
+def is_brewer(cmap):
+    """
+    Determine whether the color map is a Cynthia Brewer color map.
+
+    Args:
+
+    * cmap:
+        The color map instance.
+
+    Returns:
+        Boolean.
+
+    """
+    result = False
+    if cmap is not None:
+        result = cmap.name in _CMAP_BREWER
+    return result
 
 
 def _default_cmap_norm(args, kwargs):
@@ -83,7 +103,7 @@ def _default_cmap_norm(args, kwargs):
 
             # Add default color map to keyword arguments.
             if len(cmaps):
-                cmap = sorted(cmaps)[0]
+                cmap = sorted(cmaps, reverse=True)[0]
                 kwargs['cmap'] = mpl_cm.get_cmap(cmap)
 
         # Perform default "norm" keyword behaviour.
@@ -205,7 +225,7 @@ def _load_palette():
     
     """
     # Reference these module level namespace variables.
-    global _CMAP_BY_SCHEME, _CMAP_BY_KEYWORD, _CMAP_BY_STD_NAME
+    global _CMAP_BREWER, _CMAP_BY_SCHEME, _CMAP_BY_KEYWORD, _CMAP_BY_STD_NAME
 
     _CMAP_BY_SCHEME = {}
     _CMAP_BY_KEYWORD = {}
@@ -234,7 +254,7 @@ def _load_palette():
         
         # Read the file header.
         with open(filename) as file_handle:
-            header = filter(lambda line: line.startswith('#'), file_handle.readlines())
+            header = filter(lambda line: re.match('^\s*#.*:\s+.*$', line), file_handle.readlines())
         
         # Extract the file header metadata.
         for line in header:
@@ -271,6 +291,8 @@ def _load_palette():
         assert cmap_type == 'rgb', 'Invalid type [%s] for color map file "%s"' % (cmap_type, filename)
         
         # Update the color map look-up dictionaries.
+        _CMAP_BREWER.add(cmap_name)
+
         if cmap_scheme is not None:
             scheme_group = _CMAP_BY_SCHEME.setdefault(cmap_scheme, set())
             scheme_group.add(cmap_name)

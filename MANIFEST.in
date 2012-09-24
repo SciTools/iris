@@ -3,7 +3,7 @@ include CHANGES COPYING COPYING.LESSER INSTALL
 
 # Files from setup.py package_data that are not automatically added to source distributions
 recursive-include lib/iris/tests/results *.cml *.cdl *.txt *.xml
-include lib/iris/etc/*.txt
+recursive-include lib/iris/etc *.txt
 include lib/iris/fileformats/_pyke_rules/*.k?b
 include lib/iris/tests/stock*.npz
 
