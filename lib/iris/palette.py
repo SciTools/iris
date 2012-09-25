@@ -175,24 +175,30 @@ class SymmetricNormalize(mpl_colors.Normalize, object):
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.pivot)
     
+    def _update(self, val, update_min=True, update_max=True):
+        # Update both _vmin and _vmax from given value.
+        val_diff = numpy.abs(val - self.pivot)
+        vmin_diff = numpy.abs(self._vmin - self.pivot) if self._vmin else 0.0
+        vmax_diff = numpy.abs(self._vmax - self.pivot) if self._vmax else 0.0
+        diff = max(val_diff, vmin_diff, vmax_diff)
+        
+        if update_min:
+            self._vmin = self.pivot - diff
+        if update_max:
+            self._vmax = self.pivot + diff
+    
     def _get_vmin(self):
         return getattr(self, '_vmin')
     
     def _set_vmin(self, val):
         if val is None:
             self._vmin = None
+        elif self._vmax is None:
+            # Don't set _vmax, it'll stop matplotlib from giving us one.
+            self._update(val, update_max=False)
         else:
-            vmax = self._vmax or self.pivot
-            
-            if numpy.abs(vmax - self.pivot) > numpy.abs(val - self.pivot):
-                if vmax == self.pivot:
-                    self._vmin = self.pivot
-                else:
-                    self._vmin = self.pivot - numpy.abs(vmax - self.pivot)
-                self._vmax = vmax
-            else:
-                self._vmin = val
-                self._vmax = self.pivot + numpy.abs(val - self.pivot)
+            # Set both _vmin and _vmax from value
+            self._update(val)
     
     vmin = property(_get_vmin, _set_vmin)    
     
@@ -202,18 +208,12 @@ class SymmetricNormalize(mpl_colors.Normalize, object):
     def _set_vmax(self, val):
         if val is None:
             self._vmax = None
+        elif self._vmin is None:
+            # Don't set _vmin, it'll stop matplotlib from giving us one.
+            self._update(val, update_min=False)
         else:
-            vmin = self._vmin or self.pivot
-            
-            if numpy.abs(vmin - self.pivot) > numpy.abs(val - self.pivot):
-                if vmin == self.pivot:
-                    self._vmax = self.pivot
-                else:
-                    self._vmax = self.pivot + numpy.abs(vmin - self.pivot)
-                self._vmin = vmin
-            else:
-                self._vmin = self.pivot - numpy.abs(val - self.pivot)
-                self._vmax = val
+            # Set both _vmin and _vmax from value
+            self._update(val)
     
     vmax = property(_get_vmax, _set_vmax)
 
