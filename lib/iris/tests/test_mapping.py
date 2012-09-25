@@ -202,7 +202,9 @@ class TestLimitedAreaCube(tests.IrisTest):
         self.check_graphic()
         
     def test_grid(self):
-        iplt.pcolormesh(self.cube, facecolor='none', edgecolors='#888888')
+        iplt.pcolormesh(self.cube, facecolors='none', edgecolors='blue')
+        # the result is a graphic which has coloured edges. This is a mpl bug, see
+        # https://github.com/matplotlib/matplotlib/issues/1302
         self.check_graphic()
     
     def test_outline(self):
