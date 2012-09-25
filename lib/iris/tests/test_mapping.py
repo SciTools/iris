@@ -185,7 +185,7 @@ class TestBoundedCube(tests.IrisTest):
         self.check_graphic()
         
     def test_grid(self):
-        iplt.pcolormesh(self.cube, facecolor='none', edgecolors='#888888')
+        iplt.outline(self.cube)
         self.check_graphic()
 
 
