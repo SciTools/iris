@@ -675,7 +675,10 @@ def outline(cube, coords=None):
         the plot and the second element is the vertical axis of the plot.
         
     """
-    return _draw_2d_from_bounds('pcolormesh', cube, facecolors='none', edgecolors='k', antialiased=True, coords=coords)
+    result = _draw_2d_from_bounds('pcolormesh', cube, facecolors='none', edgecolors='k', antialiased=True, coords=coords)
+    # set the _is_stroked property to get a single color grid. See https://github.com/matplotlib/matplotlib/issues/1302
+    result._is_stroked = False
+    return result
 
 
 @iris.palette.auto_palette
