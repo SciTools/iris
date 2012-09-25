@@ -44,11 +44,8 @@ import xml.dom.minidom
 import zlib
 
 import matplotlib
-matplotlib.use('agg')
-
 import matplotlib.testing.compare as mcompare
 import matplotlib.pyplot as plt
-
 import numpy
 
 import iris.cube
@@ -57,7 +54,7 @@ import iris.io
 import iris.util
 
 
-_RESULT_PATH = os.path.join(iris.config.ROOT_PATH, 'tests', 'results')
+_RESULT_PATH = os.path.join(os.path.dirname(__file__), 'results')
 """Basepath for test results."""
 
 
@@ -73,6 +70,15 @@ else:
 logger = logging.getLogger('tests')
 
 
+# Whether to display matplotlib output to the screen.
+_DISPLAY_FIGURES = False
+
+if '-d' in sys.argv:
+    sys.argv.remove('-d')
+    plt.switch_backend('tkagg')
+    _DISPLAY_FIGURES = True
+
+
 def main():
     """A wrapper for unittest.main() which adds iris.test specific options to the help (-h) output."""
     if '-h' in sys.argv or '--help' in sys.argv:
@@ -86,6 +92,9 @@ def main():
             sys.stdout = stdout
             lines = buff.getvalue().split('\n')
             lines.insert(9, 'Iris-specific options:')
+            lines.insert(10, '  -d                   Display matplotlib figures (uses tkagg).')
+            lines.insert(11, '                       NOTE: To compare results of failing tests, ')
+            lines.insert(12, '                             use idiff.py instead')
             lines.insert(13, '  --data-files-used    Save a list of files used to a temporary file')
             print '\n'.join(lines)
     else:
@@ -155,7 +164,7 @@ class IrisTest(unittest.TestCase):
 
         # Ingest the CDL for comparison, excluding first line.
         with open(cdl_filename, 'r') as cdl_file:
-           cdl = ''.join(cdl_file.readlines()[1:])
+            cdl = ''.join(cdl_file.readlines()[1:])
 
         os.remove(cdl_filename)
         reference_path = get_result_path(reference_filename)
@@ -355,7 +364,12 @@ class IrisTest(unittest.TestCase):
             
             err = mcompare.compare_images(expected_fname, result_fname, tol=tol)
             
-            assert not err, 'Image comparison failed. Message: %s' % err
+            if _DISPLAY_FIGURES:
+                if err:
+                    print 'Image comparison would have failed. Message: %s' % err
+                plt.show()
+            else:
+                assert not err, 'Image comparison failed. Message: %s' % err
  
         finally:
             plt.close()
