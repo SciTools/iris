@@ -20,11 +20,9 @@ Definitions of coordinate systems.
 """
 
 from __future__ import division
+from abc import ABCMeta, abstractmethod
 
-import numpy
-
-import iris
-import iris.unit
+import cartopy.crs
 
 
 class CoordSystem(object):
@@ -32,13 +30,17 @@ class CoordSystem(object):
     Abstract base class for coordinate systems.
     
     """
+    __metaclass__ = ABCMeta
+
     grid_mapping_name = None
 
     def __eq__(self, other):
-        return self.__class__ == other.__class__ and self.__dict__ == other.__dict__
+        return (self.__class__ == other.__class__ and
+                self.__dict__ == other.__dict__)
 
     def __ne__(self, other):
-        # Must supply __ne__, Python does not defer to __eq__ for negative equality
+        # Must supply __ne__, Python does not defer to __eq__ for
+        # negative equality.
         return not (self == other)
 
     def xml_element(self, doc, attrs=None):
@@ -47,7 +49,10 @@ class CoordSystem(object):
         
         xml_element_name = type(self).__name__
         # lower case the first char
-        xml_element_name = xml_element_name.replace(xml_element_name[0], xml_element_name[0].lower(), 1)
+        first_char = xml_element_name[0]
+        xml_element_name = xml_element_name.replace(first_char,
+                                                    first_char.lower(),
+                                                    1)
         
         coord_system_xml_element = doc.createElement(xml_element_name)
         
@@ -59,37 +64,70 @@ class CoordSystem(object):
             coord_system_xml_element.setAttribute(name, str(value))
         
         return coord_system_xml_element
-    
+
+    @abstractmethod
+    def cartopy_crs(self):
+        """
+        Return a cartopy projection representing our native coordinate
+        system.
+
+        """
+        pass
+
+    @abstractmethod
+    def cartopy_map(self, centre=None):
+        """
+        Return a cartopy projection representing our native map.
+
+        This will be the same as the :func:`~CoordSystem.cartopy_crs` for
+        map projections but for spherical coord systems (which are not map
+        projections) we use a map projection, such as PlateCarree.
+
+        """
+        pass
+
+    def _has_variable_centre_map(self):
+        # Can the map, from self.cartopy_map(), be centred around an
+        # arbitrary point?
+        return False
+
 
 class GeogCS(CoordSystem):
-    """A geographic (ellipsoidal) coordinate system, defined by the shape of the Earth and a prime meridian."""
+    """
+    A geographic (ellipsoidal) coordinate system, defined by the shape of
+    the Earth and a prime meridian.
     
+    """
+
     grid_mapping_name = "latitude_longitude"
-    
-    def __init__(self, semi_major_axis=None, semi_minor_axis=None, inverse_flattening=None,
-                 longitude_of_prime_meridian=0):
+
+    def __init__(self, semi_major_axis=None, semi_minor_axis=None,
+                 inverse_flattening=None, longitude_of_prime_meridian=0):
         """
         Creates a new GeogCS.
-        
-        Kwargs:
-        
-            * semi_major_axis              -  of ellipsoid in meters
-            * semi_minor_axis              -  of ellipsoid in meters
-            * inverse_flattening           -  of ellipsoid 
-            * longitude_of_prime_meridian  -  Can be used to specify the prime meridian on the ellipsoid
-                                              in degrees. Default = 0.  
-        
-        If just semi_major_axis is set, with no semi_minor_axis or inverse_flattening, then
-        a perfect sphere is created from the given radius.
 
-        If just two of semi_major_axis, semi_minor_axis, and inverse_flattening are given
-        the missing element is calulated from the formula:      
+        Kwargs:
+
+            * semi_major_axis              -  of ellipsoid in metres
+            * semi_minor_axis              -  of ellipsoid in metres
+            * inverse_flattening           -  of ellipsoid 
+            * longitude_of_prime_meridian  -  Can be used to specify the
+                                              prime meridian on the ellipsoid
+                                              in degrees. Default = 0.
+
+        If just semi_major_axis is set, with no semi_minor_axis or
+        inverse_flattening, then a perfect sphere is created from the given
+        radius.
+
+        If just two of semi_major_axis, semi_minor_axis, and
+        inverse_flattening are given the missing element is calulated from the
+        formula:
         :math:`flattening = (major - minor) / major`
-        
-        Currently, Iris will not allow over-specification (all three ellipsoid paramaters).
-        
+
+        Currently, Iris will not allow over-specification (all three ellipsoid
+        paramaters).
         Examples::
-        
+
             cs = GeogCS(6371229)
             pp_cs = GeogCS(iris.fileformats.pp.EARTH_RADIUS)
             airy1830 = GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909)
@@ -98,42 +136,53 @@ class GeogCS(CoordSystem):
 
         """
         # No ellipsoid specified?
-        if (semi_major_axis is None) and (semi_minor_axis is None) and (inverse_flattening is None):  # 0 0 0
+        if ((semi_major_axis is None) and
+            (semi_minor_axis is None) and
+            (inverse_flattening is None)):  # 0 0 0
             raise ValueError("No ellipsoid specified")
 
         # Ellipsoid over-specified?
-        if (semi_major_axis is not None) and (semi_minor_axis is not None) and (inverse_flattening is not None):  # 1 1 1
+        if ((semi_major_axis is not None) and
+            (semi_minor_axis is not None) and
+            (inverse_flattening is not None)):  # 1 1 1
             raise ValueError("Ellipsoid is overspecified")
 
         # Perfect sphere (semi_major_axis only)?
-        elif semi_major_axis is not None and (semi_minor_axis is None and inverse_flattening is None):  # 1 0 0
+        elif (semi_major_axis is not None and (semi_minor_axis is None and
+                                               inverse_flattening is None)):  # 1 0 0
             semi_minor_axis = semi_major_axis
             inverse_flattening = 0.0
 
         # Calculate semi_major_axis?
-        elif semi_major_axis is None and (semi_minor_axis is not None and inverse_flattening is not None):  # 0 1 1
-            semi_major_axis = -semi_minor_axis / ((1.0 - inverse_flattening) / inverse_flattening)
+        elif semi_major_axis is None and (semi_minor_axis is not None and
+                                          inverse_flattening is not None):  # 0 1 1
+            semi_major_axis = -semi_minor_axis / ((1.0 - inverse_flattening) /
+                                                  inverse_flattening)
 
         # Calculate semi_minor_axis?
-        elif semi_minor_axis is None and (semi_major_axis is not None and inverse_flattening is not None):  # 1 0 1
-            semi_minor_axis = semi_major_axis - (1.0 / inverse_flattening) * semi_major_axis
+        elif semi_minor_axis is None and (semi_major_axis is not None and
+                                          inverse_flattening is not None):  # 1 0 1
+            semi_minor_axis = semi_major_axis - ((1.0 / inverse_flattening) *
+                                                 semi_major_axis)
 
         # Calculate inverse_flattening?
-        elif inverse_flattening is None and (semi_major_axis is not None and semi_minor_axis is not None):  # 1 1 0
+        elif inverse_flattening is None and (semi_major_axis is not None and
+                                             semi_minor_axis is not None):  # 1 1 0
             if semi_major_axis == semi_minor_axis:
                 inverse_flattening = 0.0
             else:
-                inverse_flattening = 1.0 / ((semi_major_axis - semi_minor_axis) / semi_major_axis)
+                inverse_flattening = 1.0 / ((semi_major_axis - semi_minor_axis) /
+                                            semi_major_axis)
 
         # We didn't get enough to specify an ellipse. 
         else:
             raise ValueError("Insufficient ellipsoid specification")
 
         self.semi_major_axis = float(semi_major_axis)
-        """Major radius of the ellipsoid in meters."""
+        """Major radius of the ellipsoid in metres."""
         
         self.semi_minor_axis = float(semi_minor_axis)
-        """Minor radius of the ellipsoid in meters."""
+        """Minor radius of the ellipsoid in metres."""
 
         self.inverse_flattening = float(inverse_flattening)
         """:math:`1/f` where :math:`f = (a-b)/a`"""
@@ -146,7 +195,8 @@ class GeogCS(CoordSystem):
         if self.semi_major_axis != self.semi_minor_axis:
             attrs.append(("semi_minor_axis", self.semi_minor_axis))
         if self.longitude_of_prime_meridian != 0.0:
-            attrs.append(("longitude_of_prime_meridian", self.longitude_of_prime_meridian))
+            attrs.append(("longitude_of_prime_meridian",
+                          self.longitude_of_prime_meridian))
         return attrs
 
     def __repr__(self):
@@ -172,28 +222,45 @@ class GeogCS(CoordSystem):
             attrs = [("earth_radius", self.semi_major_axis)]
 
         return CoordSystem.xml_element(self, doc, attrs)
-        
+
+    def cartopy_crs(self):
+        return cartopy.crs.Geodetic()
+
+    def cartopy_map(self, centre=None):
+        central_longitude = centre[0] if centre else None
+        return cartopy.crs.PlateCarree(central_longitude=central_longitude)
+
+    def _has_variable_centre_map(self):
+        return True
+
 
 class RotatedGeogCS(CoordSystem):
-    """A coordinate system with rotated pole, on an optional :class:`GeogCS`."""
+    """
+    A coordinate system with rotated pole, on an optional :class:`GeogCS`.
+
+    """
     
     grid_mapping_name = "rotated_latitude_longitude"
     
     def __init__(self, grid_north_pole_latitude, grid_north_pole_longitude,
                  north_pole_grid_longitude=0, ellipsoid=None):
         """
-        Constructs a coordinate system with rotated pole, on an optional :class:`GeogCS`.
+        Constructs a coordinate system with rotated pole, on an
+        optional :class:`GeogCS`.
 
         Args:
 
-            * grid_north_pole_latitude  - The true latitude of the rotated pole in degrees.
-            * grid_north_pole_longitude - The true longitude of the rotated pole in degrees.
+            * grid_north_pole_latitude  - The true latitude of the rotated
+                                          pole in degrees.
+            * grid_north_pole_longitude - The true longitude of the rotated
+                                          pole in degrees.
             
         Kwargs:
         
-            * north_pole_grid_longitude - Longitude of true north pole in rotated grid
-                                          in degrees. Default = 0.
-            * ellipsoid                 - Optional :class:`GeogCS` defining the ellipsoid.
+            * north_pole_grid_longitude - Longitude of true north pole in
+                                          rotated grid in degrees. Default = 0.
+            * ellipsoid                 - Optional :class:`GeogCS` defining
+                                          the ellipsoid.
 
         Examples::
         
@@ -217,7 +284,8 @@ class RotatedGeogCS(CoordSystem):
         attrs = [("grid_north_pole_latitude", self.grid_north_pole_latitude),
                  ("grid_north_pole_longitude", self.grid_north_pole_longitude)]
         if self.north_pole_grid_longitude != 0.0:
-            attrs.append(("north_pole_grid_longitude", self.north_pole_grid_longitude))
+            attrs.append(("north_pole_grid_longitude",
+                          self.north_pole_grid_longitude))
         if self.ellipsoid is not None:
             attrs.append(("ellipsoid", self.ellipsoid))
         return attrs
@@ -226,28 +294,43 @@ class RotatedGeogCS(CoordSystem):
         attrs = self._pretty_attrs()
         result = "RotatedGeogCS(%s)" % ", ".join(["%s=%r" % (k,v) for k,v in attrs])
         # Extra prettiness
-        result = result.replace("grid_north_pole_latitude=", "").replace("grid_north_pole_longitude=", "")
+        result = result.replace("grid_north_pole_latitude=", "")
+        result = result.replace("grid_north_pole_longitude=", "")
         return result
 
     def __str__(self):
         attrs = self._pretty_attrs()
         result = "RotatedGeogCS(%s)" % ", ".join(["%s=%s" % (k,v) for k,v in attrs])
         # Extra prettiness
-        result = result.replace("grid_north_pole_latitude=", "").replace("grid_north_pole_longitude=", "")
+        result = result.replace("grid_north_pole_latitude=", "")
+        result = result.replace("grid_north_pole_longitude=", "")
         return result
 
     def xml_element(self, doc):
         return CoordSystem.xml_element(self, doc, self._pretty_attrs())
 
+    def cartopy_crs(self):
+        return cartopy.crs.RotatedGeodetic(self.grid_north_pole_longitude,
+                                           self.grid_north_pole_latitude)
+
+    def cartopy_map(self, centre=None):
+        # TODO: Use centre lon for an alternative map centre. The default is
+        # pole_lon + 180.
+        return cartopy.crs.RotatedPole(self.grid_north_pole_longitude,
+                                       self.grid_north_pole_latitude)
+
 
 class TransverseMercator(CoordSystem):
-    """A cylindrical map projection, with XY coordinates measured in meters."""
+    """
+    A cylindrical map projection, with XY coordinates measured in metres.
+
+    """
 
     grid_mapping_name = "transverse_mercator" 
 
-    def __init__(self, latitude_of_projection_origin, longitude_of_central_meridian,
-                 false_easting, false_northing, scale_factor_at_central_meridian,
-                 ellipsoid=None):
+    def __init__(self, latitude_of_projection_origin,
+                 longitude_of_central_meridian, false_easting, false_northing,
+                 scale_factor_at_central_meridian, ellipsoid=None):
         """
         Constructs a TransverseMercator object.
         
@@ -260,14 +343,15 @@ class TransverseMercator(CoordSystem):
                     True longitude of planar origin in degrees.
 
             * false_easting                     
-                    X offset from planar origin in meters.
+                    X offset from planar origin in metres.
 
             * false_northing                    
-                    Y offset from planar origin in meters.
+                    Y offset from planar origin in metres.
 
             * scale_factor_at_central_meridian  
-                    Reduces the cylinder to slice through the ellipsoid (secant form).
-                    Used to provide TWO longitudes of zero distortion in the area of interest.
+                    Reduces the cylinder to slice through the ellipsoid
+                    (secant form). Used to provide TWO longitudes of zero
+                    distortion in the area of interest.
 
         Kwargs:
 
@@ -285,26 +369,41 @@ class TransverseMercator(CoordSystem):
 
         self.longitude_of_central_meridian = float(longitude_of_central_meridian)
         """True longitude of planar origin in degrees."""
-        
+
         self.false_easting = float(false_easting)  
-        """X offset from planar origin in meters."""
+        """X offset from planar origin in metres."""
 
         self.false_northing = float(false_northing)  
-        """Y offset from planar origin in meters."""
-        
+        """Y offset from planar origin in metres."""
+
         self.scale_factor_at_central_meridian = float(scale_factor_at_central_meridian)
         """Reduces the cylinder to slice through the ellipsoid (secant form)."""
-        
+
         self.ellipsoid = ellipsoid
         """Ellipsoid definition."""
 
     def __repr__(self):
-        return "TransverseMercator(latitude_of_projection_origin=%r, "\
-               "longitude_of_central_meridian=%r, false_easting=%r, false_northing=%r, "\
-               "scale_factor_at_central_meridian=%r, ellipsoid=%r)" % \
-               (self.latitude_of_projection_origin, self.longitude_of_central_meridian,
-                self.false_easting, self.false_northing,
-                self.scale_factor_at_central_meridian, self.ellipsoid)
+        return "TransverseMercator(latitude_of_projection_origin={!r}, "\
+               "longitude_of_central_meridian={!r}, false_easting={!r}, "\
+               "false_northing={!r}, scale_factor_at_central_meridian={!r}, "\
+               "ellipsoid={!r})".format(self.latitude_of_projection_origin,
+                                        self.longitude_of_central_meridian,
+                                        self.false_easting, self.false_northing,
+                                        self.scale_factor_at_central_meridian,
+                                        self.ellipsoid)
+
+    def cartopy_crs(self):
+        warnings.warn("Cartopy currently under-defines transverse mercator.")
+        return cartopy.crs.TransverseMercator(self.longitude_of_central_meridian)
+
+    def cartopy_map(self, centre=None):
+        warnings.warn("Cartopy currently under-defines transverse mercator.")
+        return cartopy.crs.TransverseMercator(self.longitude_of_central_meridian)
+        # TODO: Add these params to cartopy's TransverseMercator.
+        #return cartopy.crs.TransverseMercator(self.latitude_of_projection_origin,
+        #                                      self.longitude_of_central_meridian,
+        #                                      self.false_easting, self.false_northing,
+        #                                      self.scale_factor_at_central_meridian)
 
 
 class OSGB(TransverseMercator):
@@ -312,6 +411,9 @@ class OSGB(TransverseMercator):
     def __init__(self):
         TransverseMercator.__init__(self, 49, -2, -400000, 100000, 0.9996012717,
                                     GeogCS(6377563.396, 6356256.909))
-        
-    def _as_cartopy_projection(self):
+
+    def cartopy_crs(self):
+        return cartopy.crs.OSGB()
+
+    def cartopy_map(self, centre=None):
         return cartopy.crs.OSGB()
