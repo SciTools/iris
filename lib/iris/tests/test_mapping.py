@@ -24,6 +24,7 @@ import iris.tests as tests
 
 import matplotlib.pyplot as plt
 import numpy
+import cartopy.crs as ccrs
 
 import iris
 import iris.coord_systems
@@ -70,7 +71,7 @@ class TestUnmappable(tests.IrisTest):
         iplt.contourf(self.cube)
         self.check_graphic()
         
-
+# TODO: Remove
 def _pretend_unrotated(cube):
     lat = cube.coord('grid_latitude')
     lon = cube.coord('grid_longitude')
@@ -94,7 +95,7 @@ class TestMappingSubRegion(tests.IrisTest):
 
         # Until there is better mapping support for rotated-pole, pretend this isn't rotated.
         # ie. Move the pole from (37.5, 177.5) to (90, 0) and bodge the coordinates.
-        _pretend_unrotated(cube)
+#        _pretend_unrotated(cube)
 
         self.cube = cube
 
@@ -104,19 +105,16 @@ class TestMappingSubRegion(tests.IrisTest):
         plt.title('Default')
 
         iplt.contourf(self.cube)
-
-        map = iplt.gcm()
-        map.drawcoastlines()
+        plt.gca().coastlines()
 
         # Second sub-plot
         plt.subplot(222)
         plt.title('Molleweide')
 
-        iplt.map_setup(projection='moll', lon_0=120)
+        iplt.map_setup(projection=ccrs.Mollweide(central_longitude=120))
         iplt.contourf(self.cube)
-
-        map = iplt.gcm()
-        map.drawcoastlines()
+        plt.gca().set_global()  # TODO: REMOVE THIS ADDITION, PENDING FIX
+        plt.gca().coastlines()
 
         # Third sub-plot
         plt.subplot(223)
@@ -124,19 +122,15 @@ class TestMappingSubRegion(tests.IrisTest):
 
         iplt.map_setup(cube=self.cube)
         iplt.contourf(self.cube)
-
-        map = iplt.gcm()
-        map.drawcoastlines()
-
+        plt.gca().coastlines()
+        
         # Fourth sub-plot
         plt.subplot(224)
         plt.title('Three/six level')
 
-        iplt.contourf(self.cube, 3)
-        iplt.contour(self.cube, 6)
-
-        map = iplt.gcm()
-        map.drawcoastlines()
+        contour1 = iplt.contourf(self.cube, 3)
+        contour2 = iplt.contour(self.cube, 6)
+        plt.gca().coastlines()
 
         self.check_graphic()
 
@@ -154,7 +148,7 @@ class TestLowLevel(tests.IrisTest):
         self.check_graphic()
 
     def test_params(self):
-        c = iplt.contourf(self.cube, self.few)
+        iplt.contourf(self.cube, self.few)
         self.check_graphic()
 
         iplt.contourf(self.cube, self.few_levels)
@@ -181,7 +175,8 @@ class TestBoundedCube(tests.IrisTest):
         self.cube.coord('longitude').guess_bounds()
 
     def test_pcolormesh(self):
-        iplt.pcolormesh(self.cube)
+        pcolormesh = iplt.pcolormesh(self.cube)
+        pcolormesh
         self.check_graphic()
         
     def test_grid(self):
@@ -196,6 +191,7 @@ class TestLimitedAreaCube(tests.IrisTest):
         self.cube = iris.load_strict(cube_path)[::20, ::20]
         self.cube.coord('grid_latitude').guess_bounds()
         self.cube.coord('grid_longitude').guess_bounds()
+        iplt.map_setup(ccrs.PlateCarree())
 
     def test_pcolormesh(self):
         iplt.pcolormesh(self.cube)
@@ -212,9 +208,8 @@ class TestLimitedAreaCube(tests.IrisTest):
         self.check_graphic()
     
     def test_scatter(self):    
-        iplt.points(self.cube) 
-        map = iplt.gcm()
-        map.drawcoastlines()
+        scatter = iplt.points(self.cube)
+        plt.gca().coastlines()
         self.check_graphic()
 
 

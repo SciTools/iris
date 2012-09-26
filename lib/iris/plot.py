@@ -18,7 +18,7 @@
 Iris-specific extensions to matplotlib, mimicking the :mod:`matplotlib.pyplot`
 interface.
 
-See also: :ref:`matplotlib <matplotlib:users-guide-index>`, :ref:`Basemap <basemap:users-guide-index>`.
+See also: :ref:`matplotlib <matplotlib:users-guide-index>`, :ref:`cartopy <cartopy:users-guide-index>`.
 
 """
 
@@ -26,13 +26,17 @@ import collections
 import datetime
 import warnings
 
+import matplotlib.axes
 import matplotlib.collections as mpl_collections
 import matplotlib.dates as mpl_dates
 import matplotlib.transforms as mpl_transforms
 import matplotlib.pyplot as plt
-import mpl_toolkits.basemap as basemap
 from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
 import numpy
+import numpy.ma
+import cartopy.crs
+import cartopy.mpl_integration.geoaxes
+
 
 import iris.cube
 import iris.coord_systems
@@ -41,9 +45,6 @@ import iris.coords
 import iris.palette
 import iris.unit
 
-
-# Used to provide a "current" Basemap instance, in the style of pyplot.gcf() and pyplot.gca()
-_CURRENT_MAP = None
 
 # Cynthia Brewer citation text.
 _BREWER = 'Colours based on ColorBrewer.org'
@@ -346,77 +347,72 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
     "Mode" parameter will switch functionality between POINT or BOUND plotting.
     
     """
-    # get the 2d lons and 2d lats from the CS
+    # get the 2d x and 2d y from the CS
     if mode == iris.coords.POINT_MODE:
-        lats, lons = iris.analysis.cartography.get_lat_lon_grids(cube)
+        x, y = iris.analysis.cartography.get_xy_grids(cube)
     else:
-        lats, lons = iris.analysis.cartography.get_lat_lon_contiguous_bounded_grids(cube)
+        x, y = iris.analysis.cartography.get_xy_contiguous_bounded_grids(cube)
 
     # take a copy of the data so that we can make modifications to it
     data = data.copy()
 
-    # if we are global, then append the first column of data the array to the last (and add 360 degrees)  	  	 
+    # If we are global, then append the first column of data the array to the last (and add 360 degrees)  	  	 
     # NOTE: if it is found that this block of code is useful in anywhere other than this plotting routine, it  	  	 
     # may be better placed in the CS.
-    lon_coord = filter(lambda coord: coord.standard_name in ["longitude", "grid_longitude"], cube.coords())[0]
-    if getattr(lon_coord, 'circular', False):
-        lats = numpy.append(lats, lats[:, 0:1], axis=1)
-        lons = numpy.append(lons, lons[:, 0:1] + 360, axis=1)
+    x_coord = cube.coord(axis="X")
+    if getattr(x_coord, 'circular', False):
+        y = numpy.append(y, y[:, 0:1], axis=1)
+        x = numpy.append(x, x[:, 0:1] + 360, axis=1)
         data = numpy.ma.concatenate([data, data[:, 0:1]], axis=1)
 
-    # Do we need to flip the longitude to avoid basemap's "non positive monotonic" warning?
-    # Assume we have a non-scalar longitude coord describing a data dimension.
-    mono, direction = iris.util.monotonic(lons[0, :], return_direction=True) 
-    if mono and direction == -1:
-        data = data[:, ::-1]
-        lons = lons[:, ::-1]
-        lats = lats[:, ::-1]
-            
-    # Attempt to mimic the pyplot stateful interface with basemap.
-    # If the current Basemap instance hasn't been registered on the current axes then
-    # we assume we've moved to a new axes and create a new map.
-    bm = _CURRENT_MAP
-    if bm is None or hash(plt.gca()) not in bm._initialized_axes:
-        # Provide lat & lon ranges as we have already calculated our lats and lons.
-        bm = map_setup(cube=cube, lon_range=(numpy.min(lons), numpy.max(lons)),
-                        lat_range=(numpy.min(lats), numpy.max(lats)), )
 
-    # Convert the lons and lats into the plot coordinates
-    px, py = bm(lons, lats)
 
-    if mode == iris.coords.POINT_MODE:
-        # TODO #480 Include mdi in this index when it is available
-        invalid_points = numpy.where((px == 1e+30) | (py == 1e+30) | (numpy.isnan(data)))
-        data[invalid_points] = numpy.nan
-    else:
-        # TODO #480 Include mdi in this index
-        invalid_points = numpy.where( (px == 1e+30) | (py == 1e+30) )
+    # Get the native crs and map (might be the same cartopy definiton)
+    cs = cube.coord_system('CoordSystem')
+    cartopy_crs = cs.cartopy_crs()  # E.g. Geodeitc
+    cartopy_map = cs.cartopy_map()  # E.g. PlateCarree
+
+    # Can we centre the map on the data?
+    if cs._has_variable_centre_map():
+        xy_range = iris.analysis.cartography.xy_range(cube, iris.coords.POINT_MODE)
+        xy_center = (sum(xy_range[0])*0.5, sum(xy_range[1])*0.5)
+        # Use the default map to find the centre.
+        map_center = cartopy_map.transform_point(xy_center[0], xy_center[1], cartopy_crs)
+        # Make a new, centered map.
+        cartopy_map = cube.coord_system('CoordSystem').cartopy_map(map_center)
+    
+    # Replace non-cartopy subplot/axes with a cartopy alternative.
+    # XXX original subplot properties will be lost...
+    # XXX consider allowing the axes to be passed through
+    ax = plt.gca()
+    if not isinstance(ax, cartopy.mpl_integration.geoaxes.GenericProjectionAxes):
+        fig = plt.gcf()
+        if isinstance(ax, matplotlib.axes.SubplotBase):
+            new_ax = fig.add_subplot(ax.get_subplotspec(), projection=cartopy_map,
+                                     title=ax.get_title(), xlabel=ax.get_xlabel(),
+                                     ylabel=ax.get_ylabel())
+        else:
+            new_ax = fig.add_axes(projection=cartopy_map,
+                                     title=ax.get_title(), xlabel=ax.get_xlabel(),
+                                     ylabel=ax.get_ylabel())
         
-    px[invalid_points] = numpy.nan
-    py[invalid_points] = numpy.nan
+        # delete the axes which didn't have a cartopy projection
+        fig.delaxes(ax)
+        ax = new_ax
+        
+    # Draw the contour lines/filled contours.
+    draw_method = getattr(ax, draw_method_name)
 
-    # Draw the contour lines/filled contours
-    draw_method = getattr(bm, draw_method_name)
+    # Set the "from transform" keyword. 
+    assert 'transform' not in kwargs, 'Transform keyword is not allowed.' 
+    kwargs['transform'] = cartopy_crs._as_mpl_transform(ax)
     
     if arg_func is not None:
-        new_args, kwargs = arg_func(px, py, data, *args, **kwargs)
+        new_args, kwargs = arg_func(x, y, data, *args, **kwargs)
     else:
-        new_args = (px, py, data) + args
+        new_args = (x, y, data) + args
 
-    drawn_object = draw_method(*new_args, **kwargs)
-
-    # if the range of the data is outside the range of the map, then bring the data back 360 degrees and re-plot
-    if numpy.max(lons) > bm.urcrnrlon:
-        px, py = bm(lons-360, lats)
-        if hasattr(drawn_object, 'levels'):
-            if arg_func is not None:
-                new_args, kwargs = arg_func(px, py, data, drawn_object.levels, *args, **kwargs)
-            else:
-                new_args = (px, py, data, drawn_object.levels) + args
-                       
-        drawn_object = draw_method(*new_args, **kwargs)
-
-    return drawn_object
+    return draw_method(*new_args, **kwargs)
 
 
 @iris.palette.auto_palette
@@ -494,104 +490,103 @@ def contourf(cube, *args, **kwargs):
     return result
 
 
-def gcm(cube=None):
-    """Returns the current :class:`mpl_toolkits.basemap.Basemap`, creating a new instance if necessary."""
-    if _CURRENT_MAP is None:
-        map_setup(cube=cube)
-    return _CURRENT_MAP
-
-
-def map_setup(cube=None, mode=None, lon_range=None, lat_range=None, **kwargs):
-    """
-    Defines the map for the current plot.
-
+def map_setup(projection=None, xlim=None, ylim=None, cube=None, mode=None):
+    """Setup matplotlib for cartographic plotting.
+    
+    The projection is taken from the projection keyword, if present,
+    otherwise it is taken from the cube, if present,
+    otherwise it defaults to a PlateCarree projection.
+    
+    The xy limits are taken from the xlim and ylim keywords, if present,
+    otherwise they are taken from the cube, if present,
+    otherwise it is left for matplotlib to set limit during the first plot.
+    
     Kwargs:
+    
+        * projection - The projection to use for plotting.
+        * xlim       - x limits
+        * ylim       - y limits
+        * cube       - A cube which can be used for projection and limits.
+        * mode       - Controls min/max calulation for bounded coordinates
+                       (Passed through to :func:`~iris.analysis.cartography.xy_range`). 
+                       Set to iris.coords.POINT_MODE or iris.coords.BOUND_MODE.
+                       Default is iris.coords.BOUND_MODE.
 
-    * cube:
-        A cube whose native projection will be used to define the map projection.
-        
-    * projection:
-        Name of the projection to use. Currently only 'cyl', Cylindrical Equidistant, is supported.
+    Note:
 
-    * lon_range:
-        Longitude range of the map, e.g [lon_min, lon_max].
+        There is no need to setup a map in many cases,
+        as this is done for you by Iris' plotting routines.
+
+            # Unnecessary map_setup
+            map_setup(cube)
+            contourf(cube)
     
-    * lat_range:
-        Latitude range of the map, e.g [lat_min, lat_max].
-    
-    * mode:
-        If *cube* is given, and *lon_range* or *lat_range* are not provided they will be calculated automatically
-        by looking at the appropriate points/bounds range of the lat/lon coordinates. If latitude or longitude
-        coordinates have bounds then provide the *mode* keyword to determine whether to use
-        bounds or points to calculate the latitude/longitude range.
-        Valid values are iris.coords.POINT_MODE or iris.coords.BOUND_MODE.
-    
-    Returns:
-        Returns a new :class:`mpl_toolkits.basemap.Basemap`.
-    
-    """
-    global _CURRENT_MAP
-    
-    # support basemap's keywords urcrnrlat, llcrnrlat, llcrnrlat & llcrnrlat
-    # but also provide an improved interface using lon_range, lat_range
-    if (kwargs.has_key('urcrnrlat') or kwargs.has_key('llcrnrlat')) and lat_range is not None:
-        raise ValueError('Do not specify lat_range when "llcrnrlat" or "urcrnrlat" are set.')
-    
-    if (kwargs.has_key('urcrnrlon') or kwargs.has_key('llcrnrlon')) and lon_range is not None:
-        raise ValueError('Do not specify lon_range when "llcrnrlon" or "urcrnrlon" are set.')
-    
-    # decompose lat_range & lon_range into lat/lon_min/max elements
-    if lat_range is not None:
-        lat_min, lat_max = lat_range
-    else:
-        lat_min, lat_max = kwargs.get('llcrnrlat'), kwargs.get('urcrnrlat')
+        Suggested uses of this function are as follows, ::
+
+            # Alternative projection, automatic limits
+            map_setup(projection)
+            contourf(cube)
         
-    if lon_range is not None:
-        lon_min, lon_max = lon_range
-    else:
-        lon_min, lon_max = kwargs.get('llcrnrlon'), kwargs.get('urcrnrlon')
-    
-    
-    if cube is not None:
-        projection = kwargs.pop('projection', None)
-        
-        if len(kwargs) > 0:
-            raise TypeError('Unsupported keywords to map when cube is provided were given (%s).' % ', '.join(kwargs))
-        
-        # TODO #581 Get the projection from the CS
-        if projection is None:
-            projection = 'cyl'
+            # Alternative projection, custom limits
+            map_setup(projection, xlim, ylim)
+            contourf(cube)
             
-        kwargs['projection'] = projection
-        
-        if lat_range is None or lon_range is None:
-            _lat_range, _lon_range = iris.analysis.cartography.lat_lon_range(cube, mode)
-        
-        # If the lon/lat_min/max is not none, keep it, otherwise put in the newly calculated range
-        if lat_min is None: lat_min = _lat_range[0]
-        if lat_max is None: lat_max = _lat_range[1]
-        if lon_min is None: lon_min = _lon_range[0]
-        if lon_max is None: lon_max = _lon_range[1]
-        
-    if lon_min is not None:
-        kwargs['llcrnrlon'] = lon_min
-    if lon_max is not None:
-        kwargs['urcrnrlon'] = lon_max
-
-    # cap the maximum latitude range to -90, +90
-    if lat_min is not None:
-        kwargs['llcrnrlat'] = numpy.max([-90, lat_min])
-    if lat_max is not None:
-        kwargs['urcrnrlat'] = numpy.min([ lat_max, 90])
+            # Native projection, custom limits
+            map_setup(cube, xlim, ylim)
+            contourf(cube)
+            
+        The following snippet is inefficient.
+        Coordinate transformation is used twice, which is not necessary. ::
     
-    _CURRENT_MAP = basemap.Basemap(**kwargs)
+            # Transforms to calulate projected extents
+            map_setup(cube, other_projection)
+            # Transforms again, for plotting
+            contourf(cube)
+            
+        Instead, let the limits be calulated automatically,
+        as in the suggested usage, above.
 
-    # Ensure this Basemap instance has registered itself on the current axes.
-    # This allows routines like iplt.contour to avoid creating a new Basemap instance when
-    # one has explicitly been created with this routine.
-    _CURRENT_MAP.set_axes_limits()
+    """  
+    # Which projection?
+    if projection is None and cube is not None:
+        cs = cube.coord_system("CoordSystem")
+        projection = cs.cartopy_map() if cs else None
+    if projection is None:
+        projection = cartopy.crs.PlateCarree()
+    
+    # Which extents?
+    if (xlim is None or ylim is None) and cube is not None:
+        mode = mode or iris.coords.BOUND_MODE
+        extents = iris.analysis.cartography.xy_range(cube, mode, projection)
+        xlim = extents[0]
+        ylim = extents[1]
 
-    return _CURRENT_MAP
+    # TODO: Refactor with _map_common()
+    # Replace the current axis with a cartopy one
+    fig = plt.gcf()
+    ax = plt.gca()
+    if isinstance(ax, matplotlib.axes.SubplotBase):
+        # xlim = None has special meaning, and must be avoided.
+        if xlim is None:
+            new_ax = fig.add_subplot(ax.get_subplotspec(), projection=projection,
+                                     title=ax.get_title(), xlabel=ax.get_xlabel(),
+                                     ylabel=ax.get_ylabel())
+        else:
+            new_ax = fig.add_subplot(ax.get_subplotspec(), projection=projection,
+                                     xlim=xlim, ylim=ylim,
+                                     title=ax.get_title(), xlabel=ax.get_xlabel(),
+                                     ylabel=ax.get_ylabel())
+            
+    else:
+        if xlim is None:
+            new_ax = fig.add_axes(projection=projection, #xlim=xlim, ylim=ylim,
+                                  title=ax.get_title(), xlabel=ax.get_xlabel(),
+                                  ylabel=ax.get_ylabel())
+        else:
+            new_ax = fig.add_axes(projection=projection, xlim=xlim, ylim=ylim,
+                                  title=ax.get_title(), xlabel=ax.get_xlabel(),
+                                  ylabel=ax.get_ylabel())
+    fig.delaxes(ax)
 
 
 def _fill_orography(cube, coords, mode, vert_plot, horiz_plot, style_args):
@@ -738,7 +733,8 @@ def points(cube, *args, **kwargs):
     See :func:`matplotlib.pyplot.scatter` for details of other valid keyword arguments.
     
     """
-    _scatter_args = lambda u, v, data, *args, **kwargs: ((u, v) + args, kwargs)
+    _scatter_args = lambda u, v, data, *args, **kwargs: \
+                        ((u.astype(numpy.double), v.astype(numpy.double)) + args, kwargs)
     return _draw_2d_from_points('scatter', _scatter_args, cube, *args, **kwargs)
 
 
@@ -848,8 +844,4 @@ def citation(text, figure=None):
         anchor = AnchoredText(text, prop=dict(size=6), frameon=True, loc=4)
         anchor.patch.set_boxstyle('round, pad=0, rounding_size=0.2')
         figure.gca().add_artist(anchor)
-
-
-    
-    
 
