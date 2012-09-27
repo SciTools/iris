@@ -130,7 +130,6 @@ def xy_range(cube, mode=None, projection=None):
         raise ValueError('Cannot get the range of the x and y coordinates if they do '
                          'not have the same presence of bounds.')
     
-    # Points or bounds?
     if x_coord.has_bounds():
         if mode not in [iris.coords.POINT_MODE, iris.coords.BOUND_MODE]:
             raise ValueError('When the coordinate has bounds, please specify "mode".')
@@ -152,18 +151,17 @@ def xy_range(cube, mode=None, projection=None):
             x = x_coord.bounds
             y = y_coord.bounds
             
-    # Project?
     if projection:
         # source projection
         source_cs = cube.coord_system("CoordSystem")
-        if source_cs:
+        if source_cs is not None:
             source_proj = source_cs.as_cartopy_projection()
         else:
             source_proj = cartopy.crs.PlateCarree()
             
         if source_proj != projection:
             # TODO: Ensure there is a test for this
-            x, y = projection.transform_points(x=x, y=y, src_crs=source_projsource_proj)
+            x, y = projection.transform_points(x=x, y=y, src_crs=source_proj)
     
     # Get the x and y range
     if getattr(x_coord, 'circular', False):

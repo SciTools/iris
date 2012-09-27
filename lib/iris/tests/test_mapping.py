@@ -70,7 +70,8 @@ class TestUnmappable(tests.IrisTest):
     def test_simple(self):
         iplt.contourf(self.cube)
         self.check_graphic()
-        
+
+
 # TODO: Remove
 def _pretend_unrotated(cube):
     lat = cube.coord('grid_latitude')
@@ -166,8 +167,7 @@ class TestBoundedCube(tests.IrisTest):
         self.cube.coord('longitude').guess_bounds()
 
     def test_pcolormesh(self):
-        pcolormesh = iplt.pcolormesh(self.cube)
-        pcolormesh
+        iplt.pcolormesh(self.cube)
         self.check_graphic()
         
     def test_grid(self):
@@ -182,7 +182,6 @@ class TestLimitedAreaCube(tests.IrisTest):
         self.cube = iris.load_strict(cube_path)[::20, ::20]
         self.cube.coord('grid_latitude').guess_bounds()
         self.cube.coord('grid_longitude').guess_bounds()
-        iplt.map_setup(ccrs.PlateCarree())
 
     def test_pcolormesh(self):
         iplt.pcolormesh(self.cube)
