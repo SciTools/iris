@@ -365,8 +365,6 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
         x = numpy.append(x, x[:, 0:1] + 360, axis=1)
         data = numpy.ma.concatenate([data, data[:, 0:1]], axis=1)
 
-
-
     # Get the native crs and map (might be the same cartopy definiton)
     cs = cube.coord_system('CoordSystem')
     cartopy_crs = cs.as_cartopy_crs()  # E.g. Geodetic
@@ -405,7 +403,7 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
 
     # Set the "from transform" keyword. 
     assert 'transform' not in kwargs, 'Transform keyword is not allowed.' 
-    kwargs['transform'] = cartopy_crs._as_mpl_transform(ax)
+    kwargs['transform'] = cartopy_crs
     
     if arg_func is not None:
         new_args, kwargs = arg_func(x, y, data, *args, **kwargs)
@@ -554,39 +552,37 @@ def map_setup(projection=None, xlim=None, ylim=None, cube=None, mode=None):
     if projection is None:
         projection = cartopy.crs.PlateCarree()
     
+    lim_crs = projection
+    
     # Which extents?
     if (xlim is None or ylim is None) and cube is not None:
         mode = mode or iris.coords.BOUND_MODE
         extents = iris.analysis.cartography.xy_range(cube, mode, projection)
         xlim = extents[0]
         ylim = extents[1]
+        lim_crs = cs.as_cartopy_crs() if cs else None
 
     # TODO: Refactor with _map_common()
     # Replace the current axis with a cartopy one
     fig = plt.gcf()
     ax = plt.gca()
     if isinstance(ax, matplotlib.axes.SubplotBase):
-        # xlim = None has special meaning, and must be avoided.
-        if xlim is None:
-            new_ax = fig.add_subplot(ax.get_subplotspec(), projection=projection,
+        new_ax = fig.add_subplot(ax.get_subplotspec(), projection=projection,
                                      title=ax.get_title(), xlabel=ax.get_xlabel(),
                                      ylabel=ax.get_ylabel())
-        else:
-            new_ax = fig.add_subplot(ax.get_subplotspec(), projection=projection,
-                                     xlim=xlim, ylim=ylim,
-                                     title=ax.get_title(), xlabel=ax.get_xlabel(),
-                                     ylabel=ax.get_ylabel())
-            
     else:
-        if xlim is None:
-            new_ax = fig.add_axes(projection=projection, #xlim=xlim, ylim=ylim,
-                                  title=ax.get_title(), xlabel=ax.get_xlabel(),
-                                  ylabel=ax.get_ylabel())
-        else:
-            new_ax = fig.add_axes(projection=projection, xlim=xlim, ylim=ylim,
-                                  title=ax.get_title(), xlabel=ax.get_xlabel(),
-                                  ylabel=ax.get_ylabel())
+        new_ax = fig.add_axes(projection=projection,
+                              title=ax.get_title(), xlabel=ax.get_xlabel(),
+                              ylabel=ax.get_ylabel())
+            
+    if xlim is not None != ylim is not None:
+        warnings.warn('Both xlim and ylim must currently be set.')
+    
+    if xlim is not None:
+        new_ax.set_extent(tuple(xlim) + tuple(ylim), lim_crs)
+    
     fig.delaxes(ax)
+    return new_ax
 
 
 def _fill_orography(cube, coords, mode, vert_plot, horiz_plot, style_args):
