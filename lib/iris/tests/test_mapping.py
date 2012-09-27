@@ -166,8 +166,9 @@ class TestBoundedCube(tests.IrisTest):
         self.cube.coord('longitude').guess_bounds()
 
     def test_pcolormesh(self):
-        pcolormesh = iplt.pcolormesh(self.cube)
-        pcolormesh
+        # pcolormesh can only be drawn in native coordinates (or more specifically, in coordinates that don't wrap).
+        plt.axes(projection=ccrs.PlateCarree(central_longitude=180))
+        iplt.pcolormesh(self.cube)
         self.check_graphic()
         
     def test_grid(self):
