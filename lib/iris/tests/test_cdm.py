@@ -647,7 +647,19 @@ class TestCubeEquality(TestCube2d):
         r = self.t.copy()
         r.attributes['new_thing'] = None
         self.assertNotEqual(self.t, r)
-        
+
+    def test_array_attributes(self):
+        r = self.t.copy()
+        r.attributes['things'] = numpy.arange(3)
+        s = r.copy()
+        self.assertEqual(s, r)
+
+        s.attributes['things'] = numpy.arange(2)
+        self.assertNotEqual(s, r)
+
+        del s.attributes['things']
+        self.assertNotEqual(s, r)
+
     def test_cell_methods_inequality(self):
         r = self.t.copy()
         r.add_cell_method(iris.coords.CellMethod('mean'))
