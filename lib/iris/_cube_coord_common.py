@@ -38,7 +38,21 @@ class LimitedAttributeDict(dict):
         for key in self.iterkeys():
             if key in self._forbidden_keys:
                 raise ValueError('%r is not a permitted attribute' % key)
-    
+
+    def __eq__(self, other):
+        # Extend equality to allow for NumPy arrays.
+        match = self.viewkeys() == other.viewkeys()
+        if match:
+            for key, value in self.iteritems():
+                match = value == other[key]
+                try:
+                    match = bool(match)
+                except ValueError:
+                    match = match.all()
+                if not match:
+                    break
+        return match
+
     def __setitem__(self, key, value):
         if key in self._forbidden_keys:
             raise ValueError('%r is not a permitted attribute' % key)
