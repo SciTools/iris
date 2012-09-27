@@ -489,7 +489,8 @@ def contourf(cube, *args, **kwargs):
 
 
 def map_setup(projection=None, xlim=None, ylim=None, cube=None, mode=None):
-    """Setup matplotlib for cartographic plotting.
+    """
+    Setup matplotlib for cartographic plotting.
     
     The projection is taken from the projection keyword, if present,
     otherwise it is taken from the cube, if present,
