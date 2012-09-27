@@ -157,7 +157,7 @@ def xy_range(cube, mode=None, projection=None):
         # source projection
         source_cs = cube.coord_system("CoordSystem")
         if source_cs:
-            source_proj = source_cs.cartopy_map()
+            source_proj = source_cs.as_cartopy_projection()
         else:
             source_proj = cartopy.crs.PlateCarree()
             

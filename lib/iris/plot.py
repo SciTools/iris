@@ -369,17 +369,17 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
 
     # Get the native crs and map (might be the same cartopy definiton)
     cs = cube.coord_system('CoordSystem')
-    cartopy_crs = cs.cartopy_crs()  # E.g. Geodeitc
-    cartopy_map = cs.cartopy_map()  # E.g. PlateCarree
+    cartopy_crs = cs.as_cartopy_crs()  # E.g. Geodetic
+    cartopy_proj = cs.as_cartopy_projection()  # E.g. PlateCarree
 
-    # Can we centre the map on the data?
-    if cs._has_variable_centre_map():
-        xy_range = iris.analysis.cartography.xy_range(cube, iris.coords.POINT_MODE)
-        xy_center = (sum(xy_range[0])*0.5, sum(xy_range[1])*0.5)
-        # Use the default map to find the centre.
-        map_center = cartopy_map.transform_point(xy_center[0], xy_center[1], cartopy_crs)
-        # Make a new, centered map.
-        cartopy_map = cube.coord_system('CoordSystem').cartopy_map(map_center)
+    # TODO - Can we centre the map on the data?
+    #if cs._has_variable_centre_map():
+    #    xy_range = iris.analysis.cartography.xy_range(cube, iris.coords.POINT_MODE)
+    #    xy_center = (sum(xy_range[0])*0.5, sum(xy_range[1])*0.5)
+    #    # Use the default map to find the centre.
+    #    map_center = cartopy_proj.transform_point(xy_center[0], xy_center[1], cartopy_crs)
+    #    # Make a new, centered map.
+    #    cartopy_proj = cube.coord_system('CoordSystem').as_cartopy_projection(map_center)
     
     # Replace non-cartopy subplot/axes with a cartopy alternative.
     # XXX original subplot properties will be lost...
@@ -388,11 +388,11 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
     if not isinstance(ax, cartopy.mpl_integration.geoaxes.GenericProjectionAxes):
         fig = plt.gcf()
         if isinstance(ax, matplotlib.axes.SubplotBase):
-            new_ax = fig.add_subplot(ax.get_subplotspec(), projection=cartopy_map,
+            new_ax = fig.add_subplot(ax.get_subplotspec(), projection=cartopy_proj,
                                      title=ax.get_title(), xlabel=ax.get_xlabel(),
                                      ylabel=ax.get_ylabel())
         else:
-            new_ax = fig.add_axes(projection=cartopy_map,
+            new_ax = fig.add_axes(projection=cartopy_proj,
                                      title=ax.get_title(), xlabel=ax.get_xlabel(),
                                      ylabel=ax.get_ylabel())
         
@@ -550,7 +550,7 @@ def map_setup(projection=None, xlim=None, ylim=None, cube=None, mode=None):
     # Which projection?
     if projection is None and cube is not None:
         cs = cube.coord_system("CoordSystem")
-        projection = cs.cartopy_map() if cs else None
+        projection = cs.as_cartopy_projection() if cs else None
     if projection is None:
         projection = cartopy.crs.PlateCarree()
     
