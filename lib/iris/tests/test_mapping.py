@@ -92,45 +92,36 @@ class TestMappingSubRegion(tests.IrisTest):
     def setUp(self):
         cube_path = tests.get_data_path(('PP', 'aPProt1', 'rotatedMHtimecube.pp'))
         cube = iris.load_strict(cube_path)[0]
-
-        # Until there is better mapping support for rotated-pole, pretend this isn't rotated.
-        # ie. Move the pole from (37.5, 177.5) to (90, 0) and bodge the coordinates.
-#        _pretend_unrotated(cube)
-
-        self.cube = cube
+        # make the data slighly smaller to speed things up...
+        self.cube = cube[::10, ::10]
 
     def test_simple(self):
         # First sub-plot
         plt.subplot(221)
         plt.title('Default')
-
         iplt.contourf(self.cube)
         plt.gca().coastlines()
 
         # Second sub-plot
         plt.subplot(222)
         plt.title('Molleweide')
-
         iplt.map_setup(projection=ccrs.Mollweide(central_longitude=120))
         iplt.contourf(self.cube)
-        plt.gca().set_global()  # TODO: REMOVE THIS ADDITION, PENDING FIX
         plt.gca().coastlines()
 
         # Third sub-plot
         plt.subplot(223)
         plt.title('Native')
-
-        iplt.map_setup(cube=self.cube)
-        iplt.contourf(self.cube)
-        plt.gca().coastlines()
+        ax = iplt.map_setup(cube=self.cube)
+        iplt.contour(self.cube)
+        ax.coastlines()
         
         # Fourth sub-plot
         plt.subplot(224)
-        plt.title('Three/six level')
-
-        contour1 = iplt.contourf(self.cube, 3)
-        contour2 = iplt.contour(self.cube, 6)
-        plt.gca().coastlines()
+        plt.title('PlateCarree')
+        ax = plt.subplot(2, 2, 4, projection=ccrs.PlateCarree())
+        iplt.contourf(self.cube)
+        ax.coastlines()
 
         self.check_graphic()
 
