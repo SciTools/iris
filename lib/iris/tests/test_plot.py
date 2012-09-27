@@ -177,7 +177,6 @@ class SliceMixin(object):
 
     def test_yx(self):
         cube = self.wind[0, 0, :, :]
-        iplt.map_setup(cube=cube, mode=coords.POINT_MODE)
         self.draw_method(cube)
         self.check_graphic()
 
