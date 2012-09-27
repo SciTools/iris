@@ -181,16 +181,17 @@ class NimrodField(object):
         if leading_length != num_data_bytes:
             raise TranslationError("Expected data leading_length of %d" % num_data_bytes)
         
+        # TODO: Deal appropriately with MDI. Can't just create masked arrays
+        #       as cube merge converts masked arrays with no masks to ndarrays,
+        #       thus mergable cube can split one mergable cube into two.
         self.data = numpy.fromfile(infile, dtype=numpy_dtype, count=num_data)
+
         if sys.byteorder == "little":
             self.data.byteswap(True)
         
         trailing_length = struct.unpack(">L", infile.read(4))[0]
         if trailing_length != leading_length:
             raise TranslationError("Expected data trailing_length of %d" % num_data_bytes)
-        
-        # TODO: Confirm the MKS scaling factor does not need to be applied.
-        # TODO: Confirm the data offset only applies when converting to MKS too.
         
         # form the correct shape
         self.data = self.data.reshape(self.num_rows, self.num_cols)
@@ -256,9 +257,12 @@ class NimrodField(object):
             cube.add_dim_coord(
                 DimCoord(numpy.arange(self.num_cols) * self.column_step + self.x_origin,
                          long_name="x", units="m", coord_system=osgb_cs), 1)
-            cube.add_dim_coord(
-                DimCoord(numpy.arange(self.num_rows) * self.row_step + self.y_origin,
-                         long_name="y", units="m", coord_system=osgb_cs), 0)
+            if self.origin_corner == 0:  # top left
+                cube.add_dim_coord(
+                    DimCoord(numpy.arange(self.num_rows)[::-1] * -self.row_step + self.y_origin,
+                             long_name="y", units="m", coord_system=osgb_cs), 0)
+            else:
+                raise TranslationError("Corner {0} not yet implemented".format(self.origin_corner))
         else:
             raise TranslationError("Grid type %d not yet implemented" %
                                    self.horizontal_grid_type)
