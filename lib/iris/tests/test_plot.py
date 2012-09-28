@@ -406,7 +406,7 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
     
     def run_tests(self, cube, results):
         for draw_method, coords in results:
-            draw_result = draw_method(cube, coords=coords)
+            draw_method(cube, coords=coords)
             try:
                 self.check_graphic()
             except AssertionError, err:
