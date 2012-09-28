@@ -340,6 +340,32 @@ def _draw_1d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
     return result
 
 
+def _get_cartopy_axes(cartopy_proj):
+    # Replace non-cartopy subplot/axes with a cartopy alternative.
+    # XXX original subplot properties will be lost...
+    # XXX consider allowing the axes to be passed through
+    ax = plt.gca()
+    if not isinstance(ax,
+                      cartopy.mpl_integration.geoaxes.GenericProjectionAxes):
+        fig = plt.gcf()
+        if isinstance(ax, matplotlib.axes.SubplotBase):
+            new_ax = fig.add_subplot(ax.get_subplotspec(),
+                                     projection=cartopy_proj,
+                                     title=ax.get_title(),
+                                     xlabel=ax.get_xlabel(),
+                                     ylabel=ax.get_ylabel())
+        else:
+            new_ax = fig.add_axes(projection=cartopy_proj,
+                                  title=ax.get_title(),
+                                  xlabel=ax.get_xlabel(),
+                                  ylabel=ax.get_ylabel())
+
+        # delete the axes which didn't have a cartopy projection
+        fig.delaxes(ax)
+        ax = new_ax
+    return ax
+
+
 def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
     """
     Draw the given cube on a map using its points or bounds.
@@ -370,35 +396,9 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
     cartopy_crs = cs.as_cartopy_crs()  # E.g. Geodetic
     cartopy_proj = cs.as_cartopy_projection()  # E.g. PlateCarree
 
-    # TODO - Can we centre the map on the data?
-    #if cs._has_variable_centre_map():
-    #    xy_range = iris.analysis.cartography.xy_range(cube, iris.coords.POINT_MODE)
-    #    xy_center = (sum(xy_range[0])*0.5, sum(xy_range[1])*0.5)
-    #    # Use the default map to find the centre.
-    #    map_center = cartopy_proj.transform_point(xy_center[0], xy_center[1], cartopy_crs)
-    #    # Make a new, centered map.
-    #    cartopy_proj = cube.coord_system('CoordSystem').as_cartopy_projection(map_center)
-    
     # Replace non-cartopy subplot/axes with a cartopy alternative.
-    # XXX original subplot properties will be lost...
-    # XXX consider allowing the axes to be passed through
-    ax = plt.gca()
-    if not isinstance(ax, cartopy.mpl_integration.geoaxes.GenericProjectionAxes):
-        fig = plt.gcf()
-        if isinstance(ax, matplotlib.axes.SubplotBase):
-            new_ax = fig.add_subplot(ax.get_subplotspec(), projection=cartopy_proj,
-                                     title=ax.get_title(), xlabel=ax.get_xlabel(),
-                                     ylabel=ax.get_ylabel())
-        else:
-            new_ax = fig.add_axes(projection=cartopy_proj,
-                                     title=ax.get_title(), xlabel=ax.get_xlabel(),
-                                     ylabel=ax.get_ylabel())
-        
-        # delete the axes which didn't have a cartopy projection
-        fig.delaxes(ax)
-        ax = new_ax
-        
-    # Draw the contour lines/filled contours.
+    ax = _get_cartopy_axes(cartopy_proj)
+
     draw_method = getattr(ax, draw_method_name)
 
     # Set the "from transform" keyword. 
@@ -410,6 +410,7 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
     else:
         new_args = (x, y, data) + args
 
+    # Draw the contour lines/filled contours.
     return draw_method(*new_args, **kwargs)
 
 
@@ -563,27 +564,15 @@ def map_setup(projection=None, xlim=None, ylim=None, cube=None, mode=None):
         ylim = extents[1]
         lim_crs = cs.as_cartopy_crs() if cs else None
 
-    # TODO: Refactor with _map_common()
-    # Replace the current axis with a cartopy one
-    fig = plt.gcf()
-    ax = plt.gca()
-    if isinstance(ax, matplotlib.axes.SubplotBase):
-        new_ax = fig.add_subplot(ax.get_subplotspec(), projection=projection,
-                                     title=ax.get_title(), xlabel=ax.get_xlabel(),
-                                     ylabel=ax.get_ylabel())
-    else:
-        new_ax = fig.add_axes(projection=projection,
-                              title=ax.get_title(), xlabel=ax.get_xlabel(),
-                              ylabel=ax.get_ylabel())
-            
+    ax = _get_cartopy_axes(projection)
+
     if xlim is not None != ylim is not None:
         warnings.warn('Both xlim and ylim must currently be set.')
     
     if xlim is not None:
-        new_ax.set_extent(tuple(xlim) + tuple(ylim), lim_crs)
+        ax.set_extent(tuple(xlim) + tuple(ylim), lim_crs)
     
-    fig.delaxes(ax)
-    return new_ax
+    return ax
 
 
 def _fill_orography(cube, coords, mode, vert_plot, horiz_plot, style_args):
