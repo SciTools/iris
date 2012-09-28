@@ -219,7 +219,7 @@ class GribWrapper(object):
             '_firstLevelTypeUnits':unknown_string, '_firstLevel':-1.0,
             '_secondLevelTypeName':unknown_string, '_secondLevel':-1.0,
             '_originatingCentre':unknown_string, '_forecastTimeUnit':unknown_string,
-            '_coord_system':None,
+            '_coord_system':None, '_x_circular':False,
             '_x_coord_name':unknown_string, '_y_coord_name':unknown_string}
 
         #reference date
@@ -343,6 +343,26 @@ class GribWrapper(object):
         else:
             self.extra_keys['_x_coord_name'] = "grid_longitude"
             self.extra_keys['_y_coord_name'] = "grid_latitude"
+            
+        # circular x coord?
+        # TODO: This check should become Coord.is_circular(), replacing Coord.circular.
+        # See also the circular discussion in https://github.com/SciTools/iris/issues/77
+        if "longitude" in self.extra_keys['_x_coord_name'] and self.Ni > 1:
+            # TODO: This calculation is repeated several times. Refactor into a function.
+            points = numpy.arange(self.Ni, dtype=numpy.float64) * self.iDirectionIncrementInDegrees * (self.iScansNegatively*(-2)+1) + self.longitudeOfFirstGridPointInDegrees
+            
+            # If the gap from end to start is smaller or about equal to the max
+            # step then we consider the coordinate to be circular.
+            gap = 360.0 - abs(points[-1] - points[0]) 
+            max_step = abs(numpy.diff(points)).max()
+            if gap <= max_step:
+                self.extra_keys['_x_circular'] = True
+            else:
+                try:
+                    numpy.testing.assert_almost_equal(gap / max_step, 1.0, decimal=3)
+                    self.extra_keys['_x_circular'] = True
+                except:
+                    pass
         
     def _get_processing_done(self):
         """Determine the type of processing that was done on the data."""
