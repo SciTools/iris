@@ -719,8 +719,7 @@ def points(cube, *args, **kwargs):
     See :func:`matplotlib.pyplot.scatter` for details of other valid keyword arguments.
     
     """
-    _scatter_args = lambda u, v, data, *args, **kwargs: \
-                        ((u.astype(numpy.double), v.astype(numpy.double)) + args, kwargs)
+    _scatter_args = lambda u, v, data, *args, **kwargs: ((u, v) + args, kwargs)
     return _draw_2d_from_points('scatter', _scatter_args, cube, *args, **kwargs)
 
 
