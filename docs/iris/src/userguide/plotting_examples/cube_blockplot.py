@@ -14,10 +14,7 @@ temperature_cube.coord('longitude').guess_bounds()
 # Draw the contour with 25 levels
 qplt.pcolormesh(temperature_cube)
 
-# Get the map created by pcolormesh
-current_map = iplt.gcm()
-
-# Add coastlines to the map
-current_map.drawcoastlines()
+# Add coastlines to the map created by pcolormesh
+plt.gca().coastlines()
 
 plt.show()

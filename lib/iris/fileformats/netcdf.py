@@ -562,6 +562,10 @@ def _create_cf_grid_mapping(dataset, cube, cf_var):
             # tmerc
             elif isinstance(cs, iris.coord_systems.TransverseMercator):
                 warnings.warn('TransverseMercator coordinate system not yet handled')
+
+            # osgb (a specific tmerc)
+            elif isinstance(cs, iris.coord_systems.OSGB):
+                warnings.warn('OSGB coordinate system not yet handled')
             
             # other
             else:
