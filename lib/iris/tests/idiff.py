@@ -31,7 +31,6 @@ import matplotlib.widgets as mwidget
 
 
 def diff_viewer(expected_fname, result_fname, diff_fname):
-    
     plt.figure(figsize=(16, 16))
     plt.suptitle(os.path.basename(expected_fname))
     ax = plt.subplot(221)
@@ -66,20 +65,18 @@ def diff_viewer(expected_fname, result_fname, diff_fname):
 def step_over_diffs():
     import iris.tests
     image_dir = os.path.join(os.path.dirname(iris.tests.__file__),
-                             'results', 'visual_tests',
-                             )
+                             'results', 'visual_tests')
     diff_dir = os.path.join(os.path.dirname(iris.tests.__file__),
-                             'result_image_comparison',
-                             )
+                            'result_image_comparison')
 
-    for expected_fname in os.listdir(image_dir):
-        expected_fname = os.path.join(image_dir, expected_fname)
-        result_fname = os.path.join(diff_dir, 'result-' + os.path.basename(expected_fname))
-        diff_fname = result_fname[:-4] + '-failed-diff.png'
+    for expected_fname in sorted(os.listdir(image_dir)):
+        result_path = os.path.join(diff_dir, 'result-' + expected_fname)
+        diff_path = result_path[:-4] + '-failed-diff.png'
 
         # if the test failed, there will be a diff file
-        if os.path.exists(diff_fname):
-            diff_viewer(expected_fname, result_fname, diff_fname)
+        if os.path.exists(diff_path):
+            expected_path = os.path.join(image_dir, expected_fname)
+            diff_viewer(expected_path, result_path, diff_path)
 
 
 if __name__ == '__main__':
