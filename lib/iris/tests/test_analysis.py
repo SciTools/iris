@@ -242,7 +242,24 @@ class TestAnalysisBasic(tests.IrisTest):
     def test_xy_range(self):
         result_non_circ = iris.analysis.cartography.xy_range(self.cube)
         self.assertEqual(self.cube.coord('grid_longitude').circular, False)
-        numpy.testing.assert_array_almost_equal(result_non_circ, ((313.02, 392.11), (-22.49, 24.92)), decimal=0)
+        numpy.testing.assert_array_almost_equal(
+            result_non_circ, ((313.02, 392.11), (-22.49, 24.92)), decimal=0)
+
+    def test_xy_range_geog_cs(self):
+        cube = iris.tests.stock.global_pp()
+        self.assertTrue(cube.coord('longitude').circular)
+        result = iris.analysis.cartography.xy_range(cube)
+        numpy.testing.assert_array_almost_equal(
+            result, ((0, 360), (-90, 90)), decimal=0)
+
+    def test_xy_range_geog_cs_regional(self):
+        cube = iris.tests.stock.global_pp()
+        cube = cube[10:20, 20:30]
+        self.assertFalse(cube.coord('longitude').circular)
+        result = iris.analysis.cartography.xy_range(cube)
+        numpy.testing.assert_array_almost_equal(
+            result, ((75, 108.75), (42.5, 65)), decimal=0)
+
 
 class TestMissingData(tests.IrisTest):
     def setUp(self):
