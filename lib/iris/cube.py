@@ -554,6 +554,8 @@ class Cube(CFVariableMixin):
             raise ValueError('You must supply a data dimension for a dimensioned coord.')
         if isinstance(data_dim, collections.Container) and len(data_dim) != 1:
             raise ValueError('The supplied data dimension must be a single number')
+        if self.coords(dimensions=data_dim, dim_coords=True):
+            raise ValueError('A dim_coord is already associated with dimension %r.' % data_dim)
 
         # Convert data_dim to a single integer
         if isinstance(data_dim, collections.Container):

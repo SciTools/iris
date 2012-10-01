@@ -40,26 +40,6 @@ fc_default
 
 #
 # Context:
-#   This rule will trigger iff no grid_mapping() case specific fact 
-#   has been asserted.
-#
-# Purpose:
-#   Creates the default lat/lon coordinate system.
-#
-fc_default_grid_mapping_latitude_longitude
-    foreach
-        notany
-            facts_cf.grid_mapping($_)
-    assert
-    	# TODO: Discuss/confirm this default ellipsoid.
-        python coordinate_system = iris.coord_systems.GeogCS(6371229)
-        python engine.provides['coordinate_system'] = coordinate_system
-        facts_cf.provides(coordinate_system, latitude_longitude)
-        python engine.rule_triggered.add(rule.name)
-
-
-#
-# Context:
 #   This rule will trigger iff a grid_mapping() case specific fact 
 #   has been asserted that refers to a rotated pole.
 #
@@ -353,7 +333,7 @@ fc_build_coordinate_latitude_rotated
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var, coord_name=CF_VALUE_STD_NAME_GRID_LAT, coord_system=engine.provides['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
-        
+
 
 #
 # Context:
@@ -391,6 +371,50 @@ fc_build_coordinate_longitude_rotated
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var, coord_name=CF_VALUE_STD_NAME_GRID_LON, coord_system=engine.provides['coordinate_system'])
         python engine.rule_triggered.add(rule.name)        
+
+
+        
+
+#
+# Context:
+#   This rule will trigger iff a CF latitude coordinate exists and
+#   no coordinate system exists.
+#
+# Purpose:
+#   Add the latitude coordinate into the cube.
+#
+fc_build_coordinate_latitude_nocs
+    foreach
+        facts_cf.provides(coordinate, latitude, $coordinate)
+        notany
+        	facts_cf.provides(coordinate_system, latitude_longitude)
+        notany
+        	facts_cf.provides(coordinate_system, rotated_latitude_longitude)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
+        python build_dimension_coordinate(engine, cf_coord_var, coord_name=CF_VALUE_STD_NAME_LAT, coord_system=None)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff a CF longitude coordinate exists and
+#   no lat/lon coordinate system exists.
+#
+# Purpose:
+#   Add the longitude coordinate into the cube.
+#
+fc_build_coordinate_longitude_nocs
+    foreach
+        facts_cf.provides(coordinate, longitude, $coordinate)
+        notany
+	        facts_cf.provides(coordinate_system, latitude_longitude)
+        notany
+	        facts_cf.provides(coordinate_system, rotated_latitude_longitude)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
+        python build_dimension_coordinate(engine, cf_coord_var, coord_name=CF_VALUE_STD_NAME_LON, coord_system=None)
+        python engine.rule_triggered.add(rule.name)
         
 
 #
