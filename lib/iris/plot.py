@@ -387,8 +387,9 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
     # may be better placed in the CS.
     x_coord = cube.coord(axis="X")
     if getattr(x_coord, 'circular', False):
+        _, direction = iris.util.monotonic(x_coord.points, return_direction=True)
         y = numpy.append(y, y[:, 0:1], axis=1)
-        x = numpy.append(x, x[:, 0:1] + 360, axis=1)
+        x = numpy.append(x, x[:, 0:1] + 360 * direction, axis=1)
         data = numpy.ma.concatenate([data, data[:, 0:1]], axis=1)
 
     # Get the native crs and map (might be the same cartopy definiton)
