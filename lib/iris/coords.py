@@ -170,48 +170,56 @@ class Cell(iris.util._OrderedHashable):
         Common method called by the rich comparison operators. The method of checking equality
         depends on the type of the object to be compared.
         """
+        if not isinstance(other, (int, float, numpy.number, Cell)):
+            raise ValueError("Unexpected type of other")
+        if operator_method not in [operator.gt, operator.lt, operator.ge, operator.le]:
+            raise ValueError("Unexpected operator_method")
+        force_point_check = False
         
-        # Compare to a numeric type
-        if isinstance(other, (int, float, numpy.number)):
+        # Do we both have bounds?
+        if self.bound is not None and isinstance(other, Cell) and other.bound is not None:
+            # We will compare the same edge on both of us.
+            if operator_method in [operator.lt, operator.ge]:
+                me = min(self.bound)
+                it = min(other.bound)
+            else:
+                me = max(self.bound)
+                it = max(other.bound)
+            force_point_check = True
+
+        else:        
+            # Do we have bounds? (only us)
             if self.bound is not None:
-                bound_side = {operator.gt: min,
-                              operator.ge: max,
-                              operator.le: min,
-                              operator.lt: max,
-                              }
-
-                max_or_min = bound_side[operator_method]
-                res = operator_method( max_or_min(self.bound), other )
-            
+                # We will compare it's point with our appropriate edge.
+                if operator_method in [operator.gt, operator.le]:
+                    me = min(self.bound)
+                else:
+                    me = max(self.bound)
             else:
-                res = operator_method(self.point, other)
-            
-        # Compare to another Cell object
-        elif isinstance(other, Cell):
-            bound_side = {operator.gt: max,
-                          operator.ge: min,
-                          operator.le: max,
-                          operator.lt: min,
-                          }
-            
-            if other.bound is None:
-                res = operator_method(self, other.point)
-            
-            else:
-                max_or_min = bound_side[operator_method]                
-                res = True
+                me = self.point
+    
+            # Does other have bounds? (only other)
+            if isinstance(other, Cell):
+                if other.bound is not None:
+                    # We will compare our point with it's appropriate edge.
+                    if operator_method in [operator.lt, operator.ge]:
+                        it = min(other.bound)
+                    else:
+                        it = max(other.bound)
+                else:
+                    it = other.point
+            else: # isinstance(other, (int, float, numpy.number)):
+                it = other
+        
+        # Compare the designated components
+        res = operator_method(me, it)
+        
+        # If we both have bounds, we must also check our points
+        if force_point_check:
+            res = res and operator_method(self.point, other.point) 
 
-                if self.bound is not None:
-                    res = operator_method(max_or_min(self.bound), max_or_min(other.bound))
-
-                # TODO: This seems inconsistent. See #1278.
-                res = res and operator_method(self.point, other.point)
-
-        # Trying to compare with unsupported type
-        else:
-            res = NotImplemented
         return res
-
+    
     def __ge__(self, other):
         return self.__common_cmp__(other, operator.ge)
 
