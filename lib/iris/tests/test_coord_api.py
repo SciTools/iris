@@ -597,6 +597,11 @@ class TestCoordCollapsed(tests.IrisTest):
         # the order of the points/bounds should not affect the resultant bounded coordinate 
         coord = coord[::-1]
         self.assertEqual(expected_coord, coord.collapsed())
+        
+    def test_nd_bounds(self):
+        cube = iris.tests.stock.simple_2d_w_multidim_coords(with_bounds=True)
+        pcube = cube.collapsed(['bar','foo'], iris.analysis.SUM)
+        self.assertCML(pcube, ("coord_api", "nd_bounds.cml"))
 
 
 class TestGetterSetter(tests.IrisTest):
