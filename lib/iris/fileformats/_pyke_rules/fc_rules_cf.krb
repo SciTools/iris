@@ -312,7 +312,9 @@ fc_build_coordinate_latitude
         check not is_rotated_latitude(engine, $coordinate)
     assert
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
-        python build_dimension_coordinate(engine, cf_coord_var, coord_name=CF_VALUE_STD_NAME_LAT, coord_system=engine.provides['coordinate_system'])
+        python build_dimension_coordinate(engine, cf_coord_var,
+        								coord_name=CF_VALUE_STD_NAME_LAT,
+        								coord_system=engine.provides['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 
@@ -331,7 +333,9 @@ fc_build_coordinate_latitude_rotated
         check is_rotated_latitude(engine, $coordinate)
     assert
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
-        python build_dimension_coordinate(engine, cf_coord_var, coord_name=CF_VALUE_STD_NAME_GRID_LAT, coord_system=engine.provides['coordinate_system'])
+        python build_dimension_coordinate(engine, cf_coord_var,
+        								coord_name=CF_VALUE_STD_NAME_GRID_LAT,
+        								coord_system=engine.provides['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 
@@ -350,7 +354,9 @@ fc_build_coordinate_longitude
         check not is_rotated_longitude(engine, $coordinate)
     assert
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
-        python build_dimension_coordinate(engine, cf_coord_var, coord_name=CF_VALUE_STD_NAME_LON, coord_system=engine.provides['coordinate_system'])
+        python build_dimension_coordinate(engine, cf_coord_var,
+        								coord_name=CF_VALUE_STD_NAME_LON,
+        								coord_system=engine.provides['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 
@@ -369,11 +375,11 @@ fc_build_coordinate_longitude_rotated
         check is_rotated_longitude(engine, $coordinate)
     assert
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
-        python build_dimension_coordinate(engine, cf_coord_var, coord_name=CF_VALUE_STD_NAME_GRID_LON, coord_system=engine.provides['coordinate_system'])
+        python build_dimension_coordinate(engine, cf_coord_var,
+        								coord_name=CF_VALUE_STD_NAME_GRID_LON,
+        								coord_system=engine.provides['coordinate_system'])
         python engine.rule_triggered.add(rule.name)        
 
-
-        
 
 #
 # Context:
@@ -392,7 +398,9 @@ fc_build_coordinate_latitude_nocs
         	facts_cf.provides(coordinate_system, rotated_latitude_longitude)
     assert
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
-        python build_dimension_coordinate(engine, cf_coord_var, coord_name=CF_VALUE_STD_NAME_LAT, coord_system=None)
+        python build_dimension_coordinate(engine, cf_coord_var,
+        								coord_name=CF_VALUE_STD_NAME_LAT,
+        								coord_system=None)
         python engine.rule_triggered.add(rule.name)
 
 
@@ -413,7 +421,9 @@ fc_build_coordinate_longitude_nocs
 	        facts_cf.provides(coordinate_system, rotated_latitude_longitude)
     assert
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
-        python build_dimension_coordinate(engine, cf_coord_var, coord_name=CF_VALUE_STD_NAME_LON, coord_system=None)
+        python build_dimension_coordinate(engine, cf_coord_var,
+        								coord_name=CF_VALUE_STD_NAME_LON,
+        								coord_system=None)
         python engine.rule_triggered.add(rule.name)
         
 
