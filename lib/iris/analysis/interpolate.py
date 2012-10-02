@@ -659,9 +659,25 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
                                   dtype=src_coord.dtype)
             src_points = numpy.append(src_coord.points,
                                   src_coord.points[0] + modulus)
-            data = numpy.append(cube.data,
-                                cube.data[tuple(coord_slice_in_cube)],
-                                axis=sample_dim)
+
+            # TODO: Restore this code after resolution of the following issue:
+            # https://github.com/numpy/numpy/issues/478
+#            data = numpy.append(cube.data,
+#                                cube.data[tuple(coord_slice_in_cube)],
+#                                axis=sample_dim)
+            if not isinstance(cube.data, numpy.ma.MaskedArray):
+                data = numpy.append(cube.data,
+                                    cube.data[tuple(coord_slice_in_cube)],
+                                    axis=sample_dim)
+            else:
+                new_data = numpy.append(cube.data.data,
+                                    cube.data.data[tuple(coord_slice_in_cube)],
+                                    axis=sample_dim)
+                new_mask = numpy.append(cube.data.mask,
+                                    cube.data.mask[tuple(coord_slice_in_cube)],
+                                    axis=sample_dim)
+                data = numpy.ma.array(new_data, mask=new_mask)
+                
         else:
             src_points = src_coord.points
             data = cube.data
