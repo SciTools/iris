@@ -6,7 +6,7 @@
       <attribute name="source" value="Data from Met Office Unified Model 7.04"/>
     </attributes>
     <coords>
-      <coord datadims="(1, 2, 3)">
+      <coord datadims="[1, 2, 3]">
         <AuxCoord bounds="[[[[110.742, 115.678],
   		[136.728, 141.649],
   		[174.916, 179.815],
