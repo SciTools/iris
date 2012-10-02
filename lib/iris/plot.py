@@ -392,19 +392,18 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
         x = numpy.append(x, x[:, 0:1] + 360 * direction, axis=1)
         data = numpy.ma.concatenate([data, data[:, 0:1]], axis=1)
 
-    # Get the native crs and map (might be the same cartopy definiton)
-    cs = cube.coord_system('CoordSystem')
-    cartopy_crs = cs.as_cartopy_crs()  # E.g. Geodetic
-    cartopy_proj = cs.as_cartopy_projection()  # E.g. PlateCarree
-
     # Replace non-cartopy subplot/axes with a cartopy alternative.
+    cs = cube.coord_system('CoordSystem')
+    cartopy_proj = cs.as_cartopy_projection()  # E.g. PlateCarree
     ax = _get_cartopy_axes(cartopy_proj)
 
     draw_method = getattr(ax, draw_method_name)
 
     # Set the "from transform" keyword. 
+    # NB. While cartopy doesn't support spherical contours, just use the
+    # projection as the source CRS.
     assert 'transform' not in kwargs, 'Transform keyword is not allowed.' 
-    kwargs['transform'] = cartopy_crs
+    kwargs['transform'] = cartopy_proj
     
     if arg_func is not None:
         new_args, kwargs = arg_func(x, y, data, *args, **kwargs)
@@ -563,11 +562,11 @@ def map_setup(projection=None, xlim=None, ylim=None, cube=None, mode=None):
         extents = iris.analysis.cartography.xy_range(cube, mode, projection)
         xlim = extents[0]
         ylim = extents[1]
-        lim_crs = cs.as_cartopy_crs() if cs else None
+        lim_crs = cs.as_cartopy_projection() if cs else None
 
     ax = _get_cartopy_axes(projection)
 
-    if xlim is not None != ylim is not None:
+    if (xlim is not None) != (ylim is not None):
         warnings.warn('Both xlim and ylim must currently be set.')
     
     if xlim is not None:
