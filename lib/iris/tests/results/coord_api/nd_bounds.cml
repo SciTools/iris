@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube long_name="thingness" units="1">
+    <attributes>
+      <attribute name="history" value="Sum of thingness over bar, foo"/>
+    </attributes>
+    <coords>
+      <coord>
+        <AuxCoord bounds="[[0, 60]]" id="5634c91ba5717382" long_name="bar" points="[30.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
+      </coord>
+      <coord>
+        <AuxCoord bounds="[[-25, 70]]" id="5634c91ba5717382" long_name="foo" points="[22.5]" shape="(1,)" units="Unit('1')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="sum">
+        <coord name="bar"/>
+        <coord name="foo"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0xe9a1af9" dtype="int64" shape="(1,)"/>
+  </cube>
+</cubes>

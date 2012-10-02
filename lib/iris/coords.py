@@ -645,7 +645,9 @@ class Coord(CFVariableMixin):
                 raise ValueError('Cannot partially collapse a coordinate (%s).' % self.name())
         
         # Warn about non-contiguity.
-        if not self.is_contiguous():
+        if self.ndim > 1:
+            warnings.warn('Collapsing a multi-dimensional coordinate. Metadata may not be fully descriptive for "%s".' % self.name())
+        elif not self.is_contiguous():
             warnings.warn('Collapsing a non-contiguous coordinate. Metadata may not be fully descriptive for "%s".' % self.name())
 
         # Create bounds for the new collapsed coordinate.
