@@ -20,9 +20,8 @@ Iris documentation table of contents
 .. toctree::
    :maxdepth: 1
 
-   whats_new/changes.rst
+   whats_new.rst
    examples/index.rst
    developers_guide/index.rst
-   installing.rst
    copyright.rst
 
