@@ -5,7 +5,7 @@
       <attribute name="source" value="Iris test case"/>
     </attributes>
     <coords>
-      <coord datadims="(1,)">
+      <coord datadims="[1]">
         <AuxCoord bounds="[[0.0, 13.3333],
 		[13.3333, 33.3333],
 		[33.3333, 60.0],

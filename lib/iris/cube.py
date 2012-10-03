@@ -272,7 +272,7 @@ class Cube(CFVariableMixin):
         * dim_coords_and_dims
             A list of coordinates with scalar dimension mappings, e.g ``[(lat_coord, 0), (lon_coord, 1)]``.
         * aux_coords_and_dims
-            A list of coordinates with dimension mappings, e.g ``[(lat_coord, [0]), (lon_coord, [0,1])]``.
+            A list of coordinates with dimension mappings, e.g ``[(lat_coord, 0), (lon_coord, (0, 1))]``.
             See also :meth:`Cube.add_dim_coord()<iris.cube.Cube.add_dim_coord>` and :meth:`Cube.add_aux_coord()<iris.cube.Cube.add_aux_coord>`.
         * aux_factories
             A list of auxiliary coordinate factories. See :mod:`iris.aux_factory`.
@@ -381,7 +381,7 @@ class Cube(CFVariableMixin):
         Kwargs:
 
         * data_dims
-            Integer/list of integers giving the data dimensions spanned by the coordinate.
+            Integer or iterable of integers giving the data dimensions spanned by the coordinate.
             
         Raises a ValueError if a coordinate with identical metadata already exists
         on the cube.
@@ -390,14 +390,13 @@ class Cube(CFVariableMixin):
 
         """
 
+        # Convert to a tuple of integers
         if data_dims is None:
-            data_dims = []
-
-        # Convert to list of integers
-        if isinstance(data_dims, collections.Container):
-            data_dims = [int(d) for d in data_dims]
+            data_dims = tuple()
+        elif isinstance(data_dims, collections.Container):
+            data_dims = tuple(int(d) for d in data_dims)
         else:
-            data_dims = [int(data_dims)]
+            data_dims = (int(data_dims),)
 
         if data_dims:
             if len(data_dims) != coord.ndim:
@@ -458,20 +457,21 @@ class Cube(CFVariableMixin):
         if data_dim is None:
             raise ValueError('You must supply a data dimension for a dimensioned coord.')
         if isinstance(data_dim, collections.Container) and len(data_dim) != 1:
-            raise ValueError('The supplied data dimension must be a single number')            
-        if self.coords(dimensions=data_dim, dim_coords=True):
-            raise ValueError('A dim_coord is already associated with dimension %d.' % data_dim)
+            raise ValueError('The supplied data dimension must be a single number')
 
-        #TODO tidy this up
         # Convert data_dim to a single integer
         if isinstance(data_dim, collections.Container):
             data_dim = int(list(data_dim)[0])
         else:
             data_dim = int(data_dim)
-        
+
         # Check data_dim value is valid
         if data_dim < 0 or data_dim >= self.ndim:
             raise ValueError('The cube does not have the specified dimension (%d)' % data_dim)
+
+        # Check dimension is available
+        if self.coords(dimensions=data_dim, dim_coords=True):
+            raise ValueError('A dim_coord is already associated with dimension %d.' % data_dim)
 
         # Check compatibility with the shape of the data
         if dim_coord.shape[0] != self.shape[data_dim]:
@@ -528,10 +528,12 @@ class Cube(CFVariableMixin):
 
     def coord_dims(self, coord):
         """
-        Returns the list of data dimensions relevant to the given coordinate.
+        Returns a tuple of the data dimensions relevant to the given
+        coordinate.
 
-        When searching for the given coordinate in the cube the comparison is made using coordinate metadata
-        equality. Hence the given coordinate instance need not exist on the cube, and may contain different
+        When searching for the given coordinate in the cube the comparison is
+        made using coordinate metadata equality. Hence the given coordinate
+        instance need not exist on the cube, and may contain different
         coordinate values.
 
         Args:
@@ -545,7 +547,7 @@ class Cube(CFVariableMixin):
         ### Search by coord definition first
 
         # Search dim coords first
-        matches = [[dim] for coord_, dim in self._dim_coords_and_dims if coord_._as_defn() == target_defn]
+        matches = [(dim,) for coord_, dim in self._dim_coords_and_dims if coord_._as_defn() == target_defn]
 
         # Search aux coords
         if not matches:
@@ -561,7 +563,7 @@ class Cube(CFVariableMixin):
         # XXX Where did this come from? And why isn't it reflected in the docstring?
         
         if not matches:
-            matches = [[dim] for coord_, dim in self._dim_coords_and_dims if coord_.name() == coord.name()]
+            matches = [(dim,) for coord_, dim in self._dim_coords_and_dims if coord_.name() == coord.name()]
 
         # Search aux coords
         if not matches:
@@ -653,8 +655,8 @@ class Cube(CFVariableMixin):
         * contains_dimension
             The desired coordinate contains the data dimension. If None, does not check for the dimension.
         * dimensions
-            The exact data dimensions of the desired coordinate. Coordinates with no data dimension can be found with an empty list (i.e. ``[]``). 
-            If None, does not check for dimensions.
+            The exact data dimensions of the desired coordinate. Coordinates with no data dimension can be found with an
+            empty tuple or list (i.e. ``()`` or ``[]``). If None, does not check for dimensions.
         * coord
             Whether the desired coordinates have metadata equal to the given coordinate instance. If None, no check is done.
             Accepts either a :class:'iris.coords.DimCoord`, :class:`iris.coords.AuxCoord` or :class:`iris.coords.CoordDefn`.
@@ -711,7 +713,7 @@ class Cube(CFVariableMixin):
         if dimensions is not None:
             if not isinstance(dimensions, collections.Container):
                 dimensions = [dimensions]
-            coords_and_factories = filter(lambda coord_: dimensions == self.coord_dims(coord_), coords_and_factories)
+            coords_and_factories = filter(lambda coord_: tuple(dimensions) == self.coord_dims(coord_), coords_and_factories)
 
         # If any factories remain after the above filters we have to make the coords so they can be returned
         def extract_coord(coord_or_factory):
@@ -1441,9 +1443,10 @@ class Cube(CFVariableMixin):
             return coord, dim_mapping[dim]
         self._dim_coords_and_dims = map(remap_dim_coord, self._dim_coords_and_dims)
 
-        for coord, dims in self._aux_coords_and_dims:
-            for i, dim in enumerate(dims):
-                dims[i] = dim_mapping[dim]
+        def remap_aux_coord(coord_and_dims):
+            coord, dims = coord_and_dims
+            return coord, tuple(dim_mapping[dim] for dim in dims)
+        self._aux_coords_and_dims = map(remap_aux_coord, self._aux_coords_and_dims)
 
     def xml(self, checksum=False):
         """
@@ -1488,7 +1491,7 @@ class Cube(CFVariableMixin):
             cube_coord_xml_element = doc.createElement("coord")
             coords_xml_element.appendChild(cube_coord_xml_element)
             
-            dims = self.coord_dims(coord)
+            dims = list(self.coord_dims(coord))
             if dims:
                 cube_coord_xml_element.setAttribute("datadims", repr(dims))
             

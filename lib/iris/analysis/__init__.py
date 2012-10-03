@@ -240,7 +240,7 @@ def coord_comparison(*cubes):
         
         # get all coordinate groups which don't describe a dimension 
         # (None -> doesn't describe a dimension)
-        no_data_dim_fn = lambda cube, coord: cube.coord_dims(coord=coord) == []
+        no_data_dim_fn = lambda cube, coord: cube.coord_dims(coord=coord) == ()
         if coord_group.matches_all(no_data_dim_fn):
             no_data_dimension.add(coord_group)
             
