@@ -40,11 +40,15 @@ def _title(cube_or_coord, with_units):
         if with_units and not (units.unknown or
                                units.no_unit or
                                units == iris.unit.Unit('1')):
-            # Use shortest unit representation e.g. prefer 'K' over
-            # over 'kelvin', but not '0.0174532925199433 rad' over 'degrees'
-            if len(units.symbol) < len(str(units)):
+
+            # For non-time units use the shortest unit representation e.g.
+            # prefer 'K' over 'kelvin', but not '0.0174532925199433 rad'
+            # over 'degrees'
+            if (not units.is_time() and not units.time_reference and
+                len(units.symbol) < len(str(units))):
                 units = units.symbol
             title += ' / {}'.format(units)
+
     return title
 
 
@@ -59,8 +63,9 @@ def _label(cube, mode, result=None, ndims=2, coords=None):
                            drawedges=draw_edges)
         has_known_units = not (cube.units.unknown or cube.units.no_unit)
         if has_known_units and cube.units != iris.unit.Unit('1'):
-            # Use shortest unit representation
-            if len(cube.units.symbol) < len(str(cube.units)):
+            # Use shortest unit representation for anything other than time
+            if (not cube.units.is_time() and not cube.units.time_reference and
+                len(cube.units.symbol) < len(str(cube.units))):
                 bar.set_label(cube.units.symbol)
             else:
                 bar.set_label(cube.units)
