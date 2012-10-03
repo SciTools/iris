@@ -169,6 +169,39 @@ class TestBasicCubeConstruction(tests.IrisTest):
         self.cube.remove_coord('y')
         self.assertEqual(self.cube.coords(), [])
 
+    def test_immutable_dimcoord_dims(self):
+        # Add DimCoord to dimension 1
+        dims = [1]
+        self.cube.add_dim_coord(self.x, dims)
+        self.assertEqual(self.cube.coord_dims(self.x), (1,))
+
+        # Change dims object
+        dims[0] = 0
+        # Check the cube is unchanged
+        self.assertEqual(self.cube.coord_dims(self.x), (1,))
+
+        # Check coord_dims cannot be changed
+        dims = self.cube.coord_dims(self.x)
+        with self.assertRaises(TypeError):
+            dims[0] = 0
+
+    def test_immutable_auxcoord_dims(self):
+        # Add AuxCoord to dimensions (0, 1)
+        dims = [0, 1]
+        self.cube.add_aux_coord(self.xy, dims)
+        self.assertEqual(self.cube.coord_dims(self.xy), (0, 1))
+
+        # Change dims object
+        dims[0] = 1
+        dims[1] = 0
+        # Check the cube is unchanged
+        self.assertEqual(self.cube.coord_dims(self.xy), (0, 1))
+
+        # Check coord_dims cannot be changed
+        dims = self.cube.coord_dims(self.xy)
+        with self.assertRaises(TypeError):
+            dims[0] = 1
+
 
 class TestStockCubeStringRepresentations(tests.IrisTest):
     def setUp(self):

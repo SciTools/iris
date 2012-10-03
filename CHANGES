@@ -25,10 +25,13 @@ Incompatible changes
   get_lat_lon_contiguous_grids(). They have been replaced with
   generalised versions: xy_range(), get_xy_grids(),
   and get_xy_contiguous_bounded_grids().
+* Cube.coord_dims() now returns a tuple instead of a list.
 
 Deprecations
 ------------
 * The methods `Coord.cos()` and `Coord.sin()` have been deprecated.
+* The function `load_strict()` function has been deprecated. Code should
+  now use `iris.load_cube()` and `iris.load_cubes()` instead.
 
 
 ----------------------------
@@ -114,7 +117,7 @@ Incompatible changes
   Previously the signature was ``loader(filename, callback)`` and now looks like ``loader(filenames, callback)`` where ``filenames``
   is an iterable of filenames.
 * Custom aggregators should now create :class:`iris.analysis.Aggregator` instances rather than defining 
-  a the partial creation of an Aggregate (i.e. ``partial(iris.analysis.Aggregate, ...)`` becomes ``iris.analsysis.Aggregator(...)``.
+  a the partial creation of an Aggregate (i.e. ``partial(iris.analysis.Aggregate, ...)`` becomes ``iris.analysis.Aggregator(...)``.
 * PP STASH code ingestion is now stricter. In particular handling of partial stash codes (i.e. those without a model or section) 
   is no longer done, meaning that some cubes which previously had a standard name may no longer have a standard name. 
   Further work is planned to support field code translation which should provide more robust and accurate PP interpretations.
@@ -188,7 +191,7 @@ Release 0.5 (31 Oct, 2011)
 
 * Added ability to derive area weights from a shapely geometry.
 
-* Cubes can now be operated on (added, muliplied, etc.) using numpy arrays.
+* Cubes can now be operated on (added, multiplied, etc.) using numpy arrays.
 
 * New example of how to load custom ascii files into Cubes.
 

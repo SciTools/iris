@@ -46,6 +46,7 @@ Incompatible changes
 --------------------
 * The "source" and "history" metadata are now represented as Cube
   attributes, where previously they used coordinates.
+* Cube.coord_dims() now returns a tuple instead of a list.
 
 Deprecations
 ------------
@@ -196,7 +197,7 @@ Where previously it would have appeared as::
               source: Data from Met Office Unified Model
          ...
 
-.. note:: This change breaks backwards compatibiltiy with Iris 0.9. But
+.. note:: This change breaks backwards compatibility with Iris 0.9. But
     if it is desirable to have the "source" metadata expressed as a
     coordinate then it can be done with the following pattern::
 
