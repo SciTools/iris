@@ -24,7 +24,6 @@ import warnings
 import matplotlib.pyplot as plt 
 import numpy
 
-import cartopy.crs as ccrs
 import iris
 import iris.coords as coords
 import iris.plot as iplt
