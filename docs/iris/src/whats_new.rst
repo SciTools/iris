@@ -46,7 +46,7 @@ Incompatible changes
 --------------------
 * The "source" and "history" metadata are now represented as Cube
   attributes, where previously they used coordinates.
-* Cube.coord_dims() now returns a tuple instead of a list.
+* :meth:`iris.cube.Cube.coord_dims()` now returns a tuple instead of a list.
 
 Deprecations
 ------------
