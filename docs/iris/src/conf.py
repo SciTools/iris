@@ -146,7 +146,6 @@ intersphinx_mapping = {
    'numpy': ('http://docs.scipy.org/doc/numpy/', None), 
    'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None), 
    'matplotlib': ('http://matplotlib.sourceforge.net/', None),
-   'basemap': ('http://matplotlib.github.com/basemap/', None),
 } 
 
 

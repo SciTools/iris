@@ -196,7 +196,8 @@ class GribWrapper(object):
             # Warn if we detect 'bad' (2's compliment) forecastTime.
             # Don't fix it, we're not doing that at present. It's not grib compliant.
             if abs(forecastTime) > 2**24:
-                warnings.warn("Bad forecastTime detected! Please contact the Iris team with the file you tried to load.")
+                warnings.warn("Bad forecastTime detected! "
+                              "Please contact the Iris team with the file you tried to load.")
         else:
             forecastTime = self.stepRange
 
@@ -219,11 +220,14 @@ class GribWrapper(object):
             '_firstLevelTypeUnits':unknown_string, '_firstLevel':-1.0,
             '_secondLevelTypeName':unknown_string, '_secondLevel':-1.0,
             '_originatingCentre':unknown_string, '_forecastTimeUnit':unknown_string,
-            '_coord_system':None,
-            '_x_coord_name':unknown_string, '_y_coord_name':unknown_string}
+            '_coord_system':None, '_x_circular':False,
+            '_x_coord_name':unknown_string, '_y_coord_name':unknown_string,
+            '_x_points':None, '_y_points':None}  # TODO: Get rid of rules files.
 
         #reference date
-        self.extra_keys['_referenceDateTime'] = datetime.datetime(int(self.year), int(self.month), int(self.day), int(self.hour), int(self.minute))
+        self.extra_keys['_referenceDateTime'] = \
+            datetime.datetime(int(self.year), int(self.month), int(self.day),
+                              int(self.hour), int(self.minute))
         
         #verification date
         processingDone = self._get_processing_done()
@@ -236,9 +240,10 @@ class GribWrapper(object):
             endMinute = self.minuteOfEndOfOverallTimeInterval
 
             # fixed forecastTime in hours
-            self.extra_keys['_periodStartDateTime'] = self.extra_keys['_referenceDateTime'] + \
-                                                      datetime.timedelta(0, 0, 0, 0, 0, int(forecastTime))
-            self.extra_keys['_periodEndDateTime'] = datetime.datetime(endYear, endMonth, endDay, endHour, endMinute)
+            self.extra_keys['_periodStartDateTime'] = \
+                self.extra_keys['_referenceDateTime'] + datetime.timedelta(0, 0, 0, 0, 0, int(forecastTime))
+            self.extra_keys['_periodEndDateTime'] = \
+                datetime.datetime(endYear, endMonth, endDay, endHour, endMinute)
         else:
             self.extra_keys['_phenomenonDateTime'] = self._get_verification_date()
 
@@ -343,6 +348,31 @@ class GribWrapper(object):
         else:
             self.extra_keys['_x_coord_name'] = "grid_longitude"
             self.extra_keys['_y_coord_name'] = "grid_latitude"
+            
+        self._x_points = numpy.arange(self.Ni, dtype=numpy.float64) \
+                       * self.iDirectionIncrementInDegrees * (self.iScansNegatively*(-2)+1) \
+                       + self.longitudeOfFirstGridPointInDegrees
+                       
+        self._y_points = numpy.arange(self.Nj, dtype=numpy.float64) \
+                       * self.jDirectionIncrementInDegrees * (self.jScansPositively*2-1) \
+                       + self.latitudeOfFirstGridPointInDegrees
+            
+        # circular x coord?
+        # TODO: This check should become Coord.is_circular(), replacing Coord.circular.
+        # See also the circular discussion in https://github.com/SciTools/iris/issues/77
+        if "longitude" in self.extra_keys['_x_coord_name'] and self.Ni > 1:
+            # Is the gap from end to start smaller or about equal to the max step?
+            points = self._x_points
+            gap = 360.0 - abs(points[-1] - points[0]) 
+            max_step = abs(numpy.diff(points)).max()
+            if gap <= max_step:
+                self.extra_keys['_x_circular'] = True
+            else:
+                try:
+                    numpy.testing.assert_almost_equal(gap / max_step, 1.0, decimal=3)
+                    self.extra_keys['_x_circular'] = True
+                except:
+                    pass
         
     def _get_processing_done(self):
         """Determine the type of processing that was done on the data."""
@@ -353,7 +383,8 @@ class GribWrapper(object):
         #grib1
         if edition == 1:
             timeRangeIndicator = self.timeRangeIndicator
-            processingDone = TIME_RANGE_INDICATORS.get(timeRangeIndicator, 'time _grib1_process_unknown_%i' % timeRangeIndicator)
+            processingDone = TIME_RANGE_INDICATORS.get(timeRangeIndicator,
+                                'time _grib1_process_unknown_%i' % timeRangeIndicator)
         
         #grib2
         else:
@@ -367,8 +398,8 @@ class GribWrapper(object):
             #pdt 4.8? (time-processed)
             elif pdt == 8:
                 typeOfStatisticalProcessing = self.typeOfStatisticalProcessing
-                processingDone = PROCESSING_TYPES.get(typeOfStatisticalProcessing, 'time _grib2_process_unknown_%i' % \
-                                                      typeOfStatisticalProcessing)
+                processingDone = PROCESSING_TYPES.get(typeOfStatisticalProcessing,
+                                    'time _grib2_process_unknown_%i' % typeOfStatisticalProcessing)
                         
         return processingDone
     
@@ -413,10 +444,14 @@ class GribWrapper(object):
             time_diff = int(self.stepRange) # gribapi gives us a string!
             forecast_time_unit = self.indicatorOfUnitOfTimeRange  # P1 and P2 units
             
-            if forecast_time_unit == 0: verification_date = reference_date_time + datetime.timedelta(0, 0, 0, 0, int(time_diff))  # minutes
-            elif forecast_time_unit == 1: verification_date = reference_date_time + datetime.timedelta(0, 0, 0, 0, 0, int(time_diff))  # hours
-            elif forecast_time_unit == 2: verification_date = reference_date_time + datetime.timedelta(int(time_diff))  # days
-            elif forecast_time_unit == 13: verification_date = reference_date_time + datetime.timedelta(0, int(time_diff))  # seconds
+            if forecast_time_unit == 0:
+                verification_date = reference_date_time + datetime.timedelta(0, 0, 0, 0, int(time_diff))  # minutes
+            elif forecast_time_unit == 1:
+                verification_date = reference_date_time + datetime.timedelta(0, 0, 0, 0, 0, int(time_diff))  # hours
+            elif forecast_time_unit == 2:
+                verification_date = reference_date_time + datetime.timedelta(int(time_diff))  # days
+            elif forecast_time_unit == 13:
+                verification_date = reference_date_time + datetime.timedelta(0, int(time_diff))  # seconds
             else:
                 raise iris.exceptions.TranslationError("Unhandled grib2 unitOfTime = %i" % forecast_time_unit)
     

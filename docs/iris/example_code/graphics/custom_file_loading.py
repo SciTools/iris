@@ -215,15 +215,11 @@ def main():
     # Callback shown as None to illustrate where a cube-level callback function would be used if required
     cube = iris.load_strict(fname, boundary_volc_ash_constraint, callback=None)
 
-    map = iplt.map_setup(lon_range=[-70, 20], lat_range=[20, 75], resolution='i')
-    
-    map.drawcoastlines()
-    
-    iplt.contourf(cube, 
-                        levels=(0.0002, 0.002, 0.004, 1),
+    iplt.map_setup(xlim=(-70, 20), ylim=(20, 75))
+    plt.gca().coastlines()
+    iplt.contourf(cube, levels=(0.0002, 0.002, 0.004, 1),
                         colors=('#80ffff', '#939598', '#e00404'),
-                        extend='max'
-                  )
+                        extend='max')
     
     time = cube.coord('time')
     time_date = time.units.num2date(time.points[0]).strftime(UTC_format)
