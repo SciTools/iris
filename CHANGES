@@ -25,7 +25,7 @@ Incompatible changes
   get_lat_lon_contiguous_grids(). They have been replaced with
   generalised versions: xy_range(), get_xy_grids(),
   and get_xy_contiguous_bounded_grids().
-* Cube.coord_dims() now returns a tuple instead of a list.
+* The method `Cube.coord_dims()` now returns a tuple instead of a list.
 
 Deprecations
 ------------
