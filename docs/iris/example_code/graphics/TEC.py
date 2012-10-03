@@ -41,8 +41,8 @@ def main():
     plt.title('Total Electron Content')
     plt.xlabel('longitude / degrees')
     plt.ylabel('latitude / degrees')
-    iplt.gcm().bluemarble(zorder=-1)
-    iplt.gcm().drawcoastlines()
+    plt.gca().bluemarble()
+    plt.gca().coastlines()
     plt.show()
 
 

@@ -11,11 +11,8 @@ temperature_cube = iris.load_strict(fname)
 # Add a contour, and put the result in a variable called contour.
 contour = qplt.contour(temperature_cube)
 
-# Get the map created by contourf
-current_map = iplt.gcm()
-
-# Add coastlines to the map
-current_map.drawcoastlines()
+# Add coastlines to the map created by contour
+plt.gca().coastlines()
 
 # Add contour labels based on the contour we have just created
 plt.clabel(contour)

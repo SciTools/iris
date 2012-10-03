@@ -19,6 +19,8 @@
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
+import warnings
+
 import matplotlib.pyplot as plt 
 import numpy
 
@@ -175,7 +177,6 @@ class SliceMixin(object):
 
     def test_yx(self):
         cube = self.wind[0, 0, :, :]
-        iplt.map_setup(cube=cube, mode=coords.POINT_MODE)
         self.draw_method(cube)
         self.check_graphic()
 
@@ -286,35 +287,6 @@ class TestQuickplotPlot(tests.GraphicsTest, Slice1dMixin):
     def setUp(self):
         self.wind = _load_wind()
         self.draw_method = qplt.plot
-
-
-@iris.tests.skip_data
-class TestFillContinents(tests.GraphicsTest):
-    def setUp(self):
-        datafile = tests.get_data_path(('PP', 'itam', 'WO0000000000934', 'NAE.20100908_00_an.pp'))
-        self.cube = iris.load(datafile)[0]
-        # scale down the data by 100
-        self.cube.data = self.cube.data/100.0
-    
-    def test_fillcontinents_underneath(self):
-        
-        # setup the map and plot output
-        current_map = iris.plot.map_setup(resolution='i', lon_range=[-70, 70], lat_range=[25, 75], projection='merc')
-        current_map.drawcoastlines()
-        current_map.fillcontinents(color='green', lake_color='aqua', zorder=0)
-        iris.plot.contourf(self.cube)
-        
-        self.check_graphic()
-
-    def test_fillcontinents_ontop(self):
-
-        # setup the map and plot output
-        current_map = iris.plot.map_setup(resolution='i', lon_range=[-70, 70], lat_range=[25, 75], projection='merc')
-        current_map.drawcoastlines()
-        current_map.fillcontinents(color='green', lake_color='aqua', zorder=3)
-        iris.plot.contourf(self.cube)
-        
-        self.check_graphic()
 
 
 _load_strict_once_cache = {}

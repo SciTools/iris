@@ -76,8 +76,7 @@ def main():
         cf = iplt.contourf(cube, contour_levels)
     
         # add coastlines
-        m = iplt.gcm()
-        m.drawcoastlines()
+        plt.gca().coastlines()
     
     # make an axes to put the shared colorbar in
     colorbar_axes = plt.gcf().add_axes([0.35, 0.1, 0.3, 0.05])

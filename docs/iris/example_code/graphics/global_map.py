@@ -18,7 +18,7 @@ def main():
     temperature = iris.load_strict(fname)
     
     qplt.contourf(temperature, 15)
-    iplt.gcm().drawcoastlines()
+    plt.gca().coastlines()
     plt.show()
 
 
