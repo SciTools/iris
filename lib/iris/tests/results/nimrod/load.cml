@@ -25,8 +25,8 @@
         </DimCoord>
       </coord>
       <coord datadims="[0]">
-        <DimCoord id="27983361be3021ee" long_name="y" points="[1222000.0, 1224000.0, 1226000.0, ..., 2624000.0,
-		2626000.0, 2628000.0]" shape="(704,)" units="Unit('m')" value_type="float64">
+        <DimCoord id="27983361be3021ee" long_name="y" points="[-184000.0, -182000.0, -180000.0, ..., 1218000.0,
+		1220000.0, 1222000.0]" shape="(704,)" units="Unit('m')" value_type="float64">
           <oSGB ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909)" false_easting="-400000.0" false_northing="100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </DimCoord>
       </coord>
