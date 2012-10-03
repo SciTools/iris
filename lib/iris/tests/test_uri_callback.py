@@ -36,14 +36,14 @@ class TestCallbacks(tests.IrisTest):
             pass
         fname = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
         with self.assertRaises(TypeError):
-            iris.load_strict(fname, callback=invalid_callback)
+            iris.load_cube(fname, callback=invalid_callback)
 
     def test_invalid_return_type_callback(self):
         def invalid_callback(cube, field, filename):
             return 'Not valid to return a string'
         fname = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
         with self.assertRaises(TypeError):
-            iris.load_strict(fname, callback=invalid_callback)
+            iris.load_cube(fname, callback=invalid_callback)
 
     def test_non_returning_callback(self):
         def drop_all_callback(cube, field, filename):
@@ -89,7 +89,7 @@ class TestCallbacks(tests.IrisTest):
             cube.add_aux_coord(iris.coords.AuxCoord(field.extra_keys['_periodStartDateTime'], long_name='random element', units='no_unit'))
             
         fname = tests.get_data_path(('GRIB', 'global_t', 'global.grib2'))
-        cube = iris.load_strict(fname, callback=grib_thing_getter)
+        cube = iris.load_cube(fname, callback=grib_thing_getter)
         self.assertCML(cube, ['uri_callback', 'grib_global.cml'])
     
     def test_pp_callback(self):
@@ -97,7 +97,7 @@ class TestCallbacks(tests.IrisTest):
             cube.attributes['filename'] = os.path.basename(filename)
             cube.attributes['lbyr'] = field.lbyr
         fname = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
-        cube = iris.load_strict(fname, callback=pp_callback)
+        cube = iris.load_cube(fname, callback=pp_callback)
         self.assertCML(cube, ['uri_callback', 'pp_global.cml'])
 
 

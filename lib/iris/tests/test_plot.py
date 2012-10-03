@@ -138,7 +138,7 @@ def cache(fn, cache={}):
 def _load_wind():
     # Load the COLPEX data => TZYX
     path = tests.get_data_path(('PP', 'COLPEX', 'uwind_and_orog.pp'))
-    wind = iris.load_strict(path, 'eastward_wind')
+    wind = iris.load_cube(path, 'eastward_wind')
 
     # Until there is better mapping support for rotated-pole, pretend this isn't rotated.
     # ie. Move the pole from (37.5, 177.5) to (90, 0) and shift the coordinates.
@@ -289,18 +289,18 @@ class TestQuickplotPlot(tests.GraphicsTest, Slice1dMixin):
         self.draw_method = qplt.plot
 
 
-_load_strict_once_cache = {}
+_load_cube_once_cache = {}
 
 
-def load_strict_once(filename, constraint):
-    """Same syntax as load_strict, but will only load a file once, then cache the answer in a dictionary."""
-    global _load_strict_once_cache
+def load_cube_once(filename, constraint):
+    """Same syntax as load_cube, but will only load a file once, then cache the answer in a dictionary."""
+    global _load_cube_once_cache
     key = (filename, str(constraint))
-    cube = _load_strict_once_cache.get(key, None)
+    cube = _load_cube_once_cache.get(key, None)
     
     if cube is None:
-        cube = iris.load_strict(filename, constraint)
-        _load_strict_once_cache[key] = cube
+        cube = iris.load_cube(filename, constraint)
+        _load_cube_once_cache[key] = cube
         
     return cube
 
@@ -322,7 +322,7 @@ class LambdaStr(object):
 class TestPlotCoordinatesGiven(tests.GraphicsTest):
     def setUp(self):
         filename = tests.get_data_path(('PP', 'COLPEX', 'theta_and_orog_subset.pp'))
-        self.cube = load_strict_once(filename, 'air_potential_temperature')
+        self.cube = load_cube_once(filename, 'air_potential_temperature')
         
         self.draw_module = iris.plot
         self.contourf = LambdaStr('iris.plot.contourf', lambda cube, *args, **kwargs: iris.plot.contourf(cube, *args, **kwargs))

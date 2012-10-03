@@ -390,7 +390,7 @@ class TestRotatedPole(tests.IrisTest):
 
     def test_all(self):
         path = tests.get_data_path(('PP', 'ukVorog', 'ukv_orog_refonly.pp'))
-        master_cube = iris.load_strict(path)
+        master_cube = iris.load_cube(path)
 
         # Check overall behaviour
         cube = master_cube[::10, ::10]

@@ -84,7 +84,7 @@ class TestFileFormatPicker(tests.IrisTest):
 class TestFileExceptions(tests.IrisTest):
     def test_pp_little_endian(self):
         filename = tests.get_data_path(('PP', 'aPPglob1', 'global_little_endian.pp'))
-        self.assertRaises(ValueError, iris.load_strict, filename)
+        self.assertRaises(ValueError, iris.load_cube, filename)
 
 
 if __name__ == '__main__':

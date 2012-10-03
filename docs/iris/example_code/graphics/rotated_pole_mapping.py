@@ -21,7 +21,7 @@ import iris.analysis.cartography
 
 def main():
     fname = iris.sample_data_path('rotated_pole.nc')
-    temperature = iris.load_strict(fname)
+    temperature = iris.load_cube(fname)
     
     # Plot #1: Point plot showing data values & a colorbar
     plt.figure()

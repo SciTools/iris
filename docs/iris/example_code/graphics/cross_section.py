@@ -15,7 +15,7 @@ import iris.quickplot as qplt
 
 def main():
     fname = iris.sample_data_path('hybrid_height.nc')
-    theta = iris.load_strict(fname)
+    theta = iris.load_cube(fname)
     
     # Extract a single height vs longitude cross-section. N.B. This could easily be changed to
     # extract a specific slice, or even to loop over *all* cross section slices.

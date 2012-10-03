@@ -44,7 +44,7 @@ def cache(fn, cache={}):
 @cache
 def _load_theta():
     path = tests.get_data_path(('PP', 'COLPEX', 'theta_and_orog_subset.pp'))
-    theta = iris.load_strict(path, 'air_potential_temperature')
+    theta = iris.load_cube(path, 'air_potential_temperature')
     
     # Improve the unit
     theta.units = 'K'
@@ -60,7 +60,7 @@ def _load_theta():
 class TestQuickplotCoordinatesGiven(test_plot.TestPlotCoordinatesGiven):
     def setUp(self):
         filename = tests.get_data_path(('PP', 'COLPEX', 'theta_and_orog_subset.pp'))
-        self.cube = test_plot.load_strict_once(filename, 'air_potential_temperature')
+        self.cube = test_plot.load_cube_once(filename, 'air_potential_temperature')
         
         self.draw_module = iris.quickplot
         self.contourf = test_plot.LambdaStr('iris.quickplot.contourf', lambda cube, *args, **kwargs: 

@@ -39,7 +39,7 @@ def realization_metadata(cube, field, fname):
 
 def main():
     # extract surface temperature cubes which have an ensemble member coordinate, adding appropriate lagged ensemble metadata
-    surface_temp = iris.load_strict(iris.sample_data_path('GloSea4', 'ensemble_???.pp'),
+    surface_temp = iris.load_cube(iris.sample_data_path('GloSea4', 'ensemble_???.pp'),
                   iris.Constraint('surface_temperature', realization=lambda value: True),
                   callback=realization_metadata,
                   )

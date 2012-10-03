@@ -232,7 +232,7 @@ class TestStockCubeStringRepresentations(tests.IrisTest):
 class TestCubeStringRepresentations(IrisDotTest):
     def setUp(self):
         path = tests.get_data_path(('PP', 'simple_pp', 'global.pp'))
-        self.cube_2d = iris.load_strict(path)
+        self.cube_2d = iris.load_cube(path)
 
     def test_dot_simple_pp(self):
         # Test dot output of a 2d cube loaded from pp.
@@ -321,7 +321,7 @@ class TestCubeStringRepresentations(IrisDotTest):
 @iris.tests.skip_data
 class TestValidity(tests.IrisTest):
     def setUp(self):
-        self.cube_2d = iris.load_strict(tests.get_data_path(('PP', 'simple_pp', 'global.pp')))
+        self.cube_2d = iris.load_cube(tests.get_data_path(('PP', 'simple_pp', 'global.pp')))
 
     def test_wrong_length_vector_coord(self):
         wobble = iris.coords.DimCoord(points=[1, 2], long_name='wobble', units='1')
@@ -561,7 +561,7 @@ class Test2dExtractionByCoord(TestCube2d):
 @iris.tests.skip_data
 class TestCubeExtract(tests.IrisTest):
     def setUp(self):
-        self.single_cube = iris.load_strict(tests.get_data_path(('PP', 'globClim1', 'theta.pp')), 'air_potential_temperature')
+        self.single_cube = iris.load_cube(tests.get_data_path(('PP', 'globClim1', 'theta.pp')), 'air_potential_temperature')
 
     def test_simple(self):
         constraint = iris.Constraint(latitude=10)
@@ -702,7 +702,7 @@ class TestCubeEquality(TestCube2d):
 @iris.tests.skip_data
 class TestDataManagerIndexing(TestCube2d):
     def setUp(self):
-        self.cube = iris.load_strict(tests.get_data_path(('PP', 'aPProt1', 'rotatedMHtimecube.pp')))
+        self.cube = iris.load_cube(tests.get_data_path(('PP', 'aPProt1', 'rotatedMHtimecube.pp')))
         self.pa = self.cube._data
         self.dm = self.cube._data_manager
         self.data_array = self.dm.load(self.pa)
@@ -916,17 +916,17 @@ class TestTrimAttributes(tests.IrisTest):
 class TestMaskedData(tests.IrisTest, pp.PPTest):
     def _load_3d_cube(self):
         # This 3D data set has a missing a slice with SOME missing values (0)
-        return iris.load_strict(tests.get_data_path(["PP", "mdi_handmade_small", "*.pp"]))
+        return iris.load_cube(tests.get_data_path(["PP", "mdi_handmade_small", "*.pp"]))
     
     def test_complete_field(self):
         # This pp field has no missing data values
-        cube = iris.load_strict(tests.get_data_path(["PP", "mdi_handmade_small", "mdi_test_1000_3.pp"]))
+        cube = iris.load_cube(tests.get_data_path(["PP", "mdi_handmade_small", "mdi_test_1000_3.pp"]))
 
         self.assertTrue(isinstance(cube.data, numpy.ndarray), "Expected a numpy.ndarray")
 
     def test_masked_field(self):
         # This pp field has some missing data values
-        cube = iris.load_strict(tests.get_data_path(["PP", "mdi_handmade_small", "mdi_test_1000_0.pp"]))
+        cube = iris.load_cube(tests.get_data_path(["PP", "mdi_handmade_small", "mdi_test_1000_0.pp"]))
         self.assertTrue(isinstance(cube.data, numpy.ma.core.MaskedArray), "Expected a numpy.ma.core.MaskedArray")
 
     def test_missing_file(self):
@@ -965,7 +965,7 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
             iris.save(masked_slice, temp_pp_path)
         
             # test merge keeps the mdi we just saved
-            cube1 = iris.load_strict(temp_pp_path)
+            cube1 = iris.load_cube(temp_pp_path)
             cube2 = cube1.copy()
             # make cube1 and cube2 differ on a scalar coord, to make them mergeable into a 3d cube
             cube2.coord("pressure").points[0] = 1001.0

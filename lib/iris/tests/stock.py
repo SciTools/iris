@@ -56,13 +56,13 @@ def global_pp():
         cube.standard_name = 'air_temperature'
         cube.units = 'K'
     path = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
-    cube = iris.load_strict(path, callback=callback_global_pp)
+    cube = iris.load_cube(path, callback=callback_global_pp)
     return cube
 
 
 def simple_pp():
     filename = tests.get_data_path(['PP', 'simple_pp', 'global.pp'])   # Differs from global_pp()
-    cube = iris.load_strict(filename)
+    cube = iris.load_cube(filename)
     return cube
 
 
@@ -296,7 +296,7 @@ def realistic_4d():
     """
     # the stock arrays were created in Iris 0.8 with:
 #    >>> fname = iris.sample_data_path('PP', 'COLPEX', 'theta_and_orog_subset.pp')
-#    >>> theta = iris.load_strict(fname, 'air_potential_temperature')
+#    >>> theta = iris.load_cube(fname, 'air_potential_temperature')
 #    >>> for coord in theta.coords():
 #    ...  print coord.name, coord.has_points(), coord.has_bounds(), coord.units
 #    ... 
@@ -397,5 +397,5 @@ def realistic_4d_w_missing_data():
 
 def global_grib2():
     path = tests.get_data_path(('GRIB', 'global_t', 'global.grib2'))
-    cube = iris.load_strict(path)
+    cube = iris.load_cube(path)
     return cube

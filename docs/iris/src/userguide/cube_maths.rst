@@ -21,7 +21,7 @@ Calculating the difference between two cubes
 Let's load some air temperature which runs from 1860 to 2100::
 
     filename = iris.sample_data_path('E1_north_america.nc')
-    air_temp = iris.load_strict(filename, 'air_temperature')
+    air_temp = iris.load_cube(filename, 'air_temperature')
 
 We could now get the first and last time slices using indexing (see :doc:`reducing_a_cube` for a reminder)::
 
@@ -31,7 +31,7 @@ We could now get the first and last time slices using indexing (see :doc:`reduci
 .. testsetup::
 
     filename = iris.sample_data_path('E1_north_america.nc')
-    cube = iris.load_strict(filename, 'air_temperature')
+    cube = iris.load_cube(filename, 'air_temperature')
     t_first = cube[0, :, :]
     t_last = cube[-1, :, :]
 
@@ -72,7 +72,7 @@ First, let's load pressure and potential temperature cubes::
 
     filename = iris.sample_data_path('colpex.pp')
     phenomenon_names = ['air_potential_temperature', 'air_pressure']
-    pot_temperature, pressure = iris.load_strict(filename, phenomenon_names)
+    pot_temperature, pressure = iris.load_cubes(filename, phenomenon_names)
 
 In order to calculate :math:`\frac{p}{p_0}` we can define a coordinate which represents the standard reference pressure of 1000 hPa::
 

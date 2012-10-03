@@ -11,7 +11,8 @@ Features added
 * Automatic and manual use of Cynthia Brewer colour palettes.
 * Readability improvements to Cube summary.
 * Ensures netCDF files are properly closed.
-* The ability to bypass merging when loading data.
+* A more explicit set of load functions, which also allow the automatic
+  cube merging to be bypassed as a last resort.
 * Save netCDF files with an unlimited dimension.
 
 Incompatible changes
@@ -30,8 +31,8 @@ Incompatible changes
 Deprecations
 ------------
 * The methods `Coord.cos()` and `Coord.sin()` have been deprecated.
-* The function `load_strict()` function has been deprecated. Code should
-  now use `iris.load_cube()` and `iris.load_cubes()` instead.
+* The function `load_strict()` has been deprecated. Code should now use
+  `iris.load_cube()` and `iris.load_cubes()` instead.
 
 
 ----------------------------

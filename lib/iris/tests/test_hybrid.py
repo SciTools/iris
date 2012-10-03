@@ -39,7 +39,7 @@ class TestHybridHeight(tests.IrisTest):
         # Load the COLPEX data => TZYX
         path = tests.get_data_path(('PP', 'COLPEX', 'theta_and_orog.pp'))
         
-        phenom = iris.load_strict(path, 'air_potential_temperature')
+        phenom = iris.load_cube(path, 'air_potential_temperature')
 
         # Select a ZX cross-section.
         cross_section = phenom[0, :, 0, :]

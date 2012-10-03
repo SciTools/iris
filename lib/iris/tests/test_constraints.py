@@ -259,7 +259,7 @@ class TestCubeListStrictConstraint(StrictConstraintMixin, tests.IrisTest):
 class TestCubeExtract(TestMixin, tests.IrisTest):
     def setUp(self):
         TestMixin.setUp(self)
-        self.cube = iris.load_strict(self.theta_path)
+        self.cube = iris.load_cube(self.theta_path)
 
     def test_attribute_constraint(self):
         # there is no my_attribute attribute on the cube, so ensure it returns None
@@ -325,19 +325,19 @@ class TestConstraints(TestMixin, tests.IrisTest):
 
     def test_number_of_raw_cubes(self):
         # Test the constraints generate the correct number of raw cubes.    
-        raw_cubes = iris._load_common(self.theta_path, None, strict=False, unique=False, merge=False)
+        raw_cubes = iris.load_raw(self.theta_path)
         self.assertEqual(len(raw_cubes), 38)
 
-        raw_cubes = iris._load_common(self.theta_path, [self.level_10], strict=False, unique=False, merge=False)
+        raw_cubes = iris.load_raw(self.theta_path, [self.level_10])
         self.assertEqual(len(raw_cubes), 1)
 
-        raw_cubes = iris._load_common(self.theta_path, [self.theta], strict=False, unique=False, merge=False)
+        raw_cubes = iris.load_raw(self.theta_path, [self.theta])
         self.assertEqual(len(raw_cubes), 38)
 
-        raw_cubes = iris._load_common(self.dec_path, [self.level_30], strict=False, unique=False, merge=False)
+        raw_cubes = iris.load_raw(self.dec_path, [self.level_30])
         self.assertEqual(len(raw_cubes), 4)
 
-        raw_cubes = iris._load_common(self.dec_path, [self.theta], strict=False, unique=False, merge=False)
+        raw_cubes = iris.load_raw(self.dec_path, [self.theta])
         self.assertEqual(len(raw_cubes), 38)
        
 

@@ -190,26 +190,32 @@ when loading ``PP`` files, then specific STASH codes can be filtered::
 Strict loading
 --------------
 
-The :py:func:`iris.load_strict` function is similar to :py:func:`iris.load` except that it can only return *one cube per constraint*.
-Providing no constraints to :func:`iris.load_strict` is equivalent to requesting exactly one cube of any type. 
+The :py:func:`iris.load_cube` and :py:func:`iris.load_cubes` functions are
+similar to :py:func:`iris.load` except they can only return *one cube per constraint*.
+The :func:`iris.load_cube` function accepts a single constraint and
+returns a single cube. The :func:`iris.load_cubes` function accepts any
+number of constraints and returns a list of cubes (as an `iris.cube.CubeList`).
+Providing no constraints to :func:`iris.load_cube` or :func:`iris.load_cubes`
+is equivalent to requesting exactly one cube of any type. 
 
 A single cube is loaded in the following example::
 
     filename = iris.sample_data_path('air_temp.pp')
-    cube = iris.load_strict(filename)
+    cube = iris.load_cube(filename)
     print cube
 
 However, when attempting to load data which would result in anything other than one cube, an exception is raised::
 
     filename = iris.sample_data_path('uk_hires.pp')
-    cube = iris.load_strict(filename)
+    cube = iris.load_cube(filename)
 
 .. note::
  
-    :func:`iris.load_strict` and :py:func:`iris.load` share many of the same features, hence multiple
+    All the load functions share many of the same features, hence multiple
     files could be loaded with wildcard filenames or by providing a list of filenames.
 
-The strict nature of :py:func:`iris.load_strict` means that, when combined with constrained loading, it is 
+The strict nature of :func:`iris.load_cube` and :func:`iris.load_cubes`
+means that, when combined with constrained loading, it is 
 possible to ensure that precisely what was asked for on load is given - otherwise an exception is raised. 
 This fact can be utilised to make code only run successfully if the data provided has the expected criteria.
 
@@ -217,18 +223,18 @@ For example, suppose that code needed ``air_potential_temperature`` in order to 
 
     import iris
     filename = iris.sample_data_path('uk_hires.pp')
-    air_pot_temp = iris.load_strict(filename, 'air_potential_temperature')
+    air_pot_temp = iris.load_cube(filename, 'air_potential_temperature')
     print air_pot_temp
 
-Should the file not contain exactly one cube with a standard name of air potential temperature, an exception will be raised.
+Should the file not produce exactly one cube with a standard name of air potential temperature, an exception will be raised.
 
 Similarly, supposing a routine needed both 'surface_altitude' and 'air_potential_temperature' to be able to run::
 
     import iris
     filename = iris.sample_data_path('uk_hires.pp')
-    altitude_cube, pot_temp_cube = iris.load_strict(filename, ['surface_altitude', 'air_potential_temperature'])
+    altitude_cube, pot_temp_cube = iris.load_cubes(filename, ['surface_altitude', 'air_potential_temperature'])
 
-The result of :func:`iris.load_strict` in this case will be a list of 2 cubes ordered by the constraints provided. 
+The result of :func:`iris.load_cubes` in this case will be a list of 2 cubes ordered by the constraints provided. 
 Multiple assignment has been used to put these two cubes into separate variables.
 
 .. note::
