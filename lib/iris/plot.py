@@ -18,7 +18,7 @@
 Iris-specific extensions to matplotlib, mimicking the :mod:`matplotlib.pyplot`
 interface.
 
-See also: :ref:`matplotlib <matplotlib:users-guide-index>`, :ref:`cartopy <cartopy:users-guide-index>`.
+See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 """
 

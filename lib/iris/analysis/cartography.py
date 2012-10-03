@@ -157,7 +157,8 @@ def xy_range(cube, mode=None, projection=None):
         if source_cs is not None:
             source_proj = source_cs.as_cartopy_projection()
         else:
-            source_proj = cartopy.crs.PlateCarree()
+            #source_proj = cartopy.crs.PlateCarree()
+            raise Exception('Unknown source coordinate system')
             
         if source_proj != projection:
             # TODO: Ensure there is a test for this

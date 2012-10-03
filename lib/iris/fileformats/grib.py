@@ -222,7 +222,9 @@ class GribWrapper(object):
             '_originatingCentre':unknown_string, '_forecastTimeUnit':unknown_string,
             '_coord_system':None, '_x_circular':False,
             '_x_coord_name':unknown_string, '_y_coord_name':unknown_string,
-            '_x_points':None, '_y_points':None}  # TODO: Get rid of rules files.
+            # These are here to avoid repetition in the rules files,
+            # and reduce the very long line lengths.
+            '_x_points':None, '_y_points':None}
 
         #reference date
         self.extra_keys['_referenceDateTime'] = \
@@ -348,18 +350,19 @@ class GribWrapper(object):
         else:
             self.extra_keys['_x_coord_name'] = "grid_longitude"
             self.extra_keys['_y_coord_name'] = "grid_latitude"
-            
-        self._x_points = numpy.arange(self.Ni, dtype=numpy.float64) \
-                       * self.iDirectionIncrementInDegrees * (self.iScansNegatively*(-2)+1) \
-                       + self.longitudeOfFirstGridPointInDegrees
-                       
-        self._y_points = numpy.arange(self.Nj, dtype=numpy.float64) \
-                       * self.jDirectionIncrementInDegrees * (self.jScansPositively*2-1) \
-                       + self.latitudeOfFirstGridPointInDegrees
-            
+
+        i_step = self.iDirectionIncrementInDegrees
+        j_step = self.jDirectionIncrementInDegrees
+        if self.iScansNegatively:
+            i_step = -i_step
+        if not self.jScansPositively:
+            j_step = -j_step
+        self._x_points = (numpy.arange(self.Ni, dtype=numpy.float64) * i_step +
+                          self.longitudeOfFirstGridPointInDegrees)
+        self._y_points = (numpy.arange(self.Nj, dtype=numpy.float64) * j_step +
+                          self.latitudeOfFirstGridPointInDegrees)
+
         # circular x coord?
-        # TODO: This check should become Coord.is_circular(), replacing Coord.circular.
-        # See also the circular discussion in https://github.com/SciTools/iris/issues/77
         if "longitude" in self.extra_keys['_x_coord_name'] and self.Ni > 1:
             # Is the gap from end to start smaller or about equal to the max step?
             points = self._x_points

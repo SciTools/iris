@@ -20,7 +20,7 @@ High-level plotting extensions to :mod:`iris.plot`.
 These routines work much like their :mod:`iris.plot` counterparts, but they
 automatically add a plot title, axis titles, and a colour bar when appropriate.
 
-See also: :ref:`matplotlib <matplotlib:users-guide-index>`, :ref:`cartopy <cartopy:users-guide-index>`.
+See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 """
 

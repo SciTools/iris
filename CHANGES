@@ -1,3 +1,17 @@
+Release 1.0
+===========
+
+Incompatible changes
+--------------------
+* With the change to cartopy, the function iris.plot.gcm() is obsolete
+  and has been removed.
+* Three functions have been removed from iris.analysis.cartography:
+  lat_lon_range(), get_lat_lon_grids(), and
+  get_lat_lon_contiguous_grids(). They have been replaced with
+  generalised versions: xy_range(), get_xy_grids(),
+  and get_xy_contiguous_bounded_grids().
+
+
 Release 0.9 (14 Aug, 2012)
 ==========================
  
