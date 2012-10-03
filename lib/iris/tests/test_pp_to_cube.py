@@ -97,7 +97,7 @@ class TestPPLoadRules(tests.IrisTest):
         # Test custom rule evaluation.
         # Default behaviour
         data_path = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
-        cube = iris.load_strict(data_path)
+        cube = iris.load_cube(data_path)
         self.assertEqual(cube.standard_name, 'air_temperature')
 
         # Custom behaviour
@@ -111,13 +111,13 @@ class TestPPLoadRules(tests.IrisTest):
             'CMAttribute("long_name", "customised")'))) 
         f.close()
         iris.fileformats.pp.add_load_rules(temp_path)
-        cube = iris.load_strict(data_path)
+        cube = iris.load_cube(data_path)
         self.assertEqual(cube.name(), 'customised')
         os.remove(temp_path)
         
         # Back to default
         iris.fileformats.pp.reset_load_rules()
-        cube = iris.load_strict(data_path)
+        cube = iris.load_cube(data_path)
         self.assertEqual(cube.standard_name, 'air_temperature')
 
     def test_cell_methods(self):
@@ -141,7 +141,7 @@ class TestPPLoadRules(tests.IrisTest):
             f.save(open(temp_filename, 'wb'))
         
             # Load pp file
-            cube = iris.load_strict(temp_filename)
+            cube = iris.load_cube(temp_filename)
         
             if value in cell_method_values:
                 # Check for cell method on cube
@@ -170,7 +170,7 @@ class TestPPLoadRules(tests.IrisTest):
             f.save(open(temp_filename, 'wb'))
         
             # Load pp file
-            cube = iris.load_strict(temp_filename)
+            cube = iris.load_cube(temp_filename)
 
             if value in omit_process_flags_values:
                 # Check ukmo__process_flags attribute not created
@@ -196,7 +196,7 @@ class TestPPLoadRules(tests.IrisTest):
             f.save(open(temp_filename, 'wb'))
         
             # Load pp file
-            cube = iris.load_strict(temp_filename)
+            cube = iris.load_cube(temp_filename)
 
             # Check the process flags created
             self.assertEquals(set(cube.attributes["ukmo__process_flags"]), set(multiple_map[sum(bit_values)]), "Mismatch between expected and actual process flags.")
@@ -208,7 +208,7 @@ class TestPPLoadRules(tests.IrisTest):
 class TestStdName(tests.IrisTest):
     def test_no_std_name(self):
         fname = tests.get_data_path(['PP', 'simple_pp', 'bad_global.pp'])
-        cube = iris.load_strict(fname)
+        cube = iris.load_cube(fname)
         self.assertCML([cube], ['cube_io', 'pp', 'no_std_name.cml'])
         
         

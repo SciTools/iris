@@ -34,7 +34,8 @@ def main():
     # define the constraint on standard name and model level
     constraints = [iris.Constraint(phenom, model_level_number=1) for phenom in phenomena]
     
-    air_potential_temperature, air_pressure = iris.load_strict(fname, constraints) 
+    air_potential_temperature, air_pressure = iris.load_cubes(fname,
+                                                              constraints) 
     
     # define a coordinate which represents 1000 hPa 
     p0 = coords.AuxCoord(100000, long_name='P0', units='Pa')

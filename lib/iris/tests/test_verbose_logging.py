@@ -33,7 +33,7 @@ class TestVerboseLogging(tests.IrisTest):
         # check that verbose logging no longer breaks in pp.save()
         # load some data, enable logging, and save a cube to PP.
         data_path = tests.get_data_path(('PP', 'simple_pp', 'global.pp'))
-        cube = iris.load_strict(data_path)
+        cube = iris.load_cube(data_path)
         OLD_RULE_LOG_DIR = config.RULE_LOG_DIR
         config.RULE_LOG_DIR = '/var/tmp'
         old_log = rules.log

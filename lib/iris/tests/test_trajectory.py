@@ -56,7 +56,7 @@ class TestTrajectory(tests.IrisTest):
 
         # Load the COLPEX data => TZYX
         path = tests.get_data_path(['PP', 'COLPEX', 'theta_and_orog_subset.pp'])
-        cube = iris.load_strict(path, 'air_potential_temperature')
+        cube = iris.load_cube(path, 'air_potential_temperature')
         cube.coord('grid_latitude').bounds = None
         cube.coord('grid_longitude').bounds = None
         # TODO: Workaround until regrid can handle factories

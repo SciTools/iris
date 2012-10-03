@@ -45,7 +45,7 @@ class TestPickle(tests.IrisTest):
     
     @iris.tests.skip_data
     def test_cube_pickle(self):
-        cube = iris.load_strict(tests.get_data_path(('PP', 'globClim1', 'theta.pp')))
+        cube = iris.load_cube(tests.get_data_path(('PP', 'globClim1', 'theta.pp')))
         self.assertCML(cube, ('cube_io', 'pickling', 'theta.cml'), checksum=False)
         
         for _, recon_cube in self.pickle_then_unpickle(cube):

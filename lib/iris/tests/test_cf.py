@@ -172,17 +172,17 @@ class TestCFReader(tests.IrisTest):
 class TestLoad(tests.IrisTest):
     def test_attributes_empty(self):
         filename = tests.get_data_path(('NetCDF', 'global', 'xyt', 'SMALL_hires_wind_u_for_ipcc4.nc'))
-        cube = iris.load_strict(filename)
+        cube = iris.load_cube(filename)
         self.assertEquals(cube.coord('height').attributes, {})
         
     def test_attributes_populated(self):
         filename = tests.get_data_path(('NetCDF', 'label_and_climate', 'FC_167_mon_19601101.nc'))
-        cube = iris.load_strict(filename)
+        cube = iris.load_cube(filename)
         self.assertEquals(sorted(cube.coord('longitude').attributes.items()), [('data_type', 'float'), ('modulo', 360), ('topology', 'circular')])
 
     def test_cell_methods(self):
         filename = tests.get_data_path(('NetCDF', 'global', 'xyt', 'SMALL_hires_wind_u_for_ipcc4.nc'))
-        cube = iris.load_strict(filename)
+        cube = iris.load_cube(filename)
         self.assertEquals(cube.cell_methods, (iris.coords.CellMethod(method=u'mean', coords=(u'time',), intervals=(u'6 minutes',), comments=()),))
 
 

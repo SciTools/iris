@@ -81,7 +81,7 @@ class TestMultiCube(tests.IrisTest, TestMixin):
             cube.coord('time').attributes['brain'] = 'hurts'
         
         # Load slices, decorating a coord with custom attributes
-        cubes = iris._load_cubes(self._data_path, callback=custom_coord_callback)
+        cubes = iris.load_raw(self._data_path, callback=custom_coord_callback)
         # Merge
         merged = iris.cube.CubeList._extract_and_merge(cubes, constraints=None, strict=False, merge_unique=False)
         # Check the custom attributes are in the merged cube
@@ -110,20 +110,20 @@ class TestDataMerge(tests.IrisTest):
         forecast_period_constraint1 = iris.Constraint(forecast_period=1.1666666753590107)
         forecast_period_constraint2 = iris.Constraint(forecast_period=1.3333333320915699)
         forecast_period_constraint1_and_2 = iris.Constraint(forecast_period=lambda c: c in [1.1666666753590107, 1.3333333320915699])
-        cube1 = iris.load_strict(data_path, phenom_constraint & forecast_period_constraint1)
-        cube2 = iris.load_strict(data_path, phenom_constraint & forecast_period_constraint2)
+        cube1 = iris.load_cube(data_path, phenom_constraint & forecast_period_constraint1)
+        cube2 = iris.load_cube(data_path, phenom_constraint & forecast_period_constraint2)
         
         # Merge the two halves
         cubes = iris.cube.CubeList([cube1, cube2]).merge(True)
         self.assertCML(cubes, ('merge', 'theta_two_forecast_periods.cml'))
 
         # Make sure we get the same result directly from load
-        cube = iris.load_strict(data_path, phenom_constraint & (forecast_period_constraint1_and_2))
+        cube = iris.load_cube(data_path, phenom_constraint & (forecast_period_constraint1_and_2))
         self.assertCML(cubes, ('merge', 'theta_two_forecast_periods.cml'))
 
     def test_real_data(self):
         data_path = tests.get_data_path(('PP', 'globClim1', 'theta.pp'))
-        cubes = iris._load_common(data_path, None, strict=False, unique=False, merge=False)
+        cubes = iris.load_raw(data_path)
         # Force the source 2-D cubes to load their data before the merge
         for cube in cubes:
             data = cube.data

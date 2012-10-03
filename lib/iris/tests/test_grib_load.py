@@ -134,7 +134,7 @@ class TestGribLoad(tests.GraphicsTest):
         # Test custom rule evaluation.
         # Default behaviour
 #        data_path = tests.get_data_path(('GRIB', 'global_t', 'global.grib2'))
-#        cube = iris.load_strict(data_path)
+#        cube = iris.load_cube(data_path)
         cube = tests.stock.global_grib2()
         self.assertEqual(cube.name(), 'air_temperature')
 
@@ -164,19 +164,19 @@ class TestGribLoad(tests.GraphicsTest):
     def test_fp_units(self):
 
         """Test different units for forecast period (just the ones we care about)."""
-        cube = iris.load_strict(tests.get_data_path(('GRIB', 'fp_units', 'minutes.grib2')))
+        cube = iris.load_cube(tests.get_data_path(('GRIB', 'fp_units', 'minutes.grib2')))
         self.assertEqual(cube.coord("forecast_period").units, "hours")
         self.assertEqual(cube.coord("forecast_period").points[0], 24)
 
-        cube = iris.load_strict(tests.get_data_path(('GRIB', 'fp_units', 'hours.grib2')))
+        cube = iris.load_cube(tests.get_data_path(('GRIB', 'fp_units', 'hours.grib2')))
         self.assertEqual(cube.coord("forecast_period").units, "hours")
         self.assertEqual(cube.coord("forecast_period").points[0], 24)
 
-        cube = iris.load_strict(tests.get_data_path(('GRIB', 'fp_units', 'days.grib2')))
+        cube = iris.load_cube(tests.get_data_path(('GRIB', 'fp_units', 'days.grib2')))
         self.assertEqual(cube.coord("forecast_period").units, "hours")
         self.assertEqual(cube.coord("forecast_period").points[0], 24)
         
-        cube = iris.load_strict(tests.get_data_path(('GRIB', 'fp_units', 'seconds.grib2')))
+        cube = iris.load_cube(tests.get_data_path(('GRIB', 'fp_units', 'seconds.grib2')))
         self.assertEqual(cube.coord("forecast_period").units, "hours")
         self.assertEqual(cube.coord("forecast_period").points[0], 24)
  

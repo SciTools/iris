@@ -51,18 +51,18 @@ class Constraint(object):
             The name of the argument gives the name of a coordinate, and the value
             of the argument is the condition to meet on that coordinate::
             
-                Constraint(model_level=10)
+                Constraint(model_level_number=10)
                 
             Coordinate level constraints can be of several types:
             
-            * **string, int or float** - the value of the coordinate to match. e.g. ``model_level=10``
+            * **string, int or float** - the value of the coordinate to match. e.g. ``model_level_number=10``
             
             * **list of values** - the possible values that the coordinate may have to match. 
-              e.g. ``model_level=[10, 12]``
+              e.g. ``model_level_number=[10, 12]``
             
             * **callable** - a function which accepts a :class:`iris.coords.Cell` instance as its first 
               and only argument returning True or False if the value of the Cell is desired.
-              e.g. ``model_level=lambda cell: 5 < cell < 10``
+              e.g. ``model_level_number=lambda cell: 5 < cell < 10``
         
         
         The :ref:`user guide <loading_iris_cubes>` covers cube much of constraining in detail, however an example which
@@ -71,7 +71,7 @@ class Constraint(object):
             Constraint(name='air_potential_temperature', 
                        cube_func=lambda cube: cube.units == 'kelvin',
                        coord_values={'latitude':lambda cell: 0 < cell < 90}, 
-                       model_level=[10, 12]) & Constraint(ensemble_member=2)
+                       model_level_number=[10, 12]) & Constraint(ensemble_member=2)
         
         Constraint filtering is performed at the cell level. For further details on how cell comparisons are performed 
         see :class:`iris.coords.Cell`.

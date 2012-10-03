@@ -33,9 +33,9 @@ import matplotlib.dates as mdates
 
 def main():
     # Load data into three Cubes, one for each set of PP files
-    e1 = iris.load_strict(iris.sample_data_path('E1_north_america.nc'))
+    e1 = iris.load_cube(iris.sample_data_path('E1_north_america.nc'))
     
-    a1b = iris.load_strict(iris.sample_data_path('A1B_north_america.nc'))
+    a1b = iris.load_cube(iris.sample_data_path('A1B_north_america.nc'))
     
     # load in the global pre-industrial mean temperature, and limit the domain to
     # the same North American region that e1 and a1b are at.
@@ -43,9 +43,8 @@ def main():
                                     longitude=lambda v: 225 <= v <= 315,
                                     latitude=lambda v: 15 <= v <= 60,
                                     )
-    pre_industrial = iris.load_strict(iris.sample_data_path('pre-industrial.pp'),
-                                  north_america
-                                  )
+    pre_industrial = iris.load_cube(iris.sample_data_path('pre-industrial.pp'),
+                                    north_america)
     
     pre_industrial_mean = pre_industrial.collapsed(['latitude', 'longitude'], iris.analysis.MEAN)
     e1_mean = e1.collapsed(['latitude', 'longitude'], iris.analysis.MEAN)

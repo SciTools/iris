@@ -44,13 +44,13 @@ def cop_metadata_callback(cube, field, filename):
 
 def main():
     # Load e1 and a1 using the callback to update the metadata
-    e1 = iris.load_strict(iris.sample_data_path('E1.2098.pp'),
-                           callback=cop_metadata_callback)
-    a1b = iris.load_strict(iris.sample_data_path('A1B.2098.pp'),
-                            callback=cop_metadata_callback)
+    e1 = iris.load_cube(iris.sample_data_path('E1.2098.pp'),
+                        callback=cop_metadata_callback)
+    a1b = iris.load_cube(iris.sample_data_path('A1B.2098.pp'),
+                         callback=cop_metadata_callback)
     
     # Load the global average data and add an 'Experiment' coord it
-    global_avg = iris.load_strict(iris.sample_data_path('pre-industrial.pp'))
+    global_avg = iris.load_cube(iris.sample_data_path('pre-industrial.pp'))
     
     # Define evenly spaced contour levels: -2.5, -1.5, ... 15.5, 16.5 with the specific colours
     levels = numpy.arange(20) - 2.5

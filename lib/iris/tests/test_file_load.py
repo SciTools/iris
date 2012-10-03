@@ -32,7 +32,7 @@ class TestFileload(tests.IrisTest):
         reference file if it doesn't exist.
 
         """
-        cubes = iris.load(tests.get_data_path(src_path), merge=False)
+        cubes = iris.load_raw(tests.get_data_path(src_path))
         self.assertCML(cubes, ['file_load', reference_filename])
 
     def test_no_file(self):

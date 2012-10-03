@@ -22,7 +22,7 @@ import iris.tests as tests
 import numpy
 
 import iris
-from iris import load_strict
+from iris import load_cube
 from iris.analysis.interpolate import regrid_to_max_resolution
 from iris.cube import Cube
 from iris.coords import DimCoord
@@ -55,8 +55,8 @@ class TestRegrid(tests.IrisTest):
         self.forecast_constraint = iris.Constraint(forecast_period=1.5)
 
     def test_regrid_low_dimensional(self):
-        theta = load_strict(self.theta_path, self.theta_constraint & self.level_constraint & self.forecast_constraint)
-        uwind = load_strict(self.uwind_path, self.uwind_constraint & self.level_constraint & self.forecast_constraint)
+        theta = load_cube(self.theta_path, self.theta_constraint & self.level_constraint & self.forecast_constraint)
+        uwind = load_cube(self.uwind_path, self.uwind_constraint & self.level_constraint & self.forecast_constraint)
         TestRegrid.patch_data(theta)
         TestRegrid.patch_data(uwind)
 
@@ -79,8 +79,8 @@ class TestRegrid(tests.IrisTest):
         self.assertCMLApproxData(uwind2.regridded(theta2, mode='nearest'), ('regrid', 'uwind_on_theta_2d.cml'))
 
     def test_regrid_3d(self):
-        theta = load_strict(self.theta_path, self.theta_constraint & self.multi_level_constraint & self.forecast_constraint)
-        uwind = load_strict(self.uwind_path, self.uwind_constraint & self.multi_level_constraint & self.forecast_constraint)
+        theta = load_cube(self.theta_path, self.theta_constraint & self.multi_level_constraint & self.forecast_constraint)
+        uwind = load_cube(self.uwind_path, self.uwind_constraint & self.multi_level_constraint & self.forecast_constraint)
         TestRegrid.patch_data(theta)
         TestRegrid.patch_data(uwind)
 

@@ -65,7 +65,7 @@ class SystemInitialTest(tests.IrisTest):
             saved_tmpfile = iris.util.create_temp_filename(suffix=filetype)
             iris.save(cm, saved_tmpfile)
 
-            new_cube = iris.load_strict(saved_tmpfile)
+            new_cube = iris.load_cube(saved_tmpfile)
         
             self.assertCML(new_cube, ('system', 'supported_filetype_%s.cml' % filetype))
 

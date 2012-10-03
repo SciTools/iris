@@ -7,7 +7,7 @@ import iris.quickplot as qplt
 fname = iris.sample_data_path('air_temp.pp')
 
 # Load exactly one cube from the given file
-temperature = iris.load_strict(fname)
+temperature = iris.load_cube(fname)
 
 # We are only interested in a small number of longitudes (the 4 after and including the 5th element), so index them out
 temperature = temperature[5:9, :]

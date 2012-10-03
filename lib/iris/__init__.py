@@ -22,11 +22,79 @@ A package for handling multi-dimensional data and associated metadata.
     a :ref:`user guide <user_guide_index>` which should be the first port of
     call for new users.
 
+The functions in this module provide the main way to load and/or save
+your data.
+
+The :func:`load` function provides a simple way to explore data from
+the interactive Python prompt. It will convert the source data into
+:class:`Cubes <iris.cube.Cube>`, and combine those cubes into
+higher-dimensional cubes where possible.
+
+The :func:`load_cube` and :func:`load_cubes` functions are similar to
+:func:`load`, but they raise an exception if the number of cubes is not
+what was expected. They are more useful in scripts, where they can
+provide an early sanity check on incoming data.
+
+The :func:`load_raw` function is provided for those occasions where the
+automatic combination of cubes into higher-dimensional cubes is
+undesirable. However, it is intended as a tool of last resort! If you
+experience a problem with the automatic combination process then please
+raise an issue with the Iris developers.
+
+To persist a cube to the file-system, use the :func:`save` function.
+
+All the load functions share very similar arguments:
+
+    * uris:
+        Either a single filename/URI expressed as a string, or an
+        iterable of filenames/URIs.
+
+        Filenames can contain `~` or `~user` abbreviations, and/or
+        Unix shell-style wildcards (e.g. `*` and `?`). See the
+        standard library function :func:`os.path.expanduser` and
+        module :mod:`fnmatch` for more details.
+
+    * constraints:
+        Either a single constraint, or an iterable of constraints.
+        Each constraint can be either a CF standard name, an instance of
+        :class:`iris.Constraint`, or :class:`iris.AttributeConstraint`.
+
+        For example::
+
+            # Load air temperature data.
+            load_cube(uri, 'air_temperature')
+
+            # Load air temperature data.
+            load_cube(uri, iris.Constraint(model_level_number=1))
+
+    * callback:
+        A function to add metadata from the originating field and/or URI
+        which obeys the following rules:
+            1. Function signature must be: ``(cube, field, filename)``
+            2. Must not return any value - any alterations to the cube
+               must be made by reference
+            3. If the cube is to be rejected the callback must raise an
+               :class:`iris.exceptions.IgnoreCubeException`
+
+        For example::
+
+            def callback(cube, field, filename):
+                # Extract ID from filenames given as: <prefix>__<exp_id>
+                experiment_id = filename.split('__')[1]
+                experiment_coord = iris.coords.AuxCoord(experiment_id,
+                                                        long_name='experiment_id')
+                cube.add_aux_coord(experiment_coord)
+
+Format-specific translation behaviour can be modified by using:
+    :func:`iris.fileformats.pp.add_load_rules`
+
+    :func:`iris.fileformats.grib.add_load_rules`
+
 """
+import itertools
 import logging
 import os
 import warnings
-import itertools
 
 import iris.config
 import iris.cube
@@ -39,7 +107,8 @@ import iris.io
 __version__ = '0.9-dev'
 
 # Restrict the names imported when using "from iris import *"
-__all__ = ['load', 'load_strict', 'save', 'Constraint', 'AttributeConstraint']
+__all__ = ['load', 'load_cube', 'load_cubes', 'load_raw', 'load_strict', 'save',
+           'Constraint', 'AttributeConstraint']
 
 
 # When required, log the usage of Iris.
@@ -51,48 +120,7 @@ Constraint = iris._constraints.Constraint
 AttributeConstraint = iris._constraints.AttributeConstraint
 
 
-def _load_common(uris, constraints, strict=False, unique=False, callback=None, merge=True):
-    """
-    Provides a common interface for both load & load_strict.
-    
-    Args:
-    
-    * uris:
-        An iterable of URIs to load
-    * constraints:
-        The constraints to pass through to :meth:`iris.cube.CubeList.extract`. May be None.
-        
-    Kwargs:
-    
-    * strict:
-        Passed through to :meth:`iris.cube.CubeList.extract`.
-    * unique:
-        Passed through to :meth:`iris.cube.CubeList.merge` (if merge=True)
-    *callback:
-        A function following a specification defined in load & load_strict's documentation
-    * merge:
-        Whether or not to merge the resulting cubes.
-        
-    Returns - :class:`iris.cube.CubeList`
-
-    """
-    if isinstance(constraints, basestring) and os.path.exists(constraints):
-        msg = 'The second argument %r appears to be a filename, but expected a standard_name or a Constraint.\n' \
-            'If the constraint was genuine, then we recommend renaming %r.'
-        msg = msg % (constraints, constraints)
-        warnings.warn(msg, UserWarning, stacklevel=3)
-    
-    cubes = _load_cubes(uris, callback)
-
-    if merge:
-        merge_unique = bool(unique)
-    else:
-        merge_unique = None
-
-    return iris.cube.CubeList._extract_and_merge(cubes, constraints, strict, merge_unique)
-
-
-def _load_cubes(uris, callback):
+def _generate_cubes(uris, callback):
     """Returns a generator of cubes given the URIs and a callback."""
     if isinstance(uris, basestring):
         uris = [uris] 
@@ -111,116 +139,179 @@ def _load_cubes(uris, callback):
         else:
             raise ValueError('Iris cannot handle the URI scheme: %s' % scheme)
 
-                      
-def load_strict(uris, constraints=None, callback=None):
+
+def _load_collection(uris, constraints=None, callback=None):
+    cubes = _generate_cubes(uris, callback)
+    return iris.cube._CubeFilterCollection.from_cubes(cubes, constraints)
+
+
+def load(uris, constraints=None, callback=None):
     """
-    Loads fixed numbers of cubes.
+    Loads any number of Cubes for each constraint.
 
-    Loads from the given filename(s)/URI(s) to form one Cube for each constraint, or just
-    one Cube if no constraints are specified.
-    
-    Constraints can be specified as standard names or with the :class:`iris.Constraint` class::
-    
-        # Load temperature data.
-        load(uri, 'temperature')
-        
-    Format-specific translation behaviour can be modified by using:
-        :func:`iris.fileformats.pp.add_load_rules`
-
-        :func:`iris.fileformats.grib.add_load_rules`
-
-    A callback facility is provided to allow metadata to be modified/augmented.
-    
-    For example::
-    
-        def callback(cube, field, filename):
-            # Extract ID from filenames given as: <prefix>__<exp_id>
-            experiment_id = filename.split('__')[1]
-            experiment_coord = iris.coords.ExplicitCoord('experiment_id', '', points=[experiment_id])
-            cube.add_coord(experiment_coord)
+    For a full description of the arguments, please see the module
+    documentation for :mod:`iris`.
 
     Args:
 
     * uris:
-        Either a single filename/URI expressed as a string, or an iterable of filename/URIs.
+        One or more filenames.
 
     Kwargs:
 
     * constraints:
-        An iterable of constraints.
+        One or more constraints.
     * callback:
-        A function to add metadata from the originating field and/or URI which obeys the following rules:
-            1. Function signature must be: ``(cube, field, filename)``
-            2. Must not return any value - any alterations to the cube must be made by reference
-            3. If the cube is to be rejected the callback must raise an :class:`iris.exceptions.IgnoreCubeException`
+        A modifier/filter function.
+
+    Returns:
+        An :class:`iris.cube.CubeList`.
+
+    """    
+    return _load_collection(uris, constraints, callback).merged().cubes()
+
+
+def load_cube(uris, constraint=None, callback=None):
+    """
+    Loads a single cube.
+
+    For a full description of the arguments, please see the module
+    documentation for :mod:`iris`.
+
+    Args:
+
+    * uris:
+        One or more filenames.
+
+    Kwargs:
+
+    * constraints:
+        A constraint.
+    * callback:
+        A modifier/filter function.
+
+    Returns:
+        An :class:`iris.cube.Cube`.
+
+    """
+    constraints = iris._constraints.list_of_constraints(constraint)
+    if len(constraints) != 1:
+        raise ValueError('only a single constraint is allowed')
+
+    cubes = _load_collection(uris, constraints, callback).merged().cubes()
+
+    if len(cubes) != 1:
+        msg = 'Expected exactly one cube, found {}.'.format(len(cubes))
+        raise iris.exceptions.ConstraintMismatchError(msg)
+    return cubes[0]
+
+
+def load_cubes(uris, constraints=None, callback=None):
+    """
+    Loads exactly one Cube for each constraint.
+
+    For a full description of the arguments, please see the module
+    documentation for :mod:`iris`.
+
+    Args:
+
+    * uris:
+        One or more filenames.
+
+    Kwargs:
+
+    * constraints:
+        One or more constraints.
+    * callback:
+        A modifier/filter function.
+
+    Returns:
+        An :class:`iris.cube.CubeList`.
+
+    """
+    # Merge the incoming cubes
+    collection = _load_collection(uris, constraints, callback).merged()
+
+    # Make sure we have exactly one merged cube per constraint
+    bad_pairs = filter(lambda pair: len(pair) != 1, collection.pairs)
+    if bad_pairs:
+        fmt = '   {} -> {} cubes'
+        bits = [fmt.format(pair.constraint, len(pair)) for pair in bad_pairs]
+        msg = '\n' + '\n'.join(bits)
+        raise iris.exceptions.ConstraintMismatchError(msg)
+
+    return collection.cubes()
+
+
+def load_raw(uris, constraints=None, callback=None):
+    """
+    Loads non-merged cubes.
+
+    This function is provided for those occasions where the automatic
+    combination of cubes into higher-dimensional cubes is undesirable.
+    However, it is intended as a tool of last resort! If you experience
+    a problem with the automatic combination process then please raise
+    an issue with the Iris developers.
+
+    For a full description of the arguments, please see the module
+    documentation for :mod:`iris`.
+
+    Args:
+
+    * uris:
+        One or more filenames.
+
+    Kwargs:
+
+    * constraints:
+        One or more constraints.
+    * callback:
+        A modifier/filter function.
+
+    Returns:
+        An :class:`iris.cube.CubeList`.
+
+    """
+    return _load_collection(uris, constraints, callback).cubes()
+
+
+def load_strict(uris, constraints=None, callback=None):
+    """
+    Loads exactly one Cube for each constraint.
+
+    .. deprecated:: 0.9
+
+        Use :func:`load_cube` or :func:`load_cubes` instead.
+
+    Args:
+
+    * uris:
+        One or more filenames.
+
+    Kwargs:
+
+    * constraints:
+        One or more constraints.
+    * callback:
+        A modifier/filter function.
 
     Returns:
         An :class:`iris.cube.CubeList` if multiple constraints were
         supplied, or a single :class:`iris.cube.Cube` otherwise.
 
     """
-    # Load exactly one merged Cube from each constraint.
-    cubes = _load_common(uris, constraints, strict=True, unique=True, callback=callback)
-    return cubes
-
-
-def load(uris, constraints=None, unique=False, callback=None, merge=True):
-    """
-    Loads cubes.
-    
-    Loads from the given filename(s)/URI(s) to form one or more Cubes for each constraint,
-    or one or more Cubes if no constraints are specified.
-
-    Constraints can be specified as standard names or with the :class:`iris.Constraint` class::
-    
-        # Load temperature data.
-        load(uri, 'temperature')
-            
-    Format-specific translation behaviour can be modified by using:
-        :func:`iris.fileformats.pp.add_load_rules`
-
-        :func:`iris.fileformats.grib.add_load_rules`
-    
-    A callback facility is provided to allow metadata to be modified/augmented.
-    
-    For example::
-    
-        def callback(cube, field, filename):
-            # Extract ID from filenames given as: <prefix>__<exp_id>
-            experiment_id = filename.split('__')[1]
-            experiment_coord = iris.coords.ExplicitCoord('experiment_id', '', points=[experiment_id])
-            cube.add_coord(experiment_coord)
-            
-    Args:
-
-    * uris:
-        Either a single filename/URI expressed as a string, or an iterable of filenames/URIs.
-    
-    Kwargs:
-
-    * constraints:
-        An iterable of constraints.
-    * unique:
-        If set to True, raise an error if duplicate cubes are detected (ignored if merge is False)
-    * callback:
-         A function to add metadata from the originating field and/or URI which obeys the following rules:
-            1. Function signature must be: ``(cube, field, filename)``
-            2. Must not return any value - any alterations to the cube must be made by reference
-            3. If the cube is to be rejected the callback must raise an :class:`iris.exceptions.IgnoreCubeException`
-    * merge:
-        If set to False, make no attempt to merge the resulting cubes. Note that if True (default) and 
-        an iterable of constraints is provided, a separate merge is performed for each constraint.
-
-    Returns:
-        An :class:`iris.cube.CubeList`.
-
-    """    
-    # Load zero or more Cubes from each constraint.
-    cubes = _load_common(uris, constraints, strict=False, unique=unique, callback=callback, merge=merge)
-    return cubes
+    warnings.warn('The `load_strict` function is deprecated. Please use'
+                  ' `load_cube` or `load_cubes` instead.', stacklevel=2)
+    constraints = iris._constraints.list_of_constraints(constraints)
+    if len(constraints) == 1:
+        result = load_cube(uris, constraints, callback)
+    else:
+        result = load_cubes(uris, constraints, callback)
+    return result
 
 
 save = iris.io.save
+
 
 def sample_data_path(*path_to_join):
     """Given the sample data resource, returns the full path to the file."""
