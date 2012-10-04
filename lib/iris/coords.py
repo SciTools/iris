@@ -174,50 +174,34 @@ class Cell(iris.util._OrderedHashable):
             raise ValueError("Unexpected type of other")
         if operator_method not in [operator.gt, operator.lt, operator.ge, operator.le]:
             raise ValueError("Unexpected operator_method")
-        force_point_check = False
         
-        # Do we both have bounds?
-        if self.bound is not None and isinstance(other, Cell) and other.bound is not None:
-            # We will compare the same edge on both of us.
-            if operator_method in [operator.lt, operator.ge]:
+        # Do we have bounds?
+        if self.bound is not None:
+            if operator_method in [operator.gt, operator.le]:
                 me = min(self.bound)
-                it = min(other.bound)
             else:
                 me = max(self.bound)
-                it = max(other.bound)
-            force_point_check = True
-
-        else:        
-            # Do we have bounds? (only us)
-            if self.bound is not None:
-                # We will compare it's point with our appropriate edge.
-                if operator_method in [operator.gt, operator.le]:
-                    me = min(self.bound)
-                else:
-                    me = max(self.bound)
-            else:
-                me = self.point
+        else:
+            me = self.point
     
-            # Does other have bounds? (only other)
-            if isinstance(other, Cell):
-                if other.bound is not None:
-                    # We will compare our point with it's appropriate edge.
-                    if operator_method in [operator.lt, operator.ge]:
-                        it = min(other.bound)
-                    else:
-                        it = max(other.bound)
-                else:
-                    it = other.point
-            else: # isinstance(other, (int, float, numpy.number)):
-                it = other
+        # Does other have bounds?
+        if isinstance(other, (int, float, numpy.number)):
+            it = other
+        elif other.bound is not None:
+            if operator_method in [operator.lt, operator.ge]:
+                it = min(other.bound)
+            else:
+                it = max(other.bound)
+        else:
+            it = other.point
         
         # Compare the designated components
         res = operator_method(me, it)
         
         # If we both have bounds, we must also check our points
-        if force_point_check:
+        if self.bound is not None and isinstance(other, Cell) and other.bound is not None:
             res = res and operator_method(self.point, other.point) 
-
+        
         return res
     
     def __ge__(self, other):
