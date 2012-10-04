@@ -102,8 +102,10 @@ def _get_lat_lon_coords(cube):
     return (lat_coord, lon_coord)
 
 
-def xy_range(cube, mode=None, projection=None):
+def _xy_range(cube, mode=None):
     """
+    NOTE: MADE PRIVATE FOR 1.0
+
     Return the x & y range of this Cube.
     
     Args:
@@ -114,29 +116,27 @@ def xy_range(cube, mode=None, projection=None):
     
         * mode - If the coordinate has bounds, use the mode keyword to specify the
                  min/max calculation (iris.coords.POINT_MODE or iris.coords.BOUND_MODE).
-
-        * projection - Calculate the xy range in an alternative projection. 
             
     """
     # Helpful error if we have an inappropriate CoordSystem
     cs = cube.coord_system("CoordSystem")
     if cs is not None and not isinstance(cs, (iris.coord_systems.GeogCS, iris.coord_systems.RotatedGeogCS)):
         raise ValueError("Latlon coords cannot be found with {0}.".format(type(cs)))
-    
+
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
     cs = cube.coord_system('CoordSystem')
-    
+
     if x_coord.has_bounds() != x_coord.has_bounds():
         raise ValueError('Cannot get the range of the x and y coordinates if they do '
                          'not have the same presence of bounds.')
-    
+
     if x_coord.has_bounds():
         if mode not in [iris.coords.POINT_MODE, iris.coords.BOUND_MODE]:
             raise ValueError('When the coordinate has bounds, please specify "mode".')
         _mode = mode
     else:
         _mode = iris.coords.POINT_MODE
-    
+
     # Get the x and y grids
     if isinstance(cs, iris.coord_systems.RotatedGeogCS):
         if _mode == iris.coords.POINT_MODE:
@@ -150,24 +150,11 @@ def xy_range(cube, mode=None, projection=None):
         else:
             x = x_coord.bounds
             y = y_coord.bounds
-            
-    if projection:
-        # source projection
-        source_cs = cube.coord_system("CoordSystem")
-        if source_cs is not None:
-            source_proj = source_cs.as_cartopy_projection()
-        else:
-            #source_proj = cartopy.crs.PlateCarree()
-            raise Exception('Unknown source coordinate system')
-            
-        if source_proj != projection:
-            # TODO: Ensure there is a test for this
-            x, y = projection.transform_points(x=x, y=y, src_crs=source_proj)
-    
+
     # Get the x and y range
     if getattr(x_coord, 'circular', False):
         x_range = (numpy.min(x), numpy.min(x) + x_coord.units.modulus)
-    else: 
+    else:
         x_range = (numpy.min(x), numpy.max(x))
 
     y_range = (numpy.min(y), numpy.max(y))
@@ -184,11 +171,10 @@ def get_xy_grids(cube):
     
     """
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
-    cs = cube.coord_system('CoordSystem')
-    
+
     x = x_coord.points
     y = y_coord.points
-    
+
     # Convert to 2 x 2d grid of data
     x, y = numpy.meshgrid(x, y)
 
@@ -197,17 +183,16 @@ def get_xy_grids(cube):
 
 def get_xy_contiguous_bounded_grids(cube):
     """
-    Return 2d lat and lon bounds.
+    Return 2d arrays for x and y bounds.
     
     Returns array of shape (n+1, m+1).
     ::
     
-        lats, lons = cs.get_lat_lon_bounded_grids()
+        xs, ys = get_xy_contiguous_bounded_grids()
     
     """
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
-    cs = cube.coord_system('CoordSystem')
-    
+
     x = x_coord.contiguous_bounds()
     y = y_coord.contiguous_bounds()
     x, y = numpy.meshgrid(x, y)
@@ -222,7 +207,7 @@ def _quadrant_area(radian_colat_bounds, radian_lon_bounds, radius_of_earth):
     - radian_lon_bounds      -- [n,2] array of longitude bounds (radians)
     - radius_of_earth        -- radius of the earth, (currently assumed spherical)
 
-    Area weights are calulated for each lat/lon cell as:
+    Area weights are calculated for each lat/lon cell as:
 
         .. math::
         
@@ -243,8 +228,8 @@ def _quadrant_area(radian_colat_bounds, radian_lon_bounds, radius_of_earth):
     for j in range(radian_colat_bounds.shape[0]):
         areas[j, :] = [(radius_sqr * math.cos(radian_colat_bounds[j, 0]) * (radian_lon_bounds[i, 1] - radian_lon_bounds[i, 0])) - \
                       (radius_sqr * math.cos(radian_colat_bounds[j, 1]) * (radian_lon_bounds[i, 1] - radian_lon_bounds[i, 0]))   \
-                      for i in range(radian_lon_bounds.shape[0])] 
-        
+                      for i in range(radian_lon_bounds.shape[0])]
+
     return numpy.abs(areas)
 
 
@@ -280,35 +265,35 @@ def area_weights(cube):
     else:
         warnings.warn("Using DEFAULT_SPHERICAL_EARTH_RADIUS.")
         radius_of_earth = DEFAULT_SPHERICAL_EARTH_RADIUS
-        
+
     # Get the lon and lat coords and axes
     lat, lon = _get_lat_lon_coords(cube)
-    
+
     if lat.ndim > 1:
         raise iris.exceptions.CoordinateMultiDimError(lat)
     if lon.ndim > 1:
         raise iris.exceptions.CoordinateMultiDimError(lon)
-    
+
     lat_dim = cube.coord_dims(lat)
     lat_dim = lat_dim[0] if lat_dim else None
-    
+
     lon_dim = cube.coord_dims(lon)
     lon_dim = lon_dim[0] if lon_dim else None
-    
+
     # Ensure they have contiguous bounds
     if (not lat.is_contiguous()) or (not lon.is_contiguous()):
         raise ValueError("Currently need contiguous bounds to calculate area weights")
-    
+
     # Convert from degrees to radians
     lat = lat.unit_converted('radians')
     lon = lon.unit_converted('radians')
-    
+
     # Create 2D weights from bounds
     if lat.has_bounds() and lon.has_bounds():
         # Use the geographical area as the weight for each cell
         # Convert latitudes to co-latitude. I.e from -90 --> +90  to  0 --> pi
-        ll_weights = _quadrant_area(lat.bounds+numpy.pi/2., lon.bounds, radius_of_earth)
-    
+        ll_weights = _quadrant_area(lat.bounds + numpy.pi / 2., lon.bounds, radius_of_earth)
+
     # Create 2D weights from points
     else:
         raise iris.exceptions.NotYetImplementedError("Point-based weighting algorithm not yet identified")
@@ -318,15 +303,15 @@ def area_weights(cube):
     # Does the cube have them the other way round?
     if lon_dim < lat_dim:
         ll_weights = ll_weights.transpose()
-    
+
     # Now we create an array of weights for each cell.
-        
+
     # First, get the non latlon shape
     other_dims_shape = numpy.array(cube.shape)
     other_dims_shape[lat_dim] = 1
     other_dims_shape[lon_dim] = 1
     other_dims_array = numpy.ones(other_dims_shape)
-     
+
     # Create the broadcast object from the weights array and the 'other dims',
     # to match the shape of the cube.
     broad_weights = ll_weights * other_dims_array

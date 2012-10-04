@@ -34,6 +34,7 @@ A summary of the main features added with version 1.0:
 
 * Hybrid-pressure vertical coordinates, and the ability to load from GRIB.
 * Initial support for CF-style coordinate systems.
+* Use of Cartopy for mapping in matplotlib
 * Load data from NIMROD files.
 * Availability of Cynthia Brewer colour palettes.
 * Add a citation to a plot.
@@ -51,6 +52,8 @@ Incompatible changes
 * The "source" and "history" metadata are now represented as Cube
   attributes, where previously they used coordinates.
 * :meth:`iris.cube.Cube.coord_dims()` now returns a tuple instead of a list.
+* The ``iris.plot.gcm``, ``iris.plot.map_setup`` and ``iris.cartography.xy_range``
+  functions are now deprecated. See the Cartopy section for further details.
 
 Deprecations
 ------------
@@ -87,6 +90,50 @@ For convenience, Iris also includes the :class:`~iris.coord_systems.OSGB`
 class which provides a simple way to create the transverse Mercator
 coordinate system used by the British
 `Ordnance Survey <http://www.ordnancesurvey.co.uk/>`_.
+
+
+Using Cartopy for mapping in matplotlib
+=======================================
+
+The underlying map drawing package has now been updated to use
+`Cartopy <http://scitools.github.com/cartopy>`_. This change will see improved
+handling of data in its native coordinate system, and simplifies the user
+interface.
+
+The ``iris.plot.gcm`` function to get the current map is now
+redundant; instead the current map *is* the current matplotlib axes, therefore
+:func:`matplotlib.pyplot.gca` can be used instead.
+
+The ``iris.plot.map_setup`` function has now been replaced with a cleaner
+interface:
+
+    * To draw a cube on its native map project, one can simply draw the cube directly::
+
+            import iris.plot as iplt
+            import matplotlib.pyplot as plt
+
+            iplt.contourf(cube)
+            plt.gca().coastlines()
+            plt.show()
+
+    * To draw a cube on the native map and extents of another, one can use the
+      :func:`iris.plot.default_projection` and
+      :func:`iris.plot.default_projection_extent` functions::
+
+            import iris.plot as iplt
+            import matplotlib.pyplot as plt
+
+            cube1_projection = iplt.default_projection(cube1)
+            cube1_extent = iplt.default_projection_extent(cube1)
+
+            ax = plt.axes(projection=cube1_projection)
+            ax.set_extent(cube1_extent, cube1_projection)
+            iplt.contourf(cube2)
+            ax.coastlines()
+            plt.show()
+
+For more examples of what can be done with Cartopy, see the Iris gallery and
+`Cartopy's documentation  <http://scitools.github.com/cartopy>`_.
 
 
 Hybrid-pressure

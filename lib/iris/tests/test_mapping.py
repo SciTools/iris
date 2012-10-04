@@ -24,6 +24,7 @@ import iris.tests as tests
 
 import matplotlib.pyplot as plt
 import numpy
+import numpy.testing as np_testing
 import cartopy.crs as ccrs
 
 import iris
@@ -52,6 +53,15 @@ class TestBasic(tests.IrisTest):
         iplt.contourf(cube)
         self.check_graphic()
 
+    def test_default_projection_and_extent(self):
+        self.assertEqual(iplt.default_projection(self.cube),
+                         ccrs.RotatedPole(357.5 - 180, 37.5)
+                         )
+
+        np_testing.assert_array_almost_equal(iplt.default_projection_extent(self.cube),
+                                             (3.59579163e+02, 3.59669159e+02, -1.28250003e-01, -3.82499993e-02)
+                                             )
+
 
 @iris.tests.skip_data
 class TestUnmappable(tests.IrisTest):
@@ -70,22 +80,6 @@ class TestUnmappable(tests.IrisTest):
     def test_simple(self):
         iplt.contourf(self.cube)
         self.check_graphic()
-
-
-# TODO: Remove
-def _pretend_unrotated(cube):
-    lat = cube.coord('grid_latitude')
-    lon = cube.coord('grid_longitude')
-    rcs = lat.coord_system
-
-    lat.coord_system = rcs.ellipsoid
-    lon.coord_system = rcs.ellipsoid
-    lat.standard_name = "latitude"
-    lon.standard_name = "longitude"
-
-    lon.points = lon.points - 360
-    if lon.bounds is not None:
-        lon.bounds = lon.bounds - 360
 
 
 @iris.tests.skip_data
@@ -124,6 +118,14 @@ class TestMappingSubRegion(tests.IrisTest):
 
         self.check_graphic()
 
+    def test_default_projection_and_extent(self):
+        self.assertEqual(iplt.default_projection(self.cube),
+                          ccrs.RotatedPole(357.5 - 180, 37.5)
+                          )
+
+        np_testing.assert_array_almost_equal(iplt.default_projection_extent(self.cube),
+                                             (313.01998901, 391.11999512, -22.48999977, 24.80999947)
+                                             )
 
 @iris.tests.skip_data
 class TestLowLevel(tests.IrisTest):
@@ -174,6 +176,21 @@ class TestBoundedCube(tests.IrisTest):
         iplt.outline(self.cube)
         self.check_graphic()
 
+    def test_default_projection_and_extent(self):
+        self.assertEqual(iplt.default_projection(self.cube),
+                         ccrs.PlateCarree()
+                         )
+
+        np_testing.assert_array_almost_equal(
+             iplt.default_projection_extent(self.cube),
+             [0., 360., -89.99995422, 89.99998474]
+                                             )
+
+        np_testing.assert_array_almost_equal(
+             iplt.default_projection_extent(self.cube, mode=iris.coords.BOUND_MODE),
+             (-1.87499952, 358.12500048, -91.24995422, 91.24998474)
+                                             )
+
 
 @iris.tests.skip_data
 class TestLimitedAreaCube(tests.IrisTest):
@@ -198,7 +215,7 @@ class TestLimitedAreaCube(tests.IrisTest):
         self.check_graphic()
 
     def test_scatter(self):
-        scatter = iplt.points(self.cube)
+        iplt.points(self.cube)
         plt.gca().coastlines()
         self.check_graphic()
 

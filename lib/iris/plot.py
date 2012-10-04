@@ -342,8 +342,6 @@ def _draw_1d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
 
 def _get_cartopy_axes(cartopy_proj):
     # Replace non-cartopy subplot/axes with a cartopy alternative.
-    # XXX original subplot properties will be lost...
-    # XXX consider allowing the axes to be passed through
     ax = plt.gca()
     if not isinstance(ax,
                       cartopy.mpl_integration.geoaxes.GenericProjectionAxes):
@@ -482,103 +480,34 @@ def contourf(cube, *args, **kwargs):
     return result
 
 
-#def map_setup(projection=None, xlim=None, ylim=None, cube=None, mode=None):
-#    """
-#    Setup matplotlib for cartographic plotting.
-#
-#    The projection is taken from the projection keyword, if present,
-#    otherwise it is taken from the cube, if present,
-#    otherwise it defaults to a PlateCarree projection.
-#
-#    The xy limits are taken from the xlim and ylim keywords, if present,
-#    otherwise they are taken from the cube, if present,
-#    otherwise it is left for matplotlib to set limit during the first plot.
-#
-#    Kwargs:
-#
-#        * projection - The projection to use for plotting.
-#        * xlim       - x limits
-#        * ylim       - y limits
-#        * cube       - A cube which can be used for projection and limits.
-#        * mode       - Controls min/max calulation for bounded coordinates
-#                       (Passed through to :func:`~iris.analysis.cartography.xy_range`).
-#                       Set to iris.coords.POINT_MODE or iris.coords.BOUND_MODE.
-#                       Default is iris.coords.BOUND_MODE.
-#
-#    Note:
-#
-#        There is no need to setup a map in many cases,
-#        as this is done for you by Iris' plotting routines.
-#
-#            # Unnecessary map_setup
-#            map_setup(cube)
-#            contourf(cube)
-#
-#        Suggested uses of this function are as follows, ::
-#
-#            # Alternative projection, automatic limits
-#            map_setup(projection)
-#            contourf(cube)
-#
-#            # Alternative projection, custom limits
-#            map_setup(projection, xlim, ylim)
-#            contourf(cube)
-#
-#            # Native projection, custom limits
-#            map_setup(cube, xlim, ylim)
-#            contourf(cube)
-#
-#        The following snippet is inefficient.
-#        Coordinate transformation is used twice, which is not necessary. ::
-#
-#            # Transforms to calulate projected extents
-#            map_setup(cube, other_projection)
-#            # Transforms again, for plotting
-#            contourf(cube)
-#
-#        Instead, let the limits be calulated automatically,
-#        as in the suggested usage, above.
-#
-#    """
-#    # Which projection?
-#    if projection is None and cube is not None:
-#        cs = cube.coord_system("CoordSystem")
-#        projection = cs.as_cartopy_projection() if cs else None
-#    if projection is None:
-#        projection = cartopy.crs.PlateCarree()
-#
-#    lim_crs = projection
-#
-#    # Which extents?
-#    if (xlim is None or ylim is None) and cube is not None:
-#        mode = mode or iris.coords.BOUND_MODE
-#        extents = iris.analysis.cartography.xy_range(cube, mode, projection)
-#        xlim = extents[0]
-#        ylim = extents[1]
-#        lim_crs = cs.as_cartopy_projection() if cs else None
-#
-#    ax = _get_cartopy_axes(projection)
-#
-#    if (xlim is not None) != (ylim is not None):
-#        warnings.warn('Both xlim and ylim must currently be set.')
-#
-#    if xlim is not None:
-#        ax.set_extent(tuple(xlim) + tuple(ylim), lim_crs)
-#
-#    return ax
-
 def default_projection(cube):
     """
+    Return the primary map projection for the given cube.
+
+    Using the returned projection, one can create a cartopy map with::
+
+        import matplotlib.pyplot as plt
+        ax = plt.ax(projection=default_projection(cube))
+
     """
-    # XXX logic seems flawed
+    # XXX logic seems flawed, but it is what map_setup did...
     cs = cube.coord_system("CoordSystem")
     projection = cs.as_cartopy_projection() if cs else None
     return projection
 
-def default_projection_extent(cube):
-    mode = iris.coords.POINT_MODE
-    mode = mode or iris.coords.BOUND_MODE
-    extents = iris.analysis.cartography.xy_range(cube, mode)
+
+def default_projection_extent(cube, mode=iris.coords.POINT_MODE):
+    """
+    Return the extents ``(x0, x1, y0, y1)`` of the given cube in its default projection.
+
+    Keyword arguments:
+
+     * mode - either ``iris.coords.POINT_MODE`` or ``iris.coords.BOUND_MODE``. Triggers whether
+              the extent should be representative of the cell points, or the limits of the cell's
+              bounds.
+
+    """
+    extents = iris.analysis.cartography._xy_range(cube, mode)
     xlim = extents[0]
     ylim = extents[1]
     return tuple(xlim) + tuple(ylim)
