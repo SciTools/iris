@@ -164,11 +164,11 @@ def _get_plot_defn(cube, mode, ndims=2):
     # Re-order the coordinates to achieve the preferred
     # horizontal/vertical associations.
     def sort_key(coord):
-        order = {'X': 2, 'T': 1, 'Y': -1, 'Z': -2}
+        order = {'X': 2, 'T': 1, 'Y':-1, 'Z':-2}
         axis = guess_axis(coord)
         return (order.get(axis, 0), coord and coord.name())
     sorted_coords = sorted(coords, key=sort_key)
-    
+
     transpose = (sorted_coords != coords)
     return PlotDefn(sorted_coords, transpose)
 
@@ -196,7 +196,7 @@ def _broadcast_2d(u, v):
 def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     # NB. In the interests of clarity we use "u" and "v" to refer to the horizontal and vertical
     # axes on the matplotlib plot.
-    
+
     # get & remove the coords entry from kwargs
     coords = kwargs.pop('coords', None)
     mode = iris.coords.BOUND_MODE
@@ -210,7 +210,7 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
                                 draw_method_name))
     else:
         plot_defn = _get_plot_defn(cube, mode, ndims=2)
-    
+
     data = cube.data
     if plot_defn.transpose:
         data = data.T
@@ -254,7 +254,7 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
         plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode)
     else:
         plot_defn = _get_plot_defn(cube, mode, ndims=2)
-        
+
     data = cube.data
     if plot_defn.transpose:
         data = data.T
@@ -281,7 +281,7 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
 
         if u.dtype == numpy.dtype(object) and isinstance(u[0], datetime.datetime):
             u = mpl_dates.date2num(u)
-        
+
         if v.dtype == numpy.dtype(object) and isinstance(v[0], datetime.datetime):
             v = mpl_dates.date2num(v)
 
@@ -402,9 +402,9 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
     # Set the "from transform" keyword. 
     # NB. While cartopy doesn't support spherical contours, just use the
     # projection as the source CRS.
-    assert 'transform' not in kwargs, 'Transform keyword is not allowed.' 
+    assert 'transform' not in kwargs, 'Transform keyword is not allowed.'
     kwargs['transform'] = cartopy_proj
-    
+
     if arg_func is not None:
         new_args, kwargs = arg_func(x, y, data, *args, **kwargs)
     else:
@@ -449,7 +449,7 @@ def contourf(cube, *args, **kwargs):
     coords = kwargs.get('coords')
     kwargs.setdefault('antialiased', True)
     result = _draw_2d_from_points('contourf', None, cube, *args, **kwargs)
-
+    
     # Matplotlib produces visible seams between anti-aliased polygons.
     # But if the polygons are virtually opaque then we can cover the seams
     # by drawing anti-aliased lines *underneath* the polygon joins.
@@ -482,90 +482,106 @@ def contourf(cube, *args, **kwargs):
     return result
 
 
-def map_setup(projection=None, xlim=None, ylim=None, cube=None, mode=None):
+#def map_setup(projection=None, xlim=None, ylim=None, cube=None, mode=None):
+#    """
+#    Setup matplotlib for cartographic plotting.
+#
+#    The projection is taken from the projection keyword, if present,
+#    otherwise it is taken from the cube, if present,
+#    otherwise it defaults to a PlateCarree projection.
+#
+#    The xy limits are taken from the xlim and ylim keywords, if present,
+#    otherwise they are taken from the cube, if present,
+#    otherwise it is left for matplotlib to set limit during the first plot.
+#
+#    Kwargs:
+#
+#        * projection - The projection to use for plotting.
+#        * xlim       - x limits
+#        * ylim       - y limits
+#        * cube       - A cube which can be used for projection and limits.
+#        * mode       - Controls min/max calulation for bounded coordinates
+#                       (Passed through to :func:`~iris.analysis.cartography.xy_range`).
+#                       Set to iris.coords.POINT_MODE or iris.coords.BOUND_MODE.
+#                       Default is iris.coords.BOUND_MODE.
+#
+#    Note:
+#
+#        There is no need to setup a map in many cases,
+#        as this is done for you by Iris' plotting routines.
+#
+#            # Unnecessary map_setup
+#            map_setup(cube)
+#            contourf(cube)
+#
+#        Suggested uses of this function are as follows, ::
+#
+#            # Alternative projection, automatic limits
+#            map_setup(projection)
+#            contourf(cube)
+#
+#            # Alternative projection, custom limits
+#            map_setup(projection, xlim, ylim)
+#            contourf(cube)
+#
+#            # Native projection, custom limits
+#            map_setup(cube, xlim, ylim)
+#            contourf(cube)
+#
+#        The following snippet is inefficient.
+#        Coordinate transformation is used twice, which is not necessary. ::
+#
+#            # Transforms to calulate projected extents
+#            map_setup(cube, other_projection)
+#            # Transforms again, for plotting
+#            contourf(cube)
+#
+#        Instead, let the limits be calulated automatically,
+#        as in the suggested usage, above.
+#
+#    """
+#    # Which projection?
+#    if projection is None and cube is not None:
+#        cs = cube.coord_system("CoordSystem")
+#        projection = cs.as_cartopy_projection() if cs else None
+#    if projection is None:
+#        projection = cartopy.crs.PlateCarree()
+#
+#    lim_crs = projection
+#
+#    # Which extents?
+#    if (xlim is None or ylim is None) and cube is not None:
+#        mode = mode or iris.coords.BOUND_MODE
+#        extents = iris.analysis.cartography.xy_range(cube, mode, projection)
+#        xlim = extents[0]
+#        ylim = extents[1]
+#        lim_crs = cs.as_cartopy_projection() if cs else None
+#
+#    ax = _get_cartopy_axes(projection)
+#
+#    if (xlim is not None) != (ylim is not None):
+#        warnings.warn('Both xlim and ylim must currently be set.')
+#
+#    if xlim is not None:
+#        ax.set_extent(tuple(xlim) + tuple(ylim), lim_crs)
+#
+#    return ax
+
+def default_projection(cube):
     """
-    Setup matplotlib for cartographic plotting.
-    
-    The projection is taken from the projection keyword, if present,
-    otherwise it is taken from the cube, if present,
-    otherwise it defaults to a PlateCarree projection.
-    
-    The xy limits are taken from the xlim and ylim keywords, if present,
-    otherwise they are taken from the cube, if present,
-    otherwise it is left for matplotlib to set limit during the first plot.
-    
-    Kwargs:
-    
-        * projection - The projection to use for plotting.
-        * xlim       - x limits
-        * ylim       - y limits
-        * cube       - A cube which can be used for projection and limits.
-        * mode       - Controls min/max calulation for bounded coordinates
-                       (Passed through to :func:`~iris.analysis.cartography.xy_range`). 
-                       Set to iris.coords.POINT_MODE or iris.coords.BOUND_MODE.
-                       Default is iris.coords.BOUND_MODE.
+    """
+    # XXX logic seems flawed
+    cs = cube.coord_system("CoordSystem")
+    projection = cs.as_cartopy_projection() if cs else None
+    return projection
 
-    Note:
-
-        There is no need to setup a map in many cases,
-        as this is done for you by Iris' plotting routines.
-
-            # Unnecessary map_setup
-            map_setup(cube)
-            contourf(cube)
-    
-        Suggested uses of this function are as follows, ::
-
-            # Alternative projection, automatic limits
-            map_setup(projection)
-            contourf(cube)
-        
-            # Alternative projection, custom limits
-            map_setup(projection, xlim, ylim)
-            contourf(cube)
-            
-            # Native projection, custom limits
-            map_setup(cube, xlim, ylim)
-            contourf(cube)
-            
-        The following snippet is inefficient.
-        Coordinate transformation is used twice, which is not necessary. ::
-    
-            # Transforms to calulate projected extents
-            map_setup(cube, other_projection)
-            # Transforms again, for plotting
-            contourf(cube)
-            
-        Instead, let the limits be calulated automatically,
-        as in the suggested usage, above.
-
-    """  
-    # Which projection?
-    if projection is None and cube is not None:
-        cs = cube.coord_system("CoordSystem")
-        projection = cs.as_cartopy_projection() if cs else None
-    if projection is None:
-        projection = cartopy.crs.PlateCarree()
-    
-    lim_crs = projection
-    
-    # Which extents?
-    if (xlim is None or ylim is None) and cube is not None:
-        mode = mode or iris.coords.BOUND_MODE
-        extents = iris.analysis.cartography.xy_range(cube, mode, projection)
-        xlim = extents[0]
-        ylim = extents[1]
-        lim_crs = cs.as_cartopy_projection() if cs else None
-
-    ax = _get_cartopy_axes(projection)
-
-    if (xlim is not None) != (ylim is not None):
-        warnings.warn('Both xlim and ylim must currently be set.')
-    
-    if xlim is not None:
-        ax.set_extent(tuple(xlim) + tuple(ylim), lim_crs)
-    
-    return ax
+def default_projection_extent(cube):
+    mode = iris.coords.POINT_MODE
+    mode = mode or iris.coords.BOUND_MODE
+    extents = iris.analysis.cartography.xy_range(cube, mode)
+    xlim = extents[0]
+    ylim = extents[1]
+    return tuple(xlim) + tuple(ylim)
 
 
 def _fill_orography(cube, coords, mode, vert_plot, horiz_plot, style_args):
@@ -597,38 +613,38 @@ def orography_at_bounds(cube, facecolor='#888888', coords=None):
     """Plots orography defined at cell boundaries from the given Cube."""
 
     # XXX Needs contiguous orography corners to work.
-    raise NotImplementedError('This operation is temporarily not provided until ' 
+    raise NotImplementedError('This operation is temporarily not provided until '
                               'coordinates can expose 2d contiguous bounds (corners).')
-    
+
     style_args = {'edgecolor': 'none', 'facecolor': facecolor}
-    
+
     def vert_plot(u_coord, orography, style_args):
         u = u_coord.contiguous_bounds()
         left = u[:-1]
         height = orography.points
         width = u[1:] - left
         return plt.bar(left, height, width, **style_args)
-        
+
     def horiz_plot(v_coord, orography, style_args):
         v = v_coord.contiguous_bounds()
         bottom = v[:-1]
         width = orography.points
         height = v[1:] - bottom
         return plt.barh(bottom, width, height, **style_args)
-        
+
     return _fill_orography(cube, coords, iris.coords.BOUND_MODE, vert_plot, horiz_plot, style_args)
 
 
 def orography_at_points(cube, facecolor='#888888', coords=None):
     """Plots orography defined at sample points from the given Cube."""
-    
+
     style_args = {'facecolor': facecolor}
-    
+
     def vert_plot(u_coord, orography, style_args):
         x = u_coord.points
         y = orography.points
         return plt.fill_between(x, y, **style_args)
-        
+
     def horiz_plot(v_coord, orography, style_args):
         y = v_coord.points
         x = orography.points
@@ -763,9 +779,9 @@ def symbols(x, y, symbols, size, axes=None, units='inches'):
     """
     if axes is None:
         axes = plt.gca()
-        
+
     offsets = numpy.array(zip(x, y))
-    
+
     # XXX "match_original" doesn't work ... so brute-force it instead.
     #   PatchCollection constructor ignores all non-style keywords when using match_original
     #   See matplotlib.collections.PatchCollection.__init__
@@ -774,10 +790,10 @@ def symbols(x, y, symbols, size, axes=None, units='inches'):
     facecolors = [p.get_facecolor() for p in symbols]
     edgecolors = [p.get_edgecolor() for p in symbols]
     linewidths = [p.get_linewidth() for p in symbols]
-    
+
     pc = mpl_collections.PatchCollection(symbols, offsets=offsets, transOffset=axes.transData,
             facecolors=facecolors, edgecolors=edgecolors, linewidths=linewidths)
-            
+
     if units == 'inches':
         scale = axes.figure.dpi
     elif units == 'points':

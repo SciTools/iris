@@ -82,7 +82,7 @@ def _pretend_unrotated(cube):
     lon.coord_system = rcs.ellipsoid
     lat.standard_name = "latitude"
     lon.standard_name = "longitude"
-    
+
     lon.points = lon.points - 360
     if lon.bounds is not None:
         lon.bounds = lon.bounds - 360
@@ -93,7 +93,7 @@ class TestMappingSubRegion(tests.IrisTest):
     def setUp(self):
         cube_path = tests.get_data_path(('PP', 'aPProt1', 'rotatedMHtimecube.pp'))
         cube = iris.load_cube(cube_path)[0]
-        # make the data slighly smaller to speed things up...
+        # make the data smaller to speed things up.
         self.cube = cube[::10, ::10]
 
     def test_simple(self):
@@ -104,23 +104,21 @@ class TestMappingSubRegion(tests.IrisTest):
         plt.gca().coastlines()
 
         # Second sub-plot
-        plt.subplot(222)
+        plt.subplot(222, projection=ccrs.Mollweide(central_longitude=120))
         plt.title('Molleweide')
-        iplt.map_setup(projection=ccrs.Mollweide(central_longitude=120))
         iplt.contourf(self.cube)
         plt.gca().coastlines()
 
-        # Third sub-plot
-        plt.subplot(223)
+        # Third sub-plot (the projection part is redundant, but a useful
+        # test none-the-less)
+        ax = plt.subplot(223, projection=iplt.default_projection(self.cube))
         plt.title('Native')
-        ax = iplt.map_setup(cube=self.cube)
         iplt.contour(self.cube)
         ax.coastlines()
-        
+
         # Fourth sub-plot
-        plt.subplot(224)
-        plt.title('PlateCarree')
         ax = plt.subplot(2, 2, 4, projection=ccrs.PlateCarree())
+        plt.title('PlateCarree')
         iplt.contourf(self.cube)
         ax.coastlines()
 
@@ -171,7 +169,7 @@ class TestBoundedCube(tests.IrisTest):
         plt.axes(projection=ccrs.PlateCarree(central_longitude=180))
         iplt.pcolormesh(self.cube)
         self.check_graphic()
-        
+
     def test_grid(self):
         iplt.outline(self.cube)
         self.check_graphic()
@@ -188,18 +186,18 @@ class TestLimitedAreaCube(tests.IrisTest):
     def test_pcolormesh(self):
         iplt.pcolormesh(self.cube)
         self.check_graphic()
-        
+
     def test_grid(self):
         iplt.pcolormesh(self.cube, facecolors='none', edgecolors='blue')
         # the result is a graphic which has coloured edges. This is a mpl bug, see
         # https://github.com/matplotlib/matplotlib/issues/1302
         self.check_graphic()
-    
+
     def test_outline(self):
         iplt.outline(self.cube)
         self.check_graphic()
-    
-    def test_scatter(self):    
+
+    def test_scatter(self):
         scatter = iplt.points(self.cube)
         plt.gca().coastlines()
         self.check_graphic()
