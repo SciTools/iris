@@ -41,6 +41,9 @@ A summary of the main features added with version 1.0:
 * Save netCDF files with an unlimited dimension.
 * A more explicit set of load functions, which also allow the automatic
   cube merging to be bypassed as a last resort.
+* The ability to project a cube with a lat-lon or rotated lat-lon coordinate
+  system into a range of map projections e.g. Polar Stereographic.
+
 
 Incompatible changes
 --------------------
@@ -227,6 +230,44 @@ to the cube merge algorithm.
 The :func:`iris.load_strict()` function has been deprecated. Code should
 now use the :func:`iris.load_cube()` and :func:`iris.load_cubes()`
 functions instead.
+
+
+Cube projection
+===============
+
+Iris now has the ability to project a cube into a number of map projections.
+This functionality is provided by :func:`iris.analysis.cartography.project()`.
+For example::
+
+    import iris
+    import cartopy
+    import matplotlib.pyplot as plt
+
+    # Load data
+    cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
+
+    # Transform cube to target projection
+    target_proj = cartopy.crs.RotatedPole(pole_longitude=177.5,
+                                          pole_latitude=37.5)
+    new_cube, extent = iris.analysis.cartography.project(cube, target_proj)
+
+    # Plot
+    plt.axes(projection=target_proj)
+    plt.pcolor(new_cube.coord('projection_x_coordinate').points,
+               new_cube.coord('projection_y_coordinate').points,
+               new_cube.data)
+    plt.gca().coastlines()
+    plt.show()
+
+This function is intended to be used in cases where the cube's coordinates
+prevent one from directly visualising the data, e.g. when the longitude
+and latitude are two dimensional and do not make up a regular grid. The
+function uses a nearest neighbour approach rather than any form of
+linear/non-linear interpolation to determine the data value of each cell
+in the resulting cube. Consequently it may have an adverse effect on the
+statistics of the data e.g. the mean and standard deviation will not be
+preserved. This function currently assumes global data and will if
+necessary extrapolate beyond the geographical extent of the source cube.
 
 
 Other changes
