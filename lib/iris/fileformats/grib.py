@@ -186,10 +186,10 @@ class GribWrapper(object):
         
         self.extra_keys = {}
 
-        #work out stuff based on these values from the message
+        # work out stuff based on these values from the message
         edition = self.edition
 
-        #pygrib gave us format independent "forecastTime"
+        # grib forcast time, for time-processed fields, is from reference time to start of period
         if edition == 2:
             forecastTime = self.forecastTime
             
@@ -199,7 +199,7 @@ class GribWrapper(object):
                 warnings.warn("Bad forecastTime detected! "
                               "Please contact the Iris team with the file you tried to load.")
         else:
-            forecastTime = self.stepRange
+            forecastTime = self.startStep
 
         #regular or rotated grid?
         try:
@@ -235,11 +235,20 @@ class GribWrapper(object):
         processingDone = self._get_processing_done()
         #time processed?
         if processingDone.startswith("time"):
-            endYear   = self.yearOfEndOfOverallTimeInterval
-            endMonth  = self.monthOfEndOfOverallTimeInterval
-            endDay    = self.dayOfEndOfOverallTimeInterval
-            endHour   = self.hourOfEndOfOverallTimeInterval
-            endMinute = self.minuteOfEndOfOverallTimeInterval
+            if self.edition == 1:
+                validityDate = str(self.validityDate)
+                validityTime = "{:04}".format(int(self.validityTime))
+                endYear   = int(validityDate[:4])
+                endMonth  = int(validityDate[4:6])
+                endDay    = int(validityDate[6:8])
+                endHour   = int(validityTime[:2])
+                endMinute = int(validityTime[2:4])
+            elif self.edition == 2:
+                endYear   = self.yearOfEndOfOverallTimeInterval
+                endMonth  = self.monthOfEndOfOverallTimeInterval
+                endDay    = self.dayOfEndOfOverallTimeInterval
+                endHour   = self.hourOfEndOfOverallTimeInterval
+                endMinute = self.minuteOfEndOfOverallTimeInterval
 
             # fixed forecastTime in hours
             self.extra_keys['_periodStartDateTime'] = \

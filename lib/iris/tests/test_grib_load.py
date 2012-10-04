@@ -39,8 +39,11 @@ class TestGribLoad(tests.GraphicsTest):
         cubes = iris.load(tests.get_data_path(('GRIB', 'rotated_uk', "uk_wrongparam.grib1")))
         self.assertCML(cubes, ("grib_load", "rotated.cml"))
         
+        cubes = iris.load(tests.get_data_path(('GRIB', "time_processed", "time_bound.grib1")))
+        self.assertCML(cubes, ("grib_load", "time_bound_grib1.cml"))
+
         cubes = iris.load(tests.get_data_path(('GRIB', "time_processed", "time_bound.grib2")))
-        self.assertCML(cubes, ("grib_load", "time_bound.cml"))
+        self.assertCML(cubes, ("grib_load", "time_bound_grib2.cml"))
         
         cubes = iris.load(tests.get_data_path(('GRIB', "3_layer_viz", "3_layer.grib2")))
         cubes = iris.cube.CubeList([cubes[1], cubes[0], cubes[2]])
