@@ -43,16 +43,16 @@ class TestCmapNorm(tests.IrisTest):
 
     def test_cmap_override(self):
         # Diverging scheme.
-        iplt.contourf(self.cube, cmap=mcm.get_cmap(name='PRGn_11'))
+        iplt.contourf(self.cube, cmap=mcm.get_cmap(name='brewer_PRGn_11'))
         self.check_graphic()
         # Other scheme.
-        iplt.contourf(self.cube, cmap=mcm.get_cmap(name='RdGy_11'))
+        iplt.contourf(self.cube, cmap=mcm.get_cmap(name='brewer_RdGy_11'))
         self.check_graphic()
         # Qualitative scheme.
-        iplt.contourf(self.cube, cmap=mcm.get_cmap(name='Paired_12'))
+        iplt.contourf(self.cube, cmap=mcm.get_cmap(name='brewer_Paired_12'))
         self.check_graphic()
         # Sequential scheme.
-        iplt.contourf(self.cube, cmap=mcm.get_cmap(name='PuBuGn_09'))
+        iplt.contourf(self.cube, cmap=mcm.get_cmap(name='brewer_PuBuGn_09'))
         self.check_graphic()
 
     def test_norm_auto(self):

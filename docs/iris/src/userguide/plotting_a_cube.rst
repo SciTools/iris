@@ -247,3 +247,52 @@ Continuous block plots can be achieved with either :func:`iris.plot.pcolormesh` 
 .. literalinclude:: plotting_examples/cube_blockplot.py
 
 .. plot:: userguide/plotting_examples/cube_blockplot.py
+
+
+****************
+Brewer palettes
+****************
+
+Iris includes colour specifications and designs developed by `Cynthia Brewer <http://colorbrewer.org/>`_.
+These colour schemes are freely available under the following licence::
+
+      Apache-Style Software License for ColorBrewer software and ColorBrewer Color Schemes
+  
+      Copyright (c) 2002 Cynthia Brewer, Mark Harrower, and The Pennsylvania State University.
+  
+      Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+      Unless required by applicable law or agreed to in writing, software distributed
+      under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+      CONDITIONS OF ANY KIND, either express or implied. See the License for the
+      specific language governing permissions and limitations under the License.
+
+The following subset of Brewer palettes found at `colorbrewer.org <http://colorbrewer.org/>`_ are available within Iris.
+
+.. plot:: userguide/plotting_examples/brewer.py
+
+
+Plotting with Brewer
+====================
+
+To plot a cube using a Brewer palette, simply load one of the Iris pre-registered Brewer palettes and plot the cube as normal.
+
+.. plot:: userguide/plotting_examples/cube_brewer_contourf.py
+   :include-source:
+
+
+Adding a citation
+=================
+
+Citations can be easily added to plots using the :func:`iris.plot.citation` function.
+The recommended text for the Cynthia Brewer citation is provided by :data:`iris.plot.BREWER_CITE`.
+
+.. plot:: userguide/plotting_examples/cube_brewer_cite_contourf.py
+   :include-source:
+
+.. note::
+   To include a reference in a journal article or report please refer to `section 5 <http://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html>`_
+   in the citation guidance provided by Cynthia Brewer.

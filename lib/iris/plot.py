@@ -47,7 +47,7 @@ import iris.unit
 
 
 # Cynthia Brewer citation text.
-_BREWER = 'Colours based on ColorBrewer.org'
+BREWER_CITE = 'Colours based on ColorBrewer.org'
 
 
 PlotDefn = collections.namedtuple('PlotDefn', ('coords', 'transpose'))
@@ -430,8 +430,6 @@ def contour(cube, *args, **kwargs):
     
     """
     result =_draw_2d_from_points('contour', None, cube, *args, **kwargs)
-    if iris.palette.is_brewer(kwargs.get('cmap')):
-        citation(_BREWER)
     return result
 
 
@@ -454,9 +452,6 @@ def contourf(cube, *args, **kwargs):
     kwargs.setdefault('antialiased', True)
     result = _draw_2d_from_points('contourf', None, cube, *args, **kwargs)
 
-    if iris.palette.is_brewer(kwargs.get('cmap')):
-        citation(_BREWER)
-    
     # Matplotlib produces visible seams between anti-aliased polygons.
     # But if the polygons are virtually opaque then we can cover the seams
     # by drawing anti-aliased lines *underneath* the polygon joins.
@@ -679,8 +674,6 @@ def pcolor(cube, *args, **kwargs):
     """
     kwargs.setdefault('antialiased', True)
     result = _draw_2d_from_bounds('pcolor', cube, *args, **kwargs)
-    if iris.palette.is_brewer(kwargs.get('cmap')):
-        citation(_BREWER)
     return result
 
 
@@ -700,8 +693,6 @@ def pcolormesh(cube, *args, **kwargs):
     
     """
     result = _draw_2d_from_bounds('pcolormesh', cube, *args, **kwargs)
-    if iris.palette.is_brewer(kwargs.get('cmap')):
-        citation(_BREWER)
     return result
 
 
