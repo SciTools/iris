@@ -7,14 +7,10 @@
     </attributes>
     <coords>
       <coord datadims="[2]">
-        <DimCoord id="95f615fae348902" long_name="latitude" points="[90.0, 89.0, 88.0, ..., -88.0, -89.0, -90.0]" shape="(181,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
-          <geogCS earth_radius="6371229.0"/>
-        </DimCoord>
+        <DimCoord id="95f615fae348902" long_name="latitude" points="[90.0, 89.0, 88.0, ..., -88.0, -89.0, -90.0]" shape="(181,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[3]">
-        <DimCoord id="3207b04384adbdec" long_name="longitude" points="[0.0, 1.0, 2.0, ..., 357.0, 358.0, 359.0]" shape="(360,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
-          <geogCS earth_radius="6371229.0"/>
-        </DimCoord>
+        <DimCoord id="3207b04384adbdec" long_name="longitude" points="[0.0, 1.0, 2.0, ..., 357.0, 358.0, 359.0]" shape="(360,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="6382529266940739" long_name="model_level_number" points="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
@@ -37,14 +33,10 @@
     </attributes>
     <coords>
       <coord datadims="[2]">
-        <DimCoord id="95f615fae348902" long_name="latitude" points="[90.0, 89.0, 88.0, ..., -88.0, -89.0, -90.0]" shape="(181,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
-          <geogCS earth_radius="6371229.0"/>
-        </DimCoord>
+        <DimCoord id="95f615fae348902" long_name="latitude" points="[90.0, 89.0, 88.0, ..., -88.0, -89.0, -90.0]" shape="(181,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[3]">
-        <DimCoord id="3207b04384adbdec" long_name="longitude" points="[0.0, 1.0, 2.0, ..., 357.0, 358.0, 359.0]" shape="(360,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
-          <geogCS earth_radius="6371229.0"/>
-        </DimCoord>
+        <DimCoord id="3207b04384adbdec" long_name="longitude" points="[0.0, 1.0, 2.0, ..., 357.0, 358.0, 359.0]" shape="(360,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
         <DimCoord id="6382529266940739" long_name="model_level_number" points="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
