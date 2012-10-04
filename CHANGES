@@ -14,6 +14,8 @@ Features added
 * A more explicit set of load functions, which also allow the automatic
   cube merging to be bypassed as a last resort.
 * Save netCDF files with an unlimited dimension.
+* The ability to project a cube with a lat-lon or rotated lat-lon coordinate
+  system into a range of map projections e.g. Polar Stereographic.
 
 Incompatible changes
 --------------------
