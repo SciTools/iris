@@ -22,9 +22,7 @@ import itertools
 import math
 import warnings
 
-import cartopy
 import cartopy.img_transform
-from mpl_toolkits.basemap import pyproj
 import numpy
 
 import iris.analysis
@@ -407,7 +405,7 @@ def project(cube, target_proj, nx=None, ny=None):
     # if not already.
     source_x = lon_coord.points
     source_y = lat_coord.points
-    if source_x.ndim != 2 or source_y.ndim !=2:
+    if source_x.ndim != 2 or source_y.ndim != 2:
         source_x, source_y = numpy.meshgrid(source_x, source_y)
 
     # Calculate target grid
@@ -458,7 +456,7 @@ def project(cube, target_proj, nx=None, ny=None):
     new_shape[xdim] = 1
     new_shape[ydim] = 1
     index_it = numpy.ndindex(*new_shape)
-    if lat_coord.ndim == 1 and lon_coord.ndim ==1:
+    if lat_coord.ndim == 1 and lon_coord.ndim == 1:
         slice_it = cube.slices([lat_coord, lon_coord])
     elif lat_coord.ndim == 2 and lon_coord.ndim == 2:
         slice_it = cube.slices(lat_coord)
