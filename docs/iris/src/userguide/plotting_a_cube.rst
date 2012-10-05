@@ -249,9 +249,9 @@ Continuous block plots can be achieved with either :func:`iris.plot.pcolormesh` 
 .. plot:: userguide/plotting_examples/cube_blockplot.py
 
 
-****************
-Brewer palettes
-****************
+***********************
+Brewer colour palettes
+***********************
 
 Iris includes colour specifications and designs developed by `Cynthia Brewer <http://colorbrewer.org/>`_.
 These colour schemes are freely available under the following licence::
@@ -278,7 +278,7 @@ The following subset of Brewer palettes found at `colorbrewer.org <http://colorb
 Plotting with Brewer
 ====================
 
-To plot a cube using a Brewer palette, simply load one of the Iris pre-registered Brewer palettes and plot the cube as normal.
+To plot a cube using a Brewer colour palette, simply select one of the Iris registered Brewer colour palettes and plot the cube as normal.
 
 .. plot:: userguide/plotting_examples/cube_brewer_contourf.py
    :include-source:
@@ -287,7 +287,7 @@ To plot a cube using a Brewer palette, simply load one of the Iris pre-registere
 Adding a citation
 =================
 
-Citations can be easily added to plots using the :func:`iris.plot.citation` function.
+Citations can be easily added to a plot using the :func:`iris.plot.citation` function.
 The recommended text for the Cynthia Brewer citation is provided by :data:`iris.plot.BREWER_CITE`.
 
 .. plot:: userguide/plotting_examples/cube_brewer_cite_contourf.py
