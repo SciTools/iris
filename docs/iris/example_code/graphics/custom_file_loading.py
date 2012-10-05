@@ -61,17 +61,17 @@ def load_NAME_III(filename):
     Loads the Met Office's NAME III grid output files returning headers, column definitions and data arrays as 3 separate lists.
     
     """
-    
+
     # loading a file gives a generator of lines which can be progressed using the next() method. 
     # This will come in handy as we wish to progress through the file line by line.
     file_handle = file(filename)
-    
+
     # define a dictionary which can hold the header metadata about this file
     headers = {}
-    
+
     # skip the NAME header of the file which looks something like 'NAME III (version X.X.X)'
     file_handle.next()
-    
+
     # read the next 16 lines of header information, putting the form "header name:    header value" into a dictionary
     for _ in range(16):
         header_name, header_value = file_handle.next().split(':')
@@ -93,12 +93,12 @@ def load_NAME_III(filename):
 
     # skip the next blank line in the file.    
     file_handle.next()
-        
+
     # Read the next 7 lines of column definitions
     column_headings = {}
     for column_header_name in ['species_category', 'species', 'cell_measure', 'quantity', 'unit', 'z_level', 'time']:
         column_headings[column_header_name] = [col.strip() for col in file_handle.next().split(',')][:-1]
-    
+
     # convert the time to python datetimes
     new_time_column_header = []
     for i, t in enumerate(column_headings['time']):
@@ -108,38 +108,38 @@ def load_NAME_III(filename):
         else:
             new_time_column_header.append(t)
     column_headings['time'] = new_time_column_header
-        
+
     # skip the blank line after the column headers
     file_handle.next()
-    
+
     # make a list of data arrays to hold the data for each column 
     data_shape = (headers['Y grid size'], headers['X grid size'])
     data_arrays = [numpy.zeros(data_shape, dtype=numpy.float32) for i in range(headers['Number of fields'])]
-   
+
     # iterate over the remaining lines which represent the data in a column form
     for line in file_handle:
-        
+
         # split the line by comma, removing the last empty column caused by the trailing comma
         vals = line.split(',')[:-1]
-        
+
         # cast the x and y grid positions to floats and convert them to zero based indices
         # (the numbers are 1 based grid positions where 0.5 represents half a grid point.)
         x = float(vals[0]) - 1.5
         y = float(vals[1]) - 1.5
-        
+
         # populate the data arrays (i.e. all columns but the leading 4) 
-        for i, data_array in enumerate(data_arrays): 
+        for i, data_array in enumerate(data_arrays):
             data_array[y, x] = float(vals[i + 4])
-    
+
     return headers, column_headings, data_arrays
-    
-    
+
+
 def NAME_to_cube(filenames, callback):
     """Returns a generator of cubes given a list of filenames and a callback."""
-    
+
     for filename in filenames:
         header, column_headings, data_arrays = load_NAME_III(filename)
-        
+
         for i, data_array in enumerate(data_arrays):
             # turn the dictionary of column headers with a list of header information for each field into a dictionary of 
             # headers for just this field. Ignore the first 4 columns of grid position (data was located with the data array). 
@@ -147,17 +147,17 @@ def NAME_to_cube(filenames, callback):
 
             # make an cube
             cube = iris.cube.Cube(data_array)
-            
+
             # define the name and unit
             name = ('%s %s' % (field_headings['species'], field_headings['quantity'])).upper().replace(' ', '_')
             cube.rename(name)
             # Some units are badly encoded in the file, fix this by putting a space in between. (if gs is not found, then the 
             # string will be returned unchanged) 
-            cube.units = field_headings['unit'].replace('gs', 'g s') 
-            
+            cube.units = field_headings['unit'].replace('gs', 'g s')
+
             # define and add the singular coordinates of the field (flight level, time etc.)
             cube.add_aux_coord(icoords.AuxCoord(field_headings['z_level'], long_name='flight_level', units='1'))
-            
+
             # define the time unit and use it to serialise the datetime for the time coordinate
             time_unit = iris.unit.Unit('hours since epoch', calendar=iris.unit.CALENDAR_GREGORIAN)
             time_coord = icoords.AuxCoord(time_unit.date2num(field_headings['time']), standard_name='time', units=time_unit)
@@ -165,36 +165,36 @@ def NAME_to_cube(filenames, callback):
 
             # build a coordinate system which can be referenced by latitude and longitude coordinates
             lat_lon_coord_system = icoord_systems.GeogCS(6371229)
-            
+
             # build regular latitude and longitude coordinates which have bounds
             start = header['X grid origin'] + header['X grid resolution']
             step = header['X grid resolution']
             count = header['X grid size']
             pts = start + numpy.arange(count, dtype=numpy.float32) * step
-            lon_coord = icoords.DimCoord(pts, standard_name='longitude', units='degrees', coord_system = lat_lon_coord_system)
+            lon_coord = icoords.DimCoord(pts, standard_name='longitude', units='degrees', coord_system=lat_lon_coord_system)
             lon_coord.guess_bounds()
-            
+
             start = header['Y grid origin'] + header['Y grid resolution']
             step = header['Y grid resolution']
             count = header['Y grid size']
             pts = start + numpy.arange(count, dtype=numpy.float32) * step
-            lat_coord = icoords.DimCoord(pts, standard_name='latitude', units='degrees', coord_system = lat_lon_coord_system)
+            lat_coord = icoords.DimCoord(pts, standard_name='latitude', units='degrees', coord_system=lat_lon_coord_system)
             lat_coord.guess_bounds()
-            
+
             # add the latitude and longitude coordinates to the cube, with mappings to data dimensions
             cube.add_dim_coord(lat_coord, 0)
             cube.add_dim_coord(lon_coord, 1)
-            
+
             # implement standard iris callback capability. Although callbacks are not used in this example, the standard 
             # mechanism for a custom loader to implement a callback is shown:
             cube = iris.io.run_callback(callback, cube, [header, field_headings, data_array], filename)
-        
+
             # yield the cube created (the loop will continue when the next() element is requested)     
             yield cube
 
 
 # Create a format_picker specification of the NAME file format giving it a priority below NetCDF, GRIB & PP etc.
-_NAME_III_spec = format_picker.FormatSpecification('Name III', format_picker.LEADING_LINE, 
+_NAME_III_spec = format_picker.FormatSpecification('Name III', format_picker.LEADING_LINE,
                                       lambda line: line.startswith("NAME III"), NAME_to_cube,
                                       priority=3,)
 
@@ -215,12 +215,29 @@ def main():
     # Callback shown as None to illustrate where a cube-level callback function would be used if required
     cube = iris.load_cube(fname, boundary_volc_ash_constraint, callback=None)
 
-    iplt.map_setup(xlim=(-70, 20), ylim=(20, 75))
-    plt.gca().coastlines()
-    iplt.contourf(cube, levels=(0.0002, 0.002, 0.004, 1),
+    # draw contour levels for the data (the top level is just a catch-all)
+    levels = (0.0002, 0.002, 0.004, 1e10)
+    cs = iplt.contourf(cube, levels=levels,
                         colors=('#80ffff', '#939598', '#e00404'),
-                        extend='max')
-    
+                        )
+
+    # draw a black outline at the lowest contour to highlight affected areas
+    iplt.contour(cube, levels=(levels[0], 100),
+                 colors='black')
+
+    # set an extent and a background image for the map
+    ax = plt.gca()
+    ax.set_extent((-90, 20, 20, 75))
+    ax.stock_img('ne_shaded')
+
+    # make a legend, with custom labels, for the coloured contour set
+    artists, _ = cs.legend_elements()
+    labels = [
+              r'$%s < x \leq %s$' % (levels[0], levels[1]),
+              r'$%s < x \leq %s$' % (levels[1], levels[2]),
+              r'$x > %s$' % levels[2]]
+    ax.legend(artists, labels, title='Ash concentration / g m-3', loc='upper left')
+
     time = cube.coord('time')
     time_date = time.units.num2date(time.points[0]).strftime(UTC_format)
     plt.title('Volcanic ash concentration forecast\nvalid at %s' % time_date)
@@ -230,4 +247,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    

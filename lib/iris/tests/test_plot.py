@@ -148,10 +148,6 @@ def _load_wind():
     # Load the COLPEX data => TZYX
     path = tests.get_data_path(('PP', 'COLPEX', 'uwind_and_orog.pp'))
     wind = iris.load_cube(path, 'eastward_wind')
-
-    # Until there is better mapping support for rotated-pole, pretend this isn't rotated.
-    # ie. Move the pole from (37.5, 177.5) to (90, 0) and shift the coordinates.
-    tests.test_mapping._pretend_unrotated(wind)
     
     # Add time bounds so we can test for bounded time plots
     flt = wind.coord('forecast_period')
