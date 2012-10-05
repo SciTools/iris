@@ -47,7 +47,7 @@ import iris.unit
 
 
 # Cynthia Brewer citation text.
-_BREWER = 'Colours based on ColorBrewer.org'
+BREWER_CITE = 'Colours based on ColorBrewer.org'
 
 
 PlotDefn = collections.namedtuple('PlotDefn', ('coords', 'transpose'))
@@ -414,7 +414,6 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
     return draw_method(*new_args, **kwargs)
 
 
-@iris.palette.auto_palette
 def contour(cube, *args, **kwargs):
     """
     Draws contour lines based on the given Cube.
@@ -430,12 +429,9 @@ def contour(cube, *args, **kwargs):
     
     """
     result =_draw_2d_from_points('contour', None, cube, *args, **kwargs)
-    if iris.palette.is_brewer(kwargs.get('cmap')):
-        citation(_BREWER)
     return result
 
 
-@iris.palette.auto_palette
 def contourf(cube, *args, **kwargs):
     """
     Draws filled contours based on the given Cube.
@@ -454,9 +450,6 @@ def contourf(cube, *args, **kwargs):
     kwargs.setdefault('antialiased', True)
     result = _draw_2d_from_points('contourf', None, cube, *args, **kwargs)
 
-    if iris.palette.is_brewer(kwargs.get('cmap')):
-        citation(_BREWER)
-    
     # Matplotlib produces visible seams between anti-aliased polygons.
     # But if the polygons are virtually opaque then we can cover the seams
     # by drawing anti-aliased lines *underneath* the polygon joins.
@@ -662,7 +655,6 @@ def outline(cube, coords=None):
     return result
 
 
-@iris.palette.auto_palette
 def pcolor(cube, *args, **kwargs):
     """
     Draws a pseudocolor plot based on the given Cube.
@@ -679,12 +671,9 @@ def pcolor(cube, *args, **kwargs):
     """
     kwargs.setdefault('antialiased', True)
     result = _draw_2d_from_bounds('pcolor', cube, *args, **kwargs)
-    if iris.palette.is_brewer(kwargs.get('cmap')):
-        citation(_BREWER)
     return result
 
 
-@iris.palette.auto_palette
 def pcolormesh(cube, *args, **kwargs):
     """
     Draws a pseudocolor plot based on the given Cube.
@@ -700,8 +689,6 @@ def pcolormesh(cube, *args, **kwargs):
     
     """
     result = _draw_2d_from_bounds('pcolormesh', cube, *args, **kwargs)
-    if iris.palette.is_brewer(kwargs.get('cmap')):
-        citation(_BREWER)
     return result
 
 

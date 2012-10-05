@@ -8,7 +8,8 @@ Features added
 * Initial support for CF-style coordinate systems: lat-lon, rotated lat-lon,
   and transverse Mercator (incl. OSGB).
 * Iris can now load NIMROD files.
-* Automatic and manual use of Cynthia Brewer colour palettes.
+* Availability of Cynthia Brewer colour palettes.
+* Add a citation to a plot.
 * Readability improvements to Cube summary.
 * Ensures netCDF files are properly closed.
 * A more explicit set of load functions, which also allow the automatic

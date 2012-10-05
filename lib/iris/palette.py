@@ -40,7 +40,7 @@ import iris.unit
 PIVOT_BY_UNIT = {iris.unit.Unit('K') : 273.15}
 
 # Color map names by palette file metadata field value.
-_CMAP_BREWER = set()
+CMAP_BREWER = set()
 _CMAP_BY_SCHEME = None
 _CMAP_BY_KEYWORD = None
 _CMAP_BY_STD_NAME = None
@@ -64,7 +64,7 @@ def is_brewer(cmap):
     """
     result = False
     if cmap is not None:
-        result = cmap.name in _CMAP_BREWER
+        result = cmap.name in CMAP_BREWER
     return result
 
 
@@ -225,7 +225,7 @@ def _load_palette():
     
     """
     # Reference these module level namespace variables.
-    global _CMAP_BREWER, _CMAP_BY_SCHEME, _CMAP_BY_KEYWORD, _CMAP_BY_STD_NAME
+    global CMAP_BREWER, _CMAP_BY_SCHEME, _CMAP_BY_KEYWORD, _CMAP_BY_STD_NAME
 
     _CMAP_BY_SCHEME = {}
     _CMAP_BY_KEYWORD = {}
@@ -264,7 +264,7 @@ def _load_palette():
             
             if head == 'name':
                 # Case-SENSITIVE.
-                cmap_name = body
+                cmap_name = 'brewer_{}'.format(body)
                 
             if head == 'scheme':
                 # Case-insensitive.
@@ -291,7 +291,7 @@ def _load_palette():
         assert cmap_type == 'rgb', 'Invalid type [%s] for color map file "%s"' % (cmap_type, filename)
         
         # Update the color map look-up dictionaries.
-        _CMAP_BREWER.add(cmap_name)
+        CMAP_BREWER.add(cmap_name)
 
         if cmap_scheme is not None:
             scheme_group = _CMAP_BY_SCHEME.setdefault(cmap_scheme, set())
@@ -319,6 +319,7 @@ def _load_palette():
 
         # Register the color map for use.
         mpl_cm.register_cmap(cmap=cmap)
+
 
 # Ensure to load the color map palettes.
 _load_palette()
