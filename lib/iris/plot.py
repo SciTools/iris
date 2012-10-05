@@ -394,7 +394,10 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
 
     # Replace non-cartopy subplot/axes with a cartopy alternative.
     cs = cube.coord_system('CoordSystem')
-    cartopy_proj = cs.as_cartopy_projection()  # E.g. PlateCarree
+    if cs:
+        cartopy_proj = cs.as_cartopy_projection()
+    else:
+        cartopy_proj = cartopy.crs.PlateCarree()
     ax = _get_cartopy_axes(cartopy_proj)
 
     draw_method = getattr(ax, draw_method_name)
