@@ -157,9 +157,8 @@ def auto_palette(func):
         # Call the wrapped function and return its result.
         return func(*args, **kwargs)
     
-    # Temporarily disable closure wrapper function behaviour,
-    # just pass function through.
-    return func
+    # Return the closure wrapper function.
+    return wrapper_func
 
 
 class SymmetricNormalize(mpl_colors.Normalize, object):

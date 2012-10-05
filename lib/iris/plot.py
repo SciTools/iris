@@ -414,7 +414,6 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
     return draw_method(*new_args, **kwargs)
 
 
-@iris.palette.auto_palette
 def contour(cube, *args, **kwargs):
     """
     Draws contour lines based on the given Cube.
@@ -433,7 +432,6 @@ def contour(cube, *args, **kwargs):
     return result
 
 
-@iris.palette.auto_palette
 def contourf(cube, *args, **kwargs):
     """
     Draws filled contours based on the given Cube.
@@ -657,7 +655,6 @@ def outline(cube, coords=None):
     return result
 
 
-@iris.palette.auto_palette
 def pcolor(cube, *args, **kwargs):
     """
     Draws a pseudocolor plot based on the given Cube.
@@ -677,7 +674,6 @@ def pcolor(cube, *args, **kwargs):
     return result
 
 
-@iris.palette.auto_palette
 def pcolormesh(cube, *args, **kwargs):
     """
     Draws a pseudocolor plot based on the given Cube.
