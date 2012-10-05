@@ -7,10 +7,10 @@ This example uses several visualisation methods to achieve an array of differing
  * Visualisation of point based data
  * Contouring of point based data
  * Block plot of contiguous bounded data
- * Blue marble image underlay
+ * Non native projection and a Natural Earth shaded relief image underlay
 
 """
-
+import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 
 import iris
@@ -55,8 +55,9 @@ def main():
     
     # Plot #4: Block plot
     plt.figure()
+    ax = plt.axes(projection=ccrs.PlateCarree())
     iplt.pcolormesh(temperature)
-    plt.gca().bluemarble()
+    plt.gca().stock_img()
     plt.gca().coastlines()
     plt.show()
 
