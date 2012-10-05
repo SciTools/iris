@@ -49,10 +49,6 @@ def _load_theta():
     # Improve the unit
     theta.units = 'K'
 
-    # Until there is better mapping support for rotated-pole, pretend this isn't rotated.
-    # ie. Move the pole from (37.5, 177.5) to (90, 0) and adjust the coordinates.
-#    tests.test_mapping._pretend_unrotated(theta)
-
     return theta
 
 
@@ -166,7 +162,6 @@ class TestLabels(tests.GraphicsTest):
         self.check_graphic()
         
         # check that the result of adding 360 to the data is *almost* identically the same result
-        # XXX: REMOVE THIS TEST - its a test for cartopy...
         lon = cube.coord('grid_longitude')
         lon.points = lon.points + 360
         qplt.contour(cube)
