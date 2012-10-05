@@ -142,9 +142,9 @@ def _load_wind():
 
     # Until there is better mapping support for rotated-pole, pretend this isn't rotated.
     # ie. Move the pole from (37.5, 177.5) to (90, 0) and shift the coordinates.
-    tests.test_mapping._pretend_unrotated(wind)
-    
-    # Add time bounds so we can test for bounded time plots
+#    tests.test_mapping._pretend_unrotated(wind)
+#    
+#    # Add time bounds so we can test for bounded time plots
     flt = wind.coord('forecast_period')
     lower = numpy.arange(6, 12, dtype=numpy.float32) / 6
     upper = numpy.arange(7, 13, dtype=numpy.float32) / 6

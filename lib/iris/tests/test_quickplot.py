@@ -51,7 +51,7 @@ def _load_theta():
 
     # Until there is better mapping support for rotated-pole, pretend this isn't rotated.
     # ie. Move the pole from (37.5, 177.5) to (90, 0) and adjust the coordinates.
-    tests.test_mapping._pretend_unrotated(theta)
+#    tests.test_mapping._pretend_unrotated(theta)
 
     return theta
 
@@ -118,14 +118,14 @@ class TestLabels(tests.GraphicsTest):
 
     def _small(self):
         # Use a restricted size so we can make out the detail
-        cube = self._slice(['model_level_number', 'longitude'])
+        cube = self._slice(['model_level_number', 'grid_longitude'])
         return cube[:5, :5]
 
     def test_contour(self):
         qplt.contour(self._small())
         self.check_graphic()
         
-        qplt.contourf(self._small(), coords=['model_level_number', 'longitude'])
+        qplt.contourf(self._small(), coords=['model_level_number', 'grid_longitude'])
         self.check_graphic()
 
     def test_contourf(self):
@@ -136,16 +136,16 @@ class TestLabels(tests.GraphicsTest):
 
         self.check_graphic()
         
-        qplt.contourf(self._small(), coords=['model_level_number', 'longitude'])
+        qplt.contourf(self._small(), coords=['model_level_number', 'grid_longitude'])
         self.check_graphic()
         
-        qplt.contourf(self._small(), coords=['longitude', 'model_level_number'])
+        qplt.contourf(self._small(), coords=['grid_longitude', 'model_level_number'])
         self.check_graphic()
 
     def test_contourf_nameless(self):
         cube = self._small()
         cube.standard_name = None
-        qplt.contourf(cube, coords=['longitude', 'model_level_number'])
+        qplt.contourf(cube, coords=['grid_longitude', 'model_level_number'])
         self.check_graphic()
 
     def test_pcolor(self):
@@ -161,12 +161,13 @@ class TestLabels(tests.GraphicsTest):
         self.check_graphic()
 
     def test_map(self):
-        cube = self._slice(['latitude', 'longitude'])
+        cube = self._slice(['grid_latitude', 'grid_longitude'])
         qplt.contour(cube)
         self.check_graphic()
         
         # check that the result of adding 360 to the data is *almost* identically the same result
-        lon = cube.coord('longitude')
+        # XXX: REMOVE THIS TEST - its a test for cartopy...
+        lon = cube.coord('grid_longitude')
         lon.points = lon.points + 360
         qplt.contour(cube)
         self.check_graphic()

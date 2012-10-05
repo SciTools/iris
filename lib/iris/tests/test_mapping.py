@@ -59,7 +59,8 @@ class TestBasic(tests.IrisTest):
                          )
 
         np_testing.assert_array_almost_equal(iplt.default_projection_extent(self.cube),
-                                             (3.59579163e+02, 3.59669159e+02, -1.28250003e-01, -3.82499993e-02)
+                                             (3.59579163e+02, 3.59669159e+02, -1.28250003e-01, -3.82499993e-02),
+                                             decimal=3
                                              )
 
 
