@@ -52,8 +52,8 @@ Incompatible changes
 * The "source" and "history" metadata are now represented as Cube
   attributes, where previously they used coordinates.
 * :meth:`iris.cube.Cube.coord_dims()` now returns a tuple instead of a list.
-* The ``iris.plot.gcm``, ``iris.plot.map_setup`` and ``iris.cartography.xy_range``
-  functions are now deprecated. See the Cartopy section for further details.
+* The ``iris.plot.gcm`` and ``iris.plot.map_setup`` functions are now removed.
+  See the Cartopy section for further details.
 
 Deprecations
 ------------

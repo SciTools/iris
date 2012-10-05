@@ -164,7 +164,7 @@ def _get_plot_defn(cube, mode, ndims=2):
     # Re-order the coordinates to achieve the preferred
     # horizontal/vertical associations.
     def sort_key(coord):
-        order = {'X': 2, 'T': 1, 'Y':-1, 'Z':-2}
+        order = {'X': 2, 'T': 1, 'Y': -1, 'Z': -2}
         axis = guess_axis(coord)
         return (order.get(axis, 0), coord and coord.name())
     sorted_coords = sorted(coords, key=sort_key)

@@ -27,8 +27,11 @@ Incompatible changes
 * Three functions have been removed from iris.analysis.cartography:
   lat_lon_range(), get_lat_lon_grids(), and
   get_lat_lon_contiguous_grids(). They have been replaced with
-  generalised versions: xy_range(), get_xy_grids(),
+  generalised versions: get_xy_grids()
   and get_xy_contiguous_bounded_grids().
+* iris.plot.gcm, iris.plot.map_setup functions are now removed as part
+  of the change to using cartopy. See the "what's new" section for further
+  information on working with cartopy.
 * The method `Cube.coord_dims()` now returns a tuple instead of a list.
 
 Deprecations
