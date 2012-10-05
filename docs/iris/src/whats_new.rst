@@ -35,7 +35,8 @@ A summary of the main features added with version 1.0:
 * Hybrid-pressure vertical coordinates, and the ability to load from GRIB.
 * Initial support for CF-style coordinate systems.
 * Load data from NIMROD files.
-* Automatic and manual use of Cynthia Brewer colour palettes.
+* Availability of Cynthia Brewer colour palettes.
+* Add a citation to a plot.
 * Ensures netCDF files are properly closed.
 * The ability to bypass merging when loading data.
 * Save netCDF files with an unlimited dimension.
@@ -139,38 +140,22 @@ Brewer colour palettes
 ======================
 
 Iris includes a selection of carefully designed colour palettes produced
-by Cynthia Brewer. Unless an explicit palette is selected, the plotting 
-routines in :mod:`iris.plot` (and hence, :mod:`iris.quickplot` also),
-will attempt to choose an appropriate Brewer palette based on the Cube's
-standard name.
-
-For example, a Cube of `stratiform_precipitation`
-will default to a sequential white-blue palette, but a Cube of
-`air_temperature_anomaly` will default to a diverging, red-white-blue
-palette.
-
-This behaviour is controlled by the `keyword` and `std_name` tags in
-the palette definition files in `iris/etc/palette/...`. Further
-contributions to these tag values are very welcome.
-
-The :mod:`iris.palette` module, as used by :mod:`iris.plot`, also
-registers the Brewer colour palettes with matplotlib, so they are
-explicitly selectable via the :func:`matplotlib.pyplot.set_cmap`
-function. For example::
+by Cynthia Brewer. The :mod:`iris.palette` module registers the Brewer
+colour palettes with matplotlib, so they are explicitly selectable via
+the :func:`matplotlib.pyplot.set_cmap` function. For example::
 
     import iris.palette
     import matplotlib.pyplot as plt
     import numpy as np
     plt.contourf(np.random.randn(10, 10))
-    plt.set_cmap('RdBu_11')
+    plt.set_cmap('brewer_RdBu_11')
     plt.show()
 
 Citations
 ---------
-When the Iris plotting routines detect the selection of a Brewer palette
-they also add an appropriate citation to the plot. In other
-circumstances, citations can easily be explicitly added using the
-:func:`iris.plot.citation` function.
+Citations can easily be added to a plot using the :func:`iris.plot.citation`
+function. The recommended text for the Cynthia Brewer citation is provided
+by :data:`iris.plot.BREWER_CITE`.
 
 To include a reference in a journal article or report please refer to
 `section 5 <http://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html>`_
