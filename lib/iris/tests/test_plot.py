@@ -75,6 +75,20 @@ class TestMissingCoord(tests.GraphicsTest):
         cube.remove_coord('grid_longitude')
         cube.remove_coord('time')
         self._check(cube)
+        
+class TestMissingCS(tests.GraphicsTest):
+    def test_missing_cs(self):
+        cube = iris.cube.Cube(numpy.arange(110).reshape(10,11))
+        lats = numpy.arange(10)*18-90
+        lons = numpy.arange(11)*36-180
+        lat_coord = iris.coords.DimCoord(lats, standard_name="latitude", circular=True)
+        lon_coord = iris.coords.DimCoord(lons, standard_name="longitude", circular=True)
+        cube.add_dim_coord(lat_coord, 0)
+        cube.add_dim_coord(lon_coord, 1)
+        
+        qplt.contourf(cube)
+        qplt.plt.gca().coastlines()
+        self.check_graphic()
 
 
 class TestHybridHeight(tests.GraphicsTest):
