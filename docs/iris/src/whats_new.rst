@@ -34,7 +34,7 @@ A summary of the main features added with version 1.0:
 
 * Hybrid-pressure vertical coordinates, and the ability to load from GRIB.
 * Initial support for CF-style coordinate systems.
-* Use of Cartopy for mapping in matplotlib
+* Use of Cartopy for mapping in matplotlib.
 * Load data from NIMROD files.
 * Availability of Cynthia Brewer colour palettes.
 * Add a citation to a plot.
@@ -96,13 +96,10 @@ Using Cartopy for mapping in matplotlib
 =======================================
 
 The underlying map drawing package has now been updated to use
-`Cartopy <http://scitools.github.com/cartopy>`_. This change will see improved
-handling of data in its native coordinate system, and simplifies the user
-interface.
-
-The ``iris.plot.gcm`` function to get the current map is now
-redundant; instead the current map *is* the current matplotlib axes, therefore
-:func:`matplotlib.pyplot.gca` can be used instead.
+`Cartopy <http://scitools.github.com/cartopy>`_. Cartopy provides a
+highly flexible set of mapping tools, with a consistent, intuitive
+interface. As yet it doesn't have feature-parity with basemap, but its
+goal is to make maps "just work", making it the perfect complement to Iris.
 
 The ``iris.plot.map_setup`` function has now been replaced with a cleaner
 interface:
@@ -131,6 +128,10 @@ interface:
             iplt.contourf(cube2)
             ax.coastlines()
             plt.show()
+
+.. note:: The ``iris.plot.gcm`` function to get the current map is now
+    redundant; instead the current map *is* the current matplotlib axes,
+    and :func:`matplotlib.pyplot.gca` should be used instead.
 
 For more examples of what can be done with Cartopy, see the Iris gallery and
 `Cartopy's documentation  <http://scitools.github.com/cartopy>`_.
