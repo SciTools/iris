@@ -2,7 +2,7 @@
 Ionosphere space weather
 ========================
 
-This space weather example plots a filled contour of rotated pole point data with a blue marble underlay.
+This space weather example plots a filled contour of rotated pole point data with a shaded relief image underlay.
 The plot shows aggregated vertical electron content in the ionosphere.
 
 The plot exhibits an interesting outline effect due to excluding data values below a certain threshold.
@@ -41,7 +41,7 @@ def main():
     plt.title('Total Electron Content')
     plt.xlabel('longitude / degrees')
     plt.ylabel('latitude / degrees')
-    plt.gca().bluemarble()
+    plt.gca().stock_img()
     plt.gca().coastlines()
     plt.show()
 
