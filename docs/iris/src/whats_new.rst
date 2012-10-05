@@ -7,9 +7,9 @@ What's new in Iris 1.0
 This document explains the new/changed features of Iris in version 1.0.
 
 With the release of Iris 1.0, we have broadly completed the transition
-to the CF data model. Future releases will see additional features added
-on top of this foundation, and some of the remaining details filled out
-(e.g. more CF coordinate systems).
+to the CF data model, and established a stable foundation for future
+work. Following this release we plan to deliver significant performance
+improvements and additional features.
 
 
 The role of 1.x
