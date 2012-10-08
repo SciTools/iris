@@ -235,6 +235,10 @@ def time_range(cube, grib):
         warnings.warn("forecast_period encoding problem : Scaling required.")
     fp = int(fp)
     
+    # Turn negative forecast times into grib negative numbers
+    if fp < 0:
+        fp = 2*31 + abs(fp)
+        
     gribapi.grib_set_long(grib, "indicatorOfUnitOfTimeRange", grib_time_code)
     gribapi.grib_set_long(grib, "forecastTime", fp)
 

@@ -464,7 +464,7 @@ IF
 grib.edition == 2
 grib.productDefinitionTemplateNumber == 0
 THEN
-CoordAndDims(DimCoord(points=Unit(grib._forecastTimeUnit).convert(numpy.int32(grib.forecastTime), "hours"), standard_name='forecast_period', units="hours"))
+CoordAndDims(DimCoord(points=Unit(grib._forecastTimeUnit).convert(numpy.int32(grib._forecastTime), "hours"), standard_name='forecast_period', units="hours"))
 CoordAndDims(DimCoord(points=grib.phenomenon_points('hours'), standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
 
 ## time processed (4.8) ##
@@ -475,7 +475,7 @@ IF
 grib.edition == 2
 grib.productDefinitionTemplateNumber in (8, 9)
 THEN
-CoordAndDims(DimCoord(points=Unit(grib._forecastTimeUnit).convert(numpy.int32(grib.forecastTime), "hours"), standard_name='forecast_period', units="hours"))
+CoordAndDims(DimCoord(points=Unit(grib._forecastTimeUnit).convert(numpy.int32(grib._forecastTime), "hours"), standard_name='forecast_period', units="hours"))
 CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN), bounds=grib.phenomenon_bounds('hours')))
 
 
