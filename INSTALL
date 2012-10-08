@@ -64,31 +64,34 @@ PyKE 1.1.1 or later (http://pyke.sourceforge.net/)
 setuptools 0.6c11 or later (http://pypi.python.org/pypi/setuptools/)
     Python package for installing/removing python packages.
 
+Cartopy 0.4.0 or later (http://github.com/SciTools/cartopy/)
+    Python package which provides cartographic tools for python.
+
 Optional
 --------
 These are optional packages which you may want to install to use
 Iris with different file formats and to enable plotting functionality.
 All of these are required for the Iris test suite to run.
 
+basemap 1.0 or later (http://matplotlib.github.com/basemap/)
+    Toolkit for matplotlib providing map functionality.
+
+graphviz 2.18 or later (http://www.graphviz.org/)
+    Graph visualisation software.
+
 grib-api 1.9.16 or later (http://www.ecmwf.int/products/data/software/download/grib_api.html)
     API for the encoding and decoding WMO FM-92 GRIB edition 1 and 
     edition 2 messages. A compression library such as Jasper is required 
     to read JPEG2000 compressed GRIB2 files.
 
-matplotlib 1.1.0 (http://matplotlib.sourceforge.net/)
+matplotlib 1.2.0 (http://matplotlib.sourceforge.net/)
     Python package for 2D plotting.  
-
-basemap 1.0 or later (http://matplotlib.github.com/basemap/)
-    Toolkit for matplotlib providing map functionality.
-
-PythonImagingLibrary 1.1.7 or later (http://effbot.org/zone/pil-index.htm)
-    Python package for image processing.
-
-graphviz 2.18 or later (http://www.graphviz.org/)
-    Graph visualisation software.
 
 nose 1.1.2 or later (http://nose.readthedocs.org/en/latest/)
     Python package for software testing. Iris is not compatible with nose2. 
+
+PythonImagingLibrary 1.1.7 or later (http://effbot.org/zone/pil-index.htm)
+    Python package for image processing.
 
 shapely 1.2.14 (https://github.com/Toblerity/Shapely)
     Python package for the manipulation and analysis of planar geometric objects.

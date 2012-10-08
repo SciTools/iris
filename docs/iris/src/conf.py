@@ -103,7 +103,8 @@ import iris
 if iris.__version__ == 'dev':
     version = 'dev'
 else:
-    version = iris.__version__.split('-')[0]
+    # major.feature(.minor)-dev -> major.minor
+    version = '.'.join(iris.__version__.split('-')[0].split('.')[:2])
 # The full version, including alpha/beta/rc tags.
 release = iris.__version__
 
