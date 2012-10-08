@@ -2,7 +2,7 @@ What's new in Iris 1.0
 **********************
 
 :Release: 1.0.0
-:Date: dd mmm, 2012
+:Date: 15 Oct, 2012
 
 This document explains the new/changed features of Iris in version 1.0.
 
@@ -53,7 +53,7 @@ Incompatible changes
   attributes, where previously they used coordinates.
 * :meth:`iris.cube.Cube.coord_dims()` now returns a tuple instead of a list.
 * The ``iris.plot.gcm`` and ``iris.plot.map_setup`` functions are now removed.
-  See the Cartopy section for further details.
+  See :ref:`whats-new-cartopy` for further details.
 
 Deprecations
 ------------
@@ -91,6 +91,8 @@ class which provides a simple way to create the transverse Mercator
 coordinate system used by the British
 `Ordnance Survey <http://www.ordnancesurvey.co.uk/>`_.
 
+
+.. _whats-new-cartopy:
 
 Using Cartopy for mapping in matplotlib
 =======================================
