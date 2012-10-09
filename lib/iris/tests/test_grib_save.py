@@ -80,8 +80,12 @@ class TestLoadSave(tests.IrisTest):
     def test_time_mean(self):
         source_grib = tests.get_data_path(("GRIB", "time_processed", "time_bound.grib2"))
         reference_text = tests.get_result_path(("grib_save", "time_mean.grib_compare.txt"))
-        self.save_and_compare(source_grib, reference_text)
-
+        # TODO: It's not ideal to have grib patch awareness here...
+        try:
+            self.save_and_compare(source_grib, reference_text)
+        except:
+            reference_text = tests.get_result_path(("grib_save", "time_mean.grib_compare.FT_PATCH.txt"))
+            self.save_and_compare(source_grib, reference_text)
 
 @iris.tests.skip_data
 class TestCubeSave(tests.IrisTest):
