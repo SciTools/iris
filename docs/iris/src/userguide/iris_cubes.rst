@@ -49,7 +49,6 @@ There are two classes of coordinates:
    
       * Numeric
       * Monotonic
-      * Exactly one per data dimension
       * Representative of a single data dimension (1d) 
 
    **AuxCoord**
