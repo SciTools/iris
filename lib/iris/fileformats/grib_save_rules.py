@@ -237,7 +237,10 @@ def time_range(cube, grib):
     
     # Turn negative forecast times into grib negative numbers
     if fp < 0:
-        fp = 2*31 + abs(fp)
+        msg = "Encoding negative forecast period from {} to ".format(fp)
+        fp = 2**31 + abs(fp)
+        msg += "{}".format(numpy.int32(fp))
+        warnings.warn(msg)
         
     gribapi.grib_set_long(grib, "indicatorOfUnitOfTimeRange", grib_time_code)
     gribapi.grib_set_long(grib, "forecastTime", fp)

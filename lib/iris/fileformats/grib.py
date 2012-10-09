@@ -261,20 +261,10 @@ class GribWrapper(object):
             uft = numpy.uint32(forecastTime)
             BILL = 2**30
             
-            # This doesn't actually do anything. If they're saved wrong they're
-            # loaded wrong and it's self-righting (is this true on all architectures?).
-#            # Workaround incorrectly encoded 2's compliment negative forecast time
-#            if uft > 3 * BILL:
-#                msg = "Translating invalid 2's compliment forecastTime from " + str(forecastTime)
-#                forecastTime = -(4 * BILL - uft)
-#                msg += " to " + str(forecastTime)
-#                warnings.warn(msg)
-
             # Workaround grib api's assumption that forecast time is always positive.
-            # Handles correctly encoded -ve forecast times up to one -billion.
-#            elif uft > 2 * BILL:
+            # Handles correctly encoded -ve forecast times up to one -1 billion.
             if 2 * BILL < uft < 3 * BILL :
-                msg = "Translating mis-interpreted negative forecastTime from " + str(forecastTime)
+                msg = "Re-interpreting negative forecastTime from " + str(forecastTime)
                 forecastTime = -(uft - 2 * BILL)
                 msg += " to " + str(forecastTime)
                 warnings.warn(msg)
