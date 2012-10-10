@@ -30,8 +30,6 @@ import warnings
 
 import numpy
 
-import iris.analysis.calculus
-import iris.analysis.interpolate
 import iris.aux_factory
 import iris.exceptions
 import iris.unit
@@ -789,6 +787,7 @@ class Coord(CFVariableMixin):
 
         """
         warnings.warn('Coord.sin() has been deprecated.') 
+        import iris.analysis.calculus
         return iris.analysis.calculus._coord_sin(self)
 
     def cos(self):
@@ -800,6 +799,7 @@ class Coord(CFVariableMixin):
 
         """
         warnings.warn('Coord.cos() has been deprecated.') 
+        import iris.analysis.calculus
         return iris.analysis.calculus._coord_cos(self)
 
     def unit_converted(self, new_unit):
