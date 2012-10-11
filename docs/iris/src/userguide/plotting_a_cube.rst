@@ -14,26 +14,8 @@ familiarity with the interface.
 
 .. note::
    Iris includes colour specifications and designs developed by `Cynthia Brewer <http://colorbrewer.org/>`_.
-   These colour schemes are freely available under the following licence::
 
-      Apache-Style Software License for ColorBrewer software and ColorBrewer Color Schemes
-  
-      Copyright (c) 2002 Cynthia Brewer, Mark Harrower, and The Pennsylvania State University.
-  
-      Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
-      You may obtain a copy of the License at
-  
-      http://www.apache.org/licenses/LICENSE-2.0
-  
-      Unless required by applicable law or agreed to in writing, software distributed
-      under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-      CONDITIONS OF ANY KIND, either express or implied. See the License for the
-      specific language governing permissions and limitations under the License.
-
-   Citations to Cynthia Brewer can be easily added to plots using the :func:`iris.plot.citation` function.
-
-   To include a reference in a journal article or report please refer to `section 5 <http://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html>`_
-   in the citation guidance provided by Cynthia Brewer.
+   Please see :ref:`brewer-info` (below) for these, and also details of licencing and citation.
 
 
 ***************************
@@ -83,6 +65,8 @@ The current rendering mode can be determined as follows::
 Interactive mode does not clear out the figure buffer, so figures have to be explicitly closed when they are finished with::
 
         plt.close()
+
+ - or just close the figure window.
 
 Interactive mode sometimes requires an extra draw command to update all changes, which can be done with::
 
@@ -164,7 +148,7 @@ entitled :doc:`reducing_a_cube`.
 
 .. note:: 
     Axis labels and a plot title can be added using the :func:`plt.title() <matplotlib.pyplot.title>`, 
-	:func:`plt.xlabel() <matplotlib.pyplot.xlabel>` and :func:`plt.ylabel <matplotlib.pyplot.ylabel>` functions.
+	  :func:`plt.xlabel() <matplotlib.pyplot.xlabel>` and :func:`plt.ylabel <matplotlib.pyplot.ylabel>` functions.
 
 As well as providing simple Matplotlib wrappers, Iris also has a :py:mod:`iris.quickplot` module, which adds 
 extra cube based meta-data to a plot. 
@@ -244,10 +228,18 @@ In some situations the underlying coordinates are not point based and instead ar
 continuous bounded coordinate, in which case a "block" plot may be more appropriate.
 Continuous block plots can be achieved with either :func:`iris.plot.pcolormesh` or :py:func:`iris.quickplot.pcolormesh`:
 
+.. note::
+    The :py:func:`matplotlib.pyplot.pcolormesh` routine can only successfully plot with smoothly varying plotting coordinates. 
+
+    For a global cylindrical plot, in particular, we need to plot on longitudes -180..+180 degrees, as this is the default map setup.
+    The example below uses data with longitudes 0..360, so it plots only half of it to avoid the output crossing the map "seam".
+    To plot the *whole* of it, you would either have to rearrange the data, or setup a different map range.
+
 .. literalinclude:: plotting_examples/cube_blockplot.py
 
 .. plot:: userguide/plotting_examples/cube_blockplot.py
 
+.. _brewer-info:
 
 ***********************
 Brewer colour palettes
@@ -270,6 +262,13 @@ These colour schemes are freely available under the following licence::
       CONDITIONS OF ANY KIND, either express or implied. See the License for the
       specific language governing permissions and limitations under the License.
 
+To include a reference in a journal article or report please refer to `section 5 <http://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html>`_
+in the citation guidance provided by Cynthia Brewer.
+   
+For adding citations to Iris plots, see :ref:`brewer-cite` (below). 
+
+Available Brewer Schemes
+======================== 
 The following subset of Brewer palettes found at `colorbrewer.org <http://colorbrewer.org/>`_ are available within Iris.
 
 .. plot:: userguide/plotting_examples/brewer.py
@@ -284,6 +283,8 @@ To plot a cube using a Brewer colour palette, simply select one of the Iris regi
    :include-source:
 
 
+.. _brewer-cite:
+
 Adding a citation
 =================
 
@@ -293,6 +294,3 @@ The recommended text for the Cynthia Brewer citation is provided by :data:`iris.
 .. plot:: userguide/plotting_examples/cube_brewer_cite_contourf.py
    :include-source:
 
-.. note::
-   To include a reference in a journal article or report please refer to `section 5 <http://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html>`_
-   in the citation guidance provided by Cynthia Brewer.

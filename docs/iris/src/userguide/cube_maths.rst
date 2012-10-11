@@ -23,7 +23,7 @@ Let's load some air temperature which runs from 1860 to 2100::
     filename = iris.sample_data_path('E1_north_america.nc')
     air_temp = iris.load_cube(filename, 'air_temperature')
 
-We could now get the first and last time slices using indexing (see :doc:`reducing_a_cube` for a reminder)::
+We can now get the first and last time slices using indexing (see :doc:`reducing_a_cube` for a reminder)::
 
     t_first = air_temp[0, :, :]
     t_last = air_temp[-1, :, :]
@@ -56,10 +56,10 @@ data representing their difference:
     should be automatically ignored :func:`iris.analysis.maths.subtract` can be used instead.
 
 
-Combining multiple phenomenon to calculate another
---------------------------------------------------
+Combining multiple phenomena to form a new one
+----------------------------------------------
 
-Combining cubes of potential temperature and pressure we can calculate the associated temperature using the equation:
+Combining cubes of potential-temperature and pressure we can calculate the associated temperature using the equation:
 
 .. math::
    
@@ -68,7 +68,7 @@ Combining cubes of potential temperature and pressure we can calculate the assoc
 Where :math:`p` is pressure, :math:`\theta` is potential temperature, :math:`p_0` is the potential temperature 
 reference pressure and :math:`T` is temperature.
 
-First, let's load pressure and potential temperature cubes::
+First, let's load pressure and potential-temperature cubes::
 
     filename = iris.sample_data_path('colpex.pp')
     phenomenon_names = ['air_potential_temperature', 'air_pressure']

@@ -10,10 +10,11 @@ fname = iris.sample_data_path('air_temp.pp')
 temperature_cube = iris.load_cube(fname)
 
 # Load a Cynthia Brewer palette.
-brewer_cmap = mpl_cm.get_cmap('brewer_RdBu_11')
+brewer_cmap = mpl_cm.get_cmap('brewer_Purples_09')
 
-# Draw the contour with 25 levels
-qplt.contourf(temperature_cube, 25, cmap=brewer_cmap)
+# Draw the contours, with n-levels set for the map colours (9).
+# NOTE: needed for non-interpolated colormaps, as matplotlib does not check for them.
+qplt.contourf(temperature_cube, brewer_cmap.N, cmap=brewer_cmap)
 
 # Add a citation to the plot.
 iplt.citation(iris.plot.BREWER_CITE)

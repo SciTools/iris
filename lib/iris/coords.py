@@ -785,7 +785,7 @@ class Coord(CFVariableMixin):
         """
         Return a coordinate which represents sin(this coordinate).
 
-        .. deprecated::
+        .. deprecated:: 1.0
             This method has been deprecated.
 
         """
@@ -797,7 +797,7 @@ class Coord(CFVariableMixin):
         """
         Return a coordinate which represents cos(this coordinate).
 
-        .. deprecated::
+        .. deprecated:: 1.0
             This method has been deprecated.
 
         """
