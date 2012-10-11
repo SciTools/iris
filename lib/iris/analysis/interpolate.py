@@ -665,7 +665,11 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
 #            data = numpy.append(cube.data,
 #                                cube.data[tuple(coord_slice_in_cube)],
 #                                axis=sample_dim)
-            if not isinstance(cube.data, numpy.ma.MaskedArray):
+            # This is the alternative, temporary workaround.
+            # It doesn't use append on an nD mask.
+            if not isinstance(cube.data, numpy.ma.MaskedArray) \
+            or not isinstance(cube.data.mask, numpy.ndarray) \
+            or len(cube.data.mask.shape) == 0:
                 data = numpy.append(cube.data,
                                     cube.data[tuple(coord_slice_in_cube)],
                                     axis=sample_dim)
