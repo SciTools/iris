@@ -435,6 +435,17 @@ class TestCells(unittest.TestCase):
         self.assertFalse( self.f >= self.e )
         self.assertTrue( self.f < self.e )
         
+    def test_cmp_contig(self):
+        # Test cells that share an edge
+        a = iris.coords.Cell(point=1054440.0, bound=(1054080.0, 1054800.0))
+        b = iris.coords.Cell(point=1055160.0, bound=(1054800.0, 1055520.0))
+        self.assertTrue(a < b)
+        self.assertTrue(a <= b)
+        self.assertFalse(a == b)
+        self.assertFalse(a >= b)
+        self.assertFalse(a > b)
+        
+        
         
 class TestCoordMaths(tests.IrisTest):
     def _build_coord(self, start=None, step=None, count=None):

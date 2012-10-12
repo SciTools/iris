@@ -200,6 +200,9 @@ class Cell(iris.util._OrderedHashable):
         
         # If we both have bounds, we must also check our points
         if self.bound is not None and isinstance(other, Cell) and other.bound is not None:
+            # It's ok if our edges coincide, it means we are contiguous.
+            if me == it:
+                res = True
             res = res and operator_method(self.point, other.point) 
         
         return res
