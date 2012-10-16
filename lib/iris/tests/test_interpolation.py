@@ -382,8 +382,8 @@ class TestLinear1dInterpolation(tests.IrisTest):
     
     def test_scalar_mask(self):
         # Testing the bug raised in https://github.com/SciTools/iris/pull/123#issuecomment-9309872
+        # (the fix workaround for the numpy.append bug failed for scalar masks) 
         cube = tests.stock.realistic_4d_w_missing_data()
-        # mask is scalar
         cube.data = numpy.ma.arange(numpy.product(cube.shape), dtype=numpy.float32).reshape(cube.shape)
         cube.coord('grid_longitude').circular = True
         # There's no result to test, just make sure we don't cause an exception with the scalar mask.
