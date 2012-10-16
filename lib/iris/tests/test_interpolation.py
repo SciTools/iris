@@ -378,7 +378,7 @@ class TestLinear1dInterpolation(tests.IrisTest):
         cube.coord('grid_longitude').circular = True
         _ = iris.analysis.interpolate.linear(cube, [('grid_longitude',0), ('grid_latitude',0)])
         # Did numpy.append go wrong?
-        self.assertArrayEqual(cube.data.shape, cube.data.mask.shape)
+        self.assertArrayEqual(cube.data.data.shape, cube.data.mask.shape)
     
     def test_scalar_mask(self):
         # Testing the bug raised in https://github.com/SciTools/iris/pull/123#issuecomment-9309872
