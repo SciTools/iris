@@ -374,18 +374,11 @@ class TestLinear1dInterpolation(tests.IrisTest):
         # Test numpy.append bug with masked arrays.
         # Based on the bug reported in https://github.com/SciTools/iris/issues/106
         cube = tests.stock.realistic_4d_w_missing_data()
-        data = cube.data
         cube = cube[0, 2, 18::-1]
-        data = data[0, 2, 18::-1]
-        cube.data = data
         cube.coord('grid_longitude').circular = True
-        cube.data.unshare_mask()
-        
-        s = str(cube.data)
-        sample = [('grid_longitude',0), ('grid_latitude',0)]
-        inter = iris.analysis.interpolate.linear(cube, sample)
-        # This failed before the temporary workaround in linear()
-        s = str(cube.data)
+        _ = iris.analysis.interpolate.linear(cube, [('grid_longitude',0), ('grid_latitude',0)])
+        # Did numpy.append go wrong?
+        self.assertArrayEqual(cube.data.shape, cube.data.mask.shape)
     
     def test_scalar_mask(self):
         # Testing the bug raised in https://github.com/SciTools/iris/pull/123#issuecomment-9309872
@@ -393,11 +386,8 @@ class TestLinear1dInterpolation(tests.IrisTest):
         # mask is scalar
         cube.data = numpy.ma.arange(numpy.product(cube.shape), dtype=numpy.float32).reshape(cube.shape)
         cube.coord('grid_longitude').circular = True
-        
-        s = str(cube.data)
-        sample = [('grid_longitude',0), ('grid_latitude',0)]
-        inter = iris.analysis.interpolate.linear(cube, sample)
-        s = str(cube.data)
+        # There's no result to test, just make sure we don't cause an exception with the scalar mask.
+        _ = iris.analysis.interpolate.linear(cube, [('grid_longitude',0), ('grid_latitude',0)])
     
 
 @iris.tests.skip_data
