@@ -157,6 +157,7 @@ doctest_global_setup = 'import iris'
 # -- Autodoc ------------------------------------------------------------------ 
 
 autodoc_member_order = 'groupwise' 
+autodoc_default_flags = ['show-inheritance']
 
 # include the __init__ method when documenting classes 
 # document the init/new method at the top level of the class documentation rather than displaying the class docstring
