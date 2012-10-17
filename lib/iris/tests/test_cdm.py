@@ -999,7 +999,7 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
             cube1 = iris.load_cube(temp_pp_path)
             cube2 = cube1.copy()
             # make cube1 and cube2 differ on a scalar coord, to make them mergeable into a 3d cube
-            cube2.coord("pressure").points[0] = 1001.0
+            cube2.coord("pressure").points = [1001.0]
             merged_cubes = iris.cube.CubeList([cube1, cube2]).merge()
             self.assertEqual(len(merged_cubes), 1, "expected a single merged cube")
             merged_cube = merged_cubes[0]

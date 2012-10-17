@@ -22,7 +22,6 @@ See also: :mod:`NumPy <numpy>`, and :ref:`SciPy <scipy:modindex>`.
 """
 import collections
 import warnings
-from copy import deepcopy
 
 import numpy as np
 import numpy.ma as ma
