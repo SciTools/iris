@@ -80,5 +80,11 @@ wouldn't be where it is today:
  * `Mark Hedley <https://github.com/marqh>`_
  * Patrick Peglar
  * Andrew Munslow
+
+ * `Rich Hancock <https://github.com/richh98>`_
+
+     Logo design
+     rich.hancock@ragtagdev.com
+ 
  
  
