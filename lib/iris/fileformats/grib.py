@@ -445,9 +445,10 @@ class GribWrapper(object):
             else:
                 raise iris.exceptions.TranslationError("unhandled grib1 timeRangeIndicator = %i" % time_range_indicator)
     
-            if unit_of_time == 0: verification_date = reference_date_time + datetime.timedelta(0, 0, 0, 0, int(time_diff))  #minutes
-            elif unit_of_time == 1: verification_date = reference_date_time + datetime.timedelta(0, 0, 0, 0, 0, int(time_diff))  #hours
-            elif unit_of_time == 2: verification_date = reference_date_time + datetime.timedelta(int(time_diff))  #days
+            if unit_of_time == 0: verification_date = reference_date_time + datetime.timedelta(0, 0, 0, 0, int(time_diff))  # minutes
+            elif unit_of_time == 1: verification_date = reference_date_time + datetime.timedelta(0, 0, 0, 0, 0, int(time_diff))  # hours
+            elif unit_of_time == 2: verification_date = reference_date_time + datetime.timedelta(int(time_diff))  # days
+            elif unit_of_time == 10: verification_date = reference_date_time + datetime.timedelta(0, 0, 0, 0, 0, int(time_diff*3))  # hours
             else:
                 raise iris.exceptions.TranslationError("Unhandled grib1 unitOfTime = %i" % unit_of_time)
         
