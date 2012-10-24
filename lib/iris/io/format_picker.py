@@ -235,8 +235,15 @@ class FileElement(object):
         return 'FileElement(%r, %r)' % (self._name, self._element_getter_fn)
 
 
-MAGIC_NUMBER_32_BIT = FileElement('32-bit magic number', lambda filename, fh: struct.unpack('>L', fh.read(4))[0])
-MAGIC_NUMBER_64_BIT = FileElement('64-bit magic number', lambda filename, fh: struct.unpack('>Q', fh.read(8))[0])
+def _read_n(filename, fh, fmt, n):
+    bytes = fh.read(n)
+    if len(bytes) != n:
+        import iris.exceptions
+        raise iris.exceptions.TranslationError("Unexpected end of file: '{}'".format(filename))
+    return struct.unpack(fmt, bytes)[0]
+
+MAGIC_NUMBER_32_BIT = FileElement('32-bit magic number', lambda filename, fh: _read_n(filename, fh, '>L', 4))
+MAGIC_NUMBER_64_BIT = FileElement('64-bit magic number', lambda filename, fh: _read_n(filename, fh, '>Q', 8))
 
 FILE_EXTENSION = FileElement('File extension', lambda basename, fh: os.path.splitext(basename)[1])
 LEADING_LINE = FileElement('Leading line', lambda filename, fh: fh.readline())
