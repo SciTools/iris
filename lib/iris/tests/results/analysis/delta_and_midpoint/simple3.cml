@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<DimCoord bounds="[[-225.0, -135.0],
+<dimCoord bounds="[[-225.0, -135.0],
 		[-135.0, -45.0],
 		[-45.0, 45.0],
-		[45.0, 135.0]]" id="31a3be9e9cebe09a" long_name="foo" points="[-180.0, -90.0, 0.0, 90.0]" shape="(4,)" units="Unit('degrees')" value_type="float32"/>
+		[45.0, 135.0]]" id="f3234458" long_name="foo" points="[-180.0, -90.0, 0.0, 90.0]" shape="(4,)" units="Unit('degrees')" value_type="float32"/>

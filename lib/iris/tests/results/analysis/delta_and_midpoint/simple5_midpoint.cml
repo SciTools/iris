@@ -1,2 +1,2 @@
 <?xml version="1.0" ?>
-<AuxCoord id="17eb9ae9fe32de24" long_name="foo" points="[-135.0, -45.0, 45.0, -45.0]" shape="(4,)" units="Unit('meter')" value_type="float32"/>
+<auxCoord id="20c1453e" long_name="foo" points="[-135.0, -45.0, 45.0, -45.0]" shape="(4,)" units="Unit('meter')" value_type="float32"/>

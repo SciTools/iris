@@ -6,10 +6,10 @@
     </attributes>
     <coords>
       <coord>
-        <AuxCoord bounds="[[0, 60]]" id="5634c91ba5717382" long_name="bar" points="[30.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
+        <auxCoord bounds="[[0, 60]]" id="e629b330" long_name="bar" points="[30.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord>
-        <AuxCoord bounds="[[-25, 70]]" id="5634c91ba5717382" long_name="foo" points="[22.5]" shape="(1,)" units="Unit('1')" value_type="float64"/>
+        <auxCoord bounds="[[-25, 70]]" id="ce286204" long_name="foo" points="[22.5]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>

@@ -3,10 +3,10 @@
   <cube standard_name="air_temperature" units="kelvin">
     <coords>
       <coord>
-        <DimCoord id="fc2e5e733b5cf4c" points="[9]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int64"/>
+        <dimCoord id="e9a79206" points="[9]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int64"/>
       </coord>
       <coord datadims="[0]">
-        <DimCoord id="95f615fae348902" points="[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0,
+        <dimCoord id="c7b68519" points="[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0,
 		9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0,
 		17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0,
 		25.0, 26.0, 27.0, 28.0, 29.0, 30.0, 31.0, 32.0,
@@ -15,10 +15,10 @@
 		49.0, 50.0, 51.0, 52.0, 53.0, 54.0, 55.0, 56.0,
 		57.0, 58.0, 59.0]" shape="(60,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="0.0"/>
-        </DimCoord>
+        </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <DimCoord id="3207b04384adbdec" points="[30.0, 31.0, 32.0, 33.0, 34.0, 35.0, 36.0, 37.0,
+        <dimCoord id="4549b398" points="[30.0, 31.0, 32.0, 33.0, 34.0, 35.0, 36.0, 37.0,
 		38.0, 39.0, 40.0, 41.0, 42.0, 43.0, 44.0, 45.0,
 		46.0, 47.0, 48.0, 49.0, 50.0, 51.0, 52.0, 53.0,
 		54.0, 55.0, 56.0, 57.0, 58.0, 59.0, 60.0, 61.0,
@@ -27,16 +27,16 @@
 		78.0, 79.0, 80.0, 81.0, 82.0, 83.0, 84.0, 85.0,
 		86.0, 87.0, 88.0, 89.0]" shape="(60,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="0.0"/>
-        </DimCoord>
+        </dimCoord>
       </coord>
       <coord>
-        <AuxCoord id="2ba66fb2f0fc5dbd" long_name="originating_centre" points="[U.K. Met Office - Exeter]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+        <auxCoord id="fe47a8fc" long_name="originating_centre" points="[U.K. Met Office - Exeter]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <DimCoord id="432d42454e1413e1" long_name="pressure" points="[99.0]" shape="(1,)" units="Unit('Pa')" value_type="float64"/>
+        <dimCoord id="c18794c5" long_name="pressure" points="[99.0]" shape="(1,)" units="Unit('Pa')" value_type="float64"/>
       </coord>
       <coord>
-        <DimCoord id="559b95abfcdf35de" points="[3.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <dimCoord id="f0a8bc99" points="[3.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
