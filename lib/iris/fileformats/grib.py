@@ -47,17 +47,18 @@ CENTRE_TITLES = {'egrr': 'U.K. Met Office - Exeter',
                  '55'  : 'San Francisco',
                  'kwbc': 'US National Weather Service, National Centres for Environmental Prediction'}
 
-TIME_RANGE_INDICATORS = {0:'none', 1:'none', 3:'time mean', 4:'time sum', 5:'time _difference', 10:'none',
+TIME_RANGE_INDICATORS = {0:'none', 1:'none', 3:'time mean', 4:'time sum',
+                         5:'time _difference', 10:'none',
                          # TODO #567 Further exploration of the following mappings
-                         51:'time mean', 113:'time mean', 114:'time sum', 115:'time mean',
-                         116:'time sum', 117:'time mean', 118:'time _covariance', 123:'time mean',
+                         51:'time mean', 113:'time mean', 114:'time sum',
+                         115:'time mean', 116:'time sum', 117:'time mean',
+                         118:'time _covariance', 123:'time mean',
                          124:'time sum', 125:'time standard_deviation'}
 
 PROCESSING_TYPES = {0:'time mean', 1:'time sum', 2:'time maximum', 3:'time minimum',
-                    4:'time _difference',
-                    5:'time _root mean square', 6:'time standard_deviation', 7:'time _convariance',
-                    8:'time _difference',
-                    9:'time _ratio'}
+                    4:'time _difference', 5:'time _root mean square',
+                    6:'time standard_deviation', 7:'time _convariance',
+                    8:'time _difference', 9:'time _ratio'}
 
 unknown_string = "???"
 
@@ -128,7 +129,8 @@ class GribWrapper(object):
     def _confirm_in_scope(self):
         """Ensure we have a grib flavour that we choose to support."""
         #forbid quasi-regular grids
-        if gribapi.grib_is_missing(self.grib_message, "Ni") or gribapi.grib_is_missing(self.grib_message, "Nj"):
+        if (gribapi.grib_is_missing(self.grib_message, "Ni") or
+            gribapi.grib_is_missing(self.grib_message, "Nj")):
             raise iris.exceptions.IrisError("Quasi-regular grids not yet handled.")
 
         #forbid alternate row scanning
@@ -142,7 +144,8 @@ class GribWrapper(object):
             if self.iDirectionIncrementGiven == 0 or self.jDirectionIncrementGiven == 0:
                 raise iris.exceptions.IrisError("Quasi-regular grids not yet handled.")
             if self.uvRelativeToGrid == 1:
-                raise iris.exceptions.IrisError("uvRelativeToGrid == 1 (in Flag table 3.3) not handled.")
+                raise iris.exceptions.IrisError("uvRelativeToGrid == 1 "
+                                                "(in Flag table 3.3) not handled.")
             
         
     def __getattr__(self, key):
@@ -160,8 +163,8 @@ class GribWrapper(object):
                 if key_type == int:
                     res = numpy.int32(gribapi.grib_get_long(self.grib_message, key))
                 elif key_type == float:
-                    # Because some computer keys are floats, like longitudeOfFirstGridPointInDegrees,
-                    # a float32 is not always enough...
+                    # Because some computer keys are floats, like
+                    # longitudeOfFirstGridPointInDegrees, a float32 is not always enough...
                     res = numpy.float64(gribapi.grib_get_double(self.grib_message, key))
                 elif key_type == str:
                     res = gribapi.grib_get_string(self.grib_message, key)
@@ -189,7 +192,7 @@ class GribWrapper(object):
         # work out stuff based on these values from the message
         edition = self.edition
 
-        # grib forcast time, for time-processed fields, is from reference time to start of period
+        # time-processed forcast time is from reference time to start of period
         if edition == 2:
             forecastTime = self.forecastTime
             
@@ -252,7 +255,8 @@ class GribWrapper(object):
 
             # fixed forecastTime in hours
             self.extra_keys['_periodStartDateTime'] = \
-                self.extra_keys['_referenceDateTime'] + datetime.timedelta(0, 0, 0, 0, 0, int(forecastTime))
+                (self.extra_keys['_referenceDateTime'] + 
+                 datetime.timedelta(0, 0, 0, 0, 0, int(forecastTime)))
             self.extra_keys['_periodEndDateTime'] = \
                 datetime.datetime(endYear, endMonth, endDay, endHour, endMinute)
         else:
@@ -443,30 +447,45 @@ class GribWrapper(object):
             elif time_range_indicator == 123:    time_diff = P1    #Average of N uninitialized analyses, starting at the reference time, at intervals of P2.
             elif time_range_indicator == 124:    time_diff = P1    #Accumulation of N uninitialized analyses, starting at the reference time, at intervals of P2.
             else:
-                raise iris.exceptions.TranslationError("unhandled grib1 timeRangeIndicator = %i" % time_range_indicator)
+                raise iris.exceptions.TranslationError("unhandled grib1 timeRangeIndicator = %i" %
+                                                       time_range_indicator)
     
-            if unit_of_time == 0: verification_date = reference_date_time + datetime.timedelta(0, 0, 0, 0, int(time_diff))  # minutes
-            elif unit_of_time == 1: verification_date = reference_date_time + datetime.timedelta(0, 0, 0, 0, 0, int(time_diff))  # hours
-            elif unit_of_time == 2: verification_date = reference_date_time + datetime.timedelta(int(time_diff))  # days
-            elif unit_of_time == 10: verification_date = reference_date_time + datetime.timedelta(0, 0, 0, 0, 0, int(time_diff*3))  # hours
+            if unit_of_time == 0:  # minutes
+                verification_date = (reference_date_time + 
+                    datetime.timedelta(0, 0, 0, 0, int(time_diff)))  
+            elif unit_of_time == 1:  # hours
+                verification_date = (reference_date_time + 
+                    datetime.timedelta(0, 0, 0, 0, 0, int(time_diff)))
+            elif unit_of_time == 2:  # days
+                verification_date = (reference_date_time +
+                    datetime.timedelta(int(time_diff)))
+            elif unit_of_time == 10:  # 3 hours
+                verification_date = (reference_date_time +
+                    datetime.timedelta(0, 0, 0, 0, 0, int(time_diff*3)))
             else:
-                raise iris.exceptions.TranslationError("Unhandled grib1 unitOfTime = %i" % unit_of_time)
+                raise iris.exceptions.TranslationError("Unhandled grib1 unitOfTime = %i" %
+                                                       unit_of_time)
         
         if self.edition == 2:
         
             time_diff = int(self.stepRange) # gribapi gives us a string!
             forecast_time_unit = self.indicatorOfUnitOfTimeRange  # P1 and P2 units
             
-            if forecast_time_unit == 0:
-                verification_date = reference_date_time + datetime.timedelta(0, 0, 0, 0, int(time_diff))  # minutes
-            elif forecast_time_unit == 1:
-                verification_date = reference_date_time + datetime.timedelta(0, 0, 0, 0, 0, int(time_diff))  # hours
-            elif forecast_time_unit == 2:
-                verification_date = reference_date_time + datetime.timedelta(int(time_diff))  # days
-            elif forecast_time_unit == 13:
-                verification_date = reference_date_time + datetime.timedelta(0, int(time_diff))  # seconds
+            if forecast_time_unit == 0:  # minutes
+                verification_date = (reference_date_time + 
+                    datetime.timedelta(0, 0, 0, 0, int(time_diff)))
+            elif forecast_time_unit == 1:  # hours
+                verification_date = (reference_date_time +
+                    datetime.timedelta(0, 0, 0, 0, 0, int(time_diff)))
+            elif forecast_time_unit == 2:  # days
+                verification_date = (reference_date_time +
+                    datetime.timedelta(int(time_diff)))
+            elif forecast_time_unit == 13:  # seconds
+                verification_date = (reference_date_time +
+                    datetime.timedelta(0, int(time_diff)))
             else:
-                raise iris.exceptions.TranslationError("Unhandled grib2 unitOfTime = %i" % forecast_time_unit)
+                raise iris.exceptions.TranslationError("Unhandled grib2 unitOfTime = %i" %
+                                                       forecast_time_unit)
     
         return verification_date
     
@@ -478,7 +497,8 @@ class GribWrapper(object):
         """
 
         time_reference = '%s since epoch' % time_unit
-        return iris.unit.date2num(self._phenomenonDateTime, time_reference, iris.unit.CALENDAR_GREGORIAN)
+        return iris.unit.date2num(self._phenomenonDateTime, time_reference,
+                                  iris.unit.CALENDAR_GREGORIAN)
     
     def phenomenon_bounds(self, time_unit):
         """
@@ -489,7 +509,8 @@ class GribWrapper(object):
         # TODO #576 Investigate when it's valid to get phenomenon_bounds
         time_reference = '%s since epoch' % time_unit
         unit = iris.unit.Unit(time_reference, iris.unit.CALENDAR_GREGORIAN)
-        return [unit.date2num(self._periodStartDateTime), unit.date2num(self._periodEndDateTime)]
+        return [unit.date2num(self._periodStartDateTime),
+                unit.date2num(self._periodEndDateTime)]
 
 
 def grib_generator(filename):
@@ -550,7 +571,8 @@ def save_grib2(cube, target, append=False, **kwargs):
     lat_coords = filter(lambda coord: "latitude" in coord.name(), cube.coords())
     lon_coords = filter(lambda coord: "longitude" in coord.name(), cube.coords())
     if len(lat_coords) != 1 or len(lon_coords) != 1:
-        raise iris.exceptions.TranslationError("Did not find one (and only one) latitude or longitude coord")
+        raise iris.exceptions.TranslationError("Did not find one (and only one) "
+                                               "latitude or longitude coord")
 
     # Save each latlon slice2D in the cube 
     for slice2D in cube.slices([lat_coords[0], lon_coords[0]]):
