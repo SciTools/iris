@@ -27,6 +27,7 @@ from itertools import izip, chain, izip_longest
 import operator
 import re
 import warnings
+import zlib
 
 import numpy
 
@@ -830,10 +831,10 @@ class Coord(CFVariableMixin):
     
     def xml_element(self, doc):
         """Return a DOM element describing this Coord."""
-        # Create the xml element
+        # Create the XML element as the camelCaseEquivalent of the
+        # class name.
         element_name = type(self).__name__
-        # lower case the first char
-        element_name.replace(element_name[0], element_name[0].lower(), 1)
+        element_name = element_name[0].lower() + element_name[1:]
         element = doc.createElement(element_name)
         
         element.setAttribute('id', self._xml_id())
@@ -875,10 +876,11 @@ class Coord(CFVariableMixin):
 
     def _xml_id(self):
         # Returns a consistent, unique string identifier for this coordinate.
-        # NB. `None` does not have a reliable hash value.
-        unique_value = (self.standard_name or 0, str(self.units),
-                        tuple(self.attributes.iteritems()))
-        return str(hex(hash(unique_value))).lstrip('-0x')
+        unique_value = (self.standard_name, self.long_name, self.units,
+                        self.attributes, self.coord_system)
+        # Mask to ensure consistency across Python versions & platforms.
+        crc = zlib.crc32(str(unique_value)) & 0xffffffff
+        return hex(crc).lstrip('0x')
 
     def _value_type_name(self):
         """A simple, readable name for the data type of the Coord point/bound values."""
