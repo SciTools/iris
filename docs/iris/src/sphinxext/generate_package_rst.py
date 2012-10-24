@@ -32,7 +32,6 @@ document_dict = {
     .. autoclass:: %(object_name)s
         :members:
         :undoc-members:
-        :inherited-members:
 
 ''',
                      'function': '''
