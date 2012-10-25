@@ -127,9 +127,12 @@ Instead of completely collapsing a dimension, other methods can be applied to re
 Aggregation of grouped data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The :meth:`Cube.aggregated_by <iris.cube.Cube.aggregated_by>` can be used to perform aggregation by coordinate values.  
-To do this, you need a coordinate whose values all come from a limited set of values -- the *number* of these values then defines the reduced dimension.
-The :mod:`iris.coord_categorisation` module can be used to make such 'categorical' coordinates out of ordinary ones:  The commonest requirement is to aggregate over time elements, such as calendar months or days of the week.
+The :meth:`Cube.aggregated_by <iris.cube.Cube.aggregated_by>` operation 
+combines data for all points with the same value of a given coordinate. 
+To do this, you need a coordinate whose points take on only a limited set of different values
+-- the *number* of these then becomes the reduced dimension size.
+The :mod:`iris.coord_categorisation` module can be used to make such 'categorical' coordinates out of ordinary ones:  
+The most common use is to aggregate data over regular *time intervals*, such as by calendar month or day of the week.
 
 For example, let's create two new coordinates on the cube to represent the climatological seasons and the season year respectively::
 
