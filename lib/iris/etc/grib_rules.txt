@@ -400,14 +400,6 @@ CellMethod("mean", cm.coord("time"))
 
 IF
 grib.edition == 1
-grib.timeRangeIndicator == 4
-THEN
-CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
-CoordAndDims(DimCoord(points=np.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
-CellMethod("sum", cm.coord("time"))
-
-IF
-grib.edition == 1
 grib.timeRangeIndicator == 116
 THEN
 CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
