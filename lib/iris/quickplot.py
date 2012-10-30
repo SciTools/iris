@@ -32,6 +32,10 @@ import iris.coords
 import iris.plot as iplt
 
 
+def _pop_default(dict, key, default=None):
+    return dict.pop(key) if key in dict else default
+
+
 def _title(cube_or_coord, with_units):
     if cube_or_coord is None:
         title = ''
@@ -53,7 +57,7 @@ def _title(cube_or_coord, with_units):
     return title
 
 
-def _label(cube, mode, result=None, ndims=2, coords=None, num_ticks=None):
+def _label(cube, mode, result=None, ndims=2, coords=None, num_ticks=None, pad=None):
     """Puts labels on the current plot using the given cube."""
     
     plt.title(_title(cube, with_units=False))
@@ -67,8 +71,14 @@ def _label(cube, mode, result=None, ndims=2, coords=None, num_ticks=None):
         else:
             ticks=None
         
-        bar = plt.colorbar(result, orientation='horizontal',
-                           drawedges=draw_edges, ticks=ticks)
+        # If we pass pad=None to colorbar, it fails!
+        if pad is None:
+            bar = plt.colorbar(result, orientation='horizontal',
+                               drawedges=draw_edges, ticks=ticks)
+        else:
+            bar = plt.colorbar(result, orientation='horizontal',
+                               drawedges=draw_edges, ticks=ticks, pad=pad)
+        
         has_known_units = not (cube.units.unknown or cube.units.no_unit)
         if has_known_units and cube.units != iris.unit.Unit('1'):
             # Use shortest unit representation for anything other than time
@@ -96,12 +106,12 @@ def _label(cube, mode, result=None, ndims=2, coords=None, num_ticks=None):
         raise ValueError('Unexpected number of dimensions (%s) given to _label.' % ndims)
 
 
-def _label_with_bounds(cube, result=None, ndims=2, coords=None, num_ticks=None):
-    _label(cube, iris.coords.BOUND_MODE, result, ndims, coords, num_ticks)
+def _label_with_bounds(cube, result=None, ndims=2, coords=None, num_ticks=None, pad=None):
+    _label(cube, iris.coords.BOUND_MODE, result, ndims, coords, num_ticks, pad)
 
 
-def _label_with_points(cube, result=None, ndims=2, coords=None, num_ticks=None):
-    _label(cube, iris.coords.POINT_MODE, result, ndims, coords, num_ticks)
+def _label_with_points(cube, result=None, ndims=2, coords=None, num_ticks=None, pad=None):
+    _label(cube, iris.coords.POINT_MODE, result, ndims, coords, num_ticks, pad)
 
 
 def contour(cube, *args, **kwargs):
@@ -124,12 +134,10 @@ def contour(cube, *args, **kwargs):
     
     """
     coords = kwargs.get('coords')
-    try:
-        num_ticks = kwargs.pop('num_ticks')
-    except:
-        num_ticks = None
+    num_ticks = _pop_default(kwargs, 'num_ticks')
+    pad = _pop_default(kwargs, 'pad')
     result = iplt.contour(cube, *args, **kwargs)
-    _label_with_points(cube, coords=coords, num_ticks=num_ticks)
+    _label_with_points(cube, coords=coords, num_ticks=num_ticks, pad=pad)
     return result
 
 
@@ -153,23 +161,19 @@ def contourf(cube, *args, **kwargs):
     
     """
     coords = kwargs.get('coords')
-    try:
-        num_ticks = kwargs.pop('num_ticks')
-    except:
-        num_ticks = None
+    num_ticks = _pop_default(kwargs, 'num_ticks')
+    pad = _pop_default(kwargs, 'pad')
     result = iplt.contourf(cube, *args, **kwargs)
-    _label_with_points(cube, result, coords=coords, num_ticks=num_ticks)
+    _label_with_points(cube, result, coords=coords, num_ticks=num_ticks, pad=pad)
     return result
 
 
 def outline(cube, coords=None):
     """Draws cell outlines on a labelled plot based on the given Cube."""
-    try:
-        num_ticks = kwargs.pop('num_ticks')
-    except:
-        num_ticks = None
+    num_ticks = _pop_default(kwargs, 'num_ticks')
+    pad = _pop_default(kwargs, 'pad')
     result = iplt.outline(cube, coords=coords)
-    _label_with_bounds(cube, coords=coords, num_ticks=num_ticks)
+    _label_with_bounds(cube, coords=coords, num_ticks=num_ticks, pad=pad)
     return result
 
 
@@ -181,12 +185,10 @@ def pcolor(cube, *args, **kwargs):
     
     """
     coords = kwargs.get('coords')
-    try:
-        num_ticks = kwargs.pop('num_ticks')
-    except:
-        num_ticks = None
+    num_ticks = _pop_default(kwargs, 'num_ticks')
+    pad = _pop_default(kwargs, 'pad')
     result = iplt.pcolor(cube, *args, **kwargs)
-    _label_with_bounds(cube, result, coords=coords, num_ticks=num_ticks)
+    _label_with_bounds(cube, result, coords=coords, num_ticks=num_ticks, pad=pad)
     return result
 
 
@@ -198,12 +200,10 @@ def pcolormesh(cube, *args, **kwargs):
     
     """
     coords = kwargs.get('coords')
-    try:
-        num_ticks = kwargs.pop('num_ticks')
-    except:
-        num_ticks = None
+    num_ticks = _pop_default(kwargs, 'num_ticks')
+    pad = _pop_default(kwargs, 'pad')
     result = iplt.pcolormesh(cube, *args, **kwargs)
-    _label_with_bounds(cube, result, coords=coords, num_ticks=num_ticks)
+    _label_with_bounds(cube, result, coords=coords, num_ticks=num_ticks, pad=pad)
     return result
 
 
@@ -215,12 +215,10 @@ def points(cube, *args, **kwargs):
     
     """
     coords = kwargs.get('coords')
-    try:
-        num_ticks = kwargs.pop('num_ticks')
-    except:
-        num_ticks = None
+    num_ticks = _pop_default(kwargs, 'num_ticks')
+    pad = _pop_default(kwargs, 'pad')
     result = iplt.points(cube, *args, **kwargs)
-    _label_with_points(cube, coords=coords, num_ticks=num_ticks)
+    _label_with_points(cube, coords=coords, num_ticks=num_ticks, pad=pad)
     return result
 
 
@@ -232,10 +230,8 @@ def plot(cube, *args, **kwargs):
     
     """
     coords = kwargs.get('coords')
-    try:
-        num_ticks = kwargs.pop('num_ticks')
-    except:
-        num_ticks = None
+    num_ticks = _pop_default(kwargs, 'num_ticks')
+    pad = _pop_default(kwargs, 'pad')
     result = iplt.plot(cube, *args, **kwargs)
-    _label_with_points(cube, ndims=1, coords=coords, num_ticks=num_ticks)
+    _label_with_points(cube, ndims=1, coords=coords, num_ticks=num_ticks, pad=pad)
     return result
