@@ -600,6 +600,10 @@ def outline(cube, coords=None):
     result = _draw_2d_from_bounds('pcolormesh', cube, facecolors='none', edgecolors='k', antialiased=True, coords=coords)
     # set the _is_stroked property to get a single color grid. See https://github.com/matplotlib/matplotlib/issues/1302
     result._is_stroked = False
+    # handle the posibility that cartopy has done some clever wrapping of the pcolormesh
+    secondary_collection = getattr(result, '_wrapped_collection_fix', None)
+    if secondary_collection is not None:
+        secondary_collection._is_stroked = False
     return result
 
 
