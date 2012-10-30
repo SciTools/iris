@@ -4,6 +4,7 @@ unknown                             (latitude: 73; longitude: 96)
           longitude                          -              x
      Scalar coordinates:
           forecast_period: 6477.0 hours
+          forecast_reference_time: 246987.0 hours since 1970-01-01 00:00:00
           pressure: 1000.0 hPa
           time: 253464.0 hours since 1970-01-01 00:00:00
      Attributes:
