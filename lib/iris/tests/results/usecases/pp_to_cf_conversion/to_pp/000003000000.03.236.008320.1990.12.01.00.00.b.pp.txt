@@ -4,14 +4,14 @@
    lbdat: 1
    lbhr: 0
    lbmin: 0
-   lbday: 335
+   lbsec: 0
    lbyrd: 1991
    lbmond: 3
    lbdatd: 1
    lbhrd: 0
    lbmind: 0
-   lbdayd: 60
-   lbtim: 121
+   lbsecd: 0
+   lbtim: 21
    lbft: 107352
    lblrec: 7008
    lbcode: 1
@@ -20,18 +20,18 @@
    lbnpt: 96
    lbext: 0
    lbpack: 0
-   lbrel: 2
+   lbrel: 3
    lbfc: 16
    lbcfc: 0
    lbproc: 8320
-   lbvc: 1
+   lbvc: 129
    lbrvc: 0
    lbexp: 0
    lbegin: 0
    lbnrec: 0
    lbproj: 0
    lbtyp: 0
-   lblev: 9999
+   lblev: 0
    lbrsvd: (0, 0, 0, 0)
    lbsrce: 1111
    lbuser: (1, 0, 0, 3236, 0, 0, 1)
