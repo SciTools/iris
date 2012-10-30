@@ -125,6 +125,7 @@ class TestLabels(tests.GraphicsTest):
         self.check_graphic()
 
     def test_contourf(self):
+        # TODO: Why is this plot not checked, as in test_contour?
         qplt.contourf(self._small())
 
         cube = self._small()
@@ -172,6 +173,15 @@ class TestLabels(tests.GraphicsTest):
         qplt.contourf(cube)
         #qplt.outline(cube)
         qplt.points(cube)
+        self.check_graphic()
+
+    def test_num_ticks(self):
+        # Test usage via _label_with_points().
+        qplt.contourf(self._small(), num_ticks=5)
+        self.check_graphic()
+
+        # Test usage through _label_with_bounds().
+        qplt.pcolormesh(self._small(), num_ticks=5)
         self.check_graphic()
 
 
