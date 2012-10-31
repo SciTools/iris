@@ -110,6 +110,10 @@ class GribWrapper(object):
         """Store the grib message and compute our extra keys."""
         self.grib_message = grib_message
         
+        # initialise the key-extension dictionary
+        # NOTE: this attribute *must* exist, or the __getattr__ overload can hit an infinite loop
+        self.extra_keys = {}
+        
         self._confirm_in_scope()
         
         self._compute_extra_keys()
