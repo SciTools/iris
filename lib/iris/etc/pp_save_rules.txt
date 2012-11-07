@@ -100,6 +100,31 @@ IF
 THEN
     pp.lbfc = 608
 
+IF
+    cm.name() in ['wind_gust']
+THEN
+    pp.lbfc = 1694
+
+IF
+    cm.name() in ['wind_speed']
+THEN
+    pp.lbfc = 50
+
+IF
+    cm.name() in ['large_scale_rainfall_rate']
+THEN
+    pp.lbfc = 99
+
+IF
+    cm.name() in ['eastward_wind']
+THEN
+    pp.lbfc = 56
+
+IF
+    cm.name() in ['northward_wind']
+THEN
+    pp.lbfc = 57
+
 
 ######################################################
 ### time - lbtim, t1, t2 and lbft (but not lbproc) ###
