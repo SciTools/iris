@@ -100,44 +100,6 @@ IF
 THEN
     pp.lbfc = 608
 
-IF
-cm.name() in ['wind_gust']
-THEN
-pp.lbfc = 1694
-pp.lbuser[3] = 3463
-
-IF
-cm.name() in ['wind_speed']
-THEN
-pp.lbfc = 50
-pp.lbuser[3] = 6017
-
-IF
-cm.name() in ['large_scale_rainfall_rate']
-THEN
-pp.lbfc = 99
-pp.lbuser[3] = 4203
-
-IF
-cm.name() in ['eastward_wind']
-THEN
-pp.lbfc = 56
-pp.lbuser[3] = 15201
-
-IF
-cm.name() in ['northward_wind']
-THEN
-pp.lbfc = 57
-pp.lbuser[3] = 15202
-
-
-    
-    
-    
-    
-
-
-
 
 ######################################################
 ### time - lbtim, t1, t2 and lbft (but not lbproc) ###
