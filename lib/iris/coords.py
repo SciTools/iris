@@ -71,8 +71,36 @@ _GroupbyItem = collections.namedtuple('GroupbyItem', 'groupby_point, groupby_sli
 
 class Cell(iris.util._OrderedHashable):
     """
-    An immutable representation of a single cell of a coordinate, including the sample point
-    and/or boundary position.
+    An immutable representation of a single cell of a coordinate, including the 
+    sample point and/or boundary position.
+
+    Notes on cell comparison:
+
+    Cells can be compared in a number of ways depending on how they are
+    configured and the data type they are being compared to.
+    
+    For equality comparison (i.e. checking that a cell is equal to something)
+    the following rules apply:
+    
+    1. When comparing to another cell, equality is determined by comparing
+       tuples of attribute values from both objects.
+        
+    2. When comparing to a string value and cell point is also a string, string
+       comparison is performed.
+    
+    3. When comparing to an integer or float and the cell has bounds, the result
+       is True if the numeric value 'other' is within the cell's bounds.
+       Otherwise, the comparison is performed against the cell's point value.
+    
+    For rich comparisions i.e. (less than, greater than, less than or equals and
+    greater than or equals) the following rules apply:
+    
+    1. If either comparison object is a bounded cell, the min or max of its
+       bounds are used for comparison. Otherwise, the point value is used.
+    
+    2. If both comparison objects are bounded cells, the point values are also
+       compared.
+
     """
 
     # Declare the attribute names relevant to the _OrderedHashable behaviour.
@@ -82,38 +110,6 @@ class Cell(iris.util._OrderedHashable):
         """
         Construct a Cell from point or point-and-bound information. 
         
-        Notes on cell comparison:
-    
-        Cells can be compared in a number of ways depending on how they are configured and the data
-        type they are being compared to.
-        
-        For equality comparison (i.e. checking that a cell is equal to something) the following rules apply:
-        
-        1. When comparing to another cell, equality is determined by comparing tuples of attribute values from both objects.
-            
-        2. When comparing to a string value and cell point is also a string then comparison is done by string comparison.
-        
-        3. When comparing to an integer or float and there are bounds set on the cell then the comparison is True if the numeric value
-           'other' is within the cells bounds. If no bounds are set on the cell then the comparison is performed on the cells point value.
-        
-        For rich comparisions i.e. (less than, greater than, less than or equals and greater than or equals) the following rules apply:
-        
-        1. When comparing to an integer, float or numpy.number and the cell is bounded, the comparison is performed 
-           on the max or min of the cells bounds. If the cell is unbounded then the numeric value is compared with
-           the cells point value.
-        
-        2. If both comparison objects are cells the following table describes how the objects are compared:
-           
-           # TODO: This seem wrong, due to the inconsistency between the first two scenarios. See #1278.
-           
-           ========================================= ==================================================================
-           Primary and comparison cell styles        Comparison method
-           ========================================= ==================================================================
-           Bounded vs unbounded                      Comparison point is compared to primary bounds.                           
-           Unbounded vs bounded                      Point values are compared.                           
-           Bounded vs bounded                        Points values and max or min of both bounds are compared                   
-           ========================================= ==================================================================
-
         """ 
         if point is None:
             raise ValueError('Point must be defined.')
@@ -167,51 +163,46 @@ class Cell(iris.util._OrderedHashable):
 
     def __common_cmp__(self, other, operator_method):
         """
-        Common method called by the rich comparison operators. The method of checking equality
-        depends on the type of the object to be compared.
+        Common method called by the rich comparison operators. The method of
+        checking equality depends on the type of the object to be compared.
         """
+        if not isinstance(other, (int, float, numpy.number, Cell)):
+            raise ValueError("Unexpected type of other")
+        if operator_method not in [operator.gt, operator.lt, operator.ge, operator.le]:
+            raise ValueError("Unexpected operator_method")
         
-        # Compare to a numeric type
-        if isinstance(other, (int, float, numpy.number)):
-            if self.bound is not None:
-                bound_side = {operator.gt: min,
-                              operator.ge: max,
-                              operator.le: min,
-                              operator.lt: max,
-                              }
-
-                max_or_min = bound_side[operator_method]
-                res = operator_method( max_or_min(self.bound), other )
-            
+        # Do we have bounds?
+        if self.bound is not None:
+            if operator_method in [operator.gt, operator.le]:
+                me = min(self.bound)
             else:
-                res = operator_method(self.point, other)
-            
-        # Compare to another Cell object
-        elif isinstance(other, Cell):
-            bound_side = {operator.gt: max,
-                          operator.ge: min,
-                          operator.le: max,
-                          operator.lt: min,
-                          }
-            
-            if other.bound is None:
-                res = operator_method(self, other.point)
-            
-            else:
-                max_or_min = bound_side[operator_method]                
-                res = True
-
-                if self.bound is not None:
-                    res = operator_method(max_or_min(self.bound), max_or_min(other.bound))
-
-                # TODO: This seems inconsistent. See #1278.
-                res = res and operator_method(self.point, other.point)
-
-        # Trying to compare with unsupported type
+                me = max(self.bound)
         else:
-            res = NotImplemented
+            me = self.point
+    
+        # Does other have bounds?
+        if isinstance(other, (int, float, numpy.number)):
+            it = other
+        elif other.bound is not None:
+            if operator_method in [operator.lt, operator.ge]:
+                it = min(other.bound)
+            else:
+                it = max(other.bound)
+        else:
+            it = other.point
+        
+        # Compare the designated components
+        res = operator_method(me, it)
+        
+        # If we both have bounds, we must also check our points
+        if self.bound is not None and isinstance(other, Cell) and other.bound is not None:
+            # It's ok if our edges coincide, it means we are contiguous.
+            if me == it:
+                res = True
+            res = res and operator_method(self.point, other.point) 
+        
         return res
-
+    
     def __ge__(self, other):
         return self.__common_cmp__(other, operator.ge)
 
@@ -269,7 +260,8 @@ class Coord(CFVariableMixin):
         Args:
 
         * points:
-            The values (or value in the case of a scalar coordinate) of the coordinate for each cell.
+            The values (or value in the case of a scalar coordinate) of the
+            coordinate for each cell.
 
         Kwargs:
 
@@ -311,8 +303,8 @@ class Coord(CFVariableMixin):
         Returns a new Coord whose values are obtained by conventional array indexing.
 
         .. note:: 
-            Indexing of a circular coordinate results in a non-circular coordinate if the overall shape of
-            the coordinate changes after indexing.
+            Indexing of a circular coordinate results in a non-circular coordinate
+            if the overall shape of the coordinate changes after indexing.
 
         """
         points = self.points
@@ -398,8 +390,9 @@ class Coord(CFVariableMixin):
     
     def __eq__(self, other):
         eq = NotImplemented
-        # if the other object has a means of getting its definition, and whether or not it has_points and has_bounds,
-        # then do the comparison, otherwise return a NotImplemented to let Python try to resolve the operator elsewhere.
+        # if the other object has a means of getting its definition, and whether
+        # or not it has_points and has_bounds, then do the comparison, otherwise
+        # return a NotImplemented to let Python try to resolve the operator elsewhere.
         if hasattr(other, '_as_defn'):
             # metadata comparison
             eq = self._as_defn() == other._as_defn()
@@ -604,24 +597,28 @@ class Coord(CFVariableMixin):
         Return the index of a given Cell in this Coord.
 
         """
-        raise IrisError('Coord.index() is no longer available. Use Coord.nearest_neighbour_index() instead.')
+        raise IrisError('Coord.index() is no longer available.'
+                        ' Use Coord.nearest_neighbour_index() instead.')
 
     def cell(self, index):
         """
-        Return the single :class:`Cell` instance which results from slicing the points/bounds with the given index.
+        Return the single :class:`Cell` instance which results from slicing the
+        points/bounds with the given index.
 
         """
         index = iris.util._build_full_slice_given_keys(index, self.ndim)
         
         point = tuple(numpy.array(self.points[index], ndmin=1).flatten())
         if len(point) != 1:
-            raise IndexError('The index %s did not uniquely identify a single point to create a cell with.' % (index, ))
+            raise IndexError('The index %s did not uniquely identify a single '
+                             'point to create a cell with.' % (index, ))
         
         bound = None
         if self.bounds is not None:
             bound = tuple(numpy.array(self.bounds[index], ndmin=1).flatten())
             if len(bound) != self.nbounds:
-                raise IndexError('The index %s did not uniquely identify a single bound to create a cell with.' % (index, ))
+                raise IndexError('The index %s did not uniquely identify a single '
+                                 'bound to create a cell with.' % (index, ))
         
         return Cell(point, bound)
         
@@ -644,9 +641,11 @@ class Coord(CFVariableMixin):
         
         # Warn about non-contiguity.
         if self.ndim > 1:
-            warnings.warn('Collapsing a multi-dimensional coordinate. Metadata may not be fully descriptive for "%s".' % self.name())
+            warnings.warn('Collapsing a multi-dimensional coordinate. Metadata '
+                          'may not be fully descriptive for "%s".' % self.name())
         elif not self.is_contiguous():
-            warnings.warn('Collapsing a non-contiguous coordinate. Metadata may not be fully descriptive for "%s".' % self.name())
+            warnings.warn('Collapsing a non-contiguous coordinate. Metadata may '
+                          'not be fully descriptive for "%s".' % self.name())
 
         # Create bounds for the new collapsed coordinate.
         if self.bounds is not None:
@@ -669,7 +668,8 @@ class Coord(CFVariableMixin):
         
         Kwargs:
         
-        * bound_position - The desired position of the bounds relative to the position of the points.
+        * bound_position - The desired position of the bounds relative to the
+                           position of the points.
 
         This method only works for coordinates with ``coord.ndim == 1``.
         
@@ -686,7 +686,8 @@ class Coord(CFVariableMixin):
             raise ValueError('Cannot guess bounds for a coordinate of length 1.')
 
         if self.bounds is not None:
-            raise ValueError('Coord already has bounds. Remove the bounds before guessing new ones.')
+            raise ValueError('Coord already has bounds. Remove the bounds before'
+                             ' guessing new ones.')
 
         diffs = numpy.diff(self.points)
 
@@ -756,11 +757,13 @@ class Coord(CFVariableMixin):
         if self.has_bounds():
             diff = numpy.abs(self.bounds - point)
             # where will look like [[first dimension matches], [second dimension matches]]
-            # we will just take the first match (in this case, it does not matter what the second dimension was)
+            # we will just take the first match (in this case,
+            # it does not matter what the second dimension was)
             minimized_diff_indices = numpy.where(diff == numpy.min(diff))[0]
 
             min_index = None
-            # If we have more than one result, try picking the result which actually contains the requested point
+            # If we have more than one result, try picking the result which
+            # actually contains the requested point
             if len(minimized_diff_indices) > 1:
                 for index in minimized_diff_indices:
                     if self.cell(index).contains_point(point):
@@ -817,7 +820,8 @@ class Coord(CFVariableMixin):
         """Return a DOM element describing this Coord."""
         # Create the xml element
         element_name = type(self).__name__
-        element_name.replace(element_name[0], element_name[0].lower(), 1)  # lower case the first char
+        # lower case the first char
+        element_name.replace(element_name[0], element_name[0].lower(), 1)
         element = doc.createElement(element_name)
         
         element.setAttribute('id', self._xml_id())
@@ -996,7 +1000,8 @@ class DimCoord(Coord):
                     directions.add(direction)
                     
                 if len(directions) != 1:
-                    raise ValueError('The direction of monotonicity must be consistent across all bounds')
+                    raise ValueError('The direction of monotonicity must be '
+                                     'consistent across all bounds')
                 
             # Ensure the array is read-only.
             bounds.flags.writeable = False
@@ -1156,7 +1161,8 @@ class CellMethod(iris.util._OrderedHashable):
     def __str__(self):
         """Return a custom string representation of CellMethod"""
         # Group related coord names intervals and comments together 
-        cell_components = izip_longest(self.coord_names, self.intervals, self.comments, fillvalue="")
+        cell_components = izip_longest(self.coord_names, self.intervals,
+                                       self.comments, fillvalue="")
         
         collection_summaries = []
         cm_summary = "%s: " % self.method
@@ -1184,7 +1190,8 @@ class CellMethod(iris.util._OrderedHashable):
         cellMethod_xml_element = doc.createElement('cellMethod')
         cellMethod_xml_element.setAttribute('method', self.method)
 
-        for coord_name, interval, comment in map(None, self.coord_names, self.intervals, self.comments):
+        for coord_name, interval, comment in map(None, self.coord_names,
+                                                 self.intervals, self.comments):
             coord_xml_element = doc.createElement('coord')
             if coord_name is not None:
                 coord_xml_element.setAttribute('name', coord_name)
