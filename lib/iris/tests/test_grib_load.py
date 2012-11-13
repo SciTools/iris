@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+import tempfile
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -165,8 +167,7 @@ class TestGribLoad(tests.GraphicsTest):
         self.assertEqual(cube.name(), 'air_temperature')
         
     def test_fp_units(self):
-
-        """Test different units for forecast period (just the ones we care about)."""
+        # Test different units for forecast period (just the ones we care about).
         cube = iris.load_cube(tests.get_data_path(('GRIB', 'fp_units', 'minutes.grib2')))
         self.assertEqual(cube.coord("forecast_period").units, "hours")
         self.assertEqual(cube.coord("forecast_period").points[0], 24)
@@ -182,8 +183,44 @@ class TestGribLoad(tests.GraphicsTest):
         cube = iris.load_cube(tests.get_data_path(('GRIB', 'fp_units', 'seconds.grib2')))
         self.assertEqual(cube.coord("forecast_period").units, "hours")
         self.assertEqual(cube.coord("forecast_period").points[0], 24)
- 
 
+    def test_probability_forecast(self):
+        # test that the GribWrapper can correctly interpret data with a statistical time period (e.g. time-means) 
+        gribapi = iris.fileformats.grib.gribapi
+        grib_msg = gribapi.grib_new_from_samples('GRIB2')
+        gribapi.grib_set_long(grib_msg, 'productDefinitionTemplateNumber', 9)
+        gribapi.grib_set_string(grib_msg, 'stepRange', '10-55')
+        wrap = iris.fileformats.grib.GribWrapper(grib_msg)
+        assert wrap._referenceDateTime == datetime.datetime(year=2007, month=03, day=23, hour=12, minute=0, second=0)
+        assert wrap._periodStartDateTime == datetime.datetime(year=2007, month=03, day=23, hour=22, minute=0, second=0)
+        assert wrap._periodEndDateTime == datetime.datetime(year=2007, month=03, day=25, hour=12, minute=0, second=0)
+        assert None
+
+    def test_bad_pdt_example(self):
+        # test that the rules won't load a file with an unrecognised GRIB Product Definition Template
+        
+        # open a temporary file, just to get a clean name
+        with tempfile.NamedTemporaryFile(mode='wb', delete=False) as f:
+            tempfile_path = f.name
+        # reopen as a 'normal' file (??so gribapi can write to it??), and write a test message to it 
+        with open(tempfile_path, 'wb') as f:
+            gribapi = iris.fileformats.grib.gribapi
+            grib_msg = gribapi.grib_new_from_samples('GRIB2')
+            gribapi.grib_set_long(grib_msg, 'productDefinitionTemplateNumber', 5)
+            gribapi.grib_write(grib_msg, f)
+
+        # wrap the remainder in a 'try' to ensure we destroy the temporary file after testing
+        try:
+            # check that loading this as a cube FAILS
+            with self.assertRaises(NameError):
+                cube_generator = iris.fileformats.grib.load_cubes(tempfile_path)
+                cube = cube_generator.next()
+        finally:
+            try:
+                os.remove(tempfile_path)
+            except OSError:
+                pass
+        
 if __name__ == "__main__":
     tests.main()
     print "finished"
