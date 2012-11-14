@@ -315,6 +315,10 @@ class TestAuxCoordCreation(unittest.TestCase):
   
   
 class TestDimCoordCreation(unittest.TestCase):
+
+    def _change_point(self, coord):
+        coord.points[0] = 12345
+    
     def test_basic(self):
         a = iris.coords.DimCoord(range(10), 'air_temperature', units='kelvin')
         result = "DimCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), standard_name='air_temperature', units=Unit('kelvin'))"
@@ -378,6 +382,17 @@ class TestDimCoordCreation(unittest.TestCase):
         b = iris.coords.AuxCoord.from_coord(a)
         # Note - circular attribute is not a factor in equality comparison
         self.assertEqual(a, b)
+        
+    def test_writeable(self):
+        a = iris.coords.DimCoord(range(10), 'air_temperature', units='kelvin')
+        self.assertRaises(RuntimeError, self._change_point, a)
+        
+    def test_copy(self):
+        a = iris.coords.DimCoord(range(10), 'air_temperature', units='kelvin')
+        b = a.copy()
+        result = "DimCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), standard_name='air_temperature', units=Unit('kelvin'))"
+        self.assertEqual(result, str(b))
+        self.assertRaises(RuntimeError, self._change_point, b)
 
 
 class TestCoordMaths(tests.IrisTest):
