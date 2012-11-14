@@ -191,10 +191,9 @@ class TestGribLoad(tests.GraphicsTest):
         gribapi.grib_set_long(grib_msg, 'productDefinitionTemplateNumber', 9)
         gribapi.grib_set_string(grib_msg, 'stepRange', '10-55')
         wrap = iris.fileformats.grib.GribWrapper(grib_msg)
-        assert wrap._referenceDateTime == datetime.datetime(year=2007, month=03, day=23, hour=12, minute=0, second=0)
-        assert wrap._periodStartDateTime == datetime.datetime(year=2007, month=03, day=23, hour=22, minute=0, second=0)
-        assert wrap._periodEndDateTime == datetime.datetime(year=2007, month=03, day=25, hour=12, minute=0, second=0)
-        assert None
+        self.assertEqual(wrap._referenceDateTime,  datetime.datetime(year=2007, month=03, day=23, hour=12, minute=0, second=0))
+        self.assertEqual(wrap._periodStartDateTime, datetime.datetime(year=2007, month=03, day=23, hour=22, minute=0, second=0))
+        self.assertEqual(wrap._periodEndDateTime, datetime.datetime(year=2007, month=03, day=25, hour=12, minute=0, second=0))
 
     def test_bad_pdt_example(self):
         # test that the rules won't load a file with an unrecognised GRIB Product Definition Template
@@ -211,10 +210,10 @@ class TestGribLoad(tests.GraphicsTest):
 
         # wrap the remainder in a 'try' to ensure we destroy the temporary file after testing
         try:
-            # check that loading this as a cube FAILS
-            with self.assertRaises(NameError):
-                cube_generator = iris.fileformats.grib.load_cubes(tempfile_path)
-                cube = cube_generator.next()
+            # check that loading this as a cube puts a warning in 'long_name'
+            cube_generator = iris.fileformats.grib.load_cubes(tempfile_path)
+            cube = cube_generator.next()
+            self.assertEqual( cube.attributes['GRIB_LOAD_WARNING'], 'unsupported GRIB2 ProductDefinitionTemplate: #4.5' ) 
         finally:
             try:
                 os.remove(tempfile_path)
