@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube units="unknown">
+    <coords>
+      <coord>
+        <dimCoord id="b8c2476" long_name="levels_below_ground" points="[42]" shape="(1,)" units="Unit('1')" value_type="int64">
+          <attributes>
+            <attribute name="positive" value="down"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data byteorder="little" checksum="0x71e7c202" dtype="int64" order="C" shape="(10, 10)"/>
+  </cube>
+</cubes>
