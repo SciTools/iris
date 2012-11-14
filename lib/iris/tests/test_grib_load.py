@@ -198,27 +198,22 @@ class TestGribLoad(tests.GraphicsTest):
     def test_bad_pdt_example(self):
         # test that the rules won't load a file with an unrecognised GRIB Product Definition Template
         
-        # open a temporary file, just to get a clean name
-        with tempfile.NamedTemporaryFile(mode='wb', delete=False) as f:
+        # open a temporary file (guaranteed deleted afterward)
+        with tempfile.NamedTemporaryFile(mode='rb', delete=False) as f:
+            # *reopen* it as a 'normal file', because gribapi requires it (nasty type testing?)
             tempfile_path = f.name
-        # reopen as a 'normal' file (??so gribapi can write to it??), and write a test message to it 
-        with open(tempfile_path, 'wb') as f:
-            gribapi = iris.fileformats.grib.gribapi
-            grib_msg = gribapi.grib_new_from_samples('GRIB2')
-            gribapi.grib_set_long(grib_msg, 'productDefinitionTemplateNumber', 5)
-            gribapi.grib_write(grib_msg, f)
+            with open(tempfile_path, 'wb') as f:
+                # write a test grib message to it, with the required properties
+                gribapi = iris.fileformats.grib.gribapi
+                grib_msg = gribapi.grib_new_from_samples('GRIB2')
+                gribapi.grib_set_long(grib_msg, 'productDefinitionTemplateNumber', 5)
+                gribapi.grib_write(grib_msg, f)
 
-        # wrap the remainder in a 'try' to ensure we destroy the temporary file after testing
-        try:
-            # check that loading this as a cube puts a warning in 'long_name'
+            # check that loading this as a cube adds the expected extra "warning" attribute
             cube_generator = iris.fileformats.grib.load_cubes(tempfile_path)
             cube = cube_generator.next()
-            self.assertEqual( cube.attributes['GRIB_LOAD_WARNING'], 'unsupported GRIB2 ProductDefinitionTemplate: #4.5' ) 
-        finally:
-            try:
-                os.remove(tempfile_path)
-            except OSError:
-                pass
+            self.assertEqual( cube.attributes['GRIB_LOAD_WARNING'], 'unsupported GRIB2 ProductDefinitionTemplate: #4.5') 
+
         
 if __name__ == "__main__":
     tests.main()
