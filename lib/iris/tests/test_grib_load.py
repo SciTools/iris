@@ -185,7 +185,7 @@ class TestGribLoad(tests.GraphicsTest):
         self.assertEqual(cube.coord("forecast_period").points[0], 24)
 
     def test_probability_forecast(self):
-        # test that the GribWrapper can correctly interpret data with a statistical time period (e.g. time-means) 
+        # test that the GribWrapper can correctly interpret the statistical time period from PDT 4.9 data
         gribapi = iris.fileformats.grib.gribapi
         grib_msg = gribapi.grib_new_from_samples('GRIB2')
         gribapi.grib_set_long(grib_msg, 'productDefinitionTemplateNumber', 9)
