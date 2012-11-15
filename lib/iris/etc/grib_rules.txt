@@ -631,4 +631,4 @@ CoordAndDims(DimCoord(points=grib.perturbationNumber, long_name='ensemble_member
 IF
 grib.productDefinitionTemplateNumber not in (0, 8)
 THEN
-CMCustomAttribute("GRIB_LOAD_WARNING",("unsupported GRIB%0d ProductDefinitionTemplate: #4.%0d" % (grib.edition, grib.productDefinitionTemplateNumber)))
+CMCustomAttribute("GRIB_LOAD_WARNING",("unsupported GRIB%d ProductDefinitionTemplate: #4.%d" % (grib.edition, grib.productDefinitionTemplateNumber)))
