@@ -21,13 +21,15 @@ import iris.tests as tests
 
 import matplotlib.pyplot as plt
 import numpy as np
+import cartopy.crs as ccrs
 
 import iris
 import iris.plot as iplt
+import iris.quickplot as qplt
 
 
 @iris.tests.skip_data
-class TestNimrodLoad(tests.GraphicsTest):
+class TestLoad(tests.GraphicsTest):
     
     def test_load(self):
         cube = iris.load(tests.get_data_path(('NIMROD', 'uk2km', 'WO0000000003452',
@@ -35,6 +37,17 @@ class TestNimrodLoad(tests.GraphicsTest):
         self.assertCML(cube, ("nimrod", "load.cml"))
         
         c = plt.contourf(cube.data, levels=np.linspace(-25000, 6000, 10))
+        self.check_graphic()
+        
+    def test_orography(self):
+        cube = iris.load_cube(tests.get_data_path((
+            'NIMROD', 'orography', 
+            'constant_u1096_ng_globe_height_orography_2km')))
+        self.assertCML(cube, ("nimrod", "orography.cml"))
+        
+        ax = plt.subplot(1,1,1, projection=ccrs.OSGB())
+        c = qplt.contourf(cube, coords=["x", "y"])
+        ax.coastlines()
         self.check_graphic()
         
 

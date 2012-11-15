@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube long_name="2km mean orography" units="metres">
+    <attributes>
+      <attribute name="field_code" value="73"/>
+      <attribute name="nimrod_version" value="2"/>
+      <attribute name="num_model_levels" value="1"/>
+      <attribute name="source" value="GLOBE DTM"/>
+    </attributes>
+    <coords>
+      <coord>
+        <DimCoord id="7655d345fead4375" points="[320865.423889]" shape="(1,)" standard_name="time" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord datadims="[1]">
+        <DimCoord id="27983361be3021ee" long_name="x" points="[-238000.0, -236000.0, -234000.0, ..., 852000.0,
+		854000.0, 856000.0]" shape="(548,)" units="Unit('m')" value_type="float64">
+          <oSGB ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909)" false_easting="-400000.0" false_northing="100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
+        </DimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <DimCoord id="27983361be3021ee" long_name="y" points="[-184000.0, -182000.0, -180000.0, ..., 1218000.0,
+		1220000.0, 1222000.0]" shape="(704,)" units="Unit('m')" value_type="float64">
+          <oSGB ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909)" false_easting="-400000.0" false_northing="100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
+        </DimCoord>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x792b74bf" dtype="int16" shape="(704, 548)"/>
+  </cube>
+</cubes>
