@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube long_name="(MOCK) 2km mean orography" units="metres">
+    <attributes>
+      <attribute name="field_code" value="73"/>
+      <attribute name="source" value="GLOBE DTM"/>
+    </attributes>
+    <coords/>
+    <cellMethods/>
+    <data checksum="0x71e7c202" dtype="int64" shape="(10, 10)"/>
+  </cube>
+</cubes>

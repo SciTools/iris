@@ -20,12 +20,20 @@
 import iris.tests as tests
 
 import matplotlib.pyplot as plt
-import numpy as np
+import numpy
 import cartopy.crs as ccrs
 
 import iris
 import iris.plot as iplt
 import iris.quickplot as qplt
+import iris.fileformats.nimrod_load_rules as nimrod_load_rules
+
+
+def mock_nimrod_field():
+    field = iris.fileformats.nimrod.NimrodField()
+    field.int_mdi = -32767
+    field.float32_mdi = -32767.0
+    return field
 
 
 @iris.tests.skip_data
@@ -37,21 +45,15 @@ class TestLoad(tests.GraphicsTest):
         self.assertCML(cube, ("nimrod", "load.cml"))
         
         ax = plt.subplot(1,1,1, projection=ccrs.OSGB())
-        c = qplt.contourf(cube, coords=["x", "y"], levels=np.linspace(-25000, 6000, 10))
+        c = qplt.contourf(cube, coords=["x", "y"], levels=numpy.linspace(-25000, 6000, 10))
         ax.coastlines()
         self.check_graphic()
 
     def test_orography(self):
-        # Load visibility data and make it look like an orography field.
-        # Don't bother with the coords, they're pretty much identical.
-        viz_file = tests.get_data_path((
-                        'NIMROD', 'uk2km', 'WO0000000003452',
-                        '201007020900_u1096_ng_ey00_visibility0180_screen_2km'))
+        # Mock an orography field we've seen.
+        field = mock_nimrod_field()
+        cube = iris.cube.Cube(numpy.arange(100).reshape(10,10))
         
-        import iris.fileformats.nimrod
-        with open(viz_file, "rb") as infile:
-            field = iris.fileformats.nimrod.NimrodField(infile)
-            
         field.dt_year = field.dt_month = field.dt_day = field.int_mdi 
         field.dt_hour = field.dt_minute = field.int_mdi
         field.proj_biaxial_ellipsoid = 0
@@ -61,9 +63,16 @@ class TestLoad(tests.GraphicsTest):
         field.title = "(MOCK) 2km mean orography"
         field.units = "metres"
         field.source = "GLOBE DTM"
-        
-        cube = field.to_cube()
-        self.assertCML(cube, ("nimrod", "orography.cml"))
+
+        nimrod_load_rules.name(cube, field)
+        nimrod_load_rules.units(cube, field)
+        nimrod_load_rules.reference_time(cube, field)
+        nimrod_load_rules.proj_biaxial_ellipsoid(cube, field)
+        nimrod_load_rules.tm_meridian_scaling(cube, field)
+        nimrod_load_rules.vertical_coord(cube, field)
+        nimrod_load_rules.attributes(cube, field)
+
+        self.assertCML(cube, ("nimrod", "mockography.cml"))
         
 
 if __name__ == "__main__":

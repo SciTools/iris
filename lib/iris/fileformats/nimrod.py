@@ -22,11 +22,9 @@ import numpy as np
 import os
 import struct
 import sys
-import warnings
 
 import iris
 from iris.coord_systems import OSGB
-from iris.coords import DimCoord
 from iris.exceptions import TranslationError
 
 
@@ -205,155 +203,6 @@ class NimrodField(object):
         
         # Form the correct shape.
         self.data = self.data.reshape(self.num_rows, self.num_cols)
-        
-        # Flip the data to get origin in bottom left.
-        if self.origin_corner == 0:  # top left
-            # Make sure we copy, to ensure contiguous elements (e.g for crc32)
-            self.data = self.data[::-1, :].copy()
-        else:
-            raise TranslationError("Corner {0} not yet implemented".
-                                   format(self.origin_corner))
-    
-    def to_cube(self):
-        """Return a new :class:`~iris.cube.Cube`, created from this NimrodField."""
-        MISSING_INT = self.int_mdi
-        MISSING_FLOAT = self.float32_mdi
-
-        # name
-        cube = iris.cube.Cube(self.data)
-        cube.rename(self.title.strip())
-    
-        # Can we set the units?
-        units = self.units.strip()
-        try:
-            cube.units = units
-        except ValueError:
-            # Just add it as an attribute.
-            warnings.warn("Unhandled units '{0}' recorded in cube attributes.".
-                          format(units))
-            cube.attributes["invalid_units"] = units
-    
-        # time                
-        valid_date = netcdftime.datetime(self.vt_year, self.vt_month,
-                                         self.vt_day, self.vt_hour,
-                                         self.vt_minute, self.vt_second)
-        time_coord = DimCoord(iris.unit.date2num(valid_date,
-                                                 'hours since 1970-01-01 00:00:00', 
-                                                 iris.unit.CALENDAR_STANDARD), 
-                              standard_name='time', units='hours')
-        cube.add_aux_coord(time_coord)
-    
-        if self.dt_year != MISSING_INT:        
-            data_date = netcdftime.datetime(self.dt_year, self.dt_month, self.dt_day, 
-                                            self.dt_hour, self.dt_minute)
-            ref_time_coord = DimCoord(iris.unit.date2num(data_date, 
-                                                         'hours since 1970-01-01 00:00:00', 
-                                                         iris.unit.CALENDAR_STANDARD), 
-                                      standard_name='forecast_reference_time',
-                                      units='hours')
-            cube.add_aux_coord(ref_time_coord)
-        
-        if self.period_minutes != MISSING_INT:
-            if self.period_minutes != 0:
-                raise TranslationError("Period_minutes not yet handled")
-        
-        # experiment
-        if self.experiment_num != MISSING_INT:
-            cube.add_aux_coord(DimCoord(self.experiment_num, 
-                                        long_name="experiment_number"))
-            
-        # horizontal grid
-        if self.proj_biaxial_ellipsoid not in [MISSING_INT, 0]:
-            raise TranslationError("Biaxial ellipsoid %d not yet handled" %
-                                   self.proj_biaxial_ellipsoid)
-        
-        if self.tm_meridian_scaling != MISSING_INT:
-            if int(self.tm_meridian_scaling*1e6) == 999601:
-                pass  # This is the expected value for British National Grid
-            else:
-                raise TranslationError("tm_meridian_scaling not yet handled: {}".
-                                       format(self.tm_meridian_scaling))
-        
-        if self.horizontal_grid_type == 0:
-            # "NG", means osgb grid.
-            osgb_cs = iris.coord_systems.OSGB()
-            x_coord = DimCoord(np.arange(self.num_cols) * self.column_step +
-                               self.x_origin,
-                               standard_name='projection_x_coordinate',
-                               units='m', coord_system=osgb_cs)
-            cube.add_dim_coord(x_coord, 1)
-            if self.origin_corner == 0:  # top left
-                y_coord = DimCoord(np.arange(self.num_rows)[::-1] *
-                                   -self.row_step + self.y_origin,
-                                   standard_name='projection_y_coordinate',
-                                   units='m', coord_system=osgb_cs)
-                cube.add_dim_coord(y_coord, 0)
-            else:
-                raise TranslationError("Corner {0} not yet implemented".
-                                       format(self.origin_corner))
-        else:
-            raise TranslationError("Grid type %d not yet implemented" %
-                                   self.horizontal_grid_type)
-        
-        # vertical
-        if self.vertical_coord_type != MISSING_INT:
-            if self.field_code == 73:  # Orography data.
-                # We can find values in the vertical coord, such as 9999,
-                # for orography fields. Don't make a vertical coord from these.
-                pass
-            elif self.vertical_coord_type == 0:
-                if (self.reference_vertical_coord_type == MISSING_INT or
-                    self.reference_vertical_coord == MISSING_FLOAT):
-                    cube.add_aux_coord(DimCoord(self.vertical_coord,
-                                        standard_name="height", units="m"))
-                else:
-                    raise TranslationError("Bounded vertical not yet implemented")
-            elif self.vertical_coord_type == 1:
-                if (self.reference_vertical_coord_type == MISSING_INT or
-                    self.reference_vertical_coord == MISSING_FLOAT):
-                    cube.add_aux_coord(DimCoord(self.vertical_coord,
-                                        standard_name="altitude", units="m"))
-                else:
-                    raise TranslationError("Bounded vertical not yet implemented")
-            else:
-                raise TranslationError("Vertical coord type %d not yet handled" %
-                                       self.vertical_coord_type)
-    
-        # add other stuff, if present
-        ensemble_member = getattr(self, "ensemble_member")
-        if ensemble_member != MISSING_INT:
-            cube.add_aux_coord(DimCoord(ensemble_member, "realization"))
-            
-        def add_attr(name):
-            value = getattr(self, name)
-            if value not in [MISSING_INT, MISSING_FLOAT]:
-                cube.attributes[name] = value
-
-        add_attr("nimrod_version")
-        add_attr("field_code")
-        add_attr("num_model_levels")
-        add_attr("sat_calib")
-        add_attr("sat_space_count")
-        add_attr("ducting_index")
-        add_attr("elevation_angle")
-        add_attr("radar_num")
-        add_attr("radars_bitmask")
-        add_attr("more_radars_bitmask")
-        add_attr("clutter_map_num")
-        add_attr("calibration_type")
-        add_attr("bright_band_height")
-        add_attr("bright_band_intensity")
-        add_attr("bright_band_test1")
-        add_attr("bright_band_test2")
-        add_attr("infill_flag")
-        add_attr("stop_elevation")
-        add_attr("sensor_id")
-        add_attr("meteosat_id")
-        add_attr("alphas_available")
-    
-        cube.attributes["source"] = self.source.strip()
-        
-        return cube
 
 
 def load_cubes(filenames, callback=None):
@@ -383,8 +232,8 @@ def load_cubes(filenames, callback=None):
                 except struct.error:
                     # End of file. Move on to the next file.
                     continue
-
-                cube = field.to_cube()
+                
+                cube = iris.fileformats.nimrod_load_rules.run(field)
 
             # Were we given a callback?
             if callback is not None:
