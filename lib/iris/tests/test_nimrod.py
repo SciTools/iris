@@ -36,19 +36,34 @@ class TestLoad(tests.GraphicsTest):
                         '201007020900_u1096_ng_ey00_visibility0180_screen_2km')))[0]
         self.assertCML(cube, ("nimrod", "load.cml"))
         
-        c = plt.contourf(cube.data, levels=np.linspace(-25000, 6000, 10))
-        self.check_graphic()
-        
-    def test_orography(self):
-        cube = iris.load_cube(tests.get_data_path((
-            'NIMROD', 'orography', 
-            'constant_u1096_ng_globe_height_orography_2km')))
-        self.assertCML(cube, ("nimrod", "orography.cml"))
-        
         ax = plt.subplot(1,1,1, projection=ccrs.OSGB())
-        c = qplt.contourf(cube, coords=["x", "y"])
+        c = qplt.contourf(cube, coords=["x", "y"], levels=np.linspace(-25000, 6000, 10))
         ax.coastlines()
         self.check_graphic()
+
+    def test_orography(self):
+        # Load visibility data and make it look like an orography field.
+        # Don't bother with the coords, they're pretty much identical.
+        viz_file = tests.get_data_path((
+                        'NIMROD', 'uk2km', 'WO0000000003452',
+                        '201007020900_u1096_ng_ey00_visibility0180_screen_2km'))
+        
+        import iris.fileformats.nimrod
+        with open(viz_file, "rb") as infile:
+            field = iris.fileformats.nimrod.NimrodField(infile)
+            
+        field.dt_year = field.dt_month = field.dt_day = field.int_mdi 
+        field.dt_hour = field.dt_minute = field.int_mdi
+        field.proj_biaxial_ellipsoid = 0
+        field.tm_meridian_scaling = 0.999601
+        field.field_code = 73
+        field.vertical_coord_type = 1
+        field.title = "(MOCK) 2km mean orography"
+        field.units = "metres"
+        field.source = "GLOBE DTM"
+        
+        cube = field.to_cube()
+        self.assertCML(cube, ("nimrod", "orography.cml"))
         
 
 if __name__ == "__main__":

@@ -203,12 +203,13 @@ class NimrodField(object):
             raise TranslationError("Expected data trailing_length of %d" % 
                                    num_data_bytes)
         
-        # form the correct shape
+        # Form the correct shape.
         self.data = self.data.reshape(self.num_rows, self.num_cols)
-
-        # flip the data to get origin in bottom left
+        
+        # Flip the data to get origin in bottom left.
         if self.origin_corner == 0:  # top left
-            self.data = self.data[::-1, :]
+            # Make sure we copy, to ensure contiguous elements (e.g for crc32)
+            self.data = self.data[::-1, :].copy()
         else:
             raise TranslationError("Corner {0} not yet implemented".
                                    format(self.origin_corner))
