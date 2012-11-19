@@ -56,6 +56,7 @@ class TestFileFormatPicker(tests.IrisTest):
 
 
     def test_format_picker(self):
+        # make a list of testfile specs to test the picker on
         fspecs = [
                   ['NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc'], # NetCDF
                   ['NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc.k2'], # NetCDF 64-bit offset
@@ -70,14 +71,19 @@ class TestFileFormatPicker(tests.IrisTest):
 #                  ['NAME', '20100509_18Z_variablesource_12Z_VAAC', 'Fields_grid1_201005110000.txt'], # NAME
               ]
         
-        result = []
+        # construct a dictionary of known filename:format associations from a results file
+        expected_results = {}
+        with open(tests.get_result_path(('file_load', 'format_associations.txt'))) as check_results_file:
+            for line_str in check_results_file.readlines():
+                format_name, file_name =  [str.strip() for str in line_str.split('-')] 
+                expected_results[file_name] = format_name
+
+        # test that each filespec is identified as the expected format
         for spec in fspecs:
             relpath = os.path.join(*spec)
             actpath = tests.get_data_path(spec)
             a = iris.fileformats.FORMAT_AGENT.get_spec(actpath, open(actpath, 'r'))
-            result.append('%s - %s' % (a.name, relpath))
-            
-        self.assertString('\n'.join(result), tests.get_result_path(('file_load', 'format_associations.txt')))
+            self.assertEqual(a.name, expected_results[relpath])
 
 
 @iris.tests.skip_data
