@@ -161,8 +161,15 @@ def _xy_range(cube, mode=None):
 
 def get_xy_grids(cube):
     """
-    Return 2d x and y points in the native coordinate system.
-    ::
+    Return 2D X and Y points for a given cube.
+    
+    If the cube's X and Y coordinates are already 2D, their points are returned.
+    
+    Args:
+    
+        * cube - The cube for which to generate 2D X and Y points.
+
+    Example:
     
         x, y = get_xy_grids(cube)
     
@@ -173,13 +180,13 @@ def get_xy_grids(cube):
     y = y_coord.points
     
     if x.ndim == y.ndim == 1:
-        # Convert to 2 x 2d grid of data
+        # Convert to 2D.
         x, y = numpy.meshgrid(x, y)
     elif x.ndim == y.ndim == 2:
-        # They are already in the correct shape
+        # They are already in the correct shape.
         pass
     else:
-        raise ValueError("Expected 1D or 2D xy coords")
+        raise ValueError("Expected 1D or 2D XY coords")
 
     return (x, y)
 
