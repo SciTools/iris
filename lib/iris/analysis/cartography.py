@@ -171,9 +171,15 @@ def get_xy_grids(cube):
 
     x = x_coord.points
     y = y_coord.points
-
-    # Convert to 2 x 2d grid of data
-    x, y = numpy.meshgrid(x, y)
+    
+    if x.ndim == y.ndim == 1:
+        # Convert to 2 x 2d grid of data
+        x, y = numpy.meshgrid(x, y)
+    elif x.ndim == y.ndim == 2:
+        # They are already in the correct shape
+        pass
+    else:
+        raise ValueError("Expected 1D or 2D xy coords")
 
     return (x, y)
 
