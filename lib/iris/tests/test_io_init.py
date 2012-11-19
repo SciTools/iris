@@ -62,10 +62,10 @@ class TestFileFormatPicker(tests.IrisTest):
                   ['NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc.k2'], # NetCDF 64-bit offset
                   ['NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc4.k3'], # NetCDF - 4 
                   ['NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc4.k4'], # NetCDF - 4 "classic model"
-                  ['ssps', 'qtgl.ssps_006'], # UM FF
+                  ['FF', 'n48_multi_field'], # UM FF
                   ['GRIB', 'grib1_second_order_packing', 'GRIB_00008_FRANX01'], # GRIB1
                   ['GRIB', 'jpeg2000', 'file.grib2'], # GRIB2
-                  ['PP', 'uk4', 'uk4par09.pp'], # PP
+                  ['PP', 'simple_pp', 'global.pp'], # PP
 #                  ['BUFR', 'mss', 'BUFR_Samples', 'JUPV78_EGRR_121200_00002501'], # BUFFR
                   ['NIMROD', 'uk2km', 'WO0000000003452', '201007020900_u1096_ng_ey00_visibility0180_screen_2km'], # nimrod 
 #                  ['NAME', '20100509_18Z_variablesource_12Z_VAAC', 'Fields_grid1_201005110000.txt'], # NAME
