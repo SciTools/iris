@@ -87,6 +87,10 @@ grib-api 1.9.16 or later (http://www.ecmwf.int/products/data/software/download/g
 matplotlib 1.2.0 (http://matplotlib.sourceforge.net/)
     Python package for 2D plotting.  
 
+mock 1.0.1 (http://pypi.python.org/pypi/mock/)
+    Python mocking and patching package for testing. Note that this package
+    is only required to support the Iris unit tests.
+
 nose 1.1.2 or later (http://nose.readthedocs.org/en/latest/)
     Python package for software testing. Iris is not compatible with nose2. 
 
