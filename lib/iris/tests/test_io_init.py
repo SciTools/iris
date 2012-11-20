@@ -24,7 +24,7 @@ import iris.tests as tests
 import os
 import unittest
 
-import iris.fileformats
+import iris.fileformats as iff
 import iris.io
 
 
@@ -51,33 +51,46 @@ class TestDecodeUri(unittest.TestCase):
 @iris.tests.skip_data
 class TestFileFormatPicker(tests.IrisTest):
     def test_known_formats(self):
-        a = str(iris.fileformats.FORMAT_AGENT)
+        a = str(iff.FORMAT_AGENT)
         self.assertString(a, tests.get_result_path(('file_load', 'known_loaders.txt')))
 
 
     def test_format_picker(self):
-        fspecs = [
-                  ['NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc'], # NetCDF
-                  ['NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc.k2'], # NetCDF 64-bit offset
-                  ['NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc4.k3'], # NetCDF - 4 
-                  ['NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc4.k4'], # NetCDF - 4 "classic model"
-                  ['ssps', 'qtgl.ssps_006'], # UM FF
-                  ['GRIB', 'grib1_second_order_packing', 'GRIB_00008_FRANX01'], # GRIB1
-                  ['GRIB', 'jpeg2000', 'file.grib2'], # GRIB2
-                  ['PP', 'uk4', 'uk4par09.pp'], # PP
-#                  ['BUFR', 'mss', 'BUFR_Samples', 'JUPV78_EGRR_121200_00002501'], # BUFFR
-                  ['NIMROD', 'uk2km', 'WO0000000003452', '201007020900_u1096_ng_ey00_visibility0180_screen_2km'], # nimrod 
-#                  ['NAME', '20100509_18Z_variablesource_12Z_VAAC', 'Fields_grid1_201005110000.txt'], # NAME
-              ]
+        # ways to test the format picker = list of (format-name, file-spec)
+        test_specs = [
+            ('NetCDF',
+                ['NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc']),
+            ('NetCDF 64 bit offset format',
+                ['NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc.k2']),
+            ('NetCDF_v4',
+                ['NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc4.k3']),
+            ('NetCDF_v4',
+                ['NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc4.k4']),
+            ('UM Fields file (FF) pre v3.1',
+                ['FF', 'n48_multi_field']),
+            ('GRIB',
+                ['GRIB', 'grib1_second_order_packing', 'GRIB_00008_FRANX01']),
+            ('GRIB',
+                ['GRIB', 'jpeg2000', 'file.grib2']),
+            ('UM Post Processing file (PP)',
+                ['PP', 'simple_pp', 'global.pp']),
+#            ('BUFR',
+#                ['BUFR', 'mss', 'BUFR_Samples', 
+#                 'JUPV78_EGRR_121200_00002501']),
+            ('NIMROD',
+                ['NIMROD', 'uk2km', 'WO0000000003452',
+                 '201007020900_u1096_ng_ey00_visibility0180_screen_2km']),
+#            ('NAME',
+#                ['NAME', '20100509_18Z_variablesource_12Z_VAAC', 
+#                 'Fields_grid1_201005110000.txt']),
+        ]
         
-        result = []
-        for spec in fspecs:
-            relpath = os.path.join(*spec)
-            actpath = tests.get_data_path(spec)
-            a = iris.fileformats.FORMAT_AGENT.get_spec(actpath, open(actpath, 'r'))
-            result.append('%s - %s' % (a.name, relpath))
-            
-        self.assertString('\n'.join(result), tests.get_result_path(('file_load', 'format_associations.txt')))
+        # test that each filespec is identified as the expected format
+        for (expected_format_name, file_spec) in test_specs:
+            test_path = tests.get_data_path(file_spec)
+            with open(test_path, 'r') as test_file:
+                a = iff.FORMAT_AGENT.get_spec(test_path, test_file)
+                self.assertEqual(a.name, expected_format_name)
 
 
 @iris.tests.skip_data
