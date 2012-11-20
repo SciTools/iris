@@ -93,11 +93,11 @@ class TestMultiCube(tests.IrisTest, TestMixin):
 @iris.tests.skip_data
 class TestColpex(tests.IrisTest):
     def setUp(self):
-        self._data_path = tests.get_data_path(('PP', 'COLPEX', 'uwind_and_orog.pp'))
+        self._data_path = tests.get_data_path(('PP', 'COLPEX', 'small_colpex_theta_p_alt.pp'))
 
     def test_colpex(self):
         cubes = iris.load(self._data_path)
-        self.assertEqual(len(cubes), 2)
+        self.assertEqual(len(cubes), 3)
         self.assertCML(cubes, ('COLPEX', 'uwind_and_orog.cml'))
 
 
@@ -105,21 +105,26 @@ class TestColpex(tests.IrisTest):
 class TestDataMerge(tests.IrisTest):
     def test_extended_proxy_data(self):
         # Get the empty theta cubes for T+1.5 and T+2
-        data_path = tests.get_data_path(('PP', 'COLPEX', 'theta_and_orog.pp'))
+        data_path = tests.get_data_path(
+            ('PP', 'COLPEX', 'theta_and_orog_subset.pp'))
         phenom_constraint = iris.Constraint('air_potential_temperature')
-        forecast_period_constraint1 = iris.Constraint(forecast_period=1.1666666753590107)
-        forecast_period_constraint2 = iris.Constraint(forecast_period=1.3333333320915699)
-        forecast_period_constraint1_and_2 = iris.Constraint(forecast_period=lambda c: c in [1.1666666753590107, 1.3333333320915699])
-        cube1 = iris.load_cube(data_path, phenom_constraint & forecast_period_constraint1)
-        cube2 = iris.load_cube(data_path, phenom_constraint & forecast_period_constraint2)
+        time_value_1 = 347921.33333332836627960205
+        time_value_2 = 347921.83333333209156990051
+        time_constraint1 = iris.Constraint(time=time_value_1)
+        time_constraint2 = iris.Constraint(time=time_value_2)
+        time_constraint_1_and_2 = iris.Constraint(
+            time=lambda c: c in (time_value_1, time_value_2))
+        cube1 = iris.load_cube(data_path, phenom_constraint & time_constraint1)
+        cube2 = iris.load_cube(data_path, phenom_constraint & time_constraint2)
         
         # Merge the two halves
         cubes = iris.cube.CubeList([cube1, cube2]).merge(True)
-        self.assertCML(cubes, ('merge', 'theta_two_forecast_periods.cml'))
+        self.assertCML(cubes, ('merge', 'theta_two_times.cml'))
 
         # Make sure we get the same result directly from load
-        cube = iris.load_cube(data_path, phenom_constraint & (forecast_period_constraint1_and_2))
-        self.assertCML(cubes, ('merge', 'theta_two_forecast_periods.cml'))
+        cubes = iris.load_cube(data_path, 
+            phenom_constraint & time_constraint_1_and_2)
+        self.assertCML(cubes, ('merge', 'theta_two_times.cml'))
 
     def test_real_data(self):
         data_path = tests.get_data_path(('PP', 'globClim1', 'theta.pp'))
