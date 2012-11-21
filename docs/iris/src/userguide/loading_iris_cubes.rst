@@ -200,14 +200,24 @@ is equivalent to requesting exactly one cube of any type.
 
 A single cube is loaded in the following example::
 
-    filename = iris.sample_data_path('air_temp.pp')
-    cube = iris.load_cube(filename)
-    print cube
+    >>> filename = iris.sample_data_path('air_temp.pp')
+    >>> cube = iris.load_cube(filename)
+    >>> print cube
+    air_temperature                     (latitude: 73; longitude: 96)
+         Dimension coordinates:
+              latitude                           x              -
+              longitude                          -              x
+    ...
+         Cell methods:
+              mean: time
 
 However, when attempting to load data which would result in anything other than one cube, an exception is raised::
 
-    filename = iris.sample_data_path('uk_hires.pp')
-    cube = iris.load_cube(filename)
+    >>> filename = iris.sample_data_path('uk_hires.pp')
+    >>> cube = iris.load_cube(filename)
+    Traceback (most recent call last):
+    ...
+    iris.exceptions.ConstraintMismatchError: Expected exactly one cube, found 2.
 
 .. note::
  

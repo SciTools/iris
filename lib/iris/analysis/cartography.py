@@ -40,11 +40,12 @@ DEFAULT_SPHERICAL_EARTH_RADIUS_UNIT = iris.unit.Unit('m')
 
 def wrap_lons(lons, base, period):
     """
-    Returns given longitudes in the range between base and base + period.
+    Wrap longitude values into the range between base and base+period.
     
-    ::
-        wrapped_lon = wrap_lons(185, -180, 360)
-         
+    For example:
+        >>> print wrap_lons(numpy.array([185, 30, -200, 75]), -180, 360)
+        [-175   30  160   75]
+        
     """
     return ((lons - base + period * 2) % period) + base
 
@@ -239,7 +240,7 @@ def area_weights(cube):
     
     This is a 2D lat/lon area weights array, repeated over the non lat/lon dimensions.
     
-    The cube must have coordinates 'latitide' and 'longitude' with contiguous bounds. 
+    The cube must have 2 coordinates with contiguous bounds, whose names contain 'latitude' and 'longitude' respectively. 
     
     Area weights are calculated for each lat/lon cell as:
 

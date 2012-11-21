@@ -1,0 +1,8 @@
+#
+# This is a *fake / non-functional* travis configuration file.
+#
+# Its sole purpose at the moment is to record which Cartopy version was
+# used for testing.
+#
+# Cartopy version: 3ba61c91f3c291918355a7870b4a485222b85375
+#
