@@ -63,16 +63,23 @@ class CFVariable(object):
     '''Name of the netCDF variable attribute that identifies this CF-netCDF variable'''
     
     def __init__(self, name, data):
-        if not isinstance(data, netCDF4.Variable):
-            raise TypeError('%s expects a netCDF4 Variable data instance' % self.__class__.__name__)
+        # Accessing the list of netCDF attributes is surprisingly slow.
+        # Since it's used repeatedly, caching the list makes things
+        # quite a bit faster.
+        self._nc_attrs = data.ncattrs()
+
         self.cf_name = name
         '''NetCDF variable name'''
+
         self.cf_data = data
         '''NetCDF4 Variable data instance'''
+
         self.cf_group = None
         '''Collection of CF-netCDF variables associated with this variable'''
+
         self.cf_terms_by_root = {}
         '''CF-netCDF formula terms that his variable participates in'''
+
         self.cf_attrs_reset()
 
     @staticmethod
@@ -125,9 +132,14 @@ class CFVariable(object):
         return self.cf_name != other.cf_name
 
     def __getattr__(self, name):
-        if name in self.cf_data.ncattrs():
+        # Accessing netCDF attributes is surprisingly slow. Since
+        # they're often read repeatedly, caching the values makes things
+        # quite a bit faster.
+        if name in self._nc_attrs:
             self._cf_attrs.add(name)
-        return getattr(self.cf_data, name)
+        value = getattr(self.cf_data, name)
+        setattr(self, name, value)
+        return value
     
     def __getitem__(self, key):
         return self.cf_data.__getitem__(key)
@@ -140,19 +152,23 @@ class CFVariable(object):
 
     def cf_attrs(self):
         """Return a list of all attribute name and value pairs of the CF-netCDF variable."""
-        return tuple([(attr, self.getncattr(attr)) for attr in sorted(self.ncattrs())])
+        return tuple((attr, self.getncattr(attr))
+                        for attr in sorted(self._nc_attrs))
 
     def cf_attrs_ignored(self):
         """Return a list of all ignored attribute name and value pairs of the CF-netCDF variable."""
-        return tuple([(attr, self.getncattr(attr)) for attr in sorted(set(self.ncattrs()) & _CF_ATTRS_IGNORE)])
+        return tuple((attr, self.getncattr(attr)) for attr in
+                        sorted(set(self._nc_attrs) & _CF_ATTRS_IGNORE))
 
     def cf_attrs_used(self):
         """Return a list of all accessed attribute name and value pairs of the CF-netCDF variable."""
-        return tuple([(attr, self.getncattr(attr)) for attr in sorted(self._cf_attrs)])
+        return tuple((attr, self.getncattr(attr)) for attr in
+                        sorted(self._cf_attrs))
 
     def cf_attrs_unused(self):
         """Return a list of all non-accessed attribute name and value pairs of the CF-netCDF variable."""
-        return tuple([(attr, self.getncattr(attr)) for attr in sorted(set(self.ncattrs()) - self._cf_attrs)])
+        return tuple((attr, self.getncattr(attr)) for attr in
+                        sorted(set(self._nc_attrs) - self._cf_attrs))
 
     def cf_attrs_reset(self):
         """Reset the history of accessed attribute names of the CF-netCDF variable."""
