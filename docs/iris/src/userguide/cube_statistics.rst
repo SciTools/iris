@@ -229,6 +229,9 @@ three month period (note: judged here as > 3*28 days):
     <iris 'Cube' of surface_temperature (*ANONYMOUS*: 17; latitude: 18; longitude: 432)>
 
 The final result now represents the seasonal mean temperature for 17 seasons from jja-2006 to jja-2010:
+
+.. doctest:: aggregation
+
     >>> print zip(full_season_means.coord('clim_season').points, full_season_means.coord('season_year').points)
     [('jja', 2006), ('son', 2006), ('djf', 2007), ('mam', 2007), ('jja', 2007), ('son', 2007), ('djf', 2008), ('mam', 2008), ('jja', 2008), ('son', 2008), ('djf', 2009), ('mam', 2009), ('jja', 2009), ('son', 2009), ('djf', 2010), ('mam', 2010), ('jja', 2010)]
 

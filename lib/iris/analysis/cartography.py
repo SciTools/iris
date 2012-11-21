@@ -41,6 +41,11 @@ DEFAULT_SPHERICAL_EARTH_RADIUS_UNIT = iris.unit.Unit('m')
 def wrap_lons(lons, base, period):
     """
     Wrap longitude values into the range between base and base+period.
+
+    .. testsetup::
+    
+        import numpy
+        from iris.analysis.cartography import *
     
     For example:
         >>> print wrap_lons(numpy.array([185, 30, -200, 75]), -180, 360)
