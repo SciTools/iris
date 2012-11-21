@@ -228,13 +228,6 @@ In some situations the underlying coordinates are not point based and instead ar
 continuous bounded coordinate, in which case a "block" plot may be more appropriate.
 Continuous block plots can be achieved with either :func:`iris.plot.pcolormesh` or :py:func:`iris.quickplot.pcolormesh`:
 
-.. note::
-    The :py:func:`matplotlib.pyplot.pcolormesh` routine can only successfully plot with smoothly varying plotting coordinates. 
-
-    For a global cylindrical plot, in particular, we need to plot on longitudes -180..+180 degrees, as this is the default map setup.
-    The example below uses data with longitudes 0..360, so it plots only half of it to avoid the output crossing the map "seam".
-    To plot the *whole* of it, you would either have to rearrange the data, or setup a different map range.
-
 .. literalinclude:: plotting_examples/cube_blockplot.py
 
 .. plot:: userguide/plotting_examples/cube_blockplot.py
