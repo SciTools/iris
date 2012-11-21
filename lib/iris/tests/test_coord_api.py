@@ -29,6 +29,7 @@ import logging
 import numpy
 
 import iris
+import iris.aux_factory
 import iris.coords
 import iris.exceptions
 import iris.unit
@@ -36,6 +37,71 @@ import iris.tests.stock
 
 
 logger = logging.getLogger('tests')
+
+
+class TestLazy(unittest.TestCase):
+    def setUp(self):
+        # Start with a coord with LazyArray points.
+        shape = (3, 4)
+        point_func = lambda: numpy.arange(12).reshape(shape)
+        points = iris.aux_factory.LazyArray(shape, point_func)
+        self.coord = iris.coords.AuxCoord(points=points)
+
+    def _check_lazy(self, coord):
+        self.assertIsInstance(self.coord._points, iris.aux_factory.LazyArray)
+        self.assertIsNone(self.coord._points._array)
+
+    def test_nop(self):
+        self._check_lazy(self.coord)
+
+    def _check_both_lazy(self, new_coord):
+        # Make sure both coords have an "empty" LazyArray.
+        self._check_lazy(self.coord)
+        self._check_lazy(new_coord)
+
+    def test_lazy_slice1(self):
+        self._check_both_lazy(self.coord[:])
+
+    def test_lazy_slice2(self):
+        self._check_both_lazy(self.coord[:, :])
+
+    def test_lazy_slice3(self):
+        self._check_both_lazy(self.coord[...])
+
+    def _check_concrete(self, new_coord):
+        # Taking a genuine subset slice should trigger the evaluation
+        # of the original LazyArray, and result in a normal ndarray for
+        # the new coord.
+        self.assertIsInstance(self.coord._points, iris.aux_factory.LazyArray)
+        self.assertIsInstance(self.coord._points._array, numpy.ndarray)
+        self.assertIsInstance(new_coord._points, numpy.ndarray)
+
+    def test_concrete_slice1(self):
+        self._check_concrete(self.coord[0])
+
+    def test_concrete_slice2(self):
+        self._check_concrete(self.coord[0, :])
+
+    def test_shape(self):
+        # Checking the shape shouldn't trigger a lazy load.
+        self.assertEqual(self.coord.shape, (3, 4))
+        self._check_lazy(self.coord)
+
+    def _check_shared_data(self, coord):
+        # Updating the original coord's points should update the sliced
+        # coord's points too.
+        points = coord.points
+        new_points = coord[:].points
+        numpy.testing.assert_array_equal(points, new_points)
+        points[0, 0] = 999
+        self.assertEqual(points[0, 0], new_points[0, 0])
+
+    def test_concrete_shared_data(self):
+        coord = iris.coords.AuxCoord(numpy.arange(12).reshape((3, 4)))
+        self._check_shared_data(coord)
+
+    def test_lazy_shared_data(self):
+        self._check_shared_data(self.coord)
 
 
 class TestCoordSlicing(unittest.TestCase):
