@@ -86,7 +86,6 @@ FORMAT_AGENT.add_spec(FormatSpec('NetCDF 64 bit offset format',
                                  netcdf.load_cubes,
                                  priority=5))
     
-
 # This covers both v4 and v4 classic model.
 FORMAT_AGENT.add_spec(FormatSpec('NetCDF_v4',
                                  fp.MAGIC_NUMBER_64_BIT,
@@ -103,7 +102,6 @@ FORMAT_AGENT.add_spec(FormatSpec('UM Fieldsfile (FF) pre v3.1',
                                  0x000000000000000F,
                                  ff.load_cubes,
                                  priority=4))
-
 
 FORMAT_AGENT.add_spec(FormatSpec('UM Fieldsfile (FF) post v5.2',
                                  fp.MAGIC_NUMBER_64_BIT,
