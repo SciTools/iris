@@ -249,13 +249,16 @@ class DataManager(iris.util._OrderedHashable):
         
         # Create fully masked data (all missing)
         try:
-            data = numpy.ma.zeros(array_shape, dtype=self.data_type.newbyteorder('='), fill_value=self.mdi)
-            data.mask = True
+            raw_data = numpy.empty(array_shape,
+                                   dtype=self.data_type.newbyteorder('='))
+            mask = numpy.ones(array_shape, dtype=numpy.bool)
+            data = numpy.ma.MaskedArray(raw_data, mask=mask,
+                                        fill_value=self.mdi)
         except ValueError:
             raise DataManager.ArrayTooBigForAddressSpace(
-                             'Cannot create an array of shape %r as it will not fit in memory. Try reducing the shape '
-                             'of the proxy array by using indexing.' % (array_shape, )
-                             )
+                    'Cannot create an array of shape %r as it will not'
+                    ' fit in memory. Try reducing the shape of the'
+                    ' proxy array by using indexing.'.format(array_shape))
 
         for index, proxy in numpy.ndenumerate(proxy_array):
             if proxy not in [None, 0]:  # 0 can come from slicing masked proxy; numpy.array(masked_constant).
