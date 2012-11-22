@@ -528,7 +528,7 @@ class Cube(CFVariableMixin):
             raise TypeError('Factory must be a subclass of iris.aux_factory.AuxCoordFactory.')
         self._aux_factories.append(aux_factory)
 
-    def add_dim_coord(self, dim_coord, data_dim=None):
+    def add_dim_coord(self, dim_coord, data_dim):
         """
         Add a CF coordinate to the cube.
 
@@ -536,9 +536,6 @@ class Cube(CFVariableMixin):
 
         * dim_coord
             The :class:`iris.coords.DimCoord` instance to add to the cube.
-
-        Kwargs:
-
         * data_dim
             Integer giving the data dimension spanned by the coordinate.
             
@@ -550,8 +547,6 @@ class Cube(CFVariableMixin):
         """
         if self.coords(coord=dim_coord):
             raise ValueError('Duplicate coordinates are not permitted.')
-        if data_dim is None:
-            raise ValueError('You must supply a data dimension for a dimensioned coord.')
         if isinstance(data_dim, collections.Container) and len(data_dim) != 1:
             raise ValueError('The supplied data dimension must be a single number')
 
