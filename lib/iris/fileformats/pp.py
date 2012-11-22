@@ -670,12 +670,14 @@ class PPDataProxy(object):
 
 def _read_data(pp_file, lbpack, data_len, data_shape, data_type, mdi):
     """Read the data from the given file object given its precise location in the file."""
-    if lbpack == 0:
+    if lbpack.n1 == 0:
         data = numpy.fromfile(pp_file, dtype=data_type, count=data_len / data_type.itemsize)
-    elif lbpack == 1:
+    elif lbpack.n1 == 1:
         data = pp_file.read(data_len)
         data = pp_packing.wgdos_unpack(data, data_shape[0], data_shape[1], mdi)
-    elif lbpack == 4:
+    elif lbpack.n1 == 2:
+        data = numpy.fromfile(pp_file, dtype=data_type, count=data_len / data_type.itemsize)
+    elif lbpack.n1 == 4:
         data = numpy.fromfile(pp_file, dtype=data_type, count=data_len / data_type.itemsize)
         data = pp_packing.rle_decode(data, data_shape[0], data_shape[1], mdi)
     else:
@@ -691,13 +693,13 @@ def _read_data(pp_file, lbpack, data_len, data_shape, data_type, mdi):
 
     # Mask the array? 
     if mdi in data:
-        data = numpy.ma.masked_values(data, mdi, copy=False)    
+        data = numpy.ma.masked_values(data, mdi, copy=False)
     
     return data
 
 
 # The special headers of the PPField classes which get some improved functionality
-_SPECIAL_HEADERS = ('lbtim', 'lbcode', 'lbproc', 'data', 'data_manager')
+_SPECIAL_HEADERS = ('lbtim', 'lbcode', 'lbpack', 'lbproc', 'data', 'data_manager')
 
 def _header_defn(release_number):
     """
@@ -809,6 +811,16 @@ class PPField(object):
 
     lbcode = property(lambda self: self._lbcode, _lbcode_setter)
     
+    # lbpack
+    def _lbpack_setter(self, new_value):
+        if not isinstance(new_value, SplittableInt):
+            # add the n1/n2/n3/n4/n5 values for lbpack
+            name_mapping = dict(n5=slice(4, None), n4=3, n3=2, n2=1, n1=0)
+            new_value = SplittableInt(new_value, name_mapping)
+        self._lbpack = new_value
+
+    lbpack = property(lambda self: self._lbpack, _lbpack_setter)
+
     # lbproc
     def _lbproc_setter(self, new_value):
         if not isinstance(new_value, BitwiseInt):

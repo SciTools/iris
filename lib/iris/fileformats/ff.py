@@ -24,13 +24,13 @@ import warnings
 
 import numpy as np
 
-import iris.config
-import iris.fileformats.manager
+from iris.exceptions import NotYetImplementedError
+from iris.fileformats.manager import DataManager
 import pp
 
 
-FF_HEADER_DEPTH = 256  # in words (64-bit)
-FF_WORD_DEPTH = 8      # in bytes
+FF_HEADER_DEPTH = 256  # In words (64-bit).
+FF_WORD_DEPTH = 8      # In bytes.
 
 # UM marker to signify empty lookup table entry.
 _FF_LOOKUP_TABLE_TERMINATE = -99
@@ -95,6 +95,10 @@ _FF_HEADER_POINTERS = [
         'lookup_table',
         'data', ]
 
+_LBUSER_DTYPE_LOOKUP = {1: np.dtype('>f8'), 
+                        2: np.dtype('>i8'), 
+                        3: np.dtype('>i8'),
+                        'default': np.dtype('>f8'), }
 
 class FFHeader(object):
     """A class to represent the FIXED_LENGTH_HEADER section of a FieldsFile."""
@@ -141,7 +145,8 @@ class FFHeader(object):
 
     def valid(self, name):
         """
-        Determine whether the FieldsFile FIXED_LENGTH_HEADER pointer attribute has a valid FieldsFile address.
+        Determine whether the FieldsFile FIXED_LENGTH_HEADER pointer attribute
+        has a valid FieldsFile address.
         
         Args:
         
@@ -154,9 +159,10 @@ class FFHeader(object):
         """
         
         if name in _FF_HEADER_POINTERS:
-            value = getattr(self, name)[0] != _FF_HEADER_POINTER_NULL
+            value = getattr(self, name)[0] > _FF_HEADER_POINTER_NULL
         else:
-            raise AttributeError("'%s' object does not have pointer attribute '%s'" % (self.__class__.__name__, name))
+            msg = '{!r} object does not have pointer attribute {!r}'
+            raise AttributeError(msg.format(self.__class__.__name__, name))
         return value
 
     def address(self, name):
@@ -176,7 +182,8 @@ class FFHeader(object):
         if name in _FF_HEADER_POINTERS:
             value = getattr(self, name)[0] * FF_WORD_DEPTH
         else:
-            raise AttributeError("'%s' object does not have pointer attribute '%s'" % (self.__class__.__name__, name))
+            msg = '{!r} object does not have pointer attribute {!r}'
+            raise AttributeError(msg.format(self.__class__.__name__, name))
         return value
     
     def shape(self, name):
@@ -196,7 +203,8 @@ class FFHeader(object):
         if name in _FF_HEADER_POINTERS:
             value = getattr(self, name)[1:]
         else:
-            raise AttributeError("'%s' object does not have pointer address '%s'" % (self.__class_.__name__, name))
+            msg = '{!r} object does not have pointer address {!r}'
+            raise AttributeError(msg.format(self.__class_.__name__, name))
         return value
 
 
@@ -232,6 +240,33 @@ class FF2PP(object):
         self._ff_header = FFHeader(filename)
         self._filename = filename
         self._read_data = read_data
+
+    def _payload(self, field):
+        '''Calculate the payload data depth (in bytes) and type.'''
+
+        if field.lbpack.n1 == 0:
+            # Data payload is not packed.
+            data_depth = (field.lblrec - field.lbext) * FF_WORD_DEPTH
+            # Determine PP field 64-bit payload datatype.
+            lookup = _LBUSER_DTYPE_LOOKUP
+            data_type = lookup.get(field.lbuser[0], lookup['default'])
+        else:
+            # Data payload is packed.
+            if field.lbpack.n1 == 1:
+                # Data packed using WGDOS archive method.
+                data_depth = ((field.lbnrec * 2) - 1) * pp.PP_WORD_DEPTH
+            elif field.lbpack.n1 == 2:
+                # Data packed using CRAY 32-bit method.
+                data_depth = (field.lblrec - field.lbext) * pp.PP_WORD_DEPTH
+            else:
+                msg = 'PP fields with LBPACK of {} are not supported.'
+                raise NotYetImplementedError(msg.format(field.lbpack))
+
+            # Determine PP field payload datatype.
+            lookup = pp.LBUSER_DTYPE_LOOKUP
+            data_type = lookup.get(field.lbuser[0], lookup['default'])
+
+        return data_depth, data_type
         
     def _extract_field(self):
         # FF table pointer initialisation based on FF LOOKUP table configuration. 
@@ -241,53 +276,53 @@ class FF2PP(object):
         # Open the FF for processing.
         ff_file = open(self._ff_header.ff_filename, 'rb')
         ff_file_seek = ff_file.seek
+
+        # Check for an instantaneous dump.
+        if self._ff_header.dataset_type == 1:
+            table_count = self._ff_header.total_prognostic_fields
+
         # Process each FF LOOKUP table entry.
         while table_count:
             table_count -= 1
             # Move file pointer to the start of the current FF LOOKUP table entry.
             ff_file_seek(table_offset, os.SEEK_SET)
             # Read the current PP header entry from the FF LOOKUP table.
-            pp_header_integers = np.fromfile(ff_file, dtype='>i8', count=pp.NUM_LONG_HEADERS)  # 64-bit words.
-            pp_header_floats = np.fromfile(ff_file, dtype='>f8', count=pp.NUM_FLOAT_HEADERS)   # 64-bit words.
-            pp_header_data = tuple(pp_header_integers) + tuple(pp_header_floats)
+            header_integers = np.fromfile(ff_file, dtype='>i8',
+                                          count=pp.NUM_LONG_HEADERS)
+            header_floats = np.fromfile(ff_file, dtype='>f8',
+                                        count=pp.NUM_FLOAT_HEADERS)
+            # In 64-bit words.
+            header_data = tuple(header_integers) + tuple(header_floats)
             # Check whether the current FF LOOKUP table entry is valid.
-            if pp_header_data[0] == _FF_LOOKUP_TABLE_TERMINATE:
+            if header_data[0] == _FF_LOOKUP_TABLE_TERMINATE:
                 # There are no more FF LOOKUP table entries to read. 
                 break
             # Calculate next FF LOOKUP table entry.
             table_offset += table_entry_depth
-            # Construct a PPField object and populate using the pp_header_data
+            # Construct a PPField object and populate using the header_data
             # read from the current FF LOOKUP table.
             # (The PPField sub-class will depend on the header release number.)
-            pp_field = pp.make_pp_field(pp_header_data)
-            # Calculate file pointer address for the start of the associated PP header data. 
-            data_offset = pp_field.lbegin * FF_WORD_DEPTH
-            # Determine PP field payload depth.
-            pp_data_extra_depth = pp_field.lbext
-            if pp_field.lbpack:
-                # Convert PP field LBNREC, representing a count in 64-bit words,
-                # into its associated count in bytes.
-                pp_data_depth = ((pp_field.lbnrec * 2) - 1) * pp.PP_WORD_DEPTH  # in bytes
-            else:
-                pp_data_depth = (pp_field.lblrec - pp_data_extra_depth) * pp.PP_WORD_DEPTH  # in bytes 
-            
-            # Determine PP field payload datatype.
-            pp_data_type = pp.LBUSER_DTYPE_LOOKUP.get(pp_field.lbuser[0], pp.LBUSER_DTYPE_LOOKUP['default'])
-
+            field = pp.make_pp_field(header_data)
+            # Calculate start address of the associated PP header data.
+            data_offset = field.lbegin * FF_WORD_DEPTH
+            # Determine PP field payload depth and type.
+            data_depth, data_type = self._payload(field)
             # Determine PP field data shape.
-            pp_data_shape = (pp_field.lbrow, pp_field.lbnpt)
+            data_shape = (field.lbrow, field.lbnpt)
             # Determine whether to read the associated PP field data.
             if self._read_data:
                 # Move file pointer to the start of the current PP field data.
                 ff_file_seek(data_offset, os.SEEK_SET)
                 # Get the PP field data.
-                data = pp_field.read_data(ff_file, pp_data_depth, pp_data_shape, pp_data_type)
-                pp_field._data = data
-                pp_field._data_manager = None
+                data = field.read_data(ff_file, data_depth, data_shape, data_type)
+                field._data = data
+                field._data_manager = None
             else:
-                pp_field._data = np.array(pp.PPDataProxy(self._ff_header.ff_filename, data_offset, pp_data_depth, pp_field.lbpack))
-                pp_field._data_manager = iris.fileformats.manager.DataManager(pp_data_shape, pp_data_type, pp_field.bmdi)
-            yield pp_field
+                proxy = pp.PPDataProxy(self._filename, data_offset,
+                                       data_depth, field.lbpack)
+                field._data = np.array(proxy)
+                field._data_manager = DataManager(data_shape, data_type, field.bmdi)
+            yield field
         ff_file.close()
         return
         
