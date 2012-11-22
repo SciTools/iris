@@ -21,8 +21,43 @@ Test the cf module.
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
+import unittest
+
+import mock
+
 import iris
 import iris.fileformats.cf as cf
+
+
+class TestCaching(unittest.TestCase):
+    def test_cached(self):
+        # Make sure attribute access to the underlying netCDF4.Variable
+        # is cached.
+        name = 'foo'
+        nc_var = mock.MagicMock()
+        cf_var = cf.CFAncillaryDataVariable(name, nc_var)
+        self.assertEqual(nc_var.ncattrs.call_count, 1)
+
+        # Accessing a netCDF attribute should result in no further calls
+        # to nc_var.ncattrs() and the creation of an attribute on the
+        # cf_var.
+        # NB. Can't use hasattr() because that triggers the attribute
+        # to be created!
+        self.assertTrue('coordinates' not in cf_var.__dict__)
+        _ = cf_var.coordinates
+        self.assertEqual(nc_var.ncattrs.call_count, 1)
+        self.assertTrue('coordinates' in cf_var.__dict__)
+
+        # Trying again results in no change.
+        _ = cf_var.coordinates
+        self.assertEqual(nc_var.ncattrs.call_count, 1)
+        self.assertTrue('coordinates' in cf_var.__dict__)
+
+        # Trying another attribute results in just a new attribute.
+        self.assertTrue('standard_name' not in cf_var.__dict__)
+        _ = cf_var.standard_name
+        self.assertEqual(nc_var.ncattrs.call_count, 1)
+        self.assertTrue('standard_name' in cf_var.__dict__)
 
 
 @iris.tests.skip_data
