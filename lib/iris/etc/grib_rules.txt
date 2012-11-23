@@ -86,6 +86,14 @@ THEN
 CMAttribute("long_name", "UNKNOWN LOCAL PARAM " + str(grib.indicatorOfParameter) + "." + str(grib.table2Version))
 CMAttribute("units", "???")
 
+IF
+grib.edition == 1
+grib.table2Version == 1
+grib.indicatorOfParameter >= 128
+THEN
+CMAttribute("long_name", "UNKNOWN LOCAL PARAM " + str(grib.indicatorOfParameter) + "." + str(grib.table2Version))
+CMAttribute("units", "???")
+
 ####################
 ### Grib2 params ###
 ####################
