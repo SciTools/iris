@@ -27,9 +27,8 @@ import iris
 class Test_add_dim_coord(tests.IrisTest):
     def setUp(self):
         self.cube = iris.cube.Cube(numpy.arange(4).reshape(2, 2))
-        
-    
-    def test_1d(self):
+
+    def test_no_dim(self):
         self.assertRaises(TypeError,
                           self.cube.add_dim_coord,
                           iris.coords.DimCoord(numpy.arange(2), "latitude"))
