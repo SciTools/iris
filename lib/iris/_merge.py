@@ -1144,13 +1144,14 @@ class ProtoCube(object):
         # Create fully masked data i.e. all missing.
         if signature.data_manager is None:
             # Must zero the data in order to avoid random checksums.
-            data = numpy.ma.zeros(self._shape, dtype=signature.data_type)
-            data.fill_value = signature.mdi
+            data = numpy.ma.MaskedArray(numpy.zeros(self._shape,
+                                                    signature.data_type),
+                                        mask=numpy.ones(self._shape, 'bool'),
+                                        fill_value=signature.mdi)
         else:
-            # With dtype=object, ma.empty DOES initialise the memory (all None).
-            data = numpy.ma.empty(self._shape, dtype=object)
+            data = numpy.ma.MaskedArray(numpy.zeros(self._shape, 'object'),
+                                        mask=numpy.ones(self._shape, 'bool'))
 
-        data.mask = True
         cube = iris.cube.Cube(data,
                               dim_coords_and_dims=dim_coords_and_dims,
                               aux_coords_and_dims=aux_coords_and_dims,
