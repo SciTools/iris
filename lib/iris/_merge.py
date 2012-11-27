@@ -1141,9 +1141,10 @@ class ProtoCube(object):
         aux_coords_and_dims = [(deepcopy(coord), dims) for coord, dims in self._aux_coords_and_dims]
         kwargs = dict(zip(iris.cube.CubeMetadata._fields, signature.defn))
 
-        # Create fully masked data i.e. all missing.
+        # Create fully masked data, i.e. all missing.
+        # (The CubeML checksum doesn't respect the mask, so we zero the
+        # underlying data to ensure repeatable checksums.)
         if signature.data_manager is None:
-            # Must zero the data in order to avoid random checksums.
             data = numpy.ma.MaskedArray(numpy.zeros(self._shape,
                                                     signature.data_type),
                                         mask=numpy.ones(self._shape, 'bool'),

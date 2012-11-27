@@ -256,9 +256,9 @@ class DataManager(iris.util._OrderedHashable):
                                         fill_value=self.mdi)
         except ValueError:
             raise DataManager.ArrayTooBigForAddressSpace(
-                    'Cannot create an array of shape %r as it will not'
-                    ' fit in memory. Try reducing the shape of the'
-                    ' proxy array by using indexing.'.format(array_shape))
+                    'Cannot create an array of shape %r as it will not fit in'
+                    ' memory. Consider using indexing to select a subset of'
+                    ' the Cube.'.format(array_shape))
 
         for index, proxy in numpy.ndenumerate(proxy_array):
             if proxy not in [None, 0]:  # 0 can come from slicing masked proxy; numpy.array(masked_constant).
