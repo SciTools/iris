@@ -46,48 +46,90 @@ class TestRegrid(tests.IrisTest):
             cube.remove_coord(coord)
 
     def setUp(self):
-        self.theta_path = tests.get_data_path(('PP', 'COLPEX', 'theta_and_orog.pp'))
-        self.uwind_path = tests.get_data_path(('PP', 'COLPEX', 'uwind_and_orog.pp'))
+        self.theta_p_alt_path = tests.get_data_path(
+            ('PP', 'COLPEX', 'small_colpex_theta_p_alt.pp'))
         self.theta_constraint = iris.Constraint('air_potential_temperature')
-        self.uwind_constraint = iris.Constraint('eastward_wind')
+        self.airpress_constraint = iris.Constraint('air_pressure')
         self.level_constraint = iris.Constraint(model_level_number=1)
-        self.multi_level_constraint = iris.Constraint(model_level_number=lambda c: 1 <= c < 6)
-        self.forecast_constraint = iris.Constraint(forecast_period=1.5)
+        self.multi_level_constraint = iris.Constraint(
+            model_level_number=lambda c: 1 <= c < 6)
+        self.forecast_constraint = iris.Constraint(
+            forecast_period=lambda dt: 0.49 < dt < 0.51)
 
     def test_regrid_low_dimensional(self):
-        theta = load_cube(self.theta_path, self.theta_constraint & self.level_constraint & self.forecast_constraint)
-        uwind = load_cube(self.uwind_path, self.uwind_constraint & self.level_constraint & self.forecast_constraint)
+        theta = load_cube(
+            self.theta_p_alt_path,
+            (self.theta_constraint
+             & self.level_constraint
+             & self.forecast_constraint)
+        )
+        airpress = load_cube(
+            self.theta_p_alt_path,
+            (self.airpress_constraint
+             & self.level_constraint
+             & self.forecast_constraint)
+        )
         TestRegrid.patch_data(theta)
-        TestRegrid.patch_data(uwind)
+        TestRegrid.patch_data(airpress)
 
         # 0-dimensional
-        theta0 = theta[0, 0]
-        uwind0 = uwind[0, 0]
-        self.assertCMLApproxData(theta0.regridded(uwind0, mode='nearest'), ('regrid', 'theta_on_uwind_0d.cml'))
-        self.assertCMLApproxData(uwind0.regridded(theta0, mode='neatest'), ('regrid', 'uwind_on_theta_0d.cml'))
+        theta_0 = theta[0, 0]
+        airpress_0 = airpress[0, 0]
+        theta0_regridded = theta_0.regridded(airpress_0, mode='nearest')
+        airpress0_regridded = airpress_0.regridded(theta_0, mode='nearest')
+        self.assertEqual(theta_0, theta0_regridded)
+        self.assertEqual(airpress_0, airpress0_regridded)
+        self.assertCMLApproxData(
+            theta0_regridded,
+            ('regrid', 'theta_on_airpress_0d.cml'))
+        self.assertCMLApproxData(
+            airpress0_regridded,
+            ('regrid', 'airpress_on_theta_0d.cml'))
 
         # 1-dimensional
-        theta1 = theta[0, 1:4]
-        uwind1 = uwind[0, 0:4]
-        self.assertCMLApproxData(theta1.regridded(uwind1, mode='nearest'), ('regrid', 'theta_on_uwind_1d.cml'))
-        self.assertCMLApproxData(uwind1.regridded(theta1, mode='nearest'), ('regrid', 'uwind_on_theta_1d.cml'))
+        theta_1 = theta[0, 1:4]
+        airpress_1 = airpress[0, 0:4]
+        self.assertCMLApproxData(
+            theta_1.regridded(airpress_1, mode='nearest'),
+            ('regrid', 'theta_on_airpress_1d.cml'))
+        self.assertCMLApproxData(
+            airpress_1.regridded(theta_1, mode='nearest'),
+            ('regrid', 'airpress_on_theta_1d.cml'))
 
         # 2-dimensional
-        theta2 = theta[1:3, 1:4]
-        uwind2 = uwind[0:4, 0:4]
-        self.assertCMLApproxData(theta2.regridded(uwind2, mode='nearest'), ('regrid', 'theta_on_uwind_2d.cml'))
-        self.assertCMLApproxData(uwind2.regridded(theta2, mode='nearest'), ('regrid', 'uwind_on_theta_2d.cml'))
+        theta_2 = theta[1:3, 1:4]
+        airpress_2 = airpress[0:4, 0:4]
+        self.assertCMLApproxData(
+            theta_2.regridded(airpress_2, mode='nearest'),
+            ('regrid', 'theta_on_airpress_2d.cml'))
+        self.assertCMLApproxData(
+            airpress_2.regridded(theta_2, mode='nearest'),
+            ('regrid', 'airpress_on_theta_2d.cml'))
 
     def test_regrid_3d(self):
-        theta = load_cube(self.theta_path, self.theta_constraint & self.multi_level_constraint & self.forecast_constraint)
-        uwind = load_cube(self.uwind_path, self.uwind_constraint & self.multi_level_constraint & self.forecast_constraint)
+        theta = load_cube(
+            self.theta_p_alt_path,
+            (self.theta_constraint
+             & self.multi_level_constraint
+             & self.forecast_constraint)
+        )
+        airpress = load_cube(
+            self.theta_p_alt_path,
+            (self.airpress_constraint
+             & self.multi_level_constraint
+             & self.forecast_constraint)
+        )
         TestRegrid.patch_data(theta)
-        TestRegrid.patch_data(uwind)
+        TestRegrid.patch_data(airpress)
 
-        theta = theta[:, 1:3, 1:4]
-        uwind = uwind[:, 0:4, 0:4]
-        self.assertCMLApproxData(theta.regridded(uwind, mode='nearest'), ('regrid', 'theta_on_uwind_3d.cml'))
-        self.assertCMLApproxData(uwind.regridded(theta, mode='nearest'), ('regrid', 'uwind_on_theta_3d.cml'))
+        theta_part = theta[:, 1:3, 1:4]
+        airpress_part = airpress[:, 0:4, 0:4]
+        self.assertCMLApproxData(
+            theta_part.regridded(airpress_part, mode='nearest'),
+            ('regrid', 'theta_on_airpress_3d.cml'))
+        self.assertCMLApproxData(
+            airpress_part.regridded(theta_part, mode='nearest'),
+            ('regrid', 'airpress_on_theta_3d.cml'))
 
     def test_regrid_max_resolution(self):
         low = Cube(numpy.arange(12).reshape((3, 4)))
