@@ -285,6 +285,33 @@ def hybrid_height():
                           aux_factories=[hybrid_height])
     return cube
 
+def simple_4d_hh():
+    cube = iris.cube.Cube(numpy.arange(3*4*5*6).reshape(3,4,5,6), 
+                          "air_temperature", units="K")
+    
+    cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(3), "time", 
+                                            units="hours since epoch"), 0)
+    cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(4)+10, 
+                                            "model_level_number", units="1"), 1)
+    cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(5)+20, 
+                                            "grid_latitude", units="degrees"), 2)
+    cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(6)+30, 
+                                            "grid_longitude", units="degrees"), 3)
+    
+    cube.add_aux_coord(iris.coords.AuxCoord(numpy.arange(4)+40, 
+                                            long_name="level_height", units="m"), 1)
+    cube.add_aux_coord(iris.coords.AuxCoord(numpy.arange(4)+50, 
+                                            long_name="sigma", units="1"), 1)
+    
+    cube.add_aux_coord(iris.coords.AuxCoord(numpy.arange(5*6).reshape(5,6)+100, 
+                                            long_name="surface_altitude", 
+                                            units="m"), [2,3])
+    cube.add_aux_factory(iris.aux_factory.HybridHeightFactory(
+                                    delta=cube.coord("level_height"),
+                                    sigma=cube.coord("sigma"),
+                                    orography=cube.coord("surface_altitude")))
+    return cube
+    
 
 def realistic_4d():
     """
