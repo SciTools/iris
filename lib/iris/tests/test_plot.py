@@ -19,9 +19,7 @@
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import warnings
-
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 import numpy
 
 import iris
@@ -133,7 +131,7 @@ class TestHybridHeight(tests.GraphicsTest):
             self.check_graphic()
 
 
-# Caches _load_wind so subsequent calls are faster
+# Caches _load_4d_testcube so subsequent calls are faster
 def cache(fn, cache={}):
     def inner(*args, **kwargs):
         key = "result"
@@ -144,18 +142,31 @@ def cache(fn, cache={}):
 
 
 @cache
-def _load_wind():
-    # Load the COLPEX data => TZYX
-    path = tests.get_data_path(('PP', 'COLPEX', 'uwind_and_orog.pp'))
-    wind = iris.load_cube(path, 'eastward_wind')
-    
-    # Add time bounds so we can test for bounded time plots
-    flt = wind.coord('forecast_period')
-    lower = numpy.arange(6, 12, dtype=numpy.float32) / 6
-    upper = numpy.arange(7, 13, dtype=numpy.float32) / 6
-    flt._bounds = numpy.column_stack([lower, upper])
-
-    return wind[:, :, :50, :50]
+def _load_4d_testcube():
+    # Load example 4d data (TZYX).
+    test_cube = iris.tests.stock.realistic_4d()
+    # Replace forecast_period coord with a multi-valued version.
+    time_coord = test_cube.coord('time')
+    n_times = len(time_coord.points)
+    forecast_dims = test_cube.coord_dims(time_coord)
+    test_cube.remove_coord('forecast_period')
+    # Make up values (including bounds), to roughly match older testdata.
+    point_values = numpy.linspace((1 + 1.0/6), 2.0, n_times)
+    point_uppers = point_values + (point_values[1] - point_values[0])
+    bound_values = numpy.column_stack([point_values, point_uppers])
+    # NOTE: this must be a DimCoord
+    #  - an equivalent AuxCoord produces different plots.
+    new_forecast_coord = iris.coords.DimCoord(
+        points=point_values,
+        bounds=bound_values,
+        standard_name='forecast_period',
+        units=iris.unit.Unit('hours')
+    )
+    test_cube.add_aux_coord(new_forecast_coord, forecast_dims)
+    # Heavily reduce dimensions for faster testing.
+    # NOTE: this makes ZYX non-contiguous.  Doesn't seem to matter for now.
+    test_cube = test_cube[:,::10,::10,::10]
+    return test_cube
 
 
 def _time_series(src_cube):
@@ -215,7 +226,7 @@ class SliceMixin(object):
 class TestContour(tests.GraphicsTest, SliceMixin):
     """Test the iris.plot.contour routine."""
     def setUp(self):
-        self.wind = _load_wind()
+        self.wind = _load_4d_testcube()
         self.draw_method = iplt.contour
 
 
@@ -223,7 +234,7 @@ class TestContour(tests.GraphicsTest, SliceMixin):
 class TestContourf(tests.GraphicsTest, SliceMixin):
     """Test the iris.plot.contourf routine."""
     def setUp(self):
-        self.wind = _load_wind()
+        self.wind = _load_4d_testcube()
         self.draw_method = iplt.contourf
 
 
@@ -231,7 +242,7 @@ class TestContourf(tests.GraphicsTest, SliceMixin):
 class TestPcolor(tests.GraphicsTest, SliceMixin):
     """Test the iris.plot.pcolor routine."""
     def setUp(self):
-        self.wind = _load_wind()
+        self.wind = _load_4d_testcube()
         self.draw_method = iplt.pcolor
 
 
@@ -239,7 +250,7 @@ class TestPcolor(tests.GraphicsTest, SliceMixin):
 class TestPcolormesh(tests.GraphicsTest, SliceMixin):
     """Test the iris.plot.pcolormesh routine."""
     def setUp(self):
-        self.wind = _load_wind()
+        self.wind = _load_4d_testcube()
         self.draw_method = iplt.pcolormesh
 
 
@@ -282,7 +293,7 @@ class Slice1dMixin(object):
 class TestPlot(tests.GraphicsTest, Slice1dMixin):
     """Test the iris.plot.plot routine."""
     def setUp(self):
-        self.wind = _load_wind()
+        self.wind = _load_4d_testcube()
         self.draw_method = iplt.plot
         
 
@@ -290,7 +301,7 @@ class TestPlot(tests.GraphicsTest, Slice1dMixin):
 class TestQuickplotPlot(tests.GraphicsTest, Slice1dMixin):
     """Test the iris.quickplot.plot routine."""
     def setUp(self):
-        self.wind = _load_wind()
+        self.wind = _load_4d_testcube()
         self.draw_method = qplt.plot
 
 
