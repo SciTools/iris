@@ -213,14 +213,14 @@ And then comparing with the first 10 values of the new cube's coordinates:
 Because the original data started in April 2006 we have some incomplete seasons
 (e.g. there were only two months worth of data for ``mam 2006``).
 In this case we can fix this by removing all of the resultant ``times`` which do not cover a
-three month period (n.b. 3 months = 3 * 30 * 24 = 2160 hours):
+three month period (n.b. the shortest 3 month period is 3 months = 3 * 30 * 24 = 2160 hours):
 
 .. doctest:: aggregation
 
-    >>> spans_three_months = lambda time: (time.bound[1] - time.bound[0]) == 2160
+    >>> spans_three_months = lambda time: (time.bound[1] - time.bound[0]) >= 2160
     >>> three_months_bound = iris.Constraint(time=spans_three_months)
     >>> print annual_seasonal_mean.extract(three_months_bound)
-    surface_temperature                 (*ANONYMOUS*: 3; latitude: 18; longitude: 432)
+    surface_temperature                 (*ANONYMOUS*: 17; latitude: 18; longitude: 432)
          Dimension coordinates:
               latitude                              -            x              -
               longitude                             -            -              x
@@ -242,4 +242,4 @@ three month period (n.b. 3 months = 3 * 30 * 24 = 2160 hours):
 
 
 
-The final result now represents the seasonal mean temperature for 63 seasons starting from ``March April May 1990``.
+The final result now represents the seasonal mean temperature for all seasons with 3 months of data.
