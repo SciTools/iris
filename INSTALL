@@ -73,9 +73,6 @@ These are optional packages which you may want to install to use
 Iris with different file formats and to enable plotting functionality.
 All of these are required for the Iris test suite to run.
 
-basemap 1.0 or later (http://matplotlib.github.com/basemap/)
-    Toolkit for matplotlib providing map functionality.
-
 graphviz 2.18 or later (http://www.graphviz.org/)
     Graph visualisation software.
 
