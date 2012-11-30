@@ -17,6 +17,15 @@
 
 IF
 f.lbtim.ia == 0
+f.lbtim.ib == 0
+f.lbtim.ic in [1, 2, 3]
+len(f.lbcode) != 5 or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])
+THEN
+CoordAndDims(DimCoord(f.time_unit('hours').date2num(f.t1), standard_name='time', units=f.time_unit('hours')))
+
+
+IF
+f.lbtim.ia == 0
 f.lbtim.ib == 1
 f.lbtim.ic in [1, 2, 3]
 len(f.lbcode) != 5 or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])

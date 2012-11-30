@@ -21,7 +21,9 @@ Provides UK Met Office Post Process (PP) format specific capabilities.
 
 import abc
 import collections
+from copy import deepcopy
 import itertools
+import operator
 import os
 import re
 import struct
@@ -457,10 +459,40 @@ class SplittableInt(object):
     
     def __repr__(self):
         return 'SplittableInt(%r, name_mapping_dict=%r)' % (self._value, self._name_lookup)
-    
-    # handle __gt__, __eq__, __ne__ and __lt__ operators with __cmp__
-    def __cmp__(self, other):
-        return cmp(self._value, other)
+
+    def __eq__(self, other):
+        result = NotImplemented
+        if isinstance(other, SplittableInt):
+            result = self._value == other._value
+        elif isinstance(other, int):
+            result = self._value == other
+        return result
+
+    def __ne__(self, other):
+        result = self == other
+        if result != NotImplemented:
+            result = not result
+        return result
+
+    def _compare(self, other, op):
+        result = NotImplemented
+        if isinstance(other, SplittableInt):
+            result = op(self._value, other._value)
+        elif isinstance(other, int):
+            result = op(self._value, other)
+        return result
+
+    def __lt__(self, other):
+        return self._compare(other, operator.lt)
+
+    def __le__(self, other):
+        return self._compare(other, operator.le)
+
+    def __gt__(self, other):
+        return self._compare(other, operator.gt)
+
+    def __ge__(self, other):
+        return self._compare(other, operator.ge)
 
             
 class BitwiseInt(SplittableInt):
@@ -665,6 +697,22 @@ class PPDataProxy(object):
             payload = data[deferred_slice]
         
         return payload
+
+    def __eq__(self, other):
+        result = NotImplemented
+        if isinstance(other, PPDataProxy):
+            result = True
+            for attr in self.__slots__:
+                if getattr(self, attr) != getattr(other, attr):
+                    result = False
+                    break
+        return result
+
+    def __ne__(self, other):
+        result = self == other
+        if result != NotImplemented:
+            result = not result
+        return result
 
 
 def _read_data(pp_file, lbpack, data_len, data_shape, data_type, mdi):
@@ -1120,6 +1168,52 @@ class PPField(object):
     
     def read_data(self, ff_file, pp_data_depth, pp_data_shape, pp_data_type):
         return _read_data(ff_file, self.lbpack, pp_data_depth, pp_data_shape, pp_data_type, self.bmdi)
+
+    def copy(self):
+        """
+        Returns a deep copy of this PPField.
+
+        Returns:
+            A copy instance of the :class:`PPField`.
+
+        """
+        return self._deepcopy({})
+
+    def __deepcopy__(self, memo):
+        return self._deepcopy(memo)
+
+    def _deepcopy(self, memo):
+        field = self.__class__()
+        for attr in self.__slots__:
+            if hasattr(self, attr):
+                value = getattr(self, attr)
+                # Cope with inability to deepcopy a 0-d NumPy array.
+                if attr == '_data' and value is not None and value.ndim == 0:
+                    setattr(field, attr, numpy.array(deepcopy(value[()], memo)))
+                else:
+                    setattr(field, attr, deepcopy(value, memo))
+        return field
+
+    def __eq__(self, other):
+        result = NotImplemented
+        if isinstance(other, PPField):
+            result = True
+            for attr in self.__slots__:
+                attrs = [hasattr(self, attr), hasattr(other, attr)]
+                if all(attrs):
+                    if not numpy.all(getattr(self, attr) == getattr(other, attr)):
+                        result = False
+                        break
+                elif any(attrs):
+                    result = False
+                    break
+        return result
+
+    def __ne__(self, other):
+        result = self == other
+        if result != NotImplemented:
+            result = not result
+        return result
 
 
 class PPField2(PPField):
