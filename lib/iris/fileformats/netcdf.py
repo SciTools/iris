@@ -240,6 +240,7 @@ def _load_cube(engine, cf, cf_var, filename):
     engine.provides = {}
     engine.requires = {}
     engine.rule_triggered = set()
+    engine.filename = filename
 
     # Assert any case-specific facts.
     _assert_case_specific_facts(engine, cf, cf_var.cf_group)

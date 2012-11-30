@@ -307,26 +307,36 @@ class Coord(CFVariableMixin):
             if the overall shape of the coordinate changes after indexing.
 
         """
-        points = self.points
-        bounds = self.bounds
-        
-        # turn the key(s) into a full slice spec (all dims) 
+        # Turn the key(s) into a full slice spec - i.e. one entry for
+        # each dimension of the coord.
         full_slice = iris.util._build_full_slice_given_keys(key, self.ndim)
-        
-        # make indexing on the cube column based by using the column_slices_generator 
-        # (potentially requires slicing the data multiple times)
-        _, slice_gen = iris.util.column_slices_generator(full_slice, self.ndim)
-        
-        for keys in slice_gen:
-            if points is not None:
-                points = points[keys]
-                if points.shape and min(points.shape) == 0:
-                    raise IndexError('Cannot index with zero length slice.')
-            if bounds is not None:
-                bounds = bounds[keys + (Ellipsis, )]
+
+        # If it's a "null" indexing operation (e.g. coord[:, :]) then
+        # we can preserve deferred loading by avoiding promoting _points
+        # and _bounds to full ndarray instances.
+        def is_full_slice(s):
+            return isinstance(s, slice) and s == slice(None, None)
+        if all(is_full_slice(s) for s in full_slice):
+            points = self._points
+            bounds = self._bounds
+        else:
+            points = self.points
+            bounds = self.bounds
+
+            # Make indexing on the cube column based by using the
+            # column_slices_generator (potentially requires slicing the
+            # data multiple times).
+            _, slice_gen = iris.util.column_slices_generator(full_slice,
+                                                             self.ndim)
+            for keys in slice_gen:
+                if points is not None:
+                    points = points[keys]
+                    if points.shape and min(points.shape) == 0:
+                        raise IndexError('Cannot index with zero length slice.')
+                if bounds is not None:
+                    bounds = bounds[keys + (Ellipsis, )]
                     
         new_coord = self.copy(points=points, bounds=bounds)
-                    
         return new_coord    
 
     def copy(self, points=None, bounds=None):
@@ -590,7 +600,9 @@ class Coord(CFVariableMixin):
     @property
     def shape(self):
         """The fundamental shape of the Coord, expressed as a tuple."""
-        return self.points.shape
+        # Access the underlying _points attribute to avoid triggering
+        # a deferred load unnecessarily.
+        return self._points.shape
         
     def index(self, cell):
         """
