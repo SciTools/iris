@@ -63,8 +63,9 @@ _CATEGORY_UNKNOWN, _CATEGORY_NO_UNIT, _CATEGORY_UDUNIT = range(3)
 #
 # shared library constants
 #
-_LIB_C = 'libc.so.6'
-_LIB_UD = iris.config.get_option('System', 'udunits2_path', default='libudunits2.so')
+import ctypes.util
+_LIB_C = ctypes.util.find_library('libc') #'libc.so.6'
+_LIB_UD = iris.config.get_option('System', 'udunits2_path', default=ctypes.util.find_library('libudunits2'))
 
 #
 # libudunits2 constants
@@ -184,46 +185,119 @@ if _lib_ud is None:
     # cache common shared library functions
     #
     _cv_convert_float = _lib_ud.cv_convert_float
+    _cv_convert_float.argtypes = [ctypes.c_void_p, ctypes.c_float]
     _cv_convert_float.restype = ctypes.c_float
+    
     _cv_convert_floats = _lib_ud.cv_convert_floats
+    _cv_convert_floats.argtypes = [ctypes.c_void_p, ctypes.c_void_p, 
+                                   ctypes.c_ulong, ctypes.c_void_p]
+    _cv_convert_floats.restype = ctypes.c_void_p
+    
     _cv_convert_double = _lib_ud.cv_convert_double
+    _cv_convert_double.argtypes = [ctypes.c_void_p, ctypes.c_double]
     _cv_convert_double.restype = ctypes.c_double
+    
     _cv_convert_doubles = _lib_ud.cv_convert_doubles
+    _cv_convert_doubles.argtypes = [ctypes.c_void_p, ctypes.c_void_p, 
+                                    ctypes.c_ulong, ctypes.c_void_p]
+    _cv_convert_doubles.restype = ctypes.c_void_p
+    
     _cv_free = _lib_ud.cv_free
+    _cv_free.argtypes = [ctypes.c_void_p]
+    
     _ut_are_convertible = _lib_ud.ut_are_convertible
+    _ut_are_convertible.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    
     _ut_clone = _lib_ud.ut_clone
+    _ut_clone.argtypes = [ctypes.c_void_p]
+    _ut_clone.restype = ctypes.c_void_p
+    
     _ut_compare = _lib_ud.ut_compare
+    _ut_compare.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    
     _ut_decode_time = _lib_ud.ut_decode_time
     _ut_decode_time.restype = None
+    
     _ut_divide = _lib_ud.ut_divide
+    _ut_divide.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    _ut_divide.restype = ctypes.c_void_p
+    
     _ut_encode_clock = _lib_ud.ut_encode_clock
     _ut_encode_clock.restype = ctypes.c_double
+    
     _ut_encode_date = _lib_ud.ut_encode_date
     _ut_encode_date.restype = ctypes.c_double
+    
     _ut_encode_time = _lib_ud.ut_encode_time
     _ut_encode_time.restype = ctypes.c_double
+    
     _ut_format = _lib_ud.ut_format
+    _ut_format.argtypes = [ctypes.c_void_p, ctypes.c_char_p, 
+                           ctypes.c_ulong, ctypes.c_uint]
+    
     _ut_free = _lib_ud.ut_free
+    _ut_free.argtypes = [ctypes.c_void_p]
     _ut_free.restype = None
+    
     _ut_get_converter = _lib_ud.ut_get_converter
+    _ut_get_converter.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    _ut_get_converter.restype = ctypes.c_void_p
+    
     _ut_get_status = _lib_ud.ut_get_status
+    
     _ut_get_unit_by_name = _lib_ud.ut_get_unit_by_name
+    _ut_get_unit_by_name.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    _ut_get_unit_by_name.restype = ctypes.c_void_p
+    
     _ut_invert = _lib_ud.ut_invert
+    _ut_invert.argtypes = [ctypes.c_void_p]
+    _ut_invert.restype = ctypes.c_void_p
+    
     _ut_is_dimensionless = _lib_ud.ut_is_dimensionless
+    _ut_is_dimensionless.argtypes = [ctypes.c_void_p]
+    
     _ut_log = _lib_ud.ut_log
+    _ut_log.argtypes = [ctypes.c_double, ctypes.c_void_p]
+    _ut_log.restype = ctypes.c_void_p
+    
     _ut_multiply = _lib_ud.ut_multiply
+    _ut_multiply.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    _ut_multiply.restype = ctypes.c_void_p
+    
     _ut_offset = _lib_ud.ut_offset
+    _ut_offset.argtypes = [ctypes.c_void_p, ctypes.c_double]
+    _ut_offset.restype = ctypes.c_void_p
+    
     _ut_offset_by_time = _lib_ud.ut_offset_by_time
+    _ut_offset_by_time.argtypes = [ctypes.c_void_p, ctypes.c_double]
+    _ut_offset_by_time.restype = ctypes.c_void_p
+    
     _ut_parse = _lib_ud.ut_parse
+    _ut_parse.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int]
+    _ut_parse.restype = ctypes.c_void_p
+    
     _ut_raise = _lib_ud.ut_raise
+    _ut_raise.argtypes = [ctypes.c_void_p, ctypes.c_int]
+    _ut_raise.restype = ctypes.c_void_p
+    
     _ut_read_xml = _lib_ud.ut_read_xml
+    _ut_read_xml.argtypes = [ctypes.c_void_p]
+    _ut_read_xml.restype = ctypes.c_void_p
+    
     _ut_root = _lib_ud.ut_root
+    _ut_root.argtypes = [ctypes.c_void_p, ctypes.c_int]
+    _ut_root.restype = ctypes.c_void_p
+    
     _ut_scale = _lib_ud.ut_scale
+    _ut_scale.argtypes = [ctypes.c_double, ctypes.c_void_p]
+    _ut_scale.restype = ctypes.c_void_p
     
     # convenience dictionary for the Unit convert method
-    _cv_convert_scalar = {FLOAT32:_cv_convert_float, FLOAT64:_cv_convert_double}
-    _cv_convert_array = {FLOAT32:_cv_convert_floats, FLOAT64:_cv_convert_doubles}
-    _numpy2ctypes = {np.float32:FLOAT32, np.float64:FLOAT64}
+    _cv_convert_scalar = {FLOAT32: _cv_convert_float, 
+                          FLOAT64: _cv_convert_double}
+    _cv_convert_array = {FLOAT32: _cv_convert_floats, 
+                         FLOAT64: _cv_convert_doubles}
+    _numpy2ctypes = {np.float32: FLOAT32, np.float64: FLOAT64}
 #
 # load the UDUNITS-2 xml-formatted unit-database
 #
@@ -749,7 +823,7 @@ class Unit(iris.util._OrderedHashable):
             category = _CATEGORY_UDUNIT
             ut_unit = _ut_parse(_ud_system, unit, UT_ASCII)
             # _ut_parse returns 0 on failure
-            if ut_unit == 0:
+            if ut_unit is None:
                 self._raise_error('Failed to parse unit "%s"' % unit)
             if _OP_SINCE in unit.lower():
                 if calendar is None:
