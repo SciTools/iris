@@ -459,6 +459,48 @@ class TestAreaWeights(tests.IrisTest):
         self.assertAlmostEquals(area[2], [319251845980.7646484375])
 
 
+class TestWeightGeneration(tests.IrisTest):
+    def setUp(self):
+        self.cube = iris.tests.stock.realistic_4d()
+
+    def test_area_weights_std(self):
+        # weights for stock 4d data
+        weights = iris.analysis.cartography.area_weights(self.cube)
+        self.assertEqual(weights.shape, self.cube.shape)
+
+    def test_area_weights_order(self):
+        # weights for data with dimensions in a different order
+        order = [3, 2, 1, 0] # (lon, lat, level, time)
+        self.cube.transpose(order)
+        weights = iris.analysis.cartography.area_weights(self.cube)
+        self.assertEqual(weights.shape, self.cube.shape)
+
+    def test_area_weights_non_adjacent(self):
+        # weights for cube with non-adjacent latitude/longitude dimensions
+        order = [0, 3, 1, 2] # (time, lon, level, lat)
+        self.cube.transpose(order)
+        weights = iris.analysis.cartography.area_weights(self.cube)
+        self.assertEqual(weights.shape, self.cube.shape)
+
+    def test_area_weights_scalar_latitude(self):
+        # weights for cube with a scalar latitude dimension
+        cube = self.cube[:, :, 0, :]
+        weights = iris.analysis.cartography.area_weights(cube)
+        self.assertEqual(weights.shape, cube.shape)
+
+    def test_area_weights_scalar_longitude(self):
+        # weights for cube with a scalar longitude dimension
+        cube = self.cube[:, :, :, 0]
+        weights = iris.analysis.cartography.area_weights(cube)
+        self.assertEqual(weights.shape, cube.shape)
+
+    def test_area_weights_scalar(self):
+        # weights for cube with scalar latitude and longitude dimensions
+        cube = self.cube[:, :, 0, 0]
+        weights = iris.analysis.cartography.area_weights(cube)
+        self.assertEqual(weights.shape, cube.shape)
+
+
 class TestRollingWindow(tests.IrisTest):
     def setUp(self):
         # XXX Comes from test_aggregated_by
