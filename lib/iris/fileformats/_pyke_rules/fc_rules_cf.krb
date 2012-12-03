@@ -557,8 +557,10 @@ fc_extras
     import re
     import warnings
 
+    import netCDF4
     import numpy as np
 
+    import iris.aux_factory
     import iris.coords
     import iris.coord_systems
     import iris.fileformats.cf as cf
@@ -885,6 +887,14 @@ fc_extras
 
 
     ################################################################################
+    def deferred_load(filename, nc_var_name):
+        dataset = netCDF4.Dataset(filename)
+        nc_var = dataset.variables[nc_var_name]
+        values = nc_var[:]
+        return values
+
+
+    ################################################################################
     def build_auxiliary_coordinate(engine, cf_coord_var, coord_name=None, coord_system=None):
         """Create an auxiliary coordinate (AuxCoord) and add it to the cube."""
 
@@ -899,14 +909,25 @@ fc_extras
         if isinstance(cf_coord_var, cf.CFLabelVariable):
             points_data = cf_coord_var.cf_label_data(cf_var)
         else:
-            points_data = cf_coord_var[:]
+            # Use a closure to capture the current file/variable names.
+            filename = engine.filename
+            nc_var_name = cf_coord_var.cf_name
+            get_values = lambda: deferred_load(filename, nc_var_name)
+            points_data = iris.aux_factory.LazyArray(cf_coord_var.shape,
+                                                     get_values)
 
         # Get any coordinate bounds.
         bounds_data = None
         attr_bounds = getattr(cf_coord_var, CF_ATTR_BOUNDS, None)
 
         if attr_bounds is not None:
-            bounds_data = cf_coord_var.cf_group.bounds[attr_bounds][:]
+            # Use a closure to capture the current file/variable names.
+            filename = engine.filename
+            cf_bounds_var = cf_coord_var.cf_group.bounds[attr_bounds]
+            nc_bounds_var_name = cf_bounds_var.cf_name
+            get_values = lambda: deferred_load(filename, nc_bounds_var_name)
+            bounds_data = iris.aux_factory.LazyArray(cf_bounds_var.shape,
+                                                     get_values)
 
         # Determine the name of the dimension/s shared between the CF-netCDF data variable
         # and the coordinate being built.
