@@ -23,7 +23,7 @@ len(f.lbcode) != 5 or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23
 THEN
 CoordAndDims(DimCoord(f.time_unit('hours', f.t2).date2num(f.t1), standard_name='forecast_period', units='hours'))
 CoordAndDims(DimCoord(f.time_unit('hours').date2num(f.t1), standard_name='time', units=f.time_unit('hours')))
-
+CoordAndDims(DimCoord(f.time_unit('hours').date2num(f.t2), standard_name='forecast_reference_time', units=f.time_unit('hours')))
 
 IF
 f.lbtim.ib == 2
