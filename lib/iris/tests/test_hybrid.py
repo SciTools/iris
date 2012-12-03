@@ -33,25 +33,6 @@ import iris
 import iris.tests.stock
 
 
-@iris.tests.skip_data
-class TestHybridHeight(tests.IrisTest):
-    def test_colpex(self):
-        # Load the COLPEX data => TZYX
-        path = tests.get_data_path(
-            ('NetCDF', 'testing', 'small_theta_colpex.nc'))
-        
-        phenom = iris.load_cube(path, 'air_potential_temperature')
-
-        # Select a ZX cross-section.
-        cross_section = phenom[0, :, 0, :]
-
-        # Obtain the real-world heights
-        altitude = cross_section.coord('altitude')
-        self.assertEqual(altitude.shape, (10, 83))
-        self.assertEqual(cross_section.coord_dims(altitude), (0, 1))
-        self.assertEqual(zlib.crc32(altitude.points), 1313577975)
-
-
 class TestRealistic4d(tests.GraphicsTest):
     def setUp(self):
         self.cube = iris.tests.stock.realistic_4d()

@@ -98,7 +98,7 @@ class TestColpex(tests.IrisTest):
     def test_colpex(self):
         cubes = iris.load(self._data_path)
         self.assertEqual(len(cubes), 3)
-        self.assertCML(cubes, ('COLPEX', 'uwind_and_orog.cml'))
+        self.assertCML(cubes, ('COLPEX', 'small_colpex_theta_p_alt.cml'))
 
 
 @iris.tests.skip_data
