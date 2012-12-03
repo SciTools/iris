@@ -81,6 +81,8 @@ example, list indexing *could* be used:
               surface_altitude               -                      -                 x                    x
          Derived coordinates:
               altitude                       -                      x                 x                    x
+         Scalar coordinates:
+              forecast_reference_time: 349612.0 hours since 1970-01-01 00:00:00
          Attributes:
               STASH: m01s00i004
               source: Data from Met Office Unified Model 7.03

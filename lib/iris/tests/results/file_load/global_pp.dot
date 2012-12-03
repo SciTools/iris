@@ -37,15 +37,18 @@ digraph CubeGraph{
             label = "DimCoord|standard_name: forecast_period\nlong_name: None\nunits: hours\ncircular: False"
         ]
         "Coord_1" [
-            label = "DimCoord|standard_name: latitude\nlong_name: None\nunits: degrees\ncircular: False"
+            label = "DimCoord|standard_name: forecast_reference_time\nlong_name: None\nunits: hours since 1970-01-01 00:00:00\ncircular: False"
         ]
         "Coord_2" [
-            label = "DimCoord|standard_name: longitude\nlong_name: None\nunits: degrees\ncircular: True"
+            label = "DimCoord|standard_name: latitude\nlong_name: None\nunits: degrees\ncircular: False"
         ]
         "Coord_3" [
-            label = "DimCoord|standard_name: None\nlong_name: pressure\nunits: hPa\ncircular: False"
+            label = "DimCoord|standard_name: longitude\nlong_name: None\nunits: degrees\ncircular: True"
         ]
         "Coord_4" [
+            label = "DimCoord|standard_name: None\nlong_name: pressure\nunits: hPa\ncircular: False"
+        ]
+        "Coord_5" [
             label = "DimCoord|standard_name: time\nlong_name: None\nunits: hours since 1970-01-01 00:00:00\ncircular: False"
         ]
 
@@ -69,12 +72,13 @@ digraph CubeGraph{
 #   Containment
     
     ":Cube" -> "Coord_0"
-    "Coord_1" -> "CoordSystem_GeogCS_0"
     ":Cube" -> "Coord_1"
     "Coord_2" -> "CoordSystem_GeogCS_0"
     ":Cube" -> "Coord_2"
+    "Coord_3" -> "CoordSystem_GeogCS_0"
     ":Cube" -> "Coord_3"
     ":Cube" -> "Coord_4"
+    ":Cube" -> "Coord_5"
     edge [
         style="dashed"
         arrowhead = "onormal"
@@ -82,7 +86,7 @@ digraph CubeGraph{
 
 #   Association
     
-    "Coord_1" -> "CubeDimension_0":w
-    "Coord_2" -> "CubeDimension_1":w
+    "Coord_2" -> "CubeDimension_0":w
+    "Coord_3" -> "CubeDimension_1":w
 }
     
