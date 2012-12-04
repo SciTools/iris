@@ -416,19 +416,35 @@ THEN
 CMAttribute("standard_name", "sea_surface_wave_significant_height")
 CMAttribute("units", "m")
 
-# new stash code mega-rule
+
+################################################################################
+#                                                                              #
+# Stash/field code to CF meta-data rules                                       #
+#                                                                              #
+################################################################################
+
+# MOSIG stash code to CF meta-data rule.
 IF
-str(f.stash) in iris.fileformats.um_cf_map.STASH_TO_CF
+str(f.stash) in MOSIG_STASH_TO_CF
 THEN
-CMAttribute("standard_name", iris.fileformats.um_cf_map.STASH_TO_CF[str(f.stash)].cfname)
-CMAttribute("units", iris.fileformats.um_cf_map.STASH_TO_CF[str(f.stash)].unit) 
+CMAttribute('standard_name', MOSIG_STASH_TO_CF[str(f.stash)].name)
+CMAttribute('units', MOSIG_STASH_TO_CF[str(f.stash)].unit)
+CMAttribute('lone_name', None)
+
+# UM stash code to CF meta-data rule.
+IF
+str(f.stash) in STASH_TO_CF
+THEN
+CMAttribute("standard_name", STASH_TO_CF[str(f.stash)].cfname)
+CMAttribute("units", STASH_TO_CF[str(f.stash)].unit) 
 CMAttribute("long_name", None)
 
-# new field code mega-rule
+# UM field code to CF meta-data rule.
 IF
 not f.stash.is_valid
-f.lbfc in iris.fileformats.um_cf_map.LBFC_TO_CF
+f.lbfc in LBFC_TO_CF
 THEN
-CMAttribute("standard_name", iris.fileformats.um_cf_map.LBFC_TO_CF[f.lbfc].cfname)
-CMAttribute("units", iris.fileformats.um_cf_map.LBFC_TO_CF[f.lbfc].unit) 
+CMAttribute("standard_name", LBFC_TO_CF[f.lbfc].cfname)
+CMAttribute("units", LBFC_TO_CF[f.lbfc].unit) 
 CMAttribute("long_name", None)
+
