@@ -6,10 +6,10 @@
     </attributes>
     <coords>
       <coord>
-        <DimCoord bounds="[[0, 15]]" id="5634c91ba5717382" long_name="bar" points="[7.5]" shape="(1,)" units="Unit('1')" value_type="float64"/>
+        <dimCoord bounds="[[0, 15]]" id="e629b330" long_name="bar" points="[7.5]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord>
-        <DimCoord bounds="[[-15, 45]]" id="5634c91ba5717382" long_name="foo" points="[15.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
+        <dimCoord bounds="[[-15, 45]]" id="ce286204" long_name="foo" points="[15.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>

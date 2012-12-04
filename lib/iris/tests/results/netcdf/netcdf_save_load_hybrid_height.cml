@@ -8,7 +8,7 @@
     </attributes>
     <coords>
       <coord datadims="[1, 2, 3]">
-        <AuxCoord bounds="[[[[99.1904, 112.371],
+        <auxCoord bounds="[[[[99.1904, 112.371],
   		[122.346, 135.491],
   		[151.11, 164.211],
   		..., 
@@ -306,7 +306,7 @@
   		..., 
   		[37922.5, 42077.5],
   		[37922.5, 42077.5],
-  		[37922.5, 42077.5]]]]" id="3ccb55df69fe4da5" points="[[[104.133, 127.275, 156.023, ..., 54.5052,
+  		[37922.5, 42077.5]]]]" id="39d6abbb" points="[[[104.133, 127.275, 156.023, ..., 54.5052,
   		58.0957, 56.536],
  		[103.944, 108.209, 138.77, ..., 51.5391,
   		59.3869, 61.8455],
@@ -393,16 +393,16 @@
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
-        </AuxCoord>
+        </auxCoord>
       </coord>
       <coord datadims="[1]">
-        <AuxCoord bounds="[[0.0, 13.3333],
+        <auxCoord bounds="[[0.0, 13.3333],
 		[13.3333, 33.3333],
 		[33.3333, 60.0],
 		..., 
 		[30589.1, 34018.9],
 		[34018.9, 37922.5],
-		[37922.5, 42077.5]]" id="e226fef67c470dd" long_name="level_height" points="[5.0, 21.6667, 45.0, 75.0, 111.667, 155.0, 205.0,
+		[37922.5, 42077.5]]" id="aa21a204" long_name="level_height" points="[5.0, 21.6667, 45.0, 75.0, 111.667, 155.0, 205.0,
 		261.667, 325.0, 395.0, 471.667, 555.0, 645.0,
 		741.667, 845.0, 955.0, 1071.67, 1195.0, 1325.0,
 		1461.67, 1605.0, 1755.0, 1911.67, 2075.0,
@@ -418,38 +418,38 @@
 		40000.0]" shape="(70,)" standard_name="atmosphere_hybrid_height_coordinate" units="Unit('m')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
-        <AuxCoord id="fc2e5e733b5cf4c" points="[1.16666667536, 1.33333333209, 1.5,
+        <auxCoord id="87ceee70" points="[1.16666667536, 1.33333333209, 1.5,
 		1.66666666791, 1.83333333582, 2.00000000373]" shape="(6,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
-        <DimCoord id="5a80d060b964cced" points="[347920.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <dimCoord id="2233c7b4" points="[347920.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[2]">
-        <DimCoord bounds="[[-0.53415, -0.52065],
+        <dimCoord bounds="[[-0.53415, -0.52065],
 		[-0.52065, -0.50715],
 		[-0.50715, -0.49365],
 		..., 
 		[0.33795, 0.35145],
 		[0.35145, 0.36495],
-		[0.36495, 0.37845]]" id="25a5f42bc937b908" points="[-0.5274, -0.5139, -0.5004, ..., 0.3447, 0.3582,
+		[0.36495, 0.37845]]" id="2f6ce15a" points="[-0.5274, -0.5139, -0.5004, ..., 0.3447, 0.3582,
 		0.3717]" shape="(412,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
-        </DimCoord>
+        </dimCoord>
       </coord>
       <coord datadims="[3]">
-        <DimCoord bounds="[[359.173, 359.187],
+        <dimCoord bounds="[[359.173, 359.187],
 		[359.187, 359.2],
 		[359.2, 359.214],
 		..., 
 		[360.045, 360.059],
 		[360.059, 360.072],
-		[360.072, 360.086]]" id="3bf28623a9db078e" points="[359.18, 359.194, 359.207, ..., 360.052, 360.066,
+		[360.072, 360.086]]" id="5595eff5" points="[359.18, 359.194, 359.207, ..., 360.052, 360.066,
 		360.079]" shape="(412,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
-        </DimCoord>
+        </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <DimCoord id="45dad63840fafae8" points="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
+        <dimCoord id="6a7605d4" points="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
 		15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
 		27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
 		39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
@@ -457,13 +457,13 @@
 		63, 64, 65, 66, 67, 68, 69, 70]" shape="(70,)" standard_name="model_level_number" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord datadims="[1]">
-        <AuxCoord bounds="[[1.0, 0.998464],
+        <auxCoord bounds="[[1.0, 0.998464],
 		[0.998464, 0.996162],
 		[0.996162, 0.993097],
 		..., 
 		[0.0, 0.0],
 		[0.0, 0.0],
-		[0.0, 0.0]]" id="5634c91ba5717382" long_name="sigma" points="[0.999424, 0.997504, 0.99482, 0.991375, 0.987171,
+		[0.0, 0.0]]" id="bd89364a" long_name="sigma" points="[0.999424, 0.997504, 0.99482, 0.991375, 0.987171,
 		0.982215, 0.976512, 0.970069, 0.962893,
 		0.954993, 0.946377, 0.937057, 0.927043,
 		0.916346, 0.904981, 0.892961, 0.8803, 0.867014,
@@ -481,7 +481,7 @@
 		0.0, 0.0]" shape="(70,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[2, 3]">
-        <AuxCoord id="19d01d98045b97db" points="[[99.1904, 122.346, 151.11, ..., 49.5337,
+        <auxCoord id="229416d1" points="[[99.1904, 122.346, 151.11, ..., 49.5337,
  		53.1264, 51.5657],
 		[99.0009, 103.269, 133.847, ..., 46.566,
  		54.4183, 56.8783],
@@ -498,10 +498,10 @@
             <attribute name="source" value="Data from Met Office Unified Model 7.04"/>
             <attribute name="ukmo__um_stash_source" value="m01s00i033"/>
           </attributes>
-        </AuxCoord>
+        </auxCoord>
       </coord>
       <coord datadims="[0]">
-        <DimCoord id="559b95abfcdf35de" points="[347921.166667, 347921.333333, 347921.5,
+        <dimCoord id="b5668a7c" points="[347921.166667, 347921.333333, 347921.5,
 		347921.666667, 347921.833333, 347922.0]" shape="(6,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>

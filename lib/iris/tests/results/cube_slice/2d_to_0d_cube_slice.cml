@@ -3,16 +3,16 @@
   <cube long_name="test 2d dimensional cube" units="meters">
     <coords>
       <coord>
-        <AuxCoord id="2d89fa2153812c6" long_name="an_other" points="[3.0]" shape="(1,)" units="Unit('meters')" value_type="float64"/>
+        <auxCoord id="e3abfc46" long_name="an_other" points="[3.0]" shape="(1,)" units="Unit('meters')" value_type="float64"/>
       </coord>
       <coord>
-        <DimCoord id="2d89fa2153812c6" long_name="dim1" points="[3.0]" shape="(1,)" units="Unit('meters')" value_type="float32"/>
+        <dimCoord id="7ca654a7" long_name="dim1" points="[3.0]" shape="(1,)" units="Unit('meters')" value_type="float32"/>
       </coord>
       <coord>
-        <DimCoord bounds="[[0, 1]]" id="2d89fa2153812c6" long_name="dim2" points="[0]" shape="(1,)" units="Unit('meters')" value_type="int32"/>
+        <dimCoord bounds="[[0, 1]]" id="d9ae3fcb" long_name="dim2" points="[0]" shape="(1,)" units="Unit('meters')" value_type="int32"/>
       </coord>
       <coord>
-        <AuxCoord bounds="[[0, 1, 2, 3]]" id="5634c91ba5717382" long_name="my_multi_dim_coord" points="[0]" shape="(1,)" units="Unit('1')" value_type="int32"/>
+        <auxCoord bounds="[[0, 1, 2, 3]]" id="16c5c9bc" long_name="my_multi_dim_coord" points="[0]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods/>
