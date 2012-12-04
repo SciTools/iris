@@ -63,7 +63,7 @@ class TestBasicCubeConstruction(tests.IrisTest):
             self.cube.add_dim_coord(self.x, 0)
 
         # Must specify a dimension
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             self.cube.add_dim_coord(self.y)
 
         # Add y
@@ -91,9 +91,9 @@ class TestBasicCubeConstruction(tests.IrisTest):
         scalar_dim_coord = iris.coords.DimCoord(23, long_name='scalar_dim_coord')
         scalar_aux_coord = iris.coords.AuxCoord(23, long_name='scalar_aux_coord')
         # Scalars cannot be in cube.dim_coords
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             self.cube.add_dim_coord(scalar_dim_coord)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             self.cube.add_dim_coord(scalar_dim_coord, None)
         with self.assertRaises(ValueError):
             self.cube.add_dim_coord(scalar_dim_coord, [])
@@ -103,9 +103,9 @@ class TestBasicCubeConstruction(tests.IrisTest):
         # Make sure that's still the case for a 0-dimensional cube.
         cube = iris.cube.Cube(666)
         self.assertEqual(cube.ndim, 0)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             self.cube.add_dim_coord(scalar_dim_coord)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             self.cube.add_dim_coord(scalar_dim_coord, None)
         with self.assertRaises(ValueError):
             self.cube.add_dim_coord(scalar_dim_coord, [])

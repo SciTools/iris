@@ -264,17 +264,23 @@ def hybrid_surfaces(cube, grib):
 
 def non_hybrid_surfaces(cube, grib):
 
-    # pressure?
+    # pressure
     if cube.coords("air_pressure") or cube.coords("pressure"):
         grib_v_code = 100
         output_unit = iris.unit.Unit("Pa")
         v_coord = (cube.coords("air_pressure") or cube.coords("pressure"))[0]
+
+    # altitude
+    elif cube.coords("altitude"):
+        grib_v_code = 102
+        output_unit = iris.unit.Unit("m")
+        v_coord = cube.coord("altitude")
         
-#    # height?
-#    elif cube.coords("height"):
-#        grib_v_code = 102  # XXX is this correct?
-#        output_unit = iris.unti.Unit("m")
-#        v_coord = cube.coord("height")
+    # height
+    elif cube.coords("height"):
+        grib_v_code = 103
+        output_unit = iris.unit.Unit("m")
+        v_coord = cube.coord("height")
 
     else:
         raise iris.exceptions.TranslationError("Vertical coordinate not found / handled")
@@ -440,10 +446,10 @@ def data(cube, grib):
 
     # mdi
     if isinstance(cube.data, numpy.ma.core.MaskedArray):
-        gribapi.grib_set_long(grib, "missingValue", cube.data.fill_value)
+        gribapi.grib_set_double(grib, "missingValue", float(cube.data.fill_value))
         data = cube.data.filled()
     else:
-        gribapi.grib_set_long(grib, "missingValue", -1e9)
+        gribapi.grib_set_double(grib, "missingValue", float(-1e9))
         data = cube.data
     
     # values

@@ -37,6 +37,8 @@ import numpy
 import iris.config as config
 import iris.cube
 import iris.exceptions
+import iris.fileformats.mosig_cf_map
+import iris.fileformats.um_cf_map
 import iris.unit
 
 
@@ -359,6 +361,8 @@ class Rule(object):
             globals().update(iris.aux_factory.__dict__)
             globals().update(iris.coords.__dict__)
             globals().update(iris.coord_systems.__dict__)
+            globals().update(iris.fileformats.mosig_cf_map.__dict__)
+            globals().update(iris.fileformats.um_cf_map.__dict__)
             globals().update(iris.unit.__dict__)
             _import_pending = False
         
@@ -385,6 +389,7 @@ class Rule(object):
             except Exception, err:
                 print >> sys.stderr, 'Failed (msg:%(error)s) to run:\n    %(command)s\nFrom the rule:\n%(me)r' % {'me':self, 'command':action, 'error': err}
                 raise err
+
         return factories
 
 
@@ -403,24 +408,15 @@ class FunctionRule(Rule):
 
         factory = None
 
-        # NB. The names such as 'Coord' and 'CellMethod' are defined by
+        # NB. The names such as 'CoordAndDims' and 'CellMethod' are defined by
         # the "deferred import" performed by Rule.run_actions() above.
-        if isinstance(obj, Coord):
-            cube.add_coord(obj)
-
-        elif isinstance(obj, CoordAndDims):
+        if isinstance(obj, CoordAndDims):
             obj.add_coord(cube)
-
-        elif isinstance(obj, Factory):
-            factory = obj
 
         #cell methods - not yet implemented
         elif isinstance(obj, CellMethod):
             cube.add_cell_method(obj)
             
-        elif isinstance(obj, DebugString):
-            print obj
-
         elif isinstance(obj, CMAttribute):
             # Temporary code to deal with invalid standard names from the translation table.
             # TODO: when name is "standard_name" force the value to be a real standard name
@@ -431,6 +427,12 @@ class FunctionRule(Rule):
             
         elif isinstance(obj, CMCustomAttribute):
             cube.attributes[obj.name] = obj.value
+
+        elif isinstance(obj, Factory):
+            factory = obj
+
+        elif isinstance(obj, DebugString):
+            print obj
 
         # The function returned nothing, like the pp save actions, "lbft = 3"
         elif obj is None:

@@ -11,7 +11,7 @@ variables:
 		air_potential_temperature:ukmo__um_stash_source = "m01s00i004" ;
 		air_potential_temperature:source = "Data from Met Office Unified Model 7.04" ;
 		air_potential_temperature:grid_mapping = "rotated_latitude_longitude" ;
-		air_potential_temperature:coordinates = "forecast_period level_height sigma surface_altitude" ;
+		air_potential_temperature:coordinates = "forecast_period forecast_reference_time level_height sigma surface_altitude" ;
 	int rotated_latitude_longitude ;
 		rotated_latitude_longitude:grid_mapping_name = "rotated_latitude_longitude" ;
 		rotated_latitude_longitude:longitude_of_prime_meridian = 0. ;
@@ -45,6 +45,10 @@ variables:
 	double forecast_period(time) ;
 		forecast_period:units = "hours" ;
 		forecast_period:standard_name = "forecast_period" ;
+	double forecast_reference_time ;
+		forecast_reference_time:units = "hours since 1970-01-01 00:00:00" ;
+		forecast_reference_time:standard_name = "forecast_reference_time" ;
+		forecast_reference_time:calendar = "gregorian" ;
 	float level_height(model_level_number) ;
 		level_height:bounds = "level_height_bnds" ;
 		level_height:axis = "Z" ;

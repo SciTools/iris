@@ -3,16 +3,16 @@
   <cube long_name="test 2d dimensional cube" units="kelvin">
     <coords>
       <coord>
-        <AuxCoord id="5634c91ba5717382" long_name="an_other" points="[3.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
+        <auxCoord id="49949923" long_name="an_other" points="[3.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <DimCoord id="5634c91ba5717382" long_name="dim1" points="[3.0, 5.0, 7.0, 9.0]" shape="(4,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord id="c8216a64" long_name="dim1" points="[3.0, 5.0, 7.0, 9.0]" shape="(4,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <AuxCoord id="5634c91ba5717382" long_name="dim2" points="[3.5, 3.25]" shape="(2,)" units="Unit('1')" value_type="float64"/>
+        <auxCoord id="903fc34c" long_name="dim2" points="[3.5, 3.25]" shape="(2,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[1]">
-        <AuxCoord id="5634c91ba5717382" long_name="shared_x_coord" points="[9.0, 7.0]" shape="(2,)" units="Unit('1')" value_type="float64"/>
+        <auxCoord id="b7382109" long_name="shared_x_coord" points="[9.0, 7.0]" shape="(2,)" units="Unit('1')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>

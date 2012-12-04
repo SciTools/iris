@@ -267,7 +267,11 @@ def area_weights(cube):
         radius_of_earth = DEFAULT_SPHERICAL_EARTH_RADIUS
 
     # Get the lon and lat coords and axes
-    lat, lon = _get_lat_lon_coords(cube)
+    try:
+        lat, lon = _get_lat_lon_coords(cube)
+    except IndexError:
+        raise ValueError('Cannot get latitude/longitude '
+                         'coordinates from cube {!r}.'.format(cube.name()))
 
     if lat.ndim > 1:
         raise iris.exceptions.CoordinateMultiDimError(lat)
@@ -306,15 +310,26 @@ def area_weights(cube):
 
     # Now we create an array of weights for each cell.
 
-    # First, get the non latlon shape
+    # First, get the non latlon shape. Don't include scalar dimensions as they
+    # are not part of the cube's shape.
     other_dims_shape = numpy.array(cube.shape)
-    other_dims_shape[lat_dim] = 1
-    other_dims_shape[lon_dim] = 1
+    if lat_dim is not None:
+        other_dims_shape[lat_dim] = 1
+    if lon_dim is not None:
+        other_dims_shape[lon_dim] = 1
     other_dims_array = numpy.ones(other_dims_shape)
+
+    # Set the shape of the weights array that matches the dimensionality
+    # of the cube. Again, we ignore scalar dimensions.
+    weights_shape = numpy.ones(cube.ndim)
+    if lat_dim is not None:
+        weights_shape[lat_dim] = cube.shape[lat_dim]
+    if lon_dim is not None:
+        weights_shape[lon_dim] = cube.shape[lon_dim]
 
     # Create the broadcast object from the weights array and the 'other dims',
     # to match the shape of the cube.
-    broad_weights = ll_weights * other_dims_array
+    broad_weights = ll_weights.reshape(weights_shape) * other_dims_array
 
     return broad_weights
 

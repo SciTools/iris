@@ -3,13 +3,13 @@
   <cube long_name="test 2d dimensional cube" units="kelvin">
     <coords>
       <coord>
-        <AuxCoord id="5634c91ba5717382" long_name="an_other" points="[3.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
+        <auxCoord id="49949923" long_name="an_other" points="[3.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord>
-        <DimCoord id="5634c91ba5717382" long_name="dim1" points="[4.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord id="c8216a64" long_name="dim1" points="[4.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <AuxCoord id="5634c91ba5717382" long_name="dim2" points="[3.5]" shape="(1,)" units="Unit('1')" value_type="float64"/>
+        <auxCoord id="903fc34c" long_name="dim2" points="[3.5]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>

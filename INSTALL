@@ -1,5 +1,5 @@
 Installing Iris currently requires you to build it from source. The 
-latest release is available from https://github.com/scitools/iris.
+latest release is available from https://github.com/SciTools/iris.
 
 Iris makes use a range of other libraries and python modules. These 
 dependencies must be in place before you can successfully install 

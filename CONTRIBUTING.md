@@ -26,9 +26,6 @@ Submitting changes
 1. Read and sign the Contributor Licence Agreement (CLA).
  - See our [governance page](http://scitools.org.uk/pages/governance.html)
    for the CLA and what to do with it.
- - NB. The CLA is not yet available, but will be published as soon as
-   we can. Unfortunately this will be no sooner than Thursday, 15th
-   November.
 1. Push your branch to your fork of Iris.
 1. Submit your pull request.
 1. Chillax.

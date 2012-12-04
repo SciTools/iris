@@ -37,7 +37,6 @@ import iris.fileformats.rules
 import iris.io
 import iris.unit
 import iris.fileformats.manager
-import iris.fileformats.um_cf_map
 import iris.coord_systems
 import iris.proxy
 iris.proxy.apply_proxy('iris.fileformats.pp_packing', globals())
@@ -699,7 +698,8 @@ def _read_data(pp_file, lbpack, data_len, data_shape, data_type, mdi):
 
 
 # The special headers of the PPField classes which get some improved functionality
-_SPECIAL_HEADERS = ('lbtim', 'lbcode', 'lbpack', 'lbproc', 'data', 'data_manager')
+_SPECIAL_HEADERS = ('lbtim', 'lbcode', 'lbpack', 'lbproc',
+                    'data', 'data_manager', 'stash', 't1', 't2')
 
 def _header_defn(release_number):
     """
@@ -791,7 +791,9 @@ class PPField(object):
     @property
     def stash(self):
         """A stash property giving access to the associated STASH object, now supporting __eq__"""
-        return STASH(self.lbuser[6], self.lbuser[3] / 1000, self.lbuser[3] % 1000)
+        if not hasattr(self, '_stash'):
+            self._stash = STASH(self.lbuser[6], self.lbuser[3] / 1000, self.lbuser[3] % 1000)
+        return self._stash
 
     # lbtim
     def _lbtim_setter(self, new_value):
@@ -1130,7 +1132,9 @@ class PPField2(PPField):
     __slots__ = _pp_attribute_names(HEADER_DEFN)
 
     def _get_t1(self):
-        return netcdftime.datetime(self.lbyr, self.lbmon, self.lbdat, self.lbhr, self.lbmin)
+        if not hasattr(self, '_t1'):
+            self._t1 = netcdftime.datetime(self.lbyr, self.lbmon, self.lbdat, self.lbhr, self.lbmin)
+        return self._t1
     
     def _set_t1(self, dt):
         self.lbyr = dt.year
@@ -1138,12 +1142,16 @@ class PPField2(PPField):
         self.lbdat = dt.day
         self.lbhr = dt.hour
         self.lbday = int(dt.strftime('%j'))
+        if hasattr(self, '_t1'):
+            delattr(self, '_t1')
         
     t1 = property(_get_t1, _set_t1, None,
         "A netcdftime.datetime object consisting of the lbyr, lbmon, lbdat, lbhr, and lbmin attributes.")
 
     def _get_t2(self):
-        return netcdftime.datetime(self.lbyrd, self.lbmond, self.lbdatd, self.lbhrd, self.lbmind)
+        if not hasattr(self, '_t2'):
+            self._t2 = netcdftime.datetime(self.lbyrd, self.lbmond, self.lbdatd, self.lbhrd, self.lbmind)
+        return self._t2
 
     def _set_t2(self, dt):
         self.lbyrd = dt.year
@@ -1152,6 +1160,8 @@ class PPField2(PPField):
         self.lbhrd = dt.hour
         self.lbmind = dt.minute
         self.lbdayd = int(dt.strftime('%j'))
+        if hasattr(self, '_t2'):
+            delattr(self, '_t2')
 
     t2 = property(_get_t2, _set_t2, None,
         "A netcdftime.datetime object consisting of the lbyrd, lbmond, lbdatd, lbhrd, and lbmind attributes.")
@@ -1166,7 +1176,9 @@ class PPField3(PPField):
     __slots__ = _pp_attribute_names(HEADER_DEFN)
 
     def _get_t1(self):
-        return netcdftime.datetime(self.lbyr, self.lbmon, self.lbdat, self.lbhr, self.lbmin, self.lbsec)
+        if not hasattr(self, '_t1'):
+            self._t1 = netcdftime.datetime(self.lbyr, self.lbmon, self.lbdat, self.lbhr, self.lbmin, self.lbsec)
+        return self._t1
     
     def _set_t1(self, dt):
         self.lbyr = dt.year
@@ -1174,12 +1186,16 @@ class PPField3(PPField):
         self.lbdat = dt.day
         self.lbhr = dt.hour
         self.lbsec = dt.second
+        if hasattr(self, '_t1'):
+            delattr(self, '_t1')
         
     t1 = property(_get_t1, _set_t1, None,
         "A netcdftime.datetime object consisting of the lbyr, lbmon, lbdat, lbhr, lbmin, and lbsec attributes.")
 
     def _get_t2(self):
-        return netcdftime.datetime(self.lbyrd, self.lbmond, self.lbdatd, self.lbhrd, self.lbmind, self.lbsecd)
+        if not hasattr(self, '_t2'):
+            self._t2 = netcdftime.datetime(self.lbyrd, self.lbmond, self.lbdatd, self.lbhrd, self.lbmind, self.lbsecd)
+        return self._t2
 
     def _set_t2(self, dt):
         self.lbyrd = dt.year
@@ -1188,6 +1204,8 @@ class PPField3(PPField):
         self.lbhrd = dt.hour
         self.lbmind = dt.minute
         self.lbsecd = dt.second
+        if hasattr(self, '_t2'):
+            delattr(self, '_t2')
 
     t2 = property(_get_t2, _set_t2, None,
         "A netcdftime.datetime object consisting of the lbyrd, lbmond, lbdatd, lbhrd, lbmind, and lbsecd attributes.")
@@ -1316,8 +1334,7 @@ def _ensure_load_rules_loaded():
 
     if _load_rules is None:
         basepath = iris.config.CONFIG_PATH
-        _load_rules = rules.RulesContainer(os.path.join(basepath, 'mosig_codes.txt'))
-        _load_rules.import_rules(os.path.join(basepath, 'pp_rules.txt'))
+        _load_rules = rules.RulesContainer(os.path.join(basepath, 'pp_rules.txt'))
 
     if _cross_reference_rules is None:
         basepath = iris.config.CONFIG_PATH

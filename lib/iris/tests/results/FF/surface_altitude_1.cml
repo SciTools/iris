@@ -7,10 +7,13 @@
     </attributes>
     <coords>
       <coord>
-        <DimCoord id="fc2e5e733b5cf4c" points="[0.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+        <dimCoord id="e9a79206" points="[0.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord id="62742da9" points="[363984.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <DimCoord id="95f615fae348902" points="[-90.0, -87.5, -85.0, -82.5, -80.0, -77.5, -75.0,
+        <dimCoord id="531655a2" points="[-90.0, -87.5, -85.0, -82.5, -80.0, -77.5, -75.0,
 		-72.5, -70.0, -67.5, -65.0, -62.5, -60.0, -57.5,
 		-55.0, -52.5, -50.0, -47.5, -45.0, -42.5, -40.0,
 		-37.5, -35.0, -32.5, -30.0, -27.5, -25.0, -22.5,
@@ -21,15 +24,15 @@
 		57.5, 60.0, 62.5, 65.0, 67.5, 70.0, 72.5, 75.0,
 		77.5, 80.0, 82.5, 85.0, 87.5, 90.0]" shape="(73,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <geogCS earth_radius="6371229.0"/>
-        </DimCoord>
+        </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <DimCoord id="3207b04384adbdec" points="[0.0, 3.75, 7.5, ..., 348.75, 352.5, 356.25]" shape="(96,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="942f16e6" points="[0.0, 3.75, 7.5, ..., 348.75, 352.5, 356.25]" shape="(96,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <geogCS earth_radius="6371229.0"/>
-        </DimCoord>
+        </dimCoord>
       </coord>
       <coord>
-        <DimCoord id="559b95abfcdf35de" points="[363984.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <dimCoord id="f0a8bc99" points="[363984.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>

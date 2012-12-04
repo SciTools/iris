@@ -27,6 +27,7 @@ from itertools import izip, chain, izip_longest
 import operator
 import re
 import warnings
+import zlib
 
 import numpy
 
@@ -307,26 +308,36 @@ class Coord(CFVariableMixin):
             if the overall shape of the coordinate changes after indexing.
 
         """
-        points = self.points
-        bounds = self.bounds
-        
-        # turn the key(s) into a full slice spec (all dims) 
+        # Turn the key(s) into a full slice spec - i.e. one entry for
+        # each dimension of the coord.
         full_slice = iris.util._build_full_slice_given_keys(key, self.ndim)
-        
-        # make indexing on the cube column based by using the column_slices_generator 
-        # (potentially requires slicing the data multiple times)
-        _, slice_gen = iris.util.column_slices_generator(full_slice, self.ndim)
-        
-        for keys in slice_gen:
-            if points is not None:
-                points = points[keys]
-                if points.shape and min(points.shape) == 0:
-                    raise IndexError('Cannot index with zero length slice.')
-            if bounds is not None:
-                bounds = bounds[keys + (Ellipsis, )]
+
+        # If it's a "null" indexing operation (e.g. coord[:, :]) then
+        # we can preserve deferred loading by avoiding promoting _points
+        # and _bounds to full ndarray instances.
+        def is_full_slice(s):
+            return isinstance(s, slice) and s == slice(None, None)
+        if all(is_full_slice(s) for s in full_slice):
+            points = self._points
+            bounds = self._bounds
+        else:
+            points = self.points
+            bounds = self.bounds
+
+            # Make indexing on the cube column based by using the
+            # column_slices_generator (potentially requires slicing the
+            # data multiple times).
+            _, slice_gen = iris.util.column_slices_generator(full_slice,
+                                                             self.ndim)
+            for keys in slice_gen:
+                if points is not None:
+                    points = points[keys]
+                    if points.shape and min(points.shape) == 0:
+                        raise IndexError('Cannot index with zero length slice.')
+                if bounds is not None:
+                    bounds = bounds[keys + (Ellipsis, )]
                     
         new_coord = self.copy(points=points, bounds=bounds)
-                    
         return new_coord    
 
     def copy(self, points=None, bounds=None):
@@ -590,7 +601,9 @@ class Coord(CFVariableMixin):
     @property
     def shape(self):
         """The fundamental shape of the Coord, expressed as a tuple."""
-        return self.points.shape
+        # Access the underlying _points attribute to avoid triggering
+        # a deferred load unnecessarily.
+        return self._points.shape
         
     def index(self, cell):
         """
@@ -818,10 +831,10 @@ class Coord(CFVariableMixin):
     
     def xml_element(self, doc):
         """Return a DOM element describing this Coord."""
-        # Create the xml element
+        # Create the XML element as the camelCaseEquivalent of the
+        # class name.
         element_name = type(self).__name__
-        # lower case the first char
-        element_name.replace(element_name[0], element_name[0].lower(), 1)
+        element_name = element_name[0].lower() + element_name[1:]
         element = doc.createElement(element_name)
         
         element.setAttribute('id', self._xml_id())
@@ -863,10 +876,11 @@ class Coord(CFVariableMixin):
 
     def _xml_id(self):
         # Returns a consistent, unique string identifier for this coordinate.
-        # NB. `None` does not have a reliable hash value.
-        unique_value = (self.standard_name or 0, str(self.units),
-                        tuple(self.attributes.iteritems()))
-        return str(hex(hash(unique_value))).lstrip('-0x')
+        unique_value = (self.standard_name, self.long_name, self.units,
+                        self.attributes, self.coord_system)
+        # Mask to ensure consistency across Python versions & platforms.
+        crc = zlib.crc32(str(unique_value)) & 0xffffffff
+        return hex(crc).lstrip('0x')
 
     def _value_type_name(self):
         """A simple, readable name for the data type of the Coord point/bound values."""

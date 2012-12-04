@@ -38,6 +38,8 @@ Instead of downsampling the data, a similar goal can be achieved using statistic
               surface_altitude               -                      -                 x                    x
          Derived coordinates:
               altitude                       -                      x                 x                    x
+         Scalar coordinates:
+              forecast_reference_time: 349612.0 hours since 1970-01-01 00:00:00
          Attributes:
               STASH: m01s00i004
               source: Data from Met Office Unified Model 7.03
@@ -60,6 +62,7 @@ name and the aggregation definition to the :meth:`Cube.collapsed() <iris.cube.Cu
          Derived coordinates:
               altitude                       -                 x                    x
          Scalar coordinates:
+              forecast_reference_time: 349612.0 hours since 1970-01-01 00:00:00
               level_height: 696.667 m, bound=(0.0, 1393.33) m
               model_level_number: 10, bound=(1, 19)
               sigma: 0.92293, bound=(0.84586, 1.0)
@@ -106,6 +109,7 @@ These areas can now be passed to the ``collapsed`` method as weights:
          Derived coordinates:
               altitude                       -                      x
          Scalar coordinates:
+              forecast_reference_time: 349612.0 hours since 1970-01-01 00:00:00
               grid_latitude: 1.51455 degrees, bound=(0.1443, 2.8848) degrees
               grid_longitude: 358.749 degrees, bound=(357.494, 360.005) degrees
               surface_altitude: 399.625 m, bound=(-14.0, 813.25) m
