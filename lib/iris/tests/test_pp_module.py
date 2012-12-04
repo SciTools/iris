@@ -19,14 +19,47 @@
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-from types import GeneratorType
+from copy import deepcopy
 import netcdftime
 import os
+from types import GeneratorType
 import unittest
 
 import iris.fileformats
 import iris.fileformats.pp as pp
 import iris.util
+
+
+class TestPPCopy(tests.IrisTest):
+    filename = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
+
+    def test_copy_field_deferred(self):
+        field = pp.load(self.filename).next()
+        clone = field.copy()
+        self.assertEqual(field, clone)
+        clone.lbyr = 666
+        self.assertNotEqual(field, clone)
+
+    def test_deepcopy_field_deferred(self):
+        field = pp.load(self.filename).next()
+        clone = deepcopy(field)
+        self.assertEqual(field, clone)
+        clone.lbyr = 666
+        self.assertNotEqual(field, clone)
+
+    def test_copy_field_non_deferred(self):
+        field = pp.load(self.filename, True).next()
+        clone = field.copy()
+        self.assertEqual(field, clone)
+        clone.data[0][0] = 666
+        self.assertNotEqual(field, clone)
+
+    def test_deepcopy_field_non_deferred(self):
+        field = pp.load(self.filename, True).next()
+        clone = deepcopy(field)
+        self.assertEqual(field, clone)
+        clone.data[0][0] = 666
+        self.assertNotEqual(field, clone)
 
 
 class IrisPPTest(tests.IrisTest):
