@@ -42,6 +42,7 @@ f.lbtim.ic in [1, 2]
 THEN
 CoordAndDims(DimCoord(f.lbft, standard_name='forecast_period', units='hours'))
 CoordAndDims(DimCoord((f.time_unit('hours').date2num(f.t1) + f.time_unit('hours').date2num(f.t2)) / 2.0, standard_name='time', units=f.time_unit('hours'), bounds=f.time_unit('hours').date2num([f.t1, f.t2])))
+CoordAndDims(DimCoord(f.time_unit('hours').date2num(f.t2) - f.lbft, standard_name='forecast_reference_time', units=f.time_unit('hours')))
 
 
 # add season information if lbtim.ib==3
