@@ -30,6 +30,7 @@ import numpy
 
 import iris
 import iris.aux_factory
+import iris.coord_systems
 import iris.coords
 import iris.exceptions
 import iris.unit
@@ -213,27 +214,21 @@ class TestCoordIntersection(tests.IrisTest):
         self.assertEqual(coord.intersect(offset_coord), offset_coord.intersect(coord))
 
 
-class TestCoordXML(unittest.TestCase):
-    def test_aux_xml(self):
-        doc = Document()
-        coord = iris.coords.AuxCoord(numpy.arange(10, dtype=numpy.int32), long_name='test', units='meter')
-        coord_xml_element = coord.xml_element(doc)
-        doc.appendChild(coord_xml_element)
-        r = '<?xml version="1.0" ?>\n<AuxCoord id="17eb9ae9fe32de24" long_name="test" points="[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]" '\
-            'shape="(10,)" units="Unit(\'meter\')" value_type="int32"/>\n'
-        t = doc.toprettyxml(indent="  ")
-        self.assertEqual(r, t)
+class TestXML(tests.IrisTest):
+    def test_minimal(self):
+        coord = iris.coords.DimCoord(numpy.arange(10, dtype=numpy.int32))
+        element = coord.xml_element(Document())
+        self.assertXMLElement(coord, ('coord_api', 'minimal.xml'))
 
-    def test_dim_xml(self):
-        doc = Document()
-        coord = iris.coords.DimCoord(numpy.arange(4, dtype=numpy.float32) * 2, long_name='test', units='meter')
+    def test_complex(self):
+        crs = iris.coord_systems.GeogCS(6370000)
+        coord = iris.coords.AuxCoord(numpy.arange(4, dtype=numpy.float32),
+                                     'air_temperature', 'my_long_name',
+                                     units='K',
+                                     attributes={'foo': 'bar', 'count': 2},
+                                     coord_system=crs)
         coord.guess_bounds(0.5)
-        coord_xml_element = coord.xml_element(doc)
-        doc.appendChild(coord_xml_element)
-        r = '<?xml version="1.0" ?>\n<DimCoord bounds="[[-1.0, 1.0],\n\t\t[1.0, 3.0],\n\t\t[3.0, 5.0],\n\t\t[5.0, 7.0]]" '\
-            'id="17eb9ae9fe32de24" long_name="test" points="[0.0, 2.0, 4.0, 6.0]" shape="(4,)" units="Unit(\'meter\')" value_type="float32"/>\n'
-        t = doc.toprettyxml(indent="  ")
-        self.assertEqual(r, t)
+        self.assertXMLElement(coord, ('coord_api', 'complex.xml'))
 
 
 class TestCoordRepr(unittest.TestCase):

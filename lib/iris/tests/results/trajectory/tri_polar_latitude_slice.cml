@@ -30,7 +30,7 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <DimCoord bounds="[[0.0, 10.0],
+        <dimCoord bounds="[[0.0, 10.0],
 		[10.0, 20.0008],
 		[20.0008, 30.0032],
 		[30.0032, 40.0086],
@@ -60,7 +60,7 @@
 		[3504.46, 4001.16],
 		[4001.16, 4500.02],
 		[4500.02, 5000.0],
-		[5000.0, 5500.55]]" id="335a3c8e98fea901" long_name="Vertical T levels" points="[4.99994, 15.0003, 25.0018, 35.0054, 45.0133,
+		[5000.0, 5500.55]]" id="81964f3d" long_name="Vertical T levels" points="[4.99994, 15.0003, 25.0018, 35.0054, 45.0133,
 		55.0295, 65.0618, 75.1255, 85.2504, 95.4943,
 		105.97, 116.896, 128.698, 142.195, 158.961,
 		181.963, 216.648, 272.477, 364.303, 511.535,
@@ -70,31 +70,31 @@
           <attributes>
             <attribute name="title" value="deptht"/>
           </attributes>
-        </DimCoord>
+        </dimCoord>
       </coord>
       <coord datadims="[2]">
-        <AuxCoord id="59aab3cd24e0fe16" long_name="Latitude" points="[-78.1906, -78.1906, -78.1906, ..., 83.8392,
+        <auxCoord id="b010a46e" long_name="Latitude" points="[-78.1906, -78.1906, -78.1906, ..., 83.8392,
 		86.2794, 87.9471]" shape="(90,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <attributes>
             <attribute name="nav_model" value="Default grid"/>
           </attributes>
-        </AuxCoord>
+        </auxCoord>
       </coord>
       <coord datadims="[2]">
-        <AuxCoord id="6bda6d419cf4f548" long_name="Longitude" points="[-84.0002, -90.0001, -90.0001, ..., -86.9366,
+        <auxCoord id="1ff0ba3f" long_name="Longitude" points="[-84.0002, -90.0001, -90.0001, ..., -86.9366,
 		-88.8945, -100.0]" shape="(90,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <attributes>
             <attribute name="nav_model" value="Default grid"/>
           </attributes>
-        </AuxCoord>
+        </auxCoord>
       </coord>
       <coord datadims="[0]">
-        <DimCoord id="773f6676affe8323" long_name="Time axis" points="[43200.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 0001-01-01 00:00:00', calendar='360_day')" value_type="float32">
+        <dimCoord id="bce9ef86" long_name="Time axis" points="[43200.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 0001-01-01 00:00:00', calendar='360_day')" value_type="float32">
           <attributes>
             <attribute name="time_origin" value=" 0001-JAN-01 00:00:00"/>
             <attribute name="title" value="Time"/>
           </attributes>
-        </DimCoord>
+        </dimCoord>
       </coord>
     </coords>
     <cellMethods>
