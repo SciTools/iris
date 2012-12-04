@@ -138,7 +138,7 @@ class TestTrajectory(tests.IrisTest):
         self.assertRaises(ValueError, iris.analysis.trajectory.interpolate, cube, sample_points, method="linekar")
 
     def test_hybrid_height(self):
-        cube = tests.stock.simple_4d_hh()
+        cube = tests.stock.simple_4d_with_hybrid_height()
         traj = (('grid_latitude',[20.5, 21.5, 22.5, 23.5]),
                 ('grid_longitude',[31, 32, 33, 34]))
         xsec = iris.analysis.trajectory.interpolate(cube, traj, method='nearest')        
