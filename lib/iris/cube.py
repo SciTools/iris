@@ -324,6 +324,7 @@ class Cube(CFVariableMixin):
                   longitude                          -              x
              Scalar coordinates:
                   forecast_period: 6477 hours
+                  forecast_reference_time: 243363.0 hours since 1970-01-01 00:00:00
                   pressure: 1000.0 hPa
                   time: 232560.0 hours since 1970-01-01 00:00:00, bound=(215280.0, 249840.0) hours since 1970-01-01 00:00:00
              Attributes:
