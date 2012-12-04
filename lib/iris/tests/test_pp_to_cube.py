@@ -30,6 +30,25 @@ import iris.util
 import iris.tests.stock
 
 
+class TestPPLoadCustom(tests.IrisTest):
+    def setUp(self):
+        self.filename = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
+        iris.fileformats.pp._ensure_load_rules_loaded()
+        self.load_rules = iris.fileformats.pp._load_rules
+
+    def test_lbtim_2(self):
+        subcubes = iris.cube.CubeList()
+        template = iris.fileformats.pp.load(self.filename).next()
+        for delta in range(10):
+            field = template.copy()
+            field.lbtim = 2
+            field.lbdat += delta
+            rules_result = self.load_rules.result(field)
+            subcubes.append(rules_result.cube)
+        cube = subcubes.merge()[0]
+        self.assertCML(cube, ('pp_rules', 'lbtim_2.cml'))
+
+
 class TestReferences(tests.IrisTest):
     def setUp(self):
         target = iris.tests.stock.simple_2d()
