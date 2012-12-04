@@ -151,7 +151,7 @@ class NimrodField(object):
         # what are we expecting?
         num_data = int(self.num_rows) * int(self.num_cols)
         num_data_bytes = int(num_data) * int(self.datum_len)
-    
+
         # format string for unpacking the file.read()
         # 0:real
         if self.datum_type == 0:
@@ -176,7 +176,7 @@ class NimrodField(object):
             data_format_string = ">%db" % num_data
         else:
             raise TranslationError("Undefined data type")
-            
+
         leading_length = struct.unpack(">L", infile.read(4))[0]
         if leading_length != num_data_bytes:
             raise TranslationError("Expected data leading_length of %d" % num_data_bytes)
@@ -188,20 +188,20 @@ class NimrodField(object):
 
         if sys.byteorder == "little":
             self.data.byteswap(True)
-        
+
         trailing_length = struct.unpack(">L", infile.read(4))[0]
         if trailing_length != leading_length:
             raise TranslationError("Expected data trailing_length of %d" % num_data_bytes)
-        
+
         # form the correct shape
         self.data = self.data.reshape(self.num_rows, self.num_cols)
-        
+
         # flip the data to get origin in bottom left
         if self.origin_corner == 0:  # top left
             self.data = self.data[::-1, :]
         else:
             raise TranslationError("Corner {0} not yet implemented".format(self.origin_corner))
-    
+
     def to_cube(self):
         """Return a new :class:`~iris.cube.Cube`, created from this NimrodField."""
         MISSING_INT = self.int_mdi
