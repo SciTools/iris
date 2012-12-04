@@ -27,7 +27,7 @@ import iris.plot as iplt
 
 
 @iris.tests.skip_data
-class TestGribLoad(tests.GraphicsTest):
+class TestNimrodLoad(tests.GraphicsTest):
     
     def test_load(self):
         cube = iris.load(tests.get_data_path(('NIMROD', 'uk2km', 'WO0000000003452',
