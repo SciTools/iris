@@ -678,7 +678,7 @@ def save(cube, filename, netcdf_format='NETCDF4'):
     dimension_names = []
     for dim in xrange(cube.ndim):
         coords = cube.coords(dimensions=dim, dim_coords=True)
-        if coords is not None:
+        if coords:
             if len(coords) != 1:
                 raise iris.exceptions.IrisError('Cube appears to have multiple dimension coordinates on dimension %d' % dim)
             dimension_names.append(coords[0].name())

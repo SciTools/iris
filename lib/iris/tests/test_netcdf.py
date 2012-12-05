@@ -267,6 +267,22 @@ class TestNetCDFSave(tests.IrisTest):
         self.assertCML(cube, ('netcdf', 'netcdf_save_load_ndim_auxiliary.cml'))
 
         os.remove(file_out)
+        
+    def test_trajectory(self):
+        cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
+        
+        # extract a trajectory
+        x = cube.coord('longitude').points[:10]
+        y = cube.coord('latitude').points[:10]
+        sample_points = [('latitude', x), ('longitude', y)]
+        traj = iris.analysis.trajectory.interpolate(cube, sample_points)
+        
+        # save, reload and check
+        temp_filename = iris.util.create_temp_filename(suffix='.nc')
+        iris.save(traj, temp_filename)
+        reload = iris.load_cube(temp_filename)
+        self.assertCML(reload, ('netcdf', 'save_load_traj.cml'))
+        os.remove(temp_filename)
 
 
 class TestCFStandardName(tests.IrisTest):
