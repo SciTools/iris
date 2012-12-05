@@ -6,10 +6,10 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="2c9940ad" points="[100]" shape="(1,)" standard_name="height" units="Unit('meters')" value_type="int32"/>
+        <dimCoord id="b62ac022" points="[100]" shape="(1,)" standard_name="height" units="Unit('meters')" value_type="int32"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="dcfea24" points="[0, 1, 2, 3, 4]" shape="(5,)" standard_name="time" units="Unit('unknown')" value_type="int32">
+        <dimCoord id="46ab7d6e" points="[0, 1, 2, 3, 4]" shape="(5,)" standard_name="time" units="Unit('unknown')" value_type="int32">
           <attributes>
             <attribute name="invalid_units" value="wibble"/>
           </attributes>

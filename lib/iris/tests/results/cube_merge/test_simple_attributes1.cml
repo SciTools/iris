@@ -6,13 +6,13 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="e629b330" long_name="bar" points="[2.5, 7.5, 12.5]" shape="(3,)" units="Unit('1')" value_type="float64"/>
+        <dimCoord id="7c9a33bf" long_name="bar" points="[2.5, 7.5, 12.5]" shape="(3,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="ce286204" long_name="foo" points="[-7.5, 7.5, 22.5, 37.5]" shape="(4,)" units="Unit('1')" value_type="float64"/>
+        <dimCoord id="549be28b" long_name="foo" points="[-7.5, 7.5, 22.5, 37.5]" shape="(4,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="c18794c5" long_name="pressure" points="[10]" shape="(1,)" units="Unit('Pa')" value_type="int32"/>
+        <dimCoord id="5b34144a" long_name="pressure" points="[10]" shape="(1,)" units="Unit('Pa')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -21,13 +21,13 @@
   <cube long_name="thingness" units="1">
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="e629b330" long_name="bar" points="[2.5, 7.5, 12.5]" shape="(3,)" units="Unit('1')" value_type="float64"/>
+        <dimCoord id="7c9a33bf" long_name="bar" points="[2.5, 7.5, 12.5]" shape="(3,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="ce286204" long_name="foo" points="[-7.5, 7.5, 22.5, 37.5]" shape="(4,)" units="Unit('1')" value_type="float64"/>
+        <dimCoord id="549be28b" long_name="foo" points="[-7.5, 7.5, 22.5, 37.5]" shape="(4,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="c18794c5" long_name="pressure" points="[11]" shape="(1,)" units="Unit('Pa')" value_type="int32"/>
+        <dimCoord id="5b34144a" long_name="pressure" points="[11]" shape="(1,)" units="Unit('Pa')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods/>

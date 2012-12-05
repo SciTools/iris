@@ -13,12 +13,12 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="aac1b1a0" long_name="latitude in rotated grid" points="[-20.57, -20.13, -19.69, ..., 19.91, 20.35, 20.79]" shape="(95,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="e065ce2a" long_name="latitude in rotated grid" points="[-20.57, -20.13, -19.69, ..., 19.91, 20.35, 20.79]" shape="(95,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
           <rotatedGeogCS grid_north_pole_latitude="39.25" grid_north_pole_longitude="-162.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="9bc94cef" long_name="longitude in rotated pole grid" points="[-21.61, -21.17, -20.73, -20.29, -19.85, -19.41,
+        <dimCoord id="d16d3365" long_name="longitude in rotated pole grid" points="[-21.61, -21.17, -20.73, -20.29, -19.85, -19.41,
 		-18.97, -18.53, -18.09, -17.65, -17.21, -16.77,
 		-16.33, -15.89, -15.45, -15.01, -14.57, -14.13,
 		-13.69, -13.25, -12.81, -12.37, -11.93, -11.49,
@@ -36,7 +36,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[0, 1]">
-        <auxCoord id="c54e6811" long_name="latitude" points="[[26.8566, 26.9871, 27.1152, ..., 28.6672,
+        <auxCoord id="5ffde89e" long_name="latitude" points="[[26.8566, 26.9871, 27.1152, ..., 28.6672,
  		28.575, 28.4803],
 		[27.2735, 27.4048, 27.5337, ..., 29.0963,
  		29.0035, 28.9081],
@@ -51,7 +51,7 @@
  		67.5437, 67.3271]]" shape="(95, 85)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[0, 1]">
-        <auxCoord id="dbbfa730" long_name="longitude" points="[[-4.73649, -4.29826, -3.85863, ..., 33.4636,
+        <auxCoord id="410c27bf" long_name="longitude" points="[[-4.73649, -4.29826, -3.85863, ..., 33.4636,
  		33.921, 34.3773],
 		[-4.89474, -4.4538, -4.01144, ..., 33.5747,
  		34.0352, 34.4945],
