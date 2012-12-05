@@ -9,17 +9,17 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <dimCoord id="26200a20" long_name="rotated latitude" points="[-20.68, -20.46, -20.24, ..., 20.46, 20.68, 20.9]" shape="(190,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="6c8475aa" long_name="rotated latitude" points="[-20.68, -20.46, -20.24, ..., 20.46, 20.68, 20.9]" shape="(190,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
           <rotatedGeogCS grid_north_pole_latitude="18.0" grid_north_pole_longitude="-140.75"/>
         </dimCoord>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="66003d44" long_name="rotated longitude" points="[-22.16, -21.94, -21.72, ..., 15.46, 15.68, 15.9]" shape="(174,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="2ca442ce" long_name="rotated longitude" points="[-22.16, -21.94, -21.72, ..., 15.46, 15.68, 15.9]" shape="(174,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
           <rotatedGeogCS grid_north_pole_latitude="18.0" grid_north_pole_longitude="-140.75"/>
         </dimCoord>
       </coord>
       <coord datadims="[1, 2]">
-        <auxCoord id="c54e6811" long_name="latitude" points="[[26.5861, 26.653, 26.7194, ..., 28.3491,
+        <auxCoord id="5ffde89e" long_name="latitude" points="[[26.5861, 26.653, 26.7194, ..., 28.3491,
  		28.3005, 28.2513],
 		[26.794, 26.8612, 26.9277, ..., 28.563, 28.5142,
  		28.4648],
@@ -34,7 +34,7 @@
  		67.2542, 67.1424]]" shape="(190, 174)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1, 2]">
-        <auxCoord id="dbbfa730" long_name="longitude" points="[[-5.24204, -5.02433, -4.80626, ..., 34.4617,
+        <auxCoord id="410c27bf" long_name="longitude" points="[[-5.24204, -5.02433, -4.80626, ..., 34.4617,
  		34.6889, 34.9159],
 		[-5.32255, -5.10417, -4.88543, ..., 34.5205,
  		34.7485, 34.9762],
@@ -55,7 +55,7 @@
 		..., 
 		[4015.5, 4016.5],
 		[4016.5, 4017.5],
-		[4017.5, 4018.5]]" id="220e8341" long_name="Julian Day" points="[2922.5, 2923.5, 2924.5, ..., 4015.5, 4016.5,
+		[4017.5, 4018.5]]" id="b8bd03ce" long_name="Julian Day" points="[2922.5, 2923.5, 2924.5, ..., 4015.5, 4016.5,
 		4017.5]" shape="(1096,)" standard_name="time" units="Unit('days since 1950-01-01 00:00:00.0', calendar='gregorian')" value_type="float32"/>
       </coord>
     </coords>

@@ -6,4 +6,4 @@
 		[15.75, 18.75],
 		[12.75, 15.75],
 		[9.75, 12.75],
-		[6.75, 9.75]]" id="54f45157" long_name="foo" points="[30.0, 27.0, 24.0, 21.0, 18.0, 15.0, 12.0, 9.0]" shape="(8,)" units="Unit('meter')" value_type="float32"/>
+		[6.75, 9.75]]" id="ce47d1d8" long_name="foo" points="[30.0, 27.0, 24.0, 21.0, 18.0, 15.0, 12.0, 9.0]" shape="(8,)" units="Unit('meter')" value_type="float32"/>

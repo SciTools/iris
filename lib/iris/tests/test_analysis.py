@@ -641,8 +641,8 @@ class TestProject(tests.GraphicsTest):
 
     @iris.tests.skip_data
     def test_cartopy_projection(self):
-        cube = iris.load_strict(tests.get_data_path(('PP', 'aPPglob1',
-                                                     'global.pp')))
+        cube = iris.load_cube(tests.get_data_path(('PP', 'aPPglob1',
+                                                   'global.pp')))
         projections = {}
         projections['RotatedPole'] = ccrs.RotatedPole(pole_longitude=177.5,
                                                       pole_latitude=37.5)
@@ -679,7 +679,7 @@ class TestProject(tests.GraphicsTest):
 
     @iris.tests.skip_data
     def test_no_coord_system(self):
-        cube = iris.load_strict(tests.get_data_path(('PP', 'aPPglob1', 'global.pp')))
+        cube = iris.load_cube(tests.get_data_path(('PP', 'aPPglob1', 'global.pp')))
         cube.coord('longitude').coord_system = None
         cube.coord('latitude').coord_system = None
         new_cube, extent = iris.analysis.cartography.project(cube, self.target_proj)

@@ -877,7 +877,8 @@ class Coord(CFVariableMixin):
     def _xml_id(self):
         # Returns a consistent, unique string identifier for this coordinate.
         unique_value = (self.standard_name, self.long_name, self.units,
-                        self.attributes, self.coord_system)
+                        tuple(sorted(self.attributes.items())),
+                        self.coord_system)
         # Mask to ensure consistency across Python versions & platforms.
         crc = zlib.crc32(str(unique_value)) & 0xffffffff
         return hex(crc).lstrip('0x')
