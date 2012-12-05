@@ -245,7 +245,7 @@ if _lib_ud is None:
     _ut_get_status = _lib_ud.ut_get_status
 
     _ut_get_unit_by_name = _lib_ud.ut_get_unit_by_name
-    _ut_get_unit_by_name.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    _ut_get_unit_by_name.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
     _ut_get_unit_by_name.restype = ctypes.c_void_p
 
     _ut_invert = _lib_ud.ut_invert
@@ -280,7 +280,7 @@ if _lib_ud is None:
     _ut_raise.restype = ctypes.c_void_p
 
     _ut_read_xml = _lib_ud.ut_read_xml
-    _ut_read_xml.argtypes = [ctypes.c_void_p]
+    _ut_read_xml.argtypes = [ctypes.c_char_p]
     _ut_read_xml.restype = ctypes.c_void_p
 
     _ut_root = _lib_ud.ut_root
@@ -860,7 +860,7 @@ class Unit(iris.util._OrderedHashable):
     def __getstate__(self):
         # state capture method for Pickle.dump()
         #  - return the instance data needed to reconstruct a Unit value
-        return {'unit_text':self.origin, 'calendar':self.calendar}
+        return {'unit_text': self.origin, 'calendar': self.calendar}
 
     def __setstate__(self, state):
         # object reconstruction method for Pickle.load()
