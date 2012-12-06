@@ -11,8 +11,8 @@ the :py:func:`iris.load` function is used::
     filename = '/path/to/file'
     cubes = iris.load(filename)
 
-Iris will attempt to return **as few cubes as possible** b
-y collecting together multiple fields with a shared standard name 
+Iris will attempt to return **as few cubes as possible** 
+by collecting together multiple fields with a shared standard name 
 into a single multidimensional cube. 
 
 The :py:func:`iris.load` function automatically recognises the format 
@@ -41,7 +41,7 @@ The ``surface_altitude`` cube was 2 dimensional with:
    * the two dimensions have extents of 204 and 187 respectively and are 
      represented by the ``grid_latitude`` and ``grid_longitude`` coordinates.
 
-The ``air_potential_temperature`` cubes was 4 dimensional with:
+The ``air_potential_temperature`` cubes were 4 dimensional with:
    * the same length ``grid_latitude`` and ``grid_longitude`` dimensions as 
      ``surface_altitide``
    * a ``time`` dimension of length 3
