@@ -19,7 +19,11 @@
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import matplotlib.pyplot as plt
+from functools import wraps
+import types
+import warnings
+
+import matplotlib.pyplot as plt 
 import numpy
 
 import iris
@@ -134,8 +138,8 @@ class TestHybridHeight(tests.GraphicsTest):
 # Caches _load_4d_testcube so subsequent calls are faster
 def cache(fn, cache={}):
     def inner(*args, **kwargs):
-        key = "result"
-        if not cache:
+        key = fn.__name__
+        if not cache.has_key(key):
             cache[key] =  fn(*args, **kwargs)
         return cache[key]
     return inner
@@ -167,6 +171,21 @@ def _load_4d_testcube():
     # NOTE: this makes ZYX non-contiguous.  Doesn't seem to matter for now.
     test_cube = test_cube[:,::10,::10,::10]
     return test_cube
+
+
+@cache
+def _load_wind_no_bounds():
+    # Load the COLPEX data => TZYX
+    path = tests.get_data_path(('PP', 'COLPEX', 'uwind_and_orog.pp'))
+    wind = iris.load_cube(path, 'eastward_wind')
+
+    # Remove bounds from all coords that have them.
+    wind.coord('grid_latitude').bounds = None
+    wind.coord('grid_longitude').bounds = None
+    wind.coord('level_height').bounds = None
+    wind.coord('sigma').bounds = None
+
+    return wind[:, :, :50, :50]
 
 
 def _time_series(src_cube):
@@ -251,6 +270,111 @@ class TestPcolormesh(tests.GraphicsTest, SliceMixin):
     """Test the iris.plot.pcolormesh routine."""
     def setUp(self):
         self.wind = _load_4d_testcube()
+        self.draw_method = iplt.pcolormesh
+
+
+def check_warnings(method):
+    """
+    Decorator that adds a catch_warnings and filter to assert
+    the method being decorated issues a UserWarning.
+
+    """
+    @wraps(method)
+    def decorated_method(self, *args, **kwargs):
+        # Force reset of iris.coords warnings registry to avoid suppression of
+        # repeated warnings. warnings.resetwarnings() does not do this.
+        if hasattr(coords, '__warningregistry__'):
+            coords.__warningregistry__.clear()
+
+        # Check that method raises warning.
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            with self.assertRaises(UserWarning):
+                return method(self, *args, **kwargs)
+    return decorated_method
+
+
+def ignore_warnings(method):
+    """
+    Decorator that adds a catch_warnings and filter to suppress
+    any warnings issues by the method being decorated.
+
+    """
+    @wraps(method)
+    def decorated_method(self, *args, **kwargs):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            return method(self, *args, **kwargs)
+    return decorated_method
+
+
+class CheckForWarningsMetaclass(type):
+    """
+    Metaclass that adds a further test for each base class test
+    that checks that each test raises a UserWarning. Each base
+    class test is then overriden to ignore warnings in order to
+    check the underlying functionality.
+
+    """
+    def __new__(cls, name, bases, local):
+        def add_decorated_methods(attr_dict, target_dict, decorator):
+            for key, value in attr_dict.items():
+                if (isinstance(value, types.FunctionType) and
+                        key.startswith('test')):
+                    new_key = '_'.join((key, decorator.__name__))
+                    if not target_dict.has_key(new_key):
+                        wrapped = decorator(value)
+                        wrapped.__name__ = new_key
+                        target_dict[new_key] = wrapped
+                    else:
+                        raise RuntimeError('A attribute called {!r} '
+                                           'already exists.'.format(new_key))
+
+        def override_with_decorated_methods(attr_dict, target_dict,
+                                            decorator):
+            for key, value in attr_dict.items():
+                if (isinstance(value, types.FunctionType) and
+                        key.startswith('test')):
+                    target_dict[key] = decorator(value)
+
+        # Add decorated versions of base methods
+        # to check for warnings.
+        for base in bases:
+            add_decorated_methods(base.__dict__, local, check_warnings)
+
+        # Override base methods to ignore warnings.
+        for base in bases:
+            override_with_decorated_methods(base.__dict__, local,
+                                            ignore_warnings)
+
+        return type.__new__(cls, name, bases, local)
+
+
+@iris.tests.skip_data
+class TestPcolorNoBounds(tests.GraphicsTest, SliceMixin):
+    """
+    Test the iris.plot.pcolor routine on a cube with coordinates
+    that have no bounds.
+
+    """
+    __metaclass__ = CheckForWarningsMetaclass
+
+    def setUp(self):
+        self.wind = _load_wind_no_bounds()
+        self.draw_method = iplt.pcolor
+
+
+@iris.tests.skip_data
+class TestPcolormeshNoBounds(tests.GraphicsTest, SliceMixin):
+    """
+    Test the iris.plot.pcolormesh routine on a cube with coordinates
+    that have no bounds.
+
+    """
+    __metaclass__ = CheckForWarningsMetaclass
+
+    def setUp(self):
+        self.wind = _load_wind_no_bounds()
         self.draw_method = iplt.pcolormesh
 
 

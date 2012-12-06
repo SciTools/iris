@@ -202,12 +202,6 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     mode = iris.coords.BOUND_MODE
     if coords is not None:
         plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode)
-        if plot_defn.coords[0].nbounds == 0 or plot_defn.coords[1].nbounds == 0:
-            raise ValueError('Cannot draw %r against %r using %r as at least'
-                             ' one of them is not bounded.' % (
-                                plot_defn.coords[0].name(),
-                                plot_defn.coords[1].name(),
-                                draw_method_name))
     else:
         plot_defn = _get_plot_defn(cube, mode, ndims=2)
 
