@@ -465,7 +465,7 @@ CoordAndDims(DimCoord(points=grib.phenomenon_points('hours'), standard_name='tim
  
 IF
 grib.edition == 2
-grib.productDefinitionTemplateNumber == 8
+grib.productDefinitionTemplateNumber in (8, 9)
 THEN
 CoordAndDims(DimCoord(points=Unit(grib._forecastTimeUnit).convert(int(grib.forecastTime), "hours"), standard_name='forecast_period', units="hours"))
 CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN), bounds=grib.phenomenon_bounds('hours')))
@@ -626,3 +626,9 @@ grib.edition == 2
 grib.productDefinitionTemplateNumber == 1
 THEN
 CoordAndDims(DimCoord(points=grib.perturbationNumber, long_name='ensemble_member', units='no_unit'))
+
+# only accept known + understood Product Definition Templates
+IF
+grib.productDefinitionTemplateNumber not in (0, 8)
+THEN
+CMCustomAttribute("GRIB_LOAD_WARNING",("unsupported GRIB%d ProductDefinitionTemplate: #4.%d" % (grib.edition, grib.productDefinitionTemplateNumber)))

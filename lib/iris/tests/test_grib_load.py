@@ -15,12 +15,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
-
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
 import os
-import warnings
+import datetime
+
+import gribapi
 
 import matplotlib.pyplot as plt
 
@@ -165,8 +166,7 @@ class TestGribLoad(tests.GraphicsTest):
         self.assertEqual(cube.name(), 'air_temperature')
         
     def test_fp_units(self):
-
-        """Test different units for forecast period (just the ones we care about)."""
+        # Test different units for forecast period (just the ones we care about).
         cube = iris.load_cube(tests.get_data_path(('GRIB', 'fp_units', 'minutes.grib2')))
         self.assertEqual(cube.coord("forecast_period").units, "hours")
         self.assertEqual(cube.coord("forecast_period").points[0], 24)
@@ -182,8 +182,64 @@ class TestGribLoad(tests.GraphicsTest):
         cube = iris.load_cube(tests.get_data_path(('GRIB', 'fp_units', 'seconds.grib2')))
         self.assertEqual(cube.coord("forecast_period").units, "hours")
         self.assertEqual(cube.coord("forecast_period").points[0], 24)
- 
 
+    def test_load_probability_forecast(self):
+        # Test GribWrapper interpretation of PDT 4.9 data.
+        # NOTE: 
+        #   Currently Iris has only partial support for PDT 4.9.
+        #   Though it can load the data, key metadata (thresholds) is lost.
+        #   At present, we are not testing for this.
+
+        # Make a testing grib message in memory, with gribapi.
+        grib_message = gribapi.grib_new_from_samples('GRIB2')
+        gribapi.grib_set_long(grib_message, 'productDefinitionTemplateNumber', 9)
+        gribapi.grib_set_string(grib_message, 'stepRange', '10-55')
+        grib_wrapper = iris.fileformats.grib.GribWrapper(grib_message)
+        
+        # Check that it captures the statistics time period info.
+        # (And for now, nothing else)
+        self.assertEqual(
+            grib_wrapper._referenceDateTime,
+            datetime.datetime(year=2007, month=03, day=23, 
+                              hour=12, minute=0, second=0)
+        )
+        self.assertEqual(
+            grib_wrapper._periodStartDateTime,
+            datetime.datetime(year=2007, month=03, day=23,
+                              hour=22, minute=0, second=0)
+        )
+        self.assertEqual(
+            grib_wrapper._periodEndDateTime,
+            datetime.datetime(year=2007, month=03, day=25,
+                              hour=12, minute=0, second=0)
+        )
+
+
+    def test_warn_unknown_pdts(self):
+        # Test loading of an unrecognised GRIB Product Definition Template.
+        
+        # Get a temporary file by name (deleted afterward by context).
+        with self.temp_filename() as temp_gribfile_path:
+            # Write a test grib message to the temporary file.
+            with open(temp_gribfile_path, 'wb') as temp_gribfile:
+                grib_message = gribapi.grib_new_from_samples('GRIB2')
+                # Set the PDT to something unexpected.
+                gribapi.grib_set_long(
+                    grib_message, 'productDefinitionTemplateNumber', 5)
+                gribapi.grib_write(grib_message, temp_gribfile)
+
+            # Load the message from the file as a cube.
+            cube_generator = iris.fileformats.grib.load_cubes(
+                temp_gribfile_path )
+            cube = cube_generator.next()
+
+            # Check the cube has an extra "warning" attribute.
+            self.assertEqual(
+                cube.attributes['GRIB_LOAD_WARNING'],
+                'unsupported GRIB2 ProductDefinitionTemplate: #4.5'
+            )
+
+        
 if __name__ == "__main__":
     tests.main()
     print "finished"
