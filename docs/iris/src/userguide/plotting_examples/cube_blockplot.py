@@ -11,10 +11,10 @@ temperature_cube = iris.load_cube(fname)
 temperature_cube.coord('latitude').guess_bounds()
 temperature_cube.coord('longitude').guess_bounds()
 
-# Draw the contour with 25 levels
+# draw block plot
 qplt.pcolormesh(temperature_cube)
 
-# Add coastlines to the map created by pcolormesh
+# add coastlines on the map created by qplt
 plt.gca().coastlines()
 
 plt.show()

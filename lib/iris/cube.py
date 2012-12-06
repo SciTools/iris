@@ -1370,7 +1370,7 @@ class Cube(CFVariableMixin):
         """
         Extract a sub-cube at the given n-dimensional points.
         
-        .. deprecated::
+        .. deprecated:: 0.9
             Please use :func:`iris.analysis.trajectory.interpolate` instead of this method.
         
         Args:
