@@ -7,6 +7,11 @@
 		18, 14, 10, 9, 5, 2, 29, 25, 22, 18]" shape="(23,)" units="Unit('1')" value_type="int64"/>
       </coord>
       <coord datadims="[0]">
+        <auxCoord id="6a5a6eec" long_name="day_of_year" points="[1, 28, 55, 82, 109, 136, 163, 190, 217, 244,
+		271, 298, 325, 352, 14, 41, 68, 95, 122, 149,
+		176, 203, 230]" shape="(23,)" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0]">
         <auxCoord id="107d3667" long_name="month" points="[Jan, Jan, Feb, Mar, Apr, May, Jun, Jul, Aug,
 		Sep, Sep, Oct, Nov, Dec, Jan, Feb, Mar, Apr,
 		May, May, Jun, Jul, Aug]" shape="(23,)" units="Unit('no_unit')" value_type="string"/>
