@@ -33,7 +33,7 @@ import iris.exceptions
 import iris.unit
 
 
-# This value is used as a fall-back if the cube does not define the earth 
+# This value is used as a fall-back if the cube does not define the earth
 DEFAULT_SPHERICAL_EARTH_RADIUS = 6367470
 # TODO: This should not be necessary, as CF is always in meters
 DEFAULT_SPHERICAL_EARTH_RADIUS_UNIT = iris.unit.Unit('m')
@@ -41,10 +41,17 @@ DEFAULT_SPHERICAL_EARTH_RADIUS_UNIT = iris.unit.Unit('m')
 
 def wrap_lons(lons, base, period):
     """
-    Returns given longitudes in the range between base and base + period.
-    ::
-        wrapped_lon = wrap_lons(185, -180, 360)
-         
+    Wrap longitude values into the range between base and base+period.
+
+    .. testsetup::
+
+        import numpy
+        from iris.analysis.cartography import *
+
+    For example:
+        >>> print wrap_lons(numpy.array([185, 30, -200, 75]), -180, 360)
+        [-175   30  160   75]
+
     """
     return ((lons - base + period * 2) % period) + base
 
@@ -60,26 +67,31 @@ def _proj4(pole_lon, pole_lat):
 
 def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
     """
-    Given an array of lons and lats with a rotated pole, convert to unrotated lons and lats.
-     
+    Convert rotated-pole lons and lats to unrotated ones.
+
+        lons, lats = unrotate_pole(grid_lons, grid_lats, pole_lon, pole_lat)
+
     .. note:: Uses proj.4 to perform the conversion.
-    
+
     """
     proj4_wrapper = _proj4(pole_lon, pole_lat)
     # NB. pyproj modifies the proj.4 init string and adds unit=meter
     # which breaks our to_meter=57...
     # So we have to do the radian-degree correction explicitly
     d = math.degrees(1)
-    std_lons, std_lats = proj4_wrapper(rotated_lons / d, rotated_lats / d, inverse=True)
+    std_lons, std_lats = proj4_wrapper(
+        rotated_lons / d, rotated_lats / d, inverse=True)
     return std_lons, std_lats
 
 
 def rotate_pole(lons, lats, pole_lon, pole_lat):
     """
-    Given an array of lons and lats, convert to lons and lats with a rotated pole.
-        
+    Convert arrays of lons and lats to ones on a rotated pole.
+
+        grid_lons, grid_lats = rotate_pole(lons, lats, pole_lon, pole_lat)
+
     .. note:: Uses proj.4 to perform the conversion.
-    
+
     """
     proj4_wrapper = _proj4(pole_lon, pole_lat)
     rlons, rlats = proj4_wrapper(lons, lats)
@@ -93,10 +105,14 @@ def rotate_pole(lons, lats, pole_lon, pole_lat):
 
 
 def _get_lat_lon_coords(cube):
-    lat_coords = filter(lambda coord: "latitude" in coord.name(), cube.coords())
-    lon_coords = filter(lambda coord: "longitude" in coord.name(), cube.coords())
+    lat_coords = filter(lambda coord:
+                        "latitude" in coord.name(), cube.coords())
+    lon_coords = filter(lambda coord:
+                        "longitude" in coord.name(), cube.coords())
     if len(lat_coords) > 1 or len(lon_coords) > 1:
-        raise ValueError("Calling _get_lat_lon_coords() with multiple lat or lon coords is currently disallowed")
+        raise ValueError(
+            "Calling _get_lat_lon_coords() with multiple lat or lon coords"
+            " is currently disallowed")
     lat_coord = lat_coords[0]
     lon_coord = lon_coords[0]
     return (lat_coord, lon_coord)
@@ -105,32 +121,38 @@ def _get_lat_lon_coords(cube):
 def _xy_range(cube, mode=None):
     """
     Return the x & y range of this Cube.
-    
+
     Args:
-    
+
         * cube - The cube for which to calculate xy extents.
-        
+
     Kwargs:
-    
-        * mode - If the coordinate has bounds, use the mode keyword to specify the
-                 min/max calculation (iris.coords.POINT_MODE or iris.coords.BOUND_MODE).
-            
+
+        * mode - If the coordinate has bounds, set this to specify the
+                 min/max calculation.
+                 Set to iris.coords.POINT_MODE or iris.coords.BOUND_MODE.
+
     """
     # Helpful error if we have an inappropriate CoordSystem
     cs = cube.coord_system("CoordSystem")
-    if cs is not None and not isinstance(cs, (iris.coord_systems.GeogCS, iris.coord_systems.RotatedGeogCS)):
-        raise ValueError("Latlon coords cannot be found with {0}.".format(type(cs)))
+    if ((cs is not None) and
+            not isinstance(cs, (iris.coord_systems.GeogCS,
+                                iris.coord_systems.RotatedGeogCS))):
+        raise ValueError(
+            "Latlon coords cannot be found with {0}.".format(type(cs)))
 
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
     cs = cube.coord_system('CoordSystem')
 
     if x_coord.has_bounds() != x_coord.has_bounds():
-        raise ValueError('Cannot get the range of the x and y coordinates if they do '
-                         'not have the same presence of bounds.')
+        raise ValueError(
+            'Cannot get the range of the x and y coordinates if they do '
+            'not have the same presence of bounds.')
 
     if x_coord.has_bounds():
         if mode not in [iris.coords.POINT_MODE, iris.coords.BOUND_MODE]:
-            raise ValueError('When the coordinate has bounds, please specify "mode".')
+            raise ValueError(
+                'When the coordinate has bounds, please specify "mode".')
         _mode = mode
     else:
         _mode = iris.coords.POINT_MODE
@@ -163,15 +185,14 @@ def _xy_range(cube, mode=None):
 def get_xy_grids(cube):
     """
     Return 2D X and Y points for a given cube.
-    
+
     Args:
-    
+
         * cube - The cube for which to generate 2D X and Y points.
 
     Example:
-    
         x, y = get_xy_grids(cube)
-    
+
     """
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
 
@@ -214,38 +235,48 @@ def _quadrant_area(radian_colat_bounds, radian_lon_bounds, radius_of_earth):
 
     - radian_colat_bounds    -- [n,2] array of colatitude bounds (radians)
     - radian_lon_bounds      -- [n,2] array of longitude bounds (radians)
-    - radius_of_earth        -- radius of the earth, (currently assumed spherical)
+    - radius_of_earth        -- radius of the earth
+                                (currently assumed spherical)
 
     Area weights are calculated for each lat/lon cell as:
 
         .. math::
-        
+
             r^2 (lon_1 - lon_0) ( cos(colat_0) - cos(colat_1))
-    
-    The resulting array will have a shape of *(radian_colat_bounds.shape[0], radian_lon_bounds.shape[0])*
+
+    The resulting array will have a shape of
+    *(radian_colat_bounds.shape[0], radian_lon_bounds.shape[0])*
 
     """
     #ensure pairs of bounds
-    if radian_colat_bounds.shape[-1] != 2 or radian_lon_bounds.shape[-1] != 2 or \
-       radian_colat_bounds.ndim != 2 or radian_lon_bounds.ndim != 2:
+    if (radian_colat_bounds.shape[-1] != 2 or
+            radian_lon_bounds.shape[-1] != 2 or
+            radian_colat_bounds.ndim != 2 or
+            radian_lon_bounds.ndim != 2):
         raise ValueError("Bounds must be [n,2] array")
 
     #fill in a new array of areas
     radius_sqr = radius_of_earth ** 2
-    areas = np.ndarray((radian_colat_bounds.shape[0], radian_lon_bounds.shape[0]))
-    # we use abs because backwards bounds (min > max) give negative areas.
+    areas = np.ndarray(
+        (radian_colat_bounds.shape[0], radian_lon_bounds.shape[0]))
     for j in range(radian_colat_bounds.shape[0]):
-        areas[j, :] = [(radius_sqr * math.cos(radian_colat_bounds[j, 0]) * (radian_lon_bounds[i, 1] - radian_lon_bounds[i, 0])) - \
-                      (radius_sqr * math.cos(radian_colat_bounds[j, 1]) * (radian_lon_bounds[i, 1] - radian_lon_bounds[i, 0]))   \
-                      for i in range(radian_lon_bounds.shape[0])]
-
+        areas[j, :] = [
+            (radius_sqr *
+                math.cos(radian_colat_bounds[j, 0]) *
+                (radian_lon_bounds[i, 1] - radian_lon_bounds[i, 0]))
+            -
+            (radius_sqr *
+                math.cos(radian_colat_bounds[j, 1]) *
+                (radian_lon_bounds[i, 1] - radian_lon_bounds[i, 0]))
+            for i in range(radian_lon_bounds.shape[0])
+        ]
+    # we use abs because backwards bounds (min > max) give negative areas.
     return np.abs(areas)
 
 
 def area_weights(cube, normalize=False):
     """
     Returns an array of area weights, with the same dimensions as the cube.
-    
     This is a 2D lat/lon area weights array, repeated over the non lat/lon dimensions.
 
     Args:
@@ -260,17 +291,16 @@ def area_weights(cube, normalize=False):
         cell areas divided by the total grid area.
 
     The cube must have coordinates 'latitude' and 'longitude' with contiguous bounds.
-    
     Area weights are calculated for each lat/lon cell as:
 
         .. math::
-        
+
             r^2 cos(lat_0) (lon_1 - lon_0) - r^2 cos(lat_1) (lon_1 - lon_0)
 
     Currently, only supports a spherical datum.
     Uses earth radius from the cube, if present and spherical.
-    Defaults to iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS.    
-    
+    Defaults to iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS.
+
     """
     # Get the radius of the earth
     cs = cube.coord_system("CoordSystem")
@@ -278,7 +308,8 @@ def area_weights(cube, normalize=False):
         if cs.inverse_flattening != 0.0:
             warnings.warn("Assuming spherical earth from ellipsoid.")
         radius_of_earth = cs.semi_major_axis
-    elif isinstance(cs, iris.coord_systems.RotatedGeogCS) and cs.ellipsoid is not None:
+    elif (isinstance(cs, iris.coord_systems.RotatedGeogCS)
+          and (cs.ellipsoid is not None)):
         if cs.ellipsoid.inverse_flattening != 0.0:
             warnings.warn("Assuming spherical earth from ellipsoid.")
         radius_of_earth = cs.ellipsoid.semi_major_axis
@@ -306,7 +337,8 @@ def area_weights(cube, normalize=False):
 
     # Ensure they have contiguous bounds
     if (not lat.is_contiguous()) or (not lon.is_contiguous()):
-        raise ValueError("Currently need contiguous bounds to calculate area weights")
+        raise ValueError(
+            "Currently need contiguous bounds to calculate area weights")
 
     # Convert from degrees to radians
     lat = lat.copy()
@@ -318,11 +350,13 @@ def area_weights(cube, normalize=False):
     if lat.has_bounds() and lon.has_bounds():
         # Use the geographical area as the weight for each cell
         # Convert latitudes to co-latitude. I.e from -90 --> +90  to  0 --> pi
-        ll_weights = _quadrant_area(lat.bounds + np.pi / 2., lon.bounds, radius_of_earth)
+        ll_weights = _quadrant_area(lat.bounds + np.pi / 2.,
+                                    lon.bounds, radius_of_earth)
 
     # Create 2D weights from points
     else:
-        raise iris.exceptions.NotYetImplementedError("Point-based weighting algorithm not yet identified")
+        raise iris.exceptions.NotYetImplementedError(
+            "Point-based weighting algorithm not yet identified")
 
     # Do we need to transpose?
     # Quadrant_area always returns shape (y,x)
@@ -506,8 +540,8 @@ def project(cube, target_proj, nx=None, ny=None):
     if ny == None:
         ny = source_x.shape[0]
 
-    target_x, target_y, extent = cartopy.img_transform.mesh_projection(target_proj,
-                                                                       nx, ny)
+    target_x, target_y, extent = cartopy.img_transform.mesh_projection(
+        target_proj, nx, ny)
 
     # Determine dimension mappings - expect either 1d or 2d
     if lat_coord.ndim != lon_coord.ndim:
@@ -571,8 +605,8 @@ def project(cube, target_proj, nx=None, ny=None):
     #                       (source_desired_x > source_x.max()) |
     #                       (source_desired_y < source_y.min()) |
     #                       (source_desired_y > source_y.max()))
-    ## Make array a mask by default (rather than a single bool) to allow mask to be
-    ## assigned to slices.
+    ## Make array a mask by default (rather than a single bool) to allow mask
+    ## to be assigned to slices.
     #new_data.mask = np.zeros(new_shape)
 
     # Step through cube data, regrid onto desired projection and insert results
@@ -643,7 +677,8 @@ def project(cube, target_proj, nx=None, ny=None):
     new_cube.metadata = cube.metadata
 
     # Record transform in cube's history
-    new_cube.add_history('Converted from {} to {}'.format(type(source_cs).__name__,
-                                                          type(target_proj).__name__))
+    new_cube.add_history('Converted from {} to {}'.format(
+        type(source_cs).__name__,
+        type(target_proj).__name__))
 
     return new_cube, extent
