@@ -278,11 +278,10 @@ class TestNetCDFSave(tests.IrisTest):
         traj = iris.analysis.trajectory.interpolate(cube, sample_points)
         
         # save, reload and check
-        temp_filename = iris.util.create_temp_filename(suffix='.nc')
-        iris.save(traj, temp_filename)
-        reload = iris.load_cube(temp_filename)
-        self.assertCML(reload, ('netcdf', 'save_load_traj.cml'))
-        os.remove(temp_filename)
+        with self.temp_filename(suffix='.nc') as temp_filename: 
+            iris.save(traj, temp_filename)
+            reloaded = iris.load_cube(temp_filename)
+            self.assertCML(reloaded, ('netcdf', 'save_load_traj.cml'))
 
 
 class TestCFStandardName(tests.IrisTest):
