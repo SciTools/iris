@@ -309,6 +309,3 @@ Other changes
 =============
 * Cube summaries are now more readable when the scalar coordinates
   contain bounds.
-* Iris can now load NIMROD files.
-* The ability to bypass merging when loading data.
-* The methods `Coord.cos()` and `Coord.sin()` have been deprecated.
