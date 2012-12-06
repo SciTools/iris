@@ -8,7 +8,7 @@ This document explains the new/changed features of Iris in version 1.1.
 
 With the release of Iris 1.1, we are introducing support for Mac OS X.
 Version 1.1 also sees the first batch of performance enhancements, with
-some particular pleasing improvements for netCDF/PP import.
+some notable improvements to netCDF/PP import.
 
 
 Iris 1.1 features
@@ -20,7 +20,7 @@ A summary of the main features added with version 1.1:
 * GRIB1 import now supports time units of "3 hours".
 * Fieldsfile import now supports unpacked and "CRAY" 32-bit packed data
   in 64-bit Fieldsfiles.
-* PP file import now supports for "CRAY" 32-bit packed data.
+* PP file import now supports "CRAY" 32-bit packed data.
 * Various performance improvements, particularly for netCDF import,
   PP import, and constraints.
 * GRIB2 export now supports level types of altitude and height
