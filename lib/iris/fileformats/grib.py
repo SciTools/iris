@@ -411,8 +411,8 @@ class GribWrapper(object):
             if pdt == 0:
                 processingDone = 'none'
                 
-            #pdt 4.8? (time-processed)
-            elif pdt == 8:
+            #pdt 4.8 or 4.9? (time-processed)
+            elif pdt in (8, 9):
                 typeOfStatisticalProcessing = self.typeOfStatisticalProcessing
                 processingDone = PROCESSING_TYPES.get(typeOfStatisticalProcessing,
                                     'time _grib2_process_unknown_%i' % typeOfStatisticalProcessing)
