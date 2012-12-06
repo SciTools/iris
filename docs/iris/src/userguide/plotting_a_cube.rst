@@ -114,7 +114,7 @@ Some of the formats which are supported by **plt.savefig**:
 	EPS     Vector  Encapsulated PostScript
 	PDF     Vector  Portable Document Format
 	PNG     Raster  Portable Network Graphics, a format with a lossless compression method
-	PS      Vector  Post Script, ideal for printer output
+	PS      Vector  PostScript, ideal for printer output
 	SVG     Vector  Scalable Vector Graphics, XML based
 	======  ======  ======================================================================
 
@@ -164,10 +164,10 @@ entitled :doc:`reducing_a_cube`.
 
 .. note:: 
     Axis labels and a plot title can be added using the :func:`plt.title() <matplotlib.pyplot.title>`, 
-	:func:`plt.xlabel() <matplotlib.pyplot.xlabel>` and :func:`plt.ylabel <matplotlib.pyplot.ylabel>` functions.
+    :func:`plt.xlabel() <matplotlib.pyplot.xlabel>` and :func:`plt.ylabel() <matplotlib.pyplot.ylabel>` functions.
 
 As well as providing simple Matplotlib wrappers, Iris also has a :py:mod:`iris.quickplot` module, which adds 
-extra cube based meta-data to a plot. 
+extra cube based metadata to a plot.
 For example, the previous plot can be improved quickly by replacing **iris.plot** with **iris.quickplot**:
 
 .. literalinclude:: plotting_examples/1d_quickplot_simple.py
@@ -238,11 +238,13 @@ Similarly a filled contour plot of a cube can be created with the :func:`iris.pl
 
 Cube block plot
 ---------------
-Both ``contour`` and ``contourf`` are point based visualisations in that for both the x and y plot axes the 
-coordinates must have :attr:`Coord.points <iris.coords.Coord.points>`. 
-In some situations the underlying coordinates are not point based and instead are better represented with a 
+In some situations the underlying coordinates are better represented with a
 continuous bounded coordinate, in which case a "block" plot may be more appropriate.
-Continuous block plots can be achieved with either :func:`iris.plot.pcolormesh` or :py:func:`iris.quickplot.pcolormesh`:
+Continuous block plots can be achieved with either :func:`iris.plot.pcolormesh` or :func:`iris.quickplot.pcolormesh`.
+
+.. note::
+    If the cube's coordinates do not have bounds :func:`iris.plot.pcolormesh` and :func:`iris.quickplot.pcolormesh`
+    will attempt to guess suitable values based on their points (see also :func:`iris.coords.Coord.guess_bounds()`).
 
 .. literalinclude:: plotting_examples/cube_blockplot.py
 

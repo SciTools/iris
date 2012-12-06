@@ -317,7 +317,7 @@ class NimrodField(object):
         return cube
 
 
-def load_cubes(filespecs, callback=None):
+def load_cubes(filenames, callback=None):
     """
     Loads cubes from a list of NIMROD filenames.
     
@@ -330,22 +330,21 @@ def load_cubes(filespecs, callback=None):
     * callback - a function which can be passed on to :func:`iris.io.run_callback`
     
     .. note:: 
-        The resultant cubes may not be in the same order as in the file.
-         
+        The resultant cubes may not be in the same order as in the files.
+
     """
-    if isinstance(filespecs, basestring):
-        filespecs=[filespecs]
-        
-    for filespec in filespecs:
-        for filename in glob.glob(filespec):
-            with open(filename, "rb") as infile:
-                
+    if isinstance(filenames, basestring):
+        filenames = [filenames]
+
+    for filename in filenames:
+        for path in glob.glob(filename):
+            with open(path, "rb") as infile:
                 try:
                     field = NimrodField(infile)
                 except struct.error:
                     # End of file. Move on to the next file.
                     continue
-                
+
                 cube = field.to_cube()
 
             # Were we given a callback?
@@ -353,6 +352,5 @@ def load_cubes(filespecs, callback=None):
                 cube = iris.io.run_callback(callback, cube, field, filename)
                 if cube is None:
                     continue
-            
-            yield cube        
-        
+
+            yield cube

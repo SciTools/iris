@@ -169,7 +169,7 @@ def subtract(cube, other, dim=None, ignore=True, update_history=True, in_place=F
     * cube:
         An instance of :class:`iris.cube.Cube`.
     * other:
-        An instance of :class:`iris.cube.Cube`, :class:`iris.cube.Coord`,
+        An instance of :class:`iris.cube.Cube`, :class:`iris.coords.Coord`,
         or a scalar.
 
     Kwargs:

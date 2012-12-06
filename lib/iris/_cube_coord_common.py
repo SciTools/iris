@@ -89,6 +89,14 @@ class CFVariableMixin(object):
         return self.standard_name or self.long_name or default
 
     def rename(self, name):
+        """
+        Changes the human-readable name.
+
+        If 'name' is a valid standard name it will assign it to
+        :attr:`standard_name`, otherwise it will assign it to
+        :attr:`long_name`.
+
+        """
         try:
             self.standard_name = name
             self.long_name = None
