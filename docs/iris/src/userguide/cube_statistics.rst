@@ -19,9 +19,12 @@ Collapsing entire data dimensions
 
 In the section :doc:`reducing_a_cube` we saw how to extract a subset of a cube 
 in order to reduce either its dimensionality or its resolution. 
-Instead of just selecting certain indices from a dimension 
-(and ignoring the rest), we can instead form statistics over all the data. 
-Suppose we have a cube:
+Instead of simply extracting a sub-region of the data, 
+we can produce statistical functions of the data values 
+across a particular dimension, 
+such as a 'mean over time' or 'minimum over latitude'.
+
+For instance, suppose we have a cube:
 
     >>> import iris
     >>> filename = iris.sample_data_path('uk_hires.pp')
