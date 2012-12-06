@@ -64,7 +64,7 @@ PyKE 1.1.1 or later (http://pyke.sourceforge.net/)
 setuptools 0.6c11 or later (http://pypi.python.org/pypi/setuptools/)
     Python package for installing/removing python packages.
 
-Cartopy 0.4.0 or later (http://github.com/SciTools/cartopy/)
+Cartopy 0.5.0 or later (http://github.com/SciTools/cartopy/)
     Python package which provides cartographic tools for python.
 
 Optional
