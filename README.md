@@ -1,4 +1,4 @@
-Iris 1.0
+Iris 1.1
 ========
 
 (C) British Crown Copyright 2010 - 2012, Met Office
@@ -38,7 +38,7 @@ the Iris project on GitHub:
 Documentation
 -------------
 
-The full documentation for Iris 1.0, including a user guide, example
+The full documentation for Iris 1.1, including a user guide, example
 code, and gallery, is online at:
 
 - http://scitools.github.com/iris/
