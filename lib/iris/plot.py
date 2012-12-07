@@ -501,7 +501,7 @@ def default_projection_extent(cube, mode=iris.coords.POINT_MODE):
 
      * mode - either ``iris.coords.POINT_MODE`` or ``iris.coords.BOUND_MODE``. Triggers whether
               the extent should be representative of the cell points, or the limits of the cell's
-              bounds.
+              bounds. The default is iris.coords.POINT_MODE.
 
     """
     extents = iris.analysis.cartography._xy_range(cube, mode)

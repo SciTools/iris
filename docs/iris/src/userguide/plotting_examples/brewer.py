@@ -17,7 +17,8 @@ for i,m in enumerate(maps):
     plt.axis("off")
     plt.imshow(a, aspect='auto', cmap=plt.get_cmap(m), origin='lower')
     pos = list(ax.get_position().bounds)
-    fig.text(pos[0] - 0.01, pos[1], m, fontsize=8, horizontalalignment='right')
+    fig.text(pos[0] - 0.01, pos[1], m, fontsize=8,
+             horizontalalignment='right')
 
 plt.show()
 
