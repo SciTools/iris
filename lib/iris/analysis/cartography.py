@@ -104,8 +104,6 @@ def _get_lat_lon_coords(cube):
 
 def _xy_range(cube, mode=None):
     """
-    NOTE: MADE PRIVATE FOR 1.0
-
     Return the x & y range of this Cube.
     
     Args:
