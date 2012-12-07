@@ -57,19 +57,24 @@ All the load functions share very similar arguments:
     * constraints:
         Either a single constraint, or an iterable of constraints.
         Each constraint can be either a CF standard name, an instance of
-        :class:`iris.Constraint`, or :class:`iris.AttributeConstraint`.
+        :class:`iris.Constraint`, or an instance of
+        :class:`iris.AttributeConstraint`.
 
         For example::
 
             # Load air temperature data.
             load_cube(uri, 'air_temperature')
 
-            # Load air temperature data.
+            # Load data with a specific model level number.
             load_cube(uri, iris.Constraint(model_level_number=1))
+
+            # Load data with a specific STASH code.
+            load_cube(uri, iris.AttributeConstraint(STASH='m01s00i004'))
 
     * callback:
         A function to add metadata from the originating field and/or URI
         which obeys the following rules:
+
             1. Function signature must be: ``(cube, field, filename)``
             2. Must not return any value - any alterations to the cube
                must be made by reference

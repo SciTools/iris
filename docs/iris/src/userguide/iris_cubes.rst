@@ -9,7 +9,7 @@ Iris data structures
 --------------------
 The top level object in Iris is called a cube. A cube contains data and metadata about a phenomenon.
 
-In Iris, a cube is an interpretation of the *Climate and Forecast (CF) Metadata Conventions* who's purpose is to:
+In Iris, a cube is an interpretation of the *Climate and Forecast (CF) Metadata Conventions* whose purpose is to:
 
     *require conforming datasets to contain sufficient metadata that they are self-describing... including physical 
     units if appropriate, and that each value can be located in space (relative to earth-based coordinates) and time.*

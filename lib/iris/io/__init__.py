@@ -38,7 +38,7 @@ CALLBACK_DEPRECATION_MSG = "Callback functions with a return value are deprecate
 
 
 # Saving routines, indexed by file extension. 
-class SaversDict(dict):
+class _SaversDict(dict):
     """A dictionary that can only have string keys with no overlap."""
     def __setitem__(self, key, value):
         if not isinstance(key, basestring):
@@ -51,7 +51,7 @@ class SaversDict(dict):
         dict.__setitem__(self, key, value)
 
 
-_savers = SaversDict()
+_savers = _SaversDict()
 
 
 def select_data_path(resources_subdir, rel_path):
