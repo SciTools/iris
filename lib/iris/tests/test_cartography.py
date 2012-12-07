@@ -28,7 +28,7 @@ import iris
 import iris.analysis.cartography
 
 
-class TestGetXYGrids(tests.IrisTest):
+class Test_get_xy_grids(tests.IrisTest):
     # Testing for iris.analysis.carography.get_xy_grids().
     
     def test_1d(self):
