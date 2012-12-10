@@ -227,9 +227,11 @@ class TestNetCDFSave(tests.IrisTest):
             os.remove(file_out)
 
     def test_netcdf_hybrid_height(self):
-        # Test saving a CF-netCDF file which contains an atmosphere hybrid height (dimensionless vertical) coordinate.
+        # Test saving a CF-netCDF file which contains a hybrid height
+        # (i.e. dimensionless vertical) coordinate.
         # Read PP input file.
-        file_in = tests.get_data_path(('PP', 'COLPEX', 'theta_and_orog.pp'))
+        file_in = tests.get_data_path(
+            ('PP', 'COLPEX', 'small_colpex_theta_p_alt.pp'))
         cube = iris.load_cube(file_in, 'air_potential_temperature')
 
         # Write Cube to netCDF file.

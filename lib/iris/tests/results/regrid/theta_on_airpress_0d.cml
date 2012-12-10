@@ -1,31 +1,29 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube standard_name="eastward_wind" units="unknown">
+  <cube standard_name="air_potential_temperature" units="K">
     <attributes>
-      <attribute name="STASH" value="m01s00i002"/>
+      <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model 7.04"/>
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="73141289" points="[1.5]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+        <dimCoord id="73141289" points="[0.500000003725]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="f8c7ad26" points="[347920.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <dimCoord id="f8c7ad26" points="[347926.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord>
         <dimCoord bounds="[[-0.53415, -0.52065]]" id="3b3f362e" points="[-0.5274]" shape="(1,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </dimCoord>
       </coord>
-      <coord datadims="[0]">
-        <dimCoord bounds="[[359.187, 359.2],
-		[359.2, 359.214],
-		[359.214, 359.227]]" id="5036c64b" points="[359.194, 359.207, 359.22]" shape="(3,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
+      <coord>
+        <dimCoord bounds="[[359.173, 359.187]]" id="5036c64b" points="[359.18]" shape="(1,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[0.0, 5.0]]" id="218bea13" long_name="level_height" points="[2.5]" shape="(1,)" units="Unit('m')" value_type="float32">
+        <dimCoord bounds="[[0.0, 13.3333]]" id="218bea13" long_name="level_height" points="[5.0]" shape="(1,)" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -39,13 +37,13 @@
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[1.0, 0.999424]]" id="5f88ebd6" long_name="sigma" points="[0.999712]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord bounds="[[1.0, 0.998464]]" id="5f88ebd6" long_name="sigma" points="[0.999424]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <dimCoord id="6a1b3c16" points="[347921.5]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <dimCoord id="6a1b3c16" points="[347926.5]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
-    <data dtype="float32" shape="(3,)" state="loaded"/>
+    <data dtype="float32" shape="()" state="loaded"/>
   </cube>
 </cubes>
