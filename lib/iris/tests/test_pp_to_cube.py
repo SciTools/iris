@@ -30,6 +30,7 @@ import iris.util
 import iris.tests.stock
 
 
+@iris.tests.skip_data
 class TestPPLoadCustom(tests.IrisTest):
     def setUp(self):
         self.filename = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
