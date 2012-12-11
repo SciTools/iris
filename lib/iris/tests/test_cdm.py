@@ -23,6 +23,7 @@ import iris.tests as tests
 
 import os
 import re
+import warnings
 
 import numpy
 
@@ -502,6 +503,22 @@ class Test2dIndexing(TestCube2d):
         self.assertCML([self.t[(0, 2), Ellipsis, :]], ('cube_slice', '2d_to_1d_cube_multi_slice3.cml'))
         self.assertCML([self.t[(0, 2), :, Ellipsis]], ('cube_slice', '2d_to_1d_cube_multi_slice3.cml'))
         
+
+class TestIteration(TestCube2d):
+    def test_cube_iteration(self):
+        # Check that creating a cube iterator generates a warning.
+        with warnings.catch_warnings(record=True) as warnings_list:
+            warnings.simplefilter('always')
+            cube_iterator = (subcube for subcube in self.t)
+        self.assertEqual(len(warnings_list), 1)
+        self.assertEqual(warnings_list[0].category, DeprecationWarning)
+        # Check we can step through the items, and their shape and number.
+        subcubes_shape = self.t.shape[1:]
+        n_items = 0
+        for subcube in cube_iterator:
+            self.assertEqual(subcube.shape, subcubes_shape)
+            n_items += 1
+        self.assertEqual(n_items, self.t.shape[0])
 
 class Test2dSlicing(TestCube2d):
     def test_cube_slice_all_dimensions(self):
