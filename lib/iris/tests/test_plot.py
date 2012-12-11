@@ -79,6 +79,7 @@ class TestMissingCoord(tests.GraphicsTest):
         self._check(cube)
         
 class TestMissingCS(tests.GraphicsTest):
+    @iris.tests.skip_data
     def test_missing_cs(self):
         cube = tests.stock.simple_pp()
         cube.coord("latitude").coord_system = None
