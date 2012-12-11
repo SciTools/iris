@@ -35,7 +35,7 @@ from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
 import numpy
 import numpy.ma
 import cartopy.crs
-import cartopy.mpl_integration.geoaxes
+import cartopy.mpl.geoaxes
 
 
 import iris.cube
@@ -338,7 +338,7 @@ def _get_cartopy_axes(cartopy_proj):
     # Replace non-cartopy subplot/axes with a cartopy alternative.
     ax = plt.gca()
     if not isinstance(ax,
-                      cartopy.mpl_integration.geoaxes.GenericProjectionAxes):
+                      cartopy.mpl.geoaxes.GeoAxes):
         fig = plt.gcf()
         if isinstance(ax, matplotlib.axes.SubplotBase):
             new_ax = fig.add_subplot(ax.get_subplotspec(),
@@ -501,7 +501,7 @@ def default_projection_extent(cube, mode=iris.coords.POINT_MODE):
 
      * mode - either ``iris.coords.POINT_MODE`` or ``iris.coords.BOUND_MODE``. Triggers whether
               the extent should be representative of the cell points, or the limits of the cell's
-              bounds.
+              bounds. The default is iris.coords.POINT_MODE.
 
     """
     extents = iris.analysis.cartography._xy_range(cube, mode)
