@@ -1270,7 +1270,8 @@ class ProtoCube(object):
         vector_dim_coords_and_dims = []
         vector_aux_coords_and_dims = []
 
-        coords = cube.dim_coords + cube.aux_coords
+        cube_aux_coords = cube.aux_coords
+        coords = cube.dim_coords + cube_aux_coords
         
         # Coordinate hint ordering dictionary - from most preferred to least.
         # Copes with duplicate hint entries, where the most preferred is king.
@@ -1295,7 +1296,7 @@ class ProtoCube(object):
                 scalar_metadata.append(_CoordMetaData(points_dtype, bounds_dtype, kwargs))
             else:
                 # Extract the vector coordinate and metadata.
-                if coord in cube.aux_coords:
+                if coord in cube_aux_coords:
                     vector_aux_coords_and_dims.append(_CoordAndDims(coord, tuple(cube.coord_dims(coord))))
                 else:
                     vector_dim_coords_and_dims.append(_CoordAndDims(coord, tuple(cube.coord_dims(coord))))

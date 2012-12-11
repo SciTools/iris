@@ -32,21 +32,37 @@ import iris.tests.stock
 
 class TestPPLoadCustom(tests.IrisTest):
     def setUp(self):
-        self.filename = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
         iris.fileformats.pp._ensure_load_rules_loaded()
         self.load_rules = iris.fileformats.pp._load_rules
+        self.subcubes = iris.cube.CubeList()
+        filename = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
+        self.template = iris.fileformats.pp.load(filename).next()
 
     def test_lbtim_2(self):
-        subcubes = iris.cube.CubeList()
-        template = iris.fileformats.pp.load(self.filename).next()
         for delta in range(10):
-            field = template.copy()
+            field = self.template.copy()
             field.lbtim = 2
             field.lbdat += delta
             rules_result = self.load_rules.result(field)
-            subcubes.append(rules_result.cube)
-        cube = subcubes.merge()[0]
+            self.subcubes.append(rules_result.cube)
+        cube = self.subcubes.merge()[0]
         self.assertCML(cube, ('pp_rules', 'lbtim_2.cml'))
+
+    def test_ocean_depth(self):
+        lbuser = list(self.template.lbuser)
+        lbuser[6] = 2
+        lbuser[3] = 101
+        lbuser = tuple(lbuser)
+        for level_and_depth in enumerate([5.0, 15.0, 25.0, 35.0, 45.0]):
+            field = self.template.copy()
+            field.lbuser = lbuser
+            field.lbvc = 2
+            field.lbfc = 601
+            field.lblev, field.blev = level_and_depth
+            rules_result = self.load_rules.result(field)
+            self.subcubes.append(rules_result.cube)
+        cube = self.subcubes.merge()[0]
+        self.assertCML(cube, ('pp_rules', 'ocean_depth.cml'))
 
 
 class TestReferences(tests.IrisTest):
