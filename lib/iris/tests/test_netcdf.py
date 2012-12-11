@@ -71,7 +71,8 @@ class TestNetCDFLoad(tests.IrisTest):
 
     def test_load_rotated_xyt_precipitation(self):
         # Test loading single xyt rotated pole CF-netCDF file.
-        cube = iris.load_cube(tests.get_data_path(('NetCDF', 'rotated', 'xyt', 'new_rotPole_precipitation.nc')))
+        cube = iris.load_cube(tests.get_data_path(
+            ('NetCDF', 'rotated', 'xyt', 'small_rotPole_precipitation.nc')))
         self.assertCML(cube, ('netcdf', 'netcdf_rotated_xyt_precipitation.cml'))
 
     def test_cell_methods(self):
@@ -250,9 +251,10 @@ class TestNetCDFSave(tests.IrisTest):
         os.remove(file_out)
 
     def test_netcdf_save_ndim_auxiliary(self):
-        # Test saving a CF-netCDF file with multi-dimensional auxiliary coordinates.
+        # Test saving CF-netCDF with multi-dimensional auxiliary coordinates.
         # Read netCDF input file.
-        file_in = tests.get_data_path(('NetCDF', 'rotated', 'xyt', 'new_rotPole_precipitation.nc'))
+        file_in = tests.get_data_path(
+            ('NetCDF', 'rotated', 'xyt', 'small_rotPole_precipitation.nc'))
         cube = iris.load_cube(file_in)
         
         # Write Cube to nerCDF file.

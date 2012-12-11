@@ -3,7 +3,9 @@
   <cube long_name="Precipitation" standard_name="precipitation_flux" units="kg m-2 s-1">
     <attributes>
       <attribute name="Conventions" value="CF-1.0"/>
+      <attribute name="NCO" value="4.1.0"/>
       <attribute name="experiment" value="ER3"/>
+      <attribute name="history" value="Thu Nov 29 10:45:50 2012: /project/ukmo/rhel6/nco/bin/ncks -d time,0,3 new_rotPole_precipitation.nc small_rotPole_precipitation.nc"/>
       <attribute name="institution" value="DMI"/>
       <attribute name="source" value="HIRHAM"/>
     </attributes>
@@ -52,11 +54,7 @@
         <dimCoord bounds="[[2922.5, 2923.5],
 		[2923.5, 2924.5],
 		[2924.5, 2925.5],
-		..., 
-		[4015.5, 4016.5],
-		[4016.5, 4017.5],
-		[4017.5, 4018.5]]" id="4d427378" long_name="Julian Day" points="[2922.5, 2923.5, 2924.5, ..., 4015.5, 4016.5,
-		4017.5]" shape="(1096,)" standard_name="time" units="Unit('days since 1950-01-01 00:00:00.0', calendar='gregorian')" value_type="float32"/>
+		[2925.5, 2926.5]]" id="4d427378" long_name="Julian Day" points="[2922.5, 2923.5, 2924.5, 2925.5]" shape="(4,)" standard_name="time" units="Unit('days since 1950-01-01 00:00:00.0', calendar='gregorian')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods>
@@ -64,6 +62,6 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x79bb3556" dtype="float32" shape="(1096, 190, 174)"/>
+    <data checksum="-0x501a2fe4" dtype="float32" shape="(4, 190, 174)"/>
   </cube>
 </cubes>

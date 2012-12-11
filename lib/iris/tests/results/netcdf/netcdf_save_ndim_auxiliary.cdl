@@ -1,5 +1,5 @@
 dimensions:
-	time = UNLIMITED ; // (1096 currently)
+	time = UNLIMITED ; // (4 currently)
 	grid_latitude = 190 ;
 	grid_longitude = 174 ;
 	bnds = 2 ;
@@ -8,7 +8,9 @@ variables:
 		precipitation_flux:standard_name = "precipitation_flux" ;
 		precipitation_flux:long_name = "Precipitation" ;
 		precipitation_flux:units = "kg m-2 s-1" ;
+		precipitation_flux:NCO = "4.1.0" ;
 		precipitation_flux:experiment = "ER3" ;
+		precipitation_flux:history = "Thu Nov 29 10:45:50 2012: /project/ukmo/rhel6/nco/bin/ncks -d time,0,3 new_rotPole_precipitation.nc small_rotPole_precipitation.nc" ;
 		precipitation_flux:institution = "DMI" ;
 		precipitation_flux:source = "HIRHAM" ;
 		precipitation_flux:cell_methods = "time: mean" ;
