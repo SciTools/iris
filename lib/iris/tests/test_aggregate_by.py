@@ -87,6 +87,37 @@ class TestAggregateBy(tests.IrisTest):
                                          [[24., 48., 72.],   [96., 120., 144.],   [168., 192., 216.]],
                                          [[31.5, 63., 94.5], [126., 157.5, 189.], [220.5, 252., 283.5]]], dtype=np.float64)
     
+        row1 = [[0., 0., 0.], [0., 0., 0.], [0., 0., 0.]]
+        row2 = [list(np.sqrt([2.5, 10., 22.5])),
+                list(np.sqrt([40., 62.5, 90.])),
+                list(np.sqrt([122.5, 160., 202.5]))]
+        row3 = [list(np.sqrt([16.66666667, 66.66666667, 150.])),
+                list(np.sqrt([266.66666667, 416.66666667, 600.])),
+                list(np.sqrt([816.66666667, 1066.66666667, 1350.]))]
+        row4 = [list(np.sqrt([57.5, 230., 517.5])),
+                list(np.sqrt([920., 1437.5, 2070.])),
+                list(np.sqrt([2817.5, 3680., 4657.5]))]
+        row5 = [list(np.sqrt([146., 584., 1314.])),
+                list(np.sqrt([2336., 3650., 5256.])),
+                list(np.sqrt([7154., 9344., 11826.]))]
+        row6 = [list(np.sqrt([309.16666667, 1236.66666667, 2782.5])),
+                list(np.sqrt([4946.66666667, 7729.16666667, 11130.])),
+                list(np.sqrt([15149.16666667, 19786.66666667, 25042.5]))]
+        row7 = [list(np.sqrt([580., 2320., 5220.])),
+                list(np.sqrt([9280., 14500., 20880.])),
+                list(np.sqrt([28420., 37120., 46980.]))]
+        row8 = [list(np.sqrt([997.5, 3990., 8977.5])),
+                list(np.sqrt([15960., 24937.5, 35910.])),
+                list(np.sqrt([48877.5, 63840., 80797.5]))]
+        self.single_rms_expected = np.array([row1, 
+                                             row2, 
+                                             row3,
+                                             row4,
+                                             row5,
+                                             row6,
+                                             row7,
+                                             row8], dtype=np.float64)
+
         self.multi_expected = np.array([[[1., 2., 3.], [4., 5., 6.], [7., 8., 9.]],
                                         [[3.5, 7., 10.5], [14., 17.5, 21.], [24.5, 28., 31.5]],
                                         [[14., 28., 42.], [56., 70., 84.], [98., 112., 126.]],
@@ -98,15 +129,25 @@ class TestAggregateBy(tests.IrisTest):
                                         [[16.5, 33., 49.5], [66., 82.5, 99.], [115.5, 132., 148.5]]], dtype=np.float64)
     
     def test_single(self):
-        # group-by with single coordinate name.
+        # mean group-by with single coordinate name.
         aggregateby_cube = self.cube_single.aggregated_by('height', iris.analysis.MEAN)
         self.assertCML(aggregateby_cube, ('analysis', 'aggregated_by', 'single.cml'))
 
-        # group-by with single coordinate.
+        # mean group-by with single coordinate.
         aggregateby_cube = self.cube_single.aggregated_by(self.coord_z_single, iris.analysis.MEAN)
         self.assertCML(aggregateby_cube, ('analysis', 'aggregated_by', 'single.cml'))
         
         np.testing.assert_almost_equal(aggregateby_cube.data, self.single_expected)
+
+        # rms group-by with single coordinate name.
+        aggregateby_cube = self.cube_single.aggregated_by('height', iris.analysis.RMS)
+        self.assertCML(aggregateby_cube, ('analysis', 'aggregated_by', 'single_rms.cml'))
+
+        # rms group-by with single coordinate.
+        aggregateby_cube = self.cube_single.aggregated_by(self.coord_z_single, iris.analysis.RMS)
+        self.assertCML(aggregateby_cube, ('analysis', 'aggregated_by', 'single_rms.cml'))
+
+        np.testing.assert_almost_equal(aggregateby_cube.data, self.single_rms_expected)
 
     def test_single_shared(self):
         z2_points = np.arange(36, dtype=np.int32)
@@ -179,7 +220,6 @@ class TestAggregateBy(tests.IrisTest):
         cube.add_aux_coord(iris.coords.AuxCoord(np.array([0, 0, 10, 10], dtype=np.float32), 
                                                 'longitude', units='degrees', coord_system=llcs),1)
 
-
         #
         # Easy mean aggregate test by each coordinate.
         #
@@ -216,6 +256,20 @@ class TestAggregateBy(tests.IrisTest):
         
         aggregateby_cube = cube.aggregated_by('latitude', iris.analysis.PERCENTILE, percent=25)
         np.testing.assert_almost_equal(aggregateby_cube.data, np.array([[6.5, 10.5, 12.5, 18.5], [18., 12., 10., 6.]], dtype=np.float32))
+
+        #
+        # Easy root mean square aggregate test by each coordinate.
+        #
+        aggregateby_cube = cube.aggregated_by('longitude', iris.analysis.RMS)
+        row = [list(np.sqrt([68., 234.])),
+               list(np.sqrt([104., 298.])),
+               list(np.sqrt([234., 68.]))]
+        np.testing.assert_almost_equal(aggregateby_cube.data,
+                                       np.array(row, dtype=np.float32))
+
+        aggregateby_cube = cube.aggregated_by('latitude', iris.analysis.RMS)
+        row = [list(np.sqrt([50., 122., 170., 362.])), [18., 12., 10., 6.]]
+        np.testing.assert_almost_equal(aggregateby_cube.data, np.array(row, dtype=np.float32))
 
     def test_returned_weights(self):
         self.assertRaises(ValueError, self.cube_single.aggregated_by, 'height', iris.analysis.MEAN, returned=True) 

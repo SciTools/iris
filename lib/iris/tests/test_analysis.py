@@ -239,6 +239,9 @@ class TestAnalysisBasic(tests.IrisTest):
     def test_min(self):
         self._common('min', iris.analysis.MIN)
 
+    def test_rms(self):
+        self._common('rms', iris.analysis.RMS)
+
     def test_duplicate_coords(self):
         self.assertRaises(ValueError, tests.stock.track_1d, duplicate_x=True)
 

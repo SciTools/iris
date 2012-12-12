@@ -38,7 +38,8 @@ import scipy.stats.mstats
 import iris.coords
 
 
-__all__ = ('COUNT', 'GMEAN', 'HMEAN', 'MAX', 'MEAN', 'MEDIAN', 'MIN', 'PERCENTILE', 'PROPORTION', 'STD_DEV', 'SUM', 'VARIANCE',
+__all__ = ('COUNT', 'GMEAN', 'HMEAN', 'MAX', 'MEAN', 'MEDIAN', 'MIN',
+           'PERCENTILE', 'PROPORTION', 'RMS', 'STD_DEV', 'SUM', 'VARIANCE',
             'coord_comparison', 'Aggregator', 'clear_phenomenon_identity')
 
 
@@ -455,6 +456,11 @@ def _proportion(array, function, axis, **kwargs):
     return _count(array, function, axis=axis, **kwargs) / total_non_masked
 
 
+def _rms(array, axis, **kwargs):
+    n_elements = array.shape[axis]
+    return numpy.sqrt(numpy.sum(numpy.square(array), axis=axis) / n_elements)
+
+
 #
 # Common partial Aggregation class constructors.
 #
@@ -625,6 +631,19 @@ Similarly, the proportion of times precipitation exceeded 10 (in cube data units
 
 .. seealso:: :func:`iris.analysis.COUNT`
                                 
+"""
+
+
+RMS = Aggregator('Root mean square of {standard_name} {action} {coord_names}',
+                 'root mean square',
+                 _rms)
+"""
+The root mean square, as computed by ((x0**2 + x1**2 + ... + xN**2) / N) ** 0.5.
+
+For example, to compute zonal root mean square::
+
+    result = cube.collapsed('longitude', iris.analysis.RMS)
+
 """
 
 
