@@ -321,29 +321,24 @@ def monotonic(array, strict=False, return_direction=False):
     """
     if array.ndim != 1 or len(array) <= 1:
         raise ValueError('The array to check must be 1 dimensional and have more than 1 element.')
-    
-    d = delta(array, 0)
-        
-    direction = numpy.sign(max(d, key=numpy.abs))
-    
-    # ALL step of 0
-    if direction == 0 and not strict:
-        direction = 1
-    
-    if direction == 0:
-        monotonic = False
-    elif (direction > 0 and not strict):
-        monotonic = all(d >= 0)
-    elif (direction > 0 and strict):
-        monotonic = all(d > 0)
-    elif (direction < 0 and not strict):
-        monotonic = all(d <= 0)
-    elif (direction < 0 and strict):
-        monotonic = all(d < 0)
-    
-    if return_direction:    
+
+    # Identify the directions of the largest/most-positive and
+    # smallest/most-negative steps.
+    d = numpy.diff(array)
+    sign_max_d = numpy.sign(d[numpy.argmax(d)])
+    sign_min_d = numpy.sign(d[numpy.argmin(d)])
+
+    if strict:
+        monotonic = sign_max_d == sign_min_d and sign_max_d != 0
+    else:
+        monotonic = (sign_min_d < 0 and sign_max_d <= 0) or \
+                    (sign_max_d > 0 and sign_min_d >= 0) or \
+                    (sign_min_d == sign_max_d == 0)
+
+    if return_direction:
+        direction = sign_max_d or 1
         return monotonic, direction
-    else:    
+    else:
         return monotonic
 
 
