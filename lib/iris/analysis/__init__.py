@@ -638,7 +638,7 @@ RMS = Aggregator('Root mean square of {standard_name} {action} {coord_names}',
                  'root mean square',
                  _rms)
 """
-The root mean square, as computed by ((x0**2 + x1**2 + ... + xN**2) / N) ** 0.5.
+The root mean square, as computed by ((x0**2 + x1**2 + ... + xN-1**2) / N) ** 0.5.
 
 For example, to compute zonal root mean square::
 
