@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube long_name="temperature" units="kelvin">
+    <attributes>
+      <attribute name="history" value="Root mean square of temperature aggregated over height"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <auxCoord id="c7be93c8" long_name="height" points="[1, 2, 3, 4, 5, 6, 7, 8]" shape="(8,)" units="Unit('m')" value_type="int32"/>
+      </coord>
+      <coord datadims="[2]">
+        <dimCoord id="a42bcac2" points="[0.0, 3.0, 6.0]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="63128986" points="[0.0, 3.0, 6.0]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="root mean square">
+        <coord name="height"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="-0x735ddb18" dtype="float64" shape="(8, 3, 3)"/>
+  </cube>
+</cubes>
