@@ -324,7 +324,7 @@ def monotonic(array, strict=False, return_direction=False):
     
     d = delta(array, 0)
         
-    direction = numpy.sign(max(d, key=numpy.abs))
+    direction = numpy.sign(numpy.max(numpy.abs(d)))
     
     # ALL step of 0
     if direction == 0 and not strict:
