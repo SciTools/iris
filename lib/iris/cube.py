@@ -1248,8 +1248,7 @@ class Cube(CFVariableMixin):
         """
         # Issue deprecation warning.
         warnings.warn('Cube iteration has been deprecated: '
-                      'please use Cube.slices() instead.',
-                      DeprecationWarning)
+                      'please use Cube.slices() instead.')
 
         # Return a simple first-index iterator, equivalent to that produced
         # with __getitem__, if __iter__ was not defined.
