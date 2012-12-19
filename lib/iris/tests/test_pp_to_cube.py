@@ -37,7 +37,6 @@ class TestPPLoadCustom(tests.IrisTest):
         self.subcubes = iris.cube.CubeList()
         filename = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
         self.template = iris.fileformats.pp.load(filename).next()
-        self.lbuser = list(self.template.lbuser)
 
     def test_lbtim_2(self):
         for delta in range(10):
@@ -50,12 +49,13 @@ class TestPPLoadCustom(tests.IrisTest):
         self.assertCML(cube, ('pp_rules', 'lbtim_2.cml'))
 
     def test_ocean_depth(self):
-        self.lbuser[6] = 2
-        self.lbuser[3] = 101
-        self.lbuser = tuple(self.lbuser)
+        lbuser = list(self.template.lbuser)
+        lbuser[6] = 2
+        lbuser[3] = 101
+        lbuser = tuple(lbuser)
         for level_and_depth in enumerate([5.0, 15.0, 25.0, 35.0, 45.0]):
             field = self.template.copy()
-            field.lbuser = self.lbuser
+            field.lbuser = lbuser
             field.lbvc = 2
             field.lbfc = 601
             field.lblev, field.blev = level_and_depth
@@ -67,9 +67,10 @@ class TestPPLoadCustom(tests.IrisTest):
     def test_invalid_units(self):
         # UM to CF rules are mapped to the invalid unit "1e3 psu @0.035"
         # for the STASH code m02s00i102.
-        self.lbuser[6] = 2
-        self.lbuser[3] = 102
-        self.template.lbuser = tuple(self.lbuser)
+        lbuser = list(self.template.lbuser)
+        lbuser[6] = 2
+        lbuser[3] = 102
+        self.template.lbuser = tuple(lbuser)
         rules_result = self.load_rules.result(self.template)
         self.assertCML(rules_result.cube, ('pp_rules', 'invalid_units.cml'))
 

@@ -427,8 +427,8 @@ class FunctionRule(Rule):
                 try:
                     setattr(cube, obj.name, obj.value)
                 except ValueError:
-                    msg = 'Ignoring PP invalid units {!r}'
-                    warnings.warn(msg.format(obj.value))
+                    msg = 'Ignoring PP invalid units {!r}'.format(obj.value)
+                    warnings.warn(msg)
                     cube.attributes['invalid_units'] = obj.value
                     cube.units = iris.unit._UNKNOWN_UNIT_STRING
             else:
