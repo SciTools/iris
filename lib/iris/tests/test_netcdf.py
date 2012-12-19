@@ -33,8 +33,15 @@ import iris.std_names
 import iris.util
 import stock
 
+
 @iris.tests.skip_data
 class TestNetCDFLoad(tests.IrisTest):
+    def test_monotonic(self):
+        cubes = iris.load(tests.get_data_path(('NetCDF',
+                                               'testing',
+                                               'test_monotonic_coordinate.nc')))
+        self.assertCML(cubes, ('netcdf', 'netcdf_monotonic.cml'))
+
     def test_load_global_xyt_total(self):
         # Test loading single xyt CF-netCDF file.
         cube = iris.load_cube(tests.get_data_path(('NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc')))
@@ -316,7 +323,6 @@ class TestNetCDFUKmoProcessFlags(tests.IrisTest):
 
             # Reload cube     
             cube = iris.load_cube(temp_filename)
-            
             
             # Check correct number and type of flags
             self.assertTrue(len(cube.attributes["ukmo__process_flags"]) == 1, "Mismatch in number of process flags.")

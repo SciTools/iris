@@ -573,8 +573,12 @@ fc_extras
     #
     # UD Units Constants (based on Unidata udunits.dat definition file)
     #
-    UD_UNITS_LAT = ['degrees_north', 'degree_north', 'degree_n', 'degrees_n', 'degreen', 'degreesn', 'degrees']
-    UD_UNITS_LON = ['degrees_east', 'degree_east', 'degree_e', 'degrees_e', 'degreee', 'degreese', 'degrees']
+    UD_UNITS_LAT = ['degrees_north', 'degree_north', 'degree_n', 'degrees_n',
+                    'degreen', 'degreesn', 'degrees', 'degrees north',
+                    'degree north', 'degree n', 'degrees n']
+    UD_UNITS_LON = ['degrees_east', 'degree_east', 'degree_e', 'degrees_e',
+                    'degreee', 'degreese', 'degrees', 'degrees east',
+                    'degree east', 'degree e', 'degrees e']
     
     #
     # CF Dimensionless Vertical Coordinates
@@ -751,17 +755,20 @@ fc_extras
     def get_attr_units(cf_var, attributes):
         attr_units = getattr(cf_var, CF_ATTR_UNITS, iris.unit._UNKNOWN_UNIT_STRING)
 
+        # Sanitise lat/lon units.
+        if attr_units in UD_UNITS_LAT or attr_units in UD_UNITS_LON:
+            attr_units = 'degrees'
+
         # Graceful loading of invalid units.
         try:
             iris.unit.as_unit(attr_units)
         except ValueError:
-            warnings.warn('Ignoring netCDF variable {!r} invalid units {!r}'.format('{}'.format(cf_var.cf_name), '{}'.format(attr_units)))
+            msg = 'Ignoring netCDF variable {!r} invalid units {!r}'
+            msg_name = '{}'.format(cf_var.cf_name)
+            msg_units = '{}'.format(attr_units)
+            warnings.warn(msg.format(msg_name, msg_units))
             attributes['invalid_units'] = attr_units
             attr_units = iris.unit._UNKNOWN_UNIT_STRING
-
-        # Sanitise lat/lon units.
-        if attr_units in UD_UNITS_LAT or attr_units in UD_UNITS_LON:
-            attr_units = 'degrees'
 
         if np.issubdtype(cf_var.dtype, np.str):
             attr_units = iris.unit._NO_UNIT_STRING
@@ -821,6 +828,11 @@ fc_extras
 
         attr_units = get_attr_units(cf_coord_var, attributes)
         points_data = cf_coord_var[:]
+        # Gracefully fill points masked array.
+        if np.ma.isMaskedArray(points_data):
+            points_data = np.ma.filled(points_data)
+            msg = 'Gracefully filling {!r} dimension coordinate masked points'
+            warnings.warn(msg.format(str(cf_coord_var.cf_name)))
 
         # Get any coordinate bounds.
         bounds_data = None
@@ -828,6 +840,11 @@ fc_extras
 
         if attr_bounds is not None:
             bounds_data = cf_coord_var.cf_group.bounds[attr_bounds][:]
+            # Gracefully fill bounds masked array.
+            if np.ma.isMaskedArray(bounds_data):
+                bounds_data = np.ma.filled(bounds_data)
+                msg = 'Gracefully filling {!r} dimension coordinate masked bounds'
+                warnings.warn(msg.format(str(cf_coord_var.cf_name)))
 
         # Determine whether the coordinate is circular.
         circular = False
@@ -871,16 +888,37 @@ fc_extras
         # Determine the standard_name and long_name
         standard_name, long_name = get_names(cf_coord_var, coord_name, attributes)
 
-        # Create the coordinate
-        coord = iris.coords.DimCoord(points_data, standard_name=standard_name, long_name=long_name, units=attr_units,
-                                     bounds=bounds_data, attributes=attributes, coord_system=coord_system, circular=circular)
-
-        # Add it to the cube
-        if data_dims:
-            cube.add_dim_coord(coord, data_dims)
-        else:
-            # Scalar coords are placed in the aux_coords container
+        # Create the coordinate.
+        try:
+            coord = iris.coords.DimCoord(points_data,
+                                         standard_name=standard_name,
+                                         long_name=long_name,
+                                         units=attr_units,
+                                         bounds=bounds_data,
+                                         attributes=attributes,
+                                         coord_system=coord_system,
+                                         circular=circular)
+        except ValueError as e_msg:
+            # Attempt graceful loading.
+            coord = iris.coords.AuxCoord(points_data,
+                                         standard_name=standard_name,
+                                         long_name=long_name,
+                                         units=attr_units,
+                                         bounds=bounds_data,
+                                         attributes=attributes,
+                                         coord_system=coord_system)
             cube.add_aux_coord(coord, data_dims)
+            msg = 'Failed to create {name!r} dimension coordinate: {error}\n' \
+                  'Gracefully creating {name!r} auxiliary coordinate instead.'
+            warnings.warn(msg.format(name=str(cf_coord_var.cf_name),
+                                     error=e_msg))
+        else:
+            # Add the dimension coordinate to the cube.
+            if data_dims:
+                cube.add_dim_coord(coord, data_dims)
+            else:
+                # Scalar coords are placed in the aux_coords container.
+                cube.add_aux_coord(coord, data_dims)
             
         # Update the coordinate to CF-netCDF variable mapping.
         engine.provides['coordinates'].append((coord, cf_coord_var.cf_name))

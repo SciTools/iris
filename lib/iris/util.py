@@ -339,6 +339,8 @@ def monotonic(array, strict=False, return_direction=False):
     """
     Return whether the given 1d array is monotonic.
     
+    Note that, the array must not contain missing data.
+
     Kwargs:
     
     * strict (boolean)
@@ -359,6 +361,9 @@ def monotonic(array, strict=False, return_direction=False):
     """
     if array.ndim != 1 or len(array) <= 1:
         raise ValueError('The array to check must be 1 dimensional and have more than 1 element.')
+
+    if numpy.ma.isMaskedArray(array) and numpy.ma.count_masked(array) != 0:
+        raise ValueError('The array to check contains missing data.')
     
     d = delta(array, 0)
         
