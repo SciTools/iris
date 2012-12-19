@@ -422,6 +422,15 @@ class FunctionRule(Rule):
             # TODO: when name is "standard_name" force the value to be a real standard name
             if obj.name == 'standard_name' and obj.value is not None:
                 cube.rename(obj.value)
+            elif obj.name == 'units':
+                # Graceful loading of units.
+                try:
+                    setattr(cube, obj.name, obj.value)
+                except ValueError:
+                    msg = 'Ignoring PP invalid units {!r}'
+                    warnings.warn(msg.format(obj.value))
+                    cube.attributes['invalid_units'] = obj.value
+                    cube.units = iris.unit._UNKNOWN_UNIT_STRING
             else:
                 setattr(cube, obj.name, obj.value)
             
