@@ -260,6 +260,9 @@ class IrisTest(unittest.TestCase):
     def assertArrayEqual(self, a, b):
         numpy.testing.assert_array_equal(a, b)
 
+    def assertArrayAlmostEqual(self, a, b):
+        numpy.testing.assert_array_almost_equal(a, b)
+
     def assertAttributesEqual(self, attr1, attr2):
         """
         Asserts two mappings (dictionaries) are equal after
