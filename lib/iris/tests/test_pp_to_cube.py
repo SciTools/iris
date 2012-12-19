@@ -64,6 +64,16 @@ class TestPPLoadCustom(tests.IrisTest):
         cube = self.subcubes.merge()[0]
         self.assertCML(cube, ('pp_rules', 'ocean_depth.cml'))
 
+    def test_invalid_units(self):
+        # UM to CF rules are mapped to the invalid unit "1e3 psu @0.035"
+        # for the STASH code m02s00i102.
+        lbuser = list(self.template.lbuser)
+        lbuser[6] = 2
+        lbuser[3] = 102
+        self.template.lbuser = tuple(lbuser)
+        rules_result = self.load_rules.result(self.template)
+        self.assertCML(rules_result.cube, ('pp_rules', 'invalid_units.cml'))
+
 
 class TestReferences(tests.IrisTest):
     def setUp(self):
