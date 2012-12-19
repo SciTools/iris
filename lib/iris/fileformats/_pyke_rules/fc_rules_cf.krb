@@ -908,11 +908,10 @@ fc_extras
                                          attributes=attributes,
                                          coord_system=coord_system)
             cube.add_aux_coord(coord, data_dims)
-	    msg = 'Failed to create {!r} dimension coordinate: {}\n'
-	    msg += 'Gracefully creating {!r} auxiliary coordinate instead.'
-            warnings.warn(msg.format(str(cf_coord_var.cf_name),
-                                     e_msg,
-                                     str(cf_coord_var.cf_name)))
+            msg = 'Failed to create {name!r} dimension coordinate: {error}\n' \
+                  'Gracefully creating {name!r} auxiliary coordinate instead.'
+            warnings.warn(msg.format(name=str(cf_coord_var.cf_name),
+                                     error=e_msg))
         else:
             # Add the dimension coordinate to the cube.
             if data_dims:

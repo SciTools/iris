@@ -37,8 +37,9 @@ import stock
 @iris.tests.skip_data
 class TestNetCDFLoad(tests.IrisTest):
     def test_monotonic(self):
-        data_path = ('NetCDF', 'testing', 'test_monotonic_coordinate.nc')
-        cubes = iris.load(tests.get_data_path(data_path))
+        cubes = iris.load(tests.get_data_path(('NetCDF',
+                                               'testing',
+                                               'test_monotonic_coordinate.nc')))
         self.assertCML(cubes, ('netcdf', 'netcdf_monotonic.cml'))
 
     def test_load_global_xyt_total(self):
