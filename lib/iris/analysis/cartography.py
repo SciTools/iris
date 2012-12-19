@@ -306,27 +306,86 @@ def area_weights(cube):
         ll_weights = ll_weights.transpose()
 
     # Now we create an array of weights for each cell.
+    broad_weights = iris.util.broadcast_weights(ll_weights,
+                                                cube.data,
+                                                (lat_dim, lon_dim))
 
-    # First, get the non latlon shape. Don't include scalar dimensions as they
-    # are not part of the cube's shape.
-    other_dims_shape = numpy.array(cube.shape)
-    if lat_dim is not None:
-        other_dims_shape[lat_dim] = 1
-    if lon_dim is not None:
-        other_dims_shape[lon_dim] = 1
-    other_dims_array = numpy.ones(other_dims_shape)
+    return broad_weights
 
-    # Set the shape of the weights array that matches the dimensionality
-    # of the cube. Again, we ignore scalar dimensions.
-    weights_shape = numpy.ones(cube.ndim)
-    if lat_dim is not None:
-        weights_shape[lat_dim] = cube.shape[lat_dim]
-    if lon_dim is not None:
-        weights_shape[lon_dim] = cube.shape[lon_dim]
 
-    # Create the broadcast object from the weights array and the 'other dims',
-    # to match the shape of the cube.
-    broad_weights = ll_weights.reshape(weights_shape) * other_dims_array
+def cosine_latitude_weights(cube):
+    """
+    Returns an array of latitude weights, with the same dimensions as
+    the cube. The weights are the cosine of latitude.
+
+    This is a 1D latitude weights array, repeated over the non-latitude
+    dimensions.
+
+    The cube must have a coordinate with 'latitude' in the name. Out of
+    range values (greater than 90 degrees or less than -90 degrees) will
+    be clipped to the valid range.
+
+    Weights are calculated for each latitude as:
+
+        .. math::
+
+           w_l = \cos \phi_l
+
+    Examples:
+
+    Compute weights suitable for averaging type operations:
+
+        from iris.analysis.cartography import cosine_latitude_weights
+        cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
+        weights = cosine_latitude_weights(cube)
+    
+    Compute weights suitable for EOF analysis (or other covariance type
+    analyses):
+
+        import numpy
+        from iris.analysis.cartography import cosine_latitude_weights
+        cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
+        weights = numpy.sqrt(cosine_latitude_weights(cube))
+
+    """
+    # Get the latitude coordinate.
+    lat_coords = filter(lambda coord: "latitude" in coord.name(),
+                        cube.coords())
+    if len(lat_coords) > 1:
+        raise ValueError("Multiple latitude coords are currently disallowed.")
+    try:
+        lat = lat_coords[0]
+    except IndexError:
+        raise ValueError('Cannot get latitude '
+                         'coordinate from cube {!r}.'.format(cube.name()))
+    if lat.ndim > 1:
+        raise iris.exceptions.CoordinateMultiDimError(lat)
+
+    # Get the position of the latitude coordinate.
+    lat_dim = cube.coord_dims(lat)
+    lat_dim = lat_dim[0] if lat_dim else None
+
+    # Convert to radians.
+    lat = lat.unit_converted('radians')
+
+    # Compute the weights as the cosine of latitude. In some cases,
+    # particularly when working in 32-bit precision, the latitude values can
+    # extend beyond the allowable range of [-pi/2, pi/2] due to numerical
+    # precision. We first check for genuinely out of range values, and issue a
+    # warning if these are found. Then the cosine is computed and clipped to
+    # the valid range [0, 1].
+    threshold = numpy.deg2rad(0.001)  # small value for grid resolution
+    if numpy.any(lat.points < -numpy.pi / 2. - threshold) or \
+            numpy.any(lat.points > numpy.pi / 2. + threshold):
+        warnings.warn('Out of range latitude values will be '
+                      'clipped to the valid range.',
+                      UserWarning)
+    l_weights = numpy.cos(lat.points).clip(0., 1.)
+
+    # Create weights for each grid point.
+    broad_weights = iris.util.broadcast_weights(l_weights,
+                                                cube.data,
+                                                (lat_dim,))
 
     return broad_weights
 
