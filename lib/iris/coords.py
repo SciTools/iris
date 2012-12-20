@@ -509,7 +509,27 @@ class Coord(CFVariableMixin):
 
     def __neg__(self):
         return self.copy(-self.points, -self.bounds if self.bounds is not None else None)
-        
+
+    @property
+    def units(self):
+        """The :mod:`~iris.unit.Unit` instance of the phenomenon."""
+        return self._units
+
+    @units.setter
+    def units(self, unit):
+        unit = iris.unit.as_unit(unit)
+        # If the cube has units and the desired unit is valid then
+        # convert the points and bounds.
+        if (hasattr(self, '_units') and
+                not (self.units.unknown or
+                     self.units.no_unit or
+                     unit.unknown or
+                     unit.no_unit)):
+            self.points = self.units.convert(self.points, unit)
+            if self.bounds is not None:
+                self.bounds = self.units.convert(self.bounds, unit)
+        self._units = unit
+
     def cells(self):
         """
         Returns an iterable of Cell instances for this Coord.
@@ -850,15 +870,31 @@ class Coord(CFVariableMixin):
         import iris.analysis.calculus
         return iris.analysis.calculus._coord_cos(self)
 
+    def clear_units(self):
+        """Sets the cube's units to 'unknown'."""
+        self.units = None
+
+    def replace_units(self, unit):
+        """
+        Changes the cube's units to a given value without modifying
+        its data array.
+
+        .. note::
+
+            To convert a cube from one unit to another (e.g. kelvin
+            to celsius) assign to the 'units' attribute directly. For
+            example:
+
+                cube.units = 'celsius'
+
+        """
+        self.clear_units()
+        self.units = unit
+
     def unit_converted(self, new_unit):
         """Return a coordinate converted to a given unit."""
-        points = self.units.convert(self.points, new_unit)
-        if self.bounds is not None:
-            bounds = self.units.convert(self.bounds, new_unit)
-        else:
-            bounds = None
-        new_coord = self.copy(points=points, bounds=bounds)
-        new_coord.units = iris.unit.as_unit(new_unit)
+        new_coord = self.copy()
+        new_coord.units = new_unit
         return new_coord
     
     def xml_element(self, doc):

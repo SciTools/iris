@@ -156,11 +156,11 @@ class TestHybridPressure(tests.IrisTest):
         # Mangle the height coords into pressure coords.
         delta = cube.coord('level_height')
         delta.rename('level_pressure')
-        delta.units = 'Pa'
+        delta.replace_units('Pa')
         sigma = cube.coord('sigma')
         ref = cube.coord('surface_altitude')
         ref.rename('surface_air_pressure')
-        ref.units = 'Pa'
+        ref.replace_units('Pa')
 
         factory = HybridPressureFactory(delta, sigma, ref)
         cube.add_aux_factory(factory)

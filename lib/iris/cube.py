@@ -461,6 +461,50 @@ class Cube(CFVariableMixin):
         for name in CubeMetadata._fields:
             setattr(self, name, getattr(value, name))
 
+    @property
+    def units(self):
+        """The :mod:`~iris.unit.Unit` instance of the phenomenon."""
+        return self._units
+
+    @units.setter
+    def units(self, unit):
+        unit = iris.unit.as_unit(unit)
+        # If the cube has units and the desired unit is valid convert
+        # the data.
+        if (hasattr(self, '_units') and
+                not (self.units.unknown or
+                     self.units.no_unit or
+                     unit.unknown or
+                     unit.no_unit)):
+            self.data = self.units.convert(self.data, unit)
+        self._units = unit
+
+    def clear_units(self):
+        """Sets the coordinate's units to 'unknown'."""
+        self.units = None
+
+    def replace_units(self, unit):
+        """
+        Changes the coordinate's units to a given value without modifying
+        its points or bounds.
+
+        .. note::
+
+            To convert a coordinate from one unit to another (e.g. degrees
+            to radians) assign to the 'units' attribute directly. For example:
+
+                latitude_coord.units = 'radians'
+
+        """
+        self.clear_units()
+        self.units = unit
+
+    def unit_converted(self, new_unit):
+        """Return a cube converted to a given unit."""
+        new_cube = self.copy()
+        new_cube.units = new_unit
+        return new_cube
+
     def add_cell_method(self, cell_method):
         """Add a CellMethod to the Cube."""
         self.cell_methods += (cell_method, )
@@ -1052,7 +1096,7 @@ class Cube(CFVariableMixin):
         else:
             dimension_header = '; '.join([', '.join(dim_names[dim] or ['*ANONYMOUS*']) + 
                                          ': %d' % dim_shape for dim, dim_shape in enumerate(self.shape)])
-                
+
         cube_header = '%-*s (%s)' % (name_padding, self.name() or 'unknown', dimension_header)
         summary = ''
         
