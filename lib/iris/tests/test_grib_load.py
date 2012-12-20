@@ -492,6 +492,32 @@ class TestGribTimecodes(tests.GraphicsTest):
             )
 
         
+class TestGribLoadRules(tests.IrisTest):
+    # A testing class that does not need the test data.
+    
+    def mock_grib(self):
+        # A mock grib message, with attributes that can't be Mocks themselves.
+        grib = mock.Mock()
+        grib.startStep = 0
+        grib.phenomenon_points = lambda unit: 3
+        grib._forecastTimeUnit = "hours"
+        grib.productDefinitionTemplateNumber = 0
+        return grib
+
+    def test_table1_localparam(self):
+        grib = self.mock_grib()
+        grib.edition = 1
+        grib.table2Version = 1
+        grib.indicatorOfParameter = 128
+        cube = iris.cube.Cube([1,2,3,4,5])
+        
+        iris.fileformats.grib._ensure_load_rules_loaded()
+        iris.fileformats.grib._load_rules.verify(cube, grib)        
+        
+        self.assertEqual(cube.long_name, "UNKNOWN LOCAL PARAM 128.1")
+        self.assertEqual(cube.units, iris.unit.Unit("???"))
+        
+
 if __name__ == "__main__":
     tests.main()
     print "finished"
