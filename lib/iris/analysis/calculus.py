@@ -559,13 +559,13 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
         new_lat_cos_coord = _coord_cos(new_lat_coord)
         lat_dim = d_j_cube_dphi.coord_dims(new_lat_coord)[0]
         r_cmpt = iris.analysis.maths.divide(_curl_subtract(dicos_dtheta, d_j_cube_dphi), r * new_lat_cos_coord, dim=lat_dim)
-        r_cmpt.units = r_cmpt.units / r_unit
+        r_cmpt.replace_units(r_cmpt.units / r_unit)
         d_j_cube_dphi = dicos_dtheta = None
         
         # phi curl component: 1/r * ( drj_dr - d_k_cube_dtheta)
         drj_dr = _curl_differentiate(r * j_cube, z_coord)
         if drj_dr is not None:
-            drj_dr.units = drj_dr.units * r_unit
+            drj_dr.replace_units(drj_dr.units * r_unit)
         drj_dr = _curl_regrid(drj_dr, prototype_diff)
         d_k_cube_dtheta = _curl_differentiate(k_cube, lat_coord)
         d_k_cube_dtheta = _curl_regrid(d_k_cube_dtheta, prototype_diff)
@@ -573,10 +573,10 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
             phi_cmpt = None
         else:
             phi_cmpt = 1/r * _curl_subtract(drj_dr, d_k_cube_dtheta)
-            phi_cmpt.units = phi_cmpt.units / r_unit
-            
+            phi_cmpt.replace_units(phi_cmpt.units / r_unit)
+
         drj_dr = d_k_cube_dtheta = None
-        
+
         # theta curl component: 1/r * ( 1/cos(lat) * d_k_cube_dphi - dri_dr )
         d_k_cube_dphi = _curl_differentiate(k_cube, lon_coord)
         d_k_cube_dphi = _curl_regrid(d_k_cube_dphi, prototype_diff)
@@ -584,13 +584,13 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
             d_k_cube_dphi = iris.analysis.maths.divide(d_k_cube_dphi, lat_cos_coord)
         dri_dr = _curl_differentiate(r * i_cube, z_coord)
         if dri_dr is not None:
-            dri_dr.units = dri_dr.units * r_unit
+            dri_dr.replace_units(dri_dr.units * r_unit)
         dri_dr = _curl_regrid(dri_dr, prototype_diff)
         if d_k_cube_dphi is None and dri_dr is None:
             theta_cmpt = None
         else:
             theta_cmpt = 1/r * _curl_subtract(d_k_cube_dphi, dri_dr)
-            theta_cmpt.units = theta_cmpt.units / r_unit
+            theta_cmpt.replace_units(theta_cmpt.units / r_unit)
         d_k_cube_dphi = dri_dr = None
         
         result = [phi_cmpt, theta_cmpt, r_cmpt]

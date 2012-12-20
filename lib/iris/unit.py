@@ -1699,6 +1699,9 @@ class Unit(iris.util._OrderedHashable):
                     # utilise global convenience dictionary _cv_convert_scalar
                     result = _cv_convert_scalar[ctype](ut_converter, ctype(value_copy))
                 else:
+                    # Implicit cast from array of ints to array of float
+                    if issubclass(value_copy.dtype.type, np.integer):
+                        value_copy = value_copy.astype(np.float64)
                     # strict type check of numpy array
                     if value_copy.dtype.type not in _numpy2ctypes.keys():
                         raise TypeError("Expect a numpy array of '%s' or '%s'" % tuple(sorted(_numpy2ctypes.keys())))

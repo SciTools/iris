@@ -403,7 +403,7 @@ def _multiply_divide_common(operation_function, operation_symbol, operation_noun
             else:
                 history = '%s %s array' % (cube.name(), operation_symbol)
         
-        other_unit = 'unknown'
+        other_unit = '1'
     elif isinstance(other, iris.coords.Coord):
         # Deal with cube multiplication/division by coordinate
 
@@ -453,10 +453,14 @@ def _multiply_divide_common(operation_function, operation_symbol, operation_noun
                                     other.name() or 'unknown')
 
         other_unit = other.units
+    elif isinstance(other, iris.unit.Unit):
+        copy_cube = cube.copy()
+        other_unit = other
     else:
         return NotImplemented
    
     # Update the units
+    copy_cube.clear_units()
     if operation_function == numpy.multiply:
         copy_cube.units = cube.units * other_unit
     elif operation_function == numpy.divide:
@@ -586,8 +590,9 @@ def _math_op_common(cube, math_op, new_unit, history, update_history, in_place):
 
     # Update the metadata
     iris.analysis.clear_phenomenon_identity(copy_cube)
-    copy_cube.units = new_unit
     if update_history:
         copy_cube.add_history(history)
+
+    copy_cube.replace_units(new_unit)
     
     return copy_cube
