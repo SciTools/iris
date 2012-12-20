@@ -501,6 +501,7 @@ class TestGribLoadRules(tests.IrisTest):
         grib.startStep = 0
         grib.phenomenon_points = lambda unit: 3
         grib._forecastTimeUnit = "hours"
+        grib.productDefinitionTemplateNumber = 0
         return grib
 
     def test_table1_localparam(self):
