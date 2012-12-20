@@ -1,3 +1,30 @@
+Release 1.2 (unreleased)
+========================
+
+
+Features added
+--------------
+* Added a convert_units() method to cubes and coordinates for straightforward
+  conversion of a cube or coordinate from one unit to another.
+
+Bugs fixed
+----------
+* N/A
+
+Incompatible changes
+--------------------
+* The deprecated Cube.unit and Coord.unit attributes have been removed.
+
+Deprecations
+------------
+* The Coord.unit_converted method has been deprecated. Users should make a
+  copy of the coordinate using Coord.copy() and then call the
+  convert_units method of the new coordinate.
+
+
+----------------------------
+
+
 Release 1.1 (7 Dec, 2012)
 ==========================
 

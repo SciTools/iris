@@ -203,7 +203,7 @@ class TestCoordIntersection(tests.IrisTest):
         
     def test_no_intersection_on_unit(self):
         # Coordinates which do not share the same unit should fail
-        self.a.units = iris.unit.Unit('kilometer')
+        self.a.units = 'kilometer'
         self.assertRaises(ValueError, self.a.intersect, self.b)
 
     def test_commutative(self):

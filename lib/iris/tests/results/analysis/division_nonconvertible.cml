@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube units="kelvin">
+  <cube units="meter-kilogram^-1-second^2-kelvin">
     <attributes>
-      <attribute name="history" value="air_temperature / 10"/>
+      <attribute name="history" value="air_temperature / air_pressure"/>
     </attributes>
     <coords>
       <coord>

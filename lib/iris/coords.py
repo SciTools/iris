@@ -319,7 +319,7 @@ class Coord(CFVariableMixin):
         self.long_name = long_name
         """Descriptive name of the coordinate."""
 
-        self.units = iris.unit.as_unit(units)
+        self.units = units
         """Unit of the quantity that the coordinate represents."""
 
         self.attributes = attributes
@@ -541,7 +541,40 @@ class Coord(CFVariableMixin):
 
     def __neg__(self):
         return self.copy(-self.points, -self.bounds if self.bounds is not None else None)
-        
+
+    def convert_units(self, unit):
+        """
+        Changes the coordinate's units, converting the values in its points
+        and bounds arrays.
+
+        For example, if a coordinate's :attr:`~iris.coords.Coord.units`
+        attribute is set to radians then::
+
+            coord.convert_units('degrees')
+
+        will change the coordinate's
+        :attr:`~iris.coords.Coord.units` attribute to degrees and
+        multiply each value in :attr:`~iris.coords.Coord.points` and
+        :attr:`~iris.coords.Coord.bounds` by 180.0/pi.
+
+        """
+        # If the coord has units convert the values in points (and bounds if
+        # present).
+        if not self.units.unknown:
+            self.points = self.units.convert(self.points, unit)
+            if self.bounds is not None:
+                self.bounds = self.units.convert(self.bounds, unit)
+        self.units = unit
+
+    def unit_converted(self, new_unit):
+        """Return a coordinate converted to a given unit."""
+        msg = "The 'unit_converted' method is deprecated. Please make a copy"\
+              " of the coordinate and use the 'convert_units' method."
+        warnings.warn(msg, UserWarning, stacklevel=2)
+        new_coord = self.copy()
+        new_coord.convert_units(new_unit)
+        return new_coord
+
     def cells(self):
         """
         Returns an iterable of Cell instances for this Coord.
@@ -881,17 +914,6 @@ class Coord(CFVariableMixin):
         warnings.warn('Coord.cos() has been deprecated.') 
         import iris.analysis.calculus
         return iris.analysis.calculus._coord_cos(self)
-
-    def unit_converted(self, new_unit):
-        """Return a coordinate converted to a given unit."""
-        points = self.units.convert(self.points, new_unit)
-        if self.bounds is not None:
-            bounds = self.units.convert(self.bounds, new_unit)
-        else:
-            bounds = None
-        new_coord = self.copy(points=points, bounds=bounds)
-        new_coord.units = iris.unit.as_unit(new_unit)
-        return new_coord
     
     def xml_element(self, doc):
         """Return a DOM element describing this Coord."""

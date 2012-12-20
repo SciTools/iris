@@ -237,6 +237,36 @@ class TestDivideAndMultiply(tests.IrisTest):
 
         # Check that the division has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
+
+    def test_divide_convertible_cube(self):
+        a = self.cube
+        b = a.copy()
+        b.units = 'mK'
+
+        c = a / b
+
+        self.assertArrayAlmostEqual(a.data / (b.data / 1000.0), c.data)
+        self.assertCML(c, ('analysis', 'division.cml'), checksum=False)
+
+        # Check that the division has had no effect on the original
+        self.assertCML(a, ('analysis', 'maths_original.cml'))
+
+    def test_divide_nonconvertible_cube(self):
+        a = self.cube
+        b = a.copy()
+        b.rename('air_pressure')
+        b.units = 'Pa'
+        b.attributes['STASH'] = iris.fileformats.pp.STASH.from_msi('m01s16i222')
+
+        c = a / b
+
+        self.assertArrayAlmostEqual(a.data / b.data, c.data)
+        self.assertCML(c, ('analysis', 'division_nonconvertible.cml'),
+                       checksum=False)
+
+        # Check that the division has had no effect on the original
+        self.assertCML(a, ('analysis', 'maths_original.cml'))
+        self.assertCML(b, ('analysis', 'denominator_original.cml'))
         
     def test_divide_by_scalar(self):
         a = self.cube
@@ -277,7 +307,7 @@ class TestDivideAndMultiply(tests.IrisTest):
                 
         # Check that the division has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))    
-        
+
     def test_divide_by_coordinate_dim2(self):
         a = self.cube
 
@@ -293,7 +323,23 @@ class TestDivideAndMultiply(tests.IrisTest):
         # Check that the division has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
 
-    def test_divide_by_singluar_coordinate(self):
+    def test_divide_by_coordinate_with_convertible_units(self):
+        a = self.cube
+        coord = a.coord('longitude')
+
+        # Rename and force units to match for test.
+        coord.rename('temperature')
+        coord.units = 'mK'
+        # Prevent divide-by-zero warning.
+        coord += 0.5
+
+        c = a / coord
+        self.assertCML(c, ('analysis', 'division_by_temperature.cml'))
+
+        # Check that the division has had no effect on the original
+        self.assertCML(a, ('analysis', 'division_by_temperature_original.cml'))
+
+    def test_divide_by_singular_coordinate(self):
         a = self.cube
         
         coord = iris.coords.DimCoord(points=2, long_name='foo', units='1')
@@ -351,7 +397,7 @@ class TestExponentiate(tests.IrisTest):
         # Make sure we have something which we can take the root of.
         a = self.cube
         a.data = abs(a.data)
-        a.units **= 2
+        a.units = 'kelvin^2'
 
         e = a ** 0.5
 

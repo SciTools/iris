@@ -574,9 +574,9 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
         else:
             phi_cmpt = 1/r * _curl_subtract(drj_dr, d_k_cube_dtheta)
             phi_cmpt.units = phi_cmpt.units / r_unit
-            
+
         drj_dr = d_k_cube_dtheta = None
-        
+
         # theta curl component: 1/r * ( 1/cos(lat) * d_k_cube_dphi - dri_dr )
         d_k_cube_dphi = _curl_differentiate(k_cube, lon_coord)
         d_k_cube_dphi = _curl_regrid(d_k_cube_dphi, prototype_diff)

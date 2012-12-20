@@ -186,7 +186,7 @@ class CubeList(list):
         return cube_list 
 
     def __str__(self):
-        """Runs short :method:`Cube.summary` on every cube."""
+        """Runs short :meth:`Cube.summary` on every cube."""
         result = ['%s: %s' % (i, cube.summary(shorten=True)) for i, cube in enumerate(self)]
         if result:
             result = '\n'.join(result)
@@ -460,6 +460,25 @@ class Cube(CFVariableMixin):
                     raise TypeError('Invalid/incomplete metadata')
         for name in CubeMetadata._fields:
             setattr(self, name, getattr(value, name))
+
+    def convert_units(self, unit):
+        """
+        Changes the cube's units, converting the values in the data array.
+
+        For example, if a cube's :attr:`~iris.cube.Cube.units` are
+        kelvin then::
+
+            cube.convert_units('celsius')
+
+        will change the cube's :attr:`~iris.cube.Cube.units` attribute to
+        celsius and subtract 273.15 from each value in
+        :attr:`~iris.cube.Cube.data`.
+
+        """
+        # If the cube has units convert the data.
+        if not self.units.unknown:
+            self.data = self.units.convert(self.data, unit)
+        self.units = unit
 
     def add_cell_method(self, cell_method):
         """Add a CellMethod to the Cube."""
@@ -1052,7 +1071,7 @@ class Cube(CFVariableMixin):
         else:
             dimension_header = '; '.join([', '.join(dim_names[dim] or ['*ANONYMOUS*']) + 
                                          ': %d' % dim_shape for dim, dim_shape in enumerate(self.shape)])
-                
+
         cube_header = '%-*s (%s)' % (name_padding, self.name() or 'unknown', dimension_header)
         summary = ''
         
