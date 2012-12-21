@@ -903,21 +903,21 @@ class Coord(CFVariableMixin):
         return iris.analysis.calculus._coord_cos(self)
 
     def clear_units(self):
-        """Sets the cube's units to 'unknown'."""
+        """Sets the coordinate's units to 'unknown'."""
         self.units = None
 
     def replace_units(self, unit):
         """
-        Changes the cube's units to a given value without modifying
-        its data array.
+        Changes the coordinate's units to a given value without modifying
+        its points or bounds.
 
         .. note::
 
-            To convert a cube from one unit to another (e.g. kelvin
-            to celsius) assign to the 'units' attribute directly. For
-            example:
+            To convert a coordinate from one unit to another (e.g. degrees
+            to radians) assign to the :attr:`units <iris.coords.Coord.units>`
+            attribute directly. For example::
 
-                cube.units = 'celsius'
+                latitude_coord.units = 'radians'
 
         """
         self.clear_units()
