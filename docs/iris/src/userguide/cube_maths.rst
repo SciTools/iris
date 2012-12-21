@@ -8,9 +8,15 @@ The section :doc:`navigating_a_cube` highlighted that every cube has a data attr
    cube.data -= 273.16
 
 The problem with manipulating the data directly is that other metadata may become inconsistent; in this case the unit of 
-the cube is no longer what was intended, therefore this example could be rectified by setting the unit::
+the cube is no longer what was intended. This example could be rectified by replacing the unit::
 
-   cube.units = 'C'
+   cube.replace_units('C')
+
+.. note::
+    Directly assigning to :attr:`Cube.units <iris.cube.Cube.units>` will automatically convert the underlying data so the two steps above
+    can be achieved by::
+
+        cube.units = 'C'
 
 In order to reduce the amount of metadata which becomes inconsistent, fundamental arithmetic operations such as addition, 
 subtraction, division, and multiplication can be applied directly to any cube.
@@ -78,11 +84,6 @@ In order to calculate :math:`\frac{p}{p_0}` we can define a coordinate which rep
 
     import iris.coords
     p0 = iris.coords.AuxCoord(1000., long_name='reference_pressure', units='hPa')
-
-We must ensure that the units of ``pressure`` and ``p0`` are the same, so convert the newly created coordinate using 
-the :meth:`iris.coords.Coord.unit_converted` method::
-
-    p0 = p0.unit_converted(pressure.units)
 
 Now we can combine all of this information to calculate the air temperature using the equation above::
 
