@@ -297,6 +297,7 @@ if _lib_ud is None:
     _cv_convert_array = {FLOAT32: _cv_convert_floats,
                          FLOAT64: _cv_convert_doubles}
     _numpy2ctypes = {np.float32: FLOAT32, np.float64: FLOAT64}
+    _ctypes2numpy = {v: k for k, v in _numpy2ctypes.iteritems()}
 #
 # load the UDUNITS-2 xml-formatted unit-database
 #
@@ -1701,7 +1702,7 @@ class Unit(iris.util._OrderedHashable):
                 else:
                     # Implicit cast from array of ints to array of float
                     if issubclass(value_copy.dtype.type, np.integer):
-                        value_copy = value_copy.astype(np.float64)
+                        value_copy = value_copy.astype(_ctypes2numpy[ctype])
                     # strict type check of numpy array
                     if value_copy.dtype.type not in _numpy2ctypes.keys():
                         raise TypeError("Expect a numpy array of '%s' or '%s'" % tuple(sorted(_numpy2ctypes.keys())))
