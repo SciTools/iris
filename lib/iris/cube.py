@@ -1985,7 +1985,8 @@ class Cube(CFVariableMixin):
 
     def rolling_window(self, coord, aggregator, window, **kwargs):
         """
-        Perform rolling window aggregation on a cube given a coordinate, an aggregation method and a window size.
+        Perform rolling window aggregation on a cube given a coordinate, an 
+        aggregation method and a window size.
 
         Args:
 
@@ -1999,7 +2000,9 @@ class Cube(CFVariableMixin):
         Kwargs:
 
         * kwargs:
-            Aggregator and aggregation function keyword arguments.
+            Aggregator and aggregation function keyword arguments. The weights
+            argument to the aggregator, if any, should be a 1d array with the
+            same length as the chosen window.
 
         Returns:
             :class:`iris.cube.Cube`.
@@ -2047,28 +2050,28 @@ class Cube(CFVariableMixin):
                       mean: time
 
 
-            Notice that the forecast_period dimension now represents the 4 possible windows of size 3 from the original cube. 
+            Notice that the forecast_period dimension now represents the 4
+            possible windows of size 3 from the original cube. 
 
         """
-        # We can't handle weights
-        if isinstance(aggregator, iris.analysis.WeightedAggregator) and aggregator.uses_weighting(**kwargs):
-            raise ValueError('Invalid Aggregation, rolling_window() cannot use weights.')
-
         coord = self._as_list_of_coords(coord)[0]
 
         if getattr(coord, 'circular', False):
-            raise iris.exceptions.NotYetImplementedError('Rolling window over a circular coordinate.')
+            raise iris.exceptions.NotYetImplementedError(
+                'Rolling window over a circular coordinate.')
 
         if window < 2:
-            raise ValueError('Cannot perform rolling window with a window size less than 2.')
+            raise ValueError('Cannot perform rolling window '
+                             'with a window size less than 2.')
 
         if coord.ndim > 1:
             raise iris.exceptions.CoordinateMultiDimError(coord)
 
         dimension = self.coord_dims(coord)
         if len(dimension) != 1:
-            raise iris.exceptions.CoordinateCollapseError('Cannot perform rolling window with coordinate "%s", '
-                                                          'must map to one data dimension.'  % coord.name())
+            raise iris.exceptions.CoordinateCollapseError(
+                'Cannot perform rolling window with coordinate "%s", '
+                'must map to one data dimension.'  % coord.name())
         dimension = dimension[0]
 
         # Use indexing to get a result-cube of the correct shape.
@@ -2082,19 +2085,22 @@ class Cube(CFVariableMixin):
         new_cube = self[tuple(key)]
 
         # take a view of the original data using the rolling_window function
-        # this will add an extra dimension to the data at dimension + 1 which represents the rolled window (i.e. will
-        # have a length of window)
-        rolling_window_data = iris.util.rolling_window(self.data, window=window, axis=dimension)
+        # this will add an extra dimension to the data at dimension + 1 which
+        # represents the rolled window (i.e. will have a length of window)
+        rolling_window_data = iris.util.rolling_window(self.data,
+                                                       window=window,
+                                                       axis=dimension)
 
         # now update all of the coordinates to reflect the aggregation
         for coord_ in self.coords(dimensions=dimension):
             if coord_.has_bounds():
-                warnings.warn('The bounds of coordinate %r were ignored in the rolling '
-                              'window operation.' % coord_.name())
+                warnings.warn('The bounds of coordinate %r were ignored in '
+                              'the rolling window operation.' % coord_.name())
 
             if coord_.ndim != 1:
-                raise ValueError('Cannot calculate the rolling window of %s as it is a '
-                                 'multidimensional coordinate.' % coord_.name())
+                raise ValueError('Cannot calculate the rolling '
+                                 'window of %s as it is a multidimensional '
+                                 'coordinate.' % coord_.name())
 
             new_bounds = iris.util.rolling_window(coord_.points, window)
 
@@ -2108,9 +2114,26 @@ class Cube(CFVariableMixin):
             new_coord.bounds = new_bounds
 
         # update the metadata of the cube itself
-        aggregator.update_metadata(new_cube, [coord], action='with a rolling window of length %s over' % window, **kwargs)
-        # and perform the data transformation
-        new_cube.data = aggregator.aggregate(rolling_window_data, axis=dimension + 1)
+        aggregator.update_metadata(
+            new_cube, [coord],
+            action='with a rolling window of length %s over' % window,
+            **kwargs)
+        # and perform the data transformation, generating weights first if
+        # needed
+        newkwargs = {}
+        if isinstance(aggregator, iris.analysis.WeightedAggregator) and \
+                aggregator.uses_weighting(**kwargs):
+            if 'weights' in kwargs.keys():
+                weights = kwargs['weights']
+                if weights.ndim > 1 or weights.shape[0] != window:
+                    raise ValueError('Weights for rolling window aggregation '
+                                     'must be a 1d array with the same length '
+                                     'as the window.')
+                newkwargs['weights'] = iris.util.broadcast_weights(
+                    weights, rolling_window_data, [dimension+1])
+        new_cube.data = aggregator.aggregate(rolling_window_data,
+                                            axis=dimension + 1,
+                                            **newkwargs)
 
         return new_cube
     
