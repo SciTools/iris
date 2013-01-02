@@ -230,12 +230,23 @@ def _quadrant_area(radian_colat_bounds, radian_lon_bounds, radius_of_earth):
     return numpy.abs(areas)
 
 
-def area_weights(cube):
+def area_weights(cube, normalize=False):
     """
     Returns an array of area weights, with the same dimensions as the cube.
     
     This is a 2D lat/lon area weights array, repeated over the non lat/lon dimensions.
-    
+
+    Args:
+
+    * cube (:class:`iris.cube.Cube`):
+        The cube to calculate area weights for.
+
+    Kwargs:
+
+    * normalize (False/True):
+        If False, weights are grid cell areas. If True, weights are grid
+        cell areas divided by the total grid area.
+
     The cube must have coordinates 'latitude' and 'longitude' with contiguous bounds.
     
     Area weights are calculated for each lat/lon cell as:
@@ -304,6 +315,10 @@ def area_weights(cube):
     # Does the cube have them the other way round?
     if lon_dim < lat_dim:
         ll_weights = ll_weights.transpose()
+
+    # Normalize the weights if necessary.
+    if normalize:
+        ll_weights /= ll_weights.sum()
 
     # Now we create an array of weights for each cell.
     broad_weights = iris.util.broadcast_weights(ll_weights,
