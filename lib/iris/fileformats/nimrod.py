@@ -256,11 +256,13 @@ class NimrodField(object):
             osgb_cs = iris.coord_systems.OSGB()
             cube.add_dim_coord(
                 DimCoord(numpy.arange(self.num_cols) * self.column_step + self.x_origin,
-                         long_name="x", units="m", coord_system=osgb_cs), 1)
+                         standard_name="projection_x_coordinate",
+                         units="m", coord_system=osgb_cs), 1)
             if self.origin_corner == 0:  # top left
                 cube.add_dim_coord(
                     DimCoord(numpy.arange(self.num_rows)[::-1] * -self.row_step + self.y_origin,
-                             long_name="y", units="m", coord_system=osgb_cs), 0)
+                             standard_name="projection_y_coordinate",
+                             units="m", coord_system=osgb_cs), 0)
             else:
                 raise TranslationError("Corner {0} not yet implemented".format(self.origin_corner))
         else:
