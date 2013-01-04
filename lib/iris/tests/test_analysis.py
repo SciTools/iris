@@ -503,6 +503,13 @@ class TestAreaWeightGeneration(tests.IrisTest):
         weights = iris.analysis.cartography.area_weights(cube)
         self.assertEqual(weights.shape, cube.shape)
 
+    def test_area_weights_normalized(self):
+        # normalized area weights must sum to one over lat/lon dimensions.
+        weights = iris.analysis.cartography.area_weights(self.cube,
+                                                         normalize=True)
+        sumweights = weights.sum(axis=3).sum(axis=2)  # sum over lon and lat
+        self.assertArrayAlmostEqual(sumweights, 1)
+
 
 class TestLatitudeWeightGeneration(tests.IrisTest):
     def setUp(self):
