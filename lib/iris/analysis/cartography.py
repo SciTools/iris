@@ -52,7 +52,7 @@ def _proj4(pole_lon, pole_lat):
     proj4_params = {'proj': 'ob_tran', 'o_proj': 'latlon', 'o_lon_p': 0,
         'o_lat_p': pole_lat, 'lon_0': 180 + pole_lon,
         'to_meter': math.degrees(1)}
-    from mpl_toolkits.basemap import pyproj
+    import pyproj
     proj = pyproj.Proj(proj4_params)
     return proj
 

@@ -67,14 +67,15 @@ setuptools 0.6c11 or later (http://pypi.python.org/pypi/setuptools/)
 cartopy 0.5.0 or later (http://github.com/SciTools/cartopy/)
     Python package which provides cartographic tools for python.
 
+pyproj v1.9.0 or later (http://pypi.python.org/pypi/pyproj/)
+    Performs cartographic transformations and geodetic computations.
+    Required by cartopy.
+
 Optional
 --------
 These are optional packages which you may want to install to use
 Iris with different file formats and to enable plotting functionality.
 All of these are required for the Iris test suite to run.
-
-basemap 1.0 or later (http://matplotlib.github.com/basemap/)
-    Toolkit for matplotlib providing map functionality.
 
 graphviz 2.18 or later (http://www.graphviz.org/)
     Graph visualisation software.
