@@ -35,7 +35,7 @@ from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
 import numpy
 import numpy.ma
 import cartopy.crs
-import cartopy.mpl_integration.geoaxes
+import cartopy.mpl.geoaxes
 
 
 import iris.cube
@@ -202,12 +202,6 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     mode = iris.coords.BOUND_MODE
     if coords is not None:
         plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode)
-        if plot_defn.coords[0].nbounds == 0 or plot_defn.coords[1].nbounds == 0:
-            raise ValueError('Cannot draw %r against %r using %r as at least'
-                             ' one of them is not bounded.' % (
-                                plot_defn.coords[0].name(),
-                                plot_defn.coords[1].name(),
-                                draw_method_name))
     else:
         plot_defn = _get_plot_defn(cube, mode, ndims=2)
 
@@ -344,7 +338,7 @@ def _get_cartopy_axes(cartopy_proj):
     # Replace non-cartopy subplot/axes with a cartopy alternative.
     ax = plt.gca()
     if not isinstance(ax,
-                      cartopy.mpl_integration.geoaxes.GenericProjectionAxes):
+                      cartopy.mpl.geoaxes.GeoAxes):
         fig = plt.gcf()
         if isinstance(ax, matplotlib.axes.SubplotBase):
             new_ax = fig.add_subplot(ax.get_subplotspec(),
@@ -507,7 +501,7 @@ def default_projection_extent(cube, mode=iris.coords.POINT_MODE):
 
      * mode - either ``iris.coords.POINT_MODE`` or ``iris.coords.BOUND_MODE``. Triggers whether
               the extent should be representative of the cell points, or the limits of the cell's
-              bounds.
+              bounds. The default is iris.coords.POINT_MODE.
 
     """
     extents = iris.analysis.cartography._xy_range(cube, mode)

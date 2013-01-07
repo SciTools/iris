@@ -54,7 +54,6 @@ class TestFileFormatPicker(tests.IrisTest):
         a = str(iff.FORMAT_AGENT)
         self.assertString(a, tests.get_result_path(('file_load', 'known_loaders.txt')))
 
-
     def test_format_picker(self):
         # ways to test the format picker = list of (format-name, file-spec)
         test_specs = [
@@ -66,7 +65,7 @@ class TestFileFormatPicker(tests.IrisTest):
                 ['NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc4.k3']),
             ('NetCDF_v4',
                 ['NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc4.k4']),
-            ('UM Fields file (FF) pre v3.1',
+            ('UM Fieldsfile (FF) post v5.2',
                 ['FF', 'n48_multi_field']),
             ('GRIB',
                 ['GRIB', 'grib1_second_order_packing', 'GRIB_00008_FRANX01']),
@@ -74,6 +73,8 @@ class TestFileFormatPicker(tests.IrisTest):
                 ['GRIB', 'jpeg2000', 'file.grib2']),
             ('UM Post Processing file (PP)',
                 ['PP', 'simple_pp', 'global.pp']),
+            ('UM Fieldsfile (FF) ancillary',
+                ['FF', 'ancillary_fixed_length_header']),
 #            ('BUFR',
 #                ['BUFR', 'mss', 'BUFR_Samples', 
 #                 'JUPV78_EGRR_121200_00002501']),

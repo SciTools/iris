@@ -5,5 +5,6 @@
  * NetCDF 64 bit offset format (priority 5)
  * NetCDF_v4 (priority 5)
  * NIMROD (priority 5)
- * UM Fields file (FF) pre v3.1 (priority 4)
- * UM Fields file (FF) post v5.2 (priority 4)
+ * UM Fieldsfile (FF) pre v3.1 (priority 4)
+ * UM Fieldsfile (FF) post v5.2 (priority 4)
+ * UM Fieldsfile (FF) ancillary (priority 4)

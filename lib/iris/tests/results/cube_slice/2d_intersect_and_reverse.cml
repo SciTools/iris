@@ -3,10 +3,10 @@
   <cube long_name="test 2d dimensional cube" units="meters">
     <coords>
       <coord>
-        <auxCoord id="e3abfc46" long_name="an_other" points="[3.0]" shape="(1,)" units="Unit('meters')" value_type="float64"/>
+        <auxCoord id="79187cc9" long_name="an_other" points="[3.0]" shape="(1,)" units="Unit('meters')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="7ca654a7" long_name="dim1" points="[3.0, 8.1, 13.2, 18.3, 23.4]" shape="(5,)" units="Unit('meters')" value_type="float32"/>
+        <dimCoord id="e615d428" long_name="dim1" points="[3.0, 8.1, 13.2, 18.3, 23.4]" shape="(5,)" units="Unit('meters')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
         <dimCoord bounds="[[18, 19],
@@ -17,7 +17,7 @@
 		[6, 7],
 		[4, 5],
 		[2, 3],
-		[0, 1]]" id="d9ae3fcb" long_name="dim2" points="[9, 8, 7, 5, 4, 3, 2, 1, 0]" shape="(9,)" units="Unit('meters')" value_type="int32"/>
+		[0, 1]]" id="431dbf44" long_name="dim2" points="[9, 8, 7, 5, 4, 3, 2, 1, 0]" shape="(9,)" units="Unit('meters')" value_type="int32"/>
       </coord>
       <coord datadims="[0, 1]">
         <auxCoord bounds="[[[36, 37, 38, 39],
@@ -58,7 +58,7 @@
  		..., 
  		[168, 169, 170, 171],
  		[164, 165, 166, 167],
- 		[160, 161, 162, 163]]]" id="16c5c9bc" long_name="my_multi_dim_coord" points="[[9, 8, 7, 5, 4, 3, 2, 1, 0],
+ 		[160, 161, 162, 163]]]" id="8c764933" long_name="my_multi_dim_coord" points="[[9, 8, 7, 5, 4, 3, 2, 1, 0],
 		[19, 18, 17, 15, 14, 13, 12, 11, 10],
 		[29, 28, 27, 25, 24, 23, 22, 21, 20],
 		[39, 38, 37, 35, 34, 33, 32, 31, 30],

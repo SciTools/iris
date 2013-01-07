@@ -1,2 +1,2 @@
 <?xml version="1.0" ?>
-<dimCoord id="5dc634fe" long_name="foo" points="[135.0, 45.0, -45.0, -135.0]" shape="(4,)" units="Unit('degrees')" value_type="float32"/>
+<dimCoord id="c775b471" long_name="foo" points="[135.0, 45.0, -45.0, -135.0]" shape="(4,)" units="Unit('degrees')" value_type="float32"/>

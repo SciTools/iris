@@ -381,7 +381,7 @@ class Cube(CFVariableMixin):
         For example::
 
             latitude = DimCoord(range(-85, 105, 10), standard_name='latitude', units='degrees')
-            longitude = DimCoord(range(0, 360, 10), standard_name='longitude', units='degrees', 'x', 0, 10, 36)
+            longitude = DimCoord(range(0, 360, 10), standard_name='longitude', units='degrees')
             cube = Cube(numpy.zeros((18, 36), numpy.float32),
                         dim_coords_and_dims=[(latitude, 0), (longitude, 1)])
 
@@ -1263,7 +1263,7 @@ class Cube(CFVariableMixin):
         # handle unloaded data
         data_manager = None
         use_data_proxy = self._data_manager is not None
-        
+
         if first_slice is not None:
             if use_data_proxy:
                 data, data_manager = self._data_manager.getitem(self._data, first_slice)
@@ -1611,9 +1611,16 @@ class Cube(CFVariableMixin):
 
             # getting a checksum triggers any deferred loading
             if checksum:
-                data_xml_element.setAttribute("checksum", hex(zlib.crc32(self.data)))
-                if isinstance(self.data, numpy.ma.core.MaskedArray):
-                    data_xml_element.setAttribute("mask_checksum", hex(zlib.crc32(self.data.mask)))
+                data = self.data
+                # Ensure data is row-major contiguous for crc32 computation.
+                if not data.flags['C_CONTIGUOUS'] and \
+                        not data.flags['F_CONTIGUOUS']:
+                    data = numpy.ascontiguousarray(data)
+                crc = hex(zlib.crc32(data))
+                data_xml_element.setAttribute("checksum", crc)
+                if isinstance(data, numpy.ma.core.MaskedArray):
+                    crc = hex(zlib.crc32(data.mask))
+                    data_xml_element.setAttribute("mask_checksum", crc)
             elif self._data_manager is not None:
                 data_xml_element.setAttribute("state", "deferred")
             else:

@@ -17,6 +17,15 @@
 
 IF
 f.lbtim.ia == 0
+f.lbtim.ib == 0
+f.lbtim.ic in [1, 2, 3]
+len(f.lbcode) != 5 or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])
+THEN
+CoordAndDims(DimCoord(f.time_unit('hours').date2num(f.t1), standard_name='time', units=f.time_unit('hours')))
+
+
+IF
+f.lbtim.ia == 0
 f.lbtim.ib == 1
 f.lbtim.ic in [1, 2, 3]
 len(f.lbcode) != 5 or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])
@@ -303,7 +312,7 @@ f.lbproc not in [0, 128, 4096, 8192]
 THEN
 CMCustomAttribute("ukmo__process_flags", tuple(sorted([iris.fileformats.pp.lbproc_map[flag] for flag in f.lbproc.flags])))
 
-#height codes
+# Height rule 1 of 2 - non 1.5m temperature.
 IF
 f.lbvc == 1
 not (f.lbuser[6] == 1 and f.lbuser[3] == 3236)
@@ -312,10 +321,19 @@ THEN
 #heightRef = "geometric"
 CoordAndDims(DimCoord(f.blev, standard_name='height', units='m', attributes={'positive': 'up'}))
 
+# Height rule 2 of 2 - 1.5m temperature.
 IF
 f.lbuser[6] == 1 and f.lbuser[3] == 3236
 THEN
 CoordAndDims(DimCoord(1.5, standard_name='height', units='m', attributes={'positive': 'up'}))
+
+# Depth - non cross-sections.
+IF
+len(f.lbcode) != 5
+f.lbvc == 2
+THEN
+CoordAndDims(DimCoord(f.lblev, standard_name='model_level_number', attributes={'positive': 'down'}))
+CoordAndDims(DimCoord(f.blev, standard_name='depth', units='m', attributes={'positive': 'down'}))
 
 IF
 f.lbvc == 8

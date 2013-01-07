@@ -239,6 +239,9 @@ class TestAnalysisBasic(tests.IrisTest):
     def test_min(self):
         self._common('min', iris.analysis.MIN)
 
+    def test_rms(self):
+        self._common('rms', iris.analysis.RMS)
+
     def test_duplicate_coords(self):
         self.assertRaises(ValueError, tests.stock.track_1d, duplicate_x=True)
 
@@ -459,7 +462,7 @@ class TestAreaWeights(tests.IrisTest):
         self.assertAlmostEquals(area[2], [319251845980.7646484375])
 
 
-class TestWeightGeneration(tests.IrisTest):
+class TestAreaWeightGeneration(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.realistic_4d()
 
@@ -499,6 +502,85 @@ class TestWeightGeneration(tests.IrisTest):
         cube = self.cube[:, :, 0, 0]
         weights = iris.analysis.cartography.area_weights(cube)
         self.assertEqual(weights.shape, cube.shape)
+
+    def test_area_weights_normalized(self):
+        # normalized area weights must sum to one over lat/lon dimensions.
+        weights = iris.analysis.cartography.area_weights(self.cube,
+                                                         normalize=True)
+        sumweights = weights.sum(axis=3).sum(axis=2)  # sum over lon and lat
+        self.assertArrayAlmostEqual(sumweights, 1)
+
+
+class TestLatitudeWeightGeneration(tests.IrisTest):
+    def setUp(self):
+        # construct a 4d cube with global extent
+        ntime = 5
+        nlevs = 3
+        nlons = 144
+        nlats = 73
+        time_values = numpy.arange(ntime)
+        time_unit = 'days since 2001-01-01 00:00:0.0'
+        cal = 'Gregorian'
+        time_coord = iris.coords.DimCoord(time_values,
+                                          standard_name='time',
+                                          units=iris.unit.Unit(time_unit, cal))
+        lev_values = numpy.arange(1, nlevs + 1)
+        lev_coord = iris.coords.DimCoord(lev_values,
+                                         long_name='model_level_number',
+                                         units='1')
+        lat_values = numpy.linspace(-90, 90, nlats)
+        lat_coord = iris.coords.DimCoord(lat_values,
+                                         standard_name='latitude',
+                                         units=iris.unit.Unit('degrees_north'))
+        lon_values = numpy.arange(0., 360., 360./nlons)
+        lon_coord = iris.coords.DimCoord(lon_values,
+                                         standard_name='longitude',
+                                         units=iris.unit.Unit('degrees_east'))
+        data = numpy.ones([ntime, nlevs, nlats, nlons], dtype=numpy.float64)
+        self.cube = iris.cube.Cube(data, long_name='test_cube', units='1')
+        coords = (time_coord, lev_coord, lat_coord, lon_coord)
+        for icoord, coord in enumerate(coords):
+            self.cube.add_dim_coord(coord, icoord)
+        self.lat_coord = lat_coord.points
+
+    def test_sqrt_cosine_latitude_weights_range(self):
+        # range of weight values
+        weights = iris.analysis.cartography.cosine_latitude_weights(self.cube)
+        self.assertTrue(weights.max() <= 1)
+        self.assertTrue(weights.min() >= 0)
+
+    def test_cosine_latitude_weights_std(self):
+        # weights for 4d data
+        weights = iris.analysis.cartography.cosine_latitude_weights(self.cube)
+        self.assertEqual(weights.shape, self.cube.shape)
+        self.assertArrayAlmostEqual(weights[0, 0, :, 0],
+                                    numpy.cos(numpy.deg2rad(self.lat_coord)))
+
+    def test_cosine_latitude_weights_latitude_first(self):
+        # weights for data with latitude first in dimensions
+        order = [2, 0, 1, 3] # (lat, time, level, lon)
+        self.cube.transpose(order)
+        weights = iris.analysis.cartography.cosine_latitude_weights(self.cube)
+        self.assertEqual(weights.shape, self.cube.shape)
+        self.assertArrayAlmostEqual(weights[:, 0, 0, 0],
+                                    numpy.cos(numpy.deg2rad(self.lat_coord)))
+
+    def test_cosine_latitude_weights_latitude_last(self):
+        # weights for data with latitude last in dimensions
+        order = [0, 1, 3, 2] # (time, level, lon, lat)
+        self.cube.transpose(order)
+        weights = iris.analysis.cartography.cosine_latitude_weights(self.cube)
+        self.assertEqual(weights.shape, self.cube.shape)
+        self.assertArrayAlmostEqual(weights[0, 0, 0, :],
+                                    numpy.cos(numpy.deg2rad(self.lat_coord)))
+
+    def test_cosine_latitude_weights_scalar_latitude(self):
+        # weights for cube with a scalar latitude dimension
+        cube = self.cube[:, :, 0, :]
+        weights = iris.analysis.cartography.cosine_latitude_weights(cube)
+        self.assertEqual(weights.shape, cube.shape)
+        self.assertAlmostEqual(weights[0, 0, 0],
+                               numpy.cos(numpy.deg2rad(self.lat_coord[0])))
 
 
 class TestRollingWindow(tests.IrisTest):
@@ -641,8 +723,8 @@ class TestProject(tests.GraphicsTest):
 
     @iris.tests.skip_data
     def test_cartopy_projection(self):
-        cube = iris.load_strict(tests.get_data_path(('PP', 'aPPglob1',
-                                                     'global.pp')))
+        cube = iris.load_cube(tests.get_data_path(('PP', 'aPPglob1',
+                                                   'global.pp')))
         projections = {}
         projections['RotatedPole'] = ccrs.RotatedPole(pole_longitude=177.5,
                                                       pole_latitude=37.5)
@@ -675,11 +757,11 @@ class TestProject(tests.GraphicsTest):
         gs.tight_layout(plt.gcf())
 
         # Verify resulting plot
-        self.check_graphic()
+        self.check_graphic(tol=2e-4)
 
     @iris.tests.skip_data
     def test_no_coord_system(self):
-        cube = iris.load_strict(tests.get_data_path(('PP', 'aPPglob1', 'global.pp')))
+        cube = iris.load_cube(tests.get_data_path(('PP', 'aPPglob1', 'global.pp')))
         cube.coord('longitude').coord_system = None
         cube.coord('latitude').coord_system = None
         new_cube, extent = iris.analysis.cartography.project(cube, self.target_proj)

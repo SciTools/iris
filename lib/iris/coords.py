@@ -545,11 +545,23 @@ class Coord(CFVariableMixin):
             return False
 
     def contiguous_bounds(self):
-        """Returns the N+1 bound values for a contiguous bounded coordinate of length N."""
-        self._sanity_check_contiguous()
-        bounds = self.bounds
-        if bounds is None:
-            raise ValueError('Coordinate is not bounded, cannot get contiguous bounds.')
+        """
+        Returns the N+1 bound values for a contiguous bounded coordinate
+        of length N.
+
+        .. note::
+            If the coordinate is does not have bounds, this method will
+            return bounds positioned halfway between the coordinate's points.
+
+        """
+        if self.bounds is None:
+            warnings.warn('Coordinate {!r} is not bounded, guessing '
+                          'contiguous bounds.'.format(self.name()))
+            bounds = self._guess_bounds()
+        else:
+            self._sanity_check_contiguous()
+            bounds = self.bounds
+
         c_bounds = numpy.resize(bounds[:, 0], bounds.shape[0] + 1)
         c_bounds[-1] = bounds[-1, 1]
         return c_bounds
@@ -675,16 +687,20 @@ class Coord(CFVariableMixin):
                                     bounds=numpy.array([lower_bound, upper_bound], dtype=bounds_dtype))
         return coord_collapsed
 
-    def guess_bounds(self, bound_position=0.5):
+    def _guess_bounds(self, bound_position=0.5):
         """
-        Try to add bounds to this coordinate using the coordinate's points.
+        Return bounds for this coordinate based on its points.
         
         Kwargs:
         
         * bound_position - The desired position of the bounds relative to the
                            position of the points.
 
-        This method only works for coordinates with ``coord.ndim == 1``.
+        Returns:
+            A numpy array of shape (len(self.points), 2).
+
+        .. note::
+            This method only works for coordinates with ``coord.ndim == 1``.
         
         """
         # XXX Consider moving into DimCoord
@@ -710,7 +726,23 @@ class Coord(CFVariableMixin):
         min_bounds = self.points - diffs[:-1] * bound_position
         max_bounds = self.points + diffs[1:] * (1 - bound_position)
 
-        self.bounds = numpy.array([min_bounds, max_bounds]).transpose()
+        bounds = numpy.array([min_bounds, max_bounds]).transpose()
+
+        return bounds
+
+    def guess_bounds(self, bound_position=0.5):
+        """
+        Try to add bounds to this coordinate using the coordinate's points.
+
+        Kwargs:
+
+        * bound_position - The desired position of the bounds relative to the
+                           position of the points.
+
+        This method only works for coordinates with ``coord.ndim == 1``.
+
+        """
+        self.bounds = self._guess_bounds(bound_position)
 
     def intersect(self, other, return_indices=False):
         """
@@ -877,7 +909,8 @@ class Coord(CFVariableMixin):
     def _xml_id(self):
         # Returns a consistent, unique string identifier for this coordinate.
         unique_value = (self.standard_name, self.long_name, self.units,
-                        self.attributes, self.coord_system)
+                        tuple(sorted(self.attributes.items())),
+                        self.coord_system)
         # Mask to ensure consistency across Python versions & platforms.
         crc = zlib.crc32(str(unique_value)) & 0xffffffff
         return hex(crc).lstrip('0x')

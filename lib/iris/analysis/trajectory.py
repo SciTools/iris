@@ -201,21 +201,24 @@ def interpolate(cube, sample_points, method=None):
             new_cube.add_aux_coord(new_coord, dest_dims)
             coord_mapping[id(coord)] = new_coord
 
-    # Create all the squished coords empty. Filled alongside the data. 
+    # Create all the squished (non derived) coords, not filled in yet.
     trajectory_dim = len(remaining_dims)
-    for coord in cube.coords():
+    for coord in cube.dim_coords + cube.aux_coords:
         src_dims = cube.coord_dims(coord)
         if not squish_my_dims.isdisjoint(src_dims):
-            points = numpy.array([coord.points.flatten()[0]] * trajectory_size)  # preserves type
-            new_coord = iris.coords.AuxCoord(points, standard_name=coord.standard_name,
-                                             long_name=coord.long_name, units=coord.units,
-                                             bounds=None, attributes=coord.attributes,
+            points = numpy.array([coord.points.flatten()[0]] * trajectory_size)
+            new_coord = iris.coords.AuxCoord(points,
+                                             standard_name=coord.standard_name,
+                                             long_name=coord.long_name,
+                                             units=coord.units,
+                                             bounds=None,
+                                             attributes=coord.attributes,
                                              coord_system=coord.coord_system)
             new_cube.add_aux_coord(new_coord, trajectory_dim)
             coord_mapping[id(coord)] = new_coord
 
     for factory in cube.aux_factories:
-        cube.add_aux_factory(factory.updated(coord_mapping))
+        new_cube.add_aux_factory(factory.updated(coord_mapping))
 
     # Are the given coords all 1-dimensional? (can we do linear interp?)
     for coord, values in sample_points:
@@ -239,10 +242,9 @@ def interpolate(cube, sample_points, method=None):
             column = cube[column_index]
             new_cube.data[..., i] = column.data
         
-        # fill in the empty squashed coords
-        for column_coord in column.coords():
-            # is it one of the dims that got squashed?
-            src_dims = cube.coord_dims(cube.coord(column_coord.name()))
+        # Fill in the empty squashed (non derived) coords.
+        for column_coord in column.dim_coords + column.aux_coords:
+            src_dims = cube.coord_dims(column_coord)
             if not squish_my_dims.isdisjoint(src_dims):
                 if len(column_coord.points) != 1:
                     raise Exception("Expected to find exactly one point. Found %d" % len(column_coord.points))

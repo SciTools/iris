@@ -1,5 +1,5 @@
-Iris 1.0
-========
+Iris
+====
 
 (C) British Crown Copyright 2010 - 2012, Met Office
 
@@ -27,7 +27,7 @@ The highlights from recent changes are given by the file CHANGES.
 A more detailed discussion of recent changes is given by the
 "What's new" document:
 
-- http://scitools.github.com/iris/whats_new/whats_new.html
+- http://scitools.org.uk/iris/docs/latest/whatsnew/index.html
 
 If you need complete detail, then please refer to the commit history of
 the Iris project on GitHub:
@@ -38,10 +38,10 @@ the Iris project on GitHub:
 Documentation
 -------------
 
-The full documentation for Iris 1.0, including a user guide, example
+The full documentation for Iris, including a user guide, example
 code, and gallery, is online at:
 
-- http://scitools.github.com/iris/
+- http://scitools.org.uk/iris/
 
 
 Copyright and licence

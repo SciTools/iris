@@ -88,10 +88,9 @@ Now we can combine all of this information to calculate the air temperature usin
 
     temperature = pot_temperature * ( (pressure / p0) ** (287.05 / 1005) )
 
-Finally, the cube we have created needs to have its standard name and units set correctly::
+Finally, the cube we have created needs to be given a suitable name:
 
-    temperature.standard_name = 'air_temperature'
-    temperature.units = 'kelvin'
+    temperature.rename('air_temperature')
 
 The result could now be plotted using the guidance provided in the :doc:`plotting_a_cube` section.
 

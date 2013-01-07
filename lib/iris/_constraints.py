@@ -123,10 +123,16 @@ class Constraint(object):
         """Return the subset of the given cube which matches this constraint, else return None."""
         resultant_CIM = self._CIM_extract(cube)
         slice_tuple = resultant_CIM.as_slice()
-        if slice_tuple is None:
-            return None
-        else:
-            return cube[slice_tuple]
+        result = None
+        if slice_tuple is not None:
+            # Slicing the cube is an expensive operation.
+            if all([item == slice(None) for item in slice_tuple]):
+                # Don't perform a full slice, just return the cube.
+                result = cube
+            else:
+                # Performing the partial slice.
+                result = cube[slice_tuple]
+        return result
         
     def _CIM_extract(self, cube):
         # Returns _ColumnIndexManager

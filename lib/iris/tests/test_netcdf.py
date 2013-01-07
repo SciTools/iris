@@ -33,8 +33,15 @@ import iris.std_names
 import iris.util
 import stock
 
+
 @iris.tests.skip_data
 class TestNetCDFLoad(tests.IrisTest):
+    def test_monotonic(self):
+        cubes = iris.load(tests.get_data_path(('NetCDF',
+                                               'testing',
+                                               'test_monotonic_coordinate.nc')))
+        self.assertCML(cubes, ('netcdf', 'netcdf_monotonic.cml'))
+
     def test_load_global_xyt_total(self):
         # Test loading single xyt CF-netCDF file.
         cube = iris.load_cube(tests.get_data_path(('NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc')))
@@ -71,7 +78,8 @@ class TestNetCDFLoad(tests.IrisTest):
 
     def test_load_rotated_xyt_precipitation(self):
         # Test loading single xyt rotated pole CF-netCDF file.
-        cube = iris.load_cube(tests.get_data_path(('NetCDF', 'rotated', 'xyt', 'new_rotPole_precipitation.nc')))
+        cube = iris.load_cube(tests.get_data_path(
+            ('NetCDF', 'rotated', 'xyt', 'small_rotPole_precipitation.nc')))
         self.assertCML(cube, ('netcdf', 'netcdf_rotated_xyt_precipitation.cml'))
 
     def test_cell_methods(self):
@@ -227,9 +235,11 @@ class TestNetCDFSave(tests.IrisTest):
             os.remove(file_out)
 
     def test_netcdf_hybrid_height(self):
-        # Test saving a CF-netCDF file which contains an atmosphere hybrid height (dimensionless vertical) coordinate.
+        # Test saving a CF-netCDF file which contains a hybrid height
+        # (i.e. dimensionless vertical) coordinate.
         # Read PP input file.
-        file_in = tests.get_data_path(('PP', 'COLPEX', 'theta_and_orog.pp'))
+        file_in = tests.get_data_path(
+            ('PP', 'COLPEX', 'small_colpex_theta_p_alt.pp'))
         cube = iris.load_cube(file_in, 'air_potential_temperature')
 
         # Write Cube to netCDF file.
@@ -248,9 +258,10 @@ class TestNetCDFSave(tests.IrisTest):
         os.remove(file_out)
 
     def test_netcdf_save_ndim_auxiliary(self):
-        # Test saving a CF-netCDF file with multi-dimensional auxiliary coordinates.
+        # Test saving CF-netCDF with multi-dimensional auxiliary coordinates.
         # Read netCDF input file.
-        file_in = tests.get_data_path(('NetCDF', 'rotated', 'xyt', 'new_rotPole_precipitation.nc'))
+        file_in = tests.get_data_path(
+            ('NetCDF', 'rotated', 'xyt', 'small_rotPole_precipitation.nc'))
         cube = iris.load_cube(file_in)
         
         # Write Cube to nerCDF file.
@@ -267,6 +278,21 @@ class TestNetCDFSave(tests.IrisTest):
         self.assertCML(cube, ('netcdf', 'netcdf_save_load_ndim_auxiliary.cml'))
 
         os.remove(file_out)
+        
+    def test_trajectory(self):
+        cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
+        
+        # extract a trajectory
+        x = cube.coord('longitude').points[:10]
+        y = cube.coord('latitude').points[:10]
+        sample_points = [('latitude', x), ('longitude', y)]
+        traj = iris.analysis.trajectory.interpolate(cube, sample_points)
+        
+        # save, reload and check
+        with self.temp_filename(suffix='.nc') as temp_filename:
+            iris.save(traj, temp_filename)
+            reloaded = iris.load_cube(temp_filename)
+            self.assertCML(reloaded, ('netcdf', 'save_load_traj.cml'))
 
 
 class TestCFStandardName(tests.IrisTest):
@@ -297,7 +323,6 @@ class TestNetCDFUKmoProcessFlags(tests.IrisTest):
 
             # Reload cube     
             cube = iris.load_cube(temp_filename)
-            
             
             # Check correct number and type of flags
             self.assertTrue(len(cube.attributes["ukmo__process_flags"]) == 1, "Mismatch in number of process flags.")

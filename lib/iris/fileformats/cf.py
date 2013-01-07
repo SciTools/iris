@@ -379,7 +379,7 @@ class CFCoordinateVariable(CFVariable):
 
     """        
     @classmethod
-    def identify(cls, variables, ignore=None, target=None, warn=True):
+    def identify(cls, variables, ignore=None, target=None, warn=True, monotonic=False):
         result = {}
         ignore, target = cls._identify_common(variables, ignore, target)
 
@@ -393,8 +393,15 @@ class CFCoordinateVariable(CFVariable):
             # Restrict to one-dimensional with name as dimension OR zero-dimensional scalar
             if not ((nc_var.ndim == 1 and nc_var_name in nc_var.dimensions) or (nc_var.ndim == 0)):
                 continue
-            # Restrict to monotonic
-            if nc_var.shape == () or nc_var.shape == (1,) or iris.util.monotonic(nc_var[:]):
+            # Restrict to monotonic?
+            if monotonic:
+                data = nc_var[:]
+                # Gracefully fill a masked coordinate.
+                if np.ma.isMaskedArray(data):
+                    data = np.ma.filled(data)
+                if nc_var.shape == () or nc_var.shape == (1,) or iris.util.monotonic(data):
+                    result[nc_var_name] = CFCoordinateVariable(nc_var_name, nc_var)
+            else:
                 result[nc_var_name] = CFCoordinateVariable(nc_var_name, nc_var)
 
         return result
@@ -771,7 +778,7 @@ class CFReader(object):
     to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 
     """
-    def __init__(self, filename, warn=False):
+    def __init__(self, filename, warn=False, monotonic=False):
         self._filename = os.path.expanduser(filename)
         # All CF variable types EXCEPT for the "special cases" of
         # CFDataVariable, CFCoordinateVariable and _CFFormulaTermsVariable.
@@ -789,6 +796,8 @@ class CFReader(object):
             warnings.warn('Optimise CF-netCDF loading by converting data from NetCDF3 ' \
                           'to NetCDF4 file format using the "nccopy" command.')
         
+        self._check_monotonic = monotonic
+
         self._translate()
         self._build_cf_groups()
         self._reset()
@@ -805,7 +814,9 @@ class CFReader(object):
         # first as, by CF convention, the definition of a CF auxiliary
         # coordinate variable may include a scalar CF coordinate variable,
         # whereas we want these two types of variables to be mutually exclusive.
-        self.cf_group.update(CFCoordinateVariable.identify(self._dataset.variables))
+        coords = CFCoordinateVariable.identify(self._dataset.variables,
+                                               monotonic=self._check_monotonic)
+        self.cf_group.update(coords)
         coordinate_names = self.cf_group.coordinates.keys()
 
         # Identify all CF variables EXCEPT for the "special cases".

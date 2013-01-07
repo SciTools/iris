@@ -6,15 +6,15 @@
     </attributes>
     <coords>
       <coord>
-        <auxCoord bounds="[[0.0, 2.0]]" id="cadf7a10" long_name="dummy" points="[1.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+        <auxCoord bounds="[[0.0, 2.0]]" id="506cfa9f" long_name="dummy" points="[1.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[1.0, 3.0]]" id="dd790a32" long_name="lat" points="[2.0]" shape="(1,)" units="Unit('1')" value_type="float32">
+        <dimCoord bounds="[[1.0, 3.0]]" id="2a449552" long_name="lat" points="[2.0]" shape="(1,)" units="Unit('1')" value_type="float32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[1.0, 3.0]]" id="95c329d6" long_name="lon" points="[2.0]" shape="(1,)" units="Unit('1')" value_type="float32">
+        <dimCoord bounds="[[1.0, 3.0]]" id="62feb6b6" long_name="lon" points="[2.0]" shape="(1,)" units="Unit('1')" value_type="float32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
