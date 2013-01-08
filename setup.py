@@ -101,14 +101,17 @@ class TestRunner(setuptools.Command):
 
         n_processors = max(multiprocessing.cpu_count() - 1, 1)
         
+        result = True
         for test in tests:
             print
             print 'Running test discovery on %s with %s processors.' % (test, n_processors)
             # run the tests at module level i.e. my_module.tests 
             # - test must start with test/Test and must not contain the word Mixin.
-            nose.run(argv=['', test, '--processes=%s' % n_processors,
+            result &= nose.run(argv=['', test, '--processes=%s' % n_processors,
                                '--verbosity=2', regexp_pat,
                                '--process-timeout=250'])
+        if result is False:
+            exit(1)
 
 
 class MakeStdNames(Command):
