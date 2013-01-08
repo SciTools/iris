@@ -913,7 +913,7 @@ class Coord(CFVariableMixin):
                         self.coord_system)
         # Mask to ensure consistency across Python versions & platforms.
         crc = zlib.crc32(str(unique_value)) & 0xffffffff
-        return hex(crc).lstrip('0x')
+        return hex(crc).lstrip('0x').rstrip('L')  # 'L' added by 32-bit systems.
 
     def _value_type_name(self):
         """A simple, readable name for the data type of the Coord point/bound values."""
