@@ -20,4 +20,4 @@
 		[-30.25, -32.55],
 		[-32.55, -34.85]]" id="c7efdd09" points="[10.0, 7.7, 5.4, 3.1, 0.8, -1.5, -3.8, -6.1,
 		-8.4, -10.7, -13.0, -15.3, -17.6, -19.9, -22.2,
-		-24.5, -26.8, -29.1, -31.4, -33.7]" shape="(20,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+		-24.5, -26.8, -29.1, -31.4, -33.7]" shape="(20,)" standard_name="latitude" units="Unit('degrees')" value_type="float"/>

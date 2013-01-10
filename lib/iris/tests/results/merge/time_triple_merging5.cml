@@ -3,19 +3,19 @@
   <cube units="unknown">
     <coords>
       <coord datadims="[0]">
-        <auxCoord id="ca4300da" points="[0, 0, 0, 1, 1]" shape="(5,)" standard_name="forecast_period" units="Unit('1')" value_type="int32"/>
+        <auxCoord id="ca4300da" points="[0, 0, 0, 1, 1]" shape="(5,)" standard_name="forecast_period" units="Unit('1')" value_type="int"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="fe82bc89" points="[0, 1, 2, 0, 1]" shape="(5,)" standard_name="forecast_reference_time" units="Unit('1')" value_type="int32"/>
+        <auxCoord id="fe82bc89" points="[0, 1, 2, 0, 1]" shape="(5,)" standard_name="forecast_reference_time" units="Unit('1')" value_type="int"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="c2f882b5" points="[0, 1, 2, 3, 4]" shape="(5,)" standard_name="time" units="Unit('1')" value_type="int32"/>
+        <dimCoord id="c2f882b5" points="[0, 1, 2, 3, 4]" shape="(5,)" standard_name="time" units="Unit('1')" value_type="int"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="b0c4282a" long_name="x" points="[0, 1, 2, 3, 4]" shape="(5,)" units="Unit('1')" value_type="int32"/>
+        <dimCoord id="b0c4282a" long_name="x" points="[0, 1, 2, 3, 4]" shape="(5,)" units="Unit('1')" value_type="int"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="31e14d0d" long_name="y" points="[0, 1, 2, 3]" shape="(4,)" units="Unit('1')" value_type="int32"/>
+        <dimCoord id="31e14d0d" long_name="y" points="[0, 1, 2, 3]" shape="(4,)" units="Unit('1')" value_type="int"/>
       </coord>
     </coords>
     <cellMethods/>

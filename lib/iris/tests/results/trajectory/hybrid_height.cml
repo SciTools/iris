@@ -25,36 +25,36 @@
  		[5661, 5714, 5767, 5820, 5873, 5926],
  		[5979, 6032, 6085, 6138, 6191, 6244],
  		[6297, 6350, 6403, 6456, 6509, 6562],
- 		[6615, 6668, 6721, 6774, 6827, 6880]]]" shape="(4, 5, 6)" standard_name="altitude" units="Unit('m')" value_type="int64">
+ 		[6615, 6668, 6721, 6774, 6827, 6880]]]" shape="(4, 5, 6)" standard_name="altitude" units="Unit('m')" value_type="int">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </auxCoord>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="e9820db" points="[20, 21, 22, 23, 24]" shape="(5,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="int64"/>
+        <dimCoord id="e9820db" points="[20, 21, 22, 23, 24]" shape="(5,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="int"/>
       </coord>
       <coord datadims="[3]">
-        <dimCoord id="cd371440" points="[30, 31, 32, 33, 34, 35]" shape="(6,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="int64"/>
+        <dimCoord id="cd371440" points="[30, 31, 32, 33, 34, 35]" shape="(6,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="int"/>
       </coord>
       <coord datadims="[1]">
-        <auxCoord id="163b3c6c" long_name="level_height" points="[40, 41, 42, 43]" shape="(4,)" units="Unit('m')" value_type="int64"/>
+        <auxCoord id="163b3c6c" long_name="level_height" points="[40, 41, 42, 43]" shape="(4,)" units="Unit('m')" value_type="int"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="f2bf14cc" points="[10, 11, 12, 13]" shape="(4,)" standard_name="model_level_number" units="Unit('1')" value_type="int64"/>
+        <dimCoord id="f2bf14cc" points="[10, 11, 12, 13]" shape="(4,)" standard_name="model_level_number" units="Unit('1')" value_type="int"/>
       </coord>
       <coord datadims="[1]">
-        <auxCoord id="5f88ebd6" long_name="sigma" points="[50, 51, 52, 53]" shape="(4,)" units="Unit('1')" value_type="int64"/>
+        <auxCoord id="5f88ebd6" long_name="sigma" points="[50, 51, 52, 53]" shape="(4,)" units="Unit('1')" value_type="int"/>
       </coord>
       <coord datadims="[2, 3]">
         <auxCoord id="2100d535" long_name="surface_altitude" points="[[100, 101, 102, 103, 104, 105],
 		[106, 107, 108, 109, 110, 111],
 		[112, 113, 114, 115, 116, 117],
 		[118, 119, 120, 121, 122, 123],
-		[124, 125, 126, 127, 128, 129]]" shape="(5, 6)" units="Unit('m')" value_type="int64"/>
+		[124, 125, 126, 127, 128, 129]]" shape="(5, 6)" units="Unit('m')" value_type="int"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="6a1b3c16" points="[0, 1, 2]" shape="(3,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+        <dimCoord id="6a1b3c16" points="[0, 1, 2]" shape="(3,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -66,32 +66,32 @@
         <auxCoord id="c56f646c" points="[[5090, 5740, 6090, 6440],
 		[5192, 5855, 6212, 6569],
 		[5294, 5970, 6334, 6698],
-		[5396, 6085, 6456, 6827]]" shape="(4, 4)" standard_name="altitude" units="Unit('m')" value_type="int64">
+		[5396, 6085, 6456, 6827]]" shape="(4, 4)" standard_name="altitude" units="Unit('m')" value_type="int">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </auxCoord>
       </coord>
       <coord datadims="[2]">
-        <auxCoord id="e9820db" points="[20, 22, 23, 24]" shape="(4,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="int64"/>
+        <auxCoord id="e9820db" points="[20, 22, 23, 24]" shape="(4,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="int"/>
       </coord>
       <coord datadims="[2]">
-        <auxCoord id="cd371440" points="[31, 32, 33, 34]" shape="(4,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="int64"/>
+        <auxCoord id="cd371440" points="[31, 32, 33, 34]" shape="(4,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="int"/>
       </coord>
       <coord datadims="[1]">
-        <auxCoord id="163b3c6c" long_name="level_height" points="[40, 41, 42, 43]" shape="(4,)" units="Unit('m')" value_type="int64"/>
+        <auxCoord id="163b3c6c" long_name="level_height" points="[40, 41, 42, 43]" shape="(4,)" units="Unit('m')" value_type="int"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="f2bf14cc" points="[10, 11, 12, 13]" shape="(4,)" standard_name="model_level_number" units="Unit('1')" value_type="int64"/>
+        <dimCoord id="f2bf14cc" points="[10, 11, 12, 13]" shape="(4,)" standard_name="model_level_number" units="Unit('1')" value_type="int"/>
       </coord>
       <coord datadims="[1]">
-        <auxCoord id="5f88ebd6" long_name="sigma" points="[50, 51, 52, 53]" shape="(4,)" units="Unit('1')" value_type="int64"/>
+        <auxCoord id="5f88ebd6" long_name="sigma" points="[50, 51, 52, 53]" shape="(4,)" units="Unit('1')" value_type="int"/>
       </coord>
       <coord datadims="[2]">
-        <auxCoord id="2100d535" long_name="surface_altitude" points="[101, 114, 121, 128]" shape="(4,)" units="Unit('m')" value_type="int64"/>
+        <auxCoord id="2100d535" long_name="surface_altitude" points="[101, 114, 121, 128]" shape="(4,)" units="Unit('m')" value_type="int"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="6a1b3c16" points="[0, 1, 2]" shape="(3,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+        <dimCoord id="6a1b3c16" points="[0, 1, 2]" shape="(3,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int"/>
       </coord>
     </coords>
     <cellMethods/>

@@ -22,4 +22,4 @@
 		0.0465116, 0.0420168, 0.0383142, 0.0352113,
 		0.0325733, 0.030303, 0.0283286, 0.0265957,
 		0.0250627, 0.0236967, 0.0224719, 0.0213675,
-		0.0203666, 0.0194553, 0.018622]" shape="(20,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+		0.0203666, 0.0194553, 0.018622]" shape="(20,)" standard_name="latitude" units="Unit('degrees')" value_type="float"/>

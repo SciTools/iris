@@ -3,19 +3,19 @@
   <cube units="unknown">
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="9c870e8e" long_name="a" points="[0, 1, 2]" shape="(3,)" units="Unit('1')" value_type="int32"/>
+        <dimCoord id="9c870e8e" long_name="a" points="[0, 1, 2]" shape="(3,)" units="Unit('1')" value_type="int"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="c499a7a6" long_name="b" points="[0, 1]" shape="(2,)" units="Unit('1')" value_type="int32"/>
+        <dimCoord id="c499a7a6" long_name="b" points="[0, 1]" shape="(2,)" units="Unit('1')" value_type="int"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="45bcc281" long_name="c" points="[0, 1]" shape="(2,)" units="Unit('1')" value_type="int32"/>
+        <dimCoord id="45bcc281" long_name="c" points="[0, 1]" shape="(2,)" units="Unit('1')" value_type="int"/>
       </coord>
       <coord datadims="[4]">
-        <dimCoord id="b0c4282a" long_name="x" points="[0, 1, 2, 3, 4]" shape="(5,)" units="Unit('1')" value_type="int32"/>
+        <dimCoord id="b0c4282a" long_name="x" points="[0, 1, 2, 3, 4]" shape="(5,)" units="Unit('1')" value_type="int"/>
       </coord>
       <coord datadims="[3]">
-        <dimCoord id="31e14d0d" long_name="y" points="[0, 1, 2, 3]" shape="(4,)" units="Unit('1')" value_type="int32"/>
+        <dimCoord id="31e14d0d" long_name="y" points="[0, 1, 2, 3]" shape="(4,)" units="Unit('1')" value_type="int"/>
       </coord>
     </coords>
     <cellMethods/>

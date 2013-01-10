@@ -6,10 +6,10 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="e60137ce" long_name="x" points="[0.5, 1.5, 2.5, 3.5]" shape="(4,)" units="Unit('count')" value_type="float32"/>
+        <dimCoord id="e60137ce" long_name="x" points="[0.5, 1.5, 2.5, 3.5]" shape="(4,)" units="Unit('count')" value_type="float"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="9f0697c0" long_name="y" points="[0.0, 1.0, 2.0, 3.0, 4.0]" shape="(5,)" units="Unit('count')" value_type="float32"/>
+        <dimCoord id="9f0697c0" long_name="y" points="[0.0, 1.0, 2.0, 3.0, 4.0]" shape="(5,)" units="Unit('count')" value_type="float"/>
       </coord>
     </coords>
     <cellMethods/>

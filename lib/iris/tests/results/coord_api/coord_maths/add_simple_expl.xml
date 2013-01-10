@@ -20,4 +20,4 @@
 		[50.25, 52.55],
 		[52.55, 54.85]]" id="c7efdd09" points="[10.0, 12.3, 14.6, 16.9, 19.2, 21.5, 23.8, 26.1,
 		28.4, 30.7, 33.0, 35.3, 37.6, 39.9, 42.2, 44.5,
-		46.8, 49.1, 51.4, 53.7]" shape="(20,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+		46.8, 49.1, 51.4, 53.7]" shape="(20,)" standard_name="latitude" units="Unit('degrees')" value_type="float"/>
