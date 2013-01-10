@@ -19,6 +19,6 @@
         <coord name="foo"/>
       </cellMethod>
     </cellMethods>
-    <data dtype="int64" shape="(3,)" state="loaded"/>
+    <data dtype="int" shape="(3,)" state="loaded"/>
   </cube>
 </cubes>

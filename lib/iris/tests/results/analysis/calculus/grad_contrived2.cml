@@ -40,6 +40,6 @@ w cmpt of the curl of u_wind and v_wind"/>
       </coord>
     </coords>
     <cellMethods/>
-    <data dtype="float64" shape="(69, 150)" state="loaded"/>
+    <data dtype="float" shape="(69, 150)" state="loaded"/>
   </cube>
 </cubes>

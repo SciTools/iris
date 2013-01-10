@@ -32,7 +32,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data dtype="float64" shape="(10, 25, 49)" state="loaded"/>
+    <data dtype="float" shape="(10, 25, 49)" state="loaded"/>
   </cube>
   <cube long_name="v curl of wind" units="0.277777777777778 hertz">
     <attributes>
@@ -66,7 +66,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data dtype="float64" shape="(10, 25, 49)" state="loaded"/>
+    <data dtype="float" shape="(10, 25, 49)" state="loaded"/>
   </cube>
   <cube long_name="w curl of wind" units="0.277777777777778 hertz">
     <attributes>
@@ -100,6 +100,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data dtype="float64" shape="(10, 25, 49)" state="loaded"/>
+    <data dtype="float" shape="(10, 25, 49)" state="loaded"/>
   </cube>
 </cubes>
