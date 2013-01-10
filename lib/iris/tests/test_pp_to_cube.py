@@ -30,6 +30,7 @@ import iris.util
 import iris.tests.stock
 
 
+@iris.tests.skip_data
 class TestPPLoadCustom(tests.IrisTest):
     def setUp(self):
         iris.fileformats.pp._ensure_load_rules_loaded()
@@ -75,6 +76,7 @@ class TestPPLoadCustom(tests.IrisTest):
         self.assertCML(rules_result.cube, ('pp_rules', 'invalid_units.cml'))
 
 
+@iris.tests.skip_data
 class TestReferences(tests.IrisTest):
     def setUp(self):
         target = iris.tests.stock.simple_2d()

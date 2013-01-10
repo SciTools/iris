@@ -25,6 +25,7 @@ import iris
 import iris.tests.stock as stock
 
 
+@iris.tests.skip_data
 class TestLoad(tests.IrisTest):
     def test_normal(self):
         paths = (
@@ -56,6 +57,7 @@ class TestLoad(tests.IrisTest):
         self.assertEqual(len(cubes), 2)
 
 
+@iris.tests.skip_data
 class TestLoadCube(tests.IrisTest):
     def test_normal(self):
         paths = (
@@ -79,6 +81,7 @@ class TestLoadCube(tests.IrisTest):
             iris.load_cube(paths)
 
 
+@iris.tests.skip_data
 class TestLoadCubes(tests.IrisTest):
     def test_normal(self):
         paths = (

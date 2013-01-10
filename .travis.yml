@@ -84,7 +84,7 @@ install:
   
 script:
   - echo --- RUNNING TESTS *currently limited to system tests* ---
-  - /usr/bin/python setup.py test -s
+  - /usr/bin/python setup.py test -n
 
 #  - echo --- RUNNING DOCTESTS ---
 #  - cd /home/travis/builds/SciTools/iris/docs/iris
