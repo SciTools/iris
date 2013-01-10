@@ -6,12 +6,12 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="c7efdd09" points="[0.0, 5.0, 10.0]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
+        <dimCoord id="c7efdd09" points="[0.0, 5.0, 10.0]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="float"/>
       </coord>
       <coord datadims="[1]">
         <dimCoord bounds="[[0.0, 2.0],
 		[2.0, 4.0],
-		[4.0, 6.0]]" id="a523d045" points="[1.0, 3.0, 5.0]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+		[4.0, 6.0]]" id="a523d045" points="[1.0, 3.0, 5.0]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="float"/>
       </coord>
     </coords>
     <cellMethods>
@@ -19,6 +19,6 @@
         <coord name="longitude"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="-0x72bf1ecf" dtype="float64" mask_checksum="-0x19f6eb52" shape="(3, 3)"/>
+    <data checksum="-0x72bf1ecf" dtype="float" mask_checksum="-0x19f6eb52" shape="(3, 3)"/>
   </cube>
 </cubes>

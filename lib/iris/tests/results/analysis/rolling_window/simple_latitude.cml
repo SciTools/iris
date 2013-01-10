@@ -7,10 +7,10 @@
     <coords>
       <coord datadims="[0]">
         <dimCoord bounds="[[0.0, 5.0],
-		[5.0, 10.0]]" id="c7efdd09" points="[2.5, 7.5]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
+		[5.0, 10.0]]" id="c7efdd09" points="[2.5, 7.5]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="float"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="a523d045" points="[0.0, 2.0, 4.0, 6.0]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+        <dimCoord id="a523d045" points="[0.0, 2.0, 4.0, 6.0]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="float"/>
       </coord>
     </coords>
     <cellMethods>
@@ -18,6 +18,6 @@
         <coord name="latitude"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="-0x7b25d8b0" dtype="float64" mask_checksum="0x6522df69" shape="(2, 4)"/>
+    <data checksum="-0x7b25d8b0" dtype="float" mask_checksum="0x6522df69" shape="(2, 4)"/>
   </cube>
 </cubes>

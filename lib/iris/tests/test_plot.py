@@ -78,6 +78,7 @@ class TestMissingCoord(tests.GraphicsTest):
         cube.remove_coord('time')
         self._check(cube)
         
+@iris.tests.skip_data
 class TestMissingCS(tests.GraphicsTest):
     def test_missing_cs(self):
         cube = tests.stock.simple_pp()

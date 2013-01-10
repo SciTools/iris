@@ -6,23 +6,23 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <dimCoord id="a42bcac2" points="[-67.5, -22.5, 22.5, 67.5]" shape="(4,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-67.5, -22.5, 22.5, 67.5]" shape="(4,)" standard_name="latitude" units="Unit('degrees')" value_type="float">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="63128986" points="[-180.0, -90.0, 0.0, 90.0]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="63128986" points="[-180.0, -90.0, 0.0, 90.0]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="float">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="9eb36add" long_name="x" points="[0.0, 1.0, 2.0, 3.0]" shape="(4,)" units="Unit('count')" value_type="float32"/>
+        <dimCoord id="9eb36add" long_name="x" points="[0.0, 1.0, 2.0, 3.0]" shape="(4,)" units="Unit('count')" value_type="float"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="e7b4cad3" long_name="y" points="[0.5, 1.5, 2.5, 3.5]" shape="(4,)" units="Unit('count')" value_type="float32"/>
+        <dimCoord id="e7b4cad3" long_name="y" points="[0.5, 1.5, 2.5, 3.5]" shape="(4,)" units="Unit('count')" value_type="float"/>
       </coord>
     </coords>
     <cellMethods/>
-    <data dtype="float32" shape="(4, 4)" state="loaded"/>
+    <data dtype="float" shape="(4, 4)" state="loaded"/>
   </cube>
 </cubes>

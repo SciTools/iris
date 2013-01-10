@@ -1,2 +1,2 @@
 <?xml version="1.0" ?>
-<dimCoord id="ce47d1d8" long_name="foo" points="[-180.0, -90.0, 0.0, 90.0]" shape="(4,)" units="Unit('meter')" value_type="float32"/>
+<dimCoord id="ce47d1d8" long_name="foo" points="[-180.0, -90.0, 0.0, 90.0]" shape="(4,)" units="Unit('meter')" value_type="float"/>

@@ -6,7 +6,7 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord bounds="[[0, 11]]" id="549be28b" long_name="foo" points="[5]" shape="(1,)" units="Unit('1')" value_type="int32"/>
+        <dimCoord bounds="[[0, 11]]" id="549be28b" long_name="foo" points="[5]" shape="(1,)" units="Unit('1')" value_type="int"/>
       </coord>
     </coords>
     <cellMethods>
@@ -14,6 +14,6 @@
         <coord name="foo"/>
       </cellMethod>
     </cellMethods>
-    <data dtype="float64" shape="(1,)" state="loaded"/>
+    <data dtype="float" shape="(1,)" state="loaded"/>
   </cube>
 </cubes>

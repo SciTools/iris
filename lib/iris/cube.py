@@ -1605,9 +1605,12 @@ class Cube(CFVariableMixin):
 
             # Add the datatype
             if self._data_manager is not None:
-                data_xml_element.setAttribute("dtype", self._data_manager.data_type.name)
+                dtype = self._data_manager.data_type.name
             else:
-                data_xml_element.setAttribute("dtype", self._data.dtype.name)
+                dtype = self._data.dtype.name
+            if dtype.endswith("32") or dtype.endswith("64"):
+                dtype = dtype[:-2] 
+            data_xml_element.setAttribute("dtype", dtype)
 
             # getting a checksum triggers any deferred loading
             if checksum:

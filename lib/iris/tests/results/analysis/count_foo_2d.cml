@@ -8,10 +8,10 @@
       <coord datadims="[0]">
         <dimCoord bounds="[[0, 5],
 		[5, 10],
-		[10, 15]]" id="7c9a33bf" long_name="bar" points="[2.5, 7.5, 12.5]" shape="(3,)" units="Unit('1')" value_type="float64"/>
+		[10, 15]]" id="7c9a33bf" long_name="bar" points="[2.5, 7.5, 12.5]" shape="(3,)" units="Unit('1')" value_type="float"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[-15, 45]]" id="549be28b" long_name="foo" points="[15.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
+        <dimCoord bounds="[[-15, 45]]" id="549be28b" long_name="foo" points="[15.0]" shape="(1,)" units="Unit('1')" value_type="float"/>
       </coord>
     </coords>
     <cellMethods>
@@ -19,6 +19,6 @@
         <coord name="foo"/>
       </cellMethod>
     </cellMethods>
-    <data dtype="int64" shape="(3,)" state="loaded"/>
+    <data dtype="int" shape="(3,)" state="loaded"/>
   </cube>
 </cubes>

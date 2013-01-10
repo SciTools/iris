@@ -2,4 +2,4 @@
 <auxCoord bounds="[[-225.0, -135.0],
 		[-135.0, -45.0],
 		[-45.0, 45.0],
-		[45.0, 135.0]]" id="6990c4d7" long_name="foo" points="[-180.0, -90.0, 0.0, 90.0]" shape="(4,)" units="Unit('degrees')" value_type="float32"/>
+		[45.0, 135.0]]" id="6990c4d7" long_name="foo" points="[-180.0, -90.0, 0.0, 90.0]" shape="(4,)" units="Unit('degrees')" value_type="float"/>

@@ -10,7 +10,7 @@ w cmpt of the curl of u_wind and v_wind"/>
         <dimCoord id="88acc207" points="[-87.0, -81.0, -75.0, -69.0, -63.0, -57.0, -51.0,
 		-45.0, -39.0, -33.0, -27.0, -21.0, -15.0, -9.0,
 		-3.0, 3.0, 9.0, 15.0, 21.0, 27.0, 33.0, 39.0,
-		45.0, 51.0, 57.0, 63.0, 69.0, 75.0, 81.0]" shape="(29,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		45.0, 51.0, 57.0, 63.0, 69.0, 75.0, 81.0]" shape="(29,)" standard_name="latitude" units="Unit('degrees')" value_type="float">
           <geogCS earth_radius="6321.0"/>
         </dimCoord>
       </coord>
@@ -23,12 +23,12 @@ w cmpt of the curl of u_wind and v_wind"/>
 		12.0, 18.0, 24.0, 30.0, 36.0, 42.0, 48.0, 54.0,
 		60.0, 66.0, 72.0, 78.0, 84.0, 90.0, 96.0, 102.0,
 		108.0, 114.0, 120.0, 126.0, 132.0, 138.0, 144.0,
-		150.0, 156.0, 162.0, 168.0, 174.0]" shape="(60,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+		150.0, 156.0, 162.0, 168.0, 174.0]" shape="(60,)" standard_name="longitude" units="Unit('degrees')" value_type="float">
           <geogCS earth_radius="6321.0"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="e1fb938d" long_name="z" points="[10.0]" shape="(1,)" units="Unit('meters')" value_type="float32">
+        <dimCoord id="e1fb938d" long_name="z" points="[10.0]" shape="(1,)" units="Unit('meters')" value_type="float">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -36,6 +36,6 @@ w cmpt of the curl of u_wind and v_wind"/>
       </coord>
     </coords>
     <cellMethods/>
-    <data dtype="float64" shape="(29, 60)" state="loaded"/>
+    <data dtype="float" shape="(29, 60)" state="loaded"/>
   </cube>
 </cubes>

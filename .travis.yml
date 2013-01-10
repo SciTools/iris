@@ -1,8 +1,95 @@
 #
-# This is a *fake / non-functional* travis configuration file.
+# Based on pelson's travis work for cartopy.
 #
-# Its sole purpose at the moment is to record which Cartopy version was
-# used for testing.
+# Please update the cartopy checksum below as appropriate.
 #
-# Cartopy version: 5e0bda8956158b8c19566ceac81116afb55cdd71
+# Note: Contrary to the travis documentation,
+# http://about.travis-ci.org/docs/user/languages/python/#Travis-CI-Uses-Isolated-virtualenvs
+# we will use the system python because it takes too long to install scipy from source.
 #
+
+
+# Not specifying python as the language, to ensure we're using system python.
+#language: python
+#python:
+#  - 2.7
+
+language: java
+jvm:
+  - oraclejdk7
+
+
+install:
+
+  - chmod 777 ./.travis_no_output
+
+# add repo
+  - ./.travis_no_output sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3E5C1192
+  - yes | ./.travis_no_output sudo add-apt-repository ppa:olivier-berten/geo
+  - ./.travis_no_output sudo apt-get update
+
+# install deps
+  - ./.travis_no_output sudo apt-get install python-scipy cython python-pip
+  - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors shapely nose pyshp pep8 mock
+  - ./.travis_no_output sudo /usr/bin/pip install https://github.com/downloads/matplotlib/matplotlib/matplotlib-1.2.0.tar.gz
+  - ./.travis_no_output sudo apt-get install libgeos-dev libproj-dev
+  - if [[ $TRAVIS_PYTHON_VERSION == '2.'* ]]; then ./.travis_no_output sudo /usr/bin/pip install --use-mirrors PIL; fi
+  - ./.travis_no_output sudo apt-get install libudunits2-dev libhdf5-serial-dev libnetcdf-dev
+  - ./.travis_no_output sudo apt-get install make unzip python-sphinx
+  - ./.travis_no_output sudo /usr/bin/pip install pyshp shapely pep8 pyke netCDF4
+
+# grib api
+  - ./.travis_no_output sudo apt-get install libjasper-dev
+  - ./.travis_no_output sudo apt-get build-dep libgrib-api-1.9.9 libgrib-api-dev libgrib-api-tools
+  - ./.travis_no_output wget https://software.ecmwf.int/wiki/download/attachments/3473437/grib_api-1.9.16.tar.gz --no-check-certificate
+  - ./.travis_no_output tar -xvf grib_api-1.9.16.tar.gz
+  - cd grib_api-1.9.16/
+  - ../.travis_no_output ./configure --with-jasper=/usr/local/lib --disable-fortran --enable-python
+  - ../.travis_no_output make
+  - ../.travis_no_output sudo make install
+  - cd python
+  - ../../.travis_no_output sudo /usr/bin/python setup.py install
+  - cd ..
+  - cd ..
+
+# distutils
+  - ./.travis_no_output wget http://python-distribute.org/distribute_setup.py
+  - ./.travis_no_output sudo /usr/bin/python distribute_setup.py
+
+# cartopy
+  - ./.travis_no_output git clone git://github.com/SciTools/cartopy.git
+  - cd cartopy
+  - ./.travis_no_output git checkout 5e0bda8956158b8c19566ceac81116afb55cdd71
+  - ../.travis_no_output /usr/bin/python setup.py install --user
+  - cd ..
+  
+# mo_unpack
+  - wget https://puma.nerc.ac.uk/trac/UM_TOOLS/raw-attachment/wiki/unpack/unpack-030712.tgz
+  - tar -xf unpack-030712.tgz
+  - cd unpack-030712/libmo_unpack
+#?  - gcc -c -fPIC -O4 -mfpmath=sse -msse -I include -D_LARGEFILE_SOURCE -D_LARGEFILE_SOURCE64 -D_FILE_OFFSET_BITS=64 *.c
+  - gcc -c -fPIC -O4 -mfpmath=sse -msse -I include -D_LARGEFILE_SOURCE *.c
+  - gcc -shared -Wl,-soname,libmo_unpack.so -o lib/libmo_unpack.so *.o
+  - sudo cp lib/* /usr/local/lib
+  - sudo cp include/* /usr/local/include
+  - cd ../..
+
+# iris
+  - ./.travis_no_output /usr/bin/python setup.py --with-unpack build_ext --inplace -I/usr/local/include -L/usr/local/lib -R/usr/local/lib
+  - ./.travis_no_output /usr/bin/python setup.py std_names
+  - sudo mkdir /iris_test_data
+  - echo -e "[Resources]\ndata_repository = /iris_test_data\n" > lib/iris/etc/site.cfg
+  - ln -s lib/iris /home/travis/.local/lib/python2.7/site-packages/iris
+
+  
+script:
+  - echo --- RUNNING TESTS *currently limited to system tests* ---
+  - /usr/bin/python setup.py test -n
+
+#  - echo --- RUNNING DOCTESTS ---
+#  - cd /home/travis/builds/SciTools/iris/docs/iris
+#  - make doctest
+
+#  - echo --- RUNNING EXTESTS ---
+#  - make extest
+

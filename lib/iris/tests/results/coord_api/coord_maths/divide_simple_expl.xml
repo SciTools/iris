@@ -20,4 +20,4 @@
 		[4.025, 4.255],
 		[4.255, 4.485]]" id="c7efdd09" points="[0.0, 0.23, 0.46, 0.69, 0.92, 1.15, 1.38, 1.61,
 		1.84, 2.07, 2.3, 2.53, 2.76, 2.99, 3.22, 3.45,
-		3.68, 3.91, 4.14, 4.37]" shape="(20,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+		3.68, 3.91, 4.14, 4.37]" shape="(20,)" standard_name="latitude" units="Unit('degrees')" value_type="float"/>

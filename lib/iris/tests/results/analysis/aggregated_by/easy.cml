@@ -6,12 +6,12 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <auxCoord id="a42bcac2" points="[0.0, 0.0, 10.0]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <auxCoord id="a42bcac2" points="[0.0, 0.0, 10.0]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="float">
           <geogCS earth_radius="6371229.0"/>
         </auxCoord>
       </coord>
       <coord datadims="[1]">
-        <auxCoord id="63128986" points="[0.0, 10.0]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <auxCoord id="63128986" points="[0.0, 10.0]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="float">
           <geogCS earth_radius="6371229.0"/>
         </auxCoord>
       </coord>
@@ -21,6 +21,6 @@
         <coord name="longitude"/>
       </cellMethod>
     </cellMethods>
-    <data dtype="float32" shape="(3, 2)" state="loaded"/>
+    <data dtype="float" shape="(3, 2)" state="loaded"/>
   </cube>
 </cubes>

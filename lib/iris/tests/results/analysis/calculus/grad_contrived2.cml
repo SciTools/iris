@@ -21,18 +21,18 @@ w cmpt of the curl of u_wind and v_wind"/>
 		42.4285, 44.9999, 47.5713, 50.1427, 52.7142,
 		55.2856, 57.857, 60.4284, 62.9999, 65.5713,
 		68.1427, 70.7141, 73.2856, 75.857, 78.4284,
-		80.9999, 83.5713, 86.1427]" shape="(69,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		80.9999, 83.5713, 86.1427]" shape="(69,)" standard_name="latitude" units="Unit('degrees')" value_type="float">
           <geogCS earth_radius="6321.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
         <dimCoord id="cc45cdca" points="[-180.0, -177.6, -175.2, ..., 172.799, 175.199,
-		177.599]" shape="(150,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+		177.599]" shape="(150,)" standard_name="longitude" units="Unit('degrees')" value_type="float">
           <geogCS earth_radius="6321.0"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="e1fb938d" long_name="z" points="[10.0]" shape="(1,)" units="Unit('meters')" value_type="float32">
+        <dimCoord id="e1fb938d" long_name="z" points="[10.0]" shape="(1,)" units="Unit('meters')" value_type="float">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -40,6 +40,6 @@ w cmpt of the curl of u_wind and v_wind"/>
       </coord>
     </coords>
     <cellMethods/>
-    <data dtype="float64" shape="(69, 150)" state="loaded"/>
+    <data dtype="float" shape="(69, 150)" state="loaded"/>
   </cube>
 </cubes>

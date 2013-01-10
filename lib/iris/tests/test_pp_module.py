@@ -29,9 +29,10 @@ import iris.fileformats
 import iris.fileformats.pp as pp
 import iris.util
 
-
+@iris.tests.skip_data
 class TestPPCopy(tests.IrisTest):
-    filename = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
+    def setUp(self):
+        filename = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
 
     def test_copy_field_deferred(self):
         field = pp.load(self.filename).next()
