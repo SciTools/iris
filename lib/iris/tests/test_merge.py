@@ -231,6 +231,19 @@ class TestTimeTripleMerging(tests.IrisTest):
             (2,  8, 10), (2,  9, 11), (2, 10, 12), (2, 11, 13),
         )
         self._test_triples(triples, 'time_vs_forecast')
+        
+    def test_time_non_dim_coord(self):
+        # => rt: 1 fp, t (bounded): 2
+        triples = (
+            (5, 0, 2.5), (10, 0, 5),
+        )
+        cubes = [self._make_cube(fp, rt, t) for fp, rt, t in triples]
+        for end_time, cube in zip([5, 10], cubes):
+            cube.coord('time').bounds = [0, end_time] 
+        cube, = iris.cube.CubeList(cubes).merge()
+        self.assertCML(cube, ('merge', 'time_triple_time_non_dim_coord.cml'), checksum=False)
+        # make sure that forecast_period is the dimensioned coordinate (as time becomes an AuxCoord)
+        self.assertEqual(cube.coord(dimensions=0, dim_coords=True).name(), 'forecast_period')
                           
     def test_independent(self):
         # => fp: 2; rt: 2; t: 2
