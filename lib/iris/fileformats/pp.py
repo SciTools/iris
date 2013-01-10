@@ -1053,7 +1053,7 @@ class PPField(object):
         # NB: lbegin, lbnrec, lbuser[1] not set up
 
         # Now that we have done the manouvering required, write to the file...
-        if not isinstance(file_handle, file):
+        if not hasattr(file_handle, 'write'):
             raise TypeError('The file_handle argument must be an instance of a Python file object, but got %r. \n'
                              'e.g. open(filename, "wb") to open a binary file with write permission.' % type(file_handle))
 
@@ -1331,7 +1331,11 @@ def load(filename, read_data=False):
     
     Args:
     
-    * filename - string of the filename to load.
+    * filename - string of the filename to load. Alternatively
+                 a file-like object may be given. If the file-like
+                 is not named, then it will not be possible to defer
+                 the data loading and the read_data flag should be set
+                 to True.
     
     Kwargs:
     
@@ -1345,8 +1349,12 @@ def load(filename, read_data=False):
             print field
     
     """
-    
-    pp_file = open(filename, 'rb')
+    # handle file-like objects
+    if isinstance(filename, basestring):
+        pp_file = open(filename, 'rb')
+    else:
+        pp_file = filename
+        filename = pp_file.name        
         
     # Get a reference to the seek method on the file
     # (this is accessed 3* #number of headers so can provide a small performance boost)
