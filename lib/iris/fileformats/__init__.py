@@ -57,7 +57,7 @@ FORMAT_AGENT.add_spec(FormatSpec('UM Post Processing file (PP) little-endian',
                                  fp.MAGIC_NUMBER_32_BIT,
                                  0x00010000,
                                  _pp_little_endian,
-                                 priority=5))
+                                 priority=3))
 
 
 #
@@ -109,7 +109,7 @@ FORMAT_AGENT.add_spec(FormatSpec('UM Fieldsfile (FF) pre v3.1',
                                  fp.MAGIC_NUMBER_64_BIT,
                                  0x000000000000000F,
                                  ff.load_cubes,
-                                 priority=4))
+                                 priority=3))
 
 FORMAT_AGENT.add_spec(FormatSpec('UM Fieldsfile (FF) post v5.2',
                                  fp.MAGIC_NUMBER_64_BIT,
@@ -122,7 +122,15 @@ FORMAT_AGENT.add_spec(FormatSpec('UM Fieldsfile (FF) ancillary',
                                  fp.MAGIC_NUMBER_64_BIT,
                                  0xFFFFFFFFFFFF8000,
                                  ff.load_cubes,
-                                 priority=4))
+                                 priority=3))
+
+FORMAT_AGENT.add_spec(FormatSpec('UM Fieldsfile (FF) converted '
+                                 'with ieee to 32 bit',
+                                 fp.MAGIC_NUMBER_32_BIT,
+                                 0x00000014,
+                                 ff.load_cubes_32bit_ieee,
+                                 priority=3))
+
 
 #
 # NIMROD files.
@@ -131,4 +139,4 @@ FORMAT_AGENT.add_spec(FormatSpec('NIMROD',
                                  fp.MAGIC_NUMBER_32_BIT,
                                  0x00000200,
                                  nimrod.load_cubes,
-                                 priority=5))
+                                 priority=3))
