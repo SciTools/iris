@@ -3,7 +3,7 @@
   <cube standard_name="air_temperature" units="kelvin">
     <coords>
       <coord>
-        <dimCoord id="73141289" points="[9]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int64"/>
+        <dimCoord id="73141289" points="[9]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord id="22c278de" points="[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0,
@@ -13,7 +13,7 @@
 		33.0, 34.0, 35.0, 36.0, 37.0, 38.0, 39.0, 40.0,
 		41.0, 42.0, 43.0, 44.0, 45.0, 46.0, 47.0, 48.0,
 		49.0, 50.0, 51.0, 52.0, 53.0, 54.0, 55.0, 56.0,
-		57.0, 58.0, 59.0]" shape="(60,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+		57.0, 58.0, 59.0]" shape="(60,)" standard_name="latitude" units="Unit('degrees')" value_type="float">
           <geogCS earth_radius="0.0"/>
         </dimCoord>
       </coord>
@@ -25,7 +25,7 @@
 		62.0, 63.0, 64.0, 65.0, 66.0, 67.0, 68.0, 69.0,
 		70.0, 71.0, 72.0, 73.0, 74.0, 75.0, 76.0, 77.0,
 		78.0, 79.0, 80.0, 81.0, 82.0, 83.0, 84.0, 85.0,
-		86.0, 87.0, 88.0, 89.0]" shape="(60,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+		86.0, 87.0, 88.0, 89.0]" shape="(60,)" standard_name="longitude" units="Unit('degrees')" value_type="float">
           <geogCS earth_radius="0.0"/>
         </dimCoord>
       </coord>
@@ -33,13 +33,13 @@
         <auxCoord id="64f42873" long_name="originating_centre" points="[U.K. Met Office - Exeter]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <dimCoord id="5b34144a" long_name="pressure" points="[99.0]" shape="(1,)" units="Unit('Pa')" value_type="float64"/>
+        <dimCoord id="5b34144a" long_name="pressure" points="[99.0]" shape="(1,)" units="Unit('Pa')" value_type="float"/>
       </coord>
       <coord>
-        <dimCoord id="6a1b3c16" points="[3.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <dimCoord id="6a1b3c16" points="[3.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float"/>
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x146ac41b" dtype="float64" shape="(60, 60)"/>
+    <data checksum="0x146ac41b" dtype="float" shape="(60, 60)"/>
   </cube>
 </cubes>
