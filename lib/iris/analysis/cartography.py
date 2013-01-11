@@ -163,8 +163,6 @@ def get_xy_grids(cube):
     """
     Return 2D X and Y points for a given cube.
     
-    If the cube's X and Y coordinates are already 2D, their points are returned.
-    
     Args:
     
         * cube - The cube for which to generate 2D X and Y points.
