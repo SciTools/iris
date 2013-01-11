@@ -40,8 +40,8 @@ class SystemInitialTest(tests.IrisTest):
         nx, ny = 60, 60
         dataarray = np.arange(nx * ny, dtype='>f4').reshape(nx, ny)
 
-        laty = np.linspace(0, 59, ny)
-        lonx = np.linspace(30, 89, nx)
+        laty = np.linspace(0, 59, ny).astype('f8')
+        lonx = np.linspace(30, 89, nx).astype('f8')
 
         horiz_cs = lambda : iris.coord_systems.GeogCS(6371229)
 
@@ -54,10 +54,14 @@ class SystemInitialTest(tests.IrisTest):
             iris.coords.DimCoord(lonx, 'longitude', units='degrees',
                 coord_system=horiz_cs()),
             1)
-        cm.add_aux_coord(iris.coords.AuxCoord(9, 'forecast_period', units='hours'))
-        hours_since_epoch = iris.unit.Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)
-        cm.add_aux_coord(iris.coords.AuxCoord(3, 'time', units=hours_since_epoch))
-        cm.add_aux_coord(iris.coords.AuxCoord(99, long_name='pressure', units='Pa'))
+        cm.add_aux_coord(iris.coords.AuxCoord(np.array([9], 'i8'),
+                                              'forecast_period', units='hours'))
+        hours_since_epoch = iris.unit.Unit('hours since epoch',
+                                           iris.unit.CALENDAR_GREGORIAN)
+        cm.add_aux_coord(iris.coords.AuxCoord(np.array([3], 'i8'),
+                                              'time', units=hours_since_epoch))
+        cm.add_aux_coord(iris.coords.AuxCoord(np.array([99], 'i8'),
+                                              long_name='pressure', units='Pa'))
  
         cm.assert_valid()
 
