@@ -69,7 +69,6 @@ cartopy 0.5.0 or later (http://github.com/SciTools/cartopy/)
 
 pyproj v1.9.0 or later (http://pypi.python.org/pypi/pyproj/)
     Performs cartographic transformations and geodetic computations.
-    Required by cartopy.
 
 Optional
 --------
