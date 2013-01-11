@@ -254,13 +254,17 @@ class NimrodField(object):
         if self.horizontal_grid_type == 0:
             # "NG", means osgb grid.
             osgb_cs = iris.coord_systems.OSGB()
-            cube.add_dim_coord(
-                DimCoord(numpy.arange(self.num_cols) * self.column_step + self.x_origin,
-                         long_name="x", units="m", coord_system=osgb_cs), 1)
+            x_coord = DimCoord(numpy.arange(self.num_cols) * self.column_step +
+                               self.x_origin,
+                               standard_name='projection_x_coordinate',
+                               units='m', coord_system=osgb_cs)
+            cube.add_dim_coord(x_coord, 1)
             if self.origin_corner == 0:  # top left
-                cube.add_dim_coord(
-                    DimCoord(numpy.arange(self.num_rows)[::-1] * -self.row_step + self.y_origin,
-                             long_name="y", units="m", coord_system=osgb_cs), 0)
+                y_coord = DimCoord(numpy.arange(self.num_rows)[::-1] *
+                                   -self.row_step + self.y_origin,
+                                   standard_name='projection_y_coordinate',
+                                   units='m', coord_system=osgb_cs)
+                cube.add_dim_coord(y_coord, 0)
             else:
                 raise TranslationError("Corner {0} not yet implemented".format(self.origin_corner))
         else:
