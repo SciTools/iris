@@ -424,12 +424,12 @@ class TestIterateFunctions(tests.IrisTest):
             iris.iterate.izip(cube1, cube2, coords=['y', 'x'])
 
     def test_izip_nd_ortho(self):
-        cube1 = iris.cube.Cube(numpy.zeros((5, 5, 5, 5, 5)))
-        cube1.add_dim_coord(iris.coords.AuxCoord(numpy.arange(5),
+        cube1 = iris.cube.Cube(numpy.zeros((5, 5, 5, 5, 5), dtype='f8'))
+        cube1.add_dim_coord(iris.coords.AuxCoord(numpy.arange(5, dtype='i8'),
                                                  long_name='z'), [0])
-        cube1.add_aux_coord(iris.coords.AuxCoord(numpy.arange(25).reshape(5, 5),
+        cube1.add_aux_coord(iris.coords.AuxCoord(numpy.arange(25, dtype='i8').reshape(5, 5),
                                                  long_name='y'), [1,2])
-        cube1.add_aux_coord(iris.coords.AuxCoord(numpy.arange(25).reshape(5, 5),
+        cube1.add_aux_coord(iris.coords.AuxCoord(numpy.arange(25, dtype='i8').reshape(5, 5),
                                                  long_name='x'), [3, 4])
         cube2 = cube1.copy()
         

@@ -268,7 +268,7 @@ def hybrid_height():
       [ 8  9 10 11]]
     
     """
-    data = numpy.arange(12).reshape((3, 4))
+    data = numpy.arange(12, dtype='i8').reshape((3, 4))
 
     orography = icoords.AuxCoord([10, 25, 50, 5], standard_name='surface_altitude', units='m')
     model_level = icoords.AuxCoord([2, 1, 0], standard_name='model_level_number')
@@ -286,26 +286,26 @@ def hybrid_height():
     return cube
 
 def simple_4d_with_hybrid_height():
-    cube = iris.cube.Cube(numpy.arange(3*4*5*6).reshape(3,4,5,6), 
+    cube = iris.cube.Cube(numpy.arange(3*4*5*6, dtype='i8').reshape(3,4,5,6), 
                           "air_temperature", units="K")
     
-    cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(3), "time", 
+    cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(3, dtype='i8'), "time", 
                                             units="hours since epoch"), 0)
-    cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(4)+10, 
+    cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(4, dtype='i8')+10, 
                                             "model_level_number", units="1"), 1)
-    cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(5)+20, 
+    cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(5, dtype='i8')+20, 
                                             "grid_latitude",
                                             units="degrees"), 2)
-    cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(6)+30, 
+    cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(6, dtype='i8')+30, 
                                             "grid_longitude",
                                             units="degrees"), 3)
     
-    cube.add_aux_coord(iris.coords.AuxCoord(numpy.arange(4)+40, 
+    cube.add_aux_coord(iris.coords.AuxCoord(numpy.arange(4, dtype='i8')+40, 
                                             long_name="level_height",
                                             units="m"), 1)
-    cube.add_aux_coord(iris.coords.AuxCoord(numpy.arange(4)+50, 
+    cube.add_aux_coord(iris.coords.AuxCoord(numpy.arange(4, dtype='i8')+50, 
                                             long_name="sigma", units="1"), 1)
-    cube.add_aux_coord(iris.coords.AuxCoord(numpy.arange(5*6).reshape(5,6)+100, 
+    cube.add_aux_coord(iris.coords.AuxCoord(numpy.arange(5*6, dtype='i8').reshape(5,6)+100, 
                                             long_name="surface_altitude", 
                                             units="m"), [2,3])
 
