@@ -20,16 +20,19 @@
 import iris.tests as tests
 
 import os
+import tempfile
 
 import numpy
 
 import iris
 import iris.coords
 import iris.coord_systems
+import iris.fileformats.pp as ff_pp
+import iris.io
 import iris.unit
 import iris.tests.pp as pp
 import iris.util
-import stock
+import iris.tests.stock as stock
 
 
 def itab_callback(cube, field, filename):
@@ -219,7 +222,49 @@ class TestPPSaveRules(tests.IrisTest):
             self.assertEquals(self.lbproc_from_pp(temp_filename), lbproc)
 
             os.remove(temp_filename)
-
+            
+    def test_lbvc(self):
+        cube = stock.realistic_4d_no_derived()[0, :4, ...]
+        
+        v_coord = iris.coords.DimCoord(standard_name='depth', 
+                                       units='m', points=[-5, -10, -15, -20])
+        
+        cube.remove_coord('level_height')
+        cube.remove_coord('sigma')
+        cube.remove_coord('surface_altitude')
+        cube.add_aux_coord(v_coord, 0)
+    
+        expected = ([2, 1, -5.0],
+                    [2, 2, -10.0],
+                    [2, 3, -15.0],
+                    [2, 4, -20.0])
+                    
+        for field, (lbvc, lblev, blev) in zip(fields_from_cube(cube), expected):
+            self.assertEqual(field.lbvc, lbvc)
+            self.assertEqual(field.lblev, lblev)
+            self.assertEqual(field.blev, blev)
+        
+        
+def fields_from_cube(cubes):
+    """
+    Return an iterator of PP fields generated from saving the given cube(s)
+    to a temporary file, and then subsequently loading them again 
+    """
+    with tempfile.NamedTemporaryFile('w+b', suffix='.pp') as tmp_file:
+        fh = tmp_file.file
+        iris.save(cubes, fh, saver='pp')
+        
+        # make sure the fh is written to disk, and move it back to the
+        # start of the file 
+        fh.flush()
+        os.fsync(fh)        
+        fh.seek(0)
+        
+        # load in the saved pp fields and check the appropriate metadata
+        for field in ff_pp.load(tmp_file.name):
+            yield field
+            
 
 if __name__ == "__main__":
     tests.main()
+    

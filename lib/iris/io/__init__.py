@@ -339,8 +339,10 @@ def save(source, target, saver=None, **kwargs):
     # Determine format from filename
     if isinstance(target, basestring) and saver is None:
         saver = find_saver(target)
-    elif isinstance(target, types.FileType):
+    elif isinstance(target, types.FileType) and saver is None:
         saver = find_saver(target.name)
+    elif isinstance(saver, basestring):
+        saver = find_saver(saver)
     if saver is None:
         raise ValueError("Cannot save; no saver")
     
