@@ -646,9 +646,30 @@ class TestRollingWindow(tests.IrisTest):
 
         self.assertCML(res_cube, ('analysis', 'rolling_window', 'simple_latitude.cml'))
 
-    def test_returned_weights(self):
-        self.assertRaises(ValueError, self.cube.rolling_window, 'longitude', iris.analysis.MEAN, window=2, returned=True)
-        self.assertRaises(ValueError, self.cube.rolling_window, 'longitude', iris.analysis.MEAN, window=2, weights=[1, 2, 3, 4, 5])
+    def test_mean_with_weights_consistency(self):
+        # equal weights should be the same as the mean with no weights
+        wts = numpy.array([0.5, 0.5], dtype=numpy.float64)
+        res_cube = self.cube.rolling_window('longitude',
+                                            iris.analysis.MEAN,
+                                            window=2,
+                                            weights=wts)
+        expected_result = self.cube.rolling_window('longitude',
+                                                   iris.analysis.MEAN,
+                                                   window=2)
+        self.assertArrayEqual(expected_result.data, res_cube.data)
+
+    def test_mean_with_weights(self):
+        # rolling window mean with weights
+        wts = numpy.array([0.1, 0.6, 0.3], dtype=numpy.float64)
+        res_cube = self.cube.rolling_window('longitude',
+                                            iris.analysis.MEAN,
+                                            window=3,
+                                            weights=wts)
+        expected_result = numpy.array([[10.2, 13.6],
+                                       [12.2, 15.6],
+                                       [12.0, 9.0]], dtype=numpy.float64)
+        # use almost equal to compare floats
+        self.assertArrayAlmostEqual(expected_result, res_cube.data)
 
 
 class TestGeometry(tests.IrisTest):
