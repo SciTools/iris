@@ -22,10 +22,11 @@ import itertools
 import math
 import warnings
 
-import cartopy.img_transform
 import numpy as np
 import numpy.ma as ma
 
+import cartopy.img_transform
+import cartopy.crs as ccrs
 import iris.analysis
 import iris.coords
 import iris.coord_systems
@@ -56,15 +57,6 @@ def wrap_lons(lons, base, period):
     return ((lons - base + period * 2) % period) + base
 
 
-def _proj4(pole_lon, pole_lat):
-    proj4_params = {'proj': 'ob_tran', 'o_proj': 'latlon', 'o_lon_p': 0,
-        'o_lat_p': pole_lat, 'lon_0': 180 + pole_lon,
-        'to_meter': math.degrees(1)}
-    import pyproj
-    proj = pyproj.Proj(proj4_params)
-    return proj
-
-
 def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
     """
     Convert rotated-pole lons and lats to unrotated ones.
@@ -74,15 +66,15 @@ def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
     .. note:: Uses proj.4 to perform the conversion.
 
     """
-    proj4_wrapper = _proj4(pole_lon, pole_lat)
-    # NB. pyproj modifies the proj.4 init string and adds unit=meter
-    # which breaks our to_meter=57...
-    # So we have to do the radian-degree correction explicitly
-    d = math.degrees(1)
-    std_lons, std_lats = proj4_wrapper(rotated_lons / d,
-                                       rotated_lats / d,
-                                       inverse=True)
-    return std_lons, std_lats
+    src_proj = ccrs.RotatedGeodetic(pole_longitude=pole_lon,
+                                       pole_latitude=pole_lat)
+    target_proj = ccrs.Geodetic()
+    res = target_proj.transform_points(x=rotated_lons, y=rotated_lats,
+                                       src_crs=src_proj)
+    # Transpose to more easily index
+    unrotated_lon, unrotated_lat, _ = res.transpose()
+
+    return unrotated_lon, unrotated_lat
 
 
 def rotate_pole(lons, lats, pole_lon, pole_lat):
@@ -94,15 +86,15 @@ def rotate_pole(lons, lats, pole_lon, pole_lat):
     .. note:: Uses proj.4 to perform the conversion.
 
     """
-    proj4_wrapper = _proj4(pole_lon, pole_lat)
-    rlons, rlats = proj4_wrapper(lons, lats)
-    # NB. pyproj modifies the proj.4 init string and adds unit=meter
-    # which breaks our to_meter=57...
-    # So we have to do the radian-degree correction explicitly
-    d = math.degrees(1)
-    rlons *= d
-    rlats *= d
-    return rlons, rlats
+    src_proj = ccrs.Geodetic()
+    target_proj = ccrs.RotatedGeodetic(pole_longitude=pole_lon,
+                                       pole_latitude=pole_lat)
+    res = target_proj.transform_points(x=lons, y=lats,
+                                       src_crs=src_proj)
+    # Transpose to more easily index
+    rotated_lon, rotated_lat, _ = res.transpose()
+
+    return rotated_lon, rotated_lat
 
 
 def _get_lat_lon_coords(cube):
