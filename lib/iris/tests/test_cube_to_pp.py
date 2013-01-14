@@ -261,7 +261,7 @@ def fields_from_cube(cubes):
         fh.seek(0)
         
         # load in the saved pp fields and check the appropriate metadata
-        for field in ff_pp.load(fh):
+        for field in ff_pp.load(tmp_file.name):
             yield field
             
 
