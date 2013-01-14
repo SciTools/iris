@@ -78,6 +78,10 @@ class TestLoadSave(tests.IrisTest):
 #        self.save_and_compare(source_grib, reference_text)
 
     def test_time_mean(self):
+        # This test for time-mean fields also tests negative forecast time.
+        # Because the results depend on the presence of our api patch,
+        # we currently have results for both a patched and unpatched api.
+        # If the api ever allows -ve ft, we should revert to a single result.
         source_grib = tests.get_data_path(("GRIB", "time_processed", "time_bound.grib2"))
         reference_text = tests.get_result_path(("grib_save", "time_mean.grib_compare.txt"))
         # TODO: It's not ideal to have grib patch awareness here...
