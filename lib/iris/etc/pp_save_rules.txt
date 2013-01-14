@@ -587,6 +587,18 @@ THEN
     pp.blev = scalar_coord(cm, 'pressure').points[0]
 
 
+# single depth level (non cross section)
+IF
+    scalar_coord(cm, 'model_level_number') is not None
+    not scalar_coord(cm, 'model_level_number').bounds
+    scalar_coord(cm, 'depth') is not None
+    not scalar_coord(cm, 'depth').bounds
+THEN
+    pp.lbvc = 2
+    pp.lblev = scalar_coord(cm, 'model_level_number').points[0]
+    pp.blev = scalar_coord(cm, 'depth').points[0]
+
+
 # single hybrid_height level (reversed from the equivalent load rule)
 IF
     scalar_coord(cm, 'model_level_number') is not None
