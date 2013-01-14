@@ -1201,29 +1201,51 @@ class ProtoCube(object):
 
         # Build the dimension coordinates.
         for template in self._dim_templates:
-            dim_coords_and_dims.append(_CoordAndDims(iris.coords.DimCoord(template.points,
-                                                                              bounds=template.bounds,
-                                                                              **template.kwargs), template.dims))
+            # sometimes its not possible to build a dim coord (for example, 
+            # if your bounds are not monotonic, so try building the coordinate,
+            # and if it fails make the coordinate into a aux coord. This will
+            # ultimately make an anonymous dimension. 
+            try:
+                coord = iris.coords.DimCoord(template.points,
+                                             bounds=template.bounds,
+                                             **template.kwargs)
+                dim_coords_and_dims.append(_CoordAndDims(coord, template.dims))            
+            except ValueError:
+                self._aux_templates.append(template)
+
+        # there is the potential that there are still anonymous dimensions
+        # get a list of the dimensions which are not anonymous at this stage
+        covered_dims = [dim_coord_and_dim.dims 
+                        for dim_coord_and_dim in dim_coords_and_dims]
 
         # Build the auxiliary coordinates.
         for template in self._aux_templates:
-            # Attempt to build a DimCoord and add it to the cube. If this fails e.g it's
-            # non-monontic or multi-dimensional or non-numeric, then build an AuxCoord.
+            # Attempt to build a DimCoord and add it to the cube. If this
+            # fails e.g it's non-monontic or multi-dimensional or non-numeric,
+            # then build an AuxCoord.
             try:
-                aux_coords_and_dims.append(_CoordAndDims(iris.coords.DimCoord(template.points, 
-                                                                              bounds=template.bounds, 
-                                                                              **template.kwargs), template.dims))
+                coord = iris.coords.DimCoord(template.points, 
+                                             bounds=template.bounds, 
+                                             **template.kwargs)
+                if len(template.dims) == 1 and template.dims[0] not in covered_dims:
+                    dim_coords_and_dims.append(_CoordAndDims(coord, template.dims))
+                    covered_dims.append(template.dims)
+                else:
+                    aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
             except ValueError:
                 template.kwargs.pop('circular', None) # kwarg not applicable to AuxCoord.
-                aux_coords_and_dims.append(_CoordAndDims(iris.coords.AuxCoord(template.points, 
-                                                                              bounds=template.bounds, 
-                                                                              **template.kwargs), template.dims))
+                coord = iris.coords.AuxCoord(template.points,
+                                             bounds=template.bounds,
+                                             **template.kwargs)
+                aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
 
         # Mix in the vector coordinates.
-        for item, dims in zip(self._coord_signature.vector_dim_coords_and_dims, self._vector_dim_coords_dims):
+        for item, dims in zip(self._coord_signature.vector_dim_coords_and_dims, 
+                              self._vector_dim_coords_dims):
             dim_coords_and_dims.append(_CoordAndDims(item.coord, dims))
 
-        for item, dims in zip(self._coord_signature.vector_aux_coords_and_dims, self._vector_aux_coords_dims):
+        for item, dims in zip(self._coord_signature.vector_aux_coords_and_dims, 
+                              self._vector_aux_coords_dims):
             aux_coords_and_dims.append(_CoordAndDims(item.coord, dims))
 
     def _build_signature(self, cube):
