@@ -3,7 +3,7 @@
   <cube standard_name="air_temperature" units="kelvin">
     <coords>
       <coord>
-        <dimCoord id="73141289" points="[-28587]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int64"/>
+        <dimCoord id="73141289" points="[-28587]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord id="e1d3bafd" points="[89.999983, 87.499984, 84.999985, 82.499986,
