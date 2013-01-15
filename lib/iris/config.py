@@ -21,6 +21,41 @@ The default configuration values can be overridden by creating the file
 ``iris/etc/site.cfg``. If it exists, this file must conform to the format
 defined by :mod:`ConfigParser`.
 
+----------
+
+.. py:data:: iris.config.RESOURCE_DIR
+
+    The full path to the Iris resource directory.
+
+.. py:data:: iris.config.MASTER_DATA_REPOSITORY
+
+    Local directory where master test data exists. This option is not obligatory. The master test data is the super-set of the DATA_REPOSITORY.
+
+.. py:data:: iris.config.DATA_REPOSITORY
+
+    Local directory where test data exists. This option is obligatory for Iris unit tests. This test data is a sub-set of the MASTER_DATA_REPOSITORY, if it exists. Directory contents accessed via :func:iris.io.select_data_path or :func:iris.tests.get_data_path
+
+.. py:data:: iris.config.SAMPLE_DATA_DIR
+
+    Local directory where sample data exists. Defaults to "sample_data" sub-directory of the Iris package install directory. The sample data directory supports the Iris gallery. Directory contents accessed via :func:iris.sample_data_path
+
+.. py:data:: iris.config.PALETTE_PATH
+
+    The full path to the Iris palette configuration directory
+
+.. py:data:: iris.config.RULE_LOG_DIR
+
+    The [optional] full path to the rule logging directory used by fileformats.pp load() and save()
+
+.. py:data:: iris.config.RULE_LOG_IGNORE
+
+    The [optional] list of users to ignore when logging rules.
+
+.. py:data:: iris.config.IMPORT_LOGGER
+
+    The [optional] name of the logger to notify when first imported.
+
+----------
 """
 
 import ConfigParser
@@ -78,21 +113,16 @@ _RESOURCE_SECTION = 'Resources'
 
 RESOURCE_DIR = get_dir_option(_RESOURCE_SECTION, 'dir',
                               os.path.join(ROOT_PATH, 'resources'))
-"""The full path to the Iris resource directory."""
 
 
 MASTER_DATA_REPOSITORY = get_dir_option(
         _RESOURCE_SECTION, 'master_data_repository')
-"""Directory in which the master data repository normally exists. Can be seen
-as the master for the :const:`DATA_REPOSITORY`."""
 
 
 DATA_REPOSITORY = get_dir_option(_RESOURCE_SECTION, 'data_repository')
-"""Local directory where test and sample data resources exist."""
 
 SAMPLE_DATA_DIR = get_dir_option(_RESOURCE_SECTION, 'sample_data_dir',
                                  default=os.path.join(os.path.dirname(__file__), 'sample_data'))
-"""Local directory where sample data exists. Defaults to the iris source root."""
 
 # Override the data repository if the appropriate environment variable has been set
 # This is used in setup.py in the TestRunner command to enable us to simulate the absence of external data
@@ -101,7 +131,6 @@ if os.environ.get("override_data_repository"):
 
 PALETTE_PATH = get_dir_option(_RESOURCE_SECTION, 'palette_path',
                               os.path.join(CONFIG_PATH, 'palette'))
-"""The full path to the palette configuration directory of the active Iris instance."""
 
 
 #################
@@ -110,12 +139,9 @@ _LOGGING_SECTION = 'Logging'
 
 
 RULE_LOG_DIR = get_dir_option(_LOGGING_SECTION, 'rule_dir')
-"""The [optional] full path to the rule logging directory."""
 
 
 RULE_LOG_IGNORE = get_option(_LOGGING_SECTION, 'rule_ignore')
-"""The [optional] list of users to ignore when logging rules."""
 
 
 IMPORT_LOGGER = get_option(_LOGGING_SECTION, 'import_logger')
-"""The [optional] name of the logger to notify when first imported."""
