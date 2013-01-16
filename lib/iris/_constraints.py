@@ -118,9 +118,73 @@ class Constraint(object):
         if match and self._cube_func:
             match = self._cube_func(cube)
         return match
-        
+
     def extract(self, cube):
         """Return the subset of the given cube which matches this constraint, else return None."""
+        
+        # Before we do anything, we may need to work on a rolled version of the cube.
+        circular_constraints = [c for c in self._coord_constraints 
+                                if cube.coords(c.coord_name)
+                                and cube.coord(c.coord_name).circular]
+        for c in circular_constraints:
+            # Left, right and centre coords.
+            c_coord = cube.coord(c.coord_name)
+            l_coord = c_coord - 360
+            r_coord = c_coord + 360
+            
+            numpt = len(c_coord.points)
+            
+            # Set up coord extraction.
+            dims = [0]
+            c_cim = _ColumnIndexManager(1)
+            l_cim = _ColumnIndexManager(1)
+            r_cim = _ColumnIndexManager(1)
+                                                        
+            c_cim = c.extract_coord(c_coord, dims, c_cim)
+            l_cim = c.extract_coord(l_coord, dims, l_cim)
+            r_cim = c.extract_coord(r_coord, dims, r_cim)
+
+            c_result = c_cim._column_arrays[0]
+            l_result = l_cim._column_arrays[0]
+            r_result = r_cim._column_arrays[0]
+            
+            # Did either neighbour get something extra?
+            l_unique = l_result & ~c_result
+            r_unique = r_result & ~c_result
+            
+            # We're looking for exactly one neighbour with extra results.
+            if any(l_unique) and any(r_unique):
+                if not all(l_unique == r_unique):
+                    raise Exception("Wrapped extract found both sides unique")
+            elif any(l_unique):
+                
+                first_i = numpy.where(l_result)[0][0]
+                roll = numpt - first_i
+                cube = cube.copy()
+                cube.data = numpy.roll(cube.data, -roll)
+                new_coord = cube.coord(c.coord_name)
+                new_coord.points = numpy.concatenate((
+                                        l_coord.points[-roll:],
+                                        c_coord.points[:-roll]))
+                if new_coord.has_bounds():
+                    new_coord.bounds = numpy.concatenate((
+                                            l_coord.bounds[-roll:],
+                                            coord.bounds[:-roll]))
+
+            elif any(r_unique):
+
+                roll = numpy.where(c_result)[0][0]
+                cube = cube.copy()
+                cube.data = numpy.roll(cube.data, roll)
+                new_coord = cube.coord(c.coord_name)
+                new_coord.points = numpy.concatenate((
+                                        c_coord.points[roll:],
+                                        r_coord.points[:roll]))
+                if new_coord.has_bounds():
+                    new_coord.bounds = numpy.concatenate((
+                                            c_coord.bounds[roll:],
+                                            r_coord.bounds[:roll]))
+                
         resultant_CIM = self._CIM_extract(cube)
         slice_tuple = resultant_CIM.as_slice()
         result = None
@@ -217,6 +281,10 @@ class _CoordConstraint(object):
             cube_cim.all_false()
             return cube_cim
         dims = cube.coord_dims(coord)
+        return self.extract_coord(coord, dims, cube_cim)
+    
+    def extract_coord(self, coord, dims, cube_cim):
+        """Modify (and return) the cim according to the given coord."""
         if len(dims) > 1:
             raise iris.exceptions.CoordinateMultiDimError('Cannot apply constraints to multidimensional coordinates')
         r = numpy.array([self._call_func(cell) for cell in coord.cells()])
