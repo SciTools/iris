@@ -359,9 +359,9 @@ class TestAggregators(tests.IrisTest):
 
     def test_count(self):
         cube = tests.stock.simple_1d()
-        r = cube.data >= 5
         gt5 = cube.collapsed('foo', iris.analysis.COUNT, function=lambda val: val >= 5)
         numpy.testing.assert_array_almost_equal(gt5.data, numpy.array([6]))
+        gt5.data = gt5.data.astype('i8')
         self.assertCML(gt5, ('analysis', 'count_foo_1d.cml'), checksum=False)
 
     def test_count_2d(self):
@@ -369,14 +369,17 @@ class TestAggregators(tests.IrisTest):
 
         gt6 = cube.collapsed('foo', iris.analysis.COUNT, function=lambda val: val >= 6)
         numpy.testing.assert_array_almost_equal(gt6.data, numpy.array([0, 2, 4], dtype=numpy.float32))
+        gt6.data = gt6.data.astype('i8')
         self.assertCML(gt6, ('analysis', 'count_foo_2d.cml'), checksum=False)
 
         gt6 = cube.collapsed('bar', iris.analysis.COUNT, function=lambda val: val >= 6)
         numpy.testing.assert_array_almost_equal(gt6.data, numpy.array([1, 1, 2, 2], dtype=numpy.float32))
+        gt6.data = gt6.data.astype('i8')
         self.assertCML(gt6, ('analysis', 'count_bar_2d.cml'), checksum=False)
 
         gt6 = cube.collapsed(('foo', 'bar'), iris.analysis.COUNT, function=lambda val: val >= 6)
         numpy.testing.assert_array_almost_equal(gt6.data, numpy.array([6], dtype=numpy.float32))
+        gt6.data = gt6.data.astype('i8')
         self.assertCML(gt6, ('analysis', 'count_foo_bar_2d.cml'), checksum=False)
 
 

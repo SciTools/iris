@@ -25,7 +25,7 @@ install:
   - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors shapely nose pyshp pep8 mock
   - ./.travis_no_output sudo /usr/bin/pip install matplotlib
   - ./.travis_no_output sudo apt-get install libgeos-dev libproj-dev
-  - ./.travis_no_output sudo apt-get install libudunits2-dev libhdf5-serial-dev libnetcdf-dev
+  - ./.travis_no_output sudo apt-get install libudunits2-dev libhdf5-serial-dev netcdf-bin libnetcdf-dev
   - ./.travis_no_output sudo apt-get install make unzip python-sphinx
   - ./.travis_no_output sudo /usr/bin/pip install pyke netCDF4
 
@@ -73,8 +73,8 @@ install:
 
   
 script:
-  - echo --- RUNNING TESTS *currently limited to system tests* ---
-  - /usr/bin/python setup.py test -s
+  - echo --- RUNNING TESTS *currently limited to nodata tests* ---
+  - /usr/bin/python setup.py test -n
 
 #  - echo --- RUNNING DOCTESTS ---
 #  - cd /home/travis/builds/SciTools/iris/docs/iris
