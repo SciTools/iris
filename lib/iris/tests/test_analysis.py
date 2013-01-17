@@ -359,7 +359,6 @@ class TestAggregators(tests.IrisTest):
 
     def test_count(self):
         cube = tests.stock.simple_1d()
-        r = cube.data >= 5
         gt5 = cube.collapsed('foo', iris.analysis.COUNT, function=lambda val: val >= 5)
         numpy.testing.assert_array_almost_equal(gt5.data, numpy.array([6]))
         gt5.data = gt5.data.astype('i8')
