@@ -77,6 +77,8 @@ if '-d' in sys.argv:
     sys.argv.remove('-d')
     plt.switch_backend('tkagg')
     _DISPLAY_FIGURES = True
+    
+_DEFAULT_IMAGE_TOLERANCE = 0.001
 
 
 def main():
@@ -337,7 +339,7 @@ class IrisTest(unittest.TestCase):
             logger.warning('Creating folder: %s', dir_path)
             os.makedirs(dir_path)
     
-    def check_graphic(self, tol=0):
+    def check_graphic(self, tol=_DEFAULT_IMAGE_TOLERANCE):
         """Checks the CRC matches for the current matplotlib.pyplot figure, and closes the figure."""
 
         unique_id = self._unique_id()

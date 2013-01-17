@@ -531,6 +531,7 @@ class TestCoordCollapsed(tests.IrisTest):
     def test_nd_bounds(self):
         cube = iris.tests.stock.simple_2d_w_multidim_coords(with_bounds=True)
         pcube = cube.collapsed(['bar','foo'], iris.analysis.SUM)
+        pcube.data = pcube.data.astype('i8')
         self.assertCML(pcube, ("coord_api", "nd_bounds.cml"))
 
 
