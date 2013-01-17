@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="Temperature" standard_name="sea_water_potential_temperature" units="degC">
+  <cube long_name="Temperature" standard_name="sea_water_potential_temperature" units="degC" var_name="votemper">
     <attributes>
       <attribute name="Conventions" value="CF-1.1"/>
       <attribute name="DOMAIN_DIM_N001" value="x"/>
@@ -66,7 +66,7 @@
 		181.963, 216.648, 272.477, 364.303, 511.535,
 		732.201, 1033.22, 1405.7, 1830.89, 2289.77,
 		2768.24, 3257.48, 3752.44, 4250.4, 4749.91,
-		5250.23]" shape="(31,)" standard_name="depth" units="Unit('m')" value_type="float32">
+		5250.23]" shape="(31,)" standard_name="depth" units="Unit('m')" value_type="float32" var_name="deptht">
           <attributes>
             <attribute name="title" value="deptht"/>
           </attributes>
@@ -89,7 +89,7 @@
         </auxCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a992c0a8" long_name="Time axis" points="[43200.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 0001-01-01 00:00:00', calendar='360_day')" value_type="float32">
+        <dimCoord id="a992c0a8" long_name="Time axis" points="[43200.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 0001-01-01 00:00:00', calendar='360_day')" value_type="float32" var_name="time_counter">
           <attributes>
             <attribute name="time_origin" value=" 0001-JAN-01 00:00:00"/>
             <attribute name="title" value="Time"/>

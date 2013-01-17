@@ -1,21 +1,21 @@
 dimensions:
 	time = UNLIMITED ; // (4 currently)
-	grid_latitude = 190 ;
-	grid_longitude = 174 ;
+	rlat = 190 ;
+	rlon = 174 ;
 	bnds = 2 ;
 variables:
-	float precipitation_flux(time, grid_latitude, grid_longitude) ;
-		precipitation_flux:standard_name = "precipitation_flux" ;
-		precipitation_flux:long_name = "Precipitation" ;
-		precipitation_flux:units = "kg m-2 s-1" ;
-		precipitation_flux:NCO = "4.1.0" ;
-		precipitation_flux:experiment = "ER3" ;
-		precipitation_flux:history = "Thu Nov 29 10:45:50 2012: /project/ukmo/rhel6/nco/bin/ncks -d time,0,3 new_rotPole_precipitation.nc small_rotPole_precipitation.nc" ;
-		precipitation_flux:institution = "DMI" ;
-		precipitation_flux:source = "HIRHAM" ;
-		precipitation_flux:cell_methods = "time: mean" ;
-		precipitation_flux:grid_mapping = "rotated_latitude_longitude" ;
-		precipitation_flux:coordinates = "latitude longitude" ;
+	float pr(time, rlat, rlon) ;
+		pr:standard_name = "precipitation_flux" ;
+		pr:long_name = "Precipitation" ;
+		pr:units = "kg m-2 s-1" ;
+		pr:NCO = "4.1.0" ;
+		pr:experiment = "ER3" ;
+		pr:history = "Thu Nov 29 10:45:50 2012: /project/ukmo/rhel6/nco/bin/ncks -d time,0,3 new_rotPole_precipitation.nc small_rotPole_precipitation.nc" ;
+		pr:institution = "DMI" ;
+		pr:source = "HIRHAM" ;
+		pr:cell_methods = "time: mean" ;
+		pr:grid_mapping = "rotated_latitude_longitude" ;
+		pr:coordinates = "lat lon" ;
 	int rotated_latitude_longitude ;
 		rotated_latitude_longitude:grid_mapping_name = "rotated_latitude_longitude" ;
 		rotated_latitude_longitude:grid_north_pole_latitude = 18. ;
@@ -29,24 +29,24 @@ variables:
 		time:long_name = "Julian Day" ;
 		time:calendar = "gregorian" ;
 	float time_bnds(time, bnds) ;
-	float grid_latitude(grid_latitude) ;
-		grid_latitude:axis = "Y" ;
-		grid_latitude:units = "degrees" ;
-		grid_latitude:standard_name = "grid_latitude" ;
-		grid_latitude:long_name = "rotated latitude" ;
-	float grid_longitude(grid_longitude) ;
-		grid_longitude:axis = "X" ;
-		grid_longitude:units = "degrees" ;
-		grid_longitude:standard_name = "grid_longitude" ;
-		grid_longitude:long_name = "rotated longitude" ;
-	float latitude(grid_latitude, grid_longitude) ;
-		latitude:units = "degrees" ;
-		latitude:standard_name = "latitude" ;
-		latitude:long_name = "latitude" ;
-	float longitude(grid_latitude, grid_longitude) ;
-		longitude:units = "degrees" ;
-		longitude:standard_name = "longitude" ;
-		longitude:long_name = "longitude" ;
+	float rlat(rlat) ;
+		rlat:axis = "Y" ;
+		rlat:units = "degrees" ;
+		rlat:standard_name = "grid_latitude" ;
+		rlat:long_name = "rotated latitude" ;
+	float rlon(rlon) ;
+		rlon:axis = "X" ;
+		rlon:units = "degrees" ;
+		rlon:standard_name = "grid_longitude" ;
+		rlon:long_name = "rotated longitude" ;
+	float lat(rlat, rlon) ;
+		lat:units = "degrees" ;
+		lat:standard_name = "latitude" ;
+		lat:long_name = "latitude" ;
+	float lon(rlat, rlon) ;
+		lon:units = "degrees" ;
+		lon:standard_name = "longitude" ;
+		lon:long_name = "longitude" ;
 
 // global attributes:
 		:Conventions = "CF-1.5" ;

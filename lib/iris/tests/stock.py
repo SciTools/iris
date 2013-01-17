@@ -231,7 +231,10 @@ def simple_2d_w_multidim_and_scalars():
 
     # Scalars
     an_other = iris.coords.AuxCoord(3.0, long_name='an_other', units='meters')
-    yet_an_other = iris.coords.DimCoord(23.3, standard_name='air_temperature', long_name='custom long name', units='K')
+    yet_an_other = iris.coords.DimCoord(23.3, standard_name='air_temperature',
+                                        long_name='custom long name',
+                                        var_name='custom_var_name',
+                                        units='K')
     
     # Multidim
     my_multi_dim_coord = iris.coords.AuxCoord(np.arange(50, dtype=np.int32).reshape(5, 10), 

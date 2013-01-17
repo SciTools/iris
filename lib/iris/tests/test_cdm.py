@@ -369,6 +369,11 @@ class TestQueryCoord(tests.IrisTest):
         coords = self.t.coords(standard_name='air_temperature')
         self.assertEqual([coord.name() for coord in coords], ['air_temperature'])
 
+    def test_var_name(self):
+        coords = self.t.coords(var_name='custom_var_name')
+        # Matching coord in test cube has a standard_name of 'air_temperature'.
+        self.assertEqual([coord.name() for coord in coords], ['air_temperature'])
+
     def test_axis(self):
         cube = self.t.copy()
         cube.coord("dim1").rename("latitude")
@@ -603,10 +608,40 @@ class TestCubeAPI(TestCube2d):
     def test_rename(self):
         self.t.rename('foo')
         self.assertEqual(self.t.name(), 'foo')
-        
+
+    def test_var_name(self):
+        self.t.var_name = None
+        self.assertEqual(self.t.var_name, None)
+        self.t.var_name = 'bar'
+        self.assertEqual(self.t.var_name, 'bar')
+
+    def test_name_and_var_name(self):
+        # Assign only var_name.
+        self.t.standard_name = None
+        self.t.long_name = None
+        self.t.var_name = 'foo'
+        # name() should return var_name if standard_name and
+        # long_name are None.
+        self.assertEqual(self.t.name(), 'foo')
+
+    def test_rename_and_var_name(self):
+        self.t.var_name = 'bar'
+        self.t.rename('foo')
+        # Rename should clear var_name.
+        self.assertIsNone(self.t.var_name)
+
+    def test_setting_invalid_var_name(self):
+        # Name with whitespace should raise an exception.
+        with self.assertRaises(ValueError):
+            self.t.var_name = 'foo bar'
+
+    def test_setting_empty_var_name(self):
+        # Empty string should raise an exception.
+        with self.assertRaises(ValueError):
+            self.t.var_name = ''
+
     def test_getting_units(self):
         self.assertEqual(self.t.units, iris.unit.Unit('meters'))
-        self.assertEqual(str(self.t.units), 'meters')
 
     def test_setting_units(self):
         self.assertEqual(self.t.units, iris.unit.Unit('meters'))
@@ -633,28 +668,33 @@ class TestCubeAPI(TestCube2d):
         self.t.metadata = self.t.metadata
         self.assertIsNone(self.t.standard_name)
         self.assertEqual(self.t.long_name, 'test 2d dimensional cube')
+        self.assertIsNone(self.t.var_name)
         self.assertEqual(self.t.units, 'meters')
         self.assertEqual(self.t.attributes, {})
         self.assertEqual(self.t.cell_methods, ())
 
     def test_metadata_tuple(self):
-        metadata = ('air_pressure', 'foo', '', {'random': '12'}, ())
+        metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'}, ())
         self.t.metadata = metadata
         self.assertEqual(self.t.standard_name, 'air_pressure')
         self.assertEqual(self.t.long_name, 'foo')
+        self.assertEqual(self.t.var_name, 'bar')
         self.assertEqual(self.t.units, '')
-        self.assertEqual(self.t.attributes, metadata[3])
-        self.assertIsNot(self.t.attributes, metadata[3])
+        self.assertEqual(self.t.attributes, metadata[4])
+        self.assertIsNot(self.t.attributes, metadata[4])
         self.assertEqual(self.t.cell_methods, ())
 
     def test_metadata_dict(self):
         metadata = {'standard_name': 'air_pressure',
-                    'long_name': 'foo', 'units': '',
+                    'long_name': 'foo',
+                    'var_name': 'bar',
+                    'units': '',
                     'attributes': {'random': '12'},
                     'cell_methods': ()}
         self.t.metadata = metadata
         self.assertEqual(self.t.standard_name, 'air_pressure')
         self.assertEqual(self.t.long_name, 'foo')
+        self.assertEqual(self.t.var_name, 'bar')
         self.assertEqual(self.t.units, '')
         self.assertEqual(self.t.attributes, metadata['attributes'])
         self.assertIsNot(self.t.attributes, metadata['attributes'])
@@ -665,12 +705,14 @@ class TestCubeAPI(TestCube2d):
         metadata = Metadata()
         metadata.standard_name = 'air_pressure'
         metadata.long_name = 'foo'
+        metadata.var_name = 'bar'
         metadata.units = ''
         metadata.attributes = {'random': '12'}
         metadata.cell_methods = ()
         self.t.metadata = metadata
         self.assertEqual(self.t.standard_name, 'air_pressure')
         self.assertEqual(self.t.long_name, 'foo')
+        self.assertEqual(self.t.var_name, 'bar')
         self.assertEqual(self.t.units, '')
         self.assertEqual(self.t.attributes, metadata.attributes)
         self.assertIsNot(self.t.attributes, metadata.attributes)
@@ -678,18 +720,21 @@ class TestCubeAPI(TestCube2d):
 
     def test_metadata_fail(self):
         with self.assertRaises(TypeError):
-            self.t.metadata = ('air_pressure', 'foo', '', {'random': '12'})
+            self.t.metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'})
         with self.assertRaises(TypeError):
-            self.t.metadata = ('air_pressure', 'foo', '', {'random': '12'}, (), ())
+            self.t.metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'}, (), ())
         with self.assertRaises(TypeError):
             self.t.metadata = {'standard_name': 'air_pressure',
-                               'long_name': 'foo', 'units': '',
+                               'long_name': 'foo',
+                               'var_name': 'bar',
+                               'units': '',
                                'attributes': {'random': '12'}}
         with self.assertRaises(TypeError):
             class Metadata(object): pass
             metadata = Metadata()
             metadata.standard_name = 'air_pressure'
             metadata.long_name = 'foo'
+            metadata.var_name = 'bar'
             metadata.units = ''
             metadata.attributes = {'random': '12'}
             self.t.metadata = metadata

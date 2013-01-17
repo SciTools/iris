@@ -657,6 +657,7 @@ def _dereference_args(factory, reference_targets, regrid_cache, cube):
                     new_coord = iris.coords.AuxCoord(src.data,
                                                      src.standard_name,
                                                      src.long_name,
+                                                     src.var_name,
                                                      src.units,
                                                      attributes=src.attributes)
                     dims = [cube.coord_dims(src_coord)[0]
