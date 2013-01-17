@@ -18,7 +18,6 @@
 Provides an interface to manage URI scheme support in iris.
 
 """
-
 import glob
 import os.path
 import types
@@ -74,7 +73,7 @@ def select_data_path(resources_subdir, rel_path):
            
     """
     if iris.config.DATA_REPOSITORY is None:
-        raise Exception('No data repository has been configured.')
+        raise RuntimeError('No data repository has been configured.')
     MASTER_REPO = iris.config.MASTER_DATA_REPOSITORY
     DATA_REPO = os.path.join(iris.config.DATA_REPOSITORY, resources_subdir)
     
