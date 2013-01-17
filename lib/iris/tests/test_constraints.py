@@ -317,14 +317,11 @@ class TestCubeExtract(TestMixin, tests.IrisTest):
         
         wrapped_constraint = Constraint(longitude=lambda i: -30 <= i <= 30)
         x = cube.extract(wrapped_constraint)
-        print x.shape
-        print x.coord("longitude").points
+        self.assertCML(cube, ('constrained_load', 'wrapped_extract_left.cml'))
 
         wrapped_constraint = Constraint(longitude=lambda i: 330 <= i <= 390)
         x = cube.extract(wrapped_constraint)
-        print x.shape
-        print x.coord("longitude").points
-
+        self.assertCML(cube, ('constrained_load', 'wrapped_extract_right.cml'))
         
 
 @iris.tests.skip_data

@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube units="unknown">
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord id="5d3b1011" points="[0, 1, 2, ..., 357, 358, 359]" shape="(360,)" standard_name="longitude" units="Unit('1')" value_type="int64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x2acdccca" dtype="int64" shape="(360,)"/>
+  </cube>
+</cubes>
