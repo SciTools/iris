@@ -1240,6 +1240,16 @@ class Cube(CFVariableMixin):
     def __repr__(self):
         return "<iris 'Cube' of %s>" % self.summary(shorten=True, name_padding=1)
 
+    def __iter__(self):
+        # Emit a warning about iterating over the cube.
+        # __getitem__ makes this possible, but now deprecated as confusing.
+        warnings.warn('Cube iteration has been deprecated: '
+                      'please use Cube.slices() instead.')
+
+        # Return a simple first-index iterator, equivalent to that produced
+        # with __getitem__, if __iter__ was not defined.
+        return (self[i] for i in range(self.shape[0]))
+
     def __getitem__(self, keys):
         """
         Cube indexing (through use of square bracket notation) has been implemented at the data level. That is,
