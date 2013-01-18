@@ -171,7 +171,7 @@ class Constraint(object):
                     if new_coord.has_bounds():
                         new_coord.bounds = numpy.concatenate((
                                                 l_coord.bounds[-roll:],
-                                                coord.bounds[:-roll]))
+                                                c_coord.bounds[:-roll]))
     
                 elif any(r_unique):
     
