@@ -21,19 +21,17 @@ import iris.tests as tests
 
 import unittest
 
-# Import updated sys.path for example_code.
-import example_code_path
-import COP_1d_plot
-import override_mpl_show 
+import extest_util
+
+with extest_util.add_examples_to_path():
+    import COP_1d_plot
 
 
 class TestCOP1DPlot(tests.GraphicsTest):
     """Test the COP_1d_plot example code."""
-    def setUp(self):
-        override_mpl_show.init(self)
-
     def test_COP_1d_plot(self):
-        COP_1d_plot.main() 
+        with extest_util.show_replaced_by_check_graphic(self, tol=0):
+            COP_1d_plot.main()
 
 
 if __name__ == '__main__':

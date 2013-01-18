@@ -21,19 +21,17 @@ import iris.tests as tests
 
 import unittest
 
-# Import updated sys.path for example_code.
-import example_code_path 
-import global_map
-import override_mpl_show
+import extest_util
+
+with extest_util.add_examples_to_path():
+    import global_map
 
 
 class TestGlobalMap(tests.GraphicsTest):
     """Test the global_map example code."""
-    def setUp(self):
-        override_mpl_show.init(self)
-
     def test_global_map(self):
-        global_map.main() 
+        with extest_util.show_replaced_by_check_graphic(self, tol=0):
+            global_map.main()
 
 
 if __name__ == '__main__':

@@ -21,19 +21,17 @@ import iris.tests as tests
 
 import unittest
 
-# Import updated sys.path for example_code.
-import example_code_path
-import custom_file_loading 
-import override_mpl_show
+import extest_util
+
+with extest_util.add_examples_to_path():
+    import custom_file_loading
 
 
 class TestCustomFileLoading(tests.GraphicsTest):
     """Test the custom_file_loading example code."""
-    def setUp(self):
-        override_mpl_show.init(self)
-
-    def test_global_map(self):
-        custom_file_loading.main() 
+    def test_custom_file_loading(self):
+        with extest_util.show_replaced_by_check_graphic(self, tol=0):
+            custom_file_loading.main()
 
 
 if __name__ == '__main__':

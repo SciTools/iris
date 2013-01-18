@@ -21,19 +21,17 @@ import iris.tests as tests
 
 import unittest
 
-# Import updated sys.path for example_code.
-import example_code_path
-import override_mpl_show
-import TEC 
+import extest_util
+
+with extest_util.add_examples_to_path():
+    import TEC
 
 
 class TestTEC(tests.GraphicsTest):
     """Test the TEC example code."""
-    def setUp(self):
-        override_mpl_show.init(self)
-
     def test_TEC(self):
-        TEC.main() 
+        with extest_util.show_replaced_by_check_graphic(self, tol=0):
+            TEC.main()
 
 
 if __name__ == '__main__':

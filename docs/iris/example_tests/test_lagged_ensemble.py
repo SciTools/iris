@@ -21,19 +21,17 @@ import iris.tests as tests
 
 import unittest
 
-# Import updated sys.path for example_code.
-import example_code_path
-import lagged_ensemble 
-import override_mpl_show
+import extest_util
+
+with extest_util.add_examples_to_path():
+    import lagged_ensemble
 
 
 class TestLaggedEnsemble(tests.GraphicsTest):
-    """Test the lagged_ensemble example code."""
-    def setUp(self):
-        override_mpl_show.init(self)
-
+    """Test the lagged ensemble example code."""
     def test_lagged_ensemble(self):
-        lagged_ensemble.main() 
+        with extest_util.show_replaced_by_check_graphic(self, tol=0):
+            lagged_ensemble.main()
 
 
 if __name__ == '__main__':
