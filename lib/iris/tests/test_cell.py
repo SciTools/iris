@@ -169,6 +169,18 @@ class TestCells(unittest.TestCase):
         self.assertFalse(a >= b)
         self.assertFalse(a > b)
 
+    def test_overlap_order(self):
+        # Test cells that overlap still sort correctly.
+        cells = [Cell(point=375804.0, bound=(375792.0, 375816.0)),
+                 Cell(point=375672.0, bound=(375660.0, 375684.0)),
+                 Cell(point=375792.0, bound=(375780.0, 375804.0)),
+                 Cell(point=375960.0, bound=(375948.0, 375972.0))]
+        sorted_cells = [Cell(point=375672.0, bound=(375660.0, 375684.0)),
+                        Cell(point=375792.0, bound=(375780.0, 375804.0)),
+                        Cell(point=375804.0, bound=(375792.0, 375816.0)),
+                        Cell(point=375960.0, bound=(375948.0, 375972.0))]
+        self.assertEqual(sorted(cells), sorted_cells)
+
     def _check_permutations(self, a, b, a_lt_b, a_le_b, a_eq_b):
         self.assertEqual(a < b, a_lt_b)
         self.assertEqual(a <= b, a_le_b)
