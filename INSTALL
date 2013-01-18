@@ -123,6 +123,19 @@ builds correctly::
         -L <custom link-time libdir> -R <custom runtime libdir> install
 
 
+Custom site configuration
+=========================
+The default site configuration values can be overridden by creating the file
+``iris/etc/site.cfg``. For example, the following snippet can be used to
+specify a non-standard location for your udunits library::
+
+  [System]
+  udunits2_path = /path/to/libudunits2.so
+
+An example configuration file is available in ``iris/etc/site.cfg.template``.
+See :py:func:`iris.config` for further configuration options.
+
+
 Packaged distributions
 ======================
 The Enthought Python Distribution `(EPD)
