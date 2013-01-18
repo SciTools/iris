@@ -252,8 +252,13 @@ class TestNetCDFSave(tests.IrisTest):
             iris.save(cube, file_out)
 
             # Check the netCDF file against CDL expected output.
-            self.assertCDL(file_out, ('netcdf',
-                                      'netcdf_save_multi_%d.cdl' % index))
+            try:
+                self.assertCDL(file_out,
+                               ('netcdf', 'netcdf_save_multi_%d.cdl' % index))
+            except AssertionError:
+                self.assertCDL(file_out,
+                               ('netcdf',
+                                'netcdf_save_multi_%d_alt1.cdl' % index))
             os.remove(file_out)
 
     def test_netcdf_hybrid_height(self):
@@ -269,7 +274,12 @@ class TestNetCDFSave(tests.IrisTest):
         iris.save(cube, file_out)
 
         # Check the netCDF file against CDL expected output.
-        self.assertCDL(file_out, ('netcdf', 'netcdf_save_hybrid_height.cdl'))
+        try:
+            self.assertCDL(file_out, ('netcdf',
+                                      'netcdf_save_hybrid_height.cdl'))
+        except AssertionError:
+            self.assertCDL(file_out, ('netcdf',
+                                      'netcdf_save_hybrid_height_alt0.cdl'))
 
         # Read netCDF file.
         cube = iris.load_cube(file_out)
@@ -291,7 +301,12 @@ class TestNetCDFSave(tests.IrisTest):
         iris.save(cube, file_out)
 
         # Check the netCDF file against CDL expected output.
-        self.assertCDL(file_out, ('netcdf', 'netcdf_save_ndim_auxiliary.cdl'))
+        try:
+            self.assertCDL(file_out, ('netcdf',
+                                      'netcdf_save_ndim_auxiliary.cdl'))
+        except AssertionError:
+            self.assertCDL(file_out, ('netcdf',
+                                      'netcdf_save_ndim_auxiliary_alt1.cdl'))
 
         # Read the netCDF file.
         cube = iris.load_cube(file_out)

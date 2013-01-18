@@ -1,0 +1,53 @@
+dimensions:
+	time = UNLIMITED ; // (4 currently)
+	bnds = 2 ;
+	rlat = 190 ;
+	rlon = 174 ;
+variables:
+	float pr(time, rlat, rlon) ;
+		pr:standard_name = "precipitation_flux" ;
+		pr:long_name = "Precipitation" ;
+		pr:units = "kg m-2 s-1" ;
+		pr:NCO = "4.1.0" ;
+		pr:experiment = "ER3" ;
+		pr:history = "Thu Nov 29 10:45:50 2012: /project/ukmo/rhel6/nco/bin/ncks -d time,0,3 new_rotPole_precipitation.nc small_rotPole_precipitation.nc" ;
+		pr:institution = "DMI" ;
+		pr:source = "HIRHAM" ;
+		pr:cell_methods = "time: mean" ;
+		pr:grid_mapping = "rotated_latitude_longitude" ;
+		pr:coordinates = "lat lon" ;
+	int rotated_latitude_longitude ;
+		rotated_latitude_longitude:grid_mapping_name = "rotated_latitude_longitude" ;
+		rotated_latitude_longitude:grid_north_pole_latitude = 18. ;
+		rotated_latitude_longitude:grid_north_pole_longitude = -140.75 ;
+		rotated_latitude_longitude:north_pole_grid_longitude = 0. ;
+	float time(time) ;
+		time:axis = "T" ;
+		time:bounds = "time_bnds" ;
+		time:units = "days since 1950-01-01 00:00:00.0" ;
+		time:standard_name = "time" ;
+		time:long_name = "Julian Day" ;
+		time:calendar = "gregorian" ;
+	float time_bnds(time, bnds) ;
+	float rlat(rlat) ;
+		rlat:axis = "Y" ;
+		rlat:units = "degrees" ;
+		rlat:standard_name = "grid_latitude" ;
+		rlat:long_name = "rotated latitude" ;
+	float rlon(rlon) ;
+		rlon:axis = "X" ;
+		rlon:units = "degrees" ;
+		rlon:standard_name = "grid_longitude" ;
+		rlon:long_name = "rotated longitude" ;
+	float lat(rlat, rlon) ;
+		lat:units = "degrees" ;
+		lat:standard_name = "latitude" ;
+		lat:long_name = "latitude" ;
+	float lon(rlat, rlon) ;
+		lon:units = "degrees" ;
+		lon:standard_name = "longitude" ;
+		lon:long_name = "longitude" ;
+
+// global attributes:
+		:Conventions = "CF-1.5" ;
+}

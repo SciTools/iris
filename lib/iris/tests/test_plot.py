@@ -180,7 +180,7 @@ def _load_4d_testcube():
 @cache
 def _load_wind_no_bounds():
     # Load the COLPEX data => TZYX
-    path = tests.get_data_path(('PP', 'COLPEX', 'uwind_and_orog.pp'))
+    path = tests.get_data_path(('PP', 'COLPEX', 'small_eastward_wind.pp'))
     wind = iris.load_cube(path, 'eastward_wind')
 
     # Remove bounds from all coords that have them.
