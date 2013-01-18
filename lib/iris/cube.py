@@ -1241,12 +1241,8 @@ class Cube(CFVariableMixin):
         return "<iris 'Cube' of %s>" % self.summary(shorten=True, name_padding=1)
 
     def __iter__(self):
-        """
-        Warn about iterating over a cube.
-
-        This is possible (by __getitem__ existence), but currently deprecated.
-        """
-        # Issue deprecation warning.
+        # Emit a warning about iterating over the cube.
+        # __getitem__ makes this possible, but now deprecated as confusing.
         warnings.warn('Cube iteration has been deprecated: '
                       'please use Cube.slices() instead.')
 
