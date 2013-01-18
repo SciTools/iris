@@ -1229,7 +1229,7 @@ class ProtoCube(object):
                                              **template.kwargs)
                 if len(template.dims) == 1 and template.dims[0] not in covered_dims:
                     dim_coords_and_dims.append(_CoordAndDims(coord, template.dims))
-                    covered_dims.append(template.dims)
+                    covered_dims.append(template.dims[0])
                 else:
                     aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
             except ValueError:
