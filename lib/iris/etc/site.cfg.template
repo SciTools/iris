@@ -1,0 +1,10 @@
+[System]
+udunits2_path = /path/to/libudunits2.so
+dot_path = /path/to/dot # see iris.fileformats.dot
+
+[Resources]
+data_repository = /path/to/iris/resources
+sample_data_dir = /path/to/iris/resources/public_sample_data_1.0
+
+[Logging]
+import_logger = logger_name

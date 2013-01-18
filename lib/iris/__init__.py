@@ -113,7 +113,7 @@ __version__ = '1.2.0-dev'
 
 # Restrict the names imported when using "from iris import *"
 __all__ = ['load', 'load_cube', 'load_cubes', 'load_raw', 'load_strict', 'save',
-           'Constraint', 'AttributeConstraint']
+           'Constraint', 'AttributeConstraint', 'sample_data_path']
 
 
 # When required, log the usage of Iris.
