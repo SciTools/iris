@@ -33,11 +33,11 @@ defined by :mod:`ConfigParser`.
 
 .. py:data:: iris.config.DATA_REPOSITORY
 
-    Local directory where test data exists. This option is obligatory for Iris unit tests. This test data is a sub-set of the MASTER_DATA_REPOSITORY, if it exists. Directory contents accessed via :func:iris.io.select_data_path or :func:iris.tests.get_data_path
+    Local directory where test data exists. This option is obligatory for Iris unit tests. This test data is a sub-set of the MASTER_DATA_REPOSITORY, if it exists. Directory contents accessed via :func:`iris.io.select_data_path`.
 
 .. py:data:: iris.config.SAMPLE_DATA_DIR
 
-    Local directory where sample data exists. Defaults to "sample_data" sub-directory of the Iris package install directory. The sample data directory supports the Iris gallery. Directory contents accessed via :func:iris.sample_data_path
+    Local directory where sample data exists. Defaults to "sample_data" sub-directory of the Iris package install directory. The sample data directory supports the Iris gallery. Directory contents accessed via :func:`iris.sample_data_path`.
 
 .. py:data:: iris.config.PALETTE_PATH
 
@@ -45,7 +45,7 @@ defined by :mod:`ConfigParser`.
 
 .. py:data:: iris.config.RULE_LOG_DIR
 
-    The [optional] full path to the rule logging directory used by fileformats.pp load() and save()
+    The [optional] full path to the rule logging directory used by :func:`iris.fileformats.pp.load()` and :func:`iris.fileformats.pp.save()`.
 
 .. py:data:: iris.config.RULE_LOG_IGNORE
 
