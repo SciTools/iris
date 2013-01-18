@@ -30,7 +30,7 @@ with extest_util.add_examples_to_path():
 class TestCOP1DPlot(tests.GraphicsTest):
     """Test the COP_1d_plot example code."""
     def test_COP_1d_plot(self):
-        with extest_util.show_replaced_by_check_graphic(self, tol=0):
+        with extest_util.show_replaced_by_check_graphic(self):
             COP_1d_plot.main()
 
 

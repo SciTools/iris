@@ -30,7 +30,7 @@ with extest_util.add_examples_to_path():
 class TestLinePlotWithLegend(tests.GraphicsTest):
     """Test the lineplot_with_legend example code."""
     def test_lineplot_with_legend(self):
-        with extest_util.show_replaced_by_check_graphic(self, tol=0):
+        with extest_util.show_replaced_by_check_graphic(self):
             lineplot_with_legend.main()
 
 

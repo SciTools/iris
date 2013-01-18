@@ -30,7 +30,7 @@ with extest_util.add_examples_to_path():
 class TestRotatedPoleMapping(tests.GraphicsTest):
     """Test the rotated_pole_mapping example code."""
     def test_rotated_pole_mapping(self):
-        with extest_util.show_replaced_by_check_graphic(self, tol=0):
+        with extest_util.show_replaced_by_check_graphic(self):
             rotated_pole_mapping.main()
 
 

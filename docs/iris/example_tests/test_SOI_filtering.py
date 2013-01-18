@@ -30,7 +30,7 @@ with extest_util.add_examples_to_path():
 class TestSOIFiltering(tests.GraphicsTest):
     """Test the SOI_filtering example code."""
     def test_soi_filtering(self):
-        with extest_util.show_replaced_by_check_graphic(self, tol=0):
+        with extest_util.show_replaced_by_check_graphic(self, tol=0.0012):
             SOI_filtering.main()
 
 

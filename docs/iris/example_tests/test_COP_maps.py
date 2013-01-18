@@ -30,7 +30,7 @@ with extest_util.add_examples_to_path():
 class TestCOPMaps(tests.GraphicsTest):
     """Test the COP_maps example code."""
     def test_cop_maps(self):
-        with extest_util.show_replaced_by_check_graphic(self, tol=0):
+        with extest_util.show_replaced_by_check_graphic(self):
             COP_maps.main()
 
 

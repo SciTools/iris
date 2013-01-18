@@ -30,7 +30,7 @@ with extest_util.add_examples_to_path():
 class TestLaggedEnsemble(tests.GraphicsTest):
     """Test the lagged ensemble example code."""
     def test_lagged_ensemble(self):
-        with extest_util.show_replaced_by_check_graphic(self, tol=0):
+        with extest_util.show_replaced_by_check_graphic(self):
             lagged_ensemble.main()
 
 

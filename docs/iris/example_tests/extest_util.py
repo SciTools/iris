@@ -23,19 +23,15 @@ to run the example tests.
 
 
 import contextlib
+import os.path
+import sys
 import unittest
 
 import matplotlib.pyplot as plt
 
 import iris.plot as iplt
+from iris.tests import _DEFAULT_IMAGE_TOLERANCE
 
-
-import os
-import os.path
-import sys
-
-parent_dir = os.path.dirname(os.path.dirname(__file__))
-sys.path.append(os.path.join(parent_dir, 'example_code', 'graphics'))
 
 EXAMPLE_DIRECTORY = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                  'example_code', 'graphics')
@@ -57,7 +53,7 @@ def add_examples_to_path():
 
 
 @contextlib.contextmanager
-def show_replaced_by_check_graphic(test_case, tol=0):
+def show_replaced_by_check_graphic(test_case, tol=_DEFAULT_IMAGE_TOLERANCE):
     """
     Creates a context manager which can be used to replace the functionality
     of matplotlib.pyplot.show with a function which calls the check_graphic

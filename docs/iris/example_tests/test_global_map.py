@@ -30,7 +30,7 @@ with extest_util.add_examples_to_path():
 class TestGlobalMap(tests.GraphicsTest):
     """Test the global_map example code."""
     def test_global_map(self):
-        with extest_util.show_replaced_by_check_graphic(self, tol=0):
+        with extest_util.show_replaced_by_check_graphic(self):
             global_map.main()
 
 
