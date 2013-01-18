@@ -91,8 +91,13 @@ class Cell(iris.util._OrderedHashable):
     Constraint matching. The number/string will equal the Cell if, and
     only if, it is within the Cell (including on the boundary). The
     relative comparisons (lt, le, ..) are defined to be consistent with
-    this interpretation. So if `n == cell` for a bounded Cell, then:
-        cell.bound[0] <= n <= cell.bound[1]
+    this interpretation. So for a given value `n` and Cell `cell`, only
+    one of the following can be true:
+        n < cell
+        n == cell
+        n > cell
+    Similarly, `n <= cell` implies either `n < cell` or `n == cell`.
+    And `n >= cell` implies either `n > cell` or `n == cell`.
 
     """
 
@@ -182,7 +187,8 @@ class Cell(iris.util._OrderedHashable):
                     # Point vs point-and-bound
                     # - Simple ordering of point values, but if the two
                     #   points are equal, we make the arbitrary choice
-                    #   that the point comes before the point-and-bound.
+                    #   that the point-only Cell is defined as less than
+                    #   the point-and-bound Cell.
                     if self.point == other.point:
                         result = operator_method in (operator.lt, operator.le)
                     else:
@@ -192,7 +198,8 @@ class Cell(iris.util._OrderedHashable):
                     # Point-and-bound vs point
                     # - Simple ordering of point values, but if the two
                     #   points are equal, we make the arbitrary choice
-                    #   that the point comes before the point-and-bound.
+                    #   that the point-only Cell is defined as less than
+                    #   the point-and-bound Cell.
                     if self.point == other.point:
                         result = operator_method in (operator.gt, operator.ge)
                     else:
