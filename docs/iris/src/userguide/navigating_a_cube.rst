@@ -90,6 +90,14 @@ Each cube also has a :mod:`numpy` array which represents the phenomenon of the c
        print cube.shape
        print cube.ndim
 
+You can change the units of a cube by assigning to the :attr:`Cube.units <iris.cube.Cube.units>` attribute::
+
+    cube.units = 'celsius'
+
+As well as changing the value of :attr:`Cube.units <iris.cube.Cube.units>` this will also convert the values in
+:attr:`Cube.data <iris.cube.Cube.data>`. To replace the units without modifying the data values one can use
+:meth:`Cube.replace_units() <iris.cube.Cube.replace_units>`. Alternatively, the units can be cleared with
+:meth:`Cube.clear_units() <iris.cube.Cube.clear_units>` and new ones assigned.
 
 Some cubes represent a processed phenomenon which are represented with cell methods, these can be accessed on a 
 cube with the :attr:`Cube.cell_methods <iris.cube.Cube.cell_methods>` attribute::
