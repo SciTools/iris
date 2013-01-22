@@ -67,8 +67,10 @@ BOUND_POSITION_START = 0
 BOUND_POSITION_MIDDLE = 0.5
 BOUND_POSITION_END = 1
 
+
 # Private named tuple class for coordinate groups.
 _GroupbyItem = collections.namedtuple('GroupbyItem', 'groupby_point, groupby_slice')
+
 
 class Cell(iris.util._OrderedHashable):
     """
@@ -77,30 +79,25 @@ class Cell(iris.util._OrderedHashable):
 
     Notes on cell comparison:
 
-    Cells can be compared in a number of ways depending on how they are
-    configured and the data type they are being compared to.
-    
-    For equality comparison (i.e. checking that a cell is equal to something)
-    the following rules apply:
-    
-    1. When comparing to another cell, equality is determined by comparing
-       tuples of attribute values from both objects.
-        
-    2. When comparing to a string value and cell point is also a string, string
-       comparison is performed.
-    
-    3. When comparing to an integer or float and the cell has bounds, the result
-       is True if the numeric value 'other' is within the cell's bounds.
-       Otherwise, the comparison is performed against the cell's point value.
-    
-    For rich comparisions i.e. (less than, greater than, less than or equals and
-    greater than or equals) the following rules apply:
-    
-    1. If either comparison object is a bounded cell, the min or max of its
-       bounds are used for comparison. Otherwise, the point value is used.
-    
-    2. If both comparison objects are bounded cells, the point values are also
-       compared.
+    Cells are compared in two ways, depending on whether they are
+    compared to another Cell, or to a number/string.
+
+    Cell-Cell comparison is defined to produce a strict ordering. If
+    two cells are not exactly equal (i.e. including whether they both
+    define bounds or not) then they will have a consistent relative
+    order.
+
+    Cell-number and Cell-string comparison is defined to support
+    Constraint matching. The number/string will equal the Cell if, and
+    only if, it is within the Cell (including on the boundary). The
+    relative comparisons (lt, le, ..) are defined to be consistent with
+    this interpretation. So for a given value `n` and Cell `cell`, only
+    one of the following can be true:
+        n < cell
+        n == cell
+        n > cell
+    Similarly, `n <= cell` implies either `n < cell` or `n == cell`.
+    And `n >= cell` implies either `n > cell` or `n == cell`.
 
     """
 
@@ -148,7 +145,9 @@ class Cell(iris.util._OrderedHashable):
 
     def __eq__(self, other):
         """
-        Compares Cell equality depending on the type of the object to be compared.    
+        Compares Cell equality depending on the type of the object to be
+        compared.
+
         """
         if isinstance(other, (int, float)):
             if self.bound is not None:
@@ -166,43 +165,76 @@ class Cell(iris.util._OrderedHashable):
         """
         Common method called by the rich comparison operators. The method of
         checking equality depends on the type of the object to be compared.
+
+        Cell vs Cell comparison is used to define a strict order.
+        Non-Cell vs Cell comparison is used to define Constraint matching.
+
         """
         if not isinstance(other, (int, float, numpy.number, Cell)):
             raise ValueError("Unexpected type of other")
-        if operator_method not in [operator.gt, operator.lt, operator.ge, operator.le]:
+        if operator_method not in (operator.gt, operator.lt,
+                                   operator.ge, operator.le):
             raise ValueError("Unexpected operator_method")
-        
-        # Do we have bounds?
-        if self.bound is not None:
-            if operator_method in [operator.gt, operator.le]:
-                me = min(self.bound)
+
+        if isinstance(other, Cell):
+            # Cell vs Cell comparison for providing a strict sort order
+            if self.bound is None:
+                if other.bound is None:
+                    # Point vs point
+                    # - Simple ordering
+                    result = operator_method(self.point, other.point)
+                else:
+                    # Point vs point-and-bound
+                    # - Simple ordering of point values, but if the two
+                    #   points are equal, we make the arbitrary choice
+                    #   that the point-only Cell is defined as less than
+                    #   the point-and-bound Cell.
+                    if self.point == other.point:
+                        result = operator_method in (operator.lt, operator.le)
+                    else:
+                        result = operator_method(self.point, other.point)
             else:
-                me = max(self.bound)
+                if other.bound is None:
+                    # Point-and-bound vs point
+                    # - Simple ordering of point values, but if the two
+                    #   points are equal, we make the arbitrary choice
+                    #   that the point-only Cell is defined as less than
+                    #   the point-and-bound Cell.
+                    if self.point == other.point:
+                        result = operator_method in (operator.gt, operator.ge)
+                    else:
+                        result = operator_method(self.point, other.point)
+                else:
+                    # Point-and-bound vs point-and-bound
+                    # - Primarily ordered on minimum-bound. If the
+                    #   minimum-bounds are equal, then ordered on
+                    #   maximum-bound. If the maximum-bounds are also
+                    #   equal, then ordered on point values.
+                    if self.bound[0] == other.bound[0]:
+                        if self.bound[1] == other.bound[1]:
+                            result = operator_method(self.point, other.point)
+                        else:
+                            result = operator_method(self.bound[1],
+                                                     other.bound[1])
+                    else:
+                        result = operator_method(self.bound[0], other.bound[0])
         else:
-            me = self.point
-    
-        # Does other have bounds?
-        if isinstance(other, (int, float, numpy.number)):
-            it = other
-        elif other.bound is not None:
-            if operator_method in [operator.lt, operator.ge]:
-                it = min(other.bound)
+            # Cell vs number (or string) for providing Constraint
+            # behaviour.
+            if self.bound is None:
+                # Point vs number
+                # - Simple matching
+                me = self.point
             else:
-                it = max(other.bound)
-        else:
-            it = other.point
+                # Point-and-bound vs number
+                # - Match if "within" the Cell
+                if operator_method in [operator.gt, operator.le]:
+                    me = min(self.bound)
+                else:
+                    me = max(self.bound)
+            result = operator_method(me, other)
         
-        # Compare the designated components
-        res = operator_method(me, it)
-        
-        # If we both have bounds, we must also check our points
-        if self.bound is not None and isinstance(other, Cell) and other.bound is not None:
-            # It's ok if our edges coincide, it means we are contiguous.
-            if me == it:
-                res = True
-            res = res and operator_method(self.point, other.point) 
-        
-        return res
+        return result
     
     def __ge__(self, other):
         return self.__common_cmp__(other, operator.ge)
