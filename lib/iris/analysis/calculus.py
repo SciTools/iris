@@ -388,7 +388,7 @@ def _trig_method(coord, trig_function):
     trig_coord.points = trig_function(coord.points)
     if coord.has_bounds():
         trig_coord.bounds = trig_function(coord.bounds)
-    trig_coord.units = '1'
+    trig_coord.replace_units('1')
     trig_coord.rename('{}({})'.format(trig_function.__name__, coord.name()))
 
     return trig_coord

@@ -603,30 +603,36 @@ class TestCubeAPI(TestCube2d):
         self.t.rename('foo')
         self.assertEqual(self.t.name(), 'foo')
         
-    def test_getting_unit(self):
+    def test_getting_units(self):
+        self.assertEqual(self.t.units, iris.unit.Unit('meters'))
         self.assertEqual(str(self.t.units), 'meters')
 
-    def test_clearing_unit(self):
-        self.t.clear_units()
+    def test_setting_units(self):
+        self.assertEqual(self.t.units, iris.unit.Unit('meters'))
+        with self.assertRaises(iris.exceptions.ExistingUnitsError):
+            self.t.units = 'kelvin'
+
+    def test_clearing_units(self):
+        self.t.units = None
         self.assertEqual(str(self.t.units), 'unknown')
 
-    def test_setting_unit(self):
-        self.t.clear_units()
+    def test_change_units(self):
+        self.t.units = None
         self.assertEqual(str(self.t.units), 'unknown')
         # Set to 'volts'
         self.t.units = iris.unit.Unit('volt')
         self.assertEqual(str(self.t.units), 'volt')
         data = self.t.data.copy()
         # Change to 'kV' - data should be scaled automatically.
-        self.t.units = iris.unit.Unit('kV')
+        self.t.change_units('kV')
         self.assertEqual(str(self.t.units), 'kV')
         self.assertArrayAlmostEqual(self.t.data, data / 1000.0)
 
-    def test_replacing_unit(self):
+    def test_replace_units(self):
         data = self.t.data.copy()
-        self.t.replace_units(iris.unit.Unit('volt'))
+        self.t.replace_units('volt')
         self.assertEqual(str(self.t.units), 'volt')
-        # Data shoudl be unchanged.
+        # Data should be unchanged.
         self.assertArrayEqual(self.t.data, data)
 
     def test_coords_are_copies(self):

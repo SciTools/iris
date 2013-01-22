@@ -121,7 +121,7 @@ class TestCubeSave(tests.IrisTest):
     def test_forecast_period(self):
         # unhandled unit
         cube = self._load_basic()
-        cube.coord("forecast_period").units = iris.unit.Unit("years")
+        cube.coord("forecast_period").replace_units(iris.unit.Unit("years"))
         saved_grib = iris.util.create_temp_filename(suffix='.grib2')
         self.assertRaises(iris.exceptions.TranslationError, iris.save, cube, saved_grib)
         os.remove(saved_grib)

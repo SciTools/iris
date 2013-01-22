@@ -351,8 +351,7 @@ class TestExponentiate(tests.IrisTest):
         # Make sure we have something which we can take the root of.
         a = self.cube
         a.data = abs(a.data)
-        a.clear_units()
-        a.units = 'kelvin^2'
+        a.replace_units('kelvin^2')
 
         e = a ** 0.5
 

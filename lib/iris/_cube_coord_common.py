@@ -125,6 +125,31 @@ class CFVariableMixin(object):
             raise ValueError('%r is not a valid standard_name' % name)
 
     @property
+    def units(self):
+        """The :mod:`~iris.unit.Unit` instance of the object."""
+        return getattr(self, '_units', None)
+
+    @units.setter
+    def units(self, unit):
+        unit = iris.unit.as_unit(unit)
+        # Allow assignment if the current units attrinute is None/unknown,
+        # or assigning None/unknown to clear the units. Also allow
+        # assignment of an equal unit e.g. 'degC' to 'Celsius'.
+        if (unit.unknown or self.units is None or self.units.unknown or
+                self.units == unit):
+            self._units = unit
+        else:
+            raise iris.exceptions.ExistingUnitsError()
+
+    def replace_units(self, unit):
+        """Changes the object's units without modifying its values."""
+        unit = iris.unit.as_unit(unit)
+        # Clear any existing units.
+        self.units = None
+        # Assign replacement value.
+        self.units = unit
+
+    @property
     def attributes(self):
         return self._attributes
 

@@ -54,7 +54,7 @@ def global_pp():
     """
     def callback_global_pp(cube, field, filename):
         cube.standard_name = 'air_temperature'
-        cube.units = 'K'
+        cube.replace_units('K')
     path = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
     cube = iris.load_cube(path, callback=callback_global_pp)
     return cube

@@ -360,7 +360,7 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         lat_coord = y.unit_converted('radians')
         cos_lat_coord = iris.coords.AuxCoord.from_coord(lat_coord)
         cos_lat_coord.points = numpy.cos(lat_coord.points)
-        cos_lat_coord.units = '1'
+        cos_lat_coord.replace_units('1')
         cos_lat_coord.rename('cos({})'.format(lat_coord.name()))
         
         temp = iris.analysis.calculus.differentiate(cube, lon_coord)
@@ -508,7 +508,7 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         lat_coord = y.unit_converted('radians')
         cos_lat_coord = iris.coords.AuxCoord.from_coord(lat_coord)
         cos_lat_coord.points = numpy.cos(lat_coord.points)
-        cos_lat_coord.units = '1'
+        cos_lat_coord.replace_units('1')
         cos_lat_coord.rename('cos({})'.format(lat_coord.name()))
 
         r = iris.analysis.calculus.curl(u, v)[2]

@@ -480,7 +480,7 @@ def _multiply_divide_common(operation_function, operation_symbol, operation_noun
         return NotImplemented
    
     # Update the units
-    copy_cube.clear_units()
+    copy_cube.units = None
     if operation_function == numpy.multiply:
         copy_cube.units = cube.units * other_unit
     elif operation_function == numpy.divide:

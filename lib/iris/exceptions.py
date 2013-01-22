@@ -53,6 +53,18 @@ class DuplicateDataError(IrisError):
     pass
 
 
+class ExistingUnitsError(IrisError):
+    """
+    Raised when attemting to set the units attribute if it already has a
+    value.
+
+    change_units() should be used to convert a cube or coord. replace_units()
+    should be used to replace the units without modifying the values.
+
+    """
+    pass
+
+
 class InvalidCubeError(IrisError):
     """Raised when a Cube validation check fails."""
     pass
