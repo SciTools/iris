@@ -155,7 +155,7 @@ output as this is the quickest way of inspecting the contents of a cube. Here is
      
 .. testoutput::
 
-    air_potential_temperature           (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
+    air_potential_temperature / K       (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
          Dimension coordinates:
               time                           x                      -                 -                    -
               model_level_number             -                      x                 -                    -
@@ -169,7 +169,7 @@ output as this is the quickest way of inspecting the contents of a cube. Here is
          Derived coordinates:
               altitude                       -                      x                 x                    x
          Scalar coordinates:
-              forecast_reference_time: 349612.0 hours since 1970-01-01 00:00:00
+              forecast_reference_time: 2009-11-19 04:00:00
          Attributes:
               STASH: m01s00i004
               source: Data from Met Office Unified Model 7.03
