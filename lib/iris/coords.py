@@ -551,7 +551,7 @@ class Coord(CFVariableMixin):
 
             To convert a coordinate from one unit to another (e.g. degrees
             to radians) use use
-            :method:`replace_units <iris.coords.Coord.replace_units>`.
+            :meth:`replace_units <iris.coords.Coord.replace_units>`.
 
         """
         super(Coord, self).replace_units(unit)
@@ -567,15 +567,15 @@ class Coord(CFVariableMixin):
             coord.change_units('degrees')
 
         This will change the coordinate's
-        :attr:`units <iris.coords.Coord.units>` attribute to celcius and
+        :attr:`units <iris.coords.Coord.units>` attribute to degrees and
         multiply each value in :attr:`points <iris.coords.Coord.points>` and
-        :attr:`bounds <iris.coords.Coord.bounds>` by pi/180.0.
+        :attr:`bounds <iris.coords.Coord.bounds>` by 180.0/pi.
 
         .. note::
 
             To change a coordinate from one unit to another without modifying
             its values use
-            :method:`replace_units <iris.coords.Coord.replace_units>`.
+            :meth:`replace_units <iris.coords.Coord.replace_units>`.
 
         """
         unit = iris.unit.as_unit(unit)

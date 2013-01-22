@@ -5,7 +5,7 @@ Basic cube mathematics
 
 The section :doc:`navigating_a_cube` highlighted that every cube has a data attribute; this attribute can then be manipulated directly::
 
-   cube.data -= 273.16
+   cube.data -= 273.15
 
 The problem with manipulating the data directly is that other metadata may become inconsistent; in this case the unit of 
 the cube is no longer what was intended. This example could be rectified by replacing the unit::
@@ -13,10 +13,10 @@ the cube is no longer what was intended. This example could be rectified by repl
    cube.replace_units('C')
 
 .. note::
-    Directly assigning to :attr:`Cube.units <iris.cube.Cube.units>` will automatically convert the underlying data so the two steps above
+    :meth:`Cube.change_units <iris.cube.Cube.units>` can be used to automatically convert the underlying data so the two steps above
     can be achieved by::
 
-        cube.units = 'C'
+        cube.change_units('C')
 
 In order to reduce the amount of metadata which becomes inconsistent, fundamental arithmetic operations such as addition, 
 subtraction, division, and multiplication can be applied directly to any cube.

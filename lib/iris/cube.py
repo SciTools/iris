@@ -186,7 +186,7 @@ class CubeList(list):
         return cube_list 
 
     def __str__(self):
-        """Runs short :method:`Cube.summary` on every cube."""
+        """Runs short :meth:`Cube.summary` on every cube."""
         result = ['%s: %s' % (i, cube.summary(shorten=True)) for i, cube in enumerate(self)]
         if result:
             result = '\n'.join(result)
@@ -471,7 +471,7 @@ class Cube(CFVariableMixin):
 
             To convert a cube from one unit to another (e.g. kelvin
             to celsius) use
-            :method:`change_units <iris.cube.Cube.change_units>` method.
+            :meth:`change_units <iris.cube.Cube.change_units>`.
 
         """
         super(Cube, self).replace_units(unit)
@@ -486,13 +486,13 @@ class Cube(CFVariableMixin):
             cube.change_units('celsius')
 
         This will change the cube's :attr:`units <iris.cube.Cube.units>` to
-        celcius and add 273.15 to each value in
+        celsius and add 273.15 to each value in
         :attr:`data <iris.cube.Cube.data>`
 
         .. note::
 
             To change a cube from one unit to another without modifying its
-            values use :method:`replace_units <iris.cube.Cube.replace_units>`.
+            values use :meth:`replace_units <iris.cube.Cube.replace_units>`.
 
         """
         unit = iris.unit.as_unit(unit)
