@@ -46,16 +46,16 @@ postfix) in addition to the core packages.
 python 2.7 or later (http://www.python.org/)
     Iris requires Python 2.7 or later, but is not currently compatible with Python 3.
 
-numpy 1.6 or later (http://numpy.scipy.org/)
+numpy 1.6.2 or later (http://numpy.scipy.org/)
     Python package for scientific computing including a powerful N-dimensional array object.
 
-scipy 0.10 or later (http://www.scipy.org/)
+scipy 0.11 or later (http://www.scipy.org/)
     Python package for scientific computing.
 
 udunits2 2.1.24 or later (http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html)
     C library for units of physical quantities.
 
-netcdf4-python 0.9.9 or later (http://netcdf4-python.googlecode.com/)
+netcdf4-python 1.0.2 or later (http://netcdf4-python.googlecode.com/)
     Python interface to the netCDF version 4 C library.
 
 PyKE 1.1.1 or later (http://pyke.sourceforge.net/)
@@ -67,16 +67,13 @@ setuptools 0.6c11 or later (http://pypi.python.org/pypi/setuptools/)
 cartopy 0.5.0 or later (http://github.com/SciTools/cartopy/)
     Python package which provides cartographic tools for python.
 
-pyproj v1.9.0 or later (http://pypi.python.org/pypi/pyproj/)
-    Performs cartographic transformations and geodetic computations.
-
 Optional
 --------
 These are optional packages which you may want to install to use
 Iris with different file formats and to enable plotting functionality.
 All of these are required for the Iris test suite to run.
 
-graphviz 2.18 or later (http://www.graphviz.org/)
+graphviz 2.30 or later (http://www.graphviz.org/)
     Graph visualisation software.
 
 grib-api 1.9.16 or later (http://www.ecmwf.int/products/data/software/download/grib_api.html)
@@ -97,9 +94,11 @@ nose 1.1.2 or later (http://nose.readthedocs.org/en/latest/)
 PythonImagingLibrary 1.1.7 or later (http://effbot.org/zone/pil-index.htm)
     Python package for image processing.
 
-shapely 1.2.14 (https://github.com/Toblerity/Shapely)
+shapely 1.2.16 (https://github.com/Toblerity/Shapely)
     Python package for the manipulation and analysis of planar geometric objects.
 
+sphinx 1.1.3 or later (http://pypi.python.org/packages/source/S/Sphinx)
+    Python documentation generator. Required to build the Iris documentation suite.
 
 Packed PP
 =========
