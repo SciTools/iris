@@ -21,19 +21,17 @@ import iris.tests as tests
 
 import unittest
 
-# Import updated sys.path for example_code.
-import example_code_path
-import override_mpl_show
-import rotated_pole_mapping 
+import extest_util
+
+with extest_util.add_examples_to_path():
+    import rotated_pole_mapping
 
 
 class TestRotatedPoleMapping(tests.GraphicsTest):
     """Test the rotated_pole_mapping example code."""
-    def setUp(self):
-        override_mpl_show.init(self)
-
     def test_rotated_pole_mapping(self):
-        rotated_pole_mapping.main() 
+        with extest_util.show_replaced_by_check_graphic(self):
+            rotated_pole_mapping.main()
 
 
 if __name__ == '__main__':
