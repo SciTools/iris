@@ -37,6 +37,10 @@ import iris.unit
 import grib_save_rules
 
 
+
+hindcast_workaround = False  # Enable this to correct hindcast periods on load.
+
+
 # rules for converting a grib message to a cm cube
 _load_rules = None
 _cross_reference_rules = None
@@ -263,11 +267,12 @@ class GribWrapper(object):
             
             # Workaround grib api's assumption that forecast time is always positive.
             # Handles correctly encoded -ve forecast times up to one -1 billion.
-            if 2 * BILL < uft < 3 * BILL :
-                msg = "Re-interpreting negative forecastTime from " + str(forecastTime)
-                forecastTime = -(uft - 2 * BILL)
-                msg += " to " + str(forecastTime)
-                warnings.warn(msg)
+            if hindcast_workaround:
+                if 2 * BILL < uft < 3 * BILL :
+                    msg = "Re-interpreting negative forecastTime from " + str(forecastTime)
+                    forecastTime = -(uft - 2 * BILL)
+                    msg += " to " + str(forecastTime)
+                    warnings.warn(msg)
                 
         else:
             forecastTime = self.startStep

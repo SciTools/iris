@@ -35,7 +35,10 @@ import iris.coords
 @iris.tests.skip_data
 class TestLoadSave(tests.IrisTest):
     # load and save grib
-
+    
+    def setUp(self):
+        iris.fileformats.grib.hindcast_workaround = True
+  
     def save_and_compare(self, source_grib, reference_text):
         """Load and save grib data, generate diffs, compare with expected diffs."""
 
