@@ -16,7 +16,7 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Provides a context managers which are fundamental to the ability
+Provides context managers which are fundamental to the ability
 to run the example tests.
 
 """
