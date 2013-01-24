@@ -81,6 +81,7 @@ if '-d' in sys.argv:
 _DEFAULT_IMAGE_TOLERANCE = 0.001
 
 
+
 def main():
     """A wrapper for unittest.main() which adds iris.test specific options to the help (-h) output."""
     if '-h' in sys.argv or '--help' in sys.argv:

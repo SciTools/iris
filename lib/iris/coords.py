@@ -319,7 +319,7 @@ class Coord(CFVariableMixin):
         self.long_name = long_name
         """Descriptive name of the coordinate."""
 
-        self.units = iris.unit.as_unit(units)
+        self.units = units
         """Unit of the quantity that the coordinate represents."""
 
         self.attributes = attributes
@@ -541,7 +541,58 @@ class Coord(CFVariableMixin):
 
     def __neg__(self):
         return self.copy(-self.points, -self.bounds if self.bounds is not None else None)
-        
+
+    def replace_units(self, unit):
+        """
+        Changes the coordinate's units without modifying its points or
+        bounds.
+
+        .. note::
+
+            To convert a coordinate from one unit to another (e.g. degrees
+            to radians) use use
+            :meth:`replace_units <iris.coords.Coord.replace_units>`.
+
+        """
+        super(Coord, self).replace_units(unit)
+
+    def change_units(self, unit):
+        """
+        Changes the coordinate's units, converting the values in its points
+        and bounds arrays.
+
+        For example, if a coordinate's :attr:`units <iris.coords.Coord.units>`
+        attribute is set to radians, it can be converted into degrees by::
+
+            coord.change_units('degrees')
+
+        This will change the coordinate's
+        :attr:`units <iris.coords.Coord.units>` attribute to degrees and
+        multiply each value in :attr:`points <iris.coords.Coord.points>` and
+        :attr:`bounds <iris.coords.Coord.bounds>` by 180.0/pi.
+
+        .. note::
+
+            To change a coordinate from one unit to another without modifying
+            its values use
+            :meth:`replace_units <iris.coords.Coord.replace_units>`.
+
+        """
+        unit = iris.unit.as_unit(unit)
+        # If the coord has units and the desired unit is valid convert
+        # the values in points (and bounds if present).
+        if self.units is not None and not self.units.unknown:
+            self.points = self.units.convert(self.points, unit)
+            if self.bounds is not None:
+                self.bounds = self.units.convert(self.bounds, unit)
+        self.replace_units(unit)
+
+    def unit_converted(self, new_unit):
+        """Return a coordinate converted to a given unit."""
+        new_coord = self.copy()
+        new_coord.change_units(new_unit)
+        return new_coord
+
     def cells(self):
         """
         Returns an iterable of Cell instances for this Coord.
@@ -881,17 +932,6 @@ class Coord(CFVariableMixin):
         warnings.warn('Coord.cos() has been deprecated.') 
         import iris.analysis.calculus
         return iris.analysis.calculus._coord_cos(self)
-
-    def unit_converted(self, new_unit):
-        """Return a coordinate converted to a given unit."""
-        points = self.units.convert(self.points, new_unit)
-        if self.bounds is not None:
-            bounds = self.units.convert(self.bounds, new_unit)
-        else:
-            bounds = None
-        new_coord = self.copy(points=points, bounds=bounds)
-        new_coord.units = iris.unit.as_unit(new_unit)
-        return new_coord
     
     def xml_element(self, doc):
         """Return a DOM element describing this Coord."""

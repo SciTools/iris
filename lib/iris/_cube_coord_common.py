@@ -21,7 +21,6 @@
 import warnings
 
 import iris.std_names
-import iris.unit
 
 
 class LimitedAttributeDict(dict):
@@ -104,34 +103,6 @@ class CFVariableMixin(object):
             self.standard_name = None
             self.long_name = unicode(name)
 
-    @property
-    def unit(self):
-        """
-        The :mod:`iris.unit.Unit` instance representing the unit of the phenomenon.
-        
-        .. deprecated:: 0.9
-        
-            :attr:`.unit` has been deprecated. Use :attr:`.units` instead.
-        """
-        msg = 'The `unit` property is deprecated. Please use `units` instead.'
-        warnings.warn(msg, UserWarning, stacklevel=2)
-        return self.units
-
-    @unit.setter
-    def unit(self, unit):
-        msg = 'The `unit` property is deprecated. Please use `units` instead.'
-        warnings.warn(msg, UserWarning, stacklevel=2)
-        self.units = unit
-
-    @property
-    def units(self):
-        """The :mod:`~iris.unit.Unit` instance of the phenomenon."""
-        return self._units
-
-    @units.setter
-    def units(self, unit):
-        self._units = iris.unit.as_unit(unit)
-
     # TODO: Decide if this exists!
 #    @property
 #    def long_name(self):
@@ -152,6 +123,31 @@ class CFVariableMixin(object):
             self._standard_name = name
         else:
             raise ValueError('%r is not a valid standard_name' % name)
+
+    @property
+    def units(self):
+        """The :mod:`~iris.unit.Unit` instance of the object."""
+        return getattr(self, '_units', None)
+
+    @units.setter
+    def units(self, unit):
+        unit = iris.unit.as_unit(unit)
+        # Allow assignment if the current units attrinute is None/unknown,
+        # or assigning None/unknown to clear the units. Also allow
+        # assignment of an equal unit e.g. 'degC' to 'Celsius'.
+        if (unit.unknown or self.units is None or self.units.unknown or
+                self.units == unit):
+            self._units = unit
+        else:
+            raise iris.exceptions.ExistingUnitsError()
+
+    def replace_units(self, unit):
+        """Changes the object's units without modifying its values."""
+        unit = iris.unit.as_unit(unit)
+        # Clear any existing units.
+        self.units = None
+        # Assign replacement value.
+        self.units = unit
 
     @property
     def attributes(self):

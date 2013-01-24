@@ -186,7 +186,7 @@ class CubeList(list):
         return cube_list 
 
     def __str__(self):
-        """Runs short :method:`Cube.summary` on every cube."""
+        """Runs short :meth:`Cube.summary` on every cube."""
         result = ['%s: %s' % (i, cube.summary(shorten=True)) for i, cube in enumerate(self)]
         if result:
             result = '\n'.join(result)
@@ -458,8 +458,55 @@ class Cube(CFVariableMixin):
                 missing_attrs = filter(attr_check, CubeMetadata._fields)
                 if missing_attrs:
                     raise TypeError('Invalid/incomplete metadata')
+        # Clear existing units to allow new value to be assigned.
+        self.units = None
         for name in CubeMetadata._fields:
             setattr(self, name, getattr(value, name))
+
+    def replace_units(self, unit):
+        """
+        Changes the cube's units without modifying the data array.
+
+        .. note::
+
+            To convert a cube from one unit to another (e.g. kelvin
+            to celsius) use
+            :meth:`change_units <iris.cube.Cube.change_units>`.
+
+        """
+        super(Cube, self).replace_units(unit)
+
+    def change_units(self, unit):
+        """
+        Changes the cube's units, converting the values in the data array.
+
+        For example, if a cube's :attr:`units <iris.cube.Cube.units>` is
+        kelvin, it can be converted into celsius by::
+
+            cube.change_units('celsius')
+
+        This will change the cube's :attr:`units <iris.cube.Cube.units>` to
+        celsius and add 273.15 to each value in
+        :attr:`data <iris.cube.Cube.data>`
+
+        .. note::
+
+            To change a cube from one unit to another without modifying its
+            values use :meth:`replace_units <iris.cube.Cube.replace_units>`.
+
+        """
+        unit = iris.unit.as_unit(unit)
+        # If the cube has units and the desired unit is valid convert
+        # the data.
+        if self.units is not None and not self.units.unknown:
+            self.data = self.units.convert(self.data, unit)
+        self.replace_units(unit)
+
+    def unit_converted(self, new_unit):
+        """Return a cube converted to a given unit."""
+        new_cube = self.copy()
+        new_cube.change_units(new_unit)
+        return new_cube
 
     def add_cell_method(self, cell_method):
         """Add a CellMethod to the Cube."""
@@ -1052,7 +1099,7 @@ class Cube(CFVariableMixin):
         else:
             dimension_header = '; '.join([', '.join(dim_names[dim] or ['*ANONYMOUS*']) + 
                                          ': %d' % dim_shape for dim, dim_shape in enumerate(self.shape)])
-                
+
         cube_header = '%-*s (%s)' % (name_padding, self.name() or 'unknown', dimension_header)
         summary = ''
         
