@@ -38,6 +38,9 @@ class TestLoadSave(tests.IrisTest):
     
     def setUp(self):
         iris.fileformats.grib.hindcast_workaround = True
+
+    def tearDown(self):
+        iris.fileformats.grib.hindcast_workaround = False
   
     def save_and_compare(self, source_grib, reference_text):
         """Load and save grib data, generate diffs, compare with expected diffs."""
@@ -85,13 +88,17 @@ class TestLoadSave(tests.IrisTest):
         # Because the results depend on the presence of our api patch,
         # we currently have results for both a patched and unpatched api.
         # If the api ever allows -ve ft, we should revert to a single result.
-        source_grib = tests.get_data_path(("GRIB", "time_processed", "time_bound.grib2"))
-        reference_text = tests.get_result_path(("grib_save", "time_mean.grib_compare.txt"))
+        source_grib = tests.get_data_path(("GRIB", "time_processed",
+                                           "time_bound.grib2"))
+        reference_text = tests.get_result_path(("grib_save",
+                                                "time_mean.grib_compare.txt"))
         # TODO: It's not ideal to have grib patch awareness here...
         try:
             self.save_and_compare(source_grib, reference_text)
         except:
-            reference_text = tests.get_result_path(("grib_save", "time_mean.grib_compare.FT_PATCH.txt"))
+            reference_text = tests.get_result_path((
+                                        "grib_save",
+                                        "time_mean.grib_compare.FT_PATCH.txt"))
             self.save_and_compare(source_grib, reference_text)
 
 

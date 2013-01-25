@@ -235,8 +235,9 @@ def time_range(cube, grib):
         warnings.warn("forecast_period encoding problem : Scaling required.")
     fp = int(fp)
     
-    # Turn negative forecast times into grib negative numbers
-    if fp < 0:
+    # Turn negative forecast times into grib negative numbers?
+    from iris.fileformats.grib import hindcast_workaround
+    if hindcast_workaround and fp < 0:
         msg = "Encoding negative forecast period from {} to ".format(fp)
         fp = 2**31 + abs(fp)
         msg += "{}".format(numpy.int32(fp))

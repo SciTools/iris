@@ -265,11 +265,12 @@ class GribWrapper(object):
             uft = numpy.uint32(forecastTime)
             BILL = 2**30
             
-            # Workaround grib api's assumption that forecast time is always positive.
+            # Workaround grib api's assumption that forecast time is positive.
             # Handles correctly encoded -ve forecast times up to one -1 billion.
             if hindcast_workaround:
                 if 2 * BILL < uft < 3 * BILL :
-                    msg = "Re-interpreting negative forecastTime from " + str(forecastTime)
+                    msg = "Re-interpreting negative forecastTime from " \
+                            + str(forecastTime)
                     forecastTime = -(uft - 2 * BILL)
                     msg += " to " + str(forecastTime)
                     warnings.warn(msg)

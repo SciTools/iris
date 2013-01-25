@@ -178,6 +178,9 @@ class TestGribLoad(tests.GraphicsTest):
     def setUp(self):
         iris.fileformats.grib.hindcast_workaround = True
   
+    def tearDown(self):
+        iris.fileformats.grib.hindcast_workaround = False
+  
     def test_load(self):
                 
         cubes = iris.load(tests.get_data_path(('GRIB', 'rotated_uk', "uk_wrongparam.grib1")))
