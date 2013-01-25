@@ -19,8 +19,6 @@
 # Import Iris tests first so that some things can be initialised before importing anything else.
 import iris.tests as tests
 
-import unittest
-
 import extest_util
 
 with extest_util.add_examples_to_path():

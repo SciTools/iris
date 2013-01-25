@@ -25,7 +25,6 @@ to run the example tests.
 import contextlib
 import os.path
 import sys
-import unittest
 
 import matplotlib.pyplot as plt
 
