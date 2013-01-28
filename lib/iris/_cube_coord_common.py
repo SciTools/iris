@@ -132,15 +132,6 @@ class CFVariableMixin(object):
     def units(self, unit):
         self._units = iris.unit.as_unit(unit)
 
-    # TODO: Decide if this exists!
-#    @property
-#    def long_name(self):
-#        return self._attributes.get('long_name')
-#
-#    @long_name.setter
-#    def long_name(self, value):
-#        self._attributes['long_name'] = str(value)
-
     @property
     def standard_name(self):
         """The standard name for the Cube's data."""
