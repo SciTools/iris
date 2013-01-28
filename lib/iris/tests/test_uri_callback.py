@@ -91,8 +91,10 @@ class TestCallbacks(tests.IrisTest):
         iris.fileformats.grib.hindcast_workaround = True
         fname = tests.get_data_path(('GRIB', 'global_t', 'global.grib2'))
         cube = iris.load_cube(fname, callback=grib_thing_getter)
-        self.assertCML(cube, ['uri_callback', 'grib_global.cml'])
-        iris.fileformats.grib.hindcast_workaround = False
+        try:
+            self.assertCML(cube, ['uri_callback', 'grib_global.cml'])
+        finally:
+            iris.fileformats.grib.hindcast_workaround = False
     
     def test_pp_callback(self):
         def pp_callback(cube, field, filename):
