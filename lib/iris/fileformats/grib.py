@@ -268,7 +268,7 @@ class GribWrapper(object):
             # Workaround grib api's assumption that forecast time is positive.
             # Handles correctly encoded -ve forecast times up to one -1 billion.
             if hindcast_workaround:
-                if 2 * BILL < uft < 3 * BILL :
+                if 2 * BILL < uft < 3 * BILL:
                     msg = "Re-interpreting negative forecastTime from " \
                             + str(forecastTime)
                     forecastTime = -(uft - 2 * BILL)
