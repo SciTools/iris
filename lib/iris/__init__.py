@@ -104,7 +104,6 @@ import warnings
 import iris.config
 import iris.cube
 import iris._constraints
-import iris.fileformats
 import iris.io
 
 
