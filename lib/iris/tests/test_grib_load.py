@@ -174,6 +174,12 @@ class FakeGribMessage(dict):
 
 @iris.tests.skip_data
 class TestGribLoad(tests.GraphicsTest):
+    
+    def setUp(self):
+        iris.fileformats.grib.hindcast_workaround = True
+  
+    def tearDown(self):
+        iris.fileformats.grib.hindcast_workaround = False
   
     def test_load(self):
                 

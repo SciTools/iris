@@ -37,6 +37,10 @@ import iris.unit
 import grib_save_rules
 
 
+
+hindcast_workaround = False  # Enable this to correct hindcast periods on load.
+
+
 # rules for converting a grib message to a cm cube
 _load_rules = None
 _cross_reference_rules = None
@@ -257,12 +261,20 @@ class GribWrapper(object):
         # time-processed forcast time is from reference time to start of period
         if edition == 2:
             forecastTime = self.forecastTime
+
+            uft = numpy.uint32(forecastTime)
+            BILL = 2**30
             
-            # Warn if we detect 'bad' (2's compliment) forecastTime.
-            # Don't fix it, we're not doing that at present. It's not grib compliant.
-            if abs(forecastTime) > 2**24:
-                warnings.warn("Bad forecastTime detected! "
-                              "Please contact the Iris team with the file you tried to load.")
+            # Workaround grib api's assumption that forecast time is positive.
+            # Handles correctly encoded -ve forecast times up to one -1 billion.
+            if hindcast_workaround:
+                if 2 * BILL < uft < 3 * BILL:
+                    msg = "Re-interpreting negative forecastTime from " \
+                            + str(forecastTime)
+                    forecastTime = -(uft - 2 * BILL)
+                    msg += " to " + str(forecastTime)
+                    warnings.warn(msg)
+                
         else:
             forecastTime = self.startStep
 
@@ -284,7 +296,8 @@ class GribWrapper(object):
             '_levelTypeUnits':unknown_string, '_firstLevelTypeName':unknown_string,
             '_firstLevelTypeUnits':unknown_string, '_firstLevel':-1.0,
             '_secondLevelTypeName':unknown_string, '_secondLevel':-1.0,
-            '_originatingCentre':unknown_string, '_forecastTimeUnit':unknown_string,
+            '_originatingCentre':unknown_string,
+            '_forecastTime':None, '_forecastTimeUnit':unknown_string,
             '_coord_system':None, '_x_circular':False,
             '_x_coord_name':unknown_string, '_y_coord_name':unknown_string,
             # These are here to avoid repetition in the rules files,
@@ -295,6 +308,9 @@ class GribWrapper(object):
         self.extra_keys['_referenceDateTime'] = \
             datetime.datetime(int(self.year), int(self.month), int(self.day),
                               int(self.hour), int(self.minute))
+        
+        # forecast time with workarounds
+        self.extra_keys['_forecastTime'] = forecastTime
         
         #verification date
         processingDone = self._get_processing_done()

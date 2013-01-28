@@ -35,7 +35,13 @@ import iris.coords
 @iris.tests.skip_data
 class TestLoadSave(tests.IrisTest):
     # load and save grib
+    
+    def setUp(self):
+        iris.fileformats.grib.hindcast_workaround = True
 
+    def tearDown(self):
+        iris.fileformats.grib.hindcast_workaround = False
+  
     def save_and_compare(self, source_grib, reference_text):
         """Load and save grib data, generate diffs, compare with expected diffs."""
 
@@ -78,9 +84,23 @@ class TestLoadSave(tests.IrisTest):
 #        self.save_and_compare(source_grib, reference_text)
 
     def test_time_mean(self):
-        source_grib = tests.get_data_path(("GRIB", "time_processed", "time_bound.grib2"))
-        reference_text = tests.get_result_path(("grib_save", "time_mean.grib_compare.txt"))
-        self.save_and_compare(source_grib, reference_text)
+        # This test for time-mean fields also tests negative forecast time.
+        # Because the results depend on the presence of our api patch,
+        # we currently have results for both a patched and unpatched api.
+        # If the api ever allows -ve ft, we should revert to a single result.
+        source_grib = tests.get_data_path(("GRIB", "time_processed",
+                                           "time_bound.grib2"))
+        reference_text = tests.get_result_path(("grib_save",
+                                                "time_mean.grib_compare.txt"))
+        # TODO: It's not ideal to have grib patch awareness here...
+        import unittest
+        try:
+            self.save_and_compare(source_grib, reference_text)
+        except unittest.TestCase.failureException:
+            reference_text = tests.get_result_path((
+                                        "grib_save",
+                                        "time_mean.grib_compare.FT_PATCH.txt"))
+            self.save_and_compare(source_grib, reference_text)
 
 
 @iris.tests.skip_data
