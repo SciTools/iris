@@ -93,9 +93,10 @@ class TestLoadSave(tests.IrisTest):
         reference_text = tests.get_result_path(("grib_save",
                                                 "time_mean.grib_compare.txt"))
         # TODO: It's not ideal to have grib patch awareness here...
+        import unittest
         try:
             self.save_and_compare(source_grib, reference_text)
-        except:
+        except unittest.TestCase.failureException:
             reference_text = tests.get_result_path((
                                         "grib_save",
                                         "time_mean.grib_compare.FT_PATCH.txt"))
