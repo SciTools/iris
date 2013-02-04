@@ -214,7 +214,8 @@ def _add_subtract_common(operation_function, operation_symbol, operation_noun, o
         # If the units differ but are convertible (e.g kelvin and celsius)
         # change to the cube's units.
         if other_unit.convertible(cube.units):
-            other = other.unit_converted(cube.units)
+            other = other.copy()
+            other.convert_units(cube.units)
         else:
             msg = 'Differing units ({} & {}) {} not implemented'.format(
                 cube.units, other_unit, operation_noun)

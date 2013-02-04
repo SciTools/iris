@@ -89,7 +89,7 @@ Now we can combine all of this information to calculate the air temperature usin
 
     temperature = pot_temperature * ( (pressure / p0) ** (287.05 / 1005) )
 
-Finally, the cube we have created needs to be given a suitable name::
+The units of the resultant cube are automatically calculated, but it needs to be given a suitable name::
 
     temperature.rename('air_temperature')
 

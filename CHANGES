@@ -4,8 +4,9 @@ Release 1.2 (unreleased)
 
 Features added
 --------------
-* Added a convert_units() method to cubes and coordinates for straightforward
-  conversion of a cube or coordinate from one unit to another.
+* :meth:`iris.cube.Cube.convert_units()` and
+  :meth:`iris.coords.Coord.convert_units()` have been added for straightforward
+  conversion of cubes and coordinates from one unit to another.
 
 Bugs fixed
 ----------
@@ -13,13 +14,15 @@ Bugs fixed
 
 Incompatible changes
 --------------------
-* The deprecated Cube.unit and Coord.unit attributes have been removed.
+* The deprecated :attr:`iris.cube.Cube.unit` and :attr:`iris.coords.Coord.unit`
+  attributes have been removed.
 
 Deprecations
 ------------
-* The Coord.unit_converted method has been deprecated. Users should make a
-  copy of the coordinate using Coord.copy() and then call the
-  convert_units method of the new coordinate.
+* The :meth:`iris.coords.Coord.unit_converted()` method has been deprecated.
+  Users should make a copy of the coordinate using
+  :meth:`iris.coords.Coord.copy()` and then call the
+  :meth:`iris.coords.Coord.convert_units()` method of the new coordinate.
 
 
 ----------------------------

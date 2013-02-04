@@ -308,8 +308,10 @@ def area_weights(cube, normalize=False):
         raise ValueError("Currently need contiguous bounds to calculate area weights")
 
     # Convert from degrees to radians
-    lat = lat.unit_converted('radians')
-    lon = lon.unit_converted('radians')
+    lat = lat.copy()
+    lat.convert_units('radians')
+    lon = lon.copy()
+    lon.convert_units('radians')
 
     # Create 2D weights from bounds
     if lat.has_bounds() and lon.has_bounds():
@@ -392,7 +394,8 @@ def cosine_latitude_weights(cube):
     lat_dim = lat_dim[0] if lat_dim else None
 
     # Convert to radians.
-    lat = lat.unit_converted('radians')
+    lat = lat.copy()
+    lat.convert_units('radians')
 
     # Compute the weights as the cosine of latitude. In some cases,
     # particularly when working in 32-bit precision, the latitude values can
@@ -466,9 +469,11 @@ def project(cube, target_proj, nx=None, ny=None):
                          'different coordinates systems.')
 
     if lon_coord.units != 'degrees':
-        lon_coord = lon_coord.unit_converted('degrees')
+        lon_coord = lon_coord.copy()
+        lon_coord.convert_units('degrees')
     if lat_coord.units != 'degrees':
-        lat_coord = lat_coord.unit_converted('degrees')
+        lat_coord = lat_coord.copy()
+        lat_coord.convert_units('degrees')
 
     # Determine source coordinate system
     if lat_coord.coord_system is None:

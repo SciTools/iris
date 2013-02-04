@@ -380,9 +380,10 @@ def _trig_method(coord, trig_function):
         Reference to a trigonometric function e.g. numpy.sin
 
     """
-    # If we are in degrees convert our coordinate to radians.
+    # If we are in degrees create a copy that is in radians.
     if coord.units == 'degrees':
-        coord = coord.unit_converted('radians')
+        coord = coord.copy()
+        coord.convert_units('radians')
 
     trig_coord = iris.coords.AuxCoord.from_coord(coord)
     trig_coord.points = trig_function(coord.points)
@@ -542,8 +543,10 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
         if not spherical:
             raise ValueError("Cannot take the curl over a non-spherical ellipsoid.")
         
-        lon_coord = x_coord.unit_converted('radians')
-        lat_coord = y_coord.unit_converted('radians')
+        lon_coord = x_coord.copy()
+        lat_coord = y_coord.copy()
+        lon_coord.convert_units('radians')
+        lat_coord.convert_units('radians')
         lat_cos_coord = _coord_cos(lat_coord)
 
         # TODO Implement some mechanism for conforming to a common grid

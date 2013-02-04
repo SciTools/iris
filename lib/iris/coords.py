@@ -544,7 +544,7 @@ class Coord(CFVariableMixin):
 
     def convert_units(self, unit):
         """
-        Changes the coordinate's units, converting the values in its points
+        Change the coordinate's units, converting the values in its points
         and bounds arrays.
 
         For example, if a coordinate's :attr:`~iris.coords.Coord.units`
@@ -567,7 +567,15 @@ class Coord(CFVariableMixin):
         self.units = unit
 
     def unit_converted(self, new_unit):
-        """Return a coordinate converted to a given unit."""
+        """
+        Return a coordinate converted to a given unit.
+
+        .. note::
+            This method is deprecated. Please make a copy of the
+            coordinate and use the :meth:`~iris.coords.Coord.convert_units`
+            method.
+
+        """
         msg = "The 'unit_converted' method is deprecated. Please make a copy"\
               " of the coordinate and use the 'convert_units' method."
         warnings.warn(msg, UserWarning, stacklevel=2)
