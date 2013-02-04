@@ -32,6 +32,11 @@ class Test_add_dim_coord(tests.IrisTest):
         self.assertRaises(TypeError,
                           self.cube.add_dim_coord,
                           iris.coords.DimCoord(numpy.arange(2), "latitude"))
+        
+    def test_adding_aux_coord(self):
+        coord = iris.coords.AuxCoord(numpy.arange(2), "latitude")
+        with self.assertRaises(ValueError):
+            self.cube.add_dim_coord(coord, 0)
 
 
 if __name__ == "__main__":
