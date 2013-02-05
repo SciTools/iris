@@ -463,7 +463,7 @@ class Cube(CFVariableMixin):
 
     def convert_units(self, unit):
         """
-        Changes the cube's units, converting the values in the data array.
+        Change the cube's units, converting the values in the data array.
 
         For example, if a cube's :attr:`~iris.cube.Cube.units` are
         kelvin then::
@@ -473,6 +473,10 @@ class Cube(CFVariableMixin):
         will change the cube's :attr:`~iris.cube.Cube.units` attribute to
         celsius and subtract 273.15 from each value in
         :attr:`~iris.cube.Cube.data`.
+
+        .. warning::
+            Calling this method will trigger any deferred loading, causing
+            the cube's data array to be loaded into memory.
 
         """
         # If the cube has units convert the data.

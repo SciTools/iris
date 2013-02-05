@@ -555,7 +555,7 @@ class Coord(CFVariableMixin):
         will change the coordinate's
         :attr:`~iris.coords.Coord.units` attribute to degrees and
         multiply each value in :attr:`~iris.coords.Coord.points` and
-        :attr:`~iris.coords.Coord.bounds` by 180.0/pi.
+        :attr:`~iris.coords.Coord.bounds` by 180.0/:math:`\pi`.
 
         """
         # If the coord has units convert the values in points (and bounds if
@@ -570,14 +570,15 @@ class Coord(CFVariableMixin):
         """
         Return a coordinate converted to a given unit.
 
-        .. note::
-            This method is deprecated. Please make a copy of the
-            coordinate and use the :meth:`~iris.coords.Coord.convert_units`
-            method.
+        .. deprecated:: 1.2
+            Make a copy of the coordinate using
+            :meth:`~iris.coords.Coord.copy()` and then use
+            :meth:`~iris.coords.Coord.convert_units()`.
 
         """
-        msg = "The 'unit_converted' method is deprecated. Please make a copy"\
-              " of the coordinate and use the 'convert_units' method."
+        msg = "The 'unit_converted' method is deprecated. Make a copy of "\
+              "the coordinate and use the in-place 'convert_units' "\
+              "method."
         warnings.warn(msg, UserWarning, stacklevel=2)
         new_coord = self.copy()
         new_coord.convert_units(new_unit)

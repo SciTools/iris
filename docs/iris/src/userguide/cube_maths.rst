@@ -85,11 +85,16 @@ In order to calculate :math:`\frac{p}{p_0}` we can define a coordinate which rep
     import iris.coords
     p0 = iris.coords.AuxCoord(1000., long_name='reference_pressure', units='hPa')
 
+We must ensure that the units of ``pressure`` and ``p0`` are the same, so convert the newly created coordinate using
+the :meth:`iris.coords.Coord.convert_units` method::
+
+    p0.convert_units(pressure.units)
+
 Now we can combine all of this information to calculate the air temperature using the equation above::
 
     temperature = pot_temperature * ( (pressure / p0) ** (287.05 / 1005) )
 
-The units of the resultant cube are automatically calculated, but it needs to be given a suitable name::
+Finally, the cube we have created needs to be given a suitable name::
 
     temperature.rename('air_temperature')
 

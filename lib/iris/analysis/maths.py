@@ -207,19 +207,10 @@ def _add_subtract_common(operation_function, operation_symbol, operation_noun, o
         # Promote scalar to a coordinate and associate unit type with cube unit type
         other = numpy.array(other)
 
-    # Check that the units of the cube and the other item are the same, or if
-    # the other does not have units skip this test.
-    other_unit = getattr(other, 'units', cube.units)
-    if cube.units != other_unit:
-        # If the units differ but are convertible (e.g kelvin and celsius)
-        # change to the cube's units.
-        if other_unit.convertible(cube.units):
-            other = other.copy()
-            other.convert_units(cube.units)
-        else:
-            msg = 'Differing units ({} & {}) {} not implemented'.format(
-                cube.units, other_unit, operation_noun)
-            raise iris.exceptions.NotYetImplementedError(msg)
+    # Check that the units of the cube and the other item are the same, or if the other does not have a unit, skip this test
+    if cube.units != getattr(other, 'units', cube.units) :
+        raise iris.exceptions.NotYetImplementedError('Differing units (%s & %s) %s not implemented' % \
+                                                     (cube.units, other.units, operation_noun))
 
     history = None
 
@@ -438,13 +429,7 @@ def _multiply_divide_common(operation_function, operation_symbol, operation_noun
         if other.has_bounds():
             warnings.warn('%s by a bounded coordinate not well defined, ignoring bounds.' % operation_noun)
         
-        # Convert to common unit e.g. m * km to m * m
-        if other.units != cube.units and other.units.convertible(cube.units):
-            points = other.units.convert(other.points, cube.units)
-            other_unit = cube.units
-        else:
-            points = other.points
-            other_unit = other.units
+        points = other.points
             
         # If the axis is defined then shape the provided points so that we can do the
         # division (this is needed as there is no "axis" keyword to numpy's divide/multiply)
@@ -457,26 +442,21 @@ def _multiply_divide_common(operation_function, operation_symbol, operation_noun
         
         if update_history:
             history = '%s %s %s' % (cube.name(), operation_symbol, other.name())
+            
+        other_unit = other.units
     elif isinstance(other, iris.cube.Cube):
         # Deal with cube multiplication/division by cube
-        # Convert to common unit e.g. m * km to m * m
-        if other.units != cube.units and other.units.convertible(cube.units):
-            other_data = other.units.convert(other.data, cube.units)
-            other_unit = cube.units
-        else:
-            other_data = other.data
-            other_unit = other.units
-
-        copy_cube = cube.copy(data=operation_function(cube.data, other_data))
+        copy_cube = cube.copy(data=operation_function(cube.data, other.data)) 
 
         if update_history:
             history = '%s %s %s' % (cube.name() or 'unknown', operation_symbol, 
                                     other.name() or 'unknown')
+
+        other_unit = other.units
     else:
         return NotImplemented
    
     # Update the units
-    copy_cube.units = None
     if operation_function == numpy.multiply:
         copy_cube.units = cube.units * other_unit
     elif operation_function == numpy.divide:
