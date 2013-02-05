@@ -10,7 +10,7 @@ The plot exhibits an interesting outline effect due to excluding data values bel
 """
 
 import matplotlib.pyplot as plt
-import numpy as np
+import numpy.ma as ma
 
 import iris
 import iris.plot as iplt
@@ -29,7 +29,7 @@ def main():
     cube = iris.load_cube(filename, 'total electron content')
 
     # Explicitly mask negative electron content.
-    cube.data = np.ma.masked_less(cube.data, 0)
+    cube.data = ma.masked_less(cube.data, 0)
 
     # Currently require to remove the multi-dimensional
     # latitude and longitude coordinates for Iris plotting.

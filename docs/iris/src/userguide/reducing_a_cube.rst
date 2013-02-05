@@ -121,9 +121,9 @@ original array, you can **index** a Cube for the same purpose.
 
 Here are some examples of array indexing in :py:mod:`numpy`::
 
-	import numpy
+	import numpy as np
 	# create an array of 12 consecutive integers starting from 0
-	a = numpy.arange(12)
+	a = np.arange(12)
 	print a
 	
 	print a[0]       # first element of the array

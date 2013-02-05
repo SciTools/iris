@@ -20,7 +20,7 @@ References
 """
 import os.path
 
-import numpy
+import numpy as np
 import matplotlib.pyplot as plt
 import iris
 import iris.coords as coords
@@ -64,7 +64,7 @@ def main():
     plt.axhline(y=pre_industrial_mean.data, color='gray', linestyle='dashed', label='pre-industrial', lw=1.5)
     
     # Establish where r and t have the same data, i.e. the observations
-    common = numpy.where(a1b_mean.data == e1_mean.data)[0]
+    common = np.where(a1b_mean.data == e1_mean.data)[0]
     observed = a1b_mean[common]
     
     # Plot the observed data
