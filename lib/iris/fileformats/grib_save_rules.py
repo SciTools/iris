@@ -19,8 +19,7 @@
 import warnings
 
 import gribapi
-import numpy
-import numpy.ma
+import numpy as np
 
 import iris
 import iris.unit
@@ -240,7 +239,7 @@ def time_range(cube, grib):
     if hindcast_workaround and fp < 0:
         msg = "Encoding negative forecast period from {} to ".format(fp)
         fp = 2**31 + abs(fp)
-        msg += "{}".format(numpy.int32(fp))
+        msg += "{}".format(np.int32(fp))
         warnings.warn(msg)
         
     gribapi.grib_set_long(grib, "indicatorOfUnitOfTimeRange", grib_time_code)
@@ -453,7 +452,7 @@ def identification(cube, grib):
 def data(cube, grib):
 
     # mdi
-    if isinstance(cube.data, numpy.ma.core.MaskedArray):
+    if isinstance(cube.data, np.ma.core.MaskedArray):
         gribapi.grib_set_double(grib, "missingValue", float(cube.data.fill_value))
         data = cube.data.filled()
     else:

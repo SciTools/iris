@@ -25,7 +25,7 @@ import os
 import re
 import warnings
 
-import numpy
+import numpy as np
 
 import iris
 import iris.analysis
@@ -51,10 +51,10 @@ class IrisDotTest(tests.IrisTest):
 
 class TestBasicCubeConstruction(tests.IrisTest):
     def setUp(self):
-        self.cube = iris.cube.Cube(numpy.arange(12, dtype=numpy.int32).reshape((3, 4)), long_name='test cube')
-        self.x = iris.coords.DimCoord(numpy.array([ -7.5,   7.5,  22.5,  37.5]), long_name='x')
-        self.y = iris.coords.DimCoord(numpy.array([  2.5,   7.5,  12.5]), long_name='y')
-        self.xy = iris.coords.AuxCoord(numpy.arange(12).reshape((3, 4)) * 3.0, long_name='xy')
+        self.cube = iris.cube.Cube(np.arange(12, dtype=np.int32).reshape((3, 4)), long_name='test cube')
+        self.x = iris.coords.DimCoord(np.array([ -7.5,   7.5,  22.5,  37.5]), long_name='x')
+        self.y = iris.coords.DimCoord(np.array([  2.5,   7.5,  12.5]), long_name='y')
+        self.xy = iris.coords.AuxCoord(np.arange(12).reshape((3, 4)) * 3.0, long_name='xy')
 
     def test_add_dim_coord(self):
         # Lengths must match
@@ -84,7 +84,7 @@ class TestBasicCubeConstruction(tests.IrisTest):
             self.cube.add_aux_coord(self.y, 0)
 
         # Can't add AuxCoord to dim_coords
-        y_other = iris.coords.AuxCoord(numpy.array([  2.5,   7.5,  12.5]), long_name='y_other')
+        y_other = iris.coords.AuxCoord(np.array([  2.5,   7.5,  12.5]), long_name='y_other')
         with self.assertRaises(ValueError):
             self.cube.add_dim_coord(y_other, 0)
 
@@ -136,7 +136,7 @@ class TestBasicCubeConstruction(tests.IrisTest):
         self.assertEqual(cube.aux_coords, (scalar_dim_coord,))
 
     def test_add_aux_coord(self):
-        y_another = iris.coords.DimCoord(numpy.array([  2.5,   7.5,  12.5]), long_name='y_another')
+        y_another = iris.coords.DimCoord(np.array([  2.5,   7.5,  12.5]), long_name='y_another')
         
         # DimCoords can live in cube.aux_coords
         self.cube.add_aux_coord(y_another, 0)
@@ -435,7 +435,7 @@ class TestQueryCoord(tests.IrisTest):
         self.assertEqual([coord.name() for coord in coords], ['dim1'])
         # check for metadata look-up by modifying points
         coord = self.t.coord('dim1').copy()
-        coord.points = numpy.arange(5) * 1.23
+        coord.points = np.arange(5) * 1.23
         coords = self.t.coords(coord=coord)
         self.assertEqual([coord.name() for coord in coords], ['dim1'])
         
@@ -464,16 +464,16 @@ class Test2dIndexing(TestCube2d):
     
     def test_cube_indexing_1d_multi_slice(self):
         self.assertCML([self.t[0, (0, 1)]], ('cube_slice', '2d_to_1d_cube_multi_slice.cml'))
-        self.assertCML([self.t[0, numpy.array([0, 1])]], ('cube_slice', '2d_to_1d_cube_multi_slice.cml'))
+        self.assertCML([self.t[0, np.array([0, 1])]], ('cube_slice', '2d_to_1d_cube_multi_slice.cml'))
     
     def test_cube_indexing_1d_multi_slice2(self):
         self.assertCML([self.t[(0, 2), (0, 1, 3)]], ('cube_slice', '2d_to_1d_cube_multi_slice2.cml'))
-        self.assertCML([self.t[numpy.array([0, 2]), (0, 1, 3)]], ('cube_slice', '2d_to_1d_cube_multi_slice2.cml'))
-        self.assertCML([self.t[numpy.array([0, 2]), numpy.array([0, 1, 3])]], ('cube_slice', '2d_to_1d_cube_multi_slice2.cml'))
+        self.assertCML([self.t[np.array([0, 2]), (0, 1, 3)]], ('cube_slice', '2d_to_1d_cube_multi_slice2.cml'))
+        self.assertCML([self.t[np.array([0, 2]), np.array([0, 1, 3])]], ('cube_slice', '2d_to_1d_cube_multi_slice2.cml'))
         
     def test_cube_indexing_1d_multi_slice3(self):
         self.assertCML([self.t[(0, 2), :]], ('cube_slice', '2d_to_1d_cube_multi_slice3.cml'))
-        self.assertCML([self.t[numpy.array([0, 2]), :]], ('cube_slice', '2d_to_1d_cube_multi_slice3.cml'))
+        self.assertCML([self.t[np.array([0, 2]), :]], ('cube_slice', '2d_to_1d_cube_multi_slice3.cml'))
 
     def test_cube_indexing_no_change(self):
         self.assertCML([self.t[0:, 0:]], ('cube_slice', '2d_orig.cml'))
@@ -567,8 +567,8 @@ class Test2dExtraction(TestCube2d):
 class Test2dExtractionByCoord(TestCube2d):
     def test_cube_extract_by_coord_advanced(self):
         # This test reverses the coordinate in the cube and also takes a subset of the original coordinate
-        points = numpy.array([9, 8, 7, 5, 4, 3, 2, 1, 0], dtype=numpy.int32)
-        bounds = numpy.array([[18, 19], [16, 17], [14, 15], [10, 11], [ 8,  9], [ 6,  7], [ 4,  5], [ 2,  3], [ 0,  1]], dtype=numpy.int32)
+        points = np.array([9, 8, 7, 5, 4, 3, 2, 1, 0], dtype=np.int32)
+        bounds = np.array([[18, 19], [16, 17], [14, 15], [10, 11], [ 8,  9], [ 6,  7], [ 4,  5], [ 2,  3], [ 0,  1]], dtype=np.int32)
         c = iris.coords.DimCoord(points, long_name='dim2', units='meters', bounds=bounds)
         self.assertCML(self.t.subset(c), ('cube_slice', '2d_intersect_and_reverse.cml'))
         
@@ -698,11 +698,11 @@ class TestCubeEquality(TestCube2d):
 
     def test_array_attributes(self):
         r = self.t.copy()
-        r.attributes['things'] = numpy.arange(3)
+        r.attributes['things'] = np.arange(3)
         s = r.copy()
         self.assertEqual(s, r)
 
-        s.attributes['things'] = numpy.arange(2)
+        s.attributes['things'] = np.arange(2)
         self.assertNotEqual(s, r)
 
         del s.attributes['things']
@@ -730,7 +730,7 @@ class TestDataManagerIndexing(TestCube2d):
     def check_indexing(self, keys):
         pa, dm = self.dm.getitem(self.pa, keys)
         r = dm.load(pa)
-        numpy.testing.assert_array_equal(r, self.data_array[keys],
+        np.testing.assert_array_equal(r, self.data_array[keys],
                                          'Arrays were not the same after indexing '
                                          '(original shape %s) using:\n %r' % (self.data_array.shape, keys)
                                          )
@@ -740,12 +740,12 @@ class TestDataManagerIndexing(TestCube2d):
         pa, dm = dm.getitem(pa, keys2)
         # Test the access of the data shape...
         r = dm.shape(pa)
-        numpy.testing.assert_array_equal(r, self.data_array[keys1][keys2].shape, 'Reported shapes were not the same after consecutive indexing'
+        np.testing.assert_array_equal(r, self.data_array[keys1][keys2].shape, 'Reported shapes were not the same after consecutive indexing'
                                          '(original shape %s) using:\n 1:       %r\n 2:       %r' % (self.data_array.shape, keys1, keys2),
                                          )
         
         r = dm.load(pa)
-        numpy.testing.assert_array_equal(r, self.data_array[keys1][keys2],
+        np.testing.assert_array_equal(r, self.data_array[keys1][keys2],
                                          'Arrays were not the same after consecutive indexing '
                                          '(original shape %s) using:\n 1:       %r\n 2:       %r' % (self.data_array.shape, keys1, keys2),
                                          )
@@ -773,7 +773,7 @@ class TestDataManagerIndexing(TestCube2d):
         self.check_indexing( (3, 3, 2) )
         self.check_indexing( (Ellipsis, 2, 3) )
         self.check_indexing( (slice(3, 4), Ellipsis, 2, 3) )
-        self.check_indexing( (numpy.array([3], ndmin=1), Ellipsis, 2, 3) )
+        self.check_indexing( (np.array([3], ndmin=1), Ellipsis, 2, 3) )
         self.check_indexing( (slice(3, 4), Ellipsis, Ellipsis, 3) )
         self.check_indexing( (slice(3, 4), Ellipsis, Ellipsis, Ellipsis) )
         self.check_indexing( (Ellipsis, Ellipsis, Ellipsis, Ellipsis) )
@@ -792,8 +792,8 @@ class TestDataManagerIndexing(TestCube2d):
         self.check_consecutive(1, slice(None, -6, -2))
         self.check_consecutive(3, (slice(None, None), 3))
         self.check_consecutive(1, ((3, 2, 1, 3), 3))
-        self.check_consecutive(1, (numpy.array([3, 2, 1, 3]), 3))
-        self.check_consecutive(1, (3, numpy.array([3, 2, 1, 3])))
+        self.check_consecutive(1, (np.array([3, 2, 1, 3]), 3))
+        self.check_consecutive(1, (3, np.array([3, 2, 1, 3])))
         self.check_consecutive((4, slice(6, 7)), 0)
         self.check_consecutive((Ellipsis, slice(6, 7), 5), 0)
         self.check_consecutive((Ellipsis, slice(7, 5, -1), 5), 0)
@@ -821,7 +821,7 @@ class TestDataManagerIndexing(TestCube2d):
         
         self.assertEqual(rshape, c.shape)
         
-        numpy.testing.assert_array_equal(r_data, c.data)
+        np.testing.assert_array_equal(r_data, c.data)
         
     def test_real_data_cube_indexing(self):
         cube = self.cube[(0, 4, 5, 2), 0, 0]
@@ -937,16 +937,16 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
         # This pp field has no missing data values
         cube = iris.load_cube(tests.get_data_path(["PP", "mdi_handmade_small", "mdi_test_1000_3.pp"]))
 
-        self.assertTrue(isinstance(cube.data, numpy.ndarray), "Expected a numpy.ndarray")
+        self.assertTrue(isinstance(cube.data, np.ndarray), "Expected a np.ndarray")
 
     def test_masked_field(self):
         # This pp field has some missing data values
         cube = iris.load_cube(tests.get_data_path(["PP", "mdi_handmade_small", "mdi_test_1000_0.pp"]))
-        self.assertTrue(isinstance(cube.data, numpy.ma.core.MaskedArray), "Expected a numpy.ma.core.MaskedArray")
+        self.assertTrue(isinstance(cube.data, np.ma.core.MaskedArray), "Expected a np.ma.core.MaskedArray")
 
     def test_missing_file(self):
         cube = self._load_3d_cube()
-        self.assertTrue(isinstance(cube.data, numpy.ma.core.MaskedArray), "Expected a numpy.ma.core.MaskedArray")
+        self.assertTrue(isinstance(cube.data, np.ma.core.MaskedArray), "Expected a np.ma.core.MaskedArray")
         self.assertCML(cube, ('cdm', 'masked_cube.cml'))
         
     def test_slicing(self):
@@ -955,17 +955,17 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
         # Test the slicing before deferred loading
         full_slice = cube[3]
         partial_slice = cube[0]
-        self.assertTrue(isinstance(full_slice.data, numpy.ndarray), "Expected a numpy array")
-        self.assertTrue(isinstance(partial_slice.data, numpy.ma.core.MaskedArray), "Expected a numpy.ma.core.MaskedArray")
-        self.assertEqual(numpy.ma.count_masked(partial_slice._data), 25)
+        self.assertTrue(isinstance(full_slice.data, np.ndarray), "Expected a numpy array")
+        self.assertTrue(isinstance(partial_slice.data, np.ma.core.MaskedArray), "Expected a np.ma.core.MaskedArray")
+        self.assertEqual(np.ma.count_masked(partial_slice._data), 25)
 
         # Test the slicing is consistent after deferred loading
         cube.data
         full_slice = cube[3]
         partial_slice = cube[0]
-        self.assertTrue(isinstance(full_slice.data, numpy.ndarray), "Expected a numpy array")
-        self.assertTrue(isinstance(partial_slice.data, numpy.ma.core.MaskedArray), "Expected a numpy.ma.core.MaskedArray")
-        self.assertEqual(numpy.ma.count_masked(partial_slice._data), 25)
+        self.assertTrue(isinstance(full_slice.data, np.ndarray), "Expected a numpy array")
+        self.assertTrue(isinstance(partial_slice.data, np.ma.core.MaskedArray), "Expected a np.ma.core.MaskedArray")
+        self.assertEqual(np.ma.count_masked(partial_slice._data), 25)
 
     def test_save_and_merge(self):
         cube = self._load_3d_cube()

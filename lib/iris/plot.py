@@ -32,8 +32,7 @@ import matplotlib.dates as mpl_dates
 import matplotlib.transforms as mpl_transforms
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
-import numpy
-import numpy.ma
+import numpy as np
 import cartopy.crs
 import cartopy.mpl.geoaxes
 
@@ -187,9 +186,9 @@ def _broadcast_2d(u, v):
     # Matplotlib needs the U and V coordinates to have the same
     # dimensionality (either both 1D, or both 2D). So we simply
     # broadcast both to 2D to be on the safe side.
-    u = numpy.atleast_2d(u)
-    v = numpy.atleast_2d(v.T).T
-    u, v = numpy.broadcast_arrays(u, v)
+    u = np.atleast_2d(u)
+    v = np.atleast_2d(v.T).T
+    u, v = np.broadcast_arrays(u, v)
     return u, v
 
 
@@ -219,11 +218,11 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
         if u_coord:
             u = u_coord.contiguous_bounds()
         else:
-            u = numpy.arange(data.shape[1] + 1)
+            u = np.arange(data.shape[1] + 1)
         if v_coord:
             v = v_coord.contiguous_bounds()
         else:
-            v = numpy.arange(data.shape[0] + 1)
+            v = np.arange(data.shape[0] + 1)
 
         if plot_defn.transpose:
             u = u.T
@@ -262,21 +261,21 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
             u = u_coord.points
             u = _fixup_dates(u_coord, u)
         else:
-            u = numpy.arange(data.shape[1])
+            u = np.arange(data.shape[1])
         if v_coord:
             v = v_coord.points
             v = _fixup_dates(v_coord, v)
         else:
-            v = numpy.arange(data.shape[0])
+            v = np.arange(data.shape[0])
 
         if plot_defn.transpose:
             u = u.T
             v = v.T
 
-        if u.dtype == numpy.dtype(object) and isinstance(u[0], datetime.datetime):
+        if u.dtype == np.dtype(object) and isinstance(u[0], datetime.datetime):
             u = mpl_dates.date2num(u)
 
-        if v.dtype == numpy.dtype(object) and isinstance(v[0], datetime.datetime):
+        if v.dtype == np.dtype(object) and isinstance(v[0], datetime.datetime):
             v = mpl_dates.date2num(v)
 
         u, v = _broadcast_2d(u, v)
@@ -297,7 +296,7 @@ def _fixup_dates(coord, values):
             # TODO #435 Requires fix so that matplotlib doesn't dismiss the calendar
             warnings.warn('Calendar info dismissed when passing to Matplotlib.')
         r = [datetime.datetime(*(coord.units.num2date(val).timetuple()[0:6])) for val in values]
-        values = numpy.empty(len(r), dtype=object)
+        values = np.empty(len(r), dtype=object)
         values[:] = r
     return values
 
@@ -322,7 +321,7 @@ def _draw_1d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
         u = u_coord.points
         u = _fixup_dates(u_coord, u)
     else:
-        u = numpy.arange(data.shape[0])
+        u = np.arange(data.shape[0])
 
     draw_method = getattr(plt, draw_method_name)
     if arg_func is not None:
@@ -380,9 +379,9 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
     x_coord = cube.coord(axis="X")
     if getattr(x_coord, 'circular', False):
         _, direction = iris.util.monotonic(x_coord.points, return_direction=True)
-        y = numpy.append(y, y[:, 0:1], axis=1)
-        x = numpy.append(x, x[:, 0:1] + 360 * direction, axis=1)
-        data = numpy.ma.concatenate([data, data[:, 0:1]], axis=1)
+        y = np.append(y, y[:, 0:1], axis=1)
+        x = np.append(x, x[:, 0:1] + 360 * direction, axis=1)
+        data = np.ma.concatenate([data, data[:, 0:1]], axis=1)
 
     # Replace non-cartopy subplot/axes with a cartopy alternative.
     cs = cube.coord_system('CoordSystem')
@@ -708,7 +707,7 @@ def symbols(x, y, symbols, size, axes=None, units='inches'):
     if axes is None:
         axes = plt.gca()
 
-    offsets = numpy.array(zip(x, y))
+    offsets = np.array(zip(x, y))
 
     # XXX "match_original" doesn't work ... so brute-force it instead.
     #   PatchCollection constructor ignores all non-style keywords when using match_original

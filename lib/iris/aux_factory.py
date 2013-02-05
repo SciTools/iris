@@ -23,7 +23,7 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 import warnings
 import zlib
 
-import numpy
+import numpy as np
 
 from iris._cube_coord_common import CFVariableMixin, LimitedAttributeDict
 import iris.coords
@@ -79,7 +79,7 @@ class LazyArray(object):
         Returns a string describing this array, suitable for use in CML.
 
         """
-        crc = zlib.crc32(numpy.array(self._cached_array(), order='C'))
+        crc = zlib.crc32(np.array(self._cached_array(), order='C'))
         return 'LazyArray(shape={}, checksum={})'.format(self.shape, crc)
 
     def view(self, *args, **kwargs):
@@ -325,7 +325,7 @@ class AuxCoordFactory(CFVariableMixin):
                 # If no coord, treat value as zero.
                 # Use a float16 to provide `shape` attribute and avoid
                 # promoting other arguments to a higher precision.
-                nd_points = numpy.float16(0)
+                nd_points = np.float16(0)
 
             nd_points_by_key[key] = nd_points
         return nd_points_by_key
@@ -367,7 +367,7 @@ class AuxCoordFactory(CFVariableMixin):
                 # If no coord, treat value as zero.
                 # Use a float16 to provide `shape` attribute and avoid
                 # promoting other arguments to a higher precision.
-                nd_values = numpy.float16(0)
+                nd_values = np.float16(0)
 
             nd_values_by_key[key] = nd_values
         return nd_values_by_key

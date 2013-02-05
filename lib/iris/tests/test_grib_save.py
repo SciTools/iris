@@ -24,7 +24,7 @@ import warnings
 import datetime
 
 import gribapi
-import numpy
+import numpy as np
 
 import iris
 import iris.cube
@@ -124,7 +124,7 @@ class TestCubeSave(tests.IrisTest):
         lat_coord = cube.coord("latitude")
         cube.remove_coord("latitude")
        
-        new_lats = numpy.append(lat_coord.points[:-1], lat_coord.points[0])  # Irregular
+        new_lats = np.append(lat_coord.points[:-1], lat_coord.points[0])  # Irregular
         cube.add_aux_coord(iris.coords.AuxCoord(new_lats, "latitude", units="degrees", coord_system=lat_coord.coord_system), 0) 
         
         saved_grib = iris.util.create_temp_filename(suffix='.grib2')
@@ -159,10 +159,10 @@ class TestHandmade(tests.IrisTest):
 
     def _lat_lon_cube_no_time(self):
         """Returns a cube with a latitude and longitude suitable for testing saving to PP/NetCDF etc."""
-        cube = iris.cube.Cube(numpy.arange(12, dtype=numpy.int32).reshape((3, 4))) 
+        cube = iris.cube.Cube(np.arange(12, dtype=np.int32).reshape((3, 4))) 
         cs = iris.coord_systems.GeogCS(6371229)
-        cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(4) * 90 + -180, 'longitude', units='degrees', coord_system=cs), 1) 
-        cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(3) * 45 + -90, 'latitude', units='degrees', coord_system=cs), 0) 
+        cube.add_dim_coord(iris.coords.DimCoord(np.arange(4) * 90 + -180, 'longitude', units='degrees', coord_system=cs), 1) 
+        cube.add_dim_coord(iris.coords.DimCoord(np.arange(3) * 45 + -90, 'latitude', units='degrees', coord_system=cs), 0) 
         
         return cube
         
@@ -170,22 +170,22 @@ class TestHandmade(tests.IrisTest):
         cube = self._lat_lon_cube_no_time()
         unit = iris.unit.Unit('hours since epoch', calendar=iris.unit.CALENDAR_GREGORIAN)
         dt = datetime.datetime(2010, 12, 31, 12, 0)
-        cube.add_aux_coord(iris.coords.AuxCoord(numpy.array([unit.date2num(dt)], dtype=numpy.float64), 'time', units=unit)) 
+        cube.add_aux_coord(iris.coords.AuxCoord(np.array([unit.date2num(dt)], dtype=np.float64), 'time', units=unit)) 
         return cube
     
     def _cube_with_forecast(self):
         cube = self._cube_time_no_forecast()
-        cube.add_aux_coord(iris.coords.AuxCoord(numpy.array([6], dtype=numpy.int32), 'forecast_period', units='hours')) 
+        cube.add_aux_coord(iris.coords.AuxCoord(np.array([6], dtype=np.int32), 'forecast_period', units='hours')) 
         return cube
     
     def _cube_with_pressure(self):
         cube = self._cube_with_forecast()
-        cube.add_aux_coord(iris.coords.DimCoord(numpy.int32(10), 'air_pressure', units='Pa')) 
+        cube.add_aux_coord(iris.coords.DimCoord(np.int32(10), 'air_pressure', units='Pa')) 
         return cube
 
     def _cube_with_time_bounds(self):
         cube = self._cube_with_pressure()
-        cube.coord("time").bounds = numpy.array([[0,100]]) 
+        cube.coord("time").bounds = np.array([[0,100]]) 
         return cube
     
     def test_no_time_cube(self):

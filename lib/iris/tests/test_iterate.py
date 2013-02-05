@@ -26,7 +26,7 @@ import operator
 import random
 import warnings
 
-import numpy
+import numpy as np
 
 import iris
 import iris.analysis
@@ -218,7 +218,7 @@ class TestIterateFunctions(tests.IrisTest):
         # Fraction of slices to check
         check_eq_probability = max(0.0, min(1.0, float(nslices_to_check)/nslices))
 
-        ij_iterator = numpy.ndindex(self.cube_a.shape[1], self.cube_a.shape[2])
+        ij_iterator = np.ndindex(self.cube_a.shape[1], self.cube_a.shape[2])
         count = 0
         for slice_a, slice_b in iris.iterate.izip(self.cube_a, self.cube_b,
                                                       coords='level_height'):
@@ -296,7 +296,7 @@ class TestIterateFunctions(tests.IrisTest):
         nslices_to_check = 20   # This is only approximate as we use random to select slices
         # Fraction of slices to check
         check_eq_probability = max(0.0, min(1.0, float(nslices_to_check)/nslices))
-        ij_iterator = numpy.ndindex(big_cube.shape[0], big_cube.shape[2])
+        ij_iterator = np.ndindex(big_cube.shape[0], big_cube.shape[2])
         count = 0
         for big_slice, little_slice in iris.iterate.izip(big_cube, little_cube,
                                                          coords='grid_latitude'):
@@ -410,12 +410,12 @@ class TestIterateFunctions(tests.IrisTest):
         self.assertEqual(i, nslices)
         
     def test_izip_nd_non_ortho(self):
-        cube1 = iris.cube.Cube(numpy.zeros((5, 5, 5)))
-        cube1.add_aux_coord(iris.coords.AuxCoord(numpy.arange(5),
+        cube1 = iris.cube.Cube(np.zeros((5, 5, 5)))
+        cube1.add_aux_coord(iris.coords.AuxCoord(np.arange(5),
                                                  long_name='z'), [0])
-        cube1.add_aux_coord(iris.coords.AuxCoord(numpy.arange(25).reshape(5, 5),
+        cube1.add_aux_coord(iris.coords.AuxCoord(np.arange(25).reshape(5, 5),
                                                  long_name='y'), [1, 2])
-        cube1.add_aux_coord(iris.coords.AuxCoord(numpy.arange(25).reshape(5, 5),
+        cube1.add_aux_coord(iris.coords.AuxCoord(np.arange(25).reshape(5, 5),
                                                  long_name='x'), [1, 2])
         cube2 = cube1.copy()
 
@@ -424,18 +424,18 @@ class TestIterateFunctions(tests.IrisTest):
             iris.iterate.izip(cube1, cube2, coords=['y', 'x'])
 
     def test_izip_nd_ortho(self):
-        cube1 = iris.cube.Cube(numpy.zeros((5, 5, 5, 5, 5), dtype='f8'))
-        cube1.add_dim_coord(iris.coords.AuxCoord(numpy.arange(5, dtype='i8'),
+        cube1 = iris.cube.Cube(np.zeros((5, 5, 5, 5, 5), dtype='f8'))
+        cube1.add_dim_coord(iris.coords.AuxCoord(np.arange(5, dtype='i8'),
                                                  long_name='z'), [0])
-        cube1.add_aux_coord(iris.coords.AuxCoord(numpy.arange(25, dtype='i8').reshape(5, 5),
+        cube1.add_aux_coord(iris.coords.AuxCoord(np.arange(25, dtype='i8').reshape(5, 5),
                                                  long_name='y'), [1,2])
-        cube1.add_aux_coord(iris.coords.AuxCoord(numpy.arange(25, dtype='i8').reshape(5, 5),
+        cube1.add_aux_coord(iris.coords.AuxCoord(np.arange(25, dtype='i8').reshape(5, 5),
                                                  long_name='x'), [3, 4])
         cube2 = cube1.copy()
         
         # The two coords are orthogonal so we can use them with izip
         it = iris.iterate.izip(cube1, cube2, coords=['y', 'x'])
-        cubes = list(numpy.array(list(it)).flatten()) 
+        cubes = list(np.array(list(it)).flatten()) 
         self.assertCML(cubes, ('iterate', 'izip_nd_ortho.cml'))
         
 

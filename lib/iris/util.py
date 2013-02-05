@@ -26,7 +26,7 @@ import os
 import tempfile
 import time
 
-import numpy
+import numpy as np
 
 
 def broadcast_weights(weights, array, dims):
@@ -59,12 +59,12 @@ def broadcast_weights(weights, array, dims):
     """
     # Create a shape array, which *weights* can be re-shaped to, allowing
     # them to be broadcast with *array*.
-    weights_shape = numpy.ones(array.ndim)
+    weights_shape = np.ones(array.ndim)
     for dim in dims:
         if dim is not None:
             weights_shape[dim] = array.shape[dim]
     # Broadcast the arrays together.
-    return numpy.broadcast_arrays(weights.reshape(weights_shape), array)[0]
+    return np.broadcast_arrays(weights.reshape(weights_shape), array)[0]
 
 
 def delta(ndarray, dimension, circular=False):
@@ -99,9 +99,9 @@ def delta(ndarray, dimension, circular=False):
 
         The difference algorithm implemented is forward difference:
         
-            >>> import numpy
+            >>> import numpy as np
             >>> import iris.util
-            >>> original = numpy.array([-180, -90, 0, 90])
+            >>> original = np.array([-180, -90, 0, 90])
             >>> iris.util.delta(original, 0)
             array([90, 90, 90])
             >>> iris.util.delta(original, 0, circular=360)
@@ -109,18 +109,18 @@ def delta(ndarray, dimension, circular=False):
         
     """
     if circular is not False:
-        _delta = numpy.roll(ndarray, -1, axis=dimension)
+        _delta = np.roll(ndarray, -1, axis=dimension)
         last_element = [slice(None, None)] * ndarray.ndim
         last_element[dimension] = slice(-1, None)
         
         if not isinstance(circular, bool): 
-            result = numpy.where(ndarray[last_element] >= _delta[last_element])[0]
+            result = np.where(ndarray[last_element] >= _delta[last_element])[0]
             _delta[last_element] -= circular
             _delta[last_element][result] += 2*circular
                     
-        numpy.subtract(_delta, ndarray, _delta)         
+        np.subtract(_delta, ndarray, _delta)
     else:
-        _delta = numpy.diff(ndarray, axis=dimension)
+        _delta = np.diff(ndarray, axis=dimension)
     
     return _delta
 
@@ -204,7 +204,7 @@ def rolling_window(a, window=1, step=1, axis=-1):
     num_windows = (a.shape[axis] - window + step) / step
     shape = a.shape[:axis] + (num_windows, window) + a.shape[axis + 1:]
     strides = a.strides[:axis] + (step * a.strides[axis], a.strides[axis]) + a.strides[axis + 1:]
-    return numpy.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
+    return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
 
 
 def array_equal(array1, array2):
@@ -293,8 +293,8 @@ def reverse(array, axes):
        
     ::
     
-        >>> import numpy
-        >>> a = numpy.arange(24).reshape(2, 3, 4)
+        >>> import numpy as np
+        >>> a = np.arange(24).reshape(2, 3, 4)
         >>> print a
         [[[ 0  1  2  3]
           [ 4  5  6  7]
@@ -322,10 +322,10 @@ def reverse(array, axes):
        
     """
     index = [slice(None, None)] * array.ndim
-    axes = numpy.array(axes, ndmin=1)
+    axes = np.array(axes, ndmin=1)
     if axes.ndim != 1:
         raise ValueError('Reverse was expecting a single axis or a 1d array of axes, got %r' % axes)
-    if  numpy.min(axes) < 0 or numpy.max(axes) > array.ndim-1:
+    if  np.min(axes) < 0 or np.max(axes) > array.ndim-1:
         raise ValueError('An axis value out of range for the number of dimensions from the '
                          'given array (%s) was received. Got: %r' % (array.ndim, axes))
     
@@ -362,14 +362,14 @@ def monotonic(array, strict=False, return_direction=False):
     if array.ndim != 1 or len(array) <= 1:
         raise ValueError('The array to check must be 1 dimensional and have more than 1 element.')
 
-    if numpy.ma.isMaskedArray(array) and numpy.ma.count_masked(array) != 0:
+    if np.ma.isMaskedArray(array) and np.ma.count_masked(array) != 0:
         raise ValueError('The array to check contains missing data.')
  
     # Identify the directions of the largest/most-positive and
     # smallest/most-negative steps.
-    d = numpy.diff(array)
-    sign_max_d = numpy.sign(d[numpy.argmax(d)])
-    sign_min_d = numpy.sign(d[numpy.argmin(d)])
+    d = np.diff(array)
+    sign_max_d = np.sign(d[np.argmax(d)])
+    sign_min_d = np.sign(d[np.argmin(d)])
 
     if strict:
         monotonic = sign_max_d == sign_min_d and sign_max_d != 0
@@ -411,7 +411,7 @@ def column_slices_generator(full_slice, ndims):
             _count_current_dim += 1
                 
     # Get all of the dimensions for which a tuple of indices were provided (numpy.ndarrays are treated in the same way tuples in this case)
-    is_tuple_style_index = lambda key: isinstance(key, tuple) or (isinstance(key, numpy.ndarray) and key.ndim == 1)
+    is_tuple_style_index = lambda key: isinstance(key, tuple) or (isinstance(key, np.ndarray) and key.ndim == 1)
     tuple_indices = [i for i, key in enumerate(full_slice) if is_tuple_style_index(key)]
 
     # stg1: Take a copy of the full_slice specification, turning all tuples into a full slice
@@ -454,7 +454,7 @@ def _build_full_slice_given_keys(keys, ndim):
         keys = tuple([keys])
         
     # catch the case where an extra Ellipsis has been provided which can be discarded iff len(keys)-1 == ndim
-    if len(keys)-1 == ndim and Ellipsis in filter(lambda obj: not isinstance(obj, numpy.ndarray), keys):
+    if len(keys)-1 == ndim and Ellipsis in filter(lambda obj: not isinstance(obj, np.ndarray), keys):
         keys = list(keys)
         is_ellipsis = [key is Ellipsis for key in keys]
         keys.pop(is_ellipsis.index(True))
@@ -489,7 +489,7 @@ def _build_full_slice_given_keys(keys, ndim):
             full_slice[i] = key
     
     # remove any tuples on dimensions, turning them into numpy array's for consistent behaviour
-    full_slice = tuple([numpy.array(key, ndmin=1) if isinstance(key, tuple) else key for key in full_slice])
+    full_slice = tuple([np.array(key, ndmin=1) if isinstance(key, tuple) else key for key in full_slice])
     return full_slice 
 
 
@@ -705,8 +705,8 @@ def clip_string(the_str, clip_length=70, rider = "..."):
 
 
 def ensure_array(a):
-    if not isinstance(a, (numpy.ndarray, numpy.ma.core.MaskedArray)):
-        a = numpy.array([a])
+    if not isinstance(a, (np.ndarray, np.ma.core.MaskedArray)):
+        a = np.array([a])
     return a
 
 
@@ -804,6 +804,6 @@ def format_array(arr):
     else:
         summary_insert = ""
     ffunc = str
-    return numpy.core.arrayprint._formatArray(arr, ffunc, len(arr.shape), max_line_len=50,
+    return np.core.arrayprint._formatArray(arr, ffunc, len(arr.shape), max_line_len=50,
                                               next_line_prefix='\t\t', separator=', ',
                                               edge_items=3, summary_insert=summary_insert)[:-1]

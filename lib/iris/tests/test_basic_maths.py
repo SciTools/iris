@@ -21,7 +21,7 @@ import iris.tests as tests
 
 import operator
 
-import numpy
+import numpy as np
 
 import iris
 import iris.analysis.maths
@@ -101,17 +101,17 @@ class TestBasicMaths(tests.IrisTest):
         
         # subtract an array of exactly the same shape as the original
         b = a - data_array        
-        self.assertArrayEqual(b.data, numpy.array(0, dtype=numpy.float32))
+        self.assertArrayEqual(b.data, np.array(0, dtype=np.float32))
         self.assertCML(b, ('analysis', 'subtract_array.cml'), checksum=False)
 
         # subtract an array of the same number of dimensions, but with one of the dimensions having len 1
         b = a - data_array[:, 0:1]
-        self.assertArrayEqual(b.data[:, 0:1], numpy.array(0, dtype=numpy.float32))
+        self.assertArrayEqual(b.data[:, 0:1], np.array(0, dtype=np.float32))
         self.assertArrayEqual(b.data[:, 1:2], b.data[:, 1:2])
 
         # subtract an array of 1 dimension fewer than the cube
         b = a - data_array[0, :]
-        self.assertArrayEqual(b.data[0, :], numpy.array(0, dtype=numpy.float32))
+        self.assertArrayEqual(b.data[0, :], np.array(0, dtype=np.float32))
         self.assertArrayEqual(b.data[:, 1:2], b.data[:, 1:2])
         
         # subtract an array of 1 dimension more than the cube
@@ -232,7 +232,7 @@ class TestDivideAndMultiply(tests.IrisTest):
 
         c = a / a
         
-        numpy.testing.assert_array_almost_equal(a.data / a.data, c.data)
+        np.testing.assert_array_almost_equal(a.data / a.data, c.data)
         self.assertCML(c, ('analysis', 'division.cml'), checksum=False)
 
         # Check that the division has had no effect on the original
@@ -243,7 +243,7 @@ class TestDivideAndMultiply(tests.IrisTest):
 
         c = a / 10
         
-        numpy.testing.assert_array_almost_equal(a.data / 10, c.data)
+        np.testing.assert_array_almost_equal(a.data / 10, c.data)
         self.assertCML(c, ('analysis', 'division_scalar.cml'), checksum=False)
 
         # Check that the division has had no effect on the original
@@ -264,12 +264,12 @@ class TestDivideAndMultiply(tests.IrisTest):
         
         # test division by exactly the same shape data
         c = a / data_array 
-        self.assertArrayEqual(c.data, numpy.array(1, dtype=numpy.float32))
+        self.assertArrayEqual(c.data, np.array(1, dtype=np.float32))
         self.assertCML(c, ('analysis', 'division_by_array.cml'), checksum=False)
         
         # test division by array of fewer dimensions
         c = a / data_array[0, :] 
-        self.assertArrayEqual(c.data[0, :], numpy.array(1, dtype=numpy.float32))
+        self.assertArrayEqual(c.data[0, :], np.array(1, dtype=np.float32))
         
         # test division by array of more dimensions
         d_array = data_array.reshape(-1, data_array.shape[1], 1, 1)
@@ -306,7 +306,7 @@ class TestDivideAndMultiply(tests.IrisTest):
     def test_divide_by_different_len_coord(self):
         a = self.cube
         
-        coord = iris.coords.DimCoord(points=numpy.arange(10) * 2 + 5, standard_name='longitude', units='degrees') 
+        coord = iris.coords.DimCoord(points=np.arange(10) * 2 + 5, standard_name='longitude', units='degrees') 
         
         self.assertRaises(ValueError, iris.analysis.maths.divide, a, coord)
         
@@ -343,7 +343,7 @@ class TestExponentiate(tests.IrisTest):
 
     def test_exponentiate(self):
         a = self.cube
-        a.data = a.data.astype(numpy.float64)
+        a.data = a.data.astype(np.float64)
         e = pow(a, 4)
         self.assertCMLApproxData(e, ('analysis', 'exponentiate.cml'))
 
@@ -383,8 +383,8 @@ class TestMaskedArrays(tests.IrisTest):
     iops = (operator.iadd, operator.isub, operator.imul, operator.idiv)
 
     def setUp(self):
-        self.data1 = numpy.ma.MaskedArray([[9,9,9],[8,8,8,]],mask=[[0,1,0],[0,0,1]])
-        self.data2 = numpy.ma.MaskedArray([[3,3,3],[2,2,2,]],mask=[[0,1,0],[0,1,1]])
+        self.data1 = np.ma.MaskedArray([[9,9,9],[8,8,8,]],mask=[[0,1,0],[0,0,1]])
+        self.data2 = np.ma.MaskedArray([[3,3,3],[2,2,2,]],mask=[[0,1,0],[0,1,1]])
         
         self.cube1 = iris.cube.Cube(self.data1) 
         self.cube2 = iris.cube.Cube(self.data2) 
@@ -394,31 +394,31 @@ class TestMaskedArrays(tests.IrisTest):
             result1 = test_op(self.cube1, self.cube2)
             result2 = test_op(self.data1, self.data2)
         
-            numpy.testing.assert_array_equal(result1.data, result2)
+            np.testing.assert_array_equal(result1.data, result2)
 
     def test_operator_in_place(self):
         for test_op in self.iops:
             test_op(self.cube1, self.cube2)
             test_op(self.data1, self.data2)
 
-            numpy.testing.assert_array_equal(self.cube1.data, self.data1)
+            np.testing.assert_array_equal(self.cube1.data, self.data1)
     
     def test_operator_scalar(self):
         for test_op in self.ops:
             result1 = test_op(self.cube1, 2)
             result2 = test_op(self.data1, 2)
         
-            numpy.testing.assert_array_equal(result1.data, result2)
+            np.testing.assert_array_equal(result1.data, result2)
 
     def test_operator_array(self):
         for test_op in self.ops:
             result1 = test_op(self.cube1, self.data2)
             result2 = test_op(self.data1, self.data2)
     
-            numpy.testing.assert_array_equal(result1.data, result2)
+            np.testing.assert_array_equal(result1.data, result2)
 
     def test_incompatible_dimensions(self):
-        data3 = numpy.ma.MaskedArray([[3,3,3,4],[2,2,2]],mask=[[0,1,0,0],[0,1,1]])
+        data3 = np.ma.MaskedArray([[3,3,3,4],[2,2,2]],mask=[[0,1,0,0],[0,1,1]])
         with self.assertRaises(ValueError):
             # incompatible dimensions
             self.cube1 + data3
@@ -426,8 +426,8 @@ class TestMaskedArrays(tests.IrisTest):
     def test_increase_cube_dimensionality(self):
         with self.assertRaises(ValueError):
             # This would increase the dimensionality of the cube due to auto broadcasting
-            cubex = iris.cube.Cube(numpy.ma.MaskedArray([[9,]],mask=[[0]])) 
-            cubex + numpy.ma.MaskedArray([[3,3,3,3]],mask=[[0,1,0,1]]) 
+            cubex = iris.cube.Cube(np.ma.MaskedArray([[9,]],mask=[[0]])) 
+            cubex + np.ma.MaskedArray([[3,3,3,3]],mask=[[0,1,0,1]]) 
             
     
 if __name__ == "__main__":

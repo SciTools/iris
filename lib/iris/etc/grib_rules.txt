@@ -345,7 +345,7 @@ grib.edition == 1
 grib.timeRangeIndicator == 3
 THEN
 CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
-CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CoordAndDims(DimCoord(points=np.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
 CellMethod("mean", cm.coord("time"))
 
 IF
@@ -353,7 +353,7 @@ grib.edition == 1
 grib.timeRangeIndicator == 4
 THEN
 CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
-CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CoordAndDims(DimCoord(points=np.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
 CellMethod("sum", cm.coord("time"))
 
 IF
@@ -361,7 +361,7 @@ grib.edition == 1
 grib.timeRangeIndicator == 5
 THEN
 CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
-CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CoordAndDims(DimCoord(points=np.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
 CellMethod("_difference", cm.coord("time"))
 
 ## XXX: There's more detail to these than represented here... ##
@@ -371,7 +371,7 @@ grib.edition == 1
 grib.timeRangeIndicator == 51
 THEN
 CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
-CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CoordAndDims(DimCoord(points=np.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
 CellMethod("mean", cm.coord("time"))
 
 IF
@@ -379,7 +379,7 @@ grib.edition == 1
 grib.timeRangeIndicator == 113
 THEN
 CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
-CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CoordAndDims(DimCoord(points=np.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
 CellMethod("mean", cm.coord("time"))
 
 IF
@@ -387,7 +387,7 @@ grib.edition == 1
 grib.timeRangeIndicator == 114
 THEN
 CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
-CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CoordAndDims(DimCoord(points=np.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
 CellMethod("sum", cm.coord("time"))
 
 IF
@@ -395,7 +395,7 @@ grib.edition == 1
 grib.timeRangeIndicator == 115
 THEN
 CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
-CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CoordAndDims(DimCoord(points=np.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
 CellMethod("mean", cm.coord("time"))
 
 IF
@@ -403,7 +403,7 @@ grib.edition == 1
 grib.timeRangeIndicator == 4
 THEN
 CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
-CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CoordAndDims(DimCoord(points=np.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
 CellMethod("sum", cm.coord("time"))
 
 IF
@@ -411,7 +411,7 @@ grib.edition == 1
 grib.timeRangeIndicator == 116
 THEN
 CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
-CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CoordAndDims(DimCoord(points=np.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
 CellMethod("sum", cm.coord("time"))
 
 IF
@@ -419,7 +419,7 @@ grib.edition == 1
 grib.timeRangeIndicator == 117
 THEN
 CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
-CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CoordAndDims(DimCoord(points=np.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
 CellMethod("mean", cm.coord("time"))
 
 IF
@@ -427,7 +427,7 @@ grib.edition == 1
 grib.timeRangeIndicator == 118
 THEN
 CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
-CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CoordAndDims(DimCoord(points=np.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
 CellMethod("_covariance", cm.coord("time"))
 
 IF
@@ -435,7 +435,7 @@ grib.edition == 1
 grib.timeRangeIndicator == 123
 THEN
 CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
-CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CoordAndDims(DimCoord(points=np.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
 CellMethod("mean", cm.coord("time"))
 
 IF
@@ -443,7 +443,7 @@ grib.edition == 1
 grib.timeRangeIndicator == 124
 THEN
 CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
-CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CoordAndDims(DimCoord(points=np.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
 CellMethod("sum", cm.coord("time"))
 
 IF
@@ -451,7 +451,7 @@ grib.edition == 1
 grib.timeRangeIndicator == 125
 THEN
 CoordAndDims(DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit))
-CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
+CoordAndDims(DimCoord(points=np.mean(grib.phenomenon_bounds('hours')), bounds=grib.phenomenon_bounds('hours'),  standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
 CellMethod("standard_deviation", cm.coord("time"))
 
 
@@ -464,7 +464,7 @@ IF
 grib.edition == 2
 grib.productDefinitionTemplateNumber == 0
 THEN
-CoordAndDims(DimCoord(points=Unit(grib._forecastTimeUnit).convert(numpy.int32(grib._forecastTime), "hours"), standard_name='forecast_period', units="hours"))
+CoordAndDims(DimCoord(points=Unit(grib._forecastTimeUnit).convert(np.int32(grib._forecastTime), "hours"), standard_name='forecast_period', units="hours"))
 CoordAndDims(DimCoord(points=grib.phenomenon_points('hours'), standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)))
 
 ## time processed (4.8) ##
@@ -475,8 +475,8 @@ IF
 grib.edition == 2
 grib.productDefinitionTemplateNumber in (8, 9)
 THEN
-CoordAndDims(DimCoord(points=Unit(grib._forecastTimeUnit).convert(numpy.int32(grib._forecastTime), "hours"), standard_name='forecast_period', units="hours"))
-CoordAndDims(DimCoord(points=numpy.mean(grib.phenomenon_bounds('hours')), standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN), bounds=grib.phenomenon_bounds('hours')))
+CoordAndDims(DimCoord(points=Unit(grib._forecastTimeUnit).convert(np.int32(grib._forecastTime), "hours"), standard_name='forecast_period', units="hours"))
+CoordAndDims(DimCoord(points=np.mean(grib.phenomenon_bounds('hours')), standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN), bounds=grib.phenomenon_bounds('hours')))
 
 
 # specifics

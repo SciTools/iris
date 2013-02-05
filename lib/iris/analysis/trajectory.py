@@ -22,7 +22,7 @@ Defines a Trajectory class, and a routine to extract a sub-cube along a trajecto
 import math
 import warnings
 
-import numpy
+import numpy as np
 
 import iris.coord_systems
 import iris.coords
@@ -173,7 +173,7 @@ def interpolate(cube, sample_points, method=None):
     new_data_shape.append(trajectory_size)
 
     # Start with empty data and then fill in the "column" of values for each trajectory point.
-    new_cube = iris.cube.Cube(numpy.empty(new_data_shape))
+    new_cube = iris.cube.Cube(np.empty(new_data_shape))
     new_cube.metadata = cube.metadata
 
     # Derive the mapping from the non-trajectory source dimensions to their
@@ -206,7 +206,7 @@ def interpolate(cube, sample_points, method=None):
     for coord in cube.dim_coords + cube.aux_coords:
         src_dims = cube.coord_dims(coord)
         if not squish_my_dims.isdisjoint(src_dims):
-            points = numpy.array([coord.points.flatten()[0]] * trajectory_size)
+            points = np.array([coord.points.flatten()[0]] * trajectory_size)
             new_coord = iris.coords.AuxCoord(points,
                                              standard_name=coord.standard_name,
                                              long_name=coord.long_name,

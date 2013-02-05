@@ -215,7 +215,7 @@ hasattr(f, 'upper_x_domain')
 all(f.lower_x_domain != -1.e+30)
 all(f.upper_x_domain != -1.e+30)
 THEN
-CoordAndDims(AuxCoord((f.lower_x_domain + f.upper_x_domain) / 2.0, standard_name=f._x_coord_name(), units='degrees', bounds=numpy.array([f.lower_x_domain, f.upper_x_domain]).T, coord_system=f.coord_system()), 1 if f.lbcode.ix == 13 else 0)
+CoordAndDims(AuxCoord((f.lower_x_domain + f.upper_x_domain) / 2.0, standard_name=f._x_coord_name(), units='degrees', bounds=np.array([f.lower_x_domain, f.upper_x_domain]).T, coord_system=f.coord_system()), 1 if f.lbcode.ix == 13 else 0)
 
 # as a special case to some cross section lbcodes (currently only site), lats are encoded in lower_y_domain and upper_y_domain
 IF
@@ -227,7 +227,7 @@ hasattr(f, 'upper_y_domain')
 all(f.lower_y_domain != -1.e+30)
 all(f.upper_y_domain != -1.e+30)
 THEN
-CoordAndDims(AuxCoord((f.lower_y_domain + f.upper_y_domain) / 2.0, standard_name=f._y_coord_name(), units='degrees', bounds=numpy.array([f.lower_y_domain, f.upper_y_domain]).T, coord_system=f.coord_system()), 1 if f.lbcode.ix == 13 else 0)
+CoordAndDims(AuxCoord((f.lower_y_domain + f.upper_y_domain) / 2.0, standard_name=f._y_coord_name(), units='degrees', bounds=np.array([f.lower_y_domain, f.upper_y_domain]).T, coord_system=f.coord_system()), 1 if f.lbcode.ix == 13 else 0)
 
 
 ####################################################################################################

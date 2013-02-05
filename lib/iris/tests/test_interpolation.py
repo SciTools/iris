@@ -21,7 +21,7 @@ Test the interpolation of Iris cubes.
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import numpy
+import numpy as np
 from scipy.interpolate import interp1d
 
 import iris
@@ -34,37 +34,37 @@ from iris.analysis.interpolate import Linear1dExtrapolator
 
 class TestLinearExtrapolator(tests.IrisTest):
     def test_simple_axis0(self):
-        a = numpy.arange(12.).reshape(3, 4)
-        r = Linear1dExtrapolator(interp1d(numpy.arange(3), a, axis=0))
+        a = np.arange(12.).reshape(3, 4)
+        r = Linear1dExtrapolator(interp1d(np.arange(3), a, axis=0))
         
-        numpy.testing.assert_array_equal(r(0), numpy.array([ 0.,  1.,  2.,  3.]))
-        numpy.testing.assert_array_equal(r(-1), numpy.array([-4.,  -3.,  -2., -1.]))
-        numpy.testing.assert_array_equal(r(3), numpy.array([ 12.,  13.,  14.,  15.]))        
-        numpy.testing.assert_array_equal(r(2.5), numpy.array([ 10.,  11.,  12.,  13.]))
+        np.testing.assert_array_equal(r(0), np.array([ 0.,  1.,  2.,  3.]))
+        np.testing.assert_array_equal(r(-1), np.array([-4.,  -3.,  -2., -1.]))
+        np.testing.assert_array_equal(r(3), np.array([ 12.,  13.,  14.,  15.]))        
+        np.testing.assert_array_equal(r(2.5), np.array([ 10.,  11.,  12.,  13.]))
         
         # 2 Non-extrapolation point
-        numpy.testing.assert_array_equal(r(numpy.array([1.5, 2])), numpy.array([[  6.,   7.,   8.,   9.],
+        np.testing.assert_array_equal(r(np.array([1.5, 2])), np.array([[  6.,   7.,   8.,   9.],
                                                                                 [  8.,   9.,  10.,  11.]]))
         
         # 1 Non-extrapolation point & 1 upper value extrapolation
-        numpy.testing.assert_array_equal(r(numpy.array([1.5, 3])), numpy.array([[  6.,   7.,   8.,   9.],
+        np.testing.assert_array_equal(r(np.array([1.5, 3])), np.array([[  6.,   7.,   8.,   9.],
                                                                                 [ 12.,  13.,  14.,  15.]]))
         
         # 2 upper value extrapolation
-        numpy.testing.assert_array_equal(r(numpy.array([2.5, 3])), numpy.array([[ 10.,  11.,  12.,  13.],
+        np.testing.assert_array_equal(r(np.array([2.5, 3])), np.array([[ 10.,  11.,  12.,  13.],
                                                                                 [ 12.,  13.,  14.,  15.]]))
 
         # 1 lower value extrapolation & 1 Non-extrapolation point
-        numpy.testing.assert_array_equal(r(numpy.array([-1, 1.5])), numpy.array([[-4., -3., -2., -1.],
+        np.testing.assert_array_equal(r(np.array([-1, 1.5])), np.array([[-4., -3., -2., -1.],
                                                                                  [ 6.,  7.,  8.,  9.]]))
 
         # 2 lower value extrapolation
-        numpy.testing.assert_array_equal(r(numpy.array([-1.5, -1])), numpy.array([[-6., -5., -4., -3.],
+        np.testing.assert_array_equal(r(np.array([-1.5, -1])), np.array([[-6., -5., -4., -3.],
                                                                                   [-4., -3., -2., -1.]]))
         
         # 2 lower value extrapolation, 2 Non-extrapolation point & 2 upper value extrapolation
-        numpy.testing.assert_array_equal(r(numpy.array([-1.5, -1, 1, 1.5, 2.5, 3])),
-                                         numpy.array([[ -6.,  -5.,  -4.,  -3.],
+        np.testing.assert_array_equal(r(np.array([-1.5, -1, 1, 1.5, 2.5, 3])),
+                                         np.array([[ -6.,  -5.,  -4.,  -3.],
                                                       [ -4.,  -3.,  -2.,  -1.],
                                                       [  4.,   5.,   6.,   7.],
                                                       [  6.,   7.,   8.,   9.],
@@ -72,60 +72,60 @@ class TestLinearExtrapolator(tests.IrisTest):
                                                       [ 12.,  13.,  14.,  15.]]))
    
     def test_simple_axis1(self):
-        a = numpy.arange(12).reshape(3, 4)
-        r = Linear1dExtrapolator(interp1d(numpy.arange(4), a, axis=1))
+        a = np.arange(12).reshape(3, 4)
+        r = Linear1dExtrapolator(interp1d(np.arange(4), a, axis=1))
         
         # check non-extrapolation given the Extrapolator object 
-        numpy.testing.assert_array_equal(r(0), numpy.array([ 0.,  4.,  8.]))
+        np.testing.assert_array_equal(r(0), np.array([ 0.,  4.,  8.]))
         
         # check the result's shape in a 1d array (of len 0 & 1)
-        numpy.testing.assert_array_equal(r(numpy.array(0)), numpy.array([ 0.,  4.,  8.]))        
-        numpy.testing.assert_array_equal(r(numpy.array([0])), numpy.array([ [0.],  [4.],  [8.]]))
+        np.testing.assert_array_equal(r(np.array(0)), np.array([ 0.,  4.,  8.]))        
+        np.testing.assert_array_equal(r(np.array([0])), np.array([ [0.],  [4.],  [8.]]))
         
         # check extrapolation below the minimum value (and check the equivalent 0d & 1d arrays)
-        numpy.testing.assert_array_equal(r(-1), numpy.array([-1., 3., 7.]))
-        numpy.testing.assert_array_equal(r(numpy.array(-1)), numpy.array([-1., 3., 7.]))
-        numpy.testing.assert_array_equal(r(numpy.array([-1])), numpy.array([[-1.], [ 3.], [ 7.]]))
+        np.testing.assert_array_equal(r(-1), np.array([-1., 3., 7.]))
+        np.testing.assert_array_equal(r(np.array(-1)), np.array([-1., 3., 7.]))
+        np.testing.assert_array_equal(r(np.array([-1])), np.array([[-1.], [ 3.], [ 7.]]))
         
         # check extrapolation above the maximum value
-        numpy.testing.assert_array_equal(r(3), numpy.array([  3.,   7.,  11.]))
-        numpy.testing.assert_array_equal(r(2.5), numpy.array([  2.5,   6.5,  10.5]))
+        np.testing.assert_array_equal(r(3), np.array([  3.,   7.,  11.]))
+        np.testing.assert_array_equal(r(2.5), np.array([  2.5,   6.5,  10.5]))
         
         # 2 Non-extrapolation point 
-        numpy.testing.assert_array_equal(r(numpy.array([1.5, 2])), numpy.array([[  1.5,   2. ],
+        np.testing.assert_array_equal(r(np.array([1.5, 2])), np.array([[  1.5,   2. ],
                                                                                 [  5.5,   6. ],
                                                                                 [  9.5,  10. ]]))
         
         # 1 Non-extrapolation point & 1 upper value extrapolation
-        numpy.testing.assert_array_equal(r(numpy.array([1.5, 5])), numpy.array([[  1.5,   5. ],
+        np.testing.assert_array_equal(r(np.array([1.5, 5])), np.array([[  1.5,   5. ],
                                                                                 [  5.5,   9. ],
                                                                                 [  9.5,  13. ]]))
         
         # 2 upper value extrapolation        
-        numpy.testing.assert_array_equal(r(numpy.array([4.5, 5])), numpy.array([[  4.5,   5. ],
+        np.testing.assert_array_equal(r(np.array([4.5, 5])), np.array([[  4.5,   5. ],
                                                                                 [  8.5,   9. ],
                                                                                 [ 12.5,  13. ]]))
 
         # 1 lower value extrapolation & 1 Non-extrapolation point
-        numpy.testing.assert_array_equal(r(numpy.array([-0.5, 1.5])), numpy.array([[-0.5,  1.5],
+        np.testing.assert_array_equal(r(np.array([-0.5, 1.5])), np.array([[-0.5,  1.5],
                                                                                    [ 3.5,  5.5],
                                                                                    [ 7.5,  9.5]]))        
         
         # 2 lower value extrapolation
-        numpy.testing.assert_array_equal(r(numpy.array([-1.5, -1])), numpy.array([[-1.5, -1. ],
+        np.testing.assert_array_equal(r(np.array([-1.5, -1])), np.array([[-1.5, -1. ],
                                                                                   [ 2.5,  3. ],
                                                                                   [ 6.5,  7. ]]))
         
         # 2 lower value extrapolation, 2 Non-extrapolation point & 2 upper value extrapolation
-        numpy.testing.assert_array_equal(r(numpy.array([-1.5, -1, 1.5, 2, 4.5, 5])), 
-                                         numpy.array([[ -1.5,  -1. ,   1.5,   2. ,   4.5,   5. ],
+        np.testing.assert_array_equal(r(np.array([-1.5, -1, 1.5, 2, 4.5, 5])), 
+                                         np.array([[ -1.5,  -1. ,   1.5,   2. ,   4.5,   5. ],
                                                       [  2.5,   3. ,   5.5,   6. ,   8.5,   9. ],
                                                       [  6.5,   7. ,   9.5,  10. ,  12.5,  13. ]]))
         
         
     def test_simple_3d_axis1(self):
-        a = numpy.arange(24.).reshape(3, 4, 2)
-        r = Linear1dExtrapolator(interp1d(numpy.arange(4.), a, axis=1))
+        a = np.arange(24.).reshape(3, 4, 2)
+        r = Linear1dExtrapolator(interp1d(np.arange(4.), a, axis=1))
         
 #       a:
 #        [[[ 0  1]
@@ -144,76 +144,76 @@ class TestLinearExtrapolator(tests.IrisTest):
 #          [22 23]]
 #         ] 
 
-        numpy.testing.assert_array_equal(r(0), numpy.array([[  0.,   1.],
+        np.testing.assert_array_equal(r(0), np.array([[  0.,   1.],
                                                             [  8.,   9.],
                                                             [ 16.,  17.]]))
         
-        numpy.testing.assert_array_equal(r(1), numpy.array([[  2.,   3.],
+        np.testing.assert_array_equal(r(1), np.array([[  2.,   3.],
                                                             [ 10.,  11.],
                                                             [ 18.,  19.]]))
         
-        numpy.testing.assert_array_equal(r(-1), numpy.array([[ -2.,  -1.],
+        np.testing.assert_array_equal(r(-1), np.array([[ -2.,  -1.],
                                                              [  6.,   7.],
                                                              [ 14.,  15.]]))
         
-        numpy.testing.assert_array_equal(r(4), numpy.array([[  8.,   9.],
+        np.testing.assert_array_equal(r(4), np.array([[  8.,   9.],
                                                             [ 16.,  17.],
                                                             [ 24.,  25.]]))
 
-        numpy.testing.assert_array_equal(r(0.25), numpy.array([[  0.5,   1.5],
+        np.testing.assert_array_equal(r(0.25), np.array([[  0.5,   1.5],
                                                                [  8.5,   9.5],
                                                                [ 16.5,  17.5]]))
         
-        numpy.testing.assert_array_equal(r(-0.25), numpy.array([[ -0.5,   0.5],
+        np.testing.assert_array_equal(r(-0.25), np.array([[ -0.5,   0.5],
                                                                 [  7.5,   8.5],
                                                                 [ 15.5,  16.5]]))
         
-        numpy.testing.assert_array_equal(r(4.25), numpy.array([[  8.5,   9.5],
+        np.testing.assert_array_equal(r(4.25), np.array([[  8.5,   9.5],
                                                                [ 16.5,  17.5],
                                                                [ 24.5,  25.5]]))
         
-        numpy.testing.assert_array_equal(r(numpy.array([0.5, 1])), numpy.array([[[  1.,   2.], [  2.,   3.]],
+        np.testing.assert_array_equal(r(np.array([0.5, 1])), np.array([[[  1.,   2.], [  2.,   3.]],
                                                                                 [[  9.,  10.], [ 10.,  11.]],
                                                                                 [[ 17.,  18.], [ 18.,  19.]]]))
         
-        numpy.testing.assert_array_equal(r(numpy.array([0.5, 4])), numpy.array([[[  1.,   2.], [  8.,   9.]],
+        np.testing.assert_array_equal(r(np.array([0.5, 4])), np.array([[[  1.,   2.], [  8.,   9.]],
                                                                                 [[  9.,  10.], [ 16.,  17.]],
                                                                                 [[ 17.,  18.], [ 24.,  25.]]]))
 
-        numpy.testing.assert_array_equal(r(numpy.array([-0.5, 0.5])), numpy.array([[[ -1.,   0.], [  1.,   2.]],
+        np.testing.assert_array_equal(r(np.array([-0.5, 0.5])), np.array([[[ -1.,   0.], [  1.,   2.]],
                                                                                    [[  7.,   8.], [  9.,  10.]],
                                                                                    [[ 15.,  16.], [ 17.,  18.]]]))        
 
-        numpy.testing.assert_array_equal(r(numpy.array([-1.5, -1, 0.5, 1, 4.5, 5])), 
-                                         numpy.array([[[ -3.,  -2.], [ -2.,  -1.], [  1.,   2.], [  2.,   3.], [  9.,  10.], [ 10.,  11.]],
+        np.testing.assert_array_equal(r(np.array([-1.5, -1, 0.5, 1, 4.5, 5])), 
+                                         np.array([[[ -3.,  -2.], [ -2.,  -1.], [  1.,   2.], [  2.,   3.], [  9.,  10.], [ 10.,  11.]],
                                                       [[  5.,   6.], [  6.,   7.], [  9.,  10.], [ 10.,  11.], [ 17.,  18.], [ 18.,  19.]],
                                                       [[ 13.,  14.], [ 14.,  15.], [ 17.,  18.], [ 18.,  19.], [ 25.,  26.], [ 26.,  27.]]]))
         
     def test_variable_gradient(self):
-        a = numpy.array([[2, 4, 8], [0, 5, 11]])
-        r = Linear1dExtrapolator(interp1d(numpy.arange(2), a, axis=0))
+        a = np.array([[2, 4, 8], [0, 5, 11]])
+        r = Linear1dExtrapolator(interp1d(np.arange(2), a, axis=0))
         
-        numpy.testing.assert_array_equal(r(0), numpy.array([ 2.,  4.,  8.]))
-        numpy.testing.assert_array_equal(r(-1), numpy.array([ 4.,  3.,  5.]))
-        numpy.testing.assert_array_equal(r(3), numpy.array([ -4.,   7.,  17.]))        
-        numpy.testing.assert_array_equal(r(2.5), numpy.array([ -3. ,   6.5,  15.5]))
+        np.testing.assert_array_equal(r(0), np.array([ 2.,  4.,  8.]))
+        np.testing.assert_array_equal(r(-1), np.array([ 4.,  3.,  5.]))
+        np.testing.assert_array_equal(r(3), np.array([ -4.,   7.,  17.]))        
+        np.testing.assert_array_equal(r(2.5), np.array([ -3. ,   6.5,  15.5]))
         
-        numpy.testing.assert_array_equal(r(numpy.array([1.5, 2])), numpy.array([[ -1. ,   5.5,  12.5],
+        np.testing.assert_array_equal(r(np.array([1.5, 2])), np.array([[ -1. ,   5.5,  12.5],
                                                                                 [ -2. ,   6. ,  14. ]]))
     
-        numpy.testing.assert_array_equal(r(numpy.array([-1.5, 3.5])), numpy.array([[  5. ,   2.5,   3.5],
+        np.testing.assert_array_equal(r(np.array([-1.5, 3.5])), np.array([[  5. ,   2.5,   3.5],
                                                                                    [ -5. ,   7.5,  18.5]]))
 
 
 class TestLinear1dInterpolation(tests.IrisTest):
     def setUp(self):
-        data = numpy.arange(12., dtype=numpy.float32).reshape((4, 3))
+        data = np.arange(12., dtype=np.float32).reshape((4, 3))
         c2 = iris.cube.Cube(data)
            
         c2.long_name = 'test 2d dimensional cube'
         c2.units = 'kelvin'
         
-        pts = 3 + numpy.arange(4, dtype=numpy.float32) * 2
+        pts = 3 + np.arange(4, dtype=np.float32) * 2
         b = iris.coords.DimCoord(pts, long_name='dim1', units=1)
         d = iris.coords.AuxCoord([3, 3.5, 6], long_name='dim2', units=1)
         e = iris.coords.AuxCoord(3.0, long_name='an_other', units=1)
@@ -229,10 +229,10 @@ class TestLinear1dInterpolation(tests.IrisTest):
         c3.add_aux_coord(d, 1)
         self.simple2d_cube_extended = c3
 
-        pts = 0.1 + numpy.arange(5, dtype=numpy.float32) * 0.1
+        pts = 0.1 + np.arange(5, dtype=np.float32) * 0.1
         f = iris.coords.DimCoord(pts, long_name='r', units=1)
         g = iris.coords.DimCoord([0.0, 90.0, 180.0, 270.0], long_name='theta', units='degrees', circular=True)
-        data = numpy.arange(20., dtype=numpy.float32).reshape((5, 4))
+        data = np.arange(20., dtype=np.float32).reshape((5, 4))
         c4 = iris.cube.Cube(data)
         c4.add_dim_coord(f, 0)
         c4.add_dim_coord(g, 1)
@@ -247,7 +247,7 @@ class TestLinear1dInterpolation(tests.IrisTest):
 
     def test_integer_interpol(self):
         c = self.simple2d_cube
-        c.data = c.data.astype(numpy.int16)
+        c.data = c.data.astype(np.int16)
         self.assertRaises(ValueError, iris.analysis.interpolate.linear, c, [('dim1', 4)])
         
     def test_bad_sample_point_format(self):
@@ -256,13 +256,13 @@ class TestLinear1dInterpolation(tests.IrisTest):
     def test_simple_single_point(self):
         r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim1', 4)])
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_single_point.cml'))
-        numpy.testing.assert_array_equal(r.data, numpy.array([1.5, 2.5, 3.5], dtype=self.simple2d_cube.data.dtype))
+        np.testing.assert_array_equal(r.data, np.array([1.5, 2.5, 3.5], dtype=self.simple2d_cube.data.dtype))
         
     def test_monotonic_decreasing_coord(self):
         c = self.simple2d_cube[::-1]
         r = iris.analysis.interpolate.linear(c, [('dim1', 4)])
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_single_point.cml'))
-        numpy.testing.assert_array_equal(r.data, numpy.array([1.5, 2.5, 3.5], dtype=self.simple2d_cube.data.dtype))
+        np.testing.assert_array_equal(r.data, np.array([1.5, 2.5, 3.5], dtype=self.simple2d_cube.data.dtype))
         
     def test_overspecified(self):
         self.assertRaises(ValueError, iris.analysis.interpolate.linear, self.simple2d_cube[0, :], [('dim1', 4)])
@@ -273,16 +273,16 @@ class TestLinear1dInterpolation(tests.IrisTest):
         cube = self.simple2d_cube
         cube.coord('dim1').guess_bounds()
         r = iris.analysis.interpolate.linear(cube, [('dim1', [4, 5])])
-        numpy.testing.assert_array_equal(r.data, numpy.array([[ 1.5,  2.5,  3.5], [ 3. ,  4. ,  5. ]]))
+        np.testing.assert_array_equal(r.data, np.array([[ 1.5,  2.5,  3.5], [ 3. ,  4. ,  5. ]]))
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_multiple_points.cml'))
 
     def test_simple_multiple_point(self):
         r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim1', [4, 5])])
-        numpy.testing.assert_array_equal(r.data, numpy.array([[ 1.5,  2.5,  3.5], [ 3. ,  4. ,  5. ]]))
+        np.testing.assert_array_equal(r.data, np.array([[ 1.5,  2.5,  3.5], [ 3. ,  4. ,  5. ]]))
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_multiple_points.cml'))
         
         # Check that numpy arrays specifications work
-        r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim1', numpy.array([4, 5]))])
+        r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim1', np.array([4, 5]))])
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_multiple_points.cml'))
 
     def test_circular_vs_non_circular_coord(self):
@@ -300,23 +300,23 @@ class TestLinear1dInterpolation(tests.IrisTest):
         # check that the values returned by theta 0 & 360 are the same...
         r1 = iris.analysis.interpolate.linear(self.simple2d_cube_circular, [('theta', 360)])
         r2 = iris.analysis.interpolate.linear(self.simple2d_cube_circular, [('theta', 0)])
-        numpy.testing.assert_array_almost_equal(r1.data, r2.data)
+        np.testing.assert_array_almost_equal(r1.data, r2.data)
         
     def test_simple_multiple_coords(self):
-        expected_result = numpy.array(2.5)
+        expected_result = np.array(2.5)
         r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim1', 4), ('dim2', 3.5), ])
-        numpy.testing.assert_array_equal(r.data, expected_result)
+        np.testing.assert_array_equal(r.data, expected_result)
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_multiple_coords.cml'), checksum=False)
         
         # Check that it doesn't matter if you do the interpolation in separate steps...
         r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim2', 3.5)])
         r = iris.analysis.interpolate.linear(r, [('dim1', 4)])
-        numpy.testing.assert_array_equal(r.data, expected_result)
+        np.testing.assert_array_equal(r.data, expected_result)
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_multiple_coords.cml'), checksum=False)
         
         r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim1', 4)])
         r = iris.analysis.interpolate.linear(r, [('dim2', 3.5)])
-        numpy.testing.assert_array_equal(r.data, expected_result)
+        np.testing.assert_array_equal(r.data, expected_result)
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_multiple_coords.cml'), checksum=False)
     
     def test_coord_not_found(self):
@@ -330,10 +330,10 @@ class TestLinear1dInterpolation(tests.IrisTest):
         r = iris.analysis.interpolate.linear( self.simple2d_cube, [('dim2', 2.5)], extrapolation_mode='linear')
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_coord_linear_extrapolation.cml'))
         
-        numpy.testing.assert_array_equal(r.data, numpy.array([-1.,  2.,  5.,  8.], dtype=self.simple2d_cube.data.dtype))
+        np.testing.assert_array_equal(r.data, np.array([-1.,  2.,  5.,  8.], dtype=self.simple2d_cube.data.dtype))
         
         r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim1', 1)])
-        numpy.testing.assert_array_equal(r.data, numpy.array([-3., -2., -1.], dtype=self.simple2d_cube.data.dtype))
+        np.testing.assert_array_equal(r.data, np.array([-3., -2., -1.], dtype=self.simple2d_cube.data.dtype))
                 
     def test_simple_coord_linear_extrapolation_multipoint1(self):
         r = iris.analysis.interpolate.linear( self.simple2d_cube, [('dim1', [-1, 1, 10, 11])], extrapolation_mode='linear')
@@ -355,7 +355,7 @@ class TestLinear1dInterpolation(tests.IrisTest):
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_multiple_coords_extrapolation.cml'))
         
     def test_lots_of_points(self):
-        r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim1', numpy.linspace(3, 9, 20))])
+        r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim1', np.linspace(3, 9, 20))])
         
     def test_shared_axis(self):
         c = self.simple2d_cube_extended
@@ -371,20 +371,20 @@ class TestLinear1dInterpolation(tests.IrisTest):
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_casting_datatype.cml'))
         
     def test_mask(self):
-        # Test numpy.append bug with masked arrays.
+        # Test np.append bug with masked arrays.
         # Based on the bug reported in https://github.com/SciTools/iris/issues/106
         cube = tests.stock.realistic_4d_w_missing_data()
         cube = cube[0, 2, 18::-1]
         cube.coord('grid_longitude').circular = True
         _ = iris.analysis.interpolate.linear(cube, [('grid_longitude',0), ('grid_latitude',0)])
-        # Did numpy.append go wrong?
+        # Did np.append go wrong?
         self.assertArrayEqual(cube.data.data.shape, cube.data.mask.shape)
     
     def test_scalar_mask(self):
         # Testing the bug raised in https://github.com/SciTools/iris/pull/123#issuecomment-9309872
-        # (the fix workaround for the numpy.append bug failed for scalar masks) 
+        # (the fix workaround for the np.append bug failed for scalar masks) 
         cube = tests.stock.realistic_4d_w_missing_data()
-        cube.data = numpy.ma.arange(numpy.product(cube.shape), dtype=numpy.float32).reshape(cube.shape)
+        cube.data = np.ma.arange(np.product(cube.shape), dtype=np.float32).reshape(cube.shape)
         cube.coord('grid_longitude').circular = True
         # There's no result to test, just make sure we don't cause an exception with the scalar mask.
         _ = iris.analysis.interpolate.linear(cube, [('grid_longitude',0), ('grid_latitude',0)])
@@ -411,14 +411,14 @@ class TestNearestLinearInterpolRealData(tests.IrisTest):
         # check that the values returned by lon 0 & 360 are the same...
         r1 = iris.analysis.interpolate.linear(self.cube, [('longitude', 360)])
         r2 = iris.analysis.interpolate.linear(self.cube, [('longitude', 0)])
-        numpy.testing.assert_array_equal(r1.data, r2.data)
+        np.testing.assert_array_equal(r1.data, r2.data)
 
 
 @iris.tests.skip_data    
 class TestNearestNeighbour(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()
-        points = numpy.arange(self.cube.coord('latitude').shape[0], dtype=numpy.float32)
+        points = np.arange(self.cube.coord('latitude').shape[0], dtype=np.float32)
         coord_to_add = iris.coords.DimCoord(points, long_name='i', units='meters')
         self.cube.add_aux_coord(coord_to_add, 0)
 
@@ -432,7 +432,7 @@ class TestNearestNeighbour(tests.IrisTest):
         self.assertCML(b, ('analysis', 'interpolation', 'nearest_neighbour_extract_latitude_longitude.cml'))
         
         value = iris.analysis.interpolate.nearest_neighbour_data_value(self.cube, point_spec)
-        self.assertEqual(value, numpy.array(285.98785, dtype=numpy.float32))
+        self.assertEqual(value, np.array(285.98785, dtype=np.float32))
 
         # Check that the value back is that which was returned by the extract method
         self.assertEqual(value, b.data)

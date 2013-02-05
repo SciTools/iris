@@ -29,7 +29,7 @@ import re
 import warnings
 import zlib
 
-import numpy
+import numpy as np
 
 import iris.aux_factory
 import iris.exceptions
@@ -115,7 +115,7 @@ class Cell(iris.util._OrderedHashable):
         if bound is not None:
             bound = tuple(bound)
             
-        if isinstance(point, numpy.ndarray):
+        if isinstance(point, np.ndarray):
             point = tuple(point.flatten())
             
         if isinstance(point, (tuple, list)):
@@ -170,7 +170,7 @@ class Cell(iris.util._OrderedHashable):
         Non-Cell vs Cell comparison is used to define Constraint matching.
 
         """
-        if not isinstance(other, (int, float, numpy.number, Cell)):
+        if not isinstance(other, (int, float, np.number, Cell)):
             raise ValueError("Unexpected type of other")
         if operator_method not in (operator.gt, operator.lt,
                                    operator.ge, operator.le):
@@ -264,7 +264,7 @@ class Cell(iris.util._OrderedHashable):
         if self.bound is None:
             raise ValueError('Point cannot exist inside an unbounded cell.')
 
-        return numpy.min(self.bound) <= point <= numpy.max(self.bound)
+        return np.min(self.bound) <= point <= np.max(self.bound)
 
 
 class Coord(CFVariableMixin):
@@ -477,7 +477,7 @@ class Coord(CFVariableMixin):
         if isinstance(other, Coord):
             raise iris.exceptions.NotYetImplementedError('coord %s coord' % Coord._MODE_SYMBOL[mode_constant])
 
-        elif isinstance(other, (int, float, numpy.number)):
+        elif isinstance(other, (int, float, np.number)):
         
             if mode_constant == Coord._MODE_ADD:
                 points = self.points + other
@@ -572,7 +572,7 @@ class Coord(CFVariableMixin):
         """
         if self.bounds is not None:
             self._sanity_check_contiguous()
-            return numpy.all(self.bounds[1:, 0] == self.bounds[:-1, 1])
+            return np.all(self.bounds[1:, 0] == self.bounds[:-1, 1])
         else:
             return False
 
@@ -594,7 +594,7 @@ class Coord(CFVariableMixin):
             self._sanity_check_contiguous()
             bounds = self.bounds
 
-        c_bounds = numpy.resize(bounds[:, 0], bounds.shape[0] + 1)
+        c_bounds = np.resize(bounds[:, 0], bounds.shape[0] + 1)
         c_bounds[-1] = bounds[-1, 1]
         return c_bounds
 
@@ -665,14 +665,14 @@ class Coord(CFVariableMixin):
         """
         index = iris.util._build_full_slice_given_keys(index, self.ndim)
         
-        point = tuple(numpy.array(self.points[index], ndmin=1).flatten())
+        point = tuple(np.array(self.points[index], ndmin=1).flatten())
         if len(point) != 1:
             raise IndexError('The index %s did not uniquely identify a single '
                              'point to create a cell with.' % (index, ))
         
         bound = None
         if self.bounds is not None:
-            bound = tuple(numpy.array(self.bounds[index], ndmin=1).flatten())
+            bound = tuple(np.array(self.bounds[index], ndmin=1).flatten())
             if len(bound) != self.nbounds:
                 raise IndexError('The index %s did not uniquely identify a single '
                                  'bound to create a cell with.' % (index, ))
@@ -687,7 +687,7 @@ class Coord(CFVariableMixin):
         Replaces the points & bounds with a simple bounded region.
         
         """
-        if isinstance(dims_to_collapse, (int, numpy.integer)):
+        if isinstance(dims_to_collapse, (int, np.integer)):
             dims_to_collapse = set([dims_to_collapse])
 
         if dims_to_collapse is None:
@@ -706,17 +706,17 @@ class Coord(CFVariableMixin):
 
         # Create bounds for the new collapsed coordinate.
         if self.bounds is not None:
-            lower_bound, upper_bound = numpy.min(self.bounds), numpy.max(self.bounds)
+            lower_bound, upper_bound = np.min(self.bounds), np.max(self.bounds)
             bounds_dtype = self.bounds.dtype
         else:
-            lower_bound, upper_bound = numpy.min(self.points), numpy.max(self.points)
+            lower_bound, upper_bound = np.min(self.points), np.max(self.points)
             bounds_dtype = self.points.dtype
             
         points_dtype = self.points.dtype
         
         # Create the new collapsed coordinate.
-        coord_collapsed = self.copy(points=numpy.array([(lower_bound + upper_bound) * 0.5], dtype=points_dtype), 
-                                    bounds=numpy.array([lower_bound, upper_bound], dtype=bounds_dtype))
+        coord_collapsed = self.copy(points=np.array([(lower_bound + upper_bound) * 0.5], dtype=points_dtype), 
+                                    bounds=np.array([lower_bound, upper_bound], dtype=bounds_dtype))
         return coord_collapsed
 
     def _guess_bounds(self, bound_position=0.5):
@@ -750,15 +750,15 @@ class Coord(CFVariableMixin):
             raise ValueError('Coord already has bounds. Remove the bounds before'
                              ' guessing new ones.')
 
-        diffs = numpy.diff(self.points)
+        diffs = np.diff(self.points)
 
-        diffs = numpy.insert(diffs, 0, diffs[0])
-        diffs = numpy.append(diffs, diffs[-1])
+        diffs = np.insert(diffs, 0, diffs[0])
+        diffs = np.append(diffs, diffs[-1])
 
         min_bounds = self.points - diffs[:-1] * bound_position
         max_bounds = self.points + diffs[1:] * (1 - bound_position)
 
-        bounds = numpy.array([min_bounds, max_bounds]).transpose()
+        bounds = np.array([min_bounds, max_bounds]).transpose()
 
         return bounds
 
@@ -807,7 +807,7 @@ class Coord(CFVariableMixin):
         if return_indices == False and self_intersect_indices == []:
             raise ValueError('No intersection between %s coords possible.' % self.name())
 
-        self_intersect_indices = numpy.array(self_intersect_indices)
+        self_intersect_indices = np.array(self_intersect_indices)
 
         # return either the indices, or a Coordinate instance of the intersection
         if return_indices:
@@ -832,11 +832,11 @@ class Coord(CFVariableMixin):
         # if the coord has points then find the point which is closest to V
         #     if "closest" results in two matches then return the lowest index
         if self.has_bounds():
-            diff = numpy.abs(self.bounds - point)
+            diff = np.abs(self.bounds - point)
             # where will look like [[first dimension matches], [second dimension matches]]
             # we will just take the first match (in this case,
             # it does not matter what the second dimension was)
-            minimized_diff_indices = numpy.where(diff == numpy.min(diff))[0]
+            minimized_diff_indices = np.where(diff == np.min(diff))[0]
 
             min_index = None
             # If we have more than one result, try picking the result which
@@ -853,8 +853,8 @@ class Coord(CFVariableMixin):
 
         # Then we have points
         else:
-            diff = numpy.abs(self.points - point)
-            min_index = numpy.where(diff == numpy.min(diff))[0][0]
+            diff = np.abs(self.points - point)
+            min_index = np.where(diff == np.min(diff))[0][0]
 
         return min_index
 
@@ -1005,7 +1005,7 @@ class DimCoord(Coord):
             bnds = coord.bounds.copy()
             bnds[0, 1] = coord.bounds[0, 0] + self.units.modulus
             coord.bounds = bnds
-            coord.points = numpy.array(numpy.sum(coord.bounds) * 0.5, dtype=self.points.dtype)
+            coord.points = np.array(np.sum(coord.bounds) * 0.5, dtype=self.points.dtype)
         # XXX This isn't actually correct, but is ported from the old world.
         coord.circular = False
         return coord
@@ -1024,7 +1024,7 @@ class DimCoord(Coord):
 
     @points.setter
     def points(self, points):
-        points = numpy.array(points, ndmin=1)
+        points = np.array(points, ndmin=1)
         # If points are already defined for this coordinate,
         if hasattr(self, '_points') and self._points is not None:
             # Check that setting these points wouldn't change self.shape
@@ -1034,7 +1034,7 @@ class DimCoord(Coord):
         # Checks for 1d, numeric, monotonic
         if points.ndim != 1:
             raise ValueError('The points array must be 1-dimensional.')
-        if not numpy.issubdtype(points.dtype, numpy.number):
+        if not np.issubdtype(points.dtype, np.number):
             raise ValueError('The points array must be numeric.')
         if len(points) > 1 and not iris.util.monotonic(points, strict=True):
             raise ValueError('The points array must be strictly monotonic.')
@@ -1059,11 +1059,11 @@ class DimCoord(Coord):
     def bounds(self, bounds):
         if bounds is not None:
             # Ensure the bounds are a compatible shape.        
-            bounds = numpy.array(bounds, ndmin=2)
+            bounds = np.array(bounds, ndmin=2)
             if self.shape != bounds.shape[:-1]:
                 raise ValueError("Bounds shape must be compatible with points shape.")
             # Checks for numeric and monotonic
-            if not numpy.issubdtype(bounds.dtype, numpy.number):
+            if not np.issubdtype(bounds.dtype, np.number):
                 raise ValueError('The bounds array must be numeric.')
             
             n_bounds = bounds.shape[-1]
@@ -1106,10 +1106,10 @@ class AuxCoord(Coord):
     def _sanitise_array(self, src, ndmin):
         # Ensure the array is writeable.
         # NB. Returns the *same object* if src is already writeable.
-        result = numpy.require(src, requirements='W')
+        result = np.require(src, requirements='W')
         # Ensure the array has enough dimensions.
         # NB. Returns the *same object* if result.ndim >= ndmin
-        result = numpy.array(result, ndmin=ndmin, copy=False)
+        result = np.array(result, ndmin=ndmin, copy=False)
         # We don't need to copy the data, but we do need to have our
         # own view so we can control the shape, etc.
         result = result.view()

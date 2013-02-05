@@ -32,7 +32,7 @@ import sys
 import types
 import warnings
 
-import numpy
+import numpy as np
 
 import iris.config as config
 import iris.cube
@@ -256,8 +256,8 @@ def regular_step(coord):
         raise ValueError("Expected a non-scalar coord")
 
     diffs = coord.points[1:] - coord.points[:-1]
-    avdiff = numpy.mean(diffs)
-    if not numpy.allclose(diffs, avdiff, rtol=0.001):  # TODO: This value is set for test_analysis to pass... 
+    avdiff = np.mean(diffs)
+    if not np.allclose(diffs, avdiff, rtol=0.001):  # TODO: This value is set for test_analysis to pass... 
         raise iris.exceptions.CoordinateNotRegularError("Coord %s is not regular" % coord.name())
     return avdiff.astype(coord.points.dtype)
 

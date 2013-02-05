@@ -30,8 +30,7 @@ import struct
 import sys
 import warnings
 
-import numpy
-import numpy.ma
+import numpy as np
 import netcdftime
 
 import iris.config
@@ -201,13 +200,13 @@ EXTRA_DATA = {
 """A dictionary mapping IB values to their names."""
 
 
-LBUSER_DTYPE_LOOKUP = {1 :numpy.dtype('>f4'), 
-                       2 :numpy.dtype('>i4'), 
-                       3 :numpy.dtype('>i4'),
-                       -1:numpy.dtype('>f4'),
-                       -2:numpy.dtype('>i4'),
-                       -3:numpy.dtype('>i4'),
-                       'default': numpy.dtype('>f4'),
+LBUSER_DTYPE_LOOKUP = {1 :np.dtype('>f4'), 
+                       2 :np.dtype('>i4'), 
+                       3 :np.dtype('>i4'),
+                       -1:np.dtype('>f4'),
+                       -2:np.dtype('>i4'),
+                       -3:np.dtype('>i4'),
+                       'default': np.dtype('>f4'),
                        }
 """Maps lbuser[0] to numpy data type. "default" will be interpreted if no match is found, providing a warning in such a case.""" 
 
@@ -388,7 +387,7 @@ class SplittableInt(object):
             object.__setattr__(self, name, self[index])
         
     def _calculate_value_from_str_value(self):
-        self._value = numpy.sum( [ 10**i * val for i, val in enumerate(self._strvalue)] )
+        self._value = np.sum( [ 10**i * val for i, val in enumerate(self._strvalue)] )
     
     def __len__(self):
         return len(self._strvalue)
@@ -718,14 +717,14 @@ class PPDataProxy(object):
 def _read_data(pp_file, lbpack, data_len, data_shape, data_type, mdi):
     """Read the data from the given file object given its precise location in the file."""
     if lbpack.n1 == 0:
-        data = numpy.fromfile(pp_file, dtype=data_type, count=data_len / data_type.itemsize)
+        data = np.fromfile(pp_file, dtype=data_type, count=data_len / data_type.itemsize)
     elif lbpack.n1 == 1:
         data = pp_file.read(data_len)
         data = pp_packing.wgdos_unpack(data, data_shape[0], data_shape[1], mdi)
     elif lbpack.n1 == 2:
-        data = numpy.fromfile(pp_file, dtype=data_type, count=data_len / data_type.itemsize)
+        data = np.fromfile(pp_file, dtype=data_type, count=data_len / data_type.itemsize)
     elif lbpack.n1 == 4:
-        data = numpy.fromfile(pp_file, dtype=data_type, count=data_len / data_type.itemsize)
+        data = np.fromfile(pp_file, dtype=data_type, count=data_len / data_type.itemsize)
         data = pp_packing.rle_decode(data, data_shape[0], data_shape[1], mdi)
     else:
         raise iris.exceptions.NotYetImplementedError('PP fields with LBPACK of %s are not supported.' % lbpack)
@@ -740,7 +739,7 @@ def _read_data(pp_file, lbpack, data_len, data_shape, data_type, mdi):
 
     # Mask the array? 
     if mdi in data:
-        data = numpy.ma.masked_values(data, mdi, copy=False)
+        data = np.ma.masked_values(data, mdi, copy=False)
     
     return data
 
@@ -918,7 +917,7 @@ class PPField(object):
                 self.domain_title = ''.join(struct.unpack_from('>%dc' % data_len, file_reader(data_len))).rstrip('\00')
             elif ib in EXTRA_DATA:
                 attr_name = EXTRA_DATA[ib]
-                values = numpy.fromfile(pp_file, dtype=numpy.dtype('>f%d' % PP_WORD_DEPTH), count=ia)
+                values = np.fromfile(pp_file, dtype=np.dtype('>f%d' % PP_WORD_DEPTH), count=ia)
                 # Ensure the values are in the native byte order
                 if not values.dtype.isnative:
                     values.byteswap(True)
@@ -932,12 +931,12 @@ class PPField(object):
     @property
     def x_bounds(self):
         if hasattr(self, "x_lower_bound") and hasattr(self, "x_upper_bound"):
-            return numpy.column_stack((self.x_lower_bound, self.x_upper_bound))
+            return np.column_stack((self.x_lower_bound, self.x_upper_bound))
 
     @property
     def y_bounds(self):
         if hasattr(self, "y_lower_bound") and hasattr(self, "y_upper_bound"):
-            return numpy.column_stack((self.y_lower_bound, self.y_upper_bound))
+            return np.column_stack((self.y_lower_bound, self.y_upper_bound))
         
     def save(self, file_handle):
         """
@@ -961,7 +960,7 @@ class PPField(object):
         # Before we can actually write to file, we need to calculate the header elements.
         # First things first, make sure the data is big-endian
         data = self.data
-        if isinstance(data, numpy.ma.core.MaskedArray):
+        if isinstance(data, np.ma.core.MaskedArray):
             data = data.filled(fill_value=self.bmdi)
         
         if data.dtype.newbyteorder('>') != data.dtype:
@@ -970,8 +969,8 @@ class PPField(object):
             data.dtype = data.dtype.newbyteorder('>')
 
         # Create the arrays which will hold the header information
-        lb = numpy.empty(shape=NUM_LONG_HEADERS, dtype=numpy.dtype(">u%d" % PP_WORD_DEPTH))
-        b = numpy.empty(shape=NUM_FLOAT_HEADERS, dtype=numpy.dtype(">f%d" % PP_WORD_DEPTH))
+        lb = np.empty(shape=NUM_LONG_HEADERS, dtype=np.dtype(">u%d" % PP_WORD_DEPTH))
+        b = np.empty(shape=NUM_FLOAT_HEADERS, dtype=np.dtype(">f%d" % PP_WORD_DEPTH))
 
         # Populate the arrays from the PPField
         for name, pos in self.HEADER_DEFN:
@@ -1012,7 +1011,7 @@ class PPField(object):
                     ia /= PP_WORD_DEPTH
                 else:
                     # ia is the datalength in WORDS
-                    ia = numpy.product(extra_elem.shape)
+                    ia = np.product(extra_elem.shape)
                     # flip the byteorder if the data is not big-endian
                     if extra_elem.dtype.newbyteorder('>') != extra_elem.dtype:
                         # take a copy of the extra data when byte swapping
@@ -1042,9 +1041,9 @@ class PPField(object):
         lb[HEADER_DICT['lblrec'][0]] = len_of_data_payload / PP_WORD_DEPTH
 
         # populate lbuser[0] to have the data's datatype
-        if data.dtype == numpy.dtype('>f4'):
+        if data.dtype == np.dtype('>f4'):
             lb[HEADER_DICT['lbuser'][0]] = 1
-        elif data.dtype == numpy.dtype('>i4'):
+        elif data.dtype == np.dtype('>i4'):
             # NB: there is no physical difference between lbuser[0] of 2 or 3 so we encode just 2
             lb[HEADER_DICT['lbuser'][0]] = 2
         else:
@@ -1086,7 +1085,7 @@ class PPField(object):
             if isinstance(extra_data, basestring):
                 pp_file.write(struct.pack(">%sc" % len(extra_data), *extra_data))
             else:
-                extra_data = extra_data.astype(numpy.dtype('>f4'))
+                extra_data = extra_data.astype(np.dtype('>f4'))
                 extra_data.tofile(pp_file)
 
         # Data length (again)
@@ -1116,7 +1115,7 @@ class PPField(object):
         else:
             raise ValueError("'x' or 'y' not supplied")
          
-        return (bz + bd) + bd * numpy.arange(count, dtype=numpy.float32)
+        return (bz + bd) + bd * np.arange(count, dtype=np.float32)
 
     def regular_bounds(self, xy): 
         """Return regular bounds from the PPField, or fail if not regular.
@@ -1134,7 +1133,7 @@ class PPField(object):
             raise ValueError("'x' or 'y' not supplied")
 
         points = self.regular_points(xy) 
-        return numpy.concatenate([[points - delta], [points + delta]]).T 
+        return np.concatenate([[points - delta], [points + delta]]).T 
 
     def time_unit(self, time_unit, epoch='epoch'):
         return iris.unit.Unit('%s since %s' % (time_unit, epoch), calendar=self.calendar)
@@ -1189,7 +1188,7 @@ class PPField(object):
                 value = getattr(self, attr)
                 # Cope with inability to deepcopy a 0-d NumPy array.
                 if attr == '_data' and value is not None and value.ndim == 0:
-                    setattr(field, attr, numpy.array(deepcopy(value[()], memo)))
+                    setattr(field, attr, np.array(deepcopy(value[()], memo)))
                 else:
                     setattr(field, attr, deepcopy(value, memo))
         return field
@@ -1201,7 +1200,7 @@ class PPField(object):
             for attr in self.__slots__:
                 attrs = [hasattr(self, attr), hasattr(other, attr)]
                 if all(attrs):
-                    if not numpy.all(getattr(self, attr) == getattr(other, attr)):
+                    if not np.all(getattr(self, attr) == getattr(other, attr)):
                         result = False
                         break
                 elif any(attrs):
@@ -1358,12 +1357,12 @@ def load(filename, read_data=False):
         # Move past the leading header length word
         pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)
         # Get the LONG header entries
-        header_longs = numpy.fromfile(pp_file, dtype='>i%d' % PP_WORD_DEPTH, count=NUM_LONG_HEADERS)
+        header_longs = np.fromfile(pp_file, dtype='>i%d' % PP_WORD_DEPTH, count=NUM_LONG_HEADERS)
         # Nothing returned => EOF
         if len(header_longs) == 0:
             break
         # Get the FLOAT header entries
-        header_floats = numpy.fromfile(pp_file, dtype='>f%d' % PP_WORD_DEPTH, count=NUM_FLOAT_HEADERS)
+        header_floats = np.fromfile(pp_file, dtype='>f%d' % PP_WORD_DEPTH, count=NUM_FLOAT_HEADERS)
         # Ensure the values are in the native byte order
         if False and not header_longs.dtype.isnative:
             header_longs.byteswap(True)
@@ -1400,7 +1399,7 @@ def load(filename, read_data=False):
             pp_field._data_manager = None
         else:
             # NB. This makes a 0-dimensional array
-            pp_field._data = numpy.array(PPDataProxy(filename, pp_file.tell(), data_len, pp_field.lbpack))
+            pp_field._data = np.array(PPDataProxy(filename, pp_file.tell(), data_len, pp_field.lbpack))
             pp_field._data_manager = iris.fileformats.manager.DataManager(data_shape, data_type, pp_field.bmdi)
 
             # Skip the data

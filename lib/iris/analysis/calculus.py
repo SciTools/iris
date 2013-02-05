@@ -25,7 +25,7 @@ from __future__ import division
 import re
 import warnings
 
-import numpy
+import numpy as np
 
 import iris.cube
 import iris.coords
@@ -326,7 +326,7 @@ def _curl_change_z(src_cube, z_coord, prototype_diff):
     ind = [slice(None, None)] * src_cube.data.ndim 
     z_dim = src_cube.coord_dims(z_coord)[0] 
     ind[z_dim] = slice(-1, None) 
-    new_data = numpy.append(src_cube.data, src_cube.data[tuple(ind)], z_dim)
+    new_data = np.append(src_cube.data, src_cube.data[tuple(ind)], z_dim)
     
     # The existing z_coord doesn't fit the new data so make a
     # new cube using the prototype z_coord.
@@ -352,7 +352,7 @@ def _coord_sin(coord):
         Coord instance with values in either degrees or radians
 
     """
-    return _trig_method(coord, numpy.sin)
+    return _trig_method(coord, np.sin)
 
 
 def _coord_cos(coord):
@@ -365,7 +365,7 @@ def _coord_cos(coord):
         Coord instance with values in either degrees or radians
 
     """
-    return _trig_method(coord, numpy.cos)
+    return _trig_method(coord, np.cos)
 
 
 def _trig_method(coord, trig_function):

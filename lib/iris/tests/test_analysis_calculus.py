@@ -21,7 +21,7 @@ import iris.tests as tests
 
 import unittest
 
-import numpy
+import numpy as np
 
 import iris
 import iris.analysis.calculus
@@ -49,7 +49,7 @@ class TestDeltaAndMidpoint(tests.IrisTest):
         return tests.get_result_path(('analysis', 'delta_and_midpoint', 'simple%s.cml' % suffix))
     
     def test_simple1_delta_midpoint(self):
-        a = iris.coords.DimCoord((numpy.arange(4, dtype=numpy.float32) * 90) - 180, long_name='foo', 
+        a = iris.coords.DimCoord((np.arange(4, dtype=np.float32) * 90) - 180, long_name='foo', 
                                  units='degrees', circular=True)
         self.assertXMLElement(a, self._simple_filename('1'))
 
@@ -60,7 +60,7 @@ class TestDeltaAndMidpoint(tests.IrisTest):
         self.assertXMLElement(midpoint, self._simple_filename('1_midpoint'))
         
     def test_simple2_delta_midpoint(self):
-        a = iris.coords.DimCoord((numpy.arange(4, dtype=numpy.float32) * -90) + 180, long_name='foo', 
+        a = iris.coords.DimCoord((np.arange(4, dtype=np.float32) * -90) + 180, long_name='foo', 
                                  units='degrees', circular=True)
         self.assertXMLElement(a, self._simple_filename('2'))
 
@@ -71,7 +71,7 @@ class TestDeltaAndMidpoint(tests.IrisTest):
         self.assertXMLElement(midpoint, self._simple_filename('2_midpoint'))
 
     def test_simple3_delta_midpoint(self):
-        a = iris.coords.DimCoord((numpy.arange(4, dtype=numpy.float32) * 90) - 180, long_name='foo', 
+        a = iris.coords.DimCoord((np.arange(4, dtype=np.float32) * 90) - 180, long_name='foo', 
                                  units='degrees', circular=True)
         a.guess_bounds(0.5)    
         self.assertXMLElement(a, self._simple_filename('3'))
@@ -83,7 +83,7 @@ class TestDeltaAndMidpoint(tests.IrisTest):
         self.assertXMLElement(midpoint, self._simple_filename('3_midpoint'))
         
     def test_simple4_delta_midpoint(self):
-        a = iris.coords.AuxCoord(numpy.arange(4, dtype=numpy.float32) * 90 - 180, long_name='foo', units='degrees')
+        a = iris.coords.AuxCoord(np.arange(4, dtype=np.float32) * 90 - 180, long_name='foo', units='degrees')
         a.guess_bounds()
         b = a.copy()
         self.assertXMLElement(b, self._simple_filename('4'))
@@ -96,7 +96,7 @@ class TestDeltaAndMidpoint(tests.IrisTest):
         
     def test_simple5_not_degrees_delta_midpoint(self):
         # Not sure it makes sense to have a circular coordinate which does not have a modulus but test it anyway.
-        a = iris.coords.DimCoord(numpy.arange(4, dtype=numpy.float32) * 90 - 180, 
+        a = iris.coords.DimCoord(np.arange(4, dtype=np.float32) * 90 - 180, 
                                  long_name='foo', units='meter', circular=True)
         self.assertXMLElement(a, self._simple_filename('5'))
         
@@ -107,14 +107,14 @@ class TestDeltaAndMidpoint(tests.IrisTest):
         self.assertXMLElement(midpoints, self._simple_filename('5_midpoint'))
         
     def test_simple6_delta_midpoint(self):
-        a = iris.coords.DimCoord(numpy.arange(5, dtype=numpy.float32), long_name='foo', 
+        a = iris.coords.DimCoord(np.arange(5, dtype=np.float32), long_name='foo', 
                                  units='count', circular=True)
         midpoints = iris.analysis.calculus._construct_midpoint_coord(a)
         self.assertXMLElement(midpoints, self._simple_filename('6'))
     
     def test_singular_delta(self):
         # Test single valued coordinate mid-points when circular
-        lon = iris.coords.DimCoord(numpy.float32(-180.), 'latitude', units='degrees', circular=True)
+        lon = iris.coords.DimCoord(np.float32(-180.), 'latitude', units='degrees', circular=True)
         
         r_expl = iris.analysis.calculus._construct_delta_coord(lon)
         self.assertXMLElement(r_expl, ('analysis', 'delta_and_midpoint', 'delta_one_element_explicit.xml'))
@@ -126,7 +126,7 @@ class TestDeltaAndMidpoint(tests.IrisTest):
         
     def test_singular_midpoint(self):
         # Test single valued coordinate mid-points when circular
-        lon = iris.coords.DimCoord(numpy.float32(-180.), 'latitude',  units='degrees', circular=True)
+        lon = iris.coords.DimCoord(np.float32(-180.), 'latitude',  units='degrees', circular=True)
         
         r_expl = iris.analysis.calculus._construct_midpoint_coord(lon)
         self.assertXMLElement(r_expl, ('analysis', 'delta_and_midpoint', 'midpoint_one_element_explicit.xml'))
@@ -139,23 +139,23 @@ class TestDeltaAndMidpoint(tests.IrisTest):
 
 class TestCoordTrig(tests.IrisTest):
     def setUp(self):
-        points = numpy.arange(20, dtype=numpy.float32) * 2.3
-        bounds = numpy.concatenate([[points - 0.5 * 2.3],
+        points = np.arange(20, dtype=np.float32) * 2.3
+        bounds = np.concatenate([[points - 0.5 * 2.3],
                                     [points + 0.5 * 2.3]]).T
         self.lat = iris.coords.AuxCoord(points, 'latitude',  units='degrees', bounds=bounds)
-        self.rlat = iris.coords.AuxCoord(numpy.deg2rad(points), 'latitude',  units='radians', bounds=numpy.deg2rad(bounds))
+        self.rlat = iris.coords.AuxCoord(np.deg2rad(points), 'latitude',  units='radians', bounds=np.deg2rad(bounds))
 
     def test_sin(self):
         sin_of_coord = iris.analysis.calculus._coord_sin(self.lat)
         sin_of_coord_radians = iris.analysis.calculus._coord_sin(self.rlat)
 
         # Check the values are correct (within a tolerance)
-        numpy.testing.assert_array_almost_equal(numpy.sin(self.rlat.points), sin_of_coord.points)
-        numpy.testing.assert_array_almost_equal(numpy.sin(self.rlat.bounds), sin_of_coord.bounds)
+        np.testing.assert_array_almost_equal(np.sin(self.rlat.points), sin_of_coord.points)
+        np.testing.assert_array_almost_equal(np.sin(self.rlat.bounds), sin_of_coord.bounds)
 
         # Check that the results of the sin function are almost equal when operating on a coord with degrees and radians
-        numpy.testing.assert_array_almost_equal(sin_of_coord.points, sin_of_coord_radians.points)
-        numpy.testing.assert_array_almost_equal(sin_of_coord.bounds, sin_of_coord_radians.bounds)
+        np.testing.assert_array_almost_equal(sin_of_coord.points, sin_of_coord_radians.points)
+        np.testing.assert_array_almost_equal(sin_of_coord.bounds, sin_of_coord_radians.bounds)
 
         self.assertEqual(sin_of_coord.name(), 'sin(latitude)')
         self.assertEqual(sin_of_coord.units, '1')
@@ -165,16 +165,16 @@ class TestCoordTrig(tests.IrisTest):
         cos_of_coord_radians = iris.analysis.calculus._coord_cos(self.rlat)
 
         # Check the values are correct (within a tolerance)
-        numpy.testing.assert_array_almost_equal(numpy.cos(self.rlat.points), cos_of_coord.points)
-        numpy.testing.assert_array_almost_equal(numpy.cos(self.rlat.bounds), cos_of_coord.bounds)
+        np.testing.assert_array_almost_equal(np.cos(self.rlat.points), cos_of_coord.points)
+        np.testing.assert_array_almost_equal(np.cos(self.rlat.bounds), cos_of_coord.bounds)
 
         # Check that the results of the cos function are almost equal when operating on a coord with degrees and radians
-        numpy.testing.assert_array_almost_equal(cos_of_coord.points, cos_of_coord_radians.points)
-        numpy.testing.assert_array_almost_equal(cos_of_coord.bounds, cos_of_coord_radians.bounds)
+        np.testing.assert_array_almost_equal(cos_of_coord.points, cos_of_coord_radians.points)
+        np.testing.assert_array_almost_equal(cos_of_coord.bounds, cos_of_coord_radians.bounds)
 
         # Now that we have tested the points & bounds, remove them and just test the xml
-        cos_of_coord = cos_of_coord.copy(points=numpy.array([1], dtype=numpy.float32))
-        cos_of_coord_radians = cos_of_coord_radians.copy(points=numpy.array([1], dtype=numpy.float32))
+        cos_of_coord = cos_of_coord.copy(points=np.array([1], dtype=np.float32))
+        cos_of_coord_radians = cos_of_coord_radians.copy(points=np.array([1], dtype=np.float32))
 
         self.assertXMLElement(cos_of_coord, ('analysis', 'calculus', 'cos_simple.xml'))
         self.assertXMLElement(cos_of_coord_radians, ('analysis', 'calculus', 'cos_simple_radians.xml'))
@@ -183,12 +183,12 @@ class TestCoordTrig(tests.IrisTest):
 class TestCalculusSimple3(tests.IrisTest):
     
     def setUp(self):
-        data = numpy.arange(2500, dtype=numpy.float32).reshape(50, 50)
+        data = np.arange(2500, dtype=np.float32).reshape(50, 50)
         cube = iris.cube.Cube(data, standard_name="x_wind", units="km/h")
         
         self.lonlat_cs = iris.coord_systems.GeogCS(6371229)
-        cube.add_dim_coord(DimCoord(numpy.arange(50, dtype=numpy.float32) * 4.5 -180, 'longitude', units='degrees', coord_system=self.lonlat_cs), 0)
-        cube.add_dim_coord(DimCoord(numpy.arange(50, dtype=numpy.float32) * 4.5 -90,  'latitude', units='degrees', coord_system=self.lonlat_cs), 1)
+        cube.add_dim_coord(DimCoord(np.arange(50, dtype=np.float32) * 4.5 -180, 'longitude', units='degrees', coord_system=self.lonlat_cs), 0)
+        cube.add_dim_coord(DimCoord(np.arange(50, dtype=np.float32) * 4.5 -90,  'latitude', units='degrees', coord_system=self.lonlat_cs), 1)
     
         self.cube = cube  
         
@@ -205,18 +205,18 @@ class TestCalculusSimple3(tests.IrisTest):
 class TestCalculusSimple2(tests.IrisTest):
     
     def setUp(self):
-        data = numpy.array( [[1, 2, 3, 4, 5],
+        data = np.array( [[1, 2, 3, 4, 5],
                              [2, 3, 4, 5, 6],
                              [3, 4, 5, 6, 7],
-                             [4, 5, 6, 7, 9]], dtype=numpy.float32)
+                             [4, 5, 6, 7, 9]], dtype=np.float32)
         cube = iris.cube.Cube(data, standard_name="x_wind", units="km/h")
         
         self.lonlat_cs = iris.coord_systems.GeogCS(6371229)
-        cube.add_dim_coord(DimCoord(numpy.arange(4, dtype=numpy.float32) * 90 -180, 'longitude', units='degrees', circular=True, coord_system=self.lonlat_cs), 0)
-        cube.add_dim_coord(DimCoord(numpy.arange(5, dtype=numpy.float32) * 45 -90, 'latitude', units='degrees', coord_system=self.lonlat_cs), 1)
+        cube.add_dim_coord(DimCoord(np.arange(4, dtype=np.float32) * 90 -180, 'longitude', units='degrees', circular=True, coord_system=self.lonlat_cs), 0)
+        cube.add_dim_coord(DimCoord(np.arange(5, dtype=np.float32) * 45 -90, 'latitude', units='degrees', coord_system=self.lonlat_cs), 1)
     
-        cube.add_aux_coord(DimCoord(numpy.arange(4, dtype=numpy.float32), long_name='x', units='count', circular=True), 0)
-        cube.add_aux_coord(DimCoord(numpy.arange(5, dtype=numpy.float32), long_name='y', units='count'), 1)
+        cube.add_aux_coord(DimCoord(np.arange(4, dtype=np.float32), long_name='x', units='count', circular=True), 0)
+        cube.add_aux_coord(DimCoord(np.arange(5, dtype=np.float32), long_name='y', units='count'), 1)
         
         self.cube = cube  
         
@@ -256,15 +256,15 @@ class TestCalculusSimple2(tests.IrisTest):
 class TestCalculusSimple1(tests.IrisTest):
     
     def setUp(self):
-        data = numpy.array( [ [1, 2, 3, 4, 5],
+        data = np.array( [ [1, 2, 3, 4, 5],
                                    [2, 3, 4, 5, 6],
                                    [3, 4, 5, 6, 7],
                                    [4, 5, 6, 7, 8],
-                                   [5, 6, 7, 8, 10] ], dtype=numpy.float32)
+                                   [5, 6, 7, 8, 10] ], dtype=np.float32)
         cube = iris.cube.Cube(data, standard_name="x_wind", units="km/h")
         
-        cube.add_dim_coord(DimCoord(numpy.arange(5, dtype=numpy.float32), long_name='x', units='count'), 0)
-        cube.add_dim_coord(DimCoord(numpy.arange(5, dtype=numpy.float32), long_name='y', units='count'), 1)
+        cube.add_dim_coord(DimCoord(np.arange(5, dtype=np.float32), long_name='x', units='count'), 0)
+        cube.add_dim_coord(DimCoord(np.arange(5, dtype=np.float32), long_name='y', units='count'), 1)
     
         self.cube = cube  
         
@@ -294,17 +294,17 @@ def build_cube(data, spherical=False):
    
     if spherical:
         hcs = iris.coord_systems.GeogCS(6321)
-        cube.add_dim_coord(DimCoord(numpy.arange(-180, 180, 360./nx, dtype=numpy.float32), 'longitude', units='degrees', coord_system=hcs, circular=True), dimx) 
-        cube.add_dim_coord(DimCoord(numpy.arange(-90, 90, 180./ny, dtype=numpy.float32), 'latitude', units='degrees',coord_system=hcs), dimy)
+        cube.add_dim_coord(DimCoord(np.arange(-180, 180, 360./nx, dtype=np.float32), 'longitude', units='degrees', coord_system=hcs, circular=True), dimx) 
+        cube.add_dim_coord(DimCoord(np.arange(-90, 90, 180./ny, dtype=np.float32), 'latitude', units='degrees',coord_system=hcs), dimy)
 
     else:
-        cube.add_dim_coord(DimCoord(numpy.arange(nx, dtype=numpy.float32) * 2.21 + 2, 'projection_x_coordinate', units='meters'), dimx) 
-        cube.add_dim_coord(DimCoord(numpy.arange(ny, dtype=numpy.float32) * 25 -50, 'projection_y_coordinate', units='meters'), dimy)
+        cube.add_dim_coord(DimCoord(np.arange(nx, dtype=np.float32) * 2.21 + 2, 'projection_x_coordinate', units='meters'), dimx) 
+        cube.add_dim_coord(DimCoord(np.arange(ny, dtype=np.float32) * 25 -50, 'projection_y_coordinate', units='meters'), dimy)
 
     if nz is None:
-        cube.add_aux_coord(DimCoord(numpy.array([10], dtype=numpy.float32), long_name='z', units='meters', attributes={"positive":"up"}))
+        cube.add_aux_coord(DimCoord(np.array([10], dtype=np.float32), long_name='z', units='meters', attributes={"positive":"up"}))
     else:
-        cube.add_dim_coord(DimCoord(numpy.arange(nz, dtype=numpy.float32) * 2, long_name='z', units='meters', attributes={"positive":"up"}), dimz)
+        cube.add_dim_coord(DimCoord(np.arange(nz, dtype=np.float32) * 2, long_name='z', units='meters', attributes={"positive":"up"}), dimz)
     
     return cube    
 
@@ -329,12 +329,12 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         x_pts = x.points.reshape(x_shp)
         y_pts = y.points.reshape(y_shp)
         
-        x_ones = numpy.ones(x_shp)
-        y_ones = numpy.ones(y_shp)
+        x_ones = np.ones(x_shp)
+        y_ones = np.ones(y_shp)
         
         if z_shp:
             z_pts = z.points.reshape(z_shp)
-            z_ones = numpy.ones(z_shp)
+            z_ones = np.ones(z_shp)
         else:
             z_pts = None
             z_ones = None
@@ -345,21 +345,21 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         # testing :
         # F = ( cos(lat) cos(lon) )
         # dF/dLon = - sin(lon) cos(lat)     (and to simplify /cos(lat) )
-        cube = build_cube(numpy.empty((30, 60)), spherical=True)
+        cube = build_cube(np.empty((30, 60)), spherical=True)
 
         x = cube.coord('longitude')
         y = cube.coord('latitude')
         y_dim = cube.coord_dims(y)[0]
 
-        cos_x_pts = numpy.cos(numpy.radians(x.points)).reshape(1, x.shape[0])
-        cos_y_pts = numpy.cos(numpy.radians(y.points)).reshape(y.shape[0], 1)
+        cos_x_pts = np.cos(np.radians(x.points)).reshape(1, x.shape[0])
+        cos_y_pts = np.cos(np.radians(y.points)).reshape(y.shape[0], 1)
     
         cube.data = cos_y_pts * cos_x_pts
     
         lon_coord = x.unit_converted('radians')
         lat_coord = y.unit_converted('radians')
         cos_lat_coord = iris.coords.AuxCoord.from_coord(lat_coord)
-        cos_lat_coord.points = numpy.cos(lat_coord.points)
+        cos_lat_coord.points = np.cos(lat_coord.points)
         cos_lat_coord.units = '1'
         cos_lat_coord.rename('cos({})'.format(lat_coord.name()))
         
@@ -369,19 +369,19 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         x = df_dlon.coord('longitude')
         y = df_dlon.coord('latitude')
         
-        sin_x_pts = numpy.sin(numpy.radians(x.points)).reshape(1, x.shape[0])
-        y_ones = numpy.ones((y.shape[0] , 1))
+        sin_x_pts = np.sin(np.radians(x.points)).reshape(1, x.shape[0])
+        y_ones = np.ones((y.shape[0] , 1))
         
         data = - sin_x_pts * y_ones
         result = df_dlon.copy(data=data)
         
-        numpy.testing.assert_array_almost_equal(result.data, df_dlon.data, decimal=3)
+        np.testing.assert_array_almost_equal(result.data, df_dlon.data, decimal=3)
 
     def test_contrived_differential2(self):        
         # testing :
         # w = y^2
         # dw_dy = 2*y
-        cube = build_cube(numpy.empty((10, 30, 60)), spherical=False)
+        cube = build_cube(np.empty((10, 30, 60)), spherical=False)
         
         x_pts, x_ones, y_pts, y_ones, z_pts, z_ones = self.get_coord_pts(cube)
         
@@ -392,14 +392,14 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         x_pts, x_ones, y_pts, y_ones, z_pts, z_ones = self.get_coord_pts(r)
         result = r.copy(data = y_pts * 2. * x_ones * z_ones)
         
-        numpy.testing.assert_array_almost_equal(result.data, r.data, decimal=6)
+        np.testing.assert_array_almost_equal(result.data, r.data, decimal=6)
 
     def test_contrived_non_spherical_curl1(self):
         # testing :
         # F(x, y, z) = (y, 0, 0)
         # curl( F(x, y, z) ) = (0, 0, -1)
         
-        cube = build_cube(numpy.empty((25, 50)), spherical=False)
+        cube = build_cube(np.empty((25, 50)), spherical=False)
         
         x_pts, x_ones, y_pts, y_ones, z_pts, z_ones = self.get_coord_pts(cube)
         
@@ -420,7 +420,7 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         # F(x, y, z) = (z^3, x+2, y^2)
         # curl( F(x, y, z) ) = (2y, 3z^2, 1)
 
-        cube = build_cube(numpy.empty((10, 25, 50)), spherical=False)
+        cube = build_cube(np.empty((10, 25, 50)), spherical=False)
         
         x_pts, x_ones, y_pts, y_ones, z_pts, z_ones = self.get_coord_pts(cube)
         
@@ -441,16 +441,16 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
 #        result.data = y_pts * 2. * x_ones * z_ones
 #        print repr(r[0].data[0:1, 0:5, 0:25:5])
 #        print repr(result.data[0:1, 0:5, 0:25:5])
-#        numpy.testing.assert_array_almost_equal(result.data, r[0].data, decimal=2)
+#        np.testing.assert_array_almost_equal(result.data, r[0].data, decimal=2)
 #        
 #        result = r[1].copy(data=True)
 #        x_pts, x_ones, y_pts, y_ones, z_pts, z_ones = self.get_coord_pts(result)
 #        result.data = pow(z_pts, 2) * x_ones * y_ones
-#        numpy.testing.assert_array_almost_equal(result.data, r[1].data, decimal=6)
+#        np.testing.assert_array_almost_equal(result.data, r[1].data, decimal=6)
 
         result = r[2].copy()
         result.data = result.data * 0  + 1
-        numpy.testing.assert_array_almost_equal(result.data, r[2].data, decimal=4)
+        np.testing.assert_array_almost_equal(result.data, r[2].data, decimal=4)
  
         self.assertCML(r, ('analysis', 'calculus', 'curl_contrived_cartesian2.cml'), checksum=False)
 
@@ -458,17 +458,17 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         # testing:
         # F(lon, lat, r) = (- r sin(lon), -r cos(lon) sin(lat), 0)
         # curl( F(x, y, z) ) = (0, 0, 0)
-        cube = build_cube(numpy.empty((30, 60)), spherical=True)
+        cube = build_cube(np.empty((30, 60)), spherical=True)
         radius = iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS
 
         x = cube.coord('longitude')
         y = cube.coord('latitude')
 
-        cos_x_pts = numpy.cos(numpy.radians(x.points)).reshape(1, x.shape[0])
-        sin_x_pts = numpy.sin(numpy.radians(x.points)).reshape(1, x.shape[0])
-        cos_y_pts = numpy.cos(numpy.radians(y.points)).reshape(y.shape[0], 1)
-        sin_y_pts = numpy.sin(numpy.radians(y.points)).reshape(y.shape[0], 1)
-        y_ones = numpy.ones((cube.shape[0], 1))
+        cos_x_pts = np.cos(np.radians(x.points)).reshape(1, x.shape[0])
+        sin_x_pts = np.sin(np.radians(x.points)).reshape(1, x.shape[0])
+        cos_y_pts = np.cos(np.radians(y.points)).reshape(y.shape[0], 1)
+        sin_y_pts = np.sin(np.radians(y.points)).reshape(y.shape[0], 1)
+        y_ones = np.ones((cube.shape[0], 1))
     
         u = cube.copy(data=-sin_x_pts * y_ones * radius)
         v = cube.copy(data=-cos_x_pts * sin_y_pts * radius)
@@ -480,24 +480,24 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         result = r.copy(data=r.data * 0)
         
         # Note: This numerical comparison was created when the radius was 1000 times smaller
-        numpy.testing.assert_array_almost_equal(result.data[5:-5], r.data[5:-5]/1000.0, decimal=1)
+        np.testing.assert_array_almost_equal(result.data[5:-5], r.data[5:-5]/1000.0, decimal=1)
         self.assertCML(r, ('analysis', 'calculus', 'grad_contrived1.cml'), checksum=False)
 
     def test_contrived_sphrical_curl2(self):
         # testing:
         # F(lon, lat, r) = (r sin(lat) cos(lon), -r sin(lon), 0)
         # curl( F(x, y, z) ) = (0, 0, -2 cos(lon) cos(lat) )
-        cube = build_cube(numpy.empty((70, 150)), spherical=True)
+        cube = build_cube(np.empty((70, 150)), spherical=True)
         radius = iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS
 
         x = cube.coord('longitude')
         y = cube.coord('latitude')
 
-        cos_x_pts = numpy.cos(numpy.radians(x.points)).reshape(1, x.shape[0])
-        sin_x_pts = numpy.sin(numpy.radians(x.points)).reshape(1, x.shape[0])
-        cos_y_pts = numpy.cos(numpy.radians(y.points)).reshape(y.shape[0], 1)
-        sin_y_pts = numpy.sin(numpy.radians(y.points)).reshape(y.shape[0], 1)
-        y_ones = numpy.ones((cube.shape[0] , 1))
+        cos_x_pts = np.cos(np.radians(x.points)).reshape(1, x.shape[0])
+        sin_x_pts = np.sin(np.radians(x.points)).reshape(1, x.shape[0])
+        cos_y_pts = np.cos(np.radians(y.points)).reshape(y.shape[0], 1)
+        sin_y_pts = np.sin(np.radians(y.points)).reshape(y.shape[0], 1)
+        y_ones = np.ones((cube.shape[0] , 1))
     
         u = cube.copy(data=sin_y_pts * cos_x_pts * radius)
         v = cube.copy(data=-sin_x_pts * y_ones * radius)
@@ -507,7 +507,7 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         lon_coord = x.unit_converted('radians')
         lat_coord = y.unit_converted('radians')
         cos_lat_coord = iris.coords.AuxCoord.from_coord(lat_coord)
-        cos_lat_coord.points = numpy.cos(lat_coord.points)
+        cos_lat_coord.points = np.cos(lat_coord.points)
         cos_lat_coord.units = '1'
         cos_lat_coord.rename('cos({})'.format(lat_coord.name()))
 
@@ -516,19 +516,19 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         x = r.coord('longitude')
         y = r.coord('latitude')
         
-        cos_x_pts = numpy.cos(numpy.radians(x.points)).reshape(1, x.shape[0])
-        cos_y_pts = numpy.cos(numpy.radians(y.points)).reshape(y.shape[0], 1)
+        cos_x_pts = np.cos(np.radians(x.points)).reshape(1, x.shape[0])
+        cos_y_pts = np.cos(np.radians(y.points)).reshape(y.shape[0], 1)
         
         result = r.copy(data=2*cos_x_pts*cos_y_pts)
         
         # Note: This numerical comparison was created when the radius was 1000 times smaller
-        numpy.testing.assert_array_almost_equal(result.data[30:-30, :], r.data[30:-30, :]/1000.0, decimal=1)
+        np.testing.assert_array_almost_equal(result.data[30:-30, :], r.data[30:-30, :]/1000.0, decimal=1)
         self.assertCML(r, ('analysis', 'calculus', 'grad_contrived2.cml'), checksum=False)
 
 
 class TestCurlInterface(tests.IrisTest):
     def test_non_conformed(self):
-        u = build_cube(numpy.empty((50, 20)), spherical=True)
+        u = build_cube(np.empty((50, 20)), spherical=True)
         
         v = u.copy()
         y = v.coord('latitude')
@@ -537,7 +537,7 @@ class TestCurlInterface(tests.IrisTest):
         
     def test_standard_name(self):
         nx = 20; ny = 50; nz = None;
-        u = build_cube(numpy.empty((50, 20)), spherical=True)
+        u = build_cube(np.empty((50, 20)), spherical=True)
         v = u.copy()
         w = u.copy()
         u.rename('u_wind')
