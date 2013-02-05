@@ -356,8 +356,10 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
     
         cube.data = cos_y_pts * cos_x_pts
     
-        lon_coord = x.unit_converted('radians')
-        lat_coord = y.unit_converted('radians')
+        lon_coord = x.copy()
+        lon_coord.convert_units('radians')
+        lat_coord = y.copy()
+        lat_coord.convert_units('radians')
         cos_lat_coord = iris.coords.AuxCoord.from_coord(lat_coord)
         cos_lat_coord.points = numpy.cos(lat_coord.points)
         cos_lat_coord.units = '1'
@@ -504,8 +506,10 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         u.rename('u_wind')
         v.rename('v_wind')
     
-        lon_coord = x.unit_converted('radians')
-        lat_coord = y.unit_converted('radians')
+        lon_coord = x.copy()
+        lon_coord.convert_units('radians')
+        lat_coord = y.copy()
+        lat_coord.convert_units('radians')
         cos_lat_coord = iris.coords.AuxCoord.from_coord(lat_coord)
         cos_lat_coord.points = numpy.cos(lat_coord.points)
         cos_lat_coord.units = '1'

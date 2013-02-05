@@ -605,6 +605,34 @@ class TestConvert(TestUnit):
         self.assertEqual(res[0], e[0])
         self.assertEqual(res[1], e[1])
 
+    def test_convert_int(self):
+        u = Unit("mile")
+        v = Unit("meter")
+        self.assertEqual(u.convert(1, v), 1609.344)
+
+    def test_convert_int_array(self):
+        u = Unit("mile")
+        v = Unit("meter")
+        a = np.arange(2, dtype=np.int) + 1
+        res = u.convert(a, v)
+        e = (np.arange(2, dtype=np.float64) + 1) * 1609.344
+        self.assertArrayAlmostEqual(res, e)
+
+    def test_convert_int_array_ctypearg(self):
+        u = Unit("mile")
+        v = Unit("meter")
+        a = np.arange(2, dtype=np.int) + 1
+
+        res = u.convert(a, v, unit.FLOAT32)
+        e = (np.arange(2, dtype=np.float32) + 1) * 1609.344
+        self.assertEqual(res.dtype, e.dtype)
+        self.assertArrayAlmostEqual(res, e)
+
+        res = u.convert(a, v, unit.FLOAT64)
+        e = (np.arange(2, dtype=np.float64) + 1) * 1609.344
+        self.assertEqual(res.dtype, e.dtype)
+        self.assertArrayAlmostEqual(res, e)
+
     def test_convert_fail_0(self):
         u = Unit('unknown')
         v = Unit('no unit')

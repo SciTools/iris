@@ -105,34 +105,6 @@ class CFVariableMixin(object):
             self.long_name = unicode(name)
 
     @property
-    def unit(self):
-        """
-        The :mod:`iris.unit.Unit` instance representing the unit of the phenomenon.
-        
-        .. deprecated:: 0.9
-        
-            :attr:`.unit` has been deprecated. Use :attr:`.units` instead.
-        """
-        msg = 'The `unit` property is deprecated. Please use `units` instead.'
-        warnings.warn(msg, UserWarning, stacklevel=2)
-        return self.units
-
-    @unit.setter
-    def unit(self, unit):
-        msg = 'The `unit` property is deprecated. Please use `units` instead.'
-        warnings.warn(msg, UserWarning, stacklevel=2)
-        self.units = unit
-
-    @property
-    def units(self):
-        """The :mod:`~iris.unit.Unit` instance of the phenomenon."""
-        return self._units
-
-    @units.setter
-    def units(self, unit):
-        self._units = iris.unit.as_unit(unit)
-
-    @property
     def standard_name(self):
         """The standard name for the Cube's data."""
         return self._standard_name
@@ -143,6 +115,15 @@ class CFVariableMixin(object):
             self._standard_name = name
         else:
             raise ValueError('%r is not a valid standard_name' % name)
+
+    @property
+    def units(self):
+        """The :mod:`~iris.unit.Unit` instance of the object."""
+        return self._units
+
+    @units.setter
+    def units(self, unit):
+        self._units = iris.unit.as_unit(unit)
 
     @property
     def attributes(self):

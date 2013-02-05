@@ -403,7 +403,7 @@ def _multiply_divide_common(operation_function, operation_symbol, operation_noun
             else:
                 history = '%s %s array' % (cube.name(), operation_symbol)
         
-        other_unit = 'unknown'
+        other_unit = '1'
     elif isinstance(other, iris.coords.Coord):
         # Deal with cube multiplication/division by coordinate
 
