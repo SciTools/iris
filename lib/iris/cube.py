@@ -706,7 +706,8 @@ class Cube(CFVariableMixin):
 
         return matches[0]
 
-    def aux_factory(self, name=None, standard_name=None, long_name=None):
+    def aux_factory(self, name=None, standard_name=None, long_name=None,
+                    var_name=None):
         """
         Returns the single coordinate factory that matches the criteria,
         or raises an error if not found.
@@ -720,7 +721,10 @@ class Cube(CFVariableMixin):
             If None, does not check for standard name. 
         * long_name 
             An unconstrained description of the coordinate factory.
-            If None, does not check for long_name. 
+            If None, does not check for long_name.
+        * var_name
+            The CF variable name of the desired coordinate factory.
+            If None, does not check for var_name.
 
         .. note::
 
@@ -746,12 +750,19 @@ class Cube(CFVariableMixin):
                 raise ValueError('The long_name keyword is expecting a string type only. Got %s.' % type(long_name))
             factories = filter(lambda factory: factory.long_name == long_name, factories)
 
+        if var_name is not None:
+            if not isinstance(var_name, basestring):
+                raise ValueError('The var_name keyword is expecting a string '
+                                 'type only. Got {}.'.format(type(var_name)))
+            factories = filter(lambda factory: factory.var_name == var_name,
+                               factories)
+
         if len(factories) > 1:
             msg = 'Expected to find exactly 1 coordinate factory, but found %s. They were: %s.' \
                     % (len(coords), ', '.join(factory.name() for factory in factories))
             raise iris.exceptions.CoordinateNotFoundError(msg)
         elif len(factories) == 0:
-            bad_name = name or standard_name or long_name
+            bad_name = name or standard_name or long_name or var_name
             msg = 'Expected to find exactly 1 %s coordinate factory, but found none.' % bad_name
             raise iris.exceptions.CoordinateNotFoundError(msg)
 

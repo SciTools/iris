@@ -129,6 +129,7 @@ class CFVariableMixin(object):
     def units(self, unit):
         self._units = iris.unit.as_unit(unit)
 
+    @property
     def var_name(self):
         """The CF variable name for the object."""
         return self._var_name
