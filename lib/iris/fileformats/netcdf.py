@@ -32,6 +32,7 @@ import warnings
 import iris.proxy
 iris.proxy.apply_proxy('netCDF4', globals())
 import numpy as np
+import numpy.ma as ma
 from pyke import knowledge_engine
 
 import iris.analysis
@@ -597,7 +598,7 @@ def _create_cf_data_variable(dataset, cube, dimension_names):
     
     # Determine whether there is a cube MDI value.
     fill_value = None
-    if isinstance(cube.data, np.ma.core.MaskedArray):
+    if isinstance(cube.data, ma.core.MaskedArray):
         fill_value = cube.data.fill_value
         
     # Create the cube CF-netCDF data variable with data payload.

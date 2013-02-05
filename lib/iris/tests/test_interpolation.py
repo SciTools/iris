@@ -22,6 +22,7 @@ Test the interpolation of Iris cubes.
 import iris.tests as tests
 
 import numpy as np
+import numpy.ma as ma
 from scipy.interpolate import interp1d
 
 import iris
@@ -384,7 +385,7 @@ class TestLinear1dInterpolation(tests.IrisTest):
         # Testing the bug raised in https://github.com/SciTools/iris/pull/123#issuecomment-9309872
         # (the fix workaround for the np.append bug failed for scalar masks) 
         cube = tests.stock.realistic_4d_w_missing_data()
-        cube.data = np.ma.arange(np.product(cube.shape), dtype=np.float32).reshape(cube.shape)
+        cube.data = ma.arange(np.product(cube.shape), dtype=np.float32).reshape(cube.shape)
         cube.coord('grid_longitude').circular = True
         # There's no result to test, just make sure we don't cause an exception with the scalar mask.
         _ = iris.analysis.interpolate.linear(cube, [('grid_longitude',0), ('grid_latitude',0)])

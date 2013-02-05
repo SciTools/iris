@@ -29,6 +29,7 @@ import cartopy.crs as ccrs
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.ma as ma
 import shapely.geometry
 
 import iris
@@ -278,7 +279,7 @@ class TestMissingData(tests.IrisTest):
         self.cube_with_nan.data[2, 3] = np.nan
 
         self.cube_with_mask = tests.stock.simple_2d()
-        self.cube_with_mask.data = np.ma.array(self.cube_with_nan.data,
+        self.cube_with_mask.data = ma.array(self.cube_with_nan.data,
                                                   mask=np.isnan(self.cube_with_nan.data))
 
     def test_max(self):
@@ -349,10 +350,10 @@ class TestAggregators(tests.IrisTest):
         self.assertCML(gt6, ('analysis', 'proportion_foo_bar_2d.cml'), checksum=False)
 
         # mask the data
-        cube.data = np.ma.array(cube.data, mask=cube.data % 2)
+        cube.data = ma.array(cube.data, mask=cube.data % 2)
         cube.data.mask[1, 2] = True
         gt6_masked = cube.collapsed('bar', iris.analysis.PROPORTION, function=lambda val: val >= 6)
-        np.testing.assert_array_almost_equal(gt6_masked.data, np.ma.array([1 / 3, None, 1 / 2, None],
+        np.testing.assert_array_almost_equal(gt6_masked.data, ma.array([1 / 3, None, 1 / 2, None],
                                                                                 mask=[False, True, False, True],
                                                                                 dtype=np.float32))
         self.assertCML(gt6_masked, ('analysis', 'proportion_foo_2d_masked.cml'), checksum=False)

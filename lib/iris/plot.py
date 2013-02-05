@@ -33,6 +33,7 @@ import matplotlib.transforms as mpl_transforms
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
 import numpy as np
+import numpy.ma as ma
 import cartopy.crs
 import cartopy.mpl.geoaxes
 
@@ -381,7 +382,7 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
         _, direction = iris.util.monotonic(x_coord.points, return_direction=True)
         y = np.append(y, y[:, 0:1], axis=1)
         x = np.append(x, x[:, 0:1] + 360 * direction, axis=1)
-        data = np.ma.concatenate([data, data[:, 0:1]], axis=1)
+        data = ma.concatenate([data, data[:, 0:1]], axis=1)
 
     # Replace non-cartopy subplot/axes with a cartopy alternative.
     cs = cube.coord_system('CoordSystem')

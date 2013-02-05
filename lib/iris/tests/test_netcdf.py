@@ -26,7 +26,7 @@ import os
 import warnings
 
 import netCDF4 as nc
-import numpy as np
+import numpy.ma as ma
 
 import iris
 import iris.std_names
@@ -59,7 +59,7 @@ class TestNetCDFLoad(tests.IrisTest):
         
         # Check the masked array fill value is propogated through the data manager loading.
 	lnsp = cubes[1]
-        self.assertTrue(np.ma.isMaskedArray(lnsp.data))
+        self.assertTrue(ma.isMaskedArray(lnsp.data))
         self.assertEqual(-32767.0, lnsp.data.fill_value)
 
     def test_load_global_xyzt_gems_iter(self):

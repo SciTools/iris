@@ -47,6 +47,7 @@ import matplotlib
 import matplotlib.testing.compare as mcompare
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.ma as ma
 
 import iris.cube
 import iris.config
@@ -205,7 +206,7 @@ class IrisTest(unittest.TestCase):
             
             result = np.load(reference_path)
             if isinstance(result, np.lib.npyio.NpzFile):
-                self.assertIsInstance(cube.data, np.ma.MaskedArray, 'Cube data was not a masked array.')
+                self.assertIsInstance(cube.data, ma.MaskedArray, 'Cube data was not a masked array.')
                 mask = result['mask']
                 # clear the cube's data where it is masked to avoid any non-initialised array data
                 cube.data.data[cube.data.mask] = cube.data.fill_value
@@ -216,7 +217,7 @@ class IrisTest(unittest.TestCase):
         else:
             self._ensure_folder(reference_path)
             logger.warning('Creating result file: %s', reference_path)
-            if isinstance(cube.data, np.ma.MaskedArray):
+            if isinstance(cube.data, ma.MaskedArray):
                 # clear the cube's data where it is masked to avoid any non-initialised array data
                 data = cube.data.data[cube.data.mask] = cube.data.fill_value
                 np.savez(file(reference_path, 'wb'), data=data, mask=cube.data.mask)

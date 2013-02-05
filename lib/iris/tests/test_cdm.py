@@ -26,6 +26,7 @@ import re
 import warnings
 
 import numpy as np
+import numpy.ma as ma
 
 import iris
 import iris.analysis
@@ -937,16 +938,16 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
         # This pp field has no missing data values
         cube = iris.load_cube(tests.get_data_path(["PP", "mdi_handmade_small", "mdi_test_1000_3.pp"]))
 
-        self.assertTrue(isinstance(cube.data, np.ndarray), "Expected a np.ndarray")
+        self.assertTrue(isinstance(cube.data, np.ndarray), "Expected a numpy.ndarray")
 
     def test_masked_field(self):
         # This pp field has some missing data values
         cube = iris.load_cube(tests.get_data_path(["PP", "mdi_handmade_small", "mdi_test_1000_0.pp"]))
-        self.assertTrue(isinstance(cube.data, np.ma.core.MaskedArray), "Expected a np.ma.core.MaskedArray")
+        self.assertTrue(isinstance(cube.data, ma.core.MaskedArray), "Expected a numpy.ma.core.MaskedArray")
 
     def test_missing_file(self):
         cube = self._load_3d_cube()
-        self.assertTrue(isinstance(cube.data, np.ma.core.MaskedArray), "Expected a np.ma.core.MaskedArray")
+        self.assertTrue(isinstance(cube.data, ma.core.MaskedArray), "Expected a numpy.ma.core.MaskedArray")
         self.assertCML(cube, ('cdm', 'masked_cube.cml'))
         
     def test_slicing(self):
@@ -956,16 +957,16 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
         full_slice = cube[3]
         partial_slice = cube[0]
         self.assertTrue(isinstance(full_slice.data, np.ndarray), "Expected a numpy array")
-        self.assertTrue(isinstance(partial_slice.data, np.ma.core.MaskedArray), "Expected a np.ma.core.MaskedArray")
-        self.assertEqual(np.ma.count_masked(partial_slice._data), 25)
+        self.assertTrue(isinstance(partial_slice.data, ma.core.MaskedArray), "Expected a numpy.ma.core.MaskedArray")
+        self.assertEqual(ma.count_masked(partial_slice._data), 25)
 
         # Test the slicing is consistent after deferred loading
         cube.data
         full_slice = cube[3]
         partial_slice = cube[0]
         self.assertTrue(isinstance(full_slice.data, np.ndarray), "Expected a numpy array")
-        self.assertTrue(isinstance(partial_slice.data, np.ma.core.MaskedArray), "Expected a np.ma.core.MaskedArray")
-        self.assertEqual(np.ma.count_masked(partial_slice._data), 25)
+        self.assertTrue(isinstance(partial_slice.data, ma.core.MaskedArray), "Expected a numpy.ma.core.MaskedArray")
+        self.assertEqual(ma.count_masked(partial_slice._data), 25)
 
     def test_save_and_merge(self):
         cube = self._load_3d_cube()

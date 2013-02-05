@@ -31,6 +31,7 @@ import sys
 import warnings
 
 import numpy as np
+import numpy.ma as ma
 import netcdftime
 
 import iris.config
@@ -739,7 +740,7 @@ def _read_data(pp_file, lbpack, data_len, data_shape, data_type, mdi):
 
     # Mask the array? 
     if mdi in data:
-        data = np.ma.masked_values(data, mdi, copy=False)
+        data = ma.masked_values(data, mdi, copy=False)
     
     return data
 
@@ -960,7 +961,7 @@ class PPField(object):
         # Before we can actually write to file, we need to calculate the header elements.
         # First things first, make sure the data is big-endian
         data = self.data
-        if isinstance(data, np.ma.core.MaskedArray):
+        if isinstance(data, ma.core.MaskedArray):
             data = data.filled(fill_value=self.bmdi)
         
         if data.dtype.newbyteorder('>') != data.dtype:

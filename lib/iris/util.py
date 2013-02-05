@@ -27,6 +27,7 @@ import tempfile
 import time
 
 import numpy as np
+import numpy.ma as ma
 
 
 def broadcast_weights(weights, array, dims):
@@ -362,7 +363,7 @@ def monotonic(array, strict=False, return_direction=False):
     if array.ndim != 1 or len(array) <= 1:
         raise ValueError('The array to check must be 1 dimensional and have more than 1 element.')
 
-    if np.ma.isMaskedArray(array) and np.ma.count_masked(array) != 0:
+    if ma.isMaskedArray(array) and ma.count_masked(array) != 0:
         raise ValueError('The array to check contains missing data.')
  
     # Identify the directions of the largest/most-positive and
@@ -705,7 +706,7 @@ def clip_string(the_str, clip_length=70, rider = "..."):
 
 
 def ensure_array(a):
-    if not isinstance(a, (np.ndarray, np.ma.core.MaskedArray)):
+    if not isinstance(a, (np.ndarray, ma.core.MaskedArray)):
         a = np.array([a])
     return a
 

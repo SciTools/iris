@@ -20,6 +20,7 @@ import warnings
 
 import gribapi
 import numpy as np
+import numpy.ma as ma
 
 import iris
 import iris.unit
@@ -452,7 +453,7 @@ def identification(cube, grib):
 def data(cube, grib):
 
     # mdi
-    if isinstance(cube.data, np.ma.core.MaskedArray):
+    if isinstance(cube.data, ma.core.MaskedArray):
         gribapi.grib_set_double(grib, "missingValue", float(cube.data.fill_value))
         data = cube.data.filled()
     else:

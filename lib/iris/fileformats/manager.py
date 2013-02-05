@@ -23,6 +23,7 @@ from copy import deepcopy
 import types
 
 import numpy as np
+import numpy.ma as ma
 
 import iris.util
 
@@ -146,7 +147,7 @@ class DataManager(iris.util._OrderedHashable):
 
         # catch the situation where exactly one element from the proxy_array is requested:
         # (A MaskedConstant is an instance of a numpy array, so check for this specifically too) 
-        if (not isinstance(new_proxy_array, np.ndarray)) or (isinstance(new_proxy_array, np.ma.core.MaskedConstant)):
+        if (not isinstance(new_proxy_array, np.ndarray)) or (isinstance(new_proxy_array, ma.core.MaskedConstant)):
             new_proxy_array = np.array(new_proxy_array)
         
         # get the ndim of the data manager array
@@ -251,7 +252,7 @@ class DataManager(iris.util._OrderedHashable):
             raw_data = np.empty(array_shape,
                                 dtype=self.data_type.newbyteorder('='))
             mask = np.ones(array_shape, dtype=np.bool)
-            data = np.ma.MaskedArray(raw_data, mask=mask,
+            data = ma.MaskedArray(raw_data, mask=mask,
                                      fill_value=self.mdi)
         except ValueError:
             raise DataManager.ArrayTooBigForAddressSpace(
@@ -265,13 +266,13 @@ class DataManager(iris.util._OrderedHashable):
 
                 # Explicitly set the data fill value when no mdi value has been specified
                 # in order to override default masked array fill value behaviour.
-                if self.mdi is None and np.ma.isMaskedArray(payload):
+                if self.mdi is None and ma.isMaskedArray(payload):
                     data.fill_value = payload.fill_value
 
                 data[index] = payload
 
         # we can turn the masked array into a normal array if it's full.
-        if np.ma.count_masked(data) == 0:
+        if ma.count_masked(data) == 0:
             data = data.filled() 
 
         # take a copy of the data as it may be discontiguous (i.e. when numpy "fancy" indexing has taken place)

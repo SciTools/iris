@@ -25,6 +25,7 @@ import warnings
 from copy import deepcopy
 
 import numpy as np
+import numpy.ma as ma
 import scipy
 import scipy.spatial
 from scipy.interpolate.interpolate import interp1d
@@ -667,7 +668,7 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
 #                             axis=sample_dim)
             # This is the alternative, temporary workaround.
             # It doesn't use append on an nD mask.
-            if (not isinstance(cube.data, np.ma.MaskedArray) or
+            if (not isinstance(cube.data, ma.MaskedArray) or
                 not isinstance(cube.data.mask, np.ndarray) or
                 len(cube.data.mask.shape) == 0):
                 data = np.append(cube.data,
@@ -680,7 +681,7 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
                 new_mask = np.append(cube.data.mask,
                                      cube.data.mask[tuple(coord_slice_in_cube)],
                                      axis=sample_dim)
-                data = np.ma.array(new_data, mask=new_mask)
+                data = ma.array(new_data, mask=new_mask)
                 
         else:
             src_points = src_coord.points

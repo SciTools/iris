@@ -24,6 +24,7 @@ from collections import namedtuple, Iterable
 from copy import deepcopy
 
 import numpy as np
+import numpy.ma as ma
 
 import iris.cube
 import iris.coords
@@ -955,8 +956,8 @@ class ProtoCube(object):
                     merged_cube._data = data
             
             # Unmask the array only if it is filled.
-            if isinstance(merged_cube._data, np.ma.core.MaskedArray):
-                if np.ma.count_masked(merged_cube._data) == 0:
+            if isinstance(merged_cube._data, ma.core.MaskedArray):
+                if ma.count_masked(merged_cube._data) == 0:
                     merged_cube._data = merged_cube._data.filled()
 
             merged_cubes.append(merged_cube)
@@ -1145,13 +1146,13 @@ class ProtoCube(object):
         # (The CubeML checksum doesn't respect the mask, so we zero the
         # underlying data to ensure repeatable checksums.)
         if signature.data_manager is None:
-            data = np.ma.MaskedArray(np.zeros(self._shape,
-                                              signature.data_type),
-                                     mask=np.ones(self._shape, 'bool'),
-                                     fill_value=signature.mdi)
+            data = ma.MaskedArray(np.zeros(self._shape,
+                                           signature.data_type),
+                                  mask=np.ones(self._shape, 'bool'),
+                                  fill_value=signature.mdi)
         else:
-            data = np.ma.MaskedArray(np.zeros(self._shape, 'object'),
-                                     mask=np.ones(self._shape, 'bool'))
+            data = ma.MaskedArray(np.zeros(self._shape, 'object'),
+                                  mask=np.ones(self._shape, 'bool'))
 
         cube = iris.cube.Cube(data,
                               dim_coords_and_dims=dim_coords_and_dims,
@@ -1258,7 +1259,7 @@ class ProtoCube(object):
 
         if data_manager is None:
             data_type = cube._data.dtype.name
-            if isinstance(cube.data, np.ma.core.MaskedArray):
+            if isinstance(cube.data, ma.core.MaskedArray):
                 mdi = cube.data.fill_value
         else:
             data_type = data_manager.data_type.name

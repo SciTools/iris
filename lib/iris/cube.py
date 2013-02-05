@@ -31,6 +31,7 @@ import warnings
 import zlib
 
 import numpy as np
+import numpy.ma as ma
 
 import iris.analysis
 import iris.analysis.maths
@@ -1297,8 +1298,8 @@ class Cube(CFVariableMixin):
             data = data.copy()
             
         # We can turn a masked array into a normal array if it's full.
-        if isinstance(data, np.ma.core.MaskedArray):
-            if np.ma.count_masked(data) == 0:
+        if isinstance(data, ma.core.MaskedArray):
+            if ma.count_masked(data) == 0:
                 data = data.filled() 
 
         # Make the new cube slice            
@@ -1628,7 +1629,7 @@ class Cube(CFVariableMixin):
                     data = np.ascontiguousarray(data)
                 crc = hex(zlib.crc32(data))
                 data_xml_element.setAttribute("checksum", crc)
-                if isinstance(data, np.ma.core.MaskedArray):
+                if isinstance(data, ma.core.MaskedArray):
                     crc = hex(zlib.crc32(data.mask))
                     data_xml_element.setAttribute("mask_checksum", crc)
             elif self._data_manager is not None:

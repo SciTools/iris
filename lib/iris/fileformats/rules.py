@@ -33,6 +33,7 @@ import types
 import warnings
 
 import numpy as np
+import numpy.ma as ma
 
 import iris.config as config
 import iris.cube

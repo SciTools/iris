@@ -24,6 +24,7 @@ import warnings
 
 import cartopy.img_transform
 import numpy as np
+import numpy.ma as ma
 
 import iris.analysis
 import iris.coords
@@ -532,7 +533,7 @@ def project(cube, target_proj, nx=None, ny=None):
     new_shape = list(cube.shape)
     new_shape[xdim] = nx
     new_shape[ydim] = ny
-    new_data = np.ma.zeros(new_shape, cube.data.dtype)
+    new_data = ma.zeros(new_shape, cube.data.dtype)
 
     # Create iterators to step through cube data in lat long slices
     new_shape[xdim] = 1

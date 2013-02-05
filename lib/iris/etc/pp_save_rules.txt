@@ -620,12 +620,12 @@ THEN
 
 #MDI
 IF
-    isinstance(cm.data, np.ma.core.MaskedArray)
+    isinstance(cm.data, ma.core.MaskedArray)
 THEN
     pp.bmdi = cm.data.fill_value
 
 IF
-    not isinstance(cm.data, np.ma.core.MaskedArray)
+    not isinstance(cm.data, ma.core.MaskedArray)
 THEN
     pp.bmdi = -1e30
 

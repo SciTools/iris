@@ -21,6 +21,7 @@ import iris.tests as tests
 
 import gribapi
 import numpy as np
+import numpy.ma as ma
 import mock
 
 import iris.cube
@@ -69,7 +70,7 @@ class Test_data(tests.IrisTest):
     @mock.patch.object(gribapi, "grib_set_double")
     def test_masked_array(self, mock_set_double, grib_set_double_array):
         grib = None
-        cube = iris.cube.Cube(np.ma.MaskedArray([1,2,3,4,5], fill_value=54321)) 
+        cube = iris.cube.Cube(ma.MaskedArray([1,2,3,4,5], fill_value=54321)) 
 
         grib_save_rules.data(cube, grib)
 

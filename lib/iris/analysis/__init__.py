@@ -33,6 +33,7 @@ from copy import deepcopy
 from functools import partial
 
 import numpy as np
+import numpy.ma as ma
 import scipy.stats.mstats
 
 import iris.coords
@@ -441,15 +442,15 @@ def _percentile(data, axis, percent, **kwargs):
 def _count(array, function, axis, **kwargs):
     if not callable(function):
         raise ValueError('function must be a callable. Got %s.' % type(function))
-    return np.ma.sum(function(array), axis=axis, **kwargs)
+    return ma.sum(function(array), axis=axis, **kwargs)
 
 
 def _proportion(array, function, axis, **kwargs):
     # if the incoming array is masked use that to count the total number of values
-    if isinstance(array, np.ma.MaskedArray):
+    if isinstance(array, ma.MaskedArray):
         # calculate the total number of non-masked values across the given axis
         total_non_masked = _count(array.mask, lambda v: v == False, axis=axis, **kwargs)
-        total_non_masked = np.ma.masked_equal(total_non_masked, 0)
+        total_non_masked = ma.masked_equal(total_non_masked, 0)
     else:
         total_non_masked = array.shape[axis] 
         
@@ -515,7 +516,7 @@ For example, to compute zonal harmonic means::
 
 MAX = Aggregator('Maximum of {standard_name:s} {action:s} {coord_names:s}',
               'maximum',
-              np.ma.max)
+              ma.max)
 """
 The maximum, as computed by :func:`numpy.ma.max`.
 
@@ -528,7 +529,7 @@ For example, to compute zonal maximums::
 
 MEAN = WeightedAggregator('Mean of {standard_name:s} {action:s} {coord_names:s}',
                'mean',
-               np.ma.average)
+               ma.average)
 """
 The mean, as computed by :func:`numpy.ma.average`.
 
@@ -555,7 +556,7 @@ For example::
 
 MEDIAN = Aggregator('Median of {standard_name:s} {action:s} {coord_names:s}',
                  'median',
-                 np.ma.median)
+                 ma.median)
 """
 The median, as computed by :func:`numpy.ma.median`.
 
@@ -568,7 +569,7 @@ For example, to compute zonal medians::
 
 MIN = Aggregator('Minimum of {standard_name:s} {action:s} {coord_names:s}',
               'minimum',
-              np.ma.min)
+              ma.min)
 """
 The minimum, as computed by :func:`numpy.ma.min`.
 
@@ -649,7 +650,7 @@ For example, to compute zonal root mean square::
 
 STD_DEV = Aggregator('Standard deviation of {standard_name:s} {action:s} {coord_names:s} (delta degrees of freedom: {ddof:d})',
                   'standard_deviation',
-                  np.ma.std,
+                  ma.std,
                   ddof=1)
 """
 The standard deviation, as computed by :func:`numpy.ma.std`.
@@ -673,7 +674,7 @@ For example, to obtain the biased standard deviation::
 
 SUM = Aggregator('Sum of {standard_name:s} {action:s} {coord_names:s}',
               'sum',
-              np.ma.sum)
+              ma.sum)
 """
 The sum of a dataset, as computed by :func:`numpy.ma.sum`.
 
@@ -686,7 +687,7 @@ For example, to compute an accumulation over time::
 
 VARIANCE = Aggregator('Variance of {standard_name:s} {action:s} {coord_names:s} (delta degrees of freedom: {ddof:d})',
                    'variance',
-                   np.ma.var,
+                   ma.var,
                    ddof=1)
 """
 The variance, as computed by :func:`numpy.ma.var`.

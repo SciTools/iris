@@ -23,6 +23,7 @@ import os.path
 import warnings
 
 import numpy as np
+import numpy.ma as ma
 
 from iris.cube import Cube
 import iris.aux_factory
@@ -402,7 +403,7 @@ def realistic_4d_no_derived():
 def realistic_4d_w_missing_data():
     data_path = os.path.join(os.path.dirname(__file__), 'stock_mdi_arrays.npz')
     data_archive = np.load(data_path)
-    data = np.ma.masked_array(data_archive['arr_0'], mask=data_archive['arr_1'])
+    data = ma.masked_array(data_archive['arr_0'], mask=data_archive['arr_1'])
 
     # sort the arrays based on the order they were originally given. The names given are of the form 'arr_1' or 'arr_10'
     

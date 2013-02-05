@@ -559,6 +559,7 @@ fc_extras
 
     import netCDF4
     import numpy as np
+    import numpy.ma as ma
 
     import iris.aux_factory
     import iris.coords
@@ -829,8 +830,8 @@ fc_extras
         attr_units = get_attr_units(cf_coord_var, attributes)
         points_data = cf_coord_var[:]
         # Gracefully fill points masked array.
-        if np.ma.isMaskedArray(points_data):
-            points_data = np.ma.filled(points_data)
+        if ma.isMaskedArray(points_data):
+            points_data = ma.filled(points_data)
             msg = 'Gracefully filling {!r} dimension coordinate masked points'
             warnings.warn(msg.format(str(cf_coord_var.cf_name)))
 
@@ -841,8 +842,8 @@ fc_extras
         if attr_bounds is not None:
             bounds_data = cf_coord_var.cf_group.bounds[attr_bounds][:]
             # Gracefully fill bounds masked array.
-            if np.ma.isMaskedArray(bounds_data):
-                bounds_data = np.ma.filled(bounds_data)
+            if ma.isMaskedArray(bounds_data):
+                bounds_data = ma.filled(bounds_data)
                 msg = 'Gracefully filling {!r} dimension coordinate masked bounds'
                 warnings.warn(msg.format(str(cf_coord_var.cf_name)))
 
