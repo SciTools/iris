@@ -231,34 +231,48 @@ class TestXML(tests.IrisTest):
         self.assertXMLElement(coord, ('coord_api', 'complex.xml'))
 
 
-class TestCoordRepr(unittest.TestCase):
+class TestCoord_ReprStr_nontime(tests.IrisTest):
     def setUp(self):
-        self.lat = iris.tests.stock.realistic_4d().coord('grid_latitude')
+        self.lat = iris.tests.stock.realistic_4d().coord('grid_latitude')[:10]
+
+    def test_DimCoord_repr(self):
+        self.assertRepr(self.lat,
+                        ('coord_api', 'str_repr', 'dim_nontime_repr.txt'))
+
+    def test_AuxCoord_repr(self):
+        self.assertRepr(self.lat,
+                        ('coord_api', 'str_repr', 'aux_nontime_repr.txt'))
+
+    def test_DimCoord_str(self):
+        self.assertString(str(self.lat),
+                          ('coord_api', 'str_repr', 'dim_nontime_str.txt'))
+
+    def test_AuxCoord_str(self):
+        self.assertString(str(self.lat),
+                          ('coord_api', 'str_repr', 'aux_nontime_str.txt'))
+
+
+class TestCoord_ReprStr_time(tests.IrisTest):
+    def setUp(self):
+        self.time = iris.tests.stock.realistic_4d().coord('time')
         
-    def test_DimCoord(self):
-        result = "DimCoord(array([-0.1278, -0.1269, -0.126 , -0.1251, -0.1242, -0.1233, -0.1224,\n       "\
-                 "-0.1215, -0.1206, -0.1197], dtype=float32), bounds=array([[-0.12825, -0.12735],\n       "\
-                 "[-0.12735, -0.12645],\n       [-0.12645, -0.12555],\n       [-0.12555, -0.12465],\n       "\
-                 "[-0.12465, -0.12375],\n       [-0.12375, -0.12285],\n       [-0.12285, -0.12195],\n       "\
-                 "[-0.12195, -0.12105],\n       [-0.12105, -0.12015],\n       [-0.12015, -0.11925]], dtype=float32), "\
-                 "standard_name='grid_latitude', units=Unit('degrees'), coord_system=RotatedGeogCS(37.5, 177.5, "\
-                 "ellipsoid=GeogCS(6371229.0)))"
-        self.maxDiff = None
-        self.assertMultiLineEqual(result, repr(self.lat[:10]))
-        
-    def test_AuxCoord(self):
-        result = "AuxCoord(array([-0.1278, -0.1269, -0.126 , -0.1251, -0.1242, -0.1233, -0.1224,\n       "\
-                 "-0.1215, -0.1206, -0.1197], dtype=float32), bounds=array([[-0.12825, -0.12735],\n       "\
-                 "[-0.12735, -0.12645],\n       [-0.12645, -0.12555],\n       [-0.12555, -0.12465],\n       "\
-                 "[-0.12465, -0.12375],\n       [-0.12375, -0.12285],\n       [-0.12285, -0.12195],\n       "\
-                 "[-0.12195, -0.12105],\n       [-0.12105, -0.12015],\n       [-0.12015, -0.11925]], dtype=float32), "\
-                 "standard_name='grid_latitude', units=Unit('degrees'), coord_system=RotatedGeogCS(37.5, 177.5, "\
-                 "ellipsoid=GeogCS(6371229.0)))"
-        coord = iris.coords.AuxCoord.from_coord(self.lat[:10])
-        self.maxDiff = None
-        self.assertMultiLineEqual(result, repr(coord))
-        
-        
+    def test_DimCoord_repr(self):
+        self.assertRepr(self.time,
+                        ('coord_api', 'str_repr', 'dim_time_repr.txt'))
+
+    def test_AuxCoord_repr(self):
+        self.assertRepr(self.time,
+                        ('coord_api', 'str_repr', 'aux_time_repr.txt'))
+
+    def test_DimCoord_str(self):
+        self.assertString(str(self.time),
+                          ('coord_api', 'str_repr', 'dim_time_str.txt'))
+
+    def test_AuxCoord_str(self):
+        self.assertString(str(self.time),
+                          ('coord_api', 'str_repr', 'aux_time_str.txt'))
+
+
 class TestAuxCoordCreation(unittest.TestCase):
     def test_basic(self):
         a = iris.coords.AuxCoord(range(10), 'air_temperature', units='kelvin')

@@ -1,4 +1,4 @@
-air_potential_temperature           (grid_longitude: 100)
+air_potential_temperature / K       (grid_longitude: 100)
      Dimension coordinates:
           grid_longitude                           x
      Auxiliary coordinates:
@@ -11,6 +11,6 @@ air_potential_temperature           (grid_longitude: 100)
           level_height: 5.0 m, bound=(0.0, 13.3333) m
           model_level_number: 1
           sigma: 0.999424, bound=(1.0, 0.998464)
-          time: 347921.166667 hours since 1970-01-01 00:00:00
+          time: 2009-09-09 17:10:00
      Attributes:
           source: Iris test case

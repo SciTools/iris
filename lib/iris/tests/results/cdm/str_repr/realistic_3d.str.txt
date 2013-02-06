@@ -1,4 +1,4 @@
-air_potential_temperature           (model_level_number: 70; grid_latitude: 100; grid_longitude: 100)
+air_potential_temperature / K       (model_level_number: 70; grid_latitude: 100; grid_longitude: 100)
      Dimension coordinates:
           model_level_number                           x                  -                    -
           grid_latitude                                -                  x                    -
@@ -11,6 +11,6 @@ air_potential_temperature           (model_level_number: 70; grid_latitude: 100;
           altitude                                     x                  x                    x
      Scalar coordinates:
           forecast_period: 0.0 hours
-          time: 347921.166667 hours since 1970-01-01 00:00:00
+          time: 2009-09-09 17:10:00
      Attributes:
           source: Iris test case

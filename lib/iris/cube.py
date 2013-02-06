@@ -319,15 +319,15 @@ class Cube(CFVariableMixin):
 
         >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
         >>> print cube
-        air_temperature                     (latitude: 73; longitude: 96)
+        air_temperature / K                 (latitude: 73; longitude: 96)
              Dimension coordinates:
                   latitude                           x              -
                   longitude                          -              x
              Scalar coordinates:
                   forecast_period: 6477 hours
-                  forecast_reference_time: 243363.0 hours since 1970-01-01 00:00:00
+                  forecast_reference_time: 1998-03-01 03:00:00
                   pressure: 1000.0 hPa
-                  time: 232560.0 hours since 1970-01-01 00:00:00, bound=(215280.0, 249840.0) hours since 1970-01-01 00:00:00
+                  time: 1996-12-01 00:00:00, bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
              Attributes:
                   STASH: m01s16i203
                   source: Data from Met Office Unified Model
@@ -1074,12 +1074,17 @@ class Cube(CFVariableMixin):
         if self.shape == ():
             dimension_header = 'scalar cube'
         else:
-            dimension_header = '; '.join([', '.join(dim_names[dim] or ['*ANONYMOUS*']) + 
-                                         ': %d' % dim_shape for dim, dim_shape in enumerate(self.shape)])
+            dimension_header = '; '.join(
+                [', '.join(dim_names[dim] or ['*ANONYMOUS*']) +
+                ': %d' % dim_shape for dim, dim_shape in enumerate(self.shape)])
 
-        cube_header = '%-*s (%s)' % (name_padding, self.name() or 'unknown', dimension_header)
+        nameunit = '{name} / {units}'.format(name=self.name(), units=self.units)
+        cube_header = '{nameunit!s:{length}} ({dimension})'.format(
+            length=name_padding,
+            nameunit=nameunit,
+            dimension=dimension_header)
         summary = ''
-        
+
         # Generate full cube textual summary.
         if not shorten:
             indent = 10
@@ -1092,7 +1097,8 @@ class Cube(CFVariableMixin):
             dim_coords = self.dim_coords
             aux_coords = self.aux_coords
             all_coords = dim_coords + aux_coords + derived_coords
-            scalar_coords = [coord for coord in all_coords if not self.coord_dims(coord) and coord.shape == (1,)]
+            scalar_coords = [coord for coord in all_coords if not
+                             self.coord_dims(coord) and coord.shape == (1,)]
             # Determine the cube coordinates that are not scalar BUT dimensioned.
             scalar_coord_ids = set(map(id, scalar_coords))
             vector_dim_coords = [coord for coord in dim_coords if id(coord) not in scalar_coord_ids]
@@ -1178,7 +1184,8 @@ class Cube(CFVariableMixin):
 
             if scalar_coords:
                 for coord in scalar_coords:
-                    if coord.units in ['1', 'no_unit', 'unknown']:
+                    if (coord.units in ['1', 'no_unit', 'unknown'] or
+                        coord.units.time_reference):
                         unit = ''
                     else:
                         unit = ' {!s}'.format(coord.units)
@@ -1187,28 +1194,45 @@ class Cube(CFVariableMixin):
                     # has a bound
                     coord_cell = coord.cell(0)
                     if isinstance(coord_cell.point, basestring):
-                        # indent string type coordinates
+                        # Indent string type coordinates
                         coord_cell_split = [iris.util.clip_string(str(item)) for
                                             item in coord_cell.point.split('\n')]
-                        line_sep = '\n{pad:{width}}'.format(pad=' ', width=indent +
-                                                            len(coord.name()) + 2)
-                        coord_cell_str = line_sep.join(coord_cell_split) + unit
+                        line_sep = '\n{pad:{width}}'.format(
+                            pad=' ', width=indent + len(coord.name()) + 2)
+                        coord_cell_str = line_sep.join(
+                            coord_cell_split) + unit
                     else:
-                        coord_cell_str = '{!s}{}'.format(coord_cell.point, unit)
+                        # Human readable times
+                        if coord.units.time_reference:
+                            coord_cell_cpoint = coord.units.num2date(
+                                coord_cell.point)
+                            if coord_cell.bound is not None:
+                                coord_cell_cbound = coord.units.num2date(
+                                    coord_cell.bound)
+                        else:
+                            coord_cell_cpoint = coord_cell.point
+                            coord_cell_cbound = coord_cell.bound
+                            
+                        coord_cell_str = '{!s}{}'.format(coord_cell_cpoint,
+                                                         unit)
                         if coord_cell.bound is not None:
-                            bound = '({})'.format(', '.join(str(val) for val in
-                                                            coord_cell.bound))
-                            coord_cell_str += ', bound={}{}'.format(bound, unit)
+                            bound = '({})'.format(', '.join(str(val) for
+                                                  val in coord_cell_cbound))
+                            coord_cell_str += ', bound={}{}'.format(bound,
+                                                                    unit)
 
-                    scalar_summary.append('{pad:{width}}{name}: {cell}'.format(pad=' ',
-                                                                               width=indent,
-                                                                               name=coord.name(),
-                                                                               cell=coord_cell_str))
+                    scalar_summary.append('{pad:{width}}{name}: {cell}'.format(
+                        pad=' ', width=indent, name=coord.name(),
+                        cell=coord_cell_str))
 
-                # Interleave any extra lines that are needed to distinguish the coordinates.
-                scalar_summary = self._summary_extra(scalar_coords, scalar_summary, extra_indent)
+                # Interleave any extra lines that are needed to distinguish
+                # the coordinates.
+                scalar_summary = self._summary_extra(scalar_coords,
+                                                     scalar_summary,
+                                                     extra_indent)
 
-                summary += '\n     Scalar coordinates:\n' + '\n'.join(scalar_summary)
+                summary += '\n     Scalar coordinates:\n' + '\n'.join(
+                    scalar_summary)
 
             #
             # Generate summary of cube's invalid coordinates.
@@ -1817,7 +1841,7 @@ class Cube(CFVariableMixin):
             >>> cube = iris.load_cube(iris.sample_data_path('ostia_monthly.nc'))
             >>> new_cube = cube.collapsed('longitude', iris.analysis.MEAN)
             >>> print new_cube
-            surface_temperature                 (time: 54; latitude: 18)
+            surface_temperature / K             (time: 54; latitude: 18)
                  Dimension coordinates:
                       time                           x             -
                       latitude                       -             x
@@ -1931,7 +1955,7 @@ class Cube(CFVariableMixin):
             >>> cat.add_year(cube, 'time', name='year')
             >>> new_cube = cube.aggregated_by('year', iris.analysis.MEAN)
             >>> print new_cube
-            surface_temperature                 (*ANONYMOUS*: 5; latitude: 18; longitude: 432)
+            surface_temperature / K             (*ANONYMOUS*: 5; latitude: 18; longitude: 432)
                  Dimension coordinates:
                       latitude                              -            x              -
                       longitude                             -            -              x
@@ -2047,7 +2071,7 @@ class Cube(CFVariableMixin):
             >>> fname = iris.sample_data_path('GloSea4', 'ensemble_010.pp')
             >>> air_press = iris.load_cube(fname, 'surface_temperature')
             >>> print air_press
-            surface_temperature                 (time: 6; latitude: 145; longitude: 192)
+            surface_temperature / K             (time: 6; latitude: 145; longitude: 192)
                  Dimension coordinates:
                       time                           x            -               -
                       latitude                       -            x               -
@@ -2055,7 +2079,7 @@ class Cube(CFVariableMixin):
                  Auxiliary coordinates:
                       forecast_period                x            -               -
                  Scalar coordinates:
-                      forecast_reference_time: 364272.0 hours since 1970-01-01 00:00:00
+                      forecast_reference_time: 2011-07-23 00:00:00
                       realization: 10
                  Attributes:
                       STASH: m01s00i024
@@ -2065,7 +2089,7 @@ class Cube(CFVariableMixin):
 
 
             >>> print air_press.rolling_window('time', iris.analysis.MEAN, 3)
-            surface_temperature                 (time: 4; latitude: 145; longitude: 192)
+            surface_temperature / K             (time: 4; latitude: 145; longitude: 192)
                  Dimension coordinates:
                       time                           x            -               -
                       latitude                       -            x               -
@@ -2073,7 +2097,7 @@ class Cube(CFVariableMixin):
                  Auxiliary coordinates:
                       forecast_period                x            -               -
                  Scalar coordinates:
-                      forecast_reference_time: 364272.0 hours since 1970-01-01 00:00:00
+                      forecast_reference_time: 2011-07-23 00:00:00
                       realization: 10
                  Attributes:
                       STASH: m01s00i024

@@ -298,9 +298,9 @@ def extract_nearest_neighbour(cube, sample_points):
     For example:
         >>> cube = iris.load_cube(iris.sample_data_path('ostia_monthly.nc'))
         >>> iris.analysis.interpolate.extract_nearest_neighbour(cube, [('latitude', 0), ('longitude', 10)])
-        <iris 'Cube' of surface_temperature (time: 54)>
+        <iris 'Cube' of surface_temperature / K (time: 54)>
         >>> iris.analysis.interpolate.extract_nearest_neighbour(cube, [('latitude', 0)])
-        <iris 'Cube' of surface_temperature (time: 54; longitude: 432)>
+        <iris 'Cube' of surface_temperature / K (time: 54; longitude: 432)>
     
     Args:
 

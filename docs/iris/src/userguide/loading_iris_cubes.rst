@@ -28,8 +28,8 @@ In order to find out what has been loaded, the result can be printed:
     >>> filename = iris.sample_data_path('uk_hires.pp')
     >>> cubes = iris.load(filename)
     >>> print cubes
-    0: air_potential_temperature           (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
-    1: surface_altitude                    (grid_latitude: 204; grid_longitude: 187)
+    0: air_potential_temperature / K       (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
+    1: surface_altitude / m                (grid_latitude: 204; grid_longitude: 187)
 
 
 This shows that there were 2 cubes as a result of loading the file, they were: ``air_potential_temperature``
@@ -68,7 +68,7 @@ example, list indexing *could* be used:
     >>> # get the first cube (list indexing is 0 based)
     >>> air_potential_temperature = cubes[0]
     >>> print air_potential_temperature
-    air_potential_temperature           (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
+    air_potential_temperature / K       (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
          Dimension coordinates:
               time                           x                      -                 -                    -
               model_level_number             -                      x                 -                    -
@@ -82,7 +82,7 @@ example, list indexing *could* be used:
          Derived coordinates:
               altitude                       -                      x                 x                    x
          Scalar coordinates:
-              forecast_reference_time: 349612.0 hours since 1970-01-01 00:00:00
+              forecast_reference_time: 2009-11-19 04:00:00
          Attributes:
               STASH: m01s00i004
               source: Data from Met Office Unified Model 7.03

@@ -310,7 +310,8 @@ class Coord(CFVariableMixin):
         * attributes
             A dictionary containing other cf and user-defined attributes.
         * coord_system
-            A :class:`~iris.coord_systems.CoordSystem`, e.g a :class:`~iris.coord_systems.GeogCS` for a longitude Coord.
+            A :class:`~iris.coord_systems.CoordSystem`,
+            e.g. a :class:`~iris.coord_systems.GeogCS` for a longitude Coord.
 
         """
         self.standard_name = standard_name
@@ -323,7 +324,8 @@ class Coord(CFVariableMixin):
         """Unit of the quantity that the coordinate represents."""
 
         self.attributes = attributes
-        """Other attributes, including user specified attributes that have no meaning to Iris."""
+        """Other attributes, including user specified attributes that have no
+        meaning to Iris."""
 
         self.coord_system = coord_system
         """Relevant CoordSystem (if any)."""    
@@ -336,8 +338,9 @@ class Coord(CFVariableMixin):
         Returns a new Coord whose values are obtained by conventional array indexing.
 
         .. note:: 
-            Indexing of a circular coordinate results in a non-circular coordinate
-            if the overall shape of the coordinate changes after indexing.
+            Indexing of a circular coordinate results in a non-circular
+            coordinate if the overall shape of the coordinate changes after
+            indexing.
 
         """
         # Turn the key(s) into a full slice spec - i.e. one entry for
@@ -414,23 +417,50 @@ class Coord(CFVariableMixin):
     def bounds(self):
         """Property containing the bound values as a numpy array"""
 
-    def _format_metadata(self):
-        result = "standard_name=%r, units=%r" % (self.standard_name, self.units)
+    def _repr_other_metadata(self):
+        fmt = ''
         if self.long_name:
-            result += ', long_name=%r' % self.long_name
+            fmt = ', long_name={self.long_name!r}'
         if len(self.attributes) > 0:
-            result += ", attributes=" + str(self.attributes)
+            fmt += ', attributes={self.attributes}'
         if self.coord_system:
-            result += ", coord_system=" + str(self.coord_system)
+            fmt += ', coord_system={self.coord_system}'
+        result = fmt.format(self=self)
         return result
-    
+
+    def _str_dates(self, dates_as_numbers):
+        # Chop off the 'array(' prefix and the ', dtype=object)'
+        # suffix.
+        return repr(self.units.num2date(dates_as_numbers))[6:-15]
+
+    def __str__(self):
+        if self.units.time_reference:
+            fmt = '{cls}({points}{bounds}' \
+                  ', standard_name={self.standard_name!r}' \
+                  ', calendar={self.units.calendar!r}{other_metadata})'
+            points = self._str_dates(self.points)
+            bounds = ''
+            if self.bounds is not None:
+                bounds = ', bounds=' + self._str_dates(self.bounds)
+            result = fmt.format(self=self, cls=type(self).__name__,
+                                points=points, bounds=bounds,
+                                other_metadata=self._repr_other_metadata())
+        else:
+            result = repr(self)
+        return result
+
     def __repr__(self):
-        result = '%s(%r' % (self.__class__.__name__, self.points)
+        fmt = '{cls}({self.points!r}{bounds}' \
+              ', standard_name={self.standard_name!r}, units={self.units!r}' \
+              '{other_metadata})'
+        bounds = ''
         if self.bounds is not None:
-            result += ', bounds=%r' % self.bounds
-        result += ', %s)' % self._format_metadata()
+            bounds = ', bounds=' + repr(self.bounds)
+        result = fmt.format(self=self, cls=type(self).__name__,
+                            bounds=bounds,
+                            other_metadata=self._repr_other_metadata())
         return result
-    
+
     def __eq__(self, other):
         eq = NotImplemented
         # if the other object has a means of getting its definition, and whether
@@ -1024,7 +1054,7 @@ class DimCoord(Coord):
         return result
     
     # The __ne__ operator from Coord implements the not __eq__ method.
-    
+
     def __getitem__(self, key):
         coord = super(DimCoord, self).__getitem__(key)
         coord.circular = self.circular and coord.shape == self.shape
@@ -1040,13 +1070,13 @@ class DimCoord(Coord):
         # XXX This isn't actually correct, but is ported from the old world.
         coord.circular = False
         return coord
-    
-    def _format_metadata(self):
-        result = Coord._format_metadata(self)
+
+    def _repr_other_metadata(self):
+        result = Coord._repr_other_metadata(self)
         if self.circular:
             result += ', circular=%r' % self.circular
         return result
-    
+
     @property
     def points(self):
         """The local points values as a read-only NumPy array."""
