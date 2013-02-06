@@ -26,7 +26,7 @@ from xml.dom.minidom import Document
 import os.path
 import logging
 
-import numpy
+import numpy as np
 
 import iris
 import iris.aux_factory
@@ -44,7 +44,7 @@ class TestLazy(unittest.TestCase):
     def setUp(self):
         # Start with a coord with LazyArray points.
         shape = (3, 4)
-        point_func = lambda: numpy.arange(12).reshape(shape)
+        point_func = lambda: np.arange(12).reshape(shape)
         points = iris.aux_factory.LazyArray(shape, point_func)
         self.coord = iris.coords.AuxCoord(points=points)
 
@@ -74,8 +74,8 @@ class TestLazy(unittest.TestCase):
         # of the original LazyArray, and result in a normal ndarray for
         # the new coord.
         self.assertIsInstance(self.coord._points, iris.aux_factory.LazyArray)
-        self.assertIsInstance(self.coord._points._array, numpy.ndarray)
-        self.assertIsInstance(new_coord._points, numpy.ndarray)
+        self.assertIsInstance(self.coord._points._array, np.ndarray)
+        self.assertIsInstance(new_coord._points, np.ndarray)
 
     def test_concrete_slice1(self):
         self._check_concrete(self.coord[0])
@@ -93,12 +93,12 @@ class TestLazy(unittest.TestCase):
         # coord's points too.
         points = coord.points
         new_points = coord[:].points
-        numpy.testing.assert_array_equal(points, new_points)
+        np.testing.assert_array_equal(points, new_points)
         points[0, 0] = 999
         self.assertEqual(points[0, 0], new_points[0, 0])
 
     def test_concrete_shared_data(self):
-        coord = iris.coords.AuxCoord(numpy.arange(12).reshape((3, 4)))
+        coord = iris.coords.AuxCoord(np.arange(12).reshape((3, 4)))
         self._check_shared_data(coord)
 
     def test_lazy_shared_data(self):
@@ -131,8 +131,8 @@ class TestCoordSlicing(unittest.TestCase):
 
     def test_slice_reverse(self):
         b = self.lat[::-1]
-        numpy.testing.assert_array_equal(b.points, self.lat.points[::-1])
-        numpy.testing.assert_array_equal(b.bounds, self.lat.bounds[::-1, :])
+        np.testing.assert_array_equal(b.points, self.lat.points[::-1])
+        np.testing.assert_array_equal(b.bounds, self.lat.bounds[::-1, :])
         
         c = b[::-1]
         self.assertEqual(self.lat, c)
@@ -141,18 +141,18 @@ class TestCoordSlicing(unittest.TestCase):
         a = self.surface_altitude
         # make some arbitrary bounds
         bound_shape = a.shape + (2,)
-        a.bounds = numpy.arange(numpy.prod(bound_shape)).reshape(bound_shape)
+        a.bounds = np.arange(np.prod(bound_shape)).reshape(bound_shape)
         b = a[(0, 2), (0, -1)]
-        numpy.testing.assert_array_equal(b.points, a.points[(0, 2), :][:, (0, -1)])
-        numpy.testing.assert_array_equal(b.bounds, a.bounds[(0, 2), :, :][:, (0, -1), :])
+        np.testing.assert_array_equal(b.points, a.points[(0, 2), :][:, (0, -1)])
+        np.testing.assert_array_equal(b.bounds, a.bounds[(0, 2), :, :][:, (0, -1), :])
 
 
 class TestCoordIntersection(tests.IrisTest):
     def setUp(self):
-        self.a = iris.coords.DimCoord(numpy.arange(9., dtype=numpy.float32) * 3 + 9., long_name='foo', units='meter')# 0.75)
+        self.a = iris.coords.DimCoord(np.arange(9., dtype=np.float32) * 3 + 9., long_name='foo', units='meter')# 0.75)
         self.a.guess_bounds(0.75)
-        pts = numpy.array([  3.,   6.,   9.,  12.,  15.,  18.,  21.,  24.,  27.,  30.], dtype=numpy.float32)
-        bnds = numpy.array([[  0.75,   3.75],
+        pts = np.array([  3.,   6.,   9.,  12.,  15.,  18.,  21.,  24.,  27.,  30.], dtype=np.float32)
+        bnds = np.array([[  0.75,   3.75],
            [  3.75,   6.75],
            [  6.75,   9.75],
            [  9.75,  12.75],
@@ -161,7 +161,7 @@ class TestCoordIntersection(tests.IrisTest):
            [ 18.75,  21.75],
            [ 21.75,  24.75],
            [ 24.75,  27.75],
-           [ 27.75,  30.75]], dtype=numpy.float32)
+           [ 27.75,  30.75]], dtype=np.float32)
         self.b = iris.coords.AuxCoord(pts, long_name='foo', units='meter', bounds=bnds)
     
     def test_basic_intersection(self):
@@ -216,13 +216,13 @@ class TestCoordIntersection(tests.IrisTest):
 
 class TestXML(tests.IrisTest):
     def test_minimal(self):
-        coord = iris.coords.DimCoord(numpy.arange(10, dtype=numpy.int32))
+        coord = iris.coords.DimCoord(np.arange(10, dtype=np.int32))
         element = coord.xml_element(Document())
         self.assertXMLElement(coord, ('coord_api', 'minimal.xml'))
 
     def test_complex(self):
         crs = iris.coord_systems.GeogCS(6370000)
-        coord = iris.coords.AuxCoord(numpy.arange(4, dtype=numpy.float32),
+        coord = iris.coords.AuxCoord(np.arange(4, dtype=np.float32),
                                      'air_temperature', 'my_long_name',
                                      units='K',
                                      attributes={'foo': 'bar', 'count': 2},
@@ -286,7 +286,7 @@ class TestAuxCoordCreation(unittest.TestCase):
         self.assertEqual(result, str(a))
         
     def test_bounded(self):
-        a = iris.coords.AuxCoord(range(10), 'air_temperature', units='kelvin', bounds=numpy.arange(0, 20).reshape(10, 2))
+        a = iris.coords.AuxCoord(range(10), 'air_temperature', units='kelvin', bounds=np.arange(0, 20).reshape(10, 2))
         result = ("AuxCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])"
                   ", bounds=array([[ 0,  1],\n       [ 2,  3],\n       [ 4,  5],\n       [ 6,  7],\n       [ 8,  9],\n       "\
                   "[10, 11],\n       [12, 13],\n       [14, 15],\n       [16, 17],\n       [18, 19]])"
@@ -327,7 +327,7 @@ class TestDimCoordCreation(unittest.TestCase):
         self.assertEqual(result, str(a))
         
     def test_bounded(self):
-        a = iris.coords.DimCoord(range(10), 'air_temperature', units='kelvin', bounds=numpy.arange(0, 20).reshape(10, 2))
+        a = iris.coords.DimCoord(range(10), 'air_temperature', units='kelvin', bounds=np.arange(0, 20).reshape(10, 2))
         result = ("DimCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])"
                   ", bounds=array([[ 0,  1],\n       [ 2,  3],\n       [ 4,  5],\n       [ 6,  7],\n       [ 8,  9],\n       "\
                   "[10, 11],\n       [12, 13],\n       [14, 15],\n       [16, 17],\n       [18, 19]])"
@@ -360,7 +360,7 @@ class TestDimCoordCreation(unittest.TestCase):
     def test_Dim_to_Aux(self):
         a = iris.coords.DimCoord(range(10), standard_name='air_temperature', long_name='custom air temp',
                                  units='kelvin', attributes={'monty': 'python'}, 
-                                 bounds=numpy.arange(20).reshape(10, 2), circular=True)
+                                 bounds=np.arange(20).reshape(10, 2), circular=True)
         b = iris.coords.AuxCoord.from_coord(a)
         # Note - circular attribute is not a factor in equality comparison
         self.assertEqual(a, b)
@@ -369,16 +369,16 @@ class TestDimCoordCreation(unittest.TestCase):
 class TestCoordMaths(tests.IrisTest):
     def _build_coord(self, start=None, step=None, count=None):
         # Create points and bounds akin to an old RegularCoord.
-        dtype = numpy.float32
+        dtype = np.float32
         start = dtype(start or self.start)
         step = dtype(step or self.step)
         count = int(count or self.count)
         bound_position = dtype(0.5)
-        points = numpy.arange(count, dtype=dtype) * step + start
-        bounds = numpy.concatenate([[points - bound_position * step], 
+        points = np.arange(count, dtype=dtype) * step + start
+        bounds = np.concatenate([[points - bound_position * step], 
                                     [points + (1 - bound_position) * step]]).T
         self.lon = iris.coords.AuxCoord(points, 'latitude',  units='degrees', bounds=bounds)
-        self.rlon = iris.coords.AuxCoord(numpy.deg2rad(points), 'latitude',  units='radians', bounds=numpy.deg2rad(bounds))
+        self.rlon = iris.coords.AuxCoord(np.deg2rad(points), 'latitude',  units='radians', bounds=np.deg2rad(bounds))
 
     def setUp(self):
         self.start = 0
@@ -396,12 +396,12 @@ class TestCoordTrig(TestCoordMaths):
         sin_of_coord_radians = self.rlon.sin()
         
         # Check the values are correct (within a tolerance)
-        numpy.testing.assert_array_almost_equal(numpy.sin(self.rlon.points), sin_of_coord.points)
-        numpy.testing.assert_array_almost_equal(numpy.sin(self.rlon.bounds), sin_of_coord.bounds)
+        np.testing.assert_array_almost_equal(np.sin(self.rlon.points), sin_of_coord.points)
+        np.testing.assert_array_almost_equal(np.sin(self.rlon.bounds), sin_of_coord.bounds)
         
         # Check that the results of the sin function are almost equal when operating on a coord with degrees and radians
-        numpy.testing.assert_array_almost_equal(sin_of_coord.points, sin_of_coord_radians.points)
-        numpy.testing.assert_array_almost_equal(sin_of_coord.bounds, sin_of_coord_radians.bounds)
+        np.testing.assert_array_almost_equal(sin_of_coord.points, sin_of_coord_radians.points)
+        np.testing.assert_array_almost_equal(sin_of_coord.bounds, sin_of_coord_radians.bounds)
         
         self.assertEqual(sin_of_coord.name(), 'sin(latitude)')
         self.assertEqual(sin_of_coord.units, '1')
@@ -411,17 +411,17 @@ class TestCoordTrig(TestCoordMaths):
         cos_of_coord_radians = self.rlon.cos()
         
         # Check the values are correct (within a tolerance)
-        numpy.testing.assert_array_almost_equal(numpy.cos(self.rlon.points), cos_of_coord.points)
-        numpy.testing.assert_array_almost_equal(numpy.cos(self.rlon.bounds), cos_of_coord.bounds)
+        np.testing.assert_array_almost_equal(np.cos(self.rlon.points), cos_of_coord.points)
+        np.testing.assert_array_almost_equal(np.cos(self.rlon.bounds), cos_of_coord.bounds)
         
         # Check that the results of the cos function are almost equal when operating on a coord with degrees and radians
-        numpy.testing.assert_array_almost_equal(cos_of_coord.points, cos_of_coord_radians.points)
-        numpy.testing.assert_array_almost_equal(cos_of_coord.bounds, cos_of_coord_radians.bounds)
+        np.testing.assert_array_almost_equal(cos_of_coord.points, cos_of_coord_radians.points)
+        np.testing.assert_array_almost_equal(cos_of_coord.bounds, cos_of_coord_radians.bounds)
         
         # now that we have tested the points & bounds, remove them and just test the xml
-        cos_of_coord._points = numpy.array([1], dtype=numpy.float32)
+        cos_of_coord._points = np.array([1], dtype=np.float32)
         cos_of_coord._bounds = None
-        cos_of_coord_radians._points = numpy.array([1], dtype=numpy.float32)
+        cos_of_coord_radians._points = np.array([1], dtype=np.float32)
         cos_of_coord_radians._bounds = None
 
         self.assertXMLElement(cos_of_coord, ('coord_api', 'coord_maths', 'cos_simple.xml'))
@@ -441,7 +441,7 @@ class TestCoordAdditionSubtract(TestCoordMaths):
     def test_neg(self):
         self._build_coord(start=8)
         r_expl = -self.lon
-        numpy.testing.assert_array_equal(r_expl.points, -(self.lon.points))
+        np.testing.assert_array_equal(r_expl.points, -(self.lon.points))
         self.assertXMLElement(r_expl, ('coord_api', 'coord_maths', 'negate_expl.xml'))
         
     def test_right_subtract(self):
@@ -518,7 +518,7 @@ class TestCoordCollapsed(tests.IrisTest):
 
     def test_circular_collapse(self):
         # set up a coordinate that wraps 360 degrees in points using the circular flag
-        coord = self.create_1d_coord(None, numpy.arange(10) * 36, 'degrees')
+        coord = self.create_1d_coord(None, np.arange(10) * 36, 'degrees')
         expected_coord = self.create_1d_coord([0., 360.], [180.], 'degrees')
         coord.circular = True
         
@@ -549,7 +549,7 @@ class TestGetterSetter(tests.IrisTest):
         # set bounds
         coord.bounds = bounds + 1
         
-        numpy.testing.assert_array_equal(coord.bounds, bounds + 1)
+        np.testing.assert_array_equal(coord.bounds, bounds + 1)
 
         # set bounds - different length to existing points
         with self.assertRaises(ValueError):
@@ -577,24 +577,24 @@ class TestGetterSetter(tests.IrisTest):
 
 class TestGuessBounds(tests.IrisTest):
     def test_guess_bounds(self):
-        coord = iris.coords.DimCoord(numpy.array([0, 10, 20, 30]), long_name="foo", units="1")
+        coord = iris.coords.DimCoord(np.array([0, 10, 20, 30]), long_name="foo", units="1")
         coord.guess_bounds()
-        self.assertArrayEqual(coord.bounds, numpy.array([[-5,5], [5,15], [15,25], [25,35]]))
+        self.assertArrayEqual(coord.bounds, np.array([[-5,5], [5,15], [15,25], [25,35]]))
         
         coord.bounds = None
         coord.guess_bounds(0.25)
-        self.assertArrayEqual(coord.bounds, numpy.array([[-5,5], [5,15], [15,25], [25,35]]) + 2.5)
+        self.assertArrayEqual(coord.bounds, np.array([[-5,5], [5,15], [15,25], [25,35]]) + 2.5)
         
         coord.bounds = None
         coord.guess_bounds(0.75)
-        self.assertArrayEqual(coord.bounds, numpy.array([[-5,5], [5,15], [15,25], [25,35]]) - 2.5)
+        self.assertArrayEqual(coord.bounds, np.array([[-5,5], [5,15], [15,25], [25,35]]) - 2.5)
 
         points = coord.points.copy()
         points[2] = 25
         coord.points = points
         coord.bounds = None
         coord.guess_bounds()
-        self.assertArrayEqual(coord.bounds, numpy.array([[-5.,5.], [5.,17.5], [17.5,27.5], [27.5,32.5]]))
+        self.assertArrayEqual(coord.bounds, np.array([[-5.,5.], [5.,17.5], [17.5,27.5], [27.5,32.5]]))
         
         # if the points are not monotonic, then guess_bounds should fail
         points[2] = 32

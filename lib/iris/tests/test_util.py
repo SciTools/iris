@@ -21,7 +21,7 @@ Test iris.util
 import inspect
 import unittest
 
-import numpy
+import numpy as np
 
 import iris.util
 
@@ -32,7 +32,7 @@ class TestMonotonic(unittest.TestCase):
             mono, dir = iris.util.monotonic(array, return_direction=True, **kwargs)
             if not mono:
                 self.fail('Array was not monotonic:/n %r' % array)
-            if dir != numpy.sign(direction):
+            if dir != np.sign(direction):
                 self.fail('Array was monotonic but not in the direction expected:'
                           '/n  + requested direction: %s/n  + resultant direction: %s' % (direction, dir)) 
         else:
@@ -46,7 +46,7 @@ class TestMonotonic(unittest.TestCase):
             self.fail("Array was monotonic when it shouldn't be:/n %r" % array)
         
     def test_monotonic_pve(self):
-        a = numpy.array([3, 4, 5.3])
+        a = np.array([3, 4, 5.3])
         self.assertMonotonic(a)
         self.assertMonotonic(a, direction=1)
         
@@ -56,33 +56,33 @@ class TestMonotonic(unittest.TestCase):
         self.assertMonotonic(a, direction=-1)
         
     def test_not_monotonic(self):
-        b = numpy.array([3, 5.3, 4])
+        b = np.array([3, 5.3, 4])
         self.assertNotMonotonic(b)
         
     def test_monotonic_strict(self):
-        b = numpy.array([3, 5.3, 4])
+        b = np.array([3, 5.3, 4])
         self.assertNotMonotonic(b, strict=True)
         
-        b = numpy.array([3, 5.3, 5.3])
+        b = np.array([3, 5.3, 5.3])
         self.assertNotMonotonic(b, strict=True)
         self.assertMonotonic(b)
         
-        b = numpy.array([0.0])
+        b = np.array([0.0])
         self.assertRaises(ValueError, iris.util.monotonic, b)
         self.assertRaises(ValueError, iris.util.monotonic, b, strict=True)
         
-        b = numpy.array([0.0, 0.0])
+        b = np.array([0.0, 0.0])
         self.assertNotMonotonic(b, strict=True)
         self.assertMonotonic(b)
 
 
 class TestReverse(unittest.TestCase):
     def test_simple(self):
-        a = numpy.arange(12).reshape(3, 4)
-        numpy.testing.assert_array_equal(a[::-1], iris.util.reverse(a, 0))
-        numpy.testing.assert_array_equal(a[::-1, ::-1], iris.util.reverse(a, [0, 1]))
-        numpy.testing.assert_array_equal(a[:, ::-1], iris.util.reverse(a, 1))
-        numpy.testing.assert_array_equal(a[:, ::-1], iris.util.reverse(a, [1]))
+        a = np.arange(12).reshape(3, 4)
+        np.testing.assert_array_equal(a[::-1], iris.util.reverse(a, 0))
+        np.testing.assert_array_equal(a[::-1, ::-1], iris.util.reverse(a, [0, 1]))
+        np.testing.assert_array_equal(a[:, ::-1], iris.util.reverse(a, 1))
+        np.testing.assert_array_equal(a[:, ::-1], iris.util.reverse(a, [1]))
         self.assertRaises(ValueError, iris.util.reverse, a, [])
         self.assertRaises(ValueError, iris.util.reverse, a, -1)
         self.assertRaises(ValueError, iris.util.reverse, a, 10)
@@ -90,11 +90,11 @@ class TestReverse(unittest.TestCase):
         self.assertRaises(ValueError, iris.util.reverse, a, [0, -1])
         
     def test_single(self):
-        a = numpy.arange(36).reshape(3, 4, 3)
-        numpy.testing.assert_array_equal(a[::-1], iris.util.reverse(a, 0))
-        numpy.testing.assert_array_equal(a[::-1, ::-1], iris.util.reverse(a, [0, 1]))
-        numpy.testing.assert_array_equal(a[:, ::-1, ::-1], iris.util.reverse(a, [1, 2]))
-        numpy.testing.assert_array_equal(a[..., ::-1], iris.util.reverse(a, 2))
+        a = np.arange(36).reshape(3, 4, 3)
+        np.testing.assert_array_equal(a[::-1], iris.util.reverse(a, 0))
+        np.testing.assert_array_equal(a[::-1, ::-1], iris.util.reverse(a, [0, 1]))
+        np.testing.assert_array_equal(a[:, ::-1, ::-1], iris.util.reverse(a, [1, 2]))
+        np.testing.assert_array_equal(a[..., ::-1], iris.util.reverse(a, 2))
         self.assertRaises(ValueError, iris.util.reverse, a, -1)
         self.assertRaises(ValueError, iris.util.reverse, a, 10)
         self.assertRaises(ValueError, iris.util.reverse, a, [-1])

@@ -214,14 +214,14 @@ by field basis *before* they are automatically merged together:
 
 .. testcode::
 
-    import numpy
+    import numpy as np
     import iris
     import iris.coords as icoords
 
     def lagged_ensemble_callback(cube, field, filename):
         # Add our own realization coordinate if it doesn't already exist.
         if not cube.coords('realization'):
-            realization = numpy.int32(filename[-6:-3])
+            realization = np.int32(filename[-6:-3])
             ensemble_coord = icoords.AuxCoord(realization, standard_name='realization')
             cube.add_aux_coord(ensemble_coord)
 

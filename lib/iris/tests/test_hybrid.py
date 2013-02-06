@@ -26,7 +26,7 @@ import iris.tests as tests
 import warnings
 import zlib
 
-import numpy
+import numpy as np
 
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 import iris
@@ -44,8 +44,8 @@ class TestRealistic4d(tests.GraphicsTest):
         self.assertEqual(self.altitude.attributes, {'positive': 'up'})
 
     def test_points(self):
-        self.assertAlmostEqual(self.altitude.points.min(), numpy.float32(191.84892))
-        self.assertAlmostEqual(self.altitude.points.max(), numpy.float32(40000))
+        self.assertAlmostEqual(self.altitude.points.min(), np.float32(191.84892))
+        self.assertAlmostEqual(self.altitude.points.max(), np.float32(40000))
 
     def test_transpose(self):
         self.assertCML(self.cube, ('stock', 'realistic_4d.cml'))
@@ -130,13 +130,13 @@ class TestRealistic4d(tests.GraphicsTest):
         # Start with everything normal
         orog = self.cube.coord('surface_altitude')
         altitude = self.cube.coord('altitude')
-        self.assertIsInstance(altitude.bounds, numpy.ndarray)
+        self.assertIsInstance(altitude.bounds, np.ndarray)
 
         # Make sure altitude still works OK if orography was messed
         # with *after* altitude was created.
         altitude = self.cube.coord('altitude')
-        orog.bounds = numpy.zeros(orog.shape + (4,))
-        self.assertIsInstance(altitude.bounds, numpy.ndarray)
+        orog.bounds = np.zeros(orog.shape + (4,))
+        self.assertIsInstance(altitude.bounds, np.ndarray)
 
         # Make sure altitude.bounds now raises an error.
         altitude = self.cube.coord('altitude')
@@ -174,9 +174,9 @@ class TestHybridPressure(tests.IrisTest):
 
     def test_points(self):
         points = self.air_pressure.points
-        self.assertEqual(points.dtype, numpy.float32)
-        self.assertAlmostEqual(points.min(), numpy.float32(191.84892))
-        self.assertAlmostEqual(points.max(), numpy.float32(40000))
+        self.assertEqual(points.dtype, np.float32)
+        self.assertAlmostEqual(points.min(), np.float32(191.84892))
+        self.assertAlmostEqual(points.max(), np.float32(40000))
 
         # Convert the reference surface to float64 and check the
         # derived coordinate becomes float64.
@@ -184,7 +184,7 @@ class TestHybridPressure(tests.IrisTest):
         temp = temp.astype('f8')
         self.cube.coord('surface_air_pressure').points = temp
         points = self.cube.coord('air_pressure').points
-        self.assertEqual(points.dtype, numpy.float64)
+        self.assertEqual(points.dtype, np.float64)
         self.assertAlmostEqual(points.min(), 191.8489257)
         self.assertAlmostEqual(points.max(), 40000)
 
@@ -207,13 +207,13 @@ class TestHybridPressure(tests.IrisTest):
         # Start with everything normal
         surface_pressure = self.cube.coord('surface_air_pressure')
         pressure = self.cube.coord('air_pressure')
-        self.assertIsInstance(pressure.bounds, numpy.ndarray)
+        self.assertIsInstance(pressure.bounds, np.ndarray)
 
         # Make sure pressure still works OK if surface pressure was messed
         # with *after* pressure was created.
         pressure = self.cube.coord('air_pressure')
-        surface_pressure.bounds = numpy.zeros(surface_pressure.shape + (4,))
-        self.assertIsInstance(pressure.bounds, numpy.ndarray)
+        surface_pressure.bounds = np.zeros(surface_pressure.shape + (4,))
+        self.assertIsInstance(pressure.bounds, np.ndarray)
 
         # Make sure pressure.bounds now raises an error.
         pressure = self.cube.coord('air_pressure')

@@ -24,7 +24,7 @@ import types
 import warnings
 
 import matplotlib.pyplot as plt 
-import numpy
+import numpy as np
 
 import iris
 import iris.coords as coords
@@ -157,9 +157,9 @@ def _load_4d_testcube():
     forecast_dims = test_cube.coord_dims(time_coord)
     test_cube.remove_coord('forecast_period')
     # Make up values (including bounds), to roughly match older testdata.
-    point_values = numpy.linspace((1 + 1.0/6), 2.0, n_times)
+    point_values = np.linspace((1 + 1.0/6), 2.0, n_times)
     point_uppers = point_values + (point_values[1] - point_values[0])
-    bound_values = numpy.column_stack([point_values, point_uppers])
+    bound_values = np.column_stack([point_values, point_uppers])
     # NOTE: this must be a DimCoord
     #  - an equivalent AuxCoord produces different plots.
     new_forecast_coord = iris.coords.DimCoord(
@@ -552,7 +552,7 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
         
     def test_non_cube_coordinate(self):
         cube = self.cube[0, :, :, 0]
-        pts = -100 + numpy.arange(cube.shape[1]) * 13
+        pts = -100 + np.arange(cube.shape[1]) * 13
         x = coords.DimCoord(pts, standard_name='model_level_number', attributes={'positive': 'up'})
         self.draw('contourf', cube, coords=['grid_latitude', x])
 

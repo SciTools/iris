@@ -24,7 +24,7 @@ Various utilities related to geometric operations.
 
 from shapely.geometry import Polygon
 
-import numpy
+import numpy as np
 
 import iris.exceptions
 
@@ -77,12 +77,12 @@ def geometry_area_weights(cube, geometry):
     y_dim = cube.coord_dims(y_coord)[0]
     shape[x_dim] = x_coord.shape[0]
     shape[y_dim] = y_coord.shape[0]
-    weights = numpy.empty(shape, numpy.float32)
+    weights = np.empty(shape, np.float32)
 
     # Calculate the area weights
     x_bounds = x_coord.bounds
     y_bounds = y_coord.bounds
-    for nd_index in numpy.ndindex(weights.shape):
+    for nd_index in np.ndindex(weights.shape):
         xi = nd_index[x_dim]
         yi = nd_index[y_dim]
         x0, x1 = x_bounds[xi]
@@ -92,6 +92,6 @@ def geometry_area_weights(cube, geometry):
 
     # Fix for the limitation of iris.analysis.MEAN weights handling.
     # Broadcast the array to the full shape of the cube
-    weights = numpy.broadcast_arrays(weights, cube.data)[0]
+    weights = np.broadcast_arrays(weights, cube.data)[0]
 
     return weights

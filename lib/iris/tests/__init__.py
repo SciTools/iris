@@ -46,7 +46,8 @@ import zlib
 import matplotlib
 import matplotlib.testing.compare as mcompare
 import matplotlib.pyplot as plt
-import numpy
+import numpy as np
+import numpy.ma as ma
 
 import iris.cube
 import iris.config
@@ -203,25 +204,25 @@ class IrisTest(unittest.TestCase):
         if os.path.isfile(reference_path):
             kwargs.setdefault('err_msg', 'Reference file %s' % reference_path)
             
-            result = numpy.load(reference_path)
-            if isinstance(result, numpy.lib.npyio.NpzFile):
-                self.assertIsInstance(cube.data, numpy.ma.MaskedArray, 'Cube data was not a masked array.')
+            result = np.load(reference_path)
+            if isinstance(result, np.lib.npyio.NpzFile):
+                self.assertIsInstance(cube.data, ma.MaskedArray, 'Cube data was not a masked array.')
                 mask = result['mask']
                 # clear the cube's data where it is masked to avoid any non-initialised array data
                 cube.data.data[cube.data.mask] = cube.data.fill_value
-                numpy.testing.assert_array_almost_equal(cube.data.data, result['data'], *args, **kwargs)
-                numpy.testing.assert_array_equal(cube.data.mask, mask, *args, **kwargs)
+                np.testing.assert_array_almost_equal(cube.data.data, result['data'], *args, **kwargs)
+                np.testing.assert_array_equal(cube.data.mask, mask, *args, **kwargs)
             else:
-                numpy.testing.assert_array_almost_equal(cube.data, result, *args, **kwargs)
+                np.testing.assert_array_almost_equal(cube.data, result, *args, **kwargs)
         else:
             self._ensure_folder(reference_path)
             logger.warning('Creating result file: %s', reference_path)
-            if isinstance(cube.data, numpy.ma.MaskedArray):
+            if isinstance(cube.data, ma.MaskedArray):
                 # clear the cube's data where it is masked to avoid any non-initialised array data
                 data = cube.data.data[cube.data.mask] = cube.data.fill_value
-                numpy.savez(file(reference_path, 'wb'), data=data, mask=cube.data.mask)
+                np.savez(file(reference_path, 'wb'), data=data, mask=cube.data.mask)
             else:
-                numpy.save(file(reference_path, 'wb'), cube.data)
+                np.save(file(reference_path, 'wb'), cube.data)
     
     def assertFilesEqual(self, test_filename, reference_filename):
         reference_path = get_result_path(reference_filename)
@@ -260,10 +261,10 @@ class IrisTest(unittest.TestCase):
         self._check_same(pretty_xml, reference_path, reference_filename, type_comparison_name='XML')
         
     def assertArrayEqual(self, a, b):
-        numpy.testing.assert_array_equal(a, b)
+        np.testing.assert_array_equal(a, b)
 
     def assertArrayAlmostEqual(self, a, b):
-        numpy.testing.assert_array_almost_equal(a, b)
+        np.testing.assert_array_almost_equal(a, b)
 
     def assertAttributesEqual(self, attr1, attr2):
         """

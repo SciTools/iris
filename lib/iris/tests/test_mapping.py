@@ -23,7 +23,7 @@ Tests map creation.
 import iris.tests as tests
 
 import matplotlib.pyplot as plt
-import numpy
+import numpy as np
 import numpy.testing as np_testing
 import cartopy.crs as ccrs
 
@@ -71,8 +71,8 @@ class TestUnmappable(tests.IrisTest):
 
         # Make a cube that can't be located on the globe.
         cube = iris.cube.Cube(src_cube.data)
-        cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(96, dtype=numpy.float32) * 100, long_name='x', units='m'), 1)
-        cube.add_dim_coord(iris.coords.DimCoord(numpy.arange(73, dtype=numpy.float32) * 100, long_name='y', units='m'), 0)
+        cube.add_dim_coord(iris.coords.DimCoord(np.arange(96, dtype=np.float32) * 100, long_name='x', units='m'), 1)
+        cube.add_dim_coord(iris.coords.DimCoord(np.arange(73, dtype=np.float32) * 100, long_name='y', units='m'), 0)
         cube.standard_name = 'air_temperature'
         cube.units = 'K'
         cube.assert_valid()
@@ -134,7 +134,7 @@ class TestLowLevel(tests.IrisTest):
         self.cube = iris.tests.stock.global_pp()
         self.few = 4
         self.few_levels = range(280, 300, 5)
-        self.many_levels = numpy.linspace(self.cube.data.min(), self.cube.data.max(), 40)
+        self.many_levels = np.linspace(self.cube.data.min(), self.cube.data.max(), 40)
 
     def test_simple(self):
         iplt.contour(self.cube)

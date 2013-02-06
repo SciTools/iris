@@ -29,7 +29,7 @@ import re
 
 import matplotlib.cm as mpl_cm
 import matplotlib.colors as mpl_colors
-import numpy
+import numpy as np
 
 import iris.cube
 import iris.config
@@ -177,9 +177,9 @@ class SymmetricNormalize(mpl_colors.Normalize, object):
 
     def _update(self, val, update_min=True, update_max=True):
         # Update both _vmin and _vmax from given value.
-        val_diff = numpy.abs(val - self.pivot)
-        vmin_diff = numpy.abs(self._vmin - self.pivot) if self._vmin else 0.0
-        vmax_diff = numpy.abs(self._vmax - self.pivot) if self._vmax else 0.0
+        val_diff = np.abs(val - self.pivot)
+        vmin_diff = np.abs(self._vmin - self.pivot) if self._vmin else 0.0
+        vmax_diff = np.abs(self._vmax - self.pivot) if self._vmax else 0.0
         diff = max(val_diff, vmin_diff, vmax_diff)
         
         if update_min:
@@ -306,7 +306,7 @@ def _load_palette():
             std_name_group.add(cmap_name)
 
         # Load palette data and create the associated color map.
-        cmap_data = numpy.loadtxt(filename)
+        cmap_data = np.loadtxt(filename)
         # Ensure to restrict the number of RGB quantization levels to prevent color map interpolation.
         
         if interpolate_flag:

@@ -18,7 +18,7 @@
 
 import glob
 import netcdftime
-import numpy
+import numpy as np
 import os
 import struct
 import sys
@@ -103,7 +103,7 @@ class NimrodField(object):
         
     def _read_header_subset(self, infile, names, dtype):
         # Read contiguous header items of the same data type.
-        values = numpy.fromfile(infile, dtype=dtype, count=len(names))
+        values = np.fromfile(infile, dtype=dtype, count=len(names))
         if sys.byteorder == "little":
             values.byteswap(True)
         for i, name in enumerate(names):
@@ -117,14 +117,14 @@ class NimrodField(object):
             raise TranslationError("Expected header leading_length of 512") 
 
         # general header (int16) elements 1-31 (bytes 1-62)
-        self._read_header_subset(infile, general_header_int16s, numpy.int16)
+        self._read_header_subset(infile, general_header_int16s, np.int16)
         
         # general header (float32) elements 32-59 (bytes 63-174)
-        self._read_header_subset(infile, general_header_float32s, numpy.float32)
+        self._read_header_subset(infile, general_header_float32s, np.float32)
         infile.seek(4 * (28 - len(general_header_float32s)), os.SEEK_CUR)  # skip unnamed floats
                              
         # data specific header (float32) elements 60-104 (bytes 175-354)
-        self._read_header_subset(infile, data_header_float32s, numpy.float32)
+        self._read_header_subset(infile, data_header_float32s, np.float32)
         infile.seek(4 * (45 - len(data_header_float32s)), os.SEEK_CUR)  # skip unnamed floats
     
         # data specific header (char) elements 105-107 (bytes 355-410)
@@ -133,7 +133,7 @@ class NimrodField(object):
         self.title = _read_chars(infile, 24)
     
         # data specific header (int16) elements 108- (bytes 411-512)
-        self._read_header_subset(infile, data_header_int16s, numpy.int16)
+        self._read_header_subset(infile, data_header_int16s, np.int16)
         infile.seek(2 * (51 - len(data_header_int16s)), os.SEEK_CUR)  # skip unnamed int16s
     
         trailing_length = struct.unpack(">L", infile.read(4))[0]
@@ -155,24 +155,24 @@ class NimrodField(object):
         # format string for unpacking the file.read()
         # 0:real
         if self.datum_type == 0:
-            numpy_dtype = numpy.float32
+            numpy_dtype = np.float32
             data_format_string = ">%df" % num_data
         # 1:int
         elif self.datum_type == 1:
             if self.datum_len == 1:
-                numpy_dtype = numpy.int8
+                numpy_dtype = np.int8
                 data_format_string = ">%db" % num_data
             elif self.datum_len == 2:
-                numpy_dtype = numpy.int16
+                numpy_dtype = np.int16
                 data_format_string = ">%dh" % num_data
             elif self.datum_len == 4:
-                numpy_dtype = numpy.int32
+                numpy_dtype = np.int32
                 data_format_string = ">%di" % num_data
             else:
                 raise TranslationError("Undefined datum length %d" % self.datum_type)
         # 2:byte
         elif self.datum_type == 2:
-            numpy_dtype = numpy.byte
+            numpy_dtype = np.byte
             data_format_string = ">%db" % num_data
         else:
             raise TranslationError("Undefined data type")
@@ -184,7 +184,7 @@ class NimrodField(object):
         # TODO: Deal appropriately with MDI. Can't just create masked arrays
         #       as cube merge converts masked arrays with no masks to ndarrays,
         #       thus mergable cube can split one mergable cube into two.
-        self.data = numpy.fromfile(infile, dtype=numpy_dtype, count=num_data)
+        self.data = np.fromfile(infile, dtype=numpy_dtype, count=num_data)
 
         if sys.byteorder == "little":
             self.data.byteswap(True)
@@ -254,13 +254,13 @@ class NimrodField(object):
         if self.horizontal_grid_type == 0:
             # "NG", means osgb grid.
             osgb_cs = iris.coord_systems.OSGB()
-            x_coord = DimCoord(numpy.arange(self.num_cols) * self.column_step +
+            x_coord = DimCoord(np.arange(self.num_cols) * self.column_step +
                                self.x_origin,
                                standard_name='projection_x_coordinate',
                                units='m', coord_system=osgb_cs)
             cube.add_dim_coord(x_coord, 1)
             if self.origin_corner == 0:  # top left
-                y_coord = DimCoord(numpy.arange(self.num_rows)[::-1] *
+                y_coord = DimCoord(np.arange(self.num_rows)[::-1] *
                                    -self.row_step + self.y_origin,
                                    standard_name='projection_y_coordinate',
                                    units='m', coord_system=osgb_cs)

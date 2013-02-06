@@ -15,7 +15,7 @@ produce two types of plot:
 
 """
 import matplotlib.pyplot as plt
-import numpy
+import numpy as np
 
 import iris
 import iris.plot as iplt
@@ -33,7 +33,7 @@ def realization_metadata(cube, field, fname):
         realization_number = fname[-6:-3]
 
         import iris.coords
-        realization_coord = iris.coords.AuxCoord(numpy.int32(realization_number), 'realization')
+        realization_coord = iris.coords.AuxCoord(np.int32(realization_number), 'realization')
         cube.add_aux_coord(realization_coord)
 
 
@@ -52,7 +52,7 @@ def main():
     last_timestep = surface_temp[:, -1, :, :]
    
     # Make 50 evenly spaced levels which span the dataset
-    contour_levels = numpy.linspace(numpy.min(last_timestep.data), numpy.max(last_timestep.data), 50)
+    contour_levels = np.linspace(np.min(last_timestep.data), np.max(last_timestep.data), 50)
     
     # Create a wider than normal figure to support our many plots
     plt.figure(figsize=(12, 6), dpi=100)

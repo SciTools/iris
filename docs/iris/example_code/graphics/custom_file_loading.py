@@ -43,7 +43,7 @@ invokes the ``FormatSpecification`` we defined. The cube returned from the load 
 import datetime
 
 import matplotlib.pyplot as plt
-import numpy
+import numpy as np
 
 import iris
 import iris.coords as icoords
@@ -114,7 +114,7 @@ def load_NAME_III(filename):
 
     # make a list of data arrays to hold the data for each column 
     data_shape = (headers['Y grid size'], headers['X grid size'])
-    data_arrays = [numpy.zeros(data_shape, dtype=numpy.float32) for i in range(headers['Number of fields'])]
+    data_arrays = [np.zeros(data_shape, dtype=np.float32) for i in range(headers['Number of fields'])]
 
     # iterate over the remaining lines which represent the data in a column form
     for line in file_handle:
@@ -170,14 +170,14 @@ def NAME_to_cube(filenames, callback):
             start = header['X grid origin'] + header['X grid resolution']
             step = header['X grid resolution']
             count = header['X grid size']
-            pts = start + numpy.arange(count, dtype=numpy.float32) * step
+            pts = start + np.arange(count, dtype=np.float32) * step
             lon_coord = icoords.DimCoord(pts, standard_name='longitude', units='degrees', coord_system=lat_lon_coord_system)
             lon_coord.guess_bounds()
 
             start = header['Y grid origin'] + header['Y grid resolution']
             step = header['Y grid resolution']
             count = header['Y grid size']
-            pts = start + numpy.arange(count, dtype=numpy.float32) * step
+            pts = start + np.arange(count, dtype=np.float32) * step
             lat_coord = icoords.DimCoord(pts, standard_name='latitude', units='degrees', coord_system=lat_lon_coord_system)
             lat_coord.guess_bounds()
 

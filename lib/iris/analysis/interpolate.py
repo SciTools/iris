@@ -24,7 +24,8 @@ import collections
 import warnings
 from copy import deepcopy
 
-import numpy
+import numpy as np
+import numpy.ma as ma
 import scipy
 import scipy.spatial
 from scipy.interpolate.interpolate import interp1d
@@ -37,9 +38,9 @@ import iris.exceptions
 
 def _ll_to_cart(lon, lat):
     # Based on cartopy.img_transform.ll_to_cart()
-    x = numpy.sin(numpy.deg2rad(90 - lat)) * numpy.cos(numpy.deg2rad(lon))
-    y = numpy.sin(numpy.deg2rad(90 - lat)) * numpy.sin(numpy.deg2rad(lon))
-    z = numpy.cos(numpy.deg2rad(90 - lat))
+    x = np.sin(np.deg2rad(90 - lat)) * np.cos(np.deg2rad(lon))
+    y = np.sin(np.deg2rad(90 - lat)) * np.sin(np.deg2rad(lon))
+    z = np.cos(np.deg2rad(90 - lat))
     return (x, y, z)
 
 def _cartesian_sample_points(sample_points, sample_point_coord_names):
@@ -210,7 +211,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
         point.append((coord, value))
         
     # Reformat sample_point for use in _cartesian_sample_points(), below.
-    sample_point = numpy.array([[value] for coord, value in point])
+    sample_point = np.array([[value] for coord, value in point])
     sample_point_coords = [coord for coord, value in point]
     sample_point_coord_names = [coord.name() for coord, value in point]
 
@@ -236,7 +237,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
     # Order the sample point coords according to the sample space cube coords
     sample_space_coord_names = [coord.name() for coord in sample_space_cube.coords()]
     new_order = [sample_space_coord_names.index(name) for name in sample_point_coord_names]
-    sample_point = numpy.array([sample_point[i] for i in new_order])
+    sample_point = np.array([sample_point[i] for i in new_order])
     sample_point_coord_names = [sample_point_coord_names[i] for i in new_order]
     
     # Convert the sample point to cartesian coords.
@@ -251,8 +252,8 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
         kdtree = cache[cube]
     else:
         # Create a "sample space position" for each datum: sample_space_data_positions[coord_index][datum_index]
-        sample_space_data_positions = numpy.empty((len(sample_space_coords_and_dims), sample_space_cube.data.size), dtype=float)
-        for d, ndi in enumerate(numpy.ndindex(sample_space_cube.data.shape)):
+        sample_space_data_positions = np.empty((len(sample_space_coords_and_dims), sample_space_cube.data.size), dtype=float)
+        for d, ndi in enumerate(np.ndindex(sample_space_cube.data.shape)):
             for c, (coord, coord_dims) in enumerate(sample_space_coords_and_dims):
                 # Index of this datum along this coordinate (could be nD). 
                 keys = tuple(ndi[ind] for ind in coord_dims) if coord_dims else slice(None, None)
@@ -266,7 +267,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
         kdtree = scipy.spatial.cKDTree(cartesian_space_data_coords)
 
     cartesian_distance, datum_index = kdtree.query(cartesian_sample_point)
-    sample_space_ndi = numpy.unravel_index(datum_index, sample_space_cube.data.shape)
+    sample_space_ndi = np.unravel_index(datum_index, sample_space_cube.data.shape)
 
     # Turn sample_space_ndi into a main cube slice.
     # Map sample cube to main cube dims and leave the rest as a full slice.
@@ -457,7 +458,7 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
     if source_y_dims:
         new_shape[source_y_dims[0]] = grid_y.shape[0]
 
-    new_data = numpy.empty(new_shape, dtype=source_cube.data.dtype)
+    new_data = np.empty(new_shape, dtype=source_cube.data.dtype)
 
     # Prepare the index pattern which will be used to insert a single "column" of data.
     # NB. A "column" is a slice constrained to a single XY point, which therefore extends over *all* the other axes.
@@ -655,32 +656,32 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
         if getattr(src_coord, 'circular', False):
             coord_slice_in_cube = [slice(None, None)] * cube.data.ndim
             coord_slice_in_cube[sample_dim] = slice(0, 1)
-            modulus = numpy.array(src_coord.units.modulus or 0,
-                                  dtype=src_coord.dtype)
-            src_points = numpy.append(src_coord.points,
-                                  src_coord.points[0] + modulus)
+            modulus = np.array(src_coord.units.modulus or 0,
+                               dtype=src_coord.dtype)
+            src_points = np.append(src_coord.points,
+                                   src_coord.points[0] + modulus)
 
             # TODO: Restore this code after resolution of the following issue:
             # https://github.com/numpy/numpy/issues/478
-#            data = numpy.append(cube.data,
-#                                cube.data[tuple(coord_slice_in_cube)],
-#                                axis=sample_dim)
+#            data = np.append(cube.data,
+#                             cube.data[tuple(coord_slice_in_cube)],
+#                             axis=sample_dim)
             # This is the alternative, temporary workaround.
             # It doesn't use append on an nD mask.
-            if (not isinstance(cube.data, numpy.ma.MaskedArray) or
-                not isinstance(cube.data.mask, numpy.ndarray) or
+            if (not isinstance(cube.data, ma.MaskedArray) or
+                not isinstance(cube.data.mask, np.ndarray) or
                 len(cube.data.mask.shape) == 0):
-                data = numpy.append(cube.data,
-                                    cube.data[tuple(coord_slice_in_cube)],
-                                    axis=sample_dim)
+                data = np.append(cube.data,
+                                 cube.data[tuple(coord_slice_in_cube)],
+                                 axis=sample_dim)
             else:
-                new_data = numpy.append(cube.data.data,
-                                        cube.data.data[tuple(coord_slice_in_cube)],
-                                        axis=sample_dim)
-                new_mask = numpy.append(cube.data.mask,
-                                        cube.data.mask[tuple(coord_slice_in_cube)],
-                                        axis=sample_dim)
-                data = numpy.ma.array(new_data, mask=new_mask)
+                new_data = np.append(cube.data.data,
+                                     cube.data.data[tuple(coord_slice_in_cube)],
+                                     axis=sample_dim)
+                new_mask = np.append(cube.data.mask,
+                                     cube.data.mask[tuple(coord_slice_in_cube)],
+                                     axis=sample_dim)
+                data = ma.array(new_data, mask=new_mask)
                 
         else:
             src_points = src_coord.points
@@ -710,13 +711,13 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
             # integer values, convert them to the smallest possible
             # float dtype that can accurately preserve the values.
             if fx.dtype.kind == 'i':
-                fx = fx.astype(numpy.promote_types(fx.dtype, numpy.float16))
+                fx = fx.astype(np.promote_types(fx.dtype, np.float16))
             x = src_points.astype(fx.dtype)
             interpolator = interp1d(x, fx, kind='linear',
                                     bounds_error=bounds_error, **kwargs)
             if extrapolation_mode == 'linear':
                 interpolator = Linear1dExtrapolator(interpolator)
-            new_fx = interpolator(numpy.array(new_x, dtype=fx.dtype))
+            new_fx = interpolator(np.array(new_x, dtype=fx.dtype))
             return new_fx
 
         # 2) Interpolate the data and produce our new Cube.
@@ -774,11 +775,11 @@ def _resample_coord(coord, src_coord, direction, target_points, interpolate):
     if coord is src_coord:
         dtype = coord_points.dtype
         if dtype.kind == 'i':
-            dtype = numpy.promote_types(dtype, numpy.float16)
-        new_points = numpy.array(target_points, dtype=dtype)
+            dtype = np.promote_types(dtype, np.float16)
+        new_points = np.array(target_points, dtype=dtype)
     else:
         if getattr(src_coord, 'circular', False):
-            coord_points = numpy.append(coord_points, coord_points[0])
+            coord_points = np.append(coord_points, coord_points[0])
         
         # If the source coordinate was monotonic decreasing, we need to
         # flip this coordinate's values.
@@ -823,28 +824,28 @@ class Linear1dExtrapolator(object):
     def all_points_in_range(self, requested_x):
         """Given the x points, do all of the points sit inside the interpolation range."""
         test = (requested_x >= self.x[0]) & (requested_x <= self.x[-1])
-        if isinstance(test, numpy.ndarray):
+        if isinstance(test, np.ndarray):
             test = test.all()
         return test
             
     def __call__(self, requested_x):
         if not self.all_points_in_range(requested_x):
             # cast requested_x to a numpy array if it is not already.
-            if not isinstance(requested_x, numpy.ndarray):
-                requested_x = numpy.array(requested_x)
+            if not isinstance(requested_x, np.ndarray):
+                requested_x = np.array(requested_x)
                         
             # we need to catch the special case of providing a single value...
             remember_that_i_was_0d = requested_x.ndim == 0
                 
             requested_x = requested_x.flatten()
 
-            gt = numpy.where(requested_x > self.x[-1])[0]
-            lt = numpy.where(requested_x < self.x[0])[0]
-            ok = numpy.where( (requested_x >= self.x[0]) & (requested_x <= self.x[-1]) )[0]
+            gt = np.where(requested_x > self.x[-1])[0]
+            lt = np.where(requested_x < self.x[0])[0]
+            ok = np.where( (requested_x >= self.x[0]) & (requested_x <= self.x[-1]) )[0]
             
             data_shape = list(self._interpolator.y.shape)
             data_shape[-1] = len(requested_x)
-            result = numpy.empty(data_shape, dtype=self._interpolator(self.x[0]).dtype)
+            result = np.empty(data_shape, dtype=self._interpolator(self.x[0]).dtype)
             
             # Make a variable to represent the slice into the resultant data. (This will be updated in each of gt, lt & ok)
             interpolator_result_index = [slice(None, None)] * self._interpolator.y.ndim

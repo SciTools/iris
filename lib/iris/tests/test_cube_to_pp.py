@@ -22,7 +22,7 @@ import iris.tests as tests
 import os
 import tempfile
 
-import numpy
+import numpy as np
 
 import iris
 import iris.coords
@@ -111,7 +111,7 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
 
     def add_coords_to_cube_and_test(self, coord1, coord2):
         # a wrapper for creating arbitrary 2d cross-sections and run pp-saving tests
-        dataarray = numpy.arange(16, dtype='>f4').reshape(4,4)
+        dataarray = np.arange(16, dtype='>f4').reshape(4,4)
         cm = iris.cube.Cube(data=dataarray)
 
         cm.add_dim_coord(coord1, 0)

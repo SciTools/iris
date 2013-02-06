@@ -22,8 +22,8 @@ Provides support for virtual cube data and deferred loading.
 from copy import deepcopy
 import types
 
-import numpy
-import numpy.ma
+import numpy as np
+import numpy.ma as ma
 
 import iris.util
 
@@ -147,8 +147,8 @@ class DataManager(iris.util._OrderedHashable):
 
         # catch the situation where exactly one element from the proxy_array is requested:
         # (A MaskedConstant is an instance of a numpy array, so check for this specifically too) 
-        if (not isinstance(new_proxy_array, numpy.ndarray)) or (isinstance(new_proxy_array, numpy.ma.core.MaskedConstant)):
-            new_proxy_array = numpy.array(new_proxy_array)
+        if (not isinstance(new_proxy_array, np.ndarray)) or (isinstance(new_proxy_array, ma.core.MaskedConstant)):
+            new_proxy_array = np.array(new_proxy_array)
         
         # get the ndim of the data manager array
         ds_ndim = len(self._post_slice_data_shape())
@@ -160,7 +160,7 @@ class DataManager(iris.util._OrderedHashable):
         
         hashable_conversion = {
                              types.SliceType: _HashableSlice.from_slice,
-                             numpy.ndarray: tuple,
+                             np.ndarray: tuple,
                              } 
         new_deferred_slice = tuple([hashable_conversion.get(type(index), lambda index: index)(index)
                                     for index in deferred_slice])
@@ -249,30 +249,30 @@ class DataManager(iris.util._OrderedHashable):
         
         # Create fully masked data (all missing)
         try:
-            raw_data = numpy.empty(array_shape,
-                                   dtype=self.data_type.newbyteorder('='))
-            mask = numpy.ones(array_shape, dtype=numpy.bool)
-            data = numpy.ma.MaskedArray(raw_data, mask=mask,
-                                        fill_value=self.mdi)
+            raw_data = np.empty(array_shape,
+                                dtype=self.data_type.newbyteorder('='))
+            mask = np.ones(array_shape, dtype=np.bool)
+            data = ma.MaskedArray(raw_data, mask=mask,
+                                     fill_value=self.mdi)
         except ValueError:
             raise DataManager.ArrayTooBigForAddressSpace(
                     'Cannot create an array of shape %r as it will not fit in'
                     ' memory. Consider using indexing to select a subset of'
                     ' the Cube.'.format(array_shape))
 
-        for index, proxy in numpy.ndenumerate(proxy_array):
-            if proxy not in [None, 0]:  # 0 can come from slicing masked proxy; numpy.array(masked_constant).
+        for index, proxy in np.ndenumerate(proxy_array):
+            if proxy not in [None, 0]:  # 0 can come from slicing masked proxy; np.array(masked_constant).
                 payload = proxy.load(self._orig_data_shape, self.data_type, self.mdi, deferred_slice)
 
                 # Explicitly set the data fill value when no mdi value has been specified
                 # in order to override default masked array fill value behaviour.
-                if self.mdi is None and numpy.ma.isMaskedArray(payload):
+                if self.mdi is None and ma.isMaskedArray(payload):
                     data.fill_value = payload.fill_value
 
                 data[index] = payload
 
         # we can turn the masked array into a normal array if it's full.
-        if numpy.ma.count_masked(data) == 0:
+        if ma.count_masked(data) == 0:
             data = data.filled() 
 
         # take a copy of the data as it may be discontiguous (i.e. when numpy "fancy" indexing has taken place)
