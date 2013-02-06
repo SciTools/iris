@@ -258,20 +258,13 @@ def _quadrant_area(radian_colat_bounds, radian_lon_bounds, radius_of_earth):
 
     #fill in a new array of areas
     radius_sqr = radius_of_earth ** 2
-    areas = np.ndarray(
-        (radian_colat_bounds.shape[0], radian_lon_bounds.shape[0]))
-    for j in range(radian_colat_bounds.shape[0]):
-        areas[j, :] = [
-            (radius_sqr *
-                math.cos(radian_colat_bounds[j, 0]) *
-                (radian_lon_bounds[i, 1] - radian_lon_bounds[i, 0]))
-            -
-            (radius_sqr *
-                math.cos(radian_colat_bounds[j, 1]) *
-                (radian_lon_bounds[i, 1] - radian_lon_bounds[i, 0]))
-            for i in range(radian_lon_bounds.shape[0])
-        ]
+    areas = np.ndarray((radian_colat_bounds.shape[0], radian_lon_bounds.shape[0]))
     # we use abs because backwards bounds (min > max) give negative areas.
+    for j in range(radian_colat_bounds.shape[0]):
+        areas[j, :] = [(radius_sqr * math.cos(radian_colat_bounds[j, 0]) * (radian_lon_bounds[i, 1] - radian_lon_bounds[i, 0])) - \
+                      (radius_sqr * math.cos(radian_colat_bounds[j, 1]) * (radian_lon_bounds[i, 1] - radian_lon_bounds[i, 0]))   \
+                      for i in range(radian_lon_bounds.shape[0])]
+
     return np.abs(areas)
 
 
