@@ -25,7 +25,7 @@ import iris
 
 
 @iris.tests.skip_data
-class TestFileload(tests.IrisTest):
+class TestFileLoad(tests.IrisTest):
     def _test_file(self, src_path, reference_filename):
         """
         Checks the result of loading the given file spec, or creates the
@@ -67,6 +67,12 @@ class TestFileload(tests.IrisTest):
         src_path = ['PP', 'globClim1', '[!rstu]_wind.pp']
         self._test_file(src_path, 'v_wind_levels.cml')
 
+    def test_empty_file(self):
+        with self.temp_filename(suffix='.pp') as temp_filename:
+            with open(temp_filename, "a") as file:
+                with self.assertRaises(iris.exceptions.TranslationError):
+                    iris.load(temp_filename)        
+        
 
 if __name__ == "__main__":
     tests.main()

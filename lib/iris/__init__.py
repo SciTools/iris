@@ -146,8 +146,13 @@ def _generate_cubes(uris, callback):
 
 
 def _load_collection(uris, constraints=None, callback=None):
-    cubes = _generate_cubes(uris, callback)
-    return iris.cube._CubeFilterCollection.from_cubes(cubes, constraints)
+    try:
+        cubes = _generate_cubes(uris, callback)
+        result = iris.cube._CubeFilterCollection.from_cubes(cubes, constraints)
+    except EOFError as e:
+        raise iris.exceptions.TranslationError("The file appears empty or "
+                                               "incomplete: {!r}".format(e.message))
+    return result
 
 
 def load(uris, constraints=None, callback=None):
