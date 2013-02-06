@@ -30,7 +30,7 @@ For instance, suppose we have a cube:
     >>> filename = iris.sample_data_path('uk_hires.pp')
     >>> cube = iris.load_cube(filename, 'air_potential_temperature')
     >>> print cube
-    air_potential_temperature           (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
+    air_potential_temperature / K       (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
          Dimension coordinates:
               time                           x                      -                 -                    -
               model_level_number             -                      x                 -                    -
@@ -44,7 +44,7 @@ For instance, suppose we have a cube:
          Derived coordinates:
               altitude                       -                      x                 x                    x
          Scalar coordinates:
-              forecast_reference_time: 349612.0 hours since 1970-01-01 00:00:00
+              forecast_reference_time: 2009-11-19 04:00:00
          Attributes:
               STASH: m01s00i004
               source: Data from Met Office Unified Model 7.03
@@ -58,7 +58,7 @@ we can pass the coordinate name and the aggregation definition to the
     >>> import iris.analysis
     >>> vertical_mean = cube.collapsed('model_level_number', iris.analysis.MEAN)
     >>> print vertical_mean
-    air_potential_temperature           (time: 3; grid_latitude: 204; grid_longitude: 187)
+    air_potential_temperature / K       (time: 3; grid_latitude: 204; grid_longitude: 187)
          Dimension coordinates:
               time                           x                 -                    -
               grid_latitude                  -                 x                    -
@@ -69,7 +69,7 @@ we can pass the coordinate name and the aggregation definition to the
          Derived coordinates:
               altitude                       -                 x                    x
          Scalar coordinates:
-              forecast_reference_time: 349612.0 hours since 1970-01-01 00:00:00
+              forecast_reference_time: 2009-11-19 04:00:00
               level_height: 696.667 m, bound=(0.0, 1393.33) m
               model_level_number: 10, bound=(1, 19)
               sigma: 0.92293, bound=(0.84586, 1.0)
@@ -110,7 +110,7 @@ These areas can now be passed to the ``collapsed`` method as weights:
 
     >>> new_cube = cube.collapsed(['grid_longitude', 'grid_latitude'], iris.analysis.MEAN, weights=grid_areas)
     >>> print new_cube
-    air_potential_temperature           (time: 3; model_level_number: 7)
+    air_potential_temperature / K       (time: 3; model_level_number: 7)
          Dimension coordinates:
               time                           x                      -
               model_level_number             -                      x
@@ -121,7 +121,7 @@ These areas can now be passed to the ``collapsed`` method as weights:
          Derived coordinates:
               altitude                       -                      x
          Scalar coordinates:
-              forecast_reference_time: 349612.0 hours since 1970-01-01 00:00:00
+              forecast_reference_time: 2009-11-19 04:00:00
               grid_latitude: 1.51455 degrees, bound=(0.1443, 2.8848) degrees
               grid_longitude: 358.749 degrees, bound=(357.494, 360.005) degrees
               surface_altitude: 399.625 m, bound=(-14.0, 813.25) m
@@ -195,7 +195,7 @@ Printing this cube now shows that two extra coordinates exist on the cube:
 .. doctest:: aggregation
 
     >>> print cube
-    surface_temperature                 (time: 54; latitude: 18; longitude: 432)
+    surface_temperature / K             (time: 54; latitude: 18; longitude: 432)
          Dimension coordinates:
               time                           x             -              -
               latitude                       -             x              -
@@ -222,7 +222,7 @@ These two coordinates can now be used to aggregate by season and climate-year:
     ...     ['clim_season', 'season_year'], 
     ...     iris.analysis.MEAN)
     >>> print repr(annual_seasonal_mean)
-    <iris 'Cube' of surface_temperature (*ANONYMOUS*: 19; latitude: 18; longitude: 432)>
+    <iris 'Cube' of surface_temperature / K (*ANONYMOUS*: 19; latitude: 18; longitude: 432)>
     
 The primary change in the cube is that the cube's data has been 
 reduced in the 'time' dimension by aggregation (taking means, in this case). 
@@ -263,7 +263,7 @@ do not cover a three month period (note: judged here as > 3*28 days):
     >>> three_months_bound = iris.Constraint(time=spans_three_months)
     >>> full_season_means = annual_seasonal_mean.extract(three_months_bound)
     >>> full_season_means
-    <iris 'Cube' of surface_temperature (*ANONYMOUS*: 17; latitude: 18; longitude: 432)>
+    <iris 'Cube' of surface_temperature / K (*ANONYMOUS*: 17; latitude: 18; longitude: 432)>
 
 The final result now represents the seasonal mean temperature for 17 seasons 
 from jja-2006 to jja-2010:

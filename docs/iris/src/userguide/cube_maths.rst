@@ -45,12 +45,12 @@ And finally we can subtract the two. The result is a cube of the same size as th
 data representing their difference:
 
     >>> print t_last - t_first
-    unknown                             (latitude: 37; longitude: 49)
+    unknown / K                         (latitude: 37; longitude: 49)
          Dimension coordinates:
               latitude                           x              -
               longitude                          -              x
          Scalar coordinates:
-              forecast_reference_time: -953274.0 hours since 1970-01-01 00:00:00
+              forecast_reference_time: 1859-09-01 06:00:00
               height: 1.5 m
          Attributes:
               history: air_temperature - air_temperature (ignoring forecast_period, time)
