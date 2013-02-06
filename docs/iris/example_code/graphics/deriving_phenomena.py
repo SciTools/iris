@@ -44,7 +44,9 @@ def main():
                                                               constraints) 
     
     # Define a coordinate which represents 1000 hPa
-    p0 = coords.AuxCoord(100000, long_name='P0', units='Pa')
+    p0 = coords.AuxCoord(1000, long_name='P0', units='hPa')
+    # Convert reference pressure 'p0' into the same units as 'air_pressure'
+    p0.convert_units(air_pressure.units)
     
     # Calculate Exner pressure
     exner_pressure = (air_pressure / p0) ** (287.05 / 1005.0)

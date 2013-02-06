@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube units="unknown">
+  <cube units="kelvin">
     <attributes>
       <attribute name="history" value="air_temperature / 10"/>
     </attributes>

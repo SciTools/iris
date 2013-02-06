@@ -5,12 +5,18 @@ Basic cube mathematics
 
 The section :doc:`navigating_a_cube` highlighted that every cube has a data attribute; this attribute can then be manipulated directly::
 
-   cube.data -= 273.16
+   cube.data -= 273.15
 
-The problem with manipulating the data directly is that other metadata may become inconsistent; in this case the unit of 
-the cube is no longer what was intended, therefore this example could be rectified by setting the unit::
+The problem with manipulating the data directly is that other metadata may become inconsistent; in this case the units of
+the cube are no longer what was intended. This example could be rectified by changing the units attribute::
 
-   cube.units = 'C'
+   cube.units = 'celsius'
+
+.. note::
+    :meth:`iris.cube.Cube.convert_units` can be used to automatically convert a cube's data and update its units attribute
+    so the two steps above can be achieved by::
+
+        cube.convert_units('celsius')
 
 In order to reduce the amount of metadata which becomes inconsistent, fundamental arithmetic operations such as addition, 
 subtraction, division, and multiplication can be applied directly to any cube.
@@ -79,16 +85,16 @@ In order to calculate :math:`\frac{p}{p_0}` we can define a coordinate which rep
     import iris.coords
     p0 = iris.coords.AuxCoord(1000., long_name='reference_pressure', units='hPa')
 
-We must ensure that the units of ``pressure`` and ``p0`` are the same, so convert the newly created coordinate using 
-the :meth:`iris.coords.Coord.unit_converted` method::
+We must ensure that the units of ``pressure`` and ``p0`` are the same, so convert the newly created coordinate using
+the :meth:`iris.coords.Coord.convert_units` method::
 
-    p0 = p0.unit_converted(pressure.units)
+    p0.convert_units(pressure.units)
 
 Now we can combine all of this information to calculate the air temperature using the equation above::
 
     temperature = pot_temperature * ( (pressure / p0) ** (287.05 / 1005) )
 
-Finally, the cube we have created needs to be given a suitable name:
+Finally, the cube we have created needs to be given a suitable name::
 
     temperature.rename('air_temperature')
 

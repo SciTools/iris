@@ -1,0 +1,39 @@
+What's new in Iris 1.2
+**********************
+
+:Release: 1.2.0
+:Date: unreleased
+
+This document explains the new/changed features of Iris in version 1.2.
+
+Iris 1.2 features
+=================
+
+A summary of the main features added with version 1.2:
+
+* :meth:`iris.cube.Cube.convert_units()` and
+  :meth:`iris.coords.Coord.convert_units()` have been added. This is
+  aimed at simplifying the conversion of a cube or coordinate from one unit to
+  another. For example, to convert a cube in kelvin to celsius, one can now
+  call cube.convert_units('celsius'). The operation is in-place and if the
+  units are not convertible an exception will be raised.
+
+Bugs fixed
+----------
+* N/A
+
+Incompatible changes
+--------------------
+* The deprecated :attr:`iris.cube.Cube.unit` and :attr:`iris.coords.Coord.unit`
+  attributes have been removed.
+
+Deprecations
+------------
+* The :meth:`iris.coords.Coord.unit_converted()` method has been deprecated.
+  Users should make a copy of the coordinate using
+  :meth:`iris.coords.Coord.copy()` and then call the
+  :meth:`iris.coords.Coord.convert_units()` method of the new coordinate.
+
+
+
+

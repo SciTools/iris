@@ -603,12 +603,27 @@ class TestCubeAPI(TestCube2d):
         self.t.rename('foo')
         self.assertEqual(self.t.name(), 'foo')
         
-    def test_getting_unit(self):
+    def test_getting_units(self):
+        self.assertEqual(self.t.units, iris.unit.Unit('meters'))
         self.assertEqual(str(self.t.units), 'meters')
 
-    def test_setting_unit(self):
+    def test_setting_units(self):
+        self.assertEqual(self.t.units, iris.unit.Unit('meters'))
+        self.t.units = 'kelvin'
+        self.assertEqual(self.t.units, iris.unit.Unit('kelvin'))
+
+    def test_clearing_units(self):
+        self.t.units = None
+        self.assertEqual(str(self.t.units), 'unknown')
+
+    def test_convert_units(self):
+        # Set to 'volt'
         self.t.units = iris.unit.Unit('volt')
-        self.assertEqual(str(self.t.units), 'volt')
+        data = self.t.data.copy()
+        # Change to 'kV' - data should be scaled automatically.
+        self.t.convert_units('kV')
+        self.assertEqual(str(self.t.units), 'kV')
+        self.assertArrayAlmostEqual(self.t.data, data / 1000.0)
 
     def test_coords_are_copies(self):
         self.assertIsNot(self.t.coord('dim1'), self.t.copy().coord('dim1'))
