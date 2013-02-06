@@ -45,11 +45,11 @@ def wrap_lons(lons, base, period):
 
     .. testsetup::
 
-        import numpy
-        from iris.analysis.cartography import *
+        import numpy as np
+        from iris.analysis.cartography import wrap_lons
 
     For example:
-        >>> print wrap_lons(numpy.array([185, 30, -200, 75]), -180, 360)
+        >>> print wrap_lons(np.array([185, 30, -200, 75]), -180, 360)
         [-175   30  160   75]
 
     """
@@ -79,8 +79,9 @@ def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
     # which breaks our to_meter=57...
     # So we have to do the radian-degree correction explicitly
     d = math.degrees(1)
-    std_lons, std_lats = proj4_wrapper(
-        rotated_lons / d, rotated_lats / d, inverse=True)
+    std_lons, std_lats = proj4_wrapper(rotated_lons / d,
+                                       rotated_lats / d,
+                                       inverse=True)
     return std_lons, std_lats
 
 
@@ -105,10 +106,10 @@ def rotate_pole(lons, lats, pole_lon, pole_lat):
 
 
 def _get_lat_lon_coords(cube):
-    lat_coords = filter(lambda coord:
-                        "latitude" in coord.name(), cube.coords())
-    lon_coords = filter(lambda coord:
-                        "longitude" in coord.name(), cube.coords())
+    lat_coords = filter(lambda coord: "latitude" in coord.name(),
+                        cube.coords())
+    lon_coords = filter(lambda coord: "longitude" in coord.name(),
+                        cube.coords())
     if len(lat_coords) > 1 or len(lon_coords) > 1:
         raise ValueError(
             "Calling _get_lat_lon_coords() with multiple lat or lon coords"
@@ -135,9 +136,9 @@ def _xy_range(cube, mode=None):
     """
     # Helpful error if we have an inappropriate CoordSystem
     cs = cube.coord_system("CoordSystem")
-    if ((cs is not None) and
-            not isinstance(cs, (iris.coord_systems.GeogCS,
-                                iris.coord_systems.RotatedGeogCS))):
+    cs_valid_types = (iris.coord_systems.GeogCS,
+                      iris.coord_systems.RotatedGeogCS)
+    if ((cs is not None) and not isinstance(cs, cs_valid_types)):
         raise ValueError(
             "Latlon coords cannot be found with {0}.".format(type(cs)))
 
@@ -277,6 +278,7 @@ def _quadrant_area(radian_colat_bounds, radian_lon_bounds, radius_of_earth):
 def area_weights(cube, normalize=False):
     """
     Returns an array of area weights, with the same dimensions as the cube.
+
     This is a 2D lat/lon area weights array, repeated over the non lat/lon dimensions.
 
     Args:
@@ -291,6 +293,7 @@ def area_weights(cube, normalize=False):
         cell areas divided by the total grid area.
 
     The cube must have coordinates 'latitude' and 'longitude' with contiguous bounds.
+
     Area weights are calculated for each lat/lon cell as:
 
         .. math::
@@ -308,8 +311,8 @@ def area_weights(cube, normalize=False):
         if cs.inverse_flattening != 0.0:
             warnings.warn("Assuming spherical earth from ellipsoid.")
         radius_of_earth = cs.semi_major_axis
-    elif (isinstance(cs, iris.coord_systems.RotatedGeogCS)
-          and (cs.ellipsoid is not None)):
+    elif (isinstance(cs, iris.coord_systems.RotatedGeogCS) and
+            (cs.ellipsoid is not None)):
         if cs.ellipsoid.inverse_flattening != 0.0:
             warnings.warn("Assuming spherical earth from ellipsoid.")
         radius_of_earth = cs.ellipsoid.semi_major_axis
@@ -337,8 +340,8 @@ def area_weights(cube, normalize=False):
 
     # Ensure they have contiguous bounds
     if (not lat.is_contiguous()) or (not lon.is_contiguous()):
-        raise ValueError(
-            "Currently need contiguous bounds to calculate area weights")
+        msg = "Currently need contiguous bounds to calculate area weights"
+        raise ValueError(msg)
 
     # Convert from degrees to radians
     lat = lat.copy()
