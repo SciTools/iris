@@ -696,7 +696,42 @@ class Coord(CFVariableMixin):
                 if not iris.util.monotonic(self.bounds[..., b_index], strict=True):
                     return False
                 
-        return True 
+        return True
+
+    def is_compatible(self, other):
+        """
+        Return whether the coordinate is compatible with another.
+
+        Compatibility is determined by comparing
+        :meth:`iris.coords.Coord.name()`, :attr:`iris.coords.Coord.units`,
+        :attr:`iris.coords.Coord.coord_system` and
+        :attr:`iris.coords.Coord.attributes` that are present in both objects.
+
+        Args:
+
+        * other:
+            An instance of :class:`iris.coords.Coord` or
+            :class:`iris.coords.CoordDefn`.
+
+        Returns:
+           Boolean.
+
+        """
+        if self.name() != other.name():
+            return False
+
+        if self.units != other.units:
+            return False
+
+        if self.coord_system != other.coord_system:
+            return False
+
+        common_keys = set(self.attributes).intersection(other.attributes)
+        for key in common_keys:
+            if self.attributes[key] != other.attributes[key]:
+                return False
+
+        return True
 
     @property
     def dtype(self):
@@ -860,8 +895,8 @@ class Coord(CFVariableMixin):
         """
         Returns a new coordinate from the intersection of two coordinates.
 
-        Both coordinates must have the same metadata, i.e. standard_name, long_name,
-        units, attributes and coord_system.
+        Both coordinates must be compatible as defined by
+        :meth:`~iris.coords.Coord.is_compatible`.
 
         Kwargs:
 
@@ -870,8 +905,10 @@ class Coord(CFVariableMixin):
             for the "self" coordinate.
 
         """
-        if self._as_defn() != other._as_defn():
-            raise ValueError('Coords cannot be intersected, differing metadata.')
+        if not self.is_compatible(other):
+            msg = 'The coordinates cannot be intersected. They are not ' \
+                  'compatible because of differing metadata.'
+            raise ValueError(msg)
 
         # Cache self.cells for speed. We can also use the index operation on a list conveniently.
         self_cells = [cell for cell in self.cells()]

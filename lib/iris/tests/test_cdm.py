@@ -774,6 +774,49 @@ class TestCubeEquality(TestCube2d):
         r.add_cell_method(iris.coords.CellMethod('mean'))
         self.assertNotEqual(self.t, r)
 
+    def test_not_compatible(self):
+        r = self.t.copy()
+        self.assertTrue(self.t.is_compatible(r))
+        # The following changes should make the cubes incompatible.
+        # Different units.
+        r.units = 'kelvin'
+        self.assertFalse(self.t.is_compatible(r))
+        # Different cell_methods.
+        r = self.t.copy()
+        r.add_cell_method(iris.coords.CellMethod('mean', coords='dim1'))
+        self.assertFalse(self.t.is_compatible(r))
+        # Different attributes.
+        r = self.t.copy()
+        self.t.attributes['source']= 'bob'
+        r.attributes['source'] = 'alice'
+        self.assertFalse(self.t.is_compatible(r))
+
+    def test_compatible(self):
+        r = self.t.copy()
+        self.assertTrue(self.t.is_compatible(r))
+        # The following changes should not affect compatibility.
+        # Different non-common attributes.
+        self.t.attributes['source']= 'bob'
+        r.attributes['origin'] = 'alice'
+        self.assertTrue(self.t.is_compatible(r))
+        # Different histories.
+        self.t.add_history('One history.')
+        r.add_history('An alternative history.')
+        self.assertTrue(self.t.is_compatible(r))
+        # Different coordinates.
+        r.remove_coord('dim1')
+        self.assertTrue(self.t.is_compatible(r))
+        # Different data.
+        r.data = np.zeros(r.data.shape)
+        self.assertTrue(self.t.is_compatible(r))
+        # Different var_names (but equal name()).
+        r.var_name = 'foo'
+        self.assertTrue(self.t.is_compatible(r))
+
+    def test_is_compatible_metadata(self):
+        metadata = self.t.metadata
+        self.assertTrue(self.t.is_compatible(metadata))
+
 
 @iris.tests.skip_data
 class TestDataManagerIndexing(TestCube2d):

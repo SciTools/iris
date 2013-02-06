@@ -432,8 +432,8 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
     if compatible:
         grid_x = grid_cube.coord(axis='x', coord_system=grid_cs)
         grid_y = grid_cube.coord(axis='y', coord_system=grid_cs)
-        compatible = (source_x._as_defn() == grid_x._as_defn() and
-                      source_y._as_defn() == grid_y._as_defn())
+        compatible = source_x.is_compatible(grid_x) and \
+            source_y.is_compatible(grid_y)
     if not compatible:
         raise ValueError("The new grid must be defined on the same coordinate system, and have the same coordinate "
                          "metadata, as the source.")

@@ -26,6 +26,7 @@ import os
 import warnings
 
 import netCDF4 as nc
+import numpy as np
 import numpy.ma as ma
 
 import iris

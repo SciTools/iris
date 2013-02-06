@@ -472,6 +472,42 @@ class Cube(CFVariableMixin):
         for name in CubeMetadata._fields:
             setattr(self, name, getattr(value, name))
 
+    def is_compatible(self, other):
+        """
+        Return whether the cube is compatible with another.
+
+        Compatibility is determined by comparing :meth:`iris.cube.Cube.name()`,
+        :attr:`iris.cube.Cube.units`, :attr:`iris.cube.Cube.cell_methods` and
+        :attr:`iris.cube.Cube.attributes` other than history that are present
+        in both objects.
+
+        Args:
+
+        * other:
+            An instance of :class:`iris.cube.Cube` or
+            :class:`iris.cube.CubeMetadata`.
+
+        Returns:
+           Boolean.
+
+        """
+        if self.name() != other.name():
+            return False
+
+        if self.units != other.units:
+            return False
+
+        if self.cell_methods != other.cell_methods:
+            return False
+
+        common_keys = set(self.attributes).intersection(other.attributes)
+        common_keys.discard('history')
+        for key in common_keys:
+            if self.attributes[key] != other.attributes[key]:
+                return False
+
+        return True
+
     def convert_units(self, unit):
         """
         Change the cube's units, converting the values in the data array.

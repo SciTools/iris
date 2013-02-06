@@ -14,6 +14,12 @@ Features added
   var_name keyword argument has also been added to the
   :meth:`iris.cube.Cube.coord()`, :meth:`iris.cube.Cube.coords()` and
   :meth:`iris.cube.Cube.aux_factory()` methods.
+* :meth:`iris.coords.Coord.is_compatible()` has been added. This method is
+  used to determine whether two coordinates are are sufficiently alike to
+  allow operations such as :meth:`iris.coords.Coord.intersect()` and
+  :func:`iris.analysis.interpolate.regrid()` to take place. A corresponding
+  method for cubes, :meth:`iris.cube.Cube.is_compatible()`, has also been
+  added.
 
 Bugs fixed
 ----------
