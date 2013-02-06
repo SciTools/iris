@@ -21,7 +21,7 @@ References
 import os.path
 import itertools
 import matplotlib.pyplot as plt
-import numpy
+import numpy as np
 
 import iris
 import iris.coords as coords
@@ -53,13 +53,13 @@ def main():
     global_avg = iris.load_cube(iris.sample_data_path('pre-industrial.pp'))
     
     # Define evenly spaced contour levels: -2.5, -1.5, ... 15.5, 16.5 with the specific colours
-    levels = numpy.arange(20) - 2.5
-    red = numpy.array([0, 0, 221, 239, 229, 217, 239, 234, 228, 222, 205, 196, 161, 137, 116, 89, 77, 60, 51]) / 256.
-    green = numpy.array([16, 217, 242, 243, 235, 225, 190, 160, 128, 87, 72, 59, 33, 21, 29, 30, 30, 29, 26]) / 256.
-    blue = numpy.array([255, 255, 243, 169, 99, 51, 63, 37, 39, 21, 27, 23, 22, 26, 29, 28, 27, 25, 22]) / 256.
+    levels = np.arange(20) - 2.5
+    red = np.array([0, 0, 221, 239, 229, 217, 239, 234, 228, 222, 205, 196, 161, 137, 116, 89, 77, 60, 51]) / 256.
+    green = np.array([16, 217, 242, 243, 235, 225, 190, 160, 128, 87, 72, 59, 33, 21, 29, 30, 30, 29, 26]) / 256.
+    blue = np.array([255, 255, 243, 169, 99, 51, 63, 37, 39, 21, 27, 23, 22, 26, 29, 28, 27, 25, 22]) / 256.
     
     # Put those colours into an array which can be passed to conourf as the specific colours for each level
-    colors = numpy.array([red, green, blue]).T
+    colors = np.array([red, green, blue]).T
     
     # Subtract the global 
     

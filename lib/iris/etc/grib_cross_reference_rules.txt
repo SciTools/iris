@@ -24,4 +24,4 @@ grib.parameterCategory == 3
 grib.parameterNumber == 25
 grib.typeOfFirstFixedSurface == 105
 THEN
-ReferenceTarget('surface_pressure', lambda cube: {'standard_name': 'surface_air_pressure', 'units': 'Pa', 'data': numpy.exp(cube.data)})
+ReferenceTarget('surface_pressure', lambda cube: {'standard_name': 'surface_air_pressure', 'units': 'Pa', 'data': np.exp(cube.data)})

@@ -22,7 +22,7 @@ import collections
 import operator
 import warnings
 
-import numpy
+import numpy as np
 
 import iris.exceptions
 
@@ -219,7 +219,7 @@ class _CoordConstraint(object):
         dims = cube.coord_dims(coord)
         if len(dims) > 1:
             raise iris.exceptions.CoordinateMultiDimError('Cannot apply constraints to multidimensional coordinates')
-        r = numpy.array([self._call_func(cell) for cell in coord.cells()])
+        r = np.array([self._call_func(cell) for cell in coord.cells()])
         if dims:
             cube_cim[dims[0]] = r
         elif not all(r):
@@ -234,9 +234,9 @@ class _ColumnIndexManager(object):
     ::
         
         # 4 Dimensional slices
-        import numpy
+        import numpy as np
         cim = _ColumnIndexManager(4)
-        cim[1] = numpy.array([3, 4, 5]) > 3
+        cim[1] = np.array([3, 4, 5]) > 3
         print cim.as_slice()
     
     """
@@ -275,7 +275,7 @@ class _ColumnIndexManager(object):
         return self._column_arrays[key]
         
     def __setitem__(self, key, value):
-        if (isinstance(value, numpy.ndarray) and value.ndim == 1) or isinstance(value, bool):
+        if (isinstance(value, np.ndarray) and value.ndim == 1) or isinstance(value, bool):
             self._column_arrays[key] = value
         else:
             raise TypeError('Expecting value to be a 1 dimensional numpy array, or a boolean. Got %s' % (type(value)))
@@ -290,8 +290,8 @@ class _ColumnIndexManager(object):
         
         for dim, dimension_array in enumerate(self):
             # If dimension_array has not been set, then span the entire dimension
-            if isinstance(dimension_array, numpy.ndarray):
-                where_true = numpy.where(dimension_array)[0]
+            if isinstance(dimension_array, np.ndarray):
+                where_true = np.where(dimension_array)[0]
                 # If the array had no True values in it, then the dimension is equivalent to False
                 if len(where_true) == 0:
                     result = None
@@ -303,7 +303,7 @@ class _ColumnIndexManager(object):
                 else:
                     # Finally, we can either provide a slice if possible, or a tuple of indices which match
                     # In order to determine if we can provide a slice, calculate the deltas between the indices and check if they are the same
-                    delta = numpy.diff(where_true, axis=0)
+                    delta = np.diff(where_true, axis=0)
                     # if the diff is consistent then we can create a slice object 
                     if all(delta[0] == delta):
                         result[dim] = slice(where_true[0], where_true[-1] + 1, delta[0])

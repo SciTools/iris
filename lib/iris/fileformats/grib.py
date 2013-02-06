@@ -26,7 +26,7 @@ import math  #for fmod
 import os
 import warnings
 
-import numpy
+import numpy as np
 
 import iris.proxy
 iris.proxy.apply_proxy('gribapi', globals())
@@ -202,15 +202,15 @@ class GribWrapper(object):
             if key in ["values", "pv"]:
                 res = gribapi.grib_get_double_array(self.grib_message, key)
             elif key in ('typeOfFirstFixedSurface','typeOfSecondFixedSurface'):
-                res = numpy.int32(gribapi.grib_get_long(self.grib_message, key))
+                res = np.int32(gribapi.grib_get_long(self.grib_message, key))
             else:
                 key_type = gribapi.grib_get_native_type(self.grib_message, key)
                 if key_type == int:
-                    res = numpy.int32(gribapi.grib_get_long(self.grib_message, key))
+                    res = np.int32(gribapi.grib_get_long(self.grib_message, key))
                 elif key_type == float:
                     # Because some computer keys are floats, like
                     # longitudeOfFirstGridPointInDegrees, a float32 is not always enough...
-                    res = numpy.float64(gribapi.grib_get_double(self.grib_message, key))
+                    res = np.float64(gribapi.grib_get_double(self.grib_message, key))
                 elif key_type == str:
                     res = gribapi.grib_get_string(self.grib_message, key)
                 else:
@@ -262,7 +262,7 @@ class GribWrapper(object):
         if edition == 2:
             forecastTime = self.forecastTime
 
-            uft = numpy.uint32(forecastTime)
+            uft = np.uint32(forecastTime)
             BILL = 2**30
             
             # Workaround grib api's assumption that forecast time is positive.
@@ -422,9 +422,9 @@ class GribWrapper(object):
             i_step = -i_step
         if not self.jScansPositively:
             j_step = -j_step
-        self._x_points = (numpy.arange(self.Ni, dtype=numpy.float64) * i_step +
+        self._x_points = (np.arange(self.Ni, dtype=np.float64) * i_step +
                           self.longitudeOfFirstGridPointInDegrees)
-        self._y_points = (numpy.arange(self.Nj, dtype=numpy.float64) * j_step +
+        self._y_points = (np.arange(self.Nj, dtype=np.float64) * j_step +
                           self.latitudeOfFirstGridPointInDegrees)
 
         # circular x coord?
@@ -432,12 +432,12 @@ class GribWrapper(object):
             # Is the gap from end to start smaller or about equal to the max step?
             points = self._x_points
             gap = 360.0 - abs(points[-1] - points[0]) 
-            max_step = abs(numpy.diff(points)).max()
+            max_step = abs(np.diff(points)).max()
             if gap <= max_step:
                 self.extra_keys['_x_circular'] = True
             else:
                 try:
-                    numpy.testing.assert_almost_equal(gap / max_step, 1.0, decimal=3)
+                    np.testing.assert_almost_equal(gap / max_step, 1.0, decimal=3)
                     self.extra_keys['_x_circular'] = True
                 except:
                     pass

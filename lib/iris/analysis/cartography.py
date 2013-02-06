@@ -23,7 +23,8 @@ import math
 import warnings
 
 import cartopy.img_transform
-import numpy
+import numpy as np
+import numpy.ma as ma
 
 import iris.analysis
 import iris.coords
@@ -150,11 +151,11 @@ def _xy_range(cube, mode=None):
 
     # Get the x and y range
     if getattr(x_coord, 'circular', False):
-        x_range = (numpy.min(x), numpy.min(x) + x_coord.units.modulus)
+        x_range = (np.min(x), np.min(x) + x_coord.units.modulus)
     else:
-        x_range = (numpy.min(x), numpy.max(x))
+        x_range = (np.min(x), np.max(x))
 
-    y_range = (numpy.min(y), numpy.max(y))
+    y_range = (np.min(y), np.max(y))
 
     return (x_range, y_range)
 
@@ -179,7 +180,7 @@ def get_xy_grids(cube):
     
     if x.ndim == y.ndim == 1:
         # Convert to 2D.
-        x, y = numpy.meshgrid(x, y)
+        x, y = np.meshgrid(x, y)
     elif x.ndim == y.ndim == 2:
         # They are already in the correct shape.
         pass
@@ -203,7 +204,7 @@ def get_xy_contiguous_bounded_grids(cube):
 
     x = x_coord.contiguous_bounds()
     y = y_coord.contiguous_bounds()
-    x, y = numpy.meshgrid(x, y)
+    x, y = np.meshgrid(x, y)
 
     return (x, y)
 
@@ -231,14 +232,14 @@ def _quadrant_area(radian_colat_bounds, radian_lon_bounds, radius_of_earth):
 
     #fill in a new array of areas
     radius_sqr = radius_of_earth ** 2
-    areas = numpy.ndarray((radian_colat_bounds.shape[0], radian_lon_bounds.shape[0]))
+    areas = np.ndarray((radian_colat_bounds.shape[0], radian_lon_bounds.shape[0]))
     # we use abs because backwards bounds (min > max) give negative areas.
     for j in range(radian_colat_bounds.shape[0]):
         areas[j, :] = [(radius_sqr * math.cos(radian_colat_bounds[j, 0]) * (radian_lon_bounds[i, 1] - radian_lon_bounds[i, 0])) - \
                       (radius_sqr * math.cos(radian_colat_bounds[j, 1]) * (radian_lon_bounds[i, 1] - radian_lon_bounds[i, 0]))   \
                       for i in range(radian_lon_bounds.shape[0])]
 
-    return numpy.abs(areas)
+    return np.abs(areas)
 
 
 def area_weights(cube, normalize=False):
@@ -317,7 +318,7 @@ def area_weights(cube, normalize=False):
     if lat.has_bounds() and lon.has_bounds():
         # Use the geographical area as the weight for each cell
         # Convert latitudes to co-latitude. I.e from -90 --> +90  to  0 --> pi
-        ll_weights = _quadrant_area(lat.bounds + numpy.pi / 2., lon.bounds, radius_of_earth)
+        ll_weights = _quadrant_area(lat.bounds + np.pi / 2., lon.bounds, radius_of_earth)
 
     # Create 2D weights from points
     else:
@@ -370,10 +371,10 @@ def cosine_latitude_weights(cube):
     Compute weights suitable for EOF analysis (or other covariance type
     analyses):
 
-        import numpy
+        import numpy as np
         from iris.analysis.cartography import cosine_latitude_weights
         cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
-        weights = numpy.sqrt(cosine_latitude_weights(cube))
+        weights = np.sqrt(cosine_latitude_weights(cube))
 
     """
     # Get the latitude coordinate.
@@ -403,13 +404,13 @@ def cosine_latitude_weights(cube):
     # precision. We first check for genuinely out of range values, and issue a
     # warning if these are found. Then the cosine is computed and clipped to
     # the valid range [0, 1].
-    threshold = numpy.deg2rad(0.001)  # small value for grid resolution
-    if numpy.any(lat.points < -numpy.pi / 2. - threshold) or \
-            numpy.any(lat.points > numpy.pi / 2. + threshold):
+    threshold = np.deg2rad(0.001)  # small value for grid resolution
+    if np.any(lat.points < -np.pi / 2. - threshold) or \
+            np.any(lat.points > np.pi / 2. + threshold):
         warnings.warn('Out of range latitude values will be '
                       'clipped to the valid range.',
                       UserWarning)
-    l_weights = numpy.cos(lat.points).clip(0., 1.)
+    l_weights = np.cos(lat.points).clip(0., 1.)
 
     # Create weights for each grid point.
     broad_weights = iris.util.broadcast_weights(l_weights,
@@ -493,7 +494,7 @@ def project(cube, target_proj, nx=None, ny=None):
     source_x = lon_coord.points
     source_y = lat_coord.points
     if source_x.ndim != 2 or source_y.ndim != 2:
-        source_x, source_y = numpy.meshgrid(source_x, source_y)
+        source_x, source_y = np.meshgrid(source_x, source_y)
 
     # Calculate target grid
     if isinstance(target_proj, iris.coord_systems.CoordSystem):
@@ -537,12 +538,12 @@ def project(cube, target_proj, nx=None, ny=None):
     new_shape = list(cube.shape)
     new_shape[xdim] = nx
     new_shape[ydim] = ny
-    new_data = numpy.ma.zeros(new_shape, cube.data.dtype)
+    new_data = ma.zeros(new_shape, cube.data.dtype)
 
     # Create iterators to step through cube data in lat long slices
     new_shape[xdim] = 1
     new_shape[ydim] = 1
-    index_it = numpy.ndindex(*new_shape)
+    index_it = np.ndindex(*new_shape)
     if lat_coord.ndim == 1 and lon_coord.ndim == 1:
         slice_it = cube.slices([lat_coord, lon_coord])
     elif lat_coord.ndim == 2 and lon_coord.ndim == 2:
@@ -558,10 +559,10 @@ def project(cube, target_proj, nx=None, ny=None):
     #source_desired_xy = source_cs.transform_points(target_proj,
     #                                               target_x.flatten(),
     #                                               target_y.flatten())
-    #if numpy.any(source_x < 0.0) and numpy.any(source_x > 180.0):
+    #if np.any(source_x < 0.0) and np.any(source_x > 180.0):
     #    raise ValueError('Unable to handle range of longitude.')
     ## This does not work in all cases e.g. lon > 360
-    #if numpy.any(source_x > 180.0):
+    #if np.any(source_x > 180.0):
     #    source_desired_x = (source_desired_xy[:, 0].reshape(ny, nx) + 360.0) % 360.0
     #else:
     #    source_desired_x = source_desired_xy[:, 0].reshape(ny, nx)
@@ -572,7 +573,7 @@ def project(cube, target_proj, nx=None, ny=None):
     #                       (source_desired_y > source_y.max()))
     ## Make array a mask by default (rather than a single bool) to allow mask to be
     ## assigned to slices.
-    #new_data.mask = numpy.zeros(new_shape)
+    #new_data.mask = np.zeros(new_shape)
 
     # Step through cube data, regrid onto desired projection and insert results
     # in new_data array
@@ -590,7 +591,7 @@ def project(cube, target_proj, nx=None, ny=None):
         #new_data[index].mask[outof_extent_points] = True
 
     # Remove mask if it is unnecessary
-    if not numpy.any(new_data.mask):
+    if not np.any(new_data.mask):
         new_data = new_data.data
 
     # Create new cube

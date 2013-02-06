@@ -22,7 +22,7 @@ Test the cube merging mechanism.
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import numpy
+import numpy as np
 
 import iris
 import iris.cube
@@ -138,14 +138,14 @@ class TestDataMerge(tests.IrisTest):
 
 class TestDimensionSplitting(tests.IrisTest):
     def _make_cube(self, a, b, c, data):
-        cube_data = numpy.empty((4, 5), dtype=numpy.float32)
+        cube_data = np.empty((4, 5), dtype=np.float32)
         cube_data[:] = data
         cube = iris.cube.Cube(cube_data)
-        cube.add_dim_coord(DimCoord(numpy.array([0, 1, 2, 3, 4], dtype=numpy.int32), long_name='x', units='1'), 1)
-        cube.add_dim_coord(DimCoord(numpy.array([0, 1, 2, 3], dtype=numpy.int32), long_name='y', units='1'), 0)
-        cube.add_aux_coord(DimCoord(numpy.array([a], dtype=numpy.int32), long_name='a', units='1'))
-        cube.add_aux_coord(DimCoord(numpy.array([b], dtype=numpy.int32), long_name='b', units='1'))
-        cube.add_aux_coord(DimCoord(numpy.array([c], dtype=numpy.int32), long_name='c', units='1'))
+        cube.add_dim_coord(DimCoord(np.array([0, 1, 2, 3, 4], dtype=np.int32), long_name='x', units='1'), 1)
+        cube.add_dim_coord(DimCoord(np.array([0, 1, 2, 3], dtype=np.int32), long_name='y', units='1'), 0)
+        cube.add_aux_coord(DimCoord(np.array([a], dtype=np.int32), long_name='a', units='1'))
+        cube.add_aux_coord(DimCoord(np.array([b], dtype=np.int32), long_name='b', units='1'))
+        cube.add_aux_coord(DimCoord(np.array([c], dtype=np.int32), long_name='c', units='1'))
         return cube
         
     def test_single_split(self):
@@ -181,14 +181,14 @@ class TestDimensionSplitting(tests.IrisTest):
 
 class TestTimeTripleMerging(tests.IrisTest):
     def _make_cube(self, a, b, c, data=0):
-        cube_data = numpy.empty((4, 5), dtype=numpy.float32)
+        cube_data = np.empty((4, 5), dtype=np.float32)
         cube_data[:] = data
         cube = iris.cube.Cube(cube_data)
-        cube.add_dim_coord(DimCoord(numpy.array([0, 1, 2, 3, 4], dtype=numpy.int32), long_name='x', units='1'), 1)
-        cube.add_dim_coord(DimCoord(numpy.array([0, 1, 2, 3], dtype=numpy.int32), long_name='y', units='1'), 0)
-        cube.add_aux_coord(DimCoord(numpy.array([a], dtype=numpy.int32), standard_name='forecast_period', units='1'))
-        cube.add_aux_coord(DimCoord(numpy.array([b], dtype=numpy.int32), standard_name='forecast_reference_time', units='1'))
-        cube.add_aux_coord(DimCoord(numpy.array([c], dtype=numpy.int32), standard_name='time', units='1'))
+        cube.add_dim_coord(DimCoord(np.array([0, 1, 2, 3, 4], dtype=np.int32), long_name='x', units='1'), 1)
+        cube.add_dim_coord(DimCoord(np.array([0, 1, 2, 3], dtype=np.int32), long_name='y', units='1'), 0)
+        cube.add_aux_coord(DimCoord(np.array([a], dtype=np.int32), standard_name='forecast_period', units='1'))
+        cube.add_aux_coord(DimCoord(np.array([b], dtype=np.int32), standard_name='forecast_reference_time', units='1'))
+        cube.add_aux_coord(DimCoord(np.array([c], dtype=np.int32), standard_name='time', units='1'))
         return cube
     
     def _test_triples(self, triples, filename):
@@ -333,8 +333,8 @@ class TestCubeMergeTheoretical(tests.IrisTest):
         cube1 = iris.tests.stock.simple_2d()
         cube2 = iris.tests.stock.simple_2d()
         
-        cube1.add_aux_coord(DimCoord(numpy.int32(10), long_name='pressure', units='Pa'))
-        cube2.add_aux_coord(DimCoord(numpy.int32(11), long_name='pressure', units='Pa'))
+        cube1.add_aux_coord(DimCoord(np.int32(10), long_name='pressure', units='Pa'))
+        cube2.add_aux_coord(DimCoord(np.int32(11), long_name='pressure', units='Pa'))
         
         r = iris.cube.CubeList([cube1, cube2]).merge()
         self.assertCML(r, ('cube_merge', 'test_simple_bound_merge.cml'))
@@ -343,8 +343,8 @@ class TestCubeMergeTheoretical(tests.IrisTest):
         cube1 = iris.tests.stock.simple_2d_w_multidim_coords()
         cube2 = iris.tests.stock.simple_2d_w_multidim_coords()
         
-        cube1.add_aux_coord(DimCoord(numpy.int32(10), long_name='pressure', units='Pa'))
-        cube2.add_aux_coord(DimCoord(numpy.int32(11), long_name='pressure', units='Pa'))
+        cube1.add_aux_coord(DimCoord(np.int32(10), long_name='pressure', units='Pa'))
+        cube2.add_aux_coord(DimCoord(np.int32(11), long_name='pressure', units='Pa'))
 
         r = iris.cube.CubeList([cube1, cube2]).merge()[0]
         self.assertCML(r, ('cube_merge', 'multidim_coord_merge.cml'))
@@ -359,8 +359,8 @@ class TestCubeMergeTheoretical(tests.IrisTest):
         cube1 = iris.tests.stock.simple_2d(with_bounds=False)
         cube2 = iris.tests.stock.simple_2d(with_bounds=False)
         
-        cube1.add_aux_coord(DimCoord(numpy.int32(10), long_name='pressure', units='Pa'))
-        cube2.add_aux_coord(DimCoord(numpy.int32(11), long_name='pressure', units='Pa'))
+        cube1.add_aux_coord(DimCoord(np.int32(10), long_name='pressure', units='Pa'))
+        cube2.add_aux_coord(DimCoord(np.int32(11), long_name='pressure', units='Pa'))
         
         r = iris.cube.CubeList([cube1, cube2]).merge()
         self.assertCML(r, ('cube_merge', 'test_simple_merge.cml'))

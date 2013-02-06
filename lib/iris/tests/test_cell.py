@@ -23,7 +23,7 @@ import iris.tests as tests
 
 import unittest
 
-import numpy
+import numpy as np
 
 import iris.coords
 from iris.coords import Cell
@@ -36,7 +36,7 @@ class TestCells(unittest.TestCase):
 
     def test_cell_from_coord(self):
         Cell = iris.coords.Cell
-        coord = iris.coords.AuxCoord(numpy.arange(4) * 1.5, long_name='test', units='1')
+        coord = iris.coords.AuxCoord(np.arange(4) * 1.5, long_name='test', units='1')
         self.assertEqual(Cell(point=0.0, bound=None), coord.cell(0))
         self.assertEqual(Cell(point=1.5, bound=None), coord.cell(1))
         self.assertEqual(Cell(point=4.5, bound=None), coord.cell(-1))
@@ -52,8 +52,8 @@ class TestCells(unittest.TestCase):
 
     def test_cell_from_multidim_coord(self):
         Cell = iris.coords.Cell
-        coord = iris.coords.AuxCoord(points=numpy.arange(12).reshape(3, 4), long_name='test', units='1',
-                                     bounds=numpy.arange(48).reshape(3, 4, 4))
+        coord = iris.coords.AuxCoord(points=np.arange(12).reshape(3, 4), long_name='test', units='1',
+                                     bounds=np.arange(48).reshape(3, 4, 4))
         self.assertRaises(IndexError, coord.cell, 0)
         self.assertEqual(Cell(point=3, bound=(12, 13, 14, 15)), coord.cell((0, 3)))
 

@@ -27,7 +27,7 @@ import collections
 import os.path
 
 import mock
-import numpy
+import numpy as np
 
 import iris
 import iris.fileformats.ff as ff

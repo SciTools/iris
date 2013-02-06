@@ -19,19 +19,19 @@
 # importing anything else
 import iris.tests as tests
 
-import numpy
+import numpy as np
 
 import iris
 
 
 class Test_add_dim_coord(tests.IrisTest):
     def setUp(self):
-        self.cube = iris.cube.Cube(numpy.arange(4).reshape(2, 2))
+        self.cube = iris.cube.Cube(np.arange(4).reshape(2, 2))
 
     def test_no_dim(self):
         self.assertRaises(TypeError,
                           self.cube.add_dim_coord,
-                          iris.coords.DimCoord(numpy.arange(2), "latitude"))
+                          iris.coords.DimCoord(np.arange(2), "latitude"))
 
 
 if __name__ == "__main__":

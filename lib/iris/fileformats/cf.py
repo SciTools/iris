@@ -33,6 +33,7 @@ import warnings
 
 import netCDF4
 import numpy as np
+import numpy.ma as ma
 
 import iris.util
 
@@ -397,8 +398,8 @@ class CFCoordinateVariable(CFVariable):
             if monotonic:
                 data = nc_var[:]
                 # Gracefully fill a masked coordinate.
-                if np.ma.isMaskedArray(data):
-                    data = np.ma.filled(data)
+                if ma.isMaskedArray(data):
+                    data = ma.filled(data)
                 if nc_var.shape == () or nc_var.shape == (1,) or iris.util.monotonic(data):
                     result[nc_var_name] = CFCoordinateVariable(nc_var_name, nc_var)
             else:
@@ -581,7 +582,7 @@ class CFLabelVariable(CFVariable):
         str_dim_name = str_dim_name[0]
         label_data = self[:]
         
-        if isinstance(label_data, np.ma.MaskedArray):
+        if isinstance(label_data, ma.MaskedArray):
             label_data = label_data.filled()
 
         # Determine whether we have a string-valued scalar label

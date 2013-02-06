@@ -23,7 +23,7 @@ import collections
 import itertools
 import warnings
 
-import numpy
+import numpy as np
 
 import iris.exceptions
 
@@ -155,7 +155,7 @@ class _ZipSlicesIterator(collections.Iterator):
         if len(coords_by_cube) != len(cubes):
             raise ValueError('coords_by_cube parameter is not the same length as cubes.')
 
-        # Create an all encompassing dims_index called master_dims_index that is iterated over (using numpy.ndindex) 
+        # Create an all encompassing dims_index called master_dims_index that is iterated over (using np.ndindex) 
         # and from which the indices of the subcubes can be extracted using offsets i.e. position of the
         # associated coord in the master_dims_index
         master_dimensioned_coord_list = []
@@ -193,7 +193,7 @@ class _ZipSlicesIterator(collections.Iterator):
         # Let Numpy do some work in providing all of the permutations of our data shape based on the combination 
         # of dimension sizes called master_dims_index. This functionality is something like:
         # ndindex(2, 1, 3) -> [(0, 0, 0), (0, 0, 1), (0, 0, 2), (1, 0, 0), (1, 0, 1), (1, 0, 2)]
-        self._ndindex = numpy.ndindex(*master_dims_index)
+        self._ndindex = np.ndindex(*master_dims_index)
 
     def next(self):
         # When self._ndindex runs out it will raise StopIteration for us.
@@ -204,7 +204,7 @@ class _ZipSlicesIterator(collections.Iterator):
                 self._requested_dims_by_cube, self._coords_by_cube, self._cubes):
             # Extract the index_list for each cube from the master index using the offsets and
             # for each of the spanning dimensions requested, replace the index_list value 
-            # (will be a zero from numpy.ndindex()) with a spanning slice
+            # (will be a zero from np.ndindex()) with a spanning slice
             index_list = [master_index_tuple[x] for x in offsets]
             for dim in requested_dims:
                 index_list[dim] = slice(None, None)

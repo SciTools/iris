@@ -19,7 +19,7 @@
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import numpy
+import numpy as np
 
 import iris
 from iris import load_cube
@@ -132,20 +132,20 @@ class TestRegrid(tests.IrisTest):
             ('regrid', 'airpress_on_theta_3d.cml'))
 
     def test_regrid_max_resolution(self):
-        low = Cube(numpy.arange(12).reshape((3, 4)))
+        low = Cube(np.arange(12).reshape((3, 4)))
         cs = GeogCS(6371229)
-        low.add_dim_coord(DimCoord(numpy.array([-1, 0, 1], dtype=numpy.int32), 'latitude', units='degrees', coord_system=cs), 0)
-        low.add_dim_coord(DimCoord(numpy.array([-1, 0, 1, 2], dtype=numpy.int32), 'longitude', units='degrees', coord_system=cs), 1)
+        low.add_dim_coord(DimCoord(np.array([-1, 0, 1], dtype=np.int32), 'latitude', units='degrees', coord_system=cs), 0)
+        low.add_dim_coord(DimCoord(np.array([-1, 0, 1, 2], dtype=np.int32), 'longitude', units='degrees', coord_system=cs), 1)
 
-        med = Cube(numpy.arange(20).reshape((4, 5)))
+        med = Cube(np.arange(20).reshape((4, 5)))
         cs = GeogCS(6371229)
-        med.add_dim_coord(DimCoord(numpy.array([-1, 0, 1, 2], dtype=numpy.int32), 'latitude', units='degrees', coord_system=cs), 0)
-        med.add_dim_coord(DimCoord(numpy.array([-2, -1, 0, 1, 2], dtype=numpy.int32), 'longitude', units='degrees', coord_system=cs), 1)
+        med.add_dim_coord(DimCoord(np.array([-1, 0, 1, 2], dtype=np.int32), 'latitude', units='degrees', coord_system=cs), 0)
+        med.add_dim_coord(DimCoord(np.array([-2, -1, 0, 1, 2], dtype=np.int32), 'longitude', units='degrees', coord_system=cs), 1)
 
-        high = Cube(numpy.arange(30).reshape((5, 6)))
+        high = Cube(np.arange(30).reshape((5, 6)))
         cs = GeogCS(6371229)
-        high.add_dim_coord(DimCoord(numpy.array([-2, -1, 0, 1, 2], dtype=numpy.int32), 'latitude', units='degrees', coord_system=cs), 0)
-        high.add_dim_coord(DimCoord(numpy.array([-2, -1, 0, 1, 2, 3], dtype=numpy.int32), 'longitude', units='degrees', coord_system=cs), 1)
+        high.add_dim_coord(DimCoord(np.array([-2, -1, 0, 1, 2], dtype=np.int32), 'latitude', units='degrees', coord_system=cs), 0)
+        high.add_dim_coord(DimCoord(np.array([-2, -1, 0, 1, 2, 3], dtype=np.int32), 'longitude', units='degrees', coord_system=cs), 1)
 
         cubes = regrid_to_max_resolution([low, med, high], mode='nearest')
         self.assertCMLApproxData(cubes, ('regrid', 'low_med_high.cml'))
@@ -156,24 +156,24 @@ class TestRegridBilinear(tests.IrisTest):
         self.cs = GeogCS(6371229)
         
         # Source cube candidate for regridding.
-        cube = Cube(numpy.arange(12, dtype=numpy.float32).reshape(3, 4), long_name='unknown')
+        cube = Cube(np.arange(12, dtype=np.float32).reshape(3, 4), long_name='unknown')
         cube.units = '1'
-        cube.add_dim_coord(DimCoord(numpy.array([1, 2, 3]), 'latitude', units='degrees', coord_system=self.cs), 0)
-        cube.add_dim_coord(DimCoord(numpy.array([1, 2, 3, 4]), 'longitude', units='degrees', coord_system=self.cs), 1)
+        cube.add_dim_coord(DimCoord(np.array([1, 2, 3]), 'latitude', units='degrees', coord_system=self.cs), 0)
+        cube.add_dim_coord(DimCoord(np.array([1, 2, 3, 4]), 'longitude', units='degrees', coord_system=self.cs), 1)
         self.source = cube
         
         # Cube with a smaller grid in latitude and longitude than the source grid by taking the coordinate mid-points.
-        cube = Cube(numpy.arange(6, dtype=numpy.float).reshape(2, 3))
+        cube = Cube(np.arange(6, dtype=np.float).reshape(2, 3))
         cube.units = '1'
-        cube.add_dim_coord(DimCoord(numpy.array([1.5, 2.5]), 'latitude', units='degrees', coord_system=self.cs), 0)
-        cube.add_dim_coord(DimCoord(numpy.array([1.5, 2.5, 3.5]), 'longitude', units='degrees', coord_system=self.cs), 1)
+        cube.add_dim_coord(DimCoord(np.array([1.5, 2.5]), 'latitude', units='degrees', coord_system=self.cs), 0)
+        cube.add_dim_coord(DimCoord(np.array([1.5, 2.5, 3.5]), 'longitude', units='degrees', coord_system=self.cs), 1)
         self.smaller = cube
         
         # Cube with a larger grid in latitude and longitude than the source grid by taking the coordinate mid-points and extrapolating at extremes.
-        cube = Cube(numpy.arange(20, dtype=numpy.float).reshape(4, 5))
+        cube = Cube(np.arange(20, dtype=np.float).reshape(4, 5))
         cube.units = '1'
-        cube.add_dim_coord(DimCoord(numpy.array([0.5, 1.5, 2.5, 3.5]), 'latitude', units='degrees', coord_system=self.cs), 0)
-        cube.add_dim_coord(DimCoord(numpy.array([0.5, 1.5, 2.5, 3.5, 4.5]), 'longitude', units='degrees', coord_system=self.cs), 1)
+        cube.add_dim_coord(DimCoord(np.array([0.5, 1.5, 2.5, 3.5]), 'latitude', units='degrees', coord_system=self.cs), 0)
+        cube.add_dim_coord(DimCoord(np.array([0.5, 1.5, 2.5, 3.5, 4.5]), 'longitude', units='degrees', coord_system=self.cs), 1)
         self.larger = cube
 
     def test_bilinear_smaller_lon_left(self):
@@ -192,7 +192,7 @@ class TestRegridBilinear(tests.IrisTest):
         
     def test_bilinear_larger_lon_left(self):
         # Extrapolate first point of longitude with others aligned to source grid, and perform linear interpolation with extrapolation over latitude.
-        coord = iris.coords.DimCoord(numpy.array([0.5, 1, 2, 3, 4]), 'longitude', units='degrees', coord_system=self.cs)
+        coord = iris.coords.DimCoord(np.array([0.5, 1, 2, 3, 4]), 'longitude', units='degrees', coord_system=self.cs)
         self.larger.remove_coord('longitude')
         self.larger.add_dim_coord(coord, 1)
         self.assertCMLApproxData(self.source.regridded(self.larger), ('regrid', 'bilinear_larger_lon_extrapolate_left.cml'))
@@ -203,7 +203,7 @@ class TestRegridBilinear(tests.IrisTest):
         
     def test_bilinear_larger_lon_right(self):
         # Extrapolate last point of longitude with others aligned to source grid, and perform linear interpolation with extrapolation over latitude.
-        coord = iris.coords.DimCoord(numpy.array([1, 2, 3, 4, 4.5]), 'longitude', units='degrees', coord_system=self.cs)
+        coord = iris.coords.DimCoord(np.array([1, 2, 3, 4, 4.5]), 'longitude', units='degrees', coord_system=self.cs)
         self.larger.remove_coord('longitude')
         self.larger.add_dim_coord(coord, 1)
         self.assertCMLApproxData(self.source.regridded(self.larger), ('regrid', 'bilinear_larger_lon_extrapolate_right.cml'))

@@ -22,7 +22,7 @@ from __future__ import division
 import warnings
 import math
 
-import numpy
+import numpy as np
 
 import iris.analysis
 import iris.coords
@@ -51,7 +51,7 @@ def abs(cube, update_history=True, in_place=False):
         and additional metadata added.
     
     """
-    return _math_op_common(cube, numpy.abs, cube.units,
+    return _math_op_common(cube, np.abs, cube.units,
                            history='absolute', update_history=update_history, in_place=in_place)
 
 
@@ -108,7 +108,7 @@ def _assert_compatible(cube, other):
     # involving masked arrays would be broken.
     
     try:
-        data_view, other_view = numpy.broadcast_arrays(cube.data, other)
+        data_view, other_view = np.broadcast_arrays(cube.data, other)
     except ValueError, err:
         # re-raise
         raise ValueError("The array was not broadcastable to the cube's data shape. The error message from numpy when broadcasting:\n%s\n"
@@ -150,7 +150,7 @@ def add(cube, other, dim=None, ignore=True, update_history=True, in_place=False)
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _add_subtract_common(numpy.add, '+', 'addition', 'added',
+    return _add_subtract_common(np.add, '+', 'addition', 'added',
                                 cube, other, dim=dim, ignore=ignore, update_history=update_history, in_place=in_place)
 
 
@@ -185,7 +185,7 @@ def subtract(cube, other, dim=None, ignore=True, update_history=True, in_place=F
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _add_subtract_common(numpy.subtract, '-', 'subtraction', 'subtracted',
+    return _add_subtract_common(np.subtract, '-', 'subtraction', 'subtracted',
                                 cube, other, dim=dim, ignore=ignore, update_history=update_history, in_place=in_place)
 
 
@@ -205,7 +205,7 @@ def _add_subtract_common(operation_function, operation_symbol, operation_noun, o
 
     if isinstance(other, (int, float)):
         # Promote scalar to a coordinate and associate unit type with cube unit type
-        other = numpy.array(other)
+        other = np.array(other)
 
     # Check that the units of the cube and the other item are the same, or if the other does not have a unit, skip this test
     if cube.units != getattr(other, 'units', cube.units) :
@@ -214,7 +214,7 @@ def _add_subtract_common(operation_function, operation_symbol, operation_noun, o
 
     history = None
 
-    if isinstance(other, numpy.ndarray):
+    if isinstance(other, np.ndarray):
         _assert_compatible(cube, other)
         
         if in_place:
@@ -340,7 +340,7 @@ def multiply(cube, other, dim=None, update_history=True):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _multiply_divide_common(numpy.multiply, '*', 'multiplication',
+    return _multiply_divide_common(np.multiply, '*', 'multiplication',
                                 cube, other, dim=dim, update_history=update_history)
 
 
@@ -366,7 +366,7 @@ def divide(cube, other, dim=None, update_history=True):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _multiply_divide_common(numpy.divide, '/', 'division',
+    return _multiply_divide_common(np.divide, '/', 'division',
                                 cube, other, dim=dim, update_history=update_history)
 
 
@@ -387,12 +387,12 @@ def _multiply_divide_common(operation_function, operation_symbol, operation_noun
         raise TypeError('The "cube" argument must be an instance of iris.Cube.')
     
     if isinstance(other, (int, float)):
-        other = numpy.array(other)
+        other = np.array(other)
 
     other_unit = None
     history = None
     
-    if isinstance(other, numpy.ndarray):
+    if isinstance(other, np.ndarray):
         _assert_compatible(cube, other)
         
         copy_cube = cube.copy(data=operation_function(cube.data, other)) 
@@ -457,9 +457,9 @@ def _multiply_divide_common(operation_function, operation_symbol, operation_noun
         return NotImplemented
    
     # Update the units
-    if operation_function == numpy.multiply:
+    if operation_function == np.multiply:
         copy_cube.units = cube.units * other_unit
-    elif operation_function == numpy.divide:
+    elif operation_function == np.divide:
         copy_cube.units = cube.units / other_unit
    
     iris.analysis.clear_phenomenon_identity(copy_cube)
@@ -522,7 +522,7 @@ def log(cube, update_history=True, in_place=False):
         An instance of :class:`iris.cube.Cube`.
     
     """
-    return _math_op_common(cube, numpy.log, cube.units.log(math.e),
+    return _math_op_common(cube, np.log, cube.units.log(math.e),
                            history="ln", update_history=update_history, in_place=in_place)
 
 
@@ -546,7 +546,7 @@ def log2(cube, update_history=True, in_place=False):
         An instance of :class:`iris.cube.Cube`.
     
     """
-    return _math_op_common(cube, numpy.log2, cube.units.log(2), 
+    return _math_op_common(cube, np.log2, cube.units.log(2), 
                            history="lb", update_history=update_history, in_place=in_place)
 
 
@@ -570,7 +570,7 @@ def log10(cube, update_history=True, in_place=False):
         An instance of :class:`iris.cube.Cube`.
     
     """
-    return _math_op_common(cube, numpy.log10, cube.units.log(10),
+    return _math_op_common(cube, np.log10, cube.units.log(10),
                            history="lg", update_history=update_history, in_place=in_place)
 
     

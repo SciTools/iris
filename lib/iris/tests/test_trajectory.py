@@ -20,7 +20,7 @@
 import iris.tests as tests
 
 import matplotlib.pyplot as plt
-import numpy
+import numpy as np
 
 import iris.analysis.trajectory
 import iris.quickplot as qplt
@@ -110,7 +110,7 @@ class TestTrajectory(tests.IrisTest):
         # The netCDF file has different data types for the points and
         # bounds of 'depth'. This wasn't previously supported, so we
         # emulate that old behaviour.
-        cube.coord('depth').bounds = cube.coord('depth').bounds.astype(numpy.float32)
+        cube.coord('depth').bounds = cube.coord('depth').bounds.astype(np.float32)
 
         # define a latitude trajectory (put coords in a different order to the cube, just to be awkward)
         latitudes = range(-90, 90, 2)

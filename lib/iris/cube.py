@@ -30,7 +30,8 @@ import UserDict
 import warnings
 import zlib
 
-import numpy
+import numpy as np
+import numpy.ma as ma
 
 import iris.analysis
 import iris.analysis.maths
@@ -382,7 +383,7 @@ class Cube(CFVariableMixin):
 
             latitude = DimCoord(range(-85, 105, 10), standard_name='latitude', units='degrees')
             longitude = DimCoord(range(0, 360, 10), standard_name='longitude', units='degrees')
-            cube = Cube(numpy.zeros((18, 36), numpy.float32),
+            cube = Cube(np.zeros((18, 36), np.float32),
                         dim_coords_and_dims=[(latitude, 0), (longitude, 1)])
 
         """
@@ -394,10 +395,10 @@ class Cube(CFVariableMixin):
             self._data = data
             self._data_manager = data_manager
         else:
-            if isinstance(data, numpy.ndarray):
+            if isinstance(data, np.ndarray):
                 self._data = data
             else:
-                self._data = numpy.asarray(data)                
+                self._data = np.asarray(data)
             self._data_manager = None
 
         self.standard_name = standard_name
@@ -982,7 +983,7 @@ class Cube(CFVariableMixin):
 
     @data.setter
     def data(self, value):
-        data = numpy.asanyarray(value)
+        data = np.asanyarray(value)
 
         if self.shape != data.shape:
             # The _ONLY_ data reshape permitted is converting a 0-dimensional array i.e. self.shape == ()
@@ -1127,7 +1128,7 @@ class Cube(CFVariableMixin):
                 vector_summary = []
                 if vector_coords:
                     # Identify offsets for each dimension text marker.
-                    alignment = numpy.array([index for index, value in enumerate(cube_header) if value == ':'])
+                    alignment = np.array([index for index, value in enumerate(cube_header) if value == ':'])
                     
                     # Generate basic textual summary for each vector coordinate - WITHOUT dimension markers.
                     for coord in vector_coords:
@@ -1320,8 +1321,8 @@ class Cube(CFVariableMixin):
             data = data.copy()
             
         # We can turn a masked array into a normal array if it's full.
-        if isinstance(data, numpy.ma.core.MaskedArray):  
-            if numpy.ma.count_masked(data) == 0:
+        if isinstance(data, ma.core.MaskedArray):
+            if ma.count_masked(data) == 0:
                 data = data.filled() 
 
         # Make the new cube slice            
@@ -1553,13 +1554,13 @@ class Cube(CFVariableMixin):
 
         """
         if new_order is None:
-            new_order = numpy.arange(self.data.ndim)[::-1]
+            new_order = np.arange(self.data.ndim)[::-1]
         elif len(new_order) != self.data.ndim:
             raise ValueError('Incorrect number of dimensions.')
 
         # The data needs to be copied, otherwise this view of the transposed data will not be contiguous.
         # Ensure not to assign via the cube.data setter property since we are reshaping the cube payload in-place.
-        self._data = numpy.transpose(self.data, new_order).copy()
+        self._data = np.transpose(self.data, new_order).copy()
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
 
@@ -1648,10 +1649,10 @@ class Cube(CFVariableMixin):
                 # Ensure data is row-major contiguous for crc32 computation.
                 if not data.flags['C_CONTIGUOUS'] and \
                         not data.flags['F_CONTIGUOUS']:
-                    data = numpy.ascontiguousarray(data)
+                    data = np.ascontiguousarray(data)
                 crc = hex(zlib.crc32(data))
                 data_xml_element.setAttribute("checksum", crc)
-                if isinstance(data, numpy.ma.core.MaskedArray):
+                if isinstance(data, ma.core.MaskedArray):
                     crc = hex(zlib.crc32(data.mask))
                     data_xml_element.setAttribute("mask_checksum", crc)
             elif self._data_manager is not None:
@@ -1690,13 +1691,13 @@ class Cube(CFVariableMixin):
         if data is None:
             if self._data is not None and self._data.ndim == 0:
                 # Cope with NumPy's asymmetric (aka. "annoying!") behaviour of deepcopy on 0-d arrays.
-                new_cube_data = numpy.asanyarray(self._data)
+                new_cube_data = np.asanyarray(self._data)
             else:
                 new_cube_data = copy.deepcopy(self._data, memo)
 
             new_cube_data_manager = copy.deepcopy(self._data_manager, memo)
         else:
-            data = numpy.asanyarray(data)
+            data = np.asanyarray(data)
 
             if data.shape != self.shape:
                 raise ValueError('Cannot copy cube with new data of a different shape (slice or subset the cube first).')
@@ -1742,7 +1743,7 @@ class Cube(CFVariableMixin):
                 
             # having checked everything else, check approximate data equality - loading the data if has not already been loaded.
             if result:
-                result = numpy.all(numpy.abs(self.data - other.data) < 1e-8)
+                result = np.all(np.abs(self.data - other.data) < 1e-8)
             
         return result
         
@@ -1883,11 +1884,11 @@ class Cube(CFVariableMixin):
         # Perform the aggregation over the cube data
         # First reshape the data so that the dimensions being aggregated over are grouped 'at the end'.
         new_shape = [self.shape[dim] for dim in sorted(untouched_dimensions)] + [reduce(operator.mul, (self.shape[dim] for dim in dimensions_to_collapse))]
-        unrolled_data = numpy.transpose(self.data, sorted(untouched_dimensions) + sorted(dimensions_to_collapse)).reshape(new_shape)
+        unrolled_data = np.transpose(self.data, sorted(untouched_dimensions) + sorted(dimensions_to_collapse)).reshape(new_shape)
         # Perform the same operation on the weights if applicable
         if kwargs.get("weights") is not None:
             weights = kwargs["weights"].view() 
-            kwargs["weights"] = numpy.transpose(weights, sorted(untouched_dimensions) + sorted(dimensions_to_collapse)).reshape(new_shape)
+            kwargs["weights"] = np.transpose(weights, sorted(untouched_dimensions) + sorted(dimensions_to_collapse)).reshape(new_shape)
 
         data_result = aggregator.aggregate(unrolled_data, axis=-1, **kwargs)
         aggregator.update_metadata(collapsed_cube, coords, axis=-1, **kwargs)
@@ -2001,7 +2002,7 @@ class Cube(CFVariableMixin):
             # Determine aggregation result data type for the aggregate-by cube data on first pass.
             if i == 0:
                 result = aggregator.aggregate(groupby_sub_cube.data, axis=dimension_to_groupby, **kwargs)
-                aggregateby_data = numpy.zeros(data_shape, dtype=result.dtype)
+                aggregateby_data = np.zeros(data_shape, dtype=result.dtype)
                 aggregateby_data[tuple(cube_slice)] = result
             else:
                 aggregateby_data[tuple(cube_slice)] = aggregator.aggregate(groupby_sub_cube.data, axis=dimension_to_groupby, **kwargs)
@@ -2139,7 +2140,7 @@ class Cube(CFVariableMixin):
 
             # Take the first and last element of the rolled window (i.e. the bounds)
             new_bounds = new_bounds[:, (0, -1)]
-            new_points = numpy.mean(new_bounds, axis=-1)
+            new_points = np.mean(new_bounds, axis=-1)
 
             # wipe the coords points and set the bounds
             new_coord = new_cube.coord(coord=coord_)
@@ -2239,7 +2240,7 @@ class _SliceIterator(collections.Iterator):
         # Let Numpy do some work in providing all of the permutations of our data shape.
         # This functionality is something like:
         # ndindex(2, 1, 3) -> [(0, 0, 0), (0, 0, 1), (0, 0, 2), (1, 0, 0), (1, 0, 1), (1, 0, 2)]
-        self._ndindex = numpy.ndindex(*dims_index)
+        self._ndindex = np.ndindex(*dims_index)
 
         self._requested_dims = requested_dims
         self._ordered = ordered
