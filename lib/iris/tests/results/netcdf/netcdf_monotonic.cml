@@ -1,15 +1,15 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube standard_name="eastward_wind" units="m s-1">
+  <cube standard_name="eastward_wind" units="m s-1" var_name="wind3">
     <attributes>
       <attribute name="test" value="masked non-monotonic time coordinate"/>
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <dimCoord id="3131281b" points="[50, 60, 70]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="int32"/>
+        <dimCoord id="3131281b" points="[50, 60, 70]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="566c7ff8" points="[10, 20, 30]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="int32"/>
+        <dimCoord id="566c7ff8" points="[10, 20, 30]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="int32" var_name="lon"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="2fd50af3" points="[1, 100, 3]" shape="(3,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int32"/>
@@ -18,34 +18,34 @@
     <cellMethods/>
     <data checksum="0x37dc6da7" dtype="int32" mask_checksum="-0x3f514d68" shape="(3, 3, 3)"/>
   </cube>
-  <cube standard_name="eastward_wind" units="m s-1">
+  <cube standard_name="eastward_wind" units="m s-1" var_name="wind2">
     <attributes>
       <attribute name="test" value="masked monotonic time coordinate"/>
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <dimCoord id="3131281b" points="[50, 60, 70]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="int32"/>
+        <dimCoord id="3131281b" points="[50, 60, 70]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="566c7ff8" points="[10, 20, 30]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="int32"/>
+        <dimCoord id="566c7ff8" points="[10, 20, 30]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="int32" var_name="lon"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="2fd50af3" points="[1, 2, 100]" shape="(3,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int32"/>
+        <dimCoord id="2fd50af3" points="[1, 2, 100]" shape="(3,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int32" var_name="time2"/>
       </coord>
     </coords>
     <cellMethods/>
     <data checksum="-0x2b185cd1" dtype="int32" shape="(3, 3, 3)"/>
   </cube>
-  <cube standard_name="eastward_wind" units="m s-1">
+  <cube standard_name="eastward_wind" units="m s-1" var_name="wind1">
     <attributes>
       <attribute name="test" value="weak-monotonic time coordinate"/>
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <dimCoord id="3131281b" points="[50, 60, 70]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="int32"/>
+        <dimCoord id="3131281b" points="[50, 60, 70]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="int32" var_name="lat"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="566c7ff8" points="[10, 20, 30]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="int32"/>
+        <dimCoord id="566c7ff8" points="[10, 20, 30]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="int32" var_name="lon"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="2fd50af3" points="[1, 1, 2]" shape="(3,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int32"/>

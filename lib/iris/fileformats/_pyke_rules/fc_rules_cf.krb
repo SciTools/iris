@@ -679,7 +679,8 @@ fc_extras
         cf_var = engine.cf_var
         cube = engine.cube
 
-        # Determine the cube standard_name and long_name
+        # Determine the cube's name attributes
+        cube.var_name = cf_var.cf_name
         standard_name = getattr(cf_var, CF_ATTR_STD_NAME, None)
         long_name = getattr(cf_var, CF_ATTR_LONG_NAME, None)
         cube.long_name = long_name
@@ -692,7 +693,7 @@ fc_extras
                     cube.attributes['invalid_standard_name'] = standard_name
                 else:
                     cube.long_name = standard_name
-                
+
         # Determine the cube units.
         attr_units = get_attr_units(cf_var, cube.attributes)
         cube.units = attr_units
@@ -786,7 +787,7 @@ fc_extras
 
     ################################################################################
     def get_names(cf_coord_var, coord_name, attributes):
-        """Determine the standard_name and long_name attributes."""
+        """Determine the standard_name, long_name and var_name attributes."""
 
         standard_name = getattr(cf_coord_var, CF_ATTR_STD_NAME, None)
         long_name = getattr(cf_coord_var, CF_ATTR_LONG_NAME, None)
@@ -816,7 +817,7 @@ fc_extras
             if cf_name in iris.std_names.STD_NAMES:
                 standard_name = cf_name
 
-        return (standard_name, long_name)
+        return (standard_name, long_name, cf_name)
 
 
     ################################################################################
@@ -886,14 +887,15 @@ fc_extras
             # Calculate the offset of each common dimension.
             data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
 
-        # Determine the standard_name and long_name
-        standard_name, long_name = get_names(cf_coord_var, coord_name, attributes)
+        # Determine the standard_name, long_name and var_name
+        standard_name, long_name, var_name = get_names(cf_coord_var, coord_name, attributes)
 
         # Create the coordinate.
         try:
             coord = iris.coords.DimCoord(points_data,
                                          standard_name=standard_name,
                                          long_name=long_name,
+                                         var_name=var_name,
                                          units=attr_units,
                                          bounds=bounds_data,
                                          attributes=attributes,
@@ -976,12 +978,18 @@ fc_extras
             # Calculate the offset of each common dimension.
             data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
 
-        # Determine the standard_name and long_name
-        standard_name, long_name = get_names(cf_coord_var, coord_name, attributes)
+        # Determine the standard_name, long_name and var_name
+        standard_name, long_name, var_name = get_names(cf_coord_var, coord_name, attributes)
 
         # Create the coordinate
-        coord = iris.coords.AuxCoord(points_data, standard_name=standard_name, long_name=long_name, units=attr_units,
-                                     bounds=bounds_data, attributes=attributes, coord_system=coord_system)
+        coord = iris.coords.AuxCoord(points_data,
+                                     standard_name=standard_name,
+                                     long_name=long_name,
+                                     var_name=var_name,
+                                     units=attr_units,
+                                     bounds=bounds_data,
+                                     attributes=attributes,
+                                     coord_system=coord_system)
 
         # Add it to the cube
         cube.add_aux_coord(coord, data_dims)

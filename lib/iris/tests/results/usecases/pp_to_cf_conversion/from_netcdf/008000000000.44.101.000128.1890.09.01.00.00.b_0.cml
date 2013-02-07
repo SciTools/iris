@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube units="unknown">
+  <cube units="unknown" var_name="unknown">
     <attributes>
       <attribute name="Conventions" value="CF-1.5"/>
       <attribute name="STASH" value="m??s44i101"/>
@@ -11,13 +11,13 @@
         <dimCoord id="2c4b8a59" points="[5.0, 15.0, 25.0, 35.1, 47.85, 67.0, 95.75,
 		138.9, 203.7, 300.999, 447.049, 666.299,
 		995.549, 1500.85, 2116.15, 2731.4, 3346.65,
-		3961.9, 4577.15, 5192.45]" shape="(20,)" standard_name="depth" units="Unit('m')" value_type="float32"/>
+		3961.9, 4577.15, 5192.45]" shape="(20,)" standard_name="depth" units="Unit('m')" value_type="float32" var_name="depth"/>
       </coord>
       <coord datadims="[1]">
         <dimCoord id="6bc2e82a" points="[681540.0, 683340.0, 685140.0, 686940.0,
 		688740.0, 690540.0, 692340.0, 694140.0,
 		695940.0, 697740.0, 699540.0, 701340.0,
-		703140.0, 704940.0, 706740.0, 708540.0]" shape="(16,)" standard_name="time" units="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32"/>
+		703140.0, 704940.0, 706740.0, 708540.0]" shape="(16,)" standard_name="time" units="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32" var_name="time"/>
       </coord>
     </coords>
     <cellMethods>

@@ -52,9 +52,12 @@ from iris._cube_coord_common import CFVariableMixin, LimitedAttributeDict
 __all__ = ['Cube', 'CubeList', 'CubeMetadata']
 
 
-class CubeMetadata(collections.namedtuple('CubeMetadata', 
-                                          ['standard_name', 'long_name',
-                                           'units', 'attributes',
+class CubeMetadata(collections.namedtuple('CubeMetadata',
+                                          ['standard_name',
+                                           'long_name',
+                                           'var_name',
+                                           'units',
+                                           'attributes',
                                            'cell_methods'])):
     """
     Represents the phenomenon metadata for a single :class:`Cube`.
@@ -65,11 +68,11 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
         Returns a human-readable name.
         
         First it tries self.standard_name, then it tries the 'long_name'
-        attributes, before falling back to the value of `default` (which
-        itself defaults to 'unknown').
+        attribute, then the 'var_name' attribute, before falling back to
+        the value of `default` (which itself defaults to 'unknown').
         
         """
-        return self.standard_name or self.long_name or default
+        return self.standard_name or self.long_name or self.var_name or default
 
 
 # The XML namespace to use for CubeML documents
@@ -338,9 +341,11 @@ class Cube(CFVariableMixin):
     See the :doc:`user guide</userguide/index>` for more information.
 
     """
-    def __init__(self, data, standard_name=None, long_name=None, units=None,
-                 attributes=None, cell_methods=None, dim_coords_and_dims=None,
-                 aux_coords_and_dims=None, aux_factories=None, data_manager=None):        
+    def __init__(self, data, standard_name=None, long_name=None,
+                 var_name=None, units=None, attributes=None,
+                 cell_methods=None, dim_coords_and_dims=None,
+                 aux_coords_and_dims=None, aux_factories=None,
+                 data_manager=None):
         """
         Creates a cube with data and optional metadata. 
 
@@ -361,6 +366,8 @@ class Cube(CFVariableMixin):
             The standard name for the Cube's data.
         * long_name
             An unconstrained description of the cube. 
+        * var_name
+            The CF variable name for the cube.
         * units
             The unit of the cube, e.g. ``"m s-1"`` or ``"kelvin"``
         * attributes
@@ -409,6 +416,9 @@ class Cube(CFVariableMixin):
         
         self.long_name = long_name
         """The "long name" for the Cube's phenomenon."""
+
+        self.var_name = var_name
+        """The CF variable name for the Cube."""
         
         self.cell_methods = cell_methods
         
@@ -444,8 +454,8 @@ class Cube(CFVariableMixin):
            :class:`CubeMetadata`.
 
         """
-        return CubeMetadata(self.standard_name, self.long_name, self.units,
-                            self.attributes, self.cell_methods)
+        return CubeMetadata(self.standard_name, self.long_name, self.var_name,
+                            self.units, self.attributes, self.cell_methods)
 
     @metadata.setter
     def metadata(self, value):
@@ -461,6 +471,45 @@ class Cube(CFVariableMixin):
                     raise TypeError('Invalid/incomplete metadata')
         for name in CubeMetadata._fields:
             setattr(self, name, getattr(value, name))
+
+    def is_compatible(self, other, ignore=None):
+        """
+        Return whether the cube is compatible with another.
+
+        Compatibility is determined by comparing :meth:`iris.cube.Cube.name()`,
+        :attr:`iris.cube.Cube.units`, :attr:`iris.cube.Cube.cell_methods` and
+        :attr:`iris.cube.Cube.attributes` that are present in both objects.
+
+        Args:
+
+        * other:
+            An instance of :class:`iris.cube.Cube` or
+            :class:`iris.cube.CubeMetadata`.
+        * ignore:
+           A single attribute key or iterable of attribute keys to ignore when
+           comparing the cubes. Default is None. To ignore all attributes set
+           this to other.attributes.
+
+        Returns:
+           Boolean.
+
+        """
+        compatible = (self.name() == other.name() and
+                      self.units == other.units and
+                      self.cell_methods == other.cell_methods)
+
+        if compatible:
+            common_keys = set(self.attributes).intersection(other.attributes)
+            if ignore is not None:
+                if isinstance(ignore, basestring):
+                    ignore = (ignore,)
+                common_keys = common_keys.difference(ignore)
+            for key in common_keys:
+                if self.attributes[key] != other.attributes[key]:
+                    compatible = False
+                    break
+
+        return compatible
 
     def convert_units(self, unit):
         """
@@ -696,7 +745,8 @@ class Cube(CFVariableMixin):
 
         return matches[0]
 
-    def aux_factory(self, name=None, standard_name=None, long_name=None):
+    def aux_factory(self, name=None, standard_name=None, long_name=None,
+                    var_name=None):
         """
         Returns the single coordinate factory that matches the criteria,
         or raises an error if not found.
@@ -710,47 +760,53 @@ class Cube(CFVariableMixin):
             If None, does not check for standard name. 
         * long_name 
             An unconstrained description of the coordinate factory.
-            If None, does not check for long_name. 
+            If None, does not check for long_name.
+        * var_name
+            The CF variable name of the desired coordinate factory.
+            If None, does not check for var_name.
 
         .. note::
 
             If the arguments given do not result in precisely 1 coordinate
             factory being matched, an
             :class:`iris.exceptions.CoordinateNotFoundError` is raised.
-            
+
         """
         factories = self.aux_factories
 
         if name is not None:
-            if not isinstance(name, basestring):
-                raise ValueError('The name keyword is expecting a string type only. Got %s.' % type(name))
-            factories = filter(lambda factory: factory.name() == name, factories)
+            factories = [factory for factory in factories if
+                         factory.name() == name]
 
         if standard_name is not None:
-            if not isinstance(standard_name, basestring):
-                raise ValueError('The standard_name keyword is expecting a string type only. Got %s.' % type(standard_name))
-            factories = filter(lambda factory: factory.standard_name == standard_name, factories)
+            factories = [factory for factory in factories if
+                         factory.standard_name == standard_name]
 
         if long_name is not None:
-            if not isinstance(long_name, basestring):
-                raise ValueError('The long_name keyword is expecting a string type only. Got %s.' % type(long_name))
-            factories = filter(lambda factory: factory.long_name == long_name, factories)
+            factories = [factory for factory in factories if
+                         factory.long_name == long_name]
+
+        if var_name is not None:
+            factories = [factory for factory in factories if
+                         factory.var_name == var_name]
 
         if len(factories) > 1:
-            msg = 'Expected to find exactly 1 coordinate factory, but found %s. They were: %s.' \
-                    % (len(coords), ', '.join(factory.name() for factory in factories))
+            factory_names = (factory.name() for factory in factories)
+            msg = 'Expected to find exactly one coordinate factory, but ' \
+                  'found {}. They were: {}.'.format(len(factories),
+                                                    ', '.join(factory_names))
             raise iris.exceptions.CoordinateNotFoundError(msg)
         elif len(factories) == 0:
-            bad_name = name or standard_name or long_name
-            msg = 'Expected to find exactly 1 %s coordinate factory, but found none.' % bad_name
+            msg = 'Expected to find exactly one coordinate factory, but ' \
+                  'found none.'
             raise iris.exceptions.CoordinateNotFoundError(msg)
 
         return factories[0]
 
-
-    def coords(self, name=None, standard_name=None, long_name=None, attributes=None, 
-               axis=None, contains_dimension=None, dimensions=None, 
-               coord=None, coord_system=None, dim_coords=None): 
+    def coords(self, name=None, standard_name=None, long_name=None,
+               var_name=None, attributes=None, axis=None,
+               contains_dimension=None, dimensions=None, coord=None,
+               coord_system=None, dim_coords=None):
         """
         Return a list of coordinates in this cube fitting the given criteria.
 
@@ -763,6 +819,8 @@ class Cube(CFVariableMixin):
             The CF standard name of the desired coordinate. If None, does not check for standard name. 
         * long_name 
             An unconstrained description of the coordinate. If None, does not check for long_name. 
+        * var_name
+            The CF variable name of the desired coordinate. If None, does not check for var_name.
         * attributes
             A dictionary of attributes desired on the coordinates. If None, does not check for attributes.
         * axis
@@ -802,6 +860,9 @@ class Cube(CFVariableMixin):
 
         if long_name is not None:
             coords_and_factories = filter(lambda coord_: coord_.long_name == long_name, coords_and_factories)
+
+        if var_name is not None:
+            coords_and_factories = filter(lambda coord_: coord_.var_name == var_name, coords_and_factories)
 
         if axis is not None:
             axis = axis.upper()
@@ -844,9 +905,10 @@ class Cube(CFVariableMixin):
 
         return coords
     
-    def coord(self, name=None, standard_name=None, long_name=None, attributes=None, 
-               axis=None, contains_dimension=None, dimensions=None, 
-               coord=None, coord_system=None, dim_coords=None):
+    def coord(self, name=None, standard_name=None, long_name=None,
+              var_name=None, attributes=None, axis=None,
+              contains_dimension=None, dimensions=None, coord=None,
+              coord_system=None, dim_coords=None):
         """
         Return a single coord given the same arguments as :meth:`Cube.coords`.
         
@@ -857,9 +919,13 @@ class Cube(CFVariableMixin):
         .. seealso:: :meth:`Cube.coords()<iris.cube.Cube.coords>` for full keyword documentation.
 
         """
-        coords = self.coords(name=name, standard_name=standard_name, long_name=long_name, attributes=attributes,
-                             axis=axis, contains_dimension=contains_dimension, dimensions=dimensions,
-                             coord=coord, coord_system=coord_system, dim_coords=dim_coords)
+        coords = self.coords(name=name, standard_name=standard_name,
+                             long_name=long_name, var_name=var_name,
+                             attributes=attributes, axis=axis,
+                             contains_dimension=contains_dimension,
+                             dimensions=dimensions,
+                             coord=coord, coord_system=coord_system,
+                             dim_coords=dim_coords)
 
         if len(coords) > 1:
             msg = 'Expected to find exactly 1 coordinate, but found %s. They were: %s.' \
@@ -1619,6 +1685,8 @@ class Cube(CFVariableMixin):
             cube_xml_element.setAttribute('standard_name', self.standard_name)
         if self.long_name:
             cube_xml_element.setAttribute('long_name', self.long_name)
+        if self.var_name:
+            cube_xml_element.setAttribute('var_name', self.var_name)
         cube_xml_element.setAttribute('units', str(self.units))
 
         if self.attributes:

@@ -94,6 +94,13 @@ class TestRealistic4d(tests.GraphicsTest):
         self.assertEqual(factory.standard_name, 'altitude')
         self.assertEqual(factory.attributes, {'positive': 'up'})
 
+    def test_aux_factory_var_name(self):
+        factory = self.cube.aux_factory(name='altitude')
+        factory.var_name = 'alt'
+        factory = self.cube.aux_factory(var_name='alt')
+        self.assertEqual(factory.standard_name, 'altitude')
+        self.assertEqual(factory.attributes, {'positive': 'up'})
+
     def test_no_orography(self):
         # Get rid of the normal hybrid-height factory.
         cube = self.cube

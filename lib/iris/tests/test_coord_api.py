@@ -617,7 +617,79 @@ class TestGuessBounds(tests.IrisTest):
         coord.bounds = None
         with self.assertRaises(ValueError):
             coord.guess_bounds()
-    
+
+
+class TestCoordCompatibility(tests.IrisTest):
+    def setUp(self):
+        self.aux_coord = iris.coords.AuxCoord([1., 2. ,3.],
+                                              standard_name='longitude',
+                                              var_name='lon',
+                                              units='degrees')
+        self.dim_coord = iris.coords.DimCoord(np.arange(0, 360, dtype=np.float64),
+                                              standard_name='longitude',
+                                              var_name='lon',
+                                              units='degrees',
+                                              circular=True)
+
+    def test_not_compatible(self):
+        r = self.aux_coord.copy()
+        self.assertTrue(self.aux_coord.is_compatible(r))
+        # The following changes should make the coords incompatible.
+        # Different units.
+        r.units = 'radians'
+        self.assertFalse(self.aux_coord.is_compatible(r))
+        # Different coord_systems.
+        r = self.aux_coord.copy()
+        r.coord_system = iris.coord_systems.GeogCS(6371229)
+        self.assertFalse(self.aux_coord.is_compatible(r))
+        # Different attributes.
+        r = self.aux_coord.copy()
+        self.aux_coord.attributes['source']= 'bob'
+        r.attributes['source'] = 'alice'
+        self.assertFalse(self.aux_coord.is_compatible(r))
+
+    def test_compatible(self):
+        # The following changes should not affect compatibility.
+        # Different non-common attributes.
+        r = self.aux_coord.copy()
+        self.aux_coord.attributes['source']= 'bob'
+        r.attributes['origin'] = 'alice'
+        self.assertTrue(self.aux_coord.is_compatible(r))
+        # Different points.
+        r.points = np.zeros(r.points.shape)
+        self.assertTrue(self.aux_coord.is_compatible(r))
+        # Different var_names (but equal name()).
+        r.var_name = 'foo'
+        self.assertTrue(self.aux_coord.is_compatible(r))
+        # With/without bounds.
+        r.bounds = np.array([[0.5, 1.5],[1.5, 2.5],[2.5, 3.5]])
+        self.assertTrue(self.aux_coord.is_compatible(r))
+
+    def test_circular(self):
+        # Test that circular has no effect on compatibility.
+        # AuxCoord and circular DimCoord.
+        self.assertTrue(self.aux_coord.is_compatible(self.dim_coord))
+        # circular and non-circular DimCoord.
+        r = self.dim_coord.copy()
+        r.circular = False
+        self.assertTrue(r.is_compatible(self.dim_coord))
+
+    def test_defn(self):
+        coord_defn = self.aux_coord._as_defn()
+        self.assertTrue(self.aux_coord.is_compatible(coord_defn))
+        coord_defn = self.dim_coord._as_defn()
+        self.assertTrue(self.dim_coord.is_compatible(coord_defn))
+
+    def test_is_ignore(self):
+        r = self.aux_coord.copy()
+        self.aux_coord.attributes['source']= 'bob'
+        r.attributes['source'] = 'alice'
+        self.assertFalse(self.aux_coord.is_compatible(r))
+        # Use ignore keyword.
+        self.assertTrue(self.aux_coord.is_compatible(r, ignore='source'))
+        self.assertTrue(self.aux_coord.is_compatible(r, ignore=('source',)))
+        self.assertTrue(self.aux_coord.is_compatible(r, ignore=r.attributes))
+
 
 if __name__ == "__main__":
     tests.main()

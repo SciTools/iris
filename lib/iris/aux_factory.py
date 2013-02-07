@@ -100,8 +100,8 @@ class AuxCoordFactory(CFVariableMixin):
     Each concrete subclass represents a specific formula for deriving
     values from other coordinates.
 
-    The `standard_name`, `long_name`, `units`, `attributes` and 
-    `coord_system` of the factory are used to set the corresponding 
+    The `standard_name`, `long_name`, `var_name`, `units`, `attributes` and
+    `coord_system` of the factory are used to set the corresponding
     properties of the resulting auxiliary coordinates.
     
     """
@@ -110,6 +110,9 @@ class AuxCoordFactory(CFVariableMixin):
     def __init__(self):
         self.long_name = None
         """Descriptive name of the coordinate made by the factory"""
+
+        self.var_name = None
+        """CF variable name of the coordinate made by the factory"""
 
         self.coord_system = None
         """Coordinate system (if any) of the coordinate made by the factory"""
@@ -124,8 +127,8 @@ class AuxCoordFactory(CFVariableMixin):
 
     def _as_defn(self):
         defn = iris.coords.CoordDefn(self.standard_name, self.long_name,
-                                     self.units, self.attributes,
-                                     self.coord_system)
+                                     self.var_name, self.units,
+                                     self.attributes, self.coord_system)
         return defn
 
     @abstractmethod
@@ -511,6 +514,7 @@ class HybridHeightFactory(AuxCoordFactory):
         hybrid_height = iris.coords.AuxCoord(points,
                                              standard_name=self.standard_name,
                                              long_name=self.long_name,
+                                             var_name=self.var_name,
                                              units=self.units,
                                              bounds=bounds,
                                              attributes=self.attributes,
@@ -670,6 +674,7 @@ class HybridPressureFactory(AuxCoordFactory):
         hybrid_pressure = iris.coords.AuxCoord(points,
                                                standard_name=self.standard_name,
                                                long_name=self.long_name,
+                                               var_name=self.var_name,
                                                units=self.units,
                                                bounds=bounds,
                                                attributes=self.attributes,
