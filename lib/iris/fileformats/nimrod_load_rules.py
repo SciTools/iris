@@ -20,7 +20,7 @@
 import warnings
 
 import netcdftime
-import numpy
+import numpy as np
 
 import iris
 from iris.coords import DimCoord
@@ -37,9 +37,9 @@ FIELD_CODES = {"orography": 73}
 VERTICAL_CODES = {"height": 0, "altitude": 1}
 
 
-
 def name(cube, field):
     """Set the cube's name from the field."""
+
     cube.rename(field.title.strip())
 
 
@@ -136,7 +136,7 @@ def tm_meridian_scaling(cube, field):
 
 def british_national_grid_x(cube, field):
     """Add a British National Grid X coord to the cube."""
-    x_coord = DimCoord(numpy.arange(field.num_cols) * field.column_step +
+    x_coord = DimCoord(np.arange(field.num_cols) * field.column_step +
                        field.x_origin, standard_name="projection_x_coordinate",
                        units="m", coord_system=iris.coord_systems.OSGB())
     cube.add_dim_coord(x_coord, 1)
@@ -150,7 +150,7 @@ def british_national_grid_y(cube, field):
 
     """
     if field.origin_corner == 0:  # top left
-        y_coord = DimCoord(numpy.arange(field.num_rows)[::-1] *
+        y_coord = DimCoord(np.arange(field.num_rows)[::-1] *
                            -field.row_step + field.y_origin,
                            standard_name="projection_y_coordinate", units="m",
                            coord_system=iris.coord_systems.OSGB())
