@@ -137,8 +137,8 @@ def tm_meridian_scaling(cube, field):
 def british_national_grid_x(cube, field):
     """Add a British National Grid X coord to the cube."""
     x_coord = DimCoord(numpy.arange(field.num_cols) * field.column_step +
-                       field.x_origin, long_name="x", units="m",
-                       coord_system=iris.coord_systems.OSGB())
+                       field.x_origin, standard_name="projection_x_coordinate",
+                       units="m", coord_system=iris.coord_systems.OSGB())
     cube.add_dim_coord(x_coord, 1)
 
 
@@ -152,7 +152,7 @@ def british_national_grid_y(cube, field):
     if field.origin_corner == 0:  # top left
         y_coord = DimCoord(numpy.arange(field.num_rows)[::-1] *
                            -field.row_step + field.y_origin,
-                           long_name="y", units="m",
+                           standard_name="projection_y_coordinate", units="m",
                            coord_system=iris.coord_systems.OSGB())
         cube.add_dim_coord(y_coord, 0)
     else:

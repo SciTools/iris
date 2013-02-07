@@ -45,7 +45,9 @@ class TestLoad(tests.GraphicsTest):
         self.assertCML(cube, ("nimrod", "load.cml"))
         
         ax = plt.subplot(1, 1, 1, projection=ccrs.OSGB())
-        qplt.contourf(cube, coords=["x", "y"], levels=np.linspace(-25000, 6000, 10))
+        qplt.contourf(cube, coords=["projection_x_coordinate",
+                                    "projection_y_coordinate"],
+                      levels=np.linspace(-25000, 6000, 10))
         ax.coastlines()
         self.check_graphic()
 
