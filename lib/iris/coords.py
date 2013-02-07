@@ -698,7 +698,7 @@ class Coord(CFVariableMixin):
                 
         return True
 
-    def is_compatible(self, other):
+    def is_compatible(self, other, ignore=None):
         """
         Return whether the coordinate is compatible with another.
 
@@ -712,26 +712,31 @@ class Coord(CFVariableMixin):
         * other:
             An instance of :class:`iris.coords.Coord` or
             :class:`iris.coords.CoordDefn`.
+        * ignore:
+           A single attribute key or iterable of attribute keys to ignore when
+           comparing the coordinates. Default is None. To ignore all
+           attributes, set this to other.attributes.
 
         Returns:
            Boolean.
 
         """
-        if self.name() != other.name():
-            return False
+        compatible = (self.name() == other.name() and
+                      self.units == other.units and
+                      self.coord_system == other.coord_system)
 
-        if self.units != other.units:
-            return False
+        if compatible:
+            common_keys = set(self.attributes).intersection(other.attributes)
+            if ignore is not None:
+                if isinstance(ignore, basestring):
+                    ignore = (ignore,)
+                common_keys = common_keys.difference(ignore)
+            for key in common_keys:
+                if self.attributes[key] != other.attributes[key]:
+                    compatible = False
+                    break
 
-        if self.coord_system != other.coord_system:
-            return False
-
-        common_keys = set(self.attributes).intersection(other.attributes)
-        for key in common_keys:
-            if self.attributes[key] != other.attributes[key]:
-                return False
-
-        return True
+        return compatible
 
     @property
     def dtype(self):

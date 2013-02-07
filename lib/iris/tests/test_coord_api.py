@@ -680,6 +680,16 @@ class TestCoordCompatibility(tests.IrisTest):
         coord_defn = self.dim_coord._as_defn()
         self.assertTrue(self.dim_coord.is_compatible(coord_defn))
 
+    def test_is_ignore(self):
+        r = self.aux_coord.copy()
+        self.aux_coord.attributes['source']= 'bob'
+        r.attributes['source'] = 'alice'
+        self.assertFalse(self.aux_coord.is_compatible(r))
+        # Use ignore keyword.
+        self.assertTrue(self.aux_coord.is_compatible(r, ignore='source'))
+        self.assertTrue(self.aux_coord.is_compatible(r, ignore=('source',)))
+        self.assertTrue(self.aux_coord.is_compatible(r, ignore=r.attributes))
+
 
 if __name__ == "__main__":
     tests.main()

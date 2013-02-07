@@ -799,10 +799,6 @@ class TestCubeEquality(TestCube2d):
         self.t.attributes['source']= 'bob'
         r.attributes['origin'] = 'alice'
         self.assertTrue(self.t.is_compatible(r))
-        # Different histories.
-        self.t.add_history('One history.')
-        r.add_history('An alternative history.')
-        self.assertTrue(self.t.is_compatible(r))
         # Different coordinates.
         r.remove_coord('dim1')
         self.assertTrue(self.t.is_compatible(r))
@@ -812,6 +808,18 @@ class TestCubeEquality(TestCube2d):
         # Different var_names (but equal name()).
         r.var_name = 'foo'
         self.assertTrue(self.t.is_compatible(r))
+
+    def test_is_compatible_ignore(self):
+        r = self.t.copy()
+        self.assertTrue(self.t.is_compatible(r))
+        # Different histories.
+        self.t.add_history('One history.')
+        r.add_history('An alternative history.')
+        self.assertFalse(self.t.is_compatible(r))
+        # Use ignore keyword.
+        self.assertTrue(self.t.is_compatible(r, ignore='history'))
+        self.assertTrue(self.t.is_compatible(r, ignore=('history',)))
+        self.assertTrue(self.t.is_compatible(r, ignore=r.attributes))
 
     def test_is_compatible_metadata(self):
         metadata = self.t.metadata

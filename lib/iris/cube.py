@@ -472,41 +472,44 @@ class Cube(CFVariableMixin):
         for name in CubeMetadata._fields:
             setattr(self, name, getattr(value, name))
 
-    def is_compatible(self, other):
+    def is_compatible(self, other, ignore=None):
         """
         Return whether the cube is compatible with another.
 
         Compatibility is determined by comparing :meth:`iris.cube.Cube.name()`,
         :attr:`iris.cube.Cube.units`, :attr:`iris.cube.Cube.cell_methods` and
-        :attr:`iris.cube.Cube.attributes` other than history that are present
-        in both objects.
+        :attr:`iris.cube.Cube.attributes` that are present in both objects.
 
         Args:
 
         * other:
             An instance of :class:`iris.cube.Cube` or
             :class:`iris.cube.CubeMetadata`.
+        * ignore:
+           A single attribute key or iterable of attribute keys to ignore when
+           comparing the cubes. Default is None. To ignore all attributes set
+           this to other.attributes.
 
         Returns:
            Boolean.
 
         """
-        if self.name() != other.name():
-            return False
+        compatible = (self.name() == other.name() and
+                      self.units == other.units and
+                      self.cell_methods == other.cell_methods)
 
-        if self.units != other.units:
-            return False
+        if compatible:
+            common_keys = set(self.attributes).intersection(other.attributes)
+            if ignore is not None:
+                if isinstance(ignore, basestring):
+                    ignore = (ignore,)
+                common_keys = common_keys.difference(ignore)
+            for key in common_keys:
+                if self.attributes[key] != other.attributes[key]:
+                    compatible = False
+                    break
 
-        if self.cell_methods != other.cell_methods:
-            return False
-
-        common_keys = set(self.attributes).intersection(other.attributes)
-        common_keys.discard('history')
-        for key in common_keys:
-            if self.attributes[key] != other.attributes[key]:
-                return False
-
-        return True
+        return compatible
 
     def convert_units(self, unit):
         """
@@ -767,43 +770,38 @@ class Cube(CFVariableMixin):
             If the arguments given do not result in precisely 1 coordinate
             factory being matched, an
             :class:`iris.exceptions.CoordinateNotFoundError` is raised.
-            
+
         """
         factories = self.aux_factories
 
         if name is not None:
-            if not isinstance(name, basestring):
-                raise ValueError('The name keyword is expecting a string type only. Got %s.' % type(name))
-            factories = filter(lambda factory: factory.name() == name, factories)
+            factories = [factory for factory in factories if
+                         factory.name() == name]
 
         if standard_name is not None:
-            if not isinstance(standard_name, basestring):
-                raise ValueError('The standard_name keyword is expecting a string type only. Got %s.' % type(standard_name))
-            factories = filter(lambda factory: factory.standard_name == standard_name, factories)
+            factories = [factory for factory in factories if
+                         factory.standard_name == standard_name]
 
         if long_name is not None:
-            if not isinstance(long_name, basestring):
-                raise ValueError('The long_name keyword is expecting a string type only. Got %s.' % type(long_name))
-            factories = filter(lambda factory: factory.long_name == long_name, factories)
+            factories = [factory for factory in factories if
+                         factory.long_name == long_name]
 
         if var_name is not None:
-            if not isinstance(var_name, basestring):
-                raise ValueError('The var_name keyword is expecting a string '
-                                 'type only. Got {}.'.format(type(var_name)))
-            factories = filter(lambda factory: factory.var_name == var_name,
-                               factories)
+            factories = [factory for factory in factories if
+                         factory.var_name == var_name]
 
         if len(factories) > 1:
-            msg = 'Expected to find exactly 1 coordinate factory, but found %s. They were: %s.' \
-                    % (len(coords), ', '.join(factory.name() for factory in factories))
+            factory_names = (factory.name() for factory in factories)
+            msg = 'Expected to find exactly one coordinate factory, but ' \
+                  'found {}. They were: {}.'.format(len(factories),
+                                                    ', '.join(factory_names))
             raise iris.exceptions.CoordinateNotFoundError(msg)
         elif len(factories) == 0:
-            bad_name = name or standard_name or long_name or var_name
-            msg = 'Expected to find exactly 1 %s coordinate factory, but found none.' % bad_name
+            msg = 'Expected to find exactly one coordinate factory, but ' \
+                  'found none.'
             raise iris.exceptions.CoordinateNotFoundError(msg)
 
         return factories[0]
-
 
     def coords(self, name=None, standard_name=None, long_name=None,
                var_name=None, attributes=None, axis=None,

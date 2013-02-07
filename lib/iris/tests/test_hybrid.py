@@ -97,8 +97,6 @@ class TestRealistic4d(tests.GraphicsTest):
     def test_aux_factory_var_name(self):
         factory = self.cube.aux_factory(name='altitude')
         factory.var_name = 'alt'
-        with self.assertRaises(ValueError):
-            factory = self.cube.aux_factory(var_name=23)
         factory = self.cube.aux_factory(var_name='alt')
         self.assertEqual(factory.standard_name, 'altitude')
         self.assertEqual(factory.attributes, {'positive': 'up'})
