@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube standard_name="air_temperature" units="K">
+  <cube standard_name="air_temperature" units="K" var_name="air_temperature">
     <attributes>
       <attribute name="Conventions" value="CF-1.5"/>
       <attribute name="STASH" value="m01s03i236"/>
@@ -9,13 +9,13 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="1d7d6eff" points="[107352]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
+        <dimCoord id="1d7d6eff" points="[107352]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32" var_name="forecast_period"/>
       </coord>
       <coord>
-        <dimCoord id="b880473b" points="[78144.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <dimCoord id="b880473b" points="[78144.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64" var_name="forecast_reference_time"/>
       </coord>
       <coord>
-        <dimCoord id="b7ab0ae3" points="[1.5]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64"/>
+        <dimCoord id="b7ab0ae3" points="[1.5]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64" var_name="height"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord id="ec257f34" points="[90.0, 87.5, 85.0, 82.5, 80.0, 77.5, 75.0, 72.5,
@@ -27,17 +27,17 @@
 		-27.5, -30.0, -32.5, -35.0, -37.5, -40.0, -42.5,
 		-45.0, -47.5, -50.0, -52.5, -55.0, -57.5, -60.0,
 		-62.5, -65.0, -67.5, -70.0, -72.5, -75.0, -77.5,
-		-80.0, -82.5, -85.0, -87.5, -90.0]" shape="(73,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		-80.0, -82.5, -85.0, -87.5, -90.0]" shape="(73,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="latitude">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="3784d01a" points="[0.0, 3.75, 7.5, ..., 348.75, 352.5, 356.25]" shape="(96,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="3784d01a" points="[0.0, 3.75, 7.5, ..., 348.75, 352.5, 356.25]" shape="(96,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="longitude">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[183336.0, 185496.0]]" id="2fd50af3" points="[184416.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <dimCoord bounds="[[183336.0, 185496.0]]" id="2fd50af3" points="[184416.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64" var_name="time"/>
       </coord>
     </coords>
     <cellMethods/>

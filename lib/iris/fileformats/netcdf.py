@@ -27,6 +27,7 @@ import collections
 import itertools
 import os
 import os.path
+import string
 import warnings
 
 import iris.proxy
@@ -377,6 +378,64 @@ def _create_bounds(dataset, coord, cf_var, cf_name):
         cf_var_bounds[:] = coord.bounds
 
 
+def _cube_netcdf_variable_name(cube):
+    """
+    Returns a CF-netCDF variable name for the given cube.
+
+    Args:
+
+    * cube (class:`iris.cube.Cube`):
+        An instance of a cube for which a CF-netCDF variable
+        name is required.
+
+    Returns:
+        A CF-netCDF variable name as a string.
+
+    """
+    if cube.var_name is not None:
+        cf_name = cube.var_name
+    else:
+        # Convert to lower case and replace whitespace by underscores.
+        cf_name = '_'.join(cube.name().lower().split())
+
+    return cf_name
+
+
+def _coord_netcdf_variable_name(cube, coord):
+    """
+    Returns a CF-netCDF variable name for the given coordinate.
+
+    Args:
+
+    * cube (:class:`iris.cube.Cube`):
+        The cube that contains the given coordinate.
+
+    * coord (:class:`iris.coords.Coord`):
+        An instance of a coordinate for which a CF-netCDF variable
+        name is required.
+
+    Returns:
+        A CF-netCDF variable name as a string.
+
+    """
+    if coord.var_name is not None:
+        cf_name = coord.var_name
+    else:
+        name = coord.standard_name or coord.long_name
+        if not name or set(name).intersection(string.whitespace):
+            # Auto-generate name based on associated dimensions.
+            name = ''
+            for dim in cube.coord_dims(coord):
+                name += 'dim{}'.format(dim)
+            # Handle scalar coordinate (dims == ()).
+            if not name:
+                name = 'unknown_scalar'
+        # Convert to lower case and replace whitespace by underscores.
+        cf_name = '_'.join(name.lower().split())
+
+    return cf_name
+
+
 def _create_cf_variable(dataset, cube, dimension_names, coord, factory_defn):
     """
     Create the associated CF-netCDF variable in the netCDF dataset for the 
@@ -399,9 +458,8 @@ def _create_cf_variable(dataset, cube, dimension_names, coord, factory_defn):
 
     Returns:
         The string name of the associated CF-netCDF variable saved.
-    
     """
-    cf_name = coord.name()
+    cf_name = _coord_netcdf_variable_name(cube, coord)
 
     # Derive the data dimension names for the coordinate.
     cf_dimensions = [dimension_names[dim] for dim in cube.coord_dims(coord)]
@@ -594,7 +652,7 @@ def _create_cf_data_variable(dataset, cube, dimension_names):
         The newly created CF-netCDF data variable. 
     
     """
-    cf_name = cube.name()
+    cf_name = _cube_netcdf_variable_name(cube)
     
     # Determine whether there is a cube MDI value.
     fill_value = None
@@ -682,9 +740,11 @@ def save(cube, filename, netcdf_format='NETCDF4'):
         if coords:
             if len(coords) != 1:
                 raise iris.exceptions.IrisError('Cube appears to have multiple dimension coordinates on dimension %d' % dim)
-            dimension_names.append(coords[0].name())
+            dimension_names.append(
+                _coord_netcdf_variable_name(cube, coords[0]))
         else:
-             # There are no CF-netCDF coordinates describing this data dimension.
+            # There are no CF-netCDF coordinates describing this data
+            # dimension.
             dimension_names.append('dim%d' % dim)
 
     # Create the CF-netCDF data dimensions.

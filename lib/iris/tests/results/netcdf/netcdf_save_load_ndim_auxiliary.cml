@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube long_name="Precipitation" standard_name="precipitation_flux" units="kg m-2 s-1">
+  <cube long_name="Precipitation" standard_name="precipitation_flux" units="kg m-2 s-1" var_name="pr">
     <attributes>
       <attribute name="Conventions" value="CF-1.5"/>
       <attribute name="NCO" value="4.1.0"/>
@@ -11,12 +11,12 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <dimCoord id="6c8475aa" long_name="rotated latitude" points="[-20.68, -20.46, -20.24, ..., 20.46, 20.68, 20.9]" shape="(190,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="6c8475aa" long_name="rotated latitude" points="[-20.68, -20.46, -20.24, ..., 20.46, 20.68, 20.9]" shape="(190,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32" var_name="rlat">
           <rotatedGeogCS grid_north_pole_latitude="18.0" grid_north_pole_longitude="-140.75"/>
         </dimCoord>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="2ca442ce" long_name="rotated longitude" points="[-22.16, -21.94, -21.72, ..., 15.46, 15.68, 15.9]" shape="(174,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="2ca442ce" long_name="rotated longitude" points="[-22.16, -21.94, -21.72, ..., 15.46, 15.68, 15.9]" shape="(174,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32" var_name="rlon">
           <rotatedGeogCS grid_north_pole_latitude="18.0" grid_north_pole_longitude="-140.75"/>
         </dimCoord>
       </coord>
@@ -33,7 +33,7 @@
 		[63.434, 63.5681, 63.7016, ..., 67.1789,
  		67.0689, 66.9578],
 		[63.6002, 63.7349, 63.869, ..., 67.3649,
- 		67.2542, 67.1424]]" shape="(190, 174)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+ 		67.2542, 67.1424]]" shape="(190, 174)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="lat"/>
       </coord>
       <coord datadims="[1, 2]">
         <auxCoord id="410c27bf" long_name="longitude" points="[[-5.24204, -5.02433, -4.80626, ..., 34.4617,
@@ -48,13 +48,13 @@
 		[-34.0979, -33.7479, -33.3951, ..., 58.0158,
  		58.4633, 58.907],
 		[-34.421, -34.0711, -33.7182, ..., 58.3201,
- 		58.7689, 59.214]]" shape="(190, 174)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+ 		58.7689, 59.214]]" shape="(190, 174)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="lon"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord bounds="[[2922.5, 2923.5],
 		[2923.5, 2924.5],
 		[2924.5, 2925.5],
-		[2925.5, 2926.5]]" id="b8bd03ce" long_name="Julian Day" points="[2922.5, 2923.5, 2924.5, 2925.5]" shape="(4,)" standard_name="time" units="Unit('days since 1950-01-01 00:00:00.0', calendar='gregorian')" value_type="float32"/>
+		[2925.5, 2926.5]]" id="b8bd03ce" long_name="Julian Day" points="[2922.5, 2923.5, 2924.5, 2925.5]" shape="(4,)" standard_name="time" units="Unit('days since 1950-01-01 00:00:00.0', calendar='gregorian')" value_type="float32" var_name="time"/>
       </coord>
     </coords>
     <cellMethods>

@@ -18,6 +18,7 @@
 
 # TODO: Is this a mixin or a base class?
 
+import string
 import warnings
 
 import iris.std_names
@@ -81,12 +82,12 @@ class CFVariableMixin(object):
         """
         Returns a human-readable name.
 
-        First it tries :attr:`standard_name`, then it tries the 'long_name'
-        attributes, before falling back to the value of `default` (which
-        itself defaults to 'unknown').
+        First it tries :attr:`standard_name`, then 'long_name', then 'var_name'
+        before falling back to the value of `default` (which itself defaults to
+        'unknown').
 
         """
-        return self.standard_name or self.long_name or default
+        return self.standard_name or self.long_name or self.var_name or default
 
     def rename(self, name):
         """
@@ -103,6 +104,9 @@ class CFVariableMixin(object):
         except ValueError:
             self.standard_name = None
             self.long_name = unicode(name)
+
+        # Always clear var_name when renaming.
+        self.var_name = None
 
     @property
     def standard_name(self):
@@ -124,6 +128,22 @@ class CFVariableMixin(object):
     @units.setter
     def units(self, unit):
         self._units = iris.unit.as_unit(unit)
+
+    @property
+    def var_name(self):
+        """The CF variable name for the object."""
+        return self._var_name
+
+    @var_name.setter
+    def var_name(self, name):
+        if name is not None:
+            if not name:
+                raise ValueError('An empty string is not a valid CF variable '
+                                 'name.')
+            elif set(name).intersection(string.whitespace):
+                raise ValueError('{!r} is not a valid CF variable name because'
+                                 ' it contains whitespace.'.format(name))
+        self._var_name = name
 
     @property
     def attributes(self):

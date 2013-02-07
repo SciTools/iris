@@ -26,6 +26,7 @@ import os
 import warnings
 
 import netCDF4 as nc
+import numpy as np
 import numpy.ma as ma
 
 import iris
@@ -155,6 +156,19 @@ class TestSave(tests.IrisTest):
         with self.temp_filename(suffix='.nc') as filename:
             iris.save(cube, filename, netcdf_format='NETCDF3_CLASSIC')
             self.assertCDL(filename, ('netcdf', 'netcdf_save_realistic_0d.cdl'))
+
+    def test_no_name_cube(self):
+        # Cube with no names.
+        cube = iris.cube.Cube(np.arange(20, dtype=np.float64).reshape((4,5)))
+        dim0 = iris.coords.DimCoord(np.arange(4, dtype=np.float64))
+        dim1 = iris.coords.DimCoord(np.arange(5, dtype=np.float64), units='m')
+        other = iris.coords.AuxCoord('foobar', units='no_unit')
+        cube.add_dim_coord(dim0, 0)
+        cube.add_dim_coord(dim1, 1)
+        cube.add_aux_coord(other)
+        with self.temp_filename(suffix='.nc') as filename:
+            iris.save(cube, filename, netcdf_format='NETCDF3_CLASSIC')
+            self.assertCDL(filename, ('netcdf', 'netcdf_save_no_name.cdl'))
 
 
 @iris.tests.skip_data

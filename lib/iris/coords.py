@@ -40,7 +40,8 @@ from iris._cube_coord_common import CFVariableMixin, LimitedAttributeDict
 
 
 class CoordDefn(collections.namedtuple('CoordDefn', 
-                                       ['standard_name', 'long_name', 'units',
+                                       ['standard_name', 'long_name',
+                                        'var_name', 'units',
                                         'attributes', 'coord_system'])):
     """
     Criterion for identifying a specific type of :class:`DimCoord` or :class:`AuxCoord`
@@ -52,11 +53,11 @@ class CoordDefn(collections.namedtuple('CoordDefn',
         Returns a human-readable name.
         
         First it tries self.standard_name, then it tries the 'long_name'
-        attributes, before falling back to the value of `default` (which
-        itself defaults to 'unknown').
+        attribute, then the 'var_name' attribute, before falling back to
+        the value of `default` (which itself defaults to 'unknown').
 
         """
-        return self.standard_name or self.long_name or default
+        return self.standard_name or self.long_name or self.var_name or default
 
 
 # Coordinate cell styles. Used in plot and cartography.
@@ -283,8 +284,8 @@ class Coord(CFVariableMixin):
                      _MODE_MUL: '*', _MODE_DIV: '/',
                      _MODE_RDIV:'/',                 }
 
-    def __init__(self, points, standard_name=None, long_name=None, 
-                 units='1', bounds=None, attributes=None,
+    def __init__(self, points, standard_name=None, long_name=None,
+                 var_name=None, units='1', bounds=None, attributes=None,
                  coord_system=None):
     
         """
@@ -302,6 +303,8 @@ class Coord(CFVariableMixin):
             CF standard name of coordinate
         * long_name:
             Descriptive name of coordinate
+        * var_name:
+            CF variable name of coordinate
         * units
             Unit for coordinate's values
         * bounds
@@ -319,6 +322,9 @@ class Coord(CFVariableMixin):
 
         self.long_name = long_name
         """Descriptive name of the coordinate."""
+
+        self.var_name = var_name
+        """The CF variable name for the coordinate."""
 
         self.units = units
         """Unit of the quantity that the coordinate represents."""
@@ -421,6 +427,8 @@ class Coord(CFVariableMixin):
         fmt = ''
         if self.long_name:
             fmt = ', long_name={self.long_name!r}'
+        if self.var_name:
+            fmt += ', var_name={self.var_name!r}'
         if len(self.attributes) > 0:
             fmt += ', attributes={self.attributes}'
         if self.coord_system:
@@ -489,8 +497,8 @@ class Coord(CFVariableMixin):
         return result
 
     def _as_defn(self):
-        defn = CoordDefn(self.standard_name, self.long_name, self.units,
-                         self.attributes, self.coord_system)
+        defn = CoordDefn(self.standard_name, self.long_name, self.var_name,
+                         self.units, self.attributes, self.coord_system)
         return defn
 
     def __binary_operator__(self, other, mode_constant):
@@ -688,7 +696,47 @@ class Coord(CFVariableMixin):
                 if not iris.util.monotonic(self.bounds[..., b_index], strict=True):
                     return False
                 
-        return True 
+        return True
+
+    def is_compatible(self, other, ignore=None):
+        """
+        Return whether the coordinate is compatible with another.
+
+        Compatibility is determined by comparing
+        :meth:`iris.coords.Coord.name()`, :attr:`iris.coords.Coord.units`,
+        :attr:`iris.coords.Coord.coord_system` and
+        :attr:`iris.coords.Coord.attributes` that are present in both objects.
+
+        Args:
+
+        * other:
+            An instance of :class:`iris.coords.Coord` or
+            :class:`iris.coords.CoordDefn`.
+        * ignore:
+           A single attribute key or iterable of attribute keys to ignore when
+           comparing the coordinates. Default is None. To ignore all
+           attributes, set this to other.attributes.
+
+        Returns:
+           Boolean.
+
+        """
+        compatible = (self.name() == other.name() and
+                      self.units == other.units and
+                      self.coord_system == other.coord_system)
+
+        if compatible:
+            common_keys = set(self.attributes).intersection(other.attributes)
+            if ignore is not None:
+                if isinstance(ignore, basestring):
+                    ignore = (ignore,)
+                common_keys = common_keys.difference(ignore)
+            for key in common_keys:
+                if self.attributes[key] != other.attributes[key]:
+                    compatible = False
+                    break
+
+        return compatible
 
     @property
     def dtype(self):
@@ -852,8 +900,8 @@ class Coord(CFVariableMixin):
         """
         Returns a new coordinate from the intersection of two coordinates.
 
-        Both coordinates must have the same metadata, i.e. standard_name, long_name,
-        units, attributes and coord_system.
+        Both coordinates must be compatible as defined by
+        :meth:`~iris.coords.Coord.is_compatible`.
 
         Kwargs:
 
@@ -862,8 +910,10 @@ class Coord(CFVariableMixin):
             for the "self" coordinate.
 
         """
-        if self._as_defn() != other._as_defn():
-            raise ValueError('Coords cannot be intersected, differing metadata.')
+        if not self.is_compatible(other):
+            msg = 'The coordinates cannot be intersected. They are not ' \
+                  'compatible because of differing metadata.'
+            raise ValueError(msg)
 
         # Cache self.cells for speed. We can also use the index operation on a list conveniently.
         self_cells = [cell for cell in self.cells()]
@@ -968,6 +1018,8 @@ class Coord(CFVariableMixin):
             element.setAttribute('standard_name', str(self.standard_name))
         if self.long_name:
             element.setAttribute('long_name', str(self.long_name))
+        if self.var_name:
+            element.setAttribute('var_name', str(self.var_name))
         element.setAttribute('units', repr(self.units))
 
         if self.attributes:
@@ -1028,19 +1080,22 @@ class DimCoord(Coord):
     def from_coord(coord):
         """Create a new DimCoord from the given coordinate."""
         return DimCoord(coord.points, standard_name=coord.standard_name, 
-                        long_name=coord.long_name, units=coord.units, 
-                        bounds=coord.bounds, attributes=coord.attributes, 
+                        long_name=coord.long_name, var_name=coord.var_name,
+                        units=coord.units, bounds=coord.bounds,
+                        attributes=coord.attributes,
                         coord_system=coord.coord_system,
                         circular=getattr(coord, 'circular', False))
 
-    def __init__(self, points, standard_name=None, long_name=None, units='1',
-                 bounds=None, attributes=None, coord_system=None, circular=False):
+    def __init__(self, points, standard_name=None, long_name=None,
+                 var_name=None, units='1', bounds=None, attributes=None,
+                 coord_system=None, circular=False):
         """
         Create a 1D, numeric, and strictly monotonic :class:`Coord` with read-only points and bounds.
 
         """
-        Coord.__init__(self, points, standard_name=standard_name, long_name=long_name, 
-                       units=units, bounds=bounds, attributes=attributes, 
+        Coord.__init__(self, points, standard_name=standard_name,
+                       long_name=long_name, var_name=var_name,
+                       units=units, bounds=bounds, attributes=attributes,
                        coord_system=coord_system)
 
         self.circular = bool(circular)
@@ -1158,8 +1213,9 @@ class AuxCoord(Coord):
     def from_coord(coord):
         """Create a new AuxCoord from the given coordinate."""
         new_coord = AuxCoord(coord.points, standard_name=coord.standard_name, 
-                             long_name=coord.long_name, units=coord.units, 
-                             bounds=coord.bounds, attributes=coord.attributes, 
+                             long_name=coord.long_name, var_name=coord.var_name,
+                             units=coord.units, bounds=coord.bounds,
+                             attributes=coord.attributes,
                              coord_system=coord.coord_system)
 
         return new_coord
