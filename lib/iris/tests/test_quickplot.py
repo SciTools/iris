@@ -126,10 +126,7 @@ class TestLabels(tests.GraphicsTest):
 
     def test_contourf(self):
         qplt.contourf(self._small())
-
-        cube = self._small()
-        iplt.orography_at_points(cube)
-
+        iplt.orography_at_points(self._small())
         self.check_graphic()
         
         qplt.contourf(self._small(), coords=['model_level_number', 'grid_longitude'])
@@ -172,6 +169,15 @@ class TestLabels(tests.GraphicsTest):
         qplt.contourf(cube)
         #qplt.outline(cube)
         qplt.points(cube)
+        self.check_graphic()
+
+    def test_num_ticks(self):
+        # Test usage via _label_with_points().
+        qplt.contourf(self._small(), num_ticks=5)
+        self.check_graphic()
+
+        # Test usage through _label_with_bounds().
+        qplt.pcolormesh(self._small(), num_ticks=5)
         self.check_graphic()
 
 
