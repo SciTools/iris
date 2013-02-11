@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube units="unknown">
+    <coords>
+      <coord datadims="[1]">
+        <dimCoord id="a523d045" points="[-360.0, -315.0, -270.0, -225.0, -180.0, -135.0,
+		-90.0, -45.0, 0.0, 45.0, 90.0, 135.0, 180.0,
+		225.0, 270.0, 315.0, 360.0, 405.0, 450.0, 495.0,
+		540.0, 585.0, 630.0, 675.0]" shape="(24,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float64" shape="(3, 24)" state="loaded"/>
+  </cube>
+</cubes>
