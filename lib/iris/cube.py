@@ -1357,7 +1357,7 @@ class Cube(CFVariableMixin):
     def __iter__(self):
         """
         .. deprecated:: 1.2
-            Use :class:`iris.cube.Cube.slices() instead`.
+            Use :meth:`iris.cube.Cube.slices` instead.
 
         """
         # Emit a warning about iterating over the cube.
