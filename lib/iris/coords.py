@@ -643,7 +643,7 @@ class Coord(CFVariableMixin):
             raise ValueError(
                 'Invalid operation for {!r}, with {} bounds. Contiguous bounds'
                 ' are only defined for coordinates with 2 bounds.'.format(
-                    self.name()))
+                    self.name(), self.nbounds))
 
     def is_contiguous(self):
         """
