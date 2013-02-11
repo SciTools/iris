@@ -878,9 +878,9 @@ class _Groupby(object):
 
     def _compute_shared_coords(self):
         """Create the new shared coordinates given the group slices."""
-        
+ 
         groupby_bounds = []
-        
+ 
         # Iterate over the ordered dictionary in order to construct
         # a list of tuple group boundary indexes.
         for key_slice in self._slices_by_key.itervalues():
@@ -888,34 +888,44 @@ class _Groupby(object):
                 groupby_bounds.append((key_slice[0], key_slice[-1]))
             else:
                 groupby_bounds.append((key_slice.start, key_slice.stop-1))
-                
+ 
         # Create new shared bounded coordinates.
         for coord in self._shared_coords:
             new_bounds = []
-            
+ 
             # Construct list of coordinate group boundary pairs.
             for start, stop in groupby_bounds:
                 if coord.has_bounds():
                     # Collapse group bounds into bounds.
-                    if getattr(coord, 'circular', False) and (stop+1) == len(coord):
-                        new_bounds.append([coord.bounds[start, 0], coord.bounds[0, 0] + coord.units.modulus])
+                    if (getattr(coord, 'circular', False) and
+                            (stop + 1) == len(coord.points)):
+                        new_bounds.append([coord.bounds[start, 0],
+                                          coord.bounds[0, 0] +
+                                          coord.units.modulus])
                     else:
-                        new_bounds.append([coord.bounds[start, 0], coord.bounds[stop, 1]])
+                        new_bounds.append([coord.bounds[start, 0],
+                                          coord.bounds[stop, 1]])
                 else:
                     # Collapse group points into bounds.
-                    if getattr(coord, 'circular', False) and (stop+1) == len(coord):
-                        new_bounds.append([coord.points[start], coord.points[0] + coord.units.modulus])
+                    if (getattr(coord, 'circular', False) and
+                            (stop + 1) == len(coord.points)):
+                        new_bounds.append([coord.points[start],
+                                          coord.points[0] +
+                                          coord.units.modulus])
                     else:
-                        new_bounds.append([coord.points[start], coord.points[stop]])
-            
+                        new_bounds.append([coord.points[start],
+                                          coord.points[stop]])
+ 
             # Now create the new bounded group shared coordinate.
             new_points = np.array(new_bounds).mean(-1)
 
             try:
-                self.coords.append(coord.copy(points=new_points, bounds=new_bounds))
+                self.coords.append(coord.copy(points=new_points,
+                                              bounds=new_bounds))
             except ValueError:
                 # non monotonic points/bounds
-                self.coords.append(iris.coords.AuxCoord.from_coord(coord).copy(points=new_points, bounds=new_bounds))
+                self.coords.append(iris.coords.AuxCoord.from_coord(coord).copy(
+                    points=new_points, bounds=new_bounds))
 
 
     def __len__(self):

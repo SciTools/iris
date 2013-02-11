@@ -164,6 +164,29 @@ class TestAggregateBy(tests.IrisTest):
 
         np.testing.assert_almost_equal(aggregateby_cube.data, self.single_expected)
 
+    def test_single_shared_circular(self):
+        points = np.arange(36) * 10.0
+        circ_coord = iris.coords.DimCoord(points,
+                                          long_name='circ_height',
+                                          units='degrees',
+                                          circular=True)
+        self.cube_single.add_aux_coord(circ_coord, 0)
+ 
+        # group-by with single coordinate name on shared axis.
+        aggregateby_cube = self.cube_single.aggregated_by('height',
+                                                          iris.analysis.MEAN)
+        self.assertCML(aggregateby_cube, ('analysis', 'aggregated_by',
+                                          'single_shared_circular.cml'))
+
+        # group-by with single coordinate on shared axis.
+        coord = self.cube_single.coords('height')
+        aggregateby_cube = self.cube_single.aggregated_by(coord,
+                                                          iris.analysis.MEAN)
+        self.assertCML(aggregateby_cube, ('analysis', 'aggregated_by',
+                                          'single_shared_circular.cml'))
+        np.testing.assert_almost_equal(aggregateby_cube.data,
+                                       self.single_expected)
+
     def test_multi(self):
         # group-by with multiple coordinate names.
         aggregateby_cube = self.cube_multi.aggregated_by(['height', 'level'], iris.analysis.MEAN)
