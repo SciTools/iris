@@ -16,14 +16,15 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
 
-# import iris tests first so that some things can be initialised before importing anything else
+# import iris tests first so that some things can be initialised before
+# importing anything else
 import iris.tests as tests
 
 from functools import wraps
 import types
 import warnings
 
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 import numpy as np
 
 import iris
@@ -77,7 +78,8 @@ class TestMissingCoord(tests.GraphicsTest):
         cube.remove_coord('grid_longitude')
         cube.remove_coord('time')
         self._check(cube)
-        
+
+
 @iris.tests.skip_data
 class TestMissingCS(tests.GraphicsTest):
     @iris.tests.skip_data
@@ -107,7 +109,7 @@ class TestHybridHeight(tests.GraphicsTest):
         if test_altitude:
             plt_method(self.cube, coords=['grid_longitude', 'altitude'])
             self.check_graphic()
-        
+
             plt_method(self.cube, coords=['altitude', 'grid_longitude'])
             self.check_graphic()
 
@@ -128,7 +130,7 @@ class TestHybridHeight(tests.GraphicsTest):
         iplt.orography_at_points(self.cube, coords=coords)
         iplt.points(self.cube, coords=coords)
         self.check_graphic()
-        
+
         # TODO: Test bounds once they are supported.
         with self.assertRaises(NotImplementedError):
             qplt.pcolor(self.cube)
@@ -141,8 +143,8 @@ class TestHybridHeight(tests.GraphicsTest):
 def cache(fn, cache={}):
     def inner(*args, **kwargs):
         key = fn.__name__
-        if not cache.has_key(key):
-            cache[key] =  fn(*args, **kwargs)
+        if key not in cache:
+            cache[key] = fn(*args, **kwargs)
         return cache[key]
     return inner
 
@@ -157,7 +159,7 @@ def _load_4d_testcube():
     forecast_dims = test_cube.coord_dims(time_coord)
     test_cube.remove_coord('forecast_period')
     # Make up values (including bounds), to roughly match older testdata.
-    point_values = np.linspace((1 + 1.0/6), 2.0, n_times)
+    point_values = np.linspace((1 + 1.0 / 6), 2.0, n_times)
     point_uppers = point_values + (point_values[1] - point_values[0])
     bound_values = np.column_stack([point_values, point_uppers])
     # NOTE: this must be a DimCoord
@@ -171,7 +173,7 @@ def _load_4d_testcube():
     test_cube.add_aux_coord(new_forecast_coord, forecast_dims)
     # Heavily reduce dimensions for faster testing.
     # NOTE: this makes ZYX non-contiguous.  Doesn't seem to matter for now.
-    test_cube = test_cube[:,::10,::10,::10]
+    test_cube = test_cube[:, ::10, ::10, ::10]
     return test_cube
 
 
@@ -324,7 +326,7 @@ class CheckForWarningsMetaclass(type):
                 if (isinstance(value, types.FunctionType) and
                         key.startswith('test')):
                     new_key = '_'.join((key, decorator.__name__))
-                    if not target_dict.has_key(new_key):
+                    if new_key not in target_dict:
                         wrapped = decorator(value)
                         wrapped.__name__ = new_key
                         target_dict[new_key] = wrapped
@@ -385,17 +387,17 @@ class Slice1dMixin(object):
 
     Requires self.draw_method to be the relevant plotting function,
     and self.results to be a dictionary containing the desired test results."""
-    
+
     def test_x(self):
         cube = self.wind[0, 0, 0, :]
         self.draw_method(cube)
         self.check_graphic()
-        
+
     def test_y(self):
         cube = self.wind[0, 0, :, 0]
         self.draw_method(cube)
         self.check_graphic()
-        
+
     def test_z(self):
         cube = self.wind[0, :, 0, 0]
         self.draw_method(cube)
@@ -405,7 +407,7 @@ class Slice1dMixin(object):
         cube = _time_series(self.wind[:, 0, 0, 0])
         self.draw_method(cube)
         self.check_graphic()
-        
+
     def test_t_dates(self):
         cube = _date_series(self.wind[:, 0, 0, 0])
         self.draw_method(cube)
@@ -421,9 +423,9 @@ class TestPlot(tests.GraphicsTest, Slice1dMixin):
     def setUp(self):
         self.wind = _load_4d_testcube()
         self.draw_method = iplt.plot
-        
 
-@iris.tests.skip_data        
+
+@iris.tests.skip_data
 class TestQuickplotPlot(tests.GraphicsTest, Slice1dMixin):
     """Test the iris.quickplot.plot routine."""
     def setUp(self):
@@ -435,24 +437,28 @@ _load_cube_once_cache = {}
 
 
 def load_cube_once(filename, constraint):
-    """Same syntax as load_cube, but will only load a file once, then cache the answer in a dictionary."""
+    """Same syntax as load_cube, but will only load a file once,
+
+    then cache the answer in a dictionary.
+
+    """
     global _load_cube_once_cache
     key = (filename, str(constraint))
     cube = _load_cube_once_cache.get(key, None)
-    
+
     if cube is None:
         cube = iris.load_cube(filename, constraint)
         _load_cube_once_cache[key] = cube
-        
+
     return cube
 
 
 class LambdaStr(object):
-    """Provides a callable function which has a sensible __repr__.""" 
+    """Provides a callable function which has a sensible __repr__."""
     def __init__(self, repr, lambda_fn):
         self.repr = repr
         self.lambda_fn = lambda_fn
-        
+
     def __call__(self, *args, **kwargs):
         return self.lambda_fn(*args, **kwargs)
 
@@ -463,104 +469,155 @@ class LambdaStr(object):
 @iris.tests.skip_data
 class TestPlotCoordinatesGiven(tests.GraphicsTest):
     def setUp(self):
-        filename = tests.get_data_path(('PP', 'COLPEX', 'theta_and_orog_subset.pp'))
+        filename = tests.get_data_path(('PP', 'COLPEX',
+                                        'theta_and_orog_subset.pp'))
         self.cube = load_cube_once(filename, 'air_potential_temperature')
-        
+
         self.draw_module = iris.plot
-        self.contourf = LambdaStr('iris.plot.contourf', lambda cube, *args, **kwargs: iris.plot.contourf(cube, *args, **kwargs))
-        self.contour = LambdaStr('iris.plot.contour', lambda cube, *args, **kwargs: iris.plot.contour(cube, *args, **kwargs))
-        self.points = LambdaStr('iris.plot.points', lambda cube, *args, **kwargs: iris.plot.points(cube, c=cube.data,
-                                                                     *args, **kwargs))
-        self.plot = LambdaStr('iris.plot.plot', lambda cube, *args, **kwargs: iris.plot.plot(cube, *args, **kwargs))
-        
-        self.results = {'yx': (
-                           [self.contourf, ['grid_latitude', 'grid_longitude']],
-                           [self.contourf, ['grid_longitude', 'grid_latitude']],
-                           [self.contour, ['grid_latitude', 'grid_longitude']],
-                           [self.contour, ['grid_longitude', 'grid_latitude']],
-                           [self.points, ['grid_latitude', 'grid_longitude']],
-                           [self.points, ['grid_longitude', 'grid_latitude']],                   
-                           ),
-                       'zx': (
-                           [self.contourf, ['model_level_number', 'grid_longitude']],
-                           [self.contourf, ['grid_longitude', 'model_level_number']],
-                           [self.contour, ['model_level_number', 'grid_longitude']],
-                           [self.contour, ['grid_longitude', 'model_level_number']],
-                           [self.points, ['model_level_number', 'grid_longitude']],
-                           [self.points, ['grid_longitude', 'model_level_number']],
-                           ),
-                        'tx': (
-                           [self.contourf, ['time', 'grid_longitude']],
-                           [self.contourf, ['grid_longitude', 'time']],
-                           [self.contour, ['time', 'grid_longitude']],
-                           [self.contour, ['grid_longitude', 'time']],
-                           [self.points, ['time', 'grid_longitude']],
-                           [self.points, ['grid_longitude', 'time']],
-                           ),
-                        'x': (
-                           [self.plot, ['grid_longitude']],                                      
-                           ),
-                        'y': (
-                           [self.plot, ['grid_latitude']],                                      
-                           ),                             
-                       }
-        
+        self.contourf = LambdaStr('iris.plot.contourf',
+                                  lambda cube, *args, **kwargs:
+                                  iris.plot.contourf(cube, *args, **kwargs))
+        self.contour = LambdaStr('iris.plot.contour',
+                                 lambda cube, *args, **kwargs:
+                                 iris.plot.contour(cube, *args, **kwargs))
+        self.points = LambdaStr('iris.plot.points',
+                                lambda cube, *args, **kwargs:
+                                iris.plot.points(cube, c=cube.data,
+                                                 *args, **kwargs))
+        self.plot = LambdaStr('iris.plot.plot',
+                              lambda cube, *args, **kwargs:
+                              iris.plot.plot(cube, *args, **kwargs))
+
+        self.results = {'yx': ([self.contourf, ['grid_latitude',
+                                                'grid_longitude']],
+                               [self.contourf, ['grid_longitude',
+                                                'grid_latitude']],
+                               [self.contour, ['grid_latitude',
+                                               'grid_longitude']],
+                               [self.contour, ['grid_longitude',
+                                               'grid_latitude']],
+                               [self.points, ['grid_latitude',
+                                              'grid_longitude']],
+                               [self.points, ['grid_longitude',
+                                              'grid_latitude']],),
+                        'zx': ([self.contourf, ['model_level_number',
+                                                'grid_longitude']],
+                               [self.contourf, ['grid_longitude',
+                                                'model_level_number']],
+                               [self.contour, ['model_level_number',
+                                               'grid_longitude']],
+                               [self.contour, ['grid_longitude',
+                                               'model_level_number']],
+                               [self.points, ['model_level_number',
+                                              'grid_longitude']],
+                               [self.points, ['grid_longitude',
+                                              'model_level_number']],),
+                        'tx': ([self.contourf, ['time', 'grid_longitude']],
+                               [self.contourf, ['grid_longitude', 'time']],
+                               [self.contour, ['time', 'grid_longitude']],
+                               [self.contour, ['grid_longitude', 'time']],
+                               [self.points, ['time', 'grid_longitude']],
+                               [self.points, ['grid_longitude', 'time']],),
+                        'x': ([self.plot, ['grid_longitude']],),
+                        'y': ([self.plot, ['grid_latitude']],)
+                        }
+
     def draw(self, draw_method, *args, **kwargs):
         draw_fn = getattr(self.draw_module, draw_method)
         draw_fn(*args, **kwargs)
         self.check_graphic()
-    
+
     def run_tests(self, cube, results):
         for draw_method, coords in results:
             draw_method(cube, coords=coords)
             try:
                 self.check_graphic()
             except AssertionError, err:
-                self.fail('Draw method %r failed with coords: %r. Assertion message: %s' % (draw_method, coords, err))
-            
+                self.fail('Draw method %r failed with coords: %r. '
+                          'Assertion message: %s' % (draw_method, coords, err))
+
     def test_yx(self):
-        test_cube = self.cube[0, 0, :, :]        
+        test_cube = self.cube[0, 0, :, :]
         self.run_tests(test_cube, self.results['yx'])
-        
+
     def test_zx(self):
         test_cube = self.cube[0, :15, 0, :]
         self.run_tests(test_cube, self.results['zx'])
-        
+
     def test_tx(self):
         test_cube = self.cube[:, 0, 0, :]
         self.run_tests(test_cube, self.results['tx'])
-        
+
     def test_x(self):
         test_cube = self.cube[0, 0, 0, :]
         self.run_tests(test_cube, self.results['x'])
-        
+
     def test_y(self):
         test_cube = self.cube[0, 0, :, 0]
         self.run_tests(test_cube, self.results['y'])
-        
+
     def test_badcoords(self):
         cube = self.cube[0, 0, :, :]
         draw_fn = getattr(self.draw_module, 'contourf')
-        self.assertRaises(ValueError, draw_fn, cube, coords=['grid_longitude', 'grid_longitude'])
-        self.assertRaises(ValueError, draw_fn, cube, coords=['grid_longitude', 'grid_longitude', 'grid_latitude'])
-        self.assertRaises(iris.exceptions.CoordinateNotFoundError, draw_fn, cube, coords=['grid_longitude', 'wibble'])
+        self.assertRaises(ValueError, draw_fn, cube,
+                          coords=['grid_longitude', 'grid_longitude'])
+        self.assertRaises(ValueError, draw_fn, cube,
+                          coords=['grid_longitude', 'grid_longitude',
+                                  'grid_latitude'])
+        self.assertRaises(iris.exceptions.CoordinateNotFoundError, draw_fn,
+                          cube, coords=['grid_longitude', 'wibble'])
         self.assertRaises(ValueError, draw_fn, cube, coords=[])
-        self.assertRaises(ValueError, draw_fn, cube, coords=[cube.coord('grid_longitude'), cube.coord('grid_longitude')])
-        self.assertRaises(ValueError, draw_fn, cube, coords=[cube.coord('grid_longitude'),
-                                                             cube.coord('grid_longitude'),
-                                                             cube.coord('grid_longitude')])
-        
+        self.assertRaises(ValueError, draw_fn, cube,
+                          coords=[cube.coord('grid_longitude'),
+                                  cube.coord('grid_longitude')])
+        self.assertRaises(ValueError, draw_fn, cube,
+                          coords=[cube.coord('grid_longitude'),
+                                  cube.coord('grid_longitude'),
+                                  cube.coord('grid_longitude')])
+
     def test_non_cube_coordinate(self):
         cube = self.cube[0, :, :, 0]
         pts = -100 + np.arange(cube.shape[1]) * 13
-        x = coords.DimCoord(pts, standard_name='model_level_number', attributes={'positive': 'up'})
+        x = coords.DimCoord(pts, standard_name='model_level_number',
+                            attributes={'positive': 'up'})
         self.draw('contourf', cube, coords=['grid_latitude', x])
 
 
 class TestSymbols(tests.GraphicsTest):
     def test_cloud_cover(self):
-        iplt.symbols(range(10), [0] * 10, [iris.symbols.CLOUD_COVER[i] for i in range(10)], 0.375)
+        iplt.symbols(range(10), [0] * 10, [iris.symbols.CLOUD_COVER[i]
+                                           for i in range(10)], 0.375)
         self.check_graphic()
+
+
+class Test_map_common(tests.IrisTest):
+    def setUp(self):
+        self.bounded_cube = tests.stock.lat_lon_cube()
+        self.bounded_cube.coord("latitude").guess_bounds()
+        self.bounded_cube.coord("longitude").guess_bounds()
+
+    def test_boundmode_multidim(self):
+        # Test exception translation.
+        # We can't get contiguous bounded grids from multi-d coords.
+        cube = self.bounded_cube
+        cube.remove_coord("latitude")
+        cube.add_aux_coord(coords.AuxCoord(points=cube.data,
+                                           standard_name='latitude',
+                                           units='degrees'), [0, 1])
+        with self.assertRaises(ValueError):
+            iplt._map_common("pcolormesh", None, coords.BOUND_MODE, cube, None)
+
+    def test_boundmode_4bounds(self):
+        # Test exception translation.
+        # We can only get contiguous bounded grids with 2 bounds per point.
+        cube = self.bounded_cube
+        lat = coords.AuxCoord.from_coord(cube.coord("latitude"))
+        lat.bounds = np.array([lat.points, lat.points + 1,
+                               lat.points + 2, lat.points + 3]).transpose()
+        cube.remove_coord("latitude")
+        cube.add_aux_coord(lat, 0)
+        with self.assertRaises(ValueError):
+            iplt._map_common("pcolormesh", None, coords.BOUND_MODE, cube, None)
 
 
 if __name__ == "__main__":
