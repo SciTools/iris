@@ -49,7 +49,7 @@ install:
 # cartopy
   - ./.travis_no_output git clone git://github.com/SciTools/cartopy.git
   - cd cartopy
-  - ./.travis_no_output git checkout 5e0bda8956158b8c19566ceac81116afb55cdd71
+  - ./.travis_no_output git checkout e68fae42093b6922d373e820e93584d917c4f882
   - ../.travis_no_output /usr/bin/python setup.py install --user
   - cd ..
   
