@@ -78,6 +78,8 @@ if '-d' in sys.argv:
     sys.argv.remove('-d')
     plt.switch_backend('tkagg')
     _DISPLAY_FIGURES = True
+else:
+    plt.switch_backend('agg')
     
 _DEFAULT_IMAGE_TOLERANCE = 0.001
 
