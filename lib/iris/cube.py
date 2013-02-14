@@ -1320,13 +1320,13 @@ class Cube(CFVariableMixin):
             if self.attributes:
                 attribute_summary = []
                 for name, value in sorted(self.attributes.iteritems()):
+                    value = unicode(value)
                     if name == 'history':
-                        value = re.sub("[\d\/]{8} [\d\:]{8} Iris\: ", '', str(value))
-                    else:
-                        value = str(value)
-                    attribute_summary.append('%*s%s: %s' % (indent, ' ', name, iris.util.clip_string(value)))
+                        value = re.sub("[\d\/]{8} [\d\:]{8} Iris\: ", '', value)
+                    value = iris.util.clip_string(value)
+                    attribute_summary.append('%*s%s: %s' % (indent, ' ', name, value))
                 summary += '\n     Attributes:\n' + '\n'.join(attribute_summary)
-        
+
             #
             # Generate summary of cube cell methods
             #
@@ -1349,7 +1349,7 @@ class Cube(CFVariableMixin):
         warnings.warn('Cube.assert_valid() has been deprecated.')
 
     def __str__(self):
-        return self.summary()
+        return self.summary().encode('utf-8')
 
     def __repr__(self):
         return "<iris 'Cube' of %s>" % self.summary(shorten=True, name_padding=1)
