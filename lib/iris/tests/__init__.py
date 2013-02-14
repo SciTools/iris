@@ -15,14 +15,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Provides iris specific testing capabilities and customisations.
+Provides testing capabilities and customisations specific to Iris.
+
+.. note:: This module needs to control the matplotlib backend, so it
+          **must** be imported before ``matplotlib.pyplot``.
 
 The primary class for this module is :class:`IrisTest`.
 
-When importing this module, sys.argv is inspected to identify the flags ``-d`` and ``-sf`` which toggle displaying and saving image tests respectively.
-
-.. note:: The ``-d`` option sets the matplotlib backend to either agg or tkagg. For this reason ``iris.tests`` **must** be imported before ``matplotlib.pyplot``
-
+By default, this module sets the matplotlib backend to "agg". But when
+this module is imported it checks ``sys.argv`` for the flag "-d". If
+found, it is removed from ``sys.argv`` and the matplotlib backend is
+switched to "tkagg" to allow the interactive visual inspection of
+graphical test results.
 
 """
 import collections
@@ -66,7 +70,8 @@ if '--data-files-used' in sys.argv:
     _EXPORT_DATAPATHS_FILE = open(fname, 'w')
 else:
     _EXPORT_DATAPATHS_FILE = None
-    
+
+
 # A shared logger for use by unit tests
 logger = logging.getLogger('tests')
 
@@ -80,7 +85,7 @@ if '-d' in sys.argv:
     _DISPLAY_FIGURES = True
 else:
     plt.switch_backend('agg')
-    
+
 _DEFAULT_IMAGE_TOLERANCE = 0.001
 
 
@@ -386,10 +391,10 @@ class IrisTest(unittest.TestCase):
 class GraphicsTest(IrisTest):
     
     def tearDown(self):
-        # If a plotting test bombs out it can leave the current figure in an odd state, so we make
-        # sure it's been disposed of.
+        # If a plotting test bombs out it can leave the current figure
+        # in an odd state, so we make sure it's been disposed of.
         plt.close()
-  
+
 
 def skip_data(fn):
     """
