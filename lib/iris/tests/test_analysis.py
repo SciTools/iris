@@ -389,9 +389,9 @@ class TestRotatedPole(tests.IrisTest):
     def _check_both_conversions(self, cube):
         rlons, rlats = iris.analysis.cartography.get_xy_grids(cube)
         rcs = cube.coord_system('RotatedGeogCS')
-        x, y = iris.analysis.cartography.unrotate_pole(rlons, rlats,
-                                                       rcs.grid_north_pole_longitude,
-                                                       rcs.grid_north_pole_latitude)
+        x, y = iris.analysis.cartography.unrotate_pole(
+            rlons, rlats, rcs.grid_north_pole_longitude,
+            rcs.grid_north_pole_latitude)
         plt.scatter(x, y)
         self.check_graphic()
 
@@ -402,13 +402,77 @@ class TestRotatedPole(tests.IrisTest):
         path = tests.get_data_path(('PP', 'ukVorog', 'ukv_orog_refonly.pp'))
         master_cube = iris.load_cube(path)
 
-        # Check overall behaviour
+        # Check overall behaviour.
         cube = master_cube[::10, ::10]
         self._check_both_conversions(cube)
 
-        # Check numerical stability
+        # Check numerical stability.
         cube = master_cube[210:238, 424:450]
         self._check_both_conversions(cube)
+
+    def test_unrotate_nd(self):
+        rlons = np.array([[350., 352.],[350., 352.]])
+        rlats = np.array([[-5., -0.],[-4., -1.]])
+        
+        resx, resy = iris.analysis.cartography.unrotate_pole(rlons, rlats,
+                                                             178.0, 38.0)
+
+        # Solutions derived by proj4 direct.
+        solx = np.array([[-16.42176094, -14.85892262],
+                            [-16.71055023, -14.58434624]])
+        soly = np.array([[ 46.00724251,  51.29188893],
+                            [ 46.98728486,  50.30706042]])
+
+        self.assertArrayAlmostEqual(resx, solx)
+        self.assertArrayAlmostEqual(resy, soly)
+
+    def test_unrotate_1d(self):
+        rlons = np.array([350., 352., 354., 356.])
+        rlats = np.array([-5., -0., 5., 10.])
+        
+        resx, resy = iris.analysis.cartography.unrotate_pole(
+            rlons.flatten(), rlats.flatten(), 178.0, 38.0)
+
+        # Solutions derived by proj4 direct.
+        solx = np.array([-16.42176094, -14.85892262,
+                            -12.88946157, -10.35078336])
+        soly = np.array([46.00724251, 51.29188893,
+                            56.55031485, 61.77015703])
+
+        self.assertArrayAlmostEqual(resx, solx)
+        self.assertArrayAlmostEqual(resy, soly)
+        
+    def test_rotate_nd(self):
+        rlons = np.array([[350., 351.],[352., 353.]])
+        rlats = np.array([[10., 15.],[20., 25.]])
+        
+        resx, resy = iris.analysis.cartography.rotate_pole(rlons, rlats,
+                                                           20., 80.)
+
+        # Solutions derived by proj4 direct.
+        solx = np.array([[148.69672569, 149.24727087],
+                            [149.79067025, 150.31754368]])
+        soly = np.array([[18.60905789, 23.67749384],
+                            [28.74419024, 33.8087963 ]])
+
+        self.assertArrayAlmostEqual(resx, solx)
+        self.assertArrayAlmostEqual(resy, soly)
+
+    def test_rotate_1d(self):
+        rlons = np.array([350., 351., 352., 353.])
+        rlats = np.array([10., 15., 20., 25.])
+
+        resx, resy = iris.analysis.cartography.rotate_pole(rlons.flatten(),
+                                     rlats.flatten(), 20., 80.)
+
+        # Solutions derived by proj4 direct.
+        solx = np.array([148.69672569, 149.24727087,
+                            149.79067025, 150.31754368])
+        soly = np.array([18.60905789, 23.67749384,
+                            28.74419024, 33.8087963 ])
+
+        self.assertArrayAlmostEqual(resx, solx)
+        self.assertArrayAlmostEqual(resy, soly)
 
 @iris.tests.skip_data
 class TestAreaWeights(tests.IrisTest):
@@ -461,6 +525,7 @@ class TestAreaWeights(tests.IrisTest):
         lats = np.array([lat2radcolat([-80, -70]), lat2radcolat([0, 10]), lat2radcolat([70, 80])])
         lons = np.array([lon2radlon([0, 10])])
         area = iris.analysis.cartography._quadrant_area(lats, lons, iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS)
+
         self.assertAlmostEquals(area[0], [319251845980.763671875])
         self.assertAlmostEquals(area[1], [1228800593851.443115234375])
         self.assertAlmostEquals(area[2], [319251845980.7646484375])
@@ -789,8 +854,10 @@ class TestProject(tests.GraphicsTest):
         cube = iris.load_cube(tests.get_data_path(('PP', 'aPPglob1', 'global.pp')))
         cube.coord('longitude').coord_system = None
         cube.coord('latitude').coord_system = None
-        new_cube, extent = iris.analysis.cartography.project(cube, self.target_proj)
-        self.assertCML(new_cube, ('analysis', 'project', 'default_source_cs.cml'))
+        new_cube, extent = iris.analysis.cartography.project(cube,
+                                                             self.target_proj)
+        self.assertCML(new_cube,
+                       ('analysis', 'project', 'default_source_cs.cml'))
 
 
 if __name__ == "__main__":
