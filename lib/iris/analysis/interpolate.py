@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -645,6 +645,7 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
         # Now we must be down to a single sample coordinate and its
         # values.
         src_coord, requested_points = sample_points[0]
+        sample_values = np.array(requested_points)
 
         # 1) Define the interpolation characteristics.
 
@@ -682,7 +683,12 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
                                      cube.data.mask[tuple(coord_slice_in_cube)],
                                      axis=sample_dim)
                 data = ma.array(new_data, mask=new_mask)
-                
+
+            # Map all the requested values into the range of the source
+            # data.
+            if modulus:
+                offset = src_coord.points[0]
+                sample_values = ((sample_values - offset) % modulus) + offset
         else:
             src_points = src_coord.points
             data = cube.data
@@ -721,7 +727,7 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
             return new_fx
 
         # 2) Interpolate the data and produce our new Cube.
-        data = interpolate(data, requested_points, axis=sample_dim, copy=False)
+        data = interpolate(data, sample_values, axis=sample_dim, copy=False)
         new_cube = iris.cube.Cube(data)
         new_cube.metadata = cube.metadata
 
