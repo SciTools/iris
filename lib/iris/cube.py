@@ -620,9 +620,14 @@ class Cube(CFVariableMixin):
 
         """
         if self.coords(coord=dim_coord):
-            raise ValueError('Duplicate coordinates are not permitted.')
+            raise ValueError('The coordinate already exists on the cube. '
+                             'Duplicate coordinates are not permitted.')
         if isinstance(data_dim, collections.Container) and len(data_dim) != 1:
-            raise ValueError('The supplied data dimension must be a single number')
+            raise ValueError('The supplied data dimension must be a single '
+                             'number')
+
+        if isinstance(dim_coord, iris.coords.AuxCoord):
+            raise ValueError('The dim_coord may not be an AuxCoord instance.')
 
         # Convert data_dim to a single integer
         if isinstance(data_dim, collections.Container):
@@ -632,11 +637,13 @@ class Cube(CFVariableMixin):
 
         # Check data_dim value is valid
         if data_dim < 0 or data_dim >= self.ndim:
-            raise ValueError('The cube does not have the specified dimension (%d)' % data_dim)
+            raise ValueError('The cube does not have the specified dimension '
+                             '(%d)' % data_dim)
 
         # Check dimension is available
         if self.coords(dimensions=data_dim, dim_coords=True):
-            raise ValueError('A dim_coord is already associated with dimension %d.' % data_dim)
+            raise ValueError('A dim_coord is already associated with '
+                             'dimension %d.' % data_dim)
 
         # Check compatibility with the shape of the data
         if dim_coord.shape[0] != self.shape[data_dim]:
