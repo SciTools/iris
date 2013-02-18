@@ -85,30 +85,30 @@ class TestConvertible(TestUnit):
     def test_convertible_fail_0(self):
         u = Unit("meter")
         v = Unit("newton")
-        self.assertFalse(u.convertible(v))
+        self.assertFalse(u.is_convertible(v))
 
     def test_convertible_pass_0(self):
         u = Unit("meter")
         v = Unit("mile")
-        self.assertTrue(u.convertible(v))
+        self.assertTrue(u.is_convertible(v))
         
     def test_convertible_fail_1(self):
         u = Unit('meter')
         v = Unit('unknown')
-        self.assertFalse(u.convertible(v))
-        self.assertFalse(v.convertible(u))
+        self.assertFalse(u.is_convertible(v))
+        self.assertFalse(v.is_convertible(u))
         
     def test_convertible_fail_2(self):
         u = Unit('meter')
         v = Unit('no unit')
-        self.assertFalse(u.convertible(v))
-        self.assertFalse(v.convertible(u))
+        self.assertFalse(u.is_convertible(v))
+        self.assertFalse(v.is_convertible(u))
         
     def test_convertible_fail_3(self):
         u = Unit('unknown')
         v = Unit('no unit')
-        self.assertFalse(u.convertible(v))
-        self.assertFalse(v.convertible(u))
+        self.assertFalse(u.is_convertible(v))
+        self.assertFalse(v.is_convertible(u))
 
 
 class TestDimensionless(TestUnit):
@@ -117,19 +117,19 @@ class TestDimensionless(TestUnit):
     #
     def test_dimensionless_fail_0(self):
         u = Unit("meter")
-        self.assertFalse(u.dimensionless)
+        self.assertFalse(u.is_dimensionless())
 
     def test_dimensionless_pass_0(self):
         u = Unit("1")
-        self.assertTrue(u.dimensionless)
+        self.assertTrue(u.is_dimensionless())
 
     def test_dimensionless_fail_1(self):
         u = Unit('unknown')
-        self.assertFalse(u.dimensionless)
+        self.assertFalse(u.is_dimensionless())
         
     def test_dimensionless_fail_2(self):
         u = Unit('no unit')
-        self.assertFalse(u.dimensionless)
+        self.assertFalse(u.is_dimensionless())
 
 
 class TestFormat(TestUnit):
@@ -343,8 +343,8 @@ class TestMultiply(TestUnit):
     def test_multiply_fail_1(self):
         u = Unit('unknown')
         v = Unit('meters')
-        self.assertTrue((u * v).unknown)
-        self.assertTrue((v * u).unknown)
+        self.assertTrue((u * v).is_unknown())
+        self.assertTrue((v * u).is_unknown())
         
     def test_multiply_fail_3(self):
         u = Unit('unknown')
@@ -384,8 +384,8 @@ class TestDivide(TestUnit):
     def test_divide_fail_1(self):
         u = Unit('unknown')
         v = Unit('meters')
-        self.assertTrue((u / v).unknown)
-        self.assertTrue((v / u).unknown)
+        self.assertTrue((u / v).is_unknown())
+        self.assertTrue((v / u).is_unknown())
         
     def test_divide_fail_3(self):
         u = Unit('unknown')
@@ -458,11 +458,11 @@ class TestCopy(TestUnit):
         
     def test_copy_pass_1(self):
         u = Unit('unknown')
-        self.assertTrue(copy.copy(u).unknown)
+        self.assertTrue(copy.copy(u).is_unknown())
         
     def test_copy_pass_2(self):
         u = Unit('no unit')
-        self.assertTrue(copy.copy(u).no_unit)
+        self.assertTrue(copy.copy(u).is_no_unit())
 
 
 class TestStringify(TestUnit):
@@ -675,23 +675,23 @@ class TestUnknown(TestUnit):
     #
     def test_unknown_unit_pass_0(self):
         u = Unit("?")
-        self.assertTrue(u.unknown)
+        self.assertTrue(u.is_unknown())
 
     def test_unknown_unit_pass_1(self):
         u = Unit("???")
-        self.assertTrue(u.unknown)
+        self.assertTrue(u.is_unknown())
 
     def test_unknown_unit_pass_2(self):
         u = Unit("unknown")
-        self.assertTrue(u.unknown)
+        self.assertTrue(u.is_unknown())
 
     def test_unknown_unit_fail_0(self):
         u = Unit('no unit')
-        self.assertFalse(u.unknown)
+        self.assertFalse(u.is_unknown())
         
     def test_unknown_unit_fail_2(self):
         u = Unit('meters')
-        self.assertFalse(u.unknown)
+        self.assertFalse(u.is_unknown())
 
 
 class TestNoUnit(TestUnit):
@@ -700,19 +700,19 @@ class TestNoUnit(TestUnit):
     #
     def test_no_unit_pass_0(self):
         u = Unit('no_unit')
-        self.assertTrue(u.no_unit)
+        self.assertTrue(u.is_no_unit())
         
     def test_no_unit_pass_1(self):
         u = Unit('no unit')
-        self.assertTrue(u.no_unit)
+        self.assertTrue(u.is_no_unit())
         
     def test_no_unit_pass_2(self):
         u = Unit('no-unit')
-        self.assertTrue(u.no_unit)
+        self.assertTrue(u.is_no_unit())
         
     def test_no_unit_pass_3(self):
         u = Unit('nounit')
-        self.assertTrue(u.no_unit)
+        self.assertTrue(u.is_no_unit())
 
 
 class TestTimeReference(TestUnit):
@@ -721,11 +721,11 @@ class TestTimeReference(TestUnit):
     #
     def test_time_reference_pass_0(self):
         u = Unit('hours since epoch')
-        self.assertTrue(u.time_reference)
+        self.assertTrue(u.is_time_reference())
         
     def test_time_reference_fail_0(self):
         u = Unit('hours')
-        self.assertFalse(u.time_reference)
+        self.assertFalse(u.is_time_reference())
 
 
 class TestTitle(TestUnit):

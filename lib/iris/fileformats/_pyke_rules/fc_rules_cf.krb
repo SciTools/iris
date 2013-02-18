@@ -776,7 +776,7 @@ fc_extras
             attr_units = iris.unit._NO_UNIT_STRING
 
         # Get any assoicated calendar for a time reference coordinate.
-        if iris.unit.as_unit(attr_units).time_reference:
+        if iris.unit.as_unit(attr_units).is_time_reference():
             attr_calendar = getattr(cf_var, CF_ATTR_CALENDAR, None)
 
             if attr_calendar:
@@ -1074,7 +1074,7 @@ fc_extras
         attr_std_name = getattr(cf_var, CF_ATTR_STD_NAME, None)
         attr_axis = getattr(cf_var, CF_ATTR_AXIS, '')
         try:
-            is_time_reference = iris.unit.Unit(attr_units or 1).time_reference
+            is_time_reference = iris.unit.Unit(attr_units or 1).is_time_reference()
         except ValueError:
             is_time_reference = False
         

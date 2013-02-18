@@ -530,7 +530,7 @@ class Cube(CFVariableMixin):
 
         """
         # If the cube has units convert the data.
-        if not self.units.unknown:
+        if not self.units.is_unknown():
             self.data = self.units.convert(self.data, unit)
         self.units = unit
 
@@ -1251,7 +1251,7 @@ class Cube(CFVariableMixin):
             if scalar_coords:
                 for coord in scalar_coords:
                     if (coord.units in ['1', 'no_unit', 'unknown'] or
-                        coord.units.time_reference):
+                        coord.units.is_time_reference()):
                         unit = ''
                     else:
                         unit = ' {!s}'.format(coord.units)
@@ -1269,7 +1269,7 @@ class Cube(CFVariableMixin):
                             coord_cell_split) + unit
                     else:
                         # Human readable times
-                        if coord.units.time_reference:
+                        if coord.units.is_time_reference():
                             coord_cell_cpoint = coord.units.num2date(
                                 coord_cell.point)
                             if coord_cell.bound is not None:

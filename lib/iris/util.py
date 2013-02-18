@@ -148,9 +148,9 @@ def guess_coord_axis(coord):
         axis = 'X'
     elif coord.standard_name in ('latitude', 'grid_latitude', 'projection_y_coordinate'):
         axis = 'Y'
-    elif coord.units.convertible('hPa') or coord.attributes.get('positive') in ('up', 'down'):
+    elif coord.units.is_convertible('hPa') or coord.attributes.get('positive') in ('up', 'down'):
         axis = 'Z'
-    elif coord.units.time_reference:    
+    elif coord.units.is_time_reference():    
         axis = 'T'
 
     return axis
