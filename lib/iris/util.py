@@ -584,6 +584,7 @@ class _OrderedHashable(collections.Hashable):
         self._init(self, value1, value2, ..)
     
     .. note::
+
         It's the responsibility of the subclass to ensure that the values of
         its attributes are themselves hashable.
     

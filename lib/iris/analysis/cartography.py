@@ -469,6 +469,7 @@ def project(cube, target_proj, nx=None, ny=None):
         extent of the projection.
 
     .. note::
+
         This function uses a nearest neighbour approach rather than any form
         of linear/non-linear interpolation to determine the data value of each
         cell in the resulting cube. Consequently it may have an adverse effect
@@ -476,6 +477,7 @@ def project(cube, target_proj, nx=None, ny=None):
         will not be preserved.
 
     .. note::
+
         This function assumes global data and will if necessary extrapolate
         beyond the geographical extent of the source cube using a nearest
         neighbour approach.

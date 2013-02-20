@@ -500,6 +500,7 @@ class BitwiseInt(SplittableInt):
     A class to hold an integer, of fixed bit-length, which can easily get/set each bit individually.
     
     .. note::
+
         Uses a fixed number of bits.
         Will raise an Error when attempting to access an out-of-range flag.
     
@@ -953,8 +954,10 @@ class PPField(object):
         
         
         .. note::
-            The fields which are automatically calculated are: 'lbext', 'lblrec' and 'lbuser[0]'.
-            Some fields are not currently populated, these are: 'lbegin', 'lbnrec', 'lbuser[1]'.
+
+            The fields which are automatically calculated are: 'lbext',
+            'lblrec' and 'lbuser[0]'. Some fields are not currently
+            populated, these are: 'lbegin', 'lbnrec', 'lbuser[1]'.
             
         """
 
@@ -1502,7 +1505,8 @@ def load_cubes(filenames, callback=None):
     
     * callback - a function which can be passed on to :func:`iris.io.run_callback`
     
-    .. note:: 
+    .. note::
+
         The resultant cubes may not be in the order that they are in the file (order 
         is not preserved when there is a field with orography references)
          

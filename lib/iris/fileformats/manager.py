@@ -94,10 +94,13 @@ class DataManager(iris.util._OrderedHashable):
     
     def pre_slice_array_shape(self, proxy_array):
         """
-        Given the associated proxy_array, calculate the shape of the resultant data without loading it.
+        Given the associated proxy_array, calculate the shape of the resultant
+        data without loading it.
         
         .. note::
-            This may differ from the result of :meth:`load` if there are pending post load slices in :attr:`deferred_slices`.
+
+            This may differ from the result of :meth:`load` if there are
+            pending post load slices in :attr:`deferred_slices`.
             
         """
         return proxy_array.shape + self._orig_data_shape

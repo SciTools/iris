@@ -55,7 +55,8 @@ The current rendering mode can be determined as follows::
 	import matplotlib.pyplot as plt
 	print plt.isinteractive()
 
-.. note:: 
+.. note::
+
 	For clarity, each example includes all of the imports required to run on its 
 	own; when combining examples such as the two above, it would not be necessary 
 	to repeat the import statement more than once::
@@ -137,6 +138,7 @@ except that ``quickplot`` will add a title, x and y labels and a colorbar
 where appropriate.
 
 .. note::
+
    In all subsequent examples the ``matplotlib.pyplot``, ``iris.plot`` and 
    ``iris.quickplot`` modules are imported as ``plt``, ``iplt`` and ``qplt`` 
    respectively in order to make the code more readable.
@@ -162,7 +164,8 @@ keyword arguments are equivalent:
 For more information on how this example reduced the 2D cube to 1 dimension see 
 the previous section entitled :doc:`reducing_a_cube`.
 
-.. note:: 
+.. note::
+
     Axis labels and a plot title can be added using the
     :func:`plt.title() <matplotlib.pyplot.title>`,
     :func:`plt.xlabel() <matplotlib.pyplot.xlabel>` and
@@ -198,6 +201,7 @@ This example of consecutive ``qplt.plot`` calls coupled with the
 the temperature at some latitude cross-sections. 
 
 .. note::
+
     The previous example uses the ``if __name__ == "__main__"`` style to run 
     the desired code if and only if the script is run from the command line.
 
@@ -223,9 +227,10 @@ accessed with the :func:`matplotlib.pyplot.gca` function.
 Given the current map, you can draw gridlines and coastlines amongst other 
 things. 
 
-.. seealso:: 
-	:meth:`cartopy's gridlines() <cartopy.mpl.GeoAxes.gridlines>`, 
-	:meth:`cartopy's coastlines() <cartopy.mpl.GeoAxes.coastlines>`.
+.. seealso::
+
+    :meth:`cartopy's gridlines() <cartopy.mpl.GeoAxes.gridlines>`,
+    :meth:`cartopy's coastlines() <cartopy.mpl.GeoAxes.coastlines>`.
 
 
 Cube contour
@@ -257,6 +262,7 @@ Continuous block plots can be achieved with either :func:`iris.plot.pcolormesh`
 or :func:`iris.quickplot.pcolormesh`.
 
 .. note::
+
     If the cube's coordinates do not have bounds, :func:`iris.plot.pcolormesh`
     and :func:`iris.quickplot.pcolormesh` will attempt to guess suitable values
     based on their points (see also :func:`iris.coords.Coord.guess_bounds()`).
@@ -325,4 +331,3 @@ The recommended text for the Cynthia Brewer citation is provided by
 
 .. plot:: userguide/plotting_examples/cube_brewer_cite_contourf.py
    :include-source:
-

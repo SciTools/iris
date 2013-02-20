@@ -117,9 +117,10 @@ def run_callback(callback, cube, field, filename):
             2. Must not return any value - any alterations to the cube must be made by reference
             3. If the cube is to be rejected the callback must raise an :class:`iris.exceptions.IgnoreCubeException`
    
-    .. note:: 
-        It is possible that this function returns None for certain callbacks, the caller of this 
-        function should handle this case.
+    .. note::
+
+        It is possible that this function returns None for certain callbacks,
+        the caller of this function should handle this case.
         
     """
     #call the custom uri cm func, if provided, for every loaded cube
@@ -196,10 +197,13 @@ def decode_uri(uri, default='file'):
 
 def load_files(filenames, callback):
     """
-    Takes a list of filenames which may also be globs, and optionally a callback function, and returns a generator of Cubes from the given files.
+    Takes a list of filenames which may also be globs, and optionally a
+    callback function, and returns a generator of Cubes from the given files.
     
-    .. note:: 
-        Typically, this function should not be called directly; instead, the intended interface for loading is :func:`iris.load`.
+    .. note::
+
+        Typically, this function should not be called directly; instead, the
+        intended interface for loading is :func:`iris.load`.
     
     """
     # Remove any hostname component - currently unused

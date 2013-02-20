@@ -18,6 +18,7 @@
 A package for handling multi-dimensional data and associated metadata.
 
 .. note ::
+
     The Iris documentation has further usage information, including
     a :ref:`user guide <user_guide_index>` which should be the first port of
     call for new users.

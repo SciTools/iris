@@ -216,6 +216,7 @@ def load_cubes(filenames, callback=None):
                  :func:`iris.io.run_callback`
 
     .. note::
+
         The resultant cubes may not be in the same order as in the files.
 
     """

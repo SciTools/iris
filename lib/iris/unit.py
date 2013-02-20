@@ -674,6 +674,7 @@ def as_unit(unit):
     Returns a Unit corresponding to the given unit.
 
     .. note::
+
         If the given unit is already a Unit it will be returned unchanged.
 
     """
@@ -1301,6 +1302,7 @@ class Unit(iris.util._OrderedHashable):
             Unit('meter')
 
         .. note::
+
             Taking a fractional root of a unit is not supported.
 
         """
@@ -1679,8 +1681,9 @@ class Unit(iris.util._OrderedHashable):
                     46.40000153,  48.20000076], dtype=float32)
 
         .. note::
-            Conversion is done *in-place* for numpy arrays. Also note that, conversion between
-            unit calendars is not permitted.
+
+            Conversion is done *in-place* for numpy arrays. Also note that,
+            conversion between unit calendars is not permitted.
 
         """
         result = None
