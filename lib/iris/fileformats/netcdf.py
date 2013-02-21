@@ -61,12 +61,12 @@ SPATIO_TEMPORAL_AXES = ['t', 'z', 'y', 'x']
 
 # Pass through CF attributes:
 #  - comment
-#  - Conventions
-#  - history
+#  - Conventions (pyke rules filter out global attr)
+#  - history (pyke rules filter out global attr)
 #  - institution
-#  - reference
+#  - references
 #  - source
-#  - title
+#  - title (pyke rules filter out global attr)
 #
 _CF_ATTRS = ['add_offset', 'ancillary_variables', 'axis', 'bounds', 'calendar',
             'cell_measures', 'cell_methods', 'climatology', 'compress',
@@ -80,7 +80,7 @@ _CF_CONVENTIONS_VERSION = 'CF-1.5'
 
 
 _FactoryDefn = collections.namedtuple('_FactoryDefn', ('primary', 'std_name',
-                                                     'formula_terms_format'))
+                                                       'formula_terms_format'))
 _FACTORY_DEFNS = {
     iris.aux_factory.HybridHeightFactory: _FactoryDefn(
         primary='delta',
@@ -237,10 +237,6 @@ def _load_cube(engine, cf, cf_var, filename):
 
     # Reset the pyke inference engine.
     engine.reset()
-
-    # Remove conventions attribute so that it does not enter cube.
-    if 'Conventions' in cf_var.cf_group.global_attributes:
-        del cf_var.cf_group.global_attributes['Conventions']
 
     # Initialise pyke engine rule processing hooks.
     engine.cf_var = cf_var
