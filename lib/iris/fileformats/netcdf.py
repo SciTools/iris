@@ -78,7 +78,6 @@ _CF_ATTRS = ['add_offset', 'ancillary_variables', 'axis', 'bounds', 'calendar',
 
 _CF_CONVENTIONS_VERSION = 'CF-1.5'
 
-
 _FactoryDefn = collections.namedtuple('_FactoryDefn', ('primary', 'std_name',
                                                      'formula_terms_format'))
 _FACTORY_DEFNS = {
@@ -662,7 +661,7 @@ def _create_cf_data_variable(dataset, cube, dimension_names):
     # Create the cube CF-netCDF data variable with data payload.
     cf_var = dataset.createVariable(cf_name, cube.data.dtype, dimension_names, fill_value=fill_value)
     cf_var[:] = cube.data
-    
+
     if cube.standard_name:
     	cf_var.standard_name = cube.standard_name
 
@@ -731,6 +730,14 @@ def save(cube, filename, netcdf_format='NETCDF4'):
     if len(cube.aux_factories) > 1:
         raise ValueError('Multiple auxiliary factories are not supported.')
 
+    cf_profile_available = 'cf_profile' in iris.site_configuration and \
+        iris.site_configuration['cf_profile'] not in [None, False]
+
+    if cf_profile_available:
+        # Perform a CF profile of the cube. This may result in an exception
+        # being raised if mandatory requirements are not satisfied.
+        patch = iris.site_configuration['cf_profile'](cube)
+
     dataset = netCDF4.Dataset(filename, mode='w', format=netcdf_format)
     
     # Create the CF-netCDF data dimension names.
@@ -782,6 +789,10 @@ def save(cube, filename, netcdf_format='NETCDF4'):
     # Add CF-netCDF auxiliary coordinate variable references to the CF-netCDF data variable.
     if auxiliary_coordinate_names:
         cf_var_cube.coordinates = ' '.join(sorted(auxiliary_coordinate_names))
+
+    if cf_profile_available:
+        # Perform a CF patch of the dataset.
+        iris.site_configuration['cf_patch'](patch, dataset, cf_var_cube)
 
     # Flush any buffered data to the CF-netCDF file before closing.
     dataset.sync()

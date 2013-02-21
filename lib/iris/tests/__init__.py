@@ -58,7 +58,6 @@ import iris.util
 _RESULT_PATH = os.path.join(os.path.dirname(__file__), 'results')
 """Basepath for test results."""
 
-
 if '--data-files-used' in sys.argv:
     sys.argv.remove('--data-files-used')
     fname = '/var/tmp/all_iris_test_resource_paths.txt'
@@ -69,7 +68,6 @@ else:
     
 # A shared logger for use by unit tests
 logger = logging.getLogger('tests')
-
 
 # Whether to display matplotlib output to the screen.
 _DISPLAY_FIGURES = False
@@ -128,6 +126,11 @@ class IrisTest(unittest.TestCase):
     """A subclass of unittest.TestCase which provides Iris specific testing functionality."""
 
     _assertion_counts = collections.defaultdict(int)
+
+    @classmethod
+    def setUpClass(cls):
+        # Ensure that the CF profile if turned-off for testing.
+        iris.site_configuration['cf_profile'] = None
 
     def _assert_str_same(self, reference_str, test_str, reference_filename, type_comparison_name='Strings'):
         if reference_str != test_str:
