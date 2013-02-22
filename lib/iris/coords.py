@@ -442,7 +442,7 @@ class Coord(CFVariableMixin):
         return repr(self.units.num2date(dates_as_numbers))[6:-15]
 
     def __str__(self):
-        if self.units.time_reference:
+        if self.units.is_time_reference():
             fmt = '{cls}({points}{bounds}' \
                   ', standard_name={self.standard_name!r}' \
                   ', calendar={self.units.calendar!r}{other_metadata})'
@@ -598,7 +598,7 @@ class Coord(CFVariableMixin):
         """
         # If the coord has units convert the values in points (and bounds if
         # present).
-        if not self.units.unknown:
+        if not self.units.is_unknown():
             self.points = self.units.convert(self.points, unit)
             if self.bounds is not None:
                 self.bounds = self.units.convert(self.bounds, unit)
