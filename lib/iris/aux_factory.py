@@ -441,7 +441,7 @@ class HybridHeightFactory(AuxCoordFactory):
             raise ValueError('Incompatible units: delta and orography must have'
                              ' the same units.')
         self.units = (delta and delta.units) or orography.units
-        if not self.units.convertible('m'):
+        if not self.units.is_convertible('m'):
             raise ValueError('Invalid units: delta and/or orography'
                              ' must be expressed in length units.')
         self.attributes = {'positive': 'up'}
@@ -600,7 +600,7 @@ class HybridPressureFactory(AuxCoordFactory):
             raise ValueError('Incompatible units: delta and surface_pressure'
                              ' must have the same units.')
         self.units = (delta and delta.units) or surface_pressure.units
-        if not self.units.convertible('Pa'):
+        if not self.units.is_convertible('Pa'):
             raise ValueError('Invalid units: delta and/or surface_pressure'
                              ' must be expressed in pressure units.')
         self.attributes = {}

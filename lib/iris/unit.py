@@ -29,6 +29,7 @@ from __future__ import division
 import copy
 import ctypes
 import ctypes.util
+import warnings
 
 import netcdftime
 import numpy as np
@@ -899,7 +900,7 @@ class Unit(iris.util._OrderedHashable):
             False
 
         """
-        if self.unknown or self.no_unit:
+        if self.is_unknown() or self.is_no_unit():
             result = False
         else:
             result = _ut_are_convertible(self.ut_unit, _ut_get_unit_by_name(_ud_system, 'day')) != 0
@@ -923,7 +924,7 @@ class Unit(iris.util._OrderedHashable):
             True
 
         """
-        if self.unknown or self.no_unit:
+        if self.is_unknown() or self.is_no_unit():
             result = False
         else:
             result = _ut_are_convertible(self.ut_unit, _ut_get_unit_by_name(_ud_system, 'bar')) != 0 or \
@@ -934,10 +935,9 @@ class Unit(iris.util._OrderedHashable):
         """Return whether the unit is a vaild unit of UDUNITS."""
         return self.ut_unit is not None
 
-    @property
-    def time_reference(self):
+    def is_time_reference(self):
         """
-        *(read-only)* Return whether the unit is a time reference unit of the form
+        Return whether the unit is a time reference unit of the form
         '<time-unit> since <time-origin>' i.e. unit='days since 1970-01-01 00:00:00'
 
         Returns:
@@ -947,11 +947,22 @@ class Unit(iris.util._OrderedHashable):
 
             >>> import iris.unit as unit
             >>> u = unit.Unit('days since epoch')
-            >>> u.time_reference
+            >>> u.is_time_reference()
             True
 
         """
         return self.calendar is not None
+
+    @property
+    def time_reference(self):
+        """
+        .. deprecated:: 1.3
+            Please use the :meth:`~iris.unit.Unit.is_time_reference` method instead.
+        """
+        msg = "The 'time_reference' property is deprecated. "\
+              "Please use the 'is_time_reference' method instead."
+        warnings.warn(msg, UserWarning, stacklevel=2)
+        return self.is_time_reference()
 
     def title(self, value):
         """
@@ -972,7 +983,7 @@ class Unit(iris.util._OrderedHashable):
             '1970-01-01 10:00:00'
 
         """
-        if self.time_reference:
+        if self.is_time_reference():
             dt = self.num2date(value)
             result = dt.strftime('%Y-%m-%d %H:%M:%S')
         else:
@@ -1009,7 +1020,7 @@ class Unit(iris.util._OrderedHashable):
             result = None
         return result
 
-    def convertible(self, other):
+    def is_convertible(self, other):
         """
         Return whether two units are convertible.
 
@@ -1025,21 +1036,31 @@ class Unit(iris.util._OrderedHashable):
             >>> import iris.unit as unit
             >>> u = unit.Unit('meters')
             >>> v = unit.Unit('kilometers')
-            >>> u.convertible(v)
+            >>> u.is_convertible(v)
             True
 
         """
         other = as_unit(other)
-        if self.unknown or self.no_unit or other.unknown or other.no_unit:
+        if self.is_unknown() or self.is_no_unit() or other.is_unknown() or \
+            other.is_no_unit():
             result = False
         else:
             result = self.calendar == other.calendar and _ut_are_convertible(self.ut_unit, other.ut_unit) != 0
         return result
 
-    @property
-    def dimensionless(self):
+    def convertible(self, other):
         """
-        *(read-only)* Return whether the unit is dimensionless.
+        .. deprecated:: 1.3
+            Please use the :meth:`~iris.unit.Unit.is_convertible` method instead.
+        """
+        msg = "The 'convertible' method is deprecated. "\
+              "Please use the 'is_convertible' method instead."
+        warnings.warn(msg, UserWarning, stacklevel=2)
+        return self.is_convertible(other)
+
+    def is_dimensionless(self):
+        """
+        Return whether the unit is dimensionless.
 
         Returns:
             Boolean.
@@ -1048,19 +1069,29 @@ class Unit(iris.util._OrderedHashable):
 
             >>> import iris.unit as unit
             >>> u = unit.Unit('meters')
-            >>> u.dimensionless
+            >>> u.is_dimensionless()
             False
             >>> u = unit.Unit('1')
-            >>> u.dimensionless
+            >>> u.is_dimensionless()
             True
 
         """
         return self.category == _CATEGORY_UDUNIT and bool(_ut_is_dimensionless(self.ut_unit))
 
     @property
-    def unknown(self):
+    def dimensionless(self):
         """
-        *(read-only)* Return whether the unit is defined to be an *unknown* unit.
+        .. deprecated:: 1.3
+            Please use the :meth:`~iris.unit.Unit.is_dimensionless` method instead.
+        """
+        msg = "The 'dimensionless' property is deprecated. "\
+              "Please use the 'is_dimensionless' method instead."
+        warnings.warn(msg, UserWarning, stacklevel=2)
+        return self.is_dimensionless()
+
+    def is_unknown(self):
+        """
+        Return whether the unit is defined to be an *unknown* unit.
 
         Returns:
             Boolean.
@@ -1069,19 +1100,29 @@ class Unit(iris.util._OrderedHashable):
 
             >>> import iris.unit as unit
             >>> u = unit.Unit('unknown')
-            >>> u.unknown
+            >>> u.is_unknown()
             True
             >>> u = unit.Unit('meters')
-            >>> u.unknown
+            >>> u.is_unknown()
             False
 
         """
         return self.category == _CATEGORY_UNKNOWN
 
     @property
-    def no_unit(self):
+    def unknown(self):
         """
-        *(read-only)* Return whether the unit is defined to be a *no_unit* unit.
+        .. deprecated:: 1.3
+            Please use the :meth:`~iris.unit.Unit.is_unknown` method instead.
+        """
+        msg = "The 'unknown' property is deprecated. "\
+              "Please use the 'is_unknown' method instead."
+        warnings.warn(msg, UserWarning, stacklevel=2)
+        return self.is_unknown()
+
+    def is_no_unit(self):
+        """
+        Return whether the unit is defined to be a *no_unit* unit.
 
         Typically, a quantity such as a string, will have no associated unit to describe it. Such
         a class of quantity may be defined using the *no_unit* unit.
@@ -1093,14 +1134,25 @@ class Unit(iris.util._OrderedHashable):
 
             >>> import iris.unit as unit
             >>> u = unit.Unit('no unit')
-            >>> u.no_unit
+            >>> u.is_no_unit()
             True
             >>> u = unit.Unit('meters')
-            >>> u.no_unit
+            >>> u.is_no_unit()
             False
 
         """
         return self.category == _CATEGORY_NO_UNIT
+
+    @property
+    def no_unit(self):
+        """
+        .. deprecated:: 1.3
+            Please use the :meth:`~iris.unit.Unit.is_no_unit` method instead.
+        """
+        msg = "The 'no_unit' property is deprecated. "\
+              "Please use the 'is_no_unit' method instead."
+        warnings.warn(msg, UserWarning, stacklevel=2)
+        return self.is_no_unit()
 
     def format(self, option=None):
         """
@@ -1136,9 +1188,9 @@ class Unit(iris.util._OrderedHashable):
             'm'
 
         """
-        if self.unknown:
+        if self.is_unknown():
             return _UNKNOWN_UNIT_STRING
-        elif self.no_unit:
+        elif self.is_no_unit():
             return _NO_UNIT_STRING
         else:
             bitmask = UT_ASCII
@@ -1192,9 +1244,9 @@ class Unit(iris.util._OrderedHashable):
             'W'
 
         """
-        if self.unknown:
+        if self.is_unknown():
             result = _UNKNOWN_UNIT_SYMBOL
-        elif self.no_unit:
+        elif self.is_no_unit():
             result = _NO_UNIT_SYMBOL
         else:
             result = self.format()
@@ -1219,9 +1271,9 @@ class Unit(iris.util._OrderedHashable):
             'm2.kg.s-3'
 
         """
-        if self.unknown:
+        if self.is_unknown():
             result = _UNKNOWN_UNIT_SYMBOL
-        elif self.no_unit:
+        elif self.is_no_unit():
             result = _NO_UNIT_SYMBOL
         else:
             result = self.format(UT_DEFINITION)
@@ -1270,9 +1322,9 @@ class Unit(iris.util._OrderedHashable):
             Unit('meter^-1')
 
         """
-        if self.unknown:
+        if self.is_unknown():
             result = self
-        elif self.no_unit:
+        elif self.is_no_unit():
             raise ValueError("Cannot invert a 'no-unit'.")
         else:
             ut_unit = _ut_invert(self.ut_unit)
@@ -1309,9 +1361,9 @@ class Unit(iris.util._OrderedHashable):
         except TypeError:
             raise TypeError('An int or long type for the root argument is required')
 
-        if self.unknown:
+        if self.is_unknown():
             result = self
-        elif self.no_unit:
+        elif self.is_no_unit():
             raise ValueError("Cannot take the logarithm of a 'no-unit'.")
         else:
             # only update the unit if it is not scalar
@@ -1349,9 +1401,9 @@ class Unit(iris.util._OrderedHashable):
         except TypeError:
             raise TypeError('A numeric type for the base argument is required')
 
-        if self.unknown:
+        if self.is_unknown():
             result = self
-        elif self.no_unit:
+        elif self.is_no_unit():
             raise ValueError("Cannot take the logarithm of a 'no-unit'.")
         else:
             ut_unit = _ut_log(base, self.ut_unit)
@@ -1406,9 +1458,9 @@ class Unit(iris.util._OrderedHashable):
         except TypeError:
             result = NotImplemented
         else:
-            if self.unknown:
+            if self.is_unknown():
                 result = self
-            elif self.no_unit:
+            elif self.is_no_unit():
                 raise ValueError("Cannot offset a 'no-unit'.")
             else:
                 ut_unit = _ut_offset(self.ut_unit, offset)
@@ -1438,10 +1490,10 @@ class Unit(iris.util._OrderedHashable):
 
         other = as_unit(other)
 
-        if self.no_unit or other.no_unit:
+        if self.is_no_unit() or other.is_no_unit():
             raise ValueError("Cannot %s a 'no-unit'." % op_label)
 
-        if self.unknown or other.unknown:
+        if self.is_unknown() or other.is_unknown():
             result = _Unit(_CATEGORY_UNKNOWN, None)
         else:
             ut_unit = op_func(self.ut_unit, other.ut_unit)
@@ -1559,9 +1611,9 @@ class Unit(iris.util._OrderedHashable):
         except ValueError:
             raise TypeError('A numeric value is required for the power argument.')
 
-        if self.unknown:
+        if self.is_unknown():
             result = self
-        elif self.no_unit:
+        elif self.is_no_unit():
             raise ValueError("Cannot raise the power of a 'no-unit'.")
         elif self == Unit('1'):
             # 1 ** N -> 1
@@ -1691,7 +1743,7 @@ class Unit(iris.util._OrderedHashable):
         if self == other:
             return value
 
-        if self.convertible(other):
+        if self.is_convertible(other):
             ut_converter = _ut_get_converter(self.ut_unit, other.ut_unit)
             if ut_converter:
                 if isinstance(value_copy, (int, float, long)):
