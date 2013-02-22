@@ -279,30 +279,34 @@ def find_saver(filespec):
         fmt = "Multiple savers found for %r: %s"
         matches = ', '.join(map(repr, matches))
         raise ValueError(fmt % (filespec, matches))
-    return _savers[matches[0]] if matches else None 
+    return _savers[matches[0]] if matches else None
 
 
 def save(source, target, saver=None, **kwargs):
     """
     Save one or more Cubes to file (or other writable).
-    
+
     A custom saver can be provided, or Iris can select one based on filename.
 
     Args:
 
-        * source    - A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or sequence of cubes.
+        * source    - A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or
+                      sequence of cubes.
         * target    - A filename (or writable, depending on file format).
-                      When given a filename or file, Iris can determine the file format.
+                      When given a filename or file, Iris can determine the
+                      file format.
 
     Kwargs:
 
         * saver     - Optional. Specifies the save function to use.
                       If omitted, Iris will attempt to determine the format.
-    
-                      This keyword can be used to implement a custom save format (see below).
-                      Function form must be: ``my_saver(cube, target)`` plus any custom keywords.
-                      It is assumed that a saver will accept an ``append`` keyword if it's file format
-                      can handle multiple cubes. See also :func:`iris.io.add_saver`.
+
+                      This keyword can be used to implement a custom save
+                      format (see below). Function form must be:
+                      ``my_saver(cube, target)`` plus any custom keywords. It
+                      is assumed that a saver will accept an ``append`` keyword
+                      if it's file format can handle multiple cubes. See also
+                      :func:`iris.io.add_saver`.
 
     All other keywords are passed through to the saver function.
 
@@ -312,20 +316,21 @@ def save(source, target, saver=None, **kwargs):
         iris.io.save(my_cube, "myfile.pp")
         iris.io.save(my_cube_list, "myfile.pp", append=True)
 
-        # Save a cube to a custom file format and provide a format-specific argument.
+        # Save cube to custom file format and provide format-specific argument.
         # The walk keyword is passed through to my_spam_format.save.
         import my_spam_format
-        iris.io.save(my_cube, "my_file.spam", saver=my_spam_format.save, walk="silly")
+        iris.io.save(my_cube, "my_file.spam",
+                     saver=my_spam_format.save, walk="silly")
 
         # Add a custom file format to the Iris session and save a cube list.
         # When saving a cube list, Iris passes an append keyword to the saver.
-        iris.io.add_saver(".spam", my_spam_format.save)            
+        iris.io.add_saver(".spam", my_spam_format.save)
         iris.io.save(my_cube_list, "myfile.spam", walk="silly")
 
         # Get help on the PP saver, for example to see it's accepted keywords.
         help(iris.io.find_saver("pp"))
-        
-        # Create and display a PNG image of a DOT graph representation of a cube.
+
+        # Create and display PNG image of a DOT graph representation of a cube.
         iris.io.save(my_cube, "my_file.dotpng", launch=True)
 
         # Save a cube to netCDF, defaults to NETCDF4 file format
@@ -334,7 +339,7 @@ def save(source, target, saver=None, **kwargs):
         # Save a cube to netCDF using NETCDF3 file format
         iris.io.save(my_cube, "myfile.nc", netcdf_format="NETCDF3_CLASSIC")
 
-    """ 
+    """
     # Determine format from filename
     if isinstance(target, basestring) and saver is None:
         saver = find_saver(target)
@@ -344,11 +349,11 @@ def save(source, target, saver=None, **kwargs):
         saver = find_saver(saver)
     if saver is None:
         raise ValueError("Cannot save; no saver")
-    
+
     # Single cube?
     if isinstance(source, iris.cube.Cube):
         saver(source, target, **kwargs)
-        
+
     # CubeList or sequence of cubes?
     elif isinstance(source, iris.cube.CubeList) or \
        (isinstance(source, (list,tuple)) and all([type(i)==iris.cube.Cube for i in source])):
@@ -364,6 +369,3 @@ def save(source, target, saver=None, **kwargs):
             saver(cube, target, **kwargs)
     else:
         raise ValueError("Cannot save; non Cube found in source")
-
-
-
