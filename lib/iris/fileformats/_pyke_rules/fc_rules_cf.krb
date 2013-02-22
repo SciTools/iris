@@ -629,7 +629,12 @@ fc_extras
     CF_ATTR_LONG_NAME = 'long_name'
     CF_ATTR_UNITS = 'units'
     CF_ATTR_CELL_METHODS = 'cell_methods'
-    
+
+    #
+    # CF Ignore Global.
+    #
+    CF_ATTR_IGNORE = ['history', 'title', 'conventions']
+
     #
     # CF Attribute Value Constants.
     #
@@ -704,13 +709,14 @@ fc_extras
 
         # Set the cube global attributes. 
         for attr_name, attr_value in cf_var.cf_group.global_attributes.iteritems():
-            if isinstance(attr_value, unicode):
-                try:
-                    cube.attributes[str(attr_name)] = str(attr_value)
-                except UnicodeEncodeError:
+            if attr_name.lower() not in CF_ATTR_IGNORE:
+                if isinstance(attr_value, unicode):
+                    try:
+                        cube.attributes[str(attr_name)] = str(attr_value)
+                    except UnicodeEncodeError:
+                        cube.attributes[str(attr_name)] = attr_value
+                else:
                     cube.attributes[str(attr_name)] = attr_value
-            else:
-                cube.attributes[str(attr_name)] = attr_value
 
 
     ################################################################################
