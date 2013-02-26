@@ -94,9 +94,11 @@ class Cell(iris.util._OrderedHashable):
     relative comparisons (lt, le, ..) are defined to be consistent with
     this interpretation. So for a given value `n` and Cell `cell`, only
     one of the following can be true:
-        n < cell
-        n == cell
-        n > cell
+
+    |    n < cell
+    |    n == cell
+    |    n > cell
+
     Similarly, `n <= cell` implies either `n < cell` or `n == cell`.
     And `n >= cell` implies either `n > cell` or `n == cell`.
 
@@ -343,7 +345,8 @@ class Coord(CFVariableMixin):
         """
         Returns a new Coord whose values are obtained by conventional array indexing.
 
-        .. note:: 
+        .. note::
+
             Indexing of a circular coordinate results in a non-circular
             coordinate if the overall shape of the coordinate changes after
             indexing.
@@ -507,10 +510,15 @@ class Coord(CFVariableMixin):
 
         Mode constant is one of ADD, SUB, MUL, DIV, RDIV
 
-        .. note:: The unit is *not* changed when doing scalar operations on a coordinate. This means that
-                  a coordinate which represents "10 meters" when multiplied by a scalar i.e. "1000" would result
-                  in a coordinate of "10000 meters". An alternative approach could be taken to multiply the *unit*
-                  by 1000 and the resultant coordinate would represent "10 kilometers".
+        .. note::
+
+            The unit is *not* changed when doing scalar operations on a
+            coordinate. This means that a coordinate which represents
+            "10 meters" when multiplied by a scalar i.e. "1000" would result
+            in a coordinate of "10000 meters". An alternative approach could
+            be taken to multiply the *unit* by 1000 and the resultant
+            coordinate would represent "10 kilometers".
+
         """
         if isinstance(other, Coord):
             raise iris.exceptions.NotYetImplementedError('coord %s coord' % Coord._MODE_SYMBOL[mode_constant])
@@ -662,6 +670,7 @@ class Coord(CFVariableMixin):
         of length N.
 
         .. note::
+
             If the coordinate is does not have bounds, this method will
             return bounds positioned halfway between the coordinate's points.
 
@@ -852,6 +861,7 @@ class Coord(CFVariableMixin):
             A numpy array of shape (len(self.points), 2).
 
         .. note::
+
             This method only works for coordinates with ``coord.ndim == 1``.
         
         """
@@ -943,7 +953,7 @@ class Coord(CFVariableMixin):
 
         .. note:: If the coordinate contain bounds, these will be used to determine
             the nearest neighbour instead of the point values.
-            
+
         .. note:: Does not take into account the circular attribute of a coordinate.
 
         """
@@ -1259,7 +1269,7 @@ class AuxCoord(Coord):
         """
         Property containing the bound values, as a numpy array, 
         or None if no bound values are defined.
-        
+
         .. note:: The shape of the bound array should be: ``points.shape + (n_bounds, )``. 
 
         """

@@ -183,6 +183,7 @@ def load_cubes(filespecs, callback=None):
     * callback - a function that can be passed to :func:`iris.io.run_callback`
 
     .. note::
+
         The resultant cubes may not be in the same order as in the file.
 
     """

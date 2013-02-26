@@ -133,7 +133,7 @@ def cube_delta(cube, coord, update_history=True):
     
         change_in_temperature_wrt_pressure = cube_delta(temperature_cube, 'pressure')
     
-    .. Note:: Missing data support not yet implemented.
+    .. note:: Missing data support not yet implemented.
     
     """
     # handle the case where a user passes a coordinate name

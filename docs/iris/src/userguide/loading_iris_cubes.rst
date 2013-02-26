@@ -48,12 +48,14 @@ The ``air_potential_temperature`` cubes were 4 dimensional with:
    * a ``model_level_number`` dimension of length 7
 
 .. note::
+
      The result of :func:`iris.load` is **always** a 
      :class:`list of cubes <iris.cube.CubeList>`. 
      Anything that can be done with a Python :class:`list` can be done 
      with the resultant list of cubes.
 
 .. hint::
+
     Throughout this user guide you will see the function 
     ``iris.sample_data_path`` being used to get the filename for the resources 
     used in the examples. The result of this function is just a string.
@@ -101,6 +103,7 @@ on the coordinates which constitute the cube in question.
 This was the output discussed at the end of the :doc:`iris_cubes` section.
 
 .. note::
+
      Dimensioned coordinates will have a dimension marker ``x`` in the 
      appropriate column for each cube data dimension that they describe. 
 
@@ -189,6 +192,7 @@ this can be achieved by passing the constraint a function::
     cubes = iris.load(filename, level_lt_16)
      
 .. note::
+
     As with many of the examples later in this documentation, the 
     simple function above can be conveniently written as a lambda function 
     on a single line::

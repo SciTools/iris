@@ -16,6 +16,7 @@ intended. This example could be rectified by changing the units attribute::
    cube.units = 'celsius'
 
 .. note::
+
     :meth:`iris.cube.Cube.convert_units` can be used to automatically convert a
     cube's data and update its units attribute.
     So, the two steps above can be achieved by::
@@ -64,6 +65,7 @@ but with the data representing their difference:
 
 
 .. note::
+
     Notice that the coordinates "time" and "forecast_period" have been removed 
     from the resultant cube; 
     this is because these coordinates differed between the two input cubes. 
@@ -118,10 +120,12 @@ The result could now be plotted using the guidance provided in the
 :doc:`plotting_a_cube` section.
 
 .. htmlonly::
+
     A very similar example to this can be found in 
     :doc:`/examples/graphics/deriving_phenomena`.
 
 .. latexonly::
+
     A very similar example to this can be found in the examples section, 
     with the title "Deriving Exner Pressure and Air Temperature".
 
