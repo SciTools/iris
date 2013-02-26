@@ -1121,9 +1121,9 @@ class Cube(CFVariableMixin):
 
     def summary(self, shorten=False, name_padding=35):
         """
-        String summary of the Cube with name, a list of dim coord names versus length 
-        and optionally relevant coordinate information.
-        
+        Unicode string summary of the Cube with name, a list of dim coord names
+        versus length and optionally relevant coordinate information.
+
         """
         # Create a set to contain the axis names for each data dimension.
         dim_names = [set() for dim in xrange(len(self.shape))]
@@ -1318,15 +1318,20 @@ class Cube(CFVariableMixin):
             # Generate summary of cube attributes.
             #
             if self.attributes:
-                attribute_summary = []
+                attribute_lines = []
                 for name, value in sorted(self.attributes.iteritems()):
+                    value = unicode(value)
                     if name == 'history':
-                        value = re.sub("[\d\/]{8} [\d\:]{8} Iris\: ", '', str(value))
-                    else:
-                        value = str(value)
-                    attribute_summary.append('%*s%s: %s' % (indent, ' ', name, iris.util.clip_string(value)))
-                summary += '\n     Attributes:\n' + '\n'.join(attribute_summary)
-        
+                        value = re.sub("[\d\/]{8} [\d\:]{8} Iris\: ", '',
+                                       value)
+                    value = iris.util.clip_string(value)
+                    line = u'{pad:{width}}{name}: {value}'.format(pad=' ',
+                                                                  width=indent,
+                                                                  name=name,
+                                                                  value=value)
+                    attribute_lines.append(line)
+                summary += '\n     Attributes:\n' + '\n'.join(attribute_lines)
+
             #
             # Generate summary of cube cell methods
             #
@@ -1349,6 +1354,9 @@ class Cube(CFVariableMixin):
         warnings.warn('Cube.assert_valid() has been deprecated.')
 
     def __str__(self):
+        return self.summary().encode(errors='replace')
+
+    def __unicode__(self):
         return self.summary()
 
     def __repr__(self):
