@@ -3,7 +3,7 @@
    lbmon: 9
    lbdat: 9
    lbhr: 17
-   lbmin: 0
+   lbmin: 30
    lbsec: 0
    lbyrd: 2009
    lbmond: 9
@@ -89,7 +89,7 @@
    lbmon: 9
    lbdat: 9
    lbhr: 17
-   lbmin: 0
+   lbmin: 30
    lbsec: 0
    lbyrd: 2009
    lbmond: 9
@@ -175,7 +175,7 @@
    lbmon: 9
    lbdat: 9
    lbhr: 17
-   lbmin: 0
+   lbmin: 40
    lbsec: 0
    lbyrd: 2009
    lbmond: 9
@@ -261,7 +261,7 @@
    lbmon: 9
    lbdat: 9
    lbhr: 17
-   lbmin: 0
+   lbmin: 40
    lbsec: 0
    lbyrd: 2009
    lbmond: 9

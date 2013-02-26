@@ -1238,6 +1238,7 @@ class PPField2(PPField):
         self.lbmon = dt.month
         self.lbdat = dt.day
         self.lbhr = dt.hour
+        self.lbmin = dt.minute
         self.lbday = int(dt.strftime('%j'))
         if hasattr(self, '_t1'):
             delattr(self, '_t1')
@@ -1282,6 +1283,7 @@ class PPField3(PPField):
         self.lbmon = dt.month
         self.lbdat = dt.day
         self.lbhr = dt.hour
+        self.lbmin = dt.minute
         self.lbsec = dt.second
         if hasattr(self, '_t1'):
             delattr(self, '_t1')
@@ -1609,7 +1611,7 @@ def save(cube, target, append=False, field_coords=None):
         # raise an IndexError)
         # NB watch out for the ordering of the dimensions
         field_coords = (cube.coords(dimensions=n_dims-2)[0], cube.coords(dimensions=n_dims-1)[0])
-        
+
     # Save each named or latlon slice2D in the cube
     for slice2D in cube.slices(field_coords):
         # Start with a blank PPField
