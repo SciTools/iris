@@ -911,11 +911,12 @@ class Cube(CFVariableMixin):
               coord_system=None, dim_coords=None):
         """
         Return a single coord given the same arguments as :meth:`Cube.coords`.
-        
+
         .. note::
+
             If the arguments given do not result in precisely 1 coordinate being matched,
             an :class:`iris.exceptions.CoordinateNotFoundError` is raised.
-            
+
         .. seealso:: :meth:`Cube.coords()<iris.cube.Cube.coords>` for full keyword documentation.
 
         """
@@ -999,6 +1000,7 @@ class Cube(CFVariableMixin):
         The :class:`numpy.ndarray` representing the multi-dimensional data of the cube.
         
         .. note::
+
             Cubes obtained from netCDF, PP, and FieldsFile files will only populate this attribute on
             its first use.
 
@@ -1190,11 +1192,13 @@ class Cube(CFVariableMixin):
             #
             def vector_summary(vector_coords, cube_header, max_line_offset):
                 """
-                Generates a list of suitably aligned strings containing coord names 
-                and dimensions indicated by one or more 'x' symbols.
+                Generates a list of suitably aligned strings containing coord
+                names and dimensions indicated by one or more 'x' symbols.
 
-                .. note:: 
-                    The function may need to update the cube header so this is returned with the list of strings. 
+                .. note::
+
+                    The function may need to update the cube header so this is
+                    returned with the list of strings.
                 
                 """
                 vector_summary = []
@@ -1937,6 +1941,7 @@ class Cube(CFVariableMixin):
 
 
         .. note::
+
             Some aggregations are not commutative and hence the order of processing is important i.e.::
             
                 cube.collapsed('realization', iris.analysis.VARIANCE).collapsed('height', iris.analysis.VARIANCE)

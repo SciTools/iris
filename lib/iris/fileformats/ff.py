@@ -342,7 +342,8 @@ def load_cubes(filenames, callback):
     
     * callback - a function which can be passed on to :func:`iris.io.run_callback`
     
-    .. note:: 
+    .. note::
+
         The resultant cubes may not be in the order that they are in the file (order 
         is not preserved when there is a field with orography references).
          

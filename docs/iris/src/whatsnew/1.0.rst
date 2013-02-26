@@ -131,7 +131,9 @@ interface:
             ax.coastlines()
             plt.show()
 
-.. note:: The ``iris.plot.gcm`` function to get the current map is now
+.. note::
+
+    The ``iris.plot.gcm`` function to get the current map is now
     redundant; instead the current map *is* the current matplotlib axes,
     and :func:`matplotlib.pyplot.gca` should be used instead.
 
@@ -235,7 +237,9 @@ Where previously it would have appeared as::
               source: Data from Met Office Unified Model
          ...
 
-.. note:: This change breaks backwards compatibility with Iris 0.9. But
+.. note::
+
+    This change breaks backwards compatibility with Iris 0.9. But
     if it is desirable to have the "source" metadata expressed as a
     coordinate then it can be done with the following pattern::
 

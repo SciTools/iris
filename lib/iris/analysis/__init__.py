@@ -599,8 +599,9 @@ For example, to compute the 90th percentile over time::
     result = cube.collapsed('time', iris.analysis.PERCENTILE, percent=90)
 
 .. note::
-    The default values of ``alphap`` and ``betap`` are both 1. For detailed meanings on
-    these values see :func:`scipy.stats.mstats.mquantiles`.
+
+    The default values of ``alphap`` and ``betap`` are both 1. For detailed
+    meanings on these values see :func:`scipy.stats.mstats.mquantiles`.
 
 """
 

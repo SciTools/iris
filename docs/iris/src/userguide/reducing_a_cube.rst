@@ -25,7 +25,8 @@ In this example we start with a 3 dimensional cube, with dimensions of ``height`
 and extract every point where the latitude is 0, resulting in a 2d cube with axes of ``height`` and ``longitude``.
 
 
-.. warning:: 
+.. warning::
+
     Caution is required when using equality constraints with floating point coordinates such as ``latitude``. 
     Printing the points of a coordinate does not necessarily show the full precision of the underlying number and it 
     is very easy return no matches to a constraint when one was expected.
@@ -83,7 +84,8 @@ which make up the full 3d cube.::
 As the original cube had the shape (15, 100, 100) there were 15 latitude longitude slices and hence the
 line ``print repr(yx_slice)`` was run 15 times.
 
-.. note:: 
+.. note::
+
 	The order of latitude and longitude in the list is important; had they been swapped the resultant cube slices 
 	would have been transposed.
 

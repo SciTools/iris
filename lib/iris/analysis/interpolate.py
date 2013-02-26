@@ -558,6 +558,7 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
     (bi-linear, tri-linear, etc.).
     
     .. note::
+
         By definition, linear interpolation requires all coordinates to
         be 1-dimensional.
     
@@ -582,6 +583,7 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
           attempted extrapolation.
     
     .. note::
+
         If the source cube's data, or any of its resampled coordinates,
         have an integer data type they will be promoted to a floating
         point data type in the result.

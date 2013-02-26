@@ -169,6 +169,7 @@ to represent the climatological seasons and the season year respectively::
 
 
 .. note::
+
     The 'season year' is not the same as year number, because (e.g.) the months 
     Dec11, Jan12 + Feb12 all belong to 'DJF-12'.  
     See :meth:`iris.coord_categorisation.add_season_year`.

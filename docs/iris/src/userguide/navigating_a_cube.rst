@@ -77,7 +77,8 @@ Each cube also has a :mod:`numpy` array which represents the phenomenon of the c
 
     print type(cube.data)
 
-.. note:: 
+.. note::
+
     When loading some file formats in Iris, the data itself is not loaded until the **first** time that the data is requested. 
     Hence you may have noticed that running the previous command for the first time takes a little longer than it does for 
     subsequent calls.
