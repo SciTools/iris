@@ -536,7 +536,7 @@ class TestCurlInterface(tests.IrisTest):
         
         v = u.copy()
         y = v.coord('latitude')
-        y.points += 5
+        y.points = y.points + 5
         self.assertRaises(ValueError, iris.analysis.calculus.curl, u, v)
         
     def test_standard_name(self):

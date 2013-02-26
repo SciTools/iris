@@ -379,7 +379,23 @@ class Coord(CFVariableMixin):
                     bounds = bounds[keys + (Ellipsis, )]
                     
         new_coord = self.copy(points=points, bounds=bounds)
-        return new_coord    
+        return new_coord
+
+    def __deepcopy__(self, memo):
+        # We override this to maintain the writeable flag
+        new_coord = type(self)(deepcopy(self.points, memo))
+        new_coord.points.flags.writeable = self.points.flags.writeable
+        
+        if self.bounds is not None:
+            new_coord.bounds=deepcopy(self.bounds, memo)
+            new_coord.bounds.flags.writeable = self.bounds.flags.writeable
+
+        new_coord.standard_name = deepcopy(self.standard_name, memo)
+        new_coord.long_name = deepcopy(self.long_name, memo)
+        new_coord.units = deepcopy(self.units, memo)
+        new_coord.attributes = deepcopy(self.attributes, memo)
+        new_coord.coord_system = deepcopy(self.coord_system, memo)
+        return new_coord
 
     def copy(self, points=None, bounds=None):
         """
@@ -1114,7 +1130,12 @@ class DimCoord(Coord):
         coord = super(DimCoord, self).__getitem__(key)
         coord.circular = self.circular and coord.shape == self.shape
         return coord
-
+    
+    def __deepcopy__(self, memo):
+        new_coord = Coord.__deepcopy__(self, memo)
+        new_coord.circular = deepcopy(self.circular, memo)
+        return new_coord
+    
     def collapsed(self, dims_to_collapse=None):
         coord = Coord.collapsed(self, dims_to_collapse=dims_to_collapse)
         if self.circular and self.units.modulus is not None:
@@ -1219,7 +1240,7 @@ class AuxCoord(Coord):
                              coord_system=coord.coord_system)
 
         return new_coord
-
+    
     def _sanitise_array(self, src, ndmin):
         # Ensure the array is writeable.
         # NB. Returns the *same object* if src is already writeable.
