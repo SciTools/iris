@@ -235,7 +235,12 @@ class IrisTest(unittest.TestCase):
     
     def assertString(self, string, reference_filename):
         reference_path = get_result_path(reference_filename)
-        self._check_same(string, reference_path, reference_filename, type_comparison_name='Strings')
+        # If the test string is a unicode string, encode as
+        # utf-8 before comparison to the reference string.
+        if isinstance(string, unicode):
+            string = string.encode('utf-8')
+        self._check_same(string, reference_path, reference_filename,
+                         type_comparison_name='Strings')
     
     def assertRepr(self, obj, reference_filename):
         self.assertString(repr(obj), reference_filename)
@@ -247,7 +252,8 @@ class IrisTest(unittest.TestCase):
         else:
             self._ensure_folder(reference_path)
             logger.warning('Creating result file: %s', reference_path)
-            open(reference_path, 'w').writelines(item)
+            open(reference_path, 'w').writelines(line.encode('utf-8') for
+                                                 line in item)
 
     def assertXMLElement(self, obj, reference_filename):
         """

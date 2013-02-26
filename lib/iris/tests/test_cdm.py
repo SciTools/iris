@@ -270,8 +270,12 @@ class TestCubeStringRepresentations(IrisDotTest):
         self.assertString(repr(cube_list), ('cdm', 'str_repr', 'cubelist.__repr__.txt'))
 
     def test_basic_0d_cube(self):
-        self.assertString(repr(self.cube_2d[0, 0]), ('cdm', 'str_repr', '0d_cube.__repr__.txt'))
-        self.assertString(str(self.cube_2d[0, 0]), ('cdm', 'str_repr', '0d_cube.__str__.txt'))
+        self.assertString(repr(self.cube_2d[0, 0]),
+                          ('cdm', 'str_repr', '0d_cube.__repr__.txt'))
+        self.assertString(unicode(self.cube_2d[0, 0]),
+                          ('cdm', 'str_repr', '0d_cube.__unicode__.txt'))
+        self.assertString(str(self.cube_2d[0, 0]),
+                          ('cdm', 'str_repr', '0d_cube.__str__.txt'))
 
     def test_similar_coord(self):
         cube = self.cube_2d.copy()
@@ -318,6 +322,24 @@ class TestCubeStringRepresentations(IrisDotTest):
         aux = iris.coords.AuxCoord(range(11), long_name='This is a short long_name')
         cube.add_aux_coord(aux, 0)
         self.assertString(str(cube), ('cdm', 'str_repr', 'simple.__str__.txt'))
+
+    def test_unicode_attribute(self):
+        unicode_str = unichr(40960) + u'abcd' + unichr(1972)
+        cube = iris.tests.stock.simple_1d()
+        cube.attributes['source'] = unicode_str
+        self.assertString(str(cube), ('cdm', 'str_repr',
+                                      'unicode_attribute.__str__.txt'))
+        self.assertString(unicode(cube), ('cdm', 'str_repr',
+                                          'unicode_attribute.__unicode__.txt'))
+
+    def test_unicode_history(self):
+        unicode_str = unichr(40960) + u'wxyz' + unichr(1972)
+        cube = iris.tests.stock.simple_1d()
+        cube.add_history(unicode_str)
+        self.assertString(str(cube), ('cdm', 'str_repr',
+                                      'unicode_history.__str__.txt'))
+        self.assertString(unicode(cube), ('cdm', 'str_repr',
+                                          'unicode_history.__unicode__.txt'))
 
 
 @iris.tests.skip_data
