@@ -114,7 +114,8 @@ __version__ = '1.3.0-dev'
 
 # Restrict the names imported when using "from iris import *"
 __all__ = ['load', 'load_cube', 'load_cubes', 'load_raw', 'load_strict', 'save',
-           'Constraint', 'AttributeConstraint', 'sample_data_path']
+           'Constraint', 'AttributeConstraint', 'sample_data_path',
+           'site_configuration']
 
 
 # When required, log the usage of Iris.
@@ -124,6 +125,18 @@ if iris.config.IMPORT_LOGGER:
 
 Constraint = iris._constraints.Constraint
 AttributeConstraint = iris._constraints.AttributeConstraint
+
+
+# Initialise the site configuration dictionary.
+site_configuration = {}
+"""Iris site configuration dictionary."""
+
+try:
+    from iris.site_config import update as _update
+except ImportError:
+    pass
+else:
+    _update(site_configuration)
 
 
 def _generate_cubes(uris, callback):
