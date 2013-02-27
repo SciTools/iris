@@ -30,6 +30,7 @@ import os.path
 import string
 import warnings
 
+import biggus
 import iris.proxy
 iris.proxy.apply_proxy('netCDF4', globals())
 import numpy as np
@@ -42,7 +43,6 @@ import iris.coords
 import iris.cube
 import iris.exceptions
 import iris.fileformats.cf
-import iris.fileformats.manager
 import iris.fileformats._pyke_rules
 import iris.io
 import iris.unit
@@ -114,41 +114,33 @@ def _pyke_kb_engine():
 class NetCDFDataProxy(object):
     """A reference to the data payload of a single NetCDF file variable."""
 
-    __slots__ = ('path', 'variable_name')
+    __slots__ = ('shape', 'dtype', 'path', 'variable_name')
 
-    def __init__(self, path, variable_name):
+    def __init__(self, shape, dtype, path, variable_name):
+        self.shape = shape
+        self.dtype = dtype
         self.path = path
         self.variable_name = variable_name
 
-    def __repr__(self):
-        return '%s(%r, %r)' % (self.__class__.__name__, self.path, self.variable_name)
+    @property
+    def ndim(self):
+        return len(self.shape)
 
-    def load(self, data_shape, data_type, mdi, deferred_slice):
-        """
-        Load the corresponding proxy data item and perform any deferred slicing.
-
-        Args:
-
-        * data_shape (tuple of int):
-            The data shape of the proxy data item.
-        * data_type (:class:`numpy.dtype`):
-            The data type of the proxy data item.
-        * mdi (float):
-            The missing data indicator value.
-        * deferred_slice (tuple):
-            The deferred slice to be applied to the proxy data item.
-
-        Returns:
-            :class:`numpy.ndarray`
-
-        """
+    def __getitem__(self, keys):
         dataset = netCDF4.Dataset(self.path)
-        variable = dataset.variables[self.variable_name]
-        # Get the NetCDF variable data and slice.
-        payload = variable[deferred_slice]
-        dataset.close()
+        try:
+            variable = dataset.variables[self.variable_name]
+            # Get the NetCDF variable data and slice.
+            data = variable[keys]
+        finally:
+            dataset.close()
+        return data
 
-        return payload
+    def __repr__(self):
+        fmt = '<{self.__class__.__name__} shape={self.shape}' \
+              ' dtype={self.dtype!r} path={self.path!r}' \
+              ' variable_name={self.variable_name!r}>'
+        return fmt.format(self=self)
 
 
 def _assert_case_specific_facts(engine, cf, cf_group):
@@ -229,9 +221,10 @@ def _load_cube(engine, cf, cf_var, filename):
         dummy_data = cf_var.add_offset + dummy_data
 
     # Create cube with data (not yet deferred), but no metadata
-    data_proxies = np.array(NetCDFDataProxy(filename, cf_var.cf_name))
-    data_manager = iris.fileformats.manager.DataManager(cf_var.shape, dummy_data.dtype, None)
-    cube = iris.cube.Cube(data_proxies, data_manager=data_manager)
+    proxy = NetCDFDataProxy(cf_var.shape, dummy_data.dtype,
+                            filename, cf_var.cf_name)
+    data = biggus.ArrayAdapter(proxy)
+    cube = iris.cube.Cube(data)
 
     # Reset the pyke inference engine.
     engine.reset()

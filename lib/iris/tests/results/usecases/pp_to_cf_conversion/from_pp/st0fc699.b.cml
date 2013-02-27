@@ -32,6 +32,6 @@
         <coord interval="2 hour" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x6a02d101" dtype="float32" mask_checksum="-0x6605d552" shape="(144, 288)"/>
+    <data checksum="-0x152f184" dtype="float32" mask_checksum="0x4aef779f" shape="(144, 288)"/>
   </cube>
 </cubes>

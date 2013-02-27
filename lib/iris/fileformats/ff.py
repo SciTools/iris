@@ -22,10 +22,10 @@ Provides UK Met Office Fields File (FF) format specific capabilities.
 import os
 import warnings
 
+import biggus
 import numpy as np
 
 from iris.exceptions import NotYetImplementedError
-from iris.fileformats.manager import DataManager
 import pp
 
 
@@ -314,14 +314,14 @@ class FF2PP(object):
                 # Move file pointer to the start of the current PP field data.
                 ff_file_seek(data_offset, os.SEEK_SET)
                 # Get the PP field data.
-                data = field.read_data(ff_file, data_depth, data_shape, data_type)
-                field._data = data
-                field._data_manager = None
+                field._data = field.read_data(ff_file, data_depth, data_shape,
+                                              data_type)
             else:
-                proxy = pp.PPDataProxy(self._filename, data_offset,
-                                       data_depth, field.lbpack)
-                field._data = np.array(proxy)
-                field._data_manager = DataManager(data_shape, data_type, field.bmdi)
+                proxy = pp.PPDataProxy(data_shape, data_type,
+                                       self._filename, data_offset, data_depth,
+                                       field.lbpack, field.bmdi)
+                field._data = biggus.ArrayAdapter(proxy)
+
             yield field
         ff_file.close()
         return

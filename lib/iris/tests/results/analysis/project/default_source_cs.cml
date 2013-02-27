@@ -102,6 +102,6 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="-0x8a38235" dtype="float32" mask_checksum="-0x54d0441b" shape="(73, 96)"/>
+    <data checksum="-0x36d197af" dtype="float32" mask_checksum="-0x765d98ff" shape="(73, 96)"/>
   </cube>
 </cubes>

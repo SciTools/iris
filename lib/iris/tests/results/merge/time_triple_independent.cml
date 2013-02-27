@@ -19,6 +19,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data dtype="float32" shape="(2, 2, 2, 4, 5)" state="loaded"/>
+    <data dtype="float32" shape="(2, 2, 2, 4, 5)" state="deferred"/>
   </cube>
 </cubes>

@@ -23,6 +23,7 @@ Typically the cube merge process is handled by :method:`iris.cube.CubeList.merge
 from collections import namedtuple, Iterable
 from copy import deepcopy
 
+import biggus
 import numpy as np
 import numpy.ma as ma
 
@@ -205,7 +206,7 @@ class _CoordSignature(namedtuple('CoordSignature',
 
 
 class _CubeSignature(namedtuple('CubeSignature',
-                                ['defn', 'data_shape', 'data_manager', 'data_type', 'mdi'])):
+                                ['defn', 'data_shape', 'data_type'])):
     """
     Criterion for identifying a specific type of :class:`iris.cube.Cube` based on
     its metadata.
@@ -218,14 +219,8 @@ class _CubeSignature(namedtuple('CubeSignature',
     * data_shape:
         The data payload shape of a :class:`iris.cube.Cube`.
 
-    * data_manager:
-        The :class:`iris.fileformats.manager.DataManager` instance.
-
     * data_type:
         The data payload :class:`numpy.dtype` of a :class:`iris.cube.Cube`.
-
-    * mdi:
-        The missing data value associated with the data payload of a :class:`iris.cube.Cube`.
 
     """
 
@@ -875,6 +870,7 @@ class ProtoCube(object):
         self._dim_templates = []  # Proto-coordinates constructed from merged scalars.
         self._aux_templates = []  # Proto-coordinates constructed from merged scalars.
         self._shape = []
+        self._stack_shape = []
         self._nd_names = []
         self._cache_by_name = {}
         self._dim_coords_and_dims = []
@@ -933,13 +929,13 @@ class ProtoCube(object):
 
         # Generate group-depth merged cubes from the source-cubes.
         for level in xrange(group_depth):
-            # The merged cube's data will be an array of data proxies for deferred loading.
-            merged_cube = self._get_cube()
-
+            stack = np.empty(self._stack_shape, 'object')
             for nd_index in nd_indexes:
                 # Get the data of the current existing or last known good source-cube
                 offset = min(level, len(group_by_nd_index[nd_index]) - 1)
                 data = self._skeletons[group_by_nd_index[nd_index][offset]].data
+                if not isinstance(data, biggus.Array):
+                    data = biggus.ArrayAdapter(data)
 
                 # Slot the data into merged cube. The nd-index will have less dimensionality than
                 # that of the merged cube's data. The "missing" dimensions correspond to the 
@@ -949,17 +945,14 @@ class ProtoCube(object):
                     # Otherwise, the assignment copies the 0-d *array* into the merged cube,
                     # and not the contents of the array!
                     if data.ndim == 0:
-                        merged_cube._data[nd_index] = data.flatten()[0]
+                        stack[nd_index] = data.flatten()[0]
                     else:
-                        merged_cube._data[nd_index] = data
+                        stack[nd_index] = data
                 else:
-                    merged_cube._data = data
+                    stack[...] = data
             
-            # Unmask the array only if it is filled.
-            if isinstance(merged_cube._data, ma.core.MaskedArray):
-                if ma.count_masked(merged_cube._data) == 0:
-                    merged_cube._data = merged_cube._data.filled()
-
+            data = biggus.ArrayStack(stack)
+            merged_cube = self._get_cube(data)
             merged_cubes.append(merged_cube)
 
         return merged_cubes
@@ -1064,6 +1057,7 @@ class ProtoCube(object):
                     dim_by_name[name] = len(self._shape)
                     self._nd_names.append(name)
                     self._shape.append(len(cells))
+                    self._stack_shape.append(len(cells))
                     self._cache_by_name[name] = {cell:index for index, cell in enumerate(cells)}
                 else:
                     # TODO: Consider appropriate sort order (ascending, decending) i.e. use CF positive attribute.
@@ -1086,6 +1080,7 @@ class ProtoCube(object):
                         else:
                             self._dim_templates.append(_Template(dim, points, bounds, kwargs))
                         self._shape.append(len(cells))
+                        self._stack_shape.append(len(cells))
                         self._cache_by_name[name] = {cell:index for index, cell in enumerate(cells)}
 
         # Second pass - Build the auxiliary coordinate templates for the space.
@@ -1129,12 +1124,10 @@ class ProtoCube(object):
         # deferred loading, this does NOT change the shape.
         self._shape.extend(signature.data_shape)
 
-    def _get_cube(self):
+    def _get_cube(self, data):
         """
-        Returns a cube containing all its coordinates and appropriately shaped
-        data that corresponds to this ProtoCube.
-
-        All the values in the cube's data array are masked.
+        Return a fully constructed cube for the given data, containing
+        all its coordinates and metadata.
 
         """
         signature = self._cube_signature
@@ -1142,22 +1135,10 @@ class ProtoCube(object):
         aux_coords_and_dims = [(deepcopy(coord), dims) for coord, dims in self._aux_coords_and_dims]
         kwargs = dict(zip(iris.cube.CubeMetadata._fields, signature.defn))
 
-        # Create fully masked data, i.e. all missing.
-        # (The CubeML checksum doesn't respect the mask, so we zero the
-        # underlying data to ensure repeatable checksums.)
-        if signature.data_manager is None:
-            data = ma.MaskedArray(np.zeros(self._shape,
-                                           signature.data_type),
-                                  mask=np.ones(self._shape, 'bool'),
-                                  fill_value=signature.mdi)
-        else:
-            data = ma.MaskedArray(np.zeros(self._shape, 'object'),
-                                  mask=np.ones(self._shape, 'bool'))
-
         cube = iris.cube.Cube(data,
                               dim_coords_and_dims=dim_coords_and_dims,
                               aux_coords_and_dims=aux_coords_and_dims,
-                              data_manager=signature.data_manager, **kwargs)
+                              **kwargs)
 
         # Add on any aux coord factories.
         for factory_defn in self._coord_signature.factory_defns:
@@ -1252,20 +1233,7 @@ class ProtoCube(object):
     def _build_signature(self, cube):
         """Generate the signature that defines this cube."""
 
-        defn = cube.metadata
-        data_shape = cube._data.shape
-        data_manager = cube._data_manager
-        mdi = None
-
-        if data_manager is None:
-            data_type = cube._data.dtype.name
-            if isinstance(cube.data, ma.core.MaskedArray):
-                mdi = cube.data.fill_value
-        else:
-            data_type = data_manager.data_type.name
-            mdi = data_manager.mdi
-
-        return _CubeSignature(defn, data_shape, data_manager, data_type, mdi)
+        return _CubeSignature(cube.metadata, cube.shape, cube.dtype)
 
     def _add_cube(self, cube, coord_payload):
         """Create and add the source-cube skeleton to the ProtoCube."""

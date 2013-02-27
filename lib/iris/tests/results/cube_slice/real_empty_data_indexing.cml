@@ -28,6 +28,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="-0x64d90894" dtype="float32" shape="(432, 720)"/>
+    <data dtype="float32" shape="(432, 720)" state="loaded"/>
   </cube>
 </cubes>

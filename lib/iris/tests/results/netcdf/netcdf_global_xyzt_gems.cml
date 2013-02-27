@@ -50,6 +50,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x5d3a1fda" dtype="float64" mask_checksum="0x5f099d34" shape="(1, 60, 181, 360)"/>
+    <data checksum="0x5d3a1fda" dtype="float64" mask_checksum="0xed2259c" shape="(1, 60, 181, 360)"/>
   </cube>
 </cubes>

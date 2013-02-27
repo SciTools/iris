@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,6 +20,8 @@ Test the constrained cube loading mechanism.
 """
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
+
+import biggus
 
 import iris
 import iris.tests.stock as stock
@@ -293,12 +295,14 @@ class TestCubeExtract(TestMixin, tests.IrisTest):
         self.assertEqual(self.cube.extract(r), None)
 
     def test_empty_data(self):
-        # Ensure that the process of WHERE does not load data if there was empty data to start with...
-        self.assertNotEquals(None, self.cube._data_manager) 
-        
-        self.assertNotEquals(None, self.cube.extract(self.level_10)._data_manager)
-        
-        self.assertNotEquals(None, self.cube.extract(self.level_10).extract(self.level_10)._data_manager)
+        # Ensure that the process of WHERE does not load data if there
+        # was empty data to start with...
+        cube = self.cube
+        self.assertIsInstance(cube._data, biggus.Array)
+        cube = self.cube.extract(self.level_10)
+        self.assertIsInstance(cube._data, biggus.Array)
+        cube = self.cube.extract(self.level_10).extract(self.level_10)
+        self.assertIsInstance(cube._data, biggus.Array)
             
     def test_non_existant_coordinate(self):
         # Check the behaviour when a constraint is given for a coordinate which does not exist/span a dimension

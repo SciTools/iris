@@ -55,7 +55,7 @@
         <coord interval="1 hour" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="-0x7d4ef5f6" dtype="float32" shape="(360, 73, 96)"/>
+    <data checksum="0x6354511d" dtype="float32" shape="(360, 73, 96)"/>
   </cube>
   <cube standard_name="air_temperature" units="K">
     <attributes>
@@ -112,7 +112,7 @@
         <coord interval="1 hour" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="-0x26091009" dtype="float32" shape="(360, 73, 96)"/>
+    <data checksum="-0x7210021f" dtype="float32" shape="(360, 73, 96)"/>
   </cube>
   <cube standard_name="precipitation_flux" units="kg m-2 s-1">
     <attributes>
@@ -162,6 +162,6 @@
         <coord interval="1 hour" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x3bd37f19" dtype="float32" shape="(360, 73, 96)"/>
+    <data checksum="-0x6e7e7e83" dtype="float32" shape="(360, 73, 96)"/>
   </cube>
 </cubes>

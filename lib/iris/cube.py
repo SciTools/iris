@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,6 +30,7 @@ import UserDict
 import warnings
 import zlib
 
+import biggus
 import numpy as np
 import numpy.ma as ma
 
@@ -344,8 +345,7 @@ class Cube(CFVariableMixin):
     def __init__(self, data, standard_name=None, long_name=None,
                  var_name=None, units=None, attributes=None,
                  cell_methods=None, dim_coords_and_dims=None,
-                 aux_coords_and_dims=None, aux_factories=None,
-                 data_manager=None):
+                 aux_coords_and_dims=None, aux_factories=None):
         """
         Creates a cube with data and optional metadata. 
 
@@ -355,10 +355,11 @@ class Cube(CFVariableMixin):
         Args:
         
         * data 
-            A numpy array containing the phenomenon values or a data manager object. This object defines the 
-            shape of the cube and the value in each cell. 
+            A numpy or biggus array containing the phenomenon values.
+            This object defines the shape of the cube and the value in
+            each cell. 
             
-            See :attr:`Cube.data<iris.cube.Cube.data>` and :class:`iris.fileformats.manager.DataManager` 
+            See :attr:`Cube.data<iris.cube.Cube.data>`.
 
         Kwargs:
 
@@ -381,10 +382,6 @@ class Cube(CFVariableMixin):
             See also :meth:`Cube.add_dim_coord()<iris.cube.Cube.add_dim_coord>` and :meth:`Cube.add_aux_coord()<iris.cube.Cube.add_aux_coord>`.
         * aux_factories
             A list of auxiliary coordinate factories. See :mod:`iris.aux_factory`.
-        * data_manager
-            A :class:`iris.fileformats.manager.DataManager` instance. If a data manager is provided, then
-            the data should be a numpy array of data proxy instances. See :class:`iris.fileformats.pp.PPDataProxy` or
-            :class:`iris.fileformats.netcdf.NetCDFDataProxy`.
 
         For example::
 
@@ -398,15 +395,9 @@ class Cube(CFVariableMixin):
         if isinstance(data, basestring):
             raise TypeError('Invalid data type: {!r}.'.format(data))
 
-        if data_manager is not None:
-            self._data = data
-            self._data_manager = data_manager
-        else:
-            if isinstance(data, np.ndarray):
-                self._data = data
-            else:
-                self._data = np.asarray(data)
-            self._data_manager = None
+        if not isinstance(data, biggus.Array):
+            data = np.asanyarray(data)
+        self._data = data
 
         self.standard_name = standard_name
         """The "standard name" for the Cube's phenomenon."""
@@ -978,15 +969,14 @@ class Cube(CFVariableMixin):
         self._cell_methods = tuple(cell_methods) if cell_methods else tuple()
 
     @property
+    def dtype(self):
+        """The numpy datatype of the data of this cube."""
+        return self._data.dtype
+
+    @property
     def shape(self):
         """The shape of the data of this cube."""
-        if self._data_manager is None:
-            if self._data is None:
-                shape = ()
-            else:
-                shape = self._data.shape
-        else:
-            shape = self._data_manager.shape(self._data)
+        shape = self._data.shape
         return shape
     
     @property
@@ -1017,36 +1007,22 @@ class Cube(CFVariableMixin):
             (10, 20)
         
         """
-        # Cache the real data on first use
-        if self._data_manager is not None:
+        if isinstance(self._data, biggus.Array):
             try:
-                self._data = self._data_manager.load(self._data)
-
-            except (MemoryError, self._data_manager.ArrayTooBigForAddressSpace), error:
-                dm_shape = self._data_manager.pre_slice_array_shape(self._data)
-                # if the data manager shape is not the same as the cube's shape, it is because there must be deferred
-                # indexing pending once the data has been read into memory. Make the error message for this nice.
-                if self.shape != dm_shape:
-                    contextual_message = ("The cube's data array shape would have been %r, with the data manager " +
-                                 "needing a data shape of %r (before it can reduce to the cube's required size); "
-                                 "the data type is %s.\n") % (dm_shape, self.shape, self._data_manager.data_type)
-                else:
-                    contextual_message = 'The array shape would have been %r and the data type %s.\n' % (self.shape, self._data_manager.data_type)
-
-                if isinstance(error, MemoryError):
-                    raise MemoryError(
-                      "Failed to create the cube's data as there was not enough memory available.\n" +
-                      contextual_message +
-                      'Consider freeing up variables or indexing the cube before getting its data.'
-                      )
-                else:
-                    raise ValueError(
-                      "Failed to create the cube's data as there is not enough address space to represent the array.\n" +
-                      contextual_message +
-                      'The cube will need to be reduced in order to load the data.'
-                      )
-
-            self._data_manager = None
+                data = self._data.masked_array()
+            except MemoryError as error:
+                msg = "Failed to create the cube's data as there was not" \
+                      " enough memory available.\n" \
+                      "The array shape would have been {0!r} and the data" \
+                      " type {1}.\n" \
+                      "Consider freeing up variables or indexing the cube" \
+                      " before getting its data."
+                msg = msg.format(self.shape, self.dtype)
+                raise MemoryError(msg)
+            # Unmask the array only if it is filled.
+            if ma.count_masked(data) == 0:
+                data = data.data
+            self._data = data
         return self._data
 
     @data.setter
@@ -1060,7 +1036,6 @@ class Cube(CFVariableMixin):
                 raise ValueError('Require cube data with shape %r, got %r.' % (self.shape, data.shape))
 
         self._data = data
-        self._data_manager = None
     
     @property
     def dim_coords(self):
@@ -1396,31 +1371,18 @@ class Cube(CFVariableMixin):
         except StopIteration:
             first_slice = None
         
-        # handle unloaded data
-        data_manager = None
-        use_data_proxy = self._data_manager is not None
-
         if first_slice is not None:
-            if use_data_proxy:
-                data, data_manager = self._data_manager.getitem(self._data, first_slice)
-            else:
-                data = self.data[first_slice]
+            data = self._data[first_slice]
         else:
-            if use_data_proxy:
-                data, data_manager = copy.deepcopy(self._data), copy.deepcopy(self._data_manager)
-            else:
-                data = copy.deepcopy(self.data)
+            data = copy.deepcopy(self._data)
 
         for other_slice in slice_gen:
-            if use_data_proxy:
-                data, data_manager = data_manager.getitem(data, other_slice)
-            else:
-                data = data[other_slice]
+            data = data[other_slice]
                 
-        # We don't want a view of the numpy array, so take a copy of it if it's not our own
-        # (this applies to proxy "empty data" arrays too)
-        if not data.flags['OWNDATA']:
-            data = data.copy()
+        # We don't want a view of the data, so take a copy of it if it's
+        # not already our own.
+        if isinstance(data, biggus.Array) or not data.flags['OWNDATA']:
+            data = copy.deepcopy(data)
             
         # We can turn a masked array into a normal array if it's full.
         if isinstance(data, ma.core.MaskedArray):
@@ -1428,7 +1390,7 @@ class Cube(CFVariableMixin):
                 data = data.filled() 
 
         # Make the new cube slice            
-        cube = Cube(data, data_manager=data_manager)
+        cube = Cube(data)
         cube.metadata = copy.deepcopy(self.metadata)
 
         # Record a mapping from old coordinate IDs to new coordinates,
@@ -1742,10 +1704,7 @@ class Cube(CFVariableMixin):
             data_xml_element.setAttribute("shape", str(self.shape))
 
             # Add the datatype
-            if self._data_manager is not None:
-                data_xml_element.setAttribute("dtype", self._data_manager.data_type.name)
-            else:
-                data_xml_element.setAttribute("dtype", self._data.dtype.name)
+            data_xml_element.setAttribute("dtype", self._data.dtype.name)
 
             # getting a checksum triggers any deferred loading
             if checksum:
@@ -1757,9 +1716,12 @@ class Cube(CFVariableMixin):
                 crc = hex(zlib.crc32(data))
                 data_xml_element.setAttribute("checksum", crc)
                 if isinstance(data, ma.core.MaskedArray):
-                    crc = hex(zlib.crc32(data.mask))
+                    mask = data.mask
+                    if not mask.flags['F_CONTIGUOUS']:
+                        mask = np.asfortranarray(mask)
+                    crc = hex(zlib.crc32(mask))
                     data_xml_element.setAttribute("mask_checksum", crc)
-            elif self._data_manager is not None:
+            elif isinstance(self._data, biggus.Array):
                 data_xml_element.setAttribute("state", "deferred")
             else:
                 data_xml_element.setAttribute("state", "loaded")
@@ -1791,23 +1753,20 @@ class Cube(CFVariableMixin):
         return self._deepcopy(memo)
 
     def _deepcopy(self, memo, data=None):
-        # TODO FIX this with deferred loading and investiaget data=False,...
         if data is None:
-            if self._data is not None and self._data.ndim == 0:
+            if isinstance(self._data, np.ndarray) and self._data.ndim == 0:
                 # Cope with NumPy's asymmetric (aka. "annoying!") behaviour of deepcopy on 0-d arrays.
                 new_cube_data = np.asanyarray(self._data)
             else:
-                new_cube_data = copy.deepcopy(self._data, memo)
-
-            new_cube_data_manager = copy.deepcopy(self._data_manager, memo)
+                new_cube_data = copy.copy(self._data)
         else:
-            data = np.asanyarray(data)
+            if not isinstance(data, biggus.Array):
+                data = np.asanyarray(data)
 
             if data.shape != self.shape:
                 raise ValueError('Cannot copy cube with new data of a different shape (slice or subset the cube first).')
 
             new_cube_data = data
-            new_cube_data_manager = None
 
         new_dim_coords_and_dims = copy.deepcopy(self._dim_coords_and_dims, memo)
         new_aux_coords_and_dims = copy.deepcopy(self._aux_coords_and_dims, memo)
@@ -1822,9 +1781,7 @@ class Cube(CFVariableMixin):
 
         new_cube = Cube(new_cube_data,
                         dim_coords_and_dims = new_dim_coords_and_dims,
-                        aux_coords_and_dims = new_aux_coords_and_dims,
-                        data_manager=new_cube_data_manager
-                        )
+                        aux_coords_and_dims = new_aux_coords_and_dims)
         new_cube.metadata = copy.deepcopy(self.metadata, memo)
 
         for factory in self.aux_factories:

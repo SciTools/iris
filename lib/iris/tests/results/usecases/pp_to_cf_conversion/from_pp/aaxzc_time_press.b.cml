@@ -20,6 +20,6 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x46976132" dtype="float32" shape="(15, 4)"/>
+    <data checksum="0x35b4d182" dtype="float32" shape="(15, 4)"/>
   </cube>
 </cubes>

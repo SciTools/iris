@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -554,17 +554,11 @@ class RulesContainer(object):
         * matching_rules - a list of rules which matched
 
         """
-        
-        # If the field has a data manager, then put it on the cube, otherwise transfer the data to the cube
-        if getattr(field, '_data_manager', None) is not None:
+        try:
             data = field._data
-            data_manager = field._data_manager
-        else:
+        except AttributeError:
             data = field.data
-            data_manager = None
-
-        cube = iris.cube.Cube(data, data_manager=data_manager)
-        
+        cube = iris.cube.Cube(data)
         verify_result = self.verify(cube, field)
         return verify_result
     

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,6 +26,8 @@ import iris.tests as tests
 import cPickle
 import StringIO
 
+import biggus
+import numpy as np
 
 import iris
 
@@ -42,31 +44,43 @@ class TestPickle(tests.IrisTest):
             reconstructed_obj = cPickle.load(str_buffer)
             
             yield protocol, reconstructed_obj
-    
+
+    def assertCubeData(self, cube1, cube2):
+        np.testing.assert_array_equal(cube1._data.ndarray(),
+                                      cube2._data.ndarray())
+
     @iris.tests.skip_data
     def test_cube_pickle(self):
         cube = iris.load_cube(tests.get_data_path(('PP', 'globClim1', 'theta.pp')))
+        self.assertIsInstance(cube._data, biggus.Array)
         self.assertCML(cube, ('cube_io', 'pickling', 'theta.cml'), checksum=False)
         
         for _, recon_cube in self.pickle_then_unpickle(cube):
-            self.assertNotEqual(recon_cube._data_manager, None)
-            self.assertEqual(cube._data_manager, recon_cube._data_manager)
+            self.assertIsInstance(recon_cube._data, biggus.Array)
             self.assertCML(recon_cube, ('cube_io', 'pickling', 'theta.cml'), checksum=False)
+            self.assertCubeData(cube, recon_cube)
 
     @iris.tests.skip_data                    
     def test_cubelist_pickle(self):
         cubelist = iris.load(tests.get_data_path(('PP', 'COLPEX', 'theta_and_orog_subset.pp')))
         single_cube = cubelist[0]
+        for cube in cubelist:
+            cube.data
                 
-        self.assertCML(cubelist, ('cube_io', 'pickling', 'cubelist.cml'))
-        self.assertCML(single_cube, ('cube_io', 'pickling', 'single_cube.cml'))
+        self.assertCML(cubelist, ('cube_io', 'pickling', 'cubelist.cml'),
+                       checksum=False)
+        self.assertCML(single_cube, ('cube_io', 'pickling', 'single_cube.cml'),
+                       checksum=False)
         
         for _, reconstructed_cubelist in self.pickle_then_unpickle(cubelist):
-            self.assertCML(reconstructed_cubelist, ('cube_io', 'pickling', 'cubelist.cml'))
-            self.assertCML(reconstructed_cubelist[0], ('cube_io', 'pickling', 'single_cube.cml'))
+            self.assertCML(reconstructed_cubelist,
+                           ('cube_io', 'pickling', 'cubelist.cml'),
+                           checksum=False)
+            self.assertCML(reconstructed_cubelist[0],
+                           ('cube_io', 'pickling', 'single_cube.cml'),
+                           checksum=False)
             
             for cube_orig, cube_reconstruct in zip(cubelist, reconstructed_cubelist):
-                self.assertArrayEqual(cube_orig.data, cube_reconstruct.data)
                 self.assertEqual(cube_orig, cube_reconstruct)
             
     def test_picking_equality_misc(self):

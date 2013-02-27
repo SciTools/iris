@@ -519,7 +519,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="-0x6aab33ec" dtype="float32" shape="(6, 10, 83, 83)"/>
+    <data checksum="-0x75a93d66" dtype="float32" shape="(6, 10, 83, 83)"/>
   </cube>
   <cube standard_name="air_pressure" units="Pa">
     <attributes>
@@ -1040,7 +1040,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="-0x262a84df" dtype="float32" shape="(6, 10, 83, 83)"/>
+    <data checksum="0x37e952af" dtype="float32" shape="(6, 10, 83, 83)"/>
   </cube>
   <cube standard_name="surface_altitude" units="m">
     <attributes>
