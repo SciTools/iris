@@ -1689,9 +1689,11 @@ class Cube(CFVariableMixin):
         Args:
 
         * points
-            **Either** Array of dicts with identical keys, for example:
-            ``[{'latitude': 0, 'longitude': 0},
-               {'latitude': 1, 'longitude': 1}]``
+            **Either** Array of dicts with identical keys, for example::
+
+                [{'latitude': 0, 'longitude': 0},
+                 {'latitude': 1, 'longitude': 1}]
+
             **Or** a :class:`iris.analysis.trajectory.Trajectory` instance.
 
         The coordinates specified by the points will be boiled down into a
