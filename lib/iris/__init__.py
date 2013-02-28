@@ -109,7 +109,7 @@ import iris.io
 
 
 # Iris revision.
-__version__ = '1.2.0'
+__version__ = '1.2.1-dev'
 
 # Restrict the names imported when using "from iris import *"
 __all__ = ['load', 'load_cube', 'load_cubes', 'load_raw', 'load_strict', 'save',
