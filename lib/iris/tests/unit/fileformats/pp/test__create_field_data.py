@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,6 +20,7 @@
 # importing anything else.
 import iris.tests as tests
 
+import biggus
 import mock
 import numpy as np
 
@@ -28,39 +29,52 @@ import iris.fileformats.pp as pp
 
 class Test__create_field_data(tests.IrisTest):
     def test_loaded_bytes(self):
-        # Check that a field with LoadedArrayBytes in _data gets a suitable
-        # call to _read_data_bytes.
+        # Check that a field with LoadedArrayBytes in _data gets the
+        # result of a suitable call to _data_bytes_to_shaped_array().
         mock_loaded_bytes = mock.Mock(spec=pp.LoadedArrayBytes)
         field = mock.Mock(_data=mock_loaded_bytes)
         data_shape = mock.Mock()
         land_mask = mock.Mock()
-        with mock.patch('iris.fileformats.pp._read_data_bytes') as read_bytes:
+        with mock.patch('iris.fileformats.pp._data_bytes_to_shaped_array') as \
+                convert_bytes:
+            convert_bytes.return_value = mock.sentinel.array
             pp._create_field_data(field, data_shape, land_mask)
-            call = mock.call(mock_loaded_bytes.bytes, field.lbpack,
-                             data_shape, mock_loaded_bytes.dtype, field.bmdi,
-                             land_mask)
-            self.assertEqual(read_bytes.call_args, call)
-            self.assertEqual(read_bytes.call_count, 1)
-        self.assertEqual(field._data, read_bytes.return_value)
-        self.assertIsNone(field._data_manager)
+
+        self.assertIs(field._data, mock.sentinel.array)
+        convert_bytes.assert_called_once_with(mock_loaded_bytes.bytes,
+                                              field.lbpack, data_shape,
+                                              mock_loaded_bytes.dtype,
+                                              field.bmdi, land_mask)
 
     def test_deferred_bytes(self):
-        # Check that a field with DeferredArrayBytes in _data gets a data
-        # manager.
-        mock_deferred_bytes = mock.Mock(spec=pp.DeferredArrayBytes)
-        field = mock.Mock(_data=mock_deferred_bytes)
-        data_shape = mock.Mock()
+        # Check that a field with DeferredArrayBytes in _data gets a
+        # biggus array.
+        deferred_bytes = mock.Mock(spec=pp.DeferredArrayBytes)
+        deferred_bytes.dtype.newbyteorder.return_value = mock.sentinel.dtype
+        field = mock.Mock(_data=deferred_bytes)
+        data_shape = (mock.sentinel.lat, mock.sentinel.lon)
         land_mask = mock.Mock()
-        proxy = pp.PPDataProxy(mock_deferred_bytes.fname,
-                               mock_deferred_bytes.position,
-                               mock_deferred_bytes.n_bytes,
-                               field.lbpack, land_mask)
-        _data = np.array(proxy)
-        _data_manager = pp.DataManager(data_shape, mock_deferred_bytes.dtype,
-                                       field.bmdi)
-        pp._create_field_data(field, data_shape, land_mask)
-        self.assertEqual(field._data, _data)
-        self.assertEqual(field._data_manager, _data_manager)
+        proxy = mock.Mock(dtype=mock.sentinel.dtype, shape=data_shape)
+        # We can't directly inspect the concrete data source underlying
+        # the biggus array (it's a private attribute), so instead we
+        # patch the proxy creation and check it's being created and
+        # invoked correctly.
+        with mock.patch('iris.fileformats.pp.PPDataProxy') as PPDataProxy:
+            PPDataProxy.return_value = proxy
+            pp._create_field_data(field, data_shape, land_mask)
+        # Does the biggus array look OK from the outside?
+        self.assertIsInstance(field._data, biggus.Array)
+        self.assertEqual(field._data.shape, data_shape)
+        self.assertEqual(field._data.dtype, mock.sentinel.dtype)
+        # Is it making use of a correctly configured proxy?
+        # NB. We know it's *using* the result of this call because
+        # that's where the dtype came from above.
+        PPDataProxy.assert_called_once_with((data_shape), deferred_bytes.dtype,
+                                            deferred_bytes.fname,
+                                            deferred_bytes.position,
+                                            deferred_bytes.n_bytes,
+                                            field.lbpack, field.bmdi,
+                                            land_mask)
 
 
 if __name__ == "__main__":

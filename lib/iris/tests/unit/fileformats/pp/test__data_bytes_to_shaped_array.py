@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -14,7 +14,10 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the `iris.fileformats.pp._read_data_bytes` function."""
+"""
+Unit tests for the `iris.fileformats.pp._data_bytes_to_shaped_array` function.
+
+"""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -28,7 +31,8 @@ import numpy as np
 import iris.fileformats.pp as pp
 
 
-class Test__read_data_bytes__lateral_boundary_compression(tests.IrisTest):
+class Test__data_bytes_to_shaped_array__lateral_boundary_compression(
+        tests.IrisTest):
     def setUp(self):
         self.data_shape = 30, 40
         y_halo, x_halo, rim = 2, 3, 4
@@ -61,12 +65,13 @@ class Test__read_data_bytes__lateral_boundary_compression(tests.IrisTest):
     def test_boundary_decompression(self):
         boundary_packing = mock.Mock(rim_width=4, x_halo=3, y_halo=2)
         lbpack = mock.Mock(n1=0, boundary_packing=boundary_packing)
-        r = pp._read_data_bytes(self.data_payload_bytes, lbpack,
-                                self.data_shape, self.decompressed.dtype, -99)
+        r = pp._data_bytes_to_shaped_array(self.data_payload_bytes, lbpack,
+                                           self.data_shape,
+                                           self.decompressed.dtype, -99)
         self.assertMaskedArrayEqual(r, self.decompressed)
 
 
-class Test__read_data_bytes__land_packed(tests.IrisTest):
+class Test__data_bytes_to_shaped_array__land_packed(tests.IrisTest):
     def setUp(self):
         # Sets up some useful arrays for use with the land/sea mask
         # decompression.
@@ -102,9 +107,10 @@ class Test__read_data_bytes__land_packed(tests.IrisTest):
         with mock.patch('numpy.frombuffer',
                         return_value=np.arange(3)):
             with self.assertRaises(ValueError) as err:
-                pp._read_data_bytes(mock.Mock(), self.create_lbpack(120),
-                                    (3, 4), np.dtype('>f4'),
-                                    -999, mask=None)
+                pp._data_bytes_to_shaped_array(mock.Mock(),
+                                               self.create_lbpack(120),
+                                               (3, 4), np.dtype('>f4'),
+                                               -999, mask=None)
             self.assertEqual(str(err.exception),
                              ('No mask was found to unpack the data. '
                               'Could not load.'))
@@ -140,12 +146,13 @@ class Test__read_data_bytes__land_packed(tests.IrisTest):
             self.check_read_data(field_data, 320, self.land_mask)
 
     def check_read_data(self, field_data, lbpack, mask):
-        # Calls pp._read_data_bytes with the necessary mocked items, an lbpack
-        # instance, the correct data shape and mask instance.
+        # Calls pp._data_bytes_to_shaped_array with the necessary mocked
+        # items, an lbpack instance, the correct data shape and mask instance.
         with mock.patch('numpy.frombuffer', return_value=field_data):
-            return pp._read_data_bytes(mock.Mock(), self.create_lbpack(lbpack),
-                                       mask.shape, np.dtype('>f4'),
-                                       -999, mask=mask)
+            return pp._data_bytes_to_shaped_array(mock.Mock(),
+                                                  self.create_lbpack(lbpack),
+                                                  mask.shape, np.dtype('>f4'),
+                                                  -999, mask=mask)
 
 
 if __name__ == "__main__":

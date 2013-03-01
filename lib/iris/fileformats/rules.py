@@ -713,14 +713,12 @@ def _make_cube(field, converter):
     (factories, references, standard_name, long_name, units, attributes,
      cell_methods, dim_coords_and_dims, aux_coords_and_dims) = converter(field)
 
-    if getattr(field, '_data_manager', None) is not None:
+    try:
         data = field._data
-        data_manager = field._data_manager
-    else:
+    except AttributeError:
         data = field.data
-        data_manager = None
 
-    cube = iris.cube.Cube(data, data_manager=data_manager,
+    cube = iris.cube.Cube(data,
                           attributes=attributes,
                           cell_methods=cell_methods,
                           dim_coords_and_dims=dim_coords_and_dims,

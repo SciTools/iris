@@ -18,6 +18,11 @@ git:
 
 install:
 
+    # XXX This is a *TEMPORARY* hash that's only valid for my
+    # rhattersley fork.
+  - export BIGGUS_REF="3332da4f106a09749f6ccc3ed1955e53e33b9e18"
+  - export BIGGUS_SUFFIX=$(echo "${BIGGUS_REF}" | sed "s/^v//")
+
   - export CARTOPY_REF="v0.10.0"
   - export CARTOPY_SUFFIX=$(echo "${CARTOPY_REF}" | sed "s/^v//")
 
@@ -77,6 +82,15 @@ install:
   - cd python
   - ../../.travis_no_output sudo /usr/bin/python setup.py install
   - cd ../..
+
+# biggus
+# TODO: Revert this to the SciTools repo.
+  - ./.travis_no_output wget -O biggus.zip https://github.com/rhattersley/biggus/archive/${BIGGUS_REF}.zip
+  - ./.travis_no_output unzip -q biggus.zip
+  - ln -s $(pwd)/biggus-${BIGGUS_SUFFIX} biggus
+  - cd biggus
+  - ../.travis_no_output /usr/bin/python setup.py install --user
+  - cd ..
 
 # cartopy
   - ./.travis_no_output wget -O cartopy.zip https://github.com/SciTools/cartopy/archive/${CARTOPY_REF}.zip

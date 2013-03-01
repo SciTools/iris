@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,6 +26,8 @@ import iris.tests as tests
 import cPickle
 import StringIO
 
+import biggus
+import numpy as np
 
 import iris
 
@@ -43,15 +45,20 @@ class TestPickle(tests.IrisTest):
 
             yield protocol, reconstructed_obj
 
+    def assertCubeData(self, cube1, cube2):
+        np.testing.assert_array_equal(cube1.lazy_data().ndarray(),
+                                      cube2.lazy_data().ndarray())
+
     @iris.tests.skip_data
     def test_cube_pickle(self):
         cube = iris.load_cube(tests.get_data_path(('PP', 'globClim1', 'theta.pp')))
+        self.assertFalse(cube.has_data())
         self.assertCML(cube, ('cube_io', 'pickling', 'theta.cml'), checksum=False)
 
         for _, recon_cube in self.pickle_then_unpickle(cube):
-            self.assertNotEqual(recon_cube._data_manager, None)
-            self.assertEqual(cube._data_manager, recon_cube._data_manager)
+            self.assertFalse(recon_cube.has_data())
             self.assertCML(recon_cube, ('cube_io', 'pickling', 'theta.cml'), checksum=False)
+            self.assertCubeData(cube, recon_cube)
 
     @iris.tests.skip_data
     def test_cube_with_deferred_coord_points(self):

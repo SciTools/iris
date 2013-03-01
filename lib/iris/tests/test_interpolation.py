@@ -21,6 +21,7 @@ Test the interpolation of Iris cubes.
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
+import biggus
 import numpy as np
 import numpy.ma as ma
 from scipy.interpolate import interp1d
@@ -574,8 +575,8 @@ class TestNearestNeighbour(tests.IrisTest):
 
         # Check that the data has not been loaded on either the original cube,
         # nor the interpolated one.
-        self.assertIsNotNone(b._data_manager)
-        self.assertIsNotNone(self.cube._data_manager)
+        self.assertFalse(b.has_data())
+        self.assertFalse(self.cube.has_data())
         self.assertCML(b, ('analysis', 'interpolation', 'nearest_neighbour_extract_latitude_longitude.cml'))
         
         value = iris.analysis.interpolate.nearest_neighbour_data_value(self.cube, point_spec)

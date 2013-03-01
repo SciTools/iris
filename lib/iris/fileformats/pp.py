@@ -29,6 +29,7 @@ import re
 import struct
 import warnings
 
+import biggus
 import numpy as np
 import numpy.ma as ma
 import netcdftime
@@ -36,7 +37,6 @@ import netcdftime
 import iris.config
 import iris.fileformats.rules
 import iris.unit
-from iris.fileformats.manager import DataManager
 import iris.fileformats.pp_rules
 import iris.coord_systems
 import iris.proxy
@@ -619,98 +619,56 @@ class BitwiseInt(SplittableInt):
 class PPDataProxy(object):
     """A reference to the data payload of a single PP field."""
 
-    __slots__ = ('path', 'offset', 'data_len', 'lbpack', 'mask')
-
-    def __init__(self, path, offset, data_len, lbpack, mask):
+    __slots__ = ('shape', 'src_dtype', 'path', 'offset', 'data_len', 'lbpack',
+                 'mdi', 'mask')
+    
+    def __init__(self, shape, src_dtype, path, offset, data_len, lbpack, mdi,
+                 mask):
+        self.shape = shape
+        self.src_dtype = src_dtype
         self.path = path
         self.offset = offset
         self.data_len = data_len
         self.lbpack = lbpack
+        self.mdi = mdi
         self.mask = mask
 
-    # NOTE:
-    # "__getstate__" and "__setstate__" functions are defined here to provide a custom interface for Pickle
-    #  : Pickle "normal" behaviour is just to save/reinstate the object dictionary
-    #  : that won't work here, because the use of __slots__ means **there is no object dictionary**
-    def __getstate__(self):
-        # object state capture method for Pickle.dump()
-        #  - return the instance data values needed to reconstruct the PPDataProxy object
-        return dict([(k,getattr(self,k)) for k in PPDataProxy.__slots__])
+    @property
+    def dtype(self):
+        return self.src_dtype.newbyteorder('=')
 
-    def __setstate__(self, state):
-        # object reconstruction method for Pickle.load()
-        # reinitialise the object state from the serialised values (using setattr, as there is no object dictionary)
-        for (key, val) in state.items():
-            setattr(self, key, val)
+    @property
+    def fill_value(self):
+        return self.mdi
 
-    def __repr__(self):
-        return '%s(%r, %r, %r, %r, %r)' % \
-                (self.__class__.__name__, self.path, self.offset,
-                 self.data_len, self.lbpack, self.mask)
+    @property
+    def ndim(self):
+        return len(self.shape)
 
-    def load(self, data_shape, data_type, mdi, deferred_slice):
-        """
-        Load the corresponding proxy data item and perform any deferred slicing.
-
-        Args:
-
-        * data_shape (tuple of int):
-            The data shape of the proxy data item.
-        * data_type (:class:`numpy.dtype`):
-            The data type of the proxy data item.
-        * mdi (float):
-            The missing data indicator value.
-        * deferred_slice (tuple):
-            The deferred slice to be applied to the proxy data item.
-
-        Returns:
-            :class:`numpy.ndarray`
-
-        """
-        # Load the appropriate proxy data conveniently with a context manager.
+    def __getitem__(self, keys):
         with open(self.path, 'rb') as pp_file:
             pp_file.seek(self.offset, os.SEEK_SET)
             data_bytes = pp_file.read(self.data_len)
-            data = _read_data_bytes(data_bytes, self.lbpack, data_shape,
-                                    data_type, mdi, self.mask)
+            data = _data_bytes_to_shaped_array(data_bytes, self.lbpack,
+                                               self.shape, self.src_dtype,
+                                               self.mdi, self.mask)
+        return data.__getitem__(keys)
 
-        # Identify which index items in the deferred slice are tuples.
-        tuple_dims = [i for i, value in enumerate(deferred_slice) if isinstance(value, tuple)]
+    def __repr__(self):
+        fmt = '<{self.__class__.__name__} shape={self.shape}' \
+              ' src_dtype={self.dtype!r} path={self.path!r}' \
+              ' offset={self.offset} mask={self.mask!r}>'
+        return fmt.format(self=self)
 
-        # Whenever a slice consists of more than one tuple index item, numpy does not slice the
-        # data array as we want it to. We therefore require to split the deferred slice into
-        # multiple slices and consistently slice the data with one slice per tuple.
-        if len(tuple_dims) > 1:
-            # Identify which index items in the deferred slice are single scalar values.
-            # Such dimensions will collapse in the sliced data shape.
-            collapsed_dims = [i for i, value in enumerate(deferred_slice) if isinstance(value, int)]
+    def __getstate__(self):
+        # Because we have __slots__, this is needed to support Pickle.dump()
+        return [(name, getattr(self, name)) for name in self.__slots__]
 
-            # Equate the first slice to be the original deferred slice.
-            tuple_slice = list(deferred_slice)
-            # Replace all tuple index items in the slice, except for the first,
-            # to be full slices over their dimension.
-            for dim in tuple_dims[1:]:
-                tuple_slice[dim] = slice(None)
-
-            # Perform the deferred slice containing only the first tuple index item.
-            payload = data[tuple_slice]
-
-            # Re-slice the data consistently with the next single tuple index item.
-            for dim in tuple_dims[1:]:
-                # Identify all those pre-sliced collapsed dimensions less than
-                # the dimension of the current slice tuple index item.
-                ndims_collapsed = len(filter(lambda x: x < dim, collapsed_dims))
-                # Construct the single tuple slice.
-                tuple_slice = [slice(None)] * payload.ndim
-                tuple_slice[dim - ndims_collapsed] = deferred_slice[dim]
-                # Slice the data with this single tuple slice.
-                payload = payload[tuple_slice]
-        else:
-            # The deferred slice contains no more than one tuple index item, so
-            # it's safe to slice the data directly.
-            payload = data[deferred_slice]
-
-        return payload
+    def __setstate__(self, state):
+        # Because we have __slots__, this is needed to support Pickle.load()
+        # (Use setattr, as there is no object dictionary.)
+        for (key, value) in state:
+            setattr(self, key, value)
 
     def __eq__(self, other):
         result = NotImplemented
@@ -729,8 +687,8 @@ class PPDataProxy(object):
         return result
 
 
-def _read_data_bytes(data_bytes, lbpack, data_shape, data_type, mdi,
-                     mask=None):
+def _data_bytes_to_shaped_array(data_bytes, lbpack, data_shape, data_type, mdi,
+                                mask=None):
     """
     Convert the already read binary data payload into a numpy array, unpacking
     and decompressing as per the F3 specification.
@@ -832,7 +790,7 @@ def _read_data_bytes(data_bytes, lbpack, data_shape, data_type, mdi,
 
 # The special headers of the PPField classes which get some improved functionality
 _SPECIAL_HEADERS = ('lbtim', 'lbcode', 'lbpack', 'lbproc',
-                    'data', 'data_manager', 'stash', 't1', 't2')
+                    'data', 'stash', 't1', 't2')
 
 
 def _header_defn(release_number):
@@ -910,23 +868,17 @@ class PPField(object):
         self_attrs = [(name, getattr(self, name, None)) for name in public_attribute_names]
         self_attrs = filter(lambda pair: pair[1] is not None, self_attrs)
 
-        if hasattr(self, '_data_manager'):
-            if self._data_manager is None:
-                data = self.data
-                # Output any masked data as separate `data` and `mask`
-                # components, to avoid the standard MaskedArray output
-                # which causes irrelevant discrepancies between NumPy
-                # v1.6 and v1.7.
-                if ma.isMaskedArray(data):
-                    # Force the fill value to zero to have the minimum
-                    # impact on the output style.
-                    self_attrs.append(('data.data', data.filled(0)))
-                    self_attrs.append(('data.mask', data.mask))
-                else:
-                    self_attrs.append(('data', self.data))
-            else:
-                self_attrs.append( ('unloaded_data_manager', self._data_manager) )
-                self_attrs.append( ('unloaded_data_proxy', self._data) )
+        # Output any masked data as separate `data` and `mask`
+        # components, to avoid the standard MaskedArray output
+        # which causes irrelevant discrepancies between NumPy
+        # v1.6 and v1.7.
+        if ma.isMaskedArray(self._data):
+            # Force the fill value to zero to have the minimum
+            # impact on the output style.
+            self_attrs.append(('data.data', self._data.filled(0)))
+            self_attrs.append(('data.mask', self._data.mask))
+        else:
+            self_attrs.append(('data', self._data))
 
         # sort the attributes by position in the pp header followed, then by alphabetical order.
         attributes = sorted(self_attrs, key=lambda pair: (attribute_priority_lookup.get(pair[0], 999), pair[0]) )
@@ -996,15 +948,16 @@ class PPField(object):
     def data(self):
         """The :class:`numpy.ndarray` representing the multidimensional data of the pp file"""
         # Cache the real data on first use
-        if self._data_manager is not None:
-            self._data = self._data_manager.load(self._data)
-            self._data_manager = None
+        if isinstance(self._data, biggus.Array):
+            data = self._data.masked_array()
+            if ma.count_masked(data) == 0:
+                data = data.data
+            self._data = data
         return self._data
 
     @data.setter
     def data(self, value):
         self._data = value
-        self._data_manager = None
 
     @property
     def calendar(self):
@@ -1549,24 +1502,40 @@ def _interpret_fields(fields):
 def _create_field_data(field, data_shape, land_mask):
     """
     Modifies a field's ``_data`` attribute either by:
-     * converting DeferredArrayBytes into a "deferred array".
+     * converting DeferredArrayBytes into a biggus array,
      * converting LoadedArrayBytes into an actual numpy array.
+
     """
     if isinstance(field._data, LoadedArrayBytes):
         loaded_bytes = field._data
-        field._data = _read_data_bytes(loaded_bytes.bytes, field.lbpack, data_shape,
-                                       loaded_bytes.dtype, field.bmdi, land_mask)
-        field._data_manager = None
+        field._data = _data_bytes_to_shaped_array(loaded_bytes.bytes,
+                                                  field.lbpack, data_shape,
+                                                  loaded_bytes.dtype,
+                                                  field.bmdi, land_mask)
     else:
         # Get hold of the DeferredArrayBytes instance.
         deferred_bytes = field._data
-        # NB. This makes a 0-dimensional array
-        field._data = np.array(PPDataProxy(deferred_bytes.fname, deferred_bytes.position,
-                                           deferred_bytes.n_bytes, field.lbpack, land_mask))
-        field._data_manager = DataManager(data_shape, deferred_bytes.dtype, field.bmdi)
+        proxy = PPDataProxy(data_shape, deferred_bytes.dtype,
+                            deferred_bytes.fname, deferred_bytes.position,
+                            deferred_bytes.n_bytes, field.lbpack,
+                            field.bmdi, land_mask)
+        field._data = biggus.NumpyArrayAdapter(proxy)
 
 
 def _field_gen(filename, read_data_bytes):
+    """
+    Returns a generator of "half-formed" PPField instances derived from
+    the given filename.
+
+    A field returned by the generator is only "half-formed" because its
+    `_data` attribute represents a simple one-dimensional stream of
+    bytes. (Encoded as an instance of either LoadedArrayBytes or
+    DeferredArrayBytes, depending on the value of `read_data_bytes`.)
+    This is because fields encoded with a land/sea mask do not contain
+    sufficient information within the field to determine the final
+    two-dimensional shape of the data.
+
+    """
     pp_file = open(filename, 'rb')
 
     # Get a reference to the seek method on the file

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,6 +27,30 @@ from iris import FUTURE
 from iris.analysis import WeightedAggregator, Aggregator
 from iris.cube import Cube
 from iris.coords import AuxCoord, DimCoord
+
+
+class Test___init___data(tests.IrisTest):
+    def test_ndarray(self):
+        # np.ndarray should be allowed through
+        data = np.arange(12).reshape(3, 4)
+        cube = Cube(data)
+        self.assertEqual(type(cube.data), np.ndarray)
+        self.assertArrayEqual(cube.data, data)
+
+    def test_masked(self):
+        # np.ma.MaskedArray should be allowed through
+        data = np.ma.masked_greater(np.arange(12).reshape(3, 4), 1)
+        cube = Cube(data)
+        self.assertEqual(type(cube.data), np.ma.MaskedArray)
+        self.assertMaskedArrayEqual(cube.data, data)
+
+    def test_matrix(self):
+        # Subclasses of np.ndarray should be coerced back to np.ndarray.
+        # (Except for np.ma.MaskedArray.)
+        data = np.matrix([[1, 2, 3], [4, 5, 6]])
+        cube = Cube(data)
+        self.assertEqual(type(cube.data), np.ndarray)
+        self.assertArrayEqual(cube.data, data)
 
 
 class Test_xml(tests.IrisTest):
