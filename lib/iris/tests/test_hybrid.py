@@ -24,7 +24,6 @@ Test the hybrid vertical coordinate representations.
 import iris.tests as tests
 
 import warnings
-import zlib
 
 import numpy as np
 

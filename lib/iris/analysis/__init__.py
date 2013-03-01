@@ -30,7 +30,6 @@ from __future__ import division
 
 import collections
 from copy import deepcopy
-from functools import partial
 
 import numpy as np
 import numpy.ma as ma

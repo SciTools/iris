@@ -9,7 +9,6 @@ The plot title and the labels for the axes are automatically derived from the me
 import matplotlib.pyplot as plt
 
 import iris
-import iris.plot as iplt
 import iris.quickplot as qplt
 
 

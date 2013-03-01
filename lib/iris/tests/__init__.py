@@ -32,7 +32,6 @@ import filecmp
 import logging
 import os
 import os.path
-import platform
 import re
 import shutil
 import StringIO

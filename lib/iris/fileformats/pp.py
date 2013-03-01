@@ -27,8 +27,6 @@ import operator
 import os
 import re
 import struct
-import sys
-import warnings
 
 import numpy as np
 import numpy.ma as ma
@@ -980,7 +978,7 @@ class PPField(object):
         for name, pos in self.HEADER_DEFN:
             try:
                 header_elem = getattr(self, name)
-            except AttributeError, err:
+            except AttributeError:
                 raise AttributeError("PPField.save() could not find %s" % name)
             if pos[0] <= NUM_LONG_HEADERS - UM_TO_PP_HEADER_OFFSET:
                 index = slice(pos[0], pos[-1] + 1)

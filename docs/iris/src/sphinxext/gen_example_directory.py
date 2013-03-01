@@ -19,7 +19,6 @@
 """
 Generate the rst files for the examples
 """
-import glob
 import os
 import re
 import sys

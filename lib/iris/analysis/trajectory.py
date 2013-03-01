@@ -20,7 +20,6 @@ Defines a Trajectory class, and a routine to extract a sub-cube along a trajecto
 """
 
 import math
-import warnings
 
 import numpy as np
 

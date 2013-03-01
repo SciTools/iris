@@ -21,7 +21,6 @@ Provides Creation and saving of DOT graphs for a :class:`iris.cube.Cube`.
 
 import os
 import subprocess
-import tempfile
 
 import iris
 import iris.util

@@ -4,8 +4,6 @@
 """
 generate the rst files for the examples by iterating over the pylab examples
 """
-import os, glob
-
 import os
 import re
 import sys

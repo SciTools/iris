@@ -51,7 +51,6 @@ The calling sequence of handler is dependent on the function given in the origin
 import collections
 import os
 import struct
-import re
 
 
 class FormatAgent(object):

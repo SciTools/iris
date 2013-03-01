@@ -77,7 +77,7 @@ def main():
                                 weights=wgts84)
 
     # plot the SOI time series and both filtered versions
-    fig = plt.figure(figsize=(9, 4))
+    plt.figure(figsize=(9, 4))
     iplt.plot(soi, coords=['time'], color='0.7', linewidth=1., linestyle='-',
               alpha=1., label='no filter')
     iplt.plot(soi24, coords=['time'], color='b', linewidth=2., linestyle='-',
