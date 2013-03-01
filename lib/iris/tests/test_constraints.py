@@ -306,6 +306,35 @@ class TestCubeExtract(TestMixin, tests.IrisTest):
         
         self.assertEqual(self.cube.extract(iris.Constraint(wibble=10)), None)
         
+    def test_wrapped(self):
+        from iris.cube import Cube
+        from iris.coords import DimCoord
+        from iris._constraints import Constraint
+        import numpy 
+        cube = Cube(numpy.arange(360))
+        lon_coord = DimCoord(numpy.arange(360), "longitude", circular=True)
+        cube.add_dim_coord(lon_coord, 0)
+        
+        # points
+        wrapped_constraint = Constraint(longitude=lambda i: -30 <= i <= 30)
+        x = cube.extract(wrapped_constraint)
+        self.assertCML(cube, ('constrained_load', 'wrapped_extract_left.cml'))
+
+        wrapped_constraint = Constraint(longitude=lambda i: 330 <= i <= 390)
+        x = cube.extract(wrapped_constraint)
+        self.assertCML(cube, ('constrained_load', 'wrapped_extract_right.cml'))
+        
+        # points and bounds
+        cube.coord("longitude").guess_bounds()
+        
+        wrapped_constraint = Constraint(longitude=lambda i: -30 <= i <= 30)
+        x = cube.extract(wrapped_constraint)
+        self.assertCML(cube, ('constrained_load', 'wrapped_extract_left_bounded.cml'))
+
+        wrapped_constraint = Constraint(longitude=lambda i: 330 <= i <= 390)
+        x = cube.extract(wrapped_constraint)
+        self.assertCML(cube, ('constrained_load', 'wrapped_extract_right_bounded.cml'))
+        
 
 @iris.tests.skip_data
 class TestConstraints(TestMixin, tests.IrisTest):
