@@ -55,7 +55,7 @@ def main():
     
     # Plot #4: Block plot
     plt.figure()
-    ax = plt.axes(projection=ccrs.PlateCarree())
+    plt.axes(projection=ccrs.PlateCarree())
     iplt.pcolormesh(temperature)
     plt.gca().stock_img()
     plt.gca().coastlines()

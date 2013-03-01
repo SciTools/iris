@@ -24,7 +24,6 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 import collections
 import datetime
-import warnings
 
 import matplotlib.axes
 import matplotlib.collections as mpl_collections

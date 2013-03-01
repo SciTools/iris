@@ -20,7 +20,6 @@ A collection of routines which create standard Cubes for test purposes.
 """
 
 import os.path
-import warnings
 
 import numpy as np
 import numpy.ma as ma

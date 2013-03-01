@@ -22,7 +22,6 @@ Test the main loading API.
 import iris.tests as tests
 
 import iris
-import iris.tests.stock as stock
 
 
 @iris.tests.skip_data

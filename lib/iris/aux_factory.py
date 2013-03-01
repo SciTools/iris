@@ -25,7 +25,7 @@ import zlib
 
 import numpy as np
 
-from iris._cube_coord_common import CFVariableMixin, LimitedAttributeDict
+from iris._cube_coord_common import CFVariableMixin
 import iris.coords
 import iris.util
 

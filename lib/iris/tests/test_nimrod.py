@@ -25,7 +25,6 @@ import numpy as np
 import cartopy.crs as ccrs
 
 import iris
-import iris.plot as iplt
 import iris.quickplot as qplt
 import iris.fileformats.nimrod_load_rules as nimrod_load_rules
 

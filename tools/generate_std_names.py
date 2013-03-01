@@ -30,7 +30,6 @@ as obtained from:
 
 import argparse
 import pprint
-import sys
 import xml.etree.ElementTree as ET
 
 

@@ -21,7 +21,6 @@ Test metadata translation rules.
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import os
 import types
 
 from iris.aux_factory import HybridHeightFactory

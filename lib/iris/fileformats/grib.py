@@ -31,7 +31,6 @@ import numpy as np
 import iris.proxy
 iris.proxy.apply_proxy('gribapi', globals())
 
-import iris.coords as coords
 import iris.coord_systems as coord_systems
 import iris.unit
 import grib_save_rules

@@ -21,8 +21,6 @@ from __future__ import division
 import iris.tests as tests
 
 import itertools
-import os
-import unittest
 import zlib
 
 import cartopy.crs as ccrs
