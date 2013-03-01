@@ -21,10 +21,7 @@ Tests the high-level plotting interface.
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import matplotlib.pyplot as plt
-
 import iris
-import iris.coords as coords
 import iris.plot as iplt
 import iris.quickplot as qplt
 import iris.tests.test_plot as test_plot

@@ -17,7 +17,7 @@ template = """\
 {%% endblock %%}
 """
 
-import os, glob, re, sys, warnings
+import os, glob, re, warnings
 import matplotlib.image as image
 
 multiimage = re.compile('(.*)_\d\d')

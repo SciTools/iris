@@ -27,7 +27,7 @@ import numpy as np
 import iris
 import iris.cube
 import iris.exceptions
-from iris.coords import DimCoord, AuxCoord
+from iris.coords import DimCoord
 import iris.coords
 import iris.tests.stock
 

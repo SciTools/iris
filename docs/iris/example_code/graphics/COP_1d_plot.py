@@ -18,12 +18,9 @@ References
    New Study For Climate Modeling, Analyses, and Scenarios. Eos Trans. AGU, Vol 90, No. 21.
 
 """
-import os.path
-
 import numpy as np
 import matplotlib.pyplot as plt
 import iris
-import iris.coords as coords
 import iris.plot as iplt
 import iris.quickplot as qplt
 

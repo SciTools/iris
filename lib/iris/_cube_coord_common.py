@@ -19,7 +19,6 @@
 # TODO: Is this a mixin or a base class?
 
 import string
-import warnings
 
 import iris.std_names
 import iris.unit

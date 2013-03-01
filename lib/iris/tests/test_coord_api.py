@@ -23,7 +23,6 @@ import iris.tests as tests
 
 import unittest
 from xml.dom.minidom import Document
-import os.path
 import logging
 
 import numpy as np

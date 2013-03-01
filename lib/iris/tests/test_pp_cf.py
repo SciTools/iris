@@ -20,7 +20,6 @@
 import iris.tests as tests
 import iris.coords
 
-import glob
 import os
 import subprocess
 import types
