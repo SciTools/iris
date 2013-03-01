@@ -23,7 +23,6 @@ from xml.dom.minidom import Document
 import collections
 import copy
 import datetime
-import itertools
 import operator
 import re
 import UserDict
@@ -46,7 +45,7 @@ import iris.exceptions
 import iris.fileformats.rules
 import iris.util
 
-from iris._cube_coord_common import CFVariableMixin, LimitedAttributeDict
+from iris._cube_coord_common import CFVariableMixin
 
 
 __all__ = ['Cube', 'CubeList', 'CubeMetadata']
