@@ -32,4 +32,5 @@ User guide table of contents
    plotting_a_cube.rst
    cube_statistics.rst
    cube_maths.rst
+   citation.rst
    end_of_userguide.rst
