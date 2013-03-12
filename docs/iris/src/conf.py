@@ -139,6 +139,10 @@ exclude_patterns = ['sphinxext', 'build']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
+# Definer the default highlight language. This also allows the >>> removal
+# javascript (copybutton.js) to function.
+highlight_language = 'python'
+
 # A list of ignored prefixes for module index sorting.
 modindex_common_prefix = ['iris']
 
