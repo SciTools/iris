@@ -68,8 +68,8 @@ install:
   - cd ../..
 
 # iris test data
-  - ./.travis_no_output wget -O iris_test_data.zip https://github.com/bblay/iris_test_data/archive/master.zip
-  - ./.travis_no_output unzip -q iris_test_data.zip
+  - ./.travis_no_output wget -O iris-test-data.zip https://github.com/SciTools/iris-test-data/archive/master.zip
+  - ./.travis_no_output unzip -q iris-test-data.zip
 
 # iris sample data
   - ./.travis_no_output wget -O iris-sample-data.zip https://github.com/SciTools/iris-sample-data/archive/master.zip
@@ -79,7 +79,7 @@ install:
   - ./.travis_no_output /usr/bin/python setup.py --with-unpack build_ext --inplace -I/usr/local/include -L/usr/local/lib -R/usr/local/lib
   - ./.travis_no_output /usr/bin/python setup.py std_names
   - echo "[Resources]" > lib/iris/etc/site.cfg
-  - echo "data_repository = $(pwd)/iris_test_data-master" >> lib/iris/etc/site.cfg
+  - echo "data_repository = $(pwd)/iris-test-data-master" >> lib/iris/etc/site.cfg
   - echo "sample_data_dir = $(pwd)/iris-sample-data-master/sample_data" >> lib/iris/etc/site.cfg
   - ln -s $(pwd)/lib/iris /home/travis/.local/lib/python2.7/site-packages/iris
 
