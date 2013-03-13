@@ -1,8 +1,8 @@
 dimensions:
 	time = UNLIMITED ; // (4 currently)
+	bnds = 2 ;
 	latitude = 13 ;
 	longitude = 10 ;
-	bnds = 2 ;
 variables:
 	float unknown(time, latitude, longitude) ;
 		unknown:source = "Data from Met Office Unified Model" ;
