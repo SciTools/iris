@@ -173,10 +173,10 @@ class IrisTest(unittest.TestCase):
             
         # Sort the dimensions (except for the first, which can be unlimited).
         # This gives consistent CDL across different platforms.
-        vars_i, _ = next((i, line) for i, line in enumerate(lines)
-                    if line.startswith("variables:"))
-        if vars_i > 3:  # More than one dim to sort?
-            lines[2:vars_i] = sorted(lines[2:vars_i])
+        sort_key = lambda line: ('UNLIMITED' not in line, line)
+        dimension_lines = slice(lines.index('dimensions:\n') + 1,
+                                lines.index('variables:\n'))
+        lines[dimension_lines] = sorted(lines[dimension_lines], key=sort_key)
         cdl = ''.join(lines)
 
         os.remove(cdl_filename)
