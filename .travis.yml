@@ -16,8 +16,6 @@ python:
 
 install:
 
-  - echo $(pwd)
-
 # add repo
   - ./.travis_no_output sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3E5C1192
   - yes | ./.travis_no_output sudo add-apt-repository ppa:olivier-berten/geo

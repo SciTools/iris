@@ -169,7 +169,15 @@ class IrisTest(unittest.TestCase):
 
         # Ingest the CDL for comparison, excluding first line.
         with open(cdl_filename, 'r') as cdl_file:
-            cdl = ''.join(cdl_file.readlines()[1:])
+            lines = cdl_file.readlines()[1:]
+            
+        # Sort the dimensions (except for the first, which can be unlimited).
+        # This gives consistent CDL across different platforms.
+        vars_i, _ = next((i, line) for i, line in enumerate(lines)
+                    if line.startswith("variables:"))
+        if vars_i > 3:  # More than one dim to sort?
+            lines[2:vars_i] = sorted(lines[2:vars_i])
+        cdl = ''.join(lines)
 
         os.remove(cdl_filename)
         reference_path = get_result_path(reference_filename)
