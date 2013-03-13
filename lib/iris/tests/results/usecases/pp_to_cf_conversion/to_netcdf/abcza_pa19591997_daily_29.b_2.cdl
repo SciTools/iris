@@ -1,8 +1,8 @@
 dimensions:
 	time = UNLIMITED ; // (360 currently)
+	bnds = 2 ;
 	latitude = 73 ;
 	longitude = 96 ;
-	bnds = 2 ;
 variables:
 	float precipitation_flux(time, latitude, longitude) ;
 		precipitation_flux:standard_name = "precipitation_flux" ;

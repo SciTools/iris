@@ -1,9 +1,9 @@
 dimensions:
 	pseudo_level = UNLIMITED ; // (4 currently)
-	time = 4 ;
+	bnds = 2 ;
 	latitude = 143 ;
 	longitude = 1 ;
-	bnds = 2 ;
+	time = 4 ;
 variables:
 	float northward_ocean_heat_transport(pseudo_level, time, latitude, longitude) ;
 		northward_ocean_heat_transport:_FillValue = -1.e+30f ;

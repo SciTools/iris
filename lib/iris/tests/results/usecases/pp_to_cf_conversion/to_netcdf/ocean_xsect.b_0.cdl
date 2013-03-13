@@ -1,7 +1,7 @@
 dimensions:
 	depth = UNLIMITED ; // (20 currently)
-	latitude = 144 ;
 	bnds = 2 ;
+	latitude = 144 ;
 variables:
 	float sea_water_potential_temperature(depth, latitude) ;
 		sea_water_potential_temperature:_FillValue = -1.e+30f ;
