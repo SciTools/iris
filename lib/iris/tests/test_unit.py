@@ -651,6 +651,25 @@ class TestConvert(TestUnit):
         # Incompatible units
         self.assertRaises(ValueError, w.convert, a, x)
 
+    def test_convert_time_ref_0(self):
+        # Test converting from one reference time to another on non-standard
+        # calendar.
+        u1 = Unit('seconds since 1978-09-01 00:00:00', calendar='360_day')
+        u2 = Unit('seconds since 1979-04-01 00:00:00', calendar='360_day')
+        u1point = np.array([ 54432000.], dtype=np.float32)
+        u2point = np.array([ 36288000.], dtype=np.float32)
+        res = u1.convert(u1point, u2)
+        self.assertArrayAlmostEqual(res, u2point)
+
+    def test_convert_time_fail_0(self):
+        # Test converting from one reference time to another between different
+        # calendars raises an error.
+        u1 = Unit('seconds since 1978-09-01 00:00:00', calendar='360_day')
+        u2 = Unit('seconds since 1979-04-01 00:00:00', calendar='georgian')
+        u1point = np.array([ 54432000.], dtype=np.float32)
+        with self.assertRaises(ValueError):
+            u1.convert(u1point, u2)
+
 
 class TestNumsAndDates(TestUnit):
     #
