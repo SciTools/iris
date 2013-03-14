@@ -361,6 +361,15 @@ class TestExponentiate(tests.IrisTest):
         self.assertRaises(ValueError, iris.analysis.maths.exponentiate, a, 0.3)
 
 
+class TestExponential(tests.IrisTest):
+    def setUp(self):
+        self.cube = iris.tests.stock.simple_1d()
+
+    def test_exp(self):
+        e = iris.analysis.maths.exp(self.cube)
+        self.assertCMLApproxData(e, ('analysis', 'exp.cml'))
+
+
 @iris.tests.skip_data
 class TestLog(tests.IrisTest):
     def setUp(self):

@@ -49,7 +49,7 @@ def abs(cube, update_history=True, in_place=False):
     Returns:
         Cube of same dimensionality as Cube provided, with absolute data using :func:`numpy.abs`
         and additional metadata added.
-    
+
     """
     return _math_op_common(cube, np.abs, cube.units,
                            history='absolute', update_history=update_history, in_place=in_place)
@@ -58,7 +58,7 @@ def abs(cube, update_history=True, in_place=False):
 def intersection_of_cubes(cube, other_cube):
     """
     Return the two Cubes of intersection given two Cubes.
-    
+
     .. note:: The intersection of cubes function will ignore all single valued
         coordinates in checking the intersection.
 
@@ -77,12 +77,12 @@ def intersection_of_cubes(cube, other_cube):
     # Take references of the original cubes (which will be copied when slicing later)
     new_cube_self = cube
     new_cube_other = other_cube
-    
+
     # This routine has not been written to cope with multi-dimensional coordinates.
     for coord in cube.coords() + other_cube.coords():
         if coord.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(coord)
-    
+
     coord_comp = iris.analysis.coord_comparison(cube, other_cube)
 
     if coord_comp['ungroupable_and_dimensioned']:
@@ -97,23 +97,23 @@ def intersection_of_cubes(cube, other_cube):
             intersected_coord = coord.intersect(other_coord)
             new_cube_self = new_cube_self.subset(intersected_coord)
             new_cube_other = new_cube_other.subset(intersected_coord)
-    
+
     return new_cube_self, new_cube_other
 
 
 def _assert_compatible(cube, other):
     """Checks to see if cube.data and another array can be broadcast to the same shape using ``numpy.broadcast_arrays``."""
     # This code previously returned broadcasted versions of the cube data and the other array.
-    # As numpy.broadcast_arrays does not work with masked arrays (it returns them as ndarrays) operations 
+    # As numpy.broadcast_arrays does not work with masked arrays (it returns them as ndarrays) operations
     # involving masked arrays would be broken.
-    
+
     try:
         data_view, other_view = np.broadcast_arrays(cube.data, other)
     except ValueError, err:
         # re-raise
         raise ValueError("The array was not broadcastable to the cube's data shape. The error message from numpy when broadcasting:\n%s\n"
                          "The cube's shape was %s and the array's shape was %s" % (err, cube.shape, other.shape))
-    
+
     if cube.shape != data_view.shape:
         raise ValueError("The array operation would increase the dimensionality of the cube. The new cubes data would "
                          "have had to become: %s" % (data_view.shape, ))
@@ -125,9 +125,9 @@ def add(cube, other, dim=None, ignore=True, update_history=True, in_place=False)
     value.
 
     When summing two cubes, they must both have the same coordinate systems & data resolution.
-    
+
     When adding a coordinate to a cube, they must both share the same number of elements
-    along a shared axis.  
+    along a shared axis.
 
     Args:
 
@@ -160,9 +160,9 @@ def subtract(cube, other, dim=None, ignore=True, update_history=True, in_place=F
     a cube and a coordinate or scalar value.
 
     When subtracting two cubes, they must both have the same coordinate systems & data resolution.
-    
+
     When subtracting a coordinate to a cube, they must both share the same number of elements
-    along a shared axis.  
+    along a shared axis.
 
     Args:
 
@@ -193,13 +193,13 @@ def _add_subtract_common(operation_function, operation_symbol, operation_noun, o
                          cube, other, dim=None, ignore=True, update_history=True, in_place=False):
     """
     Function which shares common code between addition and subtraction of cubes.
-    
+
     operation_function   - function which does the operation (e.g. numpy.subtract)
     operation_symbol     - the textual symbol of the operation (e.g. '-')
     operation_noun       - the noun of the operation (e.g. 'subtraction')
     operation_past_tense - the past tense of the operation (e.g. 'subtracted')
-    
-    """                  
+
+    """
     if not isinstance(cube, iris.cube.Cube):
         raise TypeError('The "cube" argument must be an instance of iris.Cube.')
 
@@ -216,13 +216,13 @@ def _add_subtract_common(operation_function, operation_symbol, operation_noun, o
 
     if isinstance(other, np.ndarray):
         _assert_compatible(cube, other)
-        
+
         if in_place:
-            new_cube = cube 
+            new_cube = cube
             operation_function(new_cube.data, other, new_cube.data)
         else:
-            new_cube = cube.copy(data=operation_function(cube.data, other)) 
-            
+            new_cube = cube.copy(data=operation_function(cube.data, other))
+
         if update_history:
             if other.ndim == 0:
                 history = '%s %s %s' % (cube.name(), operation_symbol, other)
@@ -240,7 +240,7 @@ def _add_subtract_common(operation_function, operation_symbol, operation_noun, o
             data_dimension = dim
         else:
             # Try and get a coord dim
-            if other.shape != (1,): 
+            if other.shape != (1,):
                 try:
                     coord_dims = cube.coord_dims(other)
                     data_dimension = coord_dims[0] if coord_dims else None
@@ -261,23 +261,23 @@ def _add_subtract_common(operation_function, operation_symbol, operation_noun, o
             points = points.reshape(points_shape)
 
         if in_place:
-            new_cube = cube 
-            operation_function(new_cube.data, points, new_cube.data) 
+            new_cube = cube
+            operation_function(new_cube.data, points, new_cube.data)
         else:
-            new_cube = cube.copy(data=operation_function(cube.data, points)) 
+            new_cube = cube.copy(data=operation_function(cube.data, points))
 
         if update_history:
             history = '%s %s %s (coordinate)' % (cube.name(), operation_symbol, other.name())
     elif isinstance(other, iris.cube.Cube):
         # Deal with cube addition/subtraction by cube
-        
+
         # get a coordinate comparison of this cube and the cube to do the operation with
         coord_comp = iris.analysis.coord_comparison(cube, other)
-        
+
         if coord_comp['transposable']:
             raise ValueError('Cubes cannot be %s, differing axes. '
                                  'cube.transpose() may be required to re-order the axes.' % operation_past_tense)
-        
+
         # provide a deprecation warning if the ignore keyword has been set
         if ignore is not True:
             warnings.warn('The "ignore" keyword has been deprecated in add/subtract. This functionality is now automatic. '
@@ -304,7 +304,7 @@ def _add_subtract_common(operation_function, operation_symbol, operation_noun, o
             new_cube.remove_coord(coord)
 
         if update_history:
-            history = '%s %s %s%s' % (cube.name() or 'unknown', operation_symbol, 
+            history = '%s %s %s%s' % (cube.name() or 'unknown', operation_symbol,
                                       other.name() or 'unknown', ignore_string)
 
     else:
@@ -374,35 +374,35 @@ def _multiply_divide_common(operation_function, operation_symbol, operation_noun
                             cube, other, dim=None, update_history=True):
     """
     Function which shares common code between multiplication and division of cubes.
-        
+
     operation_function   - function which does the operation (e.g. numpy.divide)
     operation_symbol     - the textual symbol of the operation (e.g. '/')
     operation_noun       - the noun of the operation (e.g. 'division')
     operation_past_tense - the past tesnse of the operation (e.g. 'divided')
 
     .. seealso:: For information on the dim keyword argument see :func:`multiply`.
- 
+
     """
     if not isinstance(cube, iris.cube.Cube):
         raise TypeError('The "cube" argument must be an instance of iris.Cube.')
-    
+
     if isinstance(other, (int, float)):
         other = np.array(other)
 
     other_unit = None
     history = None
-    
+
     if isinstance(other, np.ndarray):
         _assert_compatible(cube, other)
-        
-        copy_cube = cube.copy(data=operation_function(cube.data, other)) 
-        
+
+        copy_cube = cube.copy(data=operation_function(cube.data, other))
+
         if update_history:
             if other.ndim == 0:
                 history = '%s %s %s' % (cube.name(), operation_symbol, other)
             else:
                 history = '%s %s array' % (cube.name(), operation_symbol)
-        
+
         other_unit = '1'
     elif isinstance(other, iris.coords.Coord):
         # Deal with cube multiplication/division by coordinate
@@ -416,54 +416,54 @@ def _multiply_divide_common(operation_function, operation_symbol, operation_noun
             data_dimension = dim
         else:
             # Try and get a coord dim
-            if other.shape != (1,): 
+            if other.shape != (1,):
                 try:
                     coord_dims = cube.coord_dims(other)
                     data_dimension = coord_dims[0] if coord_dims else None
                 except iris.exceptions.CoordinateNotFoundError:
                     raise ValueError("Could not determine dimension for mul/div. Use mul(coord, dim=dim)")
-            
+
         if other.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(other)
-        
+
         if other.has_bounds():
             warnings.warn('%s by a bounded coordinate not well defined, ignoring bounds.' % operation_noun)
-        
+
         points = other.points
-            
+
         # If the axis is defined then shape the provided points so that we can do the
         # division (this is needed as there is no "axis" keyword to numpy's divide/multiply)
         if data_dimension is not None:
             points_shape = [1] * cube.data.ndim
             points_shape[data_dimension] = -1
             points = points.reshape(points_shape)
-            
-        copy_cube = cube.copy(data=operation_function(cube.data, points)) 
-        
+
+        copy_cube = cube.copy(data=operation_function(cube.data, points))
+
         if update_history:
             history = '%s %s %s' % (cube.name(), operation_symbol, other.name())
-            
+
         other_unit = other.units
     elif isinstance(other, iris.cube.Cube):
         # Deal with cube multiplication/division by cube
-        copy_cube = cube.copy(data=operation_function(cube.data, other.data)) 
+        copy_cube = cube.copy(data=operation_function(cube.data, other.data))
 
         if update_history:
-            history = '%s %s %s' % (cube.name() or 'unknown', operation_symbol, 
+            history = '%s %s %s' % (cube.name() or 'unknown', operation_symbol,
                                     other.name() or 'unknown')
 
         other_unit = other.units
     else:
         return NotImplemented
-   
+
     # Update the units
     if operation_function == np.multiply:
         copy_cube.units = cube.units * other_unit
     elif operation_function == np.divide:
         copy_cube.units = cube.units / other_unit
-   
+
     iris.analysis.clear_phenomenon_identity(copy_cube)
-    
+
     if history is not None:
         copy_cube.add_history(history)
 
@@ -495,17 +495,46 @@ def exponentiate(cube, exponent, update_history=True, in_place=False):
 
     Returns:
         An instance of :class:`iris.cube.Cube`.
-    
+
     """
-    custom_pow = lambda data: pow(data, exponent) 
+    custom_pow = lambda data: pow(data, exponent)
     return _math_op_common(cube, custom_pow, cube.units ** exponent,
-                           history='%s ^(%s)' % (cube.units, exponent), update_history=update_history, in_place=in_place)
+                           history='%s^(%s)' % (cube.units, exponent), update_history=update_history, in_place=in_place)
+
+
+def exp(cube, update_history=True, in_place=False):
+    """
+    Calculate the exponential (exp(x)) of the cube.
+
+    Args:
+
+    * cube:
+        An instance of :class:`iris.cube.Cube`.
+
+    .. note::
+
+        Taking an exponential will return a cube with dimensionless units.
+
+    Kwargs:
+
+    * update_history:
+        Whether to add an entry into the resulting cube's "history" attribute.
+    * in_place:
+        Whether to create a new Cube, or alter the given "cube".
+
+    Returns:
+        An instance of :class:`iris.cube.Cube`.
+
+    """
+    return _math_op_common(cube, np.exp, iris.unit.Unit('1'),
+                           history='exp(%s)' % (cube.name()),
+                           update_history=update_history, in_place=in_place)
 
 
 def log(cube, update_history=True, in_place=False):
     """
     Calculate the natural logarithm (base-e logarithm) of the cube.
-    
+
     Args:
 
     * cube:
@@ -520,7 +549,7 @@ def log(cube, update_history=True, in_place=False):
 
     Returns:
         An instance of :class:`iris.cube.Cube`.
-    
+
     """
     return _math_op_common(cube, np.log, cube.units.log(math.e),
                            history="ln", update_history=update_history, in_place=in_place)
@@ -529,7 +558,7 @@ def log(cube, update_history=True, in_place=False):
 def log2(cube, update_history=True, in_place=False):
     """
     Calculate the base-2 logarithm of the cube.
-    
+
     Args:
 
     * cube:
@@ -544,9 +573,9 @@ def log2(cube, update_history=True, in_place=False):
 
     Returns:
         An instance of :class:`iris.cube.Cube`.
-    
+
     """
-    return _math_op_common(cube, np.log2, cube.units.log(2), 
+    return _math_op_common(cube, np.log2, cube.units.log(2),
                            history="lb", update_history=update_history, in_place=in_place)
 
 
@@ -568,12 +597,12 @@ def log10(cube, update_history=True, in_place=False):
 
     Returns:
         An instance of :class:`iris.cube.Cube`.
-    
+
     """
     return _math_op_common(cube, np.log10, cube.units.log(10),
                            history="lg", update_history=update_history, in_place=in_place)
 
-    
+
 def _math_op_common(cube, math_op, new_unit, history, update_history, in_place):
 
     data = math_op(cube.data)
@@ -589,5 +618,5 @@ def _math_op_common(cube, math_op, new_unit, history, update_history, in_place):
     copy_cube.units = new_unit
     if update_history:
         copy_cube.add_history(history)
-    
+
     return copy_cube
