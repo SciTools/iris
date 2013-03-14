@@ -1,7 +1,7 @@
 dimensions:
 	latitude = UNLIMITED ; // (94 currently)
-	longitude = 128 ;
 	bnds = 2 ;
+	longitude = 128 ;
 variables:
 	float sea_surface_height_above_geoid(latitude, longitude) ;
 		sea_surface_height_above_geoid:_FillValue = -1.e+30f ;

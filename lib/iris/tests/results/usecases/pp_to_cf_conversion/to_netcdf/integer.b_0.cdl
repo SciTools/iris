@@ -1,7 +1,7 @@
 dimensions:
 	latitude = UNLIMITED ; // (73 currently)
-	longitude = 96 ;
 	bnds = 2 ;
+	longitude = 96 ;
 variables:
 	int land_binary_mask(latitude, longitude) ;
 		land_binary_mask:standard_name = "land_binary_mask" ;

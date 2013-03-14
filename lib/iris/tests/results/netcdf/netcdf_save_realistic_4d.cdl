@@ -1,9 +1,9 @@
 dimensions:
 	time = UNLIMITED ; // (6 currently)
-	model_level_number = 70 ;
+	bnds = 2 ;
 	grid_latitude = 100 ;
 	grid_longitude = 100 ;
-	bnds = 2 ;
+	model_level_number = 70 ;
 variables:
 	float air_potential_temperature(time, model_level_number, grid_latitude, grid_longitude) ;
 		air_potential_temperature:standard_name = "air_potential_temperature" ;

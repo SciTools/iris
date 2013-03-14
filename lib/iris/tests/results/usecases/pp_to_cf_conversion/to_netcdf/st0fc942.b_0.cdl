@@ -1,9 +1,9 @@
 dimensions:
 	pseudo_level = UNLIMITED ; // (4 currently)
-	time = 4 ;
+	bnds = 2 ;
 	depth = 20 ;
 	grid_latitude = 143 ;
-	bnds = 2 ;
+	time = 4 ;
 variables:
 	float unknown(pseudo_level, time, depth, grid_latitude) ;
 		unknown:_FillValue = -1.e+30f ;
