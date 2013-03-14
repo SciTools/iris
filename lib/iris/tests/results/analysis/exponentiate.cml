@@ -2,7 +2,7 @@
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube units="kelvin^4">
     <attributes>
-      <attribute name="history" value="K ^(4)"/>
+      <attribute name="history" value="K^(4)"/>
     </attributes>
     <coords>
       <coord>
