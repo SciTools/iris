@@ -1,0 +1,75 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube units="unknown">
+    <coords>
+      <coord datadims="[2]">
+        <dimCoord bounds="[[-0.5, 0.5],
+		[0.5, 1.5],
+		[1.5, 2.5],
+		[2.5, 3.5]]" id="b0c4282a" long_name="x" points="[0.0, 1.0, 2.0, 3.0]" shape="(4,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[2]">
+        <auxCoord id="f49a8b85" long_name="x-aux" points="[0.0, 10.0, 20.0, 30.0]" shape="(4,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1, 2]">
+        <auxCoord id="31b2581d" long_name="xy-aux" points="[[0.0, 1.0, 0.0, 1.0],
+		[2.0, 3.0, 2.0, 3.0],
+		[0.0, 1.0, 0.0, 1.0],
+		[2.0, 3.0, 2.0, 3.0]]" shape="(4, 4)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0, 1, 2]">
+        <auxCoord id="cd7d6c9f" long_name="xyz-aux" points="[[[0.0, 1000.0, 0.0, 1000.0],
+ 		[2000.0, 3000.0, 2000.0, 3000.0],
+ 		[0.0, 1000.0, 0.0, 1000.0],
+ 		[2000.0, 3000.0, 2000.0, 3000.0]],
+
+		[[4000.0, 5000.0, 4000.0, 5000.0],
+ 		[6000.0, 7000.0, 6000.0, 7000.0],
+ 		[4000.0, 5000.0, 4000.0, 5000.0],
+ 		[6000.0, 7000.0, 6000.0, 7000.0]],
+
+		[[0.0, 1000.0, 0.0, 1000.0],
+ 		[2000.0, 3000.0, 2000.0, 3000.0],
+ 		[0.0, 1000.0, 0.0, 1000.0],
+ 		[2000.0, 3000.0, 2000.0, 3000.0]],
+
+		[[4000.0, 5000.0, 4000.0, 5000.0],
+ 		[6000.0, 7000.0, 6000.0, 7000.0],
+ 		[4000.0, 5000.0, 4000.0, 5000.0],
+ 		[6000.0, 7000.0, 6000.0, 7000.0]]]" shape="(4, 4, 4)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0, 2]">
+        <auxCoord id="336c5f3a" long_name="xz-aux" points="[[0.0, 10.0, 0.0, 10.0],
+		[20.0, 30.0, 20.0, 30.0],
+		[0.0, 10.0, 0.0, 10.0],
+		[20.0, 30.0, 20.0, 30.0]]" shape="(4, 4)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-0.5, 0.5],
+		[0.5, 1.5],
+		[1.5, 2.5],
+		[2.5, 3.5]]" id="31e14d0d" long_name="y" points="[0.0, 1.0, 2.0, 3.0]" shape="(4,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <auxCoord id="f52f7698" long_name="y-aux" points="[0.0, 10.0, 20.0, 30.0]" shape="(4,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0, 1]">
+        <auxCoord id="506b861e" long_name="yz-aux" points="[[0.0, 100.0, 0.0, 100.0],
+		[200.0, 300.0, 200.0, 300.0],
+		[0.0, 100.0, 0.0, 100.0],
+		[200.0, 300.0, 200.0, 300.0]]" shape="(4, 4)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[-0.5, 0.5],
+		[0.5, 1.5],
+		[1.5, 2.5],
+		[2.5, 3.5]]" id="69ffe425" long_name="z" points="[0.0, 1.0, 2.0, 3.0]" shape="(4,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord id="f7f171bf" long_name="z-aux" points="[0.0, 10.0, 20.0, 30.0]" shape="(4,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="-0x46ae21bf" dtype="float32" shape="(4, 4, 4)"/>
+  </cube>
+</cubes>
