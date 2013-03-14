@@ -1742,37 +1742,54 @@ class Unit(iris.util._OrderedHashable):
         other = as_unit(other)
         value_copy = copy.deepcopy(value)
 
-        # Temporary fix, pending #1096
         if self == other:
             return value
 
         if self.is_convertible(other):
-            ut_converter = _ut_get_converter(self.ut_unit, other.ut_unit)
-            if ut_converter:
-                if isinstance(value_copy, (int, float, long)):
-                    if ctype not in _cv_convert_scalar.keys():
-                        raise ValueError('Invalid target type. Can only convert'
-                                         ' to float or double.')
-                    # utilise global convenience dictionary _cv_convert_scalar
-                    result = _cv_convert_scalar[ctype](ut_converter, ctype(value_copy))
-                else:
-                    # Can only handle array of np.float32 or np.float64 so cast
-                    # array of ints to array of floats of requested precision.
-                    if issubclass(value_copy.dtype.type, np.integer):
-                        value_copy = value_copy.astype(_ctypes2numpy[ctype])
-                    # strict type check of numpy array
-                    if value_copy.dtype.type not in _numpy2ctypes.keys():
-                        raise TypeError("Expect a numpy array of '%s' or '%s'" % tuple(sorted(_numpy2ctypes.keys())))
-                    ctype = _numpy2ctypes[value_copy.dtype.type]
-                    pointer = value_copy.ctypes.data_as(ctypes.POINTER(ctype))
-                    # utilise global convenience dictionary _cv_convert_array
-                    _cv_convert_array[ctype](ut_converter, pointer, value_copy.size, pointer)
-                    result = value_copy
-                _cv_free(ut_converter)
+            # Use utime for converting reference times that are not using a
+            # gregorian calendar as it handles these and udunits does not.
+            if self.is_time_reference() and self.calendar is not 'gregorian':
+                ut1 = self.utime()
+                ut2 = other.utime()
+                result = ut2.date2num(ut1.num2date(value_copy))
             else:
-                self._raise_error('Failed to convert %r to %r' % (self, other))
+                ut_converter = _ut_get_converter(self.ut_unit, other.ut_unit)
+                if ut_converter:
+                    if isinstance(value_copy, (int, float, long)):
+                        if ctype not in _cv_convert_scalar.keys():
+                            raise ValueError('Invalid target type. Can only '
+                                             'convert to float or double.')
+                        # Utilise global convenience dictionary
+                        # _cv_convert_scalar
+                        result = _cv_convert_scalar[ctype](ut_converter,
+                                                           ctype(value_copy))
+                    else:
+                        # Can only handle array of np.float32 or np.float64 so
+                        # cast array of ints to array of floats of requested
+                        # precision.
+                        if issubclass(value_copy.dtype.type, np.integer):
+                            value_copy = value_copy.astype(
+                                _ctypes2numpy[ctype])
+                        # strict type check of numpy array
+                        if value_copy.dtype.type not in _numpy2ctypes.keys():
+                            raise TypeError(
+                                "Expect a numpy array of '%s' or '%s'" %
+                                tuple(sorted(_numpy2ctypes.keys())))
+                        ctype = _numpy2ctypes[value_copy.dtype.type]
+                        pointer = value_copy.ctypes.data_as(
+                            ctypes.POINTER(ctype))
+                        # Utilise global convenience dictionary
+                        # _cv_convert_array
+                        _cv_convert_array[ctype](ut_converter, pointer,
+                                                 value_copy.size, pointer)
+                        result = value_copy
+                    _cv_free(ut_converter)
+                else:
+                    self._raise_error('Failed to convert %r to %r' %
+                                      (self, other))
         else:
-            raise ValueError("Unable to convert from '%s' to '%s'." % (self, other))
+            raise ValueError("Unable to convert from '%s' to '%s'." %
+                             (self, other))
         return result
 
     def utime(self):
