@@ -354,6 +354,16 @@ class CheckForWarningsMetaclass(type):
         return type.__new__(cls, name, bases, local)
 
 
+class PlotTestingMetaclass(iris.tests.DisableCFProfileMetaclass,
+                           CheckForWarningsMetaclass):
+    """
+    Metaclass that provides warning checking functionality and disables the
+    CF profile.
+
+    """
+    pass
+
+
 @iris.tests.skip_data
 class TestPcolorNoBounds(tests.GraphicsTest, SliceMixin):
     """
@@ -361,7 +371,7 @@ class TestPcolorNoBounds(tests.GraphicsTest, SliceMixin):
     that have no bounds.
 
     """
-    __metaclass__ = CheckForWarningsMetaclass
+    __metaclass__ = PlotTestingMetaclass
 
     def setUp(self):
         self.wind = _load_wind_no_bounds()
@@ -375,7 +385,7 @@ class TestPcolormeshNoBounds(tests.GraphicsTest, SliceMixin):
     that have no bounds.
 
     """
-    __metaclass__ = CheckForWarningsMetaclass
+    __metaclass__ = PlotTestingMetaclass
 
     def setUp(self):
         self.wind = _load_wind_no_bounds()

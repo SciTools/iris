@@ -29,6 +29,7 @@ import collections
 import contextlib
 import difflib
 import filecmp
+import functools
 import logging
 import os
 import os.path
@@ -121,15 +122,86 @@ def get_result_path(relative_path):
     return os.path.abspath(os.path.join(_RESULT_PATH, relative_path))
 
 
+def setUp_decorator(method):
+    """
+    Decorator for :class:`unittest.TestCase` test methods that disables
+    the CF profile.
+
+    """
+    # Check whether method has already been decorated.
+    if getattr(method, '_su_decorated', False):
+        return method
+
+    @functools.wraps(method)
+    def decorated_method(self, *args, **kwargs):
+        if 'cf_profile' in iris.site_configuration:
+            self._orig_cf_profile = iris.site_configuration['cf_profile']
+            iris.site_configuration['cf_profile'] = None
+        return method(self, *args, **kwargs)
+    # Add attribute to indicate decoration.
+    decorated_method._su_decorated = True
+    return decorated_method
+
+
+def tearDown_decorator(method):
+    """
+    Decorator for :class:`unittest.TestCase` test methods that restores
+    the CF profile.
+
+    """
+    # Check whether method has already been decorated.
+    if getattr(method, '_td_decorated', False):
+        return method
+
+    @functools.wraps(method)
+    def decorated_method(self, *args, **kwargs):
+        res = method(self, *args, **kwargs)
+        if 'cf_profile' in iris.site_configuration and \
+                hasattr(self, '_orig_cf_profile'):
+            iris.site_configuration['cf_profile'] = self._orig_cf_profile
+        return res
+    # Add attribute to indicate decoration.
+    decorated_method._td_decorated = True
+    return decorated_method
+
+
+class DisableCFProfileMetaclass(type):
+    """
+    Metaclass that decorates all :meth:`setUp` and :meth:`tearDown` methods
+    to disable the site CF profile during testing.
+
+    """
+    def __new__(cls, name, bases, local):
+        def decorate_method(method_name, decorator):
+            method = None
+            # Look in local, then bases for an attribute
+            # with the specified name.
+            if method_name in local:
+                method = local[method_name]
+            else:
+                for base in bases:
+                    if hasattr(base, method_name):
+                        method = getattr(base, method_name)
+                        break
+            # Decorate it if it's callable and put the decorated
+            # function in local.
+            if isinstance(method, collections.Callable):
+                local[method_name] = decorator(method)
+
+        decorate_method('setUp', setUp_decorator)
+        decorate_method('tearDown', tearDown_decorator)
+        return type.__new__(cls, name, bases, local)
+
+
 class IrisTest(unittest.TestCase):
-    """A subclass of unittest.TestCase which provides Iris specific testing functionality."""
+    """
+    A subclass of unittest.TestCase which provides Iris specific testing
+    functionality.
+
+    """
+    __metaclass__ = DisableCFProfileMetaclass
 
     _assertion_counts = collections.defaultdict(int)
-
-    @classmethod
-    def setUpClass(cls):
-        # Ensure that the CF profile if turned-off for testing.
-        iris.site_configuration['cf_profile'] = None
 
     def _assert_str_same(self, reference_str, test_str, reference_filename, type_comparison_name='Strings'):
         if reference_str != test_str:
