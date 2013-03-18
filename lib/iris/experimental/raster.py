@@ -32,7 +32,7 @@ import iris
 
 def _gdal_write_array(cube_data, padf_transform, fname, ftype):
     """
-    Use GDAL WriteArray to export cube_data as a raster image.
+    Use GDAL WriteArray to export cube_data as a 32-bit raster image.
     Requires the array data to be of the form: North-at-top
     and West-on-left.
 
@@ -41,14 +41,14 @@ def _gdal_write_array(cube_data, padf_transform, fname, ftype):
         * padf_transform (tuple): coefficients for affine transformation
         * fname (string): Output file name.
         * ftype (string): Export file type.
+        * dtype (numpy.dtype): Specify the data type to be written.
+            By default a suitable type will be determined from cube_data.
 
     .. note::
 
         Projection information is currently not written to the output.
 
     """
-    mask = None
-
     dtype = gdal.GDT_Float32
 
     driver = gdal.GetDriverByName(ftype)
@@ -58,12 +58,8 @@ def _gdal_write_array(cube_data, padf_transform, fname, ftype):
     data.SetGeoTransform(padf_transform)
     band = data.GetRasterBand(1)
 
-    try:
-        mask = cube_data.mask
-    except AttributeError:
-        pass
-
-    if (mask is not None) and (mask is not np.ma.nomask):
+    mask = np.ma.getmask(cube_data)
+    if mask is not np.ma.nomask:
         cube_data = cube_data.copy()
         # For consistency with current pp.save, the MDI is set to zero.
         cube_data[mask] = 0
@@ -117,6 +113,8 @@ def export_geotiff(cube, fname):
         raise ValueError('X coordinate bounds must be regularly spaced')
     if not np.all(np.diff(coord_y.bounds) == y_step):
         raise ValueError('Y coordinate bounds must be regularly spaced')
+    if coord_x.points[0] > coord_x.points[-1]:
+        raise ValueError('Longitude values must be monotonically increasing')
 
     bbox_top = np.max(coord_y.bounds)
     bbox_left = np.min(coord_x.bounds)
