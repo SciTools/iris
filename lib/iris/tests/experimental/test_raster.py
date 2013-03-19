@@ -58,7 +58,7 @@ class TestGeoTiffExport(tests.GraphicsTest):
             np.testing.assert_array_equal(im_data,
                                           cube.data.astype(np.float32))
 
-    def test_load(self):
+    def test_unmasked(self):
         fin = tests.get_data_path(('NetCDF', 'global', 'xyt',
                                    'SMALL_total_column_co2.nc'))
         cube = iris.load_cube(fin)[0]
@@ -76,9 +76,26 @@ class TestGeoTiffExport(tests.GraphicsTest):
 
         self.check_tiff(cube, tif_header)
         # Check again with the latitude coordinate (and the corresponding
-        # cube.data) inverted.
+        # cube.data) inverted. The output should be the same as before.
         cube.coord('latitude').points = cube.coord('latitude').points[::-1]
         cube.data = cube.data[::-1, :]
+        self.check_tiff(cube, tif_header)
+
+    def test_masked(self):
+        fin = tests.get_data_path(('NetCDF', 'global', 'xyt',
+                                   'SMALL_total_column_co2.nc'))
+        cube = iris.load_cube(fin)[0]
+
+        # Repeat the same data extract as above
+        east = iris.Constraint(longitude=lambda cell: cell < 180)
+        non_edge = iris.Constraint(latitude=lambda cell: -90 < cell < 90)
+        cube = cube.extract(east & non_edge)
+        cube.coord('longitude').guess_bounds()
+        cube.coord('latitude').guess_bounds()
+        # Mask some of the data
+        cube.data = np.ma.masked_where(cube.data <= 380, cube.data)
+        tif_header = 'SMALL_total_column_co2.nc.ma.tif_header.txt'
+
         self.check_tiff(cube, tif_header)
 
 

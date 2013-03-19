@@ -58,12 +58,10 @@ def _gdal_write_array(cube_data, padf_transform, fname, ftype):
     data.SetGeoTransform(padf_transform)
     band = data.GetRasterBand(1)
 
-    mask = np.ma.getmask(cube_data)
-    if mask is not np.ma.nomask:
+    if isinstance(cube_data, np.ma.core.MaskedArray):
         cube_data = cube_data.copy()
-        # For consistency with current pp.save, the MDI is set to zero.
-        cube_data[mask] = 0
-        band.SetNoDataValue(0)
+        cube_data[cube_data.mask] = cube_data.fill_value
+        band.SetNoDataValue(cube_data.fill_value)
 
     band.WriteArray(cube_data)
 
