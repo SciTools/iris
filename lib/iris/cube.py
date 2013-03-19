@@ -213,6 +213,24 @@ class CubeList(list):
     def __add__(self, other):
         return CubeList(list.__add__(self, other))
 
+    def __getitem__(self, keys):
+        """x.__getitem__(y) <==> x[y]"""
+        result = super(CubeList, self).__getitem__(keys)
+        if isinstance(result, list):
+            result = CubeList(result)
+        return result
+
+    def __getslice__(self, start, stop):
+        """
+        x.__getslice__(i, j) <==> x[i:j]
+
+        Use of negative indices is not supported.
+
+        """
+        result = super(CubeList, self).__getslice__(start, stop)
+        result = CubeList(result)
+        return result
+
     def xml(self, checksum=False):
         """Return a string of the XML that this list of cubes represents."""
         doc = Document()
