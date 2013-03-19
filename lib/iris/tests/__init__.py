@@ -54,7 +54,6 @@ import numpy.ma as ma
 
 import iris.cube
 import iris.config
-import iris.io
 import iris.util
 
 
@@ -109,15 +108,19 @@ def main():
 
 
 def get_data_path(relative_path):
-    """Returns the absolute path to a data file when given the relative path
-    as a string, or sequence of strings."""
+    """
+    Return the absolute path to a data file when given the relative path
+    as a string, or sequence of strings.
+
+    """
+    if not isinstance(relative_path, basestring):
+        relative_path = os.path.join(*relative_path)
+    data_path = os.path.join(iris.config.TEST_DATA_DIR, relative_path)
 
     if _EXPORT_DATAPATHS_FILE is not None:
-        if isinstance(relative_path, str):
-            relative_path = tuple(relative_path)
-        _EXPORT_DATAPATHS_FILE.write(os.path.join(*relative_path) + '\n')
+        _EXPORT_DATAPATHS_FILE.write(data_path + '\n')
         
-    return iris.io.select_data_path('tests', relative_path)
+    return data_path
 
 
 def get_result_path(relative_path):
@@ -418,8 +421,8 @@ def skip_data(fn):
     availability of external data.
 
     """
-    valid_data = (iris.config.DATA_REPOSITORY and
-                  os.path.isdir(iris.config.DATA_REPOSITORY))
+    valid_data = (iris.config.TEST_DATA_DIR and
+                  os.path.isdir(iris.config.TEST_DATA_DIR))
     if valid_data and not os.environ.get('IRIS_TEST_NO_DATA'):
         return fn
     else:

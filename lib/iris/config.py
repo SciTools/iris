@@ -27,17 +27,13 @@ defined by :mod:`ConfigParser`.
 
     The full path to the Iris resource directory.
 
-.. py:data:: iris.config.MASTER_DATA_REPOSITORY
-
-    Local directory where master test data exists. This option is not obligatory. The master test data is the super-set of the DATA_REPOSITORY.
-
-.. py:data:: iris.config.DATA_REPOSITORY
-
-    Local directory where test data exists. This option is obligatory for Iris unit tests. This test data is a sub-set of the MASTER_DATA_REPOSITORY, if it exists. Directory contents accessed via :func:`iris.io.select_data_path`.
-
 .. py:data:: iris.config.SAMPLE_DATA_DIR
 
     Local directory where sample data exists. Defaults to "sample_data" sub-directory of the Iris package install directory. The sample data directory supports the Iris gallery. Directory contents accessed via :func:`iris.sample_data_path`.
+
+.. py:data:: iris.config.TEST_DATA_DIR
+
+    Local directory where test data exists.  Defaults to "test_data" sub-directory of the Iris package install directory. The test data directory supports the subset of Iris unit tests that require data. Directory contents accessed via :func:`iris.tests.get_data_path`.
 
 .. py:data:: iris.config.PALETTE_PATH
 
@@ -114,20 +110,17 @@ _RESOURCE_SECTION = 'Resources'
 RESOURCE_DIR = get_dir_option(_RESOURCE_SECTION, 'dir',
                               os.path.join(ROOT_PATH, 'resources'))
 
-
-MASTER_DATA_REPOSITORY = get_dir_option(
-        _RESOURCE_SECTION, 'master_data_repository')
-
-
-DATA_REPOSITORY = get_dir_option(_RESOURCE_SECTION, 'data_repository')
-
 SAMPLE_DATA_DIR = get_dir_option(_RESOURCE_SECTION, 'sample_data_dir',
                                  default=os.path.join(os.path.dirname(__file__), 'sample_data'))
 
+TEST_DATA_DIR = get_dir_option(_RESOURCE_SECTION, 'test_data_dir',
+                               default=os.path.join(os.path.dirname(__file__),
+                                                    'test_data'))
+
 # Override the data repository if the appropriate environment variable has been set
 # This is used in setup.py in the TestRunner command to enable us to simulate the absence of external data
-if os.environ.get("override_data_repository"):
-    DATA_REPOSITORY = None
+if os.environ.get("override_test_data_repository"):
+    TEST_DATA_DIR = None
 
 PALETTE_PATH = get_dir_option(_RESOURCE_SECTION, 'palette_path',
                               os.path.join(CONFIG_PATH, 'palette'))

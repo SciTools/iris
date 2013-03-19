@@ -1,3 +1,35 @@
+Release 1.4 (unreleased)
+========================
+
+
+Features added
+--------------
+* A new configuration variable called `iris.config.TEST_DATA_DIR`
+  has been added, replacing the previous combination of
+  `iris.config.MASTER_DATA_REPOSITORY` and
+  `iris.config.DATA_REPOSITORY`. This constant should be the path
+  to a directory containing the test data required by the unit tests. It can
+  be set by adding a ``test_data_dir`` entry to the ``Resources`` section of
+  site.cfg. See `iris.config` for more details.
+
+Bugs fixed
+----------
+* N/A
+
+Incompatible changes
+--------------------
+* As part of simplifying the mechanism for accessing test data
+  `iris.io.select_data_path()`, `iris.config.DATA_REPOSITORY`
+  and `iris.config.MASTER_DATA_REPOSITORY` have been removed.
+
+Deprecations
+------------
+* N/A
+
+
+----------------------------
+
+
 Release 1.3 (unreleased)
 ========================
 
