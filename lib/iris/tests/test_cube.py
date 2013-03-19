@@ -21,10 +21,58 @@ import iris.tests as tests
 
 import numpy as np
 
-import iris
+import iris.cube
 
 
-class Test_add_dim_coord(tests.IrisTest):
+class Test_CubeList_getitem(tests.IrisTest):
+    def setUp(self):
+        self.cube0 = iris.cube.Cube(0)
+        self.cube1 = iris.cube.Cube(1)
+        self.src_list = [self.cube0, self.cube1]
+        self.cube_list = iris.cube.CubeList(self.src_list)
+
+    def test_single(self):
+        # Check that simple indexing returns the relevant member Cube.
+        for i, cube in enumerate(self.src_list):
+            self.assertIs(self.cube_list[i], cube)
+
+    def _test_slice(self, keys):
+        subset = self.cube_list[keys]
+        self.assertIsInstance(subset, iris.cube.CubeList)
+        self.assertEqual(subset, self.src_list[keys])
+
+    def test_slice(self):
+        # Check that slicing returns a CubeList containing the relevant
+        # members.
+        self._test_slice(slice(None))
+        self._test_slice(slice(1))
+        self._test_slice(slice(1, None))
+        self._test_slice(slice(0, 1))
+        self._test_slice(slice(None, None, -1))
+
+
+class Test_CubeList_getslice(tests.IrisTest):
+    def setUp(self):
+        self.cube0 = iris.cube.Cube(0)
+        self.cube1 = iris.cube.Cube(1)
+        self.src_list = [self.cube0, self.cube1]
+        self.cube_list = iris.cube.CubeList(self.src_list)
+
+    def _test_slice(self, cube_list, equivalent):
+        self.assertIsInstance(cube_list, iris.cube.CubeList)
+        self.assertEqual(cube_list, equivalent)
+
+    def test_slice(self):
+        # Check that slicing returns a CubeList containing the relevant
+        # members.
+        # NB. We have to use explicit [:1] syntax to trigger the call
+        # to __getslice__. Using [slice(1)] still calls __getitem__!
+        self._test_slice(self.cube_list[:1], self.src_list[:1])
+        self._test_slice(self.cube_list[1:], self.src_list[1:])
+        self._test_slice(self.cube_list[0:1], self.src_list[0:1:])
+
+
+class Test_Cube_add_dim_coord(tests.IrisTest):
     def setUp(self):
         self.cube = iris.cube.Cube(np.arange(4).reshape(2, 2))
 
