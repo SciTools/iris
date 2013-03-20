@@ -110,7 +110,7 @@ def get_data_path(relative_path):
             relative_path = tuple(relative_path)
         _EXPORT_DATAPATHS_FILE.write(os.path.join(*relative_path) + '\n')
         
-    return iris.io.select_data_path('tests', relative_path)
+    return iris.io.select_data_path('test_data', relative_path)
 
 
 def get_result_path(relative_path):
