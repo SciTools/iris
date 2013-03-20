@@ -359,17 +359,27 @@ def save(source, target, saver=None, **kwargs):
         saver(source, target, **kwargs)
 
     # CubeList or sequence of cubes?
-    elif isinstance(source, iris.cube.CubeList) or \
-       (isinstance(source, (list,tuple)) and all([type(i)==iris.cube.Cube for i in source])):
-        # Make sure the saver accepts an append keyword
-        if not "append" in saver.__code__.co_varnames:
-            raise ValueError("Cannot append cubes using saver function '%s' in '%s'" % \
-                             (saver.__code__.co_name, saver.__code__.co_filename))
-        # Force append=True for the tail cubes. Don't modify the incoming kwargs.
-        kwargs = kwargs.copy()
-        for i, cube in enumerate(source):
-            if i != 0:
-                kwargs['append'] = True
-            saver(cube, target, **kwargs)
+    elif (isinstance(source, iris.cube.CubeList) or
+          (isinstance(source, (list, tuple)) and
+           all([type(i) == iris.cube.Cube for i in source]))):
+        # Only allow cubelist saving for those fileformats that are capable.
+        if not 'iris.fileformats.netcdf' in saver.__module__:
+            # Make sure the saver accepts an append keyword
+            if not "append" in saver.__code__.co_varnames:
+                raise ValueError("Cannot append cubes using saver function "
+                                 "'%s' in '%s'" %
+                                 (saver.__code__.co_name,
+                                  saver.__code__.co_filename))
+            # Force append=True for the tail cubes. Don't modify the incoming
+            # kwargs.
+            kwargs = kwargs.copy()
+            for i, cube in enumerate(source):
+                if i != 0:
+                    kwargs['append'] = True
+                saver(cube, target, **kwargs)
+        # Netcdf saver.
+        else:
+            saver(source, target, **kwargs)
+
     else:
         raise ValueError("Cannot save; non Cube found in source")

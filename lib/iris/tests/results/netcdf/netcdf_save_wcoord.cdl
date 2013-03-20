@@ -1,0 +1,23 @@
+dimensions:
+	dim0 = UNLIMITED ; // (1 currently)
+	lon = UNLIMITED ; // (2 currently)
+	lat = 2 ;
+variables:
+	double temp(lon, lat) ;
+		temp:standard_name = "surface_temperature" ;
+		temp:units = "K" ;
+	int64 lon(lon) ;
+		lon:axis = "X" ;
+		lon:units = "degree_east" ;
+		lon:standard_name = "longitude" ;
+	int64 lat(lat) ;
+		lat:units = "degree_north" ;
+	double temp2(dim0, lon, lat) ;
+		temp2:long_name = "Something Random" ;
+		temp2:units = "K" ;
+	int64 dim0(dim0) ;
+		dim0:long_name = "Rnd Coordinate" ;
+
+// global attributes:
+		:Conventions = "CF-1.5" ;
+}
