@@ -31,6 +31,7 @@ import iris.cube
 import iris.analysis.interpolate
 import iris.tests.stock
 from iris.analysis.interpolate import Linear1dExtrapolator
+import iris.analysis.interpolate as iintrp
 
 
 class TestLinearExtrapolator(tests.IrisTest):
@@ -415,7 +416,7 @@ class TestNearestLinearInterpolRealData(tests.IrisTest):
         np.testing.assert_array_equal(r1.data, r2.data)
 
 
-@iris.tests.skip_data    
+@iris.tests.skip_data
 class TestNearestNeighbour(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()
@@ -495,7 +496,271 @@ class TestNearestNeighbour(tests.IrisTest):
         
         b = iris.analysis.interpolate.extract_nearest_neighbour(self.cube, point_spec) 
         self.assertCML(b, ('analysis', 'interpolation', 'nearest_neighbour_extract_latitude.cml'))
-    
-    
+
+    def test_nearest_neighbour_circular(self):
+        # test on non-circular coordinate (latitude)
+        lat_vals = np.array([
+            [-150.0, -90], [-97, -90], [-92, -90], [-91, -90],  [-90.1, -90],
+            [-90.0, -90],  [-89.9, -90],
+            [-89, -90],  [-88, -87.5],  [-87, -87.5],
+            [-86, -85], [-85.5, -85],
+            [81, 80], [84, 85], [84.8, 85], [85, 85], [86, 85],
+            [87, 87.5], [88, 87.5], [89, 90],
+            [89.9, 90], [90.0,  90], [90.1, 90],
+            [95, 90], [100, 90], [150, 90]])
+        lat_test_vals = lat_vals[:, 0]
+        lat_expect_vals = lat_vals[:, 1]
+        lat_coord_vals = self.cube.coord('latitude').points
+
+        def near_value(val, vals):
+            # return the *exact* value from vals that is closest to val.
+            # - and raise an exception if there isn't a close match.
+            best_val = vals[np.argmin(np.abs(vals - val))]
+            if val == 0.0:
+                # absolute tolerance to 0.0 (ok for magnitudes >= 1.0 or so)
+                error_level = best_val
+            else:
+                # calculate relative-tolerance
+                error_level = abs(0.5 * (val - best_val) / (val + best_val))
+            self.assertTrue(error_level < 1.0e-6,
+                            'error_level {}% match of {} to one of {}'.format(
+                                100.0 * error_level, val, vals))
+            return best_val
+
+        lat_expect_vals = [near_value(v, lat_coord_vals)
+                           for v in lat_expect_vals]
+        lat_nearest_inds = [
+            iintrp.nearest_neighbour_indices(
+                self.cube, [('latitude', point_val)])
+            for point_val in lat_test_vals]
+        lat_nearest_vals = [lat_coord_vals[i[0]] for i in lat_nearest_inds]
+        self.assertArrayAlmostEqual(lat_nearest_vals, lat_expect_vals)
+
+        # repeat with *circular* coordinate (longitude)
+        lon_vals = np.array([
+            [0.0, 0.0],
+            [-3.75, 356.25],
+            [-1.0, 0], [-0.01, 0], [0.5, 0],
+            [2, 3.75], [3, 3.75], [4, 3.75], [5, 3.75], [6, 7.5],
+            [350.5, 348.75], [351, 352.5], [354, 352.5],
+            [355, 356.25], [358, 356.25],
+            [358.7, 0], [359, 0], [360, 0], [361, 0],
+            [362, 3.75], [363, 3.75], [364, 3.75], [365, 3.75], [366, 7.5],
+            [-725.0, 356.25], [-722, 356.25], [-721, 0], [-719, 0.0],
+            [-718, 3.75],
+            [1234.56, 153.75], [-1234.56, 206.25]])
+        lon_test_vals = lon_vals[:, 0]
+        lon_expect_vals = lon_vals[:, 1]
+        lon_coord_vals = self.cube.coord('longitude').points
+        lon_expect_vals = [near_value(v, lon_coord_vals)
+                           for v in lon_expect_vals]
+        lon_nearest_inds = [
+            iintrp.nearest_neighbour_indices(self.cube,
+                                             [('longitude', point_val)])
+            for point_val in lon_test_vals]
+        lon_nearest_vals = [lon_coord_vals[i[1]] for i in lon_nearest_inds]
+        self.assertArrayAlmostEqual(lon_nearest_vals, lon_expect_vals)
+
+
+class TestNearestNeighbourAdditional(tests.IrisTest):
+    """
+    More detailed testing for coordinate nearest_neighbour function.
+
+    Includes (especially) circular operation.
+
+    """
+    def _test_nn_breakpoints(self, points, breaks, expected,
+                             bounds=None, guess_bounds=False, bounds_point=0.2,
+                             circular=False,
+                             test_min=-500.0, test_max=750.0):
+        """
+        Make a test coordinate + test the nearest-neighbour calculation
+
+        Check that the result index changes at the specified points.
+        Includes support for circular and bounded cases.
+
+        Args:
+
+            points : 1-d array-like
+                Points of the test coordinate (see also Kwargs)
+            breaks : list
+                Input points at which we expect the output result to change
+            expected : list
+                Expected results (cell index values)
+                Length must == len(breaks) + 1
+                result == expected[i] between breaks[i] and breaks[i+1]
+
+        Kwargs:
+
+            bounds : 2d array-like
+                use these bounds
+            guess_bounds, bounds_point : bool, float
+                use guessed bounds
+            circular : bool
+                make a circular coordinate (360 degrees)
+            test_min, test_max : float
+                outer extreme values (non-circular only)
+
+        """
+        points = np.array(points, np.float)
+        if bounds:
+            bounds = np.array(bounds, np.float)
+        assert len(expected) == len(breaks) + 1
+        if circular:
+            breaks = np.array(breaks)
+            breaks = np.hstack([i * 360.0 + breaks for i in range(-2, 3)])
+            lower_lims = breaks[:-1]
+            upper_lims = breaks[1:]
+            expected = np.hstack([expected[1:] for i in range(-2, 3)])
+        else:
+            lower_lims = np.hstack(([test_min], breaks))
+            upper_lims = np.hstack((breaks, [test_max]))
+
+        # construct coord : AuxCoord, or DimCoord if it needs to be circular
+        if circular:
+            test_coord = iris.coords.DimCoord(points,
+                                              bounds=bounds,
+                                              long_name='x',
+                                              units=iris.unit.Unit('degrees'),
+                                              circular=True)
+        else:
+            test_coord = iris.coords.AuxCoord(points,
+                                              bounds=bounds,
+                                              long_name='x',
+                                              units=iris.unit.Unit('degrees'))
+        if guess_bounds:
+            test_coord.guess_bounds(bounds_point)
+
+        # test at a few 'random' points within each supposed result region
+        test_fractions = np.array([0.01, 0.2, 0.45, 0.75, 0.99])
+        for (lower, upper, expect) in zip(lower_lims, upper_lims, expected):
+            test_pts = lower + test_fractions * (upper - lower)
+            results = [test_coord.nearest_neighbour_index(x) for x in test_pts]
+            self.assertTrue(np.all([r == expect for r in results]))
+
+    def test_nearest_neighbour_circular(self):
+        # First test (simplest): ascending-order, unbounded
+        points = [0.0, 90.0, 180.0, 270.0]
+        breaks = [45.0, 135.0, 225.0]
+        results = [0, 1, 2, 3]
+        self._test_nn_breakpoints(points, breaks, results)
+
+        # same, but *CIRCULAR*
+        breaks_circ = [-45.0] + breaks
+        results_circ = [3] + results
+        self._test_nn_breakpoints(points, breaks_circ, results_circ,
+                                  circular=True)
+
+        # repeat circular test with different coordinate offsets
+        offset = 32.7
+        points_offset = np.array(points) + offset
+        breaks_offset = np.array(breaks_circ) + offset
+        self._test_nn_breakpoints(points_offset, breaks_offset, results_circ,
+                                  circular=True)
+
+        offset = -106.3
+        points_offset = np.array(points) + offset
+        breaks_offset = np.array(breaks_circ) + offset
+        self._test_nn_breakpoints(points_offset, breaks_offset, results_circ,
+                                  circular=True)
+
+        # ascending order, guess-bounded
+        # N.B. effect of bounds_position = 2/3
+        #   x_bounds = [[-60, 30], [30, 120], [120, 210], [210, 300]]
+        points = [0.0, 90, 180, 270]
+        breaks = [30.0, 120.0, 210.0]
+        results = [0, 1, 2, 3]
+        self._test_nn_breakpoints(points, breaks, results,
+                                  guess_bounds=True, bounds_point=2.0 / 3)
+
+        # same but circular...
+        breaks_circ = [-60.0] + breaks
+        results_circ = [3] + results
+        self._test_nn_breakpoints(points, breaks_circ, results_circ,
+                                  guess_bounds=True, bounds_point=2.0 / 3,
+                                  circular=True)
+
+    def test_nearest_neighbour_descending_circular(self):
+        # descending order, unbounded
+        points = [270.0, 180, 90, 0]
+        breaks = [45.0, 135.0, 225.0]
+        results = [3, 2, 1, 0]
+        self._test_nn_breakpoints(points, breaks, results)
+
+        # same but circular...
+        breaks = [-45.0] + breaks
+        results = [0] + results
+        self._test_nn_breakpoints(points, breaks, results, circular=True)
+
+        # repeat circular test with different coordinate offsets
+        offset = 32.7
+        points_offset = np.array(points) + offset
+        breaks_offset = np.array(breaks) + offset
+        self._test_nn_breakpoints(points_offset, breaks_offset, results,
+                                  circular=True)
+
+        offset = -106.3
+        points_offset = np.array(points) + offset
+        breaks_offset = np.array(breaks) + offset
+        self._test_nn_breakpoints(points_offset, breaks_offset, results,
+                                  circular=True)
+
+        # descending order, guess-bounded
+        points = [250.0, 150, 50, -50]
+        # N.B. equivalent effect of bounds_position = 0.4
+        # x_bounds = [[290, 190], [190, 90], [90, -10], [-10, -110]]
+        breaks = [-10.0, 90.0, 190.0]
+        results = [3, 2, 1, 0]
+        self._test_nn_breakpoints(points, breaks, results,
+                                  guess_bounds=True, bounds_point=0.4)
+        # same but circular...
+        breaks = [-110.0] + breaks
+        results = [0] + results
+        self._test_nn_breakpoints(points, breaks, results,
+                                  guess_bounds=True, bounds_point=0.4,
+                                  circular=True)
+
+    def test_nearest_neighbour_odd_bounds(self):
+        # additional: test with overlapping bounds
+        points = [0.0, 90, 180, 270]
+        bounds = [[-90.0, 90], [0, 180], [90, 270], [180, 360]]
+        breaks = [45.0, 135.0, 225.0]
+        results = [0, 1, 2, 3]
+        self._test_nn_breakpoints(points, breaks, results, bounds=bounds)
+
+        # additional: test with disjoint bounds
+        points = [40.0, 90, 150, 270]
+        bounds = [[0, 60], [70, 90], [140, 200], [210, 360]]
+        breaks = [65.0, 115.0, 205.0]
+        results = [0, 1, 2, 3]
+        self._test_nn_breakpoints(points, breaks, results, bounds=bounds)
+
+    def test_nearest_neighbour_scalar(self):
+        points = [1.0]
+        breaks = []
+        results = [0]
+        self._test_nn_breakpoints(points, breaks, results)
+
+    def test_nearest_neighbour_nonmonotonic(self):
+        # a bounded example
+        points = [3.0,  4.0,  1.0,  7.0, 10.0]
+        bounds = [[2.5,  3.5],
+                  [3.5,  4.5],
+                  [0.5,  1.5],
+                  [6.5,  7.5],
+                  [9.5, 10.5]]
+        breaks = [2.0, 3.5, 5.5, 8.5]
+        results = [2, 0, 1, 3, 4]
+        self._test_nn_breakpoints(points, breaks, results, bounds=bounds)
+
+        # a pointwise example
+        points = [3.0,  3.5,  1.0,  8.0, 12.0]
+        breaks = [2.0, 3.25, 5.75, 10.0]
+        results = [2, 0, 1, 3, 4]
+        self._test_nn_breakpoints(points, breaks, results)
+
+        # NOTE: no circular cases, as AuxCoords _cannot_ be circular.
+
+
 if __name__ == "__main__":
     tests.main()

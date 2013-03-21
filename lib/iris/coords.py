@@ -984,48 +984,76 @@ class Coord(CFVariableMixin):
         """
         Returns the index of the cell nearest to the given point.
 
-        .. note:: If the coordinate contain bounds, these will be used to
+        Only works for one-dimensional coordinates.
+
+        .. note:: If the coordinate contains bounds, these will be used to
             determine the nearest neighbour instead of the point values.
 
-        .. note:: Does not take into account the circular attribute of a
-            coordinate.
+        .. note:: For circular coordinates, the 'nearest' point can wrap around
+            to the other end of the values.
 
         """
-        # Calculate the nearest neighbour. The algorithm:  given a single value
-        # (V), if the coord has bounds then find the bound (upper or lower)
-        # which is closest to V if "closest" results in two matches then return
-        # the index for which a cell contains V,
-        #         if no such cell exists then pick the lowest index
-        # if the coord has points then find the point which is closest to V
-        #     if "closest" results in two matches then return the lowest index
+        points = self.points
+        bounds = self.bounds if self.has_bounds() else np.array([])
+        if self.ndim != 1:
+            raise ValueError('Nearest-neighbour is currently limited'
+                             ' to one-dimensional coordinates.')
+        do_circular = getattr(self, 'circular', False)
+        if do_circular:
+            wrap_modulus = self.units.modulus
+            # wrap 'point' to a range based on lowest points or bounds value.
+            wrap_origin = np.min(np.hstack((points, bounds.flatten())))
+            point = wrap_origin + (point - wrap_origin) % wrap_modulus
+
+        # Calculate the nearest neighbour.
+        # The algorithm:  given a single value (V),
+        #   if coord has bounds,
+        #     make bounds cells complete and non-overlapping
+        #     return first cell containing V
+        #   else (no bounds),
+        #     find the point which is closest to V
+        #     or if two are equally close, return the lowest index
         if self.has_bounds():
-            diff = np.abs(self.bounds - point)
-            # where will look like [[first dimension matches],
-            #                       [second dimension matches]]
-            # we will just take the first match (in this case,
-            # it does not matter what the second dimension was)
-            minimized_diff_indices = np.where(diff == np.min(diff))[0]
+            # make bounds ranges complete+separate, so point is in at least one
+            bounds = bounds.copy()
+            # sort the bounds cells by their centre values
+            sort_inds = np.argsort(np.mean(bounds, axis=1))
+            bounds = bounds[sort_inds]
+            # replace all adjacent bounds with their averages
+            mid_bounds = 0.5 * (bounds[:-1, 1] + bounds[1:, 0])
+            bounds[:-1, 1] = mid_bounds
+            bounds[1:, 0] = mid_bounds
+            # if point lies beyond either end, fix the end cell to include it
+            bounds[0, 0] = min(point, bounds[0, 0])
+            bounds[-1, 1] = max(point, bounds[-1, 1])
+            # get index of first-occurring cell that contains the point
+            inside_cells = np.logical_and(point >= np.min(bounds, axis=1),
+                                          point <= np.max(bounds, axis=1))
+            result_index = np.where(inside_cells)[0][0]
+            # return the original index of the cell (before the bounds sort)
+            result_index = sort_inds[result_index]
 
-            min_index = None
-            # If we have more than one result, try picking the result which
-            # actually contains the requested point
-            if len(minimized_diff_indices) > 1:
-                for index in minimized_diff_indices:
-                    if self.cell(index).contains_point(point):
-                        min_index = index
-                        break
-            # Pick the first index that WHERE returned if
-            # len(minimized_diff_indices) == 1 or we could not
-            # find a cell which contained the point
-            if min_index is None:
-                min_index = minimized_diff_indices[0]
-
-        # Then we have points
+        # Or, if no bounds, we always have points ...
         else:
-            diff = np.abs(self.points - point)
-            min_index = np.where(diff == np.min(diff))[0][0]
+            if do_circular:
+                # add an extra, wrapped max point (simpler than bounds case)
+                # NOTE: circular implies a DimCoord, so *must* be monotonic
+                if points[-1] >= points[0]:
+                    # ascending value order : add wrapped lowest value to end
+                    index_offset = 0
+                    points = np.hstack((points, points[0] + wrap_modulus))
+                else:
+                    # descending order : add wrapped lowest value at start
+                    index_offset = 1
+                    points = np.hstack((points[-1] + wrap_modulus, points))
+            # return index of first-occurring nearest point
+            distances = np.abs(points - point)
+            result_index = np.where(distances == np.min(distances))[0][0]
+            if do_circular:
+                # convert index back from circular-adjusted points
+                result_index = (result_index - index_offset) % self.shape[0]
 
-        return min_index
+        return result_index
 
     def sin(self):
         """
