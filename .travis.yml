@@ -1,7 +1,7 @@
 #
 # Based on pelson's travis work for cartopy.
 #
-# Please update the cartopy checksum below as appropriate.
+# Please update the cartopy, test data, and sample data git references below if appropriate.
 #
 # Note: Contrary to the travis documentation,
 # http://about.travis-ci.org/docs/user/languages/python/#Travis-CI-Uses-Isolated-virtualenvs
@@ -15,6 +15,15 @@ python:
 
 
 install:
+
+  - export CARTOPY_REF=v0.7.0
+
+  - export IRIS_TEST_DATA_REF=v1.0
+  - export IRIS_TEST_DATA_ZIP_DIR_SUFFIX=1.0
+
+  - export IRIS_SAMPLE_DATA_REF=v1.0
+  - export IRIS_SAMPLE_DATA_ZIP_DIR_SUFFIX=1.0
+
 
 # add repo
   - ./.travis_no_output sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3E5C1192
@@ -50,7 +59,7 @@ install:
 # cartopy
   - ./.travis_no_output git clone git://github.com/SciTools/cartopy.git
   - cd cartopy
-  - ../.travis_no_output git checkout e68fae42093b6922d373e820e93584d917c4f882
+  - ../.travis_no_output git checkout ${CARTOPY_REF}
   - ../.travis_no_output /usr/bin/python setup.py install --user
   - cd ..
   
@@ -65,20 +74,20 @@ install:
   - ../../.travis_no_output sudo cp include/* /usr/local/include
   - cd ../..
 
-# iris test data (note that the SHA appears twice; here and in the iris section below)
-  - ./.travis_no_output wget -O iris-test-data.zip https://github.com/SciTools/iris-test-data/archive/52922250a1092062e4f6f72fa416c801f46983b8.zip
+# iris test data
+  - ./.travis_no_output wget -O iris-test-data.zip https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip
   - ./.travis_no_output unzip -q iris-test-data.zip
 
 # iris sample data
-  - ./.travis_no_output wget -O iris-sample-data.zip https://github.com/SciTools/iris-sample-data/archive/master.zip
+  - ./.travis_no_output wget -O iris-sample-data.zip https://github.com/SciTools/iris-sample-data/archive/${IRIS_SAMPLE_DATA_REF}.zip
   - ./.travis_no_output unzip -q iris-sample-data.zip
   
 # iris
   - ./.travis_no_output /usr/bin/python setup.py --with-unpack build_ext --inplace -I/usr/local/include -L/usr/local/lib -R/usr/local/lib
   - ./.travis_no_output /usr/bin/python setup.py std_names
   - echo "[Resources]" > lib/iris/etc/site.cfg
-  - echo "data_repository = $(pwd)/iris-test-data-52922250a1092062e4f6f72fa416c801f46983b8" >> lib/iris/etc/site.cfg
-  - echo "sample_data_dir = $(pwd)/iris-sample-data-master/sample_data" >> lib/iris/etc/site.cfg
+  - echo "data_repository = $(pwd)/iris-test-data-${IRIS_TEST_DATA_ZIP_DIR_SUFFIX}" >> lib/iris/etc/site.cfg
+  - echo "sample_data_dir = $(pwd)/iris-sample-data-${IRIS_SAMPLE_DATA_ZIP_DIR_SUFFIX}/sample_data" >> lib/iris/etc/site.cfg
   - ln -s $(pwd)/lib/iris /home/travis/.local/lib/python2.7/site-packages/iris
 
   
