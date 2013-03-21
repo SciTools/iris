@@ -667,10 +667,14 @@ class Cube(CFVariableMixin):
 
         """
         if self.coords(coord=dim_coord):
-            raise ValueError('Duplicate coordinates are not permitted.')
+            raise ValueError('The coordinate already exists on the cube. '
+                             'Duplicate coordinates are not permitted.')
         if isinstance(data_dim, collections.Container) and len(data_dim) != 1:
             raise ValueError('The supplied data dimension must be a single '
                              'number.')
+
+        if isinstance(dim_coord, iris.coords.AuxCoord):
+            raise ValueError('The dim_coord may not be an AuxCoord instance.')
 
         # Convert data_dim to a single integer
         if isinstance(data_dim, collections.Container):
@@ -1540,6 +1544,11 @@ class Cube(CFVariableMixin):
                                                     name_padding=1)
 
     def __iter__(self):
+        """
+        .. deprecated:: 1.2
+            Use :meth:`iris.cube.Cube.slices` instead.
+
+        """
         # Emit a warning about iterating over the cube.
         # __getitem__ makes this possible, but now deprecated as confusing.
         warnings.warn('Cube iteration has been deprecated: '

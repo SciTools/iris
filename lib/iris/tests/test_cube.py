@@ -81,6 +81,11 @@ class Test_Cube_add_dim_coord(tests.IrisTest):
                           self.cube.add_dim_coord,
                           iris.coords.DimCoord(np.arange(2), "latitude"))
 
+    def test_adding_aux_coord(self):
+        coord = iris.coords.AuxCoord(np.arange(2), "latitude")
+        with self.assertRaises(ValueError):
+            self.cube.add_dim_coord(coord, 0)
+
 
 if __name__ == "__main__":
     tests.main()

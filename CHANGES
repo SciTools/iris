@@ -1,5 +1,51 @@
-Release 1.2 (unreleased)
+Release 1.3 (unreleased)
 ========================
+
+Features added
+--------------
+* Experimental support for loading ABF/ABL files.
+* Support in `iris.analysis.interpolate.linear` for longitude ranges
+  other than [-180, 180].
+* Support for customised CF profiles on export to netCDF.
+* The documentation now includes guidance on how to cite Iris.
+* The ability to calculate the exponential of a Cube, via
+  `iris.analysis.maths.exp()`.
+* Experimental support for concatenating Cubes along existing dimensions
+  via `iris.experimental.concatenate.concatenate()`.
+
+Bugs fixed
+----------
+* Printing a Cube now supports Unicode attribute values.
+* PP export now sets LBMIN correctly.
+* Converting between reference times now works correctly for
+  units with non-Gregorian calendars.
+* Slicing a CubeList now returns a CubeList instead of a normal list.
+
+Incompatible changes
+--------------------
+* N/A
+
+Deprecations
+------------
+* The boolean methods/properties on the `Unit` class have been updated
+  to `is_...()` methods, in line with the project's naming conventions.
+
+  ========================== ======================
+  Deprecated property/method New method
+  ========================== ======================
+  convertible()              is_convertible()
+  dimensionless              is_dimensionless()
+  no_unit                    is_no_unit()
+  time_reference             is_time_reference()
+  unknown                    is_unknown()
+  ========================== ======================
+
+
+----------------------------
+
+
+Release 1.2 (7 March 2013)
+==========================
 
 
 Features added
@@ -15,15 +61,26 @@ Features added
   :meth:`iris.cube.Cube.coord()`, :meth:`iris.cube.Cube.coords()` and
   :meth:`iris.cube.Cube.aux_factory()` methods.
 * :meth:`iris.coords.Coord.is_compatible()` has been added. This method is
-  used to determine whether two coordinates are are sufficiently alike to
+  used to determine whether two coordinates are sufficiently alike to
   allow operations such as :meth:`iris.coords.Coord.intersect()` and
   :func:`iris.analysis.interpolate.regrid()` to take place. A corresponding
   method for cubes, :meth:`iris.cube.Cube.is_compatible()`, has also been
   added.
+* Printing a :class:`~iris.cube.Cube` is now more user friendly with regards 
+  to dates and time. All *time* and *forecast_reference_time* scalar coordinates
+  now display human readable date/time information.
+* The units of a :class:`~iris.cube.Cube` are now shown when it is printed.
+* The area weights calculated by :func:`iris.analysis.cartography.area_weights`
+  may now be normalised relative to the total grid area.
+* Weights may now be passed to :meth:`iris.cube.Cube.rolling_window` aggregations,
+  thus allowing arbitrary digital filters to be applied to a :class:`~iris.cube.Cube`.
 
 Bugs fixed
 ----------
-* N/A
+* The GRIB hindcast interpretation of negative forecast times can be enabled
+  via the :data:`iris.fileformats.grib.hindcast_workaround` flag.
+* The NIMROD file loader has been extended to cope with orography vertical
+  coordinates.
 
 Incompatible changes
 --------------------
@@ -40,13 +97,15 @@ Deprecations
   AuxCoord have changed. This should have no impact if you are providing
   parameters as keyword arguments, but it may cause issues if you are relying
   on the position/order of the arguments.
+* Iteration over a :class:`~iris.cube.Cube` has been deprecated. Instead,
+  users should use :meth:`iris.cube.Cube.slices`.
 
 
 ----------------------------
 
 
 Release 1.1 (7 Dec, 2012)
-==========================
+=========================
 
 
 Features added
