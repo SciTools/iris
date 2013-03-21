@@ -2,7 +2,7 @@ What's new in Iris 1.2
 **********************
 
 :Release: 1.2.0
-:Date: unreleased
+:Date: 7th March 2013
 
 This document explains the new/changed features of Iris in version 1.2.
 
@@ -50,7 +50,3 @@ Deprecations
   AuxCoord have changed. This should have no impact if you are providing
   parameters as keyword arguments, but it may cause issues if you are relying
   on the position/order of the arguments.
-
-
-
-
