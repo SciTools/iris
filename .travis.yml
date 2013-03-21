@@ -16,6 +16,8 @@ python:
 
 install:
 
+  - ./.travis_no_output sudo apt-get install python-grib
+
 # add repo
   - ./.travis_no_output sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3E5C1192
   - yes | ./.travis_no_output sudo add-apt-repository ppa:olivier-berten/geo
@@ -31,17 +33,18 @@ install:
   - ./.travis_no_output sudo /usr/bin/pip install pyke netCDF4
 
 # grib api
-  - ./.travis_no_output sudo apt-get install libjasper-dev
-  - ./.travis_no_output sudo apt-get build-dep libgrib-api-1.9.9 libgrib-api-dev libgrib-api-tools
-  - ./.travis_no_output wget https://software.ecmwf.int/wiki/download/attachments/3473437/grib_api-1.9.16.tar.gz --no-check-certificate
-  - ./.travis_no_output tar -xvf grib_api-1.9.16.tar.gz
-  - cd grib_api-1.9.16/
-  - ../.travis_no_output CFLAGS="-fPIC" ./configure --with-jasper=/usr/local/lib --disable-fortran --enable-python
-  - ../.travis_no_output make
-  - ../.travis_no_output sudo make install
-  - cd python
-  - ../../.travis_no_output sudo /usr/bin/python setup.py install
-  - cd ../..
+#  - ./.travis_no_output sudo apt-get install libjasper-dev
+#  - ./.travis_no_output sudo apt-get build-dep libgrib-api-1.9.9 libgrib-api-dev libgrib-api-tools
+#  - ./.travis_no_output wget https://software.ecmwf.int/wiki/download/attachments/3473437/grib_api-1.9.16.tar.gz --no-check-certificate
+#  - ./.travis_no_output tar -xvf grib_api-1.9.16.tar.gz
+#  - cd grib_api-1.9.16/
+#  - ../.travis_no_output CFLAGS="-fPIC" ./configure --with-jasper=/usr/local/lib --disable-fortran --enable-python
+#  - ../.travis_no_output make
+#  - ../.travis_no_output sudo make install
+#  - cd python
+#  - ../../.travis_no_output sudo /usr/bin/python setup.py install
+#  - cd ../..
+   - ./.travis_no_output sudo apt-get install python-grib
 
 # distutils
   - ./.travis_no_output wget http://python-distribute.org/distribute_setup.py
