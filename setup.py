@@ -75,7 +75,7 @@ class TestRunner(setuptools.Command):
             
             # This enviroment variable will be propagated to all the processes that
             # nose.run creates allowing us to simluate the absence of test data
-            os.environ["override_data_repository"] = "true"
+            os.environ["override_test_data_repository"] = "true"
         if self.system_tests:
             print "Running system tests..."
 

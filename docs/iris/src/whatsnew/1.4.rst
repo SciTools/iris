@@ -1,0 +1,37 @@
+What's new in Iris 1.4
+**********************
+
+:Release: 1.4.0
+:Date: unreleased
+
+This document explains the new/changed features of Iris in version 1.4.
+
+Iris 1.4 features
+=================
+
+A summary of the main features added with version 1.4:
+
+* A new configuration variable called :data:`iris.config.TEST_DATA_DIR`
+  has been added, replacing the previous combination of
+  :data:`iris.config.MASTER_DATA_REPOSITORY` and
+  :data:`iris.config.DATA_REPOSITORY`. This constant should be the path
+  to a directory containing the test data required by the unit tests. It can
+  be set by adding a ``test_data_dir`` entry to the ``Resources`` section of
+  ``site.cfg``. See :mod:`iris.config` for more details.
+
+Bugs fixed
+----------
+* N/A
+
+Incompatible changes
+--------------------
+* As part of simplifying the mechanism for accessing test data
+  :func:`iris.io.select_data_path`, :data:`iris.config.DATA_REPOSITORY`,
+  :data:`iris.config.MASTER_DATA_REPOSITORY` and
+  :data:`iris.config.RESOURCE_DIR` have been removed.
+
+Deprecations
+------------
+* N/A
+
+
