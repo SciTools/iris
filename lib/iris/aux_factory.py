@@ -161,21 +161,6 @@ class AuxCoordFactory(CFVariableMixin):
 
         """
 
-    @abstractmethod
-    def updated(self, new_coord_mapping):
-        """
-        Creates a new instance of this factory where the dependencies
-        are replaced according to the given mapping.
-
-        Args:
-
-        * new_coord_mapping:
-            A dictionary mapping from the object IDs potentially used
-            by this factory, to the coordinate objects that should be
-            used instead.
-
-        """
-
     def __repr__(self):
         def arg_text(item):
             key, coord = item
