@@ -23,10 +23,6 @@ defined by :mod:`ConfigParser`.
 
 ----------
 
-.. py:data:: iris.config.RESOURCE_DIR
-
-    The full path to the Iris resource directory.
-
 .. py:data:: iris.config.SAMPLE_DATA_DIR
 
     Local directory where sample data exists. Defaults to "sample_data" sub-directory of the Iris package install directory. The sample data directory supports the Iris gallery. Directory contents accessed via :func:`iris.sample_data_path`.
@@ -106,9 +102,6 @@ config.read([os.path.join(CONFIG_PATH, 'site.cfg')])
 # Resource options
 _RESOURCE_SECTION = 'Resources'
 
-
-RESOURCE_DIR = get_dir_option(_RESOURCE_SECTION, 'dir',
-                              os.path.join(ROOT_PATH, 'resources'))
 
 SAMPLE_DATA_DIR = get_dir_option(_RESOURCE_SECTION, 'sample_data_dir',
                                  default=os.path.join(os.path.dirname(__file__), 'sample_data'))

@@ -26,8 +26,9 @@ Bugs fixed
 Incompatible changes
 --------------------
 * As part of simplifying the mechanism for accessing test data
-  :func:`iris.io.select_data_path`, :data:`iris.config.DATA_REPOSITORY`
-  and :data:`iris.config.MASTER_DATA_REPOSITORY` have been removed.
+  :func:`iris.io.select_data_path`, :data:`iris.config.DATA_REPOSITORY`,
+  :data:`iris.config.MASTER_DATA_REPOSITORY` and
+  :data:`iris.config.RESOURCE_DIR` have been removed.
 
 Deprecations
 ------------
