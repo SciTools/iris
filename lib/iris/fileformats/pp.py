@@ -1367,12 +1367,6 @@ def load(filename, read_data=False):
             break
         # Get the FLOAT header entries
         header_floats = np.fromfile(pp_file, dtype='>f%d' % PP_WORD_DEPTH, count=NUM_FLOAT_HEADERS)
-        # Ensure the values are in the native byte order
-        if False and not header_longs.dtype.isnative:
-            header_longs.byteswap(True)
-            header_longs.dtype = header_longs.dtype.newbyteorder('=')
-            header_floats.byteswap(True)
-            header_floats.dtype = header_floats.dtype.newbyteorder('=')
         header = tuple(header_longs) + tuple(header_floats)
 
         # Make a PPField of the appropriate sub-class (depends on header release number)
