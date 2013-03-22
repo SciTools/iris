@@ -445,10 +445,11 @@ class Cube(CFVariableMixin):
             self._data = data
             self._data_manager = data_manager
         else:
-            if isinstance(data, np.ndarray):
-                self._data = data
-            else:
-                self._data = np.asarray(data)
+            if not isinstance(data, np.ndarray):
+                data = np.asarray(data)
+            # Take our own view of the array, to prevent the shape being
+            # changed without our knowledge.
+            self._data = self._data_view(data)
             self._data_manager = None
 
         self.standard_name = standard_name
@@ -1109,11 +1110,26 @@ class Cube(CFVariableMixin):
         """The number of dimensions in the data of this cube."""
         return len(self.shape)
 
+    def _data_view(self, data):
+        """
+        Return a view of the given array, respecting the fill_value
+        for masked arrays.
+
+        """
+        view = data.view()
+        if hasattr(data, 'fill_value'):
+            view.fill_value = data.fill_value
+            # Force the mask to "inflate" now, otherwise it might only
+            # inflate on one side of an assignment.
+            if view.mask is ma.nomask:
+                view.mask = False
+        return view
+
     @property
     def data(self):
         """
-        The :class:`numpy.ndarray` representing the multi-dimensional data of
-        the cube.
+        A view of the :class:`numpy.ndarray` representing the
+        multi-dimensional data of the cube.
 
         .. note::
 
@@ -1172,7 +1188,10 @@ class Cube(CFVariableMixin):
                         "to load the data.")
 
             self._data_manager = None
-        return self._data
+        # Return a view to prevent the shape of our array being changed
+        # without our knowledge.
+        data = self._data_view(self._data)
+        return data
 
     @data.setter
     def data(self, value):
@@ -1186,7 +1205,11 @@ class Cube(CFVariableMixin):
                 raise ValueError('Require cube data with shape %r, got '
                                  '%r.' % (self.shape, data.shape))
 
-        self._data = data
+        # Take our own view of the array, to prevent the shape being
+        # changed without our knowledge.
+        self._data = self._data_view(data)
+        if hasattr(data, 'fill_value'):
+            self._data.fill_value = data.fill_value
         self._data_manager = None
 
     @property

@@ -87,5 +87,38 @@ class Test_Cube_add_dim_coord(tests.IrisTest):
             self.cube.add_dim_coord(coord, 0)
 
 
+class Test_Cube_data(tests.IrisTest):
+    def test_reshape_after_creation(self):
+        # Make sure we can't invalidate the shape of a Cube after it's
+        # been created.
+        data = np.zeros((3, 4))
+        cube = iris.cube.Cube(data)
+        self.assertEqual(cube.shape, (3, 4))
+        data.shape = (2, 6)
+        self.assertEqual(cube.shape, (3, 4))
+
+    def test_reshape_after_read(self):
+        # Make sure we can't invalidate the shape of a Cube by reading
+        # the data and changing its shape.
+        data = np.zeros((3, 4))
+        cube = iris.cube.Cube(data)
+        self.assertEqual(cube.shape, (3, 4))
+        data = cube.data
+        data.shape = (2, 6)
+        self.assertEqual(cube.shape, (3, 4))
+
+    def test_reshape_after_update(self):
+        # Make sure we can't invalidate the shape of a Cube after we've
+        # updated the data.
+        data = np.zeros((3, 4))
+        cube = iris.cube.Cube(data)
+        self.assertEqual(cube.shape, (3, 4))
+        data = np.zeros((3, 4))
+        cube.data = data
+        self.assertEqual(cube.shape, (3, 4))
+        data.shape = (2, 6)
+        self.assertEqual(cube.shape, (3, 4))
+
+
 if __name__ == "__main__":
     tests.main()

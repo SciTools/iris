@@ -332,12 +332,14 @@ class TestNoConcat(tests.IrisTest):
         cubes = []
         y = (0, 2)
         cube = _make_cube((0, 2), y, 1)
-        cube.data = ma.asarray(cube.data)
-        cube.data.fill_value = 10
+        data = ma.asarray(cube.data)
+        data.fill_value = 10
+        cube.data = data
         cubes.append(cube)
         cube = _make_cube((2, 4), y, 1)
-        cube.data = ma.asarray(cube.data)
-        cube.data.fill_value = 20
+        data = ma.asarray(cube.data)
+        data.fill_value = 20
+        cube.data = data
         cubes.append(cube)
         result = concatenate(cubes)
         self.assertEqual(len(result), 2)
