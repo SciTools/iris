@@ -53,58 +53,6 @@ class _SaversDict(dict):
 _savers = _SaversDict()
 
 
-def select_data_path(resources_subdir, rel_path):
-    """
-    Given a resource subdirectory and the resource file's relative path return
-    the fully qualified path of a resource.
-    
-    The function checks to see whether :const:`iris.config.MASTER_DATA_REPOSITORY`
-    exists, in which case it will check that each file also exists
-    on :const:`iris.config.DATA_REPOSITORY`, providing a warning and a printed
-    message indicating how to resolve the divergent folders. The resultant path
-    will always use the :const:`iris.config.DATA_REPOSITORY` configuration value.
-    
-    Args:
-    
-    * resources_subdir
-        The name of the subdirectory found in :const:`iris.config.DATA_REPOSITORY`
-    * rel_path
-        The tuple representing the relative path from the resources_subdir of the desired resource.
-           
-    """
-    if iris.config.DATA_REPOSITORY is None:
-        raise RuntimeError('No data repository has been configured.')
-    MASTER_REPO = iris.config.MASTER_DATA_REPOSITORY
-    DATA_REPO = os.path.join(iris.config.DATA_REPOSITORY, resources_subdir)
-    
-    path_on_slave = os.path.join(DATA_REPO, *rel_path) 
-    
-    if MASTER_REPO and os.path.isdir(MASTER_REPO):
-        path_on_master = os.path.join(MASTER_REPO, *rel_path)
-        master_files = set((fname.replace(MASTER_REPO + os.sep, '', 1) for fname in glob.iglob(path_on_master)))
-        slave_files = set((fname.replace(DATA_REPO + os.sep, '', 1) for fname in glob.iglob(path_on_slave)))
-        
-        if slave_files != master_files:
-            all_files = slave_files | master_files
-            
-            for file_in_master_not_in_slave in (all_files - slave_files):
-                master_file = os.path.join(MASTER_REPO, file_in_master_not_in_slave)
-                slave_file = os.path.join(DATA_REPO, file_in_master_not_in_slave)
-                print '; File exists at %s which does not exist at %s' % (master_file, slave_file)
-                if DATA_REPO.startswith(MASTER_REPO):
-                    print 'ln -s %s %s' % (master_file, slave_file)
-                else:
-                    print 'cp %s %s' % (master_file, slave_file)
-                
-            for file_in_slave_not_in_master in (all_files - master_files):
-                master_file = os.path.join(MASTER_REPO, file_in_slave_not_in_master)
-                slave_file = os.path.join(DATA_REPO, file_in_slave_not_in_master)
-                print '; File exists at %s which does not exist at %s' % (slave_file, master_file)
-                print 'rm -rf %s' % os.path.join(DATA_REPO, file_in_slave_not_in_master)
-
-    return path_on_slave
-
-
 def run_callback(callback, cube, field, filename):
     """
     Runs the callback mechanism given the appropriate arguments.
