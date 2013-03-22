@@ -19,6 +19,6 @@
         <coord name="foo"/>
       </cellMethod>
     </cellMethods>
-    <data dtype="float64" shape="(3,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" order="C" shape="(3,)" state="loaded"/>
   </cube>
 </cubes>
