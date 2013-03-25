@@ -14,6 +14,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data dtype="float32" shape="(4, 5)" state="loaded"/>
+    <data byteorder="little" dtype="float32" order="F" shape="(4, 5)" state="loaded"/>
   </cube>
 </cubes>

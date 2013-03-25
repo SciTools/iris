@@ -40,6 +40,6 @@ Variance of air_pressure_at_sea_level over grid_longitude (delta degrees of free
         <coord name="grid_longitude"/>
       </cellMethod>
     </cellMethods>
-    <data dtype="float64" shape="(10,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" order="C" shape="(10,)" state="loaded"/>
   </cube>
 </cubes>

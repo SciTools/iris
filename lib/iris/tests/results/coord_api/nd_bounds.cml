@@ -18,6 +18,6 @@
         <coord name="foo"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0xe9a1af9" dtype="int64" shape="(1,)"/>
+    <data byteorder="little" checksum="0xe9a1af9" dtype="int64" order="C" shape="(1,)"/>
   </cube>
 </cubes>

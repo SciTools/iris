@@ -31,6 +31,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data dtype="float32" shape="(49, 50)" state="loaded"/>
+    <data byteorder="little" dtype="float32" order="C" shape="(49, 50)" state="loaded"/>
   </cube>
 </cubes>

@@ -37,6 +37,6 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x29c91335" dtype="float32" shape="()"/>
+    <data byteorder="little" checksum="0x29c91335" dtype="float32" order="C" shape="()"/>
   </cube>
 </cubes>
