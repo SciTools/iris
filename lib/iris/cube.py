@@ -2003,11 +2003,9 @@ class Cube(CFVariableMixin):
                 # NB. dtype.byteorder can return '=', which is bad for
                 # cross-platform consistency - so we use dtype.str
                 # instead.
-                if dtype.str[0] == '>':
-                    byteorder = 'big'
-                else:
-                    byteorder = 'little'
-                data_xml_element.setAttribute('byteorder', byteorder)
+                byte_order = {'>': 'big', '<': 'little'}.get(dtype.str[0])
+                if byte_order:
+                    data_xml_element.setAttribute('byteorder', byte_order)
 
                 if isinstance(data, ma.core.MaskedArray):
                     data_xml_element.setAttribute('mask_order',
