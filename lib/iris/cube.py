@@ -1966,15 +1966,9 @@ class Cube(CFVariableMixin):
 
             data_xml_element.setAttribute("shape", str(self.shape))
 
-            # Add the datatype
-            if self._data_manager is not None:
-                data_xml_element.setAttribute(
-                    "dtype", self._data_manager.data_type.name)
-            else:
-                data_xml_element.setAttribute(
-                    "dtype", self._data.dtype.name)
-
-            # getting a checksum triggers any deferred loading
+            # NB. Getting a checksum triggers any deferred loading,
+            # in which case it also has the side-effect of forcing the
+            # byte order to be native.
             if checksum:
                 data = self.data
                 # Ensure data is row-major contiguous for crc32 computation.
@@ -1990,6 +1984,35 @@ class Cube(CFVariableMixin):
                 data_xml_element.setAttribute("state", "deferred")
             else:
                 data_xml_element.setAttribute("state", "loaded")
+
+            # Add the dtype, and also the array and dtype orders if the
+            # data is loaded.
+            if self._data_manager is None:
+                data = self.data
+                dtype = data.dtype
+
+                def _order(array):
+                    order = ''
+                    if data.flags['C_CONTIGUOUS']:
+                        order = 'C'
+                    elif data.flags['F_CONTIGUOUS']:
+                        order = 'F'
+                    return order
+                data_xml_element.setAttribute('order', _order(data))
+
+                # NB. dtype.byteorder can return '=', which is bad for
+                # cross-platform consistency - so we use dtype.str
+                # instead.
+                byte_order = {'>': 'big', '<': 'little'}.get(dtype.str[0])
+                if byte_order:
+                    data_xml_element.setAttribute('byteorder', byte_order)
+
+                if isinstance(data, ma.core.MaskedArray):
+                    data_xml_element.setAttribute('mask_order',
+                                                  _order(data.mask))
+            else:
+                dtype = self._data_manager.data_type
+            data_xml_element.setAttribute('dtype', dtype.name)
 
             cube_xml_element.appendChild(data_xml_element)
 

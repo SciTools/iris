@@ -95,6 +95,6 @@ Mean of air_potential_temperature over grid_longitude"/>
         <coord name="grid_longitude"/>
       </cellMethod>
     </cellMethods>
-    <data dtype="float64" shape="(6, 70)" state="loaded"/>
+    <data byteorder="little" dtype="float64" mask_order="C" order="C" shape="(6, 70)" state="loaded"/>
   </cube>
 </cubes>
