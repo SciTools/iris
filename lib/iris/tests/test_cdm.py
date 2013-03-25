@@ -1106,7 +1106,9 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
 
         # extract the 2d field that has SOME missing values
         masked_slice = cube[0]
-        masked_slice.data.fill_value = 123456
+        data = masked_slice.data
+        data.fill_value = 123456
+        masked_slice.data = data
         
         # test saving masked data
         reference_txt_path = tests.get_result_path(('cdm', 'masked_save_pp.txt'))
