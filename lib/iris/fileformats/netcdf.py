@@ -448,6 +448,8 @@ def load_cubes(filenames, callback=None):
 
 
 class Saver(object):
+    """A manager for saving netcdf files."""
+
     def __init__(self, filename, netcdf_format):
         """
         A manager for saving netcdf files.
@@ -1186,10 +1188,9 @@ def save(cube, filename, netcdf_format='NETCDF4'):
 
     Args:
 
-    * cube (:class:`iris.cube.Cube`) or cubelist
-      (:class:`iris.cube.CubeList`):
-        A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of
-        cubes to be saved to a netCDF file.
+    * cube (:class:`iris.cube.Cube` or :class:`iris.cube.CubeList`):
+        A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or other
+        iterable of cubes to be saved to a netCDF file.
 
     * filename (string):
         Name of the netCDF file to save the cube(s).
