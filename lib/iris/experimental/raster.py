@@ -41,8 +41,6 @@ def _gdal_write_array(cube_data, padf_transform, fname, ftype):
         * padf_transform (tuple): coefficients for affine transformation
         * fname (string): Output file name.
         * ftype (string): Export file type.
-        * dtype (numpy.dtype): Specify the data type to be written.
-            By default a suitable type will be determined from cube_data.
 
     .. note::
 
