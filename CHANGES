@@ -16,6 +16,8 @@ Features added
 * Experimental support has been added to `iris.load`,
   `iris.load_cube` and `iris.load_cubes` for loading Cubes from
   OPeNDAP URLs.
+* `iris.experimental.raster.export_geotiff` now provides experimental
+  GeoTiff export functionality.
 
 Bugs fixed
 ----------

@@ -23,6 +23,8 @@ A summary of the main features added with version 1.4:
 * Experimental support has been added to :func:`iris.load`,
   :func:`iris.load_cube` and :func:`iris.load_cubes` for loading Cubes from
   OPeNDAP URLs.
+* :func:`iris.experimental.raster.export_geotiff` now provides experimental
+  GeoTiff export functionality.
 
 Bugs fixed
 ----------
