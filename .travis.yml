@@ -38,6 +38,9 @@ install:
   - ./.travis_no_output sudo apt-get install libudunits2-dev libhdf5-serial-dev netcdf-bin libnetcdf-dev
   - ./.travis_no_output sudo apt-get install make unzip python-sphinx graphviz
   - ./.travis_no_output sudo /usr/bin/pip install pyke netCDF4
+  - ./.travis_no_output sudo apt-get install openjdk-7-jre
+  - ./.travis_no_output sudo apt-get install python-gdal
+  - export LD_LIBRARY_PATH=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/server:$LD_LIBRARY_PATH
 
 # grib api
   - ./.travis_no_output sudo apt-get install libjasper-dev
