@@ -787,7 +787,6 @@ class TestImmutable(TestUnit):
 
 
 class TestInPlace(TestUnit):
-    
     def test1(self):
         # Check conversions do not change original object
         c = unit.Unit('deg_c')
@@ -798,6 +797,18 @@ class TestInPlace(TestUnit):
         
         with self.assertRaises(AssertionError):
             np.testing.assert_array_equal(orig, converted)
+
+
+class TestBadClock(TestUnit):
+    def setUp(self):
+        self.shift_ops = ['@', 'after', 'from', 'since', 'ref']
+
+    def test_bad_clock_adjust(self):
+        for op in self.shift_ops:
+            format = 'hours {} 1970-01-01 1'.format(op)
+            u = Unit(format)
+            expected = 'hours {} 1970-01-01 01:00:00'.format(op)
+            self.assertEqual(u.origin, expected)
 
 
 if __name__ == '__main__':

@@ -29,6 +29,7 @@ from __future__ import division
 import copy
 import ctypes
 import ctypes.util
+import re
 import warnings
 
 import netcdftime
@@ -62,6 +63,16 @@ _UNIT_DIMENSIONLESS = '1'
 _OP_SINCE = ' since '
 _CATEGORY_UNKNOWN, _CATEGORY_NO_UNIT, _CATEGORY_UDUNIT = range(3)
 
+#
+# timestamp parsing
+#
+_SHIFT_OP = '(@|after|from|since|ref)'
+_DATE = '[+-]?\d{1,4}-\d{1,2}(-\d{1,2})?'
+_BAD_CLOCK = '(?P<clock>[+-]?\d{1,2})'
+_TIMESTAMP_PATTERN = '(?P<pre>^.*\s+{}\s+{}\s+){}\s*$'.format(_SHIFT_OP,
+                                                              _DATE,
+                                                              _BAD_CLOCK)
+_TIMESTAMP = re.compile(_TIMESTAMP_PATTERN, re.IGNORECASE)
 
 #
 # libudunits2 constants
@@ -811,6 +822,13 @@ class Unit(iris.util._OrderedHashable):
 
         if unit.endswith(" since epoch"):
             unit = unit.replace("epoch", IRIS_EPOCH)
+
+        # Correct badly formatted timestamp clock time that
+        # contains hours only, and no minutes (and seconds).
+        match = re.match(_TIMESTAMP, unit)
+        if match:
+            unit = '{}{:02d}:00:00'.format(match.group('pre'),
+                                           int(match.group('clock')))
 
         if unit.lower() in _UNKNOWN_UNIT:
             # TODO - removing the option of an unknown unit. Currently the auto generated MOSIG rules 
