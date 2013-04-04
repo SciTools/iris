@@ -18,12 +18,18 @@
 Regridding functions.
 
 """
+import collections
+import copy
+import warnings
 
 import numpy as np
+import numpy.ma as ma
 
-import iris.coord_systems
+import iris.analysis.cartography
 import iris.coords
+import iris.coord_systems
 import iris.cube
+import iris.unit
 
 
 def _get_xy_dim_coords(cube):
@@ -60,6 +66,78 @@ def _get_xy_dim_coords(cube):
         raise ValueError("The cube's x ({!r}) and y ({!r}) "
                          "coordinates must have the same coordinate "
                          "system.".format(x_coord.name(), y_coord.name()))
+
+    return x_coord, y_coord
+
+
+def _get_xy_coords(cube):
+    """
+    Return the x and y coordinates from a cube.
+
+    This function will preferentially return a pair of dimension
+    coordinates (if there are more than one potential x or y dimension
+    coordinates a ValueError will be raised). If the cube does not have
+    a pair of x and y dimension coordinates it will return 1D auxiliary
+    coordinates (including scalars). If there is not one and only one set
+    of x and y auxiliary coordinates a ValueError will be raised.
+
+    Having identified the x and y coordinates, the function checks that they
+    have equal coordinate systems and that they do not occupy the same
+    dimension on the cube.
+
+    Args:
+
+    * cube:
+        An instance of :class:`iris.cube.Cube`.
+
+    Returns:
+        A tuple containing the cube's x and y coordinates.
+
+    """
+    # Look for a suitable dimension coords first.
+    x_coords = cube.coords(axis='x', dim_coords=True)
+    if not x_coords:
+        # If there is no x coord in dim_coords look for scalars or
+        # monotonic coords in aux_coords.
+        x_coords = [coord for coord in cube.coords(axis='x', dim_coords=False)
+                    if coord.ndim == 1 and coord.is_monotonic()]
+    if len(x_coords) != 1:
+        raise ValueError('Cube {!r} must contain a single 1D x '
+                         'coordinate.'.format(cube.name()))
+    x_coord = x_coords[0]
+
+    # Look for a suitable dimension coords first.
+    y_coords = cube.coords(axis='y', dim_coords=True)
+    if not y_coords:
+        # If there is no y coord in dim_coords look for scalars or
+        # monotonic coords in aux_coords.
+        y_coords = [coord for coord in cube.coords(axis='y', dim_coords=False)
+                    if coord.ndim == 1 and coord.is_monotonic()]
+    if len(y_coords) != 1:
+        raise ValueError('Cube {!r} must contain a single 1D y '
+                         'coordinate.'.format(cube.name()))
+    y_coord = y_coords[0]
+
+    if x_coord.coord_system != y_coord.coord_system:
+        raise ValueError("The cube's x ({!r}) and y ({!r}) "
+                         "coordinates must have the same coordinate "
+                         "system.".format(x_coord.name(), y_coord.name()))
+
+    # The x and y coordinates must describe different dimensions
+    # or be scalar coords.
+    x_dims = cube.coord_dims(x_coord)
+    x_dim = None
+    if x_dims:
+        x_dim = x_dims[0]
+
+    y_dims = cube.coord_dims(y_coord)
+    y_dim = None
+    if y_dims:
+        y_dim = y_dims[0]
+
+    if x_dim is not None and y_dim == x_dim:
+        raise ValueError("The cube's x and y coords must not describe the "
+                         "same data dimension.")
 
     return x_coord, y_coord
 
@@ -294,7 +372,7 @@ def _create_cube(data, src, x_dim, y_dim, src_x_coord, src_y_coord,
     """
     # Create a result cube with the appropriate metadata
     result = iris.cube.Cube(data)
-    result.metadata = src.metadata
+    result.metadata = copy.deepcopy(src.metadata)
 
     # Copy across all the coordinates which don't span the grid.
     # Record a mapping from old coordinate IDs to new coordinates,
@@ -313,6 +391,7 @@ def _create_cube(data, src, x_dim, y_dim, src_x_coord, src_y_coord,
             result_coord = coord.copy()
             add_method(result_coord, dims)
             coord_mapping[id(coord)] = result_coord
+
     copy_coords(src.dim_coords, result.add_dim_coord)
     copy_coords(src.aux_coords, result.add_aux_coord)
 
@@ -414,3 +493,540 @@ def regrid_bilinear_rectilinear_src_and_grid(src, grid):
                           sample_grid_x, sample_grid_y,
                           _regrid_bilinear_array)
     return result
+
+
+def _within_bounds(bounds, lower, upper):
+    """
+    Return whether both lower and upper lie within the extremes
+    of bounds.
+
+    """
+    min_bound = np.min(bounds)
+    max_bound = np.max(bounds)
+
+    return (min_bound <= lower <= max_bound) and \
+        (min_bound <= upper <= max_bound)
+
+
+def _cropped_bounds(bounds, lower, upper):
+    """
+    Return a new bounds array and corresponding slice object (or indices)
+    that result from cropping the provided bounds between the specified lower
+    and upper values. The bounds at the extremities will be truncated so that
+    they start and end with lower and upper.
+
+    This function will return an empty NumPy array and slice if there is no
+    overlap between the region covered by bounds and the region from lower to
+    upper.
+
+    If lower > upper the resulting bounds may not be contiguous and the
+    indices object will be a tuple of indices rather than a slice object.
+
+    Args:
+
+    * bounds:
+        An (n, 2) shaped array of monotonic contiguous bounds.
+    * lower:
+        Lower bound at which to crop the bounds array.
+    * upper:
+        Upper bound at which to crop the bounds array.
+
+    Returns:
+        A tuple of the new bounds array and the corresponding slice object or
+        indices from the zeroth axis of the original array.
+
+    """
+    reversed_flag = False
+    # Ensure order is increasing.
+    if bounds[0, 0] > bounds[-1, 0]:
+        # Reverse bounds
+        bounds = bounds[::-1, ::-1]
+        reversed_flag = True
+
+    # Number of bounds.
+    n = bounds.shape[0]
+
+    if lower <= upper:
+        if lower > bounds[-1, 1] or upper < bounds[0, 0]:
+            new_bounds = bounds[0:0]
+            indices = slice(0, 0)
+        else:
+            # A single region lower->upper.
+            if lower < bounds[0, 0]:
+                # Region extends below bounds so use first lower bound.
+                l = 0
+                lower = bounds[0, 0]
+            else:
+                # Index of last lower bound less than or equal to lower.
+                l = np.nonzero(bounds[:, 0] <= lower)[0][-1]
+            if upper > bounds[-1, 1]:
+                # Region extends above bounds so use last upper bound.
+                u = n - 1
+                upper = bounds[-1, 1]
+            else:
+                # Index of first upper bound greater than or equal to
+                # upper.
+                u = np.nonzero(bounds[:, 1] >= upper)[0][0]
+            # Extract the bounds in our region defined by lower->upper.
+            new_bounds = np.copy(bounds[l:(u + 1), :])
+            # Replace first and last values with specified bounds.
+            new_bounds[0, 0] = lower
+            new_bounds[-1, 1] = upper
+            #indices = tuple(range(l, u + 1))
+            if reversed_flag:
+                indices = slice(n - (u + 1), n - l)
+            else:
+                indices = slice(l, u + 1)
+    else:
+        # Two regions [0]->upper, lower->[-1]
+        # [0]->upper
+        if upper < bounds[0, 0]:
+            # Region outside src bounds.
+            new_bounds_left = bounds[0:0]
+            indices_left = tuple()
+            slice_left = slice(0, 0)
+        else:
+            if upper > bounds[-1, 1]:
+                # Whole of bounds.
+                u = n - 1
+                upper = bounds[-1, 1]
+            else:
+                # Index of first upper bound greater than or equal to upper.
+                u = np.nonzero(bounds[:, 1] >= upper)[0][0]
+            # Extract the bounds in our region defined by [0]->upper.
+            new_bounds_left = np.copy(bounds[0:(u + 1), :])
+            # Replace last value with specified bound.
+            new_bounds_left[-1, 1] = upper
+            if reversed_flag:
+                indices_left = tuple(range(n - (u + 1), n))
+                slice_left = slice(n - (u + 1), n)
+            else:
+                indices_left = tuple(range(0, u + 1))
+                slice_left = slice(0, u + 1)
+        # lower->[-1]
+        if lower > bounds[-1, 1]:
+            # Region is outside src bounds.
+            new_bounds_right = bounds[0:0]
+            indices_right = tuple()
+            slice_right = slice(0, 0)
+        else:
+            if lower < bounds[0, 0]:
+                # Whole of bounds.
+                l = 0
+                lower = bounds[0, 0]
+            else:
+                # Index of last lower bound less than or equal to lower.
+                l = np.nonzero(bounds[:, 0] <= lower)[0][-1]
+            # Extract the bounds in our region defined by lower->[-1].
+            new_bounds_right = np.copy(bounds[l:, :])
+            # Replace first value with specified bound.
+            new_bounds_right[0, 0] = lower
+            if reversed_flag:
+                indices_right = tuple(range(0, n - l))
+                slice_right = slice(0, n - l)
+            else:
+                indices_right = tuple(range(l, n))
+                slice_right = slice(l, None)
+
+        if reversed_flag:
+            # Flip everything around.
+            indices_left, indices_right = indices_right, indices_left
+            slice_left, slice_right = slice_right, slice_left
+
+        # Combine regions.
+        new_bounds = np.concatenate((new_bounds_left, new_bounds_right))
+        # Use slices if possible, but if we have two regions use indices.
+        if indices_left and indices_right:
+            indices = indices_left + indices_right
+        elif indices_left:
+            indices = slice_left
+        elif indices_right:
+            indices = slice_right
+        else:
+            indices = slice(0, 0)
+
+    if reversed_flag:
+        new_bounds = new_bounds[::-1, ::-1]
+
+    return new_bounds, indices
+
+
+def _cartesian_area(y_bounds, x_bounds):
+    """
+    Return an array of the areas of each cell given two arrays
+    of cartesian bounds.
+
+    Args:
+
+    * y_bounds:
+        An (n, 2) shaped NumPy array.
+    * x_bounds:
+        An (m, 2) shaped NumPy array.
+
+    Returns:
+        An (n, m) shaped Numpy array of areas.
+
+    """
+    heights = y_bounds[:, 1] - y_bounds[:, 0]
+    widths = x_bounds[:, 1] - x_bounds[:, 0]
+    return np.abs(np.outer(heights, widths))
+
+
+def _spherical_area(y_bounds, x_bounds, radius=1.0):
+    """
+    Return an array of the areas of each cell on a sphere
+    given two arrays of latitude and longitude bounds in radians.
+
+    Args:
+
+    * y_bounds:
+        An (n, 2) shaped NumPy array of latitide bounds in radians.
+    * x_bounds:
+        An (m, 2) shaped NumPy array of longitude bounds in radians.
+    * radius:
+        Radius of the sphere. Default is 1.0.
+
+    Returns:
+        An (n, m) shaped Numpy array of areas.
+
+    """
+    return iris.analysis.cartography._quadrant_area(
+        y_bounds + np.pi / 2.0, x_bounds, radius)
+
+
+def _get_bounds_in_units(coord, units):
+    """Return a copy of coord's bounds in the specified units."""
+    coord = coord.copy()
+    coord.convert_units(units)
+    return coord.bounds
+
+
+def _regrid_area_weighted_array(src_data, x_dim, y_dim,
+                                src_x_bounds, src_y_bounds,
+                                grid_x_bounds, grid_y_bounds,
+                                grid_x_decreasing, grid_y_decreasing,
+                                area_func, circular=False):
+    """
+    Regrid the given data from its source grid to a new grid using
+    an area weighted mean to determine the resulting data values.
+
+    Args:
+
+    * src_data:
+        An N-dimensional NumPy array.
+    * x_dim:
+        The X dimension within `src_data`.
+    * y_dim:
+        The Y dimension within `src_data`.
+    * src_x_bounds:
+        A NumPy array of bounds along the X axis defining the source grid.
+    * src_y_bounds:
+        A NumPy array of bounds along the Y axis defining the source grid.
+    * grid_x_bounds:
+        A NumPy array of bounds along the X axis defining the new grid.
+    * grid_y_bounds:
+        A NumPy array of bounds along the Y axis defining the new grid.
+    * grid_x_decreasing:
+        Boolean indicating whether the X coordinate of the new grid is
+        in descending order.
+    * grid_y_decreasing:
+        Boolean indicating whether the Y coordinate of the new grid is
+        in descending order.
+    * area_func:
+        A function that returns an (p, q) array of weights given an (p, 2)
+        shaped array of Y bounds and an (q, 2) shaped array of X bounds.
+    * circular:
+        A boolean indicating whether the `src_x_bounds` are periodic. Default
+        is False.
+
+    Returns:
+        The regridded data as an N-dimensional NumPy array. The lengths
+        of the X and Y dimensions will now match those of the target
+        grid.
+
+    """
+    # Create empty data array to match the new grid.
+    # Note that dtype is not preserved and that the array is
+    # masked to allow for regions that do not overlap.
+    new_shape = list(src_data.shape)
+    if x_dim is not None:
+        new_shape[x_dim] = grid_x_bounds.shape[0]
+    if y_dim is not None:
+        new_shape[y_dim] = grid_y_bounds.shape[0]
+
+    # Flag to indicate whether the original data was a masked array.
+    masked = ma.isMaskedArray(src_data)
+    if masked:
+        new_data = ma.zeros(new_shape, fill_value=src_data.fill_value)
+    else:
+        new_data = ma.zeros(new_shape)
+    # Assign to mask to explode it, allowing indexed assignment.
+    new_data.mask = False
+
+    # Simple for loop approach.
+    indices = [slice(None)] * new_data.ndim
+    for j, (y_0, y_1) in enumerate(grid_y_bounds):
+        # Reverse lower and upper if dest grid is decreasing.
+        if grid_y_decreasing:
+            y_0, y_1 = y_1, y_0
+        y_bounds, y_indices = _cropped_bounds(src_y_bounds, y_0, y_1)
+        for i, (x_0, x_1) in enumerate(grid_x_bounds):
+            # Reverse lower and upper if dest grid is decreasing.
+            if grid_x_decreasing:
+                x_0, x_1 = x_1, x_0
+            x_bounds, x_indices = _cropped_bounds(src_x_bounds, x_0, x_1)
+
+            # Determine whether to mask element i, j based on overlap with
+            # src.
+            # If x_0 > x_1 then we want [0]->x_1 and x_0->[-1] in the case of
+            # wrapped longitudes. However if the src grid is not global (i.e.
+            # circular) this new cell would include a region outside of the
+            # extent of the src grid and should therefore be masked.
+            outside_extent = x_0 > x_1 and not circular
+            if (outside_extent or not _within_bounds(src_y_bounds, y_0, y_1) or
+                    not _within_bounds(src_x_bounds, x_0, x_1)):
+                # Mask out element(s) in new_data
+                if x_dim is not None:
+                    indices[x_dim] = i
+                if y_dim is not None:
+                    indices[y_dim] = j
+                new_data[tuple(indices)] = ma.masked
+            else:
+                # Calculate weighted mean of data points.
+                # Slice out relevant data (this may or may not be a view()
+                # depending on x_indices being a slice or not).
+                if x_dim is not None:
+                    indices[x_dim] = x_indices
+                if y_dim is not None:
+                    indices[y_dim] = y_indices
+                if isinstance(x_indices, tuple) and \
+                        isinstance(y_indices, tuple):
+                    raise RuntimeError('Cannot handle split bounds '
+                                       'in both x and y.')
+                data = src_data[tuple(indices)]
+
+                # Calculate weights based on areas of cropped bounds.
+                weights = area_func(y_bounds, x_bounds)
+
+                # Numpy 1.7 allows the axis keyword arg to be a tuple.
+                # If the version of NumPy is less than 1.7 manipulate the axes
+                # of the data so the x and y dimensions can be flattened.
+                Version = collections.namedtuple('Version',
+                                                 ('major', 'minor', 'micro'))
+                np_version = Version(*(int(val) for val in
+                                       np.version.version.split('.')))
+                if np_version.minor < 7:
+                    warnings.warn('Rolling axes.')
+                    if y_dim is not None and x_dim is not None:
+                        flattened_shape = list(data.shape)
+                        if y_dim > x_dim:
+                            data = np.rollaxis(data, y_dim, data.ndim)
+                            data = np.rollaxis(data, x_dim, data.ndim)
+                            del flattened_shape[y_dim]
+                            del flattened_shape[x_dim]
+                        else:
+                            data = np.rollaxis(data, x_dim, data.ndim)
+                            data = np.rollaxis(data, y_dim, data.ndim)
+                            del flattened_shape[x_dim]
+                            del flattened_shape[y_dim]
+                            weights = weights.T
+                        flattened_shape.append(-1)
+                        data = data.reshape(*flattened_shape)
+                    elif y_dim is not None:
+                        flattened_shape = list(data.shape)
+                        del flattened_shape[y_dim]
+                        flattened_shape.append(-1)
+                        data = data.swapaxes(y_dim, -1).reshape(
+                            *flattened_shape)
+                    elif x_dim is not None:
+                        flattened_shape = list(data.shape)
+                        del flattened_shape[x_dim]
+                        flattened_shape.append(-1)
+                        data = data.swapaxes(x_dim, -1).reshape(
+                            *flattened_shape)
+                    # Axes of data over which the weighted mean is calculated.
+                    axis = -1
+                    new_data_pt = ma.average(data, weights=weights.ravel(),
+                                             axis=axis)
+                else:
+                    # Transpose weights to match dim ordering in data.
+                    weights_shape_y = weights.shape[0]
+                    weights_shape_x = weights.shape[1]
+                    if x_dim is not None and y_dim is not None and \
+                            x_dim < y_dim:
+                        weights = weights.T
+                    # Broadcast the weights array to allow numpy's ma.average
+                    # to be called.
+                    weights_padded_shape = [1] * data.ndim
+                    axes = []
+                    if y_dim is not None:
+                        weights_padded_shape[y_dim] = weights_shape_y
+                        axes.append(y_dim)
+                    if x_dim is not None:
+                        weights_padded_shape[x_dim] = weights_shape_x
+                        axes.append(x_dim)
+                    # Assign new shape to raise error on copy.
+                    weights.shape = weights_padded_shape
+                    # Broadcast weights to match shape of data.
+                    _, broadcasted_weights = np.broadcast_arrays(data, weights)
+                    # Axes of data over which the weighted mean is calculated.
+                    axis = tuple(axes)
+                    # Calculate weighted mean taking into account missing data.
+                    new_data_pt = ma.average(data, weights=broadcasted_weights,
+                                             axis=axis)
+
+                # Determine suitable mask for data associated with cell.
+                # Could use all() here.
+                if masked:
+                    # data.mask may be a bool, if not collapse via any().
+                    if data.mask.ndim:
+                        new_data_pt_mask = data.mask.any(axis=axis)
+                    else:
+                        new_data_pt_mask = data.mask
+
+                # Insert data (and mask) values into new array.
+                if x_dim is not None:
+                    indices[x_dim] = i
+                if y_dim is not None:
+                    indices[y_dim] = j
+                new_data[tuple(indices)] = new_data_pt
+                if masked:
+                    new_data.mask[tuple(indices)] = new_data_pt_mask
+
+    # Remove new mask if original data was not masked
+    # and no values in the new array are masked.
+    if not masked and not new_data.mask.any():
+        new_data = new_data.data
+
+    # Special case to make 0-dimensional results take the same form as NumPy
+    if new_data.shape == ():
+        new_data = new_data.flat[0]
+
+    return new_data
+
+
+def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube):
+    """
+    Return a new cube with data values calculated using the area weighted
+    mean of data values from src_grid regridded onto the horizontal grid of
+    grid_cube.
+
+    Args:
+
+    * src_cube:
+        An instance of :class:`iris.cube.Cube` that supplies the data,
+        metadata and coordinates.
+    * grid_cube:
+        An instance of :class:`iris.cube.Cube` that supplies the desired
+        horizontal grid definition.
+
+    Returns:
+        A new :class:`iris.cube.Cube` instance.
+
+    """
+    # Get the 1d monotonic (or scalar) src and grid coordinates.
+    src_x, src_y = _get_xy_coords(src_cube)
+    grid_x, grid_y = _get_xy_coords(grid_cube)
+
+    # Condition 1: All x and y coordinates must have contiguous bounds to
+    # define areas.
+    if not src_x.is_contiguous() or not src_y.is_contiguous() or \
+            not grid_x.is_contiguous() or not grid_y.is_contiguous():
+        raise ValueError("The horizontal grid coordinates of both the source "
+                         "and grid cubes must have contiguous bounds.")
+
+    # Condition 2: Everything must have the same coordinate system.
+    src_cs = src_x.coord_system
+    grid_cs = grid_x.coord_system
+    if src_cs != grid_cs:
+        raise ValueError("The horizontal grid coordinates of both the source "
+                         "and grid cubes must have the same coordinate "
+                         "system.")
+
+    # Condition 3: Check for compatible coords.
+    if not src_x.is_compatible(grid_x) or not src_y.is_compatible(grid_y):
+        raise ValueError('The new grid must be defined on the same coordinate '
+                         'system, and have the same coordinate metadata, as '
+                         'the source.')
+
+    # Condition 4: cannot create vector coords from scalars.
+    src_x_dims = src_cube.coord_dims(src_x)
+    src_x_dim = None
+    if src_x_dims:
+        src_x_dim = src_x_dims[0]
+    src_y_dims = src_cube.coord_dims(src_y)
+    src_y_dim = None
+    if src_y_dims:
+        src_y_dim = src_y_dims[0]
+    if src_x_dim is None and grid_x.shape[0] != 1 or \
+            src_y_dim is None and grid_y.shape[0] != 1:
+        raise ValueError('The new grid must not require additional data '
+                         'dimensions.')
+
+    # Determine whether to calculate flat or spherical areas.
+    # Don't only rely on coord system as it may be None.
+    spherical = (isinstance(src_cs, (iris.coord_systems.GeogCS,
+                                     iris.coord_systems.RotatedGeogCS)) or
+                 src_x.units == 'degrees' or src_x.units == 'radians')
+
+    # Get src and grid bounds in the same units.
+    x_units = iris.unit.Unit('radians') if spherical else src_x.units
+    y_units = iris.unit.Unit('radians') if spherical else src_y.units
+
+    src_x_bounds = _get_bounds_in_units(src_x, x_units)
+    src_y_bounds = _get_bounds_in_units(src_y, y_units)
+    grid_x_bounds = _get_bounds_in_units(grid_x, x_units)
+    grid_y_bounds = _get_bounds_in_units(grid_y, y_units)
+
+    # Determine whether target grid bounds are decreasing. This must
+    # be determined prior to wrap_lons being called.
+    grid_x_decreasing = grid_x_bounds[-1, 0] < grid_x_bounds[0, 0]
+    grid_y_decreasing = grid_y_bounds[-1, 0] < grid_y_bounds[0, 0]
+
+    # Wrapping of longitudes.
+    if spherical:
+        base = np.min(src_x_bounds)
+        modulus = x_units.modulus
+        # Only wrap if necessary to avoid introducing floating
+        # point errors.
+        if np.min(grid_x_bounds) < base or \
+                np.max(grid_x_bounds) > (base + modulus):
+            grid_x_bounds = iris.analysis.cartography.wrap_lons(grid_x_bounds,
+                                                                base, modulus)
+
+    # Determine whether the src_x coord has periodic boundary conditions.
+    circular = getattr(src_x, 'circular', False)
+
+    # Use simple cartesian area function or one that takes into
+    # account the curved surface if coord system is spherical.
+    if spherical:
+        area_func = _spherical_area
+    else:
+        area_func = _cartesian_area
+
+    # Calculate new data array for regridded cube.
+    new_data = _regrid_area_weighted_array(src_cube.data, src_x_dim, src_y_dim,
+                                           src_x_bounds, src_y_bounds,
+                                           grid_x_bounds, grid_y_bounds,
+                                           grid_x_decreasing,
+                                           grid_y_decreasing,
+                                           area_func, circular)
+
+    # Wrap up the data as a Cube.
+    # Create 2d meshgrids as required by _create_cube func.
+    meshgrid_x, meshgrid_y = np.meshgrid(grid_x.points, grid_y.points)
+    new_cube = _create_cube(new_data, src_cube, src_x_dim, src_y_dim,
+                            src_x, src_y, grid_x, grid_y,
+                            meshgrid_x, meshgrid_y,
+                            _regrid_bilinear_array)
+
+    # Slice out any length 1 dimensions.
+    indices = [slice(None, None)] * new_data.ndim
+    if src_x_dim is not None and new_cube.shape[src_x_dim] == 1:
+        indices[src_x_dim] = 0
+    if src_y_dim is not None and new_cube.shape[src_y_dim] == 1:
+        indices[src_y_dim] = 0
+    if 0 in indices:
+        new_cube = new_cube[tuple(indices)]
+
+    return new_cube
