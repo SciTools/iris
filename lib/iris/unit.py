@@ -68,7 +68,7 @@ _CATEGORY_UNKNOWN, _CATEGORY_NO_UNIT, _CATEGORY_UDUNIT = range(3)
 #
 _SHIFT_OP = '(@|after|from|since|ref)'
 _DATE = '[+-]?\d{1,4}-\d{1,2}(-\d{1,2})?'
-_BAD_CLOCK = '(?P<clock>[+-]?\d{1,2})'
+_BAD_CLOCK = '(?P<clock>[+-]?\d+)'
 _TIMESTAMP_PATTERN = '(?P<pre>^.*\s+{}\s+{}\s+){}\s*$'.format(_SHIFT_OP,
                                                               _DATE,
                                                               _BAD_CLOCK)

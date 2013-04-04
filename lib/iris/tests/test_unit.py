@@ -810,6 +810,10 @@ class TestBadClock(TestUnit):
             expected = 'hours {} 1970-01-01 01:00:00'.format(op)
             self.assertEqual(u.origin, expected)
 
+    def test_bad_clock_hour(self):
+        with self.assertRaises(ValueError):
+            Unit('hours since 1970-01-01 666')
+
 
 if __name__ == '__main__':
     tests.main()
