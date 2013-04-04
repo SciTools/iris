@@ -92,6 +92,7 @@ install:
   - echo "sample_data_dir = $(pwd)/iris-sample-data-${IRIS_SAMPLE_DATA_ZIP_DIR_SUFFIX}/sample_data" >> lib/iris/etc/site.cfg
   - echo "test_data_dir = $(pwd)/iris-test-data-${IRIS_TEST_DATA_ZIP_DIR_SUFFIX}/test_data" >> lib/iris/etc/site.cfg
   - ln -s $(pwd)/lib/iris /home/travis/.local/lib/python2.7/site-packages/iris
+  - ./.travis_no_output /usr/bin/python setup.py pyke_rules
 
   
 script:

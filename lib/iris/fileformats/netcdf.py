@@ -184,14 +184,15 @@ def _pyke_kb_engine():
         tmpvar = [os.path.getmtime(os.path.join(compile_dir, fname)) for
                   fname in os.listdir(compile_dir) if not
                   fname.startswith('_')]
-        oldest_pyke_compile_file = min(tmpvar)
-        rule_age = os.path.getmtime(os.path.join(pyke_dir,
-                                                 _PYKE_RULE_BASE + '.krb'))
+        if tmpvar:
+            oldest_pyke_compile_file = min(tmpvar)
+            rule_age = os.path.getmtime(
+                os.path.join(pyke_dir, _PYKE_RULE_BASE + '.krb'))
 
-        if oldest_pyke_compile_file > rule_age:
-            # Initialise the pyke inference engine.
-            engine = knowledge_engine.engine(
-                (None, 'iris.fileformats._pyke_rules.compiled_krb'))
+            if oldest_pyke_compile_file > rule_age:
+                # Initialise the pyke inference engine.
+                engine = knowledge_engine.engine(
+                    (None, 'iris.fileformats._pyke_rules.compiled_krb'))
 
     if engine is None:
         engine = knowledge_engine.engine(iris.fileformats._pyke_rules)
