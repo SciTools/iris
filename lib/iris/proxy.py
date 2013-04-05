@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -34,7 +34,8 @@ class FakeModule(object):
         object.__setattr__(self, name, value)
 
     def __getattr__(self, name):
-        raise RuntimeError("Module '%s' not available or not installed" % self._name)
+        raise AttributeError(
+            'Module "{}" not available or not installed'.format(self._name))
 
 
 def apply_proxy(module_name, dic):
@@ -53,5 +54,4 @@ def apply_proxy(module_name, dic):
         __import__(module_name)
         dic[name] = sys.modules[module_name]
     except ImportError:
-        dic[name] = sys.modules[name] = FakeModule(name) 
-    
+        dic[name] = sys.modules[name] = FakeModule(name)
