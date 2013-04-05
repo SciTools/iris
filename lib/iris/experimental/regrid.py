@@ -56,3 +56,6 @@ def _get_xy_dim_coords(cube):
                          "system.".format(x_coord.name(), y_coord.name()))
 
     return x_coord, y_coord
+
+
+from _regrid_esmpy import regrid_conservative_with_esmpy
