@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Test the regridding functions.
+Test the :func:`iris.experimental.regrid._get_xy_dim_coords` function.
 
 """
 # import iris tests first so that some things can be initialised

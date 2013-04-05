@@ -24,6 +24,11 @@ def _get_xy_dim_coords(cube):
     """
     Return the x and y dimension coordinates from a cube.
 
+    This function raises a ValueError if the cube does not contain one and
+    only one set of x and y dimension coordinates. It also raises a ValueError
+    if the identified x and y coordinates do not have coordinate systems that
+    are equal.
+
     Args:
 
     * cube:
