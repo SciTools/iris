@@ -1,0 +1,18 @@
+sea_water_potential_temperature                     (time: 2)
+     Dimension coordinates:
+          time                                             x
+     Auxiliary coordinates:
+          eta                                            x
+     Derived coordinates:
+          sea_surface_height_above_reference_ellipsoid   x
+     Scalar coordinates:
+          depth: 100.0 m
+          depth_c: 50.0 m
+          latitude: 0.0 degrees
+          longitude: 0.0 degrees
+          model_level_number: 0
+          nsigma: 2
+          sigma: -1.0
+          zlev: 0.0 m
+     Attributes:
+          Conventions: CF-1.5

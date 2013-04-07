@@ -608,8 +608,8 @@ fc_attribute_ukmo__process_flags
         python attr_value = engine.cf_var.ukmo__process_flags
         python engine.cube.attributes['ukmo__process_flags'] = tuple([x.replace("_", " ") for x in attr_value.split(" ")])
         python engine.rule_triggered.add(rule.name)
-        
-        
+
+ 
 #
 # Context:
 #   This rule will trigger iff a formula term that refers to a
@@ -625,6 +625,24 @@ fc_formula_type_atmosphere_hybrid_height_coordinate
     assert
         python engine.requires['formula_type'] = 'atmosphere_hybrid_height_coordinate'
         facts_cf.formula_type(atmosphere_hybrid_height_coordinate)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff a formula term that refers to a
+#   dimensionless vertical coordinate of ocean sigma over z
+#
+# Purpose:
+#   Assert that the formula term refers to ocean sigma over z.
+#
+fc_formula_type_ocean_sigma_z_coordinate
+    foreach
+        facts_cf.formula_root($coordinate)
+        check getattr(engine.cf_var.cf_group[$coordinate], 'standard_name') == 'ocean_sigma_z_coordinate'
+    assert
+        python engine.requires['formula_type'] = 'ocean_sigma_z_coordinate'
+        facts_cf.formula_type(ocean_sigma_z_coordinate)
         python engine.rule_triggered.add(rule.name)
 
 
