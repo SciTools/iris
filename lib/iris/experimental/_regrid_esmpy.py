@@ -33,7 +33,7 @@ def _get_coord_crs(co):
     return cs.as_cartopy_crs()
 
 
-# instance of PlateCarree crs for transforming points to true-lat-lon
+# A private, plain Geodetic crs used for transforming points to true-lat-lon
 _crs_truelatlon = ccrs.Geodetic()
 _convert_latlons = _crs_truelatlon.transform_points
 
@@ -48,8 +48,6 @@ def _make_esmpy_field_from_coords(x_coord, y_coord, ref_name='field'):
     # calculate cell corners and transform to true-lat-lons
     x_bounds, y_bounds = np.meshgrid(x_coord.contiguous_bounds(),
                                      y_coord.contiguous_bounds())
-#    print ref_name,': x-range = ',[f(x_coord.contiguous_bounds())
-#                                   for f in (np.min, np.max)]
     grid_crs = _get_coord_crs(x_coord)
     ll_bounds = _convert_latlons(grid_crs,
                                  x_bounds,
@@ -189,8 +187,8 @@ def regrid_conservative_with_esmpy(source_cube, grid_cube_or_coords):
         # first yourself (then this call does nothing).
 
     # construct ESMF field objects on the  source and destination grids.
-    src_field = _make_esmpy_field_from_coords(*src_coords, ref_name='src')
-    dst_field = _make_esmpy_field_from_coords(*dst_coords, ref_name='dst')
+    src_field = _make_esmpy_field_from_coords(*src_coords) #, ref_name='src')
+    dst_field = _make_esmpy_field_from_coords(*dst_coords) #, ref_name='dst')
 
     # assign the source data, reformed into the right dimension order (=x,y)
     src_data = source_cube.data
