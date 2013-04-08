@@ -271,6 +271,42 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertAlmostEqual(sumAll, 1.0, delta=0.02)
 
 
+    def test_fail_no_cs(self):
+        shape1 = (5, 5)
+        xlims1, ylims1 = ((-2, 2), (-2, 2))
+        c1 = _make_test_cube(shape1, xlims1, ylims1)
+        c1.data[:] = 0.0
+        c1.data[2,2] = 1.0
+
+        shape2 = (4, 4)
+        xlims2, ylims2 = ((-1.5, 1.5), (-1.5, 1.5))
+        c2 = _make_test_cube(shape2, xlims2, ylims2)
+        c2.data[:] = 0.0
+        c2.coord('latitude').coord_system = None
+
+        with self.assertRaises(ValueError):
+            c1to2 = regrid_conservative_via_esmpy(c1, c2)
+
+
+    def test_fail_different_cs(self):
+        shape1 = (5, 5)
+        xlims1, ylims1 = ((-2, 2), (-2, 2))
+        c1 = _make_test_cube(shape1, xlims1, ylims1, 
+                             pole_latlon=(45.0, 35.0))
+        c1.data[:] = 0.0
+        c1.data[2,2] = 1.0
+
+        shape2 = (4, 4)
+        xlims2, ylims2 = ((-1.5, 1.5), (-1.5, 1.5))
+        c2 = _make_test_cube(shape2, xlims2, ylims2)
+        c2.data[:] = 0.0
+        c2.coord('latitude').coord_system = \
+            c1.coord('grid_latitude').coord_system
+
+        with self.assertRaises(ValueError):
+            c1to2 = regrid_conservative_via_esmpy(c1, c2)
+
+
     def orig_basic_visual(self):
         # initialise ESMF to log errors
         ESMF.Manager(logkind = ESMF.LogKind.SINGLE, debug = True)

@@ -159,26 +159,21 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube_or_coords):
             (?? in some cases a coordinate system may be inferred ??)
     """
     # process parameters to get input+output horizontal coordinates
-    src_coords = [source_cube.coord(dim_coords=True, axis=ax) 
-                  for ax in ('x','y')]
+    # NOTE: _get_xy_dim_coords tests exist, unique, and coor_systems match
+    # (but allows coord_system == None)
+    src_coords = i_regrid._get_xy_dim_coords(source_cube)
     if isinstance(grid_cube_or_coords, iris.cube.Cube):
-        dst_coords = [grid_cube_or_coords.coord(dim_coords=True, axis=ax) 
-                      for ax in ('x','y')]
+        dst_coords = i_regrid._get_xy_dim_coords(grid_cube_or_coords)
     else:
         dst_coords = grid_cube_or_coords
 
     # check source+target coordinates are suitable + convert to Cartopy crs
     def check_xy_coords(name, coords):
+        if _get_coord_crs(coords[0]) == None:
+            raise ValueError(name + ' X+Y coordinates do not have a '
+                             'coord_system.')
         if not coords[0].has_bounds() or not coords[1].has_bounds():
             raise ValueError(name + ' X+Y coordinates are not both bounded.')
-        crs_list =  [_get_coord_crs(co) for co in coords]
-        if any([crs is None for crs in crs_list]):
-            raise ValueError(name + ' X+Y coordinates do not '
-                             'both have a coord_system.')
-        elif crs_list[0] != crs_list[1]:
-            raise ValueError(name + ' X+Y coordinates do not '
-                             'have the same coord_system.')
-        return crs_list[0]
 
     check_xy_coords('Source', src_coords)
     check_xy_coords('Target', dst_coords)
