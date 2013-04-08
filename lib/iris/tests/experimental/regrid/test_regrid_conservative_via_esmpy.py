@@ -37,7 +37,7 @@ import iris.plot as iplt
 import iris.quickplot as qplt
 import iris.tests.stock as istk
 
-from iris.experimental.regrid import regrid_conservative_with_esmpy
+from iris.experimental.regrid_conservative import regrid_conservative_via_esmpy
 
 def _make_test_cube(shape, xlims, ylims, pole_latlon=None):
     """Create latlon cube (optionally rotated) with given xy dims+lims."""
@@ -216,7 +216,7 @@ class TestConservativeRegrid(tests.IrisTest):
         c2 = _make_test_cube(shape2, xlims2, ylims2)
         c2.data[:] = 0.0
 
-        c1to2 = regrid_conservative_with_esmpy(c1, c2)
+        c1to2 = regrid_conservative_via_esmpy(c1, c2)
         d_expect = np.array([[0.00, 0.00, 0.00, 0.00],
                              [0.00, 0.25, 0.25, 0.00],
                              [0.00, 0.25, 0.25, 0.00],
@@ -226,7 +226,7 @@ class TestConservativeRegrid(tests.IrisTest):
         sumAll = np.sum(c1to2.data)
         self.assertAlmostEqual(sumAll, 1.0, delta=0.00005)
 
-        c1to2to1 = regrid_conservative_with_esmpy(c1to2, c1)
+        c1to2to1 = regrid_conservative_via_esmpy(c1to2, c1)
         d_expect = np.array([[0.0, 0.0000, 0.0000, 0.0000, 0.0],
                              [0.0, 0.0625, 0.1250, 0.0625, 0.0],
                              [0.0, 0.1250, 0.2500, 0.1250, 0.0],
@@ -251,7 +251,7 @@ class TestConservativeRegrid(tests.IrisTest):
         c2 = _make_test_cube(shape2, xlims2, ylims2)
         c2.data[:] = 0.0
 
-        c1to2 = regrid_conservative_with_esmpy(c1, c2)
+        c1to2 = regrid_conservative_via_esmpy(c1, c2)
         d_expect = np.array([[0.0, 0.0, 0.0, 0.0],
                              [0.0, 0.23614, 0.23614, 0.0],
                              [0.0, 0.26784, 0.26784, 0.0],
@@ -260,7 +260,7 @@ class TestConservativeRegrid(tests.IrisTest):
         sumAll = np.sum(c1to2.data)
         self.assertAlmostEqual(sumAll, 1.0, delta=0.008)
 
-        c1to2to1 = regrid_conservative_with_esmpy(c1to2, c1)
+        c1to2to1 = regrid_conservative_via_esmpy(c1to2, c1)
         d_expect = np.array([[0.0, 0.0, 0.0, 0.0, 0.0],
                              [0.0, 0.056091, 0.112181, 0.056091, 0.0],
                              [0.0, 0.125499, 0.250998, 0.125499, 0.0],
@@ -328,8 +328,7 @@ class TestConservativeRegrid(tests.IrisTest):
         print c2.coord(axis='y').bounds
         print
     
-        c1_regrid = regrid_conservative_with_esmpy(c1, c2)
-    
+        c1_regrid = regrid_conservative_via_esmpy(c1, c2)
     
         levels = [1.0, 50, 99, 120, 140, 160, 180]
     

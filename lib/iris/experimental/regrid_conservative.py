@@ -25,6 +25,8 @@ import ESMF
 
 import cartopy.crs as ccrs
 import iris
+import iris.experimental.regrid as i_regrid
+
 
 def _get_coord_crs(co):
     cs = co.coord_system
@@ -122,7 +124,7 @@ def _get_esmf_regrid_coverage_mask(src_grid, dst_grid):
     return dst_coverage.data > 0.0
 
 
-def regrid_conservative_with_esmpy(source_cube, grid_cube_or_coords):
+def regrid_conservative_via_esmpy(source_cube, grid_cube_or_coords):
     """
     Perform a conservative regridding with ESMPy.
 
