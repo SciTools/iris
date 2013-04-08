@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube units="unknown">
+    <coords>
+      <coord datadims="[1]">
+        <dimCoord id="20efe55f" long_name="columns" points="[10, 11, 12, 13, 14]" shape="(5,)" units="Unit('unknown')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="da06dd05" long_name="index" points="[271753.016944, 281282.033889]" shape="(2,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data byteorder="little" checksum="0x5e85e4a4" dtype="int64" mask_checksum="-0x1c75978a" mask_order="C" order="C" shape="(2, 5)"/>
+  </cube>
+</cubes>

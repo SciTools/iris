@@ -18,6 +18,8 @@ A summary of the main features added with version 1.4:
   to a directory containing the test data required by the unit tests. It can
   be set by adding a ``test_data_dir`` entry to the ``Resources`` section of
   ``site.cfg``. See :mod:`iris.config` for more details.
+* One and two dimensional cubes can be converted to and from Pandas objects.
+  See :mod:`iris.pandas` for more details.
 
 Bugs fixed
 ----------
