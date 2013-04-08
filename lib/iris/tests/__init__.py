@@ -292,6 +292,9 @@ class IrisTest(unittest.TestCase):
     def assertArrayAlmostEqual(self, a, b):
         np.testing.assert_array_almost_equal(a, b)
 
+    def assertArrayAllClose(self, a, b, **kwargs):
+        np.testing.assert_allclose(a, b, **kwargs)
+
     def assertAttributesEqual(self, attr1, attr2):
         """
         Asserts two mappings (dictionaries) are equal after

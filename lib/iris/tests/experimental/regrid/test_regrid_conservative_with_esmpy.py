@@ -22,6 +22,8 @@ Test the :func:`iris.experimental.regrid._get_xy_dim_coords` function.
 # before importing anything else.
 import iris.tests as tests
 
+import os
+
 import numpy as np
 
 import matplotlib as mpl
@@ -37,7 +39,72 @@ import iris.tests.stock as istk
 
 from iris.experimental.regrid import regrid_conservative_with_esmpy
 
+def _make_test_cube(shape, xlims, ylims, pole_latlon=None):
+    """Create latlon cube (optionally rotated) with given xy dims+lims."""
+    nx, ny = shape
+    cube = iris.cube.Cube(np.zeros((ny, nx)))
+    xvals = np.linspace(xlims[0], xlims[1], nx)
+    yvals = np.linspace(ylims[0], ylims[1], ny)
+    if pole_latlon is not None:
+        coordname_prefix = 'grid_'
+        pole_lat, pole_lon = pole_latlon
+        cs = iris.coord_systems.RotatedGeogCS(
+            grid_north_pole_latitude=pole_lat,
+            grid_north_pole_longitude=pole_lon)
+    else:
+        coordname_prefix = ''
+        cs = iris.coord_systems.GeogCS(6371229)
+
+    co_x = iris.coords.DimCoord(xvals,
+                                standard_name=coordname_prefix + 'longitude',
+                                units=iris.unit.Unit('degrees'),
+                                coord_system=cs)
+    co_x.guess_bounds()
+    cube.add_dim_coord(co_x, 1)
+    co_y = iris.coords.DimCoord(yvals,
+                                standard_name=coordname_prefix + 'latitude',
+                                units=iris.unit.Unit('degrees'),
+                                coord_system=cs)
+    co_y.guess_bounds()
+    cube.add_dim_coord(co_y, 0)
+    return cube
+
 def _generate_test_cubes():
+    # create source test cube on rotated form
+    pole_lat = 53.4
+    pole_lon = -173.2
+    deg_swing = 35.3
+    pole_lon += deg_swing
+    c1_nx = 7
+    c1_ny = 5
+    c1_xlims = -60.0, 60.0
+    c1_ylims = -30.0, 30.0
+    do_wrapped = False
+    do_wrapped = True
+    if do_wrapped:
+        c1_xlims = [x + 360.0 for x in c1_xlims]
+    c1_xlims = [x - deg_swing for x in c1_xlims]
+    c1 = _make_test_cube((c1_nx, c1_ny), c1_xlims, c1_ylims,
+                         pole_latlon=(pole_lat, pole_lon))
+    c1.data = np.array([
+        [100, 100, 100, 100, 100, 100, 100],
+        [100, 199, 199, 199, 199, 100, 100],
+        [100, 100, 100, 199, 199, 100, 100],
+        [100, 100, 100, 199, 199, 199, 100],
+        [100, 100, 100, 100, 100, 100, 100],
+        ],
+        dtype=np.float)
+
+    # construct target cube to receive
+    nx2 = 10
+    ny2 = 8
+    c2_xlims = -150.0, 200.0
+    c2_ylims = -60.0, 70.0
+    c2 = _make_test_cube((nx2, ny2), c2_xlims, c2_ylims)
+
+    return c1, c2
+
+def _generate_test_cubes_orig_flexi():
     # create source test cube on rotated form
     pole_lat = 53.4
     pole_lon = -173.2
@@ -124,7 +191,87 @@ def _generate_test_cubes():
     return c1, c2
 
 class TestConservativeRegrid(tests.IrisTest):
-    def test_regrid_conservative_with_esmpy(self):
+    @classmethod
+    def setUpClass(self):
+        # Pre-initialise ESMF, just to avoid warnings about no logfile.
+        # NOTE: noisy if logging off, and no control of filepath.  Boo !!
+        self._emsf_logfile_path = os.path.join(os.getcwd(), 'ESMF_LogFile')
+        ESMF.Manager(logkind = ESMF.LogKind.SINGLE, debug = False)
+
+    @classmethod
+    def tearDownClass(self):
+        # remove the logfile if we can, just to be tidy
+        if os.path.exists(self._emsf_logfile_path):
+            os.remove(self._emsf_logfile_path)
+
+    def test_simple_area_sum_preserved(self):
+        shape1 = (5, 5)
+        xlims1, ylims1 = ((-2, 2), (-2, 2))
+        c1 = _make_test_cube(shape1, xlims1, ylims1)
+        c1.data[:] = 0.0
+        c1.data[2,2] = 1.0
+
+        shape2 = (4, 4)
+        xlims2, ylims2 = ((-1.5, 1.5), (-1.5, 1.5))
+        c2 = _make_test_cube(shape2, xlims2, ylims2)
+        c2.data[:] = 0.0
+
+        c1to2 = regrid_conservative_with_esmpy(c1, c2)
+        d_expect = np.array([[0.00, 0.00, 0.00, 0.00],
+                             [0.00, 0.25, 0.25, 0.00],
+                             [0.00, 0.25, 0.25, 0.00],
+                             [0.00, 0.00, 0.00, 0.00]])
+        # Numbers are slightly off (~0.25000952).  This is expected.
+        self.assertArrayAllClose(c1to2.data, d_expect, rtol=5.0e-5)
+        sumAll = np.sum(c1to2.data)
+        self.assertAlmostEqual(sumAll, 1.0, delta=0.00005)
+
+        c1to2to1 = regrid_conservative_with_esmpy(c1to2, c1)
+        d_expect = np.array([[0.0, 0.0000, 0.0000, 0.0000, 0.0],
+                             [0.0, 0.0625, 0.1250, 0.0625, 0.0],
+                             [0.0, 0.1250, 0.2500, 0.1250, 0.0],
+                             [0.0, 0.0625, 0.1250, 0.0625, 0.0],
+                             [0.0, 0.0000, 0.0000, 0.0000, 0.0]])
+        # Errors now quite large
+        self.assertArrayAllClose(c1to2to1.data, d_expect, atol=0.00002)
+        sumAll = np.sum(c1to2to1.data)
+        self.assertAlmostEqual(sumAll, 1.0, delta=0.00008)
+
+
+    def test_polar_areas(self):
+        # Like test_basic_area, but not symmetrical + bigger overall errors.
+        shape1 = (5, 5)
+        xlims1, ylims1 = ((-2, 2), (84, 88))
+        c1 = _make_test_cube(shape1, xlims1, ylims1)
+        c1.data[:] = 0.0
+        c1.data[2,2] = 1.0
+
+        shape2 = (4, 4)
+        xlims2, ylims2 = ((-1.5, 1.5), (84.5, 87.5))
+        c2 = _make_test_cube(shape2, xlims2, ylims2)
+        c2.data[:] = 0.0
+
+        c1to2 = regrid_conservative_with_esmpy(c1, c2)
+        d_expect = np.array([[0.0, 0.0, 0.0, 0.0],
+                             [0.0, 0.23614, 0.23614, 0.0],
+                             [0.0, 0.26784, 0.26784, 0.0],
+                             [0.0, 0.0, 0.0, 0.0]])
+        self.assertArrayAllClose(c1to2.data, d_expect, rtol=5.0e-5)
+        sumAll = np.sum(c1to2.data)
+        self.assertAlmostEqual(sumAll, 1.0, delta=0.008)
+
+        c1to2to1 = regrid_conservative_with_esmpy(c1to2, c1)
+        d_expect = np.array([[0.0, 0.0, 0.0, 0.0, 0.0],
+                             [0.0, 0.056091, 0.112181, 0.056091, 0.0],
+                             [0.0, 0.125499, 0.250998, 0.125499, 0.0],
+                             [0.0, 0.072534, 0.145067, 0.072534, 0.0],
+                             [0.0, 0.0, 0.0, 0.0, 0.0]])
+        self.assertArrayAllClose(c1to2to1.data, d_expect, atol=0.0005)
+        sumAll = np.sum(c1to2to1.data)
+        self.assertAlmostEqual(sumAll, 1.0, delta=0.02)
+
+
+    def orig_basic_visual(self):
         # initialise ESMF to log errors
         ESMF.Manager(logkind = ESMF.LogKind.SINGLE, debug = True)
 
