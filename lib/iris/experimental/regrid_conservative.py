@@ -39,6 +39,7 @@ def _get_coord_crs(co):
 _crs_truelatlon = ccrs.Geodetic()
 _convert_latlons = _crs_truelatlon.transform_points
 
+
 def _make_esmpy_field_from_coords(x_coord, y_coord, ref_name='field'):
     """ Create an ESMPy Grid for the coordinates and return a Field on it."""
     # create a Grid object describing point positions
@@ -68,7 +69,8 @@ def _make_esmpy_field_from_coords(x_coord, y_coord, ref_name='field'):
     # NOTE: we don't care about Iris' idea of where the points 'really' are
     # ESMF requires the data in the CENTER for conservative regrid, according
     # to the documentation :
-    #  - http://www.earthsystemmodeling.org/esmf_releases/public/last/ESMF_refdoc.pdf
+    #  - http://www.earthsystemmodeling.org/
+    #        esmf_releases/public/last/ESMF_refdoc.pdf
     #  - section  22.2.3 : ESMF_REGRIDMETHOD
     #
     # NOTE: Still not sure that the documentation states that this is necessary
@@ -87,7 +89,7 @@ def _make_esmpy_field_from_coords(x_coord, y_coord, ref_name='field'):
     ll_points = _convert_latlons(grid_crs,
                                  x_points,
                                  y_points)
-    lon_points, lat_points = ll_points[:,:,0], ll_points[:,:,1]
+    lon_points, lat_points = ll_points[:, :, 0], ll_points[:, :, 1]
 
     # get the coordinate pointers and setup the coordinate arrays
     grid.add_coords(staggerlocs=[ESMF.StaggerLoc.CENTER])
@@ -101,6 +103,7 @@ def _make_esmpy_field_from_coords(x_coord, y_coord, ref_name='field'):
     # create + return a Field based on this grid
     field = ESMF.Field(grid, ref_name)
     return field
+
 
 def _get_esmf_regrid_coverage_mask(src_grid, dst_grid):
     """
@@ -169,7 +172,7 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube_or_coords):
 
     # check source+target coordinates are suitable + convert to Cartopy crs
     def check_xy_coords(name, coords):
-        if _get_coord_crs(coords[0]) == None:
+        if _get_coord_crs(coords[0]) is None:
             raise ValueError(name + ' X+Y coordinates do not have a '
                              'coord_system.')
         if not coords[0].has_bounds() or not coords[1].has_bounds():
@@ -184,20 +187,20 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube_or_coords):
         # first yourself (then this call does nothing).
 
     # construct ESMF field objects on the  source and destination grids.
-    src_field = _make_esmpy_field_from_coords(*src_coords) #, ref_name='src')
-    dst_field = _make_esmpy_field_from_coords(*dst_coords) #, ref_name='dst')
+    src_field = _make_esmpy_field_from_coords(*src_coords)
+    dst_field = _make_esmpy_field_from_coords(*dst_coords)
 
     # assign the source data, reformed into the right dimension order (=x,y)
     src_data = source_cube.data
     # FOR NOW: 2d only
-    # TODO: should be able to manage multidimensional, but will need to
-    # construct coords in the other dims ??
     assert src_data.ndim == 2
-    src_dims_xy = [source_cube.coord_dims(source_cube.coord(axis=ax))[0]
-                   for ax in ('x', 'y')]  # esmf coords in order (x,y)
+
+    # Transpose source data into fixed (x,y) order for esmf
+    src_dims_xy = [source_cube.coord_dims(coord)[0] for coord in src_coords]
     src_data = src_data.transpose(src_dims_xy)
     src_field.data[:] = src_data
     dst_field.data[:] = np.NaN  # FOR NOW: in case of arithmetic gremlins
+
     # TODO: and add a possible mask ???
 
     # perform the actual regridding
@@ -205,19 +208,23 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube_or_coords):
                                 src_mask_values=np.array([], dtype=np.int32),
                                 dst_mask_values=np.array([], dtype=np.int32),
                                 regrid_method=ESMF.RegridMethod.CONSERVE,
-#                                unmapped_action=ESMF.UnmappedAction.ERROR)
                                 unmapped_action=ESMF.UnmappedAction.IGNORE)
     regrid_method(src_field, dst_field)
 
-    # TODO: convert result back into a suitable cube.
-    # FOR NOW: just use dest cube as a template
-    assert isinstance(grid_cube_or_coords, iris.cube.Cube)
-    result_cube = grid_cube_or_coords.copy()
-    # repeat the transpose trick -- but this time invert the operation...
-    result_data = dst_field.data
-    assert result_data.ndim == 2
-    result_dims = [result_cube.coord_dims(result_cube.coord(axis=ax))[0]
-                   for ax in ('x', 'y')]  # esmf coords in order (x,y)
-    result_cube.data.transpose(result_dims)[:] = result_data
-    return result_cube
+    # Transpose esmf result dims (X,Y) back to the order of the source
+    # TODO: really need to "invert" ordering - but for 2D it is just the same!
+    data = dst_field.data.transpose(src_dims_xy)
 
+    # Return result as a new cube based on the source.
+    return i_regrid._create_cube(
+        data,
+        src=source_cube,
+        x_dim=src_dims_xy[0],
+        y_dim=src_dims_xy[1],
+        src_x_coord=src_coords[0],
+        src_y_coord=src_coords[1],
+        dest_x_coord=dst_coords[0],
+        dest_y_coord=dst_coords[1],
+        sample_grid_x=dst_coords[0].points,
+        sample_grid_y=dst_coords[1].points,
+        regrid_callback=i_regrid._regrid_bilinear_array)
