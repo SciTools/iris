@@ -201,19 +201,33 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube_or_coords):
     src_field.data[:] = src_data
     dst_field.data[:] = np.NaN  # FOR NOW: in case of arithmetic gremlins
 
-    # TODO: and add a possible mask ???
-
     # perform the actual regridding
     regrid_method = ESMF.Regrid(src_field, dst_field,
-                                src_mask_values=np.array([], dtype=np.int32),
-                                dst_mask_values=np.array([], dtype=np.int32),
+                                src_mask_values=np.array([1], dtype=np.int32),
+                                dst_mask_values=np.array([1], dtype=np.int32),
                                 regrid_method=ESMF.RegridMethod.CONSERVE,
                                 unmapped_action=ESMF.UnmappedAction.IGNORE)
     regrid_method(src_field, dst_field)
 
+    # check for masking due to source MDI or cells outside original grid ...
+    validmask_src = ESMF.Field(src_field.grid, 'validmask_src')
+    validmask_dst = ESMF.Field(dst_field.grid, 'validmask_dst')
+    if hasattr(src_data, 'mask') and np.any(src_data.mask):
+        validmask_src.data[:] = np.logical_not(src_data.mask)
+    else:
+        validmask_src.data[:] = 1.0
+    validmask_dst.data[:] = 0.0  # TODO: almost certainly not needed ...
+    regrid_method(validmask_src, validmask_dst)
+
+    # add a mask to the data field, if not all good
+    data = dst_field.data
+    dst_mask = validmask_dst.data < (1.0 - 1e-8)
+    if np.any(dst_mask):
+        data = np.ma.array(data, mask=dst_mask)
+
     # Transpose esmf result dims (X,Y) back to the order of the source
     # TODO: really need to "invert" ordering - but for 2D it is just the same!
-    data = dst_field.data.transpose(src_dims_xy)
+    data = data.transpose(src_dims_xy)
 
     # Return result as a new cube based on the source.
     return i_regrid._create_cube(

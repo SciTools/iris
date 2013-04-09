@@ -46,7 +46,11 @@ from iris.experimental.regrid_conservative import regrid_conservative_via_esmpy
 
 
 _debug = False
-#_debug = True
+_debug = True
+_debug_pictures = False
+_debug_pictures = True
+
+_debug_pictures &= _debug
 
 
 def dprint(*args):
@@ -54,12 +58,12 @@ def dprint(*args):
         print(*args)
 
 
-def _make_test_cube(shape, xlims, ylims, pole_latlon=None):
+def _make_test_cube(shape, xlims, ylims, pole_latlon=None, endpoint=None):
     """ Create latlon cube (optionally rotated) with given xy dims+lims. """
     nx, ny = shape
     cube = iris.cube.Cube(np.zeros((ny, nx)))
-    xvals = np.linspace(xlims[0], xlims[1], nx)
-    yvals = np.linspace(ylims[0], ylims[1], ny)
+    xvals = np.linspace(xlims[0], xlims[1], nx, endpoint=endpoint)
+    yvals = np.linspace(ylims[0], ylims[1], ny, endpoint=endpoint)
     coordname_prefix = ''
     cs = iris.coord_systems.GeogCS(i_cartog.DEFAULT_SPHERICAL_EARTH_RADIUS)
     if pole_latlon is not None:
@@ -93,6 +97,18 @@ def _cube_area_sum(cube):
     return area_sum.data.flat[0]
 
 
+def _reldiff(a, b):
+    """ Compute relative-difference as |a - b| / mean(|a|, |b|). """
+    if a == 0.0 and b == 0.0:
+        return 0.0
+    return abs(a - b) * 2.0 / (abs(a) + abs(b))
+
+
+def _minmax(v):
+    """ Return min+max of array together. """
+    return [f(v) for f in (np.min, np.max)]
+
+
 class TestConservativeRegrid(tests.IrisTest):
     @classmethod
     def setUpClass(self):
@@ -106,6 +122,10 @@ class TestConservativeRegrid(tests.IrisTest):
         # remove the logfile if we can, just to be tidy
         if os.path.exists(self._emsf_logfile_path):
             os.remove(self._emsf_logfile_path)
+
+    def setUp(self):
+        # emit an extra linefeed for debug output (-v output omits one)
+        dprint()
 
     def test_simple_areas(self):
         """
@@ -227,7 +247,9 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertArrayAllClose(c1to2to1_areasum, c1_areasum)
 
     def test_fail_no_cs(self):
-        """ Check error if one coordinate has no coord_system. """
+        """
+        Check error if one coordinate has no coord_system.
+        """
         shape1 = (5, 5)
         xlims1, ylims1 = ((-2, 2), (-2, 2))
         c1 = _make_test_cube(shape1, xlims1, ylims1)
@@ -244,7 +266,9 @@ class TestConservativeRegrid(tests.IrisTest):
             c1to2 = regrid_conservative_via_esmpy(c1, c2)
 
     def test_fail_different_cs(self):
-        """ Check error when coordinates have different coord_systems. """
+        """
+        Check error when coordinates have different coord_systems.
+        """
         shape1 = (5, 5)
         xlims1, ylims1 = ((-2, 2), (-2, 2))
         shape2 = (4, 4)
@@ -270,7 +294,6 @@ class TestConservativeRegrid(tests.IrisTest):
             c1.coord('grid_latitude').coord_system
         with self.assertRaises(ValueError):
             regrid_conservative_via_esmpy(c1, c2)
-
 
     def test_rotated(self):
         """
@@ -313,52 +336,62 @@ class TestConservativeRegrid(tests.IrisTest):
         c2_xlims = -100.0, 120.0
         c2_ylims = -20.0, 50.0
         c2 = _make_test_cube((nx2, ny2), c2_xlims, c2_ylims)
+        c2.data = np.ma.array(c2.data, mask=True)
 
-        # perform regrid + snapshot test results
+        # perform regrid
         c1to2 = regrid_conservative_via_esmpy(c1, c2)
-        # just check we have zeros all around the edge..
-        self.assertArrayEqual(c1to2.data[0, :], 0.0)
-        self.assertArrayEqual(c1to2.data[-1, :], 0.0)
-        self.assertArrayEqual(c1to2.data[:, 0], 0.0)
-        self.assertArrayEqual(c1to2.data[:, -1], 0.0)
+
+        # check we have zeros (or nearly) all around the edge..
+        c1toc2_zeros = np.ma.array(c1to2.data)
+        c1toc2_zeros[c1toc2_zeros.mask] = 0.0
+        c1toc2_zeros = np.abs(c1toc2_zeros.mask) < 1.0e-6
+        self.assertArrayEqual(c1toc2_zeros[0, :], True)
+        self.assertArrayEqual(c1toc2_zeros[-1, :], True)
+        self.assertArrayEqual(c1toc2_zeros[:, 0], True)
+        self.assertArrayEqual(c1toc2_zeros[:, -1], True)
+
         # check the area-sum operation
         c1to2_sum = np.sum(c1to2.data)
         c1to2_areasum = _cube_area_sum(c1to2)
         dprint('rotate: c1to2 area-sum=', c1to2_areasum,
                ' cells-sum=', c1to2_sum)
-
-        def reldiff(a, b):
-            if a == 0.0 and b == 0.0:
-                return 0.0
-            return abs(a - b) * 2.0 / (abs(a) + abs(b))
-
         dprint('rotate: REL-DIFF c1to2/c1 area-sum = ',
-               reldiff(c1to2_areasum, c1_areasum))
+               _reldiff(c1to2_areasum, c1_areasum))
         self.assertArrayAllClose(c1to2_areasum, c1_areasum, rtol=0.004)
 
-#        levels = [1.0, 50, 99, 120, 140, 160, 180]
-#
-#        plt.figure()
-#        ax = plt.axes(projection=ccrs.PlateCarree())
-#        iplt.contourf(c2, levels=levels, extend='both')
-#        p1 = iplt.contourf(c1, levels=levels, extend='both')
-#        plt.colorbar(p1)
-#        ax.xaxis.set_visible(True)
-#        ax.yaxis.set_visible(True)
-#        plt.show(block=False)
-#
-#        plt.figure()
-#        ax = plt.axes(projection=ccrs.PlateCarree())
-#        iplt.contourf(c2, levels=levels, extend='both')
-#        p2 = iplt.pcolormesh(c1to2)
-#        plt.colorbar(p2)
-#        ax.xaxis.set_visible(True)
-#        ax.yaxis.set_visible(True)
-#        plt.show()
+        if _debug_pictures:
+            levels = [1.0, 50, 99, 120, 140, 160, 180]
+            xlims, ylims = [_minmax(c2.coord(axis=ax).bounds)
+                            for ax in ('x', 'y')]
+            plt.figure()
+            ax = plt.axes(projection=ccrs.PlateCarree())
+            iplt.contourf(c2, levels=levels, extend='both')
+            p1 = iplt.contourf(c1, levels=levels, extend='both')
+            iplt.outline(c2)
+#            plt.colorbar(p1)
+            ax.set_xlim(xlims)
+            ax.set_ylim(ylims)
+            ax.xaxis.set_visible(True)
+            ax.yaxis.set_visible(True)
+            plt.show(block=False)
+
+            plt.figure()
+            ax = plt.axes(projection=ccrs.PlateCarree())
+            iplt.contourf(c2, levels=levels, extend='both')
+            p2 = iplt.pcolormesh(c1to2)
+            iplt.outline(c2)
+#            plt.colorbar(p2)
+            ax.set_xlim(xlims)
+            ax.set_ylim(ylims)
+            ax.xaxis.set_visible(True)
+            ax.yaxis.set_visible(True)
+            plt.show()
 
         #
-        # Now repeat transform backwards ...
+        # Now repeat, transforming backwards ...
         #
+        c1.data = np.ma.array(c1.data, mask=True)
+        c2.data[:] = 0.0
         c2.data[5:-5, 5:-5] = np.array([
             [199, 199, 199, 199, 100],
             [100, 100, 199, 199, 100],
@@ -368,41 +401,158 @@ class TestConservativeRegrid(tests.IrisTest):
         c2_areasum = _cube_area_sum(c2)
         dprint('back-rotate: c2 area-sum=', c2_areasum, ' cells-sum=', c2_sum)
 
-        c2to1 = regrid_conservative_via_esmpy(c2, c1)
-        # just check we have zeros all around the edge..
-        self.assertArrayEqual(c2to1.data[0, :], 0.0)
-        self.assertArrayEqual(c2to1.data[-1, :], 0.0)
-        self.assertArrayEqual(c2to1.data[:, 0], 0.0)
-        self.assertArrayEqual(c2to1.data[:, -1], 0.0)
+        c2toc1 = regrid_conservative_via_esmpy(c2, c1)
 
-        c2to1_sum = np.sum(c2to1.data)
-        c2to1_areasum = _cube_area_sum(c2to1)
-        dprint('rotate: c2to1 area-sum=', c2to1_areasum,
-               ' cells-sum=', c2to1_sum)
+        # check we have zeros (or nearly) all around the edge..
+        c2toc1_zeros = np.ma.array(c2toc1.data)
+        c2toc1_zeros[c2toc1_zeros.mask] = 0.0
+        c2toc1_zeros = np.abs(c2toc1_zeros.mask) < 1.0e-6
+        self.assertArrayEqual(c2toc1_zeros[0, :], True)
+        self.assertArrayEqual(c2toc1_zeros[-1, :], True)
+        self.assertArrayEqual(c2toc1_zeros[:, 0], True)
+        self.assertArrayEqual(c2toc1_zeros[:, -1], True)
 
-        dprint('rotate: REL-DIFF c2to1/c2 area-sum = ',
-               reldiff(c2to1_areasum, c2_areasum))
-        self.assertArrayAllClose(c2to1_areasum, c2_areasum, rtol=0.004)
+        # check the area-sum operation
+        c2toc1_sum = np.sum(c2toc1.data)
+        c2toc1_areasum = _cube_area_sum(c2toc1)
+        dprint('back-rotate: c2toc1 area-sum=', c2toc1_areasum,
+               ' cells-sum=', c2toc1_sum)
+        dprint('back-rotate: REL-DIFF c2toc1/c2 area-sum = ',
+               _reldiff(c2toc1_areasum, c2_areasum))
+        self.assertArrayAllClose(c2toc1_areasum, c2_areasum, rtol=0.004)
 
-#        levels = [1.0, 50, 99, 120, 140, 160, 180]
-#
-#        plt.figure()
-##        ax = plt.axes(projection=ccrs.PlateCarree())
-#        iplt.contourf(c1, levels=levels, extend='both')
-#        p1 = iplt.contourf(c2, levels=levels, extend='both')
-#        plt.colorbar(p1)
-#        ax.xaxis.set_visible(True)
-#        ax.yaxis.set_visible(True)
-#        plt.show(block=False)
-#
-#        plt.figure()
-##        ax = plt.axes(projection=ccrs.PlateCarree())
-#        iplt.contourf(c1, levels=levels, extend='both')
-#        p2 = iplt.pcolormesh(c2to1)
-#        plt.colorbar(p2)
-#        ax.xaxis.set_visible(True)
-#        ax.yaxis.set_visible(True)
-#        plt.show()
+        if _debug_pictures:
+            levels = [1.0, 50, 99, 120, 140, 160, 180]
+
+            plt.figure()
+            c2_proj = c2.coord(axis='x').coord_system
+            c2_proj = c2_proj.as_cartopy_projection()
+            ax = plt.axes(projection=c2_proj)
+            p1 = iplt.contourf(c2, levels=levels, extend='both')
+#            plt.colorbar(p1)
+            ax.set_xlim()
+            ax.xaxis.set_visible(True)
+            ax.yaxis.set_visible(True)
+            plt.show(block=False)
+
+            xlims, ylims = [_minmax(c1.coord(axis=ax).bounds)
+                            for ax in ('x', 'y')]
+            plt.figure()
+            ax = plt.axes()
+            iplt.contourf(c1, levels=levels, extend='both')
+            p1 = iplt.contourf(c2, levels=levels, extend='both')
+            iplt.outline(c1)
+#            plt.colorbar(p1)
+            ax.set_xlim(xlims)
+            ax.set_ylim(ylims)
+            ax.xaxis.set_visible(True)
+            ax.yaxis.set_visible(True)
+            plt.show(block=False)
+
+            plt.figure()
+            iplt.contourf(c1, levels=levels, extend='both')
+            p2 = iplt.pcolormesh(c2toc1)
+            iplt.outline(c1)
+#            plt.colorbar(p2)
+            ax.set_xlim(xlims)
+            ax.set_ylim(ylims)
+            ax.xaxis.set_visible(True)
+            ax.yaxis.set_visible(True)
+            plt.show()
+
+    def test_missing_data(self):
+        for do_add_missing in (False, True):
+            if _debug:
+                debug_prefix = 'missing-data({}): '.format(
+                    'some' if do_add_missing else 'none')
+            # create source test cube on rotated form
+            pole_lat = 53.4
+            pole_lon = -173.2
+            deg_swing = 35.3
+            pole_lon += deg_swing
+            c1_nx = 9 + 6
+            c1_ny = 7 + 6
+            c1_xlims = -60.0, 60.0
+            c1_ylims = -45.0, 20.0
+            c1_xlims = [x - deg_swing for x in c1_xlims]
+            c1 = _make_test_cube((c1_nx, c1_ny), c1_xlims, c1_ylims,
+                                 pole_latlon=(pole_lat, pole_lon),
+                                 endpoint=True)
+            c1.data = np.ma.array(c1.data, mask=False)
+            c1.data[3:-3, 3:-3] = np.ma.array([
+                [100, 100, 100, 100, 100, 100, 100, 100, 100],
+                [100, 100, 100, 100, 100, 100, 100, 100, 100],
+                [100, 100, 199, 199, 199, 199, 100, 100, 100],
+                [100, 100, 100, 100, 199, 199, 100, 100, 100],
+                [100, 100, 100, 100, 199, 199, 199, 100, 100],
+                [100, 100, 100, 100, 100, 100, 100, 100, 100],
+                [100, 100, 100, 100, 100, 100, 100, 100, 100]],
+                dtype=np.float)
+
+            if do_add_missing:
+                c1.data = np.ma.array(c1.data)
+                c1.data[7, 7] = np.ma.masked
+                c1.data[3:5, 10:12] = np.ma.masked
+
+            # construct target cube to receive
+            nx2 = 9 + 6
+            ny2 = 7 + 6
+            c2_xlims = -80.0, 80.0
+            c2_ylims = -20.0, 50.0
+            c2 = _make_test_cube((nx2, ny2), c2_xlims, c2_ylims, endpoint=True)
+            c2.data = np.ma.array(c2.data, mask=True)
+
+            # perform regrid + snapshot test results
+            c1toc2 = regrid_conservative_via_esmpy(c1, c2)
+
+            if _debug_pictures:
+                levels = [1.0, 50, 99, 120, 140, 160, 180]
+
+                plt.figure()
+                c1_proj = c1.coord(axis='x').coord_system
+                c1_proj = c1_proj.as_cartopy_projection()
+                ax = plt.axes(projection=c1_proj)
+                p1 = iplt.contourf(c1, levels=levels, extend='both')
+                ax.xaxis.set_visible(True)
+                ax.yaxis.set_visible(True)
+                plt.show(block=False)
+
+                xlims, ylims = [_minmax(c2.coord(axis=ax).bounds)
+                                for ax in ('x', 'y')]
+                plt.figure()
+                ax = plt.axes(projection=ccrs.PlateCarree())
+                iplt.contourf(c2, levels=levels, extend='both')  # for axes box
+                ax.set_xlim(xlims)
+                ax.set_ylim(ylims)
+                p1 = iplt.contourf(c1, levels=levels, extend='both')
+                iplt.outline(c2)
+                ax.xaxis.set_visible(True)
+                ax.yaxis.set_visible(True)
+                plt.show(block=False)
+
+                plt.figure()
+                ax = plt.axes(projection=ccrs.PlateCarree())
+                iplt.contourf(c2, levels=levels, extend='both')
+                iplt.outline(c2)
+                ax.set_xlim(xlims)
+                ax.set_ylim(ylims)
+                p2 = iplt.pcolormesh(c1toc2)
+                ax.xaxis.set_visible(True)
+                ax.yaxis.set_visible(True)
+                plt.show()
+
+            # check preservation of area-sums
+            c1_areasum = _cube_area_sum(c1)
+            c1to2_areasum = _cube_area_sum(c1toc2)
+            dprint(debug_prefix + 'c1, c1toc2 area-sums=', 
+                   c1_areasum, c1to2_areasum)
+            dprint(debug_prefix + 'REL-DIFF c1/c1toc2 area-sums',
+                   _reldiff(c1_areasum, c1to2_areasum))
+            self.assertArrayAllClose(c1_areasum, c1to2_areasum, rtol=0.003)
+
+
+if __name__ == '__main__':
+    tests.main()
 
 #    TODOs
 #    ==== 20130408 ====
@@ -428,9 +578,3 @@ class TestConservativeRegrid(tests.IrisTest):
 #    TODO: masking !!
 #    TODO: fix more general regional test with older tuned test-example
 #            = _generate_test_cubes ...
-
-    def test_missing_data(self):
-        pass
-
-if __name__ == '__main__':
-    tests.main()
