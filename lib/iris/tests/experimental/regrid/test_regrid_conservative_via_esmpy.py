@@ -18,11 +18,14 @@
 Test the :func:`iris.experimental.regrid._get_xy_dim_coords` function.
 
 """
+from __future__ import print_function
+
 # import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
 import os
+import sys
 
 import numpy as np
 
@@ -33,6 +36,8 @@ import ESMF
 
 import cartopy.crs as ccrs
 import iris
+import iris.analysis
+import iris.analysis.cartography as i_cartog
 import iris.plot as iplt
 import iris.quickplot as qplt
 import iris.tests.stock as istk
@@ -40,21 +45,30 @@ import iris.tests.stock as istk
 from iris.experimental.regrid_conservative import regrid_conservative_via_esmpy
 
 
+_debug = False
+#_debug = True
+if _debug:
+    def dprint(*args):
+        print( *args)
+else:
+    def dprint(*args):
+        pass
+
 def _make_test_cube(shape, xlims, ylims, pole_latlon=None):
-    """Create latlon cube (optionally rotated) with given xy dims+lims."""
+    """ Create latlon cube (optionally rotated) with given xy dims+lims. """
     nx, ny = shape
     cube = iris.cube.Cube(np.zeros((ny, nx)))
     xvals = np.linspace(xlims[0], xlims[1], nx)
     yvals = np.linspace(ylims[0], ylims[1], ny)
+    coordname_prefix = ''
+    cs = iris.coord_systems.GeogCS(i_cartog.DEFAULT_SPHERICAL_EARTH_RADIUS)
     if pole_latlon is not None:
         coordname_prefix = 'grid_'
         pole_lat, pole_lon = pole_latlon
         cs = iris.coord_systems.RotatedGeogCS(
             grid_north_pole_latitude=pole_lat,
-            grid_north_pole_longitude=pole_lon)
-    else:
-        coordname_prefix = ''
-        cs = iris.coord_systems.GeogCS(6371229)
+            grid_north_pole_longitude=pole_lon,
+            ellipsoid=cs)
 
     co_x = iris.coords.DimCoord(xvals,
                                 standard_name=coordname_prefix + 'longitude',
@@ -71,127 +85,10 @@ def _make_test_cube(shape, xlims, ylims, pole_latlon=None):
     return cube
 
 
-def _generate_test_cubes():
-    # create source test cube on rotated form
-    pole_lat = 53.4
-    pole_lon = -173.2
-    deg_swing = 35.3
-    pole_lon += deg_swing
-    c1_nx = 7
-    c1_ny = 5
-    c1_xlims = -60.0, 60.0
-    c1_ylims = -30.0, 30.0
-    do_wrapped = False
-    do_wrapped = True
-    if do_wrapped:
-        c1_xlims = [x + 360.0 for x in c1_xlims]
-    c1_xlims = [x - deg_swing for x in c1_xlims]
-    c1 = _make_test_cube((c1_nx, c1_ny), c1_xlims, c1_ylims,
-                         pole_latlon=(pole_lat, pole_lon))
-    c1.data = np.array([
-        [100, 100, 100, 100, 100, 100, 100],
-        [100, 199, 199, 199, 199, 100, 100],
-        [100, 100, 100, 199, 199, 100, 100],
-        [100, 100, 100, 199, 199, 199, 100],
-        [100, 100, 100, 100, 100, 100, 100]],
-        dtype=np.float)
-
-    # construct target cube to receive
-    nx2 = 10
-    ny2 = 8
-    c2_xlims = -150.0, 200.0
-    c2_ylims = -60.0, 70.0
-    c2 = _make_test_cube((nx2, ny2), c2_xlims, c2_ylims)
-
-    return c1, c2
-
-
-#def _generate_test_cubes_orig_flexi():
-#    # create source test cube on rotated form
-#    pole_lat = 53.4
-#    pole_lon = -173.2
-#    deg_swing = 35.3
-#    pole_lon += deg_swing
-##    c1_xvals = np.arange(-30.0, 30.1, 10.0) - deg_swing
-##    c1_yvals = np.arange(-20.0, 20.1, 10.0)
-#    c1_nx = 7
-#    c1_ny = 5
-#    c1_xlims = -60.0, 60.0
-#    c1_ylims = -30.0, 30.0
-#    scale_x = 1.0
-#    scale_y = 1.0
-#    c1_xlims = [x*scale_x for x in c1_xlims]
-#    c1_ylims = [y*scale_y for y in c1_ylims]
-#    do_wrapped = False
-#    do_wrapped = True
-#    if do_wrapped:
-#        c1_xlims = [x+360.0 for x in c1_xlims]
-#    c1_xvals = np.linspace(c1_xlims[0], c1_xlims[1], c1_nx)
-#    c1_yvals = np.linspace(c1_ylims[0], c1_ylims[1], c1_ny)
-#    c1_xvals -= deg_swing  # NB *approx* kludge !!  Only if close to -180.
-#    c1_data = np.array([
-#        [100, 100, 100, 100, 100, 100, 100],
-#        [100, 199, 199, 199, 199, 100, 100],
-#        [100, 100, 100, 199, 199, 100, 100],
-#        [100, 100, 100, 199, 199, 199, 100],
-#        [100, 100, 100, 100, 100, 100, 100]],
-#        dtype=np.float)
-#
-#    c1 = iris.cube.Cube(c1_data)
-#    c1_cs = iris.coord_systems.RotatedGeogCS(
-#        grid_north_pole_latitude=pole_lat,
-#        grid_north_pole_longitude=pole_lon)
-#    c1_co_x = iris.coords.DimCoord(c1_xvals,
-#                                   standard_name='grid_longitude',
-#                                   units=iris.unit.Unit('degrees'),
-#                                   coord_system=c1_cs)
-#    c1.add_dim_coord(c1_co_x, 1)
-#    c1_co_y = iris.coords.DimCoord(c1_yvals,
-#                                   standard_name='grid_latitude',
-#                                   units=iris.unit.Unit('degrees'),
-#                                   coord_system=c1_cs)
-#    c1.add_dim_coord(c1_co_y, 0)
-#
-#    # construct target cube to receive
-#    nx2 = 10
-#    ny2 = 8
-#    c2_xlims = -150.0, 200.0
-#    c2_ylims = -60.0, 90.0
-#    do_min_covered = False
-##    do_min_covered = True
-#    if do_min_covered:
-#        # this fixes the no-source-cells error problem
-#        c2_xlims = -60.0, 90.0
-#        c2_ylims = -10.0, 80.0
-#    do_global = False
-##    do_global = True
-#    if do_global:
-#        nx2 = 60
-#        ny2 = 40
-#        dx = 360.0/nx2
-#        dy = 180.0/ny2
-#        c2_xlims = -180.0 + 0.5 * dx, 180.0 - 0.5 * dx
-#        c2_ylims = -90.0 + 0.5 * dy, 90.0 - 0.5 * dy
-##    c2_xvals = np.arange(-45.0, 45.1, 10.0) # nx2=10
-##    c2_yvals = np.arange(-10.0, 60.1, 10.0) # nx2=8
-#    c2_xvals = np.linspace(c2_xlims[0], c2_xlims[1], nx2, endpoint=True)
-#    c2_yvals = np.linspace(c2_ylims[0], c2_ylims[1], ny2, endpoint=False)
-#    print 'c2_yvals:'
-#    print c2_yvals
-#    c2 = iris.cube.Cube(np.zeros((len(c2_yvals), len(c2_xvals))))
-#    c2_cs = iris.coord_systems.GeogCS(6371229)
-#    c2_co_x = iris.coords.DimCoord(c2_xvals,
-#                                   standard_name='longitude',
-#                                   units=iris.unit.Unit('degrees'),
-#                                   coord_system=c2_cs)
-#    c2.add_dim_coord(c2_co_x, 1)
-#    c2_co_y = iris.coords.DimCoord(c2_yvals,
-#                                   standard_name='latitude',
-#                                   units=iris.unit.Unit('degrees'),
-#                                   coord_system=c2_cs)
-#    c2.add_dim_coord(c2_co_y, 0)
-#
-#    return c1, c2
+def _cube_area_sum(cube):
+    """ Calculate total area-sum, as Iris can not do in one operation. """
+    area_sums = cube * i_cartog.area_weights(cube, normalize=False)
+    return area_sums.collapsed(area_sums.coords(dim_coords=True), iris.analysis.SUM).data[0]
 
 
 class TestConservativeRegrid(tests.IrisTest):
@@ -208,29 +105,46 @@ class TestConservativeRegrid(tests.IrisTest):
         if os.path.exists(self._emsf_logfile_path):
             os.remove(self._emsf_logfile_path)
 
-    def test_simple_area_sum_preserved(self):
+    def test_simple_areas(self):
         shape1 = (5, 5)
         xlims1, ylims1 = ((-2, 2), (-2, 2))
         c1 = _make_test_cube(shape1, xlims1, ylims1)
         c1.data[:] = 0.0
         c1.data[2, 2] = 1.0
+        c1_sum = np.sum(c1.data)
+        c1_areasum = _cube_area_sum(c1)
+        dprint('simple: c1 area-sum=', c1_areasum, ' cells-sum=', c1_sum)
 
         shape2 = (4, 4)
         xlims2, ylims2 = ((-1.5, 1.5), (-1.5, 1.5))
         c2 = _make_test_cube(shape2, xlims2, ylims2)
         c2.data[:] = 0.0
 
+        # main regrid
         c1to2 = regrid_conservative_via_esmpy(c1, c2)
+
+        c1to2_sum = np.sum(c1to2.data)
+        c1to2_areasum = _cube_area_sum(c1to2)
+        dprint('simple: c1to2 area-sum=', c1to2_areasum, ' cells-sum=', c1to2_sum)
+
         d_expect = np.array([[0.00, 0.00, 0.00, 0.00],
                              [0.00, 0.25, 0.25, 0.00],
                              [0.00, 0.25, 0.25, 0.00],
                              [0.00, 0.00, 0.00, 0.00]])
         # Numbers are slightly off (~0.25000952).  This is expected.
         self.assertArrayAllClose(c1to2.data, d_expect, rtol=5.0e-5)
-        sumAll = np.sum(c1to2.data)
-        self.assertAlmostEqual(sumAll, 1.0, delta=0.00005)
 
+        # check that the area sums are equivalent, simple total is a bit off
+        self.assertAlmostEqual(c1to2_sum, 1.0, delta=0.00005)
+        self.assertArrayAllClose(c1to2_areasum, c1_areasum)
+
+        # regrid back onto original grid again
         c1to2to1 = regrid_conservative_via_esmpy(c1to2, c1)
+
+        c1to2to1_sum = np.sum(c1to2to1.data)
+        c1to2to1_areasum = _cube_area_sum(c1to2to1)
+        dprint('simple: c1to2to1 area-sum=', c1to2to1_areasum, ' cells-sum=', c1to2to1_sum)
+
         d_expect = np.array([[0.0, 0.0000, 0.0000, 0.0000, 0.0],
                              [0.0, 0.0625, 0.1250, 0.0625, 0.0],
                              [0.0, 0.1250, 0.2500, 0.1250, 0.0],
@@ -238,8 +152,10 @@ class TestConservativeRegrid(tests.IrisTest):
                              [0.0, 0.0000, 0.0000, 0.0000, 0.0]])
         # Errors now quite large
         self.assertArrayAllClose(c1to2to1.data, d_expect, atol=0.00002)
-        sumAll = np.sum(c1to2to1.data)
-        self.assertAlmostEqual(sumAll, 1.0, delta=0.00008)
+
+        # check area sums again
+        self.assertAlmostEqual(c1to2_sum, 1.0, delta=0.00008)
+        self.assertArrayAllClose(c1to2to1_areasum, c1_areasum)
 
     def test_polar_areas(self):
         # Like test_basic_area, but not symmetrical + bigger overall errors.
@@ -248,6 +164,9 @@ class TestConservativeRegrid(tests.IrisTest):
         c1 = _make_test_cube(shape1, xlims1, ylims1)
         c1.data[:] = 0.0
         c1.data[2, 2] = 1.0
+        c1_sum = np.sum(c1.data)
+        c1_areasum = _cube_area_sum(c1)
+        dprint('polar: c1 area-sum=', c1_areasum, ' cells-sum=', c1_sum)
 
         shape2 = (4, 4)
         xlims2, ylims2 = ((-1.5, 1.5), (84.5, 87.5))
@@ -255,23 +174,37 @@ class TestConservativeRegrid(tests.IrisTest):
         c2.data[:] = 0.0
 
         c1to2 = regrid_conservative_via_esmpy(c1, c2)
+
+        c1to2_sum = np.sum(c1to2.data)
+        c1to2_areasum = _cube_area_sum(c1to2)
+        dprint('polar: c1to2 area-sum=', c1to2_areasum, ' cells-sum=', c1to2_sum)
+
+        # check for expected pattern
         d_expect = np.array([[0.0, 0.0, 0.0, 0.0],
                              [0.0, 0.23614, 0.23614, 0.0],
                              [0.0, 0.26784, 0.26784, 0.0],
                              [0.0, 0.0, 0.0, 0.0]])
         self.assertArrayAllClose(c1to2.data, d_expect, rtol=5.0e-5)
-        sumAll = np.sum(c1to2.data)
-        self.assertAlmostEqual(sumAll, 1.0, delta=0.008)
+
+        # check sums
+        self.assertAlmostEqual(c1to2_sum, 1.0, delta=0.008)
+        self.assertArrayAllClose(c1to2_areasum, c1_areasum)
 
         c1to2to1 = regrid_conservative_via_esmpy(c1to2, c1)
+        c1to2to1_sum = np.sum(c1to2to1.data)
+        c1to2to1_areasum = _cube_area_sum(c1to2to1)
+        dprint('polar: c1to2to1 area-sum=', c1to2to1_areasum, ' cells-sum=', c1to2to1_sum)
+
         d_expect = np.array([[0.0, 0.0, 0.0, 0.0, 0.0],
                              [0.0, 0.056091, 0.112181, 0.056091, 0.0],
                              [0.0, 0.125499, 0.250998, 0.125499, 0.0],
                              [0.0, 0.072534, 0.145067, 0.072534, 0.0],
                              [0.0, 0.0, 0.0, 0.0, 0.0]])
         self.assertArrayAllClose(c1to2to1.data, d_expect, atol=0.0005)
-        sumAll = np.sum(c1to2to1.data)
-        self.assertAlmostEqual(sumAll, 1.0, delta=0.02)
+
+        # check sums
+        self.assertAlmostEqual(c1to2to1_sum, 1.0, delta=0.02)
+        self.assertArrayAllClose(c1to2to1_areasum, c1_areasum)
 
     def test_fail_no_cs(self):
         shape1 = (5, 5)
@@ -306,6 +239,158 @@ class TestConservativeRegrid(tests.IrisTest):
 
         with self.assertRaises(ValueError):
             c1to2 = regrid_conservative_via_esmpy(c1, c2)
+
+    def test_rotated(self):
+        """
+        Perform area-weighted regrid on more complex area.
+
+        Use two mutually rotated grids, of similar area + same dims.
+        Use a small central region in each which is entirely within the other region.
+        """
+        # create source test cube on rotated form
+        pole_lat = 53.4
+        pole_lon = -173.2
+        deg_swing = 35.3
+        pole_lon += deg_swing
+        c1_nx = 9 + 6
+        c1_ny = 7 + 6
+        c1_xlims = -60.0, 60.0
+        c1_ylims = -45.0, 20.0
+        c1_xlims = [x - deg_swing for x in c1_xlims]
+        c1 = _make_test_cube((c1_nx, c1_ny), c1_xlims, c1_ylims,
+                             pole_latlon=(pole_lat, pole_lon))
+        c1.data[3:-3, 3:-3] = np.array([
+            [100, 100, 100, 100, 100, 100, 100, 100, 100],
+            [100, 100, 100, 100, 100, 100, 100, 100, 100],
+            [100, 100, 199, 199, 199, 199, 100, 100, 100],
+            [100, 100, 100, 100, 199, 199, 100, 100, 100],
+            [100, 100, 100, 100, 199, 199, 199, 100, 100],
+            [100, 100, 100, 100, 100, 100, 100, 100, 100],
+            [100, 100, 100, 100, 100, 100, 100, 100, 100]],
+            dtype=np.float)
+
+        c1_sum = np.sum(c1.data)
+        c1_areasum = _cube_area_sum(c1)
+        dprint('rotate: c1 area-sum=', c1_areasum, ' cells-sum=', c1_sum)
+
+        # construct target cube to receive
+        nx2 = 9 + 6
+        ny2 = 7 + 6
+        c2_xlims = -100.0, 120.0
+        c2_ylims = -20.0, 50.0
+        c2 = _make_test_cube((nx2, ny2), c2_xlims, c2_ylims)
+
+        # perform regrid + snapshot test results
+        c1to2 = regrid_conservative_via_esmpy(c1, c2)
+        # just check we have zeros all around the edge..
+        self.assertArrayEqual(c1to2.data[0, :], 0.0)
+        self.assertArrayEqual(c1to2.data[-1, :], 0.0)
+        self.assertArrayEqual(c1to2.data[:, 0], 0.0)
+        self.assertArrayEqual(c1to2.data[:, -1], 0.0)
+        # check the area-sum operation
+        c1to2_sum = np.sum(c1to2.data)
+        c1to2_areasum = _cube_area_sum(c1to2)
+        dprint('rotate: c1to2 area-sum=', c1to2_areasum, ' cells-sum=', c1to2_sum)
+
+        def reldiff(a, b):
+            if a == 0.0 and b == 0.0:
+                return 0.0
+            return abs(a-b)*2.0/(abs(a)+abs(b))
+
+        dprint('rotate: c1to2/c1 area-sum rel-diff = ', reldiff(c1to2_areasum, c1_areasum))
+        self.assertArrayAllClose(c1to2_areasum, c1_areasum, rtol=0.004)
+
+#        levels = [1.0, 50, 99, 120, 140, 160, 180]
+#
+#        plt.figure()
+#        ax = plt.axes(projection=ccrs.PlateCarree())
+#        iplt.contourf(c2, levels=levels, extend='both')
+#        p1 = iplt.contourf(c1, levels=levels, extend='both')
+#        plt.colorbar(p1)
+#        ax.xaxis.set_visible(True)
+#        ax.yaxis.set_visible(True)
+#        plt.show(block=False)
+#
+#        plt.figure()
+#        ax = plt.axes(projection=ccrs.PlateCarree())
+#        iplt.contourf(c2, levels=levels, extend='both')
+#        p2 = iplt.pcolormesh(c1to2)
+#        plt.colorbar(p2)
+#        ax.xaxis.set_visible(True)
+#        ax.yaxis.set_visible(True)
+#        plt.show()
+
+
+        #
+        # Now repeat transform backwards ...
+        #
+        c2.data[5:-5, 5:-5] = np.array([
+            [199, 199, 199, 199, 100],
+            [100, 100, 199, 199, 100],
+            [100, 100, 199, 199, 199]],
+            dtype=np.float)
+        c2_sum = np.sum(c2.data)
+        c2_areasum = _cube_area_sum(c2)
+        dprint('back-rotate: c2 area-sum=', c2_areasum, ' cells-sum=', c2_sum)
+
+        c2to1 = regrid_conservative_via_esmpy(c2, c1)
+        # just check we have zeros all around the edge..
+        self.assertArrayEqual(c2to1.data[0, :], 0.0)
+        self.assertArrayEqual(c2to1.data[-1, :], 0.0)
+        self.assertArrayEqual(c2to1.data[:, 0], 0.0)
+        self.assertArrayEqual(c2to1.data[:, -1], 0.0)
+
+        c2to1_sum = np.sum(c2to1.data)
+        c2to1_areasum = _cube_area_sum(c2to1)
+        dprint('rotate: c2to1 area-sum=', c2to1_areasum, ' cells-sum=', c2to1_sum)
+
+        dprint('rotate: c2to1/c2 area-sum rel-diff = ', reldiff(c2to1_areasum, c2_areasum))
+        self.assertArrayAllClose(c2to1_areasum, c2_areasum, rtol=0.004)
+
+#        levels = [1.0, 50, 99, 120, 140, 160, 180]
+#
+#        plt.figure()
+##        ax = plt.axes(projection=ccrs.PlateCarree())
+#        iplt.contourf(c1, levels=levels, extend='both')
+#        p1 = iplt.contourf(c2, levels=levels, extend='both')
+#        plt.colorbar(p1)
+#        ax.xaxis.set_visible(True)
+#        ax.yaxis.set_visible(True)
+#        plt.show(block=False)
+#
+#        plt.figure()
+##        ax = plt.axes(projection=ccrs.PlateCarree())
+#        iplt.contourf(c1, levels=levels, extend='both')
+#        p2 = iplt.pcolormesh(c2to1)
+#        plt.colorbar(p2)
+#        ax.xaxis.set_visible(True)
+#        ax.yaxis.set_visible(True)
+#        plt.show()
+
+#    TODOs
+#    ==== 20130408 ====
+#    Testing areas to consider
+#      * longitude wrapping
+#      * global areas
+#      * 1x1 cells
+#      * ??1x1 global cell??
+#      * MDI handling
+#      * area checking
+#        - (1) simple quasi-rectangular to show back + forth
+#        - (2) near-pole stuff, proving true-area calc
+#      * irregular grids (?)
+#      * ? irregular bounds ?
+#      * iterate over extra dimensions
+#      * test with extra coords...
+#        * additional (irrelevant) coords (DIM + other)
+#        * factories aka hybrid-height
+#
+#      * data in regions that goes outside target area (MDI?)
+#
+#    TODO: area checks are wrong : need to use area-weighted sums...
+#    TODO: masking !!
+#    TODO: fix more general regional test with older tuned test-example
+#            = _generate_test_cubes ...
 
 
 if __name__ == '__main__':
