@@ -47,12 +47,12 @@ from iris.experimental.regrid_conservative import regrid_conservative_via_esmpy
 
 _debug = False
 #_debug = True
-if _debug:
-    def dprint(*args):
-        print( *args)
-else:
-    def dprint(*args):
-        pass
+
+
+def dprint(*args):
+    if _debug:
+        print(*args)
+
 
 def _make_test_cube(shape, xlims, ylims, pole_latlon=None):
     """ Create latlon cube (optionally rotated) with given xy dims+lims. """
@@ -88,7 +88,9 @@ def _make_test_cube(shape, xlims, ylims, pole_latlon=None):
 def _cube_area_sum(cube):
     """ Calculate total area-sum, as Iris can not do in one operation. """
     area_sums = cube * i_cartog.area_weights(cube, normalize=False)
-    return area_sums.collapsed(area_sums.coords(dim_coords=True), iris.analysis.SUM).data[0]
+    area_sum = area_sums.collapsed(area_sums.coords(dim_coords=True),
+                                   iris.analysis.SUM)
+    return area_sum.data.flat[0]
 
 
 class TestConservativeRegrid(tests.IrisTest):
@@ -125,7 +127,8 @@ class TestConservativeRegrid(tests.IrisTest):
 
         c1to2_sum = np.sum(c1to2.data)
         c1to2_areasum = _cube_area_sum(c1to2)
-        dprint('simple: c1to2 area-sum=', c1to2_areasum, ' cells-sum=', c1to2_sum)
+        dprint('simple: c1to2 area-sum=', c1to2_areasum,
+               ' cells-sum=', c1to2_sum)
 
         d_expect = np.array([[0.00, 0.00, 0.00, 0.00],
                              [0.00, 0.25, 0.25, 0.00],
@@ -143,7 +146,8 @@ class TestConservativeRegrid(tests.IrisTest):
 
         c1to2to1_sum = np.sum(c1to2to1.data)
         c1to2to1_areasum = _cube_area_sum(c1to2to1)
-        dprint('simple: c1to2to1 area-sum=', c1to2to1_areasum, ' cells-sum=', c1to2to1_sum)
+        dprint('simple: c1to2to1 area-sum=', c1to2to1_areasum,
+               ' cells-sum=', c1to2to1_sum)
 
         d_expect = np.array([[0.0, 0.0000, 0.0000, 0.0000, 0.0],
                              [0.0, 0.0625, 0.1250, 0.0625, 0.0],
@@ -177,7 +181,8 @@ class TestConservativeRegrid(tests.IrisTest):
 
         c1to2_sum = np.sum(c1to2.data)
         c1to2_areasum = _cube_area_sum(c1to2)
-        dprint('polar: c1to2 area-sum=', c1to2_areasum, ' cells-sum=', c1to2_sum)
+        dprint('polar: c1to2 area-sum=', c1to2_areasum,
+               ' cells-sum=', c1to2_sum)
 
         # check for expected pattern
         d_expect = np.array([[0.0, 0.0, 0.0, 0.0],
@@ -193,7 +198,8 @@ class TestConservativeRegrid(tests.IrisTest):
         c1to2to1 = regrid_conservative_via_esmpy(c1to2, c1)
         c1to2to1_sum = np.sum(c1to2to1.data)
         c1to2to1_areasum = _cube_area_sum(c1to2to1)
-        dprint('polar: c1to2to1 area-sum=', c1to2to1_areasum, ' cells-sum=', c1to2to1_sum)
+        dprint('polar: c1to2to1 area-sum=', c1to2to1_areasum,
+               ' cells-sum=', c1to2to1_sum)
 
         d_expect = np.array([[0.0, 0.0, 0.0, 0.0, 0.0],
                              [0.0, 0.056091, 0.112181, 0.056091, 0.0],
@@ -245,7 +251,8 @@ class TestConservativeRegrid(tests.IrisTest):
         Perform area-weighted regrid on more complex area.
 
         Use two mutually rotated grids, of similar area + same dims.
-        Use a small central region in each which is entirely within the other region.
+        Use a small central region in each, which maps entirely inside the
+        other region.
         """
         # create source test cube on rotated form
         pole_lat = 53.4
@@ -290,14 +297,16 @@ class TestConservativeRegrid(tests.IrisTest):
         # check the area-sum operation
         c1to2_sum = np.sum(c1to2.data)
         c1to2_areasum = _cube_area_sum(c1to2)
-        dprint('rotate: c1to2 area-sum=', c1to2_areasum, ' cells-sum=', c1to2_sum)
+        dprint('rotate: c1to2 area-sum=', c1to2_areasum,
+               ' cells-sum=', c1to2_sum)
 
         def reldiff(a, b):
             if a == 0.0 and b == 0.0:
                 return 0.0
-            return abs(a-b)*2.0/(abs(a)+abs(b))
+            return abs(a - b) * 2.0 / (abs(a) + abs(b))
 
-        dprint('rotate: c1to2/c1 area-sum rel-diff = ', reldiff(c1to2_areasum, c1_areasum))
+        dprint('rotate: REL-DIFF c1to2/c1 area-sum = ',
+               reldiff(c1to2_areasum, c1_areasum))
         self.assertArrayAllClose(c1to2_areasum, c1_areasum, rtol=0.004)
 
 #        levels = [1.0, 50, 99, 120, 140, 160, 180]
@@ -320,7 +329,6 @@ class TestConservativeRegrid(tests.IrisTest):
 #        ax.yaxis.set_visible(True)
 #        plt.show()
 
-
         #
         # Now repeat transform backwards ...
         #
@@ -342,9 +350,11 @@ class TestConservativeRegrid(tests.IrisTest):
 
         c2to1_sum = np.sum(c2to1.data)
         c2to1_areasum = _cube_area_sum(c2to1)
-        dprint('rotate: c2to1 area-sum=', c2to1_areasum, ' cells-sum=', c2to1_sum)
+        dprint('rotate: c2to1 area-sum=', c2to1_areasum,
+               ' cells-sum=', c2to1_sum)
 
-        dprint('rotate: c2to1/c2 area-sum rel-diff = ', reldiff(c2to1_areasum, c2_areasum))
+        dprint('rotate: REL-DIFF c2to1/c2 area-sum = ',
+               reldiff(c2to1_areasum, c2_areasum))
         self.assertArrayAllClose(c2to1_areasum, c2_areasum, rtol=0.004)
 
 #        levels = [1.0, 50, 99, 120, 140, 160, 180]
