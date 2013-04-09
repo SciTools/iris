@@ -223,8 +223,8 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube_or_coords):
         y_dim=src_dims_xy[1],
         src_x_coord=src_coords[0],
         src_y_coord=src_coords[1],
-        dest_x_coord=dst_coords[0],
-        dest_y_coord=dst_coords[1],
+        grid_x_coord=dst_coords[0],
+        grid_y_coord=dst_coords[1],
         sample_grid_x=dst_coords[0].points,
         sample_grid_y=dst_coords[1].points,
         regrid_callback=i_regrid._regrid_bilinear_array)
