@@ -108,6 +108,13 @@ class TestConservativeRegrid(tests.IrisTest):
             os.remove(self._emsf_logfile_path)
 
     def test_simple_areas(self):
+        """
+        Test area-conserving regrid between simple "near-square" grids.
+
+        Grids have overlapping areas in the same (lat-lon) coordinate system.
+        Grids are "nearly flat" lat-lon spaces (small ranges near the equator).
+
+        """
         shape1 = (5, 5)
         xlims1, ylims1 = ((-2, 2), (-2, 2))
         c1 = _make_test_cube(shape1, xlims1, ylims1)
@@ -162,6 +169,13 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertArrayAllClose(c1to2to1_areasum, c1_areasum)
 
     def test_polar_areas(self):
+        """
+        Test area-conserving regrid between different grids.
+
+        Grids have overlapping areas in the same (lat-lon) coordinate system.
+        Cells are highly non-square (near the pole).
+
+        """
         # Like test_basic_area, but not symmetrical + bigger overall errors.
         shape1 = (5, 5)
         xlims1, ylims1 = ((-2, 2), (84, 88))
@@ -213,6 +227,7 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertArrayAllClose(c1to2to1_areasum, c1_areasum)
 
     def test_fail_no_cs(self):
+        """ Check error if one coordinate has no coord_system. """
         shape1 = (5, 5)
         xlims1, ylims1 = ((-2, 2), (-2, 2))
         c1 = _make_test_cube(shape1, xlims1, ylims1)
@@ -229,30 +244,42 @@ class TestConservativeRegrid(tests.IrisTest):
             c1to2 = regrid_conservative_via_esmpy(c1, c2)
 
     def test_fail_different_cs(self):
+        """ Check error when coordinates have different coord_systems. """
         shape1 = (5, 5)
         xlims1, ylims1 = ((-2, 2), (-2, 2))
-        c1 = _make_test_cube(shape1, xlims1, ylims1,
-                             pole_latlon=(45.0, 35.0))
-        c1.data[:] = 0.0
-        c1.data[2, 2] = 1.0
-
         shape2 = (4, 4)
         xlims2, ylims2 = ((-1.5, 1.5), (-1.5, 1.5))
+
+        # Check basic regrid between these is ok.
+        c1 = _make_test_cube(shape1, xlims1, ylims1,
+                             pole_latlon=(45.0, 35.0))
         c2 = _make_test_cube(shape2, xlims2, ylims2)
-        c2.data[:] = 0.0
+        regrid_conservative_via_esmpy(c1, c2)
+
+        # Replace the coord_system one of the source coords + check this fails.
+        c1.coord('grid_longitude').coord_system = \
+            c2.coord('longitude').coord_system
+        with self.assertRaises(ValueError):
+            regrid_conservative_via_esmpy(c1, c2)
+
+        # Repeat with target coordinate fiddled.
+        c1 = _make_test_cube(shape1, xlims1, ylims1,
+                             pole_latlon=(45.0, 35.0))
+        c2 = _make_test_cube(shape2, xlims2, ylims2)
         c2.coord('latitude').coord_system = \
             c1.coord('grid_latitude').coord_system
-
         with self.assertRaises(ValueError):
-            c1to2 = regrid_conservative_via_esmpy(c1, c2)
+            regrid_conservative_via_esmpy(c1, c2)
+
 
     def test_rotated(self):
         """
-        Perform area-weighted regrid on more complex area.
+        Test area-weighted regrid on more complex area.
 
         Use two mutually rotated grids, of similar area + same dims.
-        Use a small central region in each, which maps entirely inside the
-        other region.
+        Only a small central region in each is non-zero, which maps entirely
+        inside the other region.
+        So the area-sum totals should match exactly.
         """
         # create source test cube on rotated form
         pole_lat = 53.4
@@ -402,6 +429,8 @@ class TestConservativeRegrid(tests.IrisTest):
 #    TODO: fix more general regional test with older tuned test-example
 #            = _generate_test_cubes ...
 
+    def test_missing_data(self):
+        pass
 
 if __name__ == '__main__':
     tests.main()
