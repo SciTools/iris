@@ -292,6 +292,29 @@ class IrisTest(unittest.TestCase):
     def assertArrayAlmostEqual(self, a, b):
         np.testing.assert_array_almost_equal(a, b)
 
+    def assertArrayAllClose(self, a, b, rtol=1.0e-7, atol=0.0, **kwargs):
+        """
+        Check arrays are equal, within given relative + absolute tolerances.
+
+        Args:
+
+        * a, b (array-like):
+            Two arrays to compare.
+
+        Kwargs:
+
+        * rtol, atol (float):
+            Relative and absolute tolerances to apply.
+
+        Any additional kwargs are passed to numpy.testing.assert_allclose.
+
+        Performs pointwise toleranced comparison, and raises an assertion if
+        the two are not equal 'near enough'.
+        For full details see underlying routine numpy.testing.assert_allclose.
+
+        """
+        np.testing.assert_allclose(a, b, rtol=rtol, atol=atol, **kwargs)
+
     def assertAttributesEqual(self, attr1, attr2):
         """
         Asserts two mappings (dictionaries) are equal after
