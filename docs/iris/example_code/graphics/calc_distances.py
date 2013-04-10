@@ -5,8 +5,11 @@ Calculating the grace circle distance from a point
 This example demonstrates how we might use an external library (pyproj) to
 calculate the distance from our points in a cube to a specific location,
 using our cubes grid mapping.  We then associate this information
-onto our original cube as an auxiliary coordinate.
+onto our original cube as an auxiliary coordinate, since this relates to the
+original phenomena.
 
+Following this, a determination of maximum concentration as a function of
+distance is plotted.
 
 """
 import matplotlib.pyplot as plt
@@ -26,17 +29,16 @@ def main():
 
     # Create grid of lat-lon
     xv, yv = np.meshgrid(lons.points, lats.points)
-    origshp = xv.shape
 
-    # Define the points that were calculating the distance to
+    # Define the points that we are calculating the distance to
     reflong = 50.
     reflat = 50.
     arr_reflong = np.ones_like(xv) * reflong
     arr_reflat = np.ones_like(yv) * reflat
 
     # Calculate great circle distance between points (using our ellipse)
-    elipse = lons.coord_system.as_cartopy_crs().proj4_params['ellps']
-    g = Geod(ellps=elipse)
+    ellipse = lons.coord_system.as_cartopy_crs().proj4_params['ellps']
+    g = Geod(ellps=ellipse)
     _, _, dist = g.inv(xv, yv, arr_reflong, arr_reflat)
 
     # Associate with the cube
@@ -77,11 +79,26 @@ def main():
 
     # Histogram plot
     plt.subplot(212)
-    plt.title('Histogram of phenomena vs distance')
+    plt.title('Maximum concentration with distance')
     plt2_ax = plt.gca()
-    n, bins, patches = plt2_ax.hist(dist.flatten(), bins=50, normed=1,
-                                    facecolor='green', alpha=0.75,
-                                    weights=cube.data.flatten())
+    plt2_ax.set_ylabel('{} / {}'.format('Maximum concentration',
+                                        str(cube.units)))
+    plt2_ax.set_xlabel('{} bins / {}'.format(dist_coord.name(),
+                                             str(dist_coord.units)))
+
+    # Associate bins to index
+    dist_bins, step = np.linspace(dist.min(), dist.max(), num=50,
+                                  endpoint=True, retstep=True)
+    dist_bin_indx = np.digitize(dist.flatten(), dist_bins)
+
+    # Maximum concentration within a bin (i.e. at a certain distance)
+    bins = np.unique(dist_bin_indx)
+    max_con = []
+    for ind in bins:
+        indices = np.where(dist_bin_indx == ind)
+        max_con.append(cube.data.flatten()[indices].max())
+
+    plt2_ax.bar(dist_bins, max_con, step, color='green')
     plt2_ax.grid(True)
 
     plt.show()
