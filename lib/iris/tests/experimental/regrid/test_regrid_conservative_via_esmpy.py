@@ -46,9 +46,9 @@ from iris.experimental.regrid_conservative import regrid_conservative_via_esmpy
 
 
 _debug = False
-#_debug = True
+_debug = True
 _debug_pictures = False
-_debug_pictures = True
+#_debug_pictures = True
 
 _debug_pictures &= _debug
 
@@ -145,7 +145,6 @@ class TestConservativeRegrid(tests.IrisTest):
         c1.data[2, 2] = 1.0
         c1_sum = np.sum(c1.data)
         c1_areasum = _cube_area_sum(c1)
-        dprint('simple: c1 area-sum=', c1_areasum, ' cells-sum=', c1_sum)
 
         shape2 = (4, 4)
         xlims2, ylims2 = ((-1.5, 1.5), (-1.5, 1.5))
@@ -157,9 +156,8 @@ class TestConservativeRegrid(tests.IrisTest):
 
         c1to2_sum = np.sum(c1to2.data)
         c1to2_areasum = _cube_area_sum(c1to2)
-        dprint('simple: c1to2 area-sum=', c1to2_areasum,
-               ' cells-sum=', c1to2_sum)
 
+        # check all expected values
         d_expect = np.array([[0.00, 0.00, 0.00, 0.00],
                              [0.00, 0.25, 0.25, 0.00],
                              [0.00, 0.25, 0.25, 0.00],
@@ -168,16 +166,21 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertArrayAllClose(c1to2.data, d_expect, rtol=5.0e-5)
 
         # check that the area sums are equivalent, simple total is a bit off
+        dprint('simple: c1 area-sum=', c1_areasum, ' cells-sum=', c1_sum)
+        dprint('simple: c1to2 area-sum=', c1to2_areasum,
+               ' cells-sum=', c1to2_sum)
+        dprint('simple: REL-DIFF c1to2/c1 area-sum = ',
+               _reldiff(c1to2_areasum, c1_areasum))
         self.assertAlmostEqual(c1to2_sum, 1.0, delta=0.00005)
         self.assertArrayAllClose(c1to2_areasum, c1_areasum)
 
-        # regrid back onto original grid again
+        #
+        # regrid back onto original grid again ...
+        #
         c1to2to1 = regrid_conservative_via_esmpy(c1to2, c1)
 
         c1to2to1_sum = np.sum(c1to2to1.data)
         c1to2to1_areasum = _cube_area_sum(c1to2to1)
-        dprint('simple: c1to2to1 area-sum=', c1to2to1_areasum,
-               ' cells-sum=', c1to2to1_sum)
 
         d_expect = np.array([[0.0, 0.0000, 0.0000, 0.0000, 0.0],
                              [0.0, 0.0625, 0.1250, 0.0625, 0.0],
@@ -188,6 +191,10 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertArrayAllClose(c1to2to1.data, d_expect, atol=0.00002)
 
         # check area sums again
+        dprint('simple: c1to2to1 area-sum=', c1to2to1_areasum,
+               ' cells-sum=', c1to2to1_sum)
+        dprint('simple: REL-DIFF c1to2to1/c1 area-sum = ',
+               _reldiff(c1to2to1_areasum, c1_areasum))
         self.assertAlmostEqual(c1to2_sum, 1.0, delta=0.00008)
         self.assertArrayAllClose(c1to2to1_areasum, c1_areasum)
 
@@ -207,7 +214,6 @@ class TestConservativeRegrid(tests.IrisTest):
         c1.data[2, 2] = 1.0
         c1_sum = np.sum(c1.data)
         c1_areasum = _cube_area_sum(c1)
-        dprint('polar: c1 area-sum=', c1_areasum, ' cells-sum=', c1_sum)
 
         shape2 = (4, 4)
         xlims2, ylims2 = ((-1.5, 1.5), (84.5, 87.5))
@@ -215,11 +221,6 @@ class TestConservativeRegrid(tests.IrisTest):
         c2.data[:] = 0.0
 
         c1to2 = regrid_conservative_via_esmpy(c1, c2)
-
-        c1to2_sum = np.sum(c1to2.data)
-        c1to2_areasum = _cube_area_sum(c1to2)
-        dprint('polar: c1to2 area-sum=', c1to2_areasum,
-               ' cells-sum=', c1to2_sum)
 
         # check for expected pattern
         d_expect = np.array([[0.0, 0.0, 0.0, 0.0],
@@ -229,15 +230,22 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertArrayAllClose(c1to2.data, d_expect, rtol=5.0e-5)
 
         # check sums
+        c1to2_sum = np.sum(c1to2.data)
+        c1to2_areasum = _cube_area_sum(c1to2)
+        dprint('polar: c1 area-sum=', c1_areasum, ' cells-sum=', c1_sum)
+        dprint('polar: c1to2 area-sum=', c1to2_areasum,
+               ' cells-sum=', c1to2_sum)
+        dprint('polar: REL-DIFF c1to2/c1 area-sum = ',
+               _reldiff(c1to2_areasum, c1_areasum))
         self.assertAlmostEqual(c1to2_sum, 1.0, delta=0.008)
         self.assertArrayAllClose(c1to2_areasum, c1_areasum)
 
+        #
+        # transform back again ...
+        #
         c1to2to1 = regrid_conservative_via_esmpy(c1to2, c1)
-        c1to2to1_sum = np.sum(c1to2to1.data)
-        c1to2to1_areasum = _cube_area_sum(c1to2to1)
-        dprint('polar: c1to2to1 area-sum=', c1to2to1_areasum,
-               ' cells-sum=', c1to2to1_sum)
 
+        # check values
         d_expect = np.array([[0.0, 0.0, 0.0, 0.0, 0.0],
                              [0.0, 0.056091, 0.112181, 0.056091, 0.0],
                              [0.0, 0.125499, 0.250998, 0.125499, 0.0],
@@ -246,6 +254,12 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertArrayAllClose(c1to2to1.data, d_expect, atol=0.0005)
 
         # check sums
+        c1to2to1_sum = np.sum(c1to2to1.data)
+        c1to2to1_areasum = _cube_area_sum(c1to2to1)
+        dprint('polar: c1to2to1 area-sum=', c1to2to1_areasum,
+               ' cells-sum=', c1to2to1_sum)
+        dprint('polar: REL-DIFF c1to2to1/c1 area-sum = ',
+               _reldiff(c1to2to1_areasum, c1_areasum))
         self.assertAlmostEqual(c1to2to1_sum, 1.0, delta=0.02)
         self.assertArrayAllClose(c1to2to1_areasum, c1_areasum)
 
