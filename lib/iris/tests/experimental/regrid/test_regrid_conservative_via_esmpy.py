@@ -46,7 +46,7 @@ from iris.experimental.regrid_conservative import regrid_conservative_via_esmpy
 
 
 _debug = False
-_debug = True
+#_debug = True
 _debug_pictures = False
 _debug_pictures = True
 
@@ -58,12 +58,12 @@ def dprint(*args):
         print(*args)
 
 
-def _make_test_cube(shape, xlims, ylims, pole_latlon=None, endpoint=None):
+def _make_test_cube(shape, xlims, ylims, pole_latlon=None):
     """ Create latlon cube (optionally rotated) with given xy dims+lims. """
     nx, ny = shape
     cube = iris.cube.Cube(np.zeros((ny, nx)))
-    xvals = np.linspace(xlims[0], xlims[1], nx, endpoint=endpoint)
-    yvals = np.linspace(ylims[0], ylims[1], ny, endpoint=endpoint)
+    xvals = np.linspace(xlims[0], xlims[1], nx)
+    yvals = np.linspace(ylims[0], ylims[1], ny)
     coordname_prefix = ''
     cs = iris.coord_systems.GeogCS(i_cartog.DEFAULT_SPHERICAL_EARTH_RADIUS)
     if pole_latlon is not None:
@@ -465,9 +465,8 @@ class TestConservativeRegrid(tests.IrisTest):
 
     def test_missing_data_rotated(self):
         for do_add_missing in (False, True):
-            if _debug:
-                debug_prefix = 'missing-data({}): '.format(
-                    'some' if do_add_missing else 'none')
+            debug_prefix = 'missing-data({}): '.format(
+                'some' if do_add_missing else 'none')
             # create source test cube on rotated form
             pole_lat = 53.4
             pole_lon = -173.2
@@ -479,8 +478,7 @@ class TestConservativeRegrid(tests.IrisTest):
             c1_ylims = -45.0, 20.0
             c1_xlims = [x - deg_swing for x in c1_xlims]
             c1 = _make_test_cube((c1_nx, c1_ny), c1_xlims, c1_ylims,
-                                 pole_latlon=(pole_lat, pole_lon),
-                                 endpoint=True)
+                                 pole_latlon=(pole_lat, pole_lon))
             c1.data = np.ma.array(c1.data, mask=False)
             c1.data[3:-3, 3:-3] = np.ma.array([
                 [100, 100, 100, 100, 100, 100, 100, 100, 100],
@@ -502,7 +500,7 @@ class TestConservativeRegrid(tests.IrisTest):
             ny2 = 7 + 6
             c2_xlims = -80.0, 80.0
             c2_ylims = -20.0, 50.0
-            c2 = _make_test_cube((nx2, ny2), c2_xlims, c2_ylims, endpoint=True)
+            c2 = _make_test_cube((nx2, ny2), c2_xlims, c2_ylims)
             c2.data = np.ma.array(c2.data, mask=True)
 
             # perform regrid + snapshot test results
