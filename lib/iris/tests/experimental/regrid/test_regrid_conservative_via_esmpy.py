@@ -48,7 +48,7 @@ from iris.experimental.regrid_conservative import regrid_conservative_via_esmpy
 _debug = False
 _debug = True
 _debug_pictures = False
-_debug_pictures = True
+#_debug_pictures = True
 
 _debug_pictures &= _debug
 
@@ -139,6 +139,22 @@ class TestConservativeRegrid(tests.IrisTest):
             # tweak array printouts
             np.set_printoptions(precision=2, linewidth=200, suppress=True)
 
+        # Compute basic test data cubes.
+        shape1 = (5, 5)
+        xlims1, ylims1 = ((-2, 2), (-2, 2))
+        c1 = _make_test_cube(shape1, xlims1, ylims1)
+        c1.data[:] = 0.0
+        c1.data[2, 2] = 1.0
+
+        shape2 = (4, 4)
+        xlims2, ylims2 = ((-1.5, 1.5), (-1.5, 1.5))
+        c2 = _make_test_cube(shape2, xlims2, ylims2)
+        c2.data[:] = 0.0
+
+        # Save timesaving pre-computed bits
+        self.stock_c1_c2 = (c1, c2)
+        self.stock_regrid_c1toc2 = regrid_conservative_via_esmpy(c1, c2)
+
     def test_simple_areas(self):
         """
         Test area-conserving regrid between simple "near-square" grids.
@@ -147,23 +163,12 @@ class TestConservativeRegrid(tests.IrisTest):
         Grids are "nearly flat" lat-lon spaces (small ranges near the equator).
 
         """
-        shape1 = (5, 5)
-        xlims1, ylims1 = ((-2, 2), (-2, 2))
-        c1 = _make_test_cube(shape1, xlims1, ylims1)
-        c1.data[:] = 0.0
-        c1.data[2, 2] = 1.0
-        c1_sum = np.sum(c1.data)
+        c1, c2 = self.stock_c1_c2
         c1_areasum = _cube_area_sum(c1)
-
-        shape2 = (4, 4)
-        xlims2, ylims2 = ((-1.5, 1.5), (-1.5, 1.5))
-        c2 = _make_test_cube(shape2, xlims2, ylims2)
-        c2.data[:] = 0.0
 
         # main regrid
         c1to2 = regrid_conservative_via_esmpy(c1, c2)
 
-        c1to2_sum = np.sum(c1to2.data)
         c1to2_areasum = _cube_area_sum(c1to2)
 
         # check all expected values
@@ -175,12 +180,10 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertArrayAllClose(c1to2.data, d_expect, rtol=5.0e-5)
 
         # check that the area sums are equivalent, simple total is a bit off
-        dprint('simple: c1 area-sum=', c1_areasum, ' cells-sum=', c1_sum)
-        dprint('simple: c1to2 area-sum=', c1to2_areasum,
-               ' cells-sum=', c1to2_sum)
+        dprint('simple: c1 area-sum=', c1_areasum)
+        dprint('simple: c1to2 area-sum=', c1to2_areasum)
         dprint('simple: REL-DIFF c1to2/c1 area-sum = ',
                _reldiff(c1to2_areasum, c1_areasum))
-        self.assertAlmostEqual(c1to2_sum, 1.0, delta=0.00005)
         self.assertArrayAllClose(c1to2_areasum, c1_areasum)
 
         #
@@ -188,7 +191,6 @@ class TestConservativeRegrid(tests.IrisTest):
         #
         c1to2to1 = regrid_conservative_via_esmpy(c1to2, c1)
 
-        c1to2to1_sum = np.sum(c1to2to1.data)
         c1to2to1_areasum = _cube_area_sum(c1to2to1)
 
         d_expect = np.array([[0.0, 0.0000, 0.0000, 0.0000, 0.0],
@@ -200,12 +202,247 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertArrayAllClose(c1to2to1.data, d_expect, atol=0.00002)
 
         # check area sums again
-        dprint('simple: c1to2to1 area-sum=', c1to2to1_areasum,
-               ' cells-sum=', c1to2to1_sum)
+        dprint('simple: c1to2to1 area-sum=', c1to2to1_areasum)
         dprint('simple: REL-DIFF c1to2to1/c1 area-sum = ',
                _reldiff(c1to2to1_areasum, c1_areasum))
-        self.assertAlmostEqual(c1to2_sum, 1.0, delta=0.00008)
         self.assertArrayAllClose(c1to2to1_areasum, c1_areasum)
+
+    def test_xy_transposed(self):
+        """ Test effects of transposing X and Y in src/dst data. """
+        c1, c2 = self.stock_c1_c2
+        testcube_xy = self.stock_regrid_c1toc2
+
+        # Check that transposed data produces transposed results
+        # - i.e.  regrid(data^T)^T == regrid(data)
+        c1_yx = c1.copy()
+        c1_yx.transpose()
+        testcube_yx = regrid_conservative_via_esmpy(c1_yx, c2)
+        testcube_yx.transpose()
+        self.assertTrue( testcube_yx == testcube_xy )
+
+        # Check that transposing destination does nothing
+        c2_yx = c2.copy()
+        c2_yx.transpose()
+        testcube_dst_transpose = regrid_conservative_via_esmpy(c1, c2_yx)
+        self.assertTrue( testcube_dst_transpose == testcube_xy )
+
+    def test_dst_coords(self):
+        """ Test specifying destination grid with coords instead of cube. """
+        # Check that doing op with XY coords as dst is equivalent to the cube.
+        c1, c2 = self.stock_c1_c2
+        testcube = self.stock_regrid_c1toc2
+
+        dst_x = c2.coord(axis='x')
+        dst_y = c2.coord(axis='y')
+        testcube_coords = regrid_conservative_via_esmpy(c1, (dst_x, dst_y))
+        self.assertTrue( testcube_coords == testcube )
+
+        # Check that swapping dst_coords produces transposed results.
+        testcube_coords_yx = regrid_conservative_via_esmpy(c1, (dst_y, dst_x))
+        testcube_coords_yx.transpose()
+        self.assertTrue( testcube_coords_yx == testcube )
+
+    def test_same_grid(self):
+        """ Test specifying destination grid with coords instead of cube. """
+        # Check that doing op with XY coords as dst is equivalent to the cube.
+        c1, c2 = self.stock_c1_c2
+        testcube = regrid_conservative_via_esmpy(c1, c1)
+        self.assertTrue( testcube == c1 )
+
+    def test_global(self):
+        """ Test specifying destination grid with coords instead of cube. """
+        # Compute basic test data cubes.
+        shape1 = (8, 6)
+        xlim1 = 180.0 * (shape1[0] - 1) / shape1[0]
+        ylim1 = 90.0 * (shape1[1] - 1) / shape1[1]
+        c1 = _make_test_cube(shape1, (-xlim1, xlim1), (-ylim1, ylim1))
+        # Create a small, plausible global array:
+        # - top + bottom rows all the same
+        # - left + right columns the same (though "close" would do)
+        basedata = np.array(
+            [[1, 1, 1, 1, 1, 1, 1, 1,],
+             [1, 1, 4, 4, 4, 2, 2, 1,],
+             [2, 1, 4, 4, 4, 2, 2, 2,],
+             [2, 5, 5, 1, 1, 1, 5, 5],
+             [5, 5, 5, 1, 1, 1, 5, 5],
+             [5, 5, 5, 5, 5, 5, 5, 5]])
+        c1.data[:] = basedata
+
+        # Create a rotated grid to regrid this onto.
+        shape2 = (14, 11)
+        xlim2 = 180.0 * (shape2[0] - 1) / shape2[0]
+        ylim2 = 90.0 * (shape2[1] - 1) / shape2[1]
+        c2 = _make_test_cube(shape2, (-xlim2, xlim2), (-ylim2, ylim2),
+                             pole_latlon=(47.4, 25.7))
+
+        # Perform regridding
+        c1toc2 = regrid_conservative_via_esmpy(c1, c2)
+
+        if _debug_pictures:
+            levels = np.linspace(0.0, np.max(basedata), 20)
+            vmin, vmax = 0, np.max(basedata)
+
+            plt.figure()
+            c1_proj = c1.coord(axis='x').coord_system
+            c1_proj = c1_proj.as_cartopy_projection()
+            ax = plt.axes(projection=c1_proj)
+            p1 = iplt.pcolormesh(c1, vmin=vmin, vmax=vmax, cmap='Blues')
+            iplt.outline(c1)
+            plt.colorbar(p1)
+            plt.title('source')
+            ax.xaxis.set_visible(True)
+            ax.yaxis.set_visible(True)
+            plt.show(block=False)
+
+            plt.figure()
+            c2_proj = c2.coord(axis='x').coord_system
+            c2_proj = c2_proj.as_cartopy_projection()
+            ax = plt.axes(projection=c2_proj)
+            p1 = iplt.pcolormesh(c1toc2, vmin=vmin, vmax=vmax, cmap='Blues',
+                                 edgecolor='k')
+            iplt.outline(c1toc2)
+            iplt.outline(c1)
+            plt.colorbar(p1)
+            plt.title('dest with both outlines')
+            ax.xaxis.set_visible(True)
+            ax.yaxis.set_visible(True)
+            plt.show(block=False)
+
+            plt.figure()
+            ax = plt.axes(projection=c1_proj)
+            p1 = iplt.pcolormesh(c1toc2, vmin=vmin, vmax=vmax, cmap='Blues')
+            iplt.outline(c1toc2)
+            plt.colorbar(p1)
+            plt.title('dest on source projection')
+            ax.xaxis.set_visible(True)
+            ax.yaxis.set_visible(True)
+            plt.show(block=True)
+
+        # Check that before+after area-sums match fairly well
+        c1_areasum = _cube_area_sum(c1)
+        c1toc2_areasum = _cube_area_sum(c1toc2)
+        dprint('global: area-sums RELDIFF c1/c1toc2 = ', _reldiff(c1_areasum, c1toc2_areasum))
+        self.assertArrayAllClose(c1_areasum, c1toc2_areasum, rtol=0.006)
+
+    def test_longitude_wraps(self):
+        """ Check results are independent of where the grid 'seams' are. """
+        # First repeat global regrid calculation from 'test_global'.
+        shape1 = (8, 6)
+        xlim1 = 180.0 * (shape1[0] - 1) / shape1[0]
+        ylim1 = 90.0 * (shape1[1] - 1) / shape1[1]
+        c1 = _make_test_cube(shape1, (-xlim1, xlim1), (-ylim1, ylim1))
+
+        basedata = np.array(
+            [[1, 1, 1, 1, 1, 1, 1, 1,],
+             [1, 1, 4, 4, 4, 2, 2, 1,],
+             [2, 1, 4, 4, 4, 2, 2, 2,],
+             [2, 5, 5, 1, 1, 1, 5, 5],
+             [5, 5, 5, 1, 1, 1, 5, 5],
+             [5, 5, 5, 5, 5, 5, 5, 5]])
+        c1.data[:] = basedata
+
+        shape2 = (14, 11)
+        xlim2 = 180.0 * (shape2[0] - 1) / shape2[0]
+        ylim2 = 90.0 * (shape2[1] - 1) / shape2[1]
+        xlims_2 = (-xlim2, xlim2)
+        ylims_2 = (-ylim2, ylim2)
+        c2 = _make_test_cube(shape2, xlims_2, ylims_2,
+                             pole_latlon=(47.4, 25.7))
+
+        # Perform regridding
+        c1toc2 = regrid_conservative_via_esmpy(c1, c2)
+
+        if _debug_pictures:
+            levels = np.linspace(0.0, np.max(basedata), 20)
+            vmin, vmax = 0, np.max(basedata)
+
+            plt.figure()
+            c1_proj = c1.coord(axis='x').coord_system
+            c1_proj = c1_proj.as_cartopy_projection()
+            ax = plt.axes(projection=c1_proj)
+            p1 = iplt.pcolormesh(c1, vmin=vmin, vmax=vmax, cmap='Blues')
+            iplt.outline(c1)
+            plt.colorbar(p1)
+            plt.title('source')
+            ax.xaxis.set_visible(True)
+            ax.yaxis.set_visible(True)
+            plt.show(block=False)
+
+            plt.figure()
+#            c2_proj = c2.coord(axis='x').coord_system
+#            c2_proj = c2_proj.as_cartopy_projection()
+#            ax = plt.axes(projection=c2_proj)
+            p1 = plt.pcolormesh(c1toc2.data, vmin=vmin, vmax=vmax, cmap='Blues',
+                                 edgecolor='k')
+#            iplt.outline(c1toc2)
+#            iplt.outline(c1)
+            plt.colorbar(p1)
+            plt.title('dest')
+            ax.xaxis.set_visible(True)
+            ax.yaxis.set_visible(True)
+            plt.show(block=False)
+
+            plt.figure()
+            ax = plt.axes(projection=c1_proj)
+            p1 = iplt.pcolormesh(c1toc2, vmin=vmin, vmax=vmax, cmap='Blues')
+            iplt.outline(c1toc2)
+            plt.colorbar(p1)
+            plt.title('dest on source projection')
+            ax.xaxis.set_visible(True)
+            ax.yaxis.set_visible(True)
+            plt.show(block=False)
+
+        # Now Redo with dst longitudes rotated, so the 'seam' goes somewhere else.
+        x_shift_steps = int(shape2[0] / 3)
+        xlims2_shifted = np.array(xlims_2) + 360.0 * x_shift_steps / shape2[0]
+        c2_shifted = _make_test_cube(shape2, xlims2_shifted, ylims_2,
+                             pole_latlon=(47.4, 25.7))
+        c1toc2_shifted = regrid_conservative_via_esmpy(c1, c2_shifted)
+
+        if _debug_pictures:
+            levels = np.linspace(0.0, np.max(basedata), 20)
+            vmin, vmax = 0, np.max(basedata)
+
+#            plt.figure()
+            c1_proj = c1.coord(axis='x').coord_system
+            c1_proj = c1_proj.as_cartopy_projection()
+#            ax = plt.axes(projection=c1_proj)
+#            p1 = iplt.pcolormesh(c1, vmin=vmin, vmax=vmax, cmap='Blues')
+#            iplt.outline(c1)
+#            plt.colorbar(p1)
+#            ax.xaxis.set_visible(True)
+#            ax.yaxis.set_visible(True)
+#            plt.show(block=False)
+
+            plt.figure()
+#            c2_proj = c2_shifted.coord(axis='x').coord_system
+#            c2_proj = c2_proj.as_cartopy_projection()
+#            ax = plt.axes(projection=c2_proj)
+            p1 = plt.pcolormesh(c1toc2_shifted.data,
+                                vmin=vmin, vmax=vmax, cmap='Blues',
+                                edgecolor='k')
+#            iplt.outline(c1toc2_shifted)
+#            iplt.outline(c1)
+            plt.colorbar(p1)
+            plt.title('dest_SHIFTED')
+            ax.xaxis.set_visible(True)
+            ax.yaxis.set_visible(True)
+            plt.show(block=False)
+
+            plt.figure()
+            ax = plt.axes(projection=c1_proj)
+            p1 = iplt.pcolormesh(c1toc2_shifted, vmin=vmin, vmax=vmax, cmap='Blues')
+            iplt.outline(c1toc2_shifted)
+            plt.colorbar(p1)
+            plt.title('dest_SHIFTED on source projection')
+            ax.xaxis.set_visible(True)
+            ax.yaxis.set_visible(True)
+            plt.show(block=True)
+
+        # Show that results are the same, when output rolled by same amount
+        rolled_data = np.roll(c1toc2_shifted.data, x_shift_steps, axis=1)
+        dprint('wraps: old+new maxdiff = ', np.max(np.abs(rolled_data - c1toc2.data)))
+        self.assertArrayAllClose(rolled_data, c1toc2.data)
 
     def test_polar_areas(self):
         """
@@ -221,7 +458,6 @@ class TestConservativeRegrid(tests.IrisTest):
         c1 = _make_test_cube(shape1, xlims1, ylims1)
         c1.data[:] = 0.0
         c1.data[2, 2] = 1.0
-        c1_sum = np.sum(c1.data)
         c1_areasum = _cube_area_sum(c1)
 
         shape2 = (4, 4)
@@ -239,14 +475,11 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertArrayAllClose(c1to2.data, d_expect, rtol=5.0e-5)
 
         # check sums
-        c1to2_sum = np.sum(c1to2.data)
         c1to2_areasum = _cube_area_sum(c1to2)
-        dprint('polar: c1 area-sum=', c1_areasum, ' cells-sum=', c1_sum)
-        dprint('polar: c1to2 area-sum=', c1to2_areasum,
-               ' cells-sum=', c1to2_sum)
+        dprint('polar: c1 area-sum=', c1_areasum)
+        dprint('polar: c1to2 area-sum=', c1to2_areasum)
         dprint('polar: REL-DIFF c1to2/c1 area-sum = ',
                _reldiff(c1to2_areasum, c1_areasum))
-        self.assertAlmostEqual(c1to2_sum, 1.0, delta=0.008)
         self.assertArrayAllClose(c1to2_areasum, c1_areasum)
 
         #
@@ -263,13 +496,10 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertArrayAllClose(c1to2to1.data, d_expect, atol=0.0005)
 
         # check sums
-        c1to2to1_sum = np.sum(c1to2to1.data)
         c1to2to1_areasum = _cube_area_sum(c1to2to1)
-        dprint('polar: c1to2to1 area-sum=', c1to2to1_areasum,
-               ' cells-sum=', c1to2to1_sum)
+        dprint('polar: c1to2to1 area-sum=', c1to2to1_areasum)
         dprint('polar: REL-DIFF c1to2to1/c1 area-sum = ',
                _reldiff(c1to2to1_areasum, c1_areasum))
-        self.assertAlmostEqual(c1to2to1_sum, 1.0, delta=0.02)
         self.assertArrayAllClose(c1to2to1_areasum, c1_areasum)
 
     def test_fail_no_cs(self):
@@ -352,9 +582,8 @@ class TestConservativeRegrid(tests.IrisTest):
             [100, 100, 100, 100, 100, 100, 100, 100, 100]],
             dtype=np.float)
 
-        c1_sum = np.sum(c1.data)
         c1_areasum = _cube_area_sum(c1)
-        dprint('rotate: c1 area-sum=', c1_areasum, ' cells-sum=', c1_sum)
+        dprint('rotate: c1 area-sum=', c1_areasum)
 
         # construct target cube to receive
         nx2 = 9 + 6
@@ -377,10 +606,8 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertArrayEqual(c1toc2_zeros[:, -1], True)
 
         # check the area-sum operation
-        c1to2_sum = np.sum(c1to2.data)
         c1to2_areasum = _cube_area_sum(c1to2)
-        dprint('rotate: c1to2 area-sum=', c1to2_areasum,
-               ' cells-sum=', c1to2_sum)
+        dprint('rotate: c1to2 area-sum=', c1to2_areasum)
         dprint('rotate: REL-DIFF c1to2/c1 area-sum = ',
                _reldiff(c1to2_areasum, c1_areasum))
         self.assertArrayAllClose(c1to2_areasum, c1_areasum, rtol=0.004)
@@ -423,9 +650,8 @@ class TestConservativeRegrid(tests.IrisTest):
             [100, 100, 199, 199, 100],
             [100, 100, 199, 199, 199]],
             dtype=np.float)
-        c2_sum = np.sum(c2.data)
         c2_areasum = _cube_area_sum(c2)
-        dprint('back-rotate: c2 area-sum=', c2_areasum, ' cells-sum=', c2_sum)
+        dprint('back-rotate: c2 area-sum=', c2_areasum)
 
         c2toc1 = regrid_conservative_via_esmpy(c2, c1)
 
@@ -439,10 +665,8 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertArrayEqual(c2toc1_zeros[:, -1], True)
 
         # check the area-sum operation
-        c2toc1_sum = np.sum(c2toc1.data)
         c2toc1_areasum = _cube_area_sum(c2toc1)
-        dprint('back-rotate: c2toc1 area-sum=', c2toc1_areasum,
-               ' cells-sum=', c2toc1_sum)
+        dprint('back-rotate: c2toc1 area-sum=', c2toc1_areasum)
         dprint('back-rotate: REL-DIFF c2toc1/c2 area-sum = ',
                _reldiff(c2toc1_areasum, c2_areasum))
         self.assertArrayAllClose(c2toc1_areasum, c2_areasum, rtol=0.004)
