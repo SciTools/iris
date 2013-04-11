@@ -46,7 +46,7 @@ from iris.experimental.regrid_conservative import regrid_conservative_via_esmpy
 
 
 _debug = False
-#_debug = True
+_debug = True
 _debug_pictures = False
 _debug_pictures = True
 
@@ -90,7 +90,7 @@ def _make_test_cube(shape, xlims, ylims, pole_latlon=None):
 
 
 def _cube_area_sum(cube):
-    """ Calculate total area-sum, as Iris can not do in one operation. """
+    """ Calculate total area-sum - Iris can't do this in one operation. """
     area_sums = cube * i_cartog.area_weights(cube, normalize=False)
     area_sum = area_sums.collapsed(area_sums.coords(dim_coords=True),
                                    iris.analysis.SUM)
@@ -98,14 +98,23 @@ def _cube_area_sum(cube):
 
 
 def _reldiff(a, b):
-    """ Compute relative-difference as |a - b| / mean(|a|, |b|). """
+    """
+    Compute relative-difference measure between real numbers.
+
+    Result is:
+        if a == b == 0:
+            0.0
+        otherwise:
+            |a - b| / mean(|a|, |b|)
+
+    """
     if a == 0.0 and b == 0.0:
         return 0.0
     return abs(a - b) * 2.0 / (abs(a) + abs(b))
 
 
 def _minmax(v):
-    """ Return min+max of array together. """
+    """ Calculate [min, max] of input. """
     return [f(v) for f in (np.min, np.max)]
 
 
@@ -113,7 +122,7 @@ class TestConservativeRegrid(tests.IrisTest):
     @classmethod
     def setUpClass(self):
         # Pre-initialise ESMF, just to avoid warnings about no logfile.
-        # NOTE: noisy if logging off, and no control of filepath.  Boo !!
+        # NOTE: noisy if logging is off, and no control of filepath.  Boo!!
         self._emsf_logfile_path = os.path.join(os.getcwd(), 'ESMF_LogFile')
         ESMF.Manager(logkind=ESMF.LogKind.SINGLE, debug=False)
 
@@ -127,7 +136,7 @@ class TestConservativeRegrid(tests.IrisTest):
         if _debug:
             # emit an extra linefeed for debug output (-v output omits one)
             dprint()
-            # condition output
+            # tweak array printouts
             np.set_printoptions(precision=2, linewidth=200, suppress=True)
 
     def test_simple_areas(self):
