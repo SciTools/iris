@@ -553,10 +553,15 @@ CellMethod("_ratio", cm.coord("time"))
 
 IF
 grib.edition == 1
-grib.levelType == 'pl'
+grib.indicatorOfTypeOfLevel == 100
 THEN
 CoordAndDims(DimCoord(points=grib.level,  long_name="pressure", units="hPa"))
 
+IF
+grib.edition == 1
+grib.indicatorOfTypeOfLevel = 1
+THEN
+CoordAndDims(DimCoord(points=0,  long_name="height", units="m"))
 
 
 ###################
