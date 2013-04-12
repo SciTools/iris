@@ -1,0 +1,108 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube standard_name="air_potential_temperature" units="K">
+    <attributes>
+      <attribute name="source" value="Iris test case"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1, 2, 3]">
+        <auxCoord bounds="[[[[nan, nan],
+  		[nan, nan],
+  		[346.896, 359.697],
+  		[334.793, 347.613]],
+
+ 		[[nan, nan],
+  		[nan, nan],
+  		[319.576, 332.418],
+  		[386.904, 399.643]],
+
+ 		[[nan, nan],
+  		[nan, nan],
+  		[315.718, 328.566],
+  		[398.421, 411.142]],
+
+ 		[[nan, nan],
+  		[nan, nan],
+  		[355.615, 368.402],
+  		[320.142, 332.984]]],
+
+
+		[[[nan, nan],
+  		[nan, nan],
+  		[359.697, 378.898],
+  		[347.613, 366.842]],
+
+ 		[[nan, nan],
+  		[nan, nan],
+  		[332.418, 351.682],
+  		[399.643, 418.752]],
+
+ 		[[nan, nan],
+  		[nan, nan],
+  		[328.566, 347.839],
+  		[411.142, 430.225]],
+
+ 		[[nan, nan],
+  		[nan, nan],
+  		[368.402, 387.583],
+  		[332.984, 352.247]]]]" id="c56f646c" points="[[[nan, nan, 351.696, 339.601],
+ 		[nan, nan, 324.392, 391.681],
+ 		[nan, nan, 320.536, 403.191],
+ 		[nan, nan, 360.41, 324.957]],
+
+		[[nan, nan, 367.697, 355.625],
+ 		[nan, nan, 340.445, 407.605],
+ 		[nan, nan, 336.596, 419.093],
+ 		[nan, nan, 376.394, 341.01]]]" shape="(2, 4, 4)" standard_name="altitude" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+      <coord>
+        <dimCoord id="73141289" points="[0.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord datadims="[2]">
+        <dimCoord id="a42bcac2" points="[52.377, 52.3946666667, 52.4123333333, 52.43]" shape="(4,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[0.0, 13.3333],
+		[13.3333, 33.3333]]" id="218bea13" long_name="level_height" points="[5.0, 21.6667]" shape="(2,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[3]">
+        <dimCoord id="63128986" points="[-3.3, -3.22, -3.14, -3.06]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="af0092b8" points="[1, 2]" shape="(2,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <auxCoord bounds="[[1.0, 0.998464],
+		[0.998464, 0.996162]]" id="5f88ebd6" long_name="sigma" points="[0.999424, 0.997504]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[2, 3]">
+        <auxCoord id="4471545e" points="[[nan, nan, 346.896, 334.793],
+		[nan, nan, 319.576, 386.904],
+		[nan, nan, 315.718, 398.421],
+		[nan, nan, 355.615, 320.142]]" shape="(4, 4)" standard_name="surface_altitude" units="Unit('m')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="6a1b3c16" points="[347921.166667, 347921.333333, 347921.5,
+		347921.666667, 347921.833333]" shape="(5,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data byteorder="little" dtype="float32" mask_order="C" order="C" shape="(5, 2, 4, 4)" state="loaded"/>
+  </cube>
+</cubes>
