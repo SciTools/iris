@@ -24,6 +24,7 @@ from __future__ import print_function
 # before importing anything else.
 import iris.tests as tests
 
+import contextlib
 import os
 import sys
 
@@ -58,14 +59,21 @@ def dprint(*args):
         print(*args)
 
 
+_plain_geodetic_cs = iris.coord_systems.GeogCS(
+    i_cartog.DEFAULT_SPHERICAL_EARTH_RADIUS)
+
 def _make_test_cube(shape, xlims, ylims, pole_latlon=None):
-    """ Create latlon cube (optionally rotated) with given xy dims+lims. """
+    """
+    Create latlon cube (optionally rotated) with given xy dims+lims.
+
+    Does not work for 1xN or Nx1 grids, because guess_bounds fails.
+    """
     nx, ny = shape
     cube = iris.cube.Cube(np.zeros((ny, nx)))
     xvals = np.linspace(xlims[0], xlims[1], nx)
     yvals = np.linspace(ylims[0], ylims[1], ny)
     coordname_prefix = ''
-    cs = iris.coord_systems.GeogCS(i_cartog.DEFAULT_SPHERICAL_EARTH_RADIUS)
+    cs = _plain_geodetic_cs
     if pole_latlon is not None:
         coordname_prefix = 'grid_'
         pole_lat, pole_lon = pole_latlon
@@ -94,7 +102,7 @@ def _cube_area_sum(cube):
     area_sums = cube * i_cartog.area_weights(cube, normalize=False)
     area_sum = area_sums.collapsed(area_sums.coords(dim_coords=True),
                                    iris.analysis.SUM)
-    return area_sum.data.flat[0]
+    return area_sum.data.flatten()[0]
 
 
 def _reldiff(a, b):
@@ -129,8 +137,9 @@ class TestConservativeRegrid(tests.IrisTest):
     @classmethod
     def tearDownClass(self):
         # remove the logfile if we can, just to be tidy
-        if os.path.exists(self._emsf_logfile_path):
-            os.remove(self._emsf_logfile_path)
+        if not _debug:
+            if os.path.exists(self._emsf_logfile_path):
+                os.remove(self._emsf_logfile_path)
 
     def setUp(self):
         if _debug:
@@ -154,6 +163,7 @@ class TestConservativeRegrid(tests.IrisTest):
         # Save timesaving pre-computed bits
         self.stock_c1_c2 = (c1, c2)
         self.stock_regrid_c1toc2 = regrid_conservative_via_esmpy(c1, c2)
+        self.stock_c1_areasum = _cube_area_sum(c1)
 
     def test_simple_areas(self):
         """
@@ -164,7 +174,7 @@ class TestConservativeRegrid(tests.IrisTest):
 
         """
         c1, c2 = self.stock_c1_c2
-        c1_areasum = _cube_area_sum(c1)
+        c1_areasum = self.stock_c1_areasum
 
         # main regrid
         c1to2 = regrid_conservative_via_esmpy(c1, c2)
@@ -243,14 +253,15 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertTrue( testcube_coords_yx == testcube )
 
     def test_same_grid(self):
-        """ Test specifying destination grid with coords instead of cube. """
-        # Check that doing op with XY coords as dst is equivalent to the cube.
+        """ Test regridding onto same grid. """
+        # Check that doing op with self as target is equivalent to the original.
         c1, c2 = self.stock_c1_c2
         testcube = regrid_conservative_via_esmpy(c1, c1)
         self.assertTrue( testcube == c1 )
+        self.assertArrayEqual(testcube.data, c1.data )
 
     def test_global(self):
-        """ Test specifying destination grid with coords instead of cube. """
+        """ Test global regridding. """
         # Compute basic test data cubes.
         shape1 = (8, 6)
         xlim1 = 180.0 * (shape1[0] - 1) / shape1[0]
@@ -321,8 +332,95 @@ class TestConservativeRegrid(tests.IrisTest):
         # Check that before+after area-sums match fairly well
         c1_areasum = _cube_area_sum(c1)
         c1toc2_areasum = _cube_area_sum(c1toc2)
-        dprint('global: area-sums RELDIFF c1/c1toc2 = ', _reldiff(c1_areasum, c1toc2_areasum))
-        self.assertArrayAllClose(c1_areasum, c1toc2_areasum, rtol=0.006)
+        dprint('global: area-sums RELDIFF c1/c1toc2 = ',
+               _reldiff(c1_areasum, c1toc2_areasum))
+        self.assertArrayAllClose(c1toc2_areasum, c1_areasum, rtol=0.006)
+
+    def test_global_collapse(self):
+        # Fetch 'standard' testcube data
+        c1, _ = self.stock_c1_c2
+        c1_areasum = self.stock_c1_areasum
+
+        # Condense entire globe onto a single cell
+        shape2 = (1, 1)
+        x_coord_2 = iris.coords.DimCoord([0.0], bounds=[-180.0, 180.0],
+                                         coord_system=_plain_geodetic_cs)
+        y_coord_2 = iris.coords.DimCoord([0.0], bounds=[-90.0, 90.0],
+                                         coord_system=_plain_geodetic_cs)
+
+        global_cell_supported = False
+        # NOTE: at present, this causes an error inside ESMF ...
+        if global_cell_supported:
+            @contextlib.contextmanager
+            def context():
+                yield
+        else:
+            context = self.assertRaises(NameError)
+
+        with context:
+            c1_to_global = regrid_conservative_via_esmpy(c1,
+                (x_coord_2, y_coord_2))
+
+            # Check the total area sum is still the same
+            dprint('global: area-sums RELDIFF orig/global = ',
+                   _reldiff(c1_to_global.data[0,0], c1_areasum))
+            self.assertArrayAllClose(c1_to_global.data[0,0], c1_areasum)
+
+    def test_single_cells(self):
+        # Fetch 'standard' testcube data
+        c1, c2 = self.stock_c1_c2
+        c1_areasum = self.stock_c1_areasum
+
+#
+# At present NxN -> 1x1 doesn't seem to work
+#   - always gets misssing-data in cell ?
+#
+#
+#        # Condense entire region into a single cell in the c1 grid
+#        xlims1 = _minmax(c1.coord(axis='x').bounds)
+#        ylims1 = _minmax(c1.coord(axis='y').bounds)
+#        x_c1x1 = iris.coords.DimCoord(xlims1[0], bounds=xlims1,
+#                                      long_name='longitude',
+#                                      coord_system=_plain_geodetic_cs)
+#        y_c1x1 = iris.coords.DimCoord(ylims1[0], bounds=ylims1,
+#                                      long_name='latitude',
+#                                      coord_system=_plain_geodetic_cs)
+#        c1x1 = regrid_conservative_via_esmpy(c1, (x_c1x1, y_c1x1))
+#
+#        # Check the total area sum is still the same
+#        c1x1_areasum = _cube_area_sum(c1x1)
+#        dprint('single : area-sums RELDIFF NxN -> 1x1 = ',
+#               _reldiff(c1x1_areasum, c1_areasum))
+#        self.assertArrayAllClose(c1x1_areasum, c1_areasum)
+
+        # Check reverse calculation back to c1 (i.e. *source* is 1x1)
+
+        # construct an approximation of a collapsed cube with same area sum.
+        # NOTE: can't use _make_cube (see docstring)
+        c1x1 = c1.copy()[0:1,0:1]
+        xlims1 = _minmax(c1.coord(axis='x').bounds)
+        ylims1 = _minmax(c1.coord(axis='y').bounds)
+        c1x1.coord(axis='x').bounds = xlims1
+        c1x1.coord(axis='y').bounds = ylims1
+        c1x1.data[0,0] = np.mean(c1.data)  #NOTE: not quite right, but should do
+
+        # Regrid this back onto the original NxN grid
+        c1x1_to_c1 = regrid_conservative_via_esmpy(c1x1, c1)
+        c1x1_to_c1_areasum = _cube_area_sum(c1x1_to_c1)
+
+        # Check that area sum is ~unchanged, as expected
+        dprint('single : area-sums RELDIFF 1x1 -> NxN = ',
+               _reldiff(c1x1_to_c1_areasum, c1_areasum))
+        self.assertArrayAllClose(c1x1_to_c1_areasum, c1_areasum, 0.0004)
+
+        # Finally, check 1x1 -> 1x1
+        # NOTE: can only get any result with a fully overlapping cell, so just
+        # use regrid-to-self
+        c1x1toself = regrid_conservative_via_esmpy(c1x1, c1x1)
+        c1x1toself_areasum = _cube_area_sum(c1x1toself)
+        dprint('single : area-sums RELDIFF 1x1 -> 1x1 = ',
+               _reldiff(c1x1toself_areasum, c1_areasum))
+        self.assertArrayAllClose(c1x1toself_areasum, c1_areasum, 0.0004)
 
     def test_longitude_wraps(self):
         """ Check results are independent of where the grid 'seams' are. """
@@ -443,6 +541,8 @@ class TestConservativeRegrid(tests.IrisTest):
         rolled_data = np.roll(c1toc2_shifted.data, x_shift_steps, axis=1)
         dprint('wraps: old+new maxdiff = ', np.max(np.abs(rolled_data - c1toc2.data)))
         self.assertArrayAllClose(rolled_data, c1toc2.data)
+
+        # TODO: show that nothing changes when you rotate the SOURCE data
 
     def test_polar_areas(self):
         """
