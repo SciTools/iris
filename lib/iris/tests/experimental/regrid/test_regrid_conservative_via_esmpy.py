@@ -181,7 +181,7 @@ class TestConservativeRegrid(tests.IrisTest):
 
         c1to2_areasum = _cube_area_sum(c1to2)
 
-        # check all expected values
+        # Check expected result (Cartesian equivalent, so not exact).
         d_expect = np.array([[0.00, 0.00, 0.00, 0.00],
                              [0.00, 0.25, 0.25, 0.00],
                              [0.00, 0.25, 0.25, 0.00],
@@ -203,12 +203,12 @@ class TestConservativeRegrid(tests.IrisTest):
 
         c1to2to1_areasum = _cube_area_sum(c1to2to1)
 
+        # Check expected result (Cartesian/exact difference now greater)
         d_expect = np.array([[0.0, 0.0000, 0.0000, 0.0000, 0.0],
                              [0.0, 0.0625, 0.1250, 0.0625, 0.0],
                              [0.0, 0.1250, 0.2500, 0.1250, 0.0],
                              [0.0, 0.0625, 0.1250, 0.0625, 0.0],
                              [0.0, 0.0000, 0.0000, 0.0000, 0.0]])
-        # Errors now quite large
         self.assertArrayAllClose(c1to2to1.data, d_expect, atol=0.00002)
 
         # check area sums again
@@ -253,7 +253,7 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertTrue( testcube_coords_yx == testcube )
 
     def test_same_grid(self):
-        """ Test regridding onto same grid. """
+        """ Test regridding onto the identical grid. """
         # Check that doing op with self as target is equivalent to the original.
         c1, c2 = self.stock_c1_c2
         testcube = regrid_conservative_via_esmpy(c1, c1)
@@ -269,7 +269,7 @@ class TestConservativeRegrid(tests.IrisTest):
         c1 = _make_test_cube(shape1, (-xlim1, xlim1), (-ylim1, ylim1))
         # Create a small, plausible global array:
         # - top + bottom rows all the same
-        # - left + right columns the same (though "close" would do)
+        # - left + right columns "mostly close" for checking across the seam
         basedata = np.array(
             [[1, 1, 1, 1, 1, 1, 1, 1,],
              [1, 1, 4, 4, 4, 2, 2, 1,],
@@ -428,8 +428,11 @@ class TestConservativeRegrid(tests.IrisTest):
         shape1 = (8, 6)
         xlim1 = 180.0 * (shape1[0] - 1) / shape1[0]
         ylim1 = 90.0 * (shape1[1] - 1) / shape1[1]
-        c1 = _make_test_cube(shape1, (-xlim1, xlim1), (-ylim1, ylim1))
+        xlims1 = (-xlim1, xlim1)
+        ylims1 = (-ylim1, ylim1)
+        c1 = _make_test_cube(shape1, xlims1, ylims1)
 
+        # Create a small, plausible global array (see test_global).
         basedata = np.array(
             [[1, 1, 1, 1, 1, 1, 1, 1,],
              [1, 1, 4, 4, 4, 2, 2, 1,],
@@ -491,8 +494,8 @@ class TestConservativeRegrid(tests.IrisTest):
             plt.show(block=False)
 
         # Now Redo with dst longitudes rotated, so the 'seam' goes somewhere else.
-        x_shift_steps = int(shape2[0] / 3)
-        xlims2_shifted = np.array(xlims_2) + 360.0 * x_shift_steps / shape2[0]
+        x2_shift_steps = int(shape2[0] / 3)
+        xlims2_shifted = np.array(xlims_2) + 360.0 * x2_shift_steps / shape2[0]
         c2_shifted = _make_test_cube(shape2, xlims2_shifted, ylims_2,
                              pole_latlon=(47.4, 25.7))
         c1toc2_shifted = regrid_conservative_via_esmpy(c1, c2_shifted)
@@ -538,11 +541,19 @@ class TestConservativeRegrid(tests.IrisTest):
             plt.show(block=True)
 
         # Show that results are the same, when output rolled by same amount
-        rolled_data = np.roll(c1toc2_shifted.data, x_shift_steps, axis=1)
-        dprint('wraps: old+new maxdiff = ', np.max(np.abs(rolled_data - c1toc2.data)))
+        rolled_data = np.roll(c1toc2_shifted.data, x2_shift_steps, axis=1)
+        dprint('wraps: dst-shifted/dst maxdiff = ', np.max(np.abs(rolled_data - c1toc2.data)))
         self.assertArrayAllClose(rolled_data, c1toc2.data)
 
-        # TODO: show that nothing changes when you rotate the SOURCE data
+        # Repeat with rolled *source* data : result should be identical
+        x1_shift_steps = int(shape1[0] / 3)
+        x_shift_degrees = 360.0 * x1_shift_steps / shape1[0]
+        xlims1_shifted = [x - x_shift_degrees for x in xlims1]
+        c1_shifted = _make_test_cube(shape1, xlims1_shifted, ylims1)
+        c1_shifted.data[:] = np.roll(basedata, x1_shift_steps, axis=1)
+        c1shifted_toc2 = regrid_conservative_via_esmpy(c1_shifted, c2)
+        dprint('wraps: dst(source-shifted)/dst maxdiff = ', np.max(np.abs(rolled_data - c1toc2.data)))
+        self.assertEqual(c1shifted_toc2, c1toc2)
 
     def test_polar_areas(self):
         """
@@ -935,24 +946,12 @@ if __name__ == '__main__':
 #    TODOs
 #    ==== 20130408 ====
 #    Testing areas to consider
-#      * longitude wrapping
-#      * global areas
-#      * 1x1 cells
-#      * ??1x1 global cell??
-#      * MDI handling
-#      * area checking
-#        - (1) simple quasi-rectangular to show back + forth
-#        - (2) near-pole stuff, proving true-area calc
 #      * irregular grids (?)
 #      * ? irregular bounds ?
 #      * iterate over extra dimensions
 #      * test with extra coords...
 #        * additional (irrelevant) coords (DIM + other)
 #        * factories aka hybrid-height
+#      * more intelligible tests for MDI and rotations
+#        - i.e. where answers are clear by inspection
 #
-#      * data in regions that goes outside target area (MDI?)
-#
-#    TODO: area checks are wrong : need to use area-weighted sums...
-#    TODO: masking !!
-#    TODO: fix more general regional test with older tuned test-example
-#            = _generate_test_cubes ...
