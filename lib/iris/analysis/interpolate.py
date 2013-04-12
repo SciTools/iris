@@ -684,16 +684,19 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
                                      cube.data.mask[tuple(coord_slice_in_cube)],
                                      axis=sample_dim)
                 data = ma.array(new_data, mask=new_mask)
-
-            # Map all the requested values into the range of the source
-            # data.
-            if modulus:
-                offset = src_coord.points[0]
-                sample_values = ((sample_values - offset) % modulus) + offset
         else:
             src_points = src_coord.points
             data = cube.data
-        
+
+        # Map all the requested values into the range of the source
+        # data (centered over the centre of the source data to allow
+        # extrapolation where required).
+        src_axis = iris.util.guess_coord_axis(src_coord)
+        if src_axis == 'X' and src_coord.units.modulus:
+            modulus = src_coord.units.modulus
+            offset = (src_points.max() + src_points.min() - modulus) * 0.5
+            sample_values = ((sample_values - offset) % modulus) + offset
+
         if len(src_points) <= 1:
             raise ValueError('Cannot linearly interpolate a coordinate {!r}'
                              ' with one point.'.format(src_coord.name()))
