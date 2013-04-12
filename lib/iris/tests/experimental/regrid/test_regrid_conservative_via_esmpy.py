@@ -49,7 +49,7 @@ from iris.experimental.regrid_conservative import regrid_conservative_via_esmpy
 _debug = False
 _debug = True
 _debug_pictures = False
-#_debug_pictures = True
+_debug_pictures = True
 
 _debug_pictures &= _debug
 
@@ -64,8 +64,10 @@ _plain_geodetic_cs = iris.coord_systems.GeogCS(
 
 def _make_test_cube(shape, xlims, ylims, pole_latlon=None):
     """
-    Create latlon cube (optionally rotated) with given xy dims+lims.
+    Create latlon cube (optionally rotated) with given xy dimensions and bounds
+    limit values.
 
+    Produces a regular grid in source coordinates.
     Does not work for 1xN or Nx1 grids, because guess_bounds fails.
     """
     nx, ny = shape
@@ -107,7 +109,7 @@ def _cube_area_sum(cube):
 
 def _reldiff(a, b):
     """
-    Compute relative-difference measure between real numbers.
+    Compute a relative-difference measure between real numbers.
 
     Result is:
         if a == b == 0:
@@ -337,6 +339,7 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertArrayAllClose(c1toc2_areasum, c1_areasum, rtol=0.006)
 
     def test_global_collapse(self):
+        """ Test regridding global data to a single cell. """
         # Fetch 'standard' testcube data
         c1, _ = self.stock_c1_c2
         c1_areasum = self.stock_c1_areasum
@@ -352,8 +355,10 @@ class TestConservativeRegrid(tests.IrisTest):
         # NOTE: at present, this causes an error inside ESMF ...
         if global_cell_supported:
             @contextlib.contextmanager
-            def context():
+            def context_fn():
                 yield
+                return
+            context = context_fn()
         else:
             context = self.assertRaises(NameError)
 
@@ -372,9 +377,8 @@ class TestConservativeRegrid(tests.IrisTest):
         c1_areasum = self.stock_c1_areasum
 
 #
-# At present NxN -> 1x1 doesn't seem to work
-#   - always gets misssing-data in cell ?
-#
+# At present NxN -> 1x1 "in-place" doesn't seem to work properly
+# - result cell has missing-data ?
 #
 #        # Condense entire region into a single cell in the c1 grid
 #        xlims1 = _minmax(c1.coord(axis='x').bounds)
@@ -393,16 +397,35 @@ class TestConservativeRegrid(tests.IrisTest):
 #               _reldiff(c1x1_areasum, c1_areasum))
 #        self.assertArrayAllClose(c1x1_areasum, c1_areasum)
 
-        # Check reverse calculation back to c1 (i.e. *source* is 1x1)
+        # Condense entire region onto a single cell covering the area of 'c2'
+        xlims2 = _minmax(c2.coord(axis='x').bounds)
+        ylims2 = _minmax(c2.coord(axis='y').bounds)
+        x_c2x1 = iris.coords.DimCoord(xlims2[0], bounds=xlims2,
+                                      standard_name='longitude',
+                                      units=iris.unit.Unit('degrees'),
+                                      coord_system=_plain_geodetic_cs)
+        y_c2x1 = iris.coords.DimCoord(ylims2[0], bounds=ylims2,
+                                      standard_name='latitude',
+                                      units=iris.unit.Unit('degrees'),
+                                      coord_system=_plain_geodetic_cs)
+        c1_to_c2x1 = regrid_conservative_via_esmpy(c1, (x_c2x1, y_c2x1))
 
-        # construct an approximation of a collapsed cube with same area sum.
+        # Check the total area sum is still the same
+        c1_to_c2x1_areasum = _cube_area_sum(c1_to_c2x1)
+        dprint('single : area-sums RELDIFF 1x1/original = ',
+               _reldiff(c1_to_c2x1_areasum, c1_areasum))
+        self.assertArrayAllClose(c1_to_c2x1_areasum, c1_areasum, 0.0004)
+
+        # 1x1 -> NxN : regrid single cell to NxN grid
+        # construct a single-cell approximation to 'c1' with the same area sum.
         # NOTE: can't use _make_cube (see docstring)
         c1x1 = c1.copy()[0:1,0:1]
         xlims1 = _minmax(c1.coord(axis='x').bounds)
         ylims1 = _minmax(c1.coord(axis='y').bounds)
         c1x1.coord(axis='x').bounds = xlims1
         c1x1.coord(axis='y').bounds = ylims1
-        c1x1.data[0,0] = np.mean(c1.data)  #NOTE: not quite right, but should do
+        # Assign data mean as single cell value : Maybe not exact, but "close"
+        c1x1.data[0,0] = np.mean(c1.data)
 
         # Regrid this back onto the original NxN grid
         c1x1_to_c1 = regrid_conservative_via_esmpy(c1x1, c1)
@@ -413,14 +436,15 @@ class TestConservativeRegrid(tests.IrisTest):
                _reldiff(c1x1_to_c1_areasum, c1_areasum))
         self.assertArrayAllClose(c1x1_to_c1_areasum, c1_areasum, 0.0004)
 
-        # Finally, check 1x1 -> 1x1
-        # NOTE: can only get any result with a fully overlapping cell, so just
-        # use regrid-to-self
+        # Check 1x1 -> 1x1
+        # NOTE: can *only* get any result with a fully overlapping cell, so 
+        # just regrid onto self
         c1x1toself = regrid_conservative_via_esmpy(c1x1, c1x1)
         c1x1toself_areasum = _cube_area_sum(c1x1toself)
         dprint('single : area-sums RELDIFF 1x1 -> 1x1 = ',
                _reldiff(c1x1toself_areasum, c1_areasum))
         self.assertArrayAllClose(c1x1toself_areasum, c1_areasum, 0.0004)
+        # NOTE: perhaps surprisingly, this has a similar level of error.
 
     def test_longitude_wraps(self):
         """ Check results are independent of where the grid 'seams' are. """
@@ -614,9 +638,7 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertArrayAllClose(c1to2to1_areasum, c1_areasum)
 
     def test_fail_no_cs(self):
-        """
-        Check error if one coordinate has no coord_system.
-        """
+        """ Test error when one coordinate has no coord_system. """
         shape1 = (5, 5)
         xlims1, ylims1 = ((-2, 2), (-2, 2))
         c1 = _make_test_cube(shape1, xlims1, ylims1)
@@ -634,7 +656,7 @@ class TestConservativeRegrid(tests.IrisTest):
 
     def test_fail_different_cs(self):
         """
-        Check error when coordinates have different coord_systems.
+        Test error when either src or dst coords have different coord_systems.
         """
         shape1 = (5, 5)
         xlims1, ylims1 = ((-2, 2), (-2, 2))
@@ -822,6 +844,13 @@ class TestConservativeRegrid(tests.IrisTest):
             plt.show()
 
     def test_missing_data_rotated(self):
+        """
+        Check missing-data handling between different coordinate systems.
+
+        Regrid between mutually rotated lat/lon systems, and check results for
+        missing data due to grid edge overlap, and source-data masking.
+
+        """
         for do_add_missing in (False, True):
             debug_prefix = 'missing-data({}): '.format(
                 'some' if do_add_missing else 'none')
