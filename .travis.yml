@@ -59,6 +59,7 @@ install:
   - ./.travis_no_output mkdir -p ~/esmpy
   - ./.travis_no_output cd ~/esmpy
   - ./.travis_no_output wget http://www.earthsystemmodeling.org/python_releases/ESMPy_620b10_04/ESMPy_620b10_04.tar.bz2
+  - ./.travis_no_output tar -xvf ESMPy_620b10_04.tar.bz2
   - ./.travis_no_output export ESMF_DIR=$(ls -d ~/esmpy/ESMP*/esmf)
   - ./.travis_no_output export ESMPY_DIR=$(ls -d ~/esmpy/ESMP*/ESMPy)
   - ./.travis_no_output cd $ESMF_DIR
