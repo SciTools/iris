@@ -60,11 +60,11 @@ install:
   - ./.travis_no_output cd ~/esmpy
   - ./.travis_no_output wget http://www.earthsystemmodeling.org/python_releases/ESMPy_620b10_04/ESMPy_620b10_04.tar.bz2
   - ./.travis_no_output tar -xvf ESMPy_620b10_04.tar.bz2
-  - ./.travis_no_output export ESMF_DIR=$(ls -d ~/esmpy/ESMP*/esmf)
-  - ./.travis_no_output export ESMPY_DIR=$(ls -d ~/esmpy/ESMP*/ESMPy)
+  - ./.travis_no_output export ESMF_DIR=/home/travis/esmpy/ESMPy_620b10_04/esmf
+  - ./.travis_no_output export ESMPY_DIR=/home/travis/esmpy/ESMPy_620b10_04/ESMPy
   - ./.travis_no_output cd $ESMF_DIR
   - ./.travis_no_output make
-  - ./.travis_no_output export ESMFMKFILE=$(find $ESMF_DIR -iname esmf.mk)
+  - ./.travis_no_output export ESMFMKFILE=$ESMF_DIR/lib/libO/Linux.gfortran.64.mpiuni.default/esmf.mk
   - ./.travis_no_output cd $ESMPY_DIR
   - ./.travis_no_output python setup.py
   - ./.travis_no_output echo "${ESMPY_DIR}/src/" >~/.local/lib/python2.7/site-packages/esmpy.pth
