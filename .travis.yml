@@ -56,23 +56,29 @@ install:
   - cd ../..
 
 # ESMPy
-  - mkdir -p ~/esmpy
-  - cd ~/esmpy
   - pwd
+  - export BASEDIR=$(pwd)
+  - echo $BASEDIR
+  - mkdir -p $BASEDIR/esmpy
+  - cd $BASEDIR/esmpy
   - ls
   - wget http://www.earthsystemmodeling.org/python_releases/ESMPy_620b10_04/ESMPy_620b10_04.tar.bz2
+# $BASEDIR/.travis_no_output tar...
   - tar -xvf ESMPy_620b10_04.tar.bz2
-  - export ESMF_DIR=/home/travis/esmpy/ESMPy_620b10_04/esmf
-  - export ESMPY_DIR=/home/travis/esmpy/ESMPy_620b10_04/ESMPy
+  - export ESMF_DIR=$BASEDIR/esmpy/ESMPy_620b10_04/esmf
+  - export ESMPY_DIR=$BASEDIR/esmpy/ESMPy_620b10_04/ESMPy
+  - echo $ESMF_DIR
+  - echo $ESMPY_DIR
   - cd $ESMF_DIR
   - ls
-  - ls /home/travis/.travis_no_output make
-# /home/travis/.travis_no_output make
+# $BASEDIR/.travis_no_output make
+  - find $BASEDIR -iname "\.travis_no_output"
   - make
   - export ESMFMKFILE=$(find $ESMF_DIR -iname esmf.mk)
   - cd $ESMPY_DIR
   - python setup.py
   - echo "${ESMPY_DIR}/src/" >~/.local/lib/python2.7/site-packages/esmpy.pth
+  - cd $BASEDIR
 
 # distutils
   - ./.travis_no_output wget http://python-distribute.org/distribute_setup.py
