@@ -65,6 +65,7 @@ install:
   - ./.travis_no_output cd $ESMF_DIR
   - ./.travis_no_output make
   - ./.travis_no_output export ESMFMKFILE=$(find $ESMF_DIR -iname esmf.mk)
+  - ls $ESMF_DIR
   - ./.travis_no_output cd $ESMPY_DIR
   - ./.travis_no_output python setup.py
   - ./.travis_no_output echo "${ESMPY_DIR}/src/" >~/.local/lib/python2.7/site-packages/esmpy.pth
