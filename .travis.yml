@@ -66,8 +66,9 @@ install:
   - export ESMPY_DIR=/home/travis/esmpy/ESMPy_620b10_04/ESMPy
   - cd $ESMF_DIR
   - ls
-# ~/.travis_no_output make
-  - ~/.travis_no_output make
+  - ls /home/travis/.travis_no_output make
+# /home/travis/.travis_no_output make
+  - make
   - export ESMFMKFILE=$(find $ESMF_DIR -iname esmf.mk)
   - cd $ESMPY_DIR
   - python setup.py
