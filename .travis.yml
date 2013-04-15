@@ -76,8 +76,7 @@ install:
   - python setup.py
   - PKGDIR=$IRIS_BASEDIR/esmpy/ESMPy_620b10_04/ESMPy/src/
   - echo $PKGDIR
-  - ls -ld $PKGDIR; echo ok
-  - ls -ld /home/travis/.local/lib/python2.7/site-packages; echo ok
+  - mkdir -p /home/travis/.local/lib/python2.7/site-packages
   - ln -s $PKGDIR /home/travis/.local/lib/python2.7/site-packages/esmf
   - cd $IRIS_BASEDIR
 
