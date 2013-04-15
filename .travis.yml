@@ -77,7 +77,8 @@ install:
   - export ESMFMKFILE=$(find $ESMF_DIR -iname esmf.mk)
   - cd $ESMPY_DIR
   - python setup.py
-  - echo "${ESMPY_DIR}/src/" >~/.local/lib/python2.7/site-packages/esmpy.pth
+#  - echo "${ESMPY_DIR}/src/" >~/.local/lib/python2.7/site-packages/esmpy.pth
+  - export PYTHONPATH="${PYTHONPATH}:${ESMPY_DIR}/src/"
   - cd $BASEDIR
 
 # distutils
