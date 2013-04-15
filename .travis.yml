@@ -13,7 +13,6 @@ language: python
 python:
   - 2.7
 
-
 install:
 
   - export CARTOPY_REF="v0.7.0"
@@ -74,12 +73,12 @@ install:
   - export ESMFMKFILE=$(find $ESMF_DIR -iname esmf.mk)
   - cd $ESMPY_DIR
   - python setup.py
-  - PKGDIR=$IRIS_BASEDIR/esmpy/ESMPy_620b10_04/ESMPy/src/
-  - echo $PKGDIR
-  - mkdir -p /home/travis/.local/lib/python2.7/site-packages
-  - ln -s $PKGDIR /home/travis/.local/lib/python2.7/site-packages/esmf
+# NOTE: ESMPy setup is broken : "install" separately by softlinking source directory
+  - LOCAL_PKGS=/home/travis/.local/lib/python2.7/site-packages
+  - mkdir -p $LOCAL_PKGS
+  - PKGDIR=$IRIS_BASEDIR/esmpy/ESMPy_620b10_04/ESMPy/src
+  - ln -s $PKGDIR/ESMF $LOCAL_PKGS/
   - cd $IRIS_BASEDIR
-
 
 # cartopy
   - ./.travis_no_output wget -O cartopy.zip https://github.com/SciTools/cartopy/archive/${CARTOPY_REF}.zip
