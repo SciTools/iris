@@ -134,6 +134,32 @@ class MakeStdNames(Command):
         self.spawn(cmd)
 
 
+class MakePykeRules(Command):
+    """
+    Compile the PyKE CF-NetCDF loader rule base.
+
+    """
+    description = "compile CF-NetCDF loader rule base"
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    @staticmethod
+    def _pyke_rule_compile():
+        """Compile the PyKE rule base."""
+        from pyke import knowledge_engine
+        import iris.fileformats._pyke_rules
+        knowledge_engine.engine(iris.fileformats._pyke_rules)
+
+    def run(self):
+        # Compile the PyKE rules.
+        MakePykeRules._pyke_rule_compile()
+
+
 class MissingHeaderError(Exception):
     """
     Raised when one or more files do not have the required copyright
@@ -205,7 +231,7 @@ class HeaderCheck(Command):
 class BuildPyWithExtras(build_py.build_py):
     """
     Adds the creation of the CF standard names module and compilation
-    of the pyke rules to the standard "build_py" command.
+    of the PyKE rules to the standard "build_py" command.
 
     """
     @contextlib.contextmanager
@@ -230,12 +256,9 @@ class BuildPyWithExtras(build_py.build_py):
         cmd = std_name_cmd(self.build_lib)
         self.spawn(cmd)
 
-        # Compile the pyke rules
+        # Compile the PyKE rules.
         with self.temporary_path():
-            # Compile the pyke rules
-            from pyke import knowledge_engine
-            import iris.fileformats._pyke_rules
-            e = knowledge_engine.engine(iris.fileformats._pyke_rules)
+            MakePykeRules._pyke_rule_compile()
 
 
 setup(
@@ -270,5 +293,6 @@ setup(
         )
     },
     cmdclass={'test': TestRunner, 'build_py': BuildPyWithExtras, 
-              'std_names': MakeStdNames, 'header_check': HeaderCheck},
+              'std_names': MakeStdNames, 'header_check': HeaderCheck,
+              'pyke_rules': MakePykeRules},
 )
