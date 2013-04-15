@@ -69,6 +69,7 @@ install:
   - ESMF_DIR=$IRIS_BASEDIR/esmpy/ESMPy_620b10_04/esmf
   - ESMPY_DIR=$IRIS_BASEDIR/esmpy/ESMPy_620b10_04/ESMPy
   - cd $ESMF_DIR
+  - export ESMF_DIR
   - $IRIS_BASEDIR/.travis_no_output make
   - export ESMFMKFILE=$(find $ESMF_DIR -iname esmf.mk)
   - cd $ESMPY_DIR
