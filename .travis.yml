@@ -74,8 +74,13 @@ install:
   - export ESMFMKFILE=$(find $ESMF_DIR -iname esmf.mk)
   - cd $ESMPY_DIR
   - python setup.py
-  - ln -s $IRIS_BASEDIR/esmpy/ESMPy_620b10_04/ESMPy/src/ /home/travis/.local/lib/python2.7/site-packages/esmf
+  - PKGDIR=$IRIS_BASEDIR/esmpy/ESMPy_620b10_04/ESMPy/src/
+  - echo $PKGDIR
+  - ls -ld $PKGDIR; echo ok
+  - ls -ld /home/travis/.local/lib/python2.7/site-packages; echo ok
+  - ln -s $PKGDIR /home/travis/.local/lib/python2.7/site-packages/esmf
   - cd $IRIS_BASEDIR
+
 
 # cartopy
   - ./.travis_no_output wget -O cartopy.zip https://github.com/SciTools/cartopy/archive/${CARTOPY_REF}.zip
