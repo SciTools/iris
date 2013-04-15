@@ -13,8 +13,6 @@ language: python
 python:
   - 2.7
 
-env:
-  - PYTHONPATH=/home/travis/build/SciTools/iris/esmpy/ESMPy_620b10_04/ESMPy/src/
 
 install:
 
@@ -62,26 +60,21 @@ install:
   - ./.travis_no_output sudo /usr/bin/python distribute_setup.py
 
 # ESMPy
-  - export BASEDIR=$(pwd)
+  - IRIS_BASEDIR=$(pwd)
 # NOTE: this is *actually* /home/travis/build/SciTools/iris
-  - mkdir -p $BASEDIR/esmpy
-  - cd $BASEDIR/esmpy
+  - mkdir -p $IRIS_BASEDIR/esmpy
+  - cd $IRIS_BASEDIR/esmpy
   - wget http://www.earthsystemmodeling.org/python_releases/ESMPy_620b10_04/ESMPy_620b10_04.tar.bz2
-  - $BASEDIR/.travis_no_output tar -xvf ESMPy_620b10_04.tar.bz2
-  - export ESMF_DIR=$BASEDIR/esmpy/ESMPy_620b10_04/esmf
-  - export ESMPY_DIR=$BASEDIR/esmpy/ESMPy_620b10_04/ESMPy
+  - $IRIS_BASEDIR/.travis_no_output tar -xvf ESMPy_620b10_04.tar.bz2
+  - ESMF_DIR=$IRIS_BASEDIR/esmpy/ESMPy_620b10_04/esmf
+  - ESMPY_DIR=$IRIS_BASEDIR/esmpy/ESMPy_620b10_04/ESMPy
   - cd $ESMF_DIR
-  - $BASEDIR/.travis_no_output make
+  - $IRIS_BASEDIR/.travis_no_output make
   - export ESMFMKFILE=$(find $ESMF_DIR -iname esmf.mk)
   - cd $ESMPY_DIR
   - python setup.py
-#  - echo "${ESMPY_DIR}/src/" >~/.local/lib/python2.7/site-packages/esmpy.pth
-#  - export PYTHONPATH="${PYTHONPATH}:${ESMPY_DIR}/src/"
-  - cd $BASEDIR
-# FOR NOW: also attempt to debug the actual site-packaged location...
-  - SITE_PKGS=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
-  - echo $SITE_PKGS
-  - ls -ld $SITE_PKGS
+  - ln -s $IRIS_BASEDIR/esmpy/ESMPy_620b10_04/ESMPy/src/ /home/travis/.local/lib/python2.7/site-packages/esmf
+  - cd $IRIS_BASEDIR
 
 # cartopy
   - ./.travis_no_output wget -O cartopy.zip https://github.com/SciTools/cartopy/archive/${CARTOPY_REF}.zip
