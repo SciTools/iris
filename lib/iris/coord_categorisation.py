@@ -107,7 +107,7 @@ def add_year(cube, coord, name='year'):
         )
 
 
-def add_month_number(cube, coord, name='month'):
+def add_month_number(cube, coord, name='month_number'):
     """Add a categorical month coordinate, values 1..12."""
     add_categorised_coord(
         cube, name, coord,
@@ -124,7 +124,7 @@ def add_month_shortname(cube, coord, name='month'):
         )
 
 
-def add_month_fullname(cube, coord, name='month'):
+def add_month_fullname(cube, coord, name='month_full'):
     """Add a categorical month coordinate, values 'January'..'December'."""
     add_categorised_coord(
         cube, name, coord,
@@ -139,7 +139,7 @@ def add_month(cube, coord, name='month'):
     add_month_shortname(cube, coord, name)
 
 
-def add_day_of_month(cube, coord, name='day'):
+def add_day_of_month(cube, coord, name='day_of_month'):
     """Add a categorical day-of-month coordinate, values 1..31."""
     add_categorised_coord(
         cube, name, coord,
@@ -147,7 +147,7 @@ def add_day_of_month(cube, coord, name='day'):
         )
 
 
-def add_day_of_year(cube, coord, name='day'):
+def add_day_of_year(cube, coord, name='day_of_year'):
     """
     Add a categorical day-of-year coordinate, values 1..365
     (1..366 in leap years).
@@ -161,7 +161,7 @@ def add_day_of_year(cube, coord, name='day'):
 #--------------------------------------------
 # time categorisations : days of the week
  
-def add_weekday_number(cube, coord, name='weekday'):
+def add_weekday_number(cube, coord, name='weekday_number'):
     """Add a categorical weekday coordinate, values 0..6  [0=Monday]."""
     add_categorised_coord(
         cube, name, coord,
@@ -178,7 +178,7 @@ def add_weekday_shortname(cube, coord, name='weekday'):
         )
 
 
-def add_weekday_fullname(cube, coord, name='weekday'):
+def add_weekday_fullname(cube, coord, name='weekday_full'):
     """Add a categorical weekday coordinate, values 'Monday'..'Sunday'."""
     add_categorised_coord(
         cube, name, coord,
@@ -215,7 +215,7 @@ SEASON_MONTHS_INITIALS = ['djf', 'mam', 'jja', 'son']
 """Season month strings (3-character strings) for each season (0..3)."""
 
  
-def add_season_number(cube, coord, name='season'):
+def add_season_number(cube, coord, name='season_number'):
     """Add a categorical season-of-year coordinate, values 0..3  [0=djf, 1=mam, ...]."""
     add_categorised_coord(
         cube, name, coord,
@@ -238,7 +238,7 @@ def add_season(cube, coord, name='season'):
     add_season_month_initials(cube, coord, name=name)
 
     
-def add_season_year(cube, coord, name='year'):
+def add_season_year(cube, coord, name='season_year'):
     """
     Add a categorical year-of-season coordinate (e.g. Aug'01 -> 1, but Dec'01 -> 2).
     
@@ -407,7 +407,7 @@ def add_custom_season_number(cube, coord, seasons, name='season'):
     add_categorised_coord(cube, name, coord, _custom_season_number)
 
 
-def add_custom_season_year(cube, coord, seasons, name='year'):
+def add_custom_season_year(cube, coord, seasons, name='season_year'):
     """
     Add a categorical year-of-season coordinate, with user specified
     seasons.
@@ -445,7 +445,7 @@ def add_custom_season_year(cube, coord, seasons, name='year'):
     add_categorised_coord(cube, name, coord, _custom_season_year)
 
 
-def add_custom_season_membership(cube, coord, season, name='season'):
+def add_custom_season_membership(cube, coord, season, name='season_member'):
     """
     Add a categorical season membership coordinate for a user specified
     season.
