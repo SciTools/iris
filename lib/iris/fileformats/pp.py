@@ -1159,7 +1159,7 @@ class PPField(object):
 
         t1 = self.t1
         t1_end = deepcopy(self.t2)
-        t1_end.year = self.t1.year
+        t1_end.year = t1.year
 
         t1_hrs = unit.date2num(t1)
         t1_end_hrs = unit.date2num(t1_end)
