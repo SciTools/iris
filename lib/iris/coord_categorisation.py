@@ -238,7 +238,7 @@ def add_season(cube, coord, name='season'):
     add_season_month_initials(cube, coord, name=name)
 
     
-def add_season_year(cube, coord, name='year'):
+def add_season_year(cube, coord, name='season_year'):
     """
     Add a categorical year-of-season coordinate (e.g. Aug'01 -> 1, but Dec'01 -> 2).
     
