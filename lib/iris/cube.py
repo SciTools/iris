@@ -515,7 +515,7 @@ class Cube(CFVariableMixin):
         for name in CubeMetadata._fields:
             setattr(self, name, getattr(value, name))
 
-    def is_compatible(self, other, ignore=None):
+    def is_compatible(self, other, ignore=None, verbose=False):
         """
         Return whether the cube is compatible with another.
 
@@ -532,6 +532,9 @@ class Cube(CFVariableMixin):
            A single attribute key or iterable of attribute keys to ignore when
            comparing the cubes. Default is None. To ignore all attributes set
            this to other.attributes.
+        * verbose:
+          Output information on why the cube has failed compatibility tests.
+          Default is False.
 
         Returns:
            Boolean.
@@ -549,8 +552,24 @@ class Cube(CFVariableMixin):
                 common_keys = common_keys.difference(ignore)
             for key in common_keys:
                 if self.attributes[key] != other.attributes[key]:
+                    if verbose:
+                        warnings.warn('Cube %s is not compatible with other cube %s'\
+                                % (self.attributes[key], other.attributes[key]))
                     compatible = False
                     break
+        elif verbose:
+            if self.name() != other.name():
+                warnings.warn('Cube name %s is not compatible with other cube name %s'\
+                                                % (self.name(), other.name()))
+            if self.units != other.units:
+                warnings.warn('Cube units %s are not compatible with other cube units %s'\
+                                                % (self.units, other.units))
+            if self.cell_methods != other.cell_methods:
+                for self_cell_method, other_cell_method in\
+                                    zip(self.cell_methods, other.cell_methods):
+                    if self_cell_method != other_cell_method:
+                        warnings.warn('Cube cell methods "%s" are not compatible with other'\
+                            ' cube cell methods "%s"' % (self_cell_method, other_cell_method))
 
         return compatible
 
