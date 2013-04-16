@@ -618,6 +618,134 @@ class TestGuessBounds(tests.IrisTest):
             coord.guess_bounds()
 
 
+class TestIsContiguous(tests.IrisTest):
+    def test_scalar(self):
+        coord = iris.coords.DimCoord(23., bounds=[20., 26.])
+        self.assertTrue(coord.is_contiguous())
+
+    def test_equal_int(self):
+        coord = iris.coords.DimCoord([0, 10, 20],
+                                     bounds=[[0, 10],
+                                             [10, 20],
+                                             [20, 30]])
+        self.assertTrue(coord.is_contiguous())
+
+    def test_equal_float(self):
+        coord = iris.coords.DimCoord([0., 10., 20.],
+                                     bounds=[[0., 10.],
+                                             [10., 20.],
+                                             [20., 30.]])
+        self.assertTrue(coord.is_contiguous())
+
+    def test_guessed_bounds(self):
+        delta = np.float64(0.00001)
+        lower = -1.0 + delta
+        upper = 3.0 - delta
+        points, step = np.linspace(lower, upper, 2,
+                                   endpoint=False, retstep=True)
+        points += step * 0.5
+        coord = iris.coords.DimCoord(points)
+        coord.guess_bounds()
+        self.assertTrue(coord.is_contiguous())
+
+    def test_nobounds(self):
+        coord = iris.coords.DimCoord([0, 10, 20])
+        self.assertFalse(coord.is_contiguous())
+
+    def test_multidim(self):
+        points = np.arange(12, dtype=np.float64).reshape(3, 4)
+        bounds = np.array([points, points + 1.0]).transpose(1, 2, 0)
+        coord = iris.coords.AuxCoord(points, bounds=bounds)
+        with self.assertRaises(ValueError):
+            coord.is_contiguous()
+
+    def test_one_bound(self):
+        coord = iris.coords.DimCoord([0, 10, 20],
+                                     bounds=[[0], [10], [20]])
+        with self.assertRaises(ValueError):
+            coord.is_contiguous()
+
+    def test_three_bound(self):
+        coord = iris.coords.DimCoord([0, 10, 20],
+                                     bounds=[[0, 1, 2],
+                                             [10, 11, 12],
+                                             [20, 21, 22]])
+        with self.assertRaises(ValueError):
+            coord.is_contiguous()
+
+    def test_non_contiguous(self):
+        # Large enough difference to exceed default tolerance.
+        delta = 1e-3
+        points = np.array([0., 10., 20.])
+        bounds = np.array([[0., 10.],
+                           [10., 20],
+                           [20., 30.]])
+        coord = iris.coords.DimCoord(points, bounds=bounds)
+        self.assertTrue(coord.is_contiguous())
+
+        non_contig_bounds = bounds.copy()
+        non_contig_bounds[0, 1] -= delta
+        coord = iris.coords.DimCoord(points, bounds=non_contig_bounds)
+        self.assertFalse(coord.is_contiguous())
+
+        non_contig_bounds = bounds.copy()
+        non_contig_bounds[1, 1] -= delta
+        coord = iris.coords.DimCoord(points, bounds=non_contig_bounds)
+        self.assertFalse(coord.is_contiguous())
+
+        non_contig_bounds = bounds.copy()
+        non_contig_bounds[1, 0] -= delta
+        coord = iris.coords.DimCoord(points, bounds=non_contig_bounds)
+        self.assertFalse(coord.is_contiguous())
+
+        non_contig_bounds = bounds.copy()
+        non_contig_bounds[1, 0] += delta
+        coord = iris.coords.DimCoord(points, bounds=non_contig_bounds)
+        self.assertFalse(coord.is_contiguous())
+
+        non_contig_bounds = bounds.copy()
+        non_contig_bounds[2, 0] -= delta
+        coord = iris.coords.DimCoord(points, bounds=non_contig_bounds)
+        self.assertFalse(coord.is_contiguous())
+
+    def test_default_tol(self):
+        # Smaller difference that default tolerance.
+        delta = 1e-6
+        points = np.array([0., 10., 20.])
+        bounds = np.array([[0., 10.],
+                           [10., 20],
+                           [20., 30.]])
+        bounds[1, 0] -= delta
+        coord = iris.coords.DimCoord(points, bounds=bounds)
+        self.assertTrue(coord.is_contiguous())
+
+    def test_specified_tol(self):
+        delta = 1e-6
+        points = np.array([0., 10., 20.])
+        bounds = np.array([[0., 10.],
+                           [10., 20],
+                           [20., 30.]])
+        bounds[1, 0] += delta
+        coord = iris.coords.DimCoord(points, bounds=bounds)
+        self.assertTrue(coord.is_contiguous())
+        # No tolerance.
+        rtol = 0
+        atol = 0
+        self.assertFalse(coord.is_contiguous(rtol, atol))
+        # Absolute only.
+        rtol = 0
+        atol = 1e-5  # larger than delta.
+        self.assertTrue(coord.is_contiguous(rtol, atol))
+        atol = 1e-7  # smaller than delta
+        self.assertFalse(coord.is_contiguous(rtol, atol))
+        # Relative only.
+        atol = 0
+        rtol = 1e-6  # is multiplied by upper bound (10.0) in comparison.
+        self.assertTrue(coord.is_contiguous(rtol, atol))
+        rtol = 1e-8
+        self.assertFalse(coord.is_contiguous(rtol, atol))
+
+
 class TestCoordCompatibility(tests.IrisTest):
     def setUp(self):
         self.aux_coord = iris.coords.AuxCoord([1., 2. ,3.],
