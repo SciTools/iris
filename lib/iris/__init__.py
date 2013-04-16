@@ -182,7 +182,7 @@ def load(uris, constraints=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames.
+        One or more filenames/URIs.
 
     Kwargs:
 
@@ -208,7 +208,7 @@ def load_cube(uris, constraint=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames.
+        One or more filenames/URIs.
 
     Kwargs:
 
@@ -243,7 +243,7 @@ def load_cubes(uris, constraints=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames.
+        One or more filenames/URIs.
 
     Kwargs:
 
@@ -286,7 +286,7 @@ def load_raw(uris, constraints=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames.
+        One or more filenames/URIs.
 
     Kwargs:
 
@@ -313,7 +313,7 @@ def load_strict(uris, constraints=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames.
+        One or more filenames/URIs.
 
     Kwargs:
 

@@ -181,10 +181,8 @@ def load_files(filenames, callback):
 def load_http(urls, callback):
     """
     Takes a list of urls and a callback function, and returns a generator
-    of Cubes from the given urls.
-
-    Currently only
-
+    of Cubes from the given URLs.
+    
     .. note::
 
         Typically, this function should not be called directly; instead, the
