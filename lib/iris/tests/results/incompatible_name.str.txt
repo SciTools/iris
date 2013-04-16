@@ -1,0 +1,1 @@
+cube_a name "relative_humidity" is not compatible with cube_b name "air_potential_temperature"

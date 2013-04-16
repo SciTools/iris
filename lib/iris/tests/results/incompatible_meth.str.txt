@@ -1,0 +1,5 @@
+Cell methods
+()
+and
+(CellMethod(method='mean', coord_names=('model_level_number',), intervals=(), comments=()),)
+are not compatible
