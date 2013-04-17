@@ -1,4 +1,4 @@
-test 2d dimensional cube / meters   (dim1: 5; dim2: 10)
+test 2d dimensional cube / (meters) (dim1: 5; dim2: 10)
      Dimension coordinates:
           dim1                           x        -
           dim2                           -        x

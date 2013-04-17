@@ -24,7 +24,7 @@ We have already seen a basic string representation of a cube when printing:
     >>> filename = iris.sample_data_path('rotated_pole.nc')
     >>> cube = iris.load_cube(filename)
     >>> print cube
-    air_pressure_at_sea_level / Pa      (grid_latitude: 22; grid_longitude: 36)
+    air_pressure_at_sea_level / (Pa)    (grid_latitude: 22; grid_longitude: 36)
          Dimension coordinates:
               grid_latitude                           x                   -
               grid_longitude                          -                   x
@@ -153,7 +153,7 @@ We can add and remove coordinates via :func:`Cube.add_dim_coord<iris.cube.Cube.a
     >>> new_coord = iris.coords.AuxCoord(1, long_name='my_custom_coordinate', units='no_unit')
     >>> cube.add_aux_coord(new_coord)
     >>> print cube
-    air_pressure_at_sea_level / Pa      (grid_latitude: 22; grid_longitude: 36)
+    air_pressure_at_sea_level / (Pa)    (grid_latitude: 22; grid_longitude: 36)
          Dimension coordinates:
               grid_latitude                           x                   -
               grid_longitude                          -                   x
@@ -194,9 +194,9 @@ If we try to load the data directly for ``surface_temperature``:
 
     >>> filename = iris.sample_data_path('GloSea4', '*.pp')
     >>> print iris.load(filename, 'surface_temperature')
-    0: surface_temperature / K             (time: 6; forecast_reference_time: 2; latitude: 145; longitude: 192)
-    1: surface_temperature / K             (time: 6; forecast_reference_time: 2; latitude: 145; longitude: 192)
-    2: surface_temperature / K             (realization: 9; time: 6; latitude: 145; longitude: 192)
+    0: surface_temperature / (K)           (time: 6; forecast_reference_time: 2; latitude: 145; longitude: 192)
+    1: surface_temperature / (K)           (time: 6; forecast_reference_time: 2; latitude: 145; longitude: 192)
+    2: surface_temperature / (K)           (realization: 9; time: 6; latitude: 145; longitude: 192)
 
 
 
@@ -235,4 +235,4 @@ The result is a single cube which represents the data in a form that was expecte
 
 .. testoutput::
 
-    0: surface_temperature / K             (realization: 13; time: 6; latitude: 145; longitude: 192)
+    0: surface_temperature / (K)           (realization: 13; time: 6; latitude: 145; longitude: 192)

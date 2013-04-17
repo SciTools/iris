@@ -1,4 +1,4 @@
-air_temperature / K                 (latitude: 73; longitude: 96)
+air_temperature / (K)               (latitude: 73; longitude: 96)
      Dimension coordinates:
           latitude                           x              -
           longitude                          -              x

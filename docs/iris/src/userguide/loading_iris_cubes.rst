@@ -30,8 +30,8 @@ In order to find out what has been loaded, the result can be printed:
     >>> filename = iris.sample_data_path('uk_hires.pp')
     >>> cubes = iris.load(filename)
     >>> print cubes
-    0: air_potential_temperature / K       (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
-    1: surface_altitude / m                (grid_latitude: 204; grid_longitude: 187)
+    0: air_potential_temperature / (K)     (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
+    1: surface_altitude / (m)              (grid_latitude: 204; grid_longitude: 187)
 
 
 This shows that there were 2 cubes as a result of loading the file, they were: 
@@ -77,7 +77,7 @@ list indexing can be used:
     >>> # get the first cube (list indexing is 0 based)
     >>> air_potential_temperature = cubes[0]
     >>> print air_potential_temperature
-    air_potential_temperature / K       (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
+    air_potential_temperature / (K)     (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
          Dimension coordinates:
               time                           x                      -                 -                    -
               model_level_number             -                      x                 -                    -
@@ -230,7 +230,7 @@ A single cube is loaded in the following example::
     >>> filename = iris.sample_data_path('air_temp.pp')
     >>> cube = iris.load_cube(filename)
     >>> print cube
-    air_temperature                     (latitude: 73; longitude: 96)
+    air_temperature / (K)                 (latitude: 73; longitude: 96)
          Dimension coordinates:
               latitude                           x              -
               longitude                          -              x
