@@ -582,6 +582,38 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
                             attributes={'positive': 'up'})
         self.draw('contourf', cube, coords=['grid_latitude', x])
 
+    def test_dim_and_aux_coords(self):
+        filename = tests.get_data_path(('NetCDF', 'rotated', 'xy',
+                                        'rotPole_landAreaFraction.nc'))
+        cube = iris.load_cube(filename)
+        draw_fn = getattr(self.draw_module, 'contourf')
+        # Dimension coords.
+        rlat = cube.coord('grid_latitude')
+        rlon = cube.coord('grid_longitude')
+        draw_fn(cube, coords=[rlon, rlat])
+        plt.gca().coastlines()
+        self.check_graphic()
+        # Auxiliary coords.
+        lat = cube.coord('latitude')
+        lon = cube.coord('longitude')
+        draw_fn(cube, coords=[lon, lat])
+        plt.gca().coastlines()
+        self.check_graphic()
+
+    def test_dim_and_aux_coords_with_names(self):
+        filename = tests.get_data_path(('NetCDF', 'rotated', 'xy',
+                                        'rotPole_landAreaFraction.nc'))
+        cube = iris.load_cube(filename)
+        draw_fn = getattr(self.draw_module, 'contourf')
+        # Dimension coords.
+        draw_fn(cube, coords=['grid_longitude', 'grid_latitude'])
+        plt.gca().coastlines()
+        self.check_graphic()
+        # Auxiliary coords.
+        draw_fn(cube, coords=['longitude', 'latitude'])
+        plt.gca().coastlines()
+        self.check_graphic()
+
 
 class TestSymbols(tests.GraphicsTest):
     def test_cloud_cover(self):

@@ -197,10 +197,8 @@ def _broadcast_2d(u, v):
 def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     # NB. In the interests of clarity we use "u" and "v" to refer to the
     # horizontal and vertical axes on the matplotlib plot.
-
-    # get & remove the coords entry from kwargs
-    coords = kwargs.pop('coords', None)
     mode = iris.coords.BOUND_MODE
+    coords = kwargs.get('coords')
     if coords is not None:
         plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode)
     else:
@@ -232,7 +230,9 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
             v = v.T
 
         u, v = _broadcast_2d(u, v)
-
+        # Remove the coords entry from kwargs if present as
+        # we are providing u, v.
+        kwargs.pop('coords', None)
         draw_method = getattr(plt, draw_method_name)
         result = draw_method(u, v, data, *args, **kwargs)
 
@@ -242,10 +242,8 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
 def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
     # NB. In the interests of clarity we use "u" and "v" to refer to the
     # horizontal and vertical axes on the matplotlib plot.
-
-    # get & remove the coords entry from kwargs
-    coords = kwargs.pop('coords', None)
     mode = iris.coords.POINT_MODE
+    coords = kwargs.get('coords')
     if coords is not None:
         plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode)
     else:
@@ -285,6 +283,9 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
 
         u, v = _broadcast_2d(u, v)
 
+        # Remove the coords entry from kwargs if present as
+        # we are providing u, v.
+        kwargs.pop('coords', None)
         draw_method = getattr(plt, draw_method_name)
         if arg_func is not None:
             args, kwargs = arg_func(u, v, data, *args, **kwargs)
@@ -368,12 +369,35 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
     "Mode" parameter will switch functionality between POINT or BOUND plotting.
 
     """
-    # get the 2d x and 2d y from the CS
+    # Get x and y coords.
+    coords = kwargs.get('coords')
+    if coords is not None:
+        # 'coords' in x, y order.
+        if isinstance(coords[0], basestring):
+            x_coord = cube.coord(coords[0])
+        else:
+            x_coord = cube.coord(coord=coords[0])
+        if isinstance(coords[1], basestring):
+            y_coord = cube.coord(coords[1])
+        else:
+            y_coord = cube.coord(coord=coords[1])
+    else:
+        x_coord = cube.coord(axis="X")
+        y_coord = cube.coord(axis="Y")
+
+    # Generate 2d x and 2d y grids.
     if mode == iris.coords.POINT_MODE:
-        x, y = cartography.get_xy_grids(cube)
+        if x_coord.ndim == y_coord.ndim == 1:
+            x, y = np.meshgrid(x_coord.points, y_coord.points)
+        elif x_coord.ndim == y_coord.ndim == 2:
+            x = x_coord.points
+            y = y_coord.points
+        else:
+            raise ValueError("Expected 1D or 2D XY coords")
     else:
         try:
-            x, y = cartography.get_xy_contiguous_bounded_grids(cube)
+            x, y = np.meshgrid(x_coord.contiguous_bounds(),
+                               y_coord.contiguous_bounds())
         # Exception translation.
         except iris.exceptions.CoordinateMultiDimError:
             raise ValueError("Could not get XY grid from bounds. "
@@ -390,7 +414,6 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
     # last (and add 360 degrees) NOTE: if it is found that this block of code
     # is useful in anywhere other than this plotting routine, it may be better
     # placed in the CS.
-    x_coord = cube.coord(axis="X")
     if getattr(x_coord, 'circular', False):
         _, direction = iris.util.monotonic(x_coord.points,
                                            return_direction=True)
@@ -399,7 +422,10 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
         data = ma.concatenate([data, data[:, 0:1]], axis=1)
 
     # Replace non-cartopy subplot/axes with a cartopy alternative.
-    cs = cube.coord_system('CoordSystem')
+    if x_coord.coord_system != y_coord.coord_system:
+        raise ValueError('The X and Y coordinates must have equal coordinate'
+                         ' systems.')
+    cs = x_coord.coord_system
     if cs:
         cartopy_proj = cs.as_cartopy_projection()
     else:
@@ -407,6 +433,10 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
     ax = _get_cartopy_axes(cartopy_proj)
 
     draw_method = getattr(ax, draw_method_name)
+
+    # Remove the coords entry from kwargs if present as
+    # we are providing x, y.
+    kwargs.pop('coords', None)
 
     # Set the "from transform" keyword.
     # NB. While cartopy doesn't support spherical contours, just use the
