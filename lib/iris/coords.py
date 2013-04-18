@@ -664,15 +664,26 @@ class Coord(CFVariableMixin):
                 ' are only defined for coordinates with 2 bounds.'.format(
                     self.name(), self.nbounds))
 
-    def is_contiguous(self):
+    def is_contiguous(self, rtol=1e-05, atol=1e-08):
         """
         Return True if, and only if, this Coord is bounded with contiguous
-        bounds.
+        bounds to within the specified relative and absolute tolerances.
+
+        Args:
+
+        * rtol:
+            The relative tolerance parameter (default is 1e-05).
+        * atol:
+            The absolute tolerance parameter (default is 1e-08).
+
+        Returns:
+            Boolean.
 
         """
         if self.bounds is not None:
             self._sanity_check_contiguous()
-            return np.all(self.bounds[1:, 0] == self.bounds[:-1, 1])
+            return np.allclose(self.bounds[1:, 0], self.bounds[:-1, 1],
+                               rtol=rtol, atol=atol)
         else:
             return False
 
