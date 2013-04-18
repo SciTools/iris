@@ -53,7 +53,7 @@ The result is a cube of the same size as the original two time slices,
 but with the data representing their difference:
 
     >>> print t_last - t_first
-    unknown / K                         (latitude: 37; longitude: 49)
+    unknown / (K)                       (latitude: 37; longitude: 49)
          Dimension coordinates:
               latitude                           x              -
               longitude                          -              x
