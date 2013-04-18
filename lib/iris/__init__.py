@@ -168,6 +168,48 @@ def _load_collection(uris, constraints=None, callback=None):
                                                "incomplete: {!r}".format(e.message))
     return result
 
+def diff(cubeA, cubeB):
+        """
+        Prints the differences that prevent compatibility between two cubes, as
+        defined by :meth:`iris.cube.Cube.is_compatible()`.
+
+        Args:
+        
+        * cubeA:
+            An instance of :class:`iris.cube.Cube` or
+            :class:`iris.cube.CubeMetadata`.
+
+        * cubeB:
+            An instance of :class:`iris.cube.Cube` or
+            :class:`iris.cube.CubeMetadata`.
+
+        see also :meth:`iris.cube.Cube.is_compatible()`
+        
+        """
+        if cubeA.is_compatible(cubeB):
+            print 'Cubes are compatible'
+        else:
+            common_keys = set(cubeA.attributes).intersection(cubeB.attributes)
+            for key in common_keys:
+                if cubeA.attributes[key] != cubeB.attributes[key]:
+                    print '"%s" cube attribute value "%s" is not '\
+                    'compatible with cubeB cube attribute value "%s"'\
+                    % (key, cubeA.attributes[key], cubeB.attributes[key])
+                
+            if cubeA.name() != cubeB.name():
+                print 'Cube name "%s" is not compatible '\
+                      'with cubeB cube name "%s"'\
+                       % (cubeA.name(), cubeB.name())
+                       
+            if cubeA.units != cubeB.units:
+                print 'Cube units "%s" are not compatible with cubeB '\
+                      'cube units "%s"' % (cubeA.units, cubeB.units)
+                
+            for uncommon_method in set(cubeA.cell_methods).\
+                            difference(cubeB.cell_methods):
+                print '"%s" cell method is not common between this cube '\
+                      'and cubeB cube' % (uncommon_method)
+
 
 def load(uris, constraints=None, callback=None):
     """

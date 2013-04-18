@@ -536,7 +536,7 @@ class Cube(CFVariableMixin):
         Returns:
            Boolean.
 
-        see also :meth:`iris.cube.Cube.diff()`
+        see also :meth:`iris.diff()`
         
         """
         compatible = (self.name() == other.name() and
@@ -555,45 +555,6 @@ class Cube(CFVariableMixin):
                     break
 
         return compatible
-    
-    def diff(self, other):
-        """
-        Prints the differences between cubes that prevent compatibility, as
-        defined by :meth:`iris.cube.Cube.is_compatible()`.
-
-        Args:
-
-        * other:
-            An instance of :class:`iris.cube.Cube` or
-            :class:`iris.cube.CubeMetadata`.
-
-        see also :meth:`iris.cube.Cube.is_compatible()`
-        
-        """
-        if self.is_compatible(other):
-            print 'Cubes are compatible'
-        else:
-            common_keys = set(self.attributes).intersection(other.attributes)
-            for key in common_keys:
-                if self.attributes[key] != other.attributes[key]:
-                    print '"%s" cube attribute value "%s" is not '\
-                    'compatible with other cube attribute value "%s"'\
-                    % (key, self.attributes[key], other.attributes[key])
-                
-            if self.name() != other.name():
-                print 'Cube name "%s" is not compatible '\
-                      'with other cube name "%s"'\
-                       % (self.name(), other.name())
-                       
-            if self.units != other.units:
-                print 'Cube units "%s" are not compatible with other '\
-                      'cube units "%s"' % (self.units, other.units)
-                
-            for uncommon_method in set(self.cell_methods).\
-                            difference(other.cell_methods):
-                print '"%s" cell method is not common between this cube '\
-                      'and other cube' % (uncommon_method)
-
 
     def convert_units(self, unit):
         """
