@@ -20,6 +20,7 @@
 # importing anything else
 import iris.tests as tests
 
+import copy
 from functools import wraps
 import types
 import warnings
@@ -582,36 +583,48 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
                             attributes={'positive': 'up'})
         self.draw('contourf', cube, coords=['grid_latitude', x])
 
-    def test_dim_and_aux_coords(self):
+
+@iris.tests.skip_data
+class TestPlotDimAndAuxCoordsKwarg(tests.GraphicsTest):
+    def setUp(self):
         filename = tests.get_data_path(('NetCDF', 'rotated', 'xy',
                                         'rotPole_landAreaFraction.nc'))
-        cube = iris.load_cube(filename)
-        draw_fn = getattr(self.draw_module, 'contourf')
-        # Dimension coords.
-        rlat = cube.coord('grid_latitude')
-        rlon = cube.coord('grid_longitude')
-        draw_fn(cube, coords=[rlon, rlat])
-        plt.gca().coastlines()
-        self.check_graphic()
-        # Auxiliary coords.
-        lat = cube.coord('latitude')
-        lon = cube.coord('longitude')
-        draw_fn(cube, coords=[lon, lat])
+        self.cube = iris.load_cube(filename)
+
+    def test_default(self):
+        iplt.contourf(self.cube)
         plt.gca().coastlines()
         self.check_graphic()
 
-    def test_dim_and_aux_coords_with_names(self):
-        filename = tests.get_data_path(('NetCDF', 'rotated', 'xy',
-                                        'rotPole_landAreaFraction.nc'))
-        cube = iris.load_cube(filename)
-        draw_fn = getattr(self.draw_module, 'contourf')
-        # Dimension coords.
-        draw_fn(cube, coords=['grid_longitude', 'grid_latitude'])
+    def test_coords(self):
+        # Pass in dimension coords.
+        rlat = self.cube.coord('grid_latitude')
+        rlon = self.cube.coord('grid_longitude')
+        iplt.contourf(self.cube, coords=[rlon, rlat])
         plt.gca().coastlines()
         self.check_graphic()
-        # Auxiliary coords.
-        draw_fn(cube, coords=['longitude', 'latitude'])
+        # Pass in auxiliary coords.
+        lat = self.cube.coord('latitude')
+        lon = self.cube.coord('longitude')
+        iplt.contourf(self.cube, coords=[lon, lat])
         plt.gca().coastlines()
+        self.check_graphic()
+
+    def test_coord_names(self):
+        # Pass in names of dimension coords.
+        iplt.contourf(self.cube, coords=['grid_longitude', 'grid_latitude'])
+        plt.gca().coastlines()
+        self.check_graphic()
+        # Pass in names of auxiliary coords.
+        iplt.contourf(self.cube, coords=['longitude', 'latitude'])
+        plt.gca().coastlines()
+        self.check_graphic()
+
+    def test_yx_order(self):
+        # Do not attempt to draw coastlines as it is not a map.
+        iplt.contourf(self.cube, coords=['grid_latitude', 'grid_longitude'])
+        self.check_graphic()
+        iplt.contourf(self.cube, coords=['latitude', 'longitude'])
         self.check_graphic()
 
 
@@ -622,7 +635,7 @@ class TestSymbols(tests.GraphicsTest):
         self.check_graphic()
 
 
-class Test_map_common(tests.IrisTest):
+class TestPlottingExceptions(tests.IrisTest):
     def setUp(self):
         self.bounded_cube = tests.stock.lat_lon_cube()
         self.bounded_cube.coord("latitude").guess_bounds()
@@ -637,7 +650,7 @@ class Test_map_common(tests.IrisTest):
                                            standard_name='latitude',
                                            units='degrees'), [0, 1])
         with self.assertRaises(ValueError):
-            iplt._map_common("pcolormesh", None, coords.BOUND_MODE, cube, None)
+            iplt.pcolormesh(cube, coords=['longitude', 'latitude'])
 
     def test_boundmode_4bounds(self):
         # Test exception translation.
@@ -649,7 +662,16 @@ class Test_map_common(tests.IrisTest):
         cube.remove_coord("latitude")
         cube.add_aux_coord(lat, 0)
         with self.assertRaises(ValueError):
-            iplt._map_common("pcolormesh", None, coords.BOUND_MODE, cube, None)
+            iplt.pcolormesh(cube, coords=['longitude', 'latitude'])
+
+    def test_different_coord_systems(self):
+        cube = self.bounded_cube
+        lat = cube.coord('latitude')
+        lon = cube.coord('longitude')
+        lat.coord_system = iris.coord_systems.GeogCS(7000000)
+        lon.coord_system = iris.coord_systems.GeogCS(7000001)
+        with self.assertRaises(ValueError):
+            iplt.pcolormesh(cube, coords=['longitude', 'latitude'])
 
 
 if __name__ == "__main__":
