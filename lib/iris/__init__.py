@@ -101,6 +101,7 @@ import itertools
 import logging
 import os
 import warnings
+import sys
 
 import iris.config
 import iris.cube
@@ -168,47 +169,51 @@ def _load_collection(uris, constraints=None, callback=None):
                                                "incomplete: {!r}".format(e.message))
     return result
 
-def diff(cubeA, cubeB):
-        """
-        Prints the differences that prevent compatibility between two cubes, as
-        defined by :meth:`iris.cube.Cube.is_compatible()`.
+def diff(cube_a, cube_b, string_io=sys.stdout):
+    """
+    Prints the differences that prevent compatibility between two cubes, as
+    defined by :meth:`iris.cube.Cube.is_compatible()`.
 
-        Args:
+    Args:
+    
+    * cube_a:
+        An instance of :class:`iris.cube.Cube` or
+        :class:`iris.cube.CubeMetadata`.
+
+    * cube_b:
+        An instance of :class:`iris.cube.Cube` or
+        :class:`iris.cube.CubeMetadata`.
         
-        * cubeA:
-            An instance of :class:`iris.cube.Cube` or
-            :class:`iris.cube.CubeMetadata`.
+    * string_io:
+        A :class:`StringIO.StringIO` object to 
+        receive the output. Defaults to standard out.
 
-        * cubeB:
-            An instance of :class:`iris.cube.Cube` or
-            :class:`iris.cube.CubeMetadata`.
-
-        see also :meth:`iris.cube.Cube.is_compatible()`
-        
-        """
-        if cubeA.is_compatible(cubeB):
-            print 'Cubes are compatible'
-        else:
-            common_keys = set(cubeA.attributes).intersection(cubeB.attributes)
-            for key in common_keys:
-                if cubeA.attributes[key] != cubeB.attributes[key]:
-                    print '"%s" cube attribute value "%s" is not '\
-                    'compatible with cubeB cube attribute value "%s"'\
-                    % (key, cubeA.attributes[key], cubeB.attributes[key])
-                
-            if cubeA.name() != cubeB.name():
-                print 'Cube name "%s" is not compatible '\
-                      'with cubeB cube name "%s"'\
-                       % (cubeA.name(), cubeB.name())
-                       
-            if cubeA.units != cubeB.units:
-                print 'Cube units "%s" are not compatible with cubeB '\
-                      'cube units "%s"' % (cubeA.units, cubeB.units)
-                
-            for uncommon_method in set(cubeA.cell_methods).\
-                            difference(cubeB.cell_methods):
-                print '"%s" cell method is not common between this cube '\
-                      'and cubeB cube' % (uncommon_method)
+    see also :meth:`iris.cube.Cube.is_compatible()`
+    
+    """
+    if cube_a.is_compatible(cube_b):
+        string_io.write('Cubes are compatible\n')
+    else:
+        common_keys = set(cube_a.attributes).intersection(cube_b.attributes)
+        for key in common_keys:
+            if cube_a.attributes[key] != cube_b.attributes[key]:
+                string_io.write('"%s" cube attribute value "%s" is not '
+                'compatible with cube_b cube attribute value "%s\n"'
+                % (key, cube_a.attributes[key], cube_b.attributes[key]))
+            
+        if cube_a.name() != cube_b.name():
+            string_io.write('Cube name "%s" is not compatible '
+                  'with cube_b cube name "%s"\n'
+                   % (cube_a.name(), cube_b.name()))
+                   
+        if cube_a.units != cube_b.units:
+            string_io.write('Cube units "%s" are not compatible with cube_b '
+                  'cube units "%s"\n' % (cube_a.units, cube_b.units))
+            
+        for uncommon_method in set(cube_a.cell_methods).\
+                        difference(cube_b.cell_methods):
+            string_io.write('"%s" cell method is not common between this cube '
+                  'and cube_b cube\n' % (uncommon_method))
 
 
 def load(uris, constraints=None, callback=None):
