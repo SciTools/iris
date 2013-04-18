@@ -355,7 +355,7 @@ class Cube(CFVariableMixin):
 
         >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
         >>> print cube
-        air_temperature / K                 (latitude: 73; longitude: 96)
+        air_temperature / (K)               (latitude: 73; longitude: 96)
              Dimension coordinates:
                   latitude                           x              -
                   longitude                          -              x
@@ -1286,7 +1286,7 @@ class Cube(CFVariableMixin):
                  ': %d' % dim_shape for dim, dim_shape in
                  enumerate(self.shape)])
 
-        nameunit = '{name} / {units}'.format(name=self.name(),
+        nameunit = '{name} / ({units})'.format(name=self.name(),
                                              units=self.units)
         cube_header = '{nameunit!s:{length}} ({dimension})'.format(
             length=name_padding,
@@ -2184,7 +2184,7 @@ class Cube(CFVariableMixin):
             >>> cube = iris.load_cube(iris.sample_data_path('ostia_monthly.nc'))
             >>> new_cube = cube.collapsed('longitude', iris.analysis.MEAN)
             >>> print new_cube
-            surface_temperature / K             (time: 54; latitude: 18)
+            surface_temperature / (K)           (time: 54; latitude: 18)
                  Dimension coordinates:
                       time                           x             -
                       latitude                       -             x
@@ -2319,7 +2319,7 @@ class Cube(CFVariableMixin):
             >>> cat.add_year(cube, 'time', name='year')
             >>> new_cube = cube.aggregated_by('year', iris.analysis.MEAN)
             >>> print new_cube
-            surface_temperature / K             (*ANONYMOUS*: 5; latitude: 18; longitude: 432)
+            surface_temperature / (K)           (*ANONYMOUS*: 5; latitude: 18; longitude: 432)
                  Dimension coordinates:
                       latitude                              -            x              -
                       longitude                             -            -              x
@@ -2451,7 +2451,7 @@ class Cube(CFVariableMixin):
             >>> fname = iris.sample_data_path('GloSea4', 'ensemble_010.pp')
             >>> air_press = iris.load_cube(fname, 'surface_temperature')
             >>> print air_press
-            surface_temperature / K             (time: 6; latitude: 145; longitude: 192)
+            surface_temperature / (K)           (time: 6; latitude: 145; longitude: 192)
                  Dimension coordinates:
                       time                           x            -               -
                       latitude                       -            x               -
@@ -2469,7 +2469,7 @@ class Cube(CFVariableMixin):
 
 
             >>> print air_press.rolling_window('time', iris.analysis.MEAN, 3)
-            surface_temperature / K             (time: 4; latitude: 145; longitude: 192)
+            surface_temperature / (K)           (time: 4; latitude: 145; longitude: 192)
                  Dimension coordinates:
                       time                           x            -               -
                       latitude                       -            x               -

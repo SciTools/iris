@@ -1,4 +1,4 @@
-air_potential_temperature / K       (grid_latitude: 100; grid_longitude: 100)
+air_potential_temperature / (K)     (grid_latitude: 100; grid_longitude: 100)
      Dimension coordinates:
           grid_latitude                           x                    -
           grid_longitude                          -                    x

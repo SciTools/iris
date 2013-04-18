@@ -155,7 +155,7 @@ output as this is the quickest way of inspecting the contents of a cube. Here is
      
 .. testoutput::
 
-    air_potential_temperature / K       (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
+    air_potential_temperature / (K)     (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
          Dimension coordinates:
               time                           x                      -                 -                    -
               model_level_number             -                      x                 -                    -

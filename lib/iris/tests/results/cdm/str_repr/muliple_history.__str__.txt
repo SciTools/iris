@@ -1,4 +1,4 @@
-unknown / K                         (latitude: 73; longitude: 96)
+unknown / (K)                       (latitude: 73; longitude: 96)
      Dimension coordinates:
           latitude                           x              -
           longitude                          -              x

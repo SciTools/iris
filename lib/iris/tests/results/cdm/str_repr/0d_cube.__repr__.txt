@@ -1,1 +1,1 @@
-<iris 'Cube' of air_temperature / K (scalar cube)>
+<iris 'Cube' of air_temperature / (K) (scalar cube)>
