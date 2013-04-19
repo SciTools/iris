@@ -407,7 +407,7 @@ def add_custom_season_number(cube, coord, seasons, name='season'):
     add_categorised_coord(cube, name, coord, _custom_season_number)
 
 
-def add_custom_season_year(cube, coord, seasons, name='year'):
+def add_custom_season_year(cube, coord, seasons, name='season_year'):
     """
     Add a categorical year-of-season coordinate, with user specified
     seasons.
