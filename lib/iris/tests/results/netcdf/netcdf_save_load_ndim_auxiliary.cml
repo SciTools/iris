@@ -5,7 +5,6 @@
       <attribute name="Conventions" value="CF-1.5"/>
       <attribute name="NCO" value="4.1.0"/>
       <attribute name="experiment" value="ER3"/>
-      <attribute name="history" value="Thu Nov 29 10:45:50 2012: /project/ukmo/rhel6/nco/bin/ncks -d time,0,3 new_rotPole_precipitation.nc small_rotPole_precipitation.nc"/>
       <attribute name="institution" value="DMI"/>
       <attribute name="source" value="HIRHAM"/>
     </attributes>

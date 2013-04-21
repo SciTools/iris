@@ -1252,7 +1252,9 @@ class ProtoCube(object):
     def _build_signature(self, cube):
         """Generate the signature that defines this cube."""
 
-        defn = cube.metadata
+        # Gracefully ignore any history attributes.
+        defn = deepcopy(cube.metadata)
+        defn.attributes.pop('history', None)
         data_shape = cube._data.shape
         data_manager = cube._data_manager
         mdi = None

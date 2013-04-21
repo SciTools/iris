@@ -10,7 +10,6 @@ variables:
 		pr:units = "kg m-2 s-1" ;
 		pr:NCO = "4.1.0" ;
 		pr:experiment = "ER3" ;
-		pr:history = "Thu Nov 29 10:45:50 2012: /project/ukmo/rhel6/nco/bin/ncks -d time,0,3 new_rotPole_precipitation.nc small_rotPole_precipitation.nc" ;
 		pr:institution = "DMI" ;
 		pr:source = "HIRHAM" ;
 		pr:cell_methods = "time: mean" ;

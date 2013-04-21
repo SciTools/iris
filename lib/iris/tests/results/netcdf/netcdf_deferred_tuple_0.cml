@@ -3,8 +3,6 @@
   <cube long_name="Total column Carbon Dioxide" units="kg m**-2" var_name="tcco2">
     <attributes>
       <attribute name="Conventions" value="CF-1.0"/>
-      <attribute name="history" value="Thu Feb 11 10:56:57 2010: ncks total_column_co2.nc -o SMALL_total_column_co2.nc -d time,,30
-2009-09-02 08:23:49 GMT by mars2netcdf-0.92"/>
     </attributes>
     <coords>
       <coord datadims="[1]">

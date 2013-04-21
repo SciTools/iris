@@ -22,7 +22,6 @@
       <attribute name="NCO" value="4.0.8"/>
       <attribute name="TimeStamp" value="2008-SEP-09 11:18:37 GMT+0000"/>
       <attribute name="file_name" value="ORCA2_1d_00010101_00010101_grid_T_0000.nc"/>
-      <attribute name="history" value="Mon Apr  2 10:25:46 2012: /project/ukmo/rhel6/nco/bin/ncks -v votemper,deptht_bounds,nav_lat,nav_lon,areat,latt_bounds,lont_bounds ORCA2_1d_00010101_00010101_grid_T_0000.nc votemper.nc"/>
       <attribute name="interval_operation" value="5760.0"/>
       <attribute name="interval_write" value="86400.0"/>
       <attribute name="production" value="An IPSL model"/>
