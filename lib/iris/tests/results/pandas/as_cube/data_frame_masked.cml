@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube units="unknown">
+    <coords>
+      <coord datadims="[1]">
+        <dimCoord id="20efe55f" long_name="columns" points="[12, 13, 14, 15, 16]" shape="(5,)" units="Unit('unknown')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="931e7cde" long_name="index" points="[10, 11]" shape="(2,)" units="Unit('unknown')" value_type="int64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data byteorder="little" checksum="-0x731c5757" dtype="float64" mask_checksum="-0x1215b28c" mask_order="C" order="C" shape="(2, 5)"/>
+  </cube>
+</cubes>
