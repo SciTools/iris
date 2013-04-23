@@ -34,7 +34,7 @@ MERIDIAN_SCALING_BNG = 999601  # Merdian scaling for British National grid.
 
 
 FIELD_CODES = {"orography": 73}
-VERTICAL_CODES = {"height": 0, "altitude": 1}
+VERTICAL_CODES = {"height": 0, "altitude": 1, "levels_below_ground": 12}
 
 
 def name(cube, field):
@@ -207,18 +207,34 @@ def altitude_vertical_coord(cube, field):
         raise TranslationError("Bounded vertical not yet implemented")
 
 
+def levels_below_ground_vertical_coord(cube, field):
+    """Add a levels_below_ground coord to the cube, if present in the field."""
+    if (field.reference_vertical_coord_type == field.int_mdi or
+            field.reference_vertical_coord == field.float32_mdi):
+                lev_coord = DimCoord(field.vertical_coord,
+                                     long_name="levels_below_ground",
+                                     units="1",
+                                     attributes={"positive": "down"})
+                cube.add_aux_coord(lev_coord)
+    else:
+        raise TranslationError("Bounded vertical not yet implemented")
+
+
 def vertical_coord(cube, field):
     """Add a vertical coord to the cube."""
-    if field.vertical_coord_type != field.int_mdi:
+    v_type = field.vertical_coord_type
+    if v_type != field.int_mdi:
         if field.field_code == FIELD_CODES["orography"]:
             orography_vertical_coord(cube, field)
-        elif field.vertical_coord_type == VERTICAL_CODES["height"]:
+        elif v_type == VERTICAL_CODES["height"]:
             height_vertical_coord(cube, field)
-        elif field.vertical_coord_type == VERTICAL_CODES["altitude"]:
+        elif v_type == VERTICAL_CODES["altitude"]:
             altitude_vertical_coord(cube, field)
+        elif v_type == VERTICAL_CODES["levels_below_ground"]:
+            levels_below_ground_vertical_coord(cube, field)
         else:
             raise TranslationError("Vertical coord type %d not yet handled" %
-                                   field.vertical_coord_type)
+                                   v_type)
 
 
 def ensemble_member(cube, field):
