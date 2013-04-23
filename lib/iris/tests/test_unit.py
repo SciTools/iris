@@ -590,7 +590,15 @@ class TestConvert(TestUnit):
         e = np.arange(2, dtype=np.float32) + 1
         self.assertEqual(res[0], e[0])
         self.assertEqual(res[1], e[1])
-        
+
+    def test_convert_np_float(self):
+        u = Unit("mile")
+        v = Unit("meter")
+        self.assertEqual(u.convert(np.float(1.0), v), 1609.344)
+        self.assertEqual(u.convert(np.float16(1.0), v), 1609.344)
+        self.assertEqual(u.convert(np.float32(1.0), v), 1609.344)
+        self.assertEqual(u.convert(np.float64(1.0), v), 1609.344)
+
     def test_convert_double_pass_0(self):
         u = Unit("meter")
         v = Unit("mile")
@@ -632,6 +640,15 @@ class TestConvert(TestUnit):
         e = (np.arange(2, dtype=np.float64) + 1) * 1609.344
         self.assertEqual(res.dtype, e.dtype)
         self.assertArrayAlmostEqual(res, e)
+
+    def test_convert_np_int(self):
+        u = Unit("mile")
+        v = Unit("meter")
+        self.assertEqual(u.convert(np.int(1), v), 1609.344)
+        self.assertEqual(u.convert(np.int8(1), v), 1609.344)
+        self.assertEqual(u.convert(np.int16(1), v), 1609.344)
+        self.assertEqual(u.convert(np.int32(1), v), 1609.344)
+        self.assertEqual(u.convert(np.int64(1), v), 1609.344)
 
     def test_convert_fail_0(self):
         u = Unit('unknown')

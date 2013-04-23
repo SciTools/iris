@@ -1755,15 +1755,7 @@ class Unit(iris.util._OrderedHashable):
             else:
                 ut_converter = _ut_get_converter(self.ut_unit, other.ut_unit)
                 if ut_converter:
-                    if isinstance(value_copy, (int, float, long)):
-                        if ctype not in _cv_convert_scalar.keys():
-                            raise ValueError('Invalid target type. Can only '
-                                             'convert to float or double.')
-                        # Utilise global convenience dictionary
-                        # _cv_convert_scalar
-                        result = _cv_convert_scalar[ctype](ut_converter,
-                                                           ctype(value_copy))
-                    else:
+                    if isinstance(value_copy, np.ndarray):
                         # Can only handle array of np.float32 or np.float64 so
                         # cast array of ints to array of floats of requested
                         # precision.
@@ -1783,6 +1775,14 @@ class Unit(iris.util._OrderedHashable):
                         _cv_convert_array[ctype](ut_converter, pointer,
                                                  value_copy.size, pointer)
                         result = value_copy
+                    else:
+                        if ctype not in _cv_convert_scalar.keys():
+                            raise ValueError('Invalid target type. Can only '
+                                             'convert to float or double.')
+                        # Utilise global convenience dictionary
+                        # _cv_convert_scalar
+                        result = _cv_convert_scalar[ctype](ut_converter,
+                                                           ctype(value_copy))
                     _cv_free(ut_converter)
                 else:
                     self._raise_error('Failed to convert %r to %r' %
