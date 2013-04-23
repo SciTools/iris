@@ -78,6 +78,19 @@ class TestLoad(tests.GraphicsTest):
 
         self.assertCML(cube, ("nimrod", "mockography.cml"))
 
+    def test_levels_below_ground(self):
+        # Mock a soil temperature field we've seen.
+        field = mock_nimrod_field()
+        cube = iris.cube.Cube(np.arange(100).reshape(10, 10))
+
+        field.field_code = -1  # Not orography
+        field.reference_vertical_coord_type = field.int_mdi  # Not bounded
+        field.vertical_coord_type = 12
+        field.vertical_coord = 42
+        nimrod_load_rules.vertical_coord(cube, field)
+
+        self.assertCML(cube, ("nimrod", "levels_below_ground.cml"))
+
 
 if __name__ == "__main__":
     tests.main()
