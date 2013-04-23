@@ -333,7 +333,20 @@ len(f.lbcode) != 5
 f.lbvc == 2
 THEN
 CoordAndDims(DimCoord(f.lblev, standard_name='model_level_number', attributes={'positive': 'down'}))
+
+IF
+len(f.lbcode) != 5
+f.lbvc == 2
+f.brsvd[0] == f.brlev
+THEN
 CoordAndDims(DimCoord(f.blev, standard_name='depth', units='m', attributes={'positive': 'down'}))
+
+IF
+len(f.lbcode) != 5
+f.lbvc == 2
+f.brsvd[0] != f.brlev
+THEN
+CoordAndDims(DimCoord(f.blev, standard_name='depth', units='m', bounds=[f.brsvd[0], f.brlev], attributes={'positive': 'down'}))
 
 IF
 f.lbvc == 8
