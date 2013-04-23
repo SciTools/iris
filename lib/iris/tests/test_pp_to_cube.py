@@ -47,7 +47,7 @@ class TestPPLoadCustom(tests.IrisTest):
         cube = self.subcubes.merge()[0]
         self.assertCML(cube, ('pp_rules', 'lbtim_2.cml'))
 
-    def test_ocean_depth(self):
+    def _ocean_depth(self, bounded=False):
         lbuser = list(self.template.lbuser)
         lbuser[6] = 2
         lbuser[3] = 101
@@ -58,10 +58,23 @@ class TestPPLoadCustom(tests.IrisTest):
             field.lbvc = 2
             field.lbfc = 601
             field.lblev, field.blev = level_and_depth
+            if bounded:
+                brsvd = list(field.brsvd)
+                brsvd[0] = field.blev - 1
+                field.brsvd = tuple(brsvd)
+                field.brlev = field.blev + 1
             rules_result = self.load_rules.result(field)
             self.subcubes.append(rules_result.cube)
+
+    def test_ocean_depth(self):
+        self._ocean_depth()
         cube = self.subcubes.merge()[0]
         self.assertCML(cube, ('pp_rules', 'ocean_depth.cml'))
+
+    def test_ocean_depth_bounded(self):
+        self._ocean_depth(bounded=True)
+        cube = self.subcubes.merge()[0]
+        self.assertCML(cube, ('pp_rules', 'ocean_depth_bounded.cml'))
 
     def test_invalid_units(self):
         # UM to CF rules are mapped to the invalid unit "1e3 psu @0.035"
