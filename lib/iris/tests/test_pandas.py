@@ -227,11 +227,11 @@ class TestAsDataFrame(tests.IrisTest):
         self.assertEqual(cube.data[0, 0], 0)
 
     def test_copy_int32_false(self):
-        # Cannot share memory with an int32 (as of v0.10.1)
         cube = Cube(np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]],
                              dtype=np.int32), long_name="foo")
-        with self.assertRaises(AssertionError):
-            iris.pandas.as_data_frame(cube, copy=False)
+        data_frame = iris.pandas.as_data_frame(cube, copy=False)
+        data_frame[0][0] = 99
+        self.assertEqual(cube.data[0, 0], 99)
 
     def test_copy_int64_false(self):
         cube = Cube(np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]],
