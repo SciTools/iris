@@ -1,0 +1,3 @@
+    0   1   2   3    4
+0   0 NaN   2 NaN  4.4
+1 NaN   6 NaN   8  NaN
