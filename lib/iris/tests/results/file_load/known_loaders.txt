@@ -1,3 +1,4 @@
+ * NetCDF OPeNDAP (priority 6)
  * UM Post Processing file (PP) (priority 5)
  * UM Post Processing file (PP) little-endian (priority 5)
  * GRIB (priority 5)

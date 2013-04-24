@@ -13,6 +13,9 @@ Features added
   site.cfg. See `iris.config` for more details.
 * One and two dimensional cubes can be converted to and from Pandas objects.
   See `iris.pandas` for more details.
+* Experimental support has been added to `iris.load`,
+  `iris.load_cube` and `iris.load_cubes` for loading Cubes from
+  OPeNDAP URLs.
 
 Bugs fixed
 ----------
