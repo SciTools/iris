@@ -22,6 +22,7 @@ Test the main loading API.
 import iris.tests as tests
 
 import iris
+import iris.io
 
 
 @iris.tests.skip_data
@@ -110,6 +111,34 @@ class TestLoadCubes(tests.IrisTest):
         )
         with self.assertRaises(iris.exceptions.ConstraintMismatchError):
             iris.load_cube(paths)
+
+
+class TestOpenDAP(tests.IrisTest):
+    def test_load(self):
+        # Check that calling iris.load_* with a http URI triggers a call to
+        # ``iris.io.load_http``
+
+        url = 'http://geoport.whoi.edu:80/thredds/dodsC/bathy/gom15'
+
+        class LoadHTTPCalled(Exception):
+            pass
+
+        def new_load_http(passed_urls, *args, **kwargs):
+            self.assertEqual(len(passed_urls), 1)
+            self.assertEqual(url, passed_urls[0])
+            raise LoadHTTPCalled()
+
+        try:
+            orig = iris.io.load_http
+            iris.io.load_http = new_load_http
+
+            for fn in [iris.load, iris.load_raw,
+                       iris.load_cube, iris.load_cubes]:
+                with self.assertRaises(LoadHTTPCalled):
+                    fn(url)
+
+        finally:
+            iris.io.load_http = orig
 
 
 if __name__ == "__main__":

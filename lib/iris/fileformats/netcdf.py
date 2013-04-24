@@ -400,12 +400,12 @@ def _load_aux_factory(engine, cf, filename, cube):
 
 def load_cubes(filenames, callback=None):
     """
-    Loads cubes from a list of NetCDF filenames.
+    Loads cubes from a list of NetCDF filenames/URLs.
 
     Args:
 
     * filenames (string/list):
-        One or more NetCDF filenames to load.
+        One or more NetCDF filenames/DAP URLs to load from.
 
     Kwargs:
 

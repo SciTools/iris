@@ -20,6 +20,9 @@ A summary of the main features added with version 1.4:
   ``site.cfg``. See :mod:`iris.config` for more details.
 * One and two dimensional cubes can be converted to and from Pandas objects.
   See :mod:`iris.pandas` for more details.
+* Experimental support has been added to :func:`iris.load`,
+  :func:`iris.load_cube` and :func:`iris.load_cubes` for loading Cubes from
+  OPeNDAP URLs.
 
 Bugs fixed
 ----------

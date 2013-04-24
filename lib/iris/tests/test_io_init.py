@@ -47,12 +47,13 @@ class TestDecodeUri(unittest.TestCase):
             self.assertEqual(pair, iris.io.decode_uri(uri))
 
 
-@iris.tests.skip_data
 class TestFileFormatPicker(tests.IrisTest):
     def test_known_formats(self):
-        a = str(iff.FORMAT_AGENT)
-        self.assertString(a, tests.get_result_path(('file_load', 'known_loaders.txt')))
+        self.assertString(str(iff.FORMAT_AGENT),
+                          tests.get_result_path(('file_load',
+                                                 'known_loaders.txt')))
 
+    @iris.tests.skip_data
     def test_format_picker(self):
         # ways to test the format picker = list of (format-name, file-spec)
         test_specs = [
@@ -91,6 +92,14 @@ class TestFileFormatPicker(tests.IrisTest):
             with open(test_path, 'r') as test_file:
                 a = iff.FORMAT_AGENT.get_spec(test_path, test_file)
                 self.assertEqual(a.name, expected_format_name)
+
+    def test_open_dap(self):
+        # tests that *ANY* http or https URL is seen as an OPeNDAP service.
+        # This may need to change in the future if other protocols are
+        # supported.
+        DAP_URI = 'http://geoport.whoi.edu/thredds/dodsC/bathy/gom15'
+        a = iff.FORMAT_AGENT.get_spec(DAP_URI, None)
+        self.assertEqual(a.name, 'NetCDF OPeNDAP')
 
 
 @iris.tests.skip_data

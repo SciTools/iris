@@ -149,11 +149,14 @@ def _generate_cubes(uris, callback):
     uri_tuples = sorted(iris.io.decode_uri(uri) for uri in uris)
 
     for scheme, groups in (itertools.groupby(uri_tuples, key=lambda x: x[0])):
-        part_names = [x[1] for x in groups]
-
-        # Call each scheme handler with the approriate uris
+        # Call each scheme handler with the appropriate URIs
         if scheme == 'file':
+            part_names = [x[1] for x in groups]
             for cube in iris.io.load_files(part_names, callback):
+                yield cube
+        elif scheme in ['http', 'https']:
+            urls = [':'.join(x) for x in groups]
+            for cube in iris.io.load_http(urls, callback):
                 yield cube
         else:
             raise ValueError('Iris cannot handle the URI scheme: %s' % scheme)
@@ -179,7 +182,7 @@ def load(uris, constraints=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames.
+        One or more filenames/URIs.
 
     Kwargs:
 
@@ -205,7 +208,7 @@ def load_cube(uris, constraint=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames.
+        One or more filenames/URIs.
 
     Kwargs:
 
@@ -240,7 +243,7 @@ def load_cubes(uris, constraints=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames.
+        One or more filenames/URIs.
 
     Kwargs:
 
@@ -283,7 +286,7 @@ def load_raw(uris, constraints=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames.
+        One or more filenames/URIs.
 
     Kwargs:
 
@@ -310,7 +313,7 @@ def load_strict(uris, constraints=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames.
+        One or more filenames/URIs.
 
     Kwargs:
 
