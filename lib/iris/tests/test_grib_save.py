@@ -153,6 +153,14 @@ class TestCubeSave(tests.IrisTest):
         saved_grib = iris.util.create_temp_filename(suffix='.grib2')
         self.assertRaises(iris.exceptions.TranslationError, iris.save, cube, saved_grib)
         os.remove(saved_grib)
+        
+    def test_scalar_int32_pressure(self):
+        # Make sure we can save a scalar int32 coordinate with unit conversion.
+        cube = self._load_basic()
+        cube.coord("pressure").points = np.array([200], dtype=np.int32)
+        cube.coord("pressure").units = "hPa"
+        with self.temp_filename(".grib2") as testfile: 
+            iris.save(cube, testfile)
 
 
 class TestHandmade(tests.IrisTest):
