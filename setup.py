@@ -169,65 +169,6 @@ class MissingHeaderError(Exception):
     pass
 
 
-class HeaderCheck(Command):
-    """
-    Checks that all the necessary files have the copyright and licence
-    header.
-
-    """
-
-    description = "check for copyright/licence headers"
-    user_options = []
-
-    exclude_patterns = ('./setup.py',
-                        './build/*',
-                        './dist/*',
-                        './docs/iris/example_code/graphics/*.py',
-                        './docs/iris/src/developers_guide/documenting/*.py',
-                        './docs/iris/src/sphinxext/gen_gallery.py',
-                        './docs/iris/src/sphinxext/gen_rst.py',
-                        './docs/iris/src/sphinxext/plot_directive.py',
-                        './docs/iris/src/userguide/plotting_examples/*.py',
-                        './docs/iris/build/*',
-                        './lib/iris/fileformats/_pyke_rules/compiled_krb/*.py')
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        check_paths = []
-        for root, dirs, files in os.walk('.'):
-            for file in files:
-                if file.endswith('.py') or file.endswith('.c'):
-                    path = os.path.join(root, file)
-                    check_paths.append(path)
-
-        for pattern in self.exclude_patterns:
-            exclude = lambda path: not fnmatch.fnmatch(path, pattern)
-            check_paths = filter(exclude, check_paths)
-
-        bad_paths = filter(self._header_bad, check_paths)
-        if bad_paths:
-            raise MissingHeaderError(bad_paths)
-
-    def _header_bad(self, path):
-        target = '(C) British Crown Copyright 2010 - 2012, Met Office'
-        with open(path, 'rt') as text_file:
-            # Check for the header on the first line.
-            line = text_file.readline().rstrip()
-            bad = target not in line
-
-            # Check if it was an executable script, with the header
-            # starting on the second line.
-            if bad and line == '#!/usr/bin/env python':
-                line = text_file.readline().rstrip()
-                bad = target not in line
-        return bad
-
-
 class BuildPyWithExtras(build_py.build_py):
     """
     Adds the creation of the CF standard names module and compilation
@@ -293,6 +234,5 @@ setup(
         )
     },
     cmdclass={'test': TestRunner, 'build_py': BuildPyWithExtras, 
-              'std_names': MakeStdNames, 'header_check': HeaderCheck,
-              'pyke_rules': MakePykeRules},
+              'std_names': MakeStdNames, 'pyke_rules': MakePykeRules},
 )
