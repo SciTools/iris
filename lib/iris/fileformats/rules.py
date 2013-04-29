@@ -42,7 +42,6 @@ import iris.fileformats.mosig_cf_map
 import iris.fileformats.um_cf_map
 import iris.unit
 
-
 RuleResult = collections.namedtuple('RuleResult', ['cube', 'matching_rules', 'factories'])
 Factory = collections.namedtuple('Factory', ['factory_class', 'args'])
 ReferenceTarget = collections.namedtuple('ReferenceTarget',

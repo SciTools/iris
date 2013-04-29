@@ -23,10 +23,11 @@ import gribapi
 import numpy as np
 import numpy.ma as ma
 import mock
+import warnings
 
 import iris.cube
 import iris.coords
-import iris.fileformats.grib_save_rules as grib_save_rules
+import iris.fileformats.grib.grib_save_rules as grib_save_rules
 
 
 class Test_non_hybrid_surfaces(tests.IrisTest):
@@ -62,6 +63,18 @@ class Test_non_hybrid_surfaces(tests.IrisTest):
         mock_set_long.assert_any_call(grib, "scaleFactorOfSecondFixedSurface", 255)
         mock_set_long.assert_any_call(grib, "scaledValueOfSecondFixedSurface", -1)        
 
+    @mock.patch.object(gribapi, "grib_set_long")
+    def test_no_vertical(self, mock_set_long):
+        grib = None
+        cube = iris.cube.Cube([1,2,3,4,5]) 
+        grib_save_rules.non_hybrid_surfaces(cube, grib)
+        mock_set_long.assert_any_call(grib, "typeOfFirstFixedSurface", 1)
+        mock_set_long.assert_any_call(grib, "scaleFactorOfFirstFixedSurface", 0)
+        mock_set_long.assert_any_call(grib, "scaledValueOfFirstFixedSurface", 0)
+        mock_set_long.assert_any_call(grib, "typeOfSecondFixedSurface", -1)
+        mock_set_long.assert_any_call(grib, "scaleFactorOfSecondFixedSurface", 255)
+        mock_set_long.assert_any_call(grib, "scaledValueOfSecondFixedSurface", -1)
+
 
 class Test_data(tests.IrisTest):
     # Test grib_save_rules.data()
@@ -86,6 +99,60 @@ class Test_data(tests.IrisTest):
         grib_save_rules.data(cube, grib)
 
         mock_set_double.assert_any_call(grib, "missingValue", float(-1e9))
+
+    @mock.patch.object(gribapi, "grib_set_double_array")
+    @mock.patch.object(gribapi, "grib_set_double")
+    def test_scaling(self, mock_set_double, mock_set_double_array):
+        # Show that data type known to be stored as %ge gets scaled
+        grib = None
+        cube = iris.cube.Cube(np.array([0.0, 0.25, 1.0]),
+                              standard_name='cloud_area_fraction',
+                              units=iris.unit.Unit('0.5'))
+        grib_save_rules.data(cube, grib)
+        callargs = mock_set_double_array.call_args_list
+        self.assertEqual(len(callargs), 1)
+        self.assertEqual(callargs[0][0][:2], (None, "values"))
+        self.assertArrayAlmostEqual(callargs[0][0][2],
+                                    np.array([0.0, 12.5, 50.0]))
+
+
+class Test_phenomenon(tests.IrisTest):
+    @mock.patch.object(gribapi, "grib_set_long")
+    def test_phenom_unknown(self, mock_set_long):
+        grib = None
+        cube = iris.cube.Cube(np.array([1.0]))
+        with warnings.catch_warnings():
+            # This should issue a warning about unrecognised data
+            warnings.simplefilter("error")
+            with self.assertRaises(UserWarning):
+                grib_save_rules.param_code(cube, grib)
+        # do it all again, and this time check the results
+        grib = None
+        cube = iris.cube.Cube(np.array([1.0]))
+        grib_save_rules.param_code(cube, grib)
+        mock_set_long.assert_any_call(grib, "discipline", 0)
+        mock_set_long.assert_any_call(grib, "parameterCategory", 0)
+        mock_set_long.assert_any_call(grib, "parameterNumber", 0)
+
+    @mock.patch.object(gribapi, "grib_set_long")
+    def test_phenom_known_standard_name(self, mock_set_long):
+        grib = None
+        cube = iris.cube.Cube(np.array([1.0]),
+                              standard_name='sea_surface_temperature')
+        grib_save_rules.param_code(cube, grib)
+        mock_set_long.assert_any_call(grib, "discipline", 10)
+        mock_set_long.assert_any_call(grib, "parameterCategory", 3)
+        mock_set_long.assert_any_call(grib, "parameterNumber", 0)
+
+    @mock.patch.object(gribapi, "grib_set_long")
+    def test_phenom_known_long_name(self, mock_set_long):
+        grib = None
+        cube = iris.cube.Cube(np.array([1.0]),
+                              long_name='cloud_mixing_ratio')
+        grib_save_rules.param_code(cube, grib)
+        mock_set_long.assert_any_call(grib, "discipline", 0)
+        mock_set_long.assert_any_call(grib, "parameterCategory", 1)
+        mock_set_long.assert_any_call(grib, "parameterNumber", 22)
 
 
 if __name__ == "__main__":

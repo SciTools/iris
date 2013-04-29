@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube standard_name="air_temperature" units="kelvin">
+  <cube standard_name="air_temperature" units="K">
     <coords>
       <coord>
         <dimCoord id="73141289" points="[9]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>

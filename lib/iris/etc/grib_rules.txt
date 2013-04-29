@@ -51,14 +51,15 @@ CoordAndDims(DimCoord(grib._x_points, grib._x_coord_name, units='degrees', coord
 
 
 
-####################
-### Grib1 params ###
-####################
+######################################################################
+### A few selected standard Grib1 params (none yet in grib_cf_map) ###
+######################################################################
 
 IF
 grib.edition == 1
 grib.table2Version < 128
 grib.indicatorOfParameter == 11
+grib._cf_data is None
 THEN
 CMAttribute("standard_name", "air_temperature")
 CMAttribute("units", "kelvin")
@@ -67,6 +68,7 @@ IF
 grib.edition == 1
 grib.table2Version < 128
 grib.indicatorOfParameter == 33
+grib._cf_data is None
 THEN
 CMAttribute("standard_name", "x_wind")
 CMAttribute("units", "m s-1")
@@ -75,13 +77,31 @@ IF
 grib.edition == 1
 grib.table2Version < 128
 grib.indicatorOfParameter == 34
+grib._cf_data is None
 THEN
 CMAttribute("standard_name", "y_wind")
 CMAttribute("units", "m s-1")
 
+###############################################################
+### Hook for ECMWF GRIB1 local params listed in grib_cf_map ###
+###############################################################
+
+IF
+grib.edition == 1
+grib._cf_data is not None
+THEN
+CMAttribute("standard_name", grib._cf_data.standard_name)
+CMAttribute("long_name", grib._cf_data.standard_name or grib._cf_data.long_name)
+CMAttribute("units", grib._cf_data.units)
+
+##################################################################
+### Construct magic names for otherwise unrecognised phenomena ###
+##################################################################
+
 IF
 grib.edition == 1
 grib.table2Version >= 128
+grib._cf_data is None
 THEN
 CMAttribute("long_name", "UNKNOWN LOCAL PARAM " + str(grib.indicatorOfParameter) + "." + str(grib.table2Version))
 CMAttribute("units", "???")
@@ -94,238 +114,18 @@ THEN
 CMAttribute("long_name", "UNKNOWN LOCAL PARAM " + str(grib.indicatorOfParameter) + "." + str(grib.table2Version))
 CMAttribute("units", "???")
 
-####################
-### Grib2 params ###
-####################
 
-## Note: Do we really want to be maintaining a list of these? There's lots of them...
-## Future grib  api versions may have "cfName" available for more params...
+#####################################
+### Grib2 params from grib_cf_map ###
+#####################################
 
 IF
 grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 0
-grib.parameterNumber == 0
+grib._cf_data is not None
 THEN
-CMAttribute("standard_name", "air_temperature")
-CMAttribute("units", "kelvin")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 0
-grib.parameterNumber == 2
-THEN
-CMAttribute("standard_name", "potential_temperature")
-CMAttribute("units", "K")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 1
-grib.parameterNumber == 0
-THEN
-CMAttribute("standard_name", "specific_humidity")
-CMAttribute("units", "kg kg-1")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 1
-grib.parameterNumber == 1
-THEN
-CMAttribute("standard_name", "relative_humidity")
-CMAttribute("units", "%")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 1
-grib.parameterNumber == 3
-THEN
-CMAttribute("standard_name", "precipitable_water")
-CMAttribute("units", "kg m-2")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 1
-grib.parameterNumber == 22
-THEN
-CMAttribute("standard_name", "cloud_mixing_ratio")
-CMAttribute("units", "kg kg-1")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 1
-grib.parameterNumber == 13
-THEN
-CMAttribute("standard_name", "water_equivalent_of_accumulated_snow_depth")
-CMAttribute("units", "kg m-2")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 2
-grib.parameterNumber == 1
-THEN
-CMAttribute("standard_name", "wind_speed")
-CMAttribute("units", "m s-1")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 2
-grib.parameterNumber == 2
-THEN
-CMAttribute("standard_name", "x_wind")
-CMAttribute("units", "m s-1")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 2
-grib.parameterNumber == 3
-THEN
-CMAttribute("standard_name", "y_wind")
-CMAttribute("units", "m s-1")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 2
-grib.parameterNumber == 8
-THEN
-CMAttribute("standard_name", "vertical_velocity_(pressure)")
-CMAttribute("units", "Pa s-1")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 2
-grib.parameterNumber == 10
-THEN
-CMAttribute("standard_name", "absolute_vorticity")
-CMAttribute("units", "s-1")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 3
-grib.parameterNumber == 0
-THEN
-CMAttribute("standard_name", "pressure")
-CMAttribute("units", "Pa")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 3
-grib.parameterNumber == 1
-THEN
-CMAttribute("standard_name", "pressure_reduced_to_msl")
-CMAttribute("units", "Pa")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 3
-grib.parameterNumber == 3
-THEN
-CMAttribute("standard_name", "icao_standard_atmosphere_reference_height")
-CMAttribute("units", "m")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 3
-grib.parameterNumber == 5
-THEN
-CMAttribute("standard_name", "geopotential_height")
-CMAttribute("units", "gpm")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 3
-grib.parameterNumber == 9
-THEN
-CMAttribute("standard_name", "geopotential_height_anomaly")
-CMAttribute("units", "gpm")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 6
-grib.parameterNumber == 1
-THEN
-CMAttribute("standard_name", "total_cloud_cover")
-CMAttribute("units", "%")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 6
-grib.parameterNumber == 6
-THEN
-CMAttribute("standard_name", "cloud_water")
-CMAttribute("units", "kg m-2")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 7
-grib.parameterNumber == 6
-THEN
-CMAttribute("standard_name", "convective_available_potential_energy")
-CMAttribute("units", "J kg-1")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 7
-grib.parameterNumber == 7
-THEN
-CMAttribute("standard_name", "convective_inhibition")
-CMAttribute("units", "J kg-1")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 7
-grib.parameterNumber == 8
-THEN
-CMAttribute("standard_name", "storm_relative_helicity")
-CMAttribute("units", "J kg-1")
-
-IF
-grib.edition == 2
-grib.discipline == 0
-grib.parameterCategory == 14
-grib.parameterNumber == 0
-THEN
-CMAttribute("standard_name", "total_ozone")
-CMAttribute("units", "Dobson")
-
-IF
-grib.edition == 2
-grib.discipline == 2
-grib.parameterCategory == 0
-grib.parameterNumber == 0
-THEN
-CMAttribute("standard_name", "land_cover")
-CMAttribute("units", "proportion")
-
-IF
-grib.edition == 2
-grib.discipline == 10
-grib.parameterCategory == 2
-grib.parameterNumber == 0
-THEN
-CMAttribute("standard_name", "ice_cover")
-CMAttribute("units", "proportion")
-
+CMAttribute("standard_name", grib._cf_data.standard_name)
+CMAttribute("long_name", grib._cf_data.long_name)
+CMAttribute("units", grib._cf_data.units)
 
 #######################################
 ### Grib1 verification dates ##########
@@ -557,6 +357,15 @@ grib.levelType == 'pl'
 THEN
 CoordAndDims(DimCoord(points=grib.level,  long_name="pressure", units="hPa"))
 
+# Handle grib1 phenomena which define an "implied" height value, for example
+# "2-metre temperature".  (note: Grib2 rules out such things)
+IF
+grib.edition == 1
+grib.levelType == 'sfc'
+grib._cf_data is not None
+grib._cf_data.set_height is not None
+THEN
+CoordAndDims(DimCoord(points=grib._cf_data.set_height,  long_name="height", units="m", attributes={'positive':'up'}))
 
 
 ###################
@@ -632,3 +441,5 @@ IF
 grib.productDefinitionTemplateNumber not in (0, 8)
 THEN
 CMCustomAttribute("GRIB_LOAD_WARNING",("unsupported GRIB%d ProductDefinitionTemplate: #4.%d" % (grib.edition, grib.productDefinitionTemplateNumber)))
+
+
