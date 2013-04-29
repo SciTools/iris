@@ -29,6 +29,13 @@ import iris.util
 _GRAPH_INDENT = ' ' * 4
 _SUBGRAPH_INDENT = ' ' * 8
 
+_DOT_EXECUTABLE_PATH = iris.config.get_option('System', 'dot_path',
+                                              default='dot')
+if not os.path.exists(_DOT_EXECUTABLE_PATH):
+    _DOT_EXECUTABLE_PATH = None
+DOT_AVAILABLE = _DOT_EXECUTABLE_PATH is not None
+""" Whether the 'dot' program is present (required for "dotpng" output). """
+
 
 def save(cube, target):
     """Save a dot representation of the cube.
@@ -82,16 +89,20 @@ def save_png(source, target, launch=False):
         dot_file_path = source
     else:
         raise ValueError("Can only write dot png for a Cube or DOT file")
-        
+
     # Create png data
-    dot_exe = iris.config.get_option('System', 'dot_path', default='dot')
+    if not _DOT_EXECUTABLE_PATH:
+        raise ValueError('Executable "dot" not found: '
+                         'Review dot_path setting in site.cfg.')
     # To filename or open file handle?
     if isinstance(target, basestring):
-        subprocess.call([dot_exe, '-T', 'png', '-o', target, dot_file_path])
+        subprocess.call([_DOT_EXECUTABLE_PATH, '-T', 'png', '-o', target,
+                         dot_file_path])
     elif hasattr(target, "write"):
         if hasattr(target, "mode") and "b" not in target.mode:
             raise ValueError("Target not binary")
-        subprocess.call([dot_exe, '-T', 'png', dot_file_path], stdout=target)
+        subprocess.call([_DOT_EXECUTABLE_PATH, '-T', 'png', dot_file_path],
+                        stdout=target)
     else:
         raise ValueError("Can only write dot png for a filename or writable")
 

@@ -21,17 +21,29 @@
 import iris.tests as tests
 
 import datetime
+import unittest
 
 import netcdftime
 import numpy as np
-import pandas
 
-from iris.coords import DimCoord
-from iris.cube import Cube
-import iris.pandas
-import iris.unit
+try:
+    import pandas
+except ImportError:
+    # Disable all these tests if pandas is not installed.
+    pandas = None
+
+skip_pandas = unittest.skipIf(pandas is None,
+                              'Test(s) require "pandas", '
+                              'which is not available.')
+
+if pandas is not None:
+    from iris.coords import DimCoord
+    from iris.cube import Cube
+    import iris.pandas
+    import iris.unit
 
 
+@skip_pandas
 class TestAsSeries(tests.IrisTest):
     """Test conversion of 1D cubes to Pandas using as_series()"""
 
@@ -128,6 +140,7 @@ class TestAsSeries(tests.IrisTest):
             series = iris.pandas.as_series(cube, copy=False)
 
 
+@skip_pandas
 class TestAsDataFrame(tests.IrisTest):
     """Test conversion of 2D cubes to Pandas using as_data_frame()"""
 
@@ -263,6 +276,7 @@ class TestAsDataFrame(tests.IrisTest):
             data_frame = iris.pandas.as_data_frame(cube, copy=False)
 
 
+@skip_pandas
 class TestSeriesAsCube(tests.IrisTest):
 
     def test_series_simple(self):
@@ -329,6 +343,7 @@ class TestSeriesAsCube(tests.IrisTest):
         self.assertEqual(series[5], 99)
 
 
+@skip_pandas
 class TestDataFrameAsCube(tests.IrisTest):
 
     def test_data_frame_simple(self):
