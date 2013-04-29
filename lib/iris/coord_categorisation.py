@@ -26,6 +26,7 @@ All the functions provided here add a new coordinate to a cube.
 
 import calendar   #for day and month names
 import collections   # for counting months when validating seasons
+import warnings
 
 import iris.coords
 
@@ -99,6 +100,17 @@ def _pt_date(coord, time):
 #--------------------------------------------
 # time categorisations : calendar date components
 
+# This is a temporary helper function to manage the transition away from
+# ambiguous default values. It was first released in 1.4.
+def _check_default(name, deprecated_default, upcoming_default):
+    if name is None:
+        msg = 'Default value for `name` will change from {0!r} to {1!r}'
+        msg = msg.format(deprecated_default, upcoming_default)
+        warnings.warn(msg, stacklevel=3)
+        name = deprecated_default
+    return name
+
+
 def add_year(cube, coord, name='year'):
     """Add a categorical calendar-year coordinate."""
     add_categorised_coord(
@@ -107,8 +119,9 @@ def add_year(cube, coord, name='year'):
         )
 
 
-def add_month_number(cube, coord, name='month_number'):
+def add_month_number(cube, coord, name=None):
     """Add a categorical month coordinate, values 1..12."""
+    name = _check_default(name, 'month', 'month_number')
     add_categorised_coord(
         cube, name, coord,
         lambda coord, x: _pt_date(coord, x).month
@@ -116,16 +129,22 @@ def add_month_number(cube, coord, name='month_number'):
 
 
 def add_month_shortname(cube, coord, name='month'):
-    """Add a categorical month coordinate, values 'jan'..'dec'."""
-    add_categorised_coord(
-        cube, name, coord,
-        lambda coord, x: calendar.month_abbr[_pt_date(coord, x).month],
-        units='no_unit'
-        )
+    """
+    Add a categorical month coordinate, values 'Jan'..'Dec'.
+
+        .. deprecated:: 1.4
+            Please use :func:`~iris.coord_categorisation.add_month()`.
+
+    """
+    msg = "The 'add_month_shortname()' function is deprecated." \
+          " Please use 'add_month()' instead."
+    warnings.warn(msg, UserWarning, stacklevel=2)
+    add_month(cube, coord, name)
 
 
-def add_month_fullname(cube, coord, name='month_full'):
+def add_month_fullname(cube, coord, name=None):
     """Add a categorical month coordinate, values 'January'..'December'."""
+    name = _check_default(name, 'month', 'month_fullname')
     add_categorised_coord(
         cube, name, coord,
         lambda coord, x: calendar.month_name[_pt_date(coord, x).month],
@@ -133,26 +152,31 @@ def add_month_fullname(cube, coord, name='month_full'):
         )
 
 
-# short alias for default representation
 def add_month(cube, coord, name='month'):
-    """Alias for :func:`add_month_shortname`."""
-    add_month_shortname(cube, coord, name)
+    """Add a categorical month coordinate, values 'Jan'..'Dec'."""
+    add_categorised_coord(
+        cube, name, coord,
+        lambda coord, x: calendar.month_abbr[_pt_date(coord, x).month],
+        units='no_unit'
+        )
 
 
-def add_day_of_month(cube, coord, name='day_of_month'):
+def add_day_of_month(cube, coord, name=None):
     """Add a categorical day-of-month coordinate, values 1..31."""
+    name = _check_default(name, 'day', 'day_of_month')
     add_categorised_coord(
         cube, name, coord,
         lambda coord, x: _pt_date(coord, x).day
         )
 
 
-def add_day_of_year(cube, coord, name='day_of_year'):
+def add_day_of_year(cube, coord, name=None):
     """
     Add a categorical day-of-year coordinate, values 1..365
     (1..366 in leap years).
 
     """
+    name = _check_default(name, 'day', 'day_of_year')
     add_categorised_coord(
         cube, name, coord,
         lambda coord, x: _pt_date(coord, x).timetuple().tm_yday)
@@ -161,8 +185,9 @@ def add_day_of_year(cube, coord, name='day_of_year'):
 #--------------------------------------------
 # time categorisations : days of the week
  
-def add_weekday_number(cube, coord, name='weekday_number'):
+def add_weekday_number(cube, coord, name=None):
     """Add a categorical weekday coordinate, values 0..6  [0=Monday]."""
+    name = _check_default(name, 'weekday', 'weekday_number')
     add_categorised_coord(
         cube, name, coord,
         lambda coord, x: _pt_date(coord, x).weekday()
@@ -170,16 +195,22 @@ def add_weekday_number(cube, coord, name='weekday_number'):
 
 
 def add_weekday_shortname(cube, coord, name='weekday'):
-    """Add a categorical weekday coordinate, values 'Mon'..'Sun'."""
-    add_categorised_coord(
-        cube, name, coord,
-        lambda coord, x: calendar.day_abbr[_pt_date(coord, x).weekday()],
-        units='no_unit'
-        )
+    """
+    Add a categorical weekday coordinate, values 'Mon'..'Sun'.
+
+        .. deprecated:: 1.4
+            Please use :func:`~iris.coord_categorisation.add_weekday()`.
+
+    """
+    msg = "The 'add_weekday_shortname()' function is deprecated." \
+          " Please use 'add_weekday()' instead."
+    warnings.warn(msg, UserWarning, stacklevel=2)
+    add_weekday(cube, coord, name)
 
 
-def add_weekday_fullname(cube, coord, name='weekday_full'):
+def add_weekday_fullname(cube, coord, name=None):
     """Add a categorical weekday coordinate, values 'Monday'..'Sunday'."""
+    name = _check_default(name, 'weekday', 'weekday_fullname')
     add_categorised_coord(
         cube, name, coord,
         lambda coord, x: calendar.day_name[_pt_date(coord, x).weekday()],
@@ -187,10 +218,13 @@ def add_weekday_fullname(cube, coord, name='weekday_full'):
         )
 
 
-# short alias for default representation
 def add_weekday(cube, coord, name='weekday'):
-    """Alias for :func:`add_weekday_shortname`."""
-    add_weekday_shortname(cube, coord, name)
+    """Add a categorical weekday coordinate, values 'Mon'..'Sun'."""
+    add_categorised_coord(
+        cube, name, coord,
+        lambda coord, x: calendar.day_abbr[_pt_date(coord, x).weekday()],
+        units='no_unit'
+        )
 
 
 #--------------------------------------------
@@ -215,8 +249,9 @@ SEASON_MONTHS_INITIALS = ['djf', 'mam', 'jja', 'son']
 """Season month strings (3-character strings) for each season (0..3)."""
 
  
-def add_season_number(cube, coord, name='season_number'):
+def add_season_number(cube, coord, name=None):
     """Add a categorical season-of-year coordinate, values 0..3  [0=djf, 1=mam, ...]."""
+    name = _check_default(name, 'season', 'season_number')
     add_categorised_coord(
         cube, name, coord,
         lambda coord, x: MONTH_SEASON_NUMBERS[ _pt_date(coord, x).month ]
@@ -224,6 +259,20 @@ def add_season_number(cube, coord, name='season_number'):
 
   
 def add_season_month_initials(cube, coord, name='season'):
+    """
+    Add a categorical season-of-year coordinate, values 'djf'..'son'.
+
+        .. deprecated:: 1.4
+            Please use :func:`~iris.coord_categorisation.add_season()`.
+
+    """
+    msg = "The 'add_season_month_initials()' function is deprecated." \
+          " Please use 'add_season()' instead."
+    warnings.warn(msg, UserWarning, stacklevel=2)
+    add_season(cube, coord, name)
+
+
+def add_season(cube, coord, name='season'):
     """Add a categorical season-of-year coordinate, values 'djf'..'son'."""
     add_categorised_coord(
         cube, name, coord,
@@ -232,18 +281,13 @@ def add_season_month_initials(cube, coord, name='season'):
         )
 
     
-# short alias for default representation
-def add_season(cube, coord, name='season'):
-    """Alias for :func:`add_season_month_initials`."""
-    add_season_month_initials(cube, coord, name=name)
-
-    
-def add_season_year(cube, coord, name='season_year'):
+def add_season_year(cube, coord, name=None):
     """
     Add a categorical year-of-season coordinate (e.g. Aug'01 -> 1, but Dec'01 -> 2).
     
     Differs from calendar year, because December belongs to a season in the *following* year.'
     """
+    name = _check_default(name, 'year', 'season_year')
     def _season_year(coord, value):
         value_date = _pt_date(coord, value)
         year = value_date.year
@@ -370,7 +414,7 @@ def add_custom_season(cube, coord, seasons, name='season'):
     add_categorised_coord(cube, name, coord, _custom_season)
 
 
-def add_custom_season_number(cube, coord, seasons, name='season'):
+def add_custom_season_number(cube, coord, seasons, name=None):
     """
     Add a categorical season-of-year coordinate, values 0..N-1 where
     N is the number of user specified seasons.
@@ -389,9 +433,11 @@ def add_custom_season_number(cube, coord, seasons, name='season'):
     Kwargs:
 
     * name (string):
-        Name of the created coordinate. Defaults to "season".
+        Name of the created coordinate. Currently defaults to "season",
+        but this will change in a later version to "season_membership".
 
     """
+    name = _check_default(name, 'season', 'season_number')
     # Check that the seasons are valid.
     _validate_seasons(seasons)
     # Get a list of the season number each month is is, using month numbers
@@ -407,7 +453,7 @@ def add_custom_season_number(cube, coord, seasons, name='season'):
     add_categorised_coord(cube, name, coord, _custom_season_number)
 
 
-def add_custom_season_year(cube, coord, seasons, name='season_year'):
+def add_custom_season_year(cube, coord, seasons, name=None):
     """
     Add a categorical year-of-season coordinate, with user specified
     seasons.
@@ -426,9 +472,11 @@ def add_custom_season_year(cube, coord, seasons, name='season_year'):
     Kwargs:
 
     * name (string):
-        Name of the created coordinate. Defaults to "year".
+        Name of the created coordinate. Currently defaults to "year",
+        but this will change in a later version to "season_year".
 
     """
+    name = _check_default(name, 'year', 'season_year')
     # Check that the seasons are valid.
     _validate_seasons(seasons)
     # Define the adjustments to be made to the year.
@@ -445,7 +493,7 @@ def add_custom_season_year(cube, coord, seasons, name='season_year'):
     add_categorised_coord(cube, name, coord, _custom_season_year)
 
 
-def add_custom_season_membership(cube, coord, season, name='season_member'):
+def add_custom_season_membership(cube, coord, season, name=None):
     """
     Add a categorical season membership coordinate for a user specified
     season.
@@ -466,9 +514,12 @@ def add_custom_season_membership(cube, coord, season, name='season_member'):
     Kwargs:
 
     * name (string):
-        Name of the created coordinate. Defaults to "season".
+        Name of the created coordinate. Currently defaults to "season",
+        but this will change in a later version to "season_membership".
 
     """
+    name = _check_default(name, 'season', 'season_membership')
+
     months = _months_in_season(season)
 
     def _custom_season_membership(coord, value):
