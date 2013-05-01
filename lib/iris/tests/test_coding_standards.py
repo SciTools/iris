@@ -288,9 +288,13 @@ class TestLicenseHeaders(unittest.TestCase):
         output = subprocess.check_output(['git', 'whatchanged',
                                           "--pretty=TIME:%ct"],
                                          cwd=REPO_DIR)
-
         output = output.split('\n')
-        return dict(TestLicenseHeaders.whatchanged_parse(output))
+        res = {}
+        for fname, dt in TestLicenseHeaders.whatchanged_parse(output):
+            if fname not in res or dt > res[fname]:
+                res[fname] = dt
+
+        return res
 
     def test_license_headers(self):
         exclude_patterns = ('setup.py',
