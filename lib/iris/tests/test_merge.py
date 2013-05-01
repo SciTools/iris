@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,7 +27,7 @@ import numpy as np
 import iris
 import iris.cube
 import iris.exceptions
-from iris.coords import DimCoord
+from iris.coords import DimCoord, AuxCoord
 import iris.coords
 import iris.tests.stock
 
@@ -177,6 +177,186 @@ class TestDimensionSplitting(tests.IrisTest):
         cubes.append(self._make_cube(2, 1, 1, 11))
         cube = iris.cube.CubeList(cubes).merge()
         self.assertCML(cube, ('merge', 'multi_split.cml'))
+
+
+class TestCombination(tests.IrisTest):
+    def _make_cube(self, a, b, c, d, data=0):
+        cube_data = np.empty((4, 5), dtype=np.float32)
+        cube_data[:] = data
+        cube = iris.cube.Cube(cube_data)
+        cube.add_dim_coord(DimCoord(np.array([0, 1, 2, 3, 4], dtype=np.int32),
+                                    long_name='x', units='1'), 1)
+        cube.add_dim_coord(DimCoord(np.array([0, 1, 2, 3], dtype=np.int32),
+                                    long_name='y', units='1'), 0)
+        
+        for name, value in zip(['a', 'b', 'c', 'd'], [a, b, c, d]):
+            dtype = np.str if isinstance(value, basestring) else np.float32
+            cube.add_aux_coord(AuxCoord(np.array([value], dtype=dtype),
+                                        long_name=name, units='1'))
+
+        return cube
+
+    def test_separable_combination(self):
+        cubes = iris.cube.CubeList()
+        cubes.append(self._make_cube('2005', 'ECMWF',
+                                     'HOPE-E, Sys 1, Met 1, ENSEMBLES', 0))
+        cubes.append(self._make_cube('2005', 'ECMWF',
+                                     'HOPE-E, Sys 1, Met 1, ENSEMBLES', 1))
+        cubes.append(self._make_cube('2005', 'ECMWF',
+                                     'HOPE-E, Sys 1, Met 1, ENSEMBLES', 2))
+        cubes.append(self._make_cube('2026', 'UK Met Office',
+                                     'HadGEM2, Sys 1, Met 1, ENSEMBLES', 0))
+        cubes.append(self._make_cube('2026', 'UK Met Office',
+                                     'HadGEM2, Sys 1, Met 1, ENSEMBLES', 1))
+        cubes.append(self._make_cube('2026', 'UK Met Office',
+                                     'HadGEM2, Sys 1, Met 1, ENSEMBLES', 2))
+        cubes.append(self._make_cube('2002', 'CERFACS',
+                                     'GELATO, Sys 0, Met 1, ENSEMBLES', 0))
+        cubes.append(self._make_cube('2002', 'CERFACS',
+                                     'GELATO, Sys 0, Met 1, ENSEMBLES', 1))
+        cubes.append(self._make_cube('2002', 'CERFACS',
+                                     'GELATO, Sys 0, Met 1, ENSEMBLES', 2))
+        cubes.append(self._make_cube('2002', 'IFM-GEOMAR',
+                                     'ECHAM5, Sys 1, Met 10, ENSEMBLES', 0))
+        cubes.append(self._make_cube('2002', 'IFM-GEOMAR',
+                                     'ECHAM5, Sys 1, Met 10, ENSEMBLES', 1))
+        cubes.append(self._make_cube('2002', 'IFM-GEOMAR',
+                                     'ECHAM5, Sys 1, Met 10, ENSEMBLES', 2))
+        cubes.append(self._make_cube('2502', 'UK Met Office',
+                                     'HadCM3, Sys 51, Met 10, ENSEMBLES', 0))
+        cubes.append(self._make_cube('2502', 'UK Met Office',
+                                     'HadCM3, Sys 51, Met 11, ENSEMBLES', 0))
+        cubes.append(self._make_cube('2502', 'UK Met Office',
+                                     'HadCM3, Sys 51, Met 12, ENSEMBLES', 0))
+        cubes.append(self._make_cube('2502', 'UK Met Office',
+                                     'HadCM3, Sys 51, Met 13, ENSEMBLES', 0))
+        cubes.append(self._make_cube('2502', 'UK Met Office',
+                                     'HadCM3, Sys 51, Met 14, ENSEMBLES', 0))
+        cubes.append(self._make_cube('2502', 'UK Met Office',
+                                     'HadCM3, Sys 51, Met 15, ENSEMBLES', 0))
+        cubes.append(self._make_cube('2502', 'UK Met Office',
+                                     'HadCM3, Sys 51, Met 16, ENSEMBLES', 0))
+        cubes.append(self._make_cube('2502', 'UK Met Office',
+                                     'HadCM3, Sys 51, Met 17, ENSEMBLES', 0))
+        cubes.append(self._make_cube('2502', 'UK Met Office',
+                                     'HadCM3, Sys 51, Met 18, ENSEMBLES', 0))
+        cube = cubes.merge()
+        self.assertCML(cube, ('merge', 'separable_combination.cml'),
+                       checksum=False)
+
+
+class TestDimSelection(tests.IrisTest):
+    def _make_cube(self, a, b, data=0, a_dim=False, b_dim=False):
+        cube_data = np.empty((4, 5), dtype=np.float32)
+        cube_data[:] = data
+        cube = iris.cube.Cube(cube_data)
+        cube.add_dim_coord(DimCoord(np.array([0, 1, 2, 3, 4], dtype=np.int32),
+                                    long_name='x', units='1'), 1)
+        cube.add_dim_coord(DimCoord(np.array([0, 1, 2, 3], dtype=np.int32),
+                                    long_name='y', units='1'), 0)
+
+        for name, value, dim in zip(['a', 'b'], [a, b], [a_dim, b_dim]):
+            dtype = np.str if isinstance(value, basestring) else np.float32
+            ctype = DimCoord if dim else AuxCoord
+            coord = ctype(np.array([value], dtype=dtype),
+                          long_name=name, units='1')
+            cube.add_aux_coord(coord)
+
+        return cube
+
+    def test_string_a_with_aux(self):
+        templates = (('a', 0), ('b', 1), ('c', 2), ('d', 3))
+        cubes = [self._make_cube(a, b) for a, b in templates]
+        cube = iris.cube.CubeList(cubes).merge()[0]
+        self.assertCML(cube, ('merge', 'string_a_with_aux.cml'),
+                       checksum=False)
+        self.assertTrue(isinstance(cube.coord('a'), AuxCoord))
+        self.assertTrue(isinstance(cube.coord('b'), DimCoord))
+        self.assertTrue(cube.coord('b') in cube.dim_coords)
+
+    def test_string_b_with_aux(self):
+        templates = ((0, 'a'), (1, 'b'), (2, 'c'), (3, 'd'))
+        cubes = [self._make_cube(a, b) for a, b in templates]
+        cube = iris.cube.CubeList(cubes).merge()[0]
+        self.assertCML(cube, ('merge', 'string_b_with_aux.cml'),
+                       checksum=False)
+        self.assertTrue(isinstance(cube.coord('a'), DimCoord))
+        self.assertTrue(cube.coord('a') in cube.dim_coords)
+        self.assertTrue(isinstance(cube.coord('b'), AuxCoord))
+
+    def test_string_a_with_dim(self):
+        templates = (('a', 0), ('b', 1), ('c', 2), ('d', 3))
+        cubes = [self._make_cube(a, b, b_dim=True) for a, b in templates]
+        cube = iris.cube.CubeList(cubes).merge()[0]
+        self.assertCML(cube, ('merge', 'string_a_with_dim.cml'),
+                       checksum=False)
+        self.assertTrue(isinstance(cube.coord('a'), AuxCoord))
+        self.assertTrue(isinstance(cube.coord('b'), DimCoord))
+        self.assertTrue(cube.coord('b') in cube.dim_coords)
+
+    def test_string_b_with_aux(self):
+        templates = ((0, 'a'), (1, 'b'), (2, 'c'), (3, 'd'))
+        cubes = [self._make_cube(a, b, a_dim=True) for a, b in templates]
+        cube = iris.cube.CubeList(cubes).merge()[0]
+        self.assertCML(cube, ('merge', 'string_b_with_dim.cml'),
+                       checksum=False)
+        self.assertTrue(isinstance(cube.coord('a'), DimCoord))
+        self.assertTrue(cube.coord('a') in cube.dim_coords)
+        self.assertTrue(isinstance(cube.coord('b'), AuxCoord))
+
+    def test_string_a_b(self):
+        templates = (('a', '0'), ('b', '1'), ('c', '2'), ('d', '3'))
+        cubes = [self._make_cube(a, b) for a, b in templates]
+        cube = iris.cube.CubeList(cubes).merge()[0]
+        self.assertCML(cube, ('merge', 'string_a_b.cml'),
+                       checksum=False)
+        self.assertTrue(isinstance(cube.coord('a'), AuxCoord))
+        self.assertTrue(isinstance(cube.coord('b'), AuxCoord))
+
+    def test_a_aux_b_aux(self):
+        templates = ((0, 10), (1, 11), (2, 12), (3, 13))
+        cubes = [self._make_cube(a, b) for a, b in templates]
+        cube = iris.cube.CubeList(cubes).merge()[0]
+        self.assertCML(cube, ('merge', 'a_aux_b_aux.cml'),
+                       checksum=False)
+        self.assertTrue(isinstance(cube.coord('a'), DimCoord))
+        self.assertTrue(cube.coord('a') in cube.dim_coords)
+        self.assertTrue(isinstance(cube.coord('b'), DimCoord))
+        self.assertTrue(cube.coord('b') in cube.aux_coords)
+
+    def test_a_aux_b_dim(self):
+        templates = ((0, 10), (1, 11), (2, 12), (3, 13))
+        cubes = [self._make_cube(a, b, b_dim=True) for a, b in templates]
+        cube = iris.cube.CubeList(cubes).merge()[0]
+        self.assertCML(cube, ('merge', 'a_aux_b_dim.cml'),
+                       checksum=False)
+        self.assertTrue(isinstance(cube.coord('a'), DimCoord))
+        self.assertTrue(cube.coord('a') in cube.aux_coords)
+        self.assertTrue(isinstance(cube.coord('b'), DimCoord))
+        self.assertTrue(cube.coord('b') in cube.dim_coords)
+
+    def test_a_dim_b_aux(self):
+        templates = ((0, 10), (1, 11), (2, 12), (3, 13))
+        cubes = [self._make_cube(a, b, a_dim=True) for a, b in templates]
+        cube = iris.cube.CubeList(cubes).merge()[0]
+        self.assertCML(cube, ('merge', 'a_dim_b_aux.cml'),
+                       checksum=False)
+        self.assertTrue(isinstance(cube.coord('a'), DimCoord))
+        self.assertTrue(cube.coord('a') in cube.dim_coords)
+        self.assertTrue(isinstance(cube.coord('b'), DimCoord))
+        self.assertTrue(cube.coord('b') in cube.aux_coords)
+
+    def test_a_dim_b_dim(self):
+        templates = ((0, 10), (1, 11), (2, 12), (3, 13))
+        cubes = [self._make_cube(a, b, a_dim=True, b_dim=True) \
+                     for a, b in templates]
+        cube = iris.cube.CubeList(cubes).merge()[0]
+        self.assertCML(cube, ('merge', 'a_dim_b_dim.cml'),
+                       checksum=False)
+        self.assertTrue(isinstance(cube.coord('a'), DimCoord))
+        self.assertTrue(cube.coord('a') in cube.dim_coords)
+        self.assertTrue(isinstance(cube.coord('b'), DimCoord))
+        self.assertTrue(cube.coord('b') in cube.aux_coords)
 
 
 class TestTimeTripleMerging(tests.IrisTest):

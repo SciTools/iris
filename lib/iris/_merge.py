@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -582,7 +582,7 @@ def _is_dependent(dependent, independent, positions, function_mapping=None):
     return valid
 
 
-def _derive_separable_consistent_groups(relation_matrix, separable_group):
+def _derive_consistent_groups(relation_matrix, separable_group):
     """
     Determine the largest combinations of candidate dimensions within the
     separable group that are self consistently separable from one another.
@@ -656,7 +656,7 @@ def _build_separable_group(space, group, separable_consistent_groups, positions,
         participates in a functional relationship.
 
     Returns:
-        None.
+        Boolean.
 
     """
     valid = False
@@ -683,8 +683,8 @@ def _build_separable_group(space, group, separable_consistent_groups, positions,
     if valid:
         space.update({name: None for name in independent})
         space.update({name: tuple(independent) for name in dependent})
-    else:
-        raise iris.exceptions.NotYetImplementedError('No functional relationship between separable and inseparable candidate dimensions.')
+
+    return valid
 
 
 def _build_inseparable_group(space, group, positions, function_matrix):
@@ -820,7 +820,8 @@ def derive_space(groups, relation_matrix, positions, function_matrix=None):
           participates in a functional relationship.
 
     Returns:
-        A space dictionary describing the relationship between each candidate dimension. 
+        A space dictionary describing the relationship between each
+        candidate dimension. 
 
     """
     space = {}
@@ -829,22 +830,33 @@ def derive_space(groups, relation_matrix, positions, function_matrix=None):
         separable_group = _derive_separable_group(relation_matrix, group)
 
         if len(group) == 1 and not separable_group:
-            # This single candidate dimension is separable from all other candidate dimensions
-            # in the group, therefore it is a genuine dimension of the space.
+            # This single candidate dimension is separable from all other
+            # candidate dimensions in the group, therefore it is a genuine
+            # dimension of the space.
             space.update({name: None for name in group})
         elif separable_group:
-            # Determine the largest combination of the candidate dimensions 
+            # Determine the largest combination of the candidate dimensions
             # in the separable group that are consistently separable.
-            separable_consistent_groups = _derive_separable_consistent_groups(relation_matrix, separable_group)
-            _build_separable_group(space, group, separable_consistent_groups, positions, function_matrix)
+            consistent_groups = _derive_consistent_groups(relation_matrix,
+                                                          separable_group)
+            if not _build_separable_group(space, group, consistent_groups,
+                                          positions, function_matrix):
+                # There is no relationship between any of the candidate
+                # dimensions in the separable group, so merge them together
+                # into a new combined dimesion of the space.
+                _build_combination_group(space, group,
+                                         positions, function_matrix)
         else:
             # Determine whether there is a scalar relationship between one of
-            # the candidate dimensions and each of the other candidate dimensions 
-            # in this inseparable group.
-            if not _build_inseparable_group(space, group, positions, function_matrix):
-                # There is no relationship between any of the candidate dimensions in this 
-                # inseparable group, so merge them together into a new combined dimension of the space.
-                _build_combination_group(space, group, positions, function_matrix)
+            # the candidate dimensions and each of the other candidate
+            # dimensions in this inseparable group.
+            if not _build_inseparable_group(space, group,
+                                            positions, function_matrix):
+                # There is no relationship between any of the candidate
+                # dimensions in this inseparable group, so merge them together
+                # into a new combined dimension of the space.
+                _build_combination_group(space, group,
+                                         positions, function_matrix)
 
     return space
 
@@ -1064,7 +1076,8 @@ class ProtoCube(object):
                     dim_by_name[name] = len(self._shape)
                     self._nd_names.append(name)
                     self._shape.append(len(cells))
-                    self._cache_by_name[name] = {cell:index for index, cell in enumerate(cells)}
+                    self._cache_by_name[name] = {cell: index for index, cell \
+                                                     in enumerate(cells)}
                 else:
                     # TODO: Consider appropriate sort order (ascending, decending) i.e. use CF positive attribute.
                     cells = sorted(indexes[name])
@@ -1086,7 +1099,8 @@ class ProtoCube(object):
                         else:
                             self._dim_templates.append(_Template(dim, points, bounds, kwargs))
                         self._shape.append(len(cells))
-                        self._cache_by_name[name] = {cell:index for index, cell in enumerate(cells)}
+                        self._cache_by_name[name] = {cell: index for index, cell \
+                                                         in enumerate(cells)}
 
         # Second pass - Build the auxiliary coordinate templates for the space.
         for name in names:
@@ -1202,10 +1216,10 @@ class ProtoCube(object):
 
         # Build the dimension coordinates.
         for template in self._dim_templates:
-            # sometimes its not possible to build a dim coord (for example, 
-            # if your bounds are not monotonic, so try building the coordinate,
-            # and if it fails make the coordinate into a aux coord. This will
-            # ultimately make an anonymous dimension. 
+            # Sometimes it's not possible to build a dim coordinate e.g.
+            # the bounds are not monotonic, so try building the coordinate,
+            # and if it fails make the coordinate into an auxiliary coordinate.
+            # This will ultimately make an anonymous dimension.
             try:
                 coord = iris.coords.DimCoord(template.points,
                                              bounds=template.bounds,
@@ -1214,10 +1228,10 @@ class ProtoCube(object):
             except ValueError:
                 self._aux_templates.append(template)
 
-        # there is the potential that there are still anonymous dimensions
-        # get a list of the dimensions which are not anonymous at this stage
-        covered_dims = [dim_coord_and_dim.dims 
-                        for dim_coord_and_dim in dim_coords_and_dims]
+        # There is the potential that there are still anonymous dimensions.
+        # Get a list of the dimensions which are not anonymous at this stage.
+        covered_dims = [dim_coord_and_dim.dims \
+                            for dim_coord_and_dim in dim_coords_and_dims]
 
         # Build the auxiliary coordinates.
         for template in self._aux_templates:
@@ -1271,6 +1285,10 @@ class ProtoCube(object):
         """Create and add the source-cube skeleton to the ProtoCube."""
 
         skeleton = _Skeleton(coord_payload.scalar.values, cube._data)
+        # Attempt to do something sensible with mixed scalar dtypes.
+        for i, metadata in enumerate(coord_payload.scalar.metadata):
+            if metadata.points_dtype > self._coord_metadata[i].points_dtype:
+                self._coord_metadata[i] = metadata
         self._skeletons.append(skeleton)
 
     def _extract_coord_payload(self, cube):
@@ -1301,10 +1319,14 @@ class ProtoCube(object):
         hint_dict = {name: i for i, name in zip(range(len(self._hints), 0, -1), self._hints[::-1])}
         # Coordinate axis ordering dictionary.
         axis_dict = {'T': 0, 'Z': 1, 'Y': 2, 'X': 3}
-        # Coordinate sort function - by coordinate hint, then by guessed coordinate axis, then
-        # by coordinate definition, in ascending order.
-        key_func = lambda coord: (hint_dict.get(coord.name(), len(hint_dict) + 1),
-                                  axis_dict.get(iris.util.guess_coord_axis(coord), len(axis_dict) + 1),
+        # Coordinate sort function.
+        key_func = lambda coord: (not np.issubdtype(coord.points.dtype,
+                                                    np.number),
+                                  not isinstance(coord, iris.coords.DimCoord),
+                                  hint_dict.get(coord.name(),
+                                                len(hint_dict) + 1),
+                                  axis_dict.get(iris.util.guess_coord_axis(coord),
+                                                len(axis_dict) + 1),
                                   coord._as_defn())
 
         # Order the coordinates by hints, axis, and definition.
