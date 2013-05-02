@@ -685,6 +685,8 @@ class Saver(object):
                     dimension_names.append(dim_name)
                     self._dim_coords.append(coord)
                 else:
+                    # Return the dim_name associated with the existing coordinate
+                    dim_name = self._name_coord_map.name(coord)
                     dimension_names.append(dim_name)
 
             else:
