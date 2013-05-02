@@ -411,13 +411,29 @@ class IrisTest(unittest.TestCase):
             if not os.path.isdir(os.path.dirname(result_fname)):
                 os.makedirs(os.path.dirname(result_fname)) 
             
-            figure.savefig(result_fname)
+            figure.savefig(result_fname, dpi=45, bbox_inches='tight')
             
             if not os.path.exists(expected_fname):
                 warnings.warn('Created image for test %s' % unique_id)
                 shutil.copy2(result_fname, expected_fname)
             
-            err = mcompare.compare_images(expected_fname, result_fname, tol=tol)
+            try:
+                err = mcompare.compare_images(expected_fname,
+                                              result_fname,
+                                              tol=tol)
+            except ValueError as ex:
+                # ensure there is always a diff file if there was a test
+                # failiure.
+                diff_fname = os.path.join(os.path.dirname(__file__),
+                                          'result_image_comparison',
+                                          'result-' + unique_id + \
+                                          '-failed-diff.png')
+                efig = plt.figure()
+                plt.text(0.5, 0.5, 'Diff failed: {!s}'.format(ex),
+                         ha='center')
+                efig.savefig(diff_fname, dpi=45)
+                plt.close(efig)
+                raise
             
             if _DISPLAY_FIGURES:
                 if err:
