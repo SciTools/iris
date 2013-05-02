@@ -348,7 +348,7 @@ class TestNetCDFSave(tests.IrisTest):
         self.assertCDL(file_out, ('netcdf', 'netcdf_save_samevar.cdl'))
         os.remove(file_out)
 
-    def test_netcdf_multi_wtih_coords(self):
+    def test_netcdf_multi_with_coords(self):
         # Testing the saving of a cublist with coordinates.
         lat = iris.coords.DimCoord(np.arange(2),
                                    long_name=None, var_name='lat',
@@ -391,6 +391,28 @@ class TestNetCDFSave(tests.IrisTest):
 
         # Check the netCDF file against CDL expected output.
         self.assertCDL(file_out, ('netcdf', 'netcdf_save_samedimcoord.cdl'))
+        os.remove(file_out)
+
+    def test_netcdf_multi_conflict_name_dup_coord(self):
+        # Duplicate coordinates with modified variable names lookup.
+        latitude1 = iris.coords.DimCoord(np.arange(10),
+                                         standard_name='latitude')
+        time2 = iris.coords.DimCoord(np.arange(2),
+                                     standard_name='time')
+        latitude2 = iris.coords.DimCoord(np.arange(2),
+                                         standard_name='latitude')
+
+        self.cube6.add_dim_coord(latitude1, 0)
+        self.cube.add_dim_coord(latitude2[:], 1)
+        self.cube.add_dim_coord(time2[:], 0)
+
+        cubes = iris.cube.CubeList([self.cube, self.cube6, self.cube6.copy()])
+        file_out = iris.util.create_temp_filename(suffix='.nc')
+        iris.save(cubes, file_out)
+
+        # Check the netCDF file against CDL expected output.
+        self.assertCDL(file_out, ('netcdf',
+                                  'multi_dim_coord_slightly_different.cdl'))
         os.remove(file_out)
 
     def test_netcdf_hybrid_height(self):
