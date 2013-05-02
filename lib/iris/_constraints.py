@@ -244,7 +244,7 @@ class _CoordConstraint(object):
             msg = 'Cannot apply constraints to multidimensional coordinates'
             raise iris.exceptions.CoordinateMultiDimError(msg)
 
-        simple_value = False
+        try_quick = False
         if callable(self._coord_thing):
             call_func = self._coord_thing
         elif (isinstance(self._coord_thing, collections.Iterable) and
@@ -252,12 +252,16 @@ class _CoordConstraint(object):
             call_func = lambda cell: cell in list(self._coord_thing)
         else:
             call_func = lambda c: c == self._coord_thing
-            simple_value = not isinstance(self._coord_thing, iris.coords.Cell)
+            try_quick = isinstance(coord, iris.coords.DimCoord)
 
         # Simple, yet dramatic, optimisation for the monotonic case.
-        if simple_value and isinstance(coord, iris.coords.DimCoord):
+        if try_quick:
+            try:
+                i = coord.nearest_neighbour_index(self._coord_thing)
+            except TypeError:
+                try_quick = False
+        if try_quick:
             r = np.zeros(coord.shape, dtype=np.bool)
-            i = coord.nearest_neighbour_index(self._coord_thing)
             if coord.cell(i) == self._coord_thing:
                 r[i] = True
         else:
