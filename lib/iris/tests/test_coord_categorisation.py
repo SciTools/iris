@@ -82,8 +82,7 @@ class TestCategorisations(tests.IrisTest):
                            'weekday_number',
                            'season_number',
                            'year_ofseason',
-                           'year',
-                           'day',
+                           'year',                           
                            'day_of_year']:
             cube.coord(coord_name).points = \
                 cube.coord(coord_name).points.astype(np.int64)
