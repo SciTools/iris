@@ -222,18 +222,6 @@ class _CoordConstraint(object):
         """
         self.coord_name = coord_name
         self._coord_thing = coord_thing
-        self._call_func = self._cast_coord_thing()
-
-    def _cast_coord_thing(self):
-        """Turn the coord thing into a function where appropriate."""
-        if callable(self._coord_thing):
-            result = self._coord_thing
-        elif (isinstance(self._coord_thing, collections.Iterable) and
-              not isinstance(self._coord_thing, basestring)):
-            result = lambda cell: cell in list(self._coord_thing)
-        else:
-            result = lambda c: c == self._coord_thing
-        return result
 
     def __repr__(self):
         return '_CoordConstraint(%r, %r)' % (self.coord_name,
@@ -253,9 +241,31 @@ class _CoordConstraint(object):
             return cube_cim
         dims = cube.coord_dims(coord)
         if len(dims) > 1:
-            raise iris.exceptions.CoordinateMultiDimError(
-                'Cannot apply constraints to multidimensional coordinates')
-        r = np.array([self._call_func(cell) for cell in coord.cells()])
+            msg = 'Cannot apply constraints to multidimensional coordinates'
+            raise iris.exceptions.CoordinateMultiDimError(msg)
+
+        try_quick = False
+        if callable(self._coord_thing):
+            call_func = self._coord_thing
+        elif (isinstance(self._coord_thing, collections.Iterable) and
+              not isinstance(self._coord_thing, basestring)):
+            call_func = lambda cell: cell in list(self._coord_thing)
+        else:
+            call_func = lambda c: c == self._coord_thing
+            try_quick = isinstance(coord, iris.coords.DimCoord)
+
+        # Simple, yet dramatic, optimisation for the monotonic case.
+        if try_quick:
+            try:
+                i = coord.nearest_neighbour_index(self._coord_thing)
+            except TypeError:
+                try_quick = False
+        if try_quick:
+            r = np.zeros(coord.shape, dtype=np.bool)
+            if coord.cell(i) == self._coord_thing:
+                r[i] = True
+        else:
+            r = np.array([call_func(cell) for cell in coord.cells()])
         if dims:
             cube_cim[dims[0]] = r
         elif not all(r):
