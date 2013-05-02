@@ -155,7 +155,9 @@ def _resampled_grid(cube, x_samplefactor, y_samplefactor):
 
 class TestAreaWeightedRegrid(tests.GraphicsTest):
     def setUp(self):
+        # A cube with a hybrid height derived coordinate.
         self.realistic_cube = iris.tests.stock.realistic_4d()[:2, :5, :20, :30]
+        # A simple (3, 4) cube.
         self.simple_cube = iris.tests.stock.lat_lon_cube()
         self.simple_cube.coord('latitude').guess_bounds(0.0)
         self.simple_cube.coord('longitude').guess_bounds(0.0)
@@ -180,6 +182,48 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
 
         dest = self.simple_cube.copy()
         dest.coord('longitude').bounds = None
+        with self.assertRaises(ValueError):
+            regrid_area_weighted(src, dest)
+
+    def test_non_contiguous_bounds(self):
+        src = self.simple_cube.copy()
+        bounds = src.coord('latitude').bounds.copy()
+        bounds[1, 1] -= 0.1
+        src.coord('latitude').bounds = bounds
+        dest = self.simple_cube.copy()
+        with self.assertRaises(ValueError):
+            regrid_area_weighted(src, dest)
+
+        src = self.simple_cube.copy()
+        dest = self.simple_cube.copy()
+        bounds = dest.coord('longitude').bounds.copy()
+        bounds[1, 1] -= 0.1
+        dest.coord('longitude').bounds = bounds
+        with self.assertRaises(ValueError):
+            regrid_area_weighted(src, dest)
+
+    def test_missing_coords(self):
+        dest = self.simple_cube.copy()
+        # Missing src_x.
+        src = self.simple_cube.copy()
+        src.remove_coord('longitude')
+        with self.assertRaises(ValueError):
+            regrid_area_weighted(src, dest)
+        # Missing src_y.
+        src = self.simple_cube.copy()
+        src.remove_coord('latitude')
+        with self.assertRaises(ValueError):
+            regrid_area_weighted(src, dest)
+        # Missing dest_x.
+        src = self.simple_cube.copy()
+        dest = self.simple_cube.copy()
+        dest.remove_coord('longitude')
+        with self.assertRaises(ValueError):
+            regrid_area_weighted(src, dest)
+        # Missing dest_y.
+        src = self.simple_cube.copy()
+        dest = self.simple_cube.copy()
+        dest.remove_coord('latitude')
         with self.assertRaises(ValueError):
             regrid_area_weighted(src, dest)
 
@@ -213,8 +257,6 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
         src = self.simple_cube.copy()
         dest = _subsampled_grid(src, 4, 3)
         res = regrid_area_weighted(src, dest)
-        # All cells have almost the same area (note coords are
-        # lat, lon so small effect from spherical calc.)
         expected_val = np.mean(src.data)
         self.assertAlmostEqual(expected_val, res.data)
 
@@ -222,8 +264,6 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
         src = self.simple_cube.copy()
         dest = _subsampled_grid(src, 2, 3)
         res = regrid_area_weighted(src, dest)
-        # All cells have almost the same area (note coords are
-        # lat, lon so small effect from spherical calc.)
         expected_val_left = np.mean(src.data[:, 0:2])
         self.assertEqual(expected_val_left, res.data[0])
         expected_val_right = np.mean(src.data[:, 2:4])
@@ -277,11 +317,12 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
                         6. / 12. * np.mean(src.data[1:, 1:]))
         self.assertAlmostEqual(expected_val, res.data)
 
-    def test_regrid_latlon_to_half_res(self):
+    def test_regrid_latlon_reduced_res(self):
         src = self.simple_cube
+        # Reduce from (3, 4) to (2, 2).
         dest = _subsampled_grid(src, 2, 2)
         res = regrid_area_weighted(src, dest)
-        self.assertCMLApproxData(res, RESULT_DIR + ('latlonhalved.cml',))
+        self.assertCMLApproxData(res, RESULT_DIR + ('latlonreduced.cml',))
 
     def test_regrid_transposed(self):
         src = self.simple_cube.copy()
@@ -320,10 +361,22 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
 
     def test_hybrid_height(self):
         src = self.realistic_cube
-        dest = self.realistic_cube
+        dest = _resampled_grid(src, 0.7, 0.8)
         res = regrid_area_weighted(src, dest)
-        self.assertEqual(res, src)
         self.assertCMLApproxData(res, RESULT_DIR + ('hybridheight.cml',))
+        # Consider a single slice to allow visual tests of altitudes.
+        src = src[1, 2]
+        res = res[1, 2]
+        qplt.pcolormesh(res)
+        self.check_graphic()
+        plt.contourf(res.coord('grid_longitude').points,
+                     res.coord('grid_latitude').points,
+                     res.coord('altitude').points)
+        self.check_graphic()
+        plt.contourf(res.coord('grid_longitude').points,
+                     res.coord('grid_latitude').points,
+                     res.coord('surface_altitude').points)
+        self.check_graphic()
 
     def test_missing_data(self):
         src = self.simple_cube.copy()
@@ -380,6 +433,56 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
             dest = src[indices]
             res = regrid_area_weighted(src, dest)
             self.assertTrue(res, src[indices])
+
+    def test_cross_section(self):
+        # Slice to get a cross section.
+        # Constant latitude
+        src = self.realistic_cube[0, :, 10, :]
+        lon = _resampled_coord(src.coord('grid_longitude'), 0.6)
+        shape = list(src.shape)
+        shape[1] = len(lon.points)
+        data = np.zeros(shape)
+        dest = iris.cube.Cube(data)
+        dest.add_dim_coord(lon, 1)
+        dest.add_aux_coord(src.coord('grid_latitude').copy(), None)
+        res = regrid_area_weighted(src, dest)
+        self.assertCMLApproxData(res, RESULT_DIR +
+                                 ('const_lat_cross_section.cml',))
+        # Plot a single slice.
+        qplt.plot(res[0])
+        qplt.plot(src[0], 'r')
+        self.check_graphic()
+
+        # Constant longitude
+        src = self.realistic_cube[0, :, :, 10]
+        lat = _resampled_coord(src.coord('grid_latitude'), 0.6)
+        shape = list(src.shape)
+        shape[1] = len(lat.points)
+        data = np.zeros(shape)
+        dest = iris.cube.Cube(data)
+        dest.add_dim_coord(lat, 1)
+        dest.add_aux_coord(src.coord('grid_longitude').copy(), None)
+        res = regrid_area_weighted(src, dest)
+        self.assertCMLApproxData(res, RESULT_DIR +
+                                 ('const_lon_cross_section.cml',))
+        # Plot a single slice.
+        qplt.plot(res[0])
+        qplt.plot(src[0], 'r')
+        self.check_graphic()
+
+    def test_scalar_source_cube(self):
+        src = self.simple_cube[1, 2]
+        # Extend dest beyond src grid
+        dest = src.copy()
+        dest.coord('latitude').bounds = np.array([[-0.5, 1.5]])
+        res = regrid_area_weighted(src, dest)
+        self.assertTrue(res.data.mask.all())
+        # Shrink dest to 1/4 of src
+        dest = src.copy()
+        dest.coord('latitude').bounds = np.array([[0.25, 0.75]])
+        dest.coord('longitude').bounds = np.array([[1.25, 1.75]])
+        res = regrid_area_weighted(src, dest)
+        self.assertEqual(res.data, src.data)
 
     @tests.skip_data
     def test_global_data_reduce_res(self):
@@ -476,6 +579,7 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
         qplt.pcolormesh(res)
         plt.gca().coastlines()
         self.check_graphic()
+
 
 if __name__ == "__main__":
     tests.main()

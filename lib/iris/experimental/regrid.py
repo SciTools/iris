@@ -572,7 +572,6 @@ def _cropped_bounds(bounds, lower, upper):
             # Replace first and last values with specified bounds.
             new_bounds[0, 0] = lower
             new_bounds[-1, 1] = upper
-            #indices = tuple(range(l, u + 1))
             if reversed_flag:
                 indices = slice(n - (u + 1), n - l)
             else:
@@ -694,11 +693,11 @@ def _spherical_area(y_bounds, x_bounds, radius=1.0):
         y_bounds + np.pi / 2.0, x_bounds, radius)
 
 
-def _get_bounds_in_units(coord, units):
-    """Return a copy of coord's bounds in the specified units."""
-    coord = coord.copy()
-    coord.convert_units(units)
-    return coord.bounds
+def _get_bounds_in_units(coord, units, dtype):
+    """Return a copy of coord's bounds in the specified units and dtype."""
+    # The bounds are cast to dtype before conversion to prevent issues when
+    # mixing float32 and float64 types.
+    return coord.units.convert(coord.bounds.astype(dtype), units).astype(dtype)
 
 
 def _regrid_area_weighted_array(src_data, x_dim, y_dim,
@@ -755,8 +754,8 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
         new_shape[y_dim] = grid_y_bounds.shape[0]
 
     # Flag to indicate whether the original data was a masked array.
-    masked = ma.isMaskedArray(src_data)
-    if masked:
+    src_masked = ma.isMaskedArray(src_data)
+    if src_masked:
         new_data = ma.zeros(new_shape, fill_value=src_data.fill_value)
     else:
         new_data = ma.zeros(new_shape)
@@ -778,10 +777,10 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
 
             # Determine whether to mask element i, j based on overlap with
             # src.
-            # If x_0 > x_1 then we want [0]->x_1 and x_0->[-1] in the case of
-            # wrapped longitudes. However if the src grid is not global (i.e.
-            # circular) this new cell would include a region outside of the
-            # extent of the src grid and should therefore be masked.
+            # If x_0 > x_1 then we want [0]->x_1 and x_0->[0] + mod in the case
+            # of wrapped longitudes. However if the src grid is not global
+            # (i.e. circular) this new cell would include a region outside of
+            # the extent of the src grid and should therefore be masked.
             outside_extent = x_0 > x_1 and not circular
             if (outside_extent or not _within_bounds(src_y_bounds, y_0, y_1) or
                     not _within_bounds(src_x_bounds, x_0, x_1)):
@@ -816,7 +815,6 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
                 np_version = Version(*(int(val) for val in
                                        np.version.version.split('.')))
                 if np_version.minor < 7:
-                    warnings.warn('Rolling axes.')
                     if y_dim is not None and x_dim is not None:
                         flattened_shape = list(data.shape)
                         if y_dim > x_dim:
@@ -877,7 +875,7 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
 
                 # Determine suitable mask for data associated with cell.
                 # Could use all() here.
-                if masked:
+                if src_masked:
                     # data.mask may be a bool, if not collapse via any().
                     if data.mask.ndim:
                         new_data_pt_mask = data.mask.any(axis=axis)
@@ -890,17 +888,13 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
                 if y_dim is not None:
                     indices[y_dim] = j
                 new_data[tuple(indices)] = new_data_pt
-                if masked:
+                if src_masked:
                     new_data.mask[tuple(indices)] = new_data_pt_mask
 
     # Remove new mask if original data was not masked
     # and no values in the new array are masked.
-    if not masked and not new_data.mask.any():
+    if not src_masked and not new_data.mask.any():
         new_data = new_data.data
-
-    # Special case to make 0-dimensional results take the same form as NumPy
-    if new_data.shape == ():
-        new_data = new_data.flat[0]
 
     return new_data
 
@@ -910,6 +904,12 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube):
     Return a new cube with data values calculated using the area weighted
     mean of data values from src_grid regridded onto the horizontal grid of
     grid_cube.
+
+    This function requires that the horizontal grids of both cubes are
+    rectilinear (i.e. expressed in terms of two orthogonal 1D coordinates)
+    and that these grids are in the same coordinate system. This function
+    also requires that the coordinates describing the horizontal grids
+    all have bounds.
 
     Args:
 
@@ -943,13 +943,7 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube):
                          "and grid cubes must have the same coordinate "
                          "system.")
 
-    # Condition 3: Check for compatible coords.
-    if not src_x.is_compatible(grid_x) or not src_y.is_compatible(grid_y):
-        raise ValueError('The new grid must be defined on the same coordinate '
-                         'system, and have the same coordinate metadata, as '
-                         'the source.')
-
-    # Condition 4: cannot create vector coords from scalars.
+    # Condition 3: cannot create vector coords from scalars.
     src_x_dims = src_cube.coord_dims(src_x)
     src_x_dim = None
     if src_x_dims:
@@ -960,8 +954,10 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube):
         src_y_dim = src_y_dims[0]
     if src_x_dim is None and grid_x.shape[0] != 1 or \
             src_y_dim is None and grid_y.shape[0] != 1:
-        raise ValueError('The new grid must not require additional data '
-                         'dimensions.')
+        raise ValueError('The horizontal grid coordinates of source cube '
+                         'includes scalar coordinates, but the new grid does '
+                         'not. The new grid must not require additional data '
+                         'dimensions to be created.')
 
     # Determine whether to calculate flat or spherical areas.
     # Don't only rely on coord system as it may be None.
@@ -973,10 +969,15 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube):
     x_units = iris.unit.Unit('radians') if spherical else src_x.units
     y_units = iris.unit.Unit('radians') if spherical else src_y.units
 
-    src_x_bounds = _get_bounds_in_units(src_x, x_units)
-    src_y_bounds = _get_bounds_in_units(src_y, y_units)
-    grid_x_bounds = _get_bounds_in_units(grid_x, x_units)
-    grid_y_bounds = _get_bounds_in_units(grid_y, y_units)
+    # Operate in highest precision.
+    src_dtype = np.promote_types(src_x.bounds.dtype, src_y.bounds.dtype)
+    grid_dtype = np.promote_types(grid_x.bounds.dtype, grid_y.bounds.dtype)
+    dtype = np.promote_types(src_dtype, grid_dtype)
+
+    src_x_bounds = _get_bounds_in_units(src_x, x_units, dtype)
+    src_y_bounds = _get_bounds_in_units(src_y, y_units, dtype)
+    grid_x_bounds = _get_bounds_in_units(grid_x, x_units, dtype)
+    grid_y_bounds = _get_bounds_in_units(grid_y, y_units, dtype)
 
     # Determine whether target grid bounds are decreasing. This must
     # be determined prior to wrap_lons being called.
