@@ -1,0 +1,69 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube standard_name="air_potential_temperature" units="K">
+    <attributes>
+      <attribute name="source" value="Iris test case"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord id="73141289" points="[0.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-0.128249993861, -0.126749995426],
+		[-0.126749995426, -0.12524999699],
+		[-0.12524999699, -0.123749998555],
+		[-0.123749998555, -0.122250000119],
+		[-0.122250000119, -0.120750001684],
+		[-0.120750001684, -0.119250003248],
+		[-0.119250003248, -0.117750004813],
+		[-0.117750004813, -0.116250006378],
+		[-0.116250006378, -0.114750007942],
+		[-0.114750007942, -0.113250009507],
+		[-0.113250009507, -0.111750011071],
+		[-0.111750011071, -0.110250012636]]" id="3b3f362e" points="[-0.127499994643, -0.125999996208,
+		-0.124499997772, -0.122999999337,
+		-0.121500000902, -0.120000002466,
+		-0.118500004031, -0.117000005595,
+		-0.11550000716, -0.114000008724,
+		-0.112500010289, -0.111000011854]" shape="(12,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float64">
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[359.588, 359.589]]" id="5036c64b" points="[359.589]" shape="(1,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[0.0, 13.3333],
+		[13.3333, 33.3333],
+		[33.3333, 60.0],
+		[60.0, 93.3333],
+		[93.3333, 133.333]]" id="218bea13" long_name="level_height" points="[5.0, 21.6667, 45.0, 75.0, 111.667]" shape="(5,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="af0092b8" points="[1, 2, 3, 4, 5]" shape="(5,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[1.0, 0.998464],
+		[0.998464, 0.996162],
+		[0.996162, 0.993097],
+		[0.993097, 0.989272],
+		[0.989272, 0.984692]]" id="5f88ebd6" long_name="sigma" points="[0.999424, 0.997504, 0.99482, 0.991375, 0.987171]" shape="(5,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord>
+        <dimCoord id="6a1b3c16" points="[347921.166667]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data byteorder="little" dtype="float64" order="C" shape="(5, 12)" state="loaded"/>
+  </cube>
+</cubes>
