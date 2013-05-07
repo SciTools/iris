@@ -101,6 +101,7 @@ import itertools
 import logging
 import os
 import warnings
+import sys
 
 import iris.config
 import iris.cube
@@ -170,6 +171,56 @@ def _load_collection(uris, constraints=None, callback=None):
         raise iris.exceptions.TranslationError(
             "The file appears empty or incomplete: {!r}".format(e.message))
     return result
+
+def diff(cube_a, cube_b, output_file=None):
+    """
+    Prints the differences that prevent compatibility between two cubes, as
+    defined by :meth:`iris.cube.Cube.is_compatible()`.
+
+    Args:
+    
+    * cube_a:
+        An instance of :class:`iris.cube.Cube` or
+        :class:`iris.cube.CubeMetadata`.
+
+    * cube_b:
+        An instance of :class:`iris.cube.Cube` or
+        :class:`iris.cube.CubeMetadata`.
+        
+    * output_file:
+        A :class:`file` or file-like object to receive output. Defaults to
+        sys.stdout.
+
+    see also :meth:`iris.cube.Cube.is_compatible()`
+    
+    """
+    
+    if not output_file:
+        output_file = sys.stdout
+    
+    if cube_a.is_compatible(cube_b):
+        output_file.write('Cubes are compatible\n')
+    else:
+        common_keys = set(cube_a.attributes).intersection(cube_b.attributes)
+        for key in common_keys:
+            if cube_a.attributes[key] != cube_b.attributes[key]:
+                output_file.write('"%s" cube attribute value "%s" is not '
+                'compatible with cube_b cube attribute value "%s\n"'
+                % (key, cube_a.attributes[key], cube_b.attributes[key]))
+            
+        if cube_a.name() != cube_b.name():
+            output_file.write('Cube name "%s" is not compatible '
+                  'with cube_b cube name "%s"\n'
+                   % (cube_a.name(), cube_b.name()))
+                   
+        if cube_a.units != cube_b.units:
+            output_file.write('Cube units "%s" are not compatible with cube_b '
+                  'cube units "%s"\n' % (cube_a.units, cube_b.units))
+            
+        for uncommon_method in set(cube_a.cell_methods).\
+                        difference(cube_b.cell_methods):
+            output_file.write('"%s" cell method is not common between this cube '
+                  'and cube_b cube\n' % (uncommon_method))
 
 
 def load(uris, constraints=None, callback=None):

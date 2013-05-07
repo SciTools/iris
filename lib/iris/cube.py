@@ -536,6 +536,8 @@ class Cube(CFVariableMixin):
         Returns:
            Boolean.
 
+        see also :meth:`iris.diff()`
+        
         """
         compatible = (self.name() == other.name() and
                       self.units == other.units and

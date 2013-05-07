@@ -58,7 +58,8 @@ def add_categorised_coord(cube, name, from_coord, category_function, units='1'):
         from_coord = cube.coord(from_coord)
     
     if len(cube.coords(name)) > 0:
-        raise ValueError('A coordinate "%s" already exists in the cube.' % name)
+        warnings.warn('Overwriting coordinate "%s".' % name)
+        cube.remove_coord(name)
     
     #construct new coordinate by mapping values
     points = [category_function(from_coord, value) for value in from_coord.points]
