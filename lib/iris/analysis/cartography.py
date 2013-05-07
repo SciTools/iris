@@ -71,8 +71,8 @@ def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
     target_proj = ccrs.Geodetic()
     res = target_proj.transform_points(x=rotated_lons, y=rotated_lats,
                                        src_crs=src_proj)
-    # Transpose to more easily index
-    unrotated_lon, unrotated_lat, _ = res.transpose()
+    unrotated_lon = res[..., 0]
+    unrotated_lat = res[..., 1] 
 
     return unrotated_lon, unrotated_lat
 
@@ -91,8 +91,8 @@ def rotate_pole(lons, lats, pole_lon, pole_lat):
                                        pole_latitude=pole_lat)
     res = target_proj.transform_points(x=lons, y=lats,
                                        src_crs=src_proj)
-    # Transpose to more easily index
-    rotated_lon, rotated_lat, _ = res.transpose()
+    rotated_lon = res[..., 0]
+    rotated_lat = res[..., 1] 
 
     return rotated_lon, rotated_lat
 

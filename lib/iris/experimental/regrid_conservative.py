@@ -85,9 +85,9 @@ def _make_esmpy_field(x_coord, y_coord, ref_name='field',
     # Add grid 'coord' element for corners, and fill with corner values.
     grid.add_coords(staggerlocs=[ESMF.StaggerLoc.CORNER])
     grid_corners_x = grid.get_coords(0, ESMF.StaggerLoc.CORNER)
-    grid_corners_x[:] = lon_bounds
+    grid_corners_x[:] = lon_bounds.T
     grid_corners_y = grid.get_coords(1, ESMF.StaggerLoc.CORNER)
-    grid_corners_y[:] = lat_bounds
+    grid_corners_y[:] = lat_bounds.T
 
     # calculate the cell centre-points
     # NOTE: we don't care about Iris' idea of where the points 'really' are
@@ -115,9 +115,9 @@ def _make_esmpy_field(x_coord, y_coord, ref_name='field',
     # Add grid 'coord' element for centres + fill with centre-points values.
     grid.add_coords(staggerlocs=[ESMF.StaggerLoc.CENTER])
     grid_centers_x = grid.get_coords(0, ESMF.StaggerLoc.CENTER)
-    grid_centers_x[:] = lon_points
+    grid_centers_x[:] = lon_points.T
     grid_centers_y = grid.get_coords(1, ESMF.StaggerLoc.CENTER)
-    grid_centers_y[:] = lat_points
+    grid_centers_y[:] = lat_points.T
 
     # Add a mask item, if requested
     if mask is not None:
