@@ -127,19 +127,6 @@ def izip(*cubes, **kwargs):
         coords_by_def_b = set(_CoordWrapper(coord) for coord in
                               dimensioned_iter_coords_b)
 
-        # Check to see if one cube is not a 'subspace' of the other, i.e.
-        # raise exception if cube_a has dimensioned coords that cube_b doesn't
-        # have, and cube_b has dimensioned coords that cube_a doesn't have.
-        # _ZipSlicesIterator will handle the case where this is true and will
-        # iterate through both separately, but it is sufficiently unlikely
-        # that the user really intends to do this that we catch it and raise
-        # an exception.
-        unique_a = coords_by_def_a - coords_by_def_b
-        unique_b = coords_by_def_b - coords_by_def_a
-        if len(unique_a) != 0 and len(unique_b) != 0:
-            raise ValueError("More than one cube contains a unique dimensioned"
-                             " coordinate.")
-
         # Check that the dimensioned coords that are common across the cubes
         # (i.e. have same definition/metadata) have the same shape. If this is
         # not the case it makes no sense to iterate through the coordinate in
