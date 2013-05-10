@@ -43,6 +43,22 @@ class TestCubeDelta(tests.IrisTest):
         with self.assertRaises(ValueError):
             t = iris.analysis.calculus.cube_delta(cube, 'forecast_period')
 
+    def test_delta_coord_lookup(self):
+        cube = iris.cube.Cube(np.arange(10), standard_name='air_temperature')
+        # Add a coordinate with a lot of metadata.
+        coord = iris.coords.DimCoord(np.arange(10),
+                                     long_name='projection_x_coordinate',
+                                     var_name='foo',
+                                     attributes={'source': 'testing'},
+                                     units='m',
+                                     coord_system=iris.coord_systems.OSGB())
+        cube.add_dim_coord(coord, 0)
+        delta = iris.analysis.calculus.cube_delta(cube,
+                                                  'projection_x_coordinate')
+        delta_coord = delta.coord('projection_x_coordinate')
+        self.assertEqual(delta_coord, delta.coord(coord=coord))
+        self.assertEqual(coord, cube.coord(coord=delta_coord))
+
 
 class TestDeltaAndMidpoint(tests.IrisTest):
     def _simple_filename(self, suffix):

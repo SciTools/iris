@@ -111,9 +111,6 @@ def _construct_midpoint_coord(coord, circular=None):
         mid_point_coord = coord.from_coord(coord).copy(mid_point_points, mid_point_bounds)
     except ValueError:
         mid_point_coord = iris.coords.AuxCoord.from_coord(coord).copy(mid_point_points, mid_point_bounds)
-    
-    # Set the coord name to the original name (as coord_delta will have modified it to change_in_*)
-    mid_point_coord.rename(coord.name())
 
     return mid_point_coord
 
