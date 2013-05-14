@@ -34,13 +34,22 @@ from iris.coord_systems import GeogCS, RotatedGeogCS
 
 def lat_lon_cube():
     """
-    Returns a cube with a latitude and longitude suitable for testing saving to PP/NetCDF etc.
+    Returns a cube with a latitude and longitude suitable for testing
+    saving to PP/NetCDF etc.
     
     """
     cube = Cube(np.arange(12, dtype=np.int32).reshape((3, 4)))
     cs = GeogCS(6371229)
-    cube.add_dim_coord(iris.coords.DimCoord(points=np.array([-1, 0, 1], dtype=np.int32), standard_name='latitude', units='degrees', coord_system=cs), 0)
-    cube.add_dim_coord(iris.coords.DimCoord(points=np.array([-1, 0, 1, 2], dtype=np.int32), standard_name='longitude', units='degrees', coord_system=cs), 1)
+    coord = iris.coords.DimCoord(points=np.array([-1, 0, 1], dtype=np.int32),
+                                 standard_name='latitude',
+                                 units='degrees',
+                                 coord_system=cs)
+    cube.add_dim_coord(coord, 0)
+    coord = iris.coords.DimCoord(points=np.array([-1, 0, 1, 2], dtype=np.int32),
+                                 standard_name='longitude',
+                                 units='degrees',
+                                 coord_system=cs)
+    cube.add_dim_coord(coord, 1)
     return cube
 
 

@@ -130,6 +130,18 @@ THEN
 ### time - lbtim, t1, t2 and lbft (but not lbproc) ###
 ######################################################
 
+#no forecast
+IF
+    scalar_coord(cm, 'time') is not None
+    scalar_coord(cm, 'forecast_period') is None
+    scalar_coord(cm, 'forecast_reference_time') is None
+THEN
+    pp.lbtim.ia = 0
+    pp.lbtim.ib = 0
+    pp.t1 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').points[0])
+    pp.t2 = netcdftime.datetime(0, 0, 0)
+
+
 #forecast
 IF
     scalar_coord(cm, 'time') is not None
