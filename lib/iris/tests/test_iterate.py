@@ -22,6 +22,7 @@ Test the iteration of cubes in step.
 # importing anything else
 import iris.tests as tests
 
+import itertools
 import operator
 import random
 import warnings
@@ -437,8 +438,78 @@ class TestIterateFunctions(tests.IrisTest):
         it = iris.iterate.izip(cube1, cube2, coords=['y', 'x'])
         cubes = list(np.array(list(it)).flatten()) 
         self.assertCML(cubes, ('iterate', 'izip_nd_ortho.cml'))
-        
+
+    def _check_2d_slices(self):
+        # Helper method to verify slices from izip match those from
+        # cube.slices().
+        slice_a_iterator = self.cube_a.slices(self.coord_names)
+        slice_b_iterator = self.cube_b.slices(self.coord_names)
+        nslices = self.cube_b.shape[0]
+        count = 0
+        for slice_a, slice_b in iris.iterate.izip(self.cube_a,
+                                                  self.cube_b,
+                                                  coords=self.coord_names):
+            self.assertEqual(slice_a, next(slice_a_iterator))
+            self.assertEqual(slice_b, next(slice_b_iterator))
+            count += 1
+        self.assertEqual(count, nslices)
+
+    def test_izip_extra_coords_step_dim(self):
+        # Add extra different coords to cubes along the dimension we are
+        # stepping through.
+        coord_a = iris.coords.AuxCoord(np.arange(self.cube_a.shape[0]),
+                                       long_name='another on a')
+        self.cube_a.add_aux_coord(coord_a, 0)
+        coord_b = iris.coords.AuxCoord(np.arange(self.cube_b.shape[0]),
+                                       long_name='another on b')
+        self.cube_b.add_aux_coord(coord_b, 0)
+        # Check slices.
+        self._check_2d_slices()
+
+    def test_izip_extra_coords_slice_dim(self):
+        # Add extra different coords to cubes along a dimension we are
+        # not stepping through.
+        coord_a = iris.coords.AuxCoord(np.arange(self.cube_a.shape[1]),
+                                       long_name='another on a')
+        self.cube_a.add_aux_coord(coord_a, 1)
+        coord_b = iris.coords.AuxCoord(np.arange(self.cube_b.shape[1]),
+                                       long_name='another on b')
+        self.cube_b.add_aux_coord(coord_b, 1)
+        self._check_2d_slices()
+
+    def test_izip_extra_coords_both_slice_dims(self):
+        # Add extra different coords to cubes along the dimensions we are
+        # not stepping through.
+        coord_a = iris.coords.AuxCoord(np.arange(self.cube_a.shape[1]),
+                                       long_name='another on a')
+        self.cube_a.add_aux_coord(coord_a, 1)
+        coord_b = iris.coords.AuxCoord(np.arange(self.cube_b.shape[2]),
+                                       long_name='another on b')
+        self.cube_b.add_aux_coord(coord_b, 2)
+        self._check_2d_slices()
+
+    def test_izip_no_common_coords_on_step_dim(self):
+        # Change metadata on all coords along the dimension we are
+        # stepping through.
+        self.cube_a.coord('model_level_number').rename('foo')
+        self.cube_a.coord('sigma').rename('bar')
+        self.cube_a.coord('level_height').rename('woof')
+        # izip should step through them as a product.
+        slice_a_iterator = self.cube_a.slices(self.coord_names)
+        slice_b_iterator = self.cube_b.slices(self.coord_names)
+        product_iterator = itertools.product(slice_a_iterator,
+                                             slice_b_iterator)
+        nslices = self.cube_a.shape[0] * self.cube_b.shape[0]
+        count = 0
+        for slice_a, slice_b in iris.iterate.izip(self.cube_a,
+                                                  self.cube_b,
+                                                  coords=self.coord_names):
+            expected_a, expected_b = next(product_iterator)
+            self.assertEqual(slice_a, expected_a)
+            self.assertEqual(slice_b, expected_b)
+            count += 1
+        self.assertEqual(count, nslices)
+
 
 if __name__ == '__main__':
     tests.main()
-
