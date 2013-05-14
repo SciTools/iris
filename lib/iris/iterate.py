@@ -32,24 +32,35 @@ __all__ = ['izip']
 
 def izip(*cubes, **kwargs):
     """
-    Returns an iterator for iterating over a collection of cubes in step.
+    Return an iterator for iterating over a collection of cubes in step.
+
+    If the input cubes have dimensions for which there are no common
+    coordinates, those dimensions will be treated as orthogonal. The
+    resulting iterator will step through combinations of the associated
+    coordinates.
 
     Args:
 
-    * cubes : sequence of iris Cubes
+    * cubes (:class:`iris.cube.Cube`):
+        One or more :class:`iris.cube.Cube` instances over which to iterate in
+        step. Each cube should be provided as a separate argument e.g.
+        ``iris.iterate.izip(cube_a, cube_b, cube_c, ...)``.
 
     Kwargs:
 
     * coords (string, coord or a list of strings/coords):
-        Coordinate names/coordinates of the desired sub cubes (i.e. the coords
+        Coordinate names/coordinates of the desired subcubes (i.e. those
         that are not iterated over). They must all be orthogonal (i.e. point
         to different dimensions).
     * ordered (Boolean):
-        If True (default), the order which the coords to slice are given will
-        be the order in which they represent the data in the resulting slices.
+        If True (default), the order of the coordinates in the resulting
+        subcubes will match the order of the coordinates in the coords
+        keyword argument. If False, the order of the coordinates will
+        be preserved and will match that of the input cubes.
 
     Returns:
-        A tuple of iterators for the resulting slices.
+        An iterator over a collection of tuples that contain the resulting
+        subcubes.
 
     For example:
         >>> e_content, e_density = iris.load_cubes(
@@ -126,19 +137,6 @@ def izip(*cubes, **kwargs):
                               dimensioned_iter_coords_a)
         coords_by_def_b = set(_CoordWrapper(coord) for coord in
                               dimensioned_iter_coords_b)
-
-        # Check to see if one cube is not a 'subspace' of the other, i.e.
-        # raise exception if cube_a has dimensioned coords that cube_b doesn't
-        # have, and cube_b has dimensioned coords that cube_a doesn't have.
-        # _ZipSlicesIterator will handle the case where this is true and will
-        # iterate through both separately, but it is sufficiently unlikely
-        # that the user really intends to do this that we catch it and raise
-        # an exception.
-        unique_a = coords_by_def_a - coords_by_def_b
-        unique_b = coords_by_def_b - coords_by_def_a
-        if len(unique_a) != 0 and len(unique_b) != 0:
-            raise ValueError("More than one cube contains a unique dimensioned"
-                             " coordinate.")
 
         # Check that the dimensioned coords that are common across the cubes
         # (i.e. have same definition/metadata) have the same shape. If this is
