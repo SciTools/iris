@@ -171,12 +171,25 @@ THEN
     pp.lbft = scalar_coord(cm, 'forecast_period').points[0]
 
 IF
+    # Handle missing forecast period using time and forecast reference time.
+    scalar_coord(cm, 'time') is not None
+    scalar_coord(cm, 'time').has_bounds()
+    scalar_coord(cm, 'clim_season') is None
+    scalar_coord(cm, 'forecast_period') is None
+    scalar_coord(cm, 'forecast_reference_time') is not None
+THEN
+    pp.lbtim.ib = 2
+    pp.t1 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0])
+    pp.t2 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1])
+    pp.lbft = calculate_forecast_period(scalar_coord(cm, 'time'), scalar_coord(cm, 'forecast_reference_time'))
+
+IF
     # XXX Note the repetition of the previous rule's constraints
     # This can be addressed through REQUIRES/PROVIDES extensions
     scalar_coord(cm, 'time') is not None
     scalar_coord(cm, 'time').has_bounds()
     scalar_coord(cm, 'clim_season') is None
-    scalar_coord(cm, 'forecast_period') is not None
+    scalar_coord(cm, 'forecast_period') is not None or scalar_coord(cm, 'forecast_reference_time') is not None
     scalar_cell_method(cm, 'mean', 'time') is not None
     scalar_cell_method(cm, 'mean', 'time').intervals != ()
     scalar_cell_method(cm, 'mean', 'time').intervals[0].endswith('hour')
@@ -188,7 +201,7 @@ IF
     scalar_coord(cm, 'time') is not None
     scalar_coord(cm, 'time').has_bounds()
     scalar_coord(cm, 'clim_season') is None
-    scalar_coord(cm, 'forecast_period') is not None
+    scalar_coord(cm, 'forecast_period') is not None or scalar_coord(cm, 'forecast_reference_time') is not None
     scalar_cell_method(cm, 'mean', 'time') is None or scalar_cell_method(cm, 'mean', 'time').intervals == () or not scalar_cell_method(cm, 'mean', 'time').intervals[0].endswith('hour')
 THEN
     pp.lbtim.ia = 0
