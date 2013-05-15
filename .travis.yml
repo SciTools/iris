@@ -19,7 +19,7 @@ install:
   - export CARTOPY_REF="v0.7.0"
   - export CARTOPY_SUFFIX=$(echo "${CARTOPY_REF}" | sed "s/^v//")
 
-  - export IRIS_TEST_DATA_REF="v1.1"
+  - export IRIS_TEST_DATA_REF="v1.2"
   - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
 
   - export IRIS_SAMPLE_DATA_REF="v1.0"

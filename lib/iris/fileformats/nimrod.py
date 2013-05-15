@@ -226,18 +226,22 @@ def load_cubes(filenames, callback=None):
     for filename in filenames:
         for path in glob.glob(filename):
             with open(path, "rb") as infile:
-                try:
-                    field = NimrodField(infile)
-                except struct.error:
-                    # End of file. Move on to the next file.
-                    continue
+                while True:
+                    try:
+                        field = NimrodField(infile)
+                    except struct.error:
+                        # End of file. Move on to the next file.
+                        break
 
-                cube = iris.fileformats.nimrod_load_rules.run(field)
+                    cube = iris.fileformats.nimrod_load_rules.run(field)
 
-            # Were we given a callback?
-            if callback is not None:
-                cube = iris.io.run_callback(callback, cube, field, filename)
-                if cube is None:
-                    continue
+                    # Were we given a callback?
+                    if callback is not None:
+                        cube = iris.io.run_callback(callback,
+                                                    cube,
+                                                    field,
+                                                    filename)
+                    if cube is None:
+                        continue
 
-            yield cube
+                    yield cube
