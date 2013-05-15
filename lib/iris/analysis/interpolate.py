@@ -697,38 +697,55 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
             offset = (src_points.max() + src_points.min() - modulus) * 0.5
             sample_values = ((sample_values - offset) % modulus) + offset
 
-        if len(src_points) <= 1:
-            raise ValueError('Cannot linearly interpolate a coordinate {!r}'
-                             ' with one point.'.format(src_coord.name()))
-        
-        monotonic, direction = iris.util.monotonic(src_points,
-                                                   return_direction=True)
-        if not monotonic:
-            raise ValueError('Unable to linearly interpolate this cube as the'
-                             ' coordinate {!r} is not monotonic'.format(
-                                src_coord.name()))
-        # SciPy's interp1d requires monotonic increasing coord values.
-        if direction == -1:
-            src_points = iris.util.reverse(src_points, axes=0)
-            data = iris.util.reverse(data, axes=sample_dim)
+        if len(src_points) == 1:
+            if extrapolation_mode == 'error':
+                raise ValueError('Attempting to extrapolate from a single '
+                                 'point with extrapolation mode set '
+                                 'to {!r}.'.format(extrapolation_mode))
+            direction = 0
 
-        # Wrap it all up in a function which makes the right kind of
-        # interpolator/extrapolator.
-        # NB. This uses a closure to capture the values of src_points,
-        # bounds_error, and extrapolation_mode.
-        def interpolate(fx, new_x, **kwargs):
-            # SciPy's interp1d needs float values, so if we're given
-            # integer values, convert them to the smallest possible
-            # float dtype that can accurately preserve the values.
-            if fx.dtype.kind == 'i':
-                fx = fx.astype(np.promote_types(fx.dtype, np.float16))
-            x = src_points.astype(fx.dtype)
-            interpolator = interp1d(x, fx, kind='linear',
-                                    bounds_error=bounds_error, **kwargs)
-            if extrapolation_mode == 'linear':
-                interpolator = Linear1dExtrapolator(interpolator)
-            new_fx = interpolator(np.array(new_x, dtype=fx.dtype))
-            return new_fx
+            def interpolate(fx, new_x, axis=None, **kwargs):
+                # All kwargs other than axis are ignored.
+                if axis is None:
+                    axis = -1
+                new_shape = list(fx.shape)
+                new_shape[axis] = len(new_x)
+                fx = np.broadcast_arrays(fx, np.empty(new_shape))[0].copy()
+                if extrapolation_mode == 'nan':
+                    indices = slice(None) * fx.ndim
+                    indices[axis] = new_x != sample_points
+                    fx[tuple(indices)] = np.nan
+                return fx
+        else:
+            monotonic, direction = iris.util.monotonic(src_points,
+                                                       return_direction=True)
+            if not monotonic:
+                raise ValueError('Unable to linearly interpolate this '
+                                 'cube as the coordinate {!r} is not '
+                                 'monotonic'.format(src_coord.name()))
+
+            # SciPy's interp1d requires monotonic increasing coord values.
+            if direction == -1:
+                src_points = iris.util.reverse(src_points, axes=0)
+                data = iris.util.reverse(data, axes=sample_dim)
+
+            # Wrap it all up in a function which makes the right kind of
+            # interpolator/extrapolator.
+            # NB. This uses a closure to capture the values of src_points,
+            # bounds_error, and extrapolation_mode.
+            def interpolate(fx, new_x, **kwargs):
+                # SciPy's interp1d needs float values, so if we're given
+                # integer values, convert them to the smallest possible
+                # float dtype that can accurately preserve the values.
+                if fx.dtype.kind == 'i':
+                    fx = fx.astype(np.promote_types(fx.dtype, np.float16))
+                x = src_points.astype(fx.dtype)
+                interpolator = interp1d(x, fx, kind='linear',
+                                        bounds_error=bounds_error, **kwargs)
+                if extrapolation_mode == 'linear':
+                    interpolator = Linear1dExtrapolator(interpolator)
+                new_fx = interpolator(np.array(new_x, dtype=fx.dtype))
+                return new_fx
 
         # 2) Interpolate the data and produce our new Cube.
         data = interpolate(data, sample_values, axis=sample_dim, copy=False)
