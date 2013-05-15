@@ -440,14 +440,21 @@ class GraphicsTest(IrisTest):
 
 def skip_data(fn):
     """
-    Decorator to decide if to run the test or not based on the
-    availability of external data.
+    Decorator to choose whether to run tests, based on the availability of
+    external data.
+
+    Example usage:
+        @skip_data
+        class MyDataTests(tests.IrisTest):
+            ...
 
     """
-    valid_data = (iris.config.TEST_DATA_DIR and
-                  os.path.isdir(iris.config.TEST_DATA_DIR))
-    if valid_data and not os.environ.get('IRIS_TEST_NO_DATA'):
-        return fn
-    else:
-        skip = unittest.skip("These/this test(s) requires external data.")
-        return skip(fn)
+    no_data = (not iris.config.TEST_DATA_DIR
+               or not os.path.isdir(iris.config.TEST_DATA_DIR)
+               or os.environ.get('IRIS_TEST_NO_DATA'))
+
+    skip = unittest.skipIf(
+        condition=no_data,
+        reason='Test(s) require external data.')
+
+    return skip(fn)

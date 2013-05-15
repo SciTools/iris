@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,6 +24,7 @@ import iris.tests as tests
 
 import cStringIO
 import os
+import unittest
 
 import iris
 import iris.cube
@@ -31,7 +32,14 @@ import iris.util
 import iris.fileformats.pp as pp
 import iris.fileformats.dot as dot
 
+# Make a test skip decorator, for when DOT not available
+skip_dotpng = unittest.skipIf(
+    not dot.DOT_AVAILABLE,
+    'Test(s) require the "dot" executable, which was not found. '
+    'Check the dot_path setting in site.cfg.')
+
 CHKSUM_ERR = "Mismatch between checksum of iris.save and {}.save."
+
 
 def save_by_filename(filename1, filename2, cube, saver_fn, iosaver=None):
     """ Saves a cube to two different filenames using iris.save and the save method of the object representing the file type directly"""
@@ -129,6 +137,8 @@ class TestSaveDot(TestSaveMethods):
         # Compare files
         self.assertEquals(data, string_io.getvalue(), "Mismatch in data when comparing iris cstringio save and dot.save.")
 
+
+@skip_dotpng
 class TestSavePng(TestSaveMethods):
     """Test saving cubes to png"""
     ext = ".dotpng"
@@ -171,6 +181,7 @@ class TestSaver(TestSaveMethods):
         # Compare files
         self.assertEquals(self.file_checksum(self.temp_filename2), self.file_checksum(self.temp_filename1), CHKSUM_ERR.format(self.ext))
 
+    @skip_dotpng
     def test_png(self):
         # Make our own saver
         png_saver = iris.io.find_saver("DOTPNG")
