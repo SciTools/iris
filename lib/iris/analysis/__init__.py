@@ -917,7 +917,12 @@ class _Groupby(object):
                                           coord.points[stop]])
  
             # Now create the new bounded group shared coordinate.
-            new_points = np.array(new_bounds).mean(-1)
+            try:
+                new_points = np.array(new_bounds).mean(-1)
+            except TypeError:
+                msg = 'The {0!r} coordinate on the collapsing dimension' \
+                      ' cannot be collapsed.'.format(coord.name())
+                raise ValueError(msg)
 
             try:
                 self.coords.append(coord.copy(points=new_points,
