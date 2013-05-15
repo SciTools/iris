@@ -33,7 +33,7 @@ install:
 # install deps
   - ./.travis_no_output sudo apt-get install python-scipy cython python-pip
   - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors shapely nose pyshp pep8 mock
-  - ./.travis_no_output sudo /usr/bin/pip install matplotlib==1.2.0
+  - ./.travis_no_output sudo /usr/bin/pip install matplotlib==1.2.1
   - ./.travis_no_output sudo apt-get install libgeos-dev libproj-dev
   - ./.travis_no_output sudo apt-get install libudunits2-dev libhdf5-serial-dev netcdf-bin libnetcdf-dev
   - ./.travis_no_output sudo apt-get install make unzip python-sphinx graphviz

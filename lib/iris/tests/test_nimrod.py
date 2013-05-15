@@ -46,7 +46,7 @@ class TestLoad(tests.GraphicsTest):
                  '201007020900_u1096_ng_ey00_visibility0180_screen_2km')))[0]
         self.assertCML(cube, ("nimrod", "load.cml"))
 
-        ax = plt.subplot(1, 1, 1, projection=ccrs.OSGB())
+        ax = plt.axes([0.05, 0.05, 0.9, 0.9], projection=ccrs.OSGB())
         qplt.contourf(cube, coords=["projection_x_coordinate",
                                     "projection_y_coordinate"],
                       levels=np.linspace(-25000, 6000, 10))
