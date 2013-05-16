@@ -560,6 +560,12 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
 
         By definition, linear interpolation requires all coordinates to
         be 1-dimensional.
+
+    .. note::
+
+        If a specified coordinate is single valued its value will be
+        extrapolated to the desired sample points by assuming a gradient of
+        zero.
     
     Args:
     
@@ -698,7 +704,8 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
             sample_values = ((sample_values - offset) % modulus) + offset
 
         if len(src_points) == 1:
-            if extrapolation_mode == 'error':
+            if extrapolation_mode == 'error' and \
+                    np.any(sample_values != src_points):
                 raise ValueError('Attempting to extrapolate from a single '
                                  'point with extrapolation mode set '
                                  'to {!r}.'.format(extrapolation_mode))
@@ -708,12 +715,13 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
                 # All kwargs other than axis are ignored.
                 if axis is None:
                     axis = -1
+                new_x = np.array(new_x)
                 new_shape = list(fx.shape)
-                new_shape[axis] = len(new_x)
+                new_shape[axis] = new_x.size
                 fx = np.broadcast_arrays(fx, np.empty(new_shape))[0].copy()
                 if extrapolation_mode == 'nan':
-                    indices = slice(None) * fx.ndim
-                    indices[axis] = new_x != sample_points
+                    indices = [slice(None)] * fx.ndim
+                    indices[axis] = new_x != src_points
                     fx[tuple(indices)] = np.nan
                 return fx
         else:

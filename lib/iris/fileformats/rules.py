@@ -714,8 +714,6 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
         # target_cube... so we can't regrid (i.e. just return None).
         pass
     else:
-        # Convert to tuple (as iris.cube.Cube.dim_coords property is a tuple).
-        target_coords = tuple(target_coords)
         # So we can use `iris.analysis.interpolate.linear()` later,
         # ensure each target coord is either a scalar or maps to a
         # single, distinct dimension.
@@ -731,7 +729,9 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
             if cache_key not in regrid_cache:
                 regrid_cache[cache_key] = ([src_cube.dim_coords], [src_cube])
             grids, cubes = regrid_cache[cache_key]
-
+            # 'grids' is a list of tuples of coordinates, so convert
+            # the 'target_coords' list into a tuple to be consistent.
+            target_coords = tuple(target_coords)
             try:
                 # Look for this set of target coordinates in the cache.
                 i = grids.index(target_coords)
