@@ -617,6 +617,7 @@ fc_extras
     CF_ATTR_AXIS = 'axis'
     CF_ATTR_BOUNDS = 'bounds'
     CF_ATTR_CALENDAR = 'calendar'
+    CF_ATTR_CLIMATOLOGY = 'climatology'
     CF_ATTR_GRID_INVERSE_FLATTENING = 'inverse_flattening'
     CF_ATTR_GRID_MAPPING_NAME = 'grid_mapping_name'
     CF_ATTR_GRID_NORTH_POLE_LAT = 'grid_north_pole_latitude'
@@ -837,11 +838,23 @@ fc_extras
             warnings.warn(msg.format(str(cf_coord_var.cf_name)))
 
         # Get any coordinate bounds.
-        bounds_data = None
         attr_bounds = getattr(cf_coord_var, CF_ATTR_BOUNDS, None)
+        attr_climatology = getattr(cf_coord_var, CF_ATTR_CLIMATOLOGY, None)
 
+        # Determine bounds, prefering standard bounds over climatology.
+        cf_bounds_var = None
         if attr_bounds is not None:
-            bounds_data = cf_coord_var.cf_group.bounds[attr_bounds][:]
+            cf_bounds_var = cf_coord_var.cf_group.bounds[attr_bounds]
+        elif attr_climatology is not None:
+            cf_bounds_var = cf_coord_var.cf_group.climatology[attr_climatology]
+
+        if attr_bounds is not None and attr_climatology is not None:
+            warnings.warn('Ignoring climatology in favour of bounds attribute '
+                          'on NetCDF variable {!r}.'.format(nc_var_name))
+
+        bounds_data = None
+        if cf_bounds_var is not None:
+            bounds_data = cf_bounds_var[:]
             # Gracefully fill bounds masked array.
             if ma.isMaskedArray(bounds_data):
                 bounds_data = ma.filled(bounds_data)
@@ -958,13 +971,24 @@ fc_extras
                                                      get_values)
 
         # Get any coordinate bounds.
-        bounds_data = None
         attr_bounds = getattr(cf_coord_var, CF_ATTR_BOUNDS, None)
+        attr_climatology = getattr(cf_coord_var, CF_ATTR_CLIMATOLOGY, None)
 
+        # Determine bounds, prefering standard bounds over climatology.
+        cf_bounds_var = None
         if attr_bounds is not None:
+            cf_bounds_var = cf_coord_var.cf_group.bounds[attr_bounds]
+        elif attr_climatology is not None:
+            cf_bounds_var = cf_coord_var.cf_group.climatology[attr_climatology]
+
+        if attr_bounds is not None and attr_climatology is not None:
+            warnings.warn('Ignoring climatology in favour of bounds attribute '
+                          'on NetCDF variable {!r}.'.format(nc_var_name))
+
+        bounds_data = None
+        if cf_bounds_var is not None:
             # Use a closure to capture the current file/variable names.
             filename = engine.filename
-            cf_bounds_var = cf_coord_var.cf_group.bounds[attr_bounds]
             nc_bounds_var_name = cf_bounds_var.cf_name
             get_values = lambda: deferred_load(filename, nc_bounds_var_name)
             bounds_data = iris.aux_factory.LazyArray(cf_bounds_var.shape,
