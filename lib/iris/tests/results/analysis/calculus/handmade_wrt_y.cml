@@ -19,7 +19,7 @@
         <dimCoord id="9eb36add" long_name="x" points="[0.0, 1.0, 2.0, 3.0]" shape="(4,)" units="Unit('count')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="e7b4cad3" long_name="y" points="[0.5, 1.5, 2.5, 3.5]" shape="(4,)" units="Unit('count')" value_type="float32"/>
+        <dimCoord id="9f0697c0" long_name="y" points="[0.5, 1.5, 2.5, 3.5]" shape="(4,)" units="Unit('count')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods/>
