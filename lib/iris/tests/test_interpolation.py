@@ -207,6 +207,129 @@ class TestLinearExtrapolator(tests.IrisTest):
                                                                                    [ -5. ,   7.5,  18.5]]))
 
 
+class TestLinearLengthOneCoord(tests.IrisTest):
+    def setUp(self):
+        self.cube = iris.tests.stock.lat_lon_cube()
+        self.cube.data = self.cube.data.astype(float)
+
+    def test_single_point(self):
+        # Slice to form (3, 1) shaped cube.
+        cube = self.cube[:, 2:3]
+        r = iris.analysis.interpolate.linear(cube, [('longitude', [1.])])
+        self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
+                                     'single_pt_to_single_pt_0'))
+
+        # Slice to form (1, 4) shaped cube.
+        cube = self.cube[1:2, :]
+        r = iris.analysis.interpolate.linear(cube, [('latitude', [1.])])
+        self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
+                                     'single_pt_to_single_pt_1'))
+
+    def test_multiple_points(self):
+        # Slice to form (3, 1) shaped cube.
+        cube = self.cube[:, 2:3]
+        r = iris.analysis.interpolate.linear(cube, [('longitude',
+                                                     [1., 2., 3., 4.])])
+        self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
+                                     'single_pt_to_many_0'))
+
+        # Slice to form (1, 4) shaped cube.
+        cube = self.cube[1:2, :]
+        r = iris.analysis.interpolate.linear(cube, [('latitude',
+                                                     [1., 2., 3., 4.])])
+        self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
+                                     'single_pt_to_many_1'))
+
+    def test_single_point_to_scalar(self):
+        # Slice to form (3, 1) shaped cube.
+        cube = self.cube[:, 2:3]
+        r = iris.analysis.interpolate.linear(cube, [('longitude', 1.)])
+        self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
+                                     'single_pt_to_scalar_0'))
+
+        # Slice to form (1, 4) shaped cube.
+        cube = self.cube[1:2, :]
+        r = iris.analysis.interpolate.linear(cube, [('latitude', 1.)])
+        self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
+                                     'single_pt_to_scalar_1'))
+
+    def test_extrapolation_mode_same_pt(self):
+        # Slice to form (3, 1) shaped cube.
+        cube = self.cube[:, 2:3]
+        src_points = cube.coord('longitude').points
+        r = iris.analysis.interpolate.linear(cube, [('longitude', src_points)],
+                                             extrapolation_mode='linear')
+        self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
+                                     'single_pt_to_same_pt'))
+        r = iris.analysis.interpolate.linear(cube, [('longitude', src_points)],
+                                             extrapolation_mode='nan')
+        self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
+                                     'single_pt_to_same_pt'))
+        r = iris.analysis.interpolate.linear(cube, [('longitude', src_points)],
+                                             extrapolation_mode='error')
+        self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
+                                     'single_pt_to_same_pt'))
+
+    def test_extrapolation_mode_multiple_same_pts(self):
+        # Slice to form (3, 1) shaped cube.
+        cube = self.cube[:, 2:3]
+        src_points = cube.coord('longitude').points
+        new_points = [src_points[0]] * 3
+        r = iris.analysis.interpolate.linear(cube, [('longitude', new_points)],
+                                             extrapolation_mode='linear')
+        self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
+                                     'single_pt_to_many_same'))
+        r = iris.analysis.interpolate.linear(cube, [('longitude', new_points)],
+                                             extrapolation_mode='nan')
+        self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
+                                     'single_pt_to_many_same'))
+        r = iris.analysis.interpolate.linear(cube, [('longitude', new_points)],
+                                             extrapolation_mode='error')
+        self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
+                                     'single_pt_to_many_same'))
+
+    def test_extrapolation_mode_different_pts(self):
+        # Slice to form (3, 1) shaped cube.
+        cube = self.cube[:, 2:3]
+        src_points = cube.coord('longitude').points
+        new_points_single = src_points + 0.2
+        new_points_multiple = [src_points[0],
+                               src_points[0] + 0.2,
+                               src_points[0] + 0.4]
+        new_points_scalar = src_points[0] + 0.2
+
+        # 'nan' mode
+        r = iris.analysis.interpolate.linear(cube, [('longitude',
+                                                     new_points_single)],
+                                             extrapolation_mode='nan')
+        self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
+                                     'single_pt_to_single_pt_nan'))
+        r = iris.analysis.interpolate.linear(cube, [('longitude',
+                                                     new_points_multiple)],
+                                             extrapolation_mode='nan')
+        self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
+                                     'single_pt_to_many_nan'))
+        r = iris.analysis.interpolate.linear(cube, [('longitude',
+                                                     new_points_scalar)],
+                                             extrapolation_mode='nan')
+        self.assertCMLApproxData(r, ('analysis', 'interpolation', 'linear',
+                                     'single_pt_to_scalar_nan'))
+
+        # 'error' mode
+        with self.assertRaises(ValueError):
+            r = iris.analysis.interpolate.linear(cube, [('longitude',
+                                                         new_points_single)],
+                                                 extrapolation_mode='error')
+        with self.assertRaises(ValueError):
+            r = iris.analysis.interpolate.linear(cube, [('longitude',
+                                                         new_points_multiple)],
+                                                 extrapolation_mode='error')
+        with self.assertRaises(ValueError):
+            r = iris.analysis.interpolate.linear(cube, [('longitude',
+                                                         new_points_scalar)],
+                                                 extrapolation_mode='error')
+
+
 class TestLinear1dInterpolation(tests.IrisTest):
     def setUp(self):
         data = np.arange(12., dtype=np.float32).reshape((4, 3))
