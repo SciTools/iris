@@ -723,6 +723,10 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
                     indices = [slice(None)] * fx.ndim
                     indices[axis] = new_x != src_points
                     fx[tuple(indices)] = np.nan
+                # If new_x is a scalar, then remove the dimension from fx.
+                if not new_x.shape:
+                    del new_shape[axis]
+                    fx.shape = new_shape
                 return fx
         else:
             monotonic, direction = iris.util.monotonic(src_points,
