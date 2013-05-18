@@ -32,6 +32,9 @@ __all__ = ['run']
 
 MERIDIAN_SCALING_BNG = 999601  # Merdian scaling for British National grid.
 
+TIME_UNIT = iris.unit.Unit('hours since 1970-01-01 00:00:00',
+                           calendar=iris.unit.CALENDAR_STANDARD)
+
 
 FIELD_CODES = {"orography": 73}
 VERTICAL_CODES = {"height": 0, "altitude": 1, "levels_below_ground": 12}
@@ -65,10 +68,18 @@ def time(cube, field):
     valid_date = netcdftime.datetime(field.vt_year, field.vt_month,
                                      field.vt_day, field.vt_hour,
                                      field.vt_minute, field.vt_second)
-    time_coord = DimCoord(iris.unit.date2num(valid_date,
-                                             'hours since 1970-01-01 00:00:00',
-                                             iris.unit.CALENDAR_STANDARD),
-                          standard_name='time', units='hours')
+    point = TIME_UNIT.date2num(valid_date)
+
+    bounds = None
+    if field.period_minutes != field.int_mdi and field.period_minutes != 0:
+        # Create a bound array to handle the Period of Interest if set.
+        bounds = (point - (field.period_minutes / 60.0), point)
+
+    time_coord = DimCoord(points=point,
+                          bounds=bounds,
+                          standard_name='time',
+                          units=TIME_UNIT)
+
     cube.add_aux_coord(time_coord)
 
 
@@ -78,13 +89,11 @@ def reference_time(cube, field):
         data_date = netcdftime.datetime(field.dt_year, field.dt_month,
                                         field.dt_day, field.dt_hour,
                                         field.dt_minute)
-        ref_time_coord = DimCoord(
-            iris.unit.date2num(
-                data_date,
-                'hours since 1970-01-01 00:00:00',
-                iris.unit.CALENDAR_STANDARD),
-            standard_name='forecast_reference_time',
-            units='hours')
+
+        ref_time_coord = DimCoord(TIME_UNIT.date2num(data_date),
+                                  standard_name='forecast_reference_time',
+                                  units=TIME_UNIT)
+
         cube.add_aux_coord(ref_time_coord)
 
 
@@ -93,18 +102,6 @@ def experiment(cube, field):
     if field.experiment_num != field.int_mdi:
         cube.add_aux_coord(DimCoord(field.experiment_num,
                                     long_name="experiment_number"))
-
-
-def period_minutes(cube, field):
-    """
-    Deal with 'period minutes', if present in the field
-
-    Currently unhandled. Raises an exception if present.
-
-    """
-    if field.period_minutes != field.int_mdi:
-        if field.period_minutes != 0:
-            raise TranslationError("Period_minutes not yet handled")
 
 
 def proj_biaxial_ellipsoid(cube, field):
@@ -309,7 +306,6 @@ def run(field):
     # time
     time(cube, field)
     reference_time(cube, field)
-    period_minutes(cube, field)
 
     experiment(cube, field)
 
