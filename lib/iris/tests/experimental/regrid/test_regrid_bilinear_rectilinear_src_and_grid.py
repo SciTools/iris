@@ -373,7 +373,7 @@ class TestVisual(tests.GraphicsTest):
         path = tests.get_data_path(
             ('NIMROD', 'uk2km', 'WO0000000003452',
              '201007020900_u1096_ng_ey00_visibility0180_screen_2km'))
-        src = iris.load_cube(path)
+        src = iris.load_cube(path)[0]
         src.data = src.data.astype(np.float32)
         grid = Cube(np.empty((73, 96)))
         cs = GeogCS(6370000)
