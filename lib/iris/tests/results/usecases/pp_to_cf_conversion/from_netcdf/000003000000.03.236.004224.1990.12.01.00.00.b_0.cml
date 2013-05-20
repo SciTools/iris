@@ -14,7 +14,11 @@
         <dimCoord id="b880473b" points="[185496.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64" var_name="forecast_reference_time"/>
       </coord>
       <coord>
-        <dimCoord id="b7ab0ae3" points="[1.5]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64" var_name="height"/>
+        <dimCoord id="cdeba9ad" points="[1.5]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64" var_name="height">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
       </coord>
       <coord datadims="[0]">
         <dimCoord id="ec257f34" points="[90.0, 87.5, 85.0, 82.5, 80.0, 77.5, 75.0, 72.5,

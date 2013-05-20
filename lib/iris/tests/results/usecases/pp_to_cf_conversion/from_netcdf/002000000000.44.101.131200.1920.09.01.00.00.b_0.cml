@@ -9,10 +9,14 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="2c4b8a59" points="[5.0, 15.0, 25.0, 35.1, 47.85, 67.0, 95.75,
+        <dimCoord id="e2b6e055" points="[5.0, 15.0, 25.0, 35.1, 47.85, 67.0, 95.75,
 		138.9, 203.7, 300.999, 447.049, 666.299,
 		995.549, 1500.85, 2116.15, 2731.4, 3346.65,
-		3961.9, 4577.15, 5192.45]" shape="(20,)" standard_name="depth" units="Unit('m')" value_type="float32" var_name="depth"/>
+		3961.9, 4577.15, 5192.45]" shape="(20,)" standard_name="depth" units="Unit('m')" value_type="float32" var_name="depth">
+          <attributes>
+            <attribute name="positive" value="down"/>
+          </attributes>
+        </dimCoord>
       </coord>
       <coord>
         <dimCoord id="1d7d6eff" points="[475200]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32" var_name="forecast_period"/>
