@@ -213,6 +213,13 @@ class NetCDFDataProxy(object):
         return '%s(%r, %r)' % (self.__class__.__name__, self.path,
                                self.variable_name)
 
+    def __getstate__(self):
+        return {attr: getattr(self, attr) for attr in self.__slots__}
+
+    def __setstate__(self, state):
+        for key, value in state.iteritems():
+            setattr(self, key, value)
+
     def load(self, data_shape, data_type, mdi, deferred_slice):
         """
         Load the corresponding proxy data item and perform any deferred

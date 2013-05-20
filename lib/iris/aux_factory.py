@@ -63,6 +63,7 @@ class LazyArray(object):
     def _cached_array(self):
         if self._array is None:
             self._array = self._func()
+            del self._func
         return self._array
 
     def reshape(self, *args, **kwargs):
