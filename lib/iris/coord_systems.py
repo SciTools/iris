@@ -21,6 +21,7 @@ Definitions of coordinate systems.
 
 from __future__ import division
 from abc import ABCMeta, abstractmethod
+import warnings
 
 import cartopy.crs
 
