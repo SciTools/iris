@@ -2196,8 +2196,7 @@ class Cube(CFVariableMixin):
                  Attributes:
                       Conventions: CF-1.5
                       STASH: m01s00i024
-                      history: Mean of surface_temperature aggregated over month, year
-            Mean of surface_temperature...
+                      history: Mean of surface_temperature over longitude
                  Cell methods:
                       mean: month, year
                       mean: longitude
@@ -2332,8 +2331,7 @@ class Cube(CFVariableMixin):
                  Attributes:
                       Conventions: CF-1.5
                       STASH: m01s00i024
-                      history: Mean of surface_temperature aggregated over month, year
-            Mean of surface_temperature...
+                      history: Mean of surface_temperature aggregated over year
                  Cell methods:
                       mean: month, year
                       mean: year

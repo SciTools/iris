@@ -7,7 +7,6 @@
       <attribute name="comment" value="This run was initiated from the end of the corresponding 20C3M run of CCSR/NIES/FRCGC (the same resolution as this run, realization = 1). The conditions including GHGs concentration and various aerosols emissions were changed according to the IPCC SRES A1B scenario in the course of this run."/>
       <attribute name="contact" value="Seita Emori (emori@nies.go.jp)"/>
       <attribute name="experiment_id" value="720 ppm stabilization experiment (SRES A1B)"/>
-      <attribute name="history" value=" At   15:14:34 on 01/13/2005: CMOR altered the data in the following ways: converted from type &quot;double&quot; to type &quot;real&quot;; replaced missing value flag (-9.99000E+02) with standard missing value (1.00000E+20);  lat dimension direction was reversed;"/>
       <attribute name="institution" value="CCSR/NIES/FRCGC (Center for Climate System Research, Tokyo, Japan / National Institute for Environmental Studies, Ibaraki, Japan / Frontier Research Center for Global Change, Kanagawa, Japan)"/>
       <attribute name="original_name" value="10m zonal wind"/>
       <attribute name="original_units" value="m/s"/>

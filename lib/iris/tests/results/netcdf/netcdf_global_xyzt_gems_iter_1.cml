@@ -3,7 +3,6 @@
   <cube long_name="Logarithm of surface pressure" units="no_unit" var_name="lnsp">
     <attributes>
       <attribute name="Conventions" value="CF-1.0"/>
-      <attribute name="history" value="2009-08-25 13:46:31 GMT by mars2netcdf-0.92"/>
     </attributes>
     <coords>
       <coord datadims="[2]">

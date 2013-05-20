@@ -570,5 +570,21 @@ class TestCubeMergeTheoretical(tests.IrisTest):
         self.assertCML(r, ('cube_merge', 'test_simple_attributes3.cml'))
 
 
+class TestGracefulMerge(tests.IrisTest):
+    @iris.tests.skip_data
+    def test_attributes_history(self):
+        fname = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
+        seed = iris.load_cube(fname)
+        cubes = iris.cube.CubeList()
+        for value, (cube, history) in enumerate(zip([seed, seed.copy(), seed.copy()],
+                                                    [None, 'wibble', 'wobble'])):
+            cube.add_aux_coord(iris.coords.DimCoord(value, standard_name='height', units='m'))
+            if history is not None:
+                cube.attributes['history'] = history
+            cubes.append(cube)
+        merged = cubes.merge()
+        self.assertEqual(len(merged), 1)
+
+
 if __name__ == "__main__":
     tests.main()
