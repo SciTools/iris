@@ -1774,13 +1774,15 @@ class Cube(CFVariableMixin):
 
     def slices(self, coords_to_slice, ordered=True):
         """
-        Return an iterator of all cubes given the coordinates desired.
+        Return an iterator of all subcubes given the coordinates desired
+        to be present in each subcube.
 
         Parameters:
 
         * coords_to_slice (string, coord or a list of strings/coords) :
-            Coordinate names/coordinates to iterate over. They must all be
-            orthogonal (i.e. point to different dimensions).
+            Coordinate names/coordinates that will be returned in the subcubes
+            (i.e. the coordinate names/coordinates that are not iterated over).
+            They must all be orthogonal (i.e. point to different dimensions).
 
         Kwargs:
 
@@ -1789,9 +1791,9 @@ class Cube(CFVariableMixin):
             cube slices
 
         Returns:
-            An iterator of sub cubes.
+            An iterator of subcubes.
 
-        For example, to get all 2d longitude/latitude cubes from a
+        For example, to get all 2d longitude/latitude subcubes from a
         multi-dimensional cube::
 
             for sub_cube in cube.slices(['longitude', 'latitude']):
