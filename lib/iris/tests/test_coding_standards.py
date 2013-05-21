@@ -89,7 +89,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/fileformats/grib_save_rules.py',
         '*/iris/fileformats/manager.py',
         '*/iris/fileformats/mosig_cf_map.py',
-        '*/iris/fileformats/netcdf.py',
         '*/iris/fileformats/pp.py',
         '*/iris/fileformats/rules.py',
         '*/iris/fileformats/um_cf_map.py',
