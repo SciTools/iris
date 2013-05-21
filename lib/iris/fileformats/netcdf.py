@@ -129,7 +129,7 @@ class CFNameCoordMap(object):
     def name(self, coord):
         """
         Return the CF name, given a coordinate
-        
+
         Args:
 
         * coord:
@@ -578,7 +578,8 @@ class Saver(object):
                 self._dataset.createDimension(dimension_names[0], None)
         for dim_name in dimension_names[1:]:
             if dim_name not in self._dataset.dimensions:
-                self._dataset.createDimension(dim_name, self._existing_dim[dim_name])
+                self._dataset.createDimension(dim_name,
+                                              self._existing_dim[dim_name])
 
     def _add_aux_coords(self, cube, cf_var_cube, dimension_names,
                         factory_defn):
@@ -692,7 +693,8 @@ class Saver(object):
                     dimension_names.append(dim_name)
                     self._dim_coords.append(coord)
                 else:
-                    # Return the dim_name associated with the existing coordinate
+                    # Return the dim_name associated with the existing
+                    # coordinate.
                     dim_name = self._name_coord_map.name(coord)
                     dimension_names.append(dim_name)
 
