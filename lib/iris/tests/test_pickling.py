@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -52,6 +52,20 @@ class TestPickle(tests.IrisTest):
             self.assertNotEqual(recon_cube._data_manager, None)
             self.assertEqual(cube._data_manager, recon_cube._data_manager)
             self.assertCML(recon_cube, ('cube_io', 'pickling', 'theta.cml'), checksum=False)
+
+    @iris.tests.skip_data
+    def test_cube_with_deferred_coord_points(self):
+        # Data with 2d lats and lons that when loaded results in points that
+        # are LazyArray objects.
+        filename = tests.get_data_path(('NetCDF',
+                                        'rotated',
+                                        'xy',
+                                        'rotPole_landAreaFraction.nc'))
+        cube = iris.load_cube(filename)
+        # Pickle and unpickle. Do not perform any CML tests
+        # to avoid side effects.
+        _, recon_cube = next(self.pickle_then_unpickle(cube))
+        self.assertEqual(recon_cube, cube)
 
     @iris.tests.skip_data                    
     def test_cubelist_pickle(self):
