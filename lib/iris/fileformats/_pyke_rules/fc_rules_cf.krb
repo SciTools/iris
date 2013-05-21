@@ -491,12 +491,11 @@ fc_build_coordinate_longitude_nocs
 # Purpose:
 #   Add the projection_x_coordinate coordinate into the cube.
 #
-fc_build_coordinate_transverse_mercator_x
+fc_build_coordinate_projection_x_transverse_mercator
     foreach
         facts_cf.provides(coordinate, projection_x_coordinate, $coordinate)
         facts_cf.provides(coordinate_system, transverse_mercator)
     assert
-        python import pdb;pdb.set_trace()
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_PROJ_X,
