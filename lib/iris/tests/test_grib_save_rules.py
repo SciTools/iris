@@ -68,7 +68,8 @@ class Test_data(tests.IrisTest):
     
     @mock.patch.object(gribapi, "grib_set_double_array")
     @mock.patch.object(gribapi, "grib_set_double")
-    def test_masked_array(self, mock_set_double, grib_set_double_array):
+    @mock.patch.object(gribapi, "grib_set")
+    def test_masked_array(self, mock_set, mock_set_double, grib_set_double_array):
         grib = None
         cube = iris.cube.Cube(ma.MaskedArray([1,2,3,4,5], fill_value=54321)) 
 

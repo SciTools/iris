@@ -195,6 +195,13 @@ class TestGribLoad(tests.GraphicsTest):
         cubes = iris.load(tests.get_data_path(('GRIB', "3_layer_viz", "3_layer.grib2")))
         cubes = iris.cube.CubeList([cubes[1], cubes[0], cubes[2]])
         self.assertCML(cubes, ("grib_load", "3_layer.cml"))
+
+    def test_load_masked(self):
+
+        gribfile = tests.get_data_path(
+            ('GRIB', 'missing_values', 'missing_values.grib2'))
+        cubes = iris.load(gribfile)
+        self.assertCML(cubes, ('grib_load', 'missing_values_grib2.cml'))
         
     def test_y_fastest(self):
         cubes = iris.load(tests.get_data_path(("GRIB", "y_fastest", "y_fast.grib2")))
