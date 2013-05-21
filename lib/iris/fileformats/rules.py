@@ -263,6 +263,38 @@ def regular_step(coord):
     return avdiff.astype(coord.points.dtype)
 
 
+def calculate_forecast_period(time, forecast_reference_time):
+    """
+    Return the forecast period in hours derived from time and
+    forecast_reference_time scalar coordinates.
+
+    """
+    if time.points.size != 1:
+        raise ValueError('Expected a time coordinate with a single '
+                         'point. {!r} has {} points.'.format(time.name(),
+                                                             time.points.size))
+
+    if not time.has_bounds():
+        raise ValueError('Expected a time coordinate with bounds.')
+
+    if forecast_reference_time.points.size != 1:
+        raise ValueError('Expected a forecast_reference_time coordinate '
+                         'with a single point. {!r} has {} '
+                         'points.'.format(forecast_reference_time.name(),
+                                          forecast_reference_time.points.size))
+
+    origin = time.units.origin.replace(time.units.origin.split()[0], 'hours')
+    units = iris.unit.Unit(origin, calendar=time.units.calendar)
+
+    # Determine start and eof of period in hours since a common epoch.
+    end = time.units.convert(time.bounds[0, 1], units)
+    start = forecast_reference_time.units.convert(
+        forecast_reference_time.points[0], units)
+    forecast_period = end - start
+
+    return forecast_period
+
+
 class Rule(object):
     """
     A collection of condition expressions and their associated action expressions.
