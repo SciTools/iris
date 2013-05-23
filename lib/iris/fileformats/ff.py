@@ -28,8 +28,8 @@ from iris.fileformats.manager import DataManager
 import pp
 
 
-FF_HEADER_DEPTH = 256  # In words (64-bit).
-FF_WORD_DEPTH = 8      # In bytes.
+FF_HEADER_DEPTH = 256      # In words (64-bit).
+DEFAULT_FF_WORD_DEPTH = 8  # In bytes.
 
 # UM marker to signify empty lookup table entry.
 _FF_LOOKUP_TABLE_TERMINATE = -99
@@ -103,7 +103,7 @@ _LBUSER_DTYPE_LOOKUP = {1: '>f{word_depth}',
 class FFHeader(object):
     """A class to represent the FIXED_LENGTH_HEADER section of a FieldsFile."""
     
-    def __init__(self, filename, word_depth=FF_WORD_DEPTH):
+    def __init__(self, filename, word_depth=DEFAULT_FF_WORD_DEPTH):
         """
         Create a FieldsFile header instance by reading the
         FIXED_LENGTH_HEADER section of the FieldsFile.
@@ -126,7 +126,7 @@ class FFHeader(object):
         with open(filename, 'rb') as ff_file:
             # typically 64-bit words (aka. int64 or ">i8")
             header_data = np.fromfile(ff_file,
-                                      dtype='>i{0}'.format(self._word_depth),
+                                      dtype='>i{0}'.format(word_depth),
                                       count=FF_HEADER_DEPTH)
             header_data = tuple(header_data)
             # Create FF instance attributes
@@ -139,7 +139,7 @@ class FFHeader(object):
 
     def __str__(self):
         attributes = []
-        for name, offsets in FF_HEADER:
+        for name, _ in FF_HEADER:
             attributes.append('    {}: {}'.format(name, getattr(self, name)))
         return 'FF Header:\n' + '\n'.join(attributes)
 
@@ -214,7 +214,8 @@ class FFHeader(object):
 class FF2PP(object):
     """A class to extract the individual PPFields from within a FieldsFile."""
 
-    def __init__(self, filename, read_data=False, word_depth=FF_WORD_DEPTH):
+    def __init__(self, filename, read_data=False,
+                 word_depth=DEFAULT_FF_WORD_DEPTH):
         """
         Create a FieldsFile to Post Process instance that returns a generator
         of PPFields contained within the FieldsFile.
@@ -334,16 +335,6 @@ class FF2PP(object):
         return self._extract_field()
 
 
-class FF32bit2PP(FF2PP):
-    """
-    Specialises the 64bit FF2PP class to handle fieldfiles
-    converted to 32bit with the ieee tool.
-
-    """
-    def __init__(self, filename, read_data=False, word_depth=4):
-        FF2PP.__init__(self, filename, read_data=False, word_depth=word_depth)
-
-
 def load_cubes(filenames, callback):
     """
     Loads cubes from a list of fields files filenames.
@@ -374,4 +365,5 @@ def load_cubes_32bit_ieee(filenames, callback):
         :func:`load_cubes` for keyword details
 
     """
-    return pp._load_cubes_variable_loader(filenames, callback, FF32bit2PP)
+    return pp._load_cubes_variable_loader(filenames, callback, FF2PP,
+                                          {'word_depth': 4})

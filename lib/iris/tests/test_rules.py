@@ -113,7 +113,7 @@ class TestLoadCubes(tests.IrisTest):
         xref_rules.matching_rules = lambda field: []
         # Finish by making a fake Loader
         name = 'FAKE_PP'
-        fake_loader = Loader(field_generator, rules, xref_rules, name)
+        fake_loader = Loader(field_generator, {}, rules, xref_rules, name)
         cubes = load_cubes(['fake_filename'], None, fake_loader)
         # Check the result is a generator with our "cube" as the only
         # entry.
@@ -168,7 +168,7 @@ class TestLoadCubes(tests.IrisTest):
             [orog_xref_rule] if field is orog_field else []
         # Finish by making a fake Loader
         name = 'FAKE_PP'
-        fake_loader = Loader(field_generator, rules, xref_rules, name)
+        fake_loader = Loader(field_generator, {}, rules, xref_rules, name)
         cubes = load_cubes(['fake_filename'], None, fake_loader)
         # Check the result is a generator containing both of our cubes.
         self.assertIsInstance(cubes, types.GeneratorType)
