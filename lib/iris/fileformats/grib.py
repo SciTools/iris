@@ -27,6 +27,7 @@ import os
 import warnings
 
 import numpy as np
+import numpy.ma as ma
 
 import iris.proxy
 iris.proxy.apply_proxy('gribapi', globals())
@@ -162,14 +163,20 @@ class GribWrapper(object):
         #but it flipped the data - which we don't want
         ni = self.Ni
         nj = self.Nj
+        # set the missing value key to get np.nan where values are missing,
+        # must be done before values are read from the message
+        gribapi.grib_set_double(self.grib_message, "missingValue", np.nan)
         self.data = self.values
         j_fast = gribapi.grib_get_long(grib_message, "jPointsAreConsecutive")
         if j_fast == 0:
             self.data = self.data.reshape(nj, ni)
         else:
             self.data = self.data.reshape(ni, nj)
-            
-        
+        # handle missing values in a sensible way
+        mask = np.isnan(self.data)
+        if mask.any():
+            self.data = ma.array(self.data, mask=mask)
+
     def _confirm_in_scope(self):
         """Ensure we have a grib flavour that we choose to support."""
         #forbid quasi-regular grids

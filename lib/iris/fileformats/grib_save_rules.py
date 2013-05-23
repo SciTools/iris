@@ -454,6 +454,7 @@ def data(cube, grib):
 
     # mdi
     if isinstance(cube.data, ma.core.MaskedArray):
+        gribapi.grib_set(grib, "bitmapPresent", 1)
         gribapi.grib_set_double(grib, "missingValue", float(cube.data.fill_value))
         data = cube.data.filled()
     else:
@@ -475,4 +476,3 @@ def run(cube, grib):
     grid_template(cube, grib)
     product_template(cube, grib)
     data(cube, grib)
-    
