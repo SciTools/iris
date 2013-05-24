@@ -18,6 +18,10 @@ Features added
   OPeNDAP URLs.
 * `iris.experimental.raster.export_geotiff` now provides experimental
   GeoTiff export functionality.
+* Cubes with no vertical coordinate can now be output to Grib format. In these
+  cases, "Type of first fixed surface" is set to 1, "ground or water surface".
+  ( This is a common usage for data with no defined level, but may not be
+  strictly correct - see https://github.com/SciTools/iris/issues/519 ).
 
 Bugs fixed
 ----------

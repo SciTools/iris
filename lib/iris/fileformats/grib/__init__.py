@@ -33,8 +33,10 @@ import iris.proxy
 iris.proxy.apply_proxy('gribapi', globals())
 
 import iris.coord_systems as coord_systems
+# NOTE: careful here, to avoid circular imports (as iris imports grib)
+from iris.fileformats.grib import grib_phenom_translation as gptx
+from iris.fileformats.grib import grib_save_rules
 import iris.unit
-import grib_save_rules
 
 
 
@@ -308,7 +310,29 @@ class GribWrapper(object):
             '_x_coord_name':unknown_string, '_y_coord_name':unknown_string,
             # These are here to avoid repetition in the rules files,
             # and reduce the very long line lengths.
-            '_x_points':None, '_y_points':None}
+            '_x_points':None, '_y_points':None,
+            '_cf_data':None}
+
+        # cf phenomenon translation
+        if edition == 1:
+            # Get centre code (N.B. self.centre has default type = string)
+            centre_number = gribapi.grib_get_long(self.grib_message, "centre")
+            # Look for a known grib1-to-cf translation (or None).
+            cf_data = gptx.grib1_phenom_to_cf_info(
+                table2_version=self.table2Version,
+                centre_number=centre_number,
+                param_number=self.indicatorOfParameter)
+            self.extra_keys['_cf_data'] = cf_data
+        elif edition == 2:
+            # Don't attempt to interpret params if 'master tables version' is
+            # 255, as local params may then have same codes as standard ones.
+            if self.tablesVersion != 255:
+                # Look for a known grib2-to-cf translation (or None).
+                cf_data = gptx.grib2_phenom_to_cf_info(
+                    param_discipline=self.discipline,
+                    param_category=self.parameterCategory,
+                    param_number=self.parameterNumber)
+                self.extra_keys['_cf_data'] = cf_data
 
         #reference date
         self.extra_keys['_referenceDateTime'] = \

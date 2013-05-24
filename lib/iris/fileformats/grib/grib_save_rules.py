@@ -25,6 +25,7 @@ import numpy.ma as ma
 import iris
 import iris.unit
 from iris.fileformats.rules import is_regular, regular_step
+from iris.fileformats.grib import grib_phenom_translation as gptx
 
 
 def gribbability_check(cube):
@@ -180,13 +181,26 @@ def grid_template(cube, grib):
 
 
 def param_code(cube, grib):
-    gribapi.grib_set_long(grib, "discipline", 0)
-    gribapi.grib_set_long(grib, "parameterCategory", 0)
-    gribapi.grib_set_long(grib, "parameterNumber", 0)
-    warnings.warn("Not yet translating standard name into grib param codes.\n"
-                  "discipline, parameterCategory and parameterNumber have been zeroed.")
-    
-    
+    # NOTE: for now, can match by *either* standard_name or long_name.
+    # This allows workarounds for data with no identified standard_name.
+    grib2_info = gptx.cf_phenom_to_grib2_info(cube.standard_name,
+                                              cube.long_name)
+    if grib2_info is not None:
+        gribapi.grib_set_long(grib, "discipline",
+                              int(grib2_info.discipline))
+        gribapi.grib_set_long(grib, "parameterCategory",
+                              int(grib2_info.category))
+        gribapi.grib_set_long(grib, "parameterNumber",
+                              int(grib2_info.number))
+    else:
+        gribapi.grib_set_long(grib, "discipline", 0)
+        gribapi.grib_set_long(grib, "parameterCategory", 0)
+        gribapi.grib_set_long(grib, "parameterNumber", 0)
+        warnings.warn('Unable to determine Grib2 parameter code for cube.\n'
+                      'discipline, parameterCategory and parameterNumber '
+                      'have been zeroed.')
+
+
 def generating_process_type(cube, grib):
     
     # analysis = 0
@@ -272,6 +286,9 @@ def hybrid_surfaces(cube, grib):
 
 def non_hybrid_surfaces(cube, grib):
 
+    # Look for something we can export
+    v_coord = grib_v_code = output_unit = None
+
     # pressure
     if cube.coords("air_pressure") or cube.coords("pressure"):
         grib_v_code = 100
@@ -283,41 +300,59 @@ def non_hybrid_surfaces(cube, grib):
         grib_v_code = 102
         output_unit = iris.unit.Unit("m")
         v_coord = cube.coord("altitude")
-        
+
     # height
     elif cube.coords("height"):
         grib_v_code = 103
         output_unit = iris.unit.Unit("m")
         v_coord = cube.coord("height")
 
+    # unknown / absent
     else:
-        raise iris.exceptions.TranslationError("Vertical coordinate not found / handled")
+        # check for *ANY* height coords at all...
+        v_coords = cube.coords(axis='z')
+        if v_coords:
+            # There are vertical coordinate(s), but we don't understand them...
+            v_coords_str = ' ,'.join(["'{}'".format(c.name())
+                                      for c in v_coords])
+            raise iris.exceptions.TranslationError(
+                'The vertical-axis coordinate(s) ({}) '
+                'are not recognised or handled.'.format(v_coords_str))
 
-    # is it a surface layer (no thickness)?
-    if not v_coord.has_bounds():
+    # What did we find?
+    if v_coord is None:
+        # No vertical coordinate: record as 'surface' level (levelType=1).
+        # NOTE: may *not* be truly correct, but seems to be common practice.
+        # Still under investigation :
+        # See https://github.com/SciTools/iris/issues/519
+        gribapi.grib_set_long(grib, "typeOfFirstFixedSurface", 1)
+        gribapi.grib_set_long(grib, "scaleFactorOfFirstFixedSurface", 0)
+        gribapi.grib_set_long(grib, "scaledValueOfFirstFixedSurface", 0)
+        # Set secondary surface = 'missing'.
+        gribapi.grib_set_long(grib, "typeOfSecondFixedSurface", -1)
+        gribapi.grib_set_long(grib, "scaleFactorOfSecondFixedSurface", 255)
+        gribapi.grib_set_long(grib, "scaledValueOfSecondFixedSurface", -1)
+    elif not v_coord.has_bounds():
+        # No second surface
         output_v = v_coord.units.convert(v_coord.points[0], output_unit)
         if output_v - abs(output_v):
             warnings.warn("Vertical level encoding problem : Scaling required.")
         output_v = int(output_v)
-        
+
         gribapi.grib_set_long(grib, "typeOfFirstFixedSurface", grib_v_code)
         gribapi.grib_set_long(grib, "scaleFactorOfFirstFixedSurface", 0)
         gribapi.grib_set_long(grib, "scaledValueOfFirstFixedSurface", output_v)
-        
         gribapi.grib_set_long(grib, "typeOfSecondFixedSurface", -1)
-        gribapi.grib_set_long(grib, "scaleFactorOfSecondFixedSurface", 255)  # missing, byte
-        gribapi.grib_set_long(grib, "scaledValueOfSecondFixedSurface", -1)   # missing, long        
-    
-    # it's a bounded layer
+        gribapi.grib_set_long(grib, "scaleFactorOfSecondFixedSurface", 255)
+        gribapi.grib_set_long(grib, "scaledValueOfSecondFixedSurface", -1)        
     else:
+        # bounded : set lower+upper surfaces
         output_v = v_coord.units.convert(v_coord.bounds[0,0], output_unit)
         if (output_v[0] - abs(output_v[0])) or (output_v[1] - abs(output_v[1])):
             warnings.warn("Vertical level encoding problem : Scaling required.")
-        
         gribapi.grib_set_long(grib, "typeOfFirstFixedSurface", grib_v_code)
         gribapi.grib_set_long(grib, "scaleFactorOfFirstFixedSurface", 0)
         gribapi.grib_set_long(grib, "scaledValueOfFirstFixedSurface", output_v[0])
-    
         gribapi.grib_set_long(grib, "typeOfSecondFixedSurface", grib_v_code)
         gribapi.grib_set_long(grib, "scaleFactorOfSecondFixedSurface", 0)
         gribapi.grib_set_long(grib, "scaledValueOfSecondFixedSurface", output_v[1])
@@ -367,7 +402,14 @@ def type_of_statistical_processing(cube, grib, coord):
 
 
 def time_processing_period(cube, grib):
-    """For template 4.8 (time mean, time max, etc)"""
+    """
+    For template 4.8 (time mean, time max, etc).
+
+    The time range is taken from the 'time' coordinate bounds.
+    If the cell-method coordinate is not 'time' itself, the type of statistic
+    will always be 'unknown'.
+
+    """
     # We could probably split this function up a bit
     
     # Can safely assume bounded pt.
@@ -396,7 +438,40 @@ def time_processing_period(cube, grib):
     
     gribapi.grib_set_long(grib, "indicatorOfUnitForTimeIncrement", 255)  # time unit between successive source fields (not setting this at present)
     gribapi.grib_set_long(grib, "timeIncrement", 0)  # between successive source fields (just set to 0 for now)
-    
+
+
+def _cube_is_time_statistic(cube):
+    """
+    Test whether we can identify this cube as a statistic over time.
+
+    At present, accept anything whose latest cell method operates over a single
+    coordinate that "looks like" a time factor (i.e. some specific names).
+    In particular, we recognise the coordinate names defined in
+    :py:mod:`iris.coord_categorisation`.
+
+    """
+    # The *only* relevant information is in cell_methods, as coordinates or
+    # dimensions of aggregation may no longer exist.  So it's not possible to
+    # be definitive, but we handle *some* useful cases.
+    # In other cases just say "no", which is safe even when not ideal.
+
+    # Identify a single coordinate from the latest cell_method.
+    if not cube.cell_methods:
+        return False
+    latest_coordnames = cube.cell_methods[-1].coord_names
+    if len(latest_coordnames) != 1:
+        return False
+    coord_name = latest_coordnames[0]
+
+    # Define accepted time names, including those from coord_categorisations.
+    recognised_time_names = ['time', 'year', 'month', 'day', 'weekday',
+                             'season']
+
+    # Accept it if the name is recognised.
+    # Currently does *not* recognise related names like 'month_number' or
+    # 'years', as that seems potentially unsafe.
+    return coord_name in recognised_time_names
+
 
 def product_template(cube, grib):
     # This will become more complex if we cover more templates, such as 4.15
@@ -405,15 +480,18 @@ def product_template(cube, grib):
     if not cube.coord("time").has_bounds():
         gribapi.grib_set_long(grib, "productDefinitionTemplateNumber", 0)
         product_common(cube, grib)
-    
+        return
+
     # time processed (template 4.8)
-    elif cube.cell_methods and cube.cell_methods[-1].coord_names[0] == "time":
+    if _cube_is_time_statistic(cube):
         gribapi.grib_set_long(grib, "productDefinitionTemplateNumber", 8)
         product_common(cube, grib)
         time_processing_period(cube, grib)
-        
-    else:
-        raise iris.exceptions.TranslationError("A suitable product template could not be deduced")
+        return
+
+    # Don't know how to handle this kind of data
+    raise iris.exceptions.TranslationError(
+        'A suitable product template could not be deduced')
 
 
 def centre(cube, grib):
@@ -460,10 +538,21 @@ def data(cube, grib):
     else:
         gribapi.grib_set_double(grib, "missingValue", float(-1e9))
         data = cube.data
-    
+
+    # units scaling
+    grib2_info = gptx.cf_phenom_to_grib2_info(cube.standard_name,
+                                              cube.long_name)
+    if grib2_info is None:
+        # for now, just allow this
+        warnings.warn('Unable to determine Grib2 parameter code for cube.\n'
+                      'Message data may not be correctly scaled.')
+    else:
+        if cube.units != grib2_info.units:
+            data = cube.units.convert(data, grib2_info.units)
+
     # values
     gribapi.grib_set_double_array(grib, "values", data.flatten())
-    
+
     # todo: check packing accuracy?
     #print "packingError", gribapi.getb_get_double(grib, "packingError")
 
