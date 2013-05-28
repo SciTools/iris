@@ -454,28 +454,20 @@ CMAttribute("units", "m")
 #                                                                              #
 ################################################################################
 
-# MOSIG stash code to CF meta-data rule.
-IF
-str(f.stash) in MOSIG_STASH_TO_CF
-THEN
-CMAttribute('standard_name', MOSIG_STASH_TO_CF[str(f.stash)].name)
-CMAttribute('units', MOSIG_STASH_TO_CF[str(f.stash)].unit)
-CMAttribute('long_name', None)
-
 # UM stash code to CF meta-data rule.
 IF
 str(f.stash) in STASH_TO_CF
 THEN
-CMAttribute("standard_name", STASH_TO_CF[str(f.stash)].cfname)
+CMAttribute("standard_name", STASH_TO_CF[str(f.stash)].standard_name)
 CMAttribute("units", STASH_TO_CF[str(f.stash)].unit) 
-CMAttribute("long_name", None)
+CMAttribute("long_name", STASH_TO_CF[str(f.stash)].long_name)
 
 # UM field code to CF meta-data rule.
 IF
 not f.stash.is_valid
 f.lbfc in LBFC_TO_CF
 THEN
-CMAttribute("standard_name", LBFC_TO_CF[f.lbfc].cfname)
+CMAttribute("standard_name", LBFC_TO_CF[f.lbfc].standard_name)
 CMAttribute("units", LBFC_TO_CF[f.lbfc].unit) 
-CMAttribute("long_name", None)
+CMAttribute("long_name", LBFC_TO_CF[f.lbfc].long_name)
 
