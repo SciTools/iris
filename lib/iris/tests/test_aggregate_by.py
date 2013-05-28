@@ -20,6 +20,7 @@
 import iris.tests as tests
 
 import numpy as np
+import numpy.ma as ma
 import unittest
 
 import iris
@@ -293,6 +294,88 @@ class TestAggregateBy(tests.IrisTest):
         aggregateby_cube = cube.aggregated_by('latitude', iris.analysis.RMS)
         row = [list(np.sqrt([50., 122., 170., 362.])), [18., 12., 10., 6.]]
         np.testing.assert_almost_equal(aggregateby_cube.data, np.array(row, dtype=np.float32))
+
+    def test_single_missing(self):
+        # aggregation correctly handles masked data
+        mask = np.vstack(
+            (np.array([[[0, 1, 0], [1, 0, 1], [0, 1, 0]]]).repeat(26, axis=0),
+             np.zeros([10, 3, 3])))
+        self.cube_single.data = ma.array(self.cube_single.data, mask=mask)
+        single_expected = ma.masked_invalid(
+            [[[0., np.nan, 0.],
+              [np.nan, 0., np.nan],
+              [0., np.nan, 0.]],
+             [[1.5, np.nan, 4.5],
+              [np.nan, 7.5, np.nan],
+              [10.5, np.nan, 13.5]],
+             [[4., np.nan, 12.],
+              [np.nan, 20., np.nan],
+              [28., np.nan, 36.]],
+             [[7.5, np.nan, 22.5],
+              [np.nan, 37.5, np.nan],
+              [52.5, np.nan, 67.5]],
+             [[12., np.nan, 36.],
+              [np.nan, 60., np.nan],
+              [84., np.nan, 108.]],
+             [[17.5, np.nan, 52.5],
+              [np.nan, 87.5, np.nan],
+              [122.5, np.nan, 157.5]],
+             [[24., 53., 72.],
+              [106., 120., 159.],
+              [168., 212., 216.]],
+             [[31.5, 63., 94.5],
+              [126., 157.5, 189.],
+              [220.5, 252., 283.5]]])
+        aggregateby_cube = self.cube_single.aggregated_by('height',
+                                                          iris.analysis.MEAN)
+        self.assertCML(aggregateby_cube,
+                       ('analysis', 'aggregated_by', 'single_missing.cml'),
+                       checksum=False)
+        self.assertMaskedArrayAlmostEqual(aggregateby_cube.data,
+                                          single_expected)
+
+    def test_multi_missing(self):
+        # aggregation correctly handles masked data
+        mask = np.vstack(
+            (np.array([[[0, 1, 0], [1, 0, 1], [0, 1, 0]]]).repeat(16, axis=0),
+             np.ones([2, 3, 3]),
+             np.zeros([2, 3, 3])))
+        self.cube_multi.data = ma.array(self.cube_multi.data, mask=mask)
+        multi_expected = ma.masked_invalid(
+            [[[1., np.nan, 3.],
+              [np.nan, 5., np.nan],
+              [7., np.nan, 9.]],
+             [[3.5, np.nan, 10.5],
+              [np.nan, 17.5, np.nan],
+              [24.5, np.nan, 31.5]],
+             [[14., 37., 42.],
+              [74., 70., 111.],
+              [98., 148., 126.]],
+             [[7., np.nan, 21.],
+              [np.nan, 35., np.nan],
+              [49., np.nan, 63.]],
+             [[9., np.nan, 27.],
+              [np.nan, 45., np.nan],
+              [63., np.nan, 81.]],
+             [[10.5, np.nan, 31.5],
+              [np.nan, 52.5, np.nan],
+              [73.5, np.nan, 94.5]],
+             [[13., np.nan, 39.],
+              [np.nan, 65., np.nan],
+              [91., np.nan, 117.]],
+             [[15., np.nan, 45.],
+              [np.nan, 75., np.nan],
+              [105., np.nan, 135.]],
+             [[np.nan, np.nan, np.nan],
+              [np.nan, np.nan, np.nan],
+              [np.nan, np.nan, np.nan]]])
+        aggregateby_cube = self.cube_multi.aggregated_by(['height', 'level'],
+                                                         iris.analysis.MEAN)
+        self.assertCML(aggregateby_cube,
+                       ('analysis', 'aggregated_by', 'multi_missing.cml'),
+                       checksum=False)
+        self.assertMaskedArrayAlmostEqual(aggregateby_cube.data,
+                                          multi_expected)
 
     def test_returned_weights(self):
         self.assertRaises(ValueError, self.cube_single.aggregated_by, 'height', iris.analysis.MEAN, returned=True) 
