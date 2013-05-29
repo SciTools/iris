@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -9,11 +9,11 @@
 #
 # Iris is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with Iris. If not, see <http://www.gnu.org/licenses/>.
+# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
 import itertools
 
@@ -21,7 +21,7 @@ import metocean.queries as moq
 import metocean.fuseki as fuseki
 
 
-header = '''# (C) British Crown Copyright 2010 - 2013, Met Office
+header = """# (C) British Crown Copyright 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -32,16 +32,16 @@ header = '''# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # Iris is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with Iris. If not, see <http://www.gnu.org/licenses/>.
+# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
 # DO NOT EDIT: AUTO-GENERATED 
 
+"""
 
-'''
 
 def bodc_udunit_fix(units):
     """
