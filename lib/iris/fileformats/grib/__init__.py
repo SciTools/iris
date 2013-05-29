@@ -34,6 +34,7 @@ import iris.proxy
 iris.proxy.apply_proxy('gribapi', globals())
 
 import iris.coord_systems as coord_systems
+from iris.exceptions import TranslationError
 # NOTE: careful here, to avoid circular imports (as iris imports grib)
 from iris.fileformats.grib import grib_phenom_translation as gptx
 from iris.fileformats.grib import grib_save_rules
@@ -447,10 +448,31 @@ class GribWrapper(object):
             self.extra_keys['_coord_system'] = \
                 iris.coord_systems.Stereographic(
                     pole_lat, self.orientationOfTheGridInDegrees, 0, 0,
-                    self.LaDInDegrees, ellipsoid=geoid) 
+                    self.LaDInDegrees, ellipsoid=geoid)
+
+        elif gridType == 'lambert':
+            self.extra_keys['_x_coord_name'] = "projection_x_coordinate"
+            self.extra_keys['_y_coord_name'] = "projection_y_coordinate"
+
+            if self.edition == 1:
+                flag_name = "projectionCenterFlag"
+            else:
+                flag_name = "projectionCentreFlag"
             
+            if getattr(self, flag_name) == 0:
+                pole_lat = 90
+            elif getattr(self, flag_name) == 1:
+                pole_lat = -90
+            else:
+                raise TranslationError("Unhandled projectionCentreFlag")
+
+            LambertConformal = iris.coord_systems.LambertConformal
+            self.extra_keys['_coord_system'] = LambertConformal(
+                self.LaDInDegrees, self.LoVInDegrees, 0, 0,
+                secant_latitudes=(self.Latin1InDegrees, self.Latin2InDegrees),
+                ellipsoid=geoid)
         else:
-            raise TranslationError("unhandled grid type")
+            raise TranslationError("unhandled grid type: {}".format(gridType))
 
         # x and y points, and circularity
         if gridType in ["regular_ll", "rotated_ll"]:
@@ -479,8 +501,7 @@ class GribWrapper(object):
                     if abs(1.0 - gap / max_step) < delta:
                         self.extra_keys['_x_circular'] = True
 
-        elif gridType == "polar_stereographic":
-            
+        elif gridType in ["polar_stereographic", "lambert"]:
             # convert the starting latlon into meters
             cartopy_crs = self.extra_keys['_coord_system'].as_cartopy_crs()
             x1, y1 = cartopy_crs.transform_point(
@@ -488,12 +509,15 @@ class GribWrapper(object):
                                 self.latitudeOfFirstGridPointInDegrees,
                                 cartopy.crs.Geodetic())
 
+            if not np.all(np.isfinite([x1, y1])):
+                raise TranslationError("Could not determine the first latitude"
+                                       " and/or longitude grid point.")
+
             self._x_points = x1 + self.DxInMetres * np.arange(self.Nx,
                                                               dtype=np.float64)
             self._y_points = y1 + self.DyInMetres * np.arange(self.Ny,
                                                               dtype=np.float64)
             
-
         else:
             raise TranslationError("unhandled grid type")
         
@@ -542,7 +566,8 @@ class GribWrapper(object):
             elif time_range_indicator == 5:    time_diff = P2     #Difference(reference time + P2 minus reference time + P1) product considered valid at reference time + P2
             elif time_range_indicator == 10:   time_diff = P1 * 256 + P2    #P1 occupies octets 19 and 20; product valid at reference time + P1
             elif time_range_indicator == 51:                      #Climatological Mean Value: multiple year averages of quantities which are themselves means over some period of time (P2) less than a year. The reference time (R) indicates the date and time of the start of a period of time, given by R to R + P2, over which a mean is formed; N indicates the number of such period-means that are averaged together to form the climatological value, assuming that the N period-mean fields are separated by one year. The reference time indicates the start of the N-year climatology. N is given in octets 22-23 of the PDS. If P1 = 0 then the data averaged in the basic interval P2 are assumed to be continuous, i.e., all available data are simply averaged together. If P1 = 1 (the units of time - octet 18, code table 4 - are not relevant here) then the data averaged together in the basic interval P2 are valid only at the time (hour, minute) given in the reference time, for all the days included in the P2 period. The units of P2 are given by the contents of octet 18 and Table 4.
-                raise iris.exceptions.TranslationError("unhandled grib1 timeRangeIndicator = 51 (avg of avgs)")
+                raise TranslationError("unhandled grib1 timeRangeIndicator "
+                                       "= 51 (avg of avgs)")
             elif time_range_indicator == 113:    time_diff = P1    #Average of N forecasts (or initialized analyses); each product has forecast period of P1 (P1=0 for initialized analyses); products have reference times at intervals of P2, beginning at the given reference time.
             elif time_range_indicator == 114:    time_diff = P1    #Accumulation of N forecasts (or initialized analyses); each product has forecast period of P1 (P1=0 for initialized analyses); products have reference times at intervals of P2, beginning at the given reference time.
             elif time_range_indicator == 115:    time_diff = P1    #Average of N forecasts, all with the same reference time; the first has a forecast period of P1, the remaining forecasts follow at intervals of P2.
@@ -552,14 +577,14 @@ class GribWrapper(object):
             elif time_range_indicator == 123:    time_diff = P1    #Average of N uninitialized analyses, starting at the reference time, at intervals of P2.
             elif time_range_indicator == 124:    time_diff = P1    #Accumulation of N uninitialized analyses, starting at the reference time, at intervals of P2.
             else:
-                raise iris.exceptions.TranslationError("unhandled grib1 timeRangeIndicator = %i" %
-                                                       time_range_indicator)
+                raise TranslationError("unhandled grib1 timeRangeIndicator "
+                                       "= %i" % time_range_indicator)
         elif self.edition == 2:
             time_diff = int(self.stepRange)  # gribapi gives us a string!
 
         else:
-            raise iris.exceptions.TranslationError(
-                "unhandled grib edition = {ed}".format(self.edition)
+            raise TranslationError(
+                "unhandled grib edition = {}".format(self.edition)
             )
 
         # Get the timeunit interval.
@@ -652,8 +677,8 @@ def save_grib2(cube, target, append=False, **kwargs):
     lat_coords = filter(lambda coord: "latitude" in coord.name(), cube.coords())
     lon_coords = filter(lambda coord: "longitude" in coord.name(), cube.coords())
     if len(lat_coords) != 1 or len(lon_coords) != 1:
-        raise iris.exceptions.TranslationError("Did not find one (and only one) "
-                                               "latitude or longitude coord")
+        raise TranslationError("Did not find one (and only one) "
+                               "latitude or longitude coord")
 
     # Save each latlon slice2D in the cube 
     for slice2D in cube.slices([lat_coords[0], lon_coords[0]]):
