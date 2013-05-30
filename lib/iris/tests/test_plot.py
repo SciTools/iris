@@ -20,7 +20,6 @@
 # importing anything else
 import iris.tests as tests
 
-import copy
 from functools import wraps
 import types
 import warnings

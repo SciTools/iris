@@ -442,7 +442,7 @@ def contour(cube, *args, **kwargs):
     """
     Draws contour lines based on the given Cube.
 
-    Args:
+    Kwargs:
 
     * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the
@@ -462,7 +462,7 @@ def contourf(cube, *args, **kwargs):
     """
     Draws filled contours based on the given Cube.
 
-    Args:
+    Kwargs:
 
     * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the
@@ -624,7 +624,7 @@ def outline(cube, coords=None):
     """
     Draws cell outlines based on the given Cube.
 
-    Args:
+    Kwargs:
 
     * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the
@@ -648,7 +648,7 @@ def pcolor(cube, *args, **kwargs):
     """
     Draws a pseudocolor plot based on the given Cube.
 
-    Args:
+    Kwargs:
 
     * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the
@@ -669,7 +669,7 @@ def pcolormesh(cube, *args, **kwargs):
     """
     Draws a pseudocolor plot based on the given Cube.
 
-    Args:
+    Kwargs:
 
     * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the
@@ -689,7 +689,7 @@ def points(cube, *args, **kwargs):
     """
     Draws sample point positions based on the given Cube.
 
-    Args:
+    Kwargs:
 
     * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the
@@ -710,7 +710,7 @@ def plot(cube, *args, **kwargs):
     """
     Draws a line plot based on the given Cube.
 
-    Args:
+    Kwargs:
 
     * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the
