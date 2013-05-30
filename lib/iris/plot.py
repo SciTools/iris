@@ -152,14 +152,16 @@ def _get_plot_defn(cube, mode, ndims=2):
                 coords[dim] = aux_coords[0]
 
     if mode == iris.coords.POINT_MODE:
-        # Allow multi-dimensional aux_coords to override the dim_coords.
-        # (things like grid_latitude will be overriden by latitude etc.)
+        # Allow multi-dimensional aux_coords to override the dim_coords
+        # along the Z axis. This results in a preference for using the
+        # derived altitude over model_level_number or level_height.
+        # Limit to Z axis to avoid preferring latitude over grid_latitude etc.
         axes = map(guess_axis, coords)
-        for coord in cube.coords(dim_coords=False):
-            if max(coord.shape) > 1 and (mode == iris.coords.POINT_MODE or
-                                         coord.nbounds):
-                axis = iris.util.guess_coord_axis(coord)
-                if axis and axis in axes:
+        axis = 'Z'
+        if axis in axes:
+            for coord in cube.coords(dim_coords=False):
+                if max(coord.shape) > 1 and \
+                        iris.util.guess_coord_axis(coord) == axis:
                     coords[axes.index(axis)] = coord
 
     # Re-order the coordinates to achieve the preferred
@@ -197,23 +199,23 @@ def _broadcast_2d(u, v):
 def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     # NB. In the interests of clarity we use "u" and "v" to refer to the
     # horizontal and vertical axes on the matplotlib plot.
-
-    # get & remove the coords entry from kwargs
-    coords = kwargs.pop('coords', None)
     mode = iris.coords.BOUND_MODE
+    # Get & remove the coords entry from kwargs.
+    coords = kwargs.pop('coords', None)
     if coords is not None:
         plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode)
     else:
         plot_defn = _get_plot_defn(cube, mode, ndims=2)
 
-    data = cube.data
-    if plot_defn.transpose:
-        data = data.T
-
     if _can_draw_map(plot_defn.coords):
         result = _map_common(draw_method_name, None, iris.coords.BOUND_MODE,
-                             cube, data, *args, **kwargs)
+                             cube, plot_defn, *args, **kwargs)
     else:
+        # Obtain data array.
+        data = cube.data
+        if plot_defn.transpose:
+            data = data.T
+
         # Obtain U and V coordinates
         v_coord, u_coord = plot_defn.coords
 
@@ -232,7 +234,6 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
             v = v.T
 
         u, v = _broadcast_2d(u, v)
-
         draw_method = getattr(plt, draw_method_name)
         result = draw_method(u, v, data, *args, **kwargs)
 
@@ -242,24 +243,24 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
 def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
     # NB. In the interests of clarity we use "u" and "v" to refer to the
     # horizontal and vertical axes on the matplotlib plot.
-
-    # get & remove the coords entry from kwargs
-    coords = kwargs.pop('coords', None)
     mode = iris.coords.POINT_MODE
+    # Get & remove the coords entry from kwargs.
+    coords = kwargs.pop('coords', None)
     if coords is not None:
         plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode)
     else:
         plot_defn = _get_plot_defn(cube, mode, ndims=2)
 
-    data = cube.data
-    if plot_defn.transpose:
-        data = data.T
-
     if _can_draw_map(plot_defn.coords):
         result = _map_common(draw_method_name, arg_func,
-                             iris.coords.POINT_MODE, cube, data,
+                             iris.coords.POINT_MODE, cube, plot_defn,
                              *args, **kwargs)
     else:
+        # Obtain data array.
+        data = cube.data
+        if plot_defn.transpose:
+            data = data.T
+
         # Obtain U and V coordinates
         v_coord, u_coord = plot_defn.coords
         if u_coord:
@@ -361,19 +362,29 @@ def _get_cartopy_axes(cartopy_proj):
     return ax
 
 
-def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
+def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
+                *args, **kwargs):
     """
     Draw the given cube on a map using its points or bounds.
 
     "Mode" parameter will switch functionality between POINT or BOUND plotting.
 
+
     """
-    # get the 2d x and 2d y from the CS
+    # Generate 2d x and 2d y grids.
+    y_coord, x_coord = plot_defn.coords
     if mode == iris.coords.POINT_MODE:
-        x, y = cartography.get_xy_grids(cube)
+        if x_coord.ndim == y_coord.ndim == 1:
+            x, y = np.meshgrid(x_coord.points, y_coord.points)
+        elif x_coord.ndim == y_coord.ndim == 2:
+            x = x_coord.points
+            y = y_coord.points
+        else:
+            raise ValueError("Expected 1D or 2D XY coords")
     else:
         try:
-            x, y = cartography.get_xy_contiguous_bounded_grids(cube)
+            x, y = np.meshgrid(x_coord.contiguous_bounds(),
+                               y_coord.contiguous_bounds())
         # Exception translation.
         except iris.exceptions.CoordinateMultiDimError:
             raise ValueError("Could not get XY grid from bounds. "
@@ -383,14 +394,15 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
                              "X or Y coordinate doesn't have 2 bounds "
                              "per point.")
 
-    # take a copy of the data so that we can make modifications to it
-    data = data.copy()
+    # Obtain the data array.
+    data = cube.data
+    if plot_defn.transpose:
+        data = data.T
 
     # If we are global, then append the first column of data the array to the
     # last (and add 360 degrees) NOTE: if it is found that this block of code
     # is useful in anywhere other than this plotting routine, it may be better
     # placed in the CS.
-    x_coord = cube.coord(axis="X")
     if getattr(x_coord, 'circular', False):
         _, direction = iris.util.monotonic(x_coord.points,
                                            return_direction=True)
@@ -399,7 +411,10 @@ def _map_common(draw_method_name, arg_func, mode, cube, data, *args, **kwargs):
         data = ma.concatenate([data, data[:, 0:1]], axis=1)
 
     # Replace non-cartopy subplot/axes with a cartopy alternative.
-    cs = cube.coord_system('CoordSystem')
+    if x_coord.coord_system != y_coord.coord_system:
+        raise ValueError('The X and Y coordinates must have equal coordinate'
+                         ' systems.')
+    cs = x_coord.coord_system
     if cs:
         cartopy_proj = cs.as_cartopy_projection()
     else:
@@ -427,7 +442,7 @@ def contour(cube, *args, **kwargs):
     """
     Draws contour lines based on the given Cube.
 
-    Args:
+    Kwargs:
 
     * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the
@@ -447,7 +462,7 @@ def contourf(cube, *args, **kwargs):
     """
     Draws filled contours based on the given Cube.
 
-    Args:
+    Kwargs:
 
     * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the
@@ -609,7 +624,7 @@ def outline(cube, coords=None):
     """
     Draws cell outlines based on the given Cube.
 
-    Args:
+    Kwargs:
 
     * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the
@@ -633,7 +648,7 @@ def pcolor(cube, *args, **kwargs):
     """
     Draws a pseudocolor plot based on the given Cube.
 
-    Args:
+    Kwargs:
 
     * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the
@@ -654,7 +669,7 @@ def pcolormesh(cube, *args, **kwargs):
     """
     Draws a pseudocolor plot based on the given Cube.
 
-    Args:
+    Kwargs:
 
     * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the
@@ -674,7 +689,7 @@ def points(cube, *args, **kwargs):
     """
     Draws sample point positions based on the given Cube.
 
-    Args:
+    Kwargs:
 
     * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the
@@ -695,7 +710,7 @@ def plot(cube, *args, **kwargs):
     """
     Draws a line plot based on the given Cube.
 
-    Args:
+    Kwargs:
 
     * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the plot. The order of the
