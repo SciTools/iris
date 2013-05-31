@@ -54,6 +54,26 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
         with self.cube_save_test(reference_txt_path, reference_cubes=cube) as temp_pp_path:
             iris.save(cube, temp_pp_path)
 
+    def test_no_forecast_period(self):
+        cube = stock.lat_lon_cube()
+        # Add a bounded scalar time coord and a forecast_reference_time.
+        time_coord = iris.coords.DimCoord(
+            10.958333, standard_name='time',
+            units='days since 2013-05-10 12:00',
+            bounds=[10.916667, 11.0])
+        cube.add_aux_coord(time_coord)
+        forecast_reference_time = iris.coords.DimCoord(
+            2.0, standard_name='forecast_reference_time',
+            units='weeks since 2013-05-07')
+        cube.add_aux_coord(forecast_reference_time)
+
+        self.assertCML(cube, ['cube_to_pp', 'no_forecast_period.cml'])
+        reference_txt_path = tests.get_result_path(('cube_to_pp',
+                                                    'no_forecast_period.txt'))
+        with self.cube_save_test(reference_txt_path, reference_cubes=cube) as \
+                temp_pp_path:
+            iris.save(cube, temp_pp_path)
+
     def test_pp_save_rules(self):
         # Test pp save rules without user rules.
 
