@@ -58,12 +58,13 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
         cube = stock.lat_lon_cube()
         # Add a bounded scalar time coord and a forecast_reference_time.
         time_coord = iris.coords.DimCoord(
-            380315.0, standard_name='time', units='hours since epoch',
-            bounds=[380314.0, 380316.0])
+            10.958333, standard_name='time',
+            units='days since 2013-05-10 12:00',
+            bounds=[10.916667, 11.0])
         cube.add_aux_coord(time_coord)
         forecast_reference_time = iris.coords.DimCoord(
-            380304.0, standard_name='forecast_reference_time',
-            units='hours since epoch')
+            2.0, standard_name='forecast_reference_time',
+            units='weeks since 2013-05-07')
         cube.add_aux_coord(forecast_reference_time)
 
         self.assertCML(cube, ['cube_to_pp', 'no_forecast_period.cml'])
