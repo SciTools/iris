@@ -2403,10 +2403,14 @@ class Cube(CFVariableMixin):
             result = aggregator.aggregate(groupby_sub_cube.data,
                                           axis=dimension_to_groupby,
                                           **kwargs)
+
             # Determine aggregation result data type for the aggregate-by cube
             # data on first pass.
             if i == 0:
-                aggregateby_data = np.zeros(data_shape, dtype=result.dtype)
+                if isinstance(self.data, ma.MaskedArray):
+                    aggregateby_data = ma.zeros(data_shape, dtype=result.dtype)
+                else:
+                    aggregateby_data = np.zeros(data_shape, dtype=result.dtype)
 
             aggregateby_data[tuple(cube_slice)] = result
 
