@@ -779,7 +779,7 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
 
 
 Loader = collections.namedtuple('Loader',
-                                ('field_generator',
+                                ('field_generator', 'field_generator_kwargs',
                                  'load_rules', 'cross_ref_rules',
                                  'log_name'))
 
@@ -792,7 +792,7 @@ def load_cubes(filenames, user_callback, loader):
         filenames = [filenames]
 
     for filename in filenames:
-        for field in loader.field_generator(filename):
+        for field in loader.field_generator(filename, **loader.field_generator_kwargs):
             # Convert the field to a Cube, logging the rules that were used
             rules_result = loader.load_rules.result(field)
             cube = rules_result.cube

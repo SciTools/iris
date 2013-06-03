@@ -28,8 +28,8 @@ from iris.fileformats.manager import DataManager
 import pp
 
 
-FF_HEADER_DEPTH = 256  # In words (64-bit).
-FF_WORD_DEPTH = 8      # In bytes.
+FF_HEADER_DEPTH = 256      # In words (64-bit).
+DEFAULT_FF_WORD_DEPTH = 8  # In bytes.
 
 # UM marker to signify empty lookup table entry.
 _FF_LOOKUP_TABLE_TERMINATE = -99
@@ -94,15 +94,16 @@ _FF_HEADER_POINTERS = [
         'lookup_table',
         'data', ]
 
-_LBUSER_DTYPE_LOOKUP = {1: np.dtype('>f8'), 
-                        2: np.dtype('>i8'), 
-                        3: np.dtype('>i8'),
-                        'default': np.dtype('>f8'), }
+_LBUSER_DTYPE_LOOKUP = {1: '>f{word_depth}',
+                        2: '>i{word_depth}',
+                        3: '>i{word_depth}',
+                        'default': '>f{word_depth}', }
+
 
 class FFHeader(object):
     """A class to represent the FIXED_LENGTH_HEADER section of a FieldsFile."""
     
-    def __init__(self, filename):
+    def __init__(self, filename, word_depth=DEFAULT_FF_WORD_DEPTH):
         """
         Create a FieldsFile header instance by reading the
         FIXED_LENGTH_HEADER section of the FieldsFile.
@@ -119,10 +120,13 @@ class FFHeader(object):
         
         self.ff_filename = filename
         '''File name of the FieldsFile.'''
+        self._word_depth = word_depth
+
         # Read the FF header data
         with open(filename, 'rb') as ff_file:
-            # 64-bit words (aka. int64)
-            header_data = np.fromfile(ff_file, dtype='>i8',
+            # typically 64-bit words (aka. int64 or ">i8")
+            header_data = np.fromfile(ff_file,
+                                      dtype='>i{0}'.format(word_depth),
                                       count=FF_HEADER_DEPTH)
             header_data = tuple(header_data)
             # Create FF instance attributes
@@ -135,7 +139,7 @@ class FFHeader(object):
 
     def __str__(self):
         attributes = []
-        for name, offsets in FF_HEADER:
+        for name, _ in FF_HEADER:
             attributes.append('    {}: {}'.format(name, getattr(self, name)))
         return 'FF Header:\n' + '\n'.join(attributes)
 
@@ -179,7 +183,7 @@ class FFHeader(object):
         """
         
         if name in _FF_HEADER_POINTERS:
-            value = getattr(self, name)[0] * FF_WORD_DEPTH
+            value = getattr(self, name)[0] * self._word_depth
         else:
             msg = '{!r} object does not have pointer attribute {!r}'
             raise AttributeError(msg.format(self.__class__.__name__, name))
@@ -210,7 +214,8 @@ class FFHeader(object):
 class FF2PP(object):
     """A class to extract the individual PPFields from within a FieldsFile."""
 
-    def __init__(self, filename, read_data=False):
+    def __init__(self, filename, read_data=False,
+                 word_depth=DEFAULT_FF_WORD_DEPTH):
         """
         Create a FieldsFile to Post Process instance that returns a generator
         of PPFields contained within the FieldsFile.
@@ -236,19 +241,20 @@ class FF2PP(object):
             
         """
         
-        self._ff_header = FFHeader(filename)
+        self._ff_header = FFHeader(filename, word_depth=word_depth)
+        self._word_depth = word_depth
         self._filename = filename
         self._read_data = read_data
 
     def _payload(self, field):
-        '''Calculate the payload data depth (in bytes) and type.'''
-
+        """Calculate the payload data depth (in bytes) and type."""
         if field.lbpack.n1 == 0:
             # Data payload is not packed.
-            data_depth = (field.lblrec - field.lbext) * FF_WORD_DEPTH
+            data_depth = (field.lblrec - field.lbext) * self._word_depth
             # Determine PP field 64-bit payload datatype.
             lookup = _LBUSER_DTYPE_LOOKUP
-            data_type = lookup.get(field.lbuser[0], lookup['default'])
+            dtype_template = lookup.get(field.lbuser[0], lookup['default'])
+            data_type = np.dtype(dtype_template.format(word_depth=self._word_depth))
         else:
             # Data payload is packed.
             if field.lbpack.n1 == 1:
@@ -270,8 +276,8 @@ class FF2PP(object):
     def _extract_field(self):
         # FF table pointer initialisation based on FF LOOKUP table configuration. 
         table_index, table_entry_depth, table_count = self._ff_header.lookup_table
-        table_offset = (table_index - 1) * FF_WORD_DEPTH       # in bytes
-        table_entry_depth = table_entry_depth * FF_WORD_DEPTH  # in bytes
+        table_offset = (table_index - 1) * self._word_depth       # in bytes
+        table_entry_depth = table_entry_depth * self._word_depth  # in bytes
         # Open the FF for processing.
         ff_file = open(self._ff_header.ff_filename, 'rb')
         ff_file_seek = ff_file.seek
@@ -286,9 +292,9 @@ class FF2PP(object):
             # Move file pointer to the start of the current FF LOOKUP table entry.
             ff_file_seek(table_offset, os.SEEK_SET)
             # Read the current PP header entry from the FF LOOKUP table.
-            header_integers = np.fromfile(ff_file, dtype='>i8',
+            header_integers = np.fromfile(ff_file, dtype='>i{0}'.format(self._word_depth),
                                           count=pp.NUM_LONG_HEADERS)
-            header_floats = np.fromfile(ff_file, dtype='>f8',
+            header_floats = np.fromfile(ff_file, dtype='>f{0}'.format(self._word_depth),
                                         count=pp.NUM_FLOAT_HEADERS)
             # In 64-bit words.
             header_data = tuple(header_integers) + tuple(header_floats)
@@ -303,7 +309,7 @@ class FF2PP(object):
             # (The PPField sub-class will depend on the header release number.)
             field = pp.make_pp_field(header_data)
             # Calculate start address of the associated PP header data.
-            data_offset = field.lbegin * FF_WORD_DEPTH
+            data_offset = field.lbegin * self._word_depth
             # Determine PP field payload depth and type.
             data_depth, data_type = self._payload(field)
             # Determine PP field data shape.
@@ -348,3 +354,16 @@ def load_cubes(filenames, callback):
          
     """
     return pp._load_cubes_variable_loader(filenames, callback, FF2PP)
+
+
+def load_cubes_32bit_ieee(filenames, callback):
+    """
+    Loads cubes from a list of 32bit ieee converted fieldsfiles filenames.
+
+    .. seealso::
+
+        :func:`load_cubes` for keyword details
+
+    """
+    return pp._load_cubes_variable_loader(filenames, callback, FF2PP,
+                                          {'word_depth': 4})

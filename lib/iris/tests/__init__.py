@@ -33,6 +33,7 @@ import collections
 import contextlib
 import difflib
 import filecmp
+import gzip
 import logging
 import os
 import os.path
@@ -119,7 +120,16 @@ def get_data_path(relative_path):
 
     if _EXPORT_DATAPATHS_FILE is not None:
         _EXPORT_DATAPATHS_FILE.write(data_path + '\n')
-        
+
+    if isinstance(data_path, basestring) and not os.path.exists(data_path):
+        # if the file is gzipped, ungzip it and return the path of the ungzipped
+        # file.
+        gzipped_fname = data_path + '.gz'
+        if os.path.exists(gzipped_fname):
+            with gzip.open(gzipped_fname, 'rb') as gz_fh:
+                with open(data_path, 'wb') as fh:
+                    fh.writelines(gz_fh)
+
     return data_path
 
 
