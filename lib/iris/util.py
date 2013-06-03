@@ -71,15 +71,15 @@ def broadcast_weights(weights, array, dims):
 def delta(ndarray, dimension, circular=False):
     """
     Calculates the difference between values along a given dimension.
-    
+
     Args:
 
     * ndarray:
         The array over which to do the difference.
-        
+
     * dimension:
         The dimension over which to do the difference on ndarray.
-    
+
     * circular:
         If not False then return n results in the requested dimension
         with the delta between the last and first element included in
@@ -90,7 +90,7 @@ def delta(ndarray, dimension, circular=False):
         to the last element of the given dimension if the last element
         is negative, otherwise the value of circular will be subtracted
         from the last element.
-                 
+
         The example below illustrates the process::
 
             original array              -180, -90,  0,    90
@@ -99,7 +99,7 @@ def delta(ndarray, dimension, circular=False):
     .. note::
 
         The difference algorithm implemented is forward difference:
-        
+
             >>> import numpy as np
             >>> import iris.util
             >>> original = np.array([-180, -90, 0, 90])
@@ -107,32 +107,32 @@ def delta(ndarray, dimension, circular=False):
             array([90, 90, 90])
             >>> iris.util.delta(original, 0, circular=360)
             array([90, 90, 90, 90])
-        
+
     """
     if circular is not False:
         _delta = np.roll(ndarray, -1, axis=dimension)
         last_element = [slice(None, None)] * ndarray.ndim
         last_element[dimension] = slice(-1, None)
-        
-        if not isinstance(circular, bool): 
+
+        if not isinstance(circular, bool):
             result = np.where(ndarray[last_element] >= _delta[last_element])[0]
             _delta[last_element] -= circular
             _delta[last_element][result] += 2*circular
-                    
+
         np.subtract(_delta, ndarray, _delta)
     else:
         _delta = np.diff(ndarray, axis=dimension)
-    
+
     return _delta
 
 
 def guess_coord_axis(coord):
     """
     Returns a "best guess" axis name of the coordinate.
-    
+
     Heuristic categoration of the coordinate into either label
     'T', 'Z', 'Y', 'X' or None.
-    
+
     Args:
 
     * coord:
@@ -140,7 +140,7 @@ def guess_coord_axis(coord):
 
     Returns:
         'T', 'Z', 'Y', 'X', or None.
-    
+
     """
     axis = None
 
@@ -150,7 +150,7 @@ def guess_coord_axis(coord):
         axis = 'Y'
     elif coord.units.is_convertible('hPa') or coord.attributes.get('positive') in ('up', 'down'):
         axis = 'Z'
-    elif coord.units.is_time_reference():    
+    elif coord.units.is_time_reference():
         axis = 'T'
 
     return axis
@@ -161,12 +161,12 @@ def rolling_window(a, window=1, step=1, axis=-1):
     Make an ndarray with a rolling window of the last dimension
 
     Args:
-    
+
     * a : array_like
         Array to add rolling window to
-        
+
     Kwargs:
-    
+
     * window : int
         Size of rolling window
     * step : int
@@ -175,27 +175,27 @@ def rolling_window(a, window=1, step=1, axis=-1):
         Axis to take the rolling window over
 
     Returns:
-        
+
         Array that is a view of the original array with an added dimension
         of the size of the given window at axis + 1.
 
     Examples::
-        
+
         >>> x=np.arange(10).reshape((2,5))
         >>> rolling_window(x, 3)
         array([[[0, 1, 2], [1, 2, 3], [2, 3, 4]],
                [[5, 6, 7], [6, 7, 8], [7, 8, 9]]])
-    
+
     Calculate rolling mean of last dimension::
-     
+
         >>> np.mean(rolling_window(x, 3), -1)
         array([[ 1.,  2.,  3.],
                [ 6.,  7.,  8.]])
 
     """
-    # NOTE: The implementation of this function originates from 
+    # NOTE: The implementation of this function originates from
     # https://github.com/numpy/numpy/pull/31#issuecomment-1304851 04/08/2011
-    if window < 1:  
+    if window < 1:
         raise ValueError("`window` must be at least 1.")
     if window > a.shape[axis]:
         raise ValueError("`window` is too long.")
@@ -211,10 +211,10 @@ def rolling_window(a, window=1, step=1, axis=-1):
 def array_equal(array1, array2):
     """
     Returns whether two arrays have the same shape and elements.
-    
+
     This provides the same functionality as :func:`numpy.array_equal` but with
     additional support for arrays of strings.
-    
+
     """
     # Numpy provides an array_equal method but that does not support arrays of strings.
     if array1.ndim == 0 or array2.ndim == 0:
@@ -242,25 +242,25 @@ def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
 def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
     """
     Provides a convenient way of defining a 3 element inequality such as ``a < number < b``.
-    
+
     Arguments:
-    
+
     * lh
         The left hand element of the inequality
     * rh
         The right hand element of the inequality
-        
+
     Keywords:
-    
+
     * lh_inclusive - boolean
         Affects the left hand comparison operator to use in the inequality.
         True for ``<=`` false for ``<``. Defaults to True.
     * rh_inclusive - boolean
         Same as lh_inclusive but for right hand operator.
-        
-        
+
+
     For example::
-    
+
         between_3_and_6 = between(3, 6)
         for i in range(10):
            print i, between_3_and_6(i)
@@ -269,14 +269,14 @@ def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
         between_3_and_6 = between(3, 6, rh_inclusive=False)
         for i in range(10):
            print i, between_3_and_6(i)
-        
+
     """
     if lh_inclusive and rh_inclusive:
-        return lambda c: lh <= c <= rh    
+        return lambda c: lh <= c <= rh
     elif lh_inclusive and not rh_inclusive:
-        return lambda c: lh <= c < rh    
+        return lambda c: lh <= c < rh
     elif not lh_inclusive and rh_inclusive:
-        return lambda c: lh < c <= rh    
+        return lambda c: lh < c <= rh
     else:
         return lambda c: lh < c < rh
 
@@ -284,16 +284,16 @@ def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
 def reverse(array, axes):
     """
     Reverse the array along the given axes.
-    
+
     Args:
 
     * array
         The array to reverse
     * axes
         A single value or array of values of axes to reverse
-       
+
     ::
-    
+
         >>> import numpy as np
         >>> a = np.arange(24).reshape(2, 3, 4)
         >>> print a
@@ -320,7 +320,7 @@ def reverse(array, axes):
          [[23 22 21 20]
           [19 18 17 16]
           [15 14 13 12]]]
-       
+
     """
     index = [slice(None, None)] * array.ndim
     axes = np.array(axes, ndmin=1)
@@ -329,43 +329,43 @@ def reverse(array, axes):
     if  np.min(axes) < 0 or np.max(axes) > array.ndim-1:
         raise ValueError('An axis value out of range for the number of dimensions from the '
                          'given array (%s) was received. Got: %r' % (array.ndim, axes))
-    
+
     for axis in axes:
         index[axis] = slice(None, None, -1)
-    
+
     return array[tuple(index)]
 
 
 def monotonic(array, strict=False, return_direction=False):
     """
     Return whether the given 1d array is monotonic.
-    
+
     Note that, the array must not contain missing data.
 
     Kwargs:
-    
+
     * strict (boolean)
         Flag to enable strict monotonic checking
     * return_direction (boolean)
-        Flag to change return behaviour to return (monotonic_status, direction) 
+        Flag to change return behaviour to return (monotonic_status, direction)
         Direction will be 1 for positive or -1 for negative. The direction is meaningless
         if the array is not monotonic.
-        
+
     Returns:
-    
+
     * monotonic_status (boolean)
         Whether the array was monotonic.
-        
+
         If the return_direction flag was given then the returned value will be:
             ``(monotonic_status, direction)``
-    
+
     """
     if array.ndim != 1 or len(array) <= 1:
         raise ValueError('The array to check must be 1 dimensional and have more than 1 element.')
 
     if ma.isMaskedArray(array) and ma.count_masked(array) != 0:
         raise ValueError('The array to check contains missing data.')
- 
+
     # Identify the directions of the largest/most-positive and
     # smallest/most-negative steps.
     d = np.diff(array)
@@ -388,17 +388,17 @@ def monotonic(array, strict=False, return_direction=False):
 
 def column_slices_generator(full_slice, ndims):
     """
-    Given a full slice full of tuples, return a dictionary mapping old data dimensions to new and a generator which gives 
+    Given a full slice full of tuples, return a dictionary mapping old data dimensions to new and a generator which gives
     the successive slices needed to index correctly (across columns).
-    
+
     This routine deals with the special functionality for tuple based indexing e.g. [0, (3, 5), :, (1, 6, 8)]
     by first providing a slice which takes the non tuple slices out first i.e. [0, :, :, :]
     then subsequently iterates through each of the tuples taking out the appropriate slices
     i.e. [(3, 5), :, :] followed by [:, :, (1, 6, 8)]
-    
+
     This method was developed as numpy does not support the direct approach of [(3, 5), : , (1, 6, 8)] for column based indexing.
 
-    """    
+    """
     list_of_slices = []
 
     # Map current dimensions to new dimensions, or None
@@ -410,7 +410,7 @@ def column_slices_generator(full_slice, ndims):
         else:
             dimension_mapping[i] = _count_current_dim
             _count_current_dim += 1
-                
+
     # Get all of the dimensions for which a tuple of indices were provided (numpy.ndarrays are treated in the same way tuples in this case)
     is_tuple_style_index = lambda key: isinstance(key, tuple) or (isinstance(key, np.ndarray) and key.ndim == 1)
     tuple_indices = [i for i, key in enumerate(full_slice) if is_tuple_style_index(key)]
@@ -422,76 +422,76 @@ def column_slices_generator(full_slice, ndims):
             first_slice[tuple_index] = slice(None, None)
         # turn first_slice back into a tuple ready for indexing
         first_slice = tuple(first_slice)
-        
+
         list_of_slices.append(first_slice)
-    
+
     data_ndims = max(dimension_mapping.values())
     if data_ndims is not None:
         data_ndims += 1
-    
+
     # stg2 iterate over each of the tuples
     for tuple_index in tuple_indices:
         # Create a list with the indices to span the whole data array that we currently have
         spanning_slice_with_tuple = [slice(None, None)] * data_ndims
         # Replace the slice(None, None) with our current tuple
         spanning_slice_with_tuple[dimension_mapping[tuple_index]] = full_slice[tuple_index]
-        
+
         # if we just have [(0, 1)] turn it into [(0, 1), ...] as this is Numpy's syntax.
         if len(spanning_slice_with_tuple) == 1:
             spanning_slice_with_tuple.append(Ellipsis)
-        
+
         spanning_slice_with_tuple = tuple(spanning_slice_with_tuple)
 
-        list_of_slices.append(spanning_slice_with_tuple)        
-    
+        list_of_slices.append(spanning_slice_with_tuple)
+
     # return the dimension mapping and a generator of slices
     return dimension_mapping, iter(list_of_slices)
 
 
 def _build_full_slice_given_keys(keys, ndim):
     """Given the keys passed to a __getitem__ call, build an equivalent tuple of keys which span ndims."""
-    # Ensure that we always have a tuple of keys    
+    # Ensure that we always have a tuple of keys
     if not isinstance(keys, tuple):
         keys = tuple([keys])
-        
+
     # catch the case where an extra Ellipsis has been provided which can be discarded iff len(keys)-1 == ndim
     if len(keys)-1 == ndim and Ellipsis in filter(lambda obj: not isinstance(obj, np.ndarray), keys):
         keys = list(keys)
         is_ellipsis = [key is Ellipsis for key in keys]
         keys.pop(is_ellipsis.index(True))
         keys = tuple(keys)
-    
+
     # for ndim >= 1 appending a ":" to the slice specification is allowable, remove this now
     if len(keys) > ndim and ndim != 0 and keys[-1] == slice(None, None):
         keys = keys[:-1]
-                
+
     if len(keys) > ndim:
         raise IndexError('More slices requested than dimensions. Requested %r, but there '
                              'were only %s dimensions.' % (keys, ndim))
-            
+
     # For each dimension get the slice which has been requested.
-    # If no slice provided, then default to the whole dimension        
+    # If no slice provided, then default to the whole dimension
     full_slice = [slice(None, None)] * ndim
-    
+
     for i, key in enumerate(keys):
         if key is Ellipsis:
-            
+
             # replace any subsequent Ellipsis objects in keys with slice(None, None) as per Numpy
             keys = keys[:i] + tuple( [slice(None, None) if key is Ellipsis else key for key in keys[i:]] )
-            
-            # iterate over the remaining keys in reverse to fill in 
+
+            # iterate over the remaining keys in reverse to fill in
             # the gaps from the right hand side
             for j, key in enumerate(keys[:i:-1]):
                 full_slice[-j-1] = key
-                
+
             # we've finished with i now so stop the iteration
             break
         else:
             full_slice[i] = key
-    
+
     # remove any tuples on dimensions, turning them into numpy array's for consistent behaviour
     full_slice = tuple([np.array(key, ndmin=1) if isinstance(key, tuple) else key for key in full_slice])
-    return full_slice 
+    return full_slice
 
 
 def _wrap_function_for_method(function, docstring=None):
@@ -500,7 +500,7 @@ def _wrap_function_for_method(function, docstring=None):
 
     The wrapper function renames the first argument as "self" and allows an alternative docstring, thus
     allowing the built-in help(...) routine to display appropriate output.
-    
+
     """
     # Generate the Python source for the wrapper function.
     # NB. The first argument is replaced with "self".
@@ -574,7 +574,7 @@ class _MetaOrderedHashable(abc.ABCMeta):
 class _OrderedHashable(collections.Hashable):
     """
     Convenience class for creating "immutable", hashable, and ordered classes.
-    
+
     Instance identity is defined by the specific list of attribute names
     declared in the abstract attribute "_names". Subclasses must declare the
     attribute "_names" as an iterable containing the names of all the
@@ -582,12 +582,12 @@ class _OrderedHashable(collections.Hashable):
 
     Initial values should be set by using ::
         self._init(self, value1, value2, ..)
-    
+
     .. note::
 
         It's the responsibility of the subclass to ensure that the values of
         its attributes are themselves hashable.
-    
+
     """
 
     # The metaclass adds default __init__ methods when appropriate.
@@ -651,9 +651,9 @@ def create_temp_filename(suffix=''):
     """Return a temporary file name.
 
     Args:
-    
+
         * suffix  -  Optional filename extension.
-    
+
     """
     temp_file = tempfile.mkstemp(suffix)
     os.close(temp_file[0])
@@ -664,16 +664,16 @@ def clip_string(the_str, clip_length=70, rider = "..."):
     """
     Returns a clipped version of the string based on the specified clip length and whether
     or not any graceful clip points can be found.
-    
+
     If the string to be clipped is shorter than the specified clip length, the original string is returned.
-    
+
     If the string is longer than the clip length, a graceful point (a space character) after the clip length
     is searched for. If a graceful point is found the string is clipped at this point and the rider is added.
     If no graceful point can be found, then the string is clipped exactly where the user requested and the
     rider is added.
-    
+
     Args:
-    
+
     * the_str
         The string to be clipped
     * clip_length
@@ -682,11 +682,11 @@ def clip_string(the_str, clip_length=70, rider = "..."):
     * rider
         A series of characters appended at the end of the returned string to show it has been clipped.
         Defaults to a preconfigured value if not specified.
-        
+
     Returns:
         The string clipped to the required length with a rider appended. If the clip length
         was greater than the orignal string, the original string is returned unaltered.
-        
+
     """
 
     if clip_length >= len(the_str) or clip_length <=0:
@@ -695,14 +695,14 @@ def clip_string(the_str, clip_length=70, rider = "..."):
         if the_str[clip_length].isspace():
             return the_str[:clip_length] + rider
         else:
-            first_part = the_str[:clip_length]   
+            first_part = the_str[:clip_length]
             remainder = the_str[clip_length:]
-            
+
             # Try to find a graceful point at which to trim i.e. a space
             # If no graceful point can be found, then just trim where the user specified
             # by adding an empty slice of the remainder ( [:0] )
             termination_point = remainder.find(" ") if remainder.find(" ") != -1 else 0
-            
+
             return first_part + remainder[:termination_point] + rider
 
 
@@ -715,10 +715,10 @@ def ensure_array(a):
 
 class _Timers(object):
     # See help for timers, below.
-    
+
     def __init__(self):
         self.timers = {}
-    
+
     def start(self, name, step_name):
         self.stop(name)
         timer = self.timers.setdefault(name, {})
@@ -730,7 +730,7 @@ class _Timers(object):
         timer = self.timers.setdefault(name, {})
         timer[step_name] = time.time() - timer.get(step_name, 0)
         timer["active_timer_step"] = step_name
-    
+
     def stop(self, name):
         if name in self.timers and "active_timer_step" in self.timers[name]:
             timer = self.timers[name]
@@ -738,7 +738,7 @@ class _Timers(object):
             start = timer[active]
             timer[active] = time.time() - start
         return self.get(name)
-   
+
     def get(self, name):
         result = (name, [])
         if name in self.timers:
@@ -747,7 +747,7 @@ class _Timers(object):
 
     def reset(self, name):
         self.timers[name] = {}
-    
+
 
 timers = _Timers()
 """
@@ -772,35 +772,35 @@ Example Usage:
         cleanup()
 
         timers.stop("little func")
-        
+
     def my_big_func():
-        
+
         timers.start("big func", "input")
         input()
-        
+
         timers.start("big func", "processing")
         little_func(123)
         little_func(456)
 
         timers.start("big func", "output")
         output()
-        
+
         print timers.stop("big func")
-        
+
         print timers.get("little func")
-        
+
 """
 
 
 def format_array(arr):
     """
     Returns the given array as a string, using the python builtin str function on a piecewise basis.
-    
-    Useful for xml representation of arrays. 
-    
+
+    Useful for xml representation of arrays.
+
     For customisations, use the :mod:`numpy.core.arrayprint` directly.
-    
-    """    
+
+    """
     if arr.size > 85:
         summary_insert = "..., "
     else:

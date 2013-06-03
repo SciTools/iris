@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -43,7 +43,7 @@ def _make_merged_patch(paths):
     total_len = sum(len(path) for path in paths)
     all_vertices = np.empty(total_len * 2)
     all_codes = np.empty(total_len, dtype=Path.code_type)
-    
+
     # Copy vertex/code details from the source paths
     all_segments = itertools.chain(*(path.iter_segments() for path in paths))
     i_vertices = 0
@@ -120,7 +120,7 @@ def _slash_path():
     # width _THICKNESS, that will nicely overlap the result of _ring_path().
     half_width = _THICKNESS / 2.0
     central_radius = 1.0 - half_width
-    
+
     cos45 = math.cos(math.radians(45))
 
     end_point_offset = cos45 * central_radius
@@ -142,7 +142,7 @@ def _backslash_path():
     # width _THICKNESS, that will nicely overlap the result of _ring_path().
     half_width = _THICKNESS / 2.0
     central_radius = 1.0 - half_width
-    
+
     cos45 = math.cos(math.radians(45))
 
     end_point_offset = cos45 * central_radius

@@ -62,7 +62,7 @@ def main():
 
     # construct 2-year (24-month) and 7-year (84-month) low pass filters
     # for the SOI data which is monthly
-    wgts24 = low_pass_weights(window, 1. / 24.)  # 
+    wgts24 = low_pass_weights(window, 1. / 24.)  #
     wgts84 = low_pass_weights(window, 1. / 84.)
 
     # apply the filters using the rolling_window method with the weights

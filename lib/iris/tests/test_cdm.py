@@ -101,7 +101,7 @@ class TestBasicCubeConstruction(tests.IrisTest):
             self.cube.add_dim_coord(scalar_dim_coord, [])
         with self.assertRaises(ValueError):
             self.cube.add_dim_coord(scalar_dim_coord, ())
-        
+
         # Make sure that's still the case for a 0-dimensional cube.
         cube = iris.cube.Cube(666)
         self.assertEqual(cube.ndim, 0)
@@ -118,7 +118,7 @@ class TestBasicCubeConstruction(tests.IrisTest):
         cube.add_aux_coord(scalar_dim_coord)
         cube.add_aux_coord(scalar_aux_coord)
         self.assertEqual(set(cube.aux_coords), {scalar_dim_coord, scalar_aux_coord})
-        
+
         # Various options for dims
         cube = self.cube.copy()
         cube.add_aux_coord(scalar_dim_coord, [])
@@ -138,7 +138,7 @@ class TestBasicCubeConstruction(tests.IrisTest):
 
     def test_add_aux_coord(self):
         y_another = iris.coords.DimCoord(np.array([  2.5,   7.5,  12.5]), long_name='y_another')
-        
+
         # DimCoords can live in cube.aux_coords
         self.cube.add_aux_coord(y_another, 0)
         self.assertEqual(self.cube.dim_coords, ())
@@ -161,7 +161,7 @@ class TestBasicCubeConstruction(tests.IrisTest):
         self.cube.add_dim_coord(self.x, 1)
         self.cube.add_aux_coord(self.xy, (0, 1))
         self.assertEqual(set(self.cube.coords()), {self.y, self.x, self.xy})
-        
+
         self.cube.remove_coord('xy')
         self.assertEqual(set(self.cube.coords()), {self.y, self.x})
 
@@ -241,28 +241,28 @@ class TestCubeStringRepresentations(IrisDotTest):
         cube = self.cube_2d
         cube.attributes['my_attribute'] = 'foobar'
         self.check_dot(cube, ('file_load', 'global_pp.dot'))
-        
+
         pt = cube.coord('time')
         # and with custom coord attributes
         pt.attributes['monty'] = 'python'
         pt.attributes['brain'] = 'hurts'
         self.check_dot(cube, ('file_load', 'coord_attributes.dot'))
-        
+
         del pt.attributes['monty']
         del pt.attributes['brain']
         del cube.attributes['my_attribute']
-       
+
     # TODO hybrid height and dot output - relatitionship links
     def test_dot_4d(self):
         cube = iris.tests.stock.realistic_4d()
         self.check_dot(cube, ('file_load', '4d_pp.dot'))
-        
+
     def test_multiline_history_summary(self):
         c = self.cube_2d
         # subtract two cubes from each other to make 2 lines of history
         c = (c - c) - (c - c)
         self.assertString(str(c), ('cdm', 'str_repr', 'muliple_history.__str__.txt'))
-        
+
     def test_cubelist_string(self):
         cube_list = iris.cube.CubeList([iris.tests.stock.realistic_4d(),
                                         iris.tests.stock.global_pp()])
@@ -298,20 +298,20 @@ class TestCubeStringRepresentations(IrisDotTest):
         self.assertString(str(cube), ('cdm', 'str_repr', 'similar.__str__.txt'))
 
     def test_cube_summary_cell_methods(self):
-        
+
         cube = self.cube_2d.copy()
-        
+
         # Create a list of values used to create cell methods
         test_values = ((("mean",), (u'longitude', 'latitude'), (u'6 minutes', '12 minutes'), (u'This is a test comment',)),
                         (("average",), (u'longitude', 'latitude'), (u'6 minutes', '15 minutes'), (u'This is another test comment','This is another comment')),
                         (("average",), (u'longitude', 'latitude'), (), ()),
                         (("percentile",), (u'longitude',), (u'6 minutes',), (u'This is another test comment',)))
-        
+
         for x in test_values:
             # Create a cell method
             cm = iris.coords.CellMethod(method=x[0][0], coords=x[1], intervals=x[2], comments=x[3])
             cube.add_cell_method(cm)
-        
+
         self.assertString(str(cube), ('cdm', 'str_repr', 'cell_methods.__str__.txt'))
 
     def test_cube_summary_alignment(self):
@@ -365,10 +365,10 @@ class TestQueryCoord(tests.IrisTest):
     def test_name(self):
         coords = self.t.coords(name='dim1')
         self.assertEqual([coord.name() for coord in coords], ['dim1'])
-        
+
         coords = self.t.coords(name='dim2')
         self.assertEqual([coord.name() for coord in coords], ['dim2'])
-        
+
         coords = self.t.coords(name='an_other')
         self.assertEqual([coord.name() for coord in coords], ['an_other'])
 
@@ -400,10 +400,10 @@ class TestQueryCoord(tests.IrisTest):
         cube = self.t.copy()
         cube.coord("dim1").rename("latitude")
         cube.coord("dim2").rename("longitude")
-        
+
         coords = cube.coords(axis='y')
         self.assertEqual([coord.name() for coord in coords], ['latitude'])
-        
+
         coords = cube.coords(axis='x')
         self.assertEqual([coord.name() for coord in coords], ['longitude'])
 
@@ -416,37 +416,37 @@ class TestQueryCoord(tests.IrisTest):
         cube.coord("time").units = 'hours since 1970-01-01 00:00:00'
         coords = cube.coords(axis='t')
         self.assertEqual([coord.name() for coord in coords], ['time'])
-        
+
         coords = cube.coords(axis='z')
         self.assertEqual(coords, [])
 
     def test_contains_dimension(self):
         coords = self.t.coords(contains_dimension=0)
         self.assertEqual([coord.name() for coord in coords], ['dim1', 'my_multi_dim_coord'])
-        
+
         coords = self.t.coords(contains_dimension=1)
         self.assertEqual([coord.name() for coord in coords], ['dim2', 'my_multi_dim_coord'])
-        
+
         coords = self.t.coords(contains_dimension=2)
         self.assertEqual(coords, [])
 
     def test_dimensions(self):
         coords = self.t.coords(dimensions=0)
         self.assertEqual([coord.name() for coord in coords], ['dim1'])
-        
+
         coords = self.t.coords(dimensions=1)
         self.assertEqual([coord.name() for coord in coords], ['dim2'])
-        
+
         # find all coordinates which do not describe a dimension
         coords = self.t.coords(dimensions=[])
         self.assertEqual([coord.name() for coord in coords], ['air_temperature', 'an_other'])
-        
+
         coords = self.t.coords(dimensions=2)
         self.assertEqual(coords, [])
-        
+
         coords = self.t.coords(dimensions=[0, 1])
         self.assertEqual([coord.name() for coord in coords], ['my_multi_dim_coord'])
-       
+
     def test_coord_dim_coords_keyword(self):
         coords = self.t.coords(dim_coords=True)
         self.assertEqual(set([coord.name() for coord in coords]), {'dim1', 'dim2'})
@@ -457,7 +457,7 @@ class TestQueryCoord(tests.IrisTest):
     def test_coords_empty(self):
         coords = self.t.coords()
         self.assertEqual(set([coord.name() for coord in coords]), {'dim1', 'dim2', 'an_other', 'my_multi_dim_coord', 'air_temperature'})
-    
+
     def test_coord(self):
         coords = self.t.coords(coord=self.t.coord('dim1'))
         self.assertEqual([coord.name() for coord in coords], ['dim1'])
@@ -466,12 +466,12 @@ class TestQueryCoord(tests.IrisTest):
         coord.points = np.arange(5) * 1.23
         coords = self.t.coords(coord=coord)
         self.assertEqual([coord.name() for coord in coords], ['dim1'])
-        
+
     def test_str_repr(self):
         # TODO consolidate with the TestCubeStringRepresentations class
         self.assertString(str(self.t), ('cdm', 'str_repr', 'multi_dim_coord.__str__.txt'))
         self.assertString(repr(self.t), ('cdm', 'str_repr', 'multi_dim_coord.__repr__.txt'))
-    
+
 
 class TestCube2d(tests.IrisTest):
     def setUp(self):
@@ -483,54 +483,54 @@ class Test2dIndexing(TestCube2d):
     def test_indexing_of_0d_cube(self):
         c = self.t[0, 0]
         self.assertRaises(IndexError, c.__getitem__, (slice(None, None), ) )
-        
+
     def test_cube_indexing_0d(self):
         self.assertCML([self.t[0, 0]], ('cube_slice', '2d_to_0d_cube_slice.cml'))
-        
+
     def test_cube_indexing_1d(self):
         self.assertCML([self.t[0, 0:]], ('cube_slice', '2d_to_1d_cube_slice.cml'))
-    
+
     def test_cube_indexing_1d_multi_slice(self):
         self.assertCML([self.t[0, (0, 1)]], ('cube_slice', '2d_to_1d_cube_multi_slice.cml'))
         self.assertCML([self.t[0, np.array([0, 1])]], ('cube_slice', '2d_to_1d_cube_multi_slice.cml'))
-    
+
     def test_cube_indexing_1d_multi_slice2(self):
         self.assertCML([self.t[(0, 2), (0, 1, 3)]], ('cube_slice', '2d_to_1d_cube_multi_slice2.cml'))
         self.assertCML([self.t[np.array([0, 2]), (0, 1, 3)]], ('cube_slice', '2d_to_1d_cube_multi_slice2.cml'))
         self.assertCML([self.t[np.array([0, 2]), np.array([0, 1, 3])]], ('cube_slice', '2d_to_1d_cube_multi_slice2.cml'))
-        
+
     def test_cube_indexing_1d_multi_slice3(self):
         self.assertCML([self.t[(0, 2), :]], ('cube_slice', '2d_to_1d_cube_multi_slice3.cml'))
         self.assertCML([self.t[np.array([0, 2]), :]], ('cube_slice', '2d_to_1d_cube_multi_slice3.cml'))
 
     def test_cube_indexing_no_change(self):
         self.assertCML([self.t[0:, 0:]], ('cube_slice', '2d_orig.cml'))
-    
+
     def test_cube_indexing_reverse_coords(self):
         self.assertCML([self.t[::-1, ::-1]], ('cube_slice', '2d_to_2d_revesed.cml'))
-        
+
     def test_cube_indexing_no_residual_change(self):
         self.t[0:3]
         self.assertCML([self.t], ('cube_slice', '2d_orig.cml'))
-        
+
     def test_overspecified(self):
         self.assertRaises(IndexError, self.t.__getitem__, (0, 0, Ellipsis, 0))
         self.assertRaises(IndexError, self.t.__getitem__, (0, 0, 0))
-    
+
     def test_ellipsis(self):
         self.assertCML([self.t[Ellipsis]], ('cube_slice', '2d_orig.cml'))
         self.assertCML([self.t[:, :, :]], ('cube_slice', '2d_orig.cml'))
         self.assertCML([self.t[Ellipsis, Ellipsis]], ('cube_slice', '2d_orig.cml'))
         self.assertCML([self.t[Ellipsis, Ellipsis, Ellipsis]], ('cube_slice', '2d_orig.cml'))
-       
+
         self.assertCML([self.t[Ellipsis, 0, 0]], ('cube_slice', '2d_to_0d_cube_slice.cml'))
         self.assertCML([self.t[0, Ellipsis, 0]], ('cube_slice', '2d_to_0d_cube_slice.cml'))
         self.assertCML([self.t[0, 0, Ellipsis]], ('cube_slice', '2d_to_0d_cube_slice.cml'))
-        
+
         self.assertCML([self.t[Ellipsis, (0, 2), :]], ('cube_slice', '2d_to_1d_cube_multi_slice3.cml'))
         self.assertCML([self.t[(0, 2), Ellipsis, :]], ('cube_slice', '2d_to_1d_cube_multi_slice3.cml'))
         self.assertCML([self.t[(0, 2), :, Ellipsis]], ('cube_slice', '2d_to_1d_cube_multi_slice3.cml'))
-        
+
 
 class TestIteration(TestCube2d):
     def test_cube_iteration(self):
@@ -550,22 +550,22 @@ class Test2dSlicing(TestCube2d):
     def test_cube_slice_all_dimensions(self):
         for cube in self.t.slices(['dim1', 'dim2']):
             self.assertCML(cube, ('cube_slice', '2d_orig.cml'))
-            
+
     def test_cube_slice_with_transpose(self):
         for cube in self.t.slices(['dim2', 'dim1']):
             self.assertCML(cube, ('cube_slice', '2d_transposed.cml'))
-            
+
     def test_cube_slice_1dimension(self):
         slices = [res for res in self.t.slices(['dim2'])]
         # Result came from the equivalent test test_cube_indexing_1d which does self.t[0, 0:]
         self.assertCML(slices[0], ('cube_slice', '2d_to_1d_cube_slice.cml'))
-    
+
     def test_cube_slice_zero_len_slice(self):
         self.assertRaises(IndexError, self.t.__getitem__, (slice(0, 0)))
-    
+
     def test_cube_slice_with_non_existant_coords(self):
         self.assertRaises(iris.exceptions.CoordinateNotFoundError, self.t.slices, ['dim2', 'dim1', 'doesnt exist'])
-        
+
     def test_cube_extract_coord_with_non_describing_coordinates(self):
         self.assertRaises(ValueError, self.t.slices, ['an_other'])
 
@@ -575,23 +575,23 @@ class Test2dExtraction(TestCube2d):
         # Extract the first value from each of the coords in the cube
         # this result is shared with the self.t[0, 0] test
         self.assertCML([self.t.extract(iris.Constraint(dim1=3.0, dim2=iris.coords.Cell(0, (0, 1))))], ('cube_slice', '2d_to_0d_cube_slice.cml'))
-    
+
     def test_cube_extract_1d(self):
         # Extract the first value from the second coord in the cube
         # this result is shared with the self.t[0, 0:] test
         self.assertCML([self.t.extract(iris.Constraint(dim1=3.0))], ('cube_slice', '2d_to_1d_cube_slice.cml'))
-        
+
     def test_cube_extract_2d(self):
         # Do nothing - return the original
         self.assertCML([self.t.extract(iris.Constraint())], ('cube_slice', '2d_orig.cml'))
 
     def test_cube_extract_coord_which_does_not_exist(self):
         self.assertEqual(self.t.extract(iris.Constraint(doesnt_exist=8.1)), None)
-            
+
     def test_cube_extract_coord_with_non_existant_values(self):
         self.assertEqual(self.t.extract(iris.Constraint(dim1=8)), None)
-            
-    
+
+
 class Test2dExtractionByCoord(TestCube2d):
     def test_cube_extract_by_coord_advanced(self):
         # This test reverses the coordinate in the cube and also takes a subset of the original coordinate
@@ -599,7 +599,7 @@ class Test2dExtractionByCoord(TestCube2d):
         bounds = np.array([[18, 19], [16, 17], [14, 15], [10, 11], [ 8,  9], [ 6,  7], [ 4,  5], [ 2,  3], [ 0,  1]], dtype=np.int32)
         c = iris.coords.DimCoord(points, long_name='dim2', units='meters', bounds=bounds)
         self.assertCML(self.t.subset(c), ('cube_slice', '2d_intersect_and_reverse.cml'))
-        
+
 
 @iris.tests.skip_data
 class TestCubeExtract(tests.IrisTest):
@@ -612,17 +612,17 @@ class TestCubeExtract(tests.IrisTest):
         self.assertCML(cube, ('cdm', 'extract', 'lat_eq_10.cml'))
         constraint = iris.Constraint(latitude=lambda c: c > 10)
         self.assertCML(self.single_cube.extract(constraint), ('cdm', 'extract', 'lat_gt_10.cml'))
-        
+
     def test_combined(self):
         constraint = iris.Constraint(latitude=lambda c: c > 10, longitude=lambda c: c >= 10)
 
         self.assertCML(self.single_cube.extract(constraint), ('cdm', 'extract', 'lat_gt_10_and_lon_ge_10.cml'))
-    
+
     def test_no_results(self):
         constraint = iris.Constraint(latitude=lambda c: c > 1000000)
         self.assertEqual(self.single_cube.extract(constraint), None)
-        
-        
+
+
 class TestCubeAPI(TestCube2d):
     def test_getting_standard_name(self):
         self.assertEqual(self.t.name(), 'test 2d dimensional cube')
@@ -765,15 +765,15 @@ class TestCubeAPI(TestCube2d):
 class TestCubeEquality(TestCube2d):
     def test_simple_equality(self):
         self.assertEqual(self.t, self.t.copy())
-    
+
     def test_data_inequality(self):
         self.assertNotEqual(self.t, self.t + 1)
-    
+
     def test_coords_inequality(self):
         r = self.t.copy()
         r.remove_coord(r.coord('an_other'))
         self.assertNotEqual(self.t, r)
-    
+
     def test_attributes_inequality(self):
         r = self.t.copy()
         r.attributes['new_thing'] = None
@@ -860,7 +860,7 @@ class TestDataManagerIndexing(TestCube2d):
         lat_cube = self.cube.slices(['grid_latitude', ]).next()
         self.assertIsNotNone(lat_cube._data_manager)
         self.assertIsNotNone(self.cube._data_manager)
- 
+
     def check_indexing(self, keys):
         pa, dm = self.dm.getitem(self.pa, keys)
         r = dm.load(pa)
@@ -868,7 +868,7 @@ class TestDataManagerIndexing(TestCube2d):
                                          'Arrays were not the same after indexing '
                                          '(original shape %s) using:\n %r' % (self.data_array.shape, keys)
                                          )
-        
+
     def _check_consecutive(self, keys1, keys2):
         pa, dm = self.dm.getitem(self.pa, keys1)
         pa, dm = dm.getitem(pa, keys2)
@@ -877,27 +877,27 @@ class TestDataManagerIndexing(TestCube2d):
         np.testing.assert_array_equal(r, self.data_array[keys1][keys2].shape, 'Reported shapes were not the same after consecutive indexing'
                                          '(original shape %s) using:\n 1:       %r\n 2:       %r' % (self.data_array.shape, keys1, keys2),
                                          )
-        
+
         r = dm.load(pa)
         np.testing.assert_array_equal(r, self.data_array[keys1][keys2],
                                          'Arrays were not the same after consecutive indexing '
                                          '(original shape %s) using:\n 1:       %r\n 2:       %r' % (self.data_array.shape, keys1, keys2),
                                          )
-        
+
     def check_consecutive(self, keys1, keys2):
         self._check_consecutive(keys1, keys2)
         self._check_consecutive(keys2, keys1)
-            
-    
+
+
     def check_indexing_error(self, keys):
         self.assertRaises(IndexError, self.dm.getitem, self.pa, keys)
-        
+
     def test_single_index(self):
         self.check_indexing(2)
         self.check_indexing(-1)
         self.check_indexing(0)
         self.check_indexing(None)
-        
+
     def test_basic(self):
         self.check_indexing( (2, ) )
         self.check_indexing( (slice(None, None), 2) )
@@ -911,7 +911,7 @@ class TestDataManagerIndexing(TestCube2d):
         self.check_indexing( (slice(3, 4), Ellipsis, Ellipsis, 3) )
         self.check_indexing( (slice(3, 4), Ellipsis, Ellipsis, Ellipsis) )
         self.check_indexing( (Ellipsis, Ellipsis, Ellipsis, Ellipsis) )
-        
+
     def test_out_of_range(self):
         self.check_indexing_error( tuple([slice(None, None)] * 5) )
         self.check_indexing_error( tuple([slice(None, None)] * 6) )
@@ -919,7 +919,7 @@ class TestDataManagerIndexing(TestCube2d):
         self.check_indexing_error( (10000, 2) )
         self.check_indexing_error( (10000, ) )
         self.check_indexing_error( (10, 10000) )
-                
+
     def test_consecutive(self):
         self.check_consecutive(3, 2)
         self.check_consecutive(3, slice(None, None))
@@ -932,38 +932,38 @@ class TestDataManagerIndexing(TestCube2d):
         self.check_consecutive((Ellipsis, slice(6, 7), 5), 0)
         self.check_consecutive((Ellipsis, slice(7, 5, -1), 5), 0)
         self.check_consecutive((Ellipsis, (3, 2, 1, 3), slice(6, 7)), 0)
-        
+
     def test_cube_empty_indexing(self):
         test_filename = ('cube_slice', 'real_empty_data_indexing.cml')
         r = self.cube[:5, ::-1][3]
         rshape = r.shape
-        
+
         # Make sure the datamanager is still being uses (i.e. is not None)
         self.assertNotEqual( r._data_manager, None )
         # check the CML of this result
         self.assertCML(r, test_filename)
         # The CML was checked, meaning the data must have been loaded. Check that the cube no longer has a datamanager
         self.assertEqual( r._data_manager, None )
-        
+
         r_data = r.data
-        
+
         #finally, load the data before indexing and check that it generates the same result
         c = self.cube
         c.data
         c = c[:5, ::-1][3]
         self.assertCML(c, test_filename)
-        
+
         self.assertEqual(rshape, c.shape)
-        
+
         np.testing.assert_array_equal(r_data, c.data)
-        
+
     def test_real_data_cube_indexing(self):
         cube = self.cube[(0, 4, 5, 2), 0, 0]
         self.assertCML(cube, ('cube_slice', 'real_data_dual_tuple_indexing1.cml'))
 
         cube = self.cube[0, (0, 4, 5, 2), (3, 5, 5)]
         self.assertCML(cube, ('cube_slice', 'real_data_dual_tuple_indexing2.cml'))
-        
+
         cube = self.cube[(0, 4, 5, 2), 0, (3, 5, 5)]
         self.assertCML(cube, ('cube_slice', 'real_data_dual_tuple_indexing3.cml'))
 
@@ -981,11 +981,11 @@ class TestCubeCollapsed(tests.IrisTest):
         self.assertEqual(dual.shape, single.shape, "dual and single stage shape differ")
 
     def collapse_test_common(self, cube, a_name, b_name, *args, **kwargs):
-        
+
         # preserve filenames from before the introduction of "grid_" in rotated coord names.
         a_filename = a_name.replace("grid_", "")
         b_filename = b_name.replace("grid_", "")
-        
+
         # compare dual and single stage collapsing
         dual_stage = cube.collapsed(a_name, iris.analysis.MEAN)
         dual_stage = dual_stage.collapsed(b_name, iris.analysis.MEAN)
@@ -1039,17 +1039,17 @@ class TestCubeCollapsed(tests.IrisTest):
 
         # Ensure no side effects
         self.assertCML(cube, ('cube_collapsed', 'original.cml'))
-        
-        
+
+
 class TestTrimAttributes(tests.IrisTest):
     def test_non_string_attributes(self):
         cube = iris.tests.stock.realistic_4d()
         attrib_key = "gorf"
         attrib_val = 23
         cube.attributes[attrib_key] = attrib_val
-        
+
         summary = cube.summary() # Get the cube summary
-        
+
         # Check through the lines of the summary to see that our attribute is there
         attrib_re = re.compile("%s.*?%s" % (attrib_key, attrib_val))
 
@@ -1066,7 +1066,7 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
     def _load_3d_cube(self):
         # This 3D data set has a missing a slice with SOME missing values (0)
         return iris.load_cube(tests.get_data_path(["PP", "mdi_handmade_small", "*.pp"]))
-    
+
     def test_complete_field(self):
         # This pp field has no missing data values
         cube = iris.load_cube(tests.get_data_path(["PP", "mdi_handmade_small", "mdi_test_1000_3.pp"]))
@@ -1082,7 +1082,7 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
         cube = self._load_3d_cube()
         self.assertTrue(isinstance(cube.data, ma.core.MaskedArray), "Expected a numpy.ma.core.MaskedArray")
         self.assertCML(cube, ('cdm', 'masked_cube.cml'))
-        
+
     def test_slicing(self):
         cube = self._load_3d_cube()
 
@@ -1107,12 +1107,12 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
         # extract the 2d field that has SOME missing values
         masked_slice = cube[0]
         masked_slice.data.fill_value = 123456
-        
+
         # test saving masked data
         reference_txt_path = tests.get_result_path(('cdm', 'masked_save_pp.txt'))
         with self.cube_save_test(reference_txt_path, reference_cubes=masked_slice) as temp_pp_path:
             iris.save(masked_slice, temp_pp_path)
-        
+
             # test merge keeps the mdi we just saved
             cube1 = iris.load_cube(temp_pp_path)
             cube2 = cube1.copy()
@@ -1127,25 +1127,25 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
 class TestConversionToCoordList(tests.IrisTest):
     def test_coord_conversion(self):
         cube = iris.tests.stock.realistic_4d()
-        
+
         # Single string
         self.assertEquals(len(cube._as_list_of_coords('grid_longitude')), 1)
-        
+
         # List of string and unicode
         self.assertEquals(len(cube._as_list_of_coords(['grid_longitude', u'grid_latitude'], )), 2)
-        
+
         # Coord object(s)
         lat = cube.coords("grid_latitude")[0]
         lon = cube.coords("grid_longitude")[0]
         self.assertEquals(len(cube._as_list_of_coords(lat)), 1)
         self.assertEquals(len(cube._as_list_of_coords([lat, lon])), 2)
-        
+
         # Mix of string-like and coord
         self.assertEquals(len(cube._as_list_of_coords(["grid_latitude", lon])), 2)
 
         # Empty list
         self.assertEquals(len(cube._as_list_of_coords([])), 0)
-        
+
         # Invalid coords
         invalid_choices = [iris.analysis.MEAN, # Caused by mixing up argument order in call to cube.collasped for example
                            None,
