@@ -27,10 +27,12 @@ import iris.tests as tests
 import collections
 
 import mock
+import numpy as np
 
 import iris
 import iris.fileformats.ff as ff
 import iris.fileformats.pp as pp
+import iris.iterate
 
 
 _MockField = collections.namedtuple('_MockField',
@@ -200,6 +202,21 @@ class TestFF2PP2Cube(tests.IrisTest):
             self.assertCML(cube, ('FF', filename))
 
 
+@iris.tests.skip_data
+class TestFFieee32(tests.IrisTest):
+    def test_iris_loading(self):
+        ff32_fname = tests.get_data_path(('FF', 'n48_multi_field.ieee32'))
+        ff64_fname = tests.get_data_path(('FF', 'n48_multi_field'))
+
+        ff32_cubes = iris.load(ff32_fname)
+        ff64_cubes = iris.load(ff64_fname)
+
+        for ff32, ff64 in zip(ff32_cubes, ff64_cubes):
+            # load the data
+            _, _ = ff32.data, ff64.data
+            self.assertEqual(ff32, ff64)
+
+
 class TestFFPayload(tests.IrisTest):
     filename = 'mockery'
 
@@ -215,25 +232,33 @@ class TestFFPayload(tests.IrisTest):
         mock_field = _MockField(lbext=0, lblrec=100, lbnrec=-1,
                                 lbpack=_MockLbpack(_UNPACKED),
                                 lbuser=[_REAL])
-        self._test_payload(mock_field, 800, ff._LBUSER_DTYPE_LOOKUP[_REAL])
+        expected_type = ff._LBUSER_DTYPE_LOOKUP[_REAL].format(word_depth=8)
+        expected_type = np.dtype(expected_type)
+        self._test_payload(mock_field, 800, expected_type)
 
     def test_payload_unpacked_real_ext(self):
         mock_field = _MockField(lbext=50, lblrec=100, lbnrec=-1,
                                 lbpack=_MockLbpack(_UNPACKED),
                                 lbuser=[_REAL])
-        self._test_payload(mock_field, 400, ff._LBUSER_DTYPE_LOOKUP[_REAL])
+        expected_type = ff._LBUSER_DTYPE_LOOKUP[_REAL].format(word_depth=8)
+        expected_type = np.dtype(expected_type)
+        self._test_payload(mock_field, 400, expected_type)
 
     def test_payload_unpacked_integer(self):
         mock_field = _MockField(lbext=0, lblrec=200, lbnrec=-1,
                                 lbpack=_MockLbpack(_UNPACKED),
                                 lbuser=[_INTEGER])
-        self._test_payload(mock_field, 1600, ff._LBUSER_DTYPE_LOOKUP[_INTEGER])
+        expected_type = ff._LBUSER_DTYPE_LOOKUP[_INTEGER].format(word_depth=8)
+        expected_type = np.dtype(expected_type)
+        self._test_payload(mock_field, 1600, expected_type)
 
     def test_payload_unpacked_integer_ext(self):
         mock_field = _MockField(lbext=100, lblrec=200, lbnrec=-1,
                                 lbpack=_MockLbpack(_UNPACKED),
                                 lbuser=[_INTEGER])
-        self._test_payload(mock_field, 800, ff._LBUSER_DTYPE_LOOKUP[_INTEGER])
+        expected_type = ff._LBUSER_DTYPE_LOOKUP[_INTEGER].format(word_depth=8)
+        expected_type = np.dtype(expected_type)
+        self._test_payload(mock_field, 800, expected_type)
 
     def test_payload_wgdos_real(self):
         mock_field = _MockField(lbext=0, lblrec=-1, lbnrec=100,

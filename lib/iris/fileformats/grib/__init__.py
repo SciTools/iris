@@ -590,7 +590,7 @@ def load_cubes(filenames, callback=None):
     """Returns a generator of cubes from the given list of filenames."""
     _ensure_load_rules_loaded()
     rules = iris.fileformats.rules
-    grib_loader = rules.Loader(grib_generator, _load_rules,
+    grib_loader = rules.Loader(grib_generator, {}, _load_rules,
                                _cross_reference_rules, 'GRIB_LOAD')
     return rules.load_cubes(filenames, callback, grib_loader)
 
