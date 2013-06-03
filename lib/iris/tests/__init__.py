@@ -292,6 +292,16 @@ class IrisTest(unittest.TestCase):
     def assertArrayAlmostEqual(self, a, b):
         np.testing.assert_array_almost_equal(a, b)
 
+    def assertMaskedArrayAlmostEqual(self, a, b):
+        """
+        Check that masked arrays are almost equal. This requires the
+        masks to be identical, and the unmasked values to be almost
+        equal.
+
+        """
+        np.testing.assert_array_equal(a.mask, b.mask)
+        np.testing.assert_array_almost_equal(a, b)
+
     def assertArrayAllClose(self, a, b, rtol=1.0e-7, atol=0.0, **kwargs):
         """
         Check arrays are equal, within given relative + absolute tolerances.
