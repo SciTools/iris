@@ -174,12 +174,6 @@ def _sample_grid(src_coord_system, grid_x_coord, grid_y_coord):
         sample_grid_y = grid_y
     else:
         sample_xyz = src_crs.transform_points(grid_crs, grid_x, grid_y)
-
-        # NB. Cartopy 0.7.0 contains a bug in transform_points which
-        # mixes up the dimensions in the return value. We undo the damage
-        # with a quick transpose.
-        sample_xyz = sample_xyz.transpose(1, 0, 2)
-
         sample_grid_x = sample_xyz[..., 0]
         sample_grid_y = sample_xyz[..., 1]
     return sample_grid_x, sample_grid_y
