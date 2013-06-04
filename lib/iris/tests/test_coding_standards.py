@@ -102,7 +102,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/tests/pp.py',
         '*/iris/tests/stock.py',
         '*/iris/tests/system_test.py',
-        '*/iris/tests/test_aggregate_by.py',
         '*/iris/tests/test_analysis.py',
         '*/iris/tests/test_analysis_calculus.py',
         '*/iris/tests/test_basic_maths.py',
