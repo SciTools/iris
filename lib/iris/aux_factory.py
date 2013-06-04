@@ -40,13 +40,13 @@ class LazyArray(object):
 
     The first use of either of these methods causes the array to be
     computed and cached for any subsequent access.
-    
+
     """
 
     def __init__(self, shape, func):
         """
         Args:
-        
+
         * shape (tuple):
             The shape of the array which will be created.
         * func:
@@ -104,7 +104,7 @@ class AuxCoordFactory(CFVariableMixin):
     The `standard_name`, `long_name`, `var_name`, `units`, `attributes` and
     `coord_system` of the factory are used to set the corresponding
     properties of the resulting auxiliary coordinates.
-    
+
     """
     __metaclass__ = ABCMeta
 
@@ -142,9 +142,9 @@ class AuxCoordFactory(CFVariableMixin):
 
         * coord_dims_func:
             A callable which can return the list of dimensions relevant
-            to a given coordinate. 
+            to a given coordinate.
             See :meth:`iris.cube.Cube.coord_dims()`.
-        
+
         """
 
     @abstractmethod
@@ -179,9 +179,9 @@ class AuxCoordFactory(CFVariableMixin):
 
         * coord_dims_func:
             A callable which can return the list of dimensions relevant
-            to a given coordinate. 
+            to a given coordinate.
             See :meth:`iris.cube.Cube.coord_dims()`.
-        
+
         """
         # Which dimensions are relevant?
         # e.g. If sigma -> [1] and orog -> [2, 3] then result = [1, 2, 3]
@@ -237,7 +237,7 @@ class AuxCoordFactory(CFVariableMixin):
         """
         Returns the coord's bounds in Cube-orientation and
         broadcastable to N dimensions.
-        
+
         Example:
             coord.shape == (70,)
             coord.nbounds = 2
@@ -265,7 +265,7 @@ class AuxCoordFactory(CFVariableMixin):
         """
         Returns the coord's points in Cube-orientation and
         broadcastable to N dimensions.
-        
+
         Example:
             coord.shape == (4, 3)
             dims == [3, 2]
@@ -370,7 +370,7 @@ class AuxCoordFactory(CFVariableMixin):
                     # NB. If there's an inconsistency it can only come
                     # from a mismatch in the number of bounds (the Cube
                     # ensures the other dimensions must match).
-                    # But we can't afford to raise an error now - it'd 
+                    # But we can't afford to raise an error now - it'd
                     # break Cube.derived_coords. Instead, we let the
                     # error happen when the derived coordinate's bounds
                     # are accessed.
@@ -412,7 +412,7 @@ class HybridHeightFactory(AuxCoordFactory):
                              ' 2 bounds.')
         if orography and orography.nbounds:
             warnings.warn('Orography coordinate {!r} has bounds.'
-                          'These will be disregarded.'.format(orography.name()), 
+                          'These will be disregarded.'.format(orography.name()),
                           UserWarning, stacklevel=2)
 
         self.delta = delta
@@ -454,9 +454,9 @@ class HybridHeightFactory(AuxCoordFactory):
 
         * coord_dims_func:
             A callable which can return the list of dimensions relevant
-            to a given coordinate. 
+            to a given coordinate.
             See :meth:`iris.cube.Cube.coord_dims()`.
-        
+
         """
         # Which dimensions are relevant?
         derived_dims = self.derived_dims(coord_dims_func)
@@ -532,7 +532,7 @@ class HybridHeightFactory(AuxCoordFactory):
         elif self.orography is old_coord:
             if new_coord and new_coord.nbounds:
                 warnings.warn('Orography coordinate {!r} has bounds. '
-                              'These will be disregarded.'.format(new_coord.name()), 
+                              'These will be disregarded.'.format(new_coord.name()),
                               UserWarning, stacklevel=2)
             self.orography = new_coord
 
@@ -614,9 +614,9 @@ class HybridPressureFactory(AuxCoordFactory):
 
         * coord_dims_func:
             A callable which can return the list of dimensions relevant
-            to a given coordinate. 
+            to a given coordinate.
             See :meth:`iris.cube.Cube.coord_dims()`.
-        
+
         """
         # Which dimensions are relevant?
         derived_dims = self.derived_dims(coord_dims_func)

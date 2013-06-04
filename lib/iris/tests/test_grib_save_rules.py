@@ -32,11 +32,11 @@ import iris.fileformats.grib.grib_save_rules as grib_save_rules
 
 class Test_non_hybrid_surfaces(tests.IrisTest):
     # Test grib_save_rules.non_hybrid_surfaces()
-    
+
     @mock.patch.object(gribapi, "grib_set_long")
     def test_altitude_point(self, mock_set_long):
         grib = None
-        cube = iris.cube.Cube([1,2,3,4,5]) 
+        cube = iris.cube.Cube([1,2,3,4,5])
         cube.add_aux_coord(iris.coords.AuxCoord([12345], "altitude", units="m"))
 
         grib_save_rules.non_hybrid_surfaces(cube, grib)
@@ -46,12 +46,12 @@ class Test_non_hybrid_surfaces(tests.IrisTest):
         mock_set_long.assert_any_call(grib, "scaledValueOfFirstFixedSurface", 12345)
         mock_set_long.assert_any_call(grib, "typeOfSecondFixedSurface", -1)
         mock_set_long.assert_any_call(grib, "scaleFactorOfSecondFixedSurface", 255)
-        mock_set_long.assert_any_call(grib, "scaledValueOfSecondFixedSurface", -1)        
-        
+        mock_set_long.assert_any_call(grib, "scaledValueOfSecondFixedSurface", -1)
+
     @mock.patch.object(gribapi, "grib_set_long")
     def test_height_point(self, mock_set_long):
         grib = None
-        cube = iris.cube.Cube([1,2,3,4,5]) 
+        cube = iris.cube.Cube([1,2,3,4,5])
         cube.add_aux_coord(iris.coords.AuxCoord([12345], "height", units="m"))
 
         grib_save_rules.non_hybrid_surfaces(cube, grib)
@@ -61,12 +61,12 @@ class Test_non_hybrid_surfaces(tests.IrisTest):
         mock_set_long.assert_any_call(grib, "scaledValueOfFirstFixedSurface", 12345)
         mock_set_long.assert_any_call(grib, "typeOfSecondFixedSurface", -1)
         mock_set_long.assert_any_call(grib, "scaleFactorOfSecondFixedSurface", 255)
-        mock_set_long.assert_any_call(grib, "scaledValueOfSecondFixedSurface", -1)        
+        mock_set_long.assert_any_call(grib, "scaledValueOfSecondFixedSurface", -1)
 
     @mock.patch.object(gribapi, "grib_set_long")
     def test_no_vertical(self, mock_set_long):
         grib = None
-        cube = iris.cube.Cube([1,2,3,4,5]) 
+        cube = iris.cube.Cube([1,2,3,4,5])
         grib_save_rules.non_hybrid_surfaces(cube, grib)
         mock_set_long.assert_any_call(grib, "typeOfFirstFixedSurface", 1)
         mock_set_long.assert_any_call(grib, "scaleFactorOfFirstFixedSurface", 0)
@@ -78,13 +78,13 @@ class Test_non_hybrid_surfaces(tests.IrisTest):
 
 class Test_data(tests.IrisTest):
     # Test grib_save_rules.data()
-    
+
     @mock.patch.object(gribapi, "grib_set_double_array")
     @mock.patch.object(gribapi, "grib_set_double")
     @mock.patch.object(gribapi, "grib_set")
     def test_masked_array(self, mock_set, mock_set_double, grib_set_double_array):
         grib = None
-        cube = iris.cube.Cube(ma.MaskedArray([1,2,3,4,5], fill_value=54321)) 
+        cube = iris.cube.Cube(ma.MaskedArray([1,2,3,4,5], fill_value=54321))
 
         grib_save_rules.data(cube, grib)
 
@@ -94,7 +94,7 @@ class Test_data(tests.IrisTest):
     @mock.patch.object(gribapi, "grib_set_double")
     def test_numpy_array(self, mock_set_double, grib_set_double_array):
         grib = None
-        cube = iris.cube.Cube(np.array([1,2,3,4,5])) 
+        cube = iris.cube.Cube(np.array([1,2,3,4,5]))
 
         grib_save_rules.data(cube, grib)
 

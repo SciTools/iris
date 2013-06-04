@@ -36,8 +36,8 @@ import sys, os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.append(os.path.abspath('sphinxext'))
 
-# add some sample files from the developers guide.. 
-sys.path.append(os.path.abspath(os.path.join('developers_guide'))) 
+# add some sample files from the developers guide..
+sys.path.append(os.path.abspath(os.path.join('developers_guide')))
 
 
 # -- General configuration -----------------------------------------------------
@@ -52,23 +52,23 @@ _authors = ('Byron Blay', 'Ed Campbell', 'Philip Elson', 'Richard Hattersley',
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 
-              'sphinx.ext.coverage', 
+extensions = ['sphinx.ext.autodoc',
+              'sphinx.ext.coverage',
               'sphinx.ext.pngmath',
-              'sphinx.ext.autosummary', 
-              'sphinx.ext.graphviz', 
+              'sphinx.ext.autosummary',
+              'sphinx.ext.graphviz',
               'sphinx.ext.intersphinx',
-              'sphinx.ext.doctest', 
-              'matplotlib.sphinxext.mathmpl', 
-              'matplotlib.sphinxext.only_directives', 
+              'sphinx.ext.doctest',
+              'matplotlib.sphinxext.mathmpl',
+              'matplotlib.sphinxext.only_directives',
 
-              #'matplotlib.sphinxext.plot_directive', 
+              #'matplotlib.sphinxext.plot_directive',
               'plot_directive',
 
               # better class documentation
-              'custom_class_autodoc', 
+              'custom_class_autodoc',
 
-              'gen_example_directory', 
+              'gen_example_directory',
               'generate_package_rst',
               'gen_gallery',
               ]
@@ -90,9 +90,9 @@ master_doc = 'contents'
 
 # General information about the project.
 project = u'Iris'
-# define the copyright information for latex builds. Note, for html builds, 
+# define the copyright information for latex builds. Note, for html builds,
 # the copyright exists directly inside "_templates/layout.html"
-copyright = u'British Crown Copyright 2010 - 2012, Met Office' 
+copyright = u'British Crown Copyright 2010 - 2012, Met Office'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -146,24 +146,24 @@ highlight_language = 'python'
 # A list of ignored prefixes for module index sorting.
 modindex_common_prefix = ['iris']
 
-intersphinx_mapping = { 
-   'python': ('http://docs.python.org/2.7', None), 
-   'numpy': ('http://docs.scipy.org/doc/numpy/', None), 
-   'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None), 
+intersphinx_mapping = {
+   'python': ('http://docs.python.org/2.7', None),
+   'numpy': ('http://docs.scipy.org/doc/numpy/', None),
+   'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None),
    'matplotlib': ('http://matplotlib.sourceforge.net/', None),
-} 
+}
 
 
 # -- Doctest ------------------------------------------------------------------
 
 doctest_global_setup = 'import iris'
 
-# -- Autodoc ------------------------------------------------------------------ 
+# -- Autodoc ------------------------------------------------------------------
 
-autodoc_member_order = 'groupwise' 
+autodoc_member_order = 'groupwise'
 autodoc_default_flags = ['show-inheritance']
 
-# include the __init__ method when documenting classes 
+# include the __init__ method when documenting classes
 # document the init/new method at the top level of the class documentation rather than displaying the class docstring
 autoclass_content='init'
 

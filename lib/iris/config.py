@@ -60,7 +60,7 @@ def get_option(section, option, default=None):
     """
     Returns the option value for the given section, or the default value
     if the section/option is not present.
-    
+
     """
     value = default
     if config.has_option(section, option):
@@ -74,7 +74,7 @@ def get_dir_option(section, option, default=None):
     Returns the directory path from the given option and section, or
     returns the given default value if the section/option is not present
     or does not represent a valid directory.
-    
+
     """
     path = default
     if config.has_option(section, option):

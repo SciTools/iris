@@ -38,7 +38,7 @@ def gribbability_check(cube):
         raise iris.exceptions.TranslationError("CoordSystem not present")
     if cs0 != cs1:
         raise iris.exceptions.TranslationError("Inconsistent CoordSystems")
-    
+
     # Regular?
     y_coord = cube.coord(dimensions=[0])
     x_coord = cube.coord(dimensions=[1])
@@ -59,7 +59,7 @@ def gribbability_check(cube):
 
 
 def shape_of_the_earth(cube, grib):
-    
+
     # assume latlon
     cs = cube.coord(dimensions=[0]).coord_system
 
@@ -79,14 +79,14 @@ def shape_of_the_earth(cube, grib):
         gribapi.grib_set_long(grib, "shapeOfTheEarth", 1)
         gribapi.grib_set_long(grib, "scaleFactorOfRadiusOfSphericalEarth", 0)
         gribapi.grib_set_long(grib, "scaledValueOfRadiusOfSphericalEarth", ellipsoid.semi_major_axis)
-        
+
     else:
         gribapi.grib_set_long(grib, "shapeOfTheEarth", 7)
         gribapi.grib_set_long(grib, "scaleFactorOfEarthMajorAxis", 0)
         gribapi.grib_set_long(grib, "scaledValueOfEarthMajorAxis", ellipsoid.semi_major_axis)
         gribapi.grib_set_long(grib, "scaleFactorOfEarthMinorAxis", 0)
         gribapi.grib_set_long(grib, "scaledValueOfEarthMinorAxis", ellipsoid.semi_minor_axis)
-        
+
 
 def grid_dims(x_coord, y_coord, grib):
 
@@ -95,7 +95,7 @@ def grid_dims(x_coord, y_coord, grib):
 
 
 def latlon_first_last(x_coord, y_coord, grib):
-    
+
     if x_coord.has_bounds() or y_coord.has_bounds():
         warnings.warn("Ignoring xy bounds")
 
@@ -113,25 +113,25 @@ def latlon_first_last(x_coord, y_coord, grib):
 
 def dx_dy(x_coord, y_coord, grib):
 
-    x_step = regular_step(x_coord) 
-    y_step = regular_step(y_coord) 
+    x_step = regular_step(x_coord)
+    y_step = regular_step(y_coord)
 
     # TODO: THIS USED BE "Dx" and "Dy"!!! DID THE API CHANGE AGAIN???
     gribapi.grib_set_double(grib, "DxInDegrees", float(abs(x_step)))
     gribapi.grib_set_double(grib, "DyInDegrees", float(abs(y_step)))
 
-    
+
 def scanning_mode_flags(x_coord, y_coord, grib):
-    
+
     gribapi.grib_set_long(grib, "iScansPositively", int(x_coord.points[1] - x_coord.points[0] > 0))
     gribapi.grib_set_long(grib, "jScansPositively", int(y_coord.points[1] - y_coord.points[0] > 0))
 
 
 def latlon_common(cube, grib):
-    
+
     y_coord = cube.coord(dimensions=[0])
     x_coord = cube.coord(dimensions=[1])
-    
+
     shape_of_the_earth(cube, grib)
     grid_dims(x_coord, y_coord, grib)
     latlon_first_last(x_coord, y_coord, grib)
@@ -151,17 +151,17 @@ def rotated_pole(cube, grib):
     gribapi.grib_set_long(grib, "latitudeOfSouthernPole", -int(cs.grid_north_pole_latitude*1000000))
     gribapi.grib_set_long(grib, "longitudeOfSouthernPole", int(((cs.grid_north_pole_longitude+180)%360)*1000000))
     gribapi.grib_set_long(grib, "angleOfRotation", 0)
-    
+
 
 def grid_template(cube, grib):
 
     cs = cube.coord(dimensions=[0]).coord_system
-        
+
     if isinstance(cs, iris.coord_systems.GeogCS):
-        
+
         # template 3.0
         gribapi.grib_set_long(grib, "gridDefinitionTemplateNumber", 0)
-        latlon_common(cube, grib)            
+        latlon_common(cube, grib)
 
     # rotated
     elif isinstance(cs, iris.coord_systems.RotatedGeogCS):
@@ -170,7 +170,7 @@ def grid_template(cube, grib):
         gribapi.grib_set_long(grib, "gridDefinitionTemplateNumber", 1)
         latlon_common(cube, grib)
         rotated_pole(cube, grib)
-        
+
     else:
         raise ValueError("Currently unhandled CoordSystem: %s" % cs)
 
@@ -202,23 +202,23 @@ def param_code(cube, grib):
 
 
 def generating_process_type(cube, grib):
-    
+
     # analysis = 0
     # initialisation = 1
     # forecast = 2
     # more...
-    
+
     # missing
     gribapi.grib_set_long(grib, "typeOfGeneratingProcess", 255)
-    
-    
+
+
 def background_process_id(cube, grib):
-    # locally defined    
+    # locally defined
     gribapi.grib_set_long(grib, "backgroundProcess", 255)
-    
+
 
 def generating_process_id(cube, grib):
-    # locally defined    
+    # locally defined
     gribapi.grib_set_long(grib, "generatingProcessIdentifier", 255)
 
 
@@ -229,12 +229,12 @@ def obs_time_after_cutoff(cube, grib):
 
 
 def time_range(cube, grib):
-    """Grib encoding of forecast_period.""" 
-    
+    """Grib encoding of forecast_period."""
+
     fp_coord = cube.coord("forecast_period")
     if fp_coord.has_bounds():
         raise iris.exceptions.TranslationError("Bounds not expected for 'forecast_period'")
-    
+
     if fp_coord.units == iris.unit.Unit("hours"):
         grib_time_code = 1
     elif fp_coord.units == iris.unit.Unit("minutes"):
@@ -243,12 +243,12 @@ def time_range(cube, grib):
         grib_time_code = 13
     else:
         raise iris.exceptions.TranslationError("Unexpected units for 'forecast_period' : %s" % fp_coord.units)
-    
+
     fp = fp_coord.points[0]
     if fp - int(fp):
         warnings.warn("forecast_period encoding problem : Scaling required.")
     fp = int(fp)
-    
+
     # Turn negative forecast times into grib negative numbers?
     from iris.fileformats.grib import hindcast_workaround
     if hindcast_workaround and fp < 0:
@@ -256,15 +256,15 @@ def time_range(cube, grib):
         fp = 2**31 + abs(fp)
         msg += "{}".format(np.int32(fp))
         warnings.warn(msg)
-        
+
     gribapi.grib_set_long(grib, "indicatorOfUnitOfTimeRange", grib_time_code)
     gribapi.grib_set_long(grib, "forecastTime", fp)
 
 
 def hybrid_surfaces(cube, grib):
-    
+
     is_hybrid = False
-    
+
 # XXX Addressed in #1118 pending #1039 for hybrid levels
 #
 #    # hybrid height? (assume points)
@@ -344,7 +344,7 @@ def non_hybrid_surfaces(cube, grib):
         gribapi.grib_set_long(grib, "scaledValueOfFirstFixedSurface", output_v)
         gribapi.grib_set_long(grib, "typeOfSecondFixedSurface", -1)
         gribapi.grib_set_long(grib, "scaleFactorOfSecondFixedSurface", 255)
-        gribapi.grib_set_long(grib, "scaledValueOfSecondFixedSurface", -1)        
+        gribapi.grib_set_long(grib, "scaledValueOfSecondFixedSurface", -1)
     else:
         # bounded : set lower+upper surfaces
         output_v = v_coord.units.convert(v_coord.bounds[0,0], output_unit)
@@ -359,12 +359,12 @@ def non_hybrid_surfaces(cube, grib):
 
 
 def surfaces(cube, grib):
-    
+
     if not hybrid_surfaces(cube, grib):
         non_hybrid_surfaces(cube, grib)
-    
-    
-    
+
+
+
 def product_common(cube, grib):
 
     param_code(cube, grib)
@@ -378,9 +378,9 @@ def product_common(cube, grib):
 
 def type_of_statistical_processing(cube, grib, coord):
     """Search for processing over the given coord."""
-    
+
     stat_code = 255  # (grib code table 4.10)
-    
+
     # if the last cell method applies only to the given coord...
     cell_method = cube.cell_methods[-1]
     if len(cell_method.coord_names) == 1 and cell_method.coord_names[0] == coord.name():
@@ -395,10 +395,10 @@ def type_of_statistical_processing(cube, grib, coord):
         elif cell_method.method == 'standard_deviation':
             stat_code = 6
 
-    if stat_code == 255:    
+    if stat_code == 255:
         warnings.warn("Unable to determine type of statistical processing")
-        
-    gribapi.grib_set_long(grib, "typeOfStatisticalProcessing", stat_code)  
+
+    gribapi.grib_set_long(grib, "typeOfStatisticalProcessing", stat_code)
 
 
 def time_processing_period(cube, grib):
@@ -411,11 +411,11 @@ def time_processing_period(cube, grib):
 
     """
     # We could probably split this function up a bit
-    
+
     # Can safely assume bounded pt.
     pt_coord = cube.coord("time")
     end = iris.unit.num2date(pt_coord.bounds[0,1], pt_coord.units.name, pt_coord.units.calendar)
-    
+
     gribapi.grib_set_long(grib, "yearOfEndOfOverallTimeInterval", end.year)
     gribapi.grib_set_long(grib, "monthOfEndOfOverallTimeInterval", end.month)
     gribapi.grib_set_long(grib, "dayOfEndOfOverallTimeInterval", end.day)
@@ -425,17 +425,17 @@ def time_processing_period(cube, grib):
 
     gribapi.grib_set_long(grib, "numberOfTimeRange", 1)
     gribapi.grib_set_long(grib, "numberOfMissingInStatisticalProcess", 0)
-    
+
 
     type_of_statistical_processing(cube, grib, pt_coord)
-    
+
 
     #type of time increment e.g incrementing fp, incrementing ref time, etc (code table 4.11)
     gribapi.grib_set_long(grib, "typeOfTimeIncrement", 255)
-    
+
     gribapi.grib_set_long(grib, "indicatorOfUnitForTimeRange", 1) # time unit for period over which statistical processing is done (hours)
     gribapi.grib_set_long(grib, "lengthOfTimeRange", float(pt_coord.bounds[0,1] - pt_coord.bounds[0,0]))  # period over which statistical processing is done
-    
+
     gribapi.grib_set_long(grib, "indicatorOfUnitForTimeIncrement", 255)  # time unit between successive source fields (not setting this at present)
     gribapi.grib_set_long(grib, "timeIncrement", 0)  # between successive source fields (just set to 0 for now)
 
@@ -504,14 +504,14 @@ def reference_time(cube, grib):
 
     # analysis, forecast start, verify time, obs time, (start of forecast for now)
     gribapi.grib_set_long(grib, "significanceOfReferenceTime", 1)
-      
+
     # calculate reference time
     pt_coord = cube.coord("time")
     pt = pt_coord.bounds[0,0] if pt_coord.has_bounds() else pt_coord.points[0]  # always in hours
     ft = cube.coord("forecast_period").points[0]   # always in hours
     rt = pt - ft
     rt = iris.unit.num2date(rt, pt_coord.units.name, pt_coord.units.calendar)
-    
+
     gribapi.grib_set_long(grib, "dataDate", "%04d%02d%02d" % (rt.year, rt.month, rt.day))
     gribapi.grib_set_long(grib, "dataTime", "%02d%02d" % (rt.hour, rt.minute))
 
@@ -520,10 +520,10 @@ def identification(cube, grib):
 
     centre(cube, grib)
     reference_time(cube, grib)
-    
+
     # operational product, operational test, research product, etc (missing for now)
     gribapi.grib_set_long(grib, "productionStatusOfProcessedData", 255)
-    
+
     # analysis, forecast, processed satellite, processed radar, (analysis and forecast products for now)
     gribapi.grib_set_long(grib, "typeOfProcessedData", 2)
 
@@ -560,7 +560,7 @@ def data(cube, grib):
 def run(cube, grib):
 
     gribbability_check(cube)
-    
+
     identification(cube, grib)
     grid_template(cube, grib)
     product_template(cube, grib)

@@ -180,24 +180,24 @@ class FakeGribMessage(dict):
 
 @iris.tests.skip_data
 class TestGribLoad(tests.GraphicsTest):
-    
+
     def setUp(self):
         iris.fileformats.grib.hindcast_workaround = True
-  
+
     def tearDown(self):
         iris.fileformats.grib.hindcast_workaround = False
-  
+
     def test_load(self):
-                
+
         cubes = iris.load(tests.get_data_path(('GRIB', 'rotated_uk', "uk_wrongparam.grib1")))
         self.assertCML(cubes, ("grib_load", "rotated.cml"))
-        
+
         cubes = iris.load(tests.get_data_path(('GRIB', "time_processed", "time_bound.grib1")))
         self.assertCML(cubes, ("grib_load", "time_bound_grib1.cml"))
 
         cubes = iris.load(tests.get_data_path(('GRIB', "time_processed", "time_bound.grib2")))
         self.assertCML(cubes, ("grib_load", "time_bound_grib2.cml"))
-        
+
         cubes = iris.load(tests.get_data_path(('GRIB', "3_layer_viz", "3_layer.grib2")))
         cubes = iris.cube.CubeList([cubes[1], cubes[0], cubes[2]])
         self.assertCML(cubes, ("grib_load", "3_layer.cml"))
@@ -208,7 +208,7 @@ class TestGribLoad(tests.GraphicsTest):
             ('GRIB', 'missing_values', 'missing_values.grib2'))
         cubes = iris.load(gribfile)
         self.assertCML(cubes, ('grib_load', 'missing_values_grib2.cml'))
-        
+
     def test_y_fastest(self):
         cubes = iris.load(tests.get_data_path(("GRIB", "y_fastest", "y_fast.grib2")))
         self.assertCML(cubes, ("grib_load", "y_fastest.cml"))
@@ -218,11 +218,11 @@ class TestGribLoad(tests.GraphicsTest):
         self.check_graphic()
 
     def test_ij_directions(self):
-        
+
         def old_compat_load(name):
             cube = iris.load(tests.get_data_path(('GRIB', 'ij_directions', name)))[0]
             return [cube]
-        
+
         cubes = old_compat_load("ipos_jpos.grib2")
         self.assertCML(cubes, ("grib_load", "ipos_jpos.cml"))
         iplt.contourf(cubes[0])
@@ -250,13 +250,13 @@ class TestGribLoad(tests.GraphicsTest):
         plt.gca().coastlines()
         plt.title("ineg_jpos cube")
         self.check_graphic()
-        
+
     def test_shape_of_earth(self):
-        
+
         def old_compat_load(name):
             cube = iris.load(tests.get_data_path(('GRIB', 'shape_of_earth', name)))[0]
             return cube
-        
+
         #pre-defined sphere
         cube = old_compat_load("0.grib2")
         self.assertCML(cube, ("grib_load", "earth_shape_0.cml"))
@@ -265,15 +265,15 @@ class TestGribLoad(tests.GraphicsTest):
         cube = old_compat_load("1.grib2")
         self.assertCML(cube, ("grib_load", "earth_shape_1.cml"))
 
-        #IAU65 oblate sphere 
+        #IAU65 oblate sphere
         cube = old_compat_load("2.grib2")
         self.assertCML(cube, ("grib_load", "earth_shape_2.cml"))
 
-        #custom oblate spheroid (km) 
+        #custom oblate spheroid (km)
         cube = old_compat_load("3.grib2")
         self.assertCML(cube, ("grib_load", "earth_shape_3.cml"))
 
-        #IAG-GRS80 oblate spheroid 
+        #IAG-GRS80 oblate spheroid
         cube = old_compat_load("4.grib2")
         self.assertCML(cube, ("grib_load", "earth_shape_4.cml"))
 
@@ -318,7 +318,7 @@ class TestGribLoad(tests.GraphicsTest):
         cube = tests.stock.global_grib2()
         self.assertEqual(cube.name(), 'customised')
         os.remove(temp_path)
-        
+
         # Back to default
         iris.fileformats.grib.reset_load_rules()
         cube = tests.stock.global_grib2()
@@ -456,7 +456,7 @@ class TestGribTimecodes(tests.GraphicsTest):
 
     def test_load_probability_forecast(self):
         # Test GribWrapper interpretation of PDT 4.9 data.
-        # NOTE: 
+        # NOTE:
         #   Currently Iris has only partial support for PDT 4.9.
         #   Though it can load the data, key metadata (thresholds) is lost.
         #   At present, we are not testing for this.
@@ -466,12 +466,12 @@ class TestGribTimecodes(tests.GraphicsTest):
         gribapi.grib_set_long(grib_message, 'productDefinitionTemplateNumber', 9)
         gribapi.grib_set_string(grib_message, 'stepRange', '10-55')
         grib_wrapper = iris.fileformats.grib.GribWrapper(grib_message)
-        
+
         # Check that it captures the statistics time period info.
         # (And for now, nothing else)
         self.assertEqual(
             grib_wrapper._referenceDateTime,
-            datetime.datetime(year=2007, month=03, day=23, 
+            datetime.datetime(year=2007, month=03, day=23,
                               hour=12, minute=0, second=0)
         )
         self.assertEqual(
@@ -488,7 +488,7 @@ class TestGribTimecodes(tests.GraphicsTest):
 
     def test_warn_unknown_pdts(self):
         # Test loading of an unrecognised GRIB Product Definition Template.
-        
+
         # Get a temporary file by name (deleted afterward by context).
         with self.temp_filename() as temp_gribfile_path:
             # Write a test grib message to the temporary file.
