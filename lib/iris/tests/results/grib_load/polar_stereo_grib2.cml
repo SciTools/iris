@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube standard_name="air_temperature" units="K">
+    <coords>
+      <coord>
+        <dimCoord id="73141289" points="[6]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
+      </coord>
+      <coord>
+        <auxCoord id="64f42873" long_name="originating_centre" points="[unknown centre cwao]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+      </coord>
+      <coord>
+        <dimCoord id="5b34144a" long_name="pressure" points="[101500.0]" shape="(1,)" units="Unit('Pa')" value_type="float64"/>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="ac27fa63" points="[-2610912.97429, -2580912.97429, -2550912.97429,
+		..., 4709087.02571, 4739087.02571, 4769087.02571]" shape="(247,)" standard_name="projection_x_coordinate" units="Unit('unknown')" value_type="float64">
+          <stereographic central_lat="90.0" central_lon="249.0" ellipsoid="GeogCS(6371229.0)" false_easting="0.0" false_northing="0.0" true_scale_lat="60.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="eac392a6" points="[-5972088.31685, -5942088.31685, -5912088.31685,
+		..., -62088.3168487, -32088.3168487,
+		-2088.31684868]" shape="(200,)" standard_name="projection_y_coordinate" units="Unit('unknown')" value_type="float64">
+          <stereographic central_lat="90.0" central_lon="249.0" ellipsoid="GeogCS(6371229.0)" false_easting="0.0" false_northing="0.0" true_scale_lat="60.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="6a1b3c16" points="[380286.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data byteorder="little" checksum="-0x94e6fd2" dtype="float64" order="C" shape="(200, 247)"/>
+  </cube>
+</cubes>

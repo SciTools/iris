@@ -47,6 +47,12 @@ THEN
 CoordAndDims(DimCoord(grib._y_points, grib._y_coord_name, units='degrees', coord_system=grib._coord_system), 1)
 CoordAndDims(DimCoord(grib._x_points, grib._x_coord_name, units='degrees', coord_system=grib._coord_system, circular=grib._x_circular), 0)
 
+IF
+grib.gridType=="polar_stereographic"
+THEN
+CoordAndDims(DimCoord(grib._y_points, grib._y_coord_name, units=None, coord_system=grib._coord_system), 0)
+CoordAndDims(DimCoord(grib._x_points, grib._x_coord_name, units=None, coord_system=grib._coord_system), 1)
+
 
 
 

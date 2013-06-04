@@ -22,17 +22,19 @@ import iris.tests as tests
 import datetime
 import os
 
-import numpy as np
-import matplotlib.pyplot as plt
 import gribapi
+import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
 import mock
+import numpy as np
 
 import iris
+import iris.exceptions
 import iris.fileformats.grib
 import iris.plot as iplt
-import iris.util
+import iris.quickplot as qplt
 import iris.tests.stock
-import iris.exceptions
+import iris.util
 
 # Construct a mock object to mimic the gribapi for GribWrapper testing.
 _mock_gribapi = mock.Mock(spec=gribapi)
@@ -180,24 +182,24 @@ class FakeGribMessage(dict):
 
 @iris.tests.skip_data
 class TestGribLoad(tests.GraphicsTest):
-    
+
     def setUp(self):
         iris.fileformats.grib.hindcast_workaround = True
-  
+
     def tearDown(self):
         iris.fileformats.grib.hindcast_workaround = False
-  
+
     def test_load(self):
-                
+
         cubes = iris.load(tests.get_data_path(('GRIB', 'rotated_uk', "uk_wrongparam.grib1")))
         self.assertCML(cubes, ("grib_load", "rotated.cml"))
-        
+
         cubes = iris.load(tests.get_data_path(('GRIB', "time_processed", "time_bound.grib1")))
         self.assertCML(cubes, ("grib_load", "time_bound_grib1.cml"))
 
         cubes = iris.load(tests.get_data_path(('GRIB', "time_processed", "time_bound.grib2")))
         self.assertCML(cubes, ("grib_load", "time_bound_grib2.cml"))
-        
+
         cubes = iris.load(tests.get_data_path(('GRIB', "3_layer_viz", "3_layer.grib2")))
         cubes = iris.cube.CubeList([cubes[1], cubes[0], cubes[2]])
         self.assertCML(cubes, ("grib_load", "3_layer.cml"))
@@ -218,11 +220,11 @@ class TestGribLoad(tests.GraphicsTest):
         self.check_graphic()
 
     def test_ij_directions(self):
-        
+
         def old_compat_load(name):
             cube = iris.load(tests.get_data_path(('GRIB', 'ij_directions', name)))[0]
             return [cube]
-        
+
         cubes = old_compat_load("ipos_jpos.grib2")
         self.assertCML(cubes, ("grib_load", "ipos_jpos.cml"))
         iplt.contourf(cubes[0])
@@ -250,13 +252,13 @@ class TestGribLoad(tests.GraphicsTest):
         plt.gca().coastlines()
         plt.title("ineg_jpos cube")
         self.check_graphic()
-        
+
     def test_shape_of_earth(self):
-        
+
         def old_compat_load(name):
             cube = iris.load(tests.get_data_path(('GRIB', 'shape_of_earth', name)))[0]
             return cube
-        
+
         #pre-defined sphere
         cube = old_compat_load("0.grib2")
         self.assertCML(cube, ("grib_load", "earth_shape_0.cml"))
@@ -318,11 +320,34 @@ class TestGribLoad(tests.GraphicsTest):
         cube = tests.stock.global_grib2()
         self.assertEqual(cube.name(), 'customised')
         os.remove(temp_path)
-        
+
         # Back to default
         iris.fileformats.grib.reset_load_rules()
         cube = tests.stock.global_grib2()
         self.assertEqual(cube.name(), 'air_temperature')
+
+    def test_polar_stereo_grib1(self):
+        cube = iris.load_cube(tests.get_data_path(
+            ("GRIB", "polar_stereo", "ST4.2013052210.01h")))
+        self.assertCML(cube, ("grib_load", "polar_stereo_grib1.cml"))
+
+        qplt.contourf(cube, norm=LogNorm())
+        plt.gca().coastlines()
+        plt.gca().gridlines()
+        plt.title("polar stereo grib1")
+        self.check_graphic()
+
+    def test_polar_stereo_grib2(self):
+        cube = iris.load_cube(tests.get_data_path(
+            ("GRIB", "polar_stereo",
+             "CMC_glb_TMP_ISBL_1015_ps30km_2013052000_P006.grib2")))
+        self.assertCML(cube, ("grib_load", "polar_stereo_grib2.cml"))
+
+        qplt.contourf(cube)
+        plt.gca().coastlines()
+        plt.gca().gridlines()
+        plt.title("polar stereo grib2")
+        self.check_graphic()
 
 
 class TestGribTimecodes(tests.GraphicsTest):
