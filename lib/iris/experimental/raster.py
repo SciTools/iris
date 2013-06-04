@@ -28,6 +28,8 @@ import numpy as np
 from osgeo import gdal
 
 import iris
+import iris.coord_systems as ics
+import iris.unit
 
 
 def _gdal_write_array(cube_data, padf_transform, fname, ftype):
@@ -59,7 +61,7 @@ def _gdal_write_array(cube_data, padf_transform, fname, ftype):
     if isinstance(cube_data, np.ma.core.MaskedArray):
         cube_data = cube_data.copy()
         cube_data[cube_data.mask] = cube_data.fill_value
-        band.SetNoDataValue(cube_data.fill_value)
+        band.SetNoDataValue(float(cube_data.fill_value))
 
     band.WriteArray(cube_data)
 
@@ -82,44 +84,54 @@ def export_geotiff(cube, fname):
     if cube.ndim != 2:
         raise ValueError("The cube must be two dimensional.")
 
-    coord_y = cube.coord(axis='Y')
-    coord_x = cube.coord(axis='X')
+    coord_x = cube.coord(axis='X', dim_coords=True)
+    coord_y = cube.coord(axis='Y', dim_coords=True)
 
-    if (coord_y.bounds is None) or (coord_y.bounds is None):
+    if coord_x.bounds is None or coord_y.bounds is None:
         raise ValueError('Coordinates must have bounds, consider using '
                          'guess_bounds()')
+    if coord_x.bounds.shape[-1] != 2:
+        raise ValueError('Coordinate {!r} x-bounds must have shape '
+                         '(N, 2).'.format(coord_x.name()))
+    if coord_y.bounds.shape[-1] != 2:
+        raise ValueError('Coordinate {!r} y-bounds must have shape '
+                         '(N, 2).'.format(coord_y.name()))
 
-    y_step = np.diff(coord_y.bounds[0])
-    x_step = np.diff(coord_x.bounds[0])
+    xy_step = []
+    for coord in [coord_x, coord_y]:
+        name = coord.name()
+        if coord.coord_system is not None and \
+                not isinstance(coord.coord_system, ics.GeogCS):
+            msg = 'Coordinate {!r} must be a geographic (ellipsoidal) ' \
+                'coordinate system.'.format(name)
+            raise ValueError(msg)
+        if not (coord.units == iris.unit.Unit('degrees') or
+                coord.units.is_convertible('meters')):
+            raise ValueError('Coordinate {!r} units must be either degrees or '
+                             'convertible to meters.'.format(name))
+        if not coord.is_contiguous():
+            raise ValueError('Coordinate {!r} bounds must be '
+                             'contiguous.'.format(name))
+        xy_step.append(np.diff(coord.bounds[0]))
+        size = coord.points.size
+        expected = np.array([xy_step[-1]] * size,
+                            dtype=coord.bounds.dtype).reshape(size, 1)
+        msg = 'Coordinate {!r} bounds must be regularly spaced.'.format(name)
+        np.testing.assert_array_almost_equal(np.diff(coord.bounds), expected,
+                                             err_msg=msg)
 
-    if (coord_y.coord_system and
-            coord_y.coord_system != iris.coord_systems.GeogCS(6371229.0)):
-        raise ValueError('Coordinates coord_system must be GeogCS or None')
-    if coord_y.name() != 'latitude':
-        raise ValueError('Y coordinate must have name "latitude"')
-    if coord_x.name() != 'longitude':
-        raise ValueError('X coordinate must have name "longitude"')
-    if coord_y.units != 'degrees':
-        raise ValueError('Y coordinate units must be "degrees"')
-    if coord_x.units != 'degrees':
-        raise ValueError('X coordinate units must be "degree"')
-    if not (coord_y.is_contiguous() and coord_x.is_contiguous()):
-        raise ValueError('Coordinate bounds must be contiguous')
-    if not np.all(np.diff(coord_x.bounds) == x_step):
-        raise ValueError('X coordinate bounds must be regularly spaced')
-    if not np.all(np.diff(coord_y.bounds) == y_step):
-        raise ValueError('Y coordinate bounds must be regularly spaced')
     if coord_x.points[0] > coord_x.points[-1]:
-        raise ValueError('Longitude values must be monotonically increasing')
+        raise ValueError('Coordinate {!r} x-points must be monotonically'
+                         'increasing.'.format(name))
+
+    data = cube.data
+
+    if xy_step[1] > 0:
+        # Flip the data so North is at the top.
+        data = data[::-1, :]
+        xy_step[1] *= -1
 
     bbox_top = np.max(coord_y.bounds)
     bbox_left = np.min(coord_x.bounds)
-
-    padf_transform = (bbox_left, x_step, 0.0, bbox_top, 0.0, y_step)
-    data = cube.data
-
-    if coord_y.points[0] < coord_y.points[-1]:
-        # Flip the data so North is at the top
-        data = data[::-1, :]
-
+    padf_transform = (bbox_left, xy_step[0], 0.0, bbox_top, 0.0, xy_step[1])
     _gdal_write_array(data, padf_transform, fname, 'GTiff')
