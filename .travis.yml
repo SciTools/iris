@@ -25,7 +25,7 @@ install:
   - export IRIS_SAMPLE_DATA_REF="v1.0"
   - export IRIS_SAMPLE_DATA_SUFFIX=$(echo "${IRIS_SAMPLE_DATA_REF}" | sed "s/^v//")
 
-# add repo.
+# add repo..
   - ./.travis_no_output sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3E5C1192
   - yes | ./.travis_no_output sudo add-apt-repository ppa:olivier-berten/geo
   - ./.travis_no_output sudo apt-get update
