@@ -954,6 +954,31 @@ fc_extras
 
 
     ################################################################################
+    def get_cf_bounds_var(cf_coord_var):
+        """
+        Return the CF variable representing the bounds of a coordinate
+        variable.
+
+        """
+        attr_bounds = getattr(cf_coord_var, CF_ATTR_BOUNDS, None)
+        attr_climatology = getattr(cf_coord_var, CF_ATTR_CLIMATOLOGY, None)
+
+        # Determine bounds, prefering standard bounds over climatology.
+        cf_bounds_var = None
+        if attr_bounds is not None:
+            cf_bounds_var = cf_coord_var.cf_group.bounds[attr_bounds]
+        elif attr_climatology is not None:
+            cf_bounds_var = cf_coord_var.cf_group.climatology[attr_climatology]
+
+        if attr_bounds is not None and attr_climatology is not None:
+            warnings.warn('Ignoring climatology in favour of bounds attribute '
+                          'on NetCDF variable {!r}.'.format(
+                          cf_coord_var.cf_name))
+
+        return cf_bounds_var
+
+
+    ################################################################################
     def build_dimension_coordinate(engine, cf_coord_var, coord_name=None, coord_system=None):
         """Create a dimension coordinate (DimCoord) and add it to the cube."""
 
@@ -970,21 +995,7 @@ fc_extras
             warnings.warn(msg.format(str(cf_coord_var.cf_name)))
 
         # Get any coordinate bounds.
-        attr_bounds = getattr(cf_coord_var, CF_ATTR_BOUNDS, None)
-        attr_climatology = getattr(cf_coord_var, CF_ATTR_CLIMATOLOGY, None)
-
-        # Determine bounds, prefering standard bounds over climatology.
-        cf_bounds_var = None
-        if attr_bounds is not None:
-            cf_bounds_var = cf_coord_var.cf_group.bounds[attr_bounds]
-        elif attr_climatology is not None:
-            cf_bounds_var = cf_coord_var.cf_group.climatology[attr_climatology]
-
-        if attr_bounds is not None and attr_climatology is not None:
-            warnings.warn('Ignoring climatology in favour of bounds attribute '
-                          'on NetCDF variable {!r}.'.format(nc_var_name))
-
-        bounds_data = None
+        cf_bounds_var = get_cf_bounds_var(cf_coord_var)
         if cf_bounds_var is not None:
             bounds_data = cf_bounds_var[:]
             # Gracefully fill bounds masked array.
@@ -992,6 +1003,8 @@ fc_extras
                 bounds_data = ma.filled(bounds_data)
                 msg = 'Gracefully filling {!r} dimension coordinate masked bounds'
                 warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+        else:
+            bounds_data = None
 
         # Determine whether the coordinate is circular.
         circular = False
@@ -1103,21 +1116,7 @@ fc_extras
                                                      get_values)
 
         # Get any coordinate bounds.
-        attr_bounds = getattr(cf_coord_var, CF_ATTR_BOUNDS, None)
-        attr_climatology = getattr(cf_coord_var, CF_ATTR_CLIMATOLOGY, None)
-
-        # Determine bounds, prefering standard bounds over climatology.
-        cf_bounds_var = None
-        if attr_bounds is not None:
-            cf_bounds_var = cf_coord_var.cf_group.bounds[attr_bounds]
-        elif attr_climatology is not None:
-            cf_bounds_var = cf_coord_var.cf_group.climatology[attr_climatology]
-
-        if attr_bounds is not None and attr_climatology is not None:
-            warnings.warn('Ignoring climatology in favour of bounds attribute '
-                          'on NetCDF variable {!r}.'.format(nc_var_name))
-
-        bounds_data = None
+        cf_bounds_var = get_cf_bounds_var(cf_coord_var)
         if cf_bounds_var is not None:
             # Use a closure to capture the current file/variable names.
             filename = engine.filename
@@ -1125,6 +1124,8 @@ fc_extras
             get_values = lambda: deferred_load(filename, nc_bounds_var_name)
             bounds_data = iris.aux_factory.LazyArray(cf_bounds_var.shape,
                                                      get_values)
+        else:
+            bounds_data = None
 
         # Determine the name of the dimension/s shared between the CF-netCDF data variable
         # and the coordinate being built.
