@@ -33,7 +33,7 @@ import iris
 import iris.std_names
 import iris.util
 import iris.coord_systems as icoord_systems
-import stock
+import iris.tests.stock as stock
 
 
 @iris.tests.skip_data
@@ -93,6 +93,14 @@ class TestNetCDFLoad(tests.IrisTest):
                                  'small_rotPole_precipitation.nc')))
         self.assertCML(cube, ('netcdf',
                               'netcdf_rotated_xyt_precipitation.cml'))
+
+    def test_load_tmerc_grid_and_clim_bounds(self):
+        # Test loading a single CF-netCDF file with a transverse Mercator
+        # grid_mapping and a time variable with climatology.
+        cube = iris.load_cube(
+            tests.get_data_path(('NetCDF', 'transverse_mercator',
+                                 'tmean_1910_1910.nc')))
+        self.assertCML(cube, ('netcdf', 'netcdf_tmerc_and_climatology.cml'))
 
     def test_cell_methods(self):
         # Test exercising CF-netCDF cell method parsing.

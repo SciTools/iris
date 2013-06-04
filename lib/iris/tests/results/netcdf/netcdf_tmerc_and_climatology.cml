@@ -1,0 +1,78 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube long_name="Mean temperature" units="degrees_celsius" var_name="tmean">
+    <attributes>
+      <attribute name="Conventions" value="CF-1.6"/>
+      <attribute name="Note" value="This dataset is for test purposes only"/>
+      <attribute name="history" value="Conversion from ESRI grid"/>
+      <attribute name="institution" value="Met Office"/>
+      <attribute name="source" value="EWB2"/>
+      <attribute name="title" value="UK annual mean tmean"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1, 2]">
+        <auxCoord id="5ffde89e" long_name="latitude" points="[[60.6606964512, 60.668112276, 60.6754683456,
+ 		..., 61.005365749, 61.0016928917, 60.997957365],
+		[60.6166194814, 60.6240220303, 60.6313649251,
+ 		..., 60.9606652287, 60.9569990871,
+ 		60.9532703892],
+		[60.5725399694, 60.579929278, 60.5872590331,
+ 		..., 60.9159638684, 60.9123044238,
+ 		60.9085825357],
+		..., 
+		[47.9331597562, 47.9377908451, 47.9423839765,
+ 		..., 48.1477119098, 48.1454330708,
+ 		48.1431151826],
+		[47.8886077044, 47.8932316068, 47.8978176092,
+ 		..., 48.1028255673, 48.1005502935,
+ 		48.0982360312],
+		[47.8440545534, 47.8486712814, 47.853250167,
+ 		..., 48.0579386958, 48.055666981, 48.0533563384]]" shape="(290, 180)" standard_name="latitude" units="Unit('degrees')" value_type="float64" var_name="lat"/>
+      </coord>
+      <coord datadims="[1, 2]">
+        <auxCoord id="410c27bf" long_name="longitude" points="[[-12.9670065693, -12.8771735555, -12.7872928629,
+ 		..., 3.32110128196, 3.41316070131,
+ 		3.50519538323],
+		[-12.9518591628, -12.8621441887, -12.7723817461,
+ 		..., 3.31361277349, 3.4055441645, 3.49745093094],
+		[-12.936759565, -12.8471622828, -12.7575177412,
+ 		..., 3.30614848202, 3.39795225231,
+ 		3.48973151021],
+		..., 
+		[-10.0030059799, -9.93670241296, -9.87038223385,
+ 		..., 1.86585443224, 1.93292379989,
+ 		1.99998476921],
+		[-9.99609478629, -9.92984700053, -9.86358265321,
+ 		..., 1.86248245637, 1.92949368738,
+ 		1.99649654612],
+		[-9.98920028498, -9.92300814941, -9.85679950275,
+ 		..., 1.85911871182, 1.92607194716,
+ 		1.99301683617]]" shape="(290, 180)" standard_name="longitude" units="Unit('degrees')" value_type="float64" var_name="lon"/>
+      </coord>
+      <coord datadims="[2]">
+        <dimCoord id="8dd36522" long_name="projection_x_coordinate" points="[-197500.0, -192500.0, -187500.0, ..., 687500.0,
+		692500.0, 697500.0]" shape="(180,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64" var_name="x">
+          <transverseMercator ellipsoid="None" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="4daf6692" long_name="projection_y_coordinate" points="[1247500.0, 1242500.0, 1237500.0, ..., -187500.0,
+		-192500.0, -197500.0]" shape="(290,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64" var_name="y">
+          <transverseMercator ellipsoid="None" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[113225.0, 113589.0]]" id="111cf094" long_name="time" points="[113406.0]" shape="(1,)" standard_name="time" units="Unit('days since 1600-1-1 0:0:0', calendar='gregorian')" value_type="float64" var_name="time"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="time"/>
+      </cellMethod>
+      <cellMethod method="mean">
+        <coord name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data byteorder="little" checksum="-0x5dd65adc" dtype="float32" mask_checksum="-0x3f24c2b2" mask_order="C" order="C" shape="(1, 290, 180)"/>
+  </cube>
+</cubes>
