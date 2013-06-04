@@ -407,3 +407,86 @@ class OSGB(TransverseMercator):
 
     def as_cartopy_projection(self):
         return cartopy.crs.OSGB()
+
+
+class Stereographic(CoordSystem):
+    """
+    A stereographic map projection.
+
+    """
+
+    grid_mapping_name = "stereographic" 
+
+    def __init__(self, central_lat, central_lon,
+                 false_easting=0.0, false_northing=0.0,
+                 true_scale_lat=None, ellipsoid=None):
+        """
+        Constructs a Stereographic coord system.
+        
+        Args:
+
+            * central_lat
+                    The latitude of the pole.
+
+            * central_lon     
+                    The central longitude, which aligns with the y axis.
+        
+            * false_easting                     
+                    X offset from planar origin in metres. Defaults to 0.
+
+            * false_northing                    
+                    Y offset from planar origin in metres. Defaults to 0.
+
+        Kwargs:
+
+            * true_scale_lat
+                    Latitude of true scale.
+
+            * ellipsoid
+                    :class:`GeogCS` defining the ellipsoid.
+
+        """
+        
+        self.central_lat = float(central_lat)
+        """True latitude of planar origin in degrees."""
+
+        self.central_lon = float(central_lon)
+        """True longitude of planar origin in degrees."""
+
+        self.false_easting = float(false_easting)  
+        """X offset from planar origin in metres."""
+
+        self.false_northing = float(false_northing)  
+        """Y offset from planar origin in metres."""
+
+        self.true_scale_lat = float(true_scale_lat) if true_scale_lat else None
+        """Latitude of true scale."""
+
+        self.ellipsoid = ellipsoid
+        """Ellipsoid definition."""
+
+    def __repr__(self):
+        return "Stereographic(central_lat={!r}, central_lon={!r}, "\
+               "false_easting={!r}, false_northing={!r}, "\
+               "true_scale_lat={!r}, "\
+               "ellipsoid={!r})".format(self.central_lat, self.central_lon,
+                                        self.false_easting,
+                                        self.false_northing,
+                                        self.true_scale_lat,
+                                        self.ellipsoid)
+
+    def as_cartopy_crs(self):
+        if self.ellipsoid is not None:
+            semimajor_axis = self.ellipsoid.semi_major_axis
+            semiminor_axis = self.ellipsoid.semi_minor_axis
+        else:
+            semimajor_axis = semi_minor_axis = None
+        globe = cartopy.crs.Globe(semimajor_axis=semimajor_axis,
+                                  semiminor_axis=semiminor_axis)
+        return cartopy.crs.Stereographic(
+            self.central_lat, self.central_lon,
+            self.false_easting, self.false_northing,
+            self.true_scale_lat, globe)
+                                         
+    def as_cartopy_projection(self):
+        return self.as_cartopy_crs()
