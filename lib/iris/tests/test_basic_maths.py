@@ -36,14 +36,14 @@ class TestBasicMaths(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()
         self.cube.data = self.cube.data - 260
-    
-    def test_abs(self):  
-        a = self.cube                      
-        
+
+    def test_abs(self):
+        a = self.cube
+
         b = iris.analysis.maths.abs(a, in_place=False)
         self.assertCML(a, ('analysis', 'maths_original.cml'))
         self.assertCML(b, ('analysis', 'abs.cml'))
-        
+
         iris.analysis.maths.abs(a, in_place=True)
         self.assertCML(b, ('analysis', 'abs.cml'))
         self.assertCML(a, ('analysis', 'abs.cml'))
@@ -60,20 +60,20 @@ class TestBasicMaths(tests.IrisTest):
 
         # Check that the subtraction has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
-        
+
         c = iris.analysis.maths.subtract(e, e)
         self.assertCML(c, ('analysis', 'subtract.cml'))
-                        
+
         # Check that the subtraction has had no effect on the original
         self.assertCML(e, ('analysis', 'maths_original.cml'))
-        
+
     def test_minus_in_need_of_transpose(self):
         a = self.cube
         e = self.cube.copy()
         e.transpose([1, 0])
         self.assertRaises(ValueError, iris.analysis.maths.subtract, a, e)
-        
-        
+
+
     def test_minus_with_data_describing_coordinate(self):
         a = self.cube
         e = self.cube.copy()
@@ -85,23 +85,23 @@ class TestBasicMaths(tests.IrisTest):
 
     def test_minus_scalar(self):
         a = self.cube
-        
+
         self.assertCML(a, ('analysis', 'maths_original.cml'))
-        
+
         b = a - 200
         self.assertCML(b, ('analysis', 'subtract_scalar.cml'))
         # Check that the subtraction has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
-        
+
     def test_minus_array(self):
         a = self.cube
         data_array = self.cube.copy().data
-        
+
         # check that the file has not changed (avoids false positives by failing early)
         self.assertCML(a, ('analysis', 'maths_original.cml'))
-        
+
         # subtract an array of exactly the same shape as the original
-        b = a - data_array        
+        b = a - data_array
         self.assertArrayEqual(b.data, np.array(0, dtype=np.float32))
         self.assertCML(b, ('analysis', 'subtract_array.cml'), checksum=False)
 
@@ -114,64 +114,64 @@ class TestBasicMaths(tests.IrisTest):
         b = a - data_array[0, :]
         self.assertArrayEqual(b.data[0, :], np.array(0, dtype=np.float32))
         self.assertArrayEqual(b.data[:, 1:2], b.data[:, 1:2])
-        
+
         # subtract an array of 1 dimension more than the cube
         d_array = data_array.reshape(data_array.shape[0], data_array.shape[1], 1)
         self.assertRaises(ValueError, iris.analysis.maths.subtract, a, d_array)
-                        
+
         # Check that the subtraction has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
-        
+
     def test_minus_coord(self):
         a = self.cube
 
-        xdim = a.ndim-1 
+        xdim = a.ndim-1
         ydim = a.ndim-2
-        c_x = iris.coords.DimCoord(points=range(a.shape[xdim]), long_name='x_coord', units=self.cube.units) 
-        c_y = iris.coords.AuxCoord(points=range(a.shape[ydim]), long_name='y_coord', units=self.cube.units) 
-        
+        c_x = iris.coords.DimCoord(points=range(a.shape[xdim]), long_name='x_coord', units=self.cube.units)
+        c_y = iris.coords.AuxCoord(points=range(a.shape[ydim]), long_name='y_coord', units=self.cube.units)
+
         self.assertCML(a, ('analysis', 'maths_original.cml'))
-        
+
         b = iris.analysis.maths.subtract(a, c_x, dim=1)
         self.assertCML(b, ('analysis', 'subtract_coord_x.cml'))
         # Check that the subtraction has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
-        
+
         b = iris.analysis.maths.subtract(a, c_y, dim=0)
         self.assertCML(b, ('analysis', 'subtract_coord_y.cml'))
         # Check that the subtraction has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
-        
+
     def test_addition_scalar(self):
         a = self.cube
-        
+
         self.assertCML(a, ('analysis', 'maths_original.cml'))
-        
+
         b = a + 200
         self.assertCML(b, ('analysis', 'addition_scalar.cml'))
         # Check that the addition has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
-        
+
     def test_addition_coord(self):
         a = self.cube
 
-        xdim = a.ndim-1 
+        xdim = a.ndim-1
         ydim = a.ndim-2
-        c_x = iris.coords.DimCoord(points=range(a.shape[xdim]), long_name='x_coord', units=self.cube.units) 
-        c_y = iris.coords.AuxCoord(points=range(a.shape[ydim]), long_name='y_coord', units=self.cube.units) 
-        
+        c_x = iris.coords.DimCoord(points=range(a.shape[xdim]), long_name='x_coord', units=self.cube.units)
+        c_y = iris.coords.AuxCoord(points=range(a.shape[ydim]), long_name='y_coord', units=self.cube.units)
+
         self.assertCML(a, ('analysis', 'maths_original.cml'))
-        
+
         b = iris.analysis.maths.add(a, c_x, dim=1)
         self.assertCML(b, ('analysis', 'addition_coord_x.cml'))
         # Check that the addition has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
-        
+
         b = iris.analysis.maths.add(a, c_y, dim=0)
         self.assertCML(b, ('analysis', 'addition_coord_y.cml'))
         # Check that the addition has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
-    
+
     def test_addition(self):
         a = self.cube
 
@@ -179,21 +179,21 @@ class TestBasicMaths(tests.IrisTest):
         self.assertCML(c, ('analysis', 'addition.cml'))
         # Check that the addition has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
-        
+
     def test_addition_different_standard_name(self):
         a = self.cube.copy()
         b = self.cube.copy()
         b.rename('my cube data')
-        c = a + b        
+        c = a + b
         self.assertCML(c, ('analysis', 'addition_different_std_name.cml'), checksum=False)
-        
+
     def test_addition_fail(self):
         a = self.cube
-        
-        xdim = a.ndim-1 
-        ydim = a.ndim-2 
-        c_axis_length_fail = iris.coords.DimCoord(points=range(a.shape[ydim]), long_name='x_coord', units=self.cube.units) 
-        c_unit_fail = iris.coords.AuxCoord(points=range(a.shape[xdim]), long_name='x_coord', units='volts') 
+
+        xdim = a.ndim-1
+        ydim = a.ndim-2
+        c_axis_length_fail = iris.coords.DimCoord(points=range(a.shape[ydim]), long_name='x_coord', units=self.cube.units)
+        c_unit_fail = iris.coords.AuxCoord(points=range(a.shape[xdim]), long_name='x_coord', units='volts')
 
         self.assertRaises(ValueError, iris.analysis.maths.add, a, c_axis_length_fail)
         self.assertRaises(iris.exceptions.NotYetImplementedError, iris.analysis.maths.add, a, c_unit_fail)
@@ -212,12 +212,12 @@ class TestBasicMaths(tests.IrisTest):
         b = iris.analysis.maths.add(a, 1000, in_place=True)
         self.assertTrue(b is a)
         self.assertCML(a, ('analysis', 'addition_in_place_coord.cml'))
-        
+
     def test_addition_different_attributes(self):
         a = self.cube.copy()
         b = self.cube.copy()
         b.attributes['my attribute'] = 'foobar'
-        c = a + b        
+        c = a + b
         self.assertEqual(c.standard_name, None)
         self.assertAttributesEqual(c.attributes, {'history': 'air_temperature + air_temperature'})
 
@@ -232,18 +232,18 @@ class TestDivideAndMultiply(tests.IrisTest):
         a = self.cube
 
         c = a / a
-        
+
         np.testing.assert_array_almost_equal(a.data / a.data, c.data)
         self.assertCML(c, ('analysis', 'division.cml'), checksum=False)
 
         # Check that the division has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
-        
+
     def test_divide_by_scalar(self):
         a = self.cube
 
         c = a / 10
-        
+
         np.testing.assert_array_almost_equal(a.data / 10, c.data)
         self.assertCML(c, ('analysis', 'division_scalar.cml'), checksum=False)
 
@@ -252,71 +252,71 @@ class TestDivideAndMultiply(tests.IrisTest):
 
     def test_divide_by_coordinate(self):
         a = self.cube
-                
+
         c = a / a.coord('latitude')
         self.assertCML(c, ('analysis', 'division_by_latitude.cml'))
-        
+
         # Check that the division has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
-        
+
     def test_divide_by_array(self):
         a = self.cube
         data_array = self.cube.copy().data
-        
+
         # test division by exactly the same shape data
-        c = a / data_array 
+        c = a / data_array
         self.assertArrayEqual(c.data, np.array(1, dtype=np.float32))
         self.assertCML(c, ('analysis', 'division_by_array.cml'), checksum=False)
-        
+
         # test division by array of fewer dimensions
-        c = a / data_array[0, :] 
+        c = a / data_array[0, :]
         self.assertArrayEqual(c.data[0, :], np.array(1, dtype=np.float32))
-        
+
         # test division by array of more dimensions
         d_array = data_array.reshape(-1, data_array.shape[1], 1, 1)
-        self.assertRaises(ValueError, iris.analysis.maths.divide, c, d_array) 
-                
+        self.assertRaises(ValueError, iris.analysis.maths.divide, c, d_array)
+
         # Check that the division has had no effect on the original
-        self.assertCML(a, ('analysis', 'maths_original.cml'))    
-        
+        self.assertCML(a, ('analysis', 'maths_original.cml'))
+
     def test_divide_by_coordinate_dim2(self):
         a = self.cube
 
         # Prevent divide-by-zero warning
-        a.coord('longitude').points = a.coord('longitude').points + 0.5 
+        a.coord('longitude').points = a.coord('longitude').points + 0.5
 
         c = a / a.coord('longitude')
         self.assertCML(c, ('analysis', 'division_by_longitude.cml'))
 
         # Reset to allow comparison with original
-        a.coord('longitude').points = a.coord('longitude').points - 0.5 
+        a.coord('longitude').points = a.coord('longitude').points - 0.5
 
         # Check that the division has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
 
     def test_divide_by_singluar_coordinate(self):
         a = self.cube
-        
+
         coord = iris.coords.DimCoord(points=2, long_name='foo', units='1')
         c = iris.analysis.maths.divide(a, coord)
         self.assertCML(c, ('analysis', 'division_by_singular_coord.cml'))
-        
-        # Check that the division is equivalent to dividing the whole of the data by 2 
+
+        # Check that the division is equivalent to dividing the whole of the data by 2
         self.assertArrayEqual(c.data, a.data/2.)
-        
+
     def test_divide_by_different_len_coord(self):
         a = self.cube
-        
-        coord = iris.coords.DimCoord(points=np.arange(10) * 2 + 5, standard_name='longitude', units='degrees') 
-        
+
+        coord = iris.coords.DimCoord(points=np.arange(10) * 2 + 5, standard_name='longitude', units='degrees')
+
         self.assertRaises(ValueError, iris.analysis.maths.divide, a, coord)
-        
+
     def test_multiply(self):
         a = self.cube
-        
+
         c = a * a
         self.assertCML(c, ('analysis', 'multiply.cml'))
-        
+
         # Check that the multiplication has had no effect on the original
         self.assertCML(a, ('analysis', 'maths_original.cml'))
 
@@ -324,14 +324,14 @@ class TestDivideAndMultiply(tests.IrisTest):
         a = self.cube.copy()
         b = self.cube.copy()
         b.rename('my cube data')
-        c = a * b        
+        c = a * b
         self.assertCML(c, ('analysis', 'multiply_different_std_name.cml'), checksum=False)
-        
+
     def test_multiplication_different_attributes(self):
         a = self.cube.copy()
         b = self.cube.copy()
         b.attributes['my attribute'] = 'foobar'
-        c = a * b        
+        c = a * b
         self.assertEqual(c.standard_name, None)
         self.assertAttributesEqual(c.attributes, {'history': 'air_temperature * air_temperature'})
 
@@ -395,15 +395,15 @@ class TestMaskedArrays(tests.IrisTest):
     def setUp(self):
         self.data1 = ma.MaskedArray([[9,9,9],[8,8,8,]],mask=[[0,1,0],[0,0,1]])
         self.data2 = ma.MaskedArray([[3,3,3],[2,2,2,]],mask=[[0,1,0],[0,1,1]])
-        
-        self.cube1 = iris.cube.Cube(self.data1) 
-        self.cube2 = iris.cube.Cube(self.data2) 
+
+        self.cube1 = iris.cube.Cube(self.data1)
+        self.cube2 = iris.cube.Cube(self.data2)
 
     def test_operator(self):
         for test_op in self.ops:
             result1 = test_op(self.cube1, self.cube2)
             result2 = test_op(self.data1, self.data2)
-        
+
             np.testing.assert_array_equal(result1.data, result2)
 
     def test_operator_in_place(self):
@@ -412,19 +412,19 @@ class TestMaskedArrays(tests.IrisTest):
             test_op(self.data1, self.data2)
 
             np.testing.assert_array_equal(self.cube1.data, self.data1)
-    
+
     def test_operator_scalar(self):
         for test_op in self.ops:
             result1 = test_op(self.cube1, 2)
             result2 = test_op(self.data1, 2)
-        
+
             np.testing.assert_array_equal(result1.data, result2)
 
     def test_operator_array(self):
         for test_op in self.ops:
             result1 = test_op(self.cube1, self.data2)
             result2 = test_op(self.data1, self.data2)
-    
+
             np.testing.assert_array_equal(result1.data, result2)
 
     def test_incompatible_dimensions(self):
@@ -436,9 +436,9 @@ class TestMaskedArrays(tests.IrisTest):
     def test_increase_cube_dimensionality(self):
         with self.assertRaises(ValueError):
             # This would increase the dimensionality of the cube due to auto broadcasting
-            cubex = iris.cube.Cube(ma.MaskedArray([[9,]],mask=[[0]])) 
-            cubex + ma.MaskedArray([[3,3,3,3]],mask=[[0,1,0,1]]) 
-            
-    
+            cubex = iris.cube.Cube(ma.MaskedArray([[9,]],mask=[[0]]))
+            cubex + ma.MaskedArray([[3,3,3,3]],mask=[[0,1,0,1]])
+
+
 if __name__ == "__main__":
     tests.main()

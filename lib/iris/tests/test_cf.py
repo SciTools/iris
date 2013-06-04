@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -78,18 +78,18 @@ class TestCFReader(tests.IrisTest):
         self.assertEqual(lat.shape, (190, 174))
         self.assertEqual(lat.dimensions, ('rlat', 'rlon'))
         self.assertEqual(lat.ndim, 2)
-        self.assertEqual(lat.cf_attrs(), 
-                         (('long_name', 'latitude'), 
-                          ('standard_name', 'latitude'), 
+        self.assertEqual(lat.cf_attrs(),
+                         (('long_name', 'latitude'),
+                          ('standard_name', 'latitude'),
                           ('units', 'degrees_north')))
 
         lon = self.cfr.cf_group['lon']
         self.assertEqual(lon.shape, (190, 174))
         self.assertEqual(lon.dimensions, ('rlat', 'rlon'))
         self.assertEqual(lon.ndim, 2)
-        self.assertEqual(lon.cf_attrs(), 
-                         (('long_name', 'longitude'), 
-                          ('standard_name', 'longitude'), 
+        self.assertEqual(lon.cf_attrs(),
+                         (('long_name', 'longitude'),
+                          ('standard_name', 'longitude'),
                           ('units', 'degrees_east')))
 
     def test_bounds_pass_0(self):
@@ -102,7 +102,7 @@ class TestCFReader(tests.IrisTest):
         self.assertEqual(time_bnds.cf_attrs(), ())
 
     def test_coordinates_pass_0(self):
-        self.assertEqual(sorted(self.cfr.cf_group.coordinates.keys()), 
+        self.assertEqual(sorted(self.cfr.cf_group.coordinates.keys()),
                          ['rlat', 'rlon', 'time'])
 
         rlat = self.cfr.cf_group['rlat']
@@ -140,7 +140,7 @@ class TestCFReader(tests.IrisTest):
         self.assertEqual(time.cf_attrs(), tuple(attr))
 
     def test_data_pass_0(self):
-        self.assertEqual(sorted(self.cfr.cf_group.data_variables.keys()), 
+        self.assertEqual(sorted(self.cfr.cf_group.data_variables.keys()),
                          ['pr'])
 
         data = self.cfr.cf_group['pr']
@@ -167,7 +167,7 @@ class TestCFReader(tests.IrisTest):
         self.assertEqual(self.cfr.cf_group.formula_terms, {})
 
     def test_grid_mapping_pass_0(self):
-        self.assertEqual(sorted(self.cfr.cf_group.grid_mappings.keys()), 
+        self.assertEqual(sorted(self.cfr.cf_group.grid_mappings.keys()),
                          ['rotated_pole'])
 
         rotated_pole = self.cfr.cf_group['rotated_pole']
@@ -186,53 +186,53 @@ class TestCFReader(tests.IrisTest):
     def test_global_attributes_pass_0(self):
         self.assertEqual(
             sorted(self.cfr.cf_group.global_attributes.keys()),
-            ['Conventions', 'NCO', 'experiment', 
+            ['Conventions', 'NCO', 'experiment',
                 'history', 'institution', 'source',]
         )
 
-        self.assertEqual(self.cfr.cf_group.global_attributes['Conventions'], 
+        self.assertEqual(self.cfr.cf_group.global_attributes['Conventions'],
                          'CF-1.0')
-        self.assertEqual(self.cfr.cf_group.global_attributes['experiment'], 
+        self.assertEqual(self.cfr.cf_group.global_attributes['experiment'],
                          'ER3')
-        self.assertEqual(self.cfr.cf_group.global_attributes['institution'], 
+        self.assertEqual(self.cfr.cf_group.global_attributes['institution'],
                          'DMI')
-        self.assertEqual(self.cfr.cf_group.global_attributes['source'], 
+        self.assertEqual(self.cfr.cf_group.global_attributes['source'],
                          'HIRHAM')
 
     def test_variable_cf_group_pass_0(self):
-        self.assertEqual(sorted(self.cfr.cf_group['time'].cf_group.keys()), 
+        self.assertEqual(sorted(self.cfr.cf_group['time'].cf_group.keys()),
                          ['time_bnds'])
-        self.assertEqual(sorted(self.cfr.cf_group['pr'].cf_group.keys()), 
+        self.assertEqual(sorted(self.cfr.cf_group['pr'].cf_group.keys()),
                          ['lat', 'lon', 'rlat', 'rlon', 'rotated_pole', 'time'])
 
     def test_variable_attribute_touch_pass_0(self):
         lat = self.cfr.cf_group['lat']
-        
-        self.assertEqual(lat.cf_attrs(), 
-                         (('long_name', 'latitude'), 
-                          ('standard_name', 'latitude'), 
+
+        self.assertEqual(lat.cf_attrs(),
+                         (('long_name', 'latitude'),
+                          ('standard_name', 'latitude'),
                           ('units', 'degrees_north')))
         self.assertEqual(lat.cf_attrs_used(), ())
-        self.assertEqual(lat.cf_attrs_unused(), 
-                         (('long_name', 'latitude'), 
-                          ('standard_name', 'latitude'), 
+        self.assertEqual(lat.cf_attrs_unused(),
+                         (('long_name', 'latitude'),
+                          ('standard_name', 'latitude'),
                           ('units', 'degrees_north')))
 
         # touch some variable attributes.
         lat.long_name
         lat.units
-        self.assertEqual(lat.cf_attrs_used(), 
-                         (('long_name', 'latitude'), 
+        self.assertEqual(lat.cf_attrs_used(),
+                         (('long_name', 'latitude'),
                           ('units', 'degrees_north')))
-        self.assertEqual(lat.cf_attrs_unused(), 
+        self.assertEqual(lat.cf_attrs_unused(),
                          (('standard_name', 'latitude'),))
 
         # clear the attribute touch history.
         lat.cf_attrs_reset()
         self.assertEqual(lat.cf_attrs_used(), ())
-        self.assertEqual(lat.cf_attrs_unused(), 
-                         (('long_name', 'latitude'), 
-                          ('standard_name', 'latitude'), 
+        self.assertEqual(lat.cf_attrs_unused(),
+                         (('long_name', 'latitude'),
+                          ('standard_name', 'latitude'),
                           ('units', 'degrees_north')))
 
 
@@ -242,15 +242,15 @@ class TestLoad(tests.IrisTest):
         filename = tests.get_data_path(('NetCDF', 'global', 'xyt', 'SMALL_hires_wind_u_for_ipcc4.nc'))
         cube = iris.load_cube(filename)
         self.assertEquals(cube.coord('height').attributes, {})
-        
+
     def test_attributes_populated(self):
         filename = tests.get_data_path(
             ('NetCDF', 'label_and_climate', 'small_FC_167_mon_19601101.nc'))
         cube = iris.load_cube(filename)
         self.assertEquals(
-            sorted(cube.coord('longitude').attributes.items()), 
-            [('data_type', 'float'), 
-             ('modulo', 360), 
+            sorted(cube.coord('longitude').attributes.items()),
+            [('data_type', 'float'),
+             ('modulo', 360),
              ('topology', 'circular')
             ]
         )
@@ -283,12 +283,12 @@ class TestClimatology(tests.IrisTest):
 class TestLabels(tests.IrisTest):
     def setUp(self):
         filename = tests.get_data_path(
-            ('NetCDF', 'label_and_climate', 
+            ('NetCDF', 'label_and_climate',
              'A1B-99999a-river-sep-2070-2099.nc'))
         self.cfr_start = cf.CFReader(filename)
 
         filename = tests.get_data_path(
-            ('NetCDF', 'label_and_climate', 
+            ('NetCDF', 'label_and_climate',
              'small_FC_167_mon_19601101.nc'))
         self.cfr_end = cf.CFReader(filename)
 
@@ -296,27 +296,27 @@ class TestLabels(tests.IrisTest):
         cf_data_var = self.cfr_start.cf_group['temp_dmax_tmean_abs']
 
         region_group = self.cfr_start.cf_group.labels['region_name']
-        self.assertEqual(sorted(self.cfr_start.cf_group.labels.keys()), 
+        self.assertEqual(sorted(self.cfr_start.cf_group.labels.keys()),
                          [u'region_name'])
-        self.assertEqual(sorted(cf_data_var.cf_group.labels.keys()), 
+        self.assertEqual(sorted(cf_data_var.cf_group.labels.keys()),
                          [u'region_name'])
 
-        self.assertEqual(region_group.cf_label_dimensions(cf_data_var), 
+        self.assertEqual(region_group.cf_label_dimensions(cf_data_var),
                          (u'georegion',))
-        self.assertEqual(region_group.cf_label_data(cf_data_var)[0], 
+        self.assertEqual(region_group.cf_label_data(cf_data_var)[0],
                          'Anglian')
 
         cf_data_var = self.cfr_start.cf_group['cdf_temp_dmax_tmean_abs']
 
-        self.assertEqual(sorted(self.cfr_start.cf_group.labels.keys()), 
+        self.assertEqual(sorted(self.cfr_start.cf_group.labels.keys()),
                          [u'region_name'])
-        self.assertEqual(sorted(cf_data_var.cf_group.labels.keys()), 
+        self.assertEqual(sorted(cf_data_var.cf_group.labels.keys()),
                          [u'region_name'])
 
-        self.assertEqual(region_group.cf_label_dimensions(cf_data_var), 
+        self.assertEqual(region_group.cf_label_dimensions(cf_data_var),
                          (u'georegion',))
-        self.assertEqual(region_group.cf_label_data(cf_data_var)[0], 
-                         'Anglian') 
+        self.assertEqual(region_group.cf_label_data(cf_data_var)[0],
+                         'Anglian')
 
     def test_label_dim_end(self):
         cf_data_var = self.cfr_end.cf_group['tas']

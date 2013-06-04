@@ -72,7 +72,7 @@ def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
     res = target_proj.transform_points(x=rotated_lons, y=rotated_lats,
                                        src_crs=src_proj)
     unrotated_lon = res[..., 0]
-    unrotated_lat = res[..., 1] 
+    unrotated_lat = res[..., 1]
 
     return unrotated_lon, unrotated_lat
 
@@ -92,7 +92,7 @@ def rotate_pole(lons, lats, pole_lon, pole_lat):
     res = target_proj.transform_points(x=lons, y=lats,
                                        src_crs=src_proj)
     rotated_lon = res[..., 0]
-    rotated_lat = res[..., 1] 
+    rotated_lat = res[..., 1]
 
     return rotated_lon, rotated_lat
 
@@ -191,7 +191,7 @@ def get_xy_grids(cube):
 
     x = x_coord.points
     y = y_coord.points
-    
+
     if x.ndim == y.ndim == 1:
         # Convert to 2D.
         x, y = np.meshgrid(x, y)
@@ -207,12 +207,12 @@ def get_xy_grids(cube):
 def get_xy_contiguous_bounded_grids(cube):
     """
     Return 2d arrays for x and y bounds.
-    
+
     Returns array of shape (n+1, m+1).
     ::
-    
+
         xs, ys = get_xy_contiguous_bounded_grids()
-    
+
     """
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
 
@@ -389,7 +389,7 @@ def cosine_latitude_weights(cube):
         from iris.analysis.cartography import cosine_latitude_weights
         cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
         weights = cosine_latitude_weights(cube)
-    
+
     Compute weights suitable for EOF analysis (or other covariance type
     analyses):
 

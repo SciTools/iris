@@ -162,7 +162,7 @@ class TestLowLevel(tests.IrisTest):
 class TestBoundedCube(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()
-        # Add some bounds to this data (this will actually make the bounds invalid as they 
+        # Add some bounds to this data (this will actually make the bounds invalid as they
         # will straddle the north pole and overlap on the date line, but that doesn't matter for this test.)
         self.cube.coord('latitude').guess_bounds()
         self.cube.coord('longitude').guess_bounds()

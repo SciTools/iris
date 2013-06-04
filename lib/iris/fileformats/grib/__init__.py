@@ -129,7 +129,7 @@ def add_load_rules(filename):
 
     Registered files are processed after the standard rules, and in the order
     they were registered.
-    
+
     """
     _ensure_load_rules_loaded()
     _load_rules.import_rules(filename)
@@ -137,17 +137,17 @@ def add_load_rules(filename):
 
 def reset_load_rules():
     """Resets the GRIB load process to use only the standard conversion rules."""
-    
+
     # Uses this module-level variable
     global _load_rules
-    
+
     _load_rules = None
 
 
 class GribWrapper(object):
     """
     Contains a pygrib object plus some extra keys of our own.
-    
+
     """
     def __init__(self, grib_message):
         """Store the grib message and compute our extra keys."""
@@ -159,7 +159,7 @@ class GribWrapper(object):
         self.extra_keys = {}
 
         self._confirm_in_scope()
-        
+
         self._compute_extra_keys()
 
         #this is something pygrib did for us - reshape,
@@ -192,10 +192,10 @@ class GribWrapper(object):
         #(uncommon entry from GRIB2 flag table 3.4, also in GRIB1)
         if self.alternativeRowScanning == 1:
             raise iris.exceptions.IrisError("alternativeRowScanning == 1 not handled.")
-        
+
     def __getattr__(self, key):
         """Return a grib key, or one of our extra keys."""
-        
+
         # is it in the grib message?
         try:
             # we just get <type 'float'> as the type of the "values" array...special case here...
@@ -217,7 +217,7 @@ class GribWrapper(object):
                     raise ValueError("Unknown type for %s : %s" % (key, str(key_type)))
         except gribapi.GribInternalError:
             res = None
-        
+
         #...or is it in our list of extras?
         if res == None:
             if key in self.extra_keys:
@@ -252,7 +252,7 @@ class GribWrapper(object):
     def _compute_extra_keys(self):
         """Compute our extra keys."""
         global unknown_string
-        
+
         self.extra_keys = {}
 
         # work out stuff based on these values from the message
@@ -264,7 +264,7 @@ class GribWrapper(object):
 
             uft = np.uint32(forecastTime)
             BILL = 2**30
-            
+
             # Workaround grib api's assumption that forecast time is positive.
             # Handles correctly encoded -ve forecast times up to one -1 billion.
             if hindcast_workaround:
@@ -274,7 +274,7 @@ class GribWrapper(object):
                     forecastTime = -(uft - 2 * BILL)
                     msg += " to " + str(forecastTime)
                     warnings.warn(msg)
-                
+
         else:
             forecastTime = self.startStep
 
@@ -285,12 +285,12 @@ class GribWrapper(object):
         except AttributeError:
             longitudeOfSouthernPoleInDegrees = 0.0
             latitudeOfSouthernPoleInDegrees = 90.0
-        
+
         centre = gribapi.grib_get_string(self.grib_message, "centre")
-        
-        
+
+
         #default values
-        self.extra_keys = {'_referenceDateTime':-1.0, '_phenomenonDateTime':-1.0, 
+        self.extra_keys = {'_referenceDateTime':-1.0, '_phenomenonDateTime':-1.0,
             '_periodStartDateTime':-1.0, '_periodEndDateTime':-1.0,
             '_levelTypeName':unknown_string,
             '_levelTypeUnits':unknown_string, '_firstLevelTypeName':unknown_string,
@@ -330,10 +330,10 @@ class GribWrapper(object):
         self.extra_keys['_referenceDateTime'] = \
             datetime.datetime(int(self.year), int(self.month), int(self.day),
                               int(self.hour), int(self.minute))
-        
+
         # forecast time with workarounds
         self.extra_keys['_forecastTime'] = forecastTime
-        
+
         #verification date
         processingDone = self._get_processing_done()
         #time processed?
@@ -367,34 +367,34 @@ class GribWrapper(object):
         #TODO #574 Expand to include sub-centre
         self.extra_keys['_originatingCentre'] = CENTRE_TITLES.get(
                                         centre, "unknown centre %s" % centre)
-            
+
         #forecast time unit as a cm string
         #TODO #575 Do we want PP or GRIB style forecast delta?
         self.extra_keys['_forecastTimeUnit'] = self._timeunit_string()
 
-        
+
         #shape of the earth
 
         #pre-defined sphere
         if self.shapeOfTheEarth == 0:
             geoid = coord_systems.GeogCS(semi_major_axis=6367470)
-            
+
         #custom sphere
         elif self.shapeOfTheEarth == 1:
             geoid = \
                 coord_systems.GeogCS(self.scaledValueOfRadiusOfSphericalEarth * \
                                      self.scaleFactorOfRadiusOfSphericalEarth)
-                    
+
         #IAU65 oblate sphere
         elif self.shapeOfTheEarth == 2:
             geoid = coord_systems.GeogCS(6378160, inverse_flattening=297.0)
-                
+
         #custom oblate spheroid (km)
         elif self.shapeOfTheEarth == 3:
             geoid = coord_systems.GeogCS(
                 semi_major_axis=self.scaledValueOfEarthMajorAxis * self.scaleFactorOfEarthMajorAxis * 1000.0,
                 semi_minor_axis=self.scaledValueOfEarthMinorAxis * self.scaleFactorOfEarthMinorAxis * 1000.0)
-            
+
         #IAG-GRS80 oblate spheroid
         elif self.shapeOfTheEarth == 4:
             geoid = coord_systems.GeogCS(6378137, None, 298.257222101)
@@ -403,20 +403,20 @@ class GribWrapper(object):
         elif self.shapeOfTheEarth == 5:
             geoid = \
                 coord_systems.GeogCS(6378137, inverse_flattening=298.257223563)
-        
+
         #pre-defined sphere
         elif self.shapeOfTheEarth == 6:
             geoid = coord_systems.GeogCS(6371229)
-        
+
         #custom oblate spheroid (m)
         elif self.shapeOfTheEarth == 7:
             geoid = coord_systems.GeogCS(
                 semi_major_axis=self.scaledValueOfEarthMajorAxis * self.scaleFactorOfEarthMajorAxis,
                 semi_minor_axis=self.scaledValueOfEarthMinorAxis * self.scaleFactorOfEarthMinorAxis)
-        
+
         elif self.shapeOfTheEarth == 8:
             raise ValueError("unhandled shape of earth : grib earth shape = 8")
-        
+
         else:
             raise ValueError("undefined shape of earth")
 
@@ -437,11 +437,11 @@ class GribWrapper(object):
                 iris.coord_systems.RotatedGeogCS(
                                         -southPoleLat,
                                         math.fmod(southPoleLon + 180.0, 360.0),
-                                        self.angleOfRotation, geoid) 
+                                        self.angleOfRotation, geoid)
         elif gridType == 'polar_stereographic':
             self.extra_keys['_x_coord_name'] = "projection_x_coordinate"
             self.extra_keys['_y_coord_name'] = "projection_y_coordinate"
-            
+
             if self.projectionCentreFlag == 0:
                 pole_lat = 90
             elif self.projectionCentreFlag == 1:
@@ -453,8 +453,8 @@ class GribWrapper(object):
             self.extra_keys['_coord_system'] = \
                 iris.coord_systems.Stereographic(
                     pole_lat, self.orientationOfTheGridInDegrees, 0, 0,
-                    self.LaDInDegrees, ellipsoid=geoid) 
-            
+                    self.LaDInDegrees, ellipsoid=geoid)
+
         else:
             raise TranslationError("unhandled grid type")
 
@@ -476,7 +476,7 @@ class GribWrapper(object):
                 # Is the gap from end to start smaller,
                 #  or about equal to the max step?
                 points = self._x_points
-                gap = 360.0 - abs(points[-1] - points[0]) 
+                gap = 360.0 - abs(points[-1] - points[0])
                 max_step = abs(np.diff(points)).max()
                 if gap <= max_step:
                     self.extra_keys['_x_circular'] = True
@@ -486,7 +486,7 @@ class GribWrapper(object):
                         self.extra_keys['_x_circular'] = True
 
         elif gridType == "polar_stereographic":
-            
+
             # convert the starting latlon into meters
             cartopy_crs = self.extra_keys['_coord_system'].as_cartopy_crs()
             x1, y1 = cartopy_crs.transform_point(
@@ -498,40 +498,40 @@ class GribWrapper(object):
                                                               dtype=np.float64)
             self._y_points = y1 + self.DyInMetres * np.arange(self.Ny,
                                                               dtype=np.float64)
-            
+
 
         else:
             raise TranslationError("unhandled grid type")
-        
+
     def _get_processing_done(self):
         """Determine the type of processing that was done on the data."""
-        
+
         processingDone = 'unknown'
         edition = self.edition
-        
+
         #grib1
         if edition == 1:
             timeRangeIndicator = self.timeRangeIndicator
             processingDone = TIME_RANGE_INDICATORS.get(timeRangeIndicator,
                                 'time _grib1_process_unknown_%i' % timeRangeIndicator)
-        
+
         #grib2
         else:
-        
+
             pdt = self.productDefinitionTemplateNumber
-            
+
             #pdt 4.0? (standard forecast)
             if pdt == 0:
                 processingDone = 'none'
-                
+
             #pdt 4.8 or 4.9? (time-processed)
             elif pdt in (8, 9):
                 typeOfStatisticalProcessing = self.typeOfStatisticalProcessing
                 processingDone = PROCESSING_TYPES.get(typeOfStatisticalProcessing,
                                     'time _grib2_process_unknown_%i' % typeOfStatisticalProcessing)
-                        
+
         return processingDone
-    
+
     def _get_verification_date(self):
         reference_date_time = self._referenceDateTime
 
@@ -580,19 +580,19 @@ class GribWrapper(object):
 
     def phenomenon_points(self, time_unit):
         """
-        Return the phenomenon time point offset from the epoch time reference 
+        Return the phenomenon time point offset from the epoch time reference
         measured in the appropriate time units.
-       
+
         """
         time_reference = '%s since epoch' % time_unit
         return iris.unit.date2num(self._phenomenonDateTime, time_reference,
                                   iris.unit.CALENDAR_GREGORIAN)
-    
+
     def phenomenon_bounds(self, time_unit):
         """
-        Return the phenomenon time bound offsets from the epoch time reference 
+        Return the phenomenon time bound offsets from the epoch time reference
         measured in the appropriate time units.
-    
+
         """
         # TODO #576 Investigate when it's valid to get phenomenon_bounds
         time_reference = '%s since epoch' % time_unit
@@ -629,20 +629,20 @@ def load_cubes(filenames, callback=None):
 def save_grib2(cube, target, append=False, **kwargs):
     """
     Save a cube to a GRIB2 file.
-    
+
     Args:
 
         * cube      - A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of cubes.
         * target    - A filename or open file handle.
 
     Kwargs:
-    
-        * append    - Whether to start a new file afresh or add the cube(s) to the end of the file. 
+
+        * append    - Whether to start a new file afresh or add the cube(s) to the end of the file.
                       Only applicable when target is a filename, not a file handle.
                       Default is False.
 
     See also :func:`iris.io.save`.
-    
+
     """
 
     # grib file (this bit is common to the pp and grib savers...)
@@ -662,7 +662,7 @@ def save_grib2(cube, target, append=False, **kwargs):
         raise iris.exceptions.TranslationError("Did not find one (and only one) "
                                                "latitude or longitude coord")
 
-    # Save each latlon slice2D in the cube 
+    # Save each latlon slice2D in the cube
     for slice2D in cube.slices([lat_coords[0], lon_coords[0]]):
 
         # Save this slice to the grib file
@@ -674,4 +674,3 @@ def save_grib2(cube, target, append=False, **kwargs):
     # (this bit is common to the pp and grib savers...)
     if isinstance(target, basestring):
         grib_file.close()
-
