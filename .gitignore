@@ -27,7 +27,6 @@ pip-log.txt
 *.so
 lib/iris/etc/site.cfg
 lib/iris/fileformats/_pyke_rules/compiled_krb/
-lib/iris/std_names.py
 
 # Iris test result files
 lib/iris/tests/result_image_comparison/
