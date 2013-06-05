@@ -13,6 +13,8 @@ language: python
 python:
   - 2.7
 
+git:
+  depth: 0
 
 install:
 
