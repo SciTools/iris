@@ -100,7 +100,6 @@ install:
   
 # iris
   - ./.travis_no_output /usr/bin/python setup.py --with-unpack build_ext --inplace -I/usr/local/include -L/usr/local/lib -R/usr/local/lib
-  - ./.travis_no_output /usr/bin/python setup.py std_names
   - echo "[Resources]" > lib/iris/etc/site.cfg
   - echo "sample_data_dir = $(pwd)/iris-sample-data/sample_data" >> lib/iris/etc/site.cfg
   - echo "test_data_dir = $(pwd)/iris-test-data/test_data" >> lib/iris/etc/site.cfg
