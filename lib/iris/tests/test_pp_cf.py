@@ -42,7 +42,7 @@ def callback_HadCM2_ts_SAT_ann_18602100_b_pp(cube, field, filename):
         coord = cube.coord(coord_name)
         coord.rename(coord.name().replace('grid_', ''))
         coord.coord_system = coord.coord_system.ellipsoid
-        
+
     reset_pole('grid_latitude')
     reset_pole('grid_longitude')
     cube.standard_name = 'air_temperature'
@@ -70,12 +70,12 @@ def callback_integer_b_pp(cube, field, filename):
 def callback_001000000000_00_000_000000_1860_01_01_00_00_f_b_pp(cube, field, filename):
     cube.standard_name = "sea_surface_height_above_geoid"
     cube.units = "m"
-    
+
 
 def callback_aaxzc_n10r13xy_b_pp(cube, field, filename):
     height_coord = iris.coords.DimCoord(1.5, long_name='height', units='m')
     cube.add_aux_coord(height_coord)
-    
+
 
 @iris.tests.skip_data
 class TestAll(tests.IrisTest, pp.PPTest):
@@ -84,22 +84,22 @@ class TestAll(tests.IrisTest, pp.PPTest):
     def _test_file(self, name):
         """This is the main test routine that is called for each of the files listed below."""
         pp_path = self._src_pp_path(name)
-        
+
         # 1) Load the PP and check the Cube
         callback_name = 'callback_' + name.replace('.', '_')
         callback = globals().get(callback_name)
         cubes = iris.load(pp_path, callback=callback)
-        
+
         if name.endswith('.pp'):
             fname_name = name[:-3]
         else:
             fname_name = name
-        
+
         self.assertCML(cubes, self._ref_dir + ('from_pp', fname_name + '.cml',))
 
         # 2) Save the Cube and check the netCDF
         nc_filenames = []
-        
+
         for index, cube in enumerate(cubes):
             # Write Cube to netCDF file - must be NETCDF3_CLASSIC format for the cfchecker.
             file_nc = os.path.join(os.path.sep, 'var', 'tmp', '%s_%d.nc' % (fname_name, index))
@@ -108,7 +108,7 @@ class TestAll(tests.IrisTest, pp.PPTest):
 
             # Check the netCDF file against CDL expected output.
             self.assertCDL(file_nc, self._ref_dir + ('to_netcdf', '%s_%d.cdl' % (fname_name, index)))
-            nc_filenames.append(file_nc) 
+            nc_filenames.append(file_nc)
 
             # Perform CF-netCDF conformance checking.
             with open('/dev/null', 'w') as dev_null:
@@ -119,13 +119,13 @@ class TestAll(tests.IrisTest, pp.PPTest):
                     warnings.warn('CF-netCDF "cfchecker" application not available. Skipping CF-netCDF compliance checking.')
                 else:
                     file_checker = os.path.join(os.path.dirname(file_nc), '%s_%d.txt' % (fname_name, index))
-                    
+
                     with open(file_checker, 'w') as report:
-                        # Generate cfchecker text report on the file. 
+                        # Generate cfchecker text report on the file.
                         # Don't use check_call() here, as cfchecker returns a non-zero status code
                         # for any non-compliant file, causing check_call() to raise an exception.
                         subprocess.call(['cfchecker', file_nc], stderr=report, stdout=report)
-     
+
                     if not os.path.isfile(file_checker):
                         os.remove(file_nc)
                         self.fail('Failed to process %r with cfchecker' % file_nc)
@@ -146,7 +146,7 @@ class TestAll(tests.IrisTest, pp.PPTest):
 
         # 4) Save the Cube and check the PP
         # Only the first four files pass their tests at the moment.
-        
+
         if name in self.files_to_check[:4]:
             self._test_pp_save(cubes, name)
 
@@ -170,7 +170,7 @@ class TestAll(tests.IrisTest, pp.PPTest):
                       '008000000000.44.101.000128.1890.09.01.00.00.b.pp',
                       'HadCM2_ts_SAT_ann_18602100.b.pp',
                       'aaxzc_level_lat_orig.b.pp',
-                      'aaxzc_lon_lat_press_orig.b.pp', 
+                      'aaxzc_lon_lat_press_orig.b.pp',
                       'abcza_pa19591997_daily_29.b.pp',
                       '12187.b.pp',
                       'ocean_xsect.b.pp',
@@ -189,15 +189,15 @@ class TestAll(tests.IrisTest, pp.PPTest):
 
 def make_test_function(func_name, file_name):
     """Builds a function which can be later turned into a bound method."""
-    scope = {}    
+    scope = {}
     exec("""def %s(self):
                 name = %r
-                self._test_file(name)   
+                self._test_file(name)
     """ % (func_name, file_name), scope, scope)
     # return the newly created function
     return scope[func_name]
 
-    
+
 def attach_tests():
     # attach a test method on TestAll for each file to test
     for file_name in TestAll.files_to_check:

@@ -39,14 +39,14 @@ DOT_AVAILABLE = _DOT_EXECUTABLE_PATH is not None
 
 def save(cube, target):
     """Save a dot representation of the cube.
-    
+
     Args:
 
         * cube   - A :class:`iris.cube.Cube`.
         * target - A filename or open file handle.
 
     See also :func:`iris.io.save`.
-    
+
     """
     if isinstance(target, basestring):
         dot_file = open(target, "wt")
@@ -56,12 +56,12 @@ def save(cube, target):
         dot_file = target
     else:
         raise ValueError("Can only save dot to filename or filehandle")
-    
+
     dot_file.write(cube_text(cube))
 
     if isinstance(target, basestring):
         dot_file.close()
-        
+
 
 def save_png(source, target, launch=False):
     """
@@ -120,15 +120,15 @@ def save_png(source, target, launch=False):
     # Remove the dot file if we created it
     if isinstance(source, iris.cube.Cube):
         os.remove(dot_file_path)
-        
+
 
 def cube_text(cube):
     """Return a DOT text representation a `iris.cube.Cube`.
-    
+
     Args:
-    
+
      * cube  -  The cube for which to create DOT text.
-    
+
     """
     # We use r'' type string constructor as when we type \n in a string without the r'' constructor
     # we get back a new line character - this is not what DOT expects.
@@ -141,7 +141,7 @@ def cube_text(cube):
         label="Cube data"
     '''
 
-    # TODO: Separate dim_coords from aux_coords. 
+    # TODO: Separate dim_coords from aux_coords.
     coord_nodes = r'''
     subgraph clusterCoords {
         label = "Coords"
@@ -243,14 +243,14 @@ digraph CubeGraph{
 def _coord_text(label, coord):
     """
     Returns a string containing the dot representation for a single coordinate node.
-     
+
     Args:
-     
+
     * label
         The dot ID of the coordinate node.
     * coord
         The coordinate to convert.
-     
+
     """
     # Which bits to write?
     # Note: This is is not very OO but we are achieving a separation of DOT from cdm by doing this.
@@ -273,14 +273,14 @@ def _coord_text(label, coord):
 def _coord_system_text(cs, uid):
     """
     Returns a string containing the dot representation for a single coordinate system node.
-     
+
     Args:
-     
+
     * cs
         The coordinate system to convert.
     * uid
         The uid allows/distinguishes non-identical CoordSystems of the same type.
-     
+
     """
     attrs = []
     for k, v in cs.__dict__.iteritems():
@@ -288,7 +288,7 @@ def _coord_system_text(cs, uid):
             attrs.append((k, 'defined'))
         else:
             attrs.append((k, v))
-            
+
     attrs.sort(key=lambda attr: attr[0])
 
     label = "CoordSystem_%s_%s" % (cs.__class__.__name__, uid)
@@ -299,16 +299,16 @@ def _coord_system_text(cs, uid):
 def _dot_node(indent, id, name, attributes):
     """
     Returns a string containing the dot representation for a single node.
-     
+
     Args:
-     
+
      * id
         The ID of the node.
      * name
         The visual name of the node.
      * attributes
         An iterable of (name, value) attribute pairs.
-     
+
     """
     attributes = r'\n'.join('%s: %s' % item for item in attributes)
     template = """%(indent)s"%(id)s" [
