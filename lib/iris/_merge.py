@@ -40,7 +40,7 @@ class _Template(namedtuple('Template',
                            ['dims', 'points', 'bounds', 'kwargs'])):
     """
     Common framework from which to build a dimension or auxiliary coordinate.
-    
+
     Args:
 
     * dims:
@@ -59,7 +59,7 @@ class _Template(namedtuple('Template',
         A dictionary of key/value pairs required to create a coordinate.
 
     """
-        
+
 
 class _CoordMetaData(namedtuple('CoordMetaData',
                                 ['points_dtype', 'bounds_dtype', 'kwargs'])):
@@ -85,7 +85,7 @@ class _CoordMetaData(namedtuple('CoordMetaData',
 class _CoordAndDims(namedtuple('CoordAndDims',
                                ['coord', 'dims'])):
     """
-    Container for a coordinate and the associated data dimension/s 
+    Container for a coordinate and the associated data dimension/s
     spanned over a :class:`iris.cube.Cube`.
 
     Args:
@@ -140,7 +140,7 @@ class _VectorCoordPayload(namedtuple('VectorCoordPayload',
 
     * aux_coords_and_dims:
         A list of :class:`_CoordAndDim` instances containing non-scalar (i.e. multi-valued)
-        :class:`iris.coords.DimCoord` and/or :class:`iris.coords.AuxCoord` instances and the 
+        :class:`iris.coords.DimCoord` and/or :class:`iris.coords.AuxCoord` instances and the
         associated data dimension/s spanned by them for a :class:`iris.cube.Cube`.
 
     """
@@ -152,14 +152,14 @@ class _CoordPayload(namedtuple('CoordPayload',
     Container for all the scalar and vector coordinate data and metadata, and
     auxiliary coordinate factories represented within a :class:`iris.cube.Cube`.
 
-    All scalar coordinate and factory related data is sorted into ascending order 
+    All scalar coordinate and factory related data is sorted into ascending order
     of the associated coordinate definition.
 
     Args:
 
     * scalar:
         A :class:`_ScalarCoordPayload` instance.
-    
+
     * vector:
         A :class:`_VectorCoordPayload` instance.
 
@@ -235,12 +235,12 @@ class _Skeleton(namedtuple('Skeleton',
     """
     Basis of a source-cube, containing the associated scalar coordinate values
     and data payload of a :class:`iris.cube.Cube`.
- 
+
     Args:
 
     * scalar_values:
         A list of scalar coordinate values belonging to a :class:`iris.cube.Cube`
-        sorted into ascending order of the associated coordinate definition. Each 
+        sorted into ascending order of the associated coordinate definition. Each
         scalar coordinate value is typically an :class:`iris.coords.Cell`.
 
     * data:
@@ -290,7 +290,7 @@ def _is_combination(name):
     """
     Determine whether the candidate dimension is an 'invented' combination
     of candidate dimensions.
-    
+
     Args:
 
     * name:
@@ -402,7 +402,7 @@ def _separable(name, indexes):
     value of X maps to the same set of scalar values of Y.
 
     Args:
-    
+
     * name:
         The candidate dimension that requires its separable and
         inseparable relationship to be determined.
@@ -455,7 +455,7 @@ def derive_relation_matrix(indexes):
         'b': Relation(separable=set([]), inseparable=set(['a', 'c']))
 
     Args:
-    
+
     * indexes:
         The cross-reference dictionary for each candidate dimension.
 
@@ -473,8 +473,8 @@ def derive_relation_matrix(indexes):
 def derive_groups(relation_matrix):
     """
     Determine all related (chained) groups of inseparable candidate dimensions.
-    
-    If candidate dimension A is inseparable for B and C, and B is inseparable 
+
+    If candidate dimension A is inseparable for B and C, and B is inseparable
     from D, and E is inseparable from F. Then the groups are ABCD and EF.
 
     Args:
@@ -592,7 +592,7 @@ def _derive_consistent_groups(relation_matrix, separable_group):
     group if B is separable from A and C, and C is separable from A and B.
 
     Args:
-    
+
     * relation_matrix:
         The relation dictionary for each candidate dimension.
 
@@ -627,13 +627,13 @@ def _derive_consistent_groups(relation_matrix, separable_group):
 
 def _build_separable_group(space, group, separable_consistent_groups, positions, function_matrix):
     """
-    Update the space with the first separable consistent group that satisfies a valid 
+    Update the space with the first separable consistent group that satisfies a valid
     functional relationship with all other candidate dimensions in the group.
 
-    For example, the group ABCD and separable consistent group CD, if A = f(C, D) and B = f(C, D) 
-    then update the space with "A: (C, D), B: (C, D), C: None, D: None". Where "A: (C, D)" means 
-    that candidate dimension A is dependent on candidate dimensions C and D, and "C: None" means 
-    that this candidate dimension is independent. 
+    For example, the group ABCD and separable consistent group CD, if A = f(C, D) and B = f(C, D)
+    then update the space with "A: (C, D), B: (C, D), C: None, D: None". Where "A: (C, D)" means
+    that candidate dimension A is dependent on candidate dimensions C and D, and "C: None" means
+    that this candidate dimension is independent.
 
     Args:
 
@@ -648,7 +648,7 @@ def _build_separable_group(space, group, separable_consistent_groups, positions,
         A list of candidate dimension groups that are consistently separable.
 
     * positions:
-        A list containing a dictionary of candidate dimension key to scalar value 
+        A list containing a dictionary of candidate dimension key to scalar value
         pairs for each source-cube.
 
     * function_matrix:
@@ -697,13 +697,13 @@ def _build_inseparable_group(space, group, positions, function_matrix):
     Where "A: None" means that this candidate dimension is independent, and
     "B: (A,)" means that candidate dimension B is dependent on candidate dimension A.
 
-    The scalar relationship must exist between one candidate dimension and all 
+    The scalar relationship must exist between one candidate dimension and all
     others in the group, as the group is considered inseparable in this context.
 
     Args:
-    
+
     * space:
-        A dictionary defining for each candidate dimension its dependency on 
+        A dictionary defining for each candidate dimension its dependency on
         any other candidate dimensions within the space.
 
     * group:
@@ -732,7 +732,7 @@ def _build_inseparable_group(space, group, positions, function_matrix):
         for name in dependent:
             function_mapping = {}
             valid = _is_dependent(name, independent, positions, function_mapping)
-                    
+
             if not valid:
                 break
 
@@ -753,7 +753,7 @@ def _build_inseparable_group(space, group, positions, function_matrix):
 
 def _build_combination_group(space, group, positions, function_matrix):
     """
-    Update the space with the new combined or invented dimension 
+    Update the space with the new combined or invented dimension
     that each member of this inseparable group depends on.
 
     As no functional relationship between members of the group can be determined,
@@ -821,7 +821,7 @@ def derive_space(groups, relation_matrix, positions, function_matrix=None):
 
     Returns:
         A space dictionary describing the relationship between each
-        candidate dimension. 
+        candidate dimension.
 
     """
     space = {}
@@ -873,7 +873,7 @@ class ProtoCube(object):
         # The cube signature is metadata that defines this ProtoCube.
         self._cube_signature = self._build_signature(cube)
 
-        # Extract the scalar and vector coordinate data and metadata from the cube. 
+        # Extract the scalar and vector coordinate data and metadata from the cube.
         coord_payload = self._extract_coord_payload(cube)
 
         # The coordinate signature defines the scalar and vector coordinates of this ProtoCube.
@@ -932,7 +932,7 @@ class ProtoCube(object):
         group_depth = max([len(group) for group in group_by_nd_index.values()])
         nd_indexes = group_by_nd_index.keys()
         nd_indexes.sort()
-        
+
         # Check for unique data.
         if unique and group_depth > 1:
             # Find the first offending source-cube with duplicate metadata.
@@ -954,7 +954,7 @@ class ProtoCube(object):
                 data = self._skeletons[group_by_nd_index[nd_index][offset]].data
 
                 # Slot the data into merged cube. The nd-index will have less dimensionality than
-                # that of the merged cube's data. The "missing" dimensions correspond to the 
+                # that of the merged cube's data. The "missing" dimensions correspond to the
                 # dimensionality of the source-cubes data.
                 if nd_index:
                     # The use of "flatten" allows us to cope with a 0-dimensional array.
@@ -966,7 +966,7 @@ class ProtoCube(object):
                         merged_cube._data[nd_index] = data
                 else:
                     merged_cube._data = data
-            
+
             # Unmask the array only if it is filled.
             if isinstance(merged_cube._data, ma.core.MaskedArray):
                 if ma.count_masked(merged_cube._data) == 0:
@@ -978,7 +978,7 @@ class ProtoCube(object):
 
     def register(self, cube):
         """
-        Add a compatible :class:`iris.cube.Cube` as a source-cube for merging under this 
+        Add a compatible :class:`iris.cube.Cube` as a source-cube for merging under this
         :class:`ProtoCube`.
 
         A cube will be deemed compatible based on the signature of the cube and the signature of its
@@ -988,7 +988,7 @@ class ProtoCube(object):
 
         * cube:
             Candidate :class:`iris.cube.Cube` to be associated with this :class:`ProtoCube`.
-        
+
         Returns:
             True iff the :class:`iris.cube.Cube` is compatible with this :class:`ProtoCube`.
 
@@ -1013,7 +1013,7 @@ class ProtoCube(object):
         Heuristic categoration of the candidate dimension (i.e. scalar_defn index)
         into either label 'T', 'Z', 'Y', 'X' or None.
 
-        Based on the associated scalar coordinate definition rather than the 
+        Based on the associated scalar coordinate definition rather than the
         scalar coordinate itself.
 
         Args:
@@ -1057,7 +1057,7 @@ class ProtoCube(object):
 
         """
         # Heuristic reordering of coordinate defintion indexes into preferred dimension order.
-        names = sorted(space, 
+        names = sorted(space,
                        key=lambda name: ({'T':1, 'Z':2, 'Y':3, 'X':4}.get(self._guess_axis(name), 0), name))
         dim_by_name = {}
 
@@ -1086,7 +1086,7 @@ class ProtoCube(object):
                     kwargs = dict(zip(iris.coords.CoordDefn._fields, defns[name]))
                     kwargs.update(metadata[name].kwargs)
 
-                    if len(cells) == 1 and not any([name in independents for independents in 
+                    if len(cells) == 1 and not any([name in independents for independents in
                                                     space.itervalues() if independents is not None]):
                         # A scalar coordinate not participating in a function dependency.
                         self._aux_templates.append(_Template((), points, bounds, kwargs))
@@ -1117,7 +1117,7 @@ class ProtoCube(object):
 
                 # Populate the points and bounds based on the appropriate function mapping.
                 for function_independents, name_value in function_matrix[name].iteritems():
-                    # Build the index (and cache it) for the auxiliary coordinate based on the 
+                    # Build the index (and cache it) for the auxiliary coordinate based on the
                     # associated independent dimension coordinate/s.
                     index = []
 
@@ -1130,11 +1130,11 @@ class ProtoCube(object):
 
                     if bounds is not None:
                         bounds[index] = name_value.bound
-                        
+
                 kwargs = dict(zip(iris.coords.CoordDefn._fields, defns[name]))
                 self._aux_templates.append(_Template(dims, points, bounds, kwargs))
-                
-        # Calculate the dimension mapping for each vector within the space. 
+
+        # Calculate the dimension mapping for each vector within the space.
         offset = len(self._shape)
         self._vector_dim_coords_dims = [tuple([dim + offset for dim in item.dims]) for item in vector_dim_coords_and_dims]
         self._vector_aux_coords_dims = [tuple([dim + offset for dim in item.dims]) for item in vector_aux_coords_and_dims]
@@ -1202,8 +1202,8 @@ class ProtoCube(object):
 
     def _build_coordinates(self):
         """
-        Build the dimension and auxiliary coordinates for the final merged cube given that the final 
-        dimensionality of the target merged cube is known and the associated dimension/s that each 
+        Build the dimension and auxiliary coordinates for the final merged cube given that the final
+        dimensionality of the target merged cube is known and the associated dimension/s that each
         coordinate maps onto in that merged cube.
 
         The associated vector coordinate/s of the ProtoCube are also created with the correct space
@@ -1224,7 +1224,7 @@ class ProtoCube(object):
                 coord = iris.coords.DimCoord(template.points,
                                              bounds=template.bounds,
                                              **template.kwargs)
-                dim_coords_and_dims.append(_CoordAndDims(coord, template.dims))            
+                dim_coords_and_dims.append(_CoordAndDims(coord, template.dims))
             except ValueError:
                 self._aux_templates.append(template)
 
@@ -1239,8 +1239,8 @@ class ProtoCube(object):
             # fails e.g it's non-monontic or multi-dimensional or non-numeric,
             # then build an AuxCoord.
             try:
-                coord = iris.coords.DimCoord(template.points, 
-                                             bounds=template.bounds, 
+                coord = iris.coords.DimCoord(template.points,
+                                             bounds=template.bounds,
                                              **template.kwargs)
                 if len(template.dims) == 1 and template.dims[0] not in covered_dims:
                     dim_coords_and_dims.append(_CoordAndDims(coord, template.dims))
@@ -1255,11 +1255,11 @@ class ProtoCube(object):
                 aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
 
         # Mix in the vector coordinates.
-        for item, dims in zip(self._coord_signature.vector_dim_coords_and_dims, 
+        for item, dims in zip(self._coord_signature.vector_dim_coords_and_dims,
                               self._vector_dim_coords_dims):
             dim_coords_and_dims.append(_CoordAndDims(item.coord, dims))
 
-        for item, dims in zip(self._coord_signature.vector_aux_coords_and_dims, 
+        for item, dims in zip(self._coord_signature.vector_aux_coords_and_dims,
                               self._vector_aux_coords_dims):
             aux_coords_and_dims.append(_CoordAndDims(item.coord, dims))
 
@@ -1313,7 +1313,7 @@ class ProtoCube(object):
 
         cube_aux_coords = cube.aux_coords
         coords = cube.dim_coords + cube_aux_coords
-        
+
         # Coordinate hint ordering dictionary - from most preferred to least.
         # Copes with duplicate hint entries, where the most preferred is king.
         hint_dict = {name: i for i, name in zip(range(len(self._hints), 0, -1), self._hints[::-1])}
@@ -1345,7 +1345,7 @@ class ProtoCube(object):
                     vector_aux_coords_and_dims.append(_CoordAndDims(coord, tuple(cube.coord_dims(coord))))
                 else:
                     vector_dim_coords_and_dims.append(_CoordAndDims(coord, tuple(cube.coord_dims(coord))))
- 
+
         factory_defns = []
         for factory in sorted(cube.aux_factories, key=lambda factory: factory._as_defn()):
             dependency_defns = []

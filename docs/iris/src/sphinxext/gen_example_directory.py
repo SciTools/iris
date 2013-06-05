@@ -105,7 +105,7 @@ Iris examples
             fhsubdirIndex.writelines(mod.__doc__)
         else:
             fhsubdirIndex.writelines(['Examples in %s\n' % subdir, '='*50])
-        
+
         # append the code to produce the toctree
         fhsubdirIndex.write("""\
 
@@ -158,7 +158,7 @@ Iris examples
             # indent the contents
             contents = '\n'.join(['    %s'%row.rstrip() for row in contents.split('\n')])
             fh.write(contents)
-            fh.write('\n\n\n\n\n')            
+            fh.write('\n\n\n\n\n')
 
             fh.close()
 

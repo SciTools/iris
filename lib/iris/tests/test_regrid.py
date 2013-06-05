@@ -154,21 +154,21 @@ class TestRegrid(tests.IrisTest):
 class TestRegridBilinear(tests.IrisTest):
     def setUp(self):
         self.cs = GeogCS(6371229)
-        
+
         # Source cube candidate for regridding.
         cube = Cube(np.arange(12, dtype=np.float32).reshape(3, 4), long_name='unknown')
         cube.units = '1'
         cube.add_dim_coord(DimCoord(np.array([1, 2, 3]), 'latitude', units='degrees', coord_system=self.cs), 0)
         cube.add_dim_coord(DimCoord(np.array([1, 2, 3, 4]), 'longitude', units='degrees', coord_system=self.cs), 1)
         self.source = cube
-        
+
         # Cube with a smaller grid in latitude and longitude than the source grid by taking the coordinate mid-points.
         cube = Cube(np.arange(6, dtype=np.float).reshape(2, 3))
         cube.units = '1'
         cube.add_dim_coord(DimCoord(np.array([1.5, 2.5]), 'latitude', units='degrees', coord_system=self.cs), 0)
         cube.add_dim_coord(DimCoord(np.array([1.5, 2.5, 3.5]), 'longitude', units='degrees', coord_system=self.cs), 1)
         self.smaller = cube
-        
+
         # Cube with a larger grid in latitude and longitude than the source grid by taking the coordinate mid-points and extrapolating at extremes.
         cube = Cube(np.arange(20, dtype=np.float).reshape(4, 5))
         cube.units = '1'
@@ -180,27 +180,27 @@ class TestRegridBilinear(tests.IrisTest):
         # Anchor smaller grid from the first point in longitude and perform mid-point linear interpolation in latitude.
         self.smaller.coord('longitude').points = self.smaller.coord('longitude').points - 0.5
         self.assertCMLApproxData(self.source.regridded(self.smaller), ('regrid', 'bilinear_smaller_lon_align_left.cml'))
-        
+
     def test_bilinear_smaller(self):
         # Perform mid-point bilinear interpolation over both latitude and longitude.
         self.assertCMLApproxData(self.source.regridded(self.smaller), ('regrid', 'bilinear_smaller.cml'))
-        
+
     def test_bilinear_smaller_lon_right(self):
         # Anchor smaller grid from the last point in longitude and perform mid-point linear interpolation in latitude.
         self.smaller.coord('longitude').points = self.smaller.coord('longitude').points + 0.5
         self.assertCMLApproxData(self.source.regridded(self.smaller), ('regrid', 'bilinear_smaller_lon_align_right.cml'))
-        
+
     def test_bilinear_larger_lon_left(self):
         # Extrapolate first point of longitude with others aligned to source grid, and perform linear interpolation with extrapolation over latitude.
         coord = iris.coords.DimCoord(np.array([0.5, 1, 2, 3, 4]), 'longitude', units='degrees', coord_system=self.cs)
         self.larger.remove_coord('longitude')
         self.larger.add_dim_coord(coord, 1)
         self.assertCMLApproxData(self.source.regridded(self.larger), ('regrid', 'bilinear_larger_lon_extrapolate_left.cml'))
-        
+
     def test_bilinear_larger(self):
         # Perform mid-point bi-linear interpolation with extrapolation over latitude and longitude.
         self.assertCMLApproxData(self.source.regridded(self.larger), ('regrid', 'bilinear_larger.cml'))
-        
+
     def test_bilinear_larger_lon_right(self):
         # Extrapolate last point of longitude with others aligned to source grid, and perform linear interpolation with extrapolation over latitude.
         coord = iris.coords.DimCoord(np.array([1, 2, 3, 4, 4.5]), 'longitude', units='degrees', coord_system=self.cs)

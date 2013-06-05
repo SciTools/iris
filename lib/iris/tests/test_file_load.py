@@ -71,8 +71,8 @@ class TestFileLoad(tests.IrisTest):
         with self.temp_filename(suffix='.pp') as temp_filename:
             with open(temp_filename, "a") as file:
                 with self.assertRaises(iris.exceptions.TranslationError):
-                    iris.load(temp_filename)        
-        
+                    iris.load(temp_filename)
+
 
 if __name__ == "__main__":
     tests.main()

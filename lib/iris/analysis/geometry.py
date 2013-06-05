@@ -33,18 +33,18 @@ def geometry_area_weights(cube, geometry):
     """
     Returns the array of weights corresponding to the area of overlap between
     the cells of cube's horizontal grid, and the given shapely geometry.
-    
+
     The returned array is suitable for use with :const:`iris.analysis.MEAN`.
-    
+
     The cube must have bounded horizontal coordinates.
-    
+
     .. note::
         This routine works in Euclidean space. Area calculations do not
         account for the curvature of the Earth. And care must be taken to
         ensure any longitude values are expressed over a suitable interval.
-    
+
     Args:
-    
+
     * cube (:class:`iris.cube.Cube`):
         A Cube containing a bounded, horizontal grid definition.
     * geometry (a shapely geometry instance):
