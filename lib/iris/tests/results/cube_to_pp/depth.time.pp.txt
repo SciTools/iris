@@ -42,7 +42,7 @@
    brlev: 0.0
    bhlev: 0.0
    bhrlev: 0.0
-   bplat: 0.0
+   bplat: 90.0
    bplon: 0.0
    bgor: 0.0
    bzy: 0.0

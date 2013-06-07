@@ -1048,23 +1048,33 @@ class Cube(CFVariableMixin):
 
         return coords[0]
 
-    def coord_system(self, spec):
-        """Return the CoordSystem of the given type - or None.
+    def coord_system(self, spec=None):
+        """
+        Find the coordinate system of the given type.
 
-        Args:
+        If no target coordinate system is provided then find
+        any available coordinate system.
 
-        * spec
-            The the name or type of a CoordSystem subclass. E.g. ::
+        Kwargs:
+
+        * spec:
+            The the name or type of a coordinate system subclass.
+            E.g. ::
 
                 cube.coord_system("GeogCS")
                 cube.coord_system(iris.coord_systems.GeogCS)
 
-        If spec is provided as a type it can be a superclass of any
-        CoordSystems found.
+            If spec is provided as a type it can be a superclass of
+            any coordinate system found.
+
+            If spec is None, then find any available coordinate
+            systems within the :class:`iris.cube.Cube`.
+
+        Returns:
+            The :class:`iris.coord_systems.CoordSystem` or None.
 
         """
-        # Was a string or a type provided?
-        if isinstance(spec, basestring):
+        if isinstance(spec, basestring) or spec is None:
             spec_name = spec
         else:
             msg = "type %s is not a subclass of CoordSystem" % spec
@@ -1077,7 +1087,15 @@ class Cube(CFVariableMixin):
             if coord.coord_system:
                 coord_systems.add(coord.coord_system, replace=True)
 
-        return coord_systems.get(spec_name)
+        result = None
+        if spec_name is None:
+            for key in sorted(coord_systems.keys()):
+                result = coord_systems[key]
+                break
+        else:
+            result = coord_systems.get(spec_name)
+
+        return result
 
     @property
     def cell_methods(self):
@@ -2606,7 +2624,7 @@ class ClassDict(object, UserDict.DictMixin):
         if not isinstance(object_, self._superclass):
             msg = "Only subclasses of {!r} are allowed as values.".format(
                 self._superclass.__name__)
-            raise TypeError()
+            raise TypeError(msg)
         # Find all the superclasses of the given object, starting with the
         # object's class.
         superclasses = type.mro(type(object_))
