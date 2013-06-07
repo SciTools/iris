@@ -41,8 +41,14 @@ import iris.fileformats.grib.load_rules
 import iris.unit
 
 
+__all__ = ['add_load_rules', 'grib_generator', 'load_cubes',
+           'reset_load_rules', 'save_grib2', 'GribWrapper',
+           'hindcast_workaround']
 
-hindcast_workaround = False  # Enable this to correct hindcast periods on load.
+
+#: Set this flag to True to enable support of negative forecast periods 
+#: when loading and saving GRIB files.
+hindcast_workaround = False
 
 
 # rules for converting a grib message to a cm cube
