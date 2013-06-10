@@ -55,8 +55,7 @@ LICENSE_RE = re.compile(LICENSE_RE_PATTERN, re.MULTILINE)
 #; A guess at the repo directory of Iris.
 REPO_DIR = os.path.dirname(os.path.dirname(os.path.dirname(iris.__file__)))
 DOCS_DIR = os.path.join(REPO_DIR, 'docs')
-# Problem files in build occur under html and build dir not cleared
-# by make clean command.
+# Problem files in build occur under html directory
 DOCS_BUILD_DIR = os.path.join(DOCS_DIR, 'iris', 'build', 'html')
 
 
