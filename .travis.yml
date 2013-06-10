@@ -63,6 +63,7 @@ install:
   - ../.travis_no_output PYTHON=/usr/bin/python CFLAGS="-fPIC" ./configure --with-jasper=/usr/local/lib --disable-fortran --enable-python
   - ../.travis_no_output make
   - ../.travis_no_output sudo make install
+  - cd ..
 
 # distutils
   - ./.travis_no_output wget http://python-distribute.org/distribute_setup.py
