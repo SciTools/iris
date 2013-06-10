@@ -54,6 +54,9 @@ LICENSE_RE = re.compile(LICENSE_RE_PATTERN, re.MULTILINE)
 
 #; A guess at the repo directory of Iris.
 REPO_DIR = os.path.dirname(os.path.dirname(os.path.dirname(iris.__file__)))
+DOCS_DIR = os.path.join(REPO_DIR, 'docs')
+# Problem files in build occur under html directory
+DOCS_BUILD_DIR = os.path.join(DOCS_DIR, 'iris', 'build', 'html')
 
 
 class StandardReportWithExclusions(pep8.StandardReport):
@@ -142,6 +145,51 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/tests/test_util.py',
         '*/iris/tests/test_verbose_logging.py']
 
+    if os.path.exists(DOCS_DIR):
+        expected_bad_docs_files = [
+            '*/iris/example_code/graphics/COP_1d_plot.py',
+            '*/iris/example_code/graphics/COP_maps.py',
+            '*/iris/example_code/graphics/SOI_filtering.py',
+            '*/iris/example_code/graphics/TEC.py',
+            '*/iris/example_code/graphics/cross_section.py',
+            '*/iris/example_code/graphics/custom_file_loading.py',
+            '*/iris/example_code/graphics/deriving_phenomena.py',
+            '*/iris/example_code/graphics/global_map.py',
+            '*/iris/example_code/graphics/hovmoller.py',
+            '*/iris/example_code/graphics/lagged_ensemble.py',
+            '*/iris/example_code/graphics/lineplot_with_legend.py',
+            '*/iris/example_code/graphics/rotated_pole_mapping.py',
+            '*/iris/example_tests/test_COP_1d_plot.py',
+            '*/iris/example_tests/test_COP_maps.py',
+            '*/iris/example_tests/test_SOI_filtering.py',
+            '*/iris/example_tests/test_TEC.py',
+            '*/iris/example_tests/test_cross_section.py',
+            '*/iris/example_tests/test_custom_file_loading.py',
+            '*/iris/example_tests/test_deriving_phenomena.py',
+            '*/iris/example_tests/test_global_map.py',
+            '*/iris/example_tests/test_hovmoller.py',
+            '*/iris/example_tests/test_lagged_ensemble.py',
+            '*/iris/example_tests/test_lineplot_with_legend.py',
+            '*/iris/example_tests/test_rotated_pole_mapping.py',
+            '*/iris/src/conf.py',
+            '*/iris/src/developers_guide/documenting/'
+            'docstrings_sample_routine.py',
+            '*/iris/src/developers_guide/gitwash_dumper.py',
+            '*/iris/src/sphinxext/custom_class_autodoc.py',
+            '*/iris/src/sphinxext/gen_example_directory.py',
+            '*/iris/src/sphinxext/gen_gallery.py',
+            '*/iris/src/sphinxext/gen_rst.py',
+            '*/iris/src/sphinxext/generate_package_rst.py',
+            '*/iris/src/sphinxext/plot_directive.py',
+            '*/iris/src/userguide/plotting_examples/1d_with_legend.py',
+            '*/iris/src/userguide/plotting_examples/brewer.py']
+
+        expected_bad_files += expected_bad_docs_files
+
+    if os.path.exists(DOCS_BUILD_DIR):
+        expected_bad_build_files = ['*/iris/build/*']
+        expected_bad_files += expected_bad_build_files
+
     matched_exclusions = set()
 
     def get_file_results(self):
@@ -194,7 +242,12 @@ class TestCodeFormat(unittest.TestCase):
                 extra_exclude = [line.strip() for line in fh if line.strip()]
             pep8style.options.exclude.extend(extra_exclude)
 
-        result = pep8style.check_files([os.path.dirname(iris.__file__)])
+        check_paths = [os.path.dirname(iris.__file__)]
+        if os.path.exists(DOCS_DIR):
+            check_paths.append(DOCS_DIR)
+        if os.path.exists(DOCS_BUILD_DIR):
+            check_paths.append(DOCS_BUILD_DIR)
+        result = pep8style.check_files(check_paths)
         self.assertEqual(result.total_errors, 0, "Found code syntax "
                                                  "errors (and warnings).")
 
