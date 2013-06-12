@@ -546,6 +546,7 @@ class TestIteration(TestCube2d):
         for subcube in subcubes:
             self.assertEqual(subcube.shape, self.t.shape[1:])
 
+
 class Test2dSlicing(TestCube2d):
     def test_cube_slice_all_dimensions(self):
         for cube in self.t.slices(['dim1', 'dim2']):
@@ -554,20 +555,73 @@ class Test2dSlicing(TestCube2d):
     def test_cube_slice_with_transpose(self):
         for cube in self.t.slices(['dim2', 'dim1']):
             self.assertCML(cube, ('cube_slice', '2d_transposed.cml'))
+
+    def test_cube_slice_without_transpose(self):
+        for cube in self.t.slices(['dim2', 'dim1'], ordered=False):
+            self.assertCML(cube, ('cube_slice', '2d_orig.cml'))
             
     def test_cube_slice_1dimension(self):
+        # Result came from the equivalent test test_cube_indexing_1d which
+        # does self.t[0, 0:]
         slices = [res for res in self.t.slices(['dim2'])]
-        # Result came from the equivalent test test_cube_indexing_1d which does self.t[0, 0:]
         self.assertCML(slices[0], ('cube_slice', '2d_to_1d_cube_slice.cml'))
     
     def test_cube_slice_zero_len_slice(self):
         self.assertRaises(IndexError, self.t.__getitem__, (slice(0, 0)))
     
     def test_cube_slice_with_non_existant_coords(self):
-        self.assertRaises(iris.exceptions.CoordinateNotFoundError, self.t.slices, ['dim2', 'dim1', 'doesnt exist'])
-        
+        with self.assertRaises(iris.exceptions.CoordinateNotFoundError):
+            self.t.slices(['dim2', 'dim1', 'doesnt exist'])
+
     def test_cube_extract_coord_with_non_describing_coordinates(self):
-        self.assertRaises(ValueError, self.t.slices, ['an_other'])
+        with self.assertRaises(ValueError):
+            self.t.slices(['an_other'])
+
+
+class Test2dSlicing_ByDim(TestCube2d):
+    def test_cube_slice_all_dimensions(self):
+        for cube in self.t.slices([0, 1]):
+            self.assertCML(cube, ('cube_slice', '2d_orig.cml'))
+            
+    def test_cube_slice_with_transpose(self):
+        for cube in self.t.slices([1, 0]):
+            self.assertCML(cube, ('cube_slice', '2d_transposed.cml'))
+
+    def test_cube_slice_without_transpose(self):
+        for cube in self.t.slices([1, 0], ordered=False):
+            self.assertCML(cube, ('cube_slice', '2d_orig.cml'))
+            
+    def test_cube_slice_1dimension(self):
+        # Result came from the equivalent test test_cube_indexing_1d which
+        # does self.t[0, 0:]
+        slices = [res for res in self.t.slices([1])]
+        self.assertCML(slices[0], ('cube_slice', '2d_to_1d_cube_slice.cml'))
+
+    def test_cube_slice_nodimension(self):
+        slices = [res for res in self.t.slices([])]
+        self.assertCML(slices[0], ('cube_slice', '2d_to_0d_cube_slice.cml'))
+    
+    def test_cube_slice_with_non_existant_dims(self):
+        with self.assertRaises(IndexError):
+            self.t.slices([1, 0, 2])
+
+    def test_cube_slice_duplicate_dimensions(self):
+        with self.assertRaises(ValueError):
+            self.t.slices([1, 1])
+
+
+class Test2dSlicing_ByMix(TestCube2d):
+    def test_cube_slice_all_dimensions(self):
+        for cube in self.t.slices([0, 'dim2']):
+            self.assertCML(cube, ('cube_slice', '2d_orig.cml'))
+            
+    def test_cube_slice_with_transpose(self):
+        for cube in self.t.slices(['dim2', 0]):
+            self.assertCML(cube, ('cube_slice', '2d_transposed.cml'))
+
+    def test_cube_slice_with_non_existant_dims(self):
+        with self.assertRaises(ValueError):
+            self.t.slices([1, 0, 'an_other'])
 
 
 class Test2dExtraction(TestCube2d):

@@ -13,6 +13,9 @@ Features added
 * `iris.analysis.SUM` is now a weighted aggregator, allowing it to take a
   weights keyword argument.
 * Grib2 translations added for standard_name 'soil_temperature'.
+* Method `iris.cube.Cube.slices` can now handle passing dimension index as well
+  as the currently supported types (string, coordinate), in order to slice in
+  cases where there is no coordinate associated with a dimension.
 
 Bugs fixed
 ----------
