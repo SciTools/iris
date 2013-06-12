@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,7 +25,7 @@ THEN
     pp.lbproc = 0                # Processing. Start at 0.
 
 IF
-    cm.coord_system("GeogCS") is not None
+    cm.coord_system("GeogCS") is not None or cm.coord_system(None) is None
 THEN
     pp.bplat = 90
     pp.bplon = 0

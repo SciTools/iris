@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,6 +24,7 @@ import iris.tests as tests
 import logging
 
 import iris.coords
+import iris.tests.stock
 import iris.unit
 
 from iris.coord_systems import *
@@ -38,6 +39,38 @@ def osgb():
                               scale_factor_at_central_meridian=0.9996012717,
                               ellipsoid=GeogCS(6377563.396, 6356256.909))
 
+
+class TestCoordSystemLookup(tests.IrisTest):
+    def setUp(self):
+        self.cube = iris.tests.stock.lat_lon_cube()
+
+    def test_hit_name(self):
+        self.assertIsInstance(self.cube.coord_system('GeogCS'),
+                              GeogCS)
+
+    def test_hit_type(self):
+        self.assertIsInstance(self.cube.coord_system(GeogCS),
+                              GeogCS)
+
+    def test_miss(self):
+        self.assertIsNone(self.cube.coord_system(RotatedGeogCS))
+
+    def test_empty(self):
+        self.assertIsInstance(self.cube.coord_system(GeogCS),
+                              GeogCS)
+        self.assertIsNotNone(self.cube.coord_system(None))
+        self.assertIsInstance(self.cube.coord_system(None),
+                              GeogCS)
+        self.assertIsNotNone(self.cube.coord_system())
+        self.assertIsInstance(self.cube.coord_system(),
+                              GeogCS)
+
+        for coord in self.cube.coords():
+            coord.coord_system = None
+
+        self.assertIsNone(self.cube.coord_system(GeogCS))
+        self.assertIsNone(self.cube.coord_system(None))
+        self.assertIsNone(self.cube.coord_system())
 
 
 class TestCoordSystemSame(tests.IrisTest):

@@ -212,8 +212,33 @@ class FakePPEnvironment(object):
         return iris.coord_systems.GeogCS(6371229.0)
 
 
-@iris.tests.skip_data
-class TestPPSaveRules(tests.IrisTest):  
+class TestPPSaveRules(tests.IrisTest, pp.PPTest):
+    def test_default_coord_system(self):
+        GeogCS = iris.coord_systems.GeogCS
+        cube = iris.tests.stock.lat_lon_cube()
+        reference_txt_path = tests.get_result_path(('cube_to_pp',
+                                                    'default_coord_system.txt'))
+        # Remove all coordinate systems.
+        for coord in cube.coords():
+            coord.coord_system = None
+        # Ensure no coordinate systems available.
+        self.assertIsNone(cube.coord_system(GeogCS))
+        self.assertIsNone(cube.coord_system(None))
+        with self.cube_save_test(reference_txt_path, reference_cubes=cube) as \
+                temp_pp_path:
+            # Save cube to PP with no coordinate system.
+            iris.save(cube, temp_pp_path)
+            pp_cube = iris.load_cube(temp_pp_path)
+            # Ensure saved cube has the default coordinate system.
+            self.assertIsInstance(pp_cube.coord_system(GeogCS),
+                                  iris.coord_systems.GeogCS)
+            self.assertIsNotNone(pp_cube.coord_system(None))
+            self.assertIsInstance(pp_cube.coord_system(None),
+                                  iris.coord_systems.GeogCS)
+            self.assertIsNotNone(pp_cube.coord_system())
+            self.assertIsInstance(pp_cube.coord_system(),
+                                  iris.coord_systems.GeogCS)
+
     def lbproc_from_pp(self, filename):
         # Gets the lbproc field from the ppfile
         pp_file = iris.fileformats.pp.load(filename)
