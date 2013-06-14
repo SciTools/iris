@@ -2,7 +2,7 @@ Release 1.4 (unreleased)
 ========================
 
 :Release: 1.4.0
-:Date: 07 June 2013
+:Date: 14 June 2013
 
 * Saving multiple cubes to netcdf
   https://github.com/SciTools/iris/pull/367
