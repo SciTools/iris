@@ -2,7 +2,7 @@ What's new in Iris 1.4
 **********************
 
 :Release: 1.4.0
-:Date: 07 June 2013
+:Date: 14 June 2013
 
 This document explains the new/changed features of Iris in version 1.4.
 
