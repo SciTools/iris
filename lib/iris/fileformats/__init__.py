@@ -23,6 +23,7 @@ import iris.io.format_picker as fp
 from iris.io.format_picker import FormatSpecification as FormatSpec
 import ff
 import grib
+import name
 import netcdf
 import nimrod
 import pp
@@ -143,3 +144,13 @@ FORMAT_AGENT.add_spec(FormatSpec('NIMROD',
                                  0x00000200,
                                  nimrod.load_cubes,
                                  priority=3))
+
+#
+# NAME files.
+#
+FORMAT_AGENT.add_spec(FormatSpec('NAME III',
+                                 fp.LEADING_LINE,
+                                 lambda line: line.lstrip().startswith(
+                                     "NAME III"),
+                                 name.load_cubes,
+                                 priority=5))

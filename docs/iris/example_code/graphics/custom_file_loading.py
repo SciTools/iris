@@ -193,10 +193,11 @@ def NAME_to_cube(filenames, callback):
             yield cube
 
 
-# Create a format_picker specification of the NAME file format giving it a priority below NetCDF, GRIB & PP etc.
+# Create a format_picker specification of the NAME file format giving it a
+# priority greater than the built in NAME loader.
 _NAME_III_spec = format_picker.FormatSpecification('Name III', format_picker.LEADING_LINE,
                                       lambda line: line.startswith("NAME III"), NAME_to_cube,
-                                      priority=3,)
+                                      priority=6)
 
 # Register the NAME loader with iris
 iris.fileformats.FORMAT_AGENT.add_spec(_NAME_III_spec)
