@@ -121,6 +121,10 @@ class Test_phenomenon(tests.IrisTest):
     def test_phenom_unknown(self, mock_set_long):
         grib = None
         cube = iris.cube.Cube(np.array([1.0]))
+        # Force reset of warnings registry to avoid suppression of
+        # repeated warnings. warnings.resetwarnings() does not do this.
+        if hasattr(grib_save_rules, '__warningregistry__'):
+            grib_save_rules.__warningregistry__.clear()
         with warnings.catch_warnings():
             # This should issue a warning about unrecognised data
             warnings.simplefilter("error")
