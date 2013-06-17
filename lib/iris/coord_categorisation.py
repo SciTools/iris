@@ -376,7 +376,7 @@ def add_season_number(cube, coord, name=None,
 
     * name (string):
         Name of the created coordinate. Currently defaults to "season",
-        but this will change in a later version to "season_membership".
+        but this will change in a later version to "season_number".
     * seasons (:class:`list` of strings):
         List of seasons defined by month abbreviations. Each month must
         appear once and only once. Defaults to standard meteorological
@@ -498,19 +498,42 @@ def _custom_season_deprecation(func):
 
 @_custom_season_deprecation
 def add_custom_season(cube, coord, seasons, name='season'):
+    """
+        .. deprecated:: 1.4
+            Please use :func:`~iris.coord_categorisation.add_season()`.
+
+    """
     return add_season(cube, coord, name=name, seasons=seasons)
 
 
 @_custom_season_deprecation
 def add_custom_season_number(cube, coord, seasons, name='season'):
+    """
+        .. deprecated:: 1.4
+            Please use
+            :func:`~iris.coord_categorisation.add_season_number()`.
+
+    """
     return add_season_number(cube, coord, name=name, seasons=seasons)
 
 
 @_custom_season_deprecation
 def add_custom_season_year(cube, coord, seasons, name='year'):
+    """
+        .. deprecated:: 1.4
+            Please use
+            :func:`~iris.coord_categorisation.add_season_year()`.
+
+    """
     return add_season_year(cube, coord, name=name, seasons=seasons)
 
 
 @_custom_season_deprecation
 def add_custom_season_membership(cube, coord, season, name='season'):
+    """
+        .. deprecated:: 1.4
+            Please use
+            :func:`~iris.coord_categorisation.add_season_membership()`.
+
+    """
     return add_season_membership(cube, coord, season, name=name)
