@@ -70,7 +70,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/cube.py',
         '*/iris/exceptions.py',
         '*/iris/palette.py',
-        '*/iris/pandas.py',
         '*/iris/quickplot.py',
         '*/iris/std_names.py',
         '*/iris/symbols.py',
@@ -83,7 +82,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/analysis/interpolate.py',
         '*/iris/analysis/maths.py',
         '*/iris/analysis/trajectory.py',
-        '*/iris/fileformats/__init__.py',
         '*/iris/fileformats/cf.py',
         '*/iris/fileformats/dot.py',
         '*/iris/fileformats/ff.py',
@@ -95,13 +93,9 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/fileformats/pp.py',
         '*/iris/fileformats/rules.py',
         '*/iris/fileformats/um_cf_map.py',
-        '*/iris/fileformats/_pyke_rules/__init__.py',
-        '*/iris/fileformats/_pyke_rules/compiled_krb/compiled_pyke_files.py',
-        '*/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py',
         '*/iris/io/__init__.py',
         '*/iris/io/format_picker.py',
         '*/iris/tests/__init__.py',
-        '*/iris/tests/idiff.py',
         '*/iris/tests/pp.py',
         '*/iris/tests/stock.py',
         '*/iris/tests/system_test.py',
@@ -143,7 +137,8 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/tests/test_unit.py',
         '*/iris/tests/test_uri_callback.py',
         '*/iris/tests/test_util.py',
-        '*/iris/tests/test_verbose_logging.py']
+        '*/iris/tests/test_verbose_logging.py',
+        '*/iris/fileformats/_pyke_rules/compiled_krb/*']
 
     if os.path.exists(DOCS_DIR):
         expected_bad_docs_files = [
@@ -153,11 +148,9 @@ class StandardReportWithExclusions(pep8.StandardReport):
             '*/iris/example_code/graphics/TEC.py',
             '*/iris/example_code/graphics/cross_section.py',
             '*/iris/example_code/graphics/custom_file_loading.py',
-            '*/iris/example_code/graphics/deriving_phenomena.py',
             '*/iris/example_code/graphics/global_map.py',
             '*/iris/example_code/graphics/hovmoller.py',
             '*/iris/example_code/graphics/lagged_ensemble.py',
-            '*/iris/example_code/graphics/lineplot_with_legend.py',
             '*/iris/example_code/graphics/rotated_pole_mapping.py',
             '*/iris/example_tests/test_COP_1d_plot.py',
             '*/iris/example_tests/test_COP_maps.py',
@@ -172,8 +165,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
             '*/iris/example_tests/test_lineplot_with_legend.py',
             '*/iris/example_tests/test_rotated_pole_mapping.py',
             '*/iris/src/conf.py',
-            '*/iris/src/developers_guide/documenting/'
-            'docstrings_sample_routine.py',
             '*/iris/src/developers_guide/gitwash_dumper.py',
             '*/iris/src/sphinxext/custom_class_autodoc.py',
             '*/iris/src/sphinxext/gen_example_directory.py',

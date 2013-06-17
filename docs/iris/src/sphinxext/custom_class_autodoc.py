@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -103,4 +103,3 @@ class ClassWithConstructorDocumenter(autodoc.ClassDocumenter):
 
 def setup(app):
     app.add_autodocumenter(ClassWithConstructorDocumenter)
-    

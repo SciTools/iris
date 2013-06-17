@@ -21,7 +21,7 @@ All the functions provided here add a new coordinate to a cube.
     * The function :func:`add_categorised_coord` performs a generic coordinate categorisation.
     * The other functions all implement specific common cases (e.g. :func:`add_day_of_month`).
       Currently, these are all calendar functions, so they only apply to "Time coordinates".
-      
+
 """
 
 import calendar   #for day and month names
@@ -35,9 +35,9 @@ import iris.coords
 def add_categorised_coord(cube, name, from_coord, category_function, units='1'):
     """
     Add a new coordinate to a cube, by categorising an existing one.
-  
+
     Make a new :class:`iris.coords.AuxCoord` from mapped values, and add it to the cube.
-    
+
     Args:
 
     * cube (:class:`iris.cube.Cube`):
@@ -48,7 +48,7 @@ def add_categorised_coord(cube, name, from_coord, category_function, units='1'):
         coordinate in 'cube', or the name of one
     * category_function (callable):
         function(coordinate, value), returning a category value for a coordinate point-value
-    
+
     Kwargs:
 
     * units:
@@ -57,10 +57,10 @@ def add_categorised_coord(cube, name, from_coord, category_function, units='1'):
     #interpret coord, if given as a name
     if isinstance(from_coord, basestring):
         from_coord = cube.coord(from_coord)
-    
+
     if len(cube.coords(name)) > 0:
         raise ValueError('A coordinate "%s" already exists in the cube.' % name)
-    
+
     #construct new coordinate by mapping values
     points = [category_function(from_coord, value) for value in from_coord.points]
     new_coord = iris.coords.AuxCoord(points, units=units, attributes=from_coord.attributes.copy())
@@ -80,20 +80,20 @@ def add_categorised_coord(cube, name, from_coord, category_function, units='1'):
 def _pt_date(coord, time):
     """
     Return the date of a time-coordinate point.
-    
+
     Args:
-    
+
     * coord (Coord):
         coordinate (must be Time-type)
     * time (float):
-        value of a coordinate point 
-    
+        value of a coordinate point
+
     Returns:
         datetime.date
     """
     # NOTE: all of the currently defined categorisation functions are calendar operations on Time coordinates
     #  - all these currently depend on Unit::num2date, which is deprecated (!!)
-    #  - we will want to do better, when we sort out our own Calendars 
+    #  - we will want to do better, when we sort out our own Calendars
     #  - for now, just make sure these all call through this one function
     return coord.units.num2date(time)
 
@@ -185,7 +185,7 @@ def add_day_of_year(cube, coord, name=None):
 
 #--------------------------------------------
 # time categorisations : days of the week
- 
+
 def add_weekday_number(cube, coord, name=None):
     """Add a categorical weekday coordinate, values 0..6  [0=Monday]."""
     name = _check_default(name, 'weekday', 'weekday_number')
@@ -304,7 +304,7 @@ def _month_season_numbers(seasons):
     return month_season_numbers
 
 
-  
+
 def add_season_month_initials(cube, coord, name='season'):
     """
     Add a categorical season-of-year coordinate, values 'djf'..'son'.
@@ -376,7 +376,7 @@ def add_season_number(cube, coord, name=None,
 
     * name (string):
         Name of the created coordinate. Currently defaults to "season",
-        but this will change in a later version to "season_membership".
+        but this will change in a later version to "season_number".
     * seasons (:class:`list` of strings):
         List of seasons defined by month abbreviations. Each month must
         appear once and only once. Defaults to standard meteorological
@@ -498,19 +498,42 @@ def _custom_season_deprecation(func):
 
 @_custom_season_deprecation
 def add_custom_season(cube, coord, seasons, name='season'):
+    """
+        .. deprecated:: 1.4
+            Please use :func:`~iris.coord_categorisation.add_season()`.
+
+    """
     return add_season(cube, coord, name=name, seasons=seasons)
 
 
 @_custom_season_deprecation
 def add_custom_season_number(cube, coord, seasons, name='season'):
+    """
+        .. deprecated:: 1.4
+            Please use
+            :func:`~iris.coord_categorisation.add_season_number()`.
+
+    """
     return add_season_number(cube, coord, name=name, seasons=seasons)
 
 
 @_custom_season_deprecation
 def add_custom_season_year(cube, coord, seasons, name='year'):
+    """
+        .. deprecated:: 1.4
+            Please use
+            :func:`~iris.coord_categorisation.add_season_year()`.
+
+    """
     return add_season_year(cube, coord, name=name, seasons=seasons)
 
 
 @_custom_season_deprecation
 def add_custom_season_membership(cube, coord, season, name='season'):
+    """
+        .. deprecated:: 1.4
+            Please use
+            :func:`~iris.coord_categorisation.add_season_membership()`.
+
+    """
     return add_season_membership(cube, coord, season, name=name)

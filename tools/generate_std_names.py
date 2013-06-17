@@ -80,7 +80,7 @@ def process_name_table(tree, element_name, *child_elements):
     """
     for elem in tree.iterfind(element_name):
         sub_section = {}
-        
+
         for child_elem in child_elements:
             found_elem = elem.find(child_elem)
             sub_section[child_elem] = found_elem.text if found_elem is not None else None

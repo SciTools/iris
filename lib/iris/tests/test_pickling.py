@@ -32,22 +32,22 @@ import iris
 
 class TestPickle(tests.IrisTest):
     def pickle_then_unpickle(self, obj):
-        """Returns a generator of ("cpickle protocol number", object) tuples.""" 
+        """Returns a generator of ("cpickle protocol number", object) tuples."""
         for protocol in xrange(1 + cPickle.HIGHEST_PROTOCOL):
             str_buffer = StringIO.StringIO()
             cPickle.dump(obj, str_buffer, protocol)
-            
+
             # move the str_buffer back to the start and reconstruct
             str_buffer.seek(0)
             reconstructed_obj = cPickle.load(str_buffer)
-            
+
             yield protocol, reconstructed_obj
-    
+
     @iris.tests.skip_data
     def test_cube_pickle(self):
         cube = iris.load_cube(tests.get_data_path(('PP', 'globClim1', 'theta.pp')))
         self.assertCML(cube, ('cube_io', 'pickling', 'theta.cml'), checksum=False)
-        
+
         for _, recon_cube in self.pickle_then_unpickle(cube):
             self.assertNotEqual(recon_cube._data_manager, None)
             self.assertEqual(cube._data_manager, recon_cube._data_manager)
@@ -67,22 +67,22 @@ class TestPickle(tests.IrisTest):
         _, recon_cube = next(self.pickle_then_unpickle(cube))
         self.assertEqual(recon_cube, cube)
 
-    @iris.tests.skip_data                    
+    @iris.tests.skip_data
     def test_cubelist_pickle(self):
         cubelist = iris.load(tests.get_data_path(('PP', 'COLPEX', 'theta_and_orog_subset.pp')))
         single_cube = cubelist[0]
-                
+
         self.assertCML(cubelist, ('cube_io', 'pickling', 'cubelist.cml'))
         self.assertCML(single_cube, ('cube_io', 'pickling', 'single_cube.cml'))
-        
+
         for _, reconstructed_cubelist in self.pickle_then_unpickle(cubelist):
             self.assertCML(reconstructed_cubelist, ('cube_io', 'pickling', 'cubelist.cml'))
             self.assertCML(reconstructed_cubelist[0], ('cube_io', 'pickling', 'single_cube.cml'))
-            
+
             for cube_orig, cube_reconstruct in zip(cubelist, reconstructed_cubelist):
                 self.assertArrayEqual(cube_orig.data, cube_reconstruct.data)
                 self.assertEqual(cube_orig, cube_reconstruct)
-            
+
     def test_picking_equality_misc(self):
         items_to_test = [
                         iris.unit.Unit("hours since 2007-01-15 12:06:00", calendar=iris.unit.CALENDAR_STANDARD),
