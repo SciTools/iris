@@ -62,7 +62,7 @@ class SystemInitialTest(tests.IrisTest):
                                               'time', units=hours_since_epoch))
         cm.add_aux_coord(iris.coords.AuxCoord(np.array([99], 'i8'),
                                               long_name='pressure', units='Pa'))
- 
+
         cm.assert_valid()
 
         for filetype in ('.nc', '.pp' , '.grib2'):
@@ -70,7 +70,7 @@ class SystemInitialTest(tests.IrisTest):
             iris.save(cm, saved_tmpfile)
 
             new_cube = iris.load_cube(saved_tmpfile)
-        
+
             self.assertCML(new_cube, ('system', 'supported_filetype_%s.cml' % filetype))
 
     def system_test_grib_patch(self):

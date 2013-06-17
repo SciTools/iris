@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -33,11 +33,11 @@ class TestStandardNames(unittest.TestCase):
         self.assertIsInstance(STD_NAMES, dict)
 
         keyset = set(STD_NAMES)
-        
+
         # Check for some known standard names
         valid_nameset = set(["air_density", "northward_wind", "wind_speed"])
         self.assertTrue(valid_nameset.issubset(keyset), "Known standard name missing from STD_NAMES")
-        
+
         # Check for some invalid standard names
         invalid_nameset = set(["invalid_air_density", "invalid_northward_wind",
                                "invalid_wind_speed",

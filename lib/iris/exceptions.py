@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -60,7 +60,7 @@ class InvalidCubeError(IrisError):
 
 class ConstraintMismatchError(IrisError):
     """
-    Raised when a constraint operation has failed to find the correct number 
+    Raised when a constraint operation has failed to find the correct number
     of results.
 
     """
@@ -70,9 +70,9 @@ class ConstraintMismatchError(IrisError):
 class NotYetImplementedError(IrisError):
     """
     Raised by missing functionality.
-    
+
     Different meaning to NotImplementedError, which is for abstract methods.
-       
+
     """
     pass
 
@@ -80,9 +80,8 @@ class NotYetImplementedError(IrisError):
 class TranslationError(IrisError):
     """Raised when Iris is unable to translate format-specific codes."""
     pass
-    
+
 
 class IgnoreCubeException(IrisError):
     """Raised from a callback function when a cube should be ignored on load."""
     pass
-    

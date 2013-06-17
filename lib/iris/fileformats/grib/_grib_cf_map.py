@@ -158,7 +158,7 @@ CFConstrained_TO_GRIB1Local = {
 	}
 
 CF_TO_GRIB2 = {	CFname("x_wind", None, "m s-1"):G2param(2, 0, 2, 2),
- 
+
  	CFname("air_potential_temperature", None, "K"):G2param(2, 0, 0, 2),
  	CFname("air_pressure", None, "Pa"):G2param(2, 0, 3, 0),
  	CFname("air_pressure_at_sea_level", None, "Pa"):G2param(2, 0, 3, 1),

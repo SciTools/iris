@@ -46,7 +46,7 @@ class TestSimple(tests.IrisTest):
         sub_list = self.slices.extract(constraint)
         self.assertEqual(len(sub_list), 6)
 
-        constraint = iris.Constraint(model_level_number=[10, 22])                  
+        constraint = iris.Constraint(model_level_number=[10, 22])
         sub_list = self.slices.extract(constraint)
         self.assertEqual(len(sub_list), 2 * 6)
 
@@ -82,7 +82,7 @@ class TestSimple(tests.IrisTest):
 class TestMixin(object):
     """
     Mix-in class for attributes & utilities common to the "normal" and "strict" test cases.
-    
+
     """
     def setUp(self):
         self.dec_path = tests.get_data_path(['PP', 'globClim1', 'dec_subset.pp'])
@@ -99,14 +99,14 @@ class TestMixin(object):
         self.level_30 = iris.Constraint(model_level_number=30)
         self.level_gt_30_le_3 = iris.Constraint(model_level_number=lambda c: ( c > 30 ) | (c <= 3))
         self.invalid_inequality = iris.Constraint(coord_values={'model_level_number': lambda c: c > 1000})
-        
+
         # bound based coord constraint
         self.level_height_of_model_level_number_10 = iris.Constraint(level_height=1900)
-        self.model_level_number_10_22 = iris.Constraint(model_level_number=[10, 22])                  
+        self.model_level_number_10_22 = iris.Constraint(model_level_number=[10, 22])
 
         # Invalid constraints
         self.pressure_950 = iris.Constraint(model_level_number=950)
-        
+
         self.lat_30 = iris.Constraint(latitude=30)
         self.lat_gt_45 = iris.Constraint(latitude=lambda c: c > 45)
 
@@ -117,19 +117,19 @@ class RelaxedConstraintMixin(TestMixin):
         # XXX Fix the cubes such that the sigma coordinate is always an AuxCoord. Pending gh issue #18
         if isinstance(cubes, iris.cube.Cube):
             cubes = [cubes]
-            
+
         for cube in cubes:
             sigma = cube.coord('sigma')
             sigma = iris.coords.AuxCoord.from_coord(sigma)
             cube.replace_coord(sigma)
-    
+
     def assertCML(self, cubes, filename):
         filename = "%s_%s.cml" % (filename, self.suffix)
         tests.IrisTest.assertCML(self, cubes, ('constrained_load', filename))
-        
+
     def load_match(self, files, constraints):
         raise NotImplementedError()  # defined in subclasses
-        
+
     def test_single_atomic_constraint(self):
         cubes = self.load_match(self.dec_path, self.level_10)
         self.fixup_sigma_to_be_aux(cubes)
@@ -137,19 +137,19 @@ class RelaxedConstraintMixin(TestMixin):
 
         cubes = self.load_match(self.dec_path, self.theta)
         self.assertCML(cubes, 'theta')
-        
+
         cubes = self.load_match(self.dec_path, self.model_level_number_10_22)
-        self.fixup_sigma_to_be_aux(cubes) 
+        self.fixup_sigma_to_be_aux(cubes)
         workaround_pending_1262(cubes)
         self.assertCML(cubes, 'all_ml_10_22')
-        
+
         # Check that it didn't matter that we provided sets & tuples to the model_level
         for constraint in [iris.Constraint(model_level_number=set([10, 22])), iris.Constraint(model_level_number=tuple([10, 22]))]:
             cubes = self.load_match(self.dec_path, constraint)
             self.fixup_sigma_to_be_aux(cubes)
             workaround_pending_1262(cubes)
-            self.assertCML(cubes, 'all_ml_10_22')          
-    
+            self.assertCML(cubes, 'all_ml_10_22')
+
     def test_string_standard_name(self):
         cubes = self.load_match(self.dec_path, SN_AIR_POTENTIAL_TEMPERATURE)
         self.assertCML(cubes, 'theta')
@@ -159,23 +159,23 @@ class RelaxedConstraintMixin(TestMixin):
 
         cubes = self.load_match(self.dec_path, iris.Constraint(SN_AIR_POTENTIAL_TEMPERATURE))
         self.assertCML(cubes, 'theta')
-    
+
         cubes = self.load_match(self.dec_path, iris.Constraint(SN_AIR_POTENTIAL_TEMPERATURE, model_level_number=10))
         self.fixup_sigma_to_be_aux(cubes)
         self.assertCML(cubes, 'theta_10')
-    
+
     def test_latitude_constraint(self):
         cubes = self.load_match(self.theta_path, self.lat_30)
         self.assertCML(cubes, 'theta_lat_30')
 
         cubes = self.load_match(self.theta_path, self.lat_gt_45)
         self.assertCML(cubes, 'theta_lat_gt_30')
-        
+
     def test_single_expression_constraint(self):
         cubes = self.load_match(self.theta_path, self.theta & self.level_10)
         self.fixup_sigma_to_be_aux(cubes)
         self.assertCML(cubes, 'theta_10')
-        
+
         cubes = self.load_match(self.theta_path, self.level_10 & self.theta)
         self.fixup_sigma_to_be_aux(cubes)
         self.assertCML(cubes, 'theta_10')
@@ -184,7 +184,7 @@ class RelaxedConstraintMixin(TestMixin):
         cubes = self.load_match(self.dec_path, [self.theta, self.level_10])
         self.fixup_sigma_to_be_aux(cubes)
         self.assertCML(cubes, 'theta_and_all_10')
-    
+
     def test_dual_repeated_constraint(self):
         cubes = self.load_match(self.dec_path, [self.theta, self.theta])
         self.fixup_sigma_to_be_aux(cubes)
@@ -201,7 +201,7 @@ class RelaxedConstraintMixin(TestMixin):
 
         cubes = self.load_match(self.theta_path, self.invalid_inequality)
         self.assertCML(cubes, 'invalid_inequality')
-        
+
     def test_inequality_constraint(self):
         cubes = self.load_match(self.theta_path, self.level_gt_30_le_3)
         self.assertCML(cubes, 'theta_gt_30_le_3')
@@ -211,15 +211,15 @@ class StrictConstraintMixin(RelaxedConstraintMixin):
     def test_single_atomic_constraint(self):
         cubes = self.load_match(self.theta_path, self.theta)
         self.assertCML(cubes, 'theta')
-        
+
         cubes = self.load_match(self.theta_path, self.level_10)
         self.fixup_sigma_to_be_aux(cubes)
         self.assertCML(cubes, 'theta_10')
-    
+
     def test_invalid_constraint(self):
         with self.assertRaises(iris.exceptions.ConstraintMismatchError):
             self.load_match(self.theta_path, self.pressure_950)
-    
+
     def test_dual_atomic_constraint(self):
         cubes = self.load_match(self.dec_path, [self.theta, self.level_10 & self.theta])
         self.fixup_sigma_to_be_aux(cubes)
@@ -229,41 +229,41 @@ class StrictConstraintMixin(RelaxedConstraintMixin):
 @iris.tests.skip_data
 class TestCubeLoadConstraint(RelaxedConstraintMixin, tests.IrisTest):
     suffix = 'load_match'
-    
+
     def load_match(self, files, constraints):
         cubes = iris.load(files, constraints)
         if not isinstance(cubes, iris.cube.CubeList):
             raise Exception("NOT A CUBE LIST! " + str(type(cubes)))
-        return cubes 
-    
+        return cubes
+
 
 @iris.tests.skip_data
 class TestCubeListConstraint(RelaxedConstraintMixin, tests.IrisTest):
     suffix = 'load_match'
-    
+
     def load_match(self, files, constraints):
         cubes = iris.load(files).extract(constraints)
         if not isinstance(cubes, iris.cube.CubeList):
             raise Exception("NOT A CUBE LIST! " + str(type(cubes)))
-        return cubes 
-    
+        return cubes
 
-@iris.tests.skip_data    
+
+@iris.tests.skip_data
 class TestCubeLoadStrictConstraint(StrictConstraintMixin, tests.IrisTest):
     suffix = 'load_strict'
-    
+
     def load_match(self, files, constraints):
-        cubes = iris.load_strict(files, constraints)    
-        return cubes 
+        cubes = iris.load_strict(files, constraints)
+        return cubes
 
 
 @iris.tests.skip_data
 class TestCubeListStrictConstraint(StrictConstraintMixin, tests.IrisTest):
     suffix = 'load_strict'
-    
+
     def load_match(self, files, constraints):
         cubes = iris.load(files).extract_strict(constraints)
-        return cubes 
+        return cubes
 
 
 @iris.tests.skip_data
@@ -276,47 +276,47 @@ class TestCubeExtract(TestMixin, tests.IrisTest):
         # there is no my_attribute attribute on the cube, so ensure it returns None
         cube = self.cube.extract(iris.AttributeConstraint(my_attribute='foobar'))
         self.assertIsNone(cube)
-        
+
         orig_cube = self.cube
         # add an attribute to the cubes
         orig_cube.attributes['my_attribute'] = 'foobar'
-        
+
         cube = orig_cube.extract(iris.AttributeConstraint(my_attribute='foobar'))
         self.assertCML(cube, ('constrained_load', 'attribute_constraint.cml'))
-        
+
         cube = orig_cube.extract(iris.AttributeConstraint(my_attribute='not me'))
         self.assertIsNone(cube)
-        
+
         cube = orig_cube.extract(iris.AttributeConstraint(my_attribute=lambda val: val.startswith('foo')))
         self.assertCML(cube, ('constrained_load', 'attribute_constraint.cml'))
-        
+
         cube = orig_cube.extract(iris.AttributeConstraint(my_attribute=lambda val: not val.startswith('foo')))
         self.assertIsNone(cube)
-        
+
         cube = orig_cube.extract(iris.AttributeConstraint(my_non_existant_attribute='hello world'))
         self.assertIsNone(cube)
-        
+
     def test_standard_name(self):
         r = iris.Constraint(SN_AIR_POTENTIAL_TEMPERATURE)
         self.assertTrue(self.cube.extract(r).standard_name, SN_AIR_POTENTIAL_TEMPERATURE)
-        
+
         r = iris.Constraint('wibble')
         self.assertEqual(self.cube.extract(r), None)
 
     def test_empty_data(self):
         # Ensure that the process of WHERE does not load data if there was empty data to start with...
-        self.assertNotEquals(None, self.cube._data_manager) 
-        
+        self.assertNotEquals(None, self.cube._data_manager)
+
         self.assertNotEquals(None, self.cube.extract(self.level_10)._data_manager)
-        
+
         self.assertNotEquals(None, self.cube.extract(self.level_10).extract(self.level_10)._data_manager)
-            
+
     def test_non_existant_coordinate(self):
         # Check the behaviour when a constraint is given for a coordinate which does not exist/span a dimension
         self.assertEqual(self.cube[0, :, :].extract(self.level_10), None)
-        
+
         self.assertEqual(self.cube.extract(iris.Constraint(wibble=10)), None)
-        
+
 
 @iris.tests.skip_data
 class TestConstraints(TestMixin, tests.IrisTest):
@@ -335,7 +335,7 @@ class TestConstraints(TestMixin, tests.IrisTest):
         self.assertEqual(rt, "Constraint(name='%s', coord_values={'model_level_number': 10})" % SN_AIR_POTENTIAL_TEMPERATURE)
 
     def test_number_of_raw_cubes(self):
-        # Test the constraints generate the correct number of raw cubes.    
+        # Test the constraints generate the correct number of raw cubes.
         raw_cubes = iris.load_raw(self.theta_path)
         self.assertEqual(len(raw_cubes), 38)
 
@@ -350,31 +350,31 @@ class TestConstraints(TestMixin, tests.IrisTest):
 
         raw_cubes = iris.load_raw(self.dec_path, [self.theta])
         self.assertEqual(len(raw_cubes), 38)
-       
+
 
 class TestBetween(tests.IrisTest):
     def run_test(self, function, numbers, results):
         for number, result in zip(numbers, results):
             self.assertEqual(function(number), result)
-        
+
     def test_le_ge(self):
         function = iris.util.between(2, 4)
         numbers = [1, 2, 3, 4, 5]
         results = [False, True, True, True, False]
         self.run_test(function, numbers, results)
-        
+
     def test_lt_gt(self):
         function = iris.util.between(2, 4, rh_inclusive=False, lh_inclusive=False)
         numbers = [1, 2, 3, 4, 5]
         results = [False, False, True, False, False]
         self.run_test(function, numbers, results)
-        
+
     def test_le_gt(self):
         function = iris.util.between(2, 4, rh_inclusive=False)
         numbers = [1, 2, 3, 4, 5]
         results = [False, True, True, False, False]
         self.run_test(function, numbers, results)
-        
+
     def test_lt_ge(self):
         function = iris.util.between(2, 4, lh_inclusive=False)
         numbers = [1, 2, 3, 4, 5]

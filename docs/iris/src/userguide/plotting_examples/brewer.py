@@ -21,4 +21,3 @@ for i,m in enumerate(maps):
              horizontalalignment='right')
 
 plt.show()
-

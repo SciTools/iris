@@ -156,10 +156,10 @@ class IrisTest(unittest.TestCase):
             diff = ''.join(difflib.unified_diff(reference_str.splitlines(1), test_str.splitlines(1),
                                                  'Reference', 'Test result', '', '', 0))
             self.fail("%s do not match: %s\n%s" % (type_comparison_name, reference_filename, diff))
-            
+
     def _assert_cml(self, cube_xml, reference_xml, reference_filename):
         self._assert_str_same(reference_xml, cube_xml, reference_filename, 'CML')
-    
+
     def assertCMLApproxData(self, cubes, reference_filename, *args, **kwargs):
         # passes args and kwargs on to approx equal
         if isinstance(cubes, iris.cube.Cube):
@@ -171,9 +171,9 @@ class IrisTest(unittest.TestCase):
                 fname[-1] = fname[-1][:-4]
             fname[-1] += '.data.%d.npy' % i
             self.assertCubeDataAlmostEqual(cube, fname, *args, **kwargs)
-            
+
         self.assertCML(cubes, reference_filename, checksum=False)
-    
+
     def assertCDL(self, netcdf_filename, reference_filename):
         """
         Converts the given CF-netCDF file to CDL for comparison with
@@ -190,7 +190,7 @@ class IrisTest(unittest.TestCase):
         # Ingest the CDL for comparison, excluding first line.
         with open(cdl_filename, 'r') as cdl_file:
             lines = cdl_file.readlines()[1:]
-            
+
         # Sort the dimensions (except for the first, which can be unlimited).
         # This gives consistent CDL across different platforms.
         sort_key = lambda line: ('UNLIMITED' not in line, line)
@@ -211,14 +211,14 @@ class IrisTest(unittest.TestCase):
         """
         if isinstance(cubes, iris.cube.Cube):
             cubes = [cubes]
-        
+
         if isinstance(cubes, (list, tuple)):
             xml = iris.cube.CubeList(cubes).xml(checksum=checksum)
         else:
             xml = cubes.xml(checksum=checksum)
         reference_path = get_result_path(reference_filename)
         self._check_same(xml, reference_path, reference_filename)
-        
+
     def assertTextFile(self, source_filename, reference_filename, desc="text file"):
         """Check if two text files are the same, printing any diffs."""
         with open(source_filename) as source_file:
@@ -233,7 +233,7 @@ class IrisTest(unittest.TestCase):
         reference_path = get_result_path(reference_filename)
         if os.path.isfile(reference_path):
             kwargs.setdefault('err_msg', 'Reference file %s' % reference_path)
-            
+
             result = np.load(reference_path)
             if isinstance(result, np.lib.npyio.NpzFile):
                 self.assertIsInstance(cube.data, ma.MaskedArray, 'Cube data was not a masked array.')
@@ -253,7 +253,7 @@ class IrisTest(unittest.TestCase):
                 np.savez(file(reference_path, 'wb'), data=data, mask=cube.data.mask)
             else:
                 np.save(file(reference_path, 'wb'), cube.data)
-    
+
     def assertFilesEqual(self, test_filename, reference_filename):
         reference_path = get_result_path(reference_filename)
         if os.path.isfile(reference_path):
@@ -262,7 +262,7 @@ class IrisTest(unittest.TestCase):
             self._ensure_folder(reference_path)
             logger.warning('Creating result file: %s', reference_path)
             shutil.copy(test_filename, reference_path)
-    
+
     def assertString(self, string, reference_filename):
         reference_path = get_result_path(reference_filename)
         # If the test string is a unicode string, encode as
@@ -271,10 +271,10 @@ class IrisTest(unittest.TestCase):
             string = string.encode('utf-8')
         self._check_same(string, reference_path, reference_filename,
                          type_comparison_name='Strings')
-    
+
     def assertRepr(self, obj, reference_filename):
         self.assertString(repr(obj), reference_filename)
-    
+
     def _check_same(self, item, reference_path, reference_filename, type_comparison_name='CML'):
         if os.path.isfile(reference_path):
             reference = ''.join(open(reference_path, 'r').readlines())
@@ -288,14 +288,14 @@ class IrisTest(unittest.TestCase):
     def assertXMLElement(self, obj, reference_filename):
         """
         Calls the xml_element method given obj and asserts the result is the same as the test file.
-        
+
         """
         doc = xml.dom.minidom.Document()
         doc.appendChild(obj.xml_element(doc))
         pretty_xml = doc.toprettyxml(indent="  ")
         reference_path = get_result_path(reference_filename)
         self._check_same(pretty_xml, reference_path, reference_filename, type_comparison_name='XML')
-        
+
     def assertArrayEqual(self, a, b):
         np.testing.assert_array_equal(a, b)
 
@@ -338,9 +338,9 @@ class IrisTest(unittest.TestCase):
     def assertAttributesEqual(self, attr1, attr2):
         """
         Asserts two mappings (dictionaries) are equal after
-        stripping out all timestamps of the form 'dd/mm/yy hh:mm:ss Iris: ' 
-        from values associated with a key of 'history'. This allows 
-        tests that compare the attributes property of cubes to be 
+        stripping out all timestamps of the form 'dd/mm/yy hh:mm:ss Iris: '
+        from values associated with a key of 'history'. This allows
+        tests that compare the attributes property of cubes to be
         independent of timestamp.
 
         """
@@ -352,7 +352,7 @@ class IrisTest(unittest.TestCase):
                 else:
                     value = str(value)
             return result
-        return self.assertEqual(attr_filter(attr1), attr_filter(attr2)) 
+        return self.assertEqual(attr_filter(attr1), attr_filter(attr2))
 
     @contextlib.contextmanager
     def temp_filename(self, suffix=''):
@@ -366,7 +366,7 @@ class IrisTest(unittest.TestCase):
         """
         in_file = open(file_path, "rb")
         return zlib.crc32(in_file.read())
-    
+
     def _unique_id(self):
         """
         Returns the unique ID for the current assertion.
@@ -385,7 +385,7 @@ class IrisTest(unittest.TestCase):
 
         """
         # Obtain a consistent ID for the current test.
-        
+
         # NB. unittest.TestCase.id() returns different values depending on
         # whether the test has been run explicitly, or via test discovery.
         # For example:
@@ -400,58 +400,58 @@ class IrisTest(unittest.TestCase):
         # Derive the sequential assertion ID within the test
         assertion_id = self._assertion_counts[test_id]
         self._assertion_counts[test_id] += 1
-        
+
         return test_id + '.' + str(assertion_id)
-    
+
     def _ensure_folder(self, path):
         dir_path = os.path.dirname(path)
         if not os.path.exists(dir_path):
             logger.warning('Creating folder: %s', dir_path)
             os.makedirs(dir_path)
-    
+
     def check_graphic(self, tol=_DEFAULT_IMAGE_TOLERANCE):
         """Checks the CRC matches for the current matplotlib.pyplot figure, and closes the figure."""
 
         unique_id = self._unique_id()
-        
+
         figure = plt.gcf()
-        
+
         try:
             expected_fname = os.path.join(os.path.dirname(__file__),
                                           'results', 'visual_tests',
                                           unique_id + '.png')
-            
+
             if not os.path.isdir(os.path.dirname(expected_fname)):
                 os.makedirs(os.path.dirname(expected_fname))
-            
+
             result_fname = os.path.join(os.path.dirname(__file__),
                                         'result_image_comparison',
                                         'result-' + unique_id + '.png')
-            
+
             if not os.path.isdir(os.path.dirname(result_fname)):
-                os.makedirs(os.path.dirname(result_fname)) 
-            
+                os.makedirs(os.path.dirname(result_fname))
+
             figure.savefig(result_fname)
-            
+
             if not os.path.exists(expected_fname):
                 warnings.warn('Created image for test %s' % unique_id)
                 shutil.copy2(result_fname, expected_fname)
-            
+
             err = mcompare.compare_images(expected_fname, result_fname, tol=tol)
-            
+
             if _DISPLAY_FIGURES:
                 if err:
                     print 'Image comparison would have failed. Message: %s' % err
                 plt.show()
             else:
                 assert not err, 'Image comparison failed. Message: %s' % err
- 
+
         finally:
             plt.close()
 
 
 class GraphicsTest(IrisTest):
-    
+
     def tearDown(self):
         # If a plotting test bombs out it can leave the current figure
         # in an odd state, so we make sure it's been disposed of.

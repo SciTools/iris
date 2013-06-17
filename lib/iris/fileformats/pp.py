@@ -42,7 +42,7 @@ import iris.proxy
 iris.proxy.apply_proxy('iris.fileformats.pp_packing', globals())
 
 
-__all__ = ['load', 'save', 'PPField', 'add_load_rules', 'reset_load_rules', 
+__all__ = ['load', 'save', 'PPField', 'add_load_rules', 'reset_load_rules',
            'add_save_rules', 'reset_save_rules', 'STASH', 'EARTH_RADIUS']
 
 
@@ -199,15 +199,15 @@ EXTRA_DATA = {
 """A dictionary mapping IB values to their names."""
 
 
-LBUSER_DTYPE_LOOKUP = {1 :np.dtype('>f4'), 
-                       2 :np.dtype('>i4'), 
+LBUSER_DTYPE_LOOKUP = {1 :np.dtype('>f4'),
+                       2 :np.dtype('>i4'),
                        3 :np.dtype('>i4'),
                        -1:np.dtype('>f4'),
                        -2:np.dtype('>i4'),
                        -3:np.dtype('>i4'),
                        'default': np.dtype('>f4'),
                        }
-"""Maps lbuser[0] to numpy data type. "default" will be interpreted if no match is found, providing a warning in such a case.""" 
+"""Maps lbuser[0] to numpy data type. "default" will be interpreted if no match is found, providing a warning in such a case."""
 
 # LBPROC codes and their English equivalents
 LBPROC_PAIRS = ((1, "Difference from another experiment"),
@@ -263,7 +263,7 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
         """
 
         Args:
-        
+
         * model
             A positive integer less than 100, or None.
         * section
@@ -332,7 +332,7 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
 class SplittableInt(object):
     """
     A class to hold integers which can easily get each decimal digit individually.
-    
+
     >>> three_six_two = SplittableInt(362)
     >>> print three_six_two
     362
@@ -340,19 +340,19 @@ class SplittableInt(object):
     2
     >>> print three_six_two[2]
     3
-    
+
     .. note:: No support for negative numbers
-        
+
     """
     def __init__(self, value, name_mapping_dict=None):
         """
         Build a SplittableInt given the positive integer value provided.
-        
+
         Kwargs:
-        
-        * name_mapping_dict - (dict) 
+
+        * name_mapping_dict - (dict)
             A special mapping to provide name based access to specific integer positions:
-            
+
                 >>> a = SplittableInt(1234, {'hundreds': 2})
                 >>> print a.hundreds
                 2
@@ -361,7 +361,7 @@ class SplittableInt(object):
                 9
                 >>> print a
                 1934
-        
+
         """
         if value < 0:
             raise ValueError('Negative numbers not supported with splittable integers object')
@@ -369,66 +369,66 @@ class SplittableInt(object):
         # define the name lookup first (as this is the way __setattr__ is plumbed)
         self._name_lookup = name_mapping_dict or {}
         """A dictionary mapping special attribute names on this object to the slices/indices required to access them."""
-        
+
         self._value = value
-        
+
         self._calculate_str_value_from_value()
-    
+
     def __int__(self):
         return int(self._value)
-            
+
     def _calculate_str_value_from_value(self):
         # Reverse the string to get the appropriate index when getting the sliced value
         self._strvalue = [int(c) for c in str(self._value)[::-1]]
-        
+
         # Associate the names in the lookup table to attributes
         for name, index in self._name_lookup.items():
             object.__setattr__(self, name, self[index])
-        
+
     def _calculate_value_from_str_value(self):
         self._value = np.sum( [ 10**i * val for i, val in enumerate(self._strvalue)] )
-    
+
     def __len__(self):
         return len(self._strvalue)
-    
+
     def __getitem__(self, key):
         try:
             val = self._strvalue[key]
         except IndexError:
             val = 0
-        
+
         # if the key returns a list of values, then combine them together to an integer
         if isinstance(val, list):
             val = sum([ 10**i * val for i, val in enumerate(val)])
-            
-        return val        
-        
+
+        return val
+
     def __setitem__(self, key, value):
         # The setitem method has been overridden so that assignment using ``val[0] = 1`` style syntax updates
         # the entire object appropriately.
-        
+
         if (not isinstance(value, int) or value < 0):
             raise ValueError('Can only set %s as a positive integer value.' % key)
-        
+
         if isinstance(key, slice):
             if ((key.start is not None and key.start < 0) or
                 (key.step is not None and key.step < 0) or
                 (key.stop is not None and key.stop < 0)):
                 raise ValueError('Cannot assign a value with slice objects containing negative indices.')
-            
+
             # calculate the current length of the value of this string
             current_length = len(range(*key.indices(len(self))))
-            
+
             # get indices for as many digits as have been requested. Putting the upper limit on the number of digits at 100.
             indices = range(*key.indices(100))
             if len(indices) < len(str(value)):
                 raise ValueError('Cannot put %s into %s as it has too many digits.' % (value, key))
-            
+
             # Iterate over each of the indices in the slice, zipping them together with the associated digit
             for index, digit in zip(indices, str(value).zfill(current_length)[::-1]):
-                # assign each digit to the associated index 
+                # assign each digit to the associated index
                 self.__setitem__(index, int(digit))
-        
+
         else:
             # If we are trying to set to an index which does not currently exist in _strvalue then extend it to the
             # appropriate length
@@ -436,25 +436,25 @@ class SplittableInt(object):
                 new_str_value = [0] * (key + 1)
                 new_str_value[:len(self)] = self._strvalue
                 self._strvalue = new_str_value
-            
+
             self._strvalue[key] = value
-            
+
             for name, index in self._name_lookup.items():
                 if index == key:
                     object.__setattr__(self, name, value)
-                
+
             self._calculate_value_from_str_value()
-        
+
     def __setattr__(self, name, value):
         # if the attribute is a special value, update the index value which will in turn update the attribute value
         if (name != '_name_lookup' and name in self._name_lookup.keys()):
             self[self._name_lookup[name]] = value
         else:
             object.__setattr__(self, name, value)
-    
+
     def __str__(self):
         return str(self._value)
-    
+
     def __repr__(self):
         return 'SplittableInt(%r, name_mapping_dict=%r)' % (self._value, self._name_lookup)
 
@@ -492,16 +492,16 @@ class SplittableInt(object):
     def __ge__(self, other):
         return self._compare(other, operator.ge)
 
-            
+
 class BitwiseInt(SplittableInt):
     """
     A class to hold an integer, of fixed bit-length, which can easily get/set each bit individually.
-    
+
     .. note::
 
         Uses a fixed number of bits.
         Will raise an Error when attempting to access an out-of-range flag.
-    
+
     >>> a = BitwiseInt(511)
     >>> a.flag1
     1
@@ -515,15 +515,15 @@ class BitwiseInt(SplittableInt):
     AttributeError: 'BitwiseInt' object has no attribute 'flag512'
     >>> a.flag512 = 1
     AttributeError: Cannot set a flag that does not exist: flag512
-    
+
     """
-    
+
     def __init__(self, value, num_bits=None):
         """ """ # intentionally empty docstring as all covered in the class docstring.
-        
+
         SplittableInt.__init__(self, value)
         self.flags = ()
-        
+
         #do we need to calculate the number of bits based on the given value?
         self._num_bits = num_bits
         if self._num_bits is None:
@@ -534,12 +534,12 @@ class BitwiseInt(SplittableInt):
             #make sure the number of bits is enough to store the given value.
             if (value >> self._num_bits) > 0:
                 raise ValueError("Not enough bits to store value")
-        
+
         self._set_flags_from_value()
-    
+
     def _set_flags_from_value(self):
         all_flags = []
-        
+
         # Set attributes "flag[n]" to 0 or 1
         for i in range(self._num_bits):
             flag_name = 1 << i
@@ -549,7 +549,7 @@ class BitwiseInt(SplittableInt):
             # Add to list off all flags
             if flag_value:
                 all_flags.append(flag_name)
-            
+
             self.flags = tuple(all_flags)
 
     def _set_value_from_flags(self):
@@ -577,7 +577,7 @@ class BitwiseInt(SplittableInt):
         self._value += value
         self._set_flags_from_value()
         return self
-        
+
     def __setattr__(self, name, value):
         # Allow setting of the attribute flags
         # Are we setting a flag?
@@ -585,7 +585,7 @@ class BitwiseInt(SplittableInt):
             #true and false become 1 and 0
             if not isinstance(value, bool):
                 raise TypeError("Can only set bits to True or False")
-            
+
             # Setting an existing flag?
             if hasattr(self, name):
                 #which flag?
@@ -595,11 +595,11 @@ class BitwiseInt(SplittableInt):
                     self |= flag_value
                 else:
                     self &= ~flag_value
-            
+
             # Fail if an attempt has been made to set a flag that does not exist
             else:
                 raise AttributeError("Cannot set a flag that does not exist: %s" % name)
-            
+
         # If we're not setting a flag, then continue as normal
         else:
             SplittableInt.__setattr__(self, name, value)
@@ -607,9 +607,9 @@ class BitwiseInt(SplittableInt):
 
 class PPDataProxy(object):
     """A reference to the data payload of a single PP field."""
-    
+
     __slots__ = ('path', 'offset', 'data_len', 'lbpack')
-    
+
     def __init__(self, path, offset, data_len, lbpack):
         self.path = path
         self.offset = offset
@@ -617,8 +617,8 @@ class PPDataProxy(object):
         self.lbpack = lbpack
 
     # NOTE:
-    # "__getstate__" and "__setstate__" functions are defined here to provide a custom interface for Pickle 
-    #  : Pickle "normal" behaviour is just to save/reinstate the object dictionary 
+    # "__getstate__" and "__setstate__" functions are defined here to provide a custom interface for Pickle
+    #  : Pickle "normal" behaviour is just to save/reinstate the object dictionary
     #  : that won't work here, because the use of __slots__ means **there is no object dictionary**
     def __getstate__(self):
         # object state capture method for Pickle.dump()
@@ -638,9 +638,9 @@ class PPDataProxy(object):
     def load(self, data_shape, data_type, mdi, deferred_slice):
         """
         Load the corresponding proxy data item and perform any deferred slicing.
-        
+
         Args:
-        
+
         * data_shape (tuple of int):
             The data shape of the proxy data item.
         * data_type (:class:`numpy.dtype`):
@@ -649,21 +649,21 @@ class PPDataProxy(object):
             The missing data indicator value.
         * deferred_slice (tuple):
             The deferred slice to be applied to the proxy data item.
-        
+
         Returns:
             :class:`numpy.ndarray`
-        
+
         """
         # Load the appropriate proxy data conveniently with a context manager.
         with open(self.path, 'rb') as pp_file:
             pp_file.seek(self.offset, os.SEEK_SET)
             data = _read_data(pp_file, self.lbpack, self.data_len, data_shape, data_type, mdi)
-                
-        # Identify which index items in the deferred slice are tuples. 
+
+        # Identify which index items in the deferred slice are tuples.
         tuple_dims = [i for i, value in enumerate(deferred_slice) if isinstance(value, tuple)]
-        
+
         # Whenever a slice consists of more than one tuple index item, numpy does not slice the
-        # data array as we want it to. We therefore require to split the deferred slice into 
+        # data array as we want it to. We therefore require to split the deferred slice into
         # multiple slices and consistently slice the data with one slice per tuple.
         if len(tuple_dims) > 1:
             # Identify which index items in the deferred slice are single scalar values.
@@ -676,11 +676,11 @@ class PPDataProxy(object):
             # to be full slices over their dimension.
             for dim in tuple_dims[1:]:
                 tuple_slice[dim] = slice(None)
-            
+
             # Perform the deferred slice containing only the first tuple index item.
             payload = data[tuple_slice]
-            
-            # Re-slice the data consistently with the next single tuple index item. 
+
+            # Re-slice the data consistently with the next single tuple index item.
             for dim in tuple_dims[1:]:
                 # Identify all those pre-sliced collapsed dimensions less than
                 # the dimension of the current slice tuple index item.
@@ -694,7 +694,7 @@ class PPDataProxy(object):
             # The deferred slice contains no more than one tuple index item, so
             # it's safe to slice the data directly.
             payload = data[deferred_slice]
-        
+
         return payload
 
     def __eq__(self, other):
@@ -733,14 +733,14 @@ def _read_data(pp_file, lbpack, data_len, data_shape, data_type, mdi):
     if not data.dtype.isnative:
         data.byteswap(True)
         data.dtype = data.dtype.newbyteorder('=')
-        
+
     # Reform in row-column order
     data.shape = data_shape
 
-    # Mask the array? 
+    # Mask the array?
     if mdi in data:
         data = ma.masked_values(data, mdi, copy=False)
-    
+
     return data
 
 
@@ -777,7 +777,7 @@ class PPField(object):
     A generic class for PP fields - not specific to a particular header release number.
 
     A PPField instance can easily access the PP header "words" as attributes with some added useful capabilities::
-        
+
         for field in iris.fileformats.pp.load(filename):
             print field.lbyr
             print field.lbuser
@@ -785,7 +785,7 @@ class PPField(object):
             print field.lbtim
             print field.lbtim.ia
             print field.t1
-    
+
     """
 
     # NB. Subclasses must define the attribute HEADER_DEFN to be their
@@ -798,12 +798,12 @@ class PPField(object):
     def __init__(self):
         """
         PPField instances are always created empty, and attributes are added subsequently.
-        
+
         .. seealso::
             For PP field loading see :func:`load`.
-        
+
         """
-    
+
     @abc.abstractproperty
     def t1(self):
         pass
@@ -817,7 +817,7 @@ class PPField(object):
 
         # Define an ordering on the basic header names
         attribute_priority_lookup = {name: loc[0] for name, loc in self.HEADER_DEFN}
-        
+
         # With the attributes sorted the order will remain stable if extra attributes are added.
         public_attribute_names =  attribute_priority_lookup.keys() + EXTRA_DATA.values()
         self_attrs = [(name, getattr(self, name, None)) for name in public_attribute_names]
@@ -829,10 +829,10 @@ class PPField(object):
             else:
                 self_attrs.append( ('unloaded_data_manager', self._data_manager) )
                 self_attrs.append( ('unloaded_data_proxy', self._data) )
-            
+
         # sort the attributes by position in the pp header followed, then by alphabetical order.
         attributes = sorted(self_attrs, key=lambda pair: (attribute_priority_lookup.get(pair[0], 999), pair[0]) )
-        
+
         return 'PP Field' + ''.join(['\n   %s: %s' % (k, v) for k, v in attributes]) + '\n'
 
     @property
@@ -859,7 +859,7 @@ class PPField(object):
         self._lbcode = new_value
 
     lbcode = property(lambda self: self._lbcode, _lbcode_setter)
-    
+
     # lbpack
     def _lbpack_setter(self, new_value):
         if not isinstance(new_value, SplittableInt):
@@ -874,10 +874,10 @@ class PPField(object):
     def _lbproc_setter(self, new_value):
         if not isinstance(new_value, BitwiseInt):
             new_value = BitwiseInt(new_value, num_bits=18)
-        self._lbproc = new_value    
+        self._lbproc = new_value
 
     lbproc = property(lambda self: self._lbproc, _lbproc_setter)
-    
+
     @property
     def data(self):
         """The :class:`numpy.ndarray` representing the multidimensional data of the pp file"""
@@ -900,15 +900,15 @@ class PPField(object):
 
     def _read_extra_data(self, pp_file, file_reader, extra_len):
         """Read the extra data section and update the self appropriately."""
-        
+
         # While there is still extra data to decode run this loop
         while extra_len > 0:
             extra_int_code = struct.unpack_from('>L', file_reader(PP_WORD_DEPTH))[0]
             extra_len -= PP_WORD_DEPTH
-            
+
             ib = extra_int_code % 1000
             ia = extra_int_code // 1000
-            
+
             data_len = ia * PP_WORD_DEPTH
 
             if ib == 10:
@@ -925,9 +925,9 @@ class PPField(object):
                 setattr(self, attr_name, values)
             else:
                 raise ValueError('Unknown IB value for extra data: %s' % ib)
-            
+
             extra_len -= data_len
-            
+
     @property
     def x_bounds(self):
         if hasattr(self, "x_lower_bound") and hasattr(self, "x_upper_bound"):
@@ -937,26 +937,26 @@ class PPField(object):
     def y_bounds(self):
         if hasattr(self, "y_lower_bound") and hasattr(self, "y_upper_bound"):
             return np.column_stack((self.y_lower_bound, self.y_upper_bound))
-        
+
     def save(self, file_handle):
         """
         Save the PPField to the given file object (typically created with :func:`open`).
-        
+
         ::
-        
+
             # to append the field to a file
             a_pp_field.save(open(filename, 'ab'))
-            
+
             # to overwrite/create a file
             a_pp_field.save(open(filename, 'wb'))
-        
-        
+
+
         .. note::
 
             The fields which are automatically calculated are: 'lbext',
             'lblrec' and 'lbuser[0]'. Some fields are not currently
             populated, these are: 'lbegin', 'lbnrec', 'lbuser[1]'.
-            
+
         """
 
         # Before we can actually write to file, we need to calculate the header elements.
@@ -964,7 +964,7 @@ class PPField(object):
         data = self.data
         if isinstance(data, ma.core.MaskedArray):
             data = data.filled(fill_value=self.bmdi)
-        
+
         if data.dtype.newbyteorder('>') != data.dtype:
             # take a copy of the data when byteswapping
             data = data.byteswap(False)
@@ -1100,12 +1100,12 @@ class PPField(object):
 
     def regular_points(self, xy):
         """Return regular points from the PPField, or fail if not regular.
-        
+
         Args:
-        
+
             * xy - a string, "x" or "y" to specify the dimension for which to return points.
-            
-        """ 
+
+        """
         if xy.lower() == "x":
             bz = self.bzx
             bd = self.bdx
@@ -1116,17 +1116,17 @@ class PPField(object):
             count = self.lbrow
         else:
             raise ValueError("'x' or 'y' not supplied")
-         
+
         return (bz + bd) + bd * np.arange(count, dtype=np.float32)
 
-    def regular_bounds(self, xy): 
+    def regular_bounds(self, xy):
         """Return regular bounds from the PPField, or fail if not regular.
-        
+
         Args:
-        
+
             * xy - a string, "x" or "y" to specify the dimension for which to return points.
-            
-        """ 
+
+        """
         if xy.lower() == "x":
             delta = 0.5 * self.bdx
         elif xy.lower() == "y":
@@ -1134,23 +1134,23 @@ class PPField(object):
         else:
             raise ValueError("'x' or 'y' not supplied")
 
-        points = self.regular_points(xy) 
-        return np.concatenate([[points - delta], [points + delta]]).T 
+        points = self.regular_points(xy)
+        return np.concatenate([[points - delta], [points + delta]]).T
 
     def time_unit(self, time_unit, epoch='epoch'):
         return iris.unit.Unit('%s since %s' % (time_unit, epoch), calendar=self.calendar)
 
     def coord_system(self):
         """Return a CoordSystem for this PPField.
-    
+
         Returns:
             Currently, a :class:`~iris.coord_systems.GeogCS` or :class:`~iris.coord_systems.RotatedGeogCS`.
-    
+
         """
         geog_cs =  iris.coord_systems.GeogCS(EARTH_RADIUS)
         if self.bplat != 90.0 or self.bplon != 0.0:
             geog_cs = iris.coord_systems.RotatedGeogCS(self.bplat, self.bplon, ellipsoid=geog_cs)
-        
+
         return geog_cs
 
     def _x_coord_name(self):
@@ -1166,7 +1166,7 @@ class PPField(object):
         if isinstance(self.coord_system(), iris.coord_systems.RotatedGeogCS):
             y_name = "grid_latitude"
         return y_name
-    
+
     def read_data(self, ff_file, pp_data_depth, pp_data_shape, pp_data_type):
         return _read_data(ff_file, self.lbpack, pp_data_depth, pp_data_shape, pp_data_type, self.bmdi)
 
@@ -1220,7 +1220,7 @@ class PPField(object):
 class PPField2(PPField):
     """
     A class to hold a single field from a PP file, with a header release number of 2.
-    
+
     """
     HEADER_DEFN = _header_defn(2)
 
@@ -1230,7 +1230,7 @@ class PPField2(PPField):
         if not hasattr(self, '_t1'):
             self._t1 = netcdftime.datetime(self.lbyr, self.lbmon, self.lbdat, self.lbhr, self.lbmin)
         return self._t1
-    
+
     def _set_t1(self, dt):
         self.lbyr = dt.year
         self.lbmon = dt.month
@@ -1240,7 +1240,7 @@ class PPField2(PPField):
         self.lbday = int(dt.strftime('%j'))
         if hasattr(self, '_t1'):
             delattr(self, '_t1')
-        
+
     t1 = property(_get_t1, _set_t1, None,
         "A netcdftime.datetime object consisting of the lbyr, lbmon, lbdat, lbhr, and lbmin attributes.")
 
@@ -1265,7 +1265,7 @@ class PPField2(PPField):
 class PPField3(PPField):
     """
     A class to hold a single field from a PP file, with a header release number of 3.
-    
+
     """
     HEADER_DEFN = _header_defn(3)
 
@@ -1275,7 +1275,7 @@ class PPField3(PPField):
         if not hasattr(self, '_t1'):
             self._t1 = netcdftime.datetime(self.lbyr, self.lbmon, self.lbdat, self.lbhr, self.lbmin, self.lbsec)
         return self._t1
-    
+
     def _set_t1(self, dt):
         self.lbyr = dt.year
         self.lbmon = dt.month
@@ -1285,7 +1285,7 @@ class PPField3(PPField):
         self.lbsec = dt.second
         if hasattr(self, '_t1'):
             delattr(self, '_t1')
-        
+
     t1 = property(_get_t1, _set_t1, None,
         "A netcdftime.datetime object consisting of the lbyr, lbmon, lbdat, lbhr, lbmin, and lbsec attributes.")
 
@@ -1331,31 +1331,31 @@ def make_pp_field(header_values):
 def load(filename, read_data=False):
     """
     Return an iterator of PPFields given a filename.
-    
+
     Args:
-    
+
     * filename - string of the filename to load.
-    
+
     Kwargs:
-    
-    * read_data - boolean 
+
+    * read_data - boolean
         Flag whether or not the data should be read, if False an empty data manager
         will be provided which can subsequently load the data on demand. Default False.
-        
+
     To iterate through all of the fields in a pp file::
-    
+
         for field in iris.fileformats.pp.load(filename):
             print field
-    
+
     """
-    
+
     pp_file = open(filename, 'rb')
-        
+
     # Get a reference to the seek method on the file
     # (this is accessed 3* #number of headers so can provide a small performance boost)
     pp_file_seek = pp_file.seek
     pp_file_read = pp_file.read
-        
+
     # Keep reading until we reach the end of file
     while True:
         # Move past the leading header length word
@@ -1371,25 +1371,25 @@ def load(filename, read_data=False):
 
         # Make a PPField of the appropriate sub-class (depends on header release number)
         pp_field = make_pp_field(header)
-        
+
         # Skip the trailing 4-byte word containing the header length
         pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)
-        
+
         # Read the word telling me how long the data + extra data is
         # This value is # of bytes
         len_of_data_plus_extra = struct.unpack_from('>L', pp_file_read(PP_WORD_DEPTH))[0]
         if len_of_data_plus_extra != pp_field.lblrec * PP_WORD_DEPTH:
             raise ValueError('LBLREC has a different value to the integer recorded after the '
-                             'header in the file (%s and %s).' % (pp_field.lblrec * PP_WORD_DEPTH, 
+                             'header in the file (%s and %s).' % (pp_field.lblrec * PP_WORD_DEPTH,
                                                                   len_of_data_plus_extra))
-        
+
         # calculate the extra length in bytes
         extra_len = pp_field.lbext * PP_WORD_DEPTH
-        
+
         # Derive size and datatype of payload
         data_len = len_of_data_plus_extra - extra_len
         data_type = LBUSER_DTYPE_LOOKUP.get(pp_field.lbuser[0], LBUSER_DTYPE_LOOKUP['default'])
-        
+
         data_shape = (pp_field.lbrow, pp_field.lbnpt)
 
         if read_data:
@@ -1411,7 +1411,7 @@ def load(filename, read_data=False):
         pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)
 
         yield pp_field
-        
+
     pp_file.close()
 
 
@@ -1429,7 +1429,7 @@ def _ensure_load_rules_loaded():
 
     if _cross_reference_rules is None:
         basepath = iris.config.CONFIG_PATH
-        _cross_reference_rules = rules.RulesContainer(os.path.join(basepath, 'pp_cross_reference_rules.txt'), 
+        _cross_reference_rules = rules.RulesContainer(os.path.join(basepath, 'pp_cross_reference_rules.txt'),
                                                            rule_type=rules.ObjectReturningRule)
 
 
@@ -1439,7 +1439,7 @@ def add_load_rules(filename):
 
     Registered files are processed after the standard conversion rules, and in
     the order they were registered.
-    
+
     """
     _ensure_load_rules_loaded()
     _load_rules.import_rules(filename)
@@ -1447,10 +1447,10 @@ def add_load_rules(filename):
 
 def reset_load_rules():
     """Resets the PP load process to use only the standard conversion rules."""
-    
+
     # Uses this module-level variable
     global _load_rules
-    
+
     _load_rules = None
 
 
@@ -1472,7 +1472,7 @@ def add_save_rules(filename):
 
     Registered files are processed after the standard conversion rules, and in
     the order they were registered.
-    
+
     """
     _ensure_save_rules_loaded()
     _save_rules.import_rules(filename)
@@ -1480,30 +1480,30 @@ def add_save_rules(filename):
 
 def reset_save_rules():
     """Resets the PP save process to use only the standard conversion rules."""
-    
+
     # Uses this module-level variable
     global _save_rules
-    
+
     _save_rules = None
 
 
 def load_cubes(filenames, callback=None):
     """
     Loads cubes from a list of pp filenames.
-    
+
     Args:
-    
+
     * filenames - list of pp filenames to load
-    
+
     Kwargs:
-    
+
     * callback - a function which can be passed on to :func:`iris.io.run_callback`
-    
+
     .. note::
 
-        The resultant cubes may not be in the order that they are in the file (order 
+        The resultant cubes may not be in the order that they are in the file (order
         is not preserved when there is a field with orography references)
-         
+
     """
     return _load_cubes_variable_loader(filenames, callback, load)
 
@@ -1520,25 +1520,25 @@ def _load_cubes_variable_loader(filenames, callback, loading_function,
 def save(cube, target, append=False, field_coords=None):
     """
     Use the PP saving rules (and any user rules) to save a cube to a PP file.
-    
+
     Args:
 
         * cube         - A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of cubes.
         * target       - A filename or open file handle.
 
     Kwargs:
-    
-        * append       - Whether to start a new file afresh or add the cube(s) to the end of the file. 
+
+        * append       - Whether to start a new file afresh or add the cube(s) to the end of the file.
                          Only applicable when target is a filename, not a file handle.
                          Default is False.
 
         * field_coords - list of 2 coords or coord names which are to be used for
-                         reducing the given cube into 2d slices, which will ultimately 
-                         determine the x and y coordinates of the resulting fields. 
+                         reducing the given cube into 2d slices, which will ultimately
+                         determine the x and y coordinates of the resulting fields.
                          If None, the final two  dimensions are chosen for slicing.
 
     See also :func:`iris.io.save`.
-    
+
     """
 
     # Open issues
@@ -1633,7 +1633,7 @@ def save(cube, target, append=False, field_coords=None):
         # recording the rules that were used
         rules_result = _save_rules.verify(slice2D, pp_field)
         verify_rules_ran = rules_result.matching_rules
-        
+
         # Log the rules used
         iris.fileformats.rules.log('PP_SAVE', target if isinstance(target, basestring) else target.name, verify_rules_ran)
 

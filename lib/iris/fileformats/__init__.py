@@ -97,7 +97,7 @@ FORMAT_AGENT.add_spec(FormatSpec('NetCDF_v4',
 
 
 _nc_dap = FormatSpec('NetCDF OPeNDAP',
-                     fp.URI_PROTOCOL, 
+                     fp.URI_PROTOCOL,
                      lambda protocol: protocol in ['http', 'https'],
                      netcdf.load_cubes,
                      priority=6)

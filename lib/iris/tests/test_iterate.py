@@ -66,7 +66,7 @@ class TestIterateFunctions(tests.IrisTest):
         iris.iterate.izip(*cubes, coords=self.coord_names)
         cubes = tuple(cubes)
         iris.iterate.izip(*cubes, coords=self.coord_names)
-    
+
     def test_izip_returns_iterable(self):
         try:
             # Raises an exception if arg is not iterable
@@ -92,7 +92,7 @@ class TestIterateFunctions(tests.IrisTest):
         # raise an exception
         with self.assertRaises(ValueError):
             iris.iterate.izip(self.cube_a, other_cube)
-    
+
     def test_izip_missing_slice_coords(self):
         # Remove latitude coordinate from one of the cubes
         other_cube = self.cube_b.copy()
@@ -244,7 +244,7 @@ class TestIterateFunctions(tests.IrisTest):
             self.assertEqual(slice_b_truth, slice_b)
             count += 1
         self.assertEqual(count, nslices)
-    
+
     def test_izip_extra_dim(self):
         big_cube = self.cube_a
         # Remove first data dimension and associated coords
@@ -255,7 +255,7 @@ class TestIterateFunctions(tests.IrisTest):
         little_cube.remove_coord('model_level_number')
         little_cube.remove_coord('level_height')
         little_cube.remove_coord('sigma')
-        # little_slice should remain the same as there are no other data dimensions 
+        # little_slice should remain the same as there are no other data dimensions
         little_slice_truth = little_cube
         i = 0
         for big_slice, little_slice in iris.iterate.izip(big_cube, little_cube,
@@ -266,7 +266,7 @@ class TestIterateFunctions(tests.IrisTest):
             i += 1
         nslices = big_cube.shape[0]
         self.assertEqual(nslices, i)
-            
+
         # Leave middle coord but move it from a data dimension to a scalar coord by slicing
         little_cube = self.cube_b[:, 0, :]
 
@@ -276,7 +276,7 @@ class TestIterateFunctions(tests.IrisTest):
         with self.assertRaises(iris.exceptions.CoordinateNotFoundError):
             iris.iterate.izip(big_cube, little_cube, coords=self.coord_names)
 
-        #little_slice should remain the same as there are no other data dimensions 
+        #little_slice should remain the same as there are no other data dimensions
         little_slice_truth = little_cube
         i = 0
         for big_slice, little_slice in iris.iterate.izip(big_cube, little_cube,
@@ -310,7 +310,7 @@ class TestIterateFunctions(tests.IrisTest):
             count += 1
         self.assertEqual(count, nslices)
 
-    def test_izip_different_shaped_coords(self): 
+    def test_izip_different_shaped_coords(self):
         other = self.cube_b[0:-1]
         # Different 'z' coord shape - expect a ValueError
         with self.assertRaises(ValueError):
@@ -368,7 +368,7 @@ class TestIterateFunctions(tests.IrisTest):
         cube = self.cube_b.copy()
         cube.transpose([0, 2, 1])     #switch order of lat and lon
         nslices = self.cube_b.shape[0]
-        # Default behaviour: ordered = True 
+        # Default behaviour: ordered = True
         i = 0
         for slice_b, cube_slice in iris.iterate.izip(self.cube_b, cube,
                                                      coords=self.coord_names,
@@ -409,7 +409,7 @@ class TestIterateFunctions(tests.IrisTest):
             self.assertEqual(vertical_mean, mean_slice)
             i += 1
         self.assertEqual(i, nslices)
-        
+
     def test_izip_nd_non_ortho(self):
         cube1 = iris.cube.Cube(np.zeros((5, 5, 5)))
         cube1.add_aux_coord(iris.coords.AuxCoord(np.arange(5),
@@ -433,10 +433,10 @@ class TestIterateFunctions(tests.IrisTest):
         cube1.add_aux_coord(iris.coords.AuxCoord(np.arange(25, dtype='i8').reshape(5, 5),
                                                  long_name='x'), [3, 4])
         cube2 = cube1.copy()
-        
+
         # The two coords are orthogonal so we can use them with izip
         it = iris.iterate.izip(cube1, cube2, coords=['y', 'x'])
-        cubes = list(np.array(list(it)).flatten()) 
+        cubes = list(np.array(list(it)).flatten())
         self.assertCML(cubes, ('iterate', 'izip_nd_ortho.cml'))
 
     def _check_2d_slices(self):
