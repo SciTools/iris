@@ -295,22 +295,58 @@ class IrisTest(unittest.TestCase):
         pretty_xml = doc.toprettyxml(indent="  ")
         reference_path = get_result_path(reference_filename)
         self._check_same(pretty_xml, reference_path, reference_filename, type_comparison_name='XML')
-        
-    def assertArrayEqual(self, a, b):
-        np.testing.assert_array_equal(a, b)
 
-    def assertArrayAlmostEqual(self, a, b):
-        np.testing.assert_array_almost_equal(a, b)
+    def _array_compare(self, a, b, func, *args, **kwargs):
+        if isinstance(b, basestring):
+            reference_path = get_result_path(b)
+            if os.path.isfile(reference_path):
+                result = np.load(reference_path)
+                if isinstance(result, np.lib.npyio.NpzFile):
+                    self.assertIsInstance(a, ma.MaskedArray,
+                                          'Array was not a masked array.')
+                    # Clear the array where it is masked to avoid any
+                    # non-initialised data.
+                    a.data[a.mask] = a.fill_value
+                    func(a.data, result['data'], *args, **kwargs)
+                    np.testing.assert_array_equal(a.mask, result['mask'],
+                                                  *args, **kwargs)
+                else:
+                    func(a, result, *args, **kwargs)
+            else:
+                self._ensure_folder(reference_path)
+                logger.warning('Creating result file: %s', reference_path)
+                if isinstance(a, ma.MaskedArray):
+                    # Clear the array where it is masked to avoid any
+                    # non-initialised data.
+                    data = a.data[a.mask] = a.fill_value
+                    np.savez(open(reference_path, 'wb'), data=data,
+                             mask=a.mask)
+                else:
+                    np.save(open(reference_path, 'wb'), a)
+        else:
+            if isinstance(a, ma.MaskedArray) and isinstance(b, ma.MaskedArray):
+                np.testing.assert_array_equal(a.mask, b.mask, *args, **kwargs)
+                func(a, b, *args, **kwargs)
+            else:
+                func(a, b, *args, **kwargs)
 
-    def assertMaskedArrayAlmostEqual(self, a, b):
+    def assertArrayEqual(self, a, b, *args, **kwargs):
+        self._array_compare(a, b, np.testing.assert_array_equal,
+                            *args, **kwargs)
+
+    def assertArrayAlmostEqual(self, a, b, *args, **kwargs):
+        self._array_compare(a, b, np.testing.assert_array_almost_equal,
+                            *args, **kwargs)
+
+    def assertMaskedArrayAlmostEqual(self, a, b, *args, **kwargs):
         """
         Check that masked arrays are almost equal. This requires the
         masks to be identical, and the unmasked values to be almost
         equal.
 
         """
-        np.testing.assert_array_equal(a.mask, b.mask)
-        np.testing.assert_array_almost_equal(a, b)
+        self._array_compare(a, b, np.testing.assert_array_almost_equal,
+                            *args, **kwargs)
 
     def assertArrayAllClose(self, a, b, rtol=1.0e-7, atol=0.0, **kwargs):
         """
