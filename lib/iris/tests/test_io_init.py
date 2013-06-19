@@ -22,8 +22,10 @@ Test the io/__init__.py module.
 import iris.tests as tests
 
 import unittest
+from io import BytesIO
 
 import iris.fileformats as iff
+import iris.io.format_picker as fp
 import iris.io
 
 
@@ -92,6 +94,20 @@ class TestFileFormatPicker(tests.IrisTest):
             with open(test_path, 'r') as test_file:
                 a = iff.FORMAT_AGENT.get_spec(test_path, test_file)
                 self.assertEqual(a.name, expected_format_name)
+
+    def test_format_picker_nodata(self):
+        # The following is to replace the above at some point as no real files
+        # are required.
+        # (Used binascii.unhexlify() to convert from hex to binary)
+
+        # Packaged grib, magic number offset by set length, this length is
+        # specific to WMO bulletin headers
+        binary_string = fp.WMO_BULLETIN_HEADER_LENGTH * '\x00' + 'GRIB'
+        with BytesIO('rw') as bh:
+            bh.write(binary_string)
+            bh.name = 'fake_file_handle'
+            a = iff.FORMAT_AGENT.get_spec(bh.name, bh)
+        self.assertEqual(a.name, 'WMO GRIB Bulletin')
 
     def test_open_dap(self):
         # tests that *ANY* http or https URL is seen as an OPeNDAP service.
