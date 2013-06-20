@@ -45,14 +45,6 @@ def file_walk_relative(top, remove=''):
             yield os.path.join(root, file).replace(remove, '')
 
 
-def std_name_cmd(target_dir):
-    script_path = os.path.join('tools', 'generate_std_names.py')
-    xml_path = os.path.join('etc', 'cf-standard-name-table.xml')
-    module_path = os.path.join(target_dir, 'iris', 'std_names.py')
-    cmd = (sys.executable, script_path, xml_path, module_path)
-    return cmd
-
-
 class TestRunner(setuptools.Command):
     """Run the Iris tests under nose and multiprocessor for performance"""
     description = "run tests under nose and multiprocessor for performance"
@@ -114,26 +106,6 @@ class TestRunner(setuptools.Command):
             exit(1)
 
 
-class MakeStdNames(Command):
-    """
-    Generates the CF standard name module containing mappings from
-    CF standard name to associated metadata.
-    
-    """
-    description = "generate CF standard name module"
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        cmd = std_name_cmd('lib')
-        self.spawn(cmd)
-
-
 class MakePykeRules(Command):
     """
     Compile the PyKE CF-NetCDF loader rule base.
@@ -193,10 +165,6 @@ class BuildPyWithExtras(build_py.build_py):
         # directories are in place.
         build_py.build_py.run(self)
 
-        # Now build the std_names module.
-        cmd = std_name_cmd(self.build_lib)
-        self.spawn(cmd)
-
         # Compile the PyKE rules.
         with self.temporary_path():
             MakePykeRules._pyke_rule_compile()
@@ -234,5 +202,5 @@ setup(
         )
     },
     cmdclass={'test': TestRunner, 'build_py': BuildPyWithExtras, 
-              'std_names': MakeStdNames, 'pyke_rules': MakePykeRules},
+              'pyke_rules': MakePykeRules},
 )

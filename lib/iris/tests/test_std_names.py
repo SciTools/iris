@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,7 +18,7 @@
 import unittest
 
 from iris.std_names import STD_NAMES
-
+import iris.unit
 
 class TestStandardNames(unittest.TestCase):
     """
@@ -45,6 +45,24 @@ class TestStandardNames(unittest.TestCase):
         self.assertSetEqual(invalid_nameset - keyset, invalid_nameset,
                             "\nInvalid standard name(s) present in STD_NAMES")
 
+    def test_units(self):
+        # Check we have a dict
+        self.assertIsInstance(STD_NAMES, dict)
+        
+        for key in STD_NAMES:
+            c_units = STD_NAMES[key].get('canonical_units')
+            
+            # Check we get a string
+            self.assertIsInstance(c_units, str)
+            
+            # Check if the unit is iris.units compatible
+            try:
+                i_unit = iris.unit.Unit(c_units)
+            except ValueError:
+                report = '''The unit string '{u}' referenced by '{sn}' '''
+                report += ' is not recognised by iris.unit.Unit'
+                self.fail(report.format(u=c_units, sn=key))
+            
 
 if __name__ == "__main__":
     unittest.main()
