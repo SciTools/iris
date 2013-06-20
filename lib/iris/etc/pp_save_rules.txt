@@ -657,6 +657,13 @@ THEN
 
 # CFname mega rule
 IF
-    (cm.name(),cm.units) in iris.fileformats.um_cf_map.CF_TO_LBFC
+    (cm.standard_name, None, cm.units) in iris.fileformats.um_cf_map.CF_TO_LBFC
 THEN
-    pp.lbfc = iris.fileformats.um_cf_map.CF_TO_LBFC[(cm.name(),cm.units)]
+    pp.lbfc = iris.fileformats.um_cf_map.CF_TO_LBFC[(cm.standard_name, None, cm.units)]
+
+# CFname mega rule
+IF
+    (None, cm.long_name, cm.units) in iris.fileformats.um_cf_map.CF_TO_LBFC
+THEN
+    pp.lbfc = iris.fileformats.um_cf_map.CF_TO_LBFC[(None, cm.long_name, cm.units)]
+
