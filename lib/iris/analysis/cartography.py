@@ -61,6 +61,8 @@ def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
     """
     Convert rotated-pole lons and lats to unrotated ones.
 
+    Example::
+
         lons, lats = unrotate_pole(grid_lons, grid_lats, pole_lon, pole_lat)
 
     .. note:: Uses proj.4 to perform the conversion.
@@ -80,6 +82,8 @@ def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
 def rotate_pole(lons, lats, pole_lon, pole_lat):
     """
     Convert arrays of lons and lats to ones on a rotated pole.
+
+    Example::
 
         grid_lons, grid_lats = rotate_pole(lons, lats, pole_lon, pole_lat)
 
@@ -183,7 +187,8 @@ def get_xy_grids(cube):
 
         * cube - The cube for which to generate 2D X and Y points.
 
-    Example:
+    Example::
+
         x, y = get_xy_grids(cube)
 
     """
@@ -209,10 +214,11 @@ def get_xy_contiguous_bounded_grids(cube):
     Return 2d arrays for x and y bounds.
     
     Returns array of shape (n+1, m+1).
-    ::
-    
-        xs, ys = get_xy_contiguous_bounded_grids()
-    
+
+    Example::
+
+        xs, ys = get_xy_contiguous_bounded_grids(cube)
+
     """
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
 
@@ -384,14 +390,14 @@ def cosine_latitude_weights(cube):
 
     Examples:
 
-    Compute weights suitable for averaging type operations:
+    Compute weights suitable for averaging type operations::
 
         from iris.analysis.cartography import cosine_latitude_weights
         cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
         weights = cosine_latitude_weights(cube)
     
     Compute weights suitable for EOF analysis (or other covariance type
-    analyses):
+    analyses)::
 
         import numpy as np
         from iris.analysis.cartography import cosine_latitude_weights
