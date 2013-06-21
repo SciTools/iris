@@ -369,8 +369,8 @@ def cosine_latitude_weights(cube):
     Returns an array of latitude weights, with the same dimensions as
     the cube. The weights are the cosine of latitude.
 
-    This is a 1D latitude weights array, repeated over the non-latitude
-    dimensions.
+    These are n-dimensional latitude weights repeated over the dimensions
+    not covered by the latitude coordinate.
 
     The cube must have a coordinate with 'latitude' in the name. Out of
     range values (greater than 90 degrees or less than -90 degrees) will
@@ -399,7 +399,7 @@ def cosine_latitude_weights(cube):
         weights = np.sqrt(cosine_latitude_weights(cube))
 
     """
-    # Get the latitude coordinate.
+    # Find all latitude coordinates, we want one and only one.
     lat_coords = filter(lambda coord: "latitude" in coord.name(),
                         cube.coords())
     if len(lat_coords) > 1:
@@ -409,12 +409,9 @@ def cosine_latitude_weights(cube):
     except IndexError:
         raise ValueError('Cannot get latitude '
                          'coordinate from cube {!r}.'.format(cube.name()))
-    if lat.ndim > 1:
-        raise iris.exceptions.CoordinateMultiDimError(lat)
 
-    # Get the position of the latitude coordinate.
-    lat_dim = cube.coord_dims(lat)
-    lat_dim = lat_dim[0] if lat_dim else None
+    # Get the dimension position(s) of the latitude coordinate.
+    lat_dims = cube.coord_dims(lat)
 
     # Convert to radians.
     lat = lat.copy()
@@ -432,12 +429,17 @@ def cosine_latitude_weights(cube):
         warnings.warn('Out of range latitude values will be '
                       'clipped to the valid range.',
                       UserWarning)
-    l_weights = np.cos(lat.points).clip(0., 1.)
+    points = lat.points
+    if len(lat_dims) > 1:
+        # Ensure the dimension order of the points array matches the cube.
+        order = np.argsort(lat_dims)
+        points = points.transpose(order)
+    l_weights = np.cos(points).clip(0., 1.)
 
     # Create weights for each grid point.
     broad_weights = iris.util.broadcast_weights(l_weights,
                                                 cube.data,
-                                                (lat_dim,))
+                                                lat_dims)
 
     return broad_weights
 
