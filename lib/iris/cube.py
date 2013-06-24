@@ -603,6 +603,18 @@ class Cube(CFVariableMixin):
         See also :meth:`Cube.remove_coord()<iris.cube.Cube.remove_coord>`.
 
         """
+        if self.coords(coord=coord):
+            raise ValueError('Duplicate coordinates are not permitted.')
+        self._add_distinct_aux_coord(coord, data_dims)
+
+    def _add_distinct_aux_coord(self, coord, data_dims=None):
+        """
+        Add an AuxCoord already known to be different from all existing ones.
+
+        This is just a speedup version of add_aux_coord, to avoid comparing
+        the new coord against all the existing ones.
+
+        """
 
         # Convert to a tuple of integers
         if data_dims is None:
@@ -629,8 +641,6 @@ class Cube(CFVariableMixin):
             raise ValueError('You must supply the data-dimensions for '
                              'multi-valued coordinates.')
 
-        if self.coords(coord=coord):  # TODO: just fail on duplicate object
-            raise ValueError('Duplicate coordinates are not permitted.')
         self._aux_coords_and_dims.append([coord, data_dims])
 
     def add_aux_factory(self, aux_factory):
@@ -669,6 +679,15 @@ class Cube(CFVariableMixin):
         if self.coords(coord=dim_coord):
             raise ValueError('The coordinate already exists on the cube. '
                              'Duplicate coordinates are not permitted.')
+        self._add_distinct_dim_coord(dim_coord, data_dim)
+
+    def _add_distinct_dim_coord(self, dim_coord, data_dim):
+        """
+        Add a DimCoord already known to be different from all existing ones.
+
+        This is just a speedup version of add_dim_coord, to avoid comparing
+        the new coord against all the existing ones.
+        """
         if isinstance(data_dim, collections.Container) and len(data_dim) != 1:
             raise ValueError('The supplied data dimension must be a single '
                              'number.')

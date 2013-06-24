@@ -200,28 +200,37 @@ class CoordAndDims(object):
             dims = [dims]
         self.dims = dims
         
-    def add_coord(self, cube):
+    def add_coord(self, cube, cube_coordnames_used, cube_dims_used):
         added = False
+
+        # Check for unique names, so can use faster add_distinct_xx methods.
+        coord_names_entry = (self.coord.standard_name,
+                             self.coord.long_name)
+        coord_names_unique = coord_names_entry not in cube_coordnames_used
+        if coord_names_unique:
+            cube_coordnames_used.append(coord_names_entry)
 
         # Try to add to dim_coords?
         if isinstance(self.coord, iris.coords.DimCoord) and self.dims:
             if len(self.dims) > 1:
                 raise Exception("Only 1 dim allowed for a DimCoord")
-             
+
             # Does the cube already have a coord for this dim?
-            already_taken = False
-            for coord, coord_dim in cube._dim_coords_and_dims:
-                if coord_dim == self.dims[0]:
-                    already_taken = True
-                    break
-                    
-            if not already_taken:
-                cube.add_dim_coord(self.coord, self.dims[0])
+            coord_dim = self.dims[0]
+            if coord_dim not in cube_dims_used:
+                cube_dims_used.append(coord_dim)
+                if coord_names_unique:
+                    cube._add_distinct_dim_coord(self.coord, coord_dim)
+                else:
+                    cube.add_dim_coord(self.coord, coord_dim)
                 added = True
 
-        # If we didn't add it to dim_coords, add it to aux_coords.                    
+        # If we didn't add it to dim_coords, add it to aux_coords.
         if not added:
-            cube.add_aux_coord(self.coord, self.dims)
+            if coord_names_unique:
+                cube._add_distinct_aux_coord(self.coord, self.dims)
+            else:
+                cube.add_aux_coord(self.coord, self.dims)
         
     def __repr__(self):
         return "<CoordAndDims: %r, %r>" % (self.coord.name, self.dims)
@@ -351,7 +360,8 @@ class Rule(object):
         pass
     
     @abc.abstractmethod
-    def _process_action_result(self, obj, cube):
+    def _process_action_result(self, obj, cube,
+                               cube_coordnames_used, cube_dims_used):
         pass    
     
     def __repr__(self):
@@ -381,7 +391,7 @@ class Rule(object):
         """Simple wrapper onto evaluates_true in the case where cube is None."""
         return self.evaluates_true(None, field)
         
-    def run_actions(self, cube, field):
+    def run_actions(self, cube, field, cube_coordnames_used, cube_dims_used):
         """
         Adds to the given cube based on the return values of all the actions.
     
@@ -410,7 +420,8 @@ class Rule(object):
                 # Run this action.
                 obj = self._exec_actions[i](field, f, pp, grib, cm)
                 # Process the return value (if any), e.g a CM object or None.
-                action_factory = self._process_action_result(obj, cube)
+                action_factory = self._process_action_result(
+                    obj, cube, cube_coordnames_used, cube_dims_used)
                 if action_factory:
                     factories.append(action_factory)
 
@@ -435,7 +446,8 @@ class FunctionRule(Rule):
         # Add to our list of actions.
         exec 'self._exec_actions.append(self._exec_action_%d)' % i
 
-    def _process_action_result(self, obj, cube):
+    def _process_action_result(self, obj, cube,
+                               cube_coordnames_used, cube_dims_used):
         """Process the result of an action."""
 
         factory = None
@@ -443,7 +455,7 @@ class FunctionRule(Rule):
         # NB. The names such as 'CoordAndDims' and 'CellMethod' are defined by
         # the "deferred import" performed by Rule.run_actions() above.
         if isinstance(obj, CoordAndDims):
-            obj.add_coord(cube)
+            obj.add_coord(cube, cube_coordnames_used, cube_dims_used)
 
         #cell methods - not yet implemented
         elif isinstance(obj, CellMethod):
@@ -487,7 +499,7 @@ class FunctionRule(Rule):
 
 class ObjectReturningRule(FunctionRule):
     """A rule which returns a list of objects when its actions are run.""" 
-    def run_actions(self, cube, field):
+    def run_actions(self, cube, field, cube_coordnames_used, cube_dims_used):
         f = pp = grib = field
         cm = cube
         return [action(field, f, pp, grib, cm) for action in self._exec_actions]
@@ -503,7 +515,8 @@ class ProcedureRule(Rule):
         # Add to our list of actions.
         exec 'self._exec_actions.append(self._exec_action_%d)' % i
 
-    def _process_action_result(self, obj, cube):
+    def _process_action_result(self, obj, cube,
+                               cube_coordnames_used, cube_dims_used):
         # This should always be None, as our rules won't create anything.
         pass
             
@@ -628,10 +641,14 @@ class RulesContainer(object):
         """
         matching_rules = []
         factories = []
+        cube_coordnames_used = []
+        cube_dims_used = []
         for rule in self._rules:
             if rule.evaluates_true(cube, field):
                 matching_rules.append(rule)
-                rule_factories = rule.run_actions(cube, field)
+                rule_factories = rule.run_actions(cube, field,
+                                                  cube_coordnames_used,
+                                                  cube_dims_used)
                 if rule_factories:
                     factories.extend(rule_factories)
         return RuleResult(cube, matching_rules, factories)
@@ -805,8 +822,12 @@ def load_cubes(filenames, user_callback, loader):
 
             # Cross referencing
             rules = loader.cross_ref_rules.matching_rules(field)
+            cube_coordnames_used = []
+            cube_dims_used = []
             for rule in rules:
-                reference, = rule.run_actions(cube, field)
+                reference, = rule.run_actions(cube, field,
+                                              cube_coordnames_used,
+                                              cube_dims_used)
                 name = reference.name
                 # Register this cube as a source cube for the named
                 # reference.
