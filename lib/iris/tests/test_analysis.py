@@ -578,76 +578,115 @@ class TestAreaWeightGeneration(tests.IrisTest):
         self.assertArrayAlmostEqual(sumweights, 1)
 
 
+@iris.tests.skip_data
 class TestLatitudeWeightGeneration(tests.IrisTest):
+
     def setUp(self):
-        # construct a 4d cube with global extent
-        ntime = 5
-        nlevs = 3
-        nlons = 144
-        nlats = 73
-        time_values = np.arange(ntime)
-        time_unit = 'days since 2001-01-01 00:00:0.0'
-        cal = 'Gregorian'
-        time_coord = iris.coords.DimCoord(time_values,
-                                          standard_name='time',
-                                          units=iris.unit.Unit(time_unit, cal))
-        lev_values = np.arange(1, nlevs + 1)
-        lev_coord = iris.coords.DimCoord(lev_values,
-                                         long_name='model_level_number',
-                                         units='1')
-        lat_values = np.linspace(-90, 90, nlats)
-        lat_coord = iris.coords.DimCoord(lat_values,
+        path = iris.tests.get_data_path(['NetCDF', 'rotated', 'xyt',
+                                         'small_rotPole_precipitation.nc'])
+        self.cube = iris.load_cube(path)
+        self.cube_dim_lat = self.cube.copy()
+        self.cube_dim_lat.remove_coord('latitude')
+        self.cube_dim_lat.remove_coord('longitude')
+        # The 2d cubes are unrealistic, you would not want to weight by
+        # anything other than grid latitude in real-world scenarios. However,
+        # the technical details are suitable for testing purposes, providing
+        # a nice analog for a 2d latitude coordinate from a curvilinear grid.
+        self.cube_aux_lat = self.cube.copy()
+        self.cube_aux_lat.remove_coord('grid_latitude')
+        self.cube_aux_lat.remove_coord('grid_longitude')
+        self.lat1d = self.cube.coord('grid_latitude').points
+        self.lat2d = self.cube.coord('latitude').points
+
+    def test_cosine_latitude_weights_range(self):
+        # check the range of returned values, needs a cube that spans the full
+        # latitude range
+        lat_coord = iris.coords.DimCoord(np.linspace(-90, 90, 73),
                                          standard_name='latitude',
                                          units=iris.unit.Unit('degrees_north'))
-        lon_values = np.arange(0., 360., 360./nlons)
-        lon_coord = iris.coords.DimCoord(lon_values,
-                                         standard_name='longitude',
-                                         units=iris.unit.Unit('degrees_east'))
-        data = np.ones([ntime, nlevs, nlats, nlons], dtype=np.float64)
-        self.cube = iris.cube.Cube(data, long_name='test_cube', units='1')
-        coords = (time_coord, lev_coord, lat_coord, lon_coord)
-        for icoord, coord in enumerate(coords):
-            self.cube.add_dim_coord(coord, icoord)
-        self.lat_coord = lat_coord.points
-
-    def test_sqrt_cosine_latitude_weights_range(self):
-        # range of weight values
-        weights = iris.analysis.cartography.cosine_latitude_weights(self.cube)
+        cube = iris.cube.Cube(np.ones([73], dtype=np.float64),
+                              long_name='test_cube', units='1')
+        cube.add_dim_coord(lat_coord, 0)
+        weights = iris.analysis.cartography.cosine_latitude_weights(cube)
         self.assertTrue(weights.max() <= 1)
         self.assertTrue(weights.min() >= 0)
 
-    def test_cosine_latitude_weights_std(self):
-        # weights for 4d data
-        weights = iris.analysis.cartography.cosine_latitude_weights(self.cube)
-        self.assertEqual(weights.shape, self.cube.shape)
-        self.assertArrayAlmostEqual(weights[0, 0, :, 0],
-                                    np.cos(np.deg2rad(self.lat_coord)))
+    def test_cosine_latitude_weights_0d(self):
+        # 0d latitude dimension (scalar coordinate)
+        weights = iris.analysis.cartography.cosine_latitude_weights(
+            self.cube_dim_lat[:, 0, :])
+        self.assertEqual(weights.shape, self.cube_dim_lat[:, 0, :].shape)
+        self.assertAlmostEqual(weights[0, 0],
+                               np.cos(np.deg2rad(self.lat1d[0])))
 
-    def test_cosine_latitude_weights_latitude_first(self):
-        # weights for data with latitude first in dimensions
-        order = [2, 0, 1, 3] # (lat, time, level, lon)
-        self.cube.transpose(order)
-        weights = iris.analysis.cartography.cosine_latitude_weights(self.cube)
+    def test_cosine_latitude_weights_1d(self):
+        # 1d latitude coordinate (time, lat, lon)
+        weights = iris.analysis.cartography.cosine_latitude_weights(
+            self.cube_dim_lat)
         self.assertEqual(weights.shape, self.cube.shape)
-        self.assertArrayAlmostEqual(weights[:, 0, 0, 0],
-                                    np.cos(np.deg2rad(self.lat_coord)))
+        self.assertArrayAlmostEqual(weights[0, :, 0],
+                                    np.cos(np.deg2rad(self.lat1d)))
 
-    def test_cosine_latitude_weights_latitude_last(self):
-        # weights for data with latitude last in dimensions
-        order = [0, 1, 3, 2] # (time, level, lon, lat)
-        self.cube.transpose(order)
-        weights = iris.analysis.cartography.cosine_latitude_weights(self.cube)
-        self.assertEqual(weights.shape, self.cube.shape)
-        self.assertArrayAlmostEqual(weights[0, 0, 0, :],
-                                    np.cos(np.deg2rad(self.lat_coord)))
+    def test_cosine_latitude_weights_1d_latitude_first(self):
+        # 1d latitude coordinate with latitude first (lat, time, lon)
+        order = [1, 0, 2] # (lat, time, lon)
+        self.cube_dim_lat.transpose(order)
+        weights = iris.analysis.cartography.cosine_latitude_weights(
+            self.cube_dim_lat)
+        self.assertEqual(weights.shape, self.cube_dim_lat.shape)
+        self.assertArrayAlmostEqual(weights[:, 0, 0],
+                                    np.cos(np.deg2rad(self.lat1d)))
 
-    def test_cosine_latitude_weights_scalar_latitude(self):
-        # weights for cube with a scalar latitude dimension
-        cube = self.cube[:, :, 0, :]
-        weights = iris.analysis.cartography.cosine_latitude_weights(cube)
-        self.assertEqual(weights.shape, cube.shape)
-        self.assertAlmostEqual(weights[0, 0, 0],
-                               np.cos(np.deg2rad(self.lat_coord[0])))
+    def test_cosine_latitude_weights_1d_latitude_last(self):
+        # 1d latitude coordinate with latitude last (time, lon, lat)
+        order = [0, 2, 1] # (time, lon, lat)
+        self.cube_dim_lat.transpose(order)
+        weights = iris.analysis.cartography.cosine_latitude_weights(
+            self.cube_dim_lat)
+        self.assertEqual(weights.shape, self.cube_dim_lat.shape)
+        self.assertArrayAlmostEqual(weights[0, 0, :],
+                                    np.cos(np.deg2rad(self.lat1d)))
+
+    def test_cosine_latitude_weights_2d(self):
+        # 2d latitude coordinate (time, lat, lon)
+        weights = iris.analysis.cartography.cosine_latitude_weights(
+            self.cube_aux_lat)
+        self.assertEqual(weights.shape, self.cube_aux_lat.shape)
+        self.assertArrayAlmostEqual(weights[0, :, :],
+                                    np.cos(np.deg2rad(self.lat2d)))
+
+    def test_cosine_latitude_weights_2d_latitude_first(self):
+        # 2d latitude coordinate with latitude first (lat, time, lon)
+        order = [1, 0, 2] # (lat, time, lon)
+        self.cube_aux_lat.transpose(order)
+        weights = iris.analysis.cartography.cosine_latitude_weights(
+            self.cube_aux_lat)
+        self.assertEqual(weights.shape, self.cube_aux_lat.shape)
+        self.assertArrayAlmostEqual(weights[:, 0, :],
+                                    np.cos(np.deg2rad(self.lat2d)))
+
+    def test_cosine_latitude_weights_2d_latitude_last(self):
+        # 2d latitude coordinate with latitude last (time, lon, lat)
+        order = [0, 2, 1] # (time, lon, lat)
+        self.cube_aux_lat.transpose(order)
+        weights = iris.analysis.cartography.cosine_latitude_weights(
+            self.cube_aux_lat)
+        self.assertEqual(weights.shape, self.cube_aux_lat.shape)
+        self.assertArrayAlmostEqual(weights[0, :, :],
+                                    np.cos(np.deg2rad(self.lat2d.T)))
+
+    def test_cosine_latitude_weights_no_latitude(self):
+        # no coordinate identified as latitude
+        self.cube_dim_lat.remove_coord('grid_latitude')
+        with self.assertRaises(ValueError):
+            weights = iris.analysis.cartography.cosine_latitude_weights(
+                self.cube_dim_lat)
+
+    def test_cosine_latitude_weights_multiple_latitude(self):
+        # two coordinates identified as latitude
+        with self.assertRaises(ValueError):
+            weights = iris.analysis.cartography.cosine_latitude_weights(
+                self.cube)
 
 
 class TestRollingWindow(tests.IrisTest):
