@@ -253,23 +253,28 @@ class FileElement(object):
         return 'FileElement(%r, %r)' % (self._name, self._element_getter_fn)
 
 
-def _read_n(fh, fmt, n):
+def _read_n(fh, fmt, n, offset=None):
+    if offset is not None:
+        fh.seek(offset)
     bytes_read = fh.read(n)
     if len(bytes_read) != n:
         raise EOFError(fh.name)
     return struct.unpack(fmt, bytes_read)[0]
 
 
-MAGIC_NUMBER_32_BIT = FileElement('32-bit magic number', lambda filename, fh: 
+MAGIC_NUMBER_32_BIT = FileElement('32-bit magic number', lambda filename, fh:
                                   _read_n(fh, '>L', 4))
-MAGIC_NUMBER_64_BIT = FileElement('64-bit magic number', lambda filename, fh: 
+
+WMO_BULLETIN_HEADER_LENGTH = 21
+MAGIC_NUMBER_32_BIT_WMO_BULLETIN = FileElement(
+    '32-bit magic number with byte offset', lambda filename,
+    fh: _read_n(fh, '>L', 4, WMO_BULLETIN_HEADER_LENGTH))
+
+MAGIC_NUMBER_64_BIT = FileElement('64-bit magic number', lambda filename, fh:
                                   _read_n(fh, '>Q', 8))
-
-
 FILE_EXTENSION = FileElement('File extension', lambda basename,
                              fh: os.path.splitext(basename)[1])
 LEADING_LINE = FileElement('Leading line', lambda filename, fh: fh.readline())
 URI_PROTOCOL = FileElement('URI protocol',
                            lambda uri, _: decode_uri(uri)[0],
                            requires_fh=False)
-

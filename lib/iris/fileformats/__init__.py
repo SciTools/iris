@@ -71,6 +71,12 @@ FORMAT_AGENT.add_spec(FormatSpec('GRIB',
                                  priority=5))
 
 
+FORMAT_AGENT.add_spec(FormatSpec('WMO GRIB Bulletin',
+                                 fp.MAGIC_NUMBER_32_BIT_WMO_BULLETIN,
+                                 0x47524942,
+                                 grib.load_cubes,
+                                 priority=3))
+
 #
 # netCDF files.
 #
