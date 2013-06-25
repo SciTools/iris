@@ -1195,6 +1195,28 @@ class DimCoord(Coord):
         self.circular = bool(circular)
         """Whether the coordinate wraps by ``coord.units.modulus``."""
 
+    def __deepcopy__(self, memo):
+        # Make a clean copy instead of using copy.deepcopy.
+        # But also bypass points and bounds getters + setters.
+        coord = DimCoord(points=[],
+                         bounds=None,
+                         standard_name=self.standard_name,
+                         long_name=self.long_name,
+                         var_name=self.var_name,
+                         units=self.units,
+                         attributes=self.attributes,
+                         coord_system=self.coord_system,
+                         circular=self.circular)
+        points = self._points
+        if points is not None:
+            points = points.copy()
+        bounds = self._bounds
+        if bounds is not None:
+            bounds = bounds.copy()
+        coord._points = points
+        coord._bounds = bounds
+        return coord
+
     def __eq__(self, other):
         # TODO investigate equality of AuxCoord and DimCoord if circular is
         # False.
@@ -1320,6 +1342,27 @@ class AuxCoord(Coord):
                              coord_system=coord.coord_system)
 
         return new_coord
+
+    def __deepcopy__(self, memo):
+        # Make a clean copy instead of using copy.deepcopy.
+        # But also bypass points and bounds getters + setters.
+        coord = AuxCoord(points=[],
+                         bounds=None,
+                         standard_name=self.standard_name,
+                         long_name=self.long_name,
+                         var_name=self.var_name,
+                         units=self.units,
+                         attributes=self.attributes,
+                         coord_system=self.coord_system)
+        points = self._points
+        if points is not None:
+            points = points.copy()
+        bounds = self._bounds
+        if bounds is not None:
+            bounds = bounds.copy()
+        coord._points = points
+        coord._bounds = bounds
+        return coord
 
     def _sanitise_array(self, src, ndmin):
         # Ensure the array is writeable.
