@@ -69,12 +69,12 @@ def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
 
     """
     src_proj = ccrs.RotatedGeodetic(pole_longitude=pole_lon,
-                                       pole_latitude=pole_lat)
+                                    pole_latitude=pole_lat)
     target_proj = ccrs.Geodetic()
     res = target_proj.transform_points(x=rotated_lons, y=rotated_lats,
                                        src_crs=src_proj)
     unrotated_lon = res[..., 0]
-    unrotated_lat = res[..., 1] 
+    unrotated_lat = res[..., 1]
 
     return unrotated_lon, unrotated_lat
 
@@ -96,7 +96,7 @@ def rotate_pole(lons, lats, pole_lon, pole_lat):
     res = target_proj.transform_points(x=lons, y=lats,
                                        src_crs=src_proj)
     rotated_lon = res[..., 0]
-    rotated_lat = res[..., 1] 
+    rotated_lat = res[..., 1]
 
     return rotated_lon, rotated_lat
 
@@ -196,7 +196,7 @@ def get_xy_grids(cube):
 
     x = x_coord.points
     y = y_coord.points
-    
+
     if x.ndim == y.ndim == 1:
         # Convert to 2D.
         x, y = np.meshgrid(x, y)
@@ -212,7 +212,7 @@ def get_xy_grids(cube):
 def get_xy_contiguous_bounded_grids(cube):
     """
     Return 2d arrays for x and y bounds.
-    
+
     Returns array of shape (n+1, m+1).
 
     Example::
@@ -256,12 +256,15 @@ def _quadrant_area(radian_colat_bounds, radian_lon_bounds, radius_of_earth):
 
     #fill in a new array of areas
     radius_sqr = radius_of_earth ** 2
-    areas = np.ndarray((radian_colat_bounds.shape[0], radian_lon_bounds.shape[0]))
+    areas = np.ndarray((radian_colat_bounds.shape[0],
+                        radian_lon_bounds.shape[0]))
     # we use abs because backwards bounds (min > max) give negative areas.
     for j in range(radian_colat_bounds.shape[0]):
-        areas[j, :] = [(radius_sqr * math.cos(radian_colat_bounds[j, 0]) * (radian_lon_bounds[i, 1] - radian_lon_bounds[i, 0])) - \
-                      (radius_sqr * math.cos(radian_colat_bounds[j, 1]) * (radian_lon_bounds[i, 1] - radian_lon_bounds[i, 0]))   \
-                      for i in range(radian_lon_bounds.shape[0])]
+        areas[j, :] = [(radius_sqr * math.cos(radian_colat_bounds[j, 0]) *
+                       (radian_lon_bounds[i, 1] - radian_lon_bounds[i, 0])) -
+                       (radius_sqr * math.cos(radian_colat_bounds[j, 1]) *
+                       (radian_lon_bounds[i, 1] - radian_lon_bounds[i, 0]))
+                       for i in range(radian_lon_bounds.shape[0])]
 
     return np.abs(areas)
 
@@ -270,7 +273,8 @@ def area_weights(cube, normalize=False):
     """
     Returns an array of area weights, with the same dimensions as the cube.
 
-    This is a 2D lat/lon area weights array, repeated over the non lat/lon dimensions.
+    This is a 2D lat/lon area weights array, repeated over the non lat/lon
+    dimensions.
 
     Args:
 
@@ -283,7 +287,8 @@ def area_weights(cube, normalize=False):
         If False, weights are grid cell areas. If True, weights are grid
         cell areas divided by the total grid area.
 
-    The cube must have coordinates 'latitude' and 'longitude' with contiguous bounds.
+    The cube must have coordinates 'latitude' and 'longitude' with contiguous
+    bounds.
 
     Area weights are calculated for each lat/lon cell as:
 
@@ -395,7 +400,7 @@ def cosine_latitude_weights(cube):
         from iris.analysis.cartography import cosine_latitude_weights
         cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
         weights = cosine_latitude_weights(cube)
-    
+
     Compute weights suitable for EOF analysis (or other covariance type
     analyses)::
 
@@ -494,11 +499,11 @@ def project(cube, target_proj, nx=None, ny=None):
     try:
         lat_coord, lon_coord = _get_lat_lon_coords(cube)
     except IndexError:
-        raise ValueError('Cannot get latitude/longitude ' \
+        raise ValueError('Cannot get latitude/longitude '
                          'coordinates from cube {!r}.'.format(cube.name()))
 
     if lat_coord.coord_system != lon_coord.coord_system:
-        raise ValueError('latitude and longitude coords appear to have' \
+        raise ValueError('latitude and longitude coords appear to have '
                          'different coordinates systems.')
 
     if lon_coord.units != 'degrees':
@@ -511,7 +516,7 @@ def project(cube, target_proj, nx=None, ny=None):
     # Determine source coordinate system
     if lat_coord.coord_system is None:
         # Assume WGS84 latlon if unspecified
-        warnings.warn('Coordinate system of latitude and longitude '\
+        warnings.warn('Coordinate system of latitude and longitude '
                       'coordinates is not specified. Assuming WGS84 Geodetic.')
         orig_cs = iris.coord_systems.GeogCS(semi_major_axis=6378137.0,
                                             inverse_flattening=298.257223563)
@@ -533,9 +538,9 @@ def project(cube, target_proj, nx=None, ny=None):
         target_proj = target_proj.as_cartopy_projection()
 
     # Resolution of new grid
-    if nx == None:
+    if nx is None:
         nx = source_x.shape[1]
-    if ny == None:
+    if ny is None:
         ny = source_x.shape[0]
 
     target_x, target_y, extent = cartopy.img_transform.mesh_projection(
@@ -562,8 +567,8 @@ def project(cube, target_proj, nx=None, ny=None):
         xdim = lon_dims[1]
         ydim = lon_dims[0]
     else:
-        raise ValueError('Expected the latitude and longitude coordinates '\
-                         'to have 1 or 2 dimensions, got {} and '\
+        raise ValueError('Expected the latitude and longitude coordinates '
+                         'to have 1 or 2 dimensions, got {} and '
                          '{}.'.format(lat_coord.ndim, lon_coord.ndim))
 
     # Create array to store regridded data
@@ -581,8 +586,8 @@ def project(cube, target_proj, nx=None, ny=None):
     elif lat_coord.ndim == 2 and lon_coord.ndim == 2:
         slice_it = cube.slices(lat_coord)
     else:
-        raise ValueError('Expected the latitude and longitude coordinates '\
-                         'to have 1 or 2 dimensions, got {} and '\
+        raise ValueError('Expected the latitude and longitude coordinates '
+                         'to have 1 or 2 dimensions, got {} and '
                          '{}.'.format(lat_coord.ndim, lon_coord.ndim))
 
     ## Mask out points outside of extent in source_cs - disabled until
@@ -595,7 +600,8 @@ def project(cube, target_proj, nx=None, ny=None):
     #    raise ValueError('Unable to handle range of longitude.')
     ## This does not work in all cases e.g. lon > 360
     #if np.any(source_x > 180.0):
-    #    source_desired_x = (source_desired_xy[:, 0].reshape(ny, nx) + 360.0) % 360.0
+    #    source_desired_x = (source_desired_xy[:, 0].reshape(ny, nx) +
+    #                        360.0) % 360.0
     #else:
     #    source_desired_x = source_desired_xy[:, 0].reshape(ny, nx)
     #source_desired_y = source_desired_xy[:, 1].reshape(ny, nx)
@@ -663,7 +669,7 @@ def project(cube, target_proj, nx=None, ny=None):
             new_cube.add_aux_coord(coord.copy(), cube.coord_dims(coord))
     discarded_coords = coords_to_ignore.difference([lat_coord, lon_coord])
     if discarded_coords:
-        warnings.warn('Discarding coordinates that share dimensions with ' \
+        warnings.warn('Discarding coordinates that share dimensions with '
                       '{} and {}: {}'.format(lat_coord.name(),
                                              lon_coord.name(),
                                              [coord.name() for

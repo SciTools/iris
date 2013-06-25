@@ -78,7 +78,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/util.py',
         '*/iris/analysis/__init__.py',
         '*/iris/analysis/calculus.py',
-        '*/iris/analysis/cartography.py',
         '*/iris/analysis/geometry.py',
         '*/iris/analysis/interpolate.py',
         '*/iris/analysis/maths.py',
