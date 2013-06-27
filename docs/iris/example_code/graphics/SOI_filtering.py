@@ -78,11 +78,11 @@ def main():
 
     # plot the SOI time series and both filtered versions
     plt.figure(figsize=(9, 4))
-    iplt.plot(soi, coords=['time'], color='0.7', linewidth=1., linestyle='-',
+    iplt.plot(soi, color='0.7', linewidth=1., linestyle='-',
               alpha=1., label='no filter')
-    iplt.plot(soi24, coords=['time'], color='b', linewidth=2., linestyle='-',
+    iplt.plot(soi24, color='b', linewidth=2., linestyle='-',
               alpha=.7, label='2-year filter')
-    iplt.plot(soi84, coords=['time'], color='r', linewidth=2., linestyle='-',
+    iplt.plot(soi84, color='r', linewidth=2., linestyle='-',
               alpha=.7, label='7-year filter')
     plt.ylim([-4, 4])
     plt.title('Southern Oscillation Index (Darwin Only)')

@@ -23,6 +23,7 @@ automatically add a plot title, axis titles, and a colour bar when appropriate.
 See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 """
+import warnings   # deprecation of coords keyword in plot
 
 import matplotlib.pyplot as plt
 
@@ -94,6 +95,33 @@ def _label_with_bounds(cube, result=None, ndims=2, coords=None):
 
 def _label_with_points(cube, result=None, ndims=2, coords=None):
     _label(cube, iris.coords.POINT_MODE, result, ndims, coords)
+
+
+def _get_titles(u_object, v_object):
+    if u_object is None:
+        u_object = iplt._u_object_from_v_object(v_object)
+    xlabel = _title(u_object, with_units=True)
+    ylabel = _title(v_object, with_units=True)
+    title = ''
+    if u_object is None:
+        title = _title(v_object, with_units=False)
+    elif isinstance(u_object, iris.cube.Cube) and \
+            not isinstance(v_object, iris.cube.Cube):
+        title = _title(u_object, with_units=False)
+    elif isinstance(v_object, iris.cube.Cube) and \
+            not isinstance(u_object, iris.cube.Cube):
+        title = _title(v_object, with_units=False)
+    return xlabel, ylabel, title
+
+
+def _label_1d_plot(*args):
+    if len(args) > 1 and isinstance(args[1], (iris.cube.Cube, iris.coords.Coord)):
+        xlabel, ylabel, title = _get_titles(*args[:2])
+    else:
+        xlabel, ylabel, title = _get_titles(None, args[0])
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
 
 
 def contour(cube, *args, **kwargs):
@@ -192,14 +220,16 @@ def points(cube, *args, **kwargs):
     return result
 
 
-def plot(cube, *args, **kwargs):
+@iplt._1d_coords_deprecation_handler
+def plot(*args, **kwargs):
     """
-    Draws a labelled line plot based on the given Cube.
+    Draws a labelled line plot based on the given cube(s) or
+    coordinate(s).
     
-    See :func:`iris.plot.plot` for details of valid keyword arguments.
+    See :func:`iris.plot.plot` for details of valid arguments and
+    keyword arguments.
     
     """
-    coords = kwargs.get('coords')
-    result = iplt.plot(cube, *args, **kwargs)
-    _label_with_points(cube, ndims=1, coords=coords)
+    result = iplt.plot(*args, **kwargs)
+    _label_1d_plot(*args)
     return result
