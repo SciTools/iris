@@ -1,0 +1,30 @@
+What's new in Iris 1.5
+**********************
+
+:Release: 1.5.0
+:Date: unreleased
+
+This document explains the new/changed features of Iris in version 1.5.
+
+Iris 1.5 features
+=================
+
+A summary of the main features added with version 1.5:
+
+* A new transpose keyword argument for :func:`iris.plot.plot` and
+  :func:`iris.quickplot.plot` allows the coordinate of a 1d plot to be
+  presented on the y-axis with the data values on the x-axis.
+
+Bugs fixed
+----------
+* N/A
+
+Incompatible changes
+--------------------
+* N/A
+
+Deprecations
+------------
+* N/A
+
+

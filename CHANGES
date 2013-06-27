@@ -1,3 +1,17 @@
+Release 1.5 (unreleased)
+========================
+
+
+Features added
+--------------
+* A new transpose keyword argument for `iris.plot.plot` and `iris.quickplot.plot`
+  allows the coordinate of a 1d plot to be presented on the y-axis with the data
+  values on the x-axis.
+
+
+----------------------------
+
+
 Release 1.4 (unreleased)
 ========================
 

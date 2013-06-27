@@ -139,6 +139,24 @@ class TestHybridHeight(tests.GraphicsTest):
             self.check_graphic()
 
 
+@iris.tests.skip_data
+class Test1dPlotTranspose(tests.GraphicsTest):
+
+    def setUp(self):
+        path = tests.get_data_path(('NetCDF', 'ORCA2', 'votemper.nc'))
+        self.cube = iris.load_cube(path)[0, :, 60, 80]
+
+    def test_transpose_true(self):
+        # put the coordinate on the y-axis
+        qplt.plot(self.cube, transpose=True)
+        self.check_graphic()
+
+    def test_transpose_false(self):
+        # put the coordinate on the x-axis (normal behaviour)
+        qplt.plot(self.cube, transpose=False)
+        self.check_graphic()
+
+
 # Caches _load_4d_testcube so subsequent calls are faster
 def cache(fn, cache={}):
     def inner(*args, **kwargs):

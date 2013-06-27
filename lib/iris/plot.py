@@ -328,6 +328,11 @@ def _draw_1d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
     else:
         u = np.arange(data.shape[0])
 
+    # get & remove the transpose entry from kwargs
+    transpose = kwargs.pop('transpose', False)
+    if transpose:
+        u, data = data, u
+
     draw_method = getattr(plt, draw_method_name)
     if arg_func is not None:
         args, kwargs = arg_func(u, data, *args, **kwargs)
@@ -717,6 +722,12 @@ def plot(cube, *args, **kwargs):
         given coordinates indicates which axis to use for each, where the first
         element is the horizontal axis of the plot and the second element is
         the vertical axis of the plot.
+
+    * transpose: True or False
+        If False the plot will have the coordinate on the x-axis and the data
+        values on the y-axis. If True the plot axes will be transposed with the
+        coordinate on the y-axis and the data values on the x-axis. This is
+        suitable for vertical profile type plots. Defaults to False.
 
     See :func:`matplotlib.pyplot.plot` for details of other valid keyword
     arguments.
