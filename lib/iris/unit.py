@@ -792,10 +792,15 @@ class Unit(iris.util._OrderedHashable):
 
             Unit object.
 
+        Units should be set to "no_unit" for values which are strings.
+        Units can also be set to "unknown" (or None).
         For example:
 
-            >>> import iris.unit as unit
-            >>> u = unit.Unit('volts')
+            >>> from iris.unit import Unit
+            >>> volts = Unit('volts')
+            >>> no_unit = Unit('no_unit')
+            >>> unknown = Unit('unknown')
+            >>> unknown = Unit(None)
 
         """
         ut_unit = None

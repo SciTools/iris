@@ -312,7 +312,8 @@ class Coord(CFVariableMixin):
         * var_name:
             CF variable name of coordinate
         * units
-            Unit for coordinate's values
+            The :class:`~iris.unit.Unit` of the coordinate's values.
+            Can be a string, which will be converted to a Unit object.
         * bounds
             An array of values describing the bounds of each cell. The shape
             of the array must be compatible with the points array.
