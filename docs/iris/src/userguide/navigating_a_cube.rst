@@ -30,6 +30,7 @@ We have already seen a basic string representation of a cube when printing:
               grid_longitude                          -                   x
          Scalar coordinates:
               forecast_period: 0.0 hours
+              forecast_reference_time: 2006-06-15 00:00:00
               time: 2006-06-15 00:00:00
          Attributes:
               Conventions: CF-1.5
@@ -121,7 +122,7 @@ Alternatively, we can use *list comprehension* to store the names in a list::
 The result is a basic Python list which could be sorted alphabetically and joined together:
 
      >>> print ', '.join(sorted(coord_names))
-     forecast_period, grid_latitude, grid_longitude, time
+     forecast_period, forecast_reference_time, grid_latitude, grid_longitude, time
 
 To get an individual coordinate given its name, the :meth:`Cube.coord <iris.cube.Cube.coord>` method can be used::
 
@@ -159,6 +160,7 @@ We can add and remove coordinates via :func:`Cube.add_dim_coord<iris.cube.Cube.a
               grid_longitude                          -                   x
          Scalar coordinates:
               forecast_period: 0.0 hours
+              forecast_reference_time: 2006-06-15 00:00:00
               my_custom_coordinate: 1
               time: 2006-06-15 00:00:00
          Attributes:

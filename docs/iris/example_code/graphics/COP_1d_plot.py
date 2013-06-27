@@ -54,9 +54,9 @@ def main():
     plt.gca().format_xdata = mdates.DateFormatter('%Y')
     
     # Plot the datasets
-    qplt.plot(e1_mean, coords=['time'], label='E1 scenario', lw=1.5, color='blue')
-    qplt.plot(a1b_mean, coords=['time'], label='A1B-Image scenario', lw=1.5, color='red')
-    
+    qplt.plot(e1_mean, label='E1 scenario', lw=1.5, color='blue')
+    qplt.plot(a1b_mean, label='A1B-Image scenario', lw=1.5, color='red')
+
     # Draw a horizontal line showing the pre industrial mean
     plt.axhline(y=pre_industrial_mean.data, color='gray', linestyle='dashed', label='pre-industrial', lw=1.5)
     
@@ -65,8 +65,8 @@ def main():
     observed = a1b_mean[common]
     
     # Plot the observed data
-    qplt.plot(observed, coords=['time'], label='observed', color='black', lw=1.5)
-    
+    qplt.plot(observed, label='observed', color='black', lw=1.5)
+
     # Add a legend and title
     plt.legend(loc="upper left")
     plt.title('North American mean air temperature', fontsize=18)
