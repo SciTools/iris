@@ -768,10 +768,18 @@ class Cube(CFVariableMixin):
             The :class:`iris.coords.Coord` instance to look for.
 
         """
+        # Search for existing coordinate (object) on the cube, faster lookup
+        # than equality - makes no functional difference.
+        matches = [(dim,) for coord_, dim in self._dim_coords_and_dims if
+                   coord_ is coord]
+        if not matches:
+            matches = [dims for coord_, dims in self._aux_coords_and_dims if
+                       coord_ is coord]
+        if matches:
+            return matches[0]
+
+        ## Search by coord definition (slow)
         target_defn = coord._as_defn()
-
-        ### Search by coord definition first
-
         # Search dim coords first
         matches = [(dim,) for coord_, dim in self._dim_coords_and_dims if
                    coord_._as_defn() == target_defn]
