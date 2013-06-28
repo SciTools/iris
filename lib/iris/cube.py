@@ -2332,16 +2332,27 @@ over month, year
         coords = self._as_list_of_coords(coords)
 
         # Determine the dimensions we need to collapse (and those we don't)
-        dims_to_collapse = set()
-        for coord in coords:
-            dims_to_collapse.update(self.coord_dims(coord))
+        if aggregator.cell_method == 'peak':
+            dims_to_collapse = [list(self.coord_dims(coord))
+                                for coord in coords]
+
+            # Remove duplicate dimensions.
+            new_dims = collections.OrderedDict.fromkeys(
+                d for dim in dims_to_collapse for d in dim)
+            # Reverse the dimensions so the order can be maintained when
+            # reshaping the data.
+            dims_to_collapse = list(new_dims)[::-1]
+        else:
+            dims_to_collapse = set()
+            for coord in coords:
+                dims_to_collapse.update(self.coord_dims(coord))
 
         if not dims_to_collapse:
             msg = 'Cannot collapse a dimension which does not describe any ' \
                   'data.'
             raise iris.exceptions.CoordinateCollapseError(msg)
 
-        untouched_dims = set(range(self.ndim)) - dims_to_collapse
+        untouched_dims = set(range(self.ndim)) - set(dims_to_collapse)
 
         # Remove the collapsed dimension(s) from the metadata
         indices = [slice(None, None)] * self.ndim
@@ -2352,7 +2363,7 @@ over month, year
         # Collapse any coords that span the dimension(s) being collapsed
         for coord in self.dim_coords + self.aux_coords:
             coord_dims = self.coord_dims(coord)
-            if dims_to_collapse.intersection(coord_dims):
+            if set(dims_to_collapse).intersection(coord_dims):
                 local_dims = [coord_dims.index(dim) for dim in
                               dims_to_collapse if dim in coord_dims]
                 collapsed_cube.replace_coord(coord.collapsed(local_dims))
@@ -2361,19 +2372,43 @@ over month, year
         # First reshape the data so that the dimensions being aggregated over
         # are grouped 'at the end'.
         untouched_dims = sorted(untouched_dims)
-        dims_to_collapse = sorted(dims_to_collapse)
-        end_size = reduce(operator.mul, (self.shape[dim] for dim in
-                                         dims_to_collapse))
-        new_shape = [self.shape[dim] for dim in untouched_dims] + [end_size]
-        unrolled_data = np.transpose(
-            self.data, untouched_dims + dims_to_collapse).reshape(new_shape)
-        # Perform the same operation on the weights if applicable
-        if kwargs.get("weights") is not None:
-            weights = kwargs["weights"].view()
-            kwargs["weights"] = np.transpose(
-                weights, untouched_dims + dims_to_collapse).reshape(new_shape)
 
-        data_result = aggregator.aggregate(unrolled_data, axis=-1, **kwargs)
+        # If the PEAK aggregator is to be used, each coordinate to be collapsed
+        # must be dealt with separately.
+        if aggregator.cell_method == 'peak':
+            untouched_shape = [self.shape[d] for d in untouched_dims]
+            collapsed_shape = [self.shape[d] for d in dims_to_collapse]
+            new_shape = untouched_shape + collapsed_shape
+
+            array_dims = untouched_dims + dims_to_collapse
+            unrolled_data = np.transpose(
+                self.data, array_dims).reshape(new_shape)
+
+            for dim in dims_to_collapse:
+                unrolled_data = aggregator.aggregate(unrolled_data,
+                                                     axis=-1,
+                                                     **kwargs)
+            data_result = unrolled_data
+        else:
+            dims_to_collapse = sorted(dims_to_collapse)
+
+            end_size = reduce(operator.mul, (self.shape[dim] for dim in
+                                             dims_to_collapse))
+            untouched_shape = [self.shape[dim] for dim in untouched_dims]
+            new_shape = untouched_shape + [end_size]
+            dims = untouched_dims + dims_to_collapse
+            unrolled_data = np.transpose(self.data, dims).reshape(new_shape)
+
+            # Perform the same operation on the weights if applicable
+            if kwargs.get("weights") is not None:
+                weights = kwargs["weights"].view()
+                kwargs["weights"] = np.transpose(weights,
+                                                 dims).reshape(new_shape)
+
+            data_result = aggregator.aggregate(unrolled_data,
+                                               axis=-1,
+                                               **kwargs)
+
         aggregator.update_metadata(collapsed_cube, coords, axis=-1, **kwargs)
         result = aggregator.post_process(collapsed_cube, data_result, **kwargs)
         return result
