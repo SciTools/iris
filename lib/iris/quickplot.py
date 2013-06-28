@@ -52,7 +52,7 @@ def _title(cube_or_coord, with_units):
     return title
 
 
-def _label(cube, mode, result=None, ndims=2, coords=None):
+def _label(cube, mode, result=None, ndims=2, coords=None, transpose1d=False):
     """Puts labels on the current plot using the given cube."""
     
     plt.title(_title(cube, with_units=False))
@@ -82,8 +82,14 @@ def _label(cube, mode, result=None, ndims=2, coords=None):
             plt.ylabel(_title(plot_defn.coords[0], with_units=True))
             plt.xlabel(_title(plot_defn.coords[1], with_units=True))
     elif ndims == 1:
-        plt.xlabel(_title(plot_defn.coords[0], with_units=True))
-        plt.ylabel(_title(cube, with_units=True))
+        cube_title = _title(cube, with_units=True)
+        coord_title = _title(plot_defn.coords[0], with_units=True)
+        if transpose1d:
+            plt.xlabel(cube_title)
+            plt.ylabel(coord_title)
+        else:
+            plt.xlabel(coord_title)
+            plt.ylabel(cube_title)
     else:
         raise ValueError('Unexpected number of dimensions (%s) given to _label.' % ndims)
 
@@ -92,8 +98,9 @@ def _label_with_bounds(cube, result=None, ndims=2, coords=None):
     _label(cube, iris.coords.BOUND_MODE, result, ndims, coords)
 
 
-def _label_with_points(cube, result=None, ndims=2, coords=None):
-    _label(cube, iris.coords.POINT_MODE, result, ndims, coords)
+def _label_with_points(cube, result=None, ndims=2, coords=None,
+                       transpose1d=False):
+    _label(cube, iris.coords.POINT_MODE, result, ndims, coords, transpose1d)
 
 
 def contour(cube, *args, **kwargs):
@@ -200,6 +207,7 @@ def plot(cube, *args, **kwargs):
     
     """
     coords = kwargs.get('coords')
+    transpose = kwargs.get('transpose', False)
     result = iplt.plot(cube, *args, **kwargs)
-    _label_with_points(cube, ndims=1, coords=coords)
+    _label_with_points(cube, ndims=1, coords=coords, transpose1d=transpose)
     return result
