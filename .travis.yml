@@ -24,7 +24,7 @@ install:
   - export IRIS_TEST_DATA_REF="927d715fc0551874464ce64e889df52b3c5c984d"
   - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
 
-  - export IRIS_SAMPLE_DATA_REF="v1.0"
+  - export IRIS_SAMPLE_DATA_REF="83bb756bf4b7c5c1f902442aeb3bf7acf8e305a6"
   - export IRIS_SAMPLE_DATA_SUFFIX=$(echo "${IRIS_SAMPLE_DATA_REF}" | sed "s/^v//")
 
 # add repo
@@ -47,7 +47,9 @@ install:
 # cfchecker
   - ./.travis_no_output sudo /usr/bin/pip install cdat-lite
   - ./.travis_no_output sudo /usr/bin/pip install cfchecker
-  - ./.travis_no_output wget http://cf-pcmdi.llnl.gov/documents/cf-standard-names/standard-name-table/current/cf-standard-name-table.xml
+# Using table 23 due to a bug present in the current version
+  - ./.travis_no_output wget http://cf-pcmdi.llnl.gov/documents/cf-standard-names/standard-name-table/23/cf-standard-name-table.xml
+#  - ./.travis_no_output wget http://cf-pcmdi.llnl.gov/documents/cf-standard-names/standard-name-table/current/cf-standard-name-table.xml
   - ./.travis_no_output wget http://cf-pcmdi.llnl.gov/documents/cf-standard-names/area-type-table/current/area-type-table.xml
   - echo '#!/usr/bin/env sh' > cfchecker
   - echo "cfchecks -s `pwd`/cf-standard-name-table.xml -a `pwd`/area-type-table.xml -u /usr/share/xml/udunits/udunits2.xml \$1" >> cfchecker
