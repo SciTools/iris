@@ -213,7 +213,7 @@ class CoordAndDims(object):
         # Try to add to dim_coords?
         if isinstance(self.coord, iris.coords.DimCoord) and self.dims:
             if len(self.dims) > 1:
-                raise Exception("Only 1 dim allowed for a DimCoord")
+                raise ValueError("Only 1 dim allowed for a DimCoord")
 
             # Does the cube already have a coord for this dim?
             coord_dim = self.dims[0]
