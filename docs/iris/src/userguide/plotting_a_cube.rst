@@ -1,7 +1,7 @@
-.. _introduction_to_plotting_in_iris:
+.. _plotting_a_cube:
 
 ==================================
-Introduction to plotting in Iris
+Plotting a cube
 ==================================
 
 Iris utilises the power of Python's 
@@ -16,7 +16,7 @@ been extended within Iris to facilitate easy visualisation of a cube's data.
 Matplotlib's pyplot basics
 ***************************
 
-A simple line plot can created using the 
+A simple line plot can be created using the 
 :py:func:`matplotlib.pyplot.plot` function::
 
 	import matplotlib.pyplot as plt
