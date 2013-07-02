@@ -30,11 +30,6 @@ def main():
     # Explicitly mask negative electron content.
     cube.data = ma.masked_less(cube.data, 0)
 
-    # Currently require to remove the multi-dimensional
-    # latitude and longitude coordinates for Iris plotting.
-    cube.remove_coord('latitude')
-    cube.remove_coord('longitude')
-
     # Plot the cube using one hundred colour levels.
     qplt.contourf(cube, 100)
     plt.title('Total Electron Content')
