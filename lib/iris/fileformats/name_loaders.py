@@ -18,14 +18,16 @@
 
 import collections
 import datetime
+from itertools import izip
 import re
 import warnings
 
 import numpy as np
 
-import iris.coords
+from iris.coords import AuxCoord, DimCoord
 import iris.coord_systems
 import iris.cube
+import iris.exceptions
 import iris.unit
 
 
@@ -38,6 +40,21 @@ NAMEII_TIMESERIES_DATETIME_FORMAT = '%d/%m/%Y  %H:%M:%S'
 NAMECoord = collections.namedtuple('NAMECoord', ['name',
                                                  'dimension',
                                                  'values'])
+
+
+def _split_name_and_units(name):
+    units = None
+    if "(" in name and ")" in name:
+        split = name.rsplit("(", 1)
+        try_units = split[1].replace(")", "").strip()
+        try:
+            try_units = iris.unit.Unit(try_units)
+        except ValueError:
+            pass
+        else:
+            name = split[0].strip()
+            units = try_units
+    return name, units
 
 
 def read_header(file_handle):
@@ -269,9 +286,9 @@ def _generate_cubes(header, column_headings, coords, data_arrays):
 
         # Define and add the singular coordinates of the field (flight
         # level, time etc.)
-        cube.add_aux_coord(iris.coords.AuxCoord(field_headings['Z'],
-                                                long_name='z',
-                                                units='no-unit'))
+        cube.add_aux_coord(AuxCoord(field_headings['Z'],
+                                    long_name='z',
+                                    units='no-unit'))
 
         # Define the time unit and use it to serialise the datetime for
         # the time coordinate.
@@ -290,10 +307,10 @@ def _generate_cubes(header, column_headings, coords, data_arrays):
                 pts = time_unit.date2num(coord.values)
 
             if coord.dimension is not None:
-                icoord = iris.coords.DimCoord(points=pts,
-                                              standard_name=coord.name,
-                                              units=coord_units,
-                                              coord_system=coord_sys)
+                icoord = DimCoord(points=pts,
+                                  standard_name=coord.name,
+                                  units=coord_units,
+                                  coord_system=coord_sys)
                 if coord.name == 'time' and 'Av or Int period' in \
                         field_headings:
                     dt = coord.values - \
@@ -305,10 +322,10 @@ def _generate_cubes(header, column_headings, coords, data_arrays):
                     icoord.guess_bounds()
                 cube.add_dim_coord(icoord, coord.dimension)
             else:
-                icoord = iris.coords.AuxCoord(points=pts[i],
-                                              standard_name=coord.name,
-                                              coord_system=coord_sys,
-                                              units=coord_units)
+                icoord = AuxCoord(points=pts[i],
+                                  standard_name=coord.name,
+                                  coord_system=coord_sys,
+                                  units=coord_units)
                 if coord.name == 'time' and 'Av or Int period' in \
                         field_headings:
                     dt = coord.values - \
@@ -620,3 +637,102 @@ def load_NAMEII_timeseries(filename):
         coords = [lon, lat, tdim]
 
     return _generate_cubes(header, column_headings, coords, data_arrays)
+
+
+def load_NAMEIII_trajectory(filename):
+    """
+    Load a NAME III trajectory file returning a
+    generator of :class:`iris.cube.Cube` instances.
+
+    Args:
+
+    * filename (string):
+        Name of file to load.
+
+    Returns:
+        A generator :class:`iris.cube.Cube` instances.
+
+    """
+    time_unit = iris.unit.Unit('hours since epoch',
+                               calendar=iris.unit.CALENDAR_GREGORIAN)
+
+    with open(filename, 'r') as infile:
+        header = read_header(infile)
+
+        # read the column headings
+        for line in infile:
+            if line.startswith("    "):
+                break
+        headings = [heading.strip() for heading in line.split(",")]
+
+        # read the columns
+        columns = [[] for i in range(len(headings))]
+        for line in infile:
+            values = [v.strip() for v in line.split(",")]
+            for c, v in enumerate(values):
+                if "UTC" in v:
+                    v = v.replace(":00 ", " ")  # Strip out milliseconds.
+                    v = datetime.datetime.strptime(v, NAMEIII_DATETIME_FORMAT)
+                else:
+                    try:
+                        v = float(v)
+                    except ValueError:
+                        pass
+                columns[c].append(v)
+
+    # Where's the Z column?
+    z_column = None
+    for i, heading in enumerate(headings):
+        if heading.startswith("Z "):
+            z_column = i
+            break
+    if z_column is None:
+        raise iris.exceptions.TranslationError("Expected a Z column")
+
+    # Every column up to Z becomes a coordinate.
+    coords = []
+    for name, values in izip(headings[:z_column+1], columns[:z_column+1]):
+        values = np.array(values)
+        if np.all(np.array(values) == values[0]):
+            values = [values[0]]
+
+        standard_name = long_name = units = None
+        if isinstance(values[0], datetime.datetime):
+            values = time_unit.date2num(values)
+            units = time_unit
+            if name == "Time":
+                name = "time"
+        elif " (Lat-Long)" in name:
+            if name.startswith("X"):
+                name = "longitude"
+            elif name.startswith("Y"):
+                name = "latitude"
+            units = "degrees"
+        elif name == "Z (m asl)":
+            name = "height"
+            units = "m"
+
+        try:
+            coord = DimCoord(values, units=units)
+        except ValueError:
+            coord = AuxCoord(values, units=units)
+        coord.rename(name)
+        coords.append(coord)
+
+    # Every numerical column after the Z becomes a cube.
+    for name, values in izip(headings[z_column+1:], columns[z_column+1:]):
+        try:
+            float(values[0])
+        except ValueError:
+            continue
+        # units embedded in column heading?
+        name, units = _split_name_and_units(name)
+        cube = iris.cube.Cube(values, units=units)
+        cube.rename(name)
+        for coord in coords:
+            dim = 0 if len(coord.points) > 1 else None
+            if isinstance(coord, DimCoord) and coord.name() == "time":
+                cube.add_dim_coord(coord.copy(), dim)
+            else:
+                cube.add_aux_coord(coord.copy(), dim)
+        yield cube

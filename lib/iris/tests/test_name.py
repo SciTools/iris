@@ -42,6 +42,13 @@ class TestLoad(tests.IrisTest):
                                                'NAMEII_timeseries.txt')))
         self.assertCMLApproxData(cubes, ('name', 'NAMEII_timeseries.cml'))
 
+    def test_NAMEII_trajectory(self):
+        cubes = iris.load(tests.get_data_path(('NAME',
+                                              'NAMEIII_trajectory.txt')))
+        self.assertCML(cubes[0], ('name', 'NAMEIII_trajectory0.cml'))
+        self.assertCML(cubes, ('name', 'NAMEIII_trajectory.cml'),
+                       checksum=False)
+
 
 if __name__ == "__main__":
     tests.main()
