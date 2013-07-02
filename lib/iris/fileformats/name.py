@@ -33,15 +33,11 @@ def _get_NAME_loader(filename):
     with open(filename, 'r') as file_handle:
         header = name_loaders.read_header(file_handle)
 
-    if 'trajectories' in ''.join(header.keys()) or \
-            'trajectories' in ''.join(val for val in header.values() if
-                                      isinstance(val, basestring)):
-        raise ValueError('NAME trajectories are not currently '
-                         'supported.')
-
     # Infer file type based on contents of header.
     if 'Run name' in header:
-        if header.get('X grid origin') is not None:
+        if 'X grid origin' not in header:
+            load = name_loaders.load_NAMEIII_trajectory
+        elif header.get('X grid origin') is not None:
             load = name_loaders.load_NAMEIII_field
         else:
             load = name_loaders.load_NAMEIII_timeseries
