@@ -1,6 +1,8 @@
 """
-Example of polar_stereographic plot.
-====================================
+Example of a polar stereographic plot
+=====================================
+
+Demonstrates plotting some data that is defined on a polar stereographic projection.
 
 """
 
@@ -8,6 +10,7 @@ import matplotlib.pyplot as plt
 
 import iris
 import iris.quickplot as qplt
+
 
 def main():
     file_path = iris.sample_data_path('CMC_glb_TMP_ISBL_1015_ps30km_2013052000_P006.grib2')
