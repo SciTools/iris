@@ -318,7 +318,7 @@ def _add_subtract_common(operation_function, operation_symbol, operation_noun, o
     return new_cube
 
 
-def multiply(cube, other, dim=None, update_history=True):
+def multiply(cube, other, dim=None, update_history=True, in_place=False):
     """
     Calculate the product of a cube and another cube or coordinate.
 
@@ -341,10 +341,12 @@ def multiply(cube, other, dim=None, update_history=True):
 
     """
     return _multiply_divide_common(np.multiply, '*', 'multiplication',
-                                cube, other, dim=dim, update_history=update_history)
+                                   cube, other, dim=dim,
+                                   update_history=update_history,
+                                   in_place=in_place)
 
 
-def divide(cube, other, dim=None, update_history=True):
+def divide(cube, other, dim=None, update_history=True, in_place=False):
     """
     Calculate the division of a cube by a cube or coordinate.
 
@@ -367,18 +369,21 @@ def divide(cube, other, dim=None, update_history=True):
 
     """
     return _multiply_divide_common(np.divide, '/', 'division',
-                                cube, other, dim=dim, update_history=update_history)
+                                   cube, other, dim=dim,
+                                   update_history=update_history,
+                                   in_place=in_place)
 
 
-def _multiply_divide_common(operation_function, operation_symbol, operation_noun,
-                            cube, other, dim=None, update_history=True):
+def _multiply_divide_common(operation_function, operation_symbol,
+                            operation_noun, cube, other, dim=None, 
+                            update_history=True, in_place=False):
     """
     Function which shares common code between multiplication and division of cubes.
 
     operation_function   - function which does the operation (e.g. numpy.divide)
     operation_symbol     - the textual symbol of the operation (e.g. '/')
     operation_noun       - the noun of the operation (e.g. 'division')
-    operation_past_tense - the past tesnse of the operation (e.g. 'divided')
+    operation_past_tense - the past tense of the operation (e.g. 'divided')
 
     .. seealso:: For information on the dim keyword argument see :func:`multiply`.
 
@@ -394,9 +399,13 @@ def _multiply_divide_common(operation_function, operation_symbol, operation_noun
 
     if isinstance(other, np.ndarray):
         _assert_compatible(cube, other)
-
-        copy_cube = cube.copy(data=operation_function(cube.data, other))
-
+        
+        if in_place:
+            new_cube = cube
+            new_cube.data = operation_function(cube.data, other)
+        else:
+            new_cube = cube.copy(data=operation_function(cube.data, other))
+        
         if update_history:
             if other.ndim == 0:
                 history = '%s %s %s' % (cube.name(), operation_symbol, other)
@@ -437,8 +446,12 @@ def _multiply_divide_common(operation_function, operation_symbol, operation_noun
             points_shape = [1] * cube.data.ndim
             points_shape[data_dimension] = -1
             points = points.reshape(points_shape)
-
-        copy_cube = cube.copy(data=operation_function(cube.data, points))
+        
+        if in_place:
+            new_cube = cube
+            new_cube.data = operation_function(cube.data, points)
+        else:
+            new_cube = cube.copy(data=operation_function(cube.data, points))
 
         if update_history:
             history = '%s %s %s' % (cube.name(), operation_symbol, other.name())
@@ -446,8 +459,13 @@ def _multiply_divide_common(operation_function, operation_symbol, operation_noun
         other_unit = other.units
     elif isinstance(other, iris.cube.Cube):
         # Deal with cube multiplication/division by cube
-        copy_cube = cube.copy(data=operation_function(cube.data, other.data))
-
+        
+        if in_place:
+            new_cube = cube
+            new_cube.data = operation_function(cube.data, other.data)
+        else:
+            new_cube = cube.copy(data=operation_function(cube.data, other.data))
+        
         if update_history:
             history = '%s %s %s' % (cube.name() or 'unknown', operation_symbol,
                                     other.name() or 'unknown')
@@ -458,16 +476,16 @@ def _multiply_divide_common(operation_function, operation_symbol, operation_noun
 
     # Update the units
     if operation_function == np.multiply:
-        copy_cube.units = cube.units * other_unit
+        new_cube.units = cube.units * other_unit
     elif operation_function == np.divide:
-        copy_cube.units = cube.units / other_unit
+        new_cube.units = cube.units / other_unit
 
-    iris.analysis.clear_phenomenon_identity(copy_cube)
+    iris.analysis.clear_phenomenon_identity(new_cube)
 
     if history is not None:
-        copy_cube.add_history(history)
+        new_cube.add_history(history)
 
-    return copy_cube
+    return new_cube
 
 
 def exponentiate(cube, exponent, update_history=True, in_place=False):

@@ -310,6 +310,16 @@ class TestDivideAndMultiply(tests.IrisTest):
         coord = iris.coords.DimCoord(points=np.arange(10) * 2 + 5, standard_name='longitude', units='degrees') 
         
         self.assertRaises(ValueError, iris.analysis.maths.divide, a, coord)
+
+    def test_divide_in_place(self):
+        a = self.cube.copy()
+        b = iris.analysis.maths.divide(a, 5, in_place=True)
+        self.assertIs(a, b)
+
+    def test_divide_not_in_place(self):
+        a = self.cube.copy()
+        b = iris.analysis.maths.divide(a, 5, in_place=False)
+        self.assertIsNot(a, b)
         
     def test_multiply(self):
         a = self.cube
@@ -334,6 +344,16 @@ class TestDivideAndMultiply(tests.IrisTest):
         c = a * b        
         self.assertEqual(c.standard_name, None)
         self.assertAttributesEqual(c.attributes, {'history': 'air_temperature * air_temperature'})
+
+    def test_multiplication_in_place(self):
+        a = self.cube.copy()
+        b = iris.analysis.maths.multiply(a, 5, in_place=True)
+        self.assertIs(a, b)
+
+    def test_multiplication_not_in_place(self):
+        a = self.cube.copy()
+        b = iris.analysis.maths.multiply(a, 5, in_place=False)
+        self.assertIsNot(a, b)
 
 
 @iris.tests.skip_data
