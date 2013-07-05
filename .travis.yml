@@ -24,7 +24,7 @@ install:
   - export IRIS_TEST_DATA_REF="07d756b2d9ad3bdd28d877dcc60cb2e45af1eb08"
   - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
 
-  - export IRIS_SAMPLE_DATA_REF="83bb756bf4b7c5c1f902442aeb3bf7acf8e305a6"
+  - export IRIS_SAMPLE_DATA_REF="8fd26fa65bd3e42d9910ca6ee7ffa846bb015d5e"
   - export IRIS_SAMPLE_DATA_SUFFIX=$(echo "${IRIS_SAMPLE_DATA_REF}" | sed "s/^v//")
 
 # add repo
