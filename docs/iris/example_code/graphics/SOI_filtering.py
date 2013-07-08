@@ -53,30 +53,34 @@ def low_pass_weights(window, cutoff):
 
 def main():
 
-    # load the monthly-valued Southern Oscillation Index (SOI) time-series
+    # Load the monthly-valued Southern Oscillation Index (SOI) time-series.
     fname = iris.sample_data_path('SOI_Darwin.nc')
     soi = iris.load_cube(fname)
 
-    # window length for filters
+    # Window length for filters.
     window = 121
 
-    # construct 2-year (24-month) and 7-year (84-month) low pass filters
-    # for the SOI data which is monthly
+    # Construct 2-year (24-month) and 7-year (84-month) low pass filters
+    # for the SOI data which is monthly.
     wgts24 = low_pass_weights(window, 1. / 24.)  # 
     wgts84 = low_pass_weights(window, 1. / 84.)
 
-    # apply the filters using the rolling_window method with the weights
-    # keyword argument
+    # Apply each filter using the rolling_window method used with the weights
+    # keyword argument. Note that the application of this type of filter really
+    # requires a weighted sum. Currently iris lacks a weighted sum operator, so
+    # we use the weighted mean and multiply the result by the sum of the filter
+    # weights as a work-around. In this example the sum of the weights is
+    # approximately 1, but in other filtering examples this may not be true.
     soi24 = soi.rolling_window('time',
                                iris.analysis.MEAN,
                                len(wgts24),
-                               weights=wgts24)
+                               weights=wgts24) * wgts24.sum()
     soi84 =  soi.rolling_window('time',
                                 iris.analysis.MEAN,
                                 len(wgts84),
-                                weights=wgts84)
+                                weights=wgts84) * wgts84.sum()
 
-    # plot the SOI time series and both filtered versions
+    # Plot the SOI time series and both filtered versions.
     plt.figure(figsize=(9, 4))
     iplt.plot(soi, coords=['time'], color='0.7', linewidth=1., linestyle='-',
               alpha=1., label='no filter')
