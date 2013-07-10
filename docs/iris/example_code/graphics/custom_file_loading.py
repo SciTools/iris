@@ -8,16 +8,16 @@ The first stage in the process is to define an Iris :class:`FormatSpecification 
 To create a format specification we need to define the following:
 
 * format_name - Some text that describes the format specification we are creating
-* file_element - FileElement instance of the element which identifies this FormatSpecification
+* file_element - FileElement object describing the element which identifies
+                 this FormatSpecification.
     Possible values are:
     
-    ``iris.io.format_picker.MAGIC_NUMBER_32_BIT`` - The first 4 bytes from the file
+    ``iris.io.format_picker.MagicNumber(n, o)`` - The n bytes from the file \
+    at offset o.
     
-    ``iris.io.format_picker.MAGIC_NUMBER_64_BIT`` - The first 8 bytes from the file
+    ``iris.io.format_picker.FileExtension()`` - The file's extension.
     
-    ``iris.io.format_picker.FILE_EXTENSION`` - The files extension
-    
-    ``iris.io.format_picker.LEADING_LINE`` - The first line of the file
+    ``iris.io.format_picker.LeadingLine()``  - The first line of the file.
 
 * file_element_value - The value that the file_element should take if a file matches this FormatSpecification
 * handler (optional) - A generator function that will be called when the file specification has been identified. This function is
@@ -195,7 +195,7 @@ def NAME_to_cube(filenames, callback):
 
 # Create a format_picker specification of the NAME file format giving it a
 # priority greater than the built in NAME loader.
-_NAME_III_spec = format_picker.FormatSpecification('Name III', format_picker.LEADING_LINE,
+_NAME_III_spec = format_picker.FormatSpecification('Name III', format_picker.LeadingLine(),
                                       lambda line: line.startswith("NAME III"), NAME_to_cube,
                                       priority=6)
 

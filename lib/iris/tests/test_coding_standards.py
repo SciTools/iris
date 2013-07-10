@@ -71,7 +71,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/analysis/interpolate.py',
         '*/iris/analysis/maths.py',
         '*/iris/analysis/trajectory.py',
-        '*/iris/fileformats/__init__.py',
         '*/iris/fileformats/cf.py',
         '*/iris/fileformats/dot.py',
         '*/iris/fileformats/grib/__init__.py',

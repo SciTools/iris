@@ -21,10 +21,11 @@ and file based *magic* numbers.
 
 To manage a collection of FormatSpecifications for loading::
 
-    import format_picker as fp
+    import iris.io.format_picker as fp
     import matplotlib.pyplot as plt
     fagent = fp.FormatAgent()
-    png_spec = fp.FormatSpecification('PNG image', fp.MAGIC_NUMBER_64_BIT, 0x89504E470D0A1A0A, 
+    png_spec = fp.FormatSpecification('PNG image', fp.MagicNumber(8),
+                                      0x89504E470D0A1A0A, 
                                       handler=lambda filename: plt.imread(filename),
                                       priority=5
                                       )
@@ -113,18 +114,19 @@ class FormatAgent(object):
             fmt_elem_value = format_spec.file_element_value
             
             # cache the results for each file element
-            if fmt_elem.name not in element_cache:
+            if repr(fmt_elem) not in element_cache:
                 # N.B. File oriented as this is assuming seekable stream.
                 if buffer_obj is not None and buffer_obj.tell() != 0:
                     # reset the buffer if tell != 0
                     buffer_obj.seek(0)
                     
-                element_cache[fmt_elem.name] = fmt_elem.get_element(basename, buffer_obj)
+                element_cache[repr(fmt_elem)] = \
+                    fmt_elem.get_element(basename, buffer_obj)
 
             # If we have a callable object, then call it and tests its result, otherwise test using basic equality
             if isinstance(fmt_elem_value, collections.Callable):
-                matches = fmt_elem_value(element_cache[fmt_elem.name])
-            elif element_cache[fmt_elem.name] == fmt_elem_value:
+                matches = fmt_elem_value(element_cache[repr(fmt_elem)])
+            elif element_cache[repr(fmt_elem)] == fmt_elem_value:
                 matches = True
             else:
                 matches = False
@@ -213,15 +215,12 @@ class FileElement(object):
     Represents a specific aspect of a FileFormat which can be identified using the given element getter function.
     
     """
-    def __init__(self, name, element_getter_fn, requires_fh=True):
+    def __init__(self, requires_fh=True):
         """
         Constructs a new FileElement given a name and a file element getter function.
         
         Args:
         
-        * name - The name (string) of what the element is representing
-        * element_getter_fn - Function which takes a buffer object and returns the value of the FileElement. The 
-                            function must accept a single argument of a file buffer.
         * requires_fh - Whether this FileElement needs a file buffer.
         
         
@@ -232,49 +231,63 @@ class FileElement(object):
         .. note::  The given file buffer will always be at the start of the buffer (i.e. have tell() of 0).
         
         """
-        self._element_getter_fn = element_getter_fn
-        self._name = name
         self.requires_fh = requires_fh
-    
-    @property    
-    def name(self):
-        """Name of this element. (Read only)"""
-        return self._name
     
     def get_element(self, basename, file_handle):
         """Called when identifying the element of a file that this FileElement is representing."""
-        return self._element_getter_fn(basename, file_handle)
+        raise NotImplementedError("get_element must be defined in a subclass")
         
     def __hash__(self):
-        # Hashed by name to provide a consistent order in FormatSpecification.
-        return hash(self._name)
+        return hash(repr(self))
     
     def __repr__(self):
-        return 'FileElement(%r, %r)' % (self._name, self._element_getter_fn)
+        return '{}()'.format(self.__class__.__name__)
 
 
-def _read_n(fh, fmt, n, offset=None):
-    if offset is not None:
-        fh.seek(offset)
-    bytes_read = fh.read(n)
-    if len(bytes_read) != n:
-        raise EOFError(fh.name)
-    return struct.unpack(fmt, bytes_read)[0]
+class MagicNumber(FileElement):
+    """A :class:`FileElement` that returns a byte sequence in the file."""
+    len_formats = {4: ">L", 8: ">Q"}
+
+    def __init__(self, num_bytes, offset=None):
+        if num_bytes not in self.len_formats:
+            raise ValueError("Unhandled byte length")
+        FileElement.__init__(self, '{}-bit magic number'.format(num_bytes * 8))
+        self._num_bytes = num_bytes
+        self._offset = offset
+
+    def get_element(self, basename, file_handle):
+        fmt = self.len_formats[self._num_bytes]
+        if self._offset is not None:
+            file_handle.seek(self._offset)
+        bytes = file_handle.read(self._num_bytes)
+        if len(bytes) != self._num_bytes:
+            raise EOFError(file_handle.name)
+        return struct.unpack(fmt, bytes)[0]
+
+    def __repr__(self):
+        return 'MagicNumber({}, {})'.format(self._num_bytes, self._offset)
 
 
-MAGIC_NUMBER_32_BIT = FileElement('32-bit magic number', lambda filename, fh:
-                                  _read_n(fh, '>L', 4))
+class FileExtension(FileElement):
+    """A :class:`FileElement` that returns the extension from the filename."""
+    def get_element(self, basename, file_handle):
+        return os.path.splitext(basename)[1]
 
-WMO_BULLETIN_HEADER_LENGTH = 21
-MAGIC_NUMBER_32_BIT_WMO_BULLETIN = FileElement(
-    '32-bit magic number with byte offset', lambda filename,
-    fh: _read_n(fh, '>L', 4, WMO_BULLETIN_HEADER_LENGTH))
 
-MAGIC_NUMBER_64_BIT = FileElement('64-bit magic number', lambda filename, fh:
-                                  _read_n(fh, '>Q', 8))
-FILE_EXTENSION = FileElement('File extension', lambda basename,
-                             fh: os.path.splitext(basename)[1])
-LEADING_LINE = FileElement('Leading line', lambda filename, fh: fh.readline())
-URI_PROTOCOL = FileElement('URI protocol',
-                           lambda uri, _: decode_uri(uri)[0],
-                           requires_fh=False)
+class LeadingLine(FileElement):
+    """A :class:`FileElement` that returns the first line from the file."""
+    def get_element(self, basename, file_handle):
+        return file_handle.readline()
+
+
+class UriProtocol(FileElement):
+    """
+    A :class:`FileElement` that returns the "scheme" and "part" from a URI,
+    using :func:`~iris.io.decode_uri`.
+
+    """
+    def __init__(self):
+        FileElement.__init__(self, requires_fh=False)
+
+    def get_element(self, basename, file_handle):
+        return decode_uri(basename)[0]
