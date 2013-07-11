@@ -1510,11 +1510,15 @@ def load_cubes(filenames, callback=None):
 
 def _load_cubes_variable_loader(filenames, callback, loading_function,
                                 loading_function_kwargs=None):
-    _ensure_load_rules_loaded()
-    rules = iris.fileformats.rules
-    pp_loader = rules.Loader(loading_function, loading_function_kwargs or {},
-                             _load_rules, _cross_reference_rules, 'PP_LOAD')
-    return rules.load_cubes(filenames, callback, pp_loader)
+#    _ensure_load_rules_loaded()
+#    rules = iris.fileformats.rules
+#    pp_loader = rules.Loader(loading_function, loading_function_kwargs or {},
+#                             _load_rules, _cross_reference_rules, 'PP_LOAD')
+    import iris.fileformats.pp_rules
+    pp_loader = iris.fileformats.rules.Loader(
+        loading_function, loading_function_kwargs or {},
+        iris.fileformats.pp_rules.convert)
+    return iris.fileformats.rules.load_cubes(filenames, callback, pp_loader)
 
 
 def save(cube, target, append=False, field_coords=None):

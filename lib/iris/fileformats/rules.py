@@ -42,7 +42,7 @@ import iris.fileformats.mosig_cf_map
 import iris.fileformats.um_cf_map
 import iris.unit
 
-RuleResult = collections.namedtuple('RuleResult', ['cube', 'matching_rules', 'factories'])
+RuleResult = collections.namedtuple('RuleResult', ['cube', 'factories'])
 Factory = collections.namedtuple('Factory', ['factory_class', 'args'])
 ReferenceTarget = collections.namedtuple('ReferenceTarget',
                                          ('name', 'transform'))
@@ -780,8 +780,19 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
 
 Loader = collections.namedtuple('Loader',
                                 ('field_generator', 'field_generator_kwargs',
-                                 'load_rules', 'cross_ref_rules',
-                                 'log_name'))
+                                 'converter'))
+
+
+def _make_cube(field):
+    if getattr(field, '_data_manager', None) is not None:
+        data = field._data
+        data_manager = field._data_manager
+    else:
+        data = field.data
+        data_manager = None
+
+    cube = iris.cube.Cube(data, data_manager=data_manager)
+    return cube
 
 
 def load_cubes(filenames, user_callback, loader):
@@ -793,10 +804,9 @@ def load_cubes(filenames, user_callback, loader):
 
     for filename in filenames:
         for field in loader.field_generator(filename, **loader.field_generator_kwargs):
-            # Convert the field to a Cube, logging the rules that were used
-            rules_result = loader.load_rules.result(field)
-            cube = rules_result.cube
-            log(loader.log_name, filename, rules_result.matching_rules)
+            # Convert the field to a Cube.
+            cube = _make_cube(field)
+            factories, references = loader.converter(cube, field)
 
             cube = iris.io.run_callback(user_callback, cube, field, filename)
 
@@ -804,9 +814,7 @@ def load_cubes(filenames, user_callback, loader):
                 continue
 
             # Cross referencing
-            rules = loader.cross_ref_rules.matching_rules(field)
-            for rule in rules:
-                reference, = rule.run_actions(cube, field)
+            for reference in references:
                 name = reference.name
                 # Register this cube as a source cube for the named
                 # reference.
@@ -816,8 +824,8 @@ def load_cubes(filenames, user_callback, loader):
                     concrete_reference_targets[name] = target
                 target.add_cube(cube)
 
-            if rules_result.factories:
-                results_needing_reference.append(rules_result)
+            if factories:
+                results_needing_reference.append(RuleResult(cube, factories))
             else:
                 yield cube
 
