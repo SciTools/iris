@@ -319,6 +319,14 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
             result = format(value, format_spec)
         return result
 
+    def lbuser3(self):
+        """Return the lbuser[3] value that this stash represents."""
+        return (self.section or 0) * 1000 + (self.item or 0)
+    
+    def lbuser6(self):
+        """Return the lbuser[6] value that this stash represents."""
+        return self.model or 0
+
     @property
     def is_valid(self):
         return '?' not in str(self)
@@ -843,9 +851,25 @@ class PPField(object):
     @property
     def stash(self):
         """A stash property giving access to the associated STASH object, now supporting __eq__"""
-        if not hasattr(self, '_stash'):
+        if (not hasattr(self, '_stash') or
+                self.lbuser[6] != self._stash.lbuser6() or
+                self.lbuser[3] != self._stash.lbuser3()):
             self._stash = STASH(self.lbuser[6], self.lbuser[3] / 1000, self.lbuser[3] % 1000)
         return self._stash
+    
+    @stash.setter
+    def stash(self, stash):
+        if isinstance(stash, basestring):
+            self._stash = STASH.from_msi(stash)
+        elif isinstance(stash, STASH):
+            self._stash = stash
+        else:
+            raise ValueError('Cannot set stash to {!r}'.format(stash))
+        
+        # Keep the lbuser up to date.
+        self.lbuser = list(self.lbuser)
+        self.lbuser[6] = self._stash.lbuser6()
+        self.lbuser[3] = self._stash.lbuser3()
 
     # lbtim
     def _lbtim_setter(self, new_value):

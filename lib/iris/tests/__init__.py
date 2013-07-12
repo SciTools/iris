@@ -296,8 +296,8 @@ class IrisTest(unittest.TestCase):
         reference_path = get_result_path(reference_filename)
         self._check_same(pretty_xml, reference_path, reference_filename, type_comparison_name='XML')
         
-    def assertArrayEqual(self, a, b):
-        np.testing.assert_array_equal(a, b)
+    def assertArrayEqual(self, a, b, err_msg=''):
+        np.testing.assert_array_equal(a, b, err_msg=err_msg)
 
     def assertArrayAlmostEqual(self, a, b):
         np.testing.assert_array_almost_equal(a, b)

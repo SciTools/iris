@@ -20,13 +20,19 @@ Provides UK Met Office Fields File (FF) format specific capabilities.
 """
 
 import os
+import warnings
 
 import numpy as np
 
 from iris.exceptions import NotYetImplementedError
 from iris.fileformats.manager import DataManager
+from iris.fileformats._ff_cross_references import (STASH_GRID, X_COORD_U_GRID,
+                                                   Y_COORD_V_GRID,
+                                                   HANDLED_GRIDS)
 import pp
 
+
+IMDI = -32768
 
 FF_HEADER_DEPTH = 256      # In words (64-bit).
 DEFAULT_FF_WORD_DEPTH = 8  # In bytes.
@@ -76,8 +82,6 @@ FF_HEADER = [
     (name, tuple(position - UM_TO_FF_HEADER_OFFSET for position in positions))
     for name, positions in UM_FIXED_LENGTH_HEADER]
 
-# UM marker to signify a null pointer address.
-_FF_HEADER_POINTER_NULL = 0
 # UM FieldsFile fixed length header pointer names.
 _FF_HEADER_POINTERS = [
     'integer_constants',
@@ -106,7 +110,8 @@ class FFHeader(object):
     def __init__(self, filename, word_depth=DEFAULT_FF_WORD_DEPTH):
         """
         Create a FieldsFile header instance by reading the
-        FIXED_LENGTH_HEADER section of the FieldsFile.
+        FIXED_LENGTH_HEADER section of the FieldsFile, making the names
+        defined in FF_HEADER available as attributes of a FFHeader instance.
 
         Args:
 
@@ -137,6 +142,28 @@ class FFHeader(object):
                     value = header_data[offsets[0]:offsets[-1] + 1]
                 setattr(self, name, value)
 
+            # Turn the pointer values into real arrays.
+            for elem in _FF_HEADER_POINTERS:
+                if elem not in ['data', 'lookup_table']:
+                    if self._attribute_is_pointer_and_needs_addressing(elem):
+                        addr = getattr(self, elem)
+                        ff_file.seek((addr[0] - 1) * word_depth, os.SEEK_SET)
+                        if len(addr) == 2:
+                            res = np.fromfile(ff_file,
+                                              dtype='>f{0}'.format(word_depth),
+                                              count=addr[1])
+                        elif len(addr) == 3:
+                            res = np.fromfile(ff_file,
+                                              dtype='>f{0}'.format(word_depth),
+                                              count=addr[1]*addr[2])
+                            res = res.reshape((addr[1], addr[2]), order='F')
+                        else:
+                            raise ValueError('ff header element {} is not'
+                                             'handled correctly'.format(elem))
+                    else:
+                        res = None
+                    setattr(self, elem, res)
+
     def __str__(self):
         attributes = []
         for name, _ in FF_HEADER:
@@ -146,49 +173,19 @@ class FFHeader(object):
     def __repr__(self):
         return '{}({!r})'.format(type(self).__name__, self.ff_filename)
 
-    def valid(self, name):
-        """
-        Determine whether the FieldsFile FIXED_LENGTH_HEADER pointer attribute
-        has a valid FieldsFile address.
-
-        Args:
-
-        * name (string):
-            Specify the name of the FIXED_LENGTH_HEADER attribute.
-
-        Returns:
-            Boolean.
-
-        """
-
+    def _attribute_is_pointer_and_needs_addressing(self, name):
         if name in _FF_HEADER_POINTERS:
-            value = getattr(self, name)[0] > _FF_HEADER_POINTER_NULL
+            attr = getattr(self, name)
+
+            # Check that we haven't already addressed this pointer,
+            # that the pointer is actually referenceable (i.e. >0)
+            # and that the attribute is not marked as missing.
+            is_referenceable = (isinstance(attr, tuple) and
+                                attr[0] > 0 and attr[0] != IMDI)
         else:
             msg = '{!r} object does not have pointer attribute {!r}'
             raise AttributeError(msg.format(self.__class__.__name__, name))
-        return value
-
-    def address(self, name):
-        """
-        Return the byte address of the FieldsFile FIXED_LENGTH_HEADER
-        pointer attribute.
-
-        Args:
-
-        * name (string):
-            Specify the name of the FIXED_LENGTH_HEADER attribute.
-
-        Returns:
-            A numpy.int64 containing the byte address.
-
-        """
-
-        if name in _FF_HEADER_POINTERS:
-            value = getattr(self, name)[0] * self._word_depth
-        else:
-            msg = '{!r} object does not have pointer attribute {!r}'
-            raise AttributeError(msg.format(self.__class__.__name__, name))
-        return value
+        return is_referenceable
 
     def shape(self, name):
         """
@@ -291,6 +288,26 @@ class FF2PP(object):
         if self._ff_header.dataset_type == 1:
             table_count = self._ff_header.total_prognostic_fields
 
+        # Define the T, U, and V grid coordinates. The theta values are
+        # stored in the first element of the second dimension on the
+        # column/row dependent constants, and if it exists the U and V grid
+        # coordinates can be found on the second element of the second
+        # dimension.
+        x_p, y_p, x_u, y_v = (None, None, None, None)
+        if self._ff_header.column_dependent_constants is not None:
+            x_p = self._ff_header.column_dependent_constants[:, 0]
+            if self._ff_header.column_dependent_constants.shape[1] == 2:
+                # The UM variable resolution configuration produces n "U" grid
+                # values (with the last point on the extreme right hand side
+                # of the last cell), whereas there are just n-1 "V" grid
+                # values.this has been done for good reason inside
+                # the UM.
+                x_u = self._ff_header.column_dependent_constants[:, 1]
+        if self._ff_header.row_dependent_constants is not None:
+            y_p = self._ff_header.row_dependent_constants[:, 0]
+            if self._ff_header.row_dependent_constants.shape[1] == 2:
+                y_v = self._ff_header.row_dependent_constants[:-1, 1]
+
         # Process each FF LOOKUP table entry.
         while table_count:
             table_count -= 1
@@ -322,6 +339,26 @@ class FF2PP(object):
             data_depth, data_type = self._payload(field)
             # Determine PP field data shape.
             data_shape = (field.lbrow, field.lbnpt)
+            # set x and y coordinates if they are defined as arrays
+            grid = STASH_GRID.get(str(field.stash), None)
+
+            if grid is None:
+                warnings.warn('The STASH code {0} was not found in the '
+                              'STASH to grid type mapping. Picking the P '
+                              'position as the cell type'.format(field.stash))
+            elif grid not in HANDLED_GRIDS:
+                warnings.warn('The stash code {} is on a grid {} which has '
+                              'not been explicitly handled by the fieldsfile '
+                              'loader. Assuming the data is on a P grid.'
+                              ''.format(field.stash, grid))
+
+            field.x = x_p
+            field.y = y_p
+            if grid in X_COORD_U_GRID:
+                field.x = x_u
+            if grid in Y_COORD_V_GRID:
+                field.y = y_v
+
             # Determine whether to read the associated PP field data.
             if self._read_data:
                 # Move file pointer to the start of the current PP field data.
