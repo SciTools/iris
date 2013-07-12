@@ -23,6 +23,8 @@ import os
 
 import iris
 import iris.fileformats.pp
+import iris.fileformats.pp_rules
+import iris.fileformats.rules
 import iris.io
 import iris.util
 import iris.tests.stock
@@ -31,19 +33,22 @@ import iris.tests.stock
 @iris.tests.skip_data
 class TestPPLoadCustom(tests.IrisTest):
     def setUp(self):
-        iris.fileformats.pp._ensure_load_rules_loaded()
-        self.load_rules = iris.fileformats.pp._load_rules
         self.subcubes = iris.cube.CubeList()
         filename = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
         self.template = iris.fileformats.pp.load(filename).next()
+
+    def _field_to_cube(self, field):
+        cube = iris.fileformats.rules._make_cube(field)
+        iris.fileformats.pp_rules.convert(cube, field)
+        return cube
 
     def test_lbtim_2(self):
         for delta in range(10):
             field = self.template.copy()
             field.lbtim = 2
             field.lbdat += delta
-            rules_result = self.load_rules.result(field)
-            self.subcubes.append(rules_result.cube)
+            cube = self._field_to_cube(field)
+            self.subcubes.append(cube)
         cube = self.subcubes.merge()[0]
         self.assertCML(cube, ('pp_rules', 'lbtim_2.cml'))
 
@@ -63,8 +68,8 @@ class TestPPLoadCustom(tests.IrisTest):
                 brsvd[0] = field.blev - 1
                 field.brsvd = tuple(brsvd)
                 field.brlev = field.blev + 1
-            rules_result = self.load_rules.result(field)
-            self.subcubes.append(rules_result.cube)
+            cube = self._field_to_cube(field)
+            self.subcubes.append(cube)
 
     def test_ocean_depth(self):
         self._ocean_depth()
@@ -83,8 +88,8 @@ class TestPPLoadCustom(tests.IrisTest):
         lbuser[6] = 2
         lbuser[3] = 102
         self.template.lbuser = tuple(lbuser)
-        rules_result = self.load_rules.result(self.template)
-        self.assertCML(rules_result.cube, ('pp_rules', 'invalid_units.cml'))
+        cube = self._field_to_cube(self.template)
+        self.assertCML(cube, ('pp_rules', 'invalid_units.cml'))
 
 
 class TestReferences(tests.IrisTest):

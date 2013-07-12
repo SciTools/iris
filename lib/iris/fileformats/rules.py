@@ -42,7 +42,7 @@ import iris.fileformats.mosig_cf_map
 import iris.fileformats.um_cf_map
 import iris.unit
 
-RuleResult = collections.namedtuple('RuleResult', ['cube', 'factories'])
+RuleResult = collections.namedtuple('RuleResult', ['cube', 'matching_rules', 'factories'])
 Factory = collections.namedtuple('Factory', ['factory_class', 'args'])
 ReferenceTarget = collections.namedtuple('ReferenceTarget',
                                          ('name', 'transform'))
@@ -485,14 +485,6 @@ class FunctionRule(Rule):
         return factory
 
 
-class ObjectReturningRule(FunctionRule):
-    """A rule which returns a list of objects when its actions are run.""" 
-    def run_actions(self, cube, field):
-        f = pp = grib = field
-        cm = cube
-        return [action(field, f, pp, grib, cm) for action in self._exec_actions]
-
-
 class ProcedureRule(Rule):
     """A Rule with nothing returned by its actions."""
     def _create_action_method(self, i, action):
@@ -585,6 +577,8 @@ class RulesContainer(object):
         * matching_rules - a list of rules which matched
 
         """
+        # TODO: Remove this method
+        raise RuntimeError('Obsolete')
         
         # If the field has a data manager, then put it on the cube, otherwise transfer the data to the cube
         if getattr(field, '_data_manager', None) is not None:
@@ -780,7 +774,7 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
 
 Loader = collections.namedtuple('Loader',
                                 ('field_generator', 'field_generator_kwargs',
-                                 'converter'))
+                                 'converter', 'legacy_custom_rules'))
 
 
 def _make_cube(field):
@@ -808,6 +802,10 @@ def load_cubes(filenames, user_callback, loader):
             cube = _make_cube(field)
             factories, references = loader.converter(cube, field)
 
+            # Run any custom user-provided rules.
+            if loader.legacy_custom_rules:
+                loader.legacy_custom_rules.verify(cube, field)
+
             cube = iris.io.run_callback(user_callback, cube, field, filename)
 
             if cube is None:
@@ -825,14 +823,13 @@ def load_cubes(filenames, user_callback, loader):
                 target.add_cube(cube)
 
             if factories:
-                results_needing_reference.append(RuleResult(cube, factories))
+                results_needing_reference.append((cube, factories))
             else:
                 yield cube
 
     regrid_cache = {}
-    for result in results_needing_reference:
-        cube = result.cube
-        for factory in result.factories:
+    for cube, factories in results_needing_reference:
+        for factory in factories:
             try:
                 args = _dereference_args(factory, concrete_reference_targets,
                                          regrid_cache, cube)

@@ -1,14 +1,35 @@
+# (C) British Crown Copyright 2013, Met Office
+#
+# This file is part of Iris.
+#
+# Iris is free software: you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Iris is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+
+import warnings
+
+import numpy as np
+
 from iris.aux_factory import HybridHeightFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.fileformats.mosig_cf_map import MOSIG_STASH_TO_CF
-from iris.fileformats.rules import Factory, Reference
-from iris.fileformats.um_cf_map import STASH_TO_CF
+from iris.fileformats.rules import Factory, Reference, ReferenceTarget
+from iris.fileformats.um_cf_map import LBFC_TO_CF, STASH_TO_CF
+from iris.unit import Unit
 import iris.fileformats.pp
 import iris.unit
 
 
-def convert(cube, field):
-    f = field
+def convert(cube, f):
     cm = cube
     factories = []
     references = []
@@ -277,14 +298,28 @@ def convert(cube, field):
         cube.add_aux_coord(DimCoord(f.lbuser[4], long_name='pseudo_level', units='1'))
 
     if f.lbuser[6] == 1 and f.lbuser[3] == 5226:
-        cube.standard_name = "precipitation_amount"
-        cube.units = "kg m-2"
+        cube.rename("precipitation_amount")
+        units = "kg m-2"
+        try:
+            setattr(cube, 'units', units)
+        except ValueError:
+            msg = 'Ignoring PP invalid units {!r}'.format(units)
+            warnings.warn(msg)
+            cube.attributes['invalid_units'] = units
+            cube.units = iris.unit._UNKNOWN_UNIT_STRING
 
     if \
             (f.lbuser[6] == 2) and \
             (f.lbuser[3] == 101):
-        cube.standard_name = "sea_water_potential_temperature"
-        cube.units = "Celsius"
+        cube.rename("sea_water_potential_temperature")
+        units = "Celsius"
+        try:
+            setattr(cube, 'units', units)
+        except ValueError:
+            msg = 'Ignoring PP invalid units {!r}'.format(units)
+            warnings.warn(msg)
+            cube.attributes['invalid_units'] = units
+            cube.units = iris.unit._UNKNOWN_UNIT_STRING
 
     if \
             ((f.lbsrce % 10000) == 1111) and \
@@ -302,42 +337,91 @@ def convert(cube, field):
     if \
             (f.lbuser[6] == 1) and \
             (f.lbuser[3] == 4205):
-        cube.standard_name = "mass_fraction_of_cloud_ice_in_air"
-        cube.units = "1"
+        cube.rename("mass_fraction_of_cloud_ice_in_air")
+        units = "1"
+        try:
+            setattr(cube, 'units', units)
+        except ValueError:
+            msg = 'Ignoring PP invalid units {!r}'.format(units)
+            warnings.warn(msg)
+            cube.attributes['invalid_units'] = units
+            cube.units = iris.unit._UNKNOWN_UNIT_STRING
 
     if \
             (f.lbuser[6] == 1) and \
             (f.lbuser[3] == 4206):
-        cube.standard_name = "mass_fraction_of_cloud_liquid_water_in_air"
-        cube.units = "1"
+        cube.rename("mass_fraction_of_cloud_liquid_water_in_air")
+        units = "1"
+        try:
+            setattr(cube, 'units', units)
+        except ValueError:
+            msg = 'Ignoring PP invalid units {!r}'.format(units)
+            warnings.warn(msg)
+            cube.attributes['invalid_units'] = units
+            cube.units = iris.unit._UNKNOWN_UNIT_STRING
 
     if \
             (f.lbuser[6] == 1) and \
             (f.lbuser[3] == 30204):
-        cube.standard_name = "air_temperature"
-        cube.units = "K"
+        cube.rename("air_temperature")
+        units = "K"
+        try:
+            setattr(cube, 'units', units)
+        except ValueError:
+            msg = 'Ignoring PP invalid units {!r}'.format(units)
+            warnings.warn(msg)
+            cube.attributes['invalid_units'] = units
+            cube.units = iris.unit._UNKNOWN_UNIT_STRING
 
     if \
             (f.lbuser[6] == 4) and \
             (f.lbuser[3] == 6001):
-        cube.standard_name = "sea_surface_wave_significant_height"
-        cube.units = "m"
+        cube.rename("sea_surface_wave_significant_height")
+        units = "m"
+        try:
+            setattr(cube, 'units', units)
+        except ValueError:
+            msg = 'Ignoring PP invalid units {!r}'.format(units)
+            warnings.warn(msg)
+            cube.attributes['invalid_units'] = units
+            cube.units = iris.unit._UNKNOWN_UNIT_STRING
 
     if str(f.stash) in MOSIG_STASH_TO_CF:
-        cube.standard_name = MOSIG_STASH_TO_CF[str(f.stash)].name
-        cube.units = MOSIG_STASH_TO_CF[str(f.stash)].unit
+        cube.rename(MOSIG_STASH_TO_CF[str(f.stash)].name)
+        units = MOSIG_STASH_TO_CF[str(f.stash)].unit
+        try:
+            setattr(cube, 'units', units)
+        except ValueError:
+            msg = 'Ignoring PP invalid units {!r}'.format(units)
+            warnings.warn(msg)
+            cube.attributes['invalid_units'] = units
+            cube.units = iris.unit._UNKNOWN_UNIT_STRING
         cube.long_name = None
 
     if str(f.stash) in STASH_TO_CF:
-        cube.standard_name = STASH_TO_CF[str(f.stash)].cfname
-        cube.units = STASH_TO_CF[str(f.stash)].unit
+        cube.rename(STASH_TO_CF[str(f.stash)].cfname)
+        units = STASH_TO_CF[str(f.stash)].unit
+        try:
+            setattr(cube, 'units', units)
+        except ValueError:
+            msg = 'Ignoring PP invalid units {!r}'.format(units)
+            warnings.warn(msg)
+            cube.attributes['invalid_units'] = units
+            cube.units = iris.unit._UNKNOWN_UNIT_STRING
         cube.long_name = None
 
     if \
             (not f.stash.is_valid) and \
             (f.lbfc in LBFC_TO_CF):
-        cube.standard_name = LBFC_TO_CF[f.lbfc].cfname
-        cube.units = LBFC_TO_CF[f.lbfc].unit
+        cube.rename(LBFC_TO_CF[f.lbfc].cfname)
+        units = LBFC_TO_CF[f.lbfc].unit
+        try:
+            setattr(cube, 'units', units)
+        except ValueError:
+            msg = 'Ignoring PP invalid units {!r}'.format(units)
+            warnings.warn(msg)
+            cube.attributes['invalid_units'] = units
+            cube.units = iris.unit._UNKNOWN_UNIT_STRING
         cube.long_name = None
 
     if f.lbuser[3] == 33:

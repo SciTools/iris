@@ -92,39 +92,36 @@ class TestLoadCubes(tests.IrisTest):
     def test_simple_factory(self):
         # Test the creation process for a factory definition which only
         # uses simple dict arguments.
+
+        # The fake PPField which will be supplied to our converter.
         field = Mock()
+        field.data = None
         field_generator = lambda filename: [field]
-        # A fake rule set returning:
+        # A fake conversion function returning:
         #   1) A parameter cube needing a simple factory construction.
-        src_cube = Mock()
-        src_cube.coord = lambda **args: args
-        src_cube.add_aux_factory = lambda aux_factory: \
-            setattr(src_cube, 'fake_aux_factory', aux_factory)
         aux_factory = Mock()
         factory = Mock()
         factory.args = [{'name': 'foo'}]
         factory.factory_class = lambda *args: \
             setattr(aux_factory, 'fake_args', args) or aux_factory
-        rule_result = RuleResult(src_cube, Mock(), [factory])
-        rules = Mock()
-        rules.result = lambda field: rule_result
-        # A fake cross-reference rule set
-        xref_rules = Mock()
-        xref_rules.matching_rules = lambda field: []
+        def converter(cube, field):
+            # Suppress the normal Cube.coord() method.
+            cube.coord = lambda **args: args
+            cube.add_aux_factory = lambda aux_factory: \
+                setattr(cube, 'fake_aux_factory', aux_factory)
+            return ([factory], [])
         # Finish by making a fake Loader
-        name = 'FAKE_PP'
-        fake_loader = Loader(field_generator, {}, rules, xref_rules, name)
+        fake_loader = Loader(field_generator, {}, converter, None)
         cubes = load_cubes(['fake_filename'], None, fake_loader)
-        # Check the result is a generator with our "cube" as the only
-        # entry.
+
+        # Check the result is a generator with a single entry.
         self.assertIsInstance(cubes, types.GeneratorType)
         cubes = list(cubes)
         self.assertEqual(len(cubes), 1)
-        self.assertIs(cubes[0], src_cube)
         # Check the "cube" has an "aux_factory" added, which itself
         # must have been created with the correct arguments.
-        self.assertTrue(hasattr(src_cube, 'fake_aux_factory'))
-        self.assertIs(src_cube.fake_aux_factory, aux_factory)
+        self.assertTrue(hasattr(cubes[0], 'fake_aux_factory'))
+        self.assertIs(cubes[0].fake_aux_factory, aux_factory)
         self.assertTrue(hasattr(aux_factory, 'fake_args'))
         self.assertEqual(aux_factory.fake_args, ({'name': 'foo'},))
 
@@ -147,39 +144,43 @@ class TestLoadCubes(tests.IrisTest):
         assert len(param_cube.aux_factories) == 0
         assert not param_cube.coords('surface_altitude')
 
+        # The fake PPFields which will be supplied to our converter.
         press_field = Mock()
+        press_field.data = param_cube.data
         orog_field = Mock()
+        orog_field.data = orog_cube.data
         field_generator = lambda filename: [press_field, orog_field]
         # A fake rule set returning:
         #   1) A parameter cube needing an "orography" reference
         #   2) An "orography" cube
-        factory = Factory(HybridHeightFactory, [Reference('orography')])
-        press_rule_result = RuleResult(param_cube, Mock(), [factory])
-        orog_rule_result= RuleResult(orog_cube, Mock(), [])
-        rules = Mock()
-        rules.result = lambda field: \
-            press_rule_result if field is press_field else orog_rule_result
-        # A fake cross-reference rule set
-        ref = ReferenceTarget('orography', None)
-        orog_xref_rule = Mock()
-        orog_xref_rule.run_actions = lambda cube, field: (ref,)
-        xref_rules = Mock()
-        xref_rules.matching_rules = lambda field: \
-            [orog_xref_rule] if field is orog_field else []
+        def converter(cube, field):
+            if field is press_field:
+                src = param_cube
+                factories = [Factory(HybridHeightFactory,
+                                     [Reference('orography')])]
+                references = []
+            else:
+                src = orog_cube
+                factories = []
+                references = [ReferenceTarget('orography', None)]
+            cube.metadata = src.metadata
+            for coord in src.dim_coords:
+                cube.add_dim_coord(coord, src.coord_dims(coord)[0])
+            for coord in src.aux_coords:
+                cube.add_aux_coord(coord, src.coord_dims(coord))
+            return (factories, references)
         # Finish by making a fake Loader
-        name = 'FAKE_PP'
-        fake_loader = Loader(field_generator, {}, rules, xref_rules, name)
+        fake_loader = Loader(field_generator, {}, converter, None)
         cubes = load_cubes(['fake_filename'], None, fake_loader)
-        # Check the result is a generator containing both of our cubes.
+
+        # Check the result is a generator containing two Cubes.
         self.assertIsInstance(cubes, types.GeneratorType)
         cubes = list(cubes)
         self.assertEqual(len(cubes), 2)
-        self.assertIs(cubes[0], orog_cube)
-        self.assertIs(cubes[1], param_cube)
         # Check the "cube" has an "aux_factory" added, which itself
         # must have been created with the correct arguments.
-        self.assertEqual(len(param_cube.aux_factories), 1)
-        self.assertEqual(len(param_cube.coords('surface_altitude')), 1)
+        self.assertEqual(len(cubes[1].aux_factories), 1)
+        self.assertEqual(len(cubes[1].coords('surface_altitude')), 1)
 
 
 if __name__ == "__main__":

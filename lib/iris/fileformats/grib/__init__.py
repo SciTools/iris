@@ -37,6 +37,7 @@ import iris.coord_systems as coord_systems
 # NOTE: careful here, to avoid circular imports (as iris imports grib)
 from iris.fileformats.grib import grib_phenom_translation as gptx
 from iris.fileformats.grib import grib_save_rules
+import iris.fileformats.grib.load_rules
 import iris.unit
 
 
@@ -46,7 +47,7 @@ hindcast_workaround = False  # Enable this to correct hindcast periods on load.
 
 # rules for converting a grib message to a cm cube
 _load_rules = None
-_cross_reference_rules = None
+
 
 CENTRE_TITLES = {'egrr': 'U.K. Met Office - Exeter',
                  'ecmf': 'European Centre for Medium Range Weather Forecasts',
@@ -106,23 +107,6 @@ TIME_CODES_EDITION2 = {
 unknown_string = "???"
 
 
-def _ensure_load_rules_loaded():
-    """Makes sure the standard conversion rules are loaded."""
-
-    # Uses this module-level variables
-    global _load_rules, _cross_reference_rules
-
-    if _load_rules is None:
-        rules_path = os.path.join(iris.config.CONFIG_PATH, 'grib_rules.txt')
-        _load_rules = iris.fileformats.rules.RulesContainer(rules_path)
-
-    if _cross_reference_rules is None:
-        basepath = iris.config.CONFIG_PATH
-        _cross_reference_rules = iris.fileformats.rules.RulesContainer(
-            os.path.join(basepath, 'grib_cross_reference_rules.txt'),
-            rule_type=iris.fileformats.rules.ObjectReturningRule)
-
-
 def add_load_rules(filename):
     """
     Registers a rules file for use during the GRIB load process.
@@ -130,9 +114,19 @@ def add_load_rules(filename):
     Registered files are processed after the standard rules, and in the order
     they were registered.
     
+        .. deprecated:: 1.5
+
     """
-    _ensure_load_rules_loaded()
-    _load_rules.import_rules(filename)
+    msg = "The 'add_load_rules' function is deprecated."
+    warnings.warn(msg, UserWarning, stacklevel=2)
+
+    # Uses this module-level variable
+    global _load_rules
+
+    if _load_rules is None:
+        _load_rules = iris.fileformats.rules.RulesContainer(filename)
+    else:
+        _load_rules.import_rules(filename)
 
 
 def reset_load_rules():
@@ -619,11 +613,10 @@ def grib_generator(filename):
 
 def load_cubes(filenames, callback=None):
     """Returns a generator of cubes from the given list of filenames."""
-    _ensure_load_rules_loaded()
-    rules = iris.fileformats.rules
-    grib_loader = rules.Loader(grib_generator, {}, _load_rules,
-                               _cross_reference_rules, 'GRIB_LOAD')
-    return rules.load_cubes(filenames, callback, grib_loader)
+    grib_loader = iris.fileformats.rules.Loader(
+        grib_generator, {}, iris.fileformats.grib.load_rules.convert,
+        _load_rules)
+    return iris.fileformats.rules.load_cubes(filenames, callback, grib_loader)
 
 
 def save_grib2(cube, target, append=False, **kwargs):
