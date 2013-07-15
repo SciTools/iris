@@ -233,3 +233,7 @@ def plot(*args, **kwargs):
     result = iplt.plot(*args, **kwargs)
     _label_1d_plot(*args)
     return result
+
+
+# Provide a convenience show method from pyplot.
+show = plt.show
