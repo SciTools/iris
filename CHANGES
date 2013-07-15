@@ -1,3 +1,32 @@
+Release 1.5 (unreleased)
+========================
+
+
+Features added
+--------------
+* The functions `iris.plot.plot` and `iris.quickplot.plot` now take up to two
+  arguments, which may be cubes or coordinates, allowing the user to have full
+  control over what is plotted on each axis. The coords keyword argument is now
+  deprecated for these functions.
+
+Bugs fixed
+----------
+* N/A
+
+Incompatible changes
+--------------------
+* N/A
+
+Deprecations
+------------
+* The coords keyword argument for `iris.plot.plot` and `iris.quickplot.plot`
+  has been deprecated due to the new API which accepts multiple cubes or
+  coordinates.
+
+
+----------------------------
+
+
 Release 1.4 (unreleased)
 ========================
 

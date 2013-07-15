@@ -139,6 +139,112 @@ class TestHybridHeight(tests.GraphicsTest):
             self.check_graphic()
 
 
+class Test1dPlotMultiArgs(tests.GraphicsTest):
+    # tests for iris.plot using multi-argument calling convention
+
+    def setUp(self):
+        self.cube1d = _load_4d_testcube()[0, :, 0, 0]
+        self.draw_method = iplt.plot
+
+    def test_cube(self):
+        # just plot a cube against its dim coord
+        self.draw_method(self.cube1d)   # altitude vs temp
+        self.check_graphic()
+
+    def test_coord(self):
+        # plot the altitude coordinate
+        self.draw_method(self.cube1d.coord('altitude'))
+        self.check_graphic()
+
+    def test_coord_cube(self):
+        # plot temperature against sigma
+        self.draw_method(self.cube1d.coord('sigma'), self.cube1d)
+        self.check_graphic()
+
+    def test_cube_coord(self):
+        # plot a vertical profile of temperature
+        self.draw_method(self.cube1d, self.cube1d.coord('altitude'))
+        self.check_graphic()
+
+    def test_coord_coord(self):
+        # plot two coordinates that are not mappable
+        self.draw_method(self.cube1d.coord('sigma'),
+                         self.cube1d.coord('altitude'))
+        self.check_graphic()
+
+    def test_coord_coord_map(self):
+        # plot lat-lon aux coordinates of a trajectory, which draws a map
+        lon = iris.coords.AuxCoord([0, 5, 10, 15, 20, 25, 30, 35, 40, 45],
+                                   standard_name='longitude',
+                                   units='degrees_north')
+        lat = iris.coords.AuxCoord([45, 55, 50, 60, 55, 65, 60, 70, 65, 75],
+                                   standard_name='latitude',
+                                   units='degrees_north')
+        self.draw_method(lon, lat)
+        plt.gca().coastlines()
+        self.check_graphic()
+
+    def test_cube_cube(self):
+        # plot two phenomena against eachother, in this case just dummy data
+        cube1 = self.cube1d.copy()
+        cube2 = self.cube1d.copy()
+        cube1.rename('some phenomenon')
+        cube2.rename('some other phenomenon')
+        cube1.units = iris.unit.Unit('no_unit')
+        cube2.units = iris.unit.Unit('no_unit')
+        cube1.data[:] = np.linspace(0, 1, 7)
+        cube2.data[:] = np.exp(cube1.data)
+        self.draw_method(cube1, cube2)
+        self.check_graphic()
+
+    def test_incompatible_objects(self):
+        # incompatible objects (not the same length) should raise an error
+        with self.assertRaises(ValueError):
+            self.draw_method(self.cube1d.coord('time'), (self.cube1d))
+
+    def test_multimidmensional(self):
+        # multidimensional cubes are not allowed
+        cube = _load_4d_testcube()[0, :, :, 0]
+        with self.assertRaises(ValueError):
+            self.draw_method(cube)
+
+    def test_not_cube_or_coord(self):
+        # inputs must be cubes or coordinates, otherwise an error should be
+        # raised
+        xdim = np.arange(self.cube1d.shape[0])
+        with self.assertRaises(TypeError):
+            self.draw_method(xdim, self.cube1d)
+
+    def test_coords_deprecated(self):
+        # ensure a warning is raised if the old coords keyword argument is
+        # used, and make sure the plot produced is consistent with the old
+        # interface
+        msg = 'Missing deprecation warning for coords keyword.'
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter('always')
+            self.draw_method(self.cube1d, coords=['sigma'])
+            self.assertEqual(len(w), 1, msg)
+        self.check_graphic()
+
+    def test_coords_deprecation_too_many(self):
+        # in deprecation mode, too many coords is an error
+        with self.assertRaises(ValueError):
+            self.draw_method(self.cube1d, coords=['sigma', 'sigma'])
+
+    def test_coords_deprecation_invalid_span(self):
+        # in deprecation mode, a coordinate that doesn't span data is an error
+        with self.assertRaises(ValueError):
+            self.draw_method(self.cube1d, coords=['time'])
+
+
+class Test1dQuickplotPlotMultiArgs(Test1dPlotMultiArgs):
+    # tests for iris.plot using multi-argument calling convention
+
+    def setUp(self):
+        self.cube1d = _load_4d_testcube()[0, :, 0, 0]
+        self.draw_method = qplt.plot
+
+
 # Caches _load_4d_testcube so subsequent calls are faster
 def cache(fn, cache={}):
     def inner(*args, **kwargs):
@@ -536,6 +642,17 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
                 self.fail('Draw method %r failed with coords: %r. '
                           'Assertion message: %s' % (draw_method, coords, err))
 
+    def run_tests_1d(self, cube, results):
+        # there is a different calling convention for 1d plots
+        for draw_method, coords in results:
+            draw_method(cube.coord(coords[0]), cube)
+            try:
+                self.check_graphic()
+            except AssertionError as err:
+                msg = 'Draw method {!r} failed with coords: {!r}. ' \
+                      'Assertion message: {!s}'
+                self.fail(msg.format(draw_method, coords, err))
+
     def test_yx(self):
         test_cube = self.cube[0, 0, :, :]
         self.run_tests(test_cube, self.results['yx'])
@@ -550,11 +667,11 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
 
     def test_x(self):
         test_cube = self.cube[0, 0, 0, :]
-        self.run_tests(test_cube, self.results['x'])
+        self.run_tests_1d(test_cube, self.results['x'])
 
     def test_y(self):
         test_cube = self.cube[0, 0, :, 0]
-        self.run_tests(test_cube, self.results['y'])
+        self.run_tests_1d(test_cube, self.results['y'])
 
     def test_badcoords(self):
         cube = self.cube[0, 0, :, :]

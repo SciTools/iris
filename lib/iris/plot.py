@@ -24,6 +24,8 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 import collections
 import datetime
+import functools
+import warnings
 
 import matplotlib.axes
 import matplotlib.collections as mpl_collections
@@ -305,35 +307,89 @@ def _fixup_dates(coord, values):
     return values
 
 
-def _draw_1d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
+def _data_from_coord_or_cube(c):
+    if isinstance(c, iris.cube.Cube):
+        data = c.data
+    elif isinstance(c, iris.coords.Coord):
+        data = _fixup_dates(c, c.points)
+    else:
+        raise TypeError('Plot arguments must be cubes or coordinates.')
+    return data
+
+
+def _uv_from_u_object_v_object(u_object, v_object):
+    ndim_msg = 'Cube or coordinate must be 1-dimensional. Got {} dimensions.'
+    if u_object is not None and u_object.ndim > 1:
+        raise ValueError(ndim_msg.format(u_object.ndim))
+    if v_object.ndim > 1:
+        raise ValueError(ndim_msg.format(v_object.ndim))
+    type_msg = 'Plot arguments must be cubes or coordinates.'
+    v = _data_from_coord_or_cube(v_object)
+    if u_object is None:
+        u = np.arange(v.shape[0])
+    else:
+        u = _data_from_coord_or_cube(u_object)
+    return u, v
+
+
+def _u_object_from_v_object(v_object):
+    u_object = None
+    if isinstance(v_object, iris.cube.Cube):
+        plot_defn = _get_plot_defn(v_object, iris.coords.POINT_MODE, ndims=1)
+        u_object, = plot_defn.coords
+    return u_object
+
+
+def _get_plot_objects(args):
+    if len(args) > 1 and isinstance(args[1],
+                                    (iris.cube.Cube, iris.coords.Coord)):
+        # two arguments
+        u_object, v_object = args[:2]
+        u, v = _uv_from_u_object_v_object(*args[:2])
+        args = args[2:]
+        if len(u) != len(v):
+            msg = "The x and y-axis objects are not compatible. They should " \
+                  "have equal sizes but got ({}: {}) and ({}: {})."
+            raise ValueError(msg.format(u_object.name(), len(u),
+                                        v_object.name(), len(v)))
+    else:
+        # single argument
+        v_object = args[0]
+        u_object = _u_object_from_v_object(v_object)
+        u, v = _uv_from_u_object_v_object(u_object, args[0])
+        args = args[1:]
+    return u_object, v_object, u, v, args
+
+
+def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
     # NB. In the interests of clarity we use "u" to refer to the horizontal
-    # axes on the matplotlib plot.
+    # axes on the matplotlib plot and "v" for the vertical axes.
 
-    # get & remove the coords entry from kwargs
-    coords = kwargs.pop('coords', None)
-    mode = iris.coords.POINT_MODE
-    if coords is not None:
-        plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode,
-                                                        ndims=1)
+    # retrieve the objects that are plotted on the horizontal and vertical
+    # axes (cubes or coordinates) and their respective values, along with the
+    # argument tuple with these objects removed
+    u_object, v_object, u, v, args = _get_plot_objects(args)
+
+    # if both u_object and v_object are coordinates then check if a map
+    # should be drawn
+    if isinstance(u_object, iris.coords.Coord) and \
+            isinstance(v_object, iris.coords.Coord) and \
+            _can_draw_map([v_object, u_object]):
+        # Replace non-cartopy subplot/axes with a cartopy alternative and set
+        # the transform keyword.
+        draw_method, kwargs = _geoaxes_draw_method_and_kwargs(u_object,
+                                                              v_object,
+                                                              draw_method_name,
+                                                              kwargs)
     else:
-        plot_defn = _get_plot_defn(cube, mode, ndims=1)
+        # just use a pyplot function to draw
+        draw_method = getattr(plt, draw_method_name)
 
-    data = cube.data
-
-    # Obtain U coordinates
-    u_coord, = plot_defn.coords
-    if u_coord:
-        u = u_coord.points
-        u = _fixup_dates(u_coord, u)
-    else:
-        u = np.arange(data.shape[0])
-
-    draw_method = getattr(plt, draw_method_name)
     if arg_func is not None:
-        args, kwargs = arg_func(u, data, *args, **kwargs)
+        args, kwargs = arg_func(u, v, *args, **kwargs)
         result = draw_method(*args, **kwargs)
     else:
-        result = draw_method(u, data, *args, **kwargs)
+        result = draw_method(u, v, *args, **kwargs)
 
     return result
 
@@ -360,6 +416,31 @@ def _get_cartopy_axes(cartopy_proj):
         fig.delaxes(ax)
         ax = new_ax
     return ax
+
+
+def _geoaxes_draw_method_and_kwargs(x_coord, y_coord, draw_method_name,
+                                    kwargs):
+    """
+    Retrieve a GeoAxes draw method and appropriate keyword arguments for
+    calling it given the coordinates and existing keywords.
+
+    """
+    if x_coord.coord_system != y_coord.coord_system:
+        raise ValueError('The X and Y coordinates must have equal coordinate'
+                         ' systems.')
+    cs = x_coord.coord_system
+    if cs is not None:
+        cartopy_proj = cs.as_cartopy_projection()
+    else:
+        cartopy_proj = cartopy.crs.PlateCarree()
+    ax = _get_cartopy_axes(cartopy_proj)
+    draw_method = getattr(ax, draw_method_name)
+    # Set the "from transform" keyword.
+    new_kwargs = kwargs.copy()
+    assert 'transform' not in new_kwargs, 'Transform keyword is not allowed.'
+    new_kwargs['transform'] = cartopy_proj
+
+    return draw_method, new_kwargs
 
 
 def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
@@ -410,24 +491,11 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
         x = np.append(x, x[:, 0:1] + 360 * direction, axis=1)
         data = ma.concatenate([data, data[:, 0:1]], axis=1)
 
-    # Replace non-cartopy subplot/axes with a cartopy alternative.
-    if x_coord.coord_system != y_coord.coord_system:
-        raise ValueError('The X and Y coordinates must have equal coordinate'
-                         ' systems.')
-    cs = x_coord.coord_system
-    if cs:
-        cartopy_proj = cs.as_cartopy_projection()
-    else:
-        cartopy_proj = cartopy.crs.PlateCarree()
-    ax = _get_cartopy_axes(cartopy_proj)
-
-    draw_method = getattr(ax, draw_method_name)
-
-    # Set the "from transform" keyword.
-    # NB. While cartopy doesn't support spherical contours, just use the
-    # projection as the source CRS.
-    assert 'transform' not in kwargs, 'Transform keyword is not allowed.'
-    kwargs['transform'] = cartopy_proj
+    # Replace non-cartopy subplot/axes with a cartopy alternative and set the
+    # transform keyword.
+    draw_method, kwargs = _geoaxes_draw_method_and_kwargs(x_coord, y_coord,
+                                                          draw_method_name,
+                                                          kwargs)
 
     if arg_func is not None:
         new_args, kwargs = arg_func(x, y, data, *args, **kwargs)
@@ -706,9 +774,67 @@ def points(cube, *args, **kwargs):
                                 *args, **kwargs)
 
 
-def plot(cube, *args, **kwargs):
+def _1d_coords_deprecation_handler(func):
     """
-    Draws a line plot based on the given Cube.
+    Manage the deprecation of the coords keyword argument to 1d plot
+    functions.
+
+    """
+    @functools.wraps(func)
+    def _wrapper(*args, **kwargs):
+        coords = kwargs.pop('coords', None)
+        if coords is not None:
+            # issue a deprecation warning and check to see if the old
+            # interface should be mimicked for the deprecation period
+            warnings.warn('The coords keyword argument is deprecated.',
+                          stacklevel=2)
+            if len(coords) != 1:
+                msg = 'The list of coordinates given should have length 1 ' \
+                      'but it has length {}.'
+                raise ValueError(msg.format(len(coords)))
+            if isinstance(args[0], iris.cube.Cube):
+                if len(args) < 2 or not isinstance(args[1], (iris.cube.Cube,
+                                                   iris.coords.Coord)):
+                    if isinstance(coords[0], basestring):
+                        coord = args[0].coord(name=coords[0])
+                    else:
+                        coord = args[0].coord(coord=coords[0])
+                    if not args[0].coord_dims(coord):
+                        raise ValueError("The coordinate {!r} doesn't "
+                                         "span a data dimension."
+                                         "".format(coord.name()))
+                    args = (coord,) + args
+        return func(*args, **kwargs)
+    return _wrapper
+
+
+@_1d_coords_deprecation_handler
+def plot(*args, **kwargs):
+    """
+    Draws a line plot based on the given cube(s) or coordinate(s).
+
+    The first one or two arguments may be cubes or coordinates to plot.
+    Each of the following is valid::
+
+        # plot a 1d cube against its dimension coordinate
+        plot(cube)
+
+        # plot a 1d coordinate
+        plot(coord)
+
+        # plot a 1d cube against a given 1d coordinate, with the cube
+        # values on the y-axis and the coordinate on the x-axis
+        plot(coord, cube)
+
+        # plot a 1d cube against a given 1d coordinate, with the cube
+        # values on the x-axis and the coordinate on the y-axis
+        plot(cube, coord)
+
+        # plot two 1d coordinates against one-another
+        plot(coord1, coord2)
+
+        # plot two 1d cubes against one-another
+        plot(cube1, cube2)
 
     Kwargs:
 
@@ -718,12 +844,17 @@ def plot(cube, *args, **kwargs):
         element is the horizontal axis of the plot and the second element is
         the vertical axis of the plot.
 
-    See :func:`matplotlib.pyplot.plot` for details of other valid keyword
+        .. deprecated:: 1.5
+
+           The plot coordinates can be specified explicitly as in the
+           above examples, so this keyword is no longer needed.
+
+    See :func:`matplotlib.pyplot.plot` for details of valid keyword
     arguments.
 
     """
     _plot_args = None
-    return _draw_1d_from_points('plot', _plot_args, cube, *args, **kwargs)
+    return _draw_1d_from_points('plot', _plot_args, *args, **kwargs)
 
 
 # Provide convenience show method from pyplot
