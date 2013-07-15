@@ -561,47 +561,6 @@ class RulesContainer(object):
             self._rules.append(self.rule_type(conditions, actions))
         file.close()
             
-    def result(self, field):
-        """
-        Return the :class:`iris.cube.Cube` resulting from running this
-        set of rules with the given field.
-
-        Args:
-        
-        * field:
-            A field object relevant to the rule set.
-        
-        Returns: (cube, matching_rules)
-        
-        * cube - the resultant cube
-        * matching_rules - a list of rules which matched
-
-        """
-        # TODO: Remove this method
-        raise RuntimeError('Obsolete')
-        
-        # If the field has a data manager, then put it on the cube, otherwise transfer the data to the cube
-        if getattr(field, '_data_manager', None) is not None:
-            data = field._data
-            data_manager = field._data_manager
-        else:
-            data = field.data
-            data_manager = None
-
-        cube = iris.cube.Cube(data, data_manager=data_manager)
-        
-        verify_result = self.verify(cube, field)
-        return verify_result
-    
-    def matching_rules(self, field):
-        """
-        Return a list of rules which match the given field.
-
-        Returns: list of Rule instances
-        
-        """
-        return filter(lambda rule: rule._matches_field(field), self._rules)
-        
     def verify(self, cube, field):
         """
         Add to the given :class:`iris.cube.Cube` by running this set of
