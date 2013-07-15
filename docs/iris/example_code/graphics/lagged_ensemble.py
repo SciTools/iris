@@ -126,7 +126,7 @@ def main():
     
     for ensemble_member in mean.slices(['time']):
         # draw each ensemble member as a dashed line in black
-        iplt.plot(ensemble_member, '--k', coords=['time'])
+        iplt.plot(ensemble_member, '--k')
     
     plt.title('Mean temperature anomaly for ENSO 3.4 region')
     plt.xlabel('Time')
