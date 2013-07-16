@@ -1196,8 +1196,9 @@ class DimCoord(Coord):
         """Whether the coordinate wraps by ``coord.units.modulus``."""
 
     def __deepcopy__(self, memo):
-        # Make a clean copy instead of using copy.deepcopy.
-        # But also bypass points and bounds getters + setters.
+        # Make a new coord instead of using copy.deepcopy, as it is quicker.
+        # Set the private _points and _bounds directly, which is quicker as it
+        # bypasses validity checking in the setter methods.
         coord = DimCoord(points=[],
                          bounds=None,
                          standard_name=self.standard_name,
@@ -1205,7 +1206,7 @@ class DimCoord(Coord):
                          var_name=self.var_name,
                          units=self.units,
                          attributes=self.attributes,
-                         coord_system=self.coord_system,
+                         coord_system=deepcopy(self.coord_system),
                          circular=self.circular)
         points = self._points
         if points is not None:
@@ -1344,8 +1345,9 @@ class AuxCoord(Coord):
         return new_coord
 
     def __deepcopy__(self, memo):
-        # Make a clean copy instead of using copy.deepcopy.
-        # But also bypass points and bounds getters + setters.
+        # Make a new coord instead of using copy.deepcopy, as it is quicker.
+        # Set the private _points and _bounds directly, which is quicker as it
+        # bypasses validity checking in the setter methods.
         coord = AuxCoord(points=[],
                          bounds=None,
                          standard_name=self.standard_name,
@@ -1353,7 +1355,7 @@ class AuxCoord(Coord):
                          var_name=self.var_name,
                          units=self.units,
                          attributes=self.attributes,
-                         coord_system=self.coord_system)
+                         coord_system=deepcopy(self.coord_system))
         points = self._points
         if points is not None:
             points = points.copy()
