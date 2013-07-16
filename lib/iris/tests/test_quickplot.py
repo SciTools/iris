@@ -21,6 +21,8 @@ Tests the high-level plotting interface.
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
+import matplotlib.pyplot as plt
+
 import iris
 import iris.plot as iplt
 import iris.quickplot as qplt
@@ -169,6 +171,25 @@ class TestLabels(tests.GraphicsTest):
         qplt.contourf(cube)
         #qplt.outline(cube)
         qplt.points(cube)
+        self.check_graphic()
+
+
+@tests.skip_data
+class TestTimeReferenceUnitsLabels(tests.GraphicsTest):
+
+    def setUp(self):
+        path = tests.get_data_path(('PP', 'aPProt1', 'rotatedMHtimecube.pp'))
+        self.cube = iris.load_cube(path)[:, 0, 0]
+
+    def test_reference_time_units(self):
+        # units should not be displayed for a reference time
+        qplt.plot(self.cube.coord('time'), self.cube)
+        plt.gcf().autofmt_xdate()
+        self.check_graphic()
+
+    def test_not_reference_time_units(self):
+        # units should be displayed for other time coordinates
+        qplt.plot(self.cube.coord('forecast_period'), self.cube)
         self.check_graphic()
 
 
