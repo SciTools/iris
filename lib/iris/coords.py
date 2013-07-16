@@ -1197,8 +1197,8 @@ class DimCoord(Coord):
 
     def __deepcopy__(self, memo):
         # Make a new coord instead of using copy.deepcopy, as it is quicker.
-        # Set the private _points and _bounds directly, which is quicker as it
-        # bypasses validity checking in the setter methods.
+        # Also set the private _points and _bounds directly, as this bypasses
+        # unnecessary validity checking in the setter methods.
         coord = DimCoord(points=[],
                          bounds=None,
                          standard_name=self.standard_name,
@@ -1346,8 +1346,8 @@ class AuxCoord(Coord):
 
     def __deepcopy__(self, memo):
         # Make a new coord instead of using copy.deepcopy, as it is quicker.
-        # Set the private _points and _bounds directly, which is quicker as it
-        # bypasses validity checking in the setter methods.
+        # Also set the private _points and _bounds directly, as this bypasses
+        # unnecessary validity checking in the setter methods.
         coord = AuxCoord(points=[],
                          bounds=None,
                          standard_name=self.standard_name,

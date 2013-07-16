@@ -777,17 +777,14 @@ def _pp_attribute_names(header_defn):
 # that these are computed from -- see the corresponding property functions.
 _NOCACHE_ELEMENT_NAMES = ['_' + name for name in _SPECIAL_HEADERS]
 
-# Construct the list of attributes we *do* want to cache.
+# Define the list of attributes for which we can log fetches.
 #  = any from v2/v3 headers, except the excluded ones from above
-_CACHABLE_ELEMENT_NAMES = set(_pp_attribute_names(_header_defn(2)))
-_CACHABLE_ELEMENT_NAMES = _CACHABLE_ELEMENT_NAMES \
-    | set(_pp_attribute_names(_header_defn(3)))
-_CACHABLE_ELEMENT_NAMES = _CACHABLE_ELEMENT_NAMES \
-    - set(_NOCACHE_ELEMENT_NAMES)
-_CACHABLE_ELEMENT_NAMES = tuple(_CACHABLE_ELEMENT_NAMES)
+_CACHABLE_ELEMENT_NAMES = tuple((set(_pp_attribute_names(_header_defn(2))) |
+                                 set(_pp_attribute_names(_header_defn(3)))) -
+                                set(_NOCACHE_ELEMENT_NAMES))
 
 # Define a list of attributes that need "faking" in the field attribute access
-# log used by PP rules caching.  (see PPFieldAccessLogger.__getattribute__)
+# log used by PP rules caching.  (see _PPFieldAccessLogger.__getattribute__)
 _V2_V3_HEADER_VARIANT_NAMES = ['lbsec', 'lbsecd', 'lbday', 'lbdayd']
 
 
@@ -868,7 +865,7 @@ class PPField(object):
                                 self.lbuser[3] / 1000,
                                 self.lbuser[3] % 1000)
         elif hasattr(self, 'access_log'):
-            # Field is logging-enabled (see PPFieldAccessLogger).
+            # Field is logging-enabled (see _PPFieldAccessLogger).
             # Always fetch basic attributes, to be visible for rules caching.
             _ = self.lbuser
         return self._stash
@@ -969,7 +966,8 @@ class PPField(object):
 
     @property
     def x_bounds(self):
-        # N.B. must fetch both elements for rules caching -- do not use 'and'!
+        # N.B. always read both lower and upper bounds, as rules caching needs
+        # to see consistent fetches : So must *not* use "if upper and lower:".
         lower_exists = self.x_lower_bound is not None
         upper_exists = self.x_upper_bound is not None
         if lower_exists and upper_exists:
@@ -977,7 +975,8 @@ class PPField(object):
 
     @property
     def y_bounds(self):
-        # N.B. must fetch both elements for rules caching -- do not use 'and'!
+        # N.B. always read both lower and upper bounds, as rules caching needs
+        # to see consistent fetches : So must *not* use "if upper and lower:".
         lower_exists = self.y_lower_bound is not None
         upper_exists = self.y_upper_bound is not None
         if lower_exists and upper_exists:
@@ -1278,7 +1277,7 @@ class PPField2(PPField):
             # Fetch extra attributes, to make v2/v3 fields appear the same.
             _ = self.lbday
         elif hasattr(self, 'access_log'):
-            # Field is logging-enabled (see PPFieldAccessLogger).
+            # Field is logging-enabled (see _PPFieldAccessLogger).
             # Always fetch basic attributes, to be visible for rules caching.
             _ = (self.lbyr, self.lbmon, self.lbdat, self.lbhr, self.lbmin,
                  self.lbday)
@@ -1305,7 +1304,7 @@ class PPField2(PPField):
             # Fetch extra attributes, to make v2/v3 fields appear the same.
             _ = self.lbdayd
         elif hasattr(self, 'access_log'):
-            # Field is logging-enabled (see PPFieldAccessLogger).
+            # Field is logging-enabled (see _PPFieldAccessLogger).
             # Always fetch basic attributes, to be visible for rules caching.
             _ = (self.lbyrd, self.lbmond, self.lbdatd, self.lbhrd, self.lbmind,
                  self.lbdayd)
@@ -1345,7 +1344,11 @@ class PPField2(PPField):
         return self.lbdayd
 
     def as_access_logging_field(self):
-        # Return a logging-enabled field derived from ourself.
+        """
+        Return a logging-enabled field derived from ourself.
+
+        Returns a PPField2AccessLogger for this field.
+        """
         return PPField2AccessLogger(self)
 
 
@@ -1364,7 +1367,7 @@ class PPField3(PPField):
                 self.lbyr, self.lbmon, self.lbdat,
                 self.lbhr, self.lbmin, self.lbsec)
         elif hasattr(self, 'access_log'):
-            # Field is logging-enabled (see PPFieldAccessLogger).
+            # Field is logging-enabled (see _PPFieldAccessLogger).
             # Always fetch basic attributes, to be visible for rules caching.
             _ = (self.lbyr, self.lbmon, self.lbdat,
                  self.lbhr, self.lbmin, self.lbsec)
@@ -1390,7 +1393,7 @@ class PPField3(PPField):
                 self.lbyrd, self.lbmond, self.lbdatd,
                 self.lbhrd, self.lbmind, self.lbsecd)
         elif hasattr(self, 'access_log'):
-            # Field is logging-enabled (see PPFieldAccessLogger).
+            # Field is logging-enabled (see _PPFieldAccessLogger).
             # Always fetch basic attributes, to be visible for rules caching.
             _ = (self.lbyrd, self.lbmond, self.lbdatd,
                  self.lbhrd, self.lbmind, self.lbsecd)
@@ -1431,11 +1434,15 @@ class PPField3(PPField):
         return None
 
     def as_access_logging_field(self):
-        # Return a logging-enabled field derived from ourself.
+        """
+        Return a logging-enabled field derived from ourself.
+
+        Returns a PPField3AccessLogger for this field.
+        """
         return PPField3AccessLogger(self)
 
 
-class PPFieldAccessLogger(object):
+class _PPFieldAccessLogger(object):
     """
     A class to provide automatic logging of attribute fetches.
 
@@ -1454,14 +1461,13 @@ class PPFieldAccessLogger(object):
 
     def __getattribute__(self, attname):
         """
-        Log low-level attribute accesses, for rules caching.
+        Special method to log 'low-level' attribute fetches.
 
-        Used by rules management to capture the "basic" field elements
-        referenced by a rule action (for memoizing action results).
+        Records a log entry when a 'primitive' field attribute is read (i.e.
+        one of those actually read from the file, not computed properties).
 
         """
-        # 'super' access to own attributes, to avoid endless loops.
-        parent_fetch = super(PPFieldAccessLogger, self).__getattribute__
+        parent_fetch = super(_PPFieldAccessLogger, self).__getattribute__
         result = parent_fetch(attname)
         logto = parent_fetch('access_log')
         # Log fetches of 'basic' attributes we are interested in.
@@ -1488,12 +1494,12 @@ class PPFieldAccessLogger(object):
         return result
 
 
-class PPField2AccessLogger(PPFieldAccessLogger, PPField2):
+class PPField2AccessLogger(_PPFieldAccessLogger, PPField2):
     # Logging-enabled PPField2, returned by PPField2.as_access_logging_field().
     pass
 
 
-class PPField3AccessLogger(PPFieldAccessLogger, PPField3):
+class PPField3AccessLogger(_PPFieldAccessLogger, PPField3):
     # Logging-enabled PPField3, returned by PPField2.as_access_logging_field().
     pass
 

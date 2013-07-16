@@ -319,12 +319,11 @@ class RotatedGeogCS(CoordSystem):
 
     def __deepcopy__(self, memo):
         # Just the ellipsoid needs an inner copy (as it is an object)
-        new_ellipsoid = copy.deepcopy(self.ellipsoid, memo)
         return RotatedGeogCS(
             grid_north_pole_latitude=self.grid_north_pole_latitude,
             grid_north_pole_longitude=self.grid_north_pole_longitude,
             north_pole_grid_longitude=self.north_pole_grid_longitude,
-            ellipsoid=new_ellipsoid)
+            ellipsoid=copy.deepcopy(self.ellipsoid, memo))
 
 
 class TransverseMercator(CoordSystem):

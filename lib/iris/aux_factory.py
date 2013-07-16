@@ -93,7 +93,7 @@ class LazyArray(object):
         return self._cached_array().view(*args, **kwargs)
 
     def copy(self):
-        """Return a object copy (not evaluating array)."""
+        """Return an object copy (not evaluating array)."""
         if self._array is None:
             result = LazyArray(self.shape, self._func)
         else:

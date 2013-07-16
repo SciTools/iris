@@ -187,7 +187,7 @@ class CMAttribute(object):
         For some reason tuple deepcopy is generally slow.
 
         """
-        return CMAttribute(self.name, self.value)
+        return CMAttribute(self.name, copy.deepcopy(self.value, memo))
 
 
 class CMCustomAttribute(object):
@@ -211,7 +211,7 @@ class CMCustomAttribute(object):
         For some reason tuple deepcopy is generally slow.
 
         """
-        return CMCustomAttribute(self.name, self.value)
+        return CMCustomAttribute(self.name, copy.deepcopy(self.value, memo))
 
 
 class CoordAndDims(object):
