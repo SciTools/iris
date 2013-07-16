@@ -311,6 +311,14 @@ class TestAuxCoordCreation(unittest.TestCase):
         b = iris.coords.AuxCoord(['Jan', 'Feb', 'March'], units='no_unit')
         c = iris.coords.AuxCoord(['Jan', 'Feb', 'March'], units='no_unit')
         self.assertEqual(b, c)
+
+    def test_AuxCoord_fromcoord(self):
+        # Check the coordinate returned by `from_coord` doesn't reference the
+        # same coordinate system as the source coordinate.
+        crs = iris.coord_systems.GeogCS(6370000)
+        a = iris.coords.DimCoord(10, coord_system=crs)
+        b = iris.coords.AuxCoord.from_coord(a)
+        self.assertIsNot(a.coord_system, b.coord_system)
   
   
 class TestDimCoordCreation(unittest.TestCase):
@@ -377,6 +385,14 @@ class TestDimCoordCreation(unittest.TestCase):
         b = iris.coords.AuxCoord.from_coord(a)
         # Note - circular attribute is not a factor in equality comparison
         self.assertEqual(a, b)
+
+    def test_DimCoord_fromcoord(self):
+        # Check the coordinate returned by `from_coord` doesn't reference the
+        # same coordinate system as the source coordinate.
+        crs = iris.coord_systems.GeogCS(6370000)
+        a = iris.coords.AuxCoord(10, coord_system=crs)
+        b = iris.coords.DimCoord.from_coord(a)
+        self.assertIsNot(a.coord_system, b.coord_system)
 
 
 class TestCoordMaths(tests.IrisTest):
