@@ -451,22 +451,23 @@ class Cube(CFVariableMixin):
                 self._data = np.asarray(data)
             self._data_manager = None
 
+        #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
-        """The "standard name" for the Cube's phenomenon."""
 
+        #: An instance of :class:`iris.unit.Unit` describing the Cube's data.
         self.units = units
-        """An instance of :class:`iris.unit.Unit` describing the Cube's data."""
 
+        #: The "long name" for the Cube's phenomenon.
         self.long_name = long_name
-        """The "long name" for the Cube's phenomenon."""
 
+        #: The CF variable name for the Cube.
         self.var_name = var_name
-        """The CF variable name for the Cube."""
 
         self.cell_methods = cell_methods
 
+        #: A dictionary, with a few restricted keys, for arbitrary
+        #: Cube metadata.
         self.attributes = attributes
-        """A dictionary, with a few restricted keys, for arbitrary Cube metadata."""
 
         # Coords
         self._dim_coords_and_dims = []

@@ -31,8 +31,8 @@ import iris.cube
 import iris.exceptions
            
 
+#: Used by callbacks to specify that the given cube should not be loaded.
 NO_CUBE = 'NOCUBE'
-"""Used by callbacks to specify that the given cube should not be loaded."""
 CALLBACK_DEPRECATION_MSG = "Callback functions with a return value are deprecated."
 
 

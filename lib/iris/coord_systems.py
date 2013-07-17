@@ -174,17 +174,17 @@ class GeogCS(CoordSystem):
         else:
             raise ValueError("Insufficient ellipsoid specification")
 
+        #: Major radius of the ellipsoid in metres.
         self.semi_major_axis = float(semi_major_axis)
-        """Major radius of the ellipsoid in metres."""
         
+        #: Minor radius of the ellipsoid in metres.
         self.semi_minor_axis = float(semi_minor_axis)
-        """Minor radius of the ellipsoid in metres."""
 
+        #: :math:`1/f` where :math:`f = (a-b)/a`
         self.inverse_flattening = float(inverse_flattening)
-        """:math:`1/f` where :math:`f = (a-b)/a`"""
         
+        #: Describes 'zero' on the ellipsoid in degrees.
         self.longitude_of_prime_meridian = float(longitude_of_prime_meridian)
-        """Describes 'zero' on the ellipsoid in degrees."""
         
     def _pretty_attrs(self):
         attrs = [("semi_major_axis", self.semi_major_axis)]
@@ -260,17 +260,17 @@ class RotatedGeogCS(CoordSystem):
             another_cs = RotatedGeogCS(30, 30, ellipsoid=GeogCS(6400000, 6300000))
 
         """ 
+        #: The true latitude of the rotated pole in degrees.
         self.grid_north_pole_latitude = float(grid_north_pole_latitude)
-        """The true latitude of the rotated pole in degrees."""
 
+        #: The true longitude of the rotated pole in degrees.
         self.grid_north_pole_longitude = float(grid_north_pole_longitude)
-        """The true longitude of the rotated pole in degrees."""
         
+        #: Longitude of true north pole in rotated grid in degrees.
         self.north_pole_grid_longitude = float(north_pole_grid_longitude)
-        """Longitude of true north pole in rotated grid in degrees."""
 
+        #: Ellipsoid definition.
         self.ellipsoid = ellipsoid
-        """Ellipsoid definition."""
 
     def _pretty_attrs(self):
         attrs = [("grid_north_pole_latitude", self.grid_north_pole_latitude),
@@ -354,23 +354,23 @@ class TransverseMercator(CoordSystem):
             osgb = TransverseMercator(49, -2, 400000, -100000, 0.9996012717, ellipsoid=airy1830)
 
         """
+        #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = float(latitude_of_projection_origin)
-        """True latitude of planar origin in degrees."""
 
+        #: True longitude of planar origin in degrees.
         self.longitude_of_central_meridian = float(longitude_of_central_meridian)
-        """True longitude of planar origin in degrees."""
 
+        #: X offset from planar origin in metres.
         self.false_easting = float(false_easting)  
-        """X offset from planar origin in metres."""
 
+        #: Y offset from planar origin in metres.
         self.false_northing = float(false_northing)  
-        """Y offset from planar origin in metres."""
 
+        #: Reduces the cylinder to slice through the ellipsoid (secant form).
         self.scale_factor_at_central_meridian = float(scale_factor_at_central_meridian)
-        """Reduces the cylinder to slice through the ellipsoid (secant form)."""
 
+        #: Ellipsoid definition.
         self.ellipsoid = ellipsoid
-        """Ellipsoid definition."""
 
     def __repr__(self):
         return "TransverseMercator(latitude_of_projection_origin={!r}, "\
@@ -447,23 +447,23 @@ class Stereographic(CoordSystem):
 
         """
         
+        #: True latitude of planar origin in degrees.
         self.central_lat = float(central_lat)
-        """True latitude of planar origin in degrees."""
 
+        #: True longitude of planar origin in degrees.
         self.central_lon = float(central_lon)
-        """True longitude of planar origin in degrees."""
 
+        #: X offset from planar origin in metres.
         self.false_easting = float(false_easting)  
-        """X offset from planar origin in metres."""
 
+        #: Y offset from planar origin in metres.
         self.false_northing = float(false_northing)  
-        """Y offset from planar origin in metres."""
 
+        #: Latitude of true scale.
         self.true_scale_lat = float(true_scale_lat) if true_scale_lat else None
-        """Latitude of true scale."""
 
+        #: Ellipsoid definition.
         self.ellipsoid = ellipsoid
-        """Ellipsoid definition."""
 
     def __repr__(self):
         return "Stereographic(central_lat={!r}, central_lon={!r}, "\

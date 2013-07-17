@@ -118,8 +118,8 @@ class FFHeader(object):
             
         """
         
+        #: File name of the FieldsFile.
         self.ff_filename = filename
-        '''File name of the FieldsFile.'''
         self._word_depth = word_depth
 
         # Read the FF header data

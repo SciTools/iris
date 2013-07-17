@@ -109,14 +109,14 @@ class AuxCoordFactory(CFVariableMixin):
     __metaclass__ = ABCMeta
 
     def __init__(self):
+        #: Descriptive name of the coordinate made by the factory
         self.long_name = None
-        """Descriptive name of the coordinate made by the factory"""
 
+        #: CF variable name of the coordinate made by the factory
         self.var_name = None
-        """CF variable name of the coordinate made by the factory"""
 
+        #: Coordinate system (if any) of the coordinate made by the factory
         self.coord_system = None
-        """Coordinate system (if any) of the coordinate made by the factory"""
 
     @abstractproperty
     def dependencies(self):

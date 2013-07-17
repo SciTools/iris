@@ -29,8 +29,8 @@ import iris
 import iris.experimental.regrid as i_regrid
 
 
+#: A static Cartopy Geodetic() instance for transforming to true-lat-lons.
 _CRS_TRUELATLON = ccrs.Geodetic()
-"""A static Cartopy Geodetic() instance for transforming to true-lat-lons."""
 
 
 def _convert_latlons(crs, x_array, y_array):
