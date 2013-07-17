@@ -772,22 +772,6 @@ def _pp_attribute_names(header_defn):
     extra_data = EXTRA_DATA.values()
     return normal_headers + special_headers + extra_data
 
-# Define the attributes of a PPField we *don't* want to capture accesses to.
-# NOTE: but must then ensure that capture sees accesses to the "basic" elements
-# that these are computed from -- see the corresponding property functions.
-_NOCACHE_ELEMENT_NAMES = ['_' + name for name in _SPECIAL_HEADERS]
-
-# Define the list of attributes for which we can log fetches.
-#  = any from v2/v3 headers, except the excluded ones from above
-_CACHABLE_ELEMENT_NAMES = tuple((set(_pp_attribute_names(_header_defn(2))) |
-                                 set(_pp_attribute_names(_header_defn(3)))) -
-                                set(_NOCACHE_ELEMENT_NAMES))
-
-# Define a list of attributes that need "faking" in the field attribute access
-# log used by PP rules caching.  (see _PPFieldAccessLogger.__getattribute__)
-_V2_V3_HEADER_VARIANT_NAMES = ['lbsec', 'lbsecd', 'lbday', 'lbdayd']
-
-
 class PPField(object):
     """
     A generic class for PP fields - not specific to a particular header release number.
@@ -1451,6 +1435,21 @@ class _PPFieldAccessLogger(object):
     accesses from methods of the parent PPField class.
 
     """
+    # Define the list of attributes for which we can log fetches.
+    #  = any from v2/v3 headers, except the computed ones in SPECIAL_HEADERS.
+    _CACHABLE_ELEMENT_NAMES = tuple(
+        (set(_pp_attribute_names(_header_defn(2))) |
+         set(_pp_attribute_names(_header_defn(3)))) -
+        set('_' + name for name in _SPECIAL_HEADERS))
+    # NOTE: as computed properties are excluded, the getter methods must
+    # always read all the "basic" properties they depend on, so that rules
+    # caching can track the functional dependencies.
+    # See the corresponding property functions.
+
+    # Define a list of attributes that need "faking" in the access log used by
+    # the PP rules caching.  (see _PPFieldAccessLogger.__getattribute__)
+    _V2_V3_HEADER_VARIANT_NAMES = ['lbsec', 'lbsecd', 'lbday', 'lbdayd']
+
     def __init__(self, original_field):
         # Make this a copy of the original field.
         for name in original_field.__slots__:
@@ -1470,9 +1469,10 @@ class _PPFieldAccessLogger(object):
         parent_fetch = super(_PPFieldAccessLogger, self).__getattribute__
         result = parent_fetch(attname)
         logto = parent_fetch('access_log')
+        loggable_names = parent_fetch('_CACHABLE_ELEMENT_NAMES')
         # Log fetches of 'basic' attributes we are interested in.
-        if attname in _CACHABLE_ELEMENT_NAMES:
-            if attname not in _V2_V3_HEADER_VARIANT_NAMES:
+        if attname in loggable_names:
+            if attname not in self._V2_V3_HEADER_VARIANT_NAMES:
                 # Log a 'normal' attribute fetch.
                 logto.append((attname, result))
             else:
