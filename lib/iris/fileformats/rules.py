@@ -485,14 +485,6 @@ class FunctionRule(Rule):
         return factory
 
 
-class ObjectReturningRule(FunctionRule):
-    """A rule which returns a list of objects when its actions are run.""" 
-    def run_actions(self, cube, field):
-        f = pp = grib = field
-        cm = cube
-        return [action(field, f, pp, grib, cm) for action in self._exec_actions]
-
-
 class ProcedureRule(Rule):
     """A Rule with nothing returned by its actions."""
     def _create_action_method(self, i, action):
@@ -569,45 +561,6 @@ class RulesContainer(object):
             self._rules.append(self.rule_type(conditions, actions))
         file.close()
             
-    def result(self, field):
-        """
-        Return the :class:`iris.cube.Cube` resulting from running this
-        set of rules with the given field.
-
-        Args:
-        
-        * field:
-            A field object relevant to the rule set.
-        
-        Returns: (cube, matching_rules)
-        
-        * cube - the resultant cube
-        * matching_rules - a list of rules which matched
-
-        """
-        
-        # If the field has a data manager, then put it on the cube, otherwise transfer the data to the cube
-        if getattr(field, '_data_manager', None) is not None:
-            data = field._data
-            data_manager = field._data_manager
-        else:
-            data = field.data
-            data_manager = None
-
-        cube = iris.cube.Cube(data, data_manager=data_manager)
-        
-        verify_result = self.verify(cube, field)
-        return verify_result
-    
-    def matching_rules(self, field):
-        """
-        Return a list of rules which match the given field.
-
-        Returns: list of Rule instances
-        
-        """
-        return filter(lambda rule: rule._matches_field(field), self._rules)
-        
     def verify(self, cube, field):
         """
         Add to the given :class:`iris.cube.Cube` by running this set of
@@ -780,8 +733,19 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
 
 Loader = collections.namedtuple('Loader',
                                 ('field_generator', 'field_generator_kwargs',
-                                 'load_rules', 'cross_ref_rules',
-                                 'log_name'))
+                                 'converter', 'legacy_custom_rules'))
+
+
+def _make_cube(field):
+    if getattr(field, '_data_manager', None) is not None:
+        data = field._data
+        data_manager = field._data_manager
+    else:
+        data = field.data
+        data_manager = None
+
+    cube = iris.cube.Cube(data, data_manager=data_manager)
+    return cube
 
 
 def load_cubes(filenames, user_callback, loader):
@@ -793,10 +757,13 @@ def load_cubes(filenames, user_callback, loader):
 
     for filename in filenames:
         for field in loader.field_generator(filename, **loader.field_generator_kwargs):
-            # Convert the field to a Cube, logging the rules that were used
-            rules_result = loader.load_rules.result(field)
-            cube = rules_result.cube
-            log(loader.log_name, filename, rules_result.matching_rules)
+            # Convert the field to a Cube.
+            cube = _make_cube(field)
+            factories, references = loader.converter(cube, field)
+
+            # Run any custom user-provided rules.
+            if loader.legacy_custom_rules:
+                loader.legacy_custom_rules.verify(cube, field)
 
             cube = iris.io.run_callback(user_callback, cube, field, filename)
 
@@ -804,9 +771,7 @@ def load_cubes(filenames, user_callback, loader):
                 continue
 
             # Cross referencing
-            rules = loader.cross_ref_rules.matching_rules(field)
-            for rule in rules:
-                reference, = rule.run_actions(cube, field)
+            for reference in references:
                 name = reference.name
                 # Register this cube as a source cube for the named
                 # reference.
@@ -816,15 +781,14 @@ def load_cubes(filenames, user_callback, loader):
                     concrete_reference_targets[name] = target
                 target.add_cube(cube)
 
-            if rules_result.factories:
-                results_needing_reference.append(rules_result)
+            if factories:
+                results_needing_reference.append((cube, factories))
             else:
                 yield cube
 
     regrid_cache = {}
-    for result in results_needing_reference:
-        cube = result.cube
-        for factory in result.factories:
+    for cube, factories in results_needing_reference:
+        for factory in factories:
             try:
                 args = _dereference_args(factory, concrete_reference_targets,
                                          regrid_cache, cube)

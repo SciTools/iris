@@ -552,13 +552,12 @@ class TestGribSimple(tests.IrisTest):
 
     def cube_from_message(self, grib):
         cube = iris.cube.Cube([[1.0]])
-        iris.fileformats.grib._ensure_load_rules_loaded()
         # Parameter translation now uses the GribWrapper, so we must convert
         # the Mock-based fake message to a FakeGribMessage.
         with mock.patch('iris.fileformats.grib.gribapi', _mock_gribapi):
                 grib_message = FakeGribMessage(**grib.__dict__)
                 wrapped_msg = iris.fileformats.grib.GribWrapper(grib_message)
-                iris.fileformats.grib._load_rules.verify(cube, wrapped_msg)
+                iris.fileformats.grib.load_rules.convert(cube, wrapped_msg)
         return cube
 
 

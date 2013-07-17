@@ -27,6 +27,7 @@ import operator
 import os
 import re
 import struct
+import warnings
 
 import numpy as np
 import numpy.ma as ma
@@ -37,6 +38,7 @@ import iris.fileformats.rules
 import iris.io
 import iris.unit
 import iris.fileformats.manager
+import iris.fileformats.pp_rules
 import iris.coord_systems
 import iris.proxy
 iris.proxy.apply_proxy('iris.fileformats.pp_packing', globals())
@@ -51,7 +53,6 @@ EARTH_RADIUS = 6371229.0
 
 # PP->Cube and Cube->PP rules are loaded on first use
 _load_rules = None
-_cross_reference_rules = None
 _save_rules = None
 
 
@@ -1419,24 +1420,6 @@ def load(filename, read_data=False):
     pp_file.close()
 
 
-def _ensure_load_rules_loaded():
-    """Makes sure the standard conversion and verification rules are loaded."""
-
-    # Uses these module-level variables
-    global _load_rules, _cross_reference_rules
-
-    rules = iris.fileformats.rules
-
-    if _load_rules is None:
-        basepath = iris.config.CONFIG_PATH
-        _load_rules = rules.RulesContainer(os.path.join(basepath, 'pp_rules.txt'))
-
-    if _cross_reference_rules is None:
-        basepath = iris.config.CONFIG_PATH
-        _cross_reference_rules = rules.RulesContainer(os.path.join(basepath, 'pp_cross_reference_rules.txt'), 
-                                                           rule_type=rules.ObjectReturningRule)
-
-
 def add_load_rules(filename):
     """
     Registers a rules file for use during the PP load process.
@@ -1444,9 +1427,19 @@ def add_load_rules(filename):
     Registered files are processed after the standard conversion rules, and in
     the order they were registered.
     
+        .. deprecated:: 1.5
+
     """
-    _ensure_load_rules_loaded()
-    _load_rules.import_rules(filename)
+    msg = "The 'add_load_rules' function is deprecated."
+    warnings.warn(msg, UserWarning, stacklevel=2)
+
+    # Uses this module-level variable
+    global _load_rules
+
+    if _load_rules is None:
+        _load_rules = iris.fileformats.rules.RulesContainer(filename)
+    else:
+        _load_rules.import_rules(filename)
 
 
 def reset_load_rules():
@@ -1514,11 +1507,10 @@ def load_cubes(filenames, callback=None):
 
 def _load_cubes_variable_loader(filenames, callback, loading_function,
                                 loading_function_kwargs=None):
-    _ensure_load_rules_loaded()
-    rules = iris.fileformats.rules
-    pp_loader = rules.Loader(loading_function, loading_function_kwargs or {},
-                             _load_rules, _cross_reference_rules, 'PP_LOAD')
-    return rules.load_cubes(filenames, callback, pp_loader)
+    pp_loader = iris.fileformats.rules.Loader(
+        loading_function, loading_function_kwargs or {},
+        iris.fileformats.pp_rules.convert, _load_rules)
+    return iris.fileformats.rules.load_cubes(filenames, callback, pp_loader)
 
 
 def save(cube, target, append=False, field_coords=None):
