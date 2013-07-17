@@ -60,8 +60,9 @@ class CFVariable(object):
 
     __metaclass__ = ABCMeta
 
+    #: Name of the netCDF variable attribute that identifies this
+    #: CF-netCDF variable.
     cf_identity = None
-    '''Name of the netCDF variable attribute that identifies this CF-netCDF variable'''
     
     def __init__(self, name, data):
         # Accessing the list of netCDF attributes is surprisingly slow.
@@ -69,17 +70,17 @@ class CFVariable(object):
         # quite a bit faster.
         self._nc_attrs = data.ncattrs()
 
+        #: NetCDF variable name
         self.cf_name = name
-        '''NetCDF variable name'''
 
+        #: NetCDF4 Variable data instance
         self.cf_data = data
-        '''NetCDF4 Variable data instance'''
 
+        #: Collection of CF-netCDF variables associated with this variable
         self.cf_group = None
-        '''Collection of CF-netCDF variables associated with this variable'''
 
+        #: CF-netCDF formula terms that his variable participates in
         self.cf_terms_by_root = {}
-        '''CF-netCDF formula terms that his variable participates in'''
 
         self.cf_attrs_reset()
 
@@ -434,10 +435,10 @@ class _CFFormulaTermsVariable(CFVariable):
 
     def __init__(self, name, data, formula_root, formula_term):
         CFVariable.__init__(self, name, data)
+        #: CF-netCDF variable name that defines the formula terms
         self.cf_root = formula_root
-        '''CF-netCDF variable name that defines the formula terms'''
+        #: Formula term of the associated formula variable
         self.cf_term = formula_term
-        '''Formula term of the associated formula variable'''
 
     @classmethod
     def identify(cls, variables, ignore=None, target=None, warn=True):
@@ -641,8 +642,8 @@ class CFMeasureVariable(CFVariable):
 
     def __init__(self, name, data, measure):
         CFVariable.__init__(self, name, data)
+        #: Associated cell measure of the cell variable
         self.cf_measure = measure
-        '''Associated cell measure of the cell variable'''
         
     @classmethod
     def identify(cls, variables, ignore=None, target=None, warn=True):
@@ -680,10 +681,10 @@ class CFGroup(object, UserDict.DictMixin):
     
     """
     def __init__(self):       
+        #: Collection of CF-netCDF variables
         self._cf_variables = {}
-        '''Collection of CF-netCDF variables'''
+        #: Collection of netCDF global attributes
         self.global_attributes = {}
-        '''Collection of netCDF global attributes'''
 
     def _cf_getter(self, cls):
         # Generate dictionary with dictionary comprehension.
@@ -787,8 +788,8 @@ class CFReader(object):
                                 CFBoundaryVariable, CFClimatologyVariable, 
                                 CFGridMappingVariable, CFLabelVariable, CFMeasureVariable)
         
+        #: Collection of CF-netCDF variables associated with this netCDF file
         self.cf_group = CFGroup()
-        '''Collection of CF-netCDF variables associated with this netCDF file'''
 
         self._dataset = netCDF4.Dataset(self._filename, mode='r')
 

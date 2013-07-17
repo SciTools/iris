@@ -33,8 +33,8 @@ _DOT_EXECUTABLE_PATH = iris.config.get_option('System', 'dot_path',
                                               default='dot')
 if not os.path.exists(_DOT_EXECUTABLE_PATH):
     _DOT_EXECUTABLE_PATH = None
+#: Whether the 'dot' program is present (required for "dotpng" output).
 DOT_AVAILABLE = _DOT_EXECUTABLE_PATH is not None
-""" Whether the 'dot' program is present (required for "dotpng" output). """
 
 
 def save(cube, target):
