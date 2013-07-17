@@ -128,8 +128,8 @@ AttributeConstraint = iris._constraints.AttributeConstraint
 
 
 # Initialise the site configuration dictionary.
+#: Iris site configuration dictionary.
 site_configuration = {}
-"""Iris site configuration dictionary."""
 
 try:
     from iris.site_config import update as _update

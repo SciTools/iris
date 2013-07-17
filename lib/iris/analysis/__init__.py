@@ -297,12 +297,12 @@ class Aggregator(object):
             Passed through to call_func.
         
         """
+        #: Cube history string that supports string format substitution.
         self.history = history
-        '''Cube history string that supports string format substitution.'''
+        #: Cube cell method string.
         self.cell_method = cell_method
-        '''Cube cell method string.'''
+        #: Data aggregation function.
         self.call_func = call_func
-        '''Data aggregation function.'''
 
         self._kwargs = kwargs
 
@@ -390,8 +390,8 @@ class WeightedAggregator(Aggregator):
     def __init__(self, history, cell_method, call_func, **kwargs):
         Aggregator.__init__(self, history, cell_method, call_func, **kwargs)
 
+        #: A list of keywords that trigger weighted behaviour.
         self._weighting_keywords = ["returned", "weights"]
-        '''A list of keywords that trigger weighted behaviour.'''
 
     def uses_weighting(self, **kwargs):
         """Does this aggregator use weighting with the given keywords?"""
@@ -744,8 +744,8 @@ class _Groupby(object):
             One or more coordinates that share the same group-by coordinate axis.
             
         """
+        #: Group-by and shared coordinates that have been grouped.
         self.coords = []
-        '''Group-by and shared coordinates that have been grouped.'''
         self._groupby_coords = []
         self._shared_coords = []
         self._slices_by_key = collections.OrderedDict()

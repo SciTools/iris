@@ -86,11 +86,12 @@ class DataManager(iris.util._OrderedHashable):
     def __init__(self, data_shape, data_type, mdi, deferred_slices=()):
         self._init(data_shape, data_type, mdi, deferred_slices)
 
+    #: The data shape of the array in file; may differ from the result
+    #: of :py:ref:`load` if there are pending slices.
     _orig_data_shape = None
-    """The data shape of the array in file; may differ from the result of :py:ref:`load` if there are pending slices."""
 
+    #: Tuple of keys tuples as would be used in a __getitem__ context.
     deferred_slices = None
-    """Tuple of keys tuples as would be used in a __getitem__ context."""
     
     def pre_slice_array_shape(self, proxy_array):
         """

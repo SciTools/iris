@@ -324,24 +324,24 @@ class Coord(CFVariableMixin):
             e.g. a :class:`~iris.coord_systems.GeogCS` for a longitude Coord.
 
         """
+        #: CF standard name of the quantity that the coordinate represents.
         self.standard_name = standard_name
-        """CF standard name of the quantity that the coordinate represents."""
 
+        #: Descriptive name of the coordinate.
         self.long_name = long_name
-        """Descriptive name of the coordinate."""
 
+        #: The CF variable name for the coordinate.
         self.var_name = var_name
-        """The CF variable name for the coordinate."""
 
+        #: Unit of the quantity that the coordinate represents.
         self.units = units
-        """Unit of the quantity that the coordinate represents."""
 
+        #: Other attributes, including user specified attributes that
+        #: have no meaning to Iris.
         self.attributes = attributes
-        """Other attributes, including user specified attributes that have no
-        meaning to Iris."""
 
+        #: Relevant CoordSystem (if any).
         self.coord_system = coord_system
-        """Relevant CoordSystem (if any)."""
 
         self.points = points
         self.bounds = bounds
@@ -1193,8 +1193,8 @@ class DimCoord(Coord):
                        units=units, bounds=bounds, attributes=attributes,
                        coord_system=coord_system)
 
+        #: Whether the coordinate wraps by ``coord.units.modulus``.
         self.circular = bool(circular)
-        """Whether the coordinate wraps by ``coord.units.modulus``."""
 
     def __eq__(self, other):
         # TODO investigate equality of AuxCoord and DimCoord if circular is
@@ -1398,18 +1398,18 @@ class CellMethod(iris.util._OrderedHashable):
     # Declare the attribute names relevant to the _OrderedHashable behaviour.
     _names = ('method', 'coord_names', 'intervals', 'comments')
 
+    #: The name of the operation that was applied. e.g. "mean", "max", etc.
     method = None
-    """The name of the operation that was applied. e.g. "mean", "max", etc."""
 
+    #: The tuple of coordinate names over which the operation was applied.
     coord_names = None
-    """The tuple of coordinate names over which the operation was applied."""
 
+    #: A description of the original intervals over which the operation
+    #: was applied.
     intervals = None
-    """A description of the original intervals over which the operation was
-    applied."""
 
+    #: Additional comments.
     comments = None
-    """Additional comments."""
 
     def __init__(self, method, coords=None, intervals=None, comments=None):
         """

@@ -489,17 +489,17 @@ class Saver(object):
                              netcdf_format)
 
         # All persistent variables
+        #: CF name mapping with iris coordinates
         self._name_coord_map = CFNameCoordMap()
-        """CF name mapping with iris coordinates"""
+        #: List of dimension coordinates added to the file
         self._dim_coords = []
-        """List of dimension coordinates added to the file"""
+        #: List of grid mappings added to the file
         self._coord_systems = []
-        """List of grid mappings added to the file"""
+        #: A dictionary, listing dimension names and corresponding length
         self._existing_dim = {}
-        """A dictionary, listing dimension names and corresponding length"""
+        #: NetCDF dataset
         self._dataset = netCDF4.Dataset(filename, mode='w',
                                         format=netcdf_format)
-        """NetCDF dataset"""
 
     def __enter__(self):
         return self
