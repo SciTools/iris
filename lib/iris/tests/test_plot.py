@@ -245,6 +245,85 @@ class Test1dQuickplotPlotMultiArgs(Test1dPlotMultiArgs):
         self.draw_method = qplt.plot
 
 
+@tests.skip_data
+class Test1dScatter(tests.GraphicsTest):
+
+    def setUp(self):
+        self.cube = iris.load_cube(
+            tests.get_data_path(('NAME', 'NAMEIII_trajectory.txt')),
+            'Temperature')
+        self.draw_method = iplt.scatter
+
+    def test_coord_coord(self):
+        x = self.cube.coord('longitude')
+        y = self.cube.coord('height')
+        c = self.cube.data
+        self.draw_method(x, y, c=c, edgecolor='none')
+        self.check_graphic()
+
+    def test_coord_coord_map(self):
+        x = self.cube.coord('longitude')
+        y = self.cube.coord('latitude')
+        c = self.cube.data
+        self.draw_method(x, y, c=c, edgecolor='none')
+        plt.gca().coastlines()
+        self.check_graphic()
+
+    def test_coord_cube(self):
+        x = self.cube.coord('latitude')
+        y = self.cube
+        c = self.cube.coord('Travel Time').points
+        self.draw_method(x, y, c=c, edgecolor='none')
+        self.check_graphic()
+
+    def test_cube_coord(self):
+        x = self.cube
+        y = self.cube.coord('height')
+        c = self.cube.coord('Travel Time').points
+        self.draw_method(x, y, c=c, edgecolor='none')
+        self.check_graphic()
+
+    def test_cube_cube(self):
+        x = iris.load_cube(
+            tests.get_data_path(('NAME', 'NAMEIII_trajectory.txt')),
+            'Rel Humidity')
+        y = self.cube
+        c = self.cube.coord('Travel Time').points
+        self.draw_method(x, y, c=c, edgecolor='none')
+        self.check_graphic()
+
+    def test_incompatible_objects(self):
+        # cubes/coordinates of different sizes cannot be plotted
+        x = self.cube
+        y = self.cube.coord('height')[:-1]
+        with self.assertRaises(ValueError):
+            self.draw_method(x, y)
+
+    def test_multidimensional(self):
+        # multidimensional cubes/coordinates are not allowed
+        x = _load_4d_testcube()[0, :, :, 0]
+        y = x.coord('model_level_number')
+        with self.assertRaises(ValueError):
+            self.draw_method(x, y)
+
+    def test_not_cube_or_coord(self):
+        # inputs must be cubes or coordinates
+        x = np.arange(self.cube.shape[0])
+        y = self.cube
+        with self.assertRaises(TypeError):
+            self.draw_method(x, y)
+
+
+@tests.skip_data
+class Test1dQuickplotScatter(Test1dScatter):
+
+    def setUp(self):
+        self.cube = iris.load_cube(
+            tests.get_data_path(('NAME', 'NAMEIII_trajectory.txt')),
+            'Temperature')
+        self.draw_method = qplt.scatter
+
+
 # Caches _load_4d_testcube so subsequent calls are faster
 def cache(fn, cache={}):
     def inner(*args, **kwargs):

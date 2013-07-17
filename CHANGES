@@ -4,6 +4,8 @@ Release 1.5 (unreleased)
 
 Features added
 --------------
+* Scatter plots can now be produced using `iris.plot.scatter` and
+  `iris.quickplot.scatter`.
 * The functions `iris.plot.plot` and `iris.quickplot.plot` now take up to two
   arguments, which may be cubes or coordinates, allowing the user to have full
   control over what is plotted on each axis. The coords keyword argument is now

@@ -237,5 +237,19 @@ def plot(*args, **kwargs):
     return result
 
 
+def scatter(x, y, *args, **kwargs):
+    """
+    Draws a labelled scatter plot based on the given cubes or
+    coordinates.
+
+    See :func:`iris.plot.scatter` for details of valid arguments and
+    keyword arguments.
+
+    """
+    result = iplt.scatter(x, y, *args, **kwargs)
+    _label_1d_plot(x, y)
+    return result
+
+
 # Provide a convenience show method from pyplot.
 show = plt.show
