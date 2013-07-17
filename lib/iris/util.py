@@ -23,6 +23,7 @@ import abc
 import collections
 import inspect
 import os
+import sys
 import tempfile
 import time
 
@@ -124,6 +125,63 @@ def delta(ndarray, dimension, circular=False):
         _delta = np.diff(ndarray, axis=dimension)
     
     return _delta
+
+
+def describe_diff(cube_a, cube_b, output_file=None):
+    """
+    Prints the differences that prevent compatibility between two cubes, as
+    defined by :meth:`iris.cube.Cube.is_compatible()`.
+
+    Args:
+
+    * cube_a:
+        An instance of :class:`iris.cube.Cube` or
+        :class:`iris.cube.CubeMetadata`.
+
+    * cube_b:
+        An instance of :class:`iris.cube.Cube` or
+        :class:`iris.cube.CubeMetadata`.
+
+    * output_file:
+        A :class:`file` or file-like object to receive output. Defaults to
+        sys.stdout.
+
+    .. seealso::
+        
+        :meth:`iris.cube.Cube.is_compatible()`
+
+    """
+
+    if output_file is None:
+        output_file = sys.stdout
+
+    if cube_a.is_compatible(cube_b):
+        output_file.write('Cubes are compatible\n')
+    else:
+        common_keys = set(cube_a.attributes).intersection(cube_b.attributes)
+        for key in common_keys:
+            if cube_a.attributes[key] != cube_b.attributes[key]:
+                output_file.write('"%s" cube_a attribute value "%s" is not '
+                                  'compatible with cube_b '
+                                  'attribute value "%s"\n'
+                                  % (key,
+                                     cube_a.attributes[key],
+                                     cube_b.attributes[key]))
+
+        if cube_a.name() != cube_b.name():
+            output_file.write('cube_a name "%s" is not compatible '
+                              'with cube_b name "%s"\n'
+                              % (cube_a.name(), cube_b.name()))
+
+        if cube_a.units != cube_b.units:
+            output_file.write('cube_a units "%s" are not compatible with cube_b '
+                              'units "%s"\n'
+                              % (cube_a.units,
+                                 cube_b.units))
+
+        if cube_a.cell_methods != cube_b.cell_methods:
+            output_file.write('Cell methods\n%s\nand\n%s\nare not compatible\n'
+                              % (cube_a.cell_methods, cube_b.cell_methods))
 
 
 def guess_coord_axis(coord):
