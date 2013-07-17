@@ -19,10 +19,13 @@ Test iris.util
 
 """
 import inspect
+import os
+import StringIO
 import unittest
 
 import numpy as np
 
+import iris.tests.stock as stock
 import iris.util
 
 
@@ -159,6 +162,85 @@ class TestClipString(unittest.TestCase):
         
         # Check the length of the returned string is equal to clip length + length of rider
         self.assertEquals(len(result), expected_length, "Mismatch in expected length of clipped string. Length was %s, expected value is %s" % (len(result), expected_length))
+        
+
+class TestDescribeDiff(iris.tests.IrisTest):
+    def test_identical(self):
+        test_cube_a = stock.realistic_4d()
+        test_cube_b = stock.realistic_4d()
+
+        return_str_IO = StringIO.StringIO()
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_str_IO)
+        return_str = return_str_IO.getvalue()
+
+        self.assertString(return_str, 'compatible_cubes.str.txt')
+
+    def test_different(self):
+        return_str_IO = StringIO.StringIO()
+        
+        # test incompatible attributes
+        test_cube_a = stock.realistic_4d()
+        test_cube_b = stock.realistic_4d()
+        
+        test_cube_a.attributes['Conventions'] = 'CF-1.5'
+        test_cube_b.attributes['Conventions'] = 'CF-1.6'
+        
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_str_IO)
+        return_str = return_str_IO.getvalue()
+        
+        self.assertString(return_str, 'incompatible_attr.str.txt')
+        
+        # test incompatible names
+        test_cube_a = stock.realistic_4d()
+        test_cube_b = stock.realistic_4d()
+
+        test_cube_a.standard_name = "relative_humidity"
+
+        return_str_IO.truncate(0)
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_str_IO)
+        return_str = return_str_IO.getvalue()
+
+        self.assertString(return_str, 'incompatible_name.str.txt')
+
+        # test incompatible unit
+        test_cube_a = stock.realistic_4d()
+        test_cube_b = stock.realistic_4d()
+        
+        test_cube_a.units = iris.unit.Unit('m')
+
+        return_str_IO.truncate(0)
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_str_IO)
+        return_str = return_str_IO.getvalue()
+        
+        self.assertString(return_str, 'incompatible_unit.str.txt')
+        
+        # test incompatible methods
+        test_cube_a = stock.realistic_4d()
+        test_cube_b = stock.realistic_4d().collapsed('model_level_number', iris.analysis.MEAN)
+
+        return_str_IO.truncate(0)
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_str_IO)
+        return_str = return_str_IO.getvalue()
+
+        self.assertString(return_str, 'incompatible_meth.str.txt')
+
+    def test_output_file(self):
+        # test incompatible attributes
+        test_cube_a = stock.realistic_4d()
+        test_cube_b = stock.realistic_4d().collapsed('model_level_number', iris.analysis.MEAN)
+
+        test_cube_a.attributes['Conventions'] = 'CF-1.5'
+        test_cube_b.attributes['Conventions'] = 'CF-1.6'
+        test_cube_a.standard_name = "relative_humidity"
+        test_cube_a.units = iris.unit.Unit('m')
+
+        with self.temp_filename() as filename:
+            with open(filename, 'w') as f:
+                iris.util.describe_diff(test_cube_a, test_cube_b, output_file=f)
+                f.close()
+
+            self.assertFilesEqual(filename,
+                              'incompatible_cubes.str.txt')
 
 
 if __name__ == '__main__':
