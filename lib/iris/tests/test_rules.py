@@ -162,7 +162,8 @@ class TestLoadCubes(tests.IrisTest):
         # A fake cross-reference rule set
         ref = ReferenceTarget('orography', None)
         orog_xref_rule = Mock()
-        orog_xref_rule.run_actions = lambda cube, field: (ref,)
+        orog_xref_rule.run_actions = \
+            lambda cube, field, _used_coords, _used_dims: (ref,)
         xref_rules = Mock()
         xref_rules.matching_rules = lambda field: \
             [orog_xref_rule] if field is orog_field else []
