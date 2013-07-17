@@ -21,6 +21,7 @@ Definitions of coordinate systems.
 
 from __future__ import division
 from abc import ABCMeta, abstractmethod
+import copy
 import warnings
 
 import cartopy.crs
@@ -225,6 +226,13 @@ class GeogCS(CoordSystem):
     def as_cartopy_projection(self):
         return cartopy.crs.PlateCarree()
 
+    def __deepcopy__(self, memo):
+        # Simple in this case, as instance data is all very basic.
+        return GeogCS(semi_major_axis=self.semi_major_axis,
+                      semi_minor_axis=self.semi_minor_axis,
+                      longitude_of_prime_meridian=
+                          self.longitude_of_prime_meridian)
+
 
 class RotatedGeogCS(CoordSystem):
     """
@@ -308,6 +316,14 @@ class RotatedGeogCS(CoordSystem):
     def as_cartopy_projection(self):
         return cartopy.crs.RotatedPole(self.grid_north_pole_longitude,
                                        self.grid_north_pole_latitude)
+
+    def __deepcopy__(self, memo):
+        # Just the ellipsoid needs an inner copy (as it is an object)
+        return RotatedGeogCS(
+            grid_north_pole_latitude=self.grid_north_pole_latitude,
+            grid_north_pole_longitude=self.grid_north_pole_longitude,
+            north_pole_grid_longitude=self.north_pole_grid_longitude,
+            ellipsoid=copy.deepcopy(self.ellipsoid, memo))
 
 
 class TransverseMercator(CoordSystem):

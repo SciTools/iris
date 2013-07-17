@@ -21,6 +21,7 @@ Processing of simple IF-THEN rules.
 
 import abc
 import collections
+import copy
 import getpass
 import logging
 import logging.handlers as handlers
@@ -175,6 +176,19 @@ class CMAttribute(object):
         self.name = name
         self.value = value
 
+    def __repr__(self):
+        return '<CMAttribute: name="{!s}", value={!r} >'.format(
+            self.name, self.value)
+
+    def __deepcopy__(self, memo):
+        """
+        Accelerate the full copy operation.
+
+        For some reason tuple deepcopy is generally slow.
+
+        """
+        return CMAttribute(self.name, copy.deepcopy(self.value, memo))
+
 
 class CMCustomAttribute(object):
     """
@@ -185,6 +199,19 @@ class CMCustomAttribute(object):
     def __init__(self, name, value):
         self.name = name
         self.value = value
+
+    def __repr__(self):
+        return '<CMCustomAttribute: name="{!s}", value={!r} >'.format(
+            self.name, self.value)
+
+    def __deepcopy__(self, memo):
+        """
+        Accelerate the full copy operation.
+
+        For some reason tuple deepcopy is generally slow.
+
+        """
+        return CMCustomAttribute(self.name, copy.deepcopy(self.value, memo))
 
 
 class CoordAndDims(object):
@@ -199,7 +226,18 @@ class CoordAndDims(object):
         if not isinstance(dims, list):
             dims = [dims]
         self.dims = dims
-        
+
+    def __deepcopy__(self, memo):
+        """
+        Accelerate the full copy operation.
+
+        For some reason tuple deepcopy is generally slow.
+
+        """
+        coord = copy.deepcopy(self.coord, memo)
+        dims = self.dims[:]
+        return CoordAndDims(coord, dims)
+
     def add_coord(self, cube):
         added = False
 
@@ -224,7 +262,7 @@ class CoordAndDims(object):
             cube.add_aux_coord(self.coord, self.dims)
         
     def __repr__(self):
-        return "<CoordAndDims: %r, %r>" % (self.coord.name, self.dims)
+        return "<CoordAndDims: %r, %r>" % (self.coord.name(), self.dims)
 
 
 class Reference(iris.util._OrderedHashable):
@@ -333,6 +371,9 @@ class Rule(object):
                 action = 'None'
             self._create_action_method(i, action)
 
+        # Reset any actions caches
+        self.reset_action_caches()
+
     def _create_conditions_method(self):
         # Bundle all the conditions into one big string.
         conditions = '(%s)' % ') and ('.join(self._conditions)
@@ -345,15 +386,36 @@ class Rule(object):
         exec compile(code % conditions, '<string>', 'exec')
         # Make it a method of ours.
         self._exec_conditions = types.MethodType(_exec_conditions, self, type(self))
-    
+
     @abc.abstractmethod
     def _create_action_method(self, i, action):
         pass
-    
+
     @abc.abstractmethod
     def _process_action_result(self, obj, cube):
-        pass    
-    
+        """Place the result of an action into the cube."""
+        pass
+
+    def exec_action(self, i, field, cube):
+        """Run the code of a rule action."""
+        # Define the variables which the eval command should be able to see
+        f = field
+        pp = field
+        grib = field
+        cm = cube
+        # Execute the actual action code + return the result
+        obj = self._exec_actions[i](field, f, pp, grib, cm)
+        return obj
+
+    def get_action_result(self, i, field, cube):
+        """Get the result of a rule action."""
+        # N.B. now overloaded by FunctionRule, to provide result caching.
+        return self.exec_action(i, field, cube)
+
+    def reset_action_caches(self):
+        # Used by FunctionRules, otherwise no action
+        pass
+
     def __repr__(self):
         string = "IF\n"
         string += '\n'.join(self._conditions)
@@ -380,7 +442,7 @@ class Rule(object):
     def _matches_field(self, field):
         """Simple wrapper onto evaluates_true in the case where cube is None."""
         return self.evaluates_true(None, field)
-        
+
     def run_actions(self, cube, field):
         """
         Adds to the given cube based on the return values of all the actions.
@@ -398,17 +460,12 @@ class Rule(object):
             globals().update(iris.unit.__dict__)
             _import_pending = False
         
-        # Define the variables which the eval command should be able to see
-        f = field
-        pp = field
-        grib = field
-        cm = cube
         
         factories = []
         for i, action in enumerate(self._actions):
             try:
                 # Run this action.
-                obj = self._exec_actions[i](field, f, pp, grib, cm)
+                obj = self.get_action_result(i, field, cube)
                 # Process the return value (if any), e.g a CM object or None.
                 action_factory = self._process_action_result(obj, cube)
                 if action_factory:
@@ -425,6 +482,34 @@ class Rule(object):
         return factories
 
 
+class _ObjectAccessedWrapper(object):
+    def __init__(self, target):
+        self.target = target
+        self.target_accessed = False
+
+    def __getattr__(self, attname):
+        self.target_accessed = True
+        return getattr(self.target, attname)
+
+
+def _value_as_hashable(value):
+    """
+    Make a basic attribute value hashable.
+
+    Convert 1-d arrays to tuples, otherwise return unchanged.
+    (N.B. no multidimensional arrays, for now).
+
+    """
+    if not isinstance(value, np.ndarray):
+        return value
+    # Handle a 1-D array (but nothing more complex).
+    if value.ndim > 1:
+        raise Exception(
+            'pp element Array is > 1d, shape={}'.format(
+                value.ndim))
+    return tuple(value)
+
+
 class FunctionRule(Rule):
     """A Rule with values returned by its actions."""
     def _create_action_method(self, i, action):
@@ -435,8 +520,91 @@ class FunctionRule(Rule):
         # Add to our list of actions.
         exec 'self._exec_actions.append(self._exec_action_%d)' % i
 
+    def reset_action_caches(self):
+        # Make an empty cache for each action, i.e. self._action_caches[i] = {}
+        n_actions = len(self._actions)
+        self._action_caches = {i_action: {} for i_action in range(n_actions)}
+
+    def get_action_result(self, i, field, cube):
+        # Overloaded form that caches results (aka memoising)
+        if not hasattr(field, 'as_access_logging_field'):
+            # Field does not provide access monitoring - no caching possible.
+            return self.exec_action(i, field, cube)
+
+        # 'Else' use results caching.
+        # First, see if we have existing cached action results.
+        action_cache = self._action_caches[i]
+        action_keynames = action_cache.get('__field_keynames', None)
+        if action_keynames is not None:
+            # The attributes required by this action have been recorded.
+            # Make a lookup key from the relevant field attribute values.
+            result_keys = tuple(
+                _value_as_hashable(getattr(field, keyname, None))
+                for keyname in action_keynames)
+            # Return cached result if we have a stored match.
+            if result_keys in action_cache:
+                result = action_cache[result_keys]
+                # Make a deepcopy, to avoid unexpectedly cross-linked objects
+                # TODO: **not** doing the deepcopy will potentially be *much*
+                # faster, if merging can make that possible ?
+                # Plus *another* big potential gain, if merge compare can then
+                # use 'is' in place of '=='.
+                return copy.deepcopy(result)
+
+        # 'Else' the relevant field attributes are different from any field
+        # previously cached :  Run this action + cache the result.
+
+        # Create a wrapper to check whether the action accesses the cube.
+        cube_wrapper = _ObjectAccessedWrapper(cube)
+        # Run the action code + capture its field and cube accesses.
+        field_wrapper = field.as_access_logging_field()
+        result = self.exec_action(i, field_wrapper, cube_wrapper)
+        if cube_wrapper.target_accessed:
+            # Can't cache an action that reads anything from the cube, as cube
+            # data does not go in the cache keys.
+            # (N.B. at present, no function Rules do this anyway.)
+            return result
+
+        # Construct a name:value dictionary from the field attribute fetches.
+        field_accesses = field_wrapper.access_log
+        element_values = {}
+        for attname, value in field_accesses:
+            value = _value_as_hashable(value)
+            if attname not in element_values:
+                element_values[attname] = value
+            else:
+                # This attribute already seen : all values should be the same.
+                if value != element_values[attname]:
+                    all_vals = [val for name, val in field_accesses
+                                if name == attname]
+                    raise Exception('Rule action got multiple values for '
+                                    'field.{} : {}'.format(attname, all_vals))
+
+        # Make a sorted list of the field attributes used by the action.
+        used_keys = sorted(element_values.keys())
+        if action_keynames is None:
+            # First occurrence sets the 'expected' caching names list.
+            action_cache['__field_keynames'] = used_keys
+        else:
+            # Subsequent occurences must always match.
+            if used_keys != action_keynames:
+                print 'ERROR - inconsistent rule args'
+                print 'rule: ', self
+                print 'action : ', self._actions[i]
+                raise Exception('Rule action arguments not consistent.'
+                                '\n previously used field attributes : {}'
+                                '\n now using : {}'.format(action_keynames,
+                                                           used_keys))
+
+        # Make the cache key : a tuple of (values in name order.
+        result_keys = tuple(element_values[keyname]
+                            for keyname in used_keys)
+        # cache this result, and return it
+        action_cache[result_keys] = result
+        return result
+
     def _process_action_result(self, obj, cube):
-        """Process the result of an action."""
+        # (Overrides abstract Rule method)
 
         factory = None
 
@@ -512,7 +680,6 @@ class ProcedureRule(Rule):
         if condition:
             warnings.warn(warning)
 
-
 class RulesContainer(object):
     """
     A collection of :class:`Rule` instances, with the ability to read rule
@@ -568,7 +735,12 @@ class RulesContainer(object):
         if conditions and actions:
             self._rules.append(self.rule_type(conditions, actions))
         file.close()
-            
+
+    def reset_action_caches(self):
+        # Create a fresh cache for all our actions
+        for i, rule in enumerate(self._rules):
+            rule.reset_action_caches()
+
     def result(self, field):
         """
         Return the :class:`iris.cube.Cube` resulting from running this
@@ -790,6 +962,9 @@ def load_cubes(filenames, user_callback, loader):
 
     if isinstance(filenames, basestring):
         filenames = [filenames]
+
+    # Initialise rules caching -- specific to each load operation.
+    loader.load_rules.reset_action_caches()
 
     for filename in filenames:
         for field in loader.field_generator(filename, **loader.field_generator_kwargs):

@@ -748,6 +748,7 @@ def _read_data(pp_file, lbpack, data_len, data_shape, data_type, mdi):
 _SPECIAL_HEADERS = ('lbtim', 'lbcode', 'lbpack', 'lbproc',
                     'data', 'data_manager', 'stash', 't1', 't2')
 
+
 def _header_defn(release_number):
     """
     Returns the zero-indexed header definition for a particular release of a PPField.
@@ -770,7 +771,6 @@ def _pp_attribute_names(header_defn):
     special_headers = list('_' + name for name in _SPECIAL_HEADERS)
     extra_data = EXTRA_DATA.values()
     return normal_headers + special_headers + extra_data
-
 
 class PPField(object):
     """
@@ -797,13 +797,14 @@ class PPField(object):
 
     def __init__(self):
         """
-        PPField instances are always created empty, and attributes are added subsequently.
-        
+        PPField instances are always created empty, and attributes are added
+        subsequently.
+
         .. seealso::
             For PP field loading see :func:`load`.
-        
+
         """
-    
+
     @abc.abstractproperty
     def t1(self):
         pass
@@ -837,9 +838,20 @@ class PPField(object):
 
     @property
     def stash(self):
-        """A stash property giving access to the associated STASH object, now supporting __eq__"""
+        """
+        A stash property giving access to the associated STASH object.
+
+        Now supports __eq__.
+
+        """
         if not hasattr(self, '_stash'):
-            self._stash = STASH(self.lbuser[6], self.lbuser[3] / 1000, self.lbuser[3] % 1000)
+            self._stash = STASH(self.lbuser[6],
+                                self.lbuser[3] / 1000,
+                                self.lbuser[3] % 1000)
+        elif hasattr(self, 'access_log'):
+            # Field is logging-enabled (see _PPFieldAccessLogger).
+            # Always fetch basic attributes, to be visible for rules caching.
+            _ = self.lbuser
         return self._stash
 
     # lbtim
@@ -900,24 +912,32 @@ class PPField(object):
 
     def _read_extra_data(self, pp_file, file_reader, extra_len):
         """Read the extra data section and update the self appropriately."""
-        
+
+        # Set 'None' for any missing 'extra' elements.
+        for name in EXTRA_DATA.values():
+            setattr(self, name, None)
         # While there is still extra data to decode run this loop
         while extra_len > 0:
-            extra_int_code = struct.unpack_from('>L', file_reader(PP_WORD_DEPTH))[0]
+            extra_int_code = struct.unpack_from(
+                '>L', file_reader(PP_WORD_DEPTH))[0]
             extra_len -= PP_WORD_DEPTH
-            
+
             ib = extra_int_code % 1000
             ia = extra_int_code // 1000
-            
+
             data_len = ia * PP_WORD_DEPTH
 
             if ib == 10:
-                self.field_title = ''.join(struct.unpack_from('>%dc' % data_len, file_reader(data_len))).rstrip('\00')
+                self.field_title = ''.join(struct.unpack_from(
+                    '>%dc' % data_len, file_reader(data_len))).rstrip('\00')
             elif ib == 11:
-                self.domain_title = ''.join(struct.unpack_from('>%dc' % data_len, file_reader(data_len))).rstrip('\00')
+                self.domain_title = ''.join(struct.unpack_from(
+                    '>%dc' % data_len, file_reader(data_len))).rstrip('\00')
             elif ib in EXTRA_DATA:
                 attr_name = EXTRA_DATA[ib]
-                values = np.fromfile(pp_file, dtype=np.dtype('>f%d' % PP_WORD_DEPTH), count=ia)
+                values = np.fromfile(pp_file,
+                                     dtype=np.dtype('>f%d' % PP_WORD_DEPTH),
+                                     count=ia)
                 # Ensure the values are in the native byte order
                 if not values.dtype.isnative:
                     values.byteswap(True)
@@ -925,19 +945,27 @@ class PPField(object):
                 setattr(self, attr_name, values)
             else:
                 raise ValueError('Unknown IB value for extra data: %s' % ib)
-            
+
             extra_len -= data_len
-            
+
     @property
     def x_bounds(self):
-        if hasattr(self, "x_lower_bound") and hasattr(self, "x_upper_bound"):
+        # N.B. always read both lower and upper bounds, as rules caching needs
+        # to see consistent fetches : So must *not* use "if upper and lower:".
+        lower_exists = self.x_lower_bound is not None
+        upper_exists = self.x_upper_bound is not None
+        if lower_exists and upper_exists:
             return np.column_stack((self.x_lower_bound, self.x_upper_bound))
 
     @property
     def y_bounds(self):
-        if hasattr(self, "y_lower_bound") and hasattr(self, "y_upper_bound"):
+        # N.B. always read both lower and upper bounds, as rules caching needs
+        # to see consistent fetches : So must *not* use "if upper and lower:".
+        lower_exists = self.y_lower_bound is not None
+        upper_exists = self.y_upper_bound is not None
+        if lower_exists and upper_exists:
             return np.column_stack((self.y_lower_bound, self.y_upper_bound))
-        
+
     def save(self, file_handle):
         """
         Save the PPField to the given file object (typically created with :func:`open`).
@@ -1228,9 +1256,17 @@ class PPField2(PPField):
 
     def _get_t1(self):
         if not hasattr(self, '_t1'):
-            self._t1 = netcdftime.datetime(self.lbyr, self.lbmon, self.lbdat, self.lbhr, self.lbmin)
+            self._t1 = netcdftime.datetime(
+                self.lbyr, self.lbmon, self.lbdat, self.lbhr, self.lbmin)
+            # Fetch extra attributes, to make v2/v3 fields appear the same.
+            _ = self.lbday
+        elif hasattr(self, 'access_log'):
+            # Field is logging-enabled (see _PPFieldAccessLogger).
+            # Always fetch basic attributes, to be visible for rules caching.
+            _ = (self.lbyr, self.lbmon, self.lbdat, self.lbhr, self.lbmin,
+                 self.lbday)
         return self._t1
-    
+
     def _set_t1(self, dt):
         self.lbyr = dt.year
         self.lbmon = dt.month
@@ -1240,13 +1276,22 @@ class PPField2(PPField):
         self.lbday = int(dt.strftime('%j'))
         if hasattr(self, '_t1'):
             delattr(self, '_t1')
-        
+
     t1 = property(_get_t1, _set_t1, None,
-        "A netcdftime.datetime object consisting of the lbyr, lbmon, lbdat, lbhr, and lbmin attributes.")
+                  'A netcdftime.datetime object consisting of the '
+                  'lbyr, lbmon, lbdat, lbhr, and lbmin attributes.')
 
     def _get_t2(self):
         if not hasattr(self, '_t2'):
-            self._t2 = netcdftime.datetime(self.lbyrd, self.lbmond, self.lbdatd, self.lbhrd, self.lbmind)
+            self._t2 = netcdftime.datetime(
+                self.lbyrd, self.lbmond, self.lbdatd, self.lbhrd, self.lbmind)
+            # Fetch extra attributes, to make v2/v3 fields appear the same.
+            _ = self.lbdayd
+        elif hasattr(self, 'access_log'):
+            # Field is logging-enabled (see _PPFieldAccessLogger).
+            # Always fetch basic attributes, to be visible for rules caching.
+            _ = (self.lbyrd, self.lbmond, self.lbdatd, self.lbhrd, self.lbmind,
+                 self.lbdayd)
         return self._t2
 
     def _set_t2(self, dt):
@@ -1262,6 +1307,35 @@ class PPField2(PPField):
     t2 = property(_get_t2, _set_t2, None,
         "A netcdftime.datetime object consisting of the lbyrd, lbmond, lbdatd, lbhrd, and lbmind attributes.")
 
+    @property
+    def _lbsec(self):
+        # Indicate no v3-specific header value (for rules matching only).
+        return None
+
+    @property
+    def _lbsecd(self):
+        # Indicate no v3-specific header value (for rules matching only).
+        return None
+
+    @property
+    def _lbday(self):
+        # Alternate for self.lbday (for rules matching only).
+        return self.lbday
+
+    @property
+    def _lbdayd(self):
+        # Alternate for self.lbdayd (for rules matching only).
+        return self.lbdayd
+
+    def as_access_logging_field(self):
+        """
+        Return a logging-enabled field derived from ourself.
+
+        Returns a PPField2AccessLogger for this field.
+        """
+        return PPField2AccessLogger(self)
+
+
 class PPField3(PPField):
     """
     A class to hold a single field from a PP file, with a header release number of 3.
@@ -1273,9 +1347,16 @@ class PPField3(PPField):
 
     def _get_t1(self):
         if not hasattr(self, '_t1'):
-            self._t1 = netcdftime.datetime(self.lbyr, self.lbmon, self.lbdat, self.lbhr, self.lbmin, self.lbsec)
+            self._t1 = netcdftime.datetime(
+                self.lbyr, self.lbmon, self.lbdat,
+                self.lbhr, self.lbmin, self.lbsec)
+        elif hasattr(self, 'access_log'):
+            # Field is logging-enabled (see _PPFieldAccessLogger).
+            # Always fetch basic attributes, to be visible for rules caching.
+            _ = (self.lbyr, self.lbmon, self.lbdat,
+                 self.lbhr, self.lbmin, self.lbsec)
         return self._t1
-    
+
     def _set_t1(self, dt):
         self.lbyr = dt.year
         self.lbmon = dt.month
@@ -1285,13 +1366,21 @@ class PPField3(PPField):
         self.lbsec = dt.second
         if hasattr(self, '_t1'):
             delattr(self, '_t1')
-        
+
     t1 = property(_get_t1, _set_t1, None,
-        "A netcdftime.datetime object consisting of the lbyr, lbmon, lbdat, lbhr, lbmin, and lbsec attributes.")
+                  'A netcdftime.datetime object consisting of the '
+                  'lbyr, lbmon, lbdat, lbhr, lbmin, and lbsec attributes.')
 
     def _get_t2(self):
         if not hasattr(self, '_t2'):
-            self._t2 = netcdftime.datetime(self.lbyrd, self.lbmond, self.lbdatd, self.lbhrd, self.lbmind, self.lbsecd)
+            self._t2 = netcdftime.datetime(
+                self.lbyrd, self.lbmond, self.lbdatd,
+                self.lbhrd, self.lbmind, self.lbsecd)
+        elif hasattr(self, 'access_log'):
+            # Field is logging-enabled (see _PPFieldAccessLogger).
+            # Always fetch basic attributes, to be visible for rules caching.
+            _ = (self.lbyrd, self.lbmond, self.lbdatd,
+                 self.lbhrd, self.lbmind, self.lbsecd)
         return self._t2
 
     def _set_t2(self, dt):
@@ -1305,7 +1394,115 @@ class PPField3(PPField):
             delattr(self, '_t2')
 
     t2 = property(_get_t2, _set_t2, None,
-        "A netcdftime.datetime object consisting of the lbyrd, lbmond, lbdatd, lbhrd, lbmind, and lbsecd attributes.")
+                  'A netcdftime.datetime object consisting of the lbyrd, '
+                  'lbmond, lbdatd, lbhrd, lbmind, and lbsecd attributes.')
+
+    @property
+    def _lbsec(self):
+        # Alternate for self.lbsec (for rules matching only).
+        return self.lbsec
+
+    @property
+    def _lbsecd(self):
+        # Alternate for self.lbsecd (for rules matching only).
+        return self.lbsecd
+
+    @property
+    def _lbday(self):
+        # Indicate no v2-specific header value (for rules matching only).
+        return None
+
+    @property
+    def _lbdayd(self):
+        # Indicate no v2-specific header value (for rules matching only).
+        return None
+
+    def as_access_logging_field(self):
+        """
+        Return a logging-enabled field derived from ourself.
+
+        Returns a PPField3AccessLogger for this field.
+        """
+        return PPField3AccessLogger(self)
+
+
+class _PPFieldAccessLogger(object):
+    """
+    A class to provide automatic logging of attribute fetches.
+
+    Inherited along with PPField(2/3) to define a PPField(2/3)AccessLogger.
+    This *must* be done via inheritance, as we need to intercept attribute
+    accesses from methods of the parent PPField class.
+
+    """
+    # Define the list of attributes for which we can log fetches.
+    #  = any from v2/v3 headers, except the computed ones in SPECIAL_HEADERS.
+    _CACHABLE_ELEMENT_NAMES = tuple(
+        (set(_pp_attribute_names(_header_defn(2))) |
+         set(_pp_attribute_names(_header_defn(3)))) -
+        set('_' + name for name in _SPECIAL_HEADERS))
+    # NOTE: as computed properties are excluded, the getter methods must
+    # always read all the "basic" properties they depend on, so that rules
+    # caching can track the functional dependencies.
+    # See the corresponding property functions.
+
+    # Define a list of attributes that need "faking" in the access log used by
+    # the PP rules caching.  (see _PPFieldAccessLogger.__getattribute__)
+    _V2_V3_HEADER_VARIANT_NAMES = ['lbsec', 'lbsecd', 'lbday', 'lbdayd']
+
+    def __init__(self, original_field):
+        # Make this a copy of the original field.
+        for name in original_field.__slots__:
+            if hasattr(original_field, name):
+                setattr(self, name, getattr(original_field, name))
+        # Initialise with empty access log.
+        self.access_log = []
+
+    def __getattribute__(self, attname):
+        """
+        Special method to log 'low-level' attribute fetches.
+
+        Records a log entry when a 'primitive' field attribute is read (i.e.
+        one of those actually read from the file, not computed properties).
+
+        """
+        parent_fetch = super(_PPFieldAccessLogger, self).__getattribute__
+        result = parent_fetch(attname)
+        logto = parent_fetch('access_log')
+        loggable_names = parent_fetch('_CACHABLE_ELEMENT_NAMES')
+        # Log fetches of 'basic' attributes we are interested in.
+        if attname in loggable_names:
+            if attname not in self._V2_V3_HEADER_VARIANT_NAMES:
+                # Log a 'normal' attribute fetch.
+                logto.append((attname, result))
+            else:
+                # When fetching lbsec(d)/lbday(d), pretend that we called
+                # the '_' (property) versions, *and* add in the other one.
+                # The t1 and t2 time accesses thus *appear* to access the same
+                # field elements, regardless of header version (v2/v3).
+                if attname.startswith('lbsec'):
+                    other_name = 'lbday'
+                elif attname.startswith('lbday'):
+                    other_name = 'lbsec'
+                else:
+                    raise ValueError('unexpected header "variant"'
+                                     ' attribute" : {}'.format(attname))
+                if attname.endswith('d'):
+                    other_name = other_name + 'd'
+                logto.append(('_'+attname, result))
+                logto.append(('_'+other_name, None))
+        return result
+
+
+class PPField2AccessLogger(_PPFieldAccessLogger, PPField2):
+    # Logging-enabled PPField2, returned by PPField2.as_access_logging_field().
+    pass
+
+
+class PPField3AccessLogger(_PPFieldAccessLogger, PPField3):
+    # Logging-enabled PPField3, returned by PPField2.as_access_logging_field().
+    pass
+
 
 PP_CLASSES = {
     2: PPField2,

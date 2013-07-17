@@ -107,6 +107,7 @@ class TestLoadCubes(tests.IrisTest):
             setattr(aux_factory, 'fake_args', args) or aux_factory
         rule_result = RuleResult(src_cube, Mock(), [factory])
         rules = Mock()
+        rules.reset_action_caches = lambda: None
         rules.result = lambda field: rule_result
         # A fake cross-reference rule set
         xref_rules = Mock()
@@ -157,6 +158,7 @@ class TestLoadCubes(tests.IrisTest):
         press_rule_result = RuleResult(param_cube, Mock(), [factory])
         orog_rule_result= RuleResult(orog_cube, Mock(), [])
         rules = Mock()
+        rules.reset_action_caches = lambda: None
         rules.result = lambda field: \
             press_rule_result if field is press_field else orog_rule_result
         # A fake cross-reference rule set
