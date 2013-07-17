@@ -21,7 +21,7 @@ Definitions of coordinates.
 from __future__ import division
 
 from abc import ABCMeta, abstractproperty
-from copy import deepcopy
+import copy
 import collections
 from itertools import chain, izip_longest
 import operator
@@ -413,7 +413,7 @@ class Coord(CFVariableMixin):
             raise ValueError('If bounds are specified, points must also be '
                              'specified')
 
-        new_coord = deepcopy(self)
+        new_coord = copy.deepcopy(self)
         if points is not None:
             # Explicitly not using the points property as we don't want the
             # shape the new points to be constrained by the shape of
@@ -1206,7 +1206,7 @@ class DimCoord(Coord):
                          var_name=self.var_name,
                          units=self.units,
                          attributes=self.attributes,
-                         coord_system=deepcopy(self.coord_system),
+                         coord_system=copy.deepcopy(self.coord_system),
                          circular=self.circular)
         points = self._points
         if points is not None:
@@ -1355,7 +1355,7 @@ class AuxCoord(Coord):
                          var_name=self.var_name,
                          units=self.units,
                          attributes=self.attributes,
-                         coord_system=deepcopy(self.coord_system))
+                         coord_system=copy.deepcopy(self.coord_system))
         points = self._points
         if points is not None:
             points = points.copy()
