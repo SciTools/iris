@@ -25,13 +25,13 @@ import iris.unit
 
 
 class LimitedAttributeDict(dict):
-    _forbidden_keys = ('standard_name', 'long_name', 'units', 'bounds', 'axis', 
-                       'calendar', 'leap_month', 'leap_year','month_lengths',
-                       'coordinates', 'grid_mapping', 'climatology', 'cell_methods', 'formula_terms', 
-                       'compress', 'missing_value', 'add_offset', 'scale_factor', 
-                       'valid_max', 'valid_min', 'valid_range',
-                       '_FillValue')
-                        
+    _forbidden_keys = ('standard_name', 'long_name', 'units', 'bounds', 'axis',
+                       'calendar', 'leap_month', 'leap_year', 'month_lengths',
+                       'coordinates', 'grid_mapping', 'climatology',
+                       'cell_methods', 'formula_terms', 'compress',
+                       'missing_value', 'add_offset', 'scale_factor',
+                       'valid_max', 'valid_min', 'valid_range', '_FillValue')
+
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
         # Check validity of keys
@@ -57,21 +57,21 @@ class LimitedAttributeDict(dict):
         if key in self._forbidden_keys:
             raise ValueError('%r is not a permitted attribute' % key)
         dict.__setitem__(self, key, value)
-    
+
     def update(self, other, **kwargs):
         # Gather incoming keys
         keys = []
         if hasattr(other, "keys"):
             keys += other.keys()
         else:
-            keys += [k for k,v in other]
-        
+            keys += [k for k, v in other]
+
         keys += kwargs.keys()
-        
+
         # Check validity of keys
         for key in keys:
             if key in self._forbidden_keys:
-                raise ValueError('%r is not a permitted attribute' % key)                
+                raise ValueError('%r is not a permitted attribute' % key)
 
         dict.update(self, other, **kwargs)
 
@@ -150,4 +150,4 @@ class CFVariableMixin(object):
 
     @attributes.setter
     def attributes(self, attributes):
-        self._attributes = LimitedAttributeDict(attributes or {}) 
+        self._attributes = LimitedAttributeDict(attributes or {})
