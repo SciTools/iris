@@ -36,37 +36,37 @@ _FF_LOOKUP_TABLE_TERMINATE = -99
 
 # UM FieldsFile fixed length header names and positions.
 UM_FIXED_LENGTH_HEADER = [
-        ('data_set_format_version',    (1, )),
-        ('sub_model',                  (2, )),
-        ('vert_coord_type',            (3, )),
-        ('horiz_grid_type',            (4, )),
-        ('dataset_type',               (5, )),
-        ('run_identifier',             (6, )),
-        ('experiment_number',          (7, )),
-        ('calendar',                   (8, )),
-        ('grid_staggering',            (9, )),
-        ('time_type',                  (10, )),
-        ('projection_number',          (11, )),
-        ('model_version',              (12, )),
-        ('obs_file_type',              (14, )),
-        ('last_fieldop_type',          (15, )),
-        ('first_validity_time',        (21, 22, 23, 24, 25, 26, 27, )),
-        ('last_validity_time',         (28, 29, 30, 31, 32, 33, 34, )),
-        ('misc_validity_time',         (35, 36, 37, 38, 39, 40, 41, )),
-        ('integer_constants',          (100, 101, )),
-        ('real_constants',             (105, 106, )),
-        ('level_dependent_constants',  (110, 111, 112, )),
-        ('row_dependent_constants',    (115, 116, 117, )),
-        ('column_dependent_constants', (120, 121, 122, )),
-        ('fields_of_constants',        (125, 126, 127, )),
-        ('extra_constants',            (130, 131, )),
-        ('temp_historyfile',           (135, 136, )),
-        ('compressed_field_index1',    (140, 141, )), 
-        ('compressed_field_index2',    (142, 143, )),
-        ('compressed_field_index3',    (144, 145, )),
-        ('lookup_table',               (150, 151, 152, )),
-        ('total_prognostic_fields',    (153, )),
-        ('data',                       (160, 161, 162, )), ]
+    ('data_set_format_version',    (1, )),
+    ('sub_model',                  (2, )),
+    ('vert_coord_type',            (3, )),
+    ('horiz_grid_type',            (4, )),
+    ('dataset_type',               (5, )),
+    ('run_identifier',             (6, )),
+    ('experiment_number',          (7, )),
+    ('calendar',                   (8, )),
+    ('grid_staggering',            (9, )),
+    ('time_type',                  (10, )),
+    ('projection_number',          (11, )),
+    ('model_version',              (12, )),
+    ('obs_file_type',              (14, )),
+    ('last_fieldop_type',          (15, )),
+    ('first_validity_time',        (21, 22, 23, 24, 25, 26, 27, )),
+    ('last_validity_time',         (28, 29, 30, 31, 32, 33, 34, )),
+    ('misc_validity_time',         (35, 36, 37, 38, 39, 40, 41, )),
+    ('integer_constants',          (100, 101, )),
+    ('real_constants',             (105, 106, )),
+    ('level_dependent_constants',  (110, 111, 112, )),
+    ('row_dependent_constants',    (115, 116, 117, )),
+    ('column_dependent_constants', (120, 121, 122, )),
+    ('fields_of_constants',        (125, 126, 127, )),
+    ('extra_constants',            (130, 131, )),
+    ('temp_historyfile',           (135, 136, )),
+    ('compressed_field_index1',    (140, 141, )),
+    ('compressed_field_index2',    (142, 143, )),
+    ('compressed_field_index3',    (144, 145, )),
+    ('lookup_table',               (150, 151, 152, )),
+    ('total_prognostic_fields',    (153, )),
+    ('data',                       (160, 161, 162, )), ]
 
 # Offset value to convert from UM_FIXED_LENGTH_HEADER positions to
 # FF_HEADER offsets.
@@ -74,25 +74,25 @@ UM_TO_FF_HEADER_OFFSET = 1
 # Offset the UM_FIXED_LENGTH_HEADER positions to FF_HEADER offsets.
 FF_HEADER = [
     (name, tuple(position - UM_TO_FF_HEADER_OFFSET for position in positions))
-        for name, positions in UM_FIXED_LENGTH_HEADER]
+    for name, positions in UM_FIXED_LENGTH_HEADER]
 
 # UM marker to signify a null pointer address.
 _FF_HEADER_POINTER_NULL = 0
 # UM FieldsFile fixed length header pointer names.
 _FF_HEADER_POINTERS = [
-        'integer_constants',
-        'real_constants',
-        'level_dependent_constants',
-        'row_dependent_constants',
-        'column_dependent_constants',
-        'fields_of_constants',
-        'extra_constants',
-        'temp_historyfile',
-        'compressed_field_index1',
-        'compressed_field_index2',
-        'compressed_field_index3',
-        'lookup_table',
-        'data', ]
+    'integer_constants',
+    'real_constants',
+    'level_dependent_constants',
+    'row_dependent_constants',
+    'column_dependent_constants',
+    'fields_of_constants',
+    'extra_constants',
+    'temp_historyfile',
+    'compressed_field_index1',
+    'compressed_field_index2',
+    'compressed_field_index3',
+    'lookup_table',
+    'data', ]
 
 _LBUSER_DTYPE_LOOKUP = {1: '>f{word_depth}',
                         2: '>i{word_depth}',
@@ -102,22 +102,22 @@ _LBUSER_DTYPE_LOOKUP = {1: '>f{word_depth}',
 
 class FFHeader(object):
     """A class to represent the FIXED_LENGTH_HEADER section of a FieldsFile."""
-    
+
     def __init__(self, filename, word_depth=DEFAULT_FF_WORD_DEPTH):
         """
         Create a FieldsFile header instance by reading the
         FIXED_LENGTH_HEADER section of the FieldsFile.
-        
+
         Args:
-        
+
         * filename (string):
             Specify the name of the FieldsFile.
-            
+
         Returns:
             FFHeader object.
-            
+
         """
-        
+
         #: File name of the FieldsFile.
         self.ff_filename = filename
         self._word_depth = word_depth
@@ -150,17 +150,17 @@ class FFHeader(object):
         """
         Determine whether the FieldsFile FIXED_LENGTH_HEADER pointer attribute
         has a valid FieldsFile address.
-        
+
         Args:
-        
+
         * name (string):
             Specify the name of the FIXED_LENGTH_HEADER attribute.
-            
+
         Returns:
             Boolean.
-        
+
         """
-        
+
         if name in _FF_HEADER_POINTERS:
             value = getattr(self, name)[0] > _FF_HEADER_POINTER_NULL
         else:
@@ -170,39 +170,41 @@ class FFHeader(object):
 
     def address(self, name):
         """
-        Return the byte address of the FieldsFile FIXED_LENGTH_HEADER pointer attribute.
-        
+        Return the byte address of the FieldsFile FIXED_LENGTH_HEADER
+        pointer attribute.
+
         Args:
-        
+
         * name (string):
             Specify the name of the FIXED_LENGTH_HEADER attribute.
-            
+
         Returns:
             int.
-        
+
         """
-        
+
         if name in _FF_HEADER_POINTERS:
             value = getattr(self, name)[0] * self._word_depth
         else:
             msg = '{!r} object does not have pointer attribute {!r}'
             raise AttributeError(msg.format(self.__class__.__name__, name))
         return value
-    
+
     def shape(self, name):
         """
-        Return the dimension shape of the FieldsFile FIXED_LENGTH_HEADER pointer attribute.
-        
+        Return the dimension shape of the FieldsFile FIXED_LENGTH_HEADER
+        pointer attribute.
+
         Args:
-        
+
         * name (string):
             Specify the name of the FIXED_LENGTH_HEADER attribute.
-            
+
         Returns:
             Dimension tuple.
-        
+
         """
-        
+
         if name in _FF_HEADER_POINTERS:
             value = getattr(self, name)[1:]
         else:
@@ -219,28 +221,28 @@ class FF2PP(object):
         """
         Create a FieldsFile to Post Process instance that returns a generator
         of PPFields contained within the FieldsFile.
-        
+
         Args:
-        
+
         * filename (string):
             Specify the name of the FieldsFile.
-            
+
         Kwargs:
-        
+
         * read_data (boolean):
-            Specify whether to read the associated PPField data within the FieldsFile.
-            Default value is False.
-            
+            Specify whether to read the associated PPField data within
+            the FieldsFile.  Default value is False.
+
         Returns:
             PPField generator.
-        
+
         For example::
-    
+
             >>> for field in ff.FF2PP(filename):
             ...     print field
-            
+
         """
-        
+
         self._ff_header = FFHeader(filename, word_depth=word_depth)
         self._word_depth = word_depth
         self._filename = filename
@@ -254,7 +256,8 @@ class FF2PP(object):
             # Determine PP field 64-bit payload datatype.
             lookup = _LBUSER_DTYPE_LOOKUP
             dtype_template = lookup.get(field.lbuser[0], lookup['default'])
-            data_type = np.dtype(dtype_template.format(word_depth=self._word_depth))
+            dtype_name = dtype_template.format(word_depth=self._word_depth)
+            data_type = np.dtype(dtype_name)
         else:
             # Data payload is packed.
             if field.lbpack.n1 == 1:
@@ -272,10 +275,12 @@ class FF2PP(object):
             data_type = lookup.get(field.lbuser[0], lookup['default'])
 
         return data_depth, data_type
-        
+
     def _extract_field(self):
-        # FF table pointer initialisation based on FF LOOKUP table configuration. 
-        table_index, table_entry_depth, table_count = self._ff_header.lookup_table
+        # FF table pointer initialisation based on FF LOOKUP table
+        # configuration.
+        lookup_table = self._ff_header.lookup_table
+        table_index, table_entry_depth, table_count = lookup_table
         table_offset = (table_index - 1) * self._word_depth       # in bytes
         table_entry_depth = table_entry_depth * self._word_depth  # in bytes
         # Open the FF for processing.
@@ -289,18 +294,21 @@ class FF2PP(object):
         # Process each FF LOOKUP table entry.
         while table_count:
             table_count -= 1
-            # Move file pointer to the start of the current FF LOOKUP table entry.
+            # Move file pointer to the start of the current FF LOOKUP
+            # table entry.
             ff_file_seek(table_offset, os.SEEK_SET)
             # Read the current PP header entry from the FF LOOKUP table.
-            header_integers = np.fromfile(ff_file, dtype='>i{0}'.format(self._word_depth),
-                                          count=pp.NUM_LONG_HEADERS)
-            header_floats = np.fromfile(ff_file, dtype='>f{0}'.format(self._word_depth),
-                                        count=pp.NUM_FLOAT_HEADERS)
+            header_integers = np.fromfile(
+                ff_file, dtype='>i{0}'.format(self._word_depth),
+                count=pp.NUM_LONG_HEADERS)
+            header_floats = np.fromfile(
+                ff_file, dtype='>f{0}'.format(self._word_depth),
+                count=pp.NUM_FLOAT_HEADERS)
             # In 64-bit words.
             header_data = tuple(header_integers) + tuple(header_floats)
             # Check whether the current FF LOOKUP table entry is valid.
             if header_data[0] == _FF_LOOKUP_TABLE_TERMINATE:
-                # There are no more FF LOOKUP table entries to read. 
+                # There are no more FF LOOKUP table entries to read.
                 break
             # Calculate next FF LOOKUP table entry.
             table_offset += table_entry_depth
@@ -319,18 +327,20 @@ class FF2PP(object):
                 # Move file pointer to the start of the current PP field data.
                 ff_file_seek(data_offset, os.SEEK_SET)
                 # Get the PP field data.
-                data = field.read_data(ff_file, data_depth, data_shape, data_type)
+                data = field.read_data(ff_file, data_depth, data_shape,
+                                       data_type)
                 field._data = data
                 field._data_manager = None
             else:
                 proxy = pp.PPDataProxy(self._filename, data_offset,
                                        data_depth, field.lbpack)
                 field._data = np.array(proxy)
-                field._data_manager = DataManager(data_shape, data_type, field.bmdi)
+                field._data_manager = DataManager(data_shape, data_type,
+                                                  field.bmdi)
             yield field
         ff_file.close()
         return
-        
+
     def __iter__(self):
         return self._extract_field()
 
@@ -338,20 +348,22 @@ class FF2PP(object):
 def load_cubes(filenames, callback):
     """
     Loads cubes from a list of fields files filenames.
-    
+
     Args:
-    
+
     * filenames - list of fields files filenames to load
-    
+
     Kwargs:
-    
-    * callback - a function which can be passed on to :func:`iris.io.run_callback`
-    
+
+    * callback - a function which can be passed on to
+        :func:`iris.io.run_callback`
+
     .. note::
 
-        The resultant cubes may not be in the order that they are in the file (order 
-        is not preserved when there is a field with orography references).
-         
+        The resultant cubes may not be in the order that they are in the
+        file (order is not preserved when there is a field with
+        orography references).
+
     """
     return pp._load_cubes_variable_loader(filenames, callback, FF2PP)
 
