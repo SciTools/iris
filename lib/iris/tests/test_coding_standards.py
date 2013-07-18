@@ -61,7 +61,6 @@ DOCS_BUILD_DIR = os.path.join(DOCS_DIR, 'iris', 'build', 'html')
 
 class StandardReportWithExclusions(pep8.StandardReport):
     expected_bad_files = [
-        '*/iris/_cube_coord_common.py',
         '*/iris/_merge.py',
         '*/iris/aux_factory.py',
         '*/iris/config.py',
