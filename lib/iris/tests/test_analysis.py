@@ -306,24 +306,99 @@ class TestAggregators(tests.IrisTest):
     def test_percentile_1d(self):
         cube = tests.stock.simple_1d()
 
-        first_quartile = cube.collapsed('foo', iris.analysis.PERCENTILE, percent=25)
-        np.testing.assert_array_almost_equal(first_quartile.data, np.array([2.5], dtype=np.float32))
-        self.assertCML(first_quartile, ('analysis', 'first_quartile_foo_1d.cml'), checksum=False)
+        first_quartile = cube.collapsed('foo', iris.analysis.PERCENTILE,
+                                        percent=25)
+        np.testing.assert_array_almost_equal(first_quartile.data,
+                                             np.array([2.5], dtype=np.float32))
+        self.assertCML(first_quartile, ('analysis',
+                                        'first_quartile_foo_1d.cml'),
+                       checksum=False)
 
-        third_quartile = cube.collapsed('foo', iris.analysis.PERCENTILE, percent=75)
-        np.testing.assert_array_almost_equal(third_quartile.data, np.array([7.5], dtype=np.float32))
-        self.assertCML(third_quartile, ('analysis', 'third_quartile_foo_1d.cml'), checksum=False)
+        third_quartile = cube.collapsed('foo', iris.analysis.PERCENTILE,
+                                        percent=75)
+        np.testing.assert_array_almost_equal(third_quartile.data,
+                                             np.array([7.5],
+                                             dtype=np.float32))
+        self.assertCML(third_quartile,
+                       ('analysis', 'third_quartile_foo_1d.cml'),
+                       checksum=False)
 
     def test_percentile_2d(self):
         cube = tests.stock.simple_2d()
 
-        first_quartile = cube.collapsed('foo', iris.analysis.PERCENTILE, percent=25)
-        np.testing.assert_array_almost_equal(first_quartile.data, np.array([0.75, 4.75, 8.75], dtype=np.float32))
-        self.assertCML(first_quartile, ('analysis', 'first_quartile_foo_2d.cml'), checksum=False)
+        first_quartile = cube.collapsed('foo', iris.analysis.PERCENTILE,
+                                        percent=25)
+        np.testing.assert_array_almost_equal(first_quartile.data,
+                                             np.array([0.75, 4.75, 8.75],
+                                             dtype=np.float32))
+        self.assertCML(first_quartile, ('analysis',
+                                        'first_quartile_foo_2d.cml'),
+                       checksum=False)
 
-        first_quartile = cube.collapsed(('foo', 'bar'), iris.analysis.PERCENTILE, percent=25)
-        np.testing.assert_array_almost_equal(first_quartile.data, np.array([2.75], dtype=np.float32))
-        self.assertCML(first_quartile, ('analysis', 'first_quartile_foo_bar_2d.cml'), checksum=False)
+        first_quartile = cube.collapsed(('foo', 'bar'),
+                                        iris.analysis.PERCENTILE, percent=25)
+        np.testing.assert_array_almost_equal(first_quartile.data,
+                                             np.array([2.75],
+                                             dtype=np.float32))
+        self.assertCML(first_quartile, ('analysis',
+                                        'first_quartile_foo_bar_2d.cml'),
+                       checksum=False)
+
+    def test_percentile_3d(self):
+        array_3d = np.arange(24, dtype=np.int32).reshape((2, 3, 4))
+
+        last_quartile = iris.analysis._percentile(array_3d, 0, 50)
+        np.testing.assert_array_almost_equal(last_quartile,
+                                             np.array([[6., 7., 8., 9.],
+                                                       [10., 11., 12., 13.],
+                                                       [14., 15., 16., 17.]],
+                                             dtype=np.float32))
+
+    def test_percentile_3d_axis_one(self):
+        array_3d = np.arange(24, dtype=np.int32).reshape((2, 3, 4))
+
+        last_quartile = iris.analysis._percentile(array_3d, 1, 50)
+        np.testing.assert_array_almost_equal(last_quartile,
+                                             np.array([[4., 5., 6., 7.],
+                                                       [16., 17., 18., 19.]],
+                                             dtype=np.float32))
+
+    def test_percentile_3d_axis_two(self):
+        array_3d = np.arange(24, dtype=np.int32).reshape((2, 3, 4))
+
+        last_quartile = iris.analysis._percentile(array_3d, 2, 50)
+        np.testing.assert_array_almost_equal(last_quartile,
+                                             np.array([[1.5, 5.5, 9.5],
+                                                       [13.5, 17.5, 21.5]],
+                                             dtype=np.float32))
+
+    def test_percentile_3d_masked(self):
+        cube = tests.stock.simple_3d_mask()
+
+        last_quartile = cube.collapsed('wibble',
+                                       iris.analysis.PERCENTILE, percent=75)
+        np.testing.assert_array_almost_equal(last_quartile.data,
+                                             np.array([[12., 13., 14., 15.],
+                                                       [16., 17., 18., 19.],
+                                                       [20., 18., 19., 20.]],
+                                             dtype=np.float32))
+        self.assertCML(last_quartile, ('analysis',
+                                       'last_quartile_foo_3d_masked.cml'),
+                       checksum=False)
+
+    def test_percentile_3d_notmasked(self):
+        cube = tests.stock.simple_3d()
+
+        last_quartile = cube.collapsed('wibble',
+                                       iris.analysis.PERCENTILE, percent=75)
+        np.testing.assert_array_almost_equal(last_quartile.data,
+                                             np.array([[9., 10., 11., 12.],
+                                                       [13., 14., 15., 16.],
+                                                       [17., 18., 19., 20.]],
+                                             dtype=np.float32))
+        self.assertCML(last_quartile, ('analysis',
+                                       'last_quartile_foo_3d_notmasked.cml'),
+                       checksum=False)
 
     def test_proportion(self):
         cube = tests.stock.simple_1d()
