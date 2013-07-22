@@ -8,6 +8,8 @@ Features added
   arguments, which may be cubes or coordinates, allowing the user to have full
   control over what is plotted on each axis. The coords keyword argument is now
   deprecated for these functions.
+* `iris.analysis.SUM` is now a weighted aggregator, allowing it to take a
+  weights keyword argument.
 
 Bugs fixed
 ----------

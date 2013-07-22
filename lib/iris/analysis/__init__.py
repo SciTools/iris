@@ -461,6 +461,26 @@ def _rms(array, axis, **kwargs):
     return np.sqrt(np.sum(np.square(array), axis=axis) / n_elements)
 
 
+def _sum(array, **kwargs):
+    # weighted or scaled sum
+    axis_in = kwargs.get('axis', None)
+    weights_in = kwargs.pop('weights', None)
+    returned_in = kwargs.pop('returned', False)
+    if weights_in is not None:
+        wsum = ma.sum(weights_in * array, **kwargs)
+    else:
+        wsum = ma.sum(array, **kwargs)
+    if returned_in:
+        if weights_in is None:
+            weights = np.ones_like(array)
+        else:
+            weights = weights_in
+        rvalue = (wsum, ma.sum(weights, axis=axis_in))
+    else:
+        rvalue = wsum
+    return rvalue
+
+
 #
 # Common partial Aggregation class constructors.
 #
@@ -672,15 +692,32 @@ For example, to obtain the biased standard deviation::
 """
 
 
-SUM = Aggregator('Sum of {standard_name:s} {action:s} {coord_names:s}',
-              'sum',
-              ma.sum)
+SUM = WeightedAggregator('Sum of {standard_name:s} {action:s} {coord_names:s}',
+                         'sum',
+                         _sum)
 """
 The sum of a dataset, as computed by :func:`numpy.ma.sum`.
 
 For example, to compute an accumulation over time::
 
     result = cube.collapsed('time', iris.analysis.SUM)
+
+Additional kwargs available:
+
+* weights
+    Optional array of floats. If supplied, the shape must match the
+    shape of the cube for collapsing, or the length of the window for
+    rolling window operations.
+
+* returned
+    Set this to True to indicate the collapsed weights are to be returned
+    along with the collapsed data. Defaults to False.
+
+For example to compute a weighted rolling sum (e.g., to apply a digital filter)::
+
+    weights = np.array([.1, .2, .4, .2, .1])
+    result = cube.rolling_window('time', iris.analysis.SUM,
+                                 len(weights), weights=weights)
 
 """
 

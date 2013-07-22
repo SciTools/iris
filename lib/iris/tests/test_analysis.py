@@ -381,6 +381,33 @@ class TestAggregators(tests.IrisTest):
         gt6.data = gt6.data.astype('i8')
         self.assertCML(gt6, ('analysis', 'count_foo_bar_2d.cml'), checksum=False)
 
+    def test_weighted_sum_consistency(self):
+        # weighted sum with unit weights should be the same as a sum
+        cube = tests.stock.simple_1d()
+        normal_sum = cube.collapsed('foo', iris.analysis.SUM)
+        weights = np.ones_like(cube.data)
+        weighted_sum = cube.collapsed('foo', iris.analysis.SUM, weights=weights)
+        self.assertArrayAlmostEqual(normal_sum.data, weighted_sum.data)
+
+    def test_weighted_sum_1d(self):
+        # verify 1d weighted sum is correct
+        cube = tests.stock.simple_1d()
+        weights = np.array([.05, .05, .1, .1, .2, .3, .2, .1, .1, .05, .05])
+        result = cube.collapsed('foo', iris.analysis.SUM, weights=weights)
+        self.assertAlmostEqual(result.data, 6.5)
+        self.assertCML(result, ('analysis', 'sum_weighted_1d.cml'),
+                       checksum=False)
+
+    def test_weighted_sum_2d(self):
+        # verify 2d weighted sum is correct
+        cube = tests.stock.simple_2d()
+        weights = np.array([.3, .4, .3])
+        weights = iris.util.broadcast_weights(weights, cube.data, [0])
+        result = cube.collapsed('bar', iris.analysis.SUM, weights=weights)
+        self.assertArrayAlmostEqual(result.data, np.array([4., 5., 6., 7.]))
+        self.assertCML(result, ('analysis', 'sum_weighted_2d.cml'),
+                       checksum=False)
+
 
 @iris.tests.skip_data
 class TestRotatedPole(tests.IrisTest):
