@@ -67,7 +67,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/coord_systems.py',
         '*/iris/cube.py',
         '*/iris/exceptions.py',
-        '*/iris/palette.py',
         '*/iris/quickplot.py',
         '*/iris/std_names.py',
         '*/iris/symbols.py',
