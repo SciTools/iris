@@ -179,7 +179,7 @@ class FFHeader(object):
             Specify the name of the FIXED_LENGTH_HEADER attribute.
 
         Returns:
-            int.
+            A numpy.int64 containing the byte address.
 
         """
 
