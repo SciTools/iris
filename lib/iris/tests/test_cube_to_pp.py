@@ -44,7 +44,7 @@ def itab_callback(cube, field, filename):
 class TestPPSave(tests.IrisTest, pp.PPTest):
     def test_no_forecast_time(self):
         cube = stock.lat_lon_cube()
-        coord = iris.coords.DimCoord(24,
+        coord = iris.coords.DimCoord(np.array([24], dtype=np.int64),
                                      standard_name='time',
                                      units='hours since epoch')
         cube.add_aux_coord(coord)
