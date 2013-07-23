@@ -29,7 +29,7 @@ install:
 
 # add repo
   - ./.travis_no_output sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3E5C1192
-  - yes | ./.travis_no_output sudo add-apt-repository ppa:olivier-berten/geo
+  - yes | ./.travis_no_output sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
   - ./.travis_no_output sudo apt-get update
 
 # install deps
