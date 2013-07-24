@@ -17,6 +17,8 @@ A summary of the main features added with version 1.5:
   up to two arguments, which may be cubes or coordinates, allowing the user to
   have full control over what is plotted on each axis. The coords keyword argument
   is now deprecated for these functions.
+* class:`iris.analysis.SUM` is now a weighted aggregator, allowing it to take a
+  weights keyword argument.
 
 Bugs fixed
 ----------
