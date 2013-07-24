@@ -11,6 +11,8 @@ Iris 1.5 features
 
 A summary of the main features added with version 1.5:
 
+* Scatter plots can now be produced using :func:`iris.plot.scatter` and
+  :func:`iris.quickplot.scatter`.
 * The functions :func:`iris.plot.plot` and :func:`iris.quickplot.plot` now take
   up to two arguments, which may be cubes or coordinates, allowing the user to
   have full control over what is plotted on each axis. The coords keyword argument
