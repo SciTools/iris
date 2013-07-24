@@ -85,7 +85,7 @@ def as_cube(pandas_array, copy=True, calendars=None):
                       Required to convert datetime indices/columns.
 
     Example usage::
-    
+
         as_cube(series, calendars={0: iris.unit.CALENDAR_360_DAY})
         as_cube(data_frame, calendars={1: iris.unit.CALENDAR_GREGORIAN})
 
@@ -186,10 +186,10 @@ def as_data_frame(cube, copy=True):
         make sure it is not masked and use copy=False.
 
     .. note::
-    
+
         Pandas will sometimes make a copy of the array,
         for example when creating from an int32 array.
-        Iris will detect this and raise an exception if copy=False. 
+        Iris will detect this and raise an exception if copy=False.
 
     """
     data = cube.data
