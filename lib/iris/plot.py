@@ -857,6 +857,32 @@ def plot(*args, **kwargs):
     return _draw_1d_from_points('plot', _plot_args, *args, **kwargs)
 
 
+def scatter(x, y, *args, **kwargs):
+    """
+    Draws a scatter plot based on the given cube(s) or coordinate(s).
+
+    Args:
+
+    * x: :class:`~iris.cube.Cube` or :class:`~iris.coords.Coord`
+        A cube or a coordinate to plot on the x-axis.
+
+    * y: :class:`~iris.cube.Cube` or :class:`~iris.coords.Coord`
+        A cube or a coordinate to plot on the y-axis.
+
+    See :func:`matplotlib.pyplot.scatter` for details of valid keyword
+    arguments.
+
+    """
+    # here we are more specific about argument types than generic 1d plotting
+    if not isinstance(x, (iris.cube.Cube, iris.coords.Coord)):
+        raise TypeError('x must be a cube or a coordinate.')
+    if not isinstance(y, (iris.cube.Cube, iris.coords.Coord)):
+        raise TypeError('y must be a cube or a coordinate.')
+    args = (x, y) + args
+    _plot_args = None
+    return _draw_1d_from_points('scatter', _plot_args, *args, **kwargs)
+
+
 # Provide convenience show method from pyplot
 show = plt.show
 
