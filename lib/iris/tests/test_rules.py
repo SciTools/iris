@@ -24,6 +24,7 @@ import iris.tests as tests
 import types
 
 from iris.aux_factory import HybridHeightFactory
+from iris.cube import Cube
 from iris.fileformats.rules import ConcreteReferenceTarget, Factory, Loader, \
                                    Reference, ReferenceTarget, RuleResult, \
                                    load_cubes
@@ -104,19 +105,27 @@ class TestLoadCubes(tests.IrisTest):
         factory.args = [{'name': 'foo'}]
         factory.factory_class = lambda *args: \
             setattr(aux_factory, 'fake_args', args) or aux_factory
-        def converter(cube, field):
-            # Suppress the normal Cube.coord() method.
-            cube.coord = lambda **args: args
-            cube.add_aux_factory = lambda aux_factory: \
-                setattr(cube, 'fake_aux_factory', aux_factory)
-            return ([factory], [])
+        def converter(field):
+            return ([factory], [], '', '', '', {}, [], [], [])
         # Finish by making a fake Loader
         fake_loader = Loader(field_generator, {}, converter, None)
         cubes = load_cubes(['fake_filename'], None, fake_loader)
 
         # Check the result is a generator with a single entry.
         self.assertIsInstance(cubes, types.GeneratorType)
-        cubes = list(cubes)
+        try:
+            # Suppress the normal Cube.coord() and Cube.add_aux_factory()
+            # methods.
+            coord_method = Cube.coord
+            add_aux_factory_method = Cube.add_aux_factory
+            Cube.coord = lambda self, **args: args
+            Cube.add_aux_factory = lambda self, aux_factory: \
+                setattr(self, 'fake_aux_factory', aux_factory)
+
+            cubes = list(cubes)
+        finally:
+            Cube.coord = coord_method
+            Cube.add_aux_factory = add_aux_factory_method
         self.assertEqual(len(cubes), 1)
         # Check the "cube" has an "aux_factory" added, which itself
         # must have been created with the correct arguments.
@@ -153,7 +162,7 @@ class TestLoadCubes(tests.IrisTest):
         # A fake rule set returning:
         #   1) A parameter cube needing an "orography" reference
         #   2) An "orography" cube
-        def converter(cube, field):
+        def converter(field):
             if field is press_field:
                 src = param_cube
                 factories = [Factory(HybridHeightFactory,
@@ -163,12 +172,13 @@ class TestLoadCubes(tests.IrisTest):
                 src = orog_cube
                 factories = []
                 references = [ReferenceTarget('orography', None)]
-            cube.metadata = src.metadata
-            for coord in src.dim_coords:
-                cube.add_dim_coord(coord, src.coord_dims(coord)[0])
-            for coord in src.aux_coords:
-                cube.add_aux_coord(coord, src.coord_dims(coord))
-            return (factories, references)
+            dim_coords_and_dims = [(coord, src.coord_dims(coord)[0])
+                                   for coord in src.dim_coords]
+            aux_coords_and_dims = [(coord, src.coord_dims(coord))
+                                   for coord in src.aux_coords]
+            return (factories, references, src.standard_name, src.long_name,
+                    src.units, src.attributes, src.cell_methods,
+                    dim_coords_and_dims, aux_coords_and_dims)
         # Finish by making a fake Loader
         fake_loader = Loader(field_generator, {}, converter, None)
         cubes = load_cubes(['fake_filename'], None, fake_loader)

@@ -32,42 +32,48 @@ import iris.fileformats.pp
 import iris.unit
 
 
-def convert(cube, f):
-    cm = cube
+def convert(f):
     factories = []
     references = []
+    standard_name = None
+    long_name = None
+    units = None
+    attributes = {}
+    cell_methods = []
+    dim_coords_and_dims = []
+    aux_coords_and_dims = []
 
     if \
             (f.lbtim.ia == 0) and \
             (f.lbtim.ib == 0) and \
             (f.lbtim.ic in [1, 2, 3]) and \
             (len(f.lbcode) != 5 or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])):
-        cube.add_aux_coord(DimCoord(f.time_unit('hours').date2num(f.t1), standard_name='time', units=f.time_unit('hours')))
+        aux_coords_and_dims.append((DimCoord(f.time_unit('hours').date2num(f.t1), standard_name='time', units=f.time_unit('hours')), None))
 
     if \
             (f.lbtim.ia == 0) and \
             (f.lbtim.ib == 1) and \
             (f.lbtim.ic in [1, 2, 3]) and \
             (len(f.lbcode) != 5 or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])):
-        cube.add_aux_coord(DimCoord(f.time_unit('hours', f.t2).date2num(f.t1), standard_name='forecast_period', units='hours'))
-        cube.add_aux_coord(DimCoord(f.time_unit('hours').date2num(f.t1), standard_name='time', units=f.time_unit('hours')))
-        cube.add_aux_coord(DimCoord(f.time_unit('hours').date2num(f.t2), standard_name='forecast_reference_time', units=f.time_unit('hours')))
+        aux_coords_and_dims.append((DimCoord(f.time_unit('hours', f.t2).date2num(f.t1), standard_name='forecast_period', units='hours'), None))
+        aux_coords_and_dims.append((DimCoord(f.time_unit('hours').date2num(f.t1), standard_name='time', units=f.time_unit('hours')), None))
+        aux_coords_and_dims.append((DimCoord(f.time_unit('hours').date2num(f.t2), standard_name='forecast_reference_time', units=f.time_unit('hours')), None))
 
     if \
             (f.lbtim.ib == 2) and \
             (f.lbtim.ic in [1, 2]) and \
             ((len(f.lbcode) != 5) or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])):
-        cube.add_aux_coord(DimCoord(f.lbft, standard_name='forecast_period', units='hours'))
-        cube.add_aux_coord(DimCoord((f.time_unit('hours').date2num(f.t1) + f.time_unit('hours').date2num(f.t2)) / 2.0, standard_name='time', units=f.time_unit('hours'), bounds=f.time_unit('hours').date2num([f.t1, f.t2])))
-        cube.add_aux_coord(DimCoord(f.time_unit('hours').date2num(f.t2) - f.lbft, standard_name='forecast_reference_time', units=f.time_unit('hours')))
+        aux_coords_and_dims.append((DimCoord(f.lbft, standard_name='forecast_period', units='hours'), None))
+        aux_coords_and_dims.append((DimCoord((f.time_unit('hours').date2num(f.t1) + f.time_unit('hours').date2num(f.t2)) / 2.0, standard_name='time', units=f.time_unit('hours'), bounds=f.time_unit('hours').date2num([f.t1, f.t2])), None))
+        aux_coords_and_dims.append((DimCoord(f.time_unit('hours').date2num(f.t2) - f.lbft, standard_name='forecast_reference_time', units=f.time_unit('hours')), None))
 
     if \
             (f.lbtim.ib == 3) and \
             (f.lbtim.ic in [1, 2]) and \
             ((len(f.lbcode) != 5) or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])):
-        cube.add_aux_coord(DimCoord(f.lbft, standard_name='forecast_period', units='hours'))
-        cube.add_aux_coord(DimCoord((f.time_unit('hours').date2num(f.t1) + f.time_unit('hours').date2num(f.t2)) / 2.0, standard_name='time', units=f.time_unit('hours'), bounds=f.time_unit('hours').date2num([f.t1, f.t2])))
-        cube.add_aux_coord(DimCoord(f.time_unit('hours').date2num(f.t2) - f.lbft, standard_name='forecast_reference_time', units=f.time_unit('hours')))
+        aux_coords_and_dims.append((DimCoord(f.lbft, standard_name='forecast_period', units='hours'), None))
+        aux_coords_and_dims.append((DimCoord((f.time_unit('hours').date2num(f.t1) + f.time_unit('hours').date2num(f.t2)) / 2.0, standard_name='time', units=f.time_unit('hours'), bounds=f.time_unit('hours').date2num([f.t1, f.t2])), None))
+        aux_coords_and_dims.append((DimCoord(f.time_unit('hours').date2num(f.t2) - f.lbft, standard_name='forecast_reference_time', units=f.time_unit('hours')), None))
 
     if \
             (f.lbtim.ib == 3) and \
@@ -75,7 +81,7 @@ def convert(cube, f):
             ((len(f.lbcode) != 5) or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])) and \
             (f.lbmon == 12 and f.lbdat == 1 and f.lbhr == 0 and f.lbmin == 0) and \
             (f.lbmond == 3 and f.lbdatd == 1 and f.lbhrd == 0 and f.lbmind == 0):
-        cube.add_aux_coord(AuxCoord('djf', long_name='season', units='no_unit'))
+        aux_coords_and_dims.append((AuxCoord('djf', long_name='season', units='no_unit'), None))
 
     if \
             (f.lbtim.ib == 3) and \
@@ -83,7 +89,7 @@ def convert(cube, f):
             ((len(f.lbcode) != 5) or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])) and \
             (f.lbmon == 3 and f.lbdat == 1 and f.lbhr == 0 and f.lbmin == 0) and \
             (f.lbmond == 6 and f.lbdatd == 1 and f.lbhrd == 0 and f.lbmind == 0):
-        cube.add_aux_coord(AuxCoord('mam', long_name='season', units='no_unit'))
+        aux_coords_and_dims.append((AuxCoord('mam', long_name='season', units='no_unit'), None))
 
     if \
             (f.lbtim.ib == 3) and \
@@ -91,7 +97,7 @@ def convert(cube, f):
             ((len(f.lbcode) != 5) or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])) and \
             (f.lbmon == 6 and f.lbdat == 1 and f.lbhr == 0 and f.lbmin == 0) and \
             (f.lbmond == 9 and f.lbdatd == 1 and f.lbhrd == 0 and f.lbmind == 0):
-        cube.add_aux_coord(AuxCoord('jja', long_name='season', units='no_unit'))
+        aux_coords_and_dims.append((AuxCoord('jja', long_name='season', units='no_unit'), None))
 
     if \
             (f.lbtim.ib == 3) and \
@@ -99,84 +105,84 @@ def convert(cube, f):
             ((len(f.lbcode) != 5) or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])) and \
             (f.lbmon == 9 and f.lbdat == 1 and f.lbhr == 0 and f.lbmin == 0) and \
             (f.lbmond == 12 and f.lbdatd == 1 and f.lbhrd == 0 and f.lbmind == 0):
-        cube.add_aux_coord(AuxCoord('son', long_name='season', units='no_unit'))
+        aux_coords_and_dims.append((AuxCoord('son', long_name='season', units='no_unit'), None))
 
     if \
             (f.bdx != 0.0) and \
             (len(f.lbcode) != 5) and \
             (f.lbcode[0] == 1):
-        cube.add_dim_coord(DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt, standard_name=f._x_coord_name(), units='degrees', circular=(f.lbhem in [0, 4]), coord_system=f.coord_system()), 1)
+        dim_coords_and_dims.append((DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt, standard_name=f._x_coord_name(), units='degrees', circular=(f.lbhem in [0, 4]), coord_system=f.coord_system()), 1))
 
     if \
             (f.bdx != 0.0) and \
             (len(f.lbcode) != 5) and \
             (f.lbcode[0] == 2):
-        cube.add_dim_coord(DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt, standard_name=f._x_coord_name(), units='degrees', circular=(f.lbhem in [0, 4]), coord_system=f.coord_system(), with_bounds=True), 1)
+        dim_coords_and_dims.append((DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt, standard_name=f._x_coord_name(), units='degrees', circular=(f.lbhem in [0, 4]), coord_system=f.coord_system(), with_bounds=True), 1))
 
     if \
             (f.bdy != 0.0) and \
             (len(f.lbcode) != 5) and \
             (f.lbcode[0] == 1):
-        cube.add_dim_coord(DimCoord.from_regular(f.bzy, f.bdy, f.lbrow, standard_name=f._y_coord_name(), units='degrees', coord_system=f.coord_system()), 0)
+        dim_coords_and_dims.append((DimCoord.from_regular(f.bzy, f.bdy, f.lbrow, standard_name=f._y_coord_name(), units='degrees', coord_system=f.coord_system()), 0))
 
     if \
             (f.bdy != 0.0) and \
             (len(f.lbcode) != 5) and \
             (f.lbcode[0] == 2):
-        cube.add_dim_coord(DimCoord.from_regular(f.bzy, f.bdy, f.lbrow, standard_name=f._y_coord_name(), units='degrees', coord_system=f.coord_system(), with_bounds=True), 0)
+        dim_coords_and_dims.append((DimCoord.from_regular(f.bzy, f.bdy, f.lbrow, standard_name=f._y_coord_name(), units='degrees', coord_system=f.coord_system(), with_bounds=True), 0))
 
     if \
             (f.bdy == 0.0) and \
             (len(f.lbcode) != 5 or (len(f.lbcode) == 5 and f.lbcode.iy == 10)):
-        cube.add_dim_coord(DimCoord(f.y, standard_name=f._y_coord_name(), units='degrees', bounds=f.y_bounds, coord_system=f.coord_system()), 0)
+        dim_coords_and_dims.append((DimCoord(f.y, standard_name=f._y_coord_name(), units='degrees', bounds=f.y_bounds, coord_system=f.coord_system()), 0))
 
     if \
             (f.bdx == 0.0) and \
             (len(f.lbcode) != 5 or (len(f.lbcode) == 5 and f.lbcode.ix == 11)):
-        cube.add_dim_coord(DimCoord(f.x, standard_name=f._x_coord_name(),  units='degrees', bounds=f.x_bounds, circular=(f.lbhem in [0, 4]), coord_system=f.coord_system()), 1)
+        dim_coords_and_dims.append((DimCoord(f.x, standard_name=f._x_coord_name(),  units='degrees', bounds=f.x_bounds, circular=(f.lbhem in [0, 4]), coord_system=f.coord_system()), 1))
 
     if \
             (len(f.lbcode) == 5) and \
             (f.lbcode[-1] == 1) and \
             (f.lbcode.iy == 4):
-        cube.add_dim_coord(DimCoord(f.y, standard_name='depth', units='m', bounds=f.y_bounds, attributes={'positive': 'down'}), 0)
+        dim_coords_and_dims.append((DimCoord(f.y, standard_name='depth', units='m', bounds=f.y_bounds, attributes={'positive': 'down'}), 0))
 
     if \
             (len(f.lbcode) == 5) and \
             (f.lbcode.ix == 10) and \
             (f.bdx != 0):
-        cube.add_dim_coord(DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt, standard_name=f._y_coord_name(), units='degrees', coord_system=f.coord_system()), 1)
+        dim_coords_and_dims.append((DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt, standard_name=f._y_coord_name(), units='degrees', coord_system=f.coord_system()), 1))
 
     if \
             (len(f.lbcode) == 5) and \
             (f.lbcode.iy == 1) and \
             (f.bdy == 0):
-        cube.add_dim_coord(DimCoord(f.y, long_name='pressure', units='hPa', bounds=f.y_bounds), 0)
+        dim_coords_and_dims.append((DimCoord(f.y, long_name='pressure', units='hPa', bounds=f.y_bounds), 0))
 
     if \
             (len(f.lbcode) == 5) and \
             (f.lbcode.ix == 1) and \
             (f.bdx == 0):
-        cube.add_dim_coord(DimCoord(f.x, long_name='pressure', units='hPa', bounds=f.x_bounds), 1)
+        dim_coords_and_dims.append((DimCoord(f.x, long_name='pressure', units='hPa', bounds=f.x_bounds), 1))
 
     if \
             (len(f.lbcode) == 5) and \
             (f.lbcode[-1] == 1) and \
             (f.lbcode.iy == 23):
-        cube.add_dim_coord(DimCoord(f.y, standard_name='time', units=iris.unit.Unit('days since 0000-01-01 00:00:00', calendar=iris.unit.CALENDAR_360_DAY), bounds=f.y_bounds), 0)
+        dim_coords_and_dims.append((DimCoord(f.y, standard_name='time', units=iris.unit.Unit('days since 0000-01-01 00:00:00', calendar=iris.unit.CALENDAR_360_DAY), bounds=f.y_bounds), 0))
 
     if \
             (len(f.lbcode) == 5) and \
             (f.lbcode[-1] == 1) and \
             (f.lbcode.ix == 23):
-        cube.add_dim_coord(DimCoord(f.x, standard_name='time', units=iris.unit.Unit('days since 0000-01-01 00:00:00', calendar=iris.unit.CALENDAR_360_DAY), bounds=f.x_bounds), 1)
+        dim_coords_and_dims.append((DimCoord(f.x, standard_name='time', units=iris.unit.Unit('days since 0000-01-01 00:00:00', calendar=iris.unit.CALENDAR_360_DAY), bounds=f.x_bounds), 1))
 
     if \
             (len(f.lbcode) == 5) and \
             (f.lbcode[-1] == 1) and \
             (f.lbcode.ix == 13) and \
             (f.bdx != 0):
-        cube.add_dim_coord(DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt, long_name='site_number', units='1'), 1)
+        dim_coords_and_dims.append((DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt, long_name='site_number', units='1'), 1))
 
     if \
             (len(f.lbcode) == 5) and \
@@ -186,7 +192,7 @@ def convert(cube, f):
             (hasattr(f, 'upper_x_domain')) and \
             (all(f.lower_x_domain != -1.e+30)) and \
             (all(f.upper_x_domain != -1.e+30)):
-        cube.add_aux_coord(AuxCoord((f.lower_x_domain + f.upper_x_domain) / 2.0, standard_name=f._x_coord_name(), units='degrees', bounds=np.array([f.lower_x_domain, f.upper_x_domain]).T, coord_system=f.coord_system()), 1 if f.lbcode.ix == 13 else 0)
+        aux_coords_and_dims.append((AuxCoord((f.lower_x_domain + f.upper_x_domain) / 2.0, standard_name=f._x_coord_name(), units='degrees', bounds=np.array([f.lower_x_domain, f.upper_x_domain]).T, coord_system=f.coord_system()), 1 if f.lbcode.ix == 13 else 0))
 
     if \
             (len(f.lbcode) == 5) and \
@@ -196,238 +202,176 @@ def convert(cube, f):
             (hasattr(f, 'upper_y_domain')) and \
             (all(f.lower_y_domain != -1.e+30)) and \
             (all(f.upper_y_domain != -1.e+30)):
-        cube.add_aux_coord(AuxCoord((f.lower_y_domain + f.upper_y_domain) / 2.0, standard_name=f._y_coord_name(), units='degrees', bounds=np.array([f.lower_y_domain, f.upper_y_domain]).T, coord_system=f.coord_system()), 1 if f.lbcode.ix == 13 else 0)
+        aux_coords_and_dims.append((AuxCoord((f.lower_y_domain + f.upper_y_domain) / 2.0, standard_name=f._y_coord_name(), units='degrees', bounds=np.array([f.lower_y_domain, f.upper_y_domain]).T, coord_system=f.coord_system()), 1 if f.lbcode.ix == 13 else 0))
 
     if \
             (f.lbproc == 128) and \
             (f.lbtim.ib == 2) and \
             (f.lbtim.ia == 0):
-        cube.add_cell_method(CellMethod("mean", coords="time"))
+        cell_methods.append(CellMethod("mean", coords="time"))
 
     if \
             (f.lbproc == 128) and \
             (f.lbtim.ib == 2) and \
             (f.lbtim.ia != 0):
-        cube.add_cell_method(CellMethod("mean", coords="time", intervals="%d hour" % f.lbtim.ia))
+        cell_methods.append(CellMethod("mean", coords="time", intervals="%d hour" % f.lbtim.ia))
 
     if \
             (f.lbproc == 128) and \
             (f.lbtim.ib == 3):
-        cube.add_cell_method(CellMethod("mean", coords="time"))
+        cell_methods.append(CellMethod("mean", coords="time"))
 
     if \
             (f.lbproc == 128) and \
             (f.lbtim.ib not in [2, 3]):
-        cube.add_cell_method(CellMethod("mean", coords="time"))
+        cell_methods.append(CellMethod("mean", coords="time"))
 
     if \
             (f.lbproc == 4096) and \
             (f.lbtim.ib == 2) and \
             (f.lbtim.ia == 0):
-        cube.add_cell_method(CellMethod("minimum", coords="time"))
+        cell_methods.append(CellMethod("minimum", coords="time"))
 
     if \
             (f.lbproc == 4096) and \
             (f.lbtim.ib == 2) and \
             (f.lbtim.ia != 0):
-        cube.add_cell_method(CellMethod("minimum", coords="time", intervals="%d hour" % f.lbtim.ia))
+        cell_methods.append(CellMethod("minimum", coords="time", intervals="%d hour" % f.lbtim.ia))
 
     if \
             (f.lbproc == 4096) and \
             (f.lbtim.ib != 2):
-        cube.add_cell_method(CellMethod("minimum", coords="time"))
+        cell_methods.append(CellMethod("minimum", coords="time"))
 
     if \
             (f.lbproc == 8192) and \
             (f.lbtim.ib == 2) and \
             (f.lbtim.ia == 0):
-        cube.add_cell_method(CellMethod("maximum", coords="time"))
+        cell_methods.append(CellMethod("maximum", coords="time"))
 
     if \
             (f.lbproc == 8192) and \
             (f.lbtim.ib == 2) and \
             (f.lbtim.ia != 0):
-        cube.add_cell_method(CellMethod("maximum", coords="time", intervals="%d hour" % f.lbtim.ia))
+        cell_methods.append(CellMethod("maximum", coords="time", intervals="%d hour" % f.lbtim.ia))
 
     if \
             (f.lbproc == 8192) and \
             (f.lbtim.ib != 2):
-        cube.add_cell_method(CellMethod("maximum", coords="time"))
+        cell_methods.append(CellMethod("maximum", coords="time"))
 
     if f.lbproc not in [0, 128, 4096, 8192]:
-        cube.attributes["ukmo__process_flags"] = tuple(sorted([iris.fileformats.pp.lbproc_map[flag] for flag in f.lbproc.flags]))
+        attributes["ukmo__process_flags"] = tuple(sorted([iris.fileformats.pp.lbproc_map[flag] for flag in f.lbproc.flags]))
 
     if \
             (f.lbvc == 1) and \
             (not (f.lbuser[6] == 1 and f.lbuser[3] == 3236)) and \
             (f.blev != -1):
-        cube.add_aux_coord(DimCoord(f.blev, standard_name='height', units='m', attributes={'positive': 'up'}))
+        aux_coords_and_dims.append((DimCoord(f.blev, standard_name='height', units='m', attributes={'positive': 'up'}), None))
 
     if f.lbuser[6] == 1 and f.lbuser[3] == 3236:
-        cube.add_aux_coord(DimCoord(1.5, standard_name='height', units='m', attributes={'positive': 'up'}))
+        aux_coords_and_dims.append((DimCoord(1.5, standard_name='height', units='m', attributes={'positive': 'up'}), None))
 
     if \
             (len(f.lbcode) != 5) and \
             (f.lbvc == 2):
-        cube.add_aux_coord(DimCoord(f.lblev, standard_name='model_level_number', attributes={'positive': 'down'}))
+        aux_coords_and_dims.append((DimCoord(f.lblev, standard_name='model_level_number', attributes={'positive': 'down'}), None))
 
     if \
             (len(f.lbcode) != 5) and \
             (f.lbvc == 2) and \
             (f.brsvd[0] == f.brlev):
-        cube.add_aux_coord(DimCoord(f.blev, standard_name='depth', units='m', attributes={'positive': 'down'}))
+        aux_coords_and_dims.append((DimCoord(f.blev, standard_name='depth', units='m', attributes={'positive': 'down'}), None))
 
     if \
             (len(f.lbcode) != 5) and \
             (f.lbvc == 2) and \
             (f.brsvd[0] != f.brlev):
-        cube.add_aux_coord(DimCoord(f.blev, standard_name='depth', units='m', bounds=[f.brsvd[0], f.brlev], attributes={'positive': 'down'}))
+        aux_coords_and_dims.append((DimCoord(f.blev, standard_name='depth', units='m', bounds=[f.brsvd[0], f.brlev], attributes={'positive': 'down'}), None))
 
     if \
             (f.lbvc == 8) and \
             (len(f.lbcode) != 5 or (len(f.lbcode) == 5 and 1 not in [f.lbcode.ix, f.lbcode.iy])):
-        cube.add_aux_coord(DimCoord(f.blev, long_name='pressure', units='hPa'))
+        aux_coords_and_dims.append((DimCoord(f.blev, long_name='pressure', units='hPa'), None))
 
     if f.lbvc == 65:
-        cube.add_aux_coord(DimCoord(f.lblev, standard_name='model_level_number', attributes={'positive': 'up'}))
-        cube.add_aux_coord(DimCoord(f.blev, long_name='level_height', units='m', bounds=[f.brlev, f.brsvd[0]], attributes={'positive': 'up'}))
-        cube.add_aux_coord(AuxCoord(f.bhlev, long_name='sigma', bounds=[f.bhrlev, f.brsvd[1]]))
+        aux_coords_and_dims.append((DimCoord(f.lblev, standard_name='model_level_number', attributes={'positive': 'up'}), None))
+        aux_coords_and_dims.append((DimCoord(f.blev, long_name='level_height', units='m', bounds=[f.brlev, f.brsvd[0]], attributes={'positive': 'up'}), None))
+        aux_coords_and_dims.append((AuxCoord(f.bhlev, long_name='sigma', bounds=[f.bhrlev, f.brsvd[1]]), None))
         factories.append(Factory(HybridHeightFactory, [{'long_name': 'level_height'}, {'long_name': 'sigma'}, Reference('orography')]))
 
     if f.lbrsvd[3] != 0:
-        cube.add_aux_coord(DimCoord(f.lbrsvd[3], standard_name='realization'))
+        aux_coords_and_dims.append((DimCoord(f.lbrsvd[3], standard_name='realization'), None))
 
     if f.lbuser[4] != 0:
-        cube.add_aux_coord(DimCoord(f.lbuser[4], long_name='pseudo_level', units='1'))
+        aux_coords_and_dims.append((DimCoord(f.lbuser[4], long_name='pseudo_level', units='1'), None))
 
     if f.lbuser[6] == 1 and f.lbuser[3] == 5226:
-        cube.rename("precipitation_amount")
+        standard_name = "precipitation_amount"
         units = "kg m-2"
-        try:
-            setattr(cube, 'units', units)
-        except ValueError:
-            msg = 'Ignoring PP invalid units {!r}'.format(units)
-            warnings.warn(msg)
-            cube.attributes['invalid_units'] = units
-            cube.units = iris.unit._UNKNOWN_UNIT_STRING
 
     if \
             (f.lbuser[6] == 2) and \
             (f.lbuser[3] == 101):
-        cube.rename("sea_water_potential_temperature")
+        standard_name = "sea_water_potential_temperature"
         units = "Celsius"
-        try:
-            setattr(cube, 'units', units)
-        except ValueError:
-            msg = 'Ignoring PP invalid units {!r}'.format(units)
-            warnings.warn(msg)
-            cube.attributes['invalid_units'] = units
-            cube.units = iris.unit._UNKNOWN_UNIT_STRING
 
     if \
             ((f.lbsrce % 10000) == 1111) and \
             ((f.lbsrce / 10000) / 100.0 > 0):
-        cube.attributes['source'] = 'Data from Met Office Unified Model %4.2f' % ((f.lbsrce / 10000) / 100.0)
+        attributes['source'] = 'Data from Met Office Unified Model %4.2f' % ((f.lbsrce / 10000) / 100.0)
 
     if \
             ((f.lbsrce % 10000) == 1111) and \
             ((f.lbsrce / 10000) / 100.0 == 0):
-        cube.attributes['source'] = 'Data from Met Office Unified Model'
+        attributes['source'] = 'Data from Met Office Unified Model'
 
     if f.lbuser[6] != 0 or (f.lbuser[3] / 1000) != 0 or (f.lbuser[3] % 1000) != 0:
-        cube.attributes['STASH'] = f.stash
+        attributes['STASH'] = f.stash
 
     if \
             (f.lbuser[6] == 1) and \
             (f.lbuser[3] == 4205):
-        cube.rename("mass_fraction_of_cloud_ice_in_air")
+        standard_name = "mass_fraction_of_cloud_ice_in_air"
         units = "1"
-        try:
-            setattr(cube, 'units', units)
-        except ValueError:
-            msg = 'Ignoring PP invalid units {!r}'.format(units)
-            warnings.warn(msg)
-            cube.attributes['invalid_units'] = units
-            cube.units = iris.unit._UNKNOWN_UNIT_STRING
 
     if \
             (f.lbuser[6] == 1) and \
             (f.lbuser[3] == 4206):
-        cube.rename("mass_fraction_of_cloud_liquid_water_in_air")
+        standard_name = "mass_fraction_of_cloud_liquid_water_in_air"
         units = "1"
-        try:
-            setattr(cube, 'units', units)
-        except ValueError:
-            msg = 'Ignoring PP invalid units {!r}'.format(units)
-            warnings.warn(msg)
-            cube.attributes['invalid_units'] = units
-            cube.units = iris.unit._UNKNOWN_UNIT_STRING
 
     if \
             (f.lbuser[6] == 1) and \
             (f.lbuser[3] == 30204):
-        cube.rename("air_temperature")
+        standard_name = "air_temperature"
         units = "K"
-        try:
-            setattr(cube, 'units', units)
-        except ValueError:
-            msg = 'Ignoring PP invalid units {!r}'.format(units)
-            warnings.warn(msg)
-            cube.attributes['invalid_units'] = units
-            cube.units = iris.unit._UNKNOWN_UNIT_STRING
 
     if \
             (f.lbuser[6] == 4) and \
             (f.lbuser[3] == 6001):
-        cube.rename("sea_surface_wave_significant_height")
+        standard_name = "sea_surface_wave_significant_height"
         units = "m"
-        try:
-            setattr(cube, 'units', units)
-        except ValueError:
-            msg = 'Ignoring PP invalid units {!r}'.format(units)
-            warnings.warn(msg)
-            cube.attributes['invalid_units'] = units
-            cube.units = iris.unit._UNKNOWN_UNIT_STRING
 
     if str(f.stash) in MOSIG_STASH_TO_CF:
-        cube.rename(MOSIG_STASH_TO_CF[str(f.stash)].name)
+        standard_name = MOSIG_STASH_TO_CF[str(f.stash)].name
         units = MOSIG_STASH_TO_CF[str(f.stash)].unit
-        try:
-            setattr(cube, 'units', units)
-        except ValueError:
-            msg = 'Ignoring PP invalid units {!r}'.format(units)
-            warnings.warn(msg)
-            cube.attributes['invalid_units'] = units
-            cube.units = iris.unit._UNKNOWN_UNIT_STRING
-        cube.long_name = None
+        long_name = None
 
     if str(f.stash) in STASH_TO_CF:
-        cube.rename(STASH_TO_CF[str(f.stash)].cfname)
+        standard_name = STASH_TO_CF[str(f.stash)].cfname
         units = STASH_TO_CF[str(f.stash)].unit
-        try:
-            setattr(cube, 'units', units)
-        except ValueError:
-            msg = 'Ignoring PP invalid units {!r}'.format(units)
-            warnings.warn(msg)
-            cube.attributes['invalid_units'] = units
-            cube.units = iris.unit._UNKNOWN_UNIT_STRING
-        cube.long_name = None
+        long_name = None
 
     if \
             (not f.stash.is_valid) and \
             (f.lbfc in LBFC_TO_CF):
-        cube.rename(LBFC_TO_CF[f.lbfc].cfname)
+        standard_name = LBFC_TO_CF[f.lbfc].cfname
         units = LBFC_TO_CF[f.lbfc].unit
-        try:
-            setattr(cube, 'units', units)
-        except ValueError:
-            msg = 'Ignoring PP invalid units {!r}'.format(units)
-            warnings.warn(msg)
-            cube.attributes['invalid_units'] = units
-            cube.units = iris.unit._UNKNOWN_UNIT_STRING
-        cube.long_name = None
+        long_name = None
 
     if f.lbuser[3] == 33:
         references.append(ReferenceTarget('orography', None))
 
-    return factories, references
+    return (factories, references, standard_name, long_name, units, attributes,
+            cell_methods, dim_coords_and_dims, aux_coords_and_dims)
