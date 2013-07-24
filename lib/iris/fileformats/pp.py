@@ -1109,8 +1109,13 @@ class PPField(object):
         Args:
         
             * xy - a string, "x" or "y" to specify the dimension for which to return points.
-            
+
+        .. deprecated:: 1.5
+
         """ 
+        msg = "The 'regular_points' method is deprecated."
+        warnings.warn(msg, UserWarning, stacklevel=2)
+
         if xy.lower() == "x":
             bz = self.bzx
             bd = self.bdx
@@ -1130,8 +1135,13 @@ class PPField(object):
         Args:
         
             * xy - a string, "x" or "y" to specify the dimension for which to return points.
-            
+
+        .. deprecated:: 1.5
+
         """ 
+        msg = "The 'regular_bounds' method is deprecated."
+        warnings.warn(msg, UserWarning, stacklevel=2)
+
         if xy.lower() == "x":
             delta = 0.5 * self.bdx
         elif xy.lower() == "y":
