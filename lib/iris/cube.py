@@ -2145,7 +2145,10 @@ class Cube(CFVariableMixin):
 
     # Must supply __ne__, Python does not defer to __eq__ for negative equality
     def __ne__(self, other):
-        return not self == other
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+        return result
 
     def __add__(self, other):
         return iris.analysis.maths.add(self, other, ignore=True)
