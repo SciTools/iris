@@ -28,9 +28,12 @@ import iris.config
 import iris.fileformats.manager
 import pp
 
+import sys
+import datetime as dt
+import iris.timer
 
-FF_HEADER_DEPTH = 256  # in words (64-bit)
-FF_WORD_DEPTH = 8      # in bytes
+FF_HEADER_DEPTH = 256  # In words (64-bit).
+FF_WORD_DEPTH = 8      # In bytes.
 
 # UM marker to signify empty lookup table entry.
 _FF_LOOKUP_TABLE_TERMINATE = -99
@@ -95,6 +98,10 @@ _FF_HEADER_POINTERS = [
         'lookup_table',
         'data', ]
 
+_FF_LBUSER_DTYPE_LOOKUP = {1: np.dtype('>f8'), 
+                           2: np.dtype('>i8'), 
+                           3: np.dtype('>i8'),
+                           'default': np.dtype('>f8'), }
 
 class FFHeader(object):
     """A class to represent the FIXED_LENGTH_HEADER section of a FieldsFile."""
@@ -154,7 +161,7 @@ class FFHeader(object):
         """
         
         if name in _FF_HEADER_POINTERS:
-            value = getattr(self, name)[0] != _FF_HEADER_POINTER_NULL
+            value = getattr(self, name)[0] > _FF_HEADER_POINTER_NULL
         else:
             raise AttributeError("'%s' object does not have pointer attribute '%s'" % (self.__class__.__name__, name))
         return value
@@ -232,6 +239,32 @@ class FF2PP(object):
         self._ff_header = FFHeader(filename)
         self._filename = filename
         self._read_data = read_data
+
+    def _pp_payload(self, pp_field):
+        if pp_field.lbpack.n1 == 0:
+            # Data payload is not packed.
+            pp_data_depth = (pp_field.lblrec - pp_field.lbext) * FF_WORD_DEPTH  # In bytes.
+            # Determine PP field 64-bit payload datatype.
+            pp_data_type = _FF_LBUSER_DTYPE_LOOKUP.get(pp_field.lbuser[0], _FF_LBUSER_DTYPE_LOOKUP['default'])
+        else:
+            # Data payload is packed.
+            if pp_field.lbpack.n1 == 1:
+                # Data packed using WGDOS archive method.
+                # Convert PP field LBNREC, representing a count in 64-bit words, into its associated count in bytes.
+                pp_data_depth = ((pp_field.lbnrec * 2) - 1) * pp.PP_WORD_DEPTH  # In bytes.
+            elif pp_field.lbpack.n1 == 2:
+                # Data packed using CRAY 32-bit method.
+                pp_data_depth = (pp_field.lblrec - pp_field.lbext) * pp.PP_WORD_DEPTH  # In bytes.
+            elif pp_field.lbpack.n1 == 4:
+                # TBC - Data packed using Run Length Encoding.
+                pp_data_depth = (pp_field.lblrec - pp_field.lbext) * pp.PP_WORD_DEPTH  # In bytes.
+            else:
+                raise iris.exceptions.NotYetImplementedError('PP fields with LBPACK of {} are not supported.'.format(pp_field.lbpack))
+
+            # Determine PP field payload datatype.
+            pp_data_type = pp.LBUSER_DTYPE_LOOKUP.get(pp_field.lbuser[0], pp.LBUSER_DTYPE_LOOKUP['default'])
+
+        return pp_data_depth, pp_data_type
         
     def _extract_field(self):
         # FF table pointer initialisation based on FF LOOKUP table configuration. 
@@ -241,8 +274,14 @@ class FF2PP(object):
         # Open the FF for processing.
         ff_file = open(self._ff_header.ff_filename, 'rb')
         ff_file_seek = ff_file.seek
+
+        # Check for an instantaneous dump.
+        if self._ff_header.dataset_type == 1:
+            table_count = self._ff_header.total_prognostic_fields
+
         # Process each FF LOOKUP table entry.
         while table_count:
+            start = dt.datetime.now()
             table_count -= 1
             # Move file pointer to the start of the current FF LOOKUP table entry.
             ff_file_seek(table_offset, os.SEEK_SET)
@@ -262,18 +301,8 @@ class FF2PP(object):
             pp_field = pp.make_pp_field(pp_header_data)
             # Calculate file pointer address for the start of the associated PP header data. 
             data_offset = pp_field.lbegin * FF_WORD_DEPTH
-            # Determine PP field payload depth.
-            pp_data_extra_depth = pp_field.lbext
-            if pp_field.lbpack:
-                # Convert PP field LBNREC, representing a count in 64-bit words,
-                # into its associated count in bytes.
-                pp_data_depth = ((pp_field.lbnrec * 2) - 1) * pp.PP_WORD_DEPTH  # in bytes
-            else:
-                pp_data_depth = (pp_field.lblrec - pp_data_extra_depth) * pp.PP_WORD_DEPTH  # in bytes 
-            
-            # Determine PP field payload datatype.
-            pp_data_type = pp.LBUSER_DTYPE_LOOKUP.get(pp_field.lbuser[0], pp.LBUSER_DTYPE_LOOKUP['default'])
-
+            # Determine PP field payload depth and type.
+            pp_data_depth, pp_data_type = self._pp_payload(pp_field)
             # Determine PP field data shape.
             pp_data_shape = (pp_field.lbrow, pp_field.lbnpt)
             # Determine whether to read the associated PP field data.
@@ -287,6 +316,12 @@ class FF2PP(object):
             else:
                 pp_field._data = np.array(pp.PPDataProxy(self._ff_header.ff_filename, data_offset, pp_data_depth, pp_field.lbpack))
                 pp_field._data_manager = iris.fileformats.manager.DataManager(pp_data_shape, pp_data_type, pp_field.bmdi)
+
+            end = dt.datetime.now()
+            iris.timer.ff[0] += 1
+            delta = end - start
+            iris.timer.ff[1] += delta
+            iris.timer.ff[2][iris.timer.ff[0]] = delta
             yield pp_field
         ff_file.close()
         return

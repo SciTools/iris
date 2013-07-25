@@ -102,6 +102,8 @@ import iris._constraints
 import iris.fileformats
 import iris.io
 
+import datetime as dt
+import iris.timer
 
 # Iris revision.
 __version__ = '1.1.0-dev'
@@ -136,6 +138,7 @@ def _generate_cubes(uris, callback):
         if scheme == 'file':
             for cube in iris.io.load_files(part_names, callback):
                 yield cube
+            
         else:
             raise ValueError('Iris cannot handle the URI scheme: %s' % scheme)
 
@@ -230,7 +233,13 @@ def load_cubes(uris, constraints=None, callback=None):
 
     """
     # Merge the incoming cubes
-    collection = _load_collection(uris, constraints, callback).merged()
+    import datetime
+    start = datetime.datetime.now()
+    #collection = _load_collection(uris, constraints, callback).merged()
+    c1 = _load_collection(uris, constraints, callback)
+    mark1 = datetime.datetime.now()
+    collection = c1.merged()
+    mark2 = datetime.datetime.now()
 
     # Make sure we have exactly one merged cube per constraint
     bad_pairs = filter(lambda pair: len(pair) != 1, collection.pairs)
@@ -239,6 +248,41 @@ def load_cubes(uris, constraints=None, callback=None):
         bits = [fmt.format(pair.constraint, len(pair)) for pair in bad_pairs]
         msg = '\n' + '\n'.join(bits)
         raise iris.exceptions.ConstraintMismatchError(msg)
+    mark3 = datetime.datetime.now()
+
+    print 'load ', mark1 - start
+    print 'merge', mark2 - mark1
+    print 'check', mark3 - mark2
+    print 'total', mark3 - start
+    print
+
+    print 'ff:        ', iris.timer.ff[0], iris.timer.ff[1]
+    print 'pp:        ', iris.timer.pp[0], iris.timer.pp[1]
+    print 'ref:       ', iris.timer.pp_ref[0], iris.timer.pp_ref[1]
+    print 'constraint:', iris.timer.constraint[0], iris.timer.constraint[1]
+    print
+
+    print 'constraint break-down:'
+    sum = dt.timedelta(0)
+    for i, k in enumerate(sorted(iris.timer.constraint[2].keys())):
+        total = dt.timedelta(0)
+        for j in iris.timer.constraint[2][k]:
+            total += j
+        print i, total
+        sum += total
+    print 'sum =', sum
+    print
+
+    print 'merge break-down'
+    sum = dt.timedelta(0)
+    for i, k in enumerate(sorted(iris.timer.merge[2].keys())):
+        total = dt.timedelta(0)
+        for j in iris.timer.merge[2][k]:
+            total += j
+        print i, total, iris.timer.merge[3][k]
+        sum += total
+    print 'sum =', sum
+    print
 
     return collection.cubes()
 

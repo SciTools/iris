@@ -20,3 +20,11 @@ IF
 f.lbuser[3] == 33
 THEN
 ReferenceTarget('orography', None)
+
+
+# The land/sea mask reference.
+IF
+f.lbuser[3] == 30
+THEN
+ReferenceTarget('land_sea_mask', None)
+

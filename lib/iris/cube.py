@@ -48,6 +48,9 @@ import iris.util
 from iris._cube_coord_common import CFVariableMixin, LimitedAttributeDict
 
 
+import datetime as dt
+import iris.timer
+
 __all__ = ['Cube', 'CubeList', 'CubeMetadata']
 
 
@@ -142,8 +145,16 @@ class _CubeFilterCollection(object):
         constraint pairs.
 
         """
+        iris.timer.constraint[0] += 1
         for pair in self.pairs:
+            start = dt.datetime.now()
             pair.add(cube)
+            end = dt.datetime.now()
+            delta = end - start
+            iris.timer.constraint[1] += delta
+            pair_list = iris.timer.constraint[2].setdefault(pair, [])
+            pair_list.append(delta)
+
 
     def cubes(self):
         """
@@ -168,7 +179,20 @@ class _CubeFilterCollection(object):
             duplicate cubes are detected.
 
         """
-        return _CubeFilterCollection([pair.merged(unique) for pair in self.pairs])
+        merge_list = []
+        for pair in self.pairs:
+            iris.timer.merge[0] += 1
+            start = dt.datetime.now()
+            merge_list.append(pair.merged(unique))
+            end = dt.datetime.now()
+            delta = end - start
+            iris.timer.merge[1] += delta
+            pair_list = iris.timer.merge[2].setdefault(pair, [])
+            pair_list.append(delta)
+            pair_list = iris.timer.merge[3].setdefault(pair, [])
+            pair_list.append(len(pair))
+        return _CubeFilterCollection(merge_list)
+#        return _CubeFilterCollection([pair.merged(unique) for pair in self.pairs])
 
 
 class CubeList(list):

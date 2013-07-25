@@ -22,6 +22,7 @@ Provides UK Met Office Post Process (PP) format specific capabilities.
 import abc
 import collections
 import itertools
+import operator
 import os
 import re
 import struct
@@ -605,7 +606,7 @@ class PPDataProxy(object):
         return '%s(%r, %r, %r, %r)' % \
                 (self.__class__.__name__, self.path, self.offset, self.data_len, self.lbpack)
 
-    def load(self, data_shape, data_type, mdi, deferred_slice):
+    def load(self, data_shape, data_type, mdi, deferred_slice, mask):
         """
         Load the corresponding proxy data item and perform any deferred slicing.
         
@@ -627,7 +628,17 @@ class PPDataProxy(object):
         # Load the appropriate proxy data conveniently with a context manager.
         with open(self.path, 'rb') as pp_file:
             pp_file.seek(self.offset, os.SEEK_SET)
-            data = _read_data(pp_file, self.lbpack, self.data_len, data_shape, data_type, mdi)
+
+            if mask:
+                # The mask is flat so create flat data.
+                mask_shape = (len(mask), )
+                data = numpy.ma.masked_all(operator.mul(*data_shape), dtype=data_type)
+                data.fill_value = mdi
+                data[numpy.array(mask)] = _read_data(pp_file, self.lbpack, self.data_len, mask_shape, data_type, mdi)
+                # Reshape the data appropriately.
+                data = numpy.reshape(data, data_shape)
+            else:
+                data = _read_data(pp_file, self.lbpack, self.data_len, data_shape, data_type, mdi)
                 
         # Identify which index items in the deferred slice are tuples. 
         tuple_dims = [i for i, value in enumerate(deferred_slice) if isinstance(value, tuple)]
@@ -670,12 +681,14 @@ class PPDataProxy(object):
 
 def _read_data(pp_file, lbpack, data_len, data_shape, data_type, mdi):
     """Read the data from the given file object given its precise location in the file."""
-    if lbpack == 0:
+    if lbpack.n1 == 0:
         data = numpy.fromfile(pp_file, dtype=data_type, count=data_len / data_type.itemsize)
-    elif lbpack == 1:
+    elif lbpack.n1 == 1:
         data = pp_file.read(data_len)
         data = pp_packing.wgdos_unpack(data, data_shape[0], data_shape[1], mdi)
-    elif lbpack == 4:
+    elif lbpack.n1 == 2:
+        data = numpy.fromfile(pp_file, dtype=data_type, count=data_len / data_type.itemsize)
+    elif lbpack.n1 == 4:
         data = numpy.fromfile(pp_file, dtype=data_type, count=data_len / data_type.itemsize)
         data = pp_packing.rle_decode(data, data_shape[0], data_shape[1], mdi)
     else:
@@ -691,13 +704,13 @@ def _read_data(pp_file, lbpack, data_len, data_shape, data_type, mdi):
 
     # Mask the array? 
     if mdi in data:
-        data = numpy.ma.masked_values(data, mdi, copy=False)    
+        data = numpy.ma.masked_values(data, mdi, copy=False)
     
     return data
 
 
 # The special headers of the PPField classes which get some improved functionality
-_SPECIAL_HEADERS = ('lbtim', 'lbcode', 'lbproc', 'data', 'data_manager')
+_SPECIAL_HEADERS = ('lbtim', 'lbcode', 'lbpack', 'lbproc', 'data', 'data_manager')
 
 def _header_defn(release_number):
     """
@@ -809,6 +822,15 @@ class PPField(object):
 
     lbcode = property(lambda self: self._lbcode, _lbcode_setter)
     
+    # lbpack
+    def _lbpack_setter(self, new_value):
+        if not isinstance(new_value, SplittableInt):
+            # add the n1/n2/n3/n4/n5 values for lbpack
+            new_value = SplittableInt(new_value, dict(n5=slice(4, None), n4=3, n3=2, n2=1, n1=0))
+        self._lbpack = new_value
+
+    lbpack = property(lambda self: self._lbpack, _lbpack_setter)
+
     # lbproc
     def _lbproc_setter(self, new_value):
         if not isinstance(new_value, BitwiseInt):

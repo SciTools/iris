@@ -81,10 +81,10 @@ class DataManager(iris.util._OrderedHashable):
     
     """
 
-    _names = ('_orig_data_shape', 'data_type', 'mdi', 'deferred_slices')
+    _names = ('_orig_data_shape', 'data_type', 'mdi', 'deferred_slices', 'mask')
 
-    def __init__(self, data_shape, data_type, mdi, deferred_slices=()):
-        self._init(data_shape, data_type, mdi, deferred_slices)
+    def __init__(self, data_shape, data_type, mdi, deferred_slices=(), mask=()):
+        self._init(data_shape, data_type, mdi, deferred_slices, mask)
 
     _orig_data_shape = None
     """The data shape of the array in file; may differ from the result of :py:ref:`load` if there are pending slices."""
@@ -158,19 +158,19 @@ class DataManager(iris.util._OrderedHashable):
         else:
             deferred_slice = full_slice[-ds_ndim:]
         
-        hashable_conversion = {
-                             types.SliceType: _HashableSlice.from_slice,
-                             numpy.ndarray: tuple,
-                             } 
+        hashable_conversion = {types.SliceType: _HashableSlice.from_slice,
+                               numpy.ndarray: tuple,
+                               } 
         new_deferred_slice = tuple([hashable_conversion.get(type(index), lambda index: index)(index)
                                     for index in deferred_slice])
         
         # Apply the slice to a new data manager (to be deferred)
-        new_data_manager = DataManager( data_shape=deepcopy(self._orig_data_shape),
-                              data_type=deepcopy(self.data_type),
-                              mdi=deepcopy(self.mdi),
-                              deferred_slices=self.deferred_slices + (new_deferred_slice, ),
-                              )
+        new_data_manager = DataManager(data_shape=deepcopy(self._orig_data_shape),
+                                       data_type=deepcopy(self.data_type),
+                                       mdi=deepcopy(self.mdi),
+                                       deferred_slices=self.deferred_slices + (new_deferred_slice, ),
+                                       mask=deepcopy(self.mask)
+                                       )
         
         return new_proxy_array, new_data_manager
 
@@ -259,7 +259,7 @@ class DataManager(iris.util._OrderedHashable):
 
         for index, proxy in numpy.ndenumerate(proxy_array):
             if proxy not in [None, 0]:  # 0 can come from slicing masked proxy; numpy.array(masked_constant).
-                payload = proxy.load(self._orig_data_shape, self.data_type, self.mdi, deferred_slice)
+                payload = proxy.load(self._orig_data_shape, self.data_type, self.mdi, deferred_slice, self.mask)
 
                 # Explicitly set the data fill value when no mdi value has been specified
                 # in order to override default masked array fill value behaviour.

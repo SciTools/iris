@@ -83,6 +83,7 @@ CoordAndDims(AuxCoord('son', long_name='season', units='no_unit'))
 
 # Regular longitude points
 IF
+f.lbnpt != 0
 f.bdx != 0.0
 len(f.lbcode) != 5
 f.lbcode[0] == 1
@@ -91,6 +92,7 @@ CoordAndDims(DimCoord(f.regular_points("x"), standard_name=f._x_coord_name(), un
 
 # Regular longitude bounds
 IF
+f.lbnpt != 0
 f.bdx != 0.0
 len(f.lbcode) != 5
 f.lbcode[0] == 2
@@ -99,6 +101,7 @@ CoordAndDims(DimCoord(f.regular_points("x"), standard_name=f._x_coord_name(), un
 
 # Regular latitude points
 IF
+f.lbrow != 0
 f.bdy != 0.0
 len(f.lbcode) != 5
 f.lbcode[0] == 1
@@ -107,6 +110,7 @@ CoordAndDims(DimCoord(f.regular_points("y"), standard_name=f._y_coord_name(), un
 
 # Regular latitude bounds
 IF
+f.lbrow != 0
 f.bdy != 0.0
 len(f.lbcode) != 5
 f.lbcode[0] == 2
@@ -147,6 +151,7 @@ THEN
 CoordAndDims(DimCoord(f.y, standard_name='depth', units='m', bounds=f.y_bounds, attributes={'positive': 'down'}), 0)
 
 IF
+f.lbnpt != 0
 len(f.lbcode) == 5
 f.lbcode.ix == 10
 f.bdx != 0
@@ -187,6 +192,7 @@ CoordAndDims(DimCoord(f.x, standard_name='time', units=iris.unit.Unit('days sinc
 
 
 IF
+f.lbnpt != 0
 len(f.lbcode) == 5
 f.lbcode[-1] == 1
 f.lbcode.ix == 13
@@ -341,6 +347,24 @@ CoordAndDims(AuxCoord(f.lblev, standard_name='model_level_number', attributes={'
 CoordAndDims(DimCoord(f.blev, long_name='level_height', units='m', bounds=[f.brlev, f.brsvd[0]], attributes={'positive': 'up'}))
 CoordAndDims(AuxCoord(f.bhlev, long_name='sigma', bounds=[f.bhrlev, f.brsvd[1]]))
 Factory(HybridHeightFactory, [{'long_name': 'level_height'}, {'long_name': 'sigma'}, Reference('orography')])
+
+
+# Land mask compression.
+IF
+f.lbuser[3] != 30
+f.lbpack.n2 == 2
+f.lbpack.n3 == 1
+THEN
+Mask(LandMask, Reference('land_sea_mask'))
+
+
+# Sea mask compression.
+IF
+f.lbuser[3] != 30
+f.lbpack.n2 == 2
+f.lbpack.n3 == 2
+THEN
+Mask(SeaMask, Reference('land_sea_mask'))
 
 
 IF

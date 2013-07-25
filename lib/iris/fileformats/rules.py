@@ -19,7 +19,7 @@ Processing of simple IF-THEN rules.
 
 """
 
-import abc
+from abc import ABCMeta, abstractmethod, abstractproperty
 import collections
 import getpass
 import logging
@@ -37,13 +37,17 @@ import numpy
 import iris.config as config
 import iris.cube
 import iris.exceptions
+from iris.fileformats.manager import DataManager
 import iris.unit
 
+import iris.timer
+import datetime as dt
 
-RuleResult = collections.namedtuple('RuleResult', ['cube', 'matching_rules', 'factories'])
+
 Factory = collections.namedtuple('Factory', ['factory_class', 'args'])
-ReferenceTarget = collections.namedtuple('ReferenceTarget',
-                                         ('name', 'transform'))
+Mask = collections.namedtuple('Mask', ['mask_class', 'reference'])
+ReferenceTarget = collections.namedtuple('ReferenceTarget', ['name', 'transform'])
+RuleResult = collections.namedtuple('RuleResult', ['cube', 'matching_rules', 'factories'])
 
 
 class ConcreteReferenceTarget(object):
@@ -65,7 +69,7 @@ class ConcreteReferenceTarget(object):
             src_cubes = self._src_cubes
             if len(src_cubes) > 1:
                 # Merge the reference cubes to allow for
-                # time-varying surface pressure in hybrid-presure.
+                # time-varying surface pressure in hybrid-pressure.
                 src_cubes = src_cubes.merge()
                 if len(src_cubes) > 1:
                     warnings.warn('Multiple reference cubes for {}'
@@ -82,6 +86,66 @@ class ConcreteReferenceTarget(object):
                 self._final_cube = final_cube
 
         return self._final_cube
+
+
+class BaseMask(object):
+    """
+    Abstract base class for land/sea masks.
+
+    """
+    __metaclass__ = ABCMeta
+
+    def __init__(self, mask):
+        self.mask = mask
+        '''The reference land/sea mask cube.'''
+        self._cache = None
+
+    @abstractproperty
+    def mask_value(self):
+        """The land/sea mask value."""
+
+    @property
+    def slice(self):
+        """A tuple of indicies for the flattened land/sea mask."""
+
+        if self._cache is None:
+            self._cache = tuple(numpy.where(self.mask.data.flatten() == self.mask_value)[0])
+        return self._cache
+
+    def unmask(self, cube):
+        """
+        Unmask the cube with respect to the reference land/sea mask.
+
+        Reconstruct the cubes' data manager to provide a valid data
+        payload shape and associated land/sea mask indicies. The cube
+        is also decorated with the dimension coordinates of the 
+        reference mask cube.
+
+        Assumes that the cube to be unmasked has a deferred payload.
+
+        Args:
+
+        * cube: The :class:`iris.cube.Cube` to be unmasked.
+
+        """
+        if cube._data_manager:
+            # The target shape of the data payload.
+            data_shape = self.mask.shape
+
+            # Correct the cube data manager, which has no shape,
+            # and provide the land/sea mask for deferred loading.
+            data_type = deepcopy(cube._data_manager.data_type)
+            mdi = deepcopy(cube._data_manager.mdi)
+            deferred_slices = deepcopy(cube._data_manager.deferred_slices)
+            cube._data_manager = DataManager(data_shape, data_type, mdi,
+                                             deferred_slices=deferred_slices,
+                                             mask=self.slice)
+
+            # Populate the cube with the reference mask dimension coordinates.
+            for dim in range(2):
+                # The cube should _NOT_ have dimension coordinates.
+                coord = self.mask.coord(dimensions=dim, dim_coords=True)
+                cube.add_dim_coord(coord.copy(), dim)
 
 
 # Controls the deferred import of all the symbols from iris.coords.
@@ -154,6 +218,28 @@ def _prepare_rule_logger(verbose=False):
 
 # Defines the "log" function for this module
 log = _prepare_rule_logger()
+
+
+class LandMask(BaseMask):
+    """
+    Used by the rules to represent a land mask.
+
+    """
+    @property
+    def mask_value(self):
+        """The land mask is True."""
+        return 1
+
+
+class SeaMask(BaseMask):
+    """
+    Used by the rules to represent a sea mask.
+
+    """
+    @property
+    def mask_value(self):
+        """The sea mask is False."""
+        return 0
 
 
 class DebugString(str):
@@ -274,6 +360,8 @@ class Rule(object):
             CMAttribute('units', 'Celsius')
 
     """
+    __metaclass__ = ABCMeta
+
     def __init__(self, conditions, actions):
         """Create instance methods from our conditions and actions."""
         if not hasattr(conditions, '__iter__'):
@@ -312,11 +400,11 @@ class Rule(object):
         # Make it a method of ours.
         self._exec_conditions = types.MethodType(_exec_conditions, self, type(self))
     
-    @abc.abstractmethod
+    @abstractmethod
     def _create_action_method(self, i, action):
         pass
     
-    @abc.abstractmethod
+    @abstractmethod
     def _process_action_result(self, obj, cube):
         pass    
     
@@ -411,10 +499,10 @@ class FunctionRule(Rule):
         elif isinstance(obj, CoordAndDims):
             obj.add_coord(cube)
 
-        elif isinstance(obj, Factory):
+        elif isinstance(obj, Factory) or isinstance(obj, Mask):
             factory = obj
 
-        #cell methods - not yet implemented
+        # cell methods - not yet implemented
         elif isinstance(obj, CellMethod):
             cube.add_cell_method(obj)
             
@@ -631,6 +719,33 @@ class _ReferenceError(Exception):
     pass
 
 
+def _apply_mask(filenames, mask, reference_targets, cube):
+    if mask.reference.name in reference_targets:
+        mask_cube = reference_targets[mask.reference.name].as_cube()
+        masker = mask.mask_class(mask_cube)
+        masker.unmask(cube)
+    else:
+        msg = 'Unable to create instance of {mask}. ' + \
+            "The file(s) {filenames} don't contain " + \
+            "field(s) for {reference!r}."
+        mask_name = mask.mask_class.__name__
+        raise ValueError(msg.format(filenames=filenames, 
+                                    mask=mask_name,
+                                    reference=mask.reference.name))
+
+
+def _dereference_auxiliary_factory(filenames, factory, reference_targets, regrid_cache, cube):
+    try:
+        args = _dereference_args(factory, reference_targets, regrid_cache, cube)
+    except _ReferenceError as e:
+        msg = 'Unable to create instance of {factory}. ' + e.message
+        factory_name = factory.factory_class.__name__
+        warnings.warn(msg.format(filenames=filenames, factory=factory_name))
+    else:
+        aux_factory = factory.factory_class(*args)
+        cube.add_aux_factory(aux_factory)
+
+
 def _dereference_args(factory, reference_targets, regrid_cache, cube):
     """Converts all the arguments for a factory into concrete coordinates."""
     args = []
@@ -745,9 +860,11 @@ def load_cubes(filenames, user_callback, loader):
     if isinstance(filenames, basestring):
         filenames = [filenames]
 
+    count = 0
     for filename in filenames:
         for field in loader.field_generator(filename):
-            # Convert the field to a Cube, logging the rules that were used
+            start = dt.datetime.now()
+            # Convert the field to a Cube, logging the rules that were used.
             rules_result = loader.load_rules.result(field)
             cube = rules_result.cube
             log(loader.log_name, filename, rules_result.matching_rules)
@@ -762,32 +879,39 @@ def load_cubes(filenames, user_callback, loader):
             for rule in rules:
                 reference, = rule.run_actions(cube, field)
                 name = reference.name
-                # Register this cube as a source cube for the named
-                # reference.
+                # Register this cube as a source cube for the named reference.
                 target = concrete_reference_targets.get(name)
                 if target is None:
                     target = ConcreteReferenceTarget(name, reference.transform)
                     concrete_reference_targets[name] = target
                 target.add_cube(cube)
 
+            end = dt.datetime.now()
+            delta = end - start
+            iris.timer.pp[0] += 1
+            iris.timer.pp[1] += delta
+            iris.timer.pp[2][iris.timer.pp[0]] = delta
+
             if rules_result.factories:
                 results_needing_reference.append(rules_result)
             else:
                 yield cube
 
+    count = 0
     regrid_cache = {}
     for result in results_needing_reference:
+        start = dt.datetime.now()
         cube = result.cube
         for factory in result.factories:
-            try:
-                args = _dereference_args(factory, concrete_reference_targets,
-                                         regrid_cache, cube)
-            except _ReferenceError as e:
-                msg = 'Unable to create instance of {factory}. ' + e.message
-                factory_name = factory.factory_class.__name__
-                warnings.warn(msg.format(filenames=filenames,
-                                         factory=factory_name))
+            if isinstance(factory, Mask):
+                _apply_mask(filenames, factory, concrete_reference_targets, cube)
             else:
-                aux_factory = factory.factory_class(*args)
-                cube.add_aux_factory(aux_factory)
+                _dereference_auxiliary_factory(filenames, factory,
+                                               concrete_reference_targets,
+                                               regrid_cache, cube)
+        end = dt.datetime.now()
+        delta = end - start
+        iris.timer.pp_ref[0] += 1
+        iris.timer.pp_ref[1] += delta
+        iris.timer.pp_ref[2][iris.timer.pp_ref[0]] = delta
         yield cube
