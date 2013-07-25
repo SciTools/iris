@@ -941,8 +941,7 @@ class TestDataManagerIndexing(TestCube2d):
     def check_consecutive(self, keys1, keys2):
         self._check_consecutive(keys1, keys2)
         self._check_consecutive(keys2, keys1)
-            
-    
+
     def check_indexing_error(self, keys):
         self.assertRaises(IndexError, self.dm.getitem, self.pa, keys)
         
@@ -1023,6 +1022,15 @@ class TestDataManagerIndexing(TestCube2d):
 
         self.assertRaises(IndexError, self.cube.__getitem__, ((0, 4, 5, 2), (3, 5, 5), 0, 0, 4) )
         self.assertRaises(IndexError, self.cube.__getitem__, (Ellipsis, Ellipsis, Ellipsis, Ellipsis, Ellipsis, Ellipsis) )
+
+    def test_fancy_indexing_bool_array(self):
+        cube = self.cube
+        cube.data = np.ma.masked_array(cube.data, mask=cube.data > 100000)
+        r = cube[:, cube.coord('grid_latitude').points > 1]
+        self.assertEqual(r.shape, (10, 218, 720))
+        data = cube.data[:, self.cube.coord('grid_latitude').points > 1, :]
+        np.testing.assert_array_equal(data, r.data)
+        np.testing.assert_array_equal(data.mask, r.data.mask)
 
 
 class TestCubeCollapsed(tests.IrisTest):
