@@ -66,19 +66,16 @@ def main():
     wgts84 = low_pass_weights(window, 1. / 84.)
 
     # Apply each filter using the rolling_window method used with the weights
-    # keyword argument. Note that the application of this type of filter really
-    # requires a weighted sum. Currently iris lacks a weighted sum operator, so
-    # we use the weighted mean and multiply the result by the sum of the filter
-    # weights as a work-around. In this example the sum of the weights is
-    # approximately 1, but in other filtering examples this may not be true.
+    # keyword argument. A weighted sum is required because the magnitude of
+    # the weights are just as important as their relative sizes.
     soi24 = soi.rolling_window('time',
-                               iris.analysis.MEAN,
+                               iris.analysis.SUM,
                                len(wgts24),
-                               weights=wgts24) * wgts24.sum()
+                               weights=wgts24)
     soi84 =  soi.rolling_window('time',
-                                iris.analysis.MEAN,
+                                iris.analysis.SUM,
                                 len(wgts84),
-                                weights=wgts84) * wgts84.sum()
+                                weights=wgts84)
 
     # Plot the SOI time series and both filtered versions.
     plt.figure(figsize=(9, 4))
