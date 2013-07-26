@@ -206,16 +206,19 @@ class TestAsDataFrame(tests.IrisTest):
     def test_time_gregorian(self):
         cube = Cube(np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]),
                     long_name="ts")
-        time_coord = DimCoord([0, 100.1, 200.2, 300.3, 400.4],
-                              long_name="time",
+        day_offsets = [0, 100.1, 200.2, 300.3, 400.4]
+        time_coord = DimCoord(day_offsets, long_name="time",
                               units="days since 2000-01-01 00:00")
         cube.add_dim_coord(time_coord, 1)
         data_frame = iris.pandas.as_data_frame(cube)
         self.assertArrayEqual(data_frame, cube.data)
-        self.assertString(
-            str(data_frame),
-            tests.get_result_path(('pandas', 'as_dataframe',
-                                   'time_gregorian.txt')))
+        nanoseconds_per_day = 24 * 60 * 60 * 1000000000
+        days_to_2000 = 365 * 30 + 7
+        timestamps = [pandas.Timestamp(nanoseconds_per_day *
+                                       (days_to_2000 + day_offset))
+                      for day_offset in day_offsets]
+        self.assertTrue(all(data_frame.columns == timestamps))
+        self.assertTrue(all(data_frame.index == [0, 1]))
 
     def test_time_360(self):
         cube = Cube(np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]),
