@@ -122,6 +122,11 @@ class TestCells(unittest.TestCase):
         self.assertFalse(self.d <= 1)
         self.assertTrue(self.d > 1)
         self.assertTrue(self.d < 2)
+        
+        # Ensure the Cell's operators return NotImplemented.
+        class Terry(object): pass
+        self.assertEquals(self.d.__eq__(Terry()), NotImplemented)
+        self.assertEquals(self.d.__ne__(Terry()), NotImplemented)
 
     def test_coord_bounds_cmp(self):
         self.e = iris.coords.Cell(0.7, [1.1, 1.9])

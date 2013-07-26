@@ -73,7 +73,7 @@ _GroupbyItem = collections.namedtuple('GroupbyItem',
                                       'groupby_point, groupby_slice')
 
 
-class Cell(iris.util._OrderedHashable):
+class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
     """
     An immutable representation of a single cell of a coordinate, including the
     sample point and/or boundary position.
@@ -104,10 +104,10 @@ class Cell(iris.util._OrderedHashable):
 
     """
 
-    # Declare the attribute names relevant to the _OrderedHashable behaviour.
-    _names = ('point', 'bound')
+    # This subclass adds no attributes.
+    __slots__ = ()
 
-    def __init__(self, point=None, bound=None):
+    def __new__(cls, point=None, bound=None):
         """
         Construct a Cell from point or point-and-bound information.
 
@@ -127,7 +127,7 @@ class Cell(iris.util._OrderedHashable):
                                  'length 1.')
             point = point[0]
 
-        self._init(point, bound)
+        return super(Cell, cls).__new__(cls, point, bound)
 
     def __mod__(self, mod):
         point = self.point
@@ -159,12 +159,19 @@ class Cell(iris.util._OrderedHashable):
             else:
                 return self.point == other
         elif isinstance(other, Cell):
-            return self._as_tuple() == other._as_tuple()
+            return (self.point == other.point) and (self.bound == other.bound)
         elif (isinstance(other, basestring) and self.bound is None and
               isinstance(self.point, basestring)):
             return self.point == other
         else:
             return NotImplemented
+
+    # Must supply __ne__, Python does not defer to __eq__ for negative equality
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+        return result
 
     def __common_cmp__(self, other, operator_method):
         """
