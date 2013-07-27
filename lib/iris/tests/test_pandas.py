@@ -214,8 +214,9 @@ class TestAsDataFrame(tests.IrisTest):
         self.assertArrayEqual(data_frame, cube.data)
         nanoseconds_per_day = 24 * 60 * 60 * 1000000000
         days_to_2000 = 365 * 30 + 7
-        timestamps = [pandas.Timestamp(nanoseconds_per_day *
-                                       (days_to_2000 + day_offset))
+        # pandas Timestamp class cannot handle floats in pandas <v0.12
+        timestamps = [pandas.Timestamp(int(nanoseconds_per_day *
+                                       (days_to_2000 + day_offset)))
                       for day_offset in day_offsets]
         self.assertTrue(all(data_frame.columns == timestamps))
         self.assertTrue(all(data_frame.index == [0, 1]))
