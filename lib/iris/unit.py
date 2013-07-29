@@ -214,6 +214,7 @@ if _lib_ud is None:
 
     _ut_compare = _lib_ud.ut_compare
     _ut_compare.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    _ut_compare.restype = ctypes.c_int
 
     _ut_decode_time = _lib_ud.ut_decode_time
     _ut_decode_time.restype = None
@@ -1673,7 +1674,21 @@ class Unit(iris.util._OrderedHashable):
 
         """
         other = as_unit(other)
-        return iris.util._OrderedHashable.__eq__(self, as_unit(other))
+
+        # Compare category (i.e. unknown, no_unit, etc.).
+        if self.category != other.category:
+            return False
+
+        # Compare calendar as UDUNITS cannot handle calendars.
+        if self.calendar != other.calendar:
+            return False
+
+        # Compare UDUNITS.
+        res = _ut_compare(self.ut_unit, other.ut_unit)
+        if res == 0:
+            return True
+        else:
+            return False
 
     def __ne__(self, other):
         """
