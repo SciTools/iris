@@ -225,6 +225,10 @@ class GeogCS(CoordSystem):
     def as_cartopy_projection(self):
         return cartopy.crs.PlateCarree()
 
+    def as_cartopy_globe(self):
+        return cartopy.crs.Globe(semimajor_axis=self.semi_major_axis,
+                                 semiminor_axis=self.semi_minor_axis)
+
 
 class RotatedGeogCS(CoordSystem):
     """
@@ -477,16 +481,102 @@ class Stereographic(CoordSystem):
 
     def as_cartopy_crs(self):
         if self.ellipsoid is not None:
-            semimajor_axis = self.ellipsoid.semi_major_axis
-            semiminor_axis = self.ellipsoid.semi_minor_axis
+            globe = self.ellipsoid.as_cartopy_globe()
         else:
-            semimajor_axis = semi_minor_axis = None
-        globe = cartopy.crs.Globe(semimajor_axis=semimajor_axis,
-                                  semiminor_axis=semiminor_axis)
+            globe = cartopy.crs.Globe()
         return cartopy.crs.Stereographic(
             self.central_lat, self.central_lon,
             self.false_easting, self.false_northing,
             self.true_scale_lat, globe)
                                          
+    def as_cartopy_projection(self):
+        return self.as_cartopy_crs()
+
+
+class LambertConformal(CoordSystem):
+    """
+    A coordinate system in the Lambert Conformal conic projection.
+
+    """
+
+    grid_mapping_name = "lambert_conformal"
+
+    def __init__(self, central_lat=39.0, central_lon=-96.0,
+                 false_easting=0.0, false_northing=0.0,
+                 secant_latitudes=(33, 45), ellipsoid=None):
+        """
+        Constructs a LambertConformal coord system.
+
+        Args:
+
+            * central_lat
+                    The latitude of "unitary scale".
+
+            * central_lon
+                    The central longitude.
+
+            * false_easting
+                    X offset from planar origin in metres.
+
+            * false_northing
+                    Y offset from planar origin in metres.
+
+        Kwargs:
+
+            * secant_latitudes
+                    Latitudes of secant intersection.
+
+            * ellipsoid
+                    :class:`GeogCS` defining the ellipsoid.
+
+        .. note:
+
+            Default arguments are for the familiar USA map:
+            central_lon=-96.0, central_lat=39.0,
+            false_easting=0.0, false_northing=0.0,
+            secant_latitudes=(33, 45)
+
+        """
+
+        #: True latitude of planar origin in degrees.
+        self.central_lat = central_lat
+        #: True longitude of planar origin in degrees.
+        self.central_lon = central_lon
+        #: X offset from planar origin in metres.
+        self.false_easting = false_easting
+        #: Y offset from planar origin in metres.
+        self.false_northing = false_northing
+        #: Latitudes of secant intersection.
+        self.secant_latitudes = secant_latitudes
+        #: Ellipsoid definition.
+        self.ellipsoid = ellipsoid
+
+    def __repr__(self):
+        return "LambertConformal(central_lat={!r}, central_lon={!r}, "\
+               "false_easting={!r}, false_northing={!r}, "\
+               "secant_latitudes={!r}, ellipsoid={!r})".format(
+                   self.central_lat, self.central_lon,
+                   self.false_easting, self.false_northing,
+                   self.secant_latitudes, self.ellipsoid)
+
+    def as_cartopy_crs(self):
+        # We're either north or south polar. Set a cutoff accordingly.
+        if self.secant_latitudes is not None:
+            lats = self.secant_latitudes
+            max_lat = lats[0] if abs(lats[0]) > abs(lats[1]) else lats[1]
+            cutoff = -30 if max_lat > 0 else 30
+        else:
+            cutoff = None
+
+        if self.ellipsoid is not None:
+            globe = self.ellipsoid.as_cartopy_globe()
+        else:
+            globe = cartopy.crs.Globe()
+
+        return cartopy.crs.LambertConformal(
+            self.central_lon, self.central_lat,
+            self.false_easting, self.false_northing,
+            self.secant_latitudes, globe, cutoff)
+
     def as_cartopy_projection(self):
         return self.as_cartopy_crs()

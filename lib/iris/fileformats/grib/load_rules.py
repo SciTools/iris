@@ -58,7 +58,7 @@ def convert(cube, grib):
         cube.add_dim_coord(DimCoord(grib._y_points, grib._y_coord_name, units='degrees', coord_system=grib._coord_system), 1)
         cube.add_dim_coord(DimCoord(grib._x_points, grib._x_coord_name, units='degrees', coord_system=grib._coord_system, circular=grib._x_circular), 0)
 
-    if grib.gridType=="polar_stereographic":
+    if grib.gridType in ["polar_stereographic", "lambert"]:
         cube.add_dim_coord(DimCoord(grib._y_points, grib._y_coord_name, units=None, coord_system=grib._coord_system), 0)
         cube.add_dim_coord(DimCoord(grib._x_points, grib._x_coord_name, units=None, coord_system=grib._coord_system), 1)
 
