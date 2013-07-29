@@ -363,7 +363,8 @@ class Cube(CFVariableMixin):
                   forecast_period: 6477 hours
                   forecast_reference_time: 1998-03-01 03:00:00
                   pressure: 1000.0 hPa
-                  time: 1996-12-01 00:00:00, bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
+                  time: 1996-12-01 00:00:00, \
+bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
              Attributes:
                   STASH: m01s16i203
                   source: Data from Met Office Unified Model
@@ -538,9 +539,9 @@ class Cube(CFVariableMixin):
            Boolean.
 
         .. seealso::
-        
+
             :meth:`iris.util.describe_diff()`
-        
+
         """
         compatible = (self.name() == other.name() and
                       self.units == other.units and
@@ -1156,11 +1157,15 @@ class Cube(CFVariableMixin):
 
         Example::
             >>> fname = iris.sample_data_path('air_temp.pp')
-            >>> cube = iris.load_cube(fname, 'air_temperature')  # cube.data does not yet have a value.
-            >>> print cube.shape                                 # cube.data still does not have a value.
+            >>> cube = iris.load_cube(fname, 'air_temperature')  \
+# cube.data does not yet have a value.
+            >>> print cube.shape                                 \
+# cube.data still does not have a value.
             (73, 96)
-            >>> cube = cube[:10, :20]                            # cube.data still does not have a value.
-            >>> data = cube.data                                 # Only now is the data loaded.
+            >>> cube = cube[:10, :20]                            \
+# cube.data still does not have a value.
+            >>> data = cube.data                                 \
+# Only now is the data loaded.
             >>> print data.shape
             (10, 20)
 
@@ -1318,7 +1323,7 @@ class Cube(CFVariableMixin):
                  enumerate(self.shape)])
 
         nameunit = '{name} / ({units})'.format(name=self.name(),
-                                             units=self.units)
+                                               units=self.units)
         cube_header = '{nameunit!s:{length}} ({dimension})'.format(
             length=name_padding,
             nameunit=nameunit,
@@ -2214,7 +2219,8 @@ class Cube(CFVariableMixin):
 
             >>> import iris
             >>> import iris.analysis
-            >>> cube = iris.load_cube(iris.sample_data_path('ostia_monthly.nc'))
+            >>> path = iris.sample_data_path('ostia_monthly.nc')
+            >>> cube = iris.load_cube(path)
             >>> new_cube = cube.collapsed('longitude', iris.analysis.MEAN)
             >>> print new_cube
             surface_temperature / (K)           (time: 54; latitude: 18)
@@ -2229,7 +2235,8 @@ class Cube(CFVariableMixin):
                  Attributes:
                       Conventions: CF-1.5
                       STASH: m01s00i024
-                      history: Mean of surface_temperature aggregated over month, year
+                      history: Mean of surface_temperature aggregated \
+over month, year
             Mean of surface_temperature...
                  Cell methods:
                       mean: month, year
@@ -2241,11 +2248,13 @@ class Cube(CFVariableMixin):
             Some aggregations are not commutative and hence the order of
             processing is important i.e.::
 
-                cube.collapsed('realization', iris.analysis.VARIANCE).collapsed('height', iris.analysis.VARIANCE)
+                tmp = cube.collapsed('realization', iris.analysis.VARIANCE)
+                result = tmp.collapsed('height', iris.analysis.VARIANCE)
 
             is not necessarily the same result as::
 
-                result2 = cube.collapsed('height', iris.analysis.VARIANCE).collapsed('realization', iris.analysis.VARIANCE)
+                tmp = cube.collapsed('height', iris.analysis.VARIANCE)
+                result2 = tmp.collapsed('realization', iris.analysis.VARIANCE)
 
             Conversely operations which operate on more than one coordinate
             at the same time are commutative as they are combined internally
@@ -2352,20 +2361,27 @@ class Cube(CFVariableMixin):
             >>> cat.add_year(cube, 'time', name='year')
             >>> new_cube = cube.aggregated_by('year', iris.analysis.MEAN)
             >>> print new_cube
-            surface_temperature / (K)           (*ANONYMOUS*: 5; latitude: 18; longitude: 432)
+            surface_temperature / (K)           \
+(*ANONYMOUS*: 5; latitude: 18; longitude: 432)
                  Dimension coordinates:
-                      latitude                              -            x              -
-                      longitude                             -            -              x
+                      latitude                  \
+            -            x              -
+                      longitude                 \
+            -            -              x
                  Auxiliary coordinates:
-                      forecast_reference_time               x            -              -
-                      time                                  x            -              -
-                      year                                  x            -              -
+                      forecast_reference_time   \
+            x            -              -
+                      time                      \
+            x            -              -
+                      year                      \
+            x            -              -
                  Scalar coordinates:
                       forecast_period: 0 hours
                  Attributes:
                       Conventions: CF-1.5
                       STASH: m01s00i024
-                      history: Mean of surface_temperature aggregated over month, year
+                      history: Mean of surface_temperature aggregated \
+over month, year
             Mean of surface_temperature...
                  Cell methods:
                       mean: month, year
@@ -2488,13 +2504,18 @@ class Cube(CFVariableMixin):
             >>> fname = iris.sample_data_path('GloSea4', 'ensemble_010.pp')
             >>> air_press = iris.load_cube(fname, 'surface_temperature')
             >>> print air_press
-            surface_temperature / (K)           (time: 6; latitude: 145; longitude: 192)
+            surface_temperature / (K)           \
+(time: 6; latitude: 145; longitude: 192)
                  Dimension coordinates:
-                      time                           x            -               -
-                      latitude                       -            x               -
-                      longitude                      -            -               x
+                      time                      \
+     x            -               -
+                      latitude                  \
+     -            x               -
+                      longitude                 \
+     -            -               x
                  Auxiliary coordinates:
-                      forecast_period                x            -               -
+                      forecast_period           \
+     x            -               -
                  Scalar coordinates:
                       forecast_reference_time: 2011-07-23 00:00:00
                       realization: 10
@@ -2506,19 +2527,25 @@ class Cube(CFVariableMixin):
 
 
             >>> print air_press.rolling_window('time', iris.analysis.MEAN, 3)
-            surface_temperature / (K)           (time: 4; latitude: 145; longitude: 192)
+            surface_temperature / (K)           \
+(time: 4; latitude: 145; longitude: 192)
                  Dimension coordinates:
-                      time                           x            -               -
-                      latitude                       -            x               -
-                      longitude                      -            -               x
+                      time                      \
+     x            -               -
+                      latitude                  \
+     -            x               -
+                      longitude                 \
+     -            -               x
                  Auxiliary coordinates:
-                      forecast_period                x            -               -
+                      forecast_period           \
+     x            -               -
                  Scalar coordinates:
                       forecast_reference_time: 2011-07-23 00:00:00
                       realization: 10
                  Attributes:
                       STASH: m01s00i024
-                      history: Mean of surface_temperature with a rolling window of length 3 over tim...
+                      history: Mean of surface_temperature with a rolling \
+window of length 3 over tim...
                       source: Data from Met Office Unified Model 7.06
                  Cell methods:
                       mean: time (1 hour)
