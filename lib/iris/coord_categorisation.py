@@ -60,7 +60,7 @@ def add_categorised_coord(cube, name, from_coord, category_function,
     * units:
         units of the category value, typically 'no_unit' or '1'.
     """
-    #interpret coord, if given as a name
+    # Interpret coord, if given as a name
     if isinstance(from_coord, basestring):
         from_coord = cube.coord(from_coord)
 
@@ -68,14 +68,14 @@ def add_categorised_coord(cube, name, from_coord, category_function,
         msg = 'A coordinate "%s" already exists in the cube.' % name
         raise ValueError(msg)
 
-    #construct new coordinate by mapping values
+    # Construct new coordinate by mapping values
     points = [category_function(from_coord, value)
               for value in from_coord.points]
     new_coord = iris.coords.AuxCoord(points, units=units,
                                      attributes=from_coord.attributes.copy())
     new_coord.rename(name)
 
-    # add into the cube
+    # Add into the cube
     cube.add_aux_coord(new_coord, cube.coord_dims(from_coord))
 
 
@@ -86,7 +86,7 @@ def add_categorised_coord(cube, name, from_coord, category_function,
 # coordinates only
 #
 
-# private "helper" function
+# Private "helper" function
 def _pt_date(coord, time):
     """
     Return the date of a time-coordinate point.
@@ -101,16 +101,16 @@ def _pt_date(coord, time):
     Returns:
         datetime.date
     """
-    # NOTE: all of the currently defined categorisation functions are
-    # calendar operations on Time coordinates
-    #  - all these currently depend on Unit::num2date, which is deprecated (!!)
-    #  - we will want to do better, when we sort out our own Calendars
-    #  - for now, just make sure these all call through this one function
+    # NOTE: All of the currently defined categorisation functions are
+    # calendar operations on Time coordinates.
+    #  - All these currently depend on Unit::num2date, which is deprecated (!!)
+    #  - We will want to do better, when we sort out our own Calendars.
+    #  - For now, just make sure these all call through this one function.
     return coord.units.num2date(time)
 
 
 #--------------------------------------------
-# time categorisations : calendar date components
+# Time categorisations : calendar date components
 
 # This is a temporary helper function to manage the transition away from
 # ambiguous default values. It was first released in 1.4.
@@ -190,7 +190,7 @@ def add_day_of_year(cube, coord, name=None):
 
 
 #--------------------------------------------
-# time categorisations : days of the week
+# Time categorisations : days of the week
 
 def add_weekday_number(cube, coord, name=None):
     """Add a categorical weekday coordinate, values 0..6  [0=Monday]."""
@@ -232,7 +232,7 @@ def add_weekday(cube, coord, name='weekday'):
 
 
 #----------------------------------------------
-# time categorisations : meteorological seasons
+# Time categorisations : meteorological seasons
 
 def _months_in_season(season):
     """
@@ -262,13 +262,13 @@ def _validate_seasons(seasons):
     c = collections.Counter()
     for season in seasons:
         c.update(_months_in_season(season))
-    # make a list of months that are not present...
+    # Make a list of months that are not present...
     not_present = [calendar.month_abbr[month] for month in xrange(1, 13)
                    if month not in c.keys()]
     if not_present:
         raise ValueError('some months do not appear in any season: '
                          '{!s}'.format(', '.join(not_present)))
-    # make a list of months that appear multiple times...
+    # Make a list of months that appear multiple times...
     multi_present = [calendar.month_abbr[month] for month in xrange(1, 13)
                      if c[month] > 1]
     if multi_present:
@@ -482,7 +482,7 @@ def add_season_membership(cube, coord, season, name=None):
 
 
 #-----------------------------------
-# deprecated custom season functions
+# Deprecated custom season functions
 #
 
 # A temporary decorator to manage the deprecation of the add_custom_season*
