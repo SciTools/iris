@@ -191,16 +191,20 @@ class TestGribLoad(tests.GraphicsTest):
 
     def test_load(self):
 
-        cubes = iris.load(tests.get_data_path(('GRIB', 'rotated_uk', "uk_wrongparam.grib1")))
+        cubes = iris.load(tests.get_data_path(('GRIB', 'rotated_uk',
+                                               "uk_wrongparam.grib1")))
         self.assertCML(cubes, ("grib_load", "rotated.cml"))
 
-        cubes = iris.load(tests.get_data_path(('GRIB', "time_processed", "time_bound.grib1")))
+        cubes = iris.load(tests.get_data_path(('GRIB', "time_processed",
+                                               "time_bound.grib1")))
         self.assertCML(cubes, ("grib_load", "time_bound_grib1.cml"))
 
-        cubes = iris.load(tests.get_data_path(('GRIB', "time_processed", "time_bound.grib2")))
+        cubes = iris.load(tests.get_data_path(('GRIB', "time_processed",
+                                               "time_bound.grib2")))
         self.assertCML(cubes, ("grib_load", "time_bound_grib2.cml"))
 
-        cubes = iris.load(tests.get_data_path(('GRIB', "3_layer_viz", "3_layer.grib2")))
+        cubes = iris.load(tests.get_data_path(('GRIB', "3_layer_viz",
+                                               "3_layer.grib2")))
         cubes = iris.cube.CubeList([cubes[1], cubes[0], cubes[2]])
         self.assertCML(cubes, ("grib_load", "3_layer.cml"))
 
@@ -212,7 +216,8 @@ class TestGribLoad(tests.GraphicsTest):
         self.assertCML(cubes, ('grib_load', 'missing_values_grib2.cml'))
         
     def test_y_fastest(self):
-        cubes = iris.load(tests.get_data_path(("GRIB", "y_fastest", "y_fast.grib2")))
+        cubes = iris.load(tests.get_data_path(("GRIB", "y_fastest",
+                                               "y_fast.grib2")))
         self.assertCML(cubes, ("grib_load", "y_fastest.cml"))
         iplt.contourf(cubes[0])
         plt.gca().coastlines()
@@ -222,7 +227,8 @@ class TestGribLoad(tests.GraphicsTest):
     def test_ij_directions(self):
 
         def old_compat_load(name):
-            cube = iris.load(tests.get_data_path(('GRIB', 'ij_directions', name)))[0]
+            cube = iris.load(tests.get_data_path(('GRIB', 'ij_directions',
+                                                  name)))[0]
             return [cube]
 
         cubes = old_compat_load("ipos_jpos.grib2")
@@ -256,7 +262,8 @@ class TestGribLoad(tests.GraphicsTest):
     def test_shape_of_earth(self):
 
         def old_compat_load(name):
-            cube = iris.load(tests.get_data_path(('GRIB', 'shape_of_earth', name)))[0]
+            cube = iris.load(tests.get_data_path(('GRIB', 'shape_of_earth',
+                                                  name)))[0]
             return cube
 
         #pre-defined sphere
@@ -298,8 +305,6 @@ class TestGribLoad(tests.GraphicsTest):
     def test_custom_rules(self):
         # Test custom rule evaluation.
         # Default behaviour
-#        data_path = tests.get_data_path(('GRIB', 'global_t', 'global.grib2'))
-#        cube = iris.load_cube(data_path)
         cube = tests.stock.global_grib2()
         self.assertEqual(cube.name(), 'air_temperature')
 
@@ -330,7 +335,6 @@ class TestGribLoad(tests.GraphicsTest):
         cube = iris.load_cube(tests.get_data_path(
             ("GRIB", "polar_stereo", "ST4.2013052210.01h")))
         self.assertCML(cube, ("grib_load", "polar_stereo_grib1.cml"))
-
         qplt.contourf(cube, norm=LogNorm())
         plt.gca().coastlines()
         plt.gca().gridlines()
@@ -347,6 +351,28 @@ class TestGribLoad(tests.GraphicsTest):
         plt.gca().coastlines()
         plt.gca().gridlines()
         plt.title("polar stereo grib2")
+        self.check_graphic()
+
+    def test_lambert_grib1(self):
+        cube = iris.load_cube(tests.get_data_path(
+            ("GRIB", "lambert", "lambert.grib1")))
+        self.assertCML(cube, ("grib_load", "lambert_grib1.cml"))
+
+        qplt.contourf(cube)
+        plt.gca().coastlines()
+        plt.gca().gridlines()
+        plt.title("lambert grib1")
+        self.check_graphic()
+
+    def test_lambert_grib2(self):
+        cube = iris.load_cube(tests.get_data_path(
+            ("GRIB", "lambert", "lambert.grib2")))
+        self.assertCML(cube, ("grib_load", "lambert_grib2.cml"))
+
+        qplt.contourf(cube)
+        plt.gca().coastlines()
+        plt.gca().gridlines()
+        plt.title("lambert grib2")
         self.check_graphic()
 
 
@@ -478,7 +504,6 @@ class TestGribTimecodes(tests.GraphicsTest):
         )
         TestGribTimecodes._run_timetests(self, tests)
 
-
     def test_load_probability_forecast(self):
         # Test GribWrapper interpretation of PDT 4.9 data.
         # NOTE: 
@@ -488,7 +513,8 @@ class TestGribTimecodes(tests.GraphicsTest):
 
         # Make a testing grib message in memory, with gribapi.
         grib_message = gribapi.grib_new_from_samples('GRIB2')
-        gribapi.grib_set_long(grib_message, 'productDefinitionTemplateNumber', 9)
+        gribapi.grib_set_long(grib_message, 'productDefinitionTemplateNumber',
+                              9)
         gribapi.grib_set_string(grib_message, 'stepRange', '10-55')
         grib_wrapper = iris.fileformats.grib.GribWrapper(grib_message)
         
@@ -510,7 +536,6 @@ class TestGribTimecodes(tests.GraphicsTest):
                               hour=12, minute=0, second=0)
         )
 
-
     def test_warn_unknown_pdts(self):
         # Test loading of an unrecognised GRIB Product Definition Template.
         
@@ -526,7 +551,7 @@ class TestGribTimecodes(tests.GraphicsTest):
 
             # Load the message from the file as a cube.
             cube_generator = iris.fileformats.grib.load_cubes(
-                temp_gribfile_path )
+                temp_gribfile_path)
             cube = cube_generator.next()
 
             # Check the cube has an extra "warning" attribute.

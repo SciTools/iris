@@ -23,7 +23,11 @@ import iris.tests as tests
 
 import logging
 
+import numpy as np
+
+import iris.cube
 import iris.coords
+import iris.plot as iplt
 import iris.tests.stock
 import iris.unit
 
@@ -222,6 +226,19 @@ class Test_TransverseMercator_repr(tests.IrisTest):
                     "false_easting=-400.0, false_northing=100.0, scale_factor_at_central_meridian=0.9996012717, "\
                     "ellipsoid=GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909))"
         self.assertEqual(expected, repr(tm))
+
+
+class Test_LambertConformal(tests.GraphicsTest):
+
+    def test_north_cutoff(self):
+        lcc = LambertConformal(0, 0, secant_latitudes=(30, 60))
+        ccrs = lcc.as_cartopy_crs()
+        self.assertEqual(ccrs.cutoff, -30)
+
+    def test_south_cutoff(self):
+        lcc = LambertConformal(0, 0, secant_latitudes=(-30, -60))
+        ccrs = lcc.as_cartopy_crs()
+        self.assertEqual(ccrs.cutoff, 30)
 
 
 if __name__ == "__main__":
