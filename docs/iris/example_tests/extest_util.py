@@ -29,6 +29,7 @@ import sys
 import matplotlib.pyplot as plt
 
 import iris.plot as iplt
+import iris.quickplot as qplt
 from iris.tests import _DEFAULT_IMAGE_TOLERANCE
 
 
@@ -64,6 +65,6 @@ def show_replaced_by_check_graphic(test_case, tol=_DEFAULT_IMAGE_TOLERANCE):
         test_case.check_graphic(tol=tol)
 
     orig_show = plt.show
-    plt.show = iplt.show = replacement_show
+    plt.show = iplt.show = qplt.show = replacement_show
     yield
-    plt.show = iplt.show = orig_show
+    plt.show = iplt.show = qplt.show = orig_show
