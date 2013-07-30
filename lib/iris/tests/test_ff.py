@@ -170,7 +170,7 @@ class TestFFHeader(tests.IrisTest):
 
     def test_address_coverage(self):
         for header in self.valid_headers + self.invalid_headers:
-            self.assertIsInstance(self.ff_header.address(header), int)
+            self.assertIsInstance(self.ff_header.address(header), np.int64)
         with self.assertRaises(AttributeError):
             self.ff_header.address('not_a_real_header')
 
