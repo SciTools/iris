@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -470,6 +470,30 @@ class TestSplittableInt(unittest.TestCase):
             _ = pp.SplittableInt(-5)
         except ValueError, err:
             self.assertEqual(str(err), 'Negative numbers not supported with splittable integers object')
+
+            
+class TestSplittableIntEquality(unittest.TestCase):
+    def test_not_implemented(self):
+        class Terry(object): pass
+        sin = pp.SplittableInt(0)
+        self.assertIs(sin.__eq__(Terry()), NotImplemented)
+        self.assertIs(sin.__ne__(Terry()), NotImplemented)
+
+
+class TestPPDataProxyEquality(unittest.TestCase):
+    def test_not_implemented(self):
+        class Terry(object): pass
+        pox = pp.PPDataProxy("john", "michael", "eric", "graham")
+        self.assertIs(pox.__eq__(Terry()), NotImplemented)
+        self.assertIs(pox.__ne__(Terry()), NotImplemented)
+
+
+class TestPPFieldEquality(unittest.TestCase):
+    def test_not_implemented(self):
+        class Terry(object): pass
+        pox = pp.PPField3()
+        self.assertIs(pox.__eq__(Terry()), NotImplemented)
+        self.assertIs(pox.__ne__(Terry()), NotImplemented)
 
 
 if __name__ == "__main__":

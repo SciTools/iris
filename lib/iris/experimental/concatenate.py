@@ -344,7 +344,10 @@ class CubeSignature(object):
         return result
 
     def __ne__(self, other):
-        return not self == other
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+        return result
 
 
 class CoordSignature(object):
