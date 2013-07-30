@@ -1208,7 +1208,7 @@ class DimCoord(Coord):
             bounds values will be defined. Defaults to False.
 
         """
-        coord = object.__new__(cls)
+        coord = DimCoord.__new__(cls)
 
         coord.standard_name = standard_name
         coord.long_name = long_name
