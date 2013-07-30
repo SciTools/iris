@@ -1697,10 +1697,7 @@ class Unit(iris.util._OrderedHashable):
 
         # Compare UDUNITS.
         res = _ut_compare(self.ut_unit, other.ut_unit)
-        if res == 0:
-            return True
-        else:
-            return False
+        return res == 0
 
     def __ne__(self, other):
         """
