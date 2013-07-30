@@ -472,8 +472,8 @@ class SplittableInt(object):
         return result
 
     def __ne__(self, other):
-        result = self == other
-        if result != NotImplemented:
+        result = self.__eq__(other)
+        if result is not NotImplemented:
             result = not result
         return result
 
@@ -713,8 +713,8 @@ class PPDataProxy(object):
         return result
 
     def __ne__(self, other):
-        result = self == other
-        if result != NotImplemented:
+        result = self.__eq__(other)
+        if result is not NotImplemented:
             result = not result
         return result
 
@@ -1216,8 +1216,8 @@ class PPField(object):
         return result
 
     def __ne__(self, other):
-        result = self == other
-        if result != NotImplemented:
+        result = self.__eq__(other)
+        if result is not NotImplemented:
             result = not result
         return result
 

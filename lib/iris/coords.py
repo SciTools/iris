@@ -512,8 +512,8 @@ class Coord(CFVariableMixin):
 
     # Must supply __ne__, Python does not defer to __eq__ for negative equality
     def __ne__(self, other):
-        result = self == other
-        if result != NotImplemented:
+        result = self.__eq__(other)
+        if result is not NotImplemented:
             result = not result
         return result
 

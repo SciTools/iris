@@ -834,5 +834,24 @@ class TestCoordCompatibility(tests.IrisTest):
         self.assertTrue(self.aux_coord.is_compatible(r, ignore=r.attributes))
 
 
+class TestAuxCoordEquality(tests.IrisTest):
+    def test_not_implmemented(self):
+        class Terry(object): pass
+        aux = iris.coords.AuxCoord(0)
+        self.assertIs(aux.__eq__(Terry()), NotImplemented)
+        self.assertIs(aux.__ne__(Terry()), NotImplemented)
+
+
+class TestDimCoordEquality(tests.IrisTest):
+    def test_not_implmemented(self):
+        class Terry(object): pass
+        dim = iris.coords.DimCoord(0)
+        aux = iris.coords.AuxCoord(0)
+        self.assertIs(dim.__eq__(Terry()), NotImplemented)
+        self.assertIs(dim.__ne__(Terry()), NotImplemented)
+        self.assertIs(dim.__eq__(aux), NotImplemented)
+        self.assertIs(dim.__ne__(aux), NotImplemented)
+
+
 if __name__ == "__main__":
     tests.main()
