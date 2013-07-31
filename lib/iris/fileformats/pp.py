@@ -555,7 +555,7 @@ class BitwiseInt(SplittableInt):
             if flag_value:
                 all_flags.append(flag_name)
             
-            self.flags = tuple(all_flags)
+        self.flags = tuple(all_flags)
 
     def _set_value_from_flags(self):
         self._value = 0
