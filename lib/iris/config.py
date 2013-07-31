@@ -25,11 +25,17 @@ defined by :mod:`ConfigParser`.
 
 .. py:data:: iris.config.SAMPLE_DATA_DIR
 
-    Local directory where sample data exists. Defaults to "sample_data" sub-directory of the Iris package install directory. The sample data directory supports the Iris gallery. Directory contents accessed via :func:`iris.sample_data_path`.
+    Local directory where sample data exists. Defaults to "sample_data"
+    sub-directory of the Iris package install directory. The sample data
+    directory supports the Iris gallery. Directory contents accessed via
+    :func:`iris.sample_data_path`.
 
 .. py:data:: iris.config.TEST_DATA_DIR
 
-    Local directory where test data exists.  Defaults to "test_data" sub-directory of the Iris package install directory. The test data directory supports the subset of Iris unit tests that require data. Directory contents accessed via :func:`iris.tests.get_data_path`.
+    Local directory where test data exists.  Defaults to "test_data"
+    sub-directory of the Iris package install directory. The test data
+    directory supports the subset of Iris unit tests that require data.
+    Directory contents accessed via :func:`iris.tests.get_data_path`.
 
 .. py:data:: iris.config.PALETTE_PATH
 
@@ -37,7 +43,9 @@ defined by :mod:`ConfigParser`.
 
 .. py:data:: iris.config.RULE_LOG_DIR
 
-    The [optional] full path to the rule logging directory used by :func:`iris.fileformats.pp.load()` and :func:`iris.fileformats.pp.save()`.
+    The [optional] full path to the rule logging directory used by
+    :func:`iris.fileformats.pp.load()` and
+    :func:`iris.fileformats.pp.save()`.
 
 .. py:data:: iris.config.RULE_LOG_IGNORE
 
@@ -60,7 +68,7 @@ def get_option(section, option, default=None):
     """
     Returns the option value for the given section, or the default value
     if the section/option is not present.
-    
+
     """
     value = default
     if config.has_option(section, option):
@@ -74,7 +82,7 @@ def get_dir_option(section, option, default=None):
     Returns the directory path from the given option and section, or
     returns the given default value if the section/option is not present
     or does not represent a valid directory.
-    
+
     """
     path = default
     if config.has_option(section, option):
@@ -82,8 +90,9 @@ def get_dir_option(section, option, default=None):
         if os.path.isdir(c_path):
             path = c_path
         else:
-            warnings.warn("Ignoring config item '%s':'%s' (section:option) as '%s' is not a valid directory path." % \
-                    (section, option, c_path))
+            msg = 'Ignoring config item {!r}:{!r} (section:option) as {!r}' \
+                  ' is not a valid directory path.'
+            warnings.warn(msg.format(section, option, c_path))
     return path
 
 
@@ -103,15 +112,17 @@ config.read([os.path.join(CONFIG_PATH, 'site.cfg')])
 _RESOURCE_SECTION = 'Resources'
 
 
-SAMPLE_DATA_DIR = get_dir_option(_RESOURCE_SECTION, 'sample_data_dir',
-                                 default=os.path.join(os.path.dirname(__file__), 'sample_data'))
+SAMPLE_DATA_DIR = get_dir_option(
+    _RESOURCE_SECTION, 'sample_data_dir',
+    default=os.path.join(os.path.dirname(__file__), 'sample_data'))
 
 TEST_DATA_DIR = get_dir_option(_RESOURCE_SECTION, 'test_data_dir',
                                default=os.path.join(os.path.dirname(__file__),
                                                     'test_data'))
 
-# Override the data repository if the appropriate environment variable has been set
-# This is used in setup.py in the TestRunner command to enable us to simulate the absence of external data
+# Override the data repository if the appropriate environment variable
+# has been set.  This is used in setup.py in the TestRunner command to
+# enable us to simulate the absence of external data.
 if os.environ.get("override_test_data_repository"):
     TEST_DATA_DIR = None
 
