@@ -841,10 +841,6 @@ class Coord(CFVariableMixin):
         bound = None
         if self.bounds is not None:
             bound = tuple(np.array(self.bounds[index], ndmin=1).flatten())
-            if len(bound) != self.nbounds:
-                raise IndexError('The index %s did not uniquely identify a '
-                                 'single bound to create a cell with.' %
-                                 (index, ))
 
         return Cell(point, bound)
 
