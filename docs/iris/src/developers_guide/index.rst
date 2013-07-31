@@ -34,3 +34,4 @@
 
    documenting/index.rst
    gitwash/index.rst
+   pulls.rst
