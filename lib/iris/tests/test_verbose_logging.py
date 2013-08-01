@@ -38,10 +38,10 @@ class TestVerboseLogging(tests.IrisTest):
         config.RULE_LOG_DIR = '/var/tmp'
         old_log = rules.log
         rules.log = rules._prepare_rule_logger(verbose=True)
-        
+
         temp_filename1 = iris.util.create_temp_filename(suffix='.pp')
-  
-        # Test writing to a file handle to test that the logger uses the handle name      
+
+        # Test writing to a file handle to test that the logger uses the handle name
         with open(temp_filename1, "wb") as mysavefile:
             try:
                 iris.save(cube, mysavefile)
@@ -49,7 +49,7 @@ class TestVerboseLogging(tests.IrisTest):
                 # Restore old logging config
                 config.RULE_LOG_DIR = OLD_RULE_LOG_DIR
                 rules.log = old_log
-                os.unlink(temp_filename1) 
+                os.unlink(temp_filename1)
 
 if __name__ == "__main__":
     tests.main()

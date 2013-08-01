@@ -145,7 +145,7 @@ def _prepare_rule_logger(verbose=False):
                     logger = _verbose_log
                 else:
                     logger = _real_log
-                    
+
             except IOError:
                 # If we can't create the log file for some reason then it's fine to just silently
                 # ignore the error and fallback to using the dummy logging routine.
@@ -168,7 +168,7 @@ class DebugString(str):
 class CMAttribute(object):
     """
     Used by the rules for defining attributes on the Cube in a consistent manner.
-    
+
     """
     __slots__ = ('name', 'value')
     def __init__(self, name, value):
@@ -179,7 +179,7 @@ class CMAttribute(object):
 class CMCustomAttribute(object):
     """
     Used by the rules for defining custom attributes on the Cube in a consistent manner.
-    
+
     """
     __slots__ = ('name', 'value')
     def __init__(self, name, value):
@@ -189,8 +189,8 @@ class CMCustomAttribute(object):
 
 class CoordAndDims(object):
     """
-    Used within rules to represent a mapping of coordinate to data dimensions. 
-    
+    Used within rules to represent a mapping of coordinate to data dimensions.
+
     """
     def __init__(self, coord, dims=None):
         self.coord = coord
@@ -199,7 +199,7 @@ class CoordAndDims(object):
         if not isinstance(dims, list):
             dims = [dims]
         self.dims = dims
-        
+
     def add_coord(self, cube):
         added = False
 
@@ -207,22 +207,22 @@ class CoordAndDims(object):
         if isinstance(self.coord, iris.coords.DimCoord) and self.dims:
             if len(self.dims) > 1:
                 raise Exception("Only 1 dim allowed for a DimCoord")
-             
+
             # Does the cube already have a coord for this dim?
             already_taken = False
             for coord, coord_dim in cube._dim_coords_and_dims:
                 if coord_dim == self.dims[0]:
                     already_taken = True
                     break
-                    
+
             if not already_taken:
                 cube.add_dim_coord(self.coord, self.dims[0])
                 added = True
 
-        # If we didn't add it to dim_coords, add it to aux_coords.                    
+        # If we didn't add it to dim_coords, add it to aux_coords.
         if not added:
             cube.add_aux_coord(self.coord, self.dims)
-        
+
     def __repr__(self):
         return "<CoordAndDims: %r, %r>" % (self.coord.name, self.dims)
 
@@ -234,7 +234,7 @@ class Reference(iris.util._OrderedHashable):
 
     """
 
-    
+
 # TODO: This function only uses data from a coord, and produces information only pertaining to a coord, so should it be in the coord.
 def is_regular(coord):
     """Determine if the given coord is regular."""
@@ -257,7 +257,7 @@ def regular_step(coord):
 
     diffs = coord.points[1:] - coord.points[:-1]
     avdiff = np.mean(diffs)
-    if not np.allclose(diffs, avdiff, rtol=0.001):  # TODO: This value is set for test_analysis to pass... 
+    if not np.allclose(diffs, avdiff, rtol=0.001):  # TODO: This value is set for test_analysis to pass...
         raise iris.exceptions.CoordinateNotRegularError("Coord %s is not regular" % coord.name())
     return avdiff.astype(coord.points.dtype)
 
@@ -297,7 +297,7 @@ def calculate_forecast_period(time, forecast_reference_time):
 class Rule(object):
     """
     A collection of condition expressions and their associated action expressions.
-    
+
     Example rule::
 
         IF
@@ -314,7 +314,7 @@ class Rule(object):
             raise TypeError('Variable conditions should be iterable, got: '+ type(conditions))
         if not hasattr(actions, '__iter__'):
             raise TypeError('Variable actions should be iterable, got: '+ type(actions))
-        
+
         self._conditions = conditions
         self._actions = actions
         self._exec_actions = []
@@ -345,15 +345,15 @@ class Rule(object):
         exec compile(code % conditions, '<string>', 'exec')
         # Make it a method of ours.
         self._exec_conditions = types.MethodType(_exec_conditions, self, type(self))
-    
+
     @abc.abstractmethod
     def _create_action_method(self, i, action):
         pass
-    
+
     @abc.abstractmethod
     def _process_action_result(self, obj, cube):
-        pass    
-    
+        pass
+
     def __repr__(self):
         string = "IF\n"
         string += '\n'.join(self._conditions)
@@ -368,23 +368,23 @@ class Rule(object):
         pp = field
         grib = field
         cm = cube
-        
+
         try:
             result = self._exec_conditions(field, f, pp, grib, cm)
         except Exception, err:
             print >> sys.stderr, 'Condition failed to run conditions: %s : %s' % (self._conditions, err)
             raise err
-                               
+
         return result
 
     def _matches_field(self, field):
         """Simple wrapper onto evaluates_true in the case where cube is None."""
         return self.evaluates_true(None, field)
-        
+
     def run_actions(self, cube, field):
         """
         Adds to the given cube based on the return values of all the actions.
-    
+
         """
         # Deferred import of all the symbols from iris.coords.
         # This import all is used as the rules file does not use fully qualified class names.
@@ -397,13 +397,13 @@ class Rule(object):
             globals().update(iris.fileformats.um_cf_map.__dict__)
             globals().update(iris.unit.__dict__)
             _import_pending = False
-        
+
         # Define the variables which the eval command should be able to see
         f = field
         pp = field
         grib = field
         cm = cube
-        
+
         factories = []
         for i, action in enumerate(self._actions):
             try:
@@ -448,7 +448,7 @@ class FunctionRule(Rule):
         #cell methods - not yet implemented
         elif isinstance(obj, CellMethod):
             cube.add_cell_method(obj)
-            
+
         elif isinstance(obj, CMAttribute):
             # Temporary code to deal with invalid standard names from the translation table.
             # TODO: when name is "standard_name" force the value to be a real standard name
@@ -465,7 +465,7 @@ class FunctionRule(Rule):
                     cube.units = iris.unit._UNKNOWN_UNIT_STRING
             else:
                 setattr(cube, obj.name, obj.value)
-            
+
         elif isinstance(obj, CMCustomAttribute):
             cube.attributes[obj.name] = obj.value
 
@@ -478,7 +478,7 @@ class FunctionRule(Rule):
         # The function returned nothing, like the pp save actions, "lbft = 3"
         elif obj is None:
             pass
-        
+
         else:
             raise Exception("Object could not be added to cube. Unknown type: " + obj.__class__.__name__)
 
@@ -498,7 +498,7 @@ class ProcedureRule(Rule):
     def _process_action_result(self, obj, cube):
         # This should always be None, as our rules won't create anything.
         pass
-            
+
     def conditional_warning(self, condition, warning):
         pass  # without this pass statement it alsp print, "  Args:" on a new line.
         if condition:
@@ -509,16 +509,16 @@ class RulesContainer(object):
     """
     A collection of :class:`Rule` instances, with the ability to read rule
     definitions from files and run the rules against given fields.
-    
+
     """
     def __init__(self, filepath=None, rule_type=FunctionRule):
         """Create a new rule set, optionally adding rules from the specified file.
-        
+
         The rule_type defaults to :class:`FunctionRule`,
         e.g for CM loading actions that return objects, such as *AuxCoord(...)*
-        
+
         rule_type can also be set to :class:`ProcedureRule`
-        e.g for PP saving actions that do not return anything, such as *pp.lbuser[3] = 16203* 
+        e.g for PP saving actions that do not return anything, such as *pp.lbuser[3] = 16203*
         """
         self._rules = []
         self.rule_type = rule_type
@@ -530,10 +530,10 @@ class RulesContainer(object):
         # Define state constants
         IN_CONDITION = 1
         IN_ACTION = 2
-        
+
         rule_file = os.path.expanduser(filepath)
         file = open(rule_file, 'r')
-        
+
         conditions = []
         actions = []
         state = None
@@ -560,24 +560,24 @@ class RulesContainer(object):
         if conditions and actions:
             self._rules.append(self.rule_type(conditions, actions))
         file.close()
-            
+
     def verify(self, cube, field):
         """
         Add to the given :class:`iris.cube.Cube` by running this set of
         rules with the given field.
 
         Args:
-        
+
         * cube:
             An instance of :class:`iris.cube.Cube`.
         * field:
             A field object relevant to the rule set.
-            
+
         Returns: (cube, matching_rules)
-        
+
         * cube - the resultant cube
         * matching_rules - a list of rules which matched
-        
+
         """
         matching_rules = []
         factories = []

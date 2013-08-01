@@ -34,7 +34,7 @@ class PPTest(object):
         A context manager for testing the saving of Cubes to PP files.
 
         Args:
-        
+
         * reference_txt_path:
             The path of the file containing the textual PP reference data.
 
@@ -78,7 +78,7 @@ class PPTest(object):
             pp_fields = list(iris.fileformats.pp.load(temp_pp_path))
             for pp_field in pp_fields:
                 pp_field.data
-                
+
             reference = ''.join(open(reference_txt_path, 'r'))
             self._assert_str_same(reference + '\n', str(pp_fields) + '\n',
                                     reference_txt_path, type_comparison_name='PP files')

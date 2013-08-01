@@ -104,4 +104,3 @@ MOSIG_STASH_TO_CF = {
     'm15s00i243': CF(name='eastward_wind', unit='m s-1'),
     'm15s00i244': CF(name='northward_wind', unit='m s-1'),
 }
-

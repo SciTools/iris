@@ -831,7 +831,7 @@ class Unit(iris.util._OrderedHashable):
             unit = unit.replace("epoch", IRIS_EPOCH)
 
         if unit.lower() in _UNKNOWN_UNIT:
-            # TODO - removing the option of an unknown unit. Currently the auto generated MOSIG rules 
+            # TODO - removing the option of an unknown unit. Currently the auto generated MOSIG rules
             # are missing units on a number of phenomena which would lead to errors.
             # Will be addressed by work on metadata translation.
             category = _CATEGORY_UNKNOWN
@@ -874,8 +874,8 @@ class Unit(iris.util._OrderedHashable):
         raise ValueError('[%s] %s %s' % (status_msg, msg, error_msg))
 
     # NOTE:
-    # "__getstate__" and "__setstate__" functions are defined here to provide a custom interface for Pickle 
-    #  : Pickle "normal" behaviour is just to save/reinstate the object dictionary 
+    # "__getstate__" and "__setstate__" functions are defined here to provide a custom interface for Pickle
+    #  : Pickle "normal" behaviour is just to save/reinstate the object dictionary
     #  : that won't work here, because the "ut_unit" attribute is an object handle
     #    - the corresponding udunits object only exists in the original invocation
     def __getstate__(self):

@@ -45,18 +45,18 @@ def save_by_filename(filename1, filename2, cube, saver_fn, iosaver=None):
     """ Saves a cube to two different filenames using iris.save and the save method of the object representing the file type directly"""
     # Save from object direct
     saver_fn(cube, filename1)
-    
+
     # Call save on iris
     iris.save(cube, filename2, iosaver) # Optional iris.io.find_saver passed in from test
 
 def save_by_filehandle(filehandle1, filehandle2, cube, fn_saver, binary_mode = True):
     """ Saves a cube to two different filehandles using iris.save and the save method of the object representing the file type directly"""
     mode = "wb" if binary_mode else "w"
-    
+
     # Save from object direct
     with open(filehandle1, mode) as outfile:
         fn_saver(cube, outfile)
-    
+
     # Call save on iris
     with open(filehandle2, mode) as outfile:
         iris.save(cube, outfile)
@@ -77,57 +77,57 @@ class TestSaveMethods(tests.IrisTest):
                 os.remove(tempfile)
             except Exception:
                 pass
-    
+
 class TestSavePP(TestSaveMethods):
     """Test saving cubes to PP format"""
     ext = ".pp"
-    
+
     def test_filename(self):
-        # Save using iris.save and pp.save 
+        # Save using iris.save and pp.save
         save_by_filename(self.temp_filename1, self.temp_filename2, self.cube1, pp.save)
 
         # Compare files
         self.assertEquals(self.file_checksum(self.temp_filename2), self.file_checksum(self.temp_filename1), CHKSUM_ERR.format(self.ext))
 
     def test_filehandle(self):
-        # Save using iris.save and pp.save 
+        # Save using iris.save and pp.save
         save_by_filehandle(self.temp_filename1, self.temp_filename2, self.cube1, pp.save, binary_mode = True)
-        
+
         # Compare files
         self.assertEquals(self.file_checksum(self.temp_filename2), self.file_checksum(self.temp_filename1), CHKSUM_ERR.format(self.ext))
 
-        # Check we can't save when file handle is not binary        
+        # Check we can't save when file handle is not binary
         with self.assertRaises(ValueError):
             save_by_filehandle(self.temp_filename1, self.temp_filename2, self.cube1, pp.save, binary_mode = False)
 
 class TestSaveDot(TestSaveMethods):
     """Test saving cubes to DOT format"""
     ext = ".dot"
-    
+
     def test_filename(self):
-        # Save using iris.save and dot.save 
+        # Save using iris.save and dot.save
         save_by_filename(self.temp_filename1, self.temp_filename2, self.cube1, dot.save)
-        
+
         # Compare files
         self.assertEquals(self.file_checksum(self.temp_filename2), self.file_checksum(self.temp_filename1), CHKSUM_ERR.format(self.ext))
 
-    def test_filehandle(self):  
+    def test_filehandle(self):
         # Save using iris.save and dot.save
         save_by_filehandle(self.temp_filename1, self.temp_filename2, self.cube1, dot.save, binary_mode = False)
-    
+
         # Compare files
         self.assertEquals(self.file_checksum(self.temp_filename2), self.file_checksum(self.temp_filename1), CHKSUM_ERR.format(self.ext))
 
-        # Check we can't save when file handle is binary        
+        # Check we can't save when file handle is binary
         with self.assertRaises(ValueError):
             save_by_filehandle(self.temp_filename1, self.temp_filename2, self.cube1, dot.save, binary_mode = True)
 
     def test_cstringio(self):
         string_io = cStringIO.StringIO()
-    
+
         # Save from dot direct
         dot.save(self.cube1, self.temp_filename1)
-    
+
         # Call save on iris
         iris.save(self.cube1, string_io, iris.io.find_saver(self.ext))
 
@@ -146,30 +146,30 @@ class TestSavePng(TestSaveMethods):
     def test_filename(self):
         # Save using iris.save and dot.save_png
         save_by_filename(self.temp_filename1, self.temp_filename2, self.cube1, dot.save_png)
-        
+
         # Compare files
         self.assertEquals(self.file_checksum(self.temp_filename2), self.file_checksum(self.temp_filename1), CHKSUM_ERR.format(self.ext))
 
     def test_filehandle(self):
         # Save using iris.save and dot.save_png
         save_by_filehandle(self.temp_filename1, self.temp_filename2, self.cube1, dot.save_png, binary_mode = True)
-    
+
         # Compare files
         self.assertEquals(self.file_checksum(self.temp_filename2), self.file_checksum(self.temp_filename1), CHKSUM_ERR.format(self.ext))
-        
-        # Check we can't save when file handle is not binary        
+
+        # Check we can't save when file handle is not binary
         with self.assertRaises(ValueError):
             save_by_filehandle(self.temp_filename1, self.temp_filename2, self.cube1, dot.save_png, binary_mode = False)
 
 class TestSaver(TestSaveMethods):
     """Test saving to Iris when we define the saver type to use"""
     ext = ".spam"
-    
+
     def test_pp(self):
         # Make our own saver
         pp_saver = iris.io.find_saver("PP")
         save_by_filename(self.temp_filename1, self.temp_filename2, self.cube1, pp.save, pp_saver)
-        
+
         # Compare files
         self.assertEquals(self.file_checksum(self.temp_filename2), self.file_checksum(self.temp_filename1), CHKSUM_ERR.format(self.ext))
 
@@ -177,7 +177,7 @@ class TestSaver(TestSaveMethods):
         # Make our own saver
         dot_saver = iris.io.find_saver("DOT")
         save_by_filename(self.temp_filename1, self.temp_filename2, self.cube1, dot.save, dot_saver)
-        
+
         # Compare files
         self.assertEquals(self.file_checksum(self.temp_filename2), self.file_checksum(self.temp_filename1), CHKSUM_ERR.format(self.ext))
 
@@ -186,7 +186,7 @@ class TestSaver(TestSaveMethods):
         # Make our own saver
         png_saver = iris.io.find_saver("DOTPNG")
         save_by_filename(self.temp_filename1, self.temp_filename2, self.cube1, dot.save_png, png_saver)
-        
+
         # Compare files
         self.assertEquals(self.file_checksum(self.temp_filename2), self.file_checksum(self.temp_filename1), CHKSUM_ERR.format(self.ext))
 
@@ -201,4 +201,3 @@ class TestSaveInvalid(TestSaveMethods):
 
 if __name__ == "__main__":
     tests.main()
-    

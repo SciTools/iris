@@ -103,4 +103,3 @@ class ClassWithConstructorDocumenter(autodoc.ClassDocumenter):
 
 def setup(app):
     app.add_autodocumenter(ClassWithConstructorDocumenter)
-    

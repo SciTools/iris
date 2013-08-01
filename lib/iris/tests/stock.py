@@ -36,7 +36,7 @@ def lat_lon_cube():
     """
     Returns a cube with a latitude and longitude suitable for testing
     saving to PP/NetCDF etc.
-    
+
     """
     cube = Cube(np.arange(12, dtype=np.int32).reshape((3, 4)))
     cs = GeogCS(6371229)
@@ -168,7 +168,7 @@ def simple_3d_w_multidim_coords(with_bounds=True):
     [[[ 0  1  2  3]
       [ 4  5  6  7]
       [ 8  9 10 11]]
-    
+
      [[12 13 14 15]
       [16 17 18 19]
       [20 21 22 23]]]
@@ -177,18 +177,18 @@ def simple_3d_w_multidim_coords(with_bounds=True):
     cube = Cube(np.arange(24, dtype=np.int32).reshape((2, 3, 4)))
     cube.long_name = 'thingness'
     cube.units = '1'
-    
+
     y_points = np.array([[  2.5,   7.5,  12.5,  17.5],
                             [ 10. ,  17.5,  27.5,  42.5],
                             [ 15. ,  22.5,  32.5,  50. ]])
-    y_bounds = np.array([[[0, 5], [5, 10], [10, 15], [15, 20]], 
+    y_bounds = np.array([[[0, 5], [5, 10], [10, 15], [15, 20]],
                             [[5, 15], [15, 20], [20, 35], [35, 50]],
                             [[10, 20], [20, 25], [25, 40], [40, 60]]], dtype=np.int32)
     y_coord = iris.coords.AuxCoord(points=y_points, long_name='bar', units='1', bounds=y_bounds if with_bounds else None)
     x_points = np.array([[ -7.5,   7.5,  22.5,  37.5],
                             [-12.5,   4. ,  26.5,  47.5],
                             [  2.5,  14. ,  36.5,  44. ]])
-    x_bounds = np.array([[[-15, 0], [0, 15], [15, 30], [30, 45]], 
+    x_bounds = np.array([[[-15, 0], [0, 15], [15, 30], [30, 45]],
                             [[-25, 0], [0, 8], [8, 45], [45, 50]],
                             [[-5, 10], [10, 18],  [18, 55], [18, 70]]], dtype=np.int32)
     x_coord = iris.coords.AuxCoord(points=x_points, long_name='foo', units='1', bounds=x_bounds if with_bounds else None)
@@ -243,10 +243,10 @@ def simple_2d_w_multidim_and_scalars():
                                         long_name='custom long name',
                                         var_name='custom_var_name',
                                         units='K')
-    
+
     # Multidim
-    my_multi_dim_coord = iris.coords.AuxCoord(np.arange(50, dtype=np.int32).reshape(5, 10), 
-                                              long_name='my_multi_dim_coord', units='1', 
+    my_multi_dim_coord = iris.coords.AuxCoord(np.arange(50, dtype=np.int32).reshape(5, 10),
+                                              long_name='my_multi_dim_coord', units='1',
                                               bounds=np.arange(200, dtype=np.int32).reshape(5, 10, 4))
 
     cube.add_dim_coord(dim1, 0)
@@ -278,7 +278,7 @@ def hybrid_height():
     [[[ 0  1  2  3]
       [ 4  5  6  7]
       [ 8  9 10 11]]
-    
+
     """
     data = np.arange(12, dtype='i8').reshape((3, 4))
 
@@ -298,27 +298,27 @@ def hybrid_height():
     return cube
 
 def simple_4d_with_hybrid_height():
-    cube = iris.cube.Cube(np.arange(3*4*5*6, dtype='i8').reshape(3,4,5,6), 
+    cube = iris.cube.Cube(np.arange(3*4*5*6, dtype='i8').reshape(3,4,5,6),
                           "air_temperature", units="K")
-    
-    cube.add_dim_coord(iris.coords.DimCoord(np.arange(3, dtype='i8'), "time", 
+
+    cube.add_dim_coord(iris.coords.DimCoord(np.arange(3, dtype='i8'), "time",
                                             units="hours since epoch"), 0)
-    cube.add_dim_coord(iris.coords.DimCoord(np.arange(4, dtype='i8')+10, 
+    cube.add_dim_coord(iris.coords.DimCoord(np.arange(4, dtype='i8')+10,
                                             "model_level_number", units="1"), 1)
-    cube.add_dim_coord(iris.coords.DimCoord(np.arange(5, dtype='i8')+20, 
+    cube.add_dim_coord(iris.coords.DimCoord(np.arange(5, dtype='i8')+20,
                                             "grid_latitude",
                                             units="degrees"), 2)
-    cube.add_dim_coord(iris.coords.DimCoord(np.arange(6, dtype='i8')+30, 
+    cube.add_dim_coord(iris.coords.DimCoord(np.arange(6, dtype='i8')+30,
                                             "grid_longitude",
                                             units="degrees"), 3)
-    
-    cube.add_aux_coord(iris.coords.AuxCoord(np.arange(4, dtype='i8')+40, 
+
+    cube.add_aux_coord(iris.coords.AuxCoord(np.arange(4, dtype='i8')+40,
                                             long_name="level_height",
                                             units="m"), 1)
-    cube.add_aux_coord(iris.coords.AuxCoord(np.arange(4, dtype='i8')+50, 
+    cube.add_aux_coord(iris.coords.AuxCoord(np.arange(4, dtype='i8')+50,
                                             long_name="sigma", units="1"), 1)
-    cube.add_aux_coord(iris.coords.AuxCoord(np.arange(5*6, dtype='i8').reshape(5,6)+100, 
-                                            long_name="surface_altitude", 
+    cube.add_aux_coord(iris.coords.AuxCoord(np.arange(5*6, dtype='i8').reshape(5,6)+100,
+                                            long_name="surface_altitude",
                                             units="m"), [2,3])
 
     cube.add_aux_factory(iris.aux_factory.HybridHeightFactory(
@@ -326,12 +326,12 @@ def simple_4d_with_hybrid_height():
                                     sigma=cube.coord("sigma"),
                                     orography=cube.coord("surface_altitude")))
     return cube
-    
+
 
 def realistic_4d():
     """
     Returns a realistic 4d cube.
-    
+
     >>> print repr(realistic_4d())
     <iris 'Cube' of air_potential_temperature (time: 6; model_level_number: 70; grid_latitude: 100; grid_longitude: 100)>
 
@@ -341,7 +341,7 @@ def realistic_4d():
 #    >>> theta = iris.load_cube(fname, 'air_potential_temperature')
 #    >>> for coord in theta.coords():
 #    ...  print coord.name, coord.has_points(), coord.has_bounds(), coord.units
-#    ... 
+#    ...
 #    grid_latitude True True degrees
 #    grid_longitude True True degrees
 #    level_height True True m
@@ -350,40 +350,40 @@ def realistic_4d():
 #    time True False hours since 1970-01-01 00:00:00
 #    source True False no_unit
 #    forecast_period True False hours
-#    >>> arrays = []    
+#    >>> arrays = []
 #    >>> for coord in theta.coords():
 #    ...  if coord.has_points(): arrays.append(coord.points)
 #    ...  if coord.has_bounds(): arrays.append(coord.bounds)
 #    >>> arrays.append(theta.data)
 #    >>> arrays.append(theta.coord('sigma').coord_system.orography.data)
 #    >>> np.savez('stock_arrays.npz', *arrays)
-    
+
     data_path = os.path.join(os.path.dirname(__file__), 'stock_arrays.npz')
     r = np.load(data_path)
     # sort the arrays based on the order they were originally given. The names given are of the form 'arr_1' or 'arr_10'
     _, arrays =  zip(*sorted(r.iteritems(), key=lambda item: int(item[0][4:])))
-    
+
     lat_pts, lat_bnds, lon_pts, lon_bnds, level_height_pts, \
     level_height_bnds, model_level_pts, sigma_pts, sigma_bnds, time_pts, \
     _source_pts, forecast_period_pts, data, orography = arrays
-    
-    
+
+
     ll_cs = RotatedGeogCS(37.5, 177.5, ellipsoid=GeogCS(6371229.0))
-    
-    lat = icoords.DimCoord(lat_pts, standard_name='grid_latitude', units='degrees', 
+
+    lat = icoords.DimCoord(lat_pts, standard_name='grid_latitude', units='degrees',
                            bounds=lat_bnds, coord_system=ll_cs)
     lon = icoords.DimCoord(lon_pts, standard_name='grid_longitude', units='degrees',
                            bounds=lon_bnds, coord_system=ll_cs)
-    level_height = icoords.DimCoord(level_height_pts, long_name='level_height', 
-                                    units='m', bounds=level_height_bnds, 
+    level_height = icoords.DimCoord(level_height_pts, long_name='level_height',
+                                    units='m', bounds=level_height_bnds,
                                     attributes={'positive': 'up'})
-    model_level = icoords.DimCoord(model_level_pts, standard_name='model_level_number', 
+    model_level = icoords.DimCoord(model_level_pts, standard_name='model_level_number',
                                    units='1', attributes={'positive': 'up'})
     sigma = icoords.AuxCoord(sigma_pts, long_name='sigma', units='1', bounds=sigma_bnds)
     orography = icoords.AuxCoord(orography, standard_name='surface_altitude', units='m')
     time = icoords.DimCoord(time_pts, standard_name='time', units='hours since 1970-01-01 00:00:00')
     forecast_period = icoords.DimCoord(forecast_period_pts, standard_name='forecast_period', units='hours')
-    
+
     hybrid_height = iris.aux_factory.HybridHeightFactory(level_height, sigma, orography)
 
     cube = iris.cube.Cube(data, standard_name='air_potential_temperature', units='K',
@@ -398,13 +398,13 @@ def realistic_4d():
 def realistic_4d_no_derived():
     """
     Returns a realistic 4d cube without hybrid height
-    
+
     >>> print repr(realistic_4d())
     <iris 'Cube' of air_potential_temperature (time: 6; model_level_number: 70; grid_latitude: 100; grid_longitude: 100)>
 
     """
     cube = realistic_4d()
-    
+
     # TODO determine appropriate way to remove aux_factory from a cube
     cube._aux_factories = []
 
@@ -417,17 +417,17 @@ def realistic_4d_w_missing_data():
     data = ma.masked_array(data_archive['arr_0'], mask=data_archive['arr_1'])
 
     # sort the arrays based on the order they were originally given. The names given are of the form 'arr_1' or 'arr_10'
-    
+
     ll_cs = GeogCS(6371229)
-    
-    lat = iris.coords.DimCoord(np.arange(20, dtype=np.float32), standard_name='grid_latitude', 
+
+    lat = iris.coords.DimCoord(np.arange(20, dtype=np.float32), standard_name='grid_latitude',
                                units='degrees', coord_system=ll_cs)
     lon = iris.coords.DimCoord(np.arange(20, dtype=np.float32), standard_name='grid_longitude',
                                units='degrees', coord_system=ll_cs)
-    time = iris.coords.DimCoord([1000., 1003., 1006.], standard_name='time', 
+    time = iris.coords.DimCoord([1000., 1003., 1006.], standard_name='time',
                                 units='hours since 1970-01-01 00:00:00')
     forecast_period = iris.coords.DimCoord([0.0, 3.0, 6.0], standard_name='forecast_period', units='hours')
-    pressure = iris.coords.DimCoord(np.array([  800.,   900.,  1000.], dtype=np.float32), 
+    pressure = iris.coords.DimCoord(np.array([  800.,   900.,  1000.], dtype=np.float32),
                                     long_name='pressure', units='hPa')
 
     cube = iris.cube.Cube(data, long_name='missing data test data', units='K',

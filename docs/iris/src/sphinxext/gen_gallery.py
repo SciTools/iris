@@ -49,7 +49,7 @@ def gen_gallery(app, doctree):
 
     data = []
     thumbnails = {}
-    
+
     for subdir in ('graphics', ):
         origdir = os.path.join(os.path.dirname(outdir), rootdir, subdir)
         thumbdir = os.path.join(outdir, rootdir, subdir, 'thumbnails')
