@@ -19,6 +19,7 @@ A summary of the main features added with version 1.5:
   is now deprecated for these functions.
 * class:`iris.analysis.SUM` is now a weighted aggregator, allowing it to take a
   weights keyword argument.
+* Grib2 translations added for standard_name 'soil_temperature'.
 
 Bugs fixed
 ----------
