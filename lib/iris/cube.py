@@ -475,13 +475,26 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         self._aux_coords_and_dims = []
         self._aux_factories = []
 
+        identities = set()
         if dim_coords_and_dims:
+            dims = set()
             for coord, dim in dim_coords_and_dims:
-                self.add_dim_coord(coord, dim)
+                identity = coord.standard_name, coord.long_name
+                if identity not in identities and dim not in dims:
+                    self._add_unique_dim_coord(coord, dim)
+                else:
+                    self.add_dim_coord(coord, dim)
+                identities.add(identity)
+                dims.add(dim)
 
         if aux_coords_and_dims:
             for coord, dims in aux_coords_and_dims:
-                self.add_aux_coord(coord, dims)
+                identity = coord.standard_name, coord.long_name
+                if identity not in identities:
+                    self._add_unique_aux_coord(coord, dims)
+                else:
+                    self.add_aux_coord(coord, dims)
+                identities.add(identity)
 
         if aux_factories:
             for factory in aux_factories:
@@ -609,7 +622,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         See also :meth:`Cube.remove_coord()<iris.cube.Cube.remove_coord>`.
 
         """
+        if self.coords(coord=coord):  # TODO: just fail on duplicate object
+            raise ValueError('Duplicate coordinates are not permitted.')
+        self._add_unique_aux_coord(coord, data_dims)
 
+    def _add_unique_aux_coord(self, coord, data_dims):
         # Convert to a tuple of integers
         if data_dims is None:
             data_dims = tuple()
@@ -635,8 +652,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise ValueError('You must supply the data-dimensions for '
                              'multi-valued coordinates.')
 
-        if self.coords(coord=coord):  # TODO: just fail on duplicate object
-            raise ValueError('Duplicate coordinates are not permitted.')
         self._aux_coords_and_dims.append([coord, data_dims])
 
     def add_aux_factory(self, aux_factory):
@@ -675,15 +690,21 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if self.coords(coord=dim_coord):
             raise ValueError('The coordinate already exists on the cube. '
                              'Duplicate coordinates are not permitted.')
-        if isinstance(data_dim, collections.Container) and len(data_dim) != 1:
-            raise ValueError('The supplied data dimension must be a single '
-                             'number.')
+        # Check dimension is available
+        if self.coords(dimensions=data_dim, dim_coords=True):
+            raise ValueError('A dim_coord is already associated with '
+                             'dimension %d.' % data_dim)
+        self._add_unique_dim_coord(dim_coord, data_dim)
 
+    def _add_unique_dim_coord(self, dim_coord, data_dim):
         if isinstance(dim_coord, iris.coords.AuxCoord):
             raise ValueError('The dim_coord may not be an AuxCoord instance.')
 
         # Convert data_dim to a single integer
         if isinstance(data_dim, collections.Container):
+            if len(data_dim) != 1:
+                raise ValueError('The supplied data dimension must be a'
+                                 ' single number.')
             data_dim = int(list(data_dim)[0])
         else:
             data_dim = int(data_dim)
@@ -692,11 +713,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if data_dim < 0 or data_dim >= self.ndim:
             raise ValueError('The cube does not have the specified dimension '
                              '(%d)' % data_dim)
-
-        # Check dimension is available
-        if self.coords(dimensions=data_dim, dim_coords=True):
-            raise ValueError('A dim_coord is already associated with '
-                             'dimension %d.' % data_dim)
 
         # Check compatibility with the shape of the data
         if dim_coord.shape[0] != self.shape[data_dim]:

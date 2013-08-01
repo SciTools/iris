@@ -736,7 +736,11 @@ Loader = collections.namedtuple('Loader',
                                  'converter', 'legacy_custom_rules'))
 
 
-def _make_cube(field):
+def _make_cube(field, converter):
+    # Convert the field to a Cube.
+    (factories, references, standard_name, long_name, units, attributes,
+     cell_methods, dim_coords_and_dims, aux_coords_and_dims) = converter(field)
+
     if getattr(field, '_data_manager', None) is not None:
         data = field._data
         data_manager = field._data_manager
@@ -744,8 +748,30 @@ def _make_cube(field):
         data = field.data
         data_manager = None
 
-    cube = iris.cube.Cube(data, data_manager=data_manager)
-    return cube
+    cube = iris.cube.Cube(data, data_manager=data_manager,
+                          attributes=attributes,
+                          cell_methods=cell_methods,
+                          dim_coords_and_dims=dim_coords_and_dims,
+                          aux_coords_and_dims=aux_coords_and_dims)
+
+    # Temporary code to deal with invalid standard names in the
+    # translation table.
+    if standard_name is not None:
+        cube.rename(standard_name)
+    if long_name is not None:
+        cube.long_name = long_name
+    if units is not None:
+        # Temporary code to deal with invalid units in the translation
+        # table.
+        try:
+            cube.units = units
+        except ValueError:
+            msg = 'Ignoring PP invalid units {!r}'.format(units)
+            warnings.warn(msg)
+            cube.attributes['invalid_units'] = units
+            cube.units = iris.unit._UNKNOWN_UNIT_STRING
+
+    return cube, factories, references
 
 
 def load_cubes(filenames, user_callback, loader):
@@ -758,8 +784,7 @@ def load_cubes(filenames, user_callback, loader):
     for filename in filenames:
         for field in loader.field_generator(filename, **loader.field_generator_kwargs):
             # Convert the field to a Cube.
-            cube = _make_cube(field)
-            factories, references = loader.converter(cube, field)
+            cube, factories, references = _make_cube(field, loader.converter)
 
             # Run any custom user-provided rules.
             if loader.legacy_custom_rules:

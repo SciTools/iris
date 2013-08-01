@@ -38,8 +38,8 @@ class TestPPLoadCustom(tests.IrisTest):
         self.template = iris.fileformats.pp.load(filename).next()
 
     def _field_to_cube(self, field):
-        cube = iris.fileformats.rules._make_cube(field)
-        iris.fileformats.pp_rules.convert(cube, field)
+        cube, _, _ = iris.fileformats.rules._make_cube(
+            field, iris.fileformats.pp_rules.convert)
         return cube
 
     def test_lbtim_2(self):
