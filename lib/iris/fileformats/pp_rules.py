@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+# DO NOT EDIT DIRECTLY
+# Auto-generated from SciTools/iris-code-generators:tools/gen_rules.py
+
 import warnings
 
 import numpy as np
@@ -102,25 +105,25 @@ def convert(cube, f):
             (f.bdx != 0.0) and \
             (len(f.lbcode) != 5) and \
             (f.lbcode[0] == 1):
-        cube.add_dim_coord(DimCoord(f.regular_points("x"), standard_name=f._x_coord_name(), units='degrees', circular=(f.lbhem in [0, 4]), coord_system=f.coord_system()), 1)
+        cube.add_dim_coord(DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt, standard_name=f._x_coord_name(), units='degrees', circular=(f.lbhem in [0, 4]), coord_system=f.coord_system()), 1)
 
     if \
             (f.bdx != 0.0) and \
             (len(f.lbcode) != 5) and \
             (f.lbcode[0] == 2):
-        cube.add_dim_coord(DimCoord(f.regular_points("x"), standard_name=f._x_coord_name(), units='degrees', circular=(f.lbhem in [0, 4]), coord_system=f.coord_system(), bounds=f.regular_bounds("x")), 1)
+        cube.add_dim_coord(DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt, standard_name=f._x_coord_name(), units='degrees', circular=(f.lbhem in [0, 4]), coord_system=f.coord_system(), with_bounds=True), 1)
 
     if \
             (f.bdy != 0.0) and \
             (len(f.lbcode) != 5) and \
             (f.lbcode[0] == 1):
-        cube.add_dim_coord(DimCoord(f.regular_points("y"), standard_name=f._y_coord_name(), units='degrees', coord_system=f.coord_system()), 0)
+        cube.add_dim_coord(DimCoord.from_regular(f.bzy, f.bdy, f.lbrow, standard_name=f._y_coord_name(), units='degrees', coord_system=f.coord_system()), 0)
 
     if \
             (f.bdy != 0.0) and \
             (len(f.lbcode) != 5) and \
             (f.lbcode[0] == 2):
-        cube.add_dim_coord(DimCoord(f.regular_points("y"), standard_name=f._y_coord_name(), units='degrees', coord_system=f.coord_system(), bounds=f.regular_bounds("y")), 0)
+        cube.add_dim_coord(DimCoord.from_regular(f.bzy, f.bdy, f.lbrow, standard_name=f._y_coord_name(), units='degrees', coord_system=f.coord_system(), with_bounds=True), 0)
 
     if \
             (f.bdy == 0.0) and \
@@ -142,7 +145,7 @@ def convert(cube, f):
             (len(f.lbcode) == 5) and \
             (f.lbcode.ix == 10) and \
             (f.bdx != 0):
-        cube.add_dim_coord(DimCoord(f.regular_points("x"), standard_name=f._y_coord_name(), units='degrees', coord_system=f.coord_system()), 1)
+        cube.add_dim_coord(DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt, standard_name=f._y_coord_name(), units='degrees', coord_system=f.coord_system()), 1)
 
     if \
             (len(f.lbcode) == 5) and \
@@ -173,7 +176,7 @@ def convert(cube, f):
             (f.lbcode[-1] == 1) and \
             (f.lbcode.ix == 13) and \
             (f.bdx != 0):
-        cube.add_dim_coord(DimCoord(f.regular_points("x"), long_name='site_number', units='1'), 1)
+        cube.add_dim_coord(DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt, long_name='site_number', units='1'), 1)
 
     if \
             (len(f.lbcode) == 5) and \
