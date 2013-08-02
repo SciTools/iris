@@ -387,17 +387,21 @@ class TransverseMercator(CoordSystem):
                                         self.ellipsoid)
 
     def as_cartopy_crs(self):
-        warnings.warn("Cartopy currently under-defines transverse mercator.")
-        return cartopy.crs.TransverseMercator(self.longitude_of_central_meridian)
+        if self.ellipsoid is not None:
+            globe = self.self.ellipsoid.as_cartopy_globe()
+        else:
+            globe = None
+
+        return cartopy.crs.TransverseMercator(
+            central_longitude=self.longitude_of_central_meridian,
+            central_latitude=self.latitude_of_projection_origin,
+            false_easting=self.false_easting,
+            false_northing=self.false_northing,
+            scale_factor=self.scale_factor_at_central_meridian,
+            globe=globe)
 
     def as_cartopy_projection(self):
-        warnings.warn("Cartopy currently under-defines transverse mercator.")
-        return cartopy.crs.TransverseMercator(self.longitude_of_central_meridian)
-        # TODO: Add these params to cartopy's TransverseMercator.
-        #return cartopy.crs.TransverseMercator(self.latitude_of_projection_origin,
-        #                                      self.longitude_of_central_meridian,
-        #                                      self.false_easting, self.false_northing,
-        #                                      self.scale_factor_at_central_meridian)
+        return self.as_cartopy_crs()
 
 
 class OSGB(TransverseMercator):

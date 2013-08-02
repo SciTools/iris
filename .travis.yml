@@ -18,7 +18,7 @@ git:
 
 install:
 
-  - export CARTOPY_REF="fcec835d18fc5f6b6994b6f230e17dd3c6a4dc23"
+  - export CARTOPY_REF="1fe7438b8f203a19b5855c2491622ee9001bb62c"
   - export CARTOPY_SUFFIX=$(echo "${CARTOPY_REF}" | sed "s/^v//")
 
   - export IRIS_TEST_DATA_REF="89bb2ce50e5f407614f097cd47927eac0bdcd50b"
