@@ -90,10 +90,13 @@ class TestGribPhenomenonLookup(itests.IrisTest):
                 self.assertEqual(cfdata.long_name, long_name)
                 self.assertEqual(cfdata.units, iris_units)
 
+        # These should work
         check_grib2_cf(0, 0, 2, "air_potential_temperature", None, "K")
         check_grib2_cf(0, 19, 1, None, "grib_physical_atmosphere_albedo", "%")
-        check_grib2_cf(0, 19, 1, None, "grib_physical_atmosphere_albedo", "%")
+        check_grib2_cf(2, 0, 2, "soil_temperature", None, "K")
         check_grib2_cf(10, 2, 0, "sea_ice_area_fraction", None, 1)
+
+        # These should fail
         check_grib2_cf(9999, 2, 0, "sea_ice_area_fraction", None, 1,
                        expect_none=True)
         check_grib2_cf(10, 9999, 0, "sea_ice_area_fraction", None, 1,
@@ -115,10 +118,15 @@ class TestGribPhenomenonLookup(itests.IrisTest):
                 self.assertEqual(gribdata.number, number)
                 self.assertEqual(gribdata.units, iris_units)
 
+        # These should work
         check_cf_grib2("sea_surface_temperature", None,
                        10, 3, 0, 'K')
         check_cf_grib2("air_temperature", None,
                        0, 0, 0, 'K')
+        check_cf_grib2("soil_temperature", None,
+                       2, 0, 2, "K")
+
+        # These should fail
         check_cf_grib2("air_temperature", "user_long_UNRECOGNISED",
                        0, 0, 0, 'K')
         check_cf_grib2("air_temperature_UNRECOGNISED", None,

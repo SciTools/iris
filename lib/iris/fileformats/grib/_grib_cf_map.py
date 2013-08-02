@@ -46,6 +46,7 @@ import collections
 # * "grib_physical _atmosphere_albedo" : removed space from name
 # * albedo in Grib2 changed to a *percentage* (but still a fraction in Grib1)
 # * air_temperature unit "kelvin" changed to "K", as udunits requires it.
+# * 'soil_temperature' added
 
 # OUTSTANDING QUESTIONS:
 # Remarks regarding the Metarelate output format
@@ -128,6 +129,7 @@ GRIB2_TO_CF = {
 	G2param(2, 10, 3, 0): CFname("sea_surface_temperature", None, "K"),
 	G2param(2, 2, 0, 0): CFname("land_area_fraction", None, 1),
 	G2param(2, 2, 0, 1): CFname("surface_roughness_length", None, "m"),
+    G2param(2, 2, 0, 2): CFname("soil_temperature", None, "K"),
 	}
 
 CF_TO_GRIB1Local = {
@@ -181,7 +183,8 @@ CF_TO_GRIB2 = {	CFname("x_wind", None, "m s-1"):G2param(2, 0, 2, 2),
  	CFname("relative_humidity", None, "%"):G2param(2, 0, 1, 1),
  	CFname("sea_ice_area_fraction", None, 1):G2param(2, 10, 2, 0),
  	CFname("sea_surface_temperature", None, "K"):G2param(2, 10, 3, 0),
- 	CFname("specific_humidity", None, "kg kg-1"):G2param(2, 0, 1, 0),
+    CFname("soil_temperature", None, "K"):G2param(2, 2, 0, 2),
+    CFname("specific_humidity", None, "kg kg-1"):G2param(2, 0, 1, 0),
  	CFname("surface_roughness_length", None, "m"):G2param(2, 2, 0, 1),
  	CFname("thickness_of_snowfall_amount", None, "m"):G2param(2, 0, 1, 11),
  	CFname("wind_speed", None, "m s-1"):G2param(2, 0, 2, 1),
