@@ -20,7 +20,8 @@ Units of measure.
 Provision of a wrapper class to support Unidata/UCAR UDUNITS-2, and the
 netcdftime calendar functionality.
 
-See also: `UDUNITS-2 <http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html>`_.
+See also: `UDUNITS-2 <http://www.unidata.ucar.edu/software/udunits/udunits-2/\
+udunits2.html>`_.
 
 """
 
@@ -38,14 +39,15 @@ import iris.config
 import iris.util
 
 
-__all__ = ['Unit', 'date2num', 'decode_time', 'encode_clock', 'encode_date', 'encode_time', 'num2date']
+__all__ = ['Unit', 'date2num', 'decode_time', 'encode_clock', 'encode_date',
+           'encode_time', 'num2date']
 
 
-################################################################################
+###############################################################################
 #
 # module level constants
 #
-################################################################################
+###############################################################################
 
 #
 # default constants
@@ -84,7 +86,8 @@ UT_UTF8 = 2
 UT_NAMES = 4
 UT_DEFINITION = 8
 
-UT_FORMATS = [UT_ASCII, UT_ISO_8859_1, UT_LATIN1, UT_UTF8, UT_NAMES, UT_DEFINITION]
+UT_FORMATS = [UT_ASCII, UT_ISO_8859_1, UT_LATIN1, UT_UTF8, UT_NAMES,
+              UT_DEFINITION]
 
 #
 # netcdftime constants
@@ -99,8 +102,10 @@ CALENDAR_365_DAY = '365_day'
 CALENDAR_366_DAY = '366_day'
 CALENDAR_360_DAY = '360_day'
 
-CALENDARS = [CALENDAR_STANDARD, CALENDAR_GREGORIAN, CALENDAR_PROLEPTIC_GREGORIAN, CALENDAR_NO_LEAP,
-             CALENDAR_JULIAN, CALENDAR_ALL_LEAP, CALENDAR_365_DAY, CALENDAR_366_DAY, CALENDAR_360_DAY]
+CALENDARS = [CALENDAR_STANDARD, CALENDAR_GREGORIAN,
+             CALENDAR_PROLEPTIC_GREGORIAN, CALENDAR_NO_LEAP,
+             CALENDAR_JULIAN, CALENDAR_ALL_LEAP, CALENDAR_365_DAY,
+             CALENDAR_366_DAY, CALENDAR_360_DAY]
 
 #
 # ctypes types
@@ -108,11 +113,11 @@ CALENDARS = [CALENDAR_STANDARD, CALENDAR_GREGORIAN, CALENDAR_PROLEPTIC_GREGORIAN
 FLOAT32 = ctypes.c_float
 FLOAT64 = ctypes.c_double
 
-################################################################################
+###############################################################################
 #
 # module level variables
 #
-################################################################################
+###############################################################################
 
 # cache for ctypes foreign shared library handles
 _lib_c = None
@@ -155,11 +160,11 @@ _ut_root = None
 _ut_scale = None
 _ut_set_error_message_handler = None
 
-################################################################################
+###############################################################################
 #
 # module level statements
 #
-################################################################################
+###############################################################################
 
 #
 # load the libc shared library
@@ -177,8 +182,10 @@ if _lib_c is None:
 # load the libudunits2 shared library
 #
 if _lib_ud is None:
-    _lib_ud = iris.config.get_option('System', 'udunits2_path',
-                                     default=ctypes.util.find_library('udunits2'))
+    _lib_ud = iris.config.get_option(
+        'System',
+        'udunits2_path',
+        default=ctypes.util.find_library('udunits2'))
     _lib_ud = ctypes.CDLL(_lib_ud, use_errno=True)
 
     #
@@ -304,8 +311,11 @@ if _lib_ud is None:
 # load the UDUNITS-2 xml-formatted unit-database
 #
 if not _ud_system:
-    _func_type = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.c_char_p, use_errno=True)
-    _ut_set_error_message_handler = ctypes.CFUNCTYPE(_func_type, _func_type)((_UT_HANDLER, _lib_ud))
+    _func_type = ctypes.CFUNCTYPE(ctypes.c_int,
+                                  ctypes.c_char_p,
+                                  use_errno=True)
+    foo = ctypes.CFUNCTYPE(_func_type, _func_type)
+    _ut_set_error_message_handler = foo((_UT_HANDLER, _lib_ud))
     _ut_ignore = _func_type((_UT_IGNORE, _lib_ud))
     # ignore standard UDUNITS-2 start-up preamble redirected to stderr stream
     _default_handler = _ut_set_error_message_handler(_ut_ignore)
@@ -326,21 +336,24 @@ if not _ud_system:
         if _errno != 0:
             _error_msg = ': "%s"' % _strerror(_errno)
             ctypes.set_errno(0)
-        raise OSError('[%s] Failed to open UDUNITS-2 XML unit database %s' % (_status_msg, _error_msg))
+        raise OSError('[%s] Failed to open UDUNITS-2 XML unit database %s' %
+                      (_status_msg, _error_msg))
 
-################################################################################
+
+###############################################################################
 #
 # module level function definitions
 #
-################################################################################
+###############################################################################
 
 def encode_time(year, month, day, hour, minute, second):
     """
     Return date/clock time encoded as a double precision value.
 
     Encoding performed using UDUNITS-2 hybrid Gregorian/Julian calendar.
-    Dates on or after 1582-10-15 are assumed to be Gregorian dates; dates before that are assumed
-    to be Julian dates. In particular, the year 1 BCE is immediately followed by the year 1 CE.
+    Dates on or after 1582-10-15 are assumed to be Gregorian dates; dates
+    before that are assumed to be Julian dates. In particular, the year 1 BCE
+    is immediately followed by the year 1 CE.
 
     Args:
 
@@ -368,8 +381,9 @@ def encode_time(year, month, day, hour, minute, second):
 
     """
 
-    return _ut_encode_time(ctypes.c_int(year), ctypes.c_int(month), ctypes.c_int(day),
-                           ctypes.c_int(hour), ctypes.c_int(minute), ctypes.c_double(second))
+    return _ut_encode_time(ctypes.c_int(year), ctypes.c_int(month),
+                           ctypes.c_int(day), ctypes.c_int(hour),
+                           ctypes.c_int(minute), ctypes.c_double(second))
 
 
 def encode_date(year, month, day):
@@ -377,8 +391,9 @@ def encode_date(year, month, day):
     Return date encoded as a double precision value.
 
     Encoding performed using UDUNITS-2 hybrid Gergorian/Julian calendar.
-    Dates on or after 1582-10-15 are assumed to be Gregorian dates; dates before that are assumed
-    to be Julian dates. In particular, the year 1 BCE is immediately followed by the year 1 CE.
+    Dates on or after 1582-10-15 are assumed to be Gregorian dates; dates
+    before that are assumed to be Julian dates. In particular, the year 1 BCE
+    is immediately followed by the year 1 CE.
 
     Args:
 
@@ -400,7 +415,8 @@ def encode_date(year, month, day):
 
     """
 
-    return _ut_encode_date(ctypes.c_int(year), ctypes.c_int(month), ctypes.c_int(day))
+    return _ut_encode_date(ctypes.c_int(year), ctypes.c_int(month),
+                           ctypes.c_int(day))
 
 
 def encode_clock(hour, minute, second):
@@ -427,14 +443,17 @@ def encode_clock(hour, minute, second):
 
     """
 
-    return _ut_encode_clock(ctypes.c_int(hour), ctypes.c_int(minute), ctypes.c_double(second))
+    return _ut_encode_clock(ctypes.c_int(hour), ctypes.c_int(minute),
+                            ctypes.c_double(second))
 
 
 def decode_time(time):
     """
-    Decode a double precision date/clock time value into its component parts and return as tuple.
+    Decode a double precision date/clock time value into its component parts \
+    and return as tuple.
 
-    Decode time into it's year, month, day, hour, minute, second, and resolution component parts.
+    Decode time into it's year, month, day, hour, minute, second, and
+    resolution component parts.
     Where resolution is the uncertainty of the time in seconds.
 
     Args:
@@ -459,9 +478,12 @@ def decode_time(time):
     minute = ctypes.c_int()
     second = ctypes.c_double()
     resolution = ctypes.c_double()
-    _ut_decode_time(ctypes.c_double(time), ctypes.pointer(year), ctypes.pointer(month), ctypes.pointer(day),
-                    ctypes.pointer(hour), ctypes.pointer(minute), ctypes.pointer(second), ctypes.pointer(resolution))
-    return (year.value, month.value, day.value, hour.value, minute.value, second.value, resolution.value)
+    _ut_decode_time(ctypes.c_double(time), ctypes.pointer(year),
+                    ctypes.pointer(month), ctypes.pointer(day),
+                    ctypes.pointer(hour), ctypes.pointer(minute),
+                    ctypes.pointer(second), ctypes.pointer(resolution))
+    return (year.value, month.value, day.value, hour.value, minute.value,
+            second.value, resolution.value)
 
 
 def julian_day2date(julian_day, calendar):
@@ -469,9 +491,10 @@ def julian_day2date(julian_day, calendar):
     Return a netcdftime datetime-like object representing the Julian day.
 
     If calendar is 'standard' or 'gregorian', Julian day follows
-    Julian calendar on and before 1582-10-5, Gregorian calendar after 1582-10-15.
-    If calendar is 'proleptic_gregorian', Julian Day follows Gregorian calendar.
-    If calendar is 'julian', Julian Day follows Julian calendar.
+    Julian calendar on and before 1582-10-5, Gregorian calendar after
+    1582-10-15.  If calendar is 'proleptic_gregorian', Julian Day follows
+    Gregorian calendar.  If calendar is 'julian', Julian Day follows Julian
+    calendar.
 
     The datetime object is a 'real' datetime object if the date falls in
     the Gregorian calendar (i.e. calendar is 'proleptic_gregorian', or
@@ -480,7 +503,8 @@ def julian_day2date(julian_day, calendar):
     of netcdftime.datetime.
 
     Algorithm:
-        Meeus, Jean (1998) Astronomical Algorithms (2nd Edition). Willmann-Bell, Virginia. p. 63.
+        Meeus, Jean (1998) Astronomical Algorithms (2nd Edition). \
+        Willmann-Bell, Virginia. p. 63.
 
     Args:
 
@@ -496,7 +520,10 @@ def julian_day2date(julian_day, calendar):
 
         >>> import iris.unit as unit
         >>> import datetime
-        >>> unit.julian_day2date(unit.date2julian_day(datetime.datetime(1970, 1, 1, 0, 0, 0), unit.CALENDAR_STANDARD), unit.CALENDAR_STANDARD)
+        >>> unit.julian_day2date(unit.date2julian_day(\
+                datetime.datetime(1970, 1, 1, 0, 0, 0), \
+                                  unit.CALENDAR_STANDARD), \
+                                  unit.CALENDAR_STANDARD)
         datetime.datetime(1970, 1, 1, 0, 0)
 
     """
@@ -506,15 +533,17 @@ def julian_day2date(julian_day, calendar):
 
 def date2julian_day(date, calendar):
     """
-    Return the Julian day (resolution of 1 second) from a netcdftime datetime-like object.
+    Return the Julian day (resolution of 1 second) from a netcdftime \
+    datetime-like object.
 
     If calendar is 'standard' or 'gregorian', Julian day follows Julian
     calendar on and before 1582-10-5, Gregorian calendar after 1582-10-15.
-    If calendar is 'proleptic_gregorian', Julian day follows Gregorian calendar.
-    If calendar is 'julian', Julian day follows Julian calendar.
+    If calendar is 'proleptic_gregorian', Julian day follows Gregorian
+    calendar.  If calendar is 'julian', Julian day follows Julian calendar.
 
     Algorithm:
-        Meeus, Jean (1998) Astronomical Algorithms (2nd Edition). Willmann-Bell, Virginia. p. 63.
+        Meeus, Jean (1998) Astronomical Algorithms (2nd Edition). \
+        Willmann-Bell, Virginia. p. 63.
 
     Args:
 
@@ -530,7 +559,8 @@ def date2julian_day(date, calendar):
 
         >>> import iris.unit as unit
         >>> import datetime
-        >>> unit.date2julian_day(datetime.datetime(1970, 1, 1, 0, 0, 0), unit.CALENDAR_STANDARD)
+        >>> unit.date2julian_day(datetime.datetime(1970, 1, 1, 0, 0, 0), \
+                unit.CALENDAR_STANDARD)
         2440587.5
 
     """
@@ -540,12 +570,13 @@ def date2julian_day(date, calendar):
 
 def date2num(date, unit, calendar):
     """
-    Return numeric time value (resolution of 1 second) encoding of datetime object.
+    Return numeric time value (resolution of 1 second) encoding of datetime \
+    object.
 
     The units of the numeric time values are described by the unit and
     calendar arguments. The datetime objects must be in UTC with no
-    time-zone offset.  If there is a time-zone offset in unit, it will be applied
-    to the returned numeric values.
+    time-zone offset.  If there is a time-zone offset in unit, it will be
+    applied to the returned numeric values.
 
     Like the :func:`matplotlib.dates.date2num` function, except that it allows
     for different units and calendars.  Behaves the same as if
@@ -574,9 +605,11 @@ def date2num(date, unit, calendar):
         >>> import datetime
         >>> dt1 = datetime.datetime(1970, 1, 1, 6, 0, 0)
         >>> dt2 = datetime.datetime(1970, 1, 1, 7, 0, 0)
-        >>> unit.date2num(dt1, 'hours since 1970-01-01 00:00:00', unit.CALENDAR_STANDARD)
+        >>> unit.date2num(dt1, 'hours since 1970-01-01 00:00:00', \
+unit.CALENDAR_STANDARD)
         6.0
-        >>> unit.date2num([dt1, dt2], 'hours since 1970-01-01 00:00:00', unit.CALENDAR_STANDARD)
+        >>> unit.date2num([dt1, dt2], 'hours since 1970-01-01 00:00:00', \
+unit.CALENDAR_STANDARD)
         array([ 6.,  7.])
 
     """
@@ -622,8 +655,10 @@ def num2date(time_value, unit, calendar):
     * time_value (float):
         Numeric time value/s. Maximum resolution is 1 second.
     * unit (sting):
-        A string of the form '<time-unit> since <time-origin>' describing the time units.
-        The <time-unit> can be days, hours, minutes or seconds. The <time-origin> is the date/time reference point.
+        A string of the form '<time-unit> since <time-origin>' \
+            describing the time units.
+        The <time-unit> can be days, hours, minutes or seconds.
+        The <time-origin> is the date/time reference point.
         A valid choice would be unit='hours since 1800-01-01 00:00:00 -6:00'.
     * calendar (string):
         Name of the calendar, see iris.unit.CALENDARS.
@@ -635,9 +670,11 @@ def num2date(time_value, unit, calendar):
 
         >>> import iris.unit as unit
         >>> import datetime
-        >>> unit.num2date(6, 'hours since 1970-01-01 00:00:00', unit.CALENDAR_STANDARD)
+        >>> unit.num2date(6, 'hours since 1970-01-01 00:00:00', \
+unit.CALENDAR_STANDARD)
         datetime.datetime(1970, 1, 1, 6, 0)
-        >>> unit.num2date([6, 7], 'hours since 1970-01-01 00:00:00', unit.CALENDAR_STANDARD)
+        >>> unit.num2date([6, 7], 'hours since 1970-01-01 00:00:00', \
+unit.CALENDAR_STANDARD)
         array([1970-01-01 06:00:00, 1970-01-01 07:00:00], dtype=object)
 
     """
@@ -659,11 +696,11 @@ def _handler(func):
     _ut_set_error_message_handler(func)
 
 
-################################################################################
+###############################################################################
 #
 # unit wrapper class for unidata/ucar UDUNITS-2
 #
-################################################################################
+###############################################################################
 
 def _Unit(category, ut_unit, calendar=None, origin=None):
     unit = iris.util._OrderedHashable.__new__(Unit)
@@ -748,11 +785,12 @@ class Unit(iris.util._OrderedHashable):
     A class to represent S.I. units and support common operations to manipulate
     such units in a consistent manner as per UDUNITS-2.
 
-    These operations include scaling the unit, offsetting the unit by a constant or time,
-    inverting the unit, raising the unit by a power, taking a root of the unit, taking a
-    log of the unit, multiplying the unit by a constant or another unit, dividing the unit
-    by a constant or another unit, comparing units, copying units and converting unit data
-    to single precision or double precision floating point numbers.
+    These operations include scaling the unit, offsetting the unit by a
+    constant or time, inverting the unit, raising the unit by a power, taking a
+    root of the unit, taking a log of the unit, multiplying the unit by a
+    constant or another unit, dividing the unit by a constant or another unit,
+    comparing units, copying units and converting unit data to single precision
+    or double precision floating point numbers.
 
     This class also supports time and calendar defintion and manipulation.
 
@@ -778,28 +816,34 @@ class Unit(iris.util._OrderedHashable):
         """
         Create a wrapper instance for UDUNITS-2.
 
-        An optional calendar may be provided for a unit which defines a time reference of
-        the form '<time-unit> since <time-origin>' i.e. unit='days since 1970-01-01 00:00:00'.
-        For a unit that is a time reference, the default calendar is 'standard'.
+        An optional calendar may be provided for a unit which defines a time
+        reference of the form '<time-unit> since <time-origin>' i.e.
+        unit='days since 1970-01-01 00:00:00'.  For a unit that is a time
+        reference, the default calendar is 'standard'.
 
         Accepted calendars are as follows,
 
-        * 'standard' or 'gregorian' - Mixed Gregorian/Julian calendar as defined by udunits.
-        * 'proleptic_gregorian' - A Gregorian calendar extended to dates before 1582-10-15. A year is a leap year if either,
+        * 'standard' or 'gregorian' - Mixed Gregorian/Julian calendar as \
+              defined by udunits.
+        * 'proleptic_gregorian' - A Gregorian calendar extended to dates \
+              before 1582-10-15. A year is a leap year if either,
             1. It is divisible by 4 but not by 100, or
             2. It is divisible by 400.
-        * 'noleap' or '365_day' - A Gregorian calendar without leap years i.e. all years are 365 days long.
-        * 'all_leap' or '366_day' - A Gregorian calendar with every year being a leap year i.e. all years are 366 days long.
+        * 'noleap' or '365_day' - A Gregorian calendar without leap years \
+              i.e. all years are 365 days long.
+        * 'all_leap' or '366_day' - A Gregorian calendar with every year \
+              being a leap year i.e. all years are 366 days long.
         * '360_day' - All years are 360 days divided into 30 day months.
-        * 'julian' - Proleptic Julian calendar, extended to dates after 1582-10-5. A year is a leap year if it is divisible by 4.
+        * 'julian' - Proleptic Julian calendar, extended to dates after \
+              1582-10-5. A year is a leap year if it is divisible by 4.
 
         Args:
 
         * unit:
             Specify the unit as defined by UDUNITS-2.
         * calendar (string):
-            Describes the calendar used in time calculations. The default is 'standard'
-            or 'gregorian' for a time reference unit.
+            Describes the calendar used in time calculations. The default is \
+                'standard' or 'gregorian' for a time reference unit.
 
         Returns:
 
@@ -831,9 +875,10 @@ class Unit(iris.util._OrderedHashable):
             unit = unit.replace("epoch", IRIS_EPOCH)
 
         if unit.lower() in _UNKNOWN_UNIT:
-            # TODO - removing the option of an unknown unit. Currently the auto generated MOSIG rules 
-            # are missing units on a number of phenomena which would lead to errors.
-            # Will be addressed by work on metadata translation.
+            # TODO - removing the option of an unknown unit. Currently the
+            # auto generated MOSIG rules are missing units on a number of
+            # phenomena which would lead to errors.  Will be addressed by work
+            # on metadata translation.
             category = _CATEGORY_UNKNOWN
             unit = _UNKNOWN_UNIT_STRING
         elif unit.lower() in _NO_UNIT:
@@ -874,10 +919,14 @@ class Unit(iris.util._OrderedHashable):
         raise ValueError('[%s] %s %s' % (status_msg, msg, error_msg))
 
     # NOTE:
-    # "__getstate__" and "__setstate__" functions are defined here to provide a custom interface for Pickle 
-    #  : Pickle "normal" behaviour is just to save/reinstate the object dictionary 
-    #  : that won't work here, because the "ut_unit" attribute is an object handle
-    #    - the corresponding udunits object only exists in the original invocation
+    # "__getstate__" and "__setstate__" functions are defined here to provide
+    # a custom interface for Pickle.
+    #  : Pickle "normal" behaviour is just to save/reinstate the object
+    # dictionary.
+    #  : that won't work here, because the "ut_unit" attribute is an object
+    # handle
+    #    - the corresponding udunits object only exists in the original
+    # invocation
     def __getstate__(self):
         # state capture method for Pickle.dump()
         #  - return the instance data needed to reconstruct a Unit value
@@ -886,12 +935,13 @@ class Unit(iris.util._OrderedHashable):
     def __setstate__(self, state):
         # object reconstruction method for Pickle.load()
         # intercept the Pickle.load() operation and call own __init__ again
-        #  - this is to ensure a valid ut_unit attribute (as these handles aren't persistent)
+        #  - this is to ensure a valid ut_unit attribute (as these handles
+        # aren't persistent)
         self.__init__(state['unit_text'], calendar=state['calendar'])
 
     def __del__(self):
-        # NB. If Python is terminating then the module global "_ut_free" may have
-        # already been deleted ... so we check before using it.
+        # NB. If Python is terminating then the module global "_ut_free" may
+        # have already been deleted ... so we check before using it.
         if _ut_free:
             _ut_free(self.ut_unit)
 
@@ -922,12 +972,15 @@ class Unit(iris.util._OrderedHashable):
         if self.is_unknown() or self.is_no_unit():
             result = False
         else:
-            result = _ut_are_convertible(self.ut_unit, _ut_get_unit_by_name(_ud_system, 'day')) != 0
+            result = _ut_are_convertible(
+                self.ut_unit,
+                _ut_get_unit_by_name(_ud_system, 'day')) != 0
         return result
 
     def is_vertical(self):
         """
-        Determine whether the unit is a related SI Unit of pressure or distance.
+        Determine whether the unit is a related SI Unit of pressure or \
+        distance.
 
         Returns:
             Boolean.
@@ -946,8 +999,12 @@ class Unit(iris.util._OrderedHashable):
         if self.is_unknown() or self.is_no_unit():
             result = False
         else:
-            result = _ut_are_convertible(self.ut_unit, _ut_get_unit_by_name(_ud_system, 'bar')) != 0 or \
-            _ut_are_convertible(self.ut_unit, _ut_get_unit_by_name(_ud_system, 'meter')) != 0
+            result = (_ut_are_convertible(
+                self.ut_unit,
+                _ut_get_unit_by_name(_ud_system, 'bar')) != 0 or
+                _ut_are_convertible(
+                    self.ut_unit,
+                    _ut_get_unit_by_name(_ud_system, 'meter')) != 0)
         return result
 
     def is_udunits(self):
@@ -957,7 +1014,8 @@ class Unit(iris.util._OrderedHashable):
     def is_time_reference(self):
         """
         Return whether the unit is a time reference unit of the form
-        '<time-unit> since <time-origin>' i.e. unit='days since 1970-01-01 00:00:00'
+        '<time-unit> since <time-origin>' i.e. unit='days since \
+        1970-01-01 00:00:00'
 
         Returns:
             Boolean.
@@ -976,10 +1034,11 @@ class Unit(iris.util._OrderedHashable):
     def time_reference(self):
         """
         .. deprecated:: 1.3
-            Please use the :meth:`~iris.unit.Unit.is_time_reference` method instead.
+            Please use the :meth:`~iris.unit.Unit.is_time_reference` method \
+            instead.
         """
-        msg = "The 'time_reference' property is deprecated. "\
-              "Please use the 'is_time_reference' method instead."
+        msg = ("The 'time_reference' property is deprecated. "
+               "Please use the 'is_time_reference' method instead.")
         warnings.warn(msg, UserWarning, stacklevel=2)
         return self.is_time_reference()
 
@@ -997,7 +1056,8 @@ class Unit(iris.util._OrderedHashable):
         For example:
 
             >>> import iris.unit as unit
-            >>> u = unit.Unit('hours since epoch', calendar=unit.CALENDAR_STANDARD)
+            >>> u = unit.Unit('hours since epoch', calendar= \
+unit.CALENDAR_STANDARD)
             >>> u.title(10)
             '1970-01-01 10:00:00'
 
@@ -1060,17 +1120,19 @@ class Unit(iris.util._OrderedHashable):
 
         """
         other = as_unit(other)
-        if self.is_unknown() or self.is_no_unit() or other.is_unknown() or \
-            other.is_no_unit():
+        if (self.is_unknown() or self.is_no_unit() or other.is_unknown() or
+                other.is_no_unit()):
             result = False
         else:
-            result = self.calendar == other.calendar and _ut_are_convertible(self.ut_unit, other.ut_unit) != 0
+            result = (self.calendar == other.calendar and
+                      _ut_are_convertible(self.ut_unit, other.ut_unit) != 0)
         return result
 
     def convertible(self, other):
         """
         .. deprecated:: 1.3
-            Please use the :meth:`~iris.unit.Unit.is_convertible` method instead.
+            Please use the :meth:`~iris.unit.Unit.is_convertible` method \
+            instead.
         """
         msg = "The 'convertible' method is deprecated. "\
               "Please use the 'is_convertible' method instead."
@@ -1095,13 +1157,15 @@ class Unit(iris.util._OrderedHashable):
             True
 
         """
-        return self.category == _CATEGORY_UDUNIT and bool(_ut_is_dimensionless(self.ut_unit))
+        return (self.category == _CATEGORY_UDUNIT and
+                bool(_ut_is_dimensionless(self.ut_unit)))
 
     @property
     def dimensionless(self):
         """
         .. deprecated:: 1.3
-            Please use the :meth:`~iris.unit.Unit.is_dimensionless` method instead.
+            Please use the :meth:`~iris.unit.Unit.is_dimensionless` method \
+            instead.
         """
         msg = "The 'dimensionless' property is deprecated. "\
               "Please use the 'is_dimensionless' method instead."
@@ -1143,8 +1207,9 @@ class Unit(iris.util._OrderedHashable):
         """
         Return whether the unit is defined to be a *no_unit* unit.
 
-        Typically, a quantity such as a string, will have no associated unit to describe it. Such
-        a class of quantity may be defined using the *no_unit* unit.
+        Typically, a quantity such as a string, will have no associated unit to
+        describe it. Such a class of quantity may be defined using the
+        *no_unit* unit.
 
         Returns:
             Boolean.
@@ -1190,7 +1255,8 @@ class Unit(iris.util._OrderedHashable):
             * Unit.UT_NAMES
             * Unit.UT_DEFINITION
 
-            Multiple options may be combined within a list. The default option is iris.unit.UT_ASCII.
+            Multiple options may be combined within a list. The default option
+            is iris.unit.UT_ASCII.
 
         Returns:
             string.
@@ -1219,7 +1285,10 @@ class Unit(iris.util._OrderedHashable):
                 for i in option:
                     bitmask |= i
             string_buffer = ctypes.create_string_buffer(_STRING_BUFFER_DEPTH)
-            depth = _ut_format(self.ut_unit, string_buffer, ctypes.sizeof(string_buffer), bitmask)
+            depth = _ut_format(self.ut_unit,
+                               string_buffer,
+                               ctypes.sizeof(string_buffer),
+                               bitmask)
             if depth < 0:
                 self._raise_error('Failed to format %r' % self)
         return string_buffer.value
@@ -1229,8 +1298,9 @@ class Unit(iris.util._OrderedHashable):
         """
         *(read-only)* The full name of the unit.
 
-        Formats the binary unit into a string representation using method :func:`iris.unit.Unit.format`
-        with keyword argument option=iris.unit.UT_NAMES.
+        Formats the binary unit into a string representation using method \
+        :func:`iris.unit.Unit.format` with keyword argument
+        option=iris.unit.UT_NAMES.
 
         Returns:
             string.
@@ -1250,7 +1320,8 @@ class Unit(iris.util._OrderedHashable):
         """
         *(read-only)* The symbolic representation of the unit.
 
-        Formats the binary unit into a string representation using method :func:`iris.unit.Unit.format`.
+        Formats the binary unit into a string representation using method
+        :func:`iris.unit.Unit.format`.
 
         Returns:
             string.
@@ -1276,8 +1347,9 @@ class Unit(iris.util._OrderedHashable):
         """
         *(read-only)* The symbolic decomposition of the unit.
 
-        Formats the binary unit into a string representation using method :func:`iris.unit.Unit.format`
-        with keyword argument option=iris.unit.UT_DEFINITION.
+        Formats the binary unit into a string representation using method
+        :func:`iris.unit.Unit.format` with keyword argument
+        option=iris.unit.UT_DEFINITION.
 
         Returns:
             string.
@@ -1304,7 +1376,8 @@ class Unit(iris.util._OrderedHashable):
 
         Args:
 
-        * origin (float): Time origin as returned by the :func:`iris.unit.encode_time` method.
+        * origin (float): Time origin as returned by the \
+        :func:`iris.unit.encode_time` method.
 
         Returns:
             None.
@@ -1319,7 +1392,8 @@ class Unit(iris.util._OrderedHashable):
         """
 
         if not isinstance(origin, (int, float, long)):
-            raise TypeError('a numeric type for the origin argument is required')
+            msg = 'a numeric type for the origin argument is required'
+            raise TypeError(msg)
         ut_unit = _ut_offset_by_time(self.ut_unit, ctypes.c_double(origin))
         if not ut_unit:
             self._raise_error('Failed to offset %r' % self)
@@ -1328,7 +1402,8 @@ class Unit(iris.util._OrderedHashable):
 
     def invert(self):
         """
-        Invert the unit i.e. find the reciprocal of the unit, and return the Unit result.
+        Invert the unit i.e. find the reciprocal of the unit, and return the \
+        Unit result.
 
         Returns:
             Unit.
@@ -1379,7 +1454,8 @@ class Unit(iris.util._OrderedHashable):
         try:
             root = ctypes.c_int(root)
         except TypeError:
-            raise TypeError('An int or long type for the root argument is required')
+            msg = 'An int or long type for the root argument is required'
+            raise TypeError(msg)
 
         if self.is_unknown():
             result = self
@@ -1399,7 +1475,8 @@ class Unit(iris.util._OrderedHashable):
 
     def log(self, base):
         """
-        Returns the logorithmic unit corresponding to the given logorithmic base.
+        Returns the logorithmic unit corresponding to the given logorithmic \
+        base.
 
         Args:
 
@@ -1428,7 +1505,8 @@ class Unit(iris.util._OrderedHashable):
         else:
             ut_unit = _ut_log(base, self.ut_unit)
             if not ut_unit:
-                self._raise_error('Failed to calculate logorithmic base of %r' % self)
+                msg = 'Failed to calculate logorithmic base of %r' % self
+                self._raise_error(msg)
             calendar = None
             result = _Unit(_CATEGORY_UDUNIT, ut_unit, calendar)
         return result
@@ -1469,7 +1547,9 @@ class Unit(iris.util._OrderedHashable):
         if self.calendar is None:
             result = "%s('%s')" % (self.__class__.__name__, self)
         else:
-            result = "%s('%s', calendar='%s')" % (self.__class__.__name__, self, self.calendar)
+            result = "%s('%s', calendar='%s')" % (self.__class__.__name__,
+                                                  self,
+                                                  self.calendar)
         return result
 
     def _offset_common(self, offset):
@@ -1518,7 +1598,9 @@ class Unit(iris.util._OrderedHashable):
         else:
             ut_unit = op_func(self.ut_unit, other.ut_unit)
             if not ut_unit:
-                self._raise_error('Failed to %s %r by %r' % (op_label, self, other))
+                self._raise_error('Failed to %s %r by %r' % (op_label,
+                                                             self,
+                                                             other))
             calendar = None
             result = _Unit(_CATEGORY_UDUNIT, ut_unit, calendar)
         return result
@@ -1531,14 +1613,16 @@ class Unit(iris.util._OrderedHashable):
 
     def __mul__(self, other):
         """
-        Multiply the self unit by the other scale factor or unit and return the Unit result.
+        Multiply the self unit by the other scale factor or unit and return \
+        the Unit result.
 
         Note that, multiplication involving an 'unknown' unit will always
         result in an 'unknown' unit.
 
         Args:
 
-        * other (int/float/long/string/Unit): Multiplication scale factor or unit.
+        * other (int/float/long/string/Unit): Multiplication scale factor or
+        unit.
 
         Returns:
             Unit.
@@ -1556,7 +1640,8 @@ class Unit(iris.util._OrderedHashable):
 
     def __div__(self, other):
         """
-        Divide the self unit by the other scale factor or unit and return the Unit result.
+        Divide the self unit by the other scale factor or unit and return the \
+        Unit result.
 
         Note that, division involving an 'unknown' unit will always
         result in an 'unknown' unit.
@@ -1581,7 +1666,8 @@ class Unit(iris.util._OrderedHashable):
 
     def __truediv__(self, other):
         """
-        Divide the self unit by the other scale factor or unit and return the Unit result.
+        Divide the self unit by the other scale factor or unit and return the \
+        Unit result.
 
         Note that, division involving an 'unknown' unit will always
         result in an 'unknown' unit.
@@ -1608,8 +1694,9 @@ class Unit(iris.util._OrderedHashable):
         """
         Raise the unit by the given power and return the Unit result.
 
-        Note that, UDUNITS-2 does not support raising a non-dimensionless unit by a fractional power.
-        Approximate floating point power behaviour has been implemented specifically for Iris.
+        Note that, UDUNITS-2 does not support raising a non-dimensionless unit
+        by a fractional power. Approximate floating point power behaviour has
+        been implemented specifically for Iris.
 
         Args:
 
@@ -1629,7 +1716,8 @@ class Unit(iris.util._OrderedHashable):
         try:
             power = float(power)
         except ValueError:
-            raise TypeError('A numeric value is required for the power argument.')
+            msg = 'A numeric value is required for the power argument.'
+            raise TypeError(msg)
 
         if self.is_unknown():
             result = self
@@ -1652,7 +1740,8 @@ class Unit(iris.util._OrderedHashable):
                 # Failing that, check for powers which are (very nearly) simple
                 # integer values.
                 if not iris.util.approx_equal(power, round(power)):
-                    raise ValueError('Cannot raise a unit by a decimal (got %s).' % power)
+                    msg = 'Cannot raise a unit by a decimal (got %s).' % power
+                    raise ValueError(msg)
                 power = int(round(power))
 
                 ut_unit = _ut_raise(self.ut_unit, ctypes.c_int(power))
@@ -1662,7 +1751,8 @@ class Unit(iris.util._OrderedHashable):
         return result
 
     def _identity(self):
-        # Redefine the comparison/hash/ordering identity as used by iris.util._OrderedHashable.
+        # Redefine the comparison/hash/ordering identity as used by
+        # iris.util._OrderedHashable.
         return (self.name, self.calendar)
 
     def __eq__(self, other):
@@ -1754,7 +1844,8 @@ class Unit(iris.util._OrderedHashable):
             32.0
             >>> a64 = np.arange(10, dtype=np.float64)
             >>> c.convert(a64, f)
-            array([ 32. ,  33.8,  35.6,  37.4,  39.2,  41. ,  42.8,  44.6,  46.4,  48.2])
+            array([ 32. ,  33.8,  35.6,  37.4,  39.2,  41. ,  42.8,  44.6,  \
+46.4,  48.2])
             >>> a32 = np.arange(10, dtype=np.float32)
             >>> c.convert(a32, f)
             array([ 32.        ,  33.79999924,  35.59999847,  37.40000153,
@@ -1824,10 +1915,11 @@ class Unit(iris.util._OrderedHashable):
     def utime(self):
         """
         Returns a netcdftime.utime object which performs conversions of numeric
-        time values to/from datetime objects given the current calendar and unit
-        time reference.
+        time values to/from datetime objects given the current calendar and
+        unit time reference.
 
-        The current unit time reference must be of the form: '<time-unit> since <time-origin>'
+        The current unit time reference must be of the form:
+        '<time-unit> since <time-origin>'
         i.e. 'hours since 1970-01-01 00:00:00'
 
         Returns:
@@ -1836,7 +1928,8 @@ class Unit(iris.util._OrderedHashable):
         For example:
 
             >>> import iris.unit as unit
-            >>> u = unit.Unit('hours since 1970-01-01 00:00:00', calendar=unit.CALENDAR_STANDARD)
+            >>> u = unit.Unit('hours since 1970-01-01 00:00:00', \
+calendar=unit.CALENDAR_STANDARD)
             >>> ut = u.utime()
             >>> ut.num2date(2)
             datetime.datetime(1970, 1, 1, 2, 0)
@@ -1853,14 +1946,15 @@ class Unit(iris.util._OrderedHashable):
 
     def date2num(self, date):
         """
-        Returns the numeric time value calculated from the datetime object using the current
-        calendar and unit time reference.
+        Returns the numeric time value calculated from the datetime object \
+        using the current calendar and unit time reference.
 
-        The current unit time reference must be of the form: '<time-unit> since <time-origin>'
+        The current unit time reference must be of the form:
+        '<time-unit> since <time-origin>'
         i.e. 'hours since 1970-01-01 00:00:00'
 
-        Works for scalars, sequences and numpy arrays. Returns a scalar if input is a scalar,
-        else returns a numpy array.
+        Works for scalars, sequences and numpy arrays. Returns a scalar if
+        input is a scalar, else returns a numpy array.
 
         Args:
 
@@ -1875,10 +1969,12 @@ class Unit(iris.util._OrderedHashable):
 
             >>> import iris.unit as unit
             >>> import datetime
-            >>> u = unit.Unit('hours since 1970-01-01 00:00:00', calendar=unit.CALENDAR_STANDARD)
+            >>> u = unit.Unit('hours since 1970-01-01 00:00:00', \
+calendar=unit.CALENDAR_STANDARD)
             >>> u.date2num(datetime.datetime(1970, 1, 1, 5))
             5.00000000372529
-            >>> u.date2num([datetime.datetime(1970, 1, 1, 5), datetime.datetime(1970, 1, 1, 6)])
+            >>> u.date2num([datetime.datetime(1970, 1, 1, 5), \
+datetime.datetime(1970, 1, 1, 6)])
             array([ 5.,  6.])
 
         """
@@ -1888,23 +1984,27 @@ class Unit(iris.util._OrderedHashable):
 
     def num2date(self, time_value):
         """
-        Returns a datetime-like object calculated from the numeric time value using the
-        current calendar and the unit time reference.
+        Returns a datetime-like object calculated from the numeric time value \
+        using the current calendar and the unit time reference.
 
-        The current unit time reference must be of the form: '<time-unit> since <time-origin>'
+        The current unit time reference must be of the form:
+        '<time-unit> since <time-origin>'
         i.e. 'hours since 1970-01-01 00:00:00'
 
-        The datetime objects returned are 'real' Python datetime objects if the date falls in the
-        Gregorian calendar (i.e. the calendar is 'standard', 'gregorian', or 'proleptic_gregorian'
-        and the date is after 1582-10-15). Otherwise a 'phoney' datetime-like object (netcdftime.datetime)
-        is returned which can handle dates that don't exist in the Proleptic Gregorian calendar.
+        The datetime objects returned are 'real' Python datetime objects if
+        the date falls in the Gregorian calendar (i.e. the calendar is
+        'standard', 'gregorian', or 'proleptic_gregorian' and the date is
+        after 1582-10-15). Otherwise a 'phoney' datetime-like object
+        (netcdftime.datetime) is returned which can handle dates that don't
+        exist in the Proleptic Gregorian calendar.
 
-        Works for scalars, sequences and numpy arrays. Returns a scalar if input is a scalar,
-        else returns a numpy array.
+        Works for scalars, sequences and numpy arrays. Returns a scalar if
+        input is a scalar, else returns a numpy array.
 
         Args:
 
-        * time_value (float): Numeric time value/s. Maximum resolution is 1 second.
+        * time_value (float): Numeric time value/s. Maximum resolution is 1 \
+            second.
 
         Returns:
             datetime, or numpy.ndarray of datetime object.
@@ -1912,7 +2012,8 @@ class Unit(iris.util._OrderedHashable):
         For example:
 
             >>> import iris.unit as unit
-            >>> u = unit.Unit('hours since 1970-01-01 00:00:00', calendar=unit.CALENDAR_STANDARD)
+            >>> u = unit.Unit('hours since 1970-01-01 00:00:00', \
+calendar=unit.CALENDAR_STANDARD)
             >>> u.num2date(6)
             datetime.datetime(1970, 1, 1, 6, 0)
             >>> u.num2date([6, 7])

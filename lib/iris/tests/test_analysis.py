@@ -229,7 +229,7 @@ class TestAnalysisBasic(tests.IrisTest):
         self._common('median', iris.analysis.MEDIAN)
 
     def test_sum(self):
-        # as the numbers are so high, trim off some trailing digits & compare to 0dp 
+        # as the numbers are so high, trim off some trailing digits & compare to 0dp
         self._common('sum', iris.analysis.SUM, decimal=1)
 
     def test_max(self):
@@ -438,7 +438,7 @@ class TestRotatedPole(tests.IrisTest):
     def test_unrotate_nd(self):
         rlons = np.array([[350., 352.],[350., 352.]])
         rlats = np.array([[-5., -0.],[-4., -1.]])
-        
+
         resx, resy = iris.analysis.cartography.unrotate_pole(rlons, rlats,
                                                              178.0, 38.0)
 
@@ -454,7 +454,7 @@ class TestRotatedPole(tests.IrisTest):
     def test_unrotate_1d(self):
         rlons = np.array([350., 352., 354., 356.])
         rlats = np.array([-5., -0., 5., 10.])
-        
+
         resx, resy = iris.analysis.cartography.unrotate_pole(
             rlons.flatten(), rlats.flatten(), 178.0, 38.0)
 
@@ -466,11 +466,11 @@ class TestRotatedPole(tests.IrisTest):
 
         self.assertArrayAlmostEqual(resx, solx)
         self.assertArrayAlmostEqual(resy, soly)
-        
+
     def test_rotate_nd(self):
         rlons = np.array([[350., 351.],[352., 353.]])
         rlats = np.array([[10., 15.],[20., 25.]])
-        
+
         resx, resy = iris.analysis.cartography.rotate_pole(rlons, rlats,
                                                            20., 80.)
 

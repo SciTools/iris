@@ -375,7 +375,7 @@ def divide(cube, other, dim=None, update_history=True, in_place=False):
 
 
 def _multiply_divide_common(operation_function, operation_symbol,
-                            operation_noun, cube, other, dim=None, 
+                            operation_noun, cube, other, dim=None,
                             update_history=True, in_place=False):
     """
     Function which shares common code between multiplication and division of cubes.
@@ -399,13 +399,13 @@ def _multiply_divide_common(operation_function, operation_symbol,
 
     if isinstance(other, np.ndarray):
         _assert_compatible(cube, other)
-        
+
         if in_place:
             new_cube = cube
             new_cube.data = operation_function(cube.data, other)
         else:
             new_cube = cube.copy(data=operation_function(cube.data, other))
-        
+
         if update_history:
             if other.ndim == 0:
                 history = '%s %s %s' % (cube.name(), operation_symbol, other)
@@ -446,7 +446,7 @@ def _multiply_divide_common(operation_function, operation_symbol,
             points_shape = [1] * cube.data.ndim
             points_shape[data_dimension] = -1
             points = points.reshape(points_shape)
-        
+
         if in_place:
             new_cube = cube
             new_cube.data = operation_function(cube.data, points)
@@ -459,13 +459,13 @@ def _multiply_divide_common(operation_function, operation_symbol,
         other_unit = other.units
     elif isinstance(other, iris.cube.Cube):
         # Deal with cube multiplication/division by cube
-        
+
         if in_place:
             new_cube = cube
             new_cube.data = operation_function(cube.data, other.data)
         else:
             new_cube = cube.copy(data=operation_function(cube.data, other.data))
-        
+
         if update_history:
             history = '%s %s %s' % (cube.name() or 'unknown', operation_symbol,
                                     other.name() or 'unknown')
