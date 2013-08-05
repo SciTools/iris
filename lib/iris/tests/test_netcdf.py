@@ -24,6 +24,7 @@ Test CF-NetCDF file loading and saving.
 import iris.tests as tests
 
 import os
+import shutil
 
 import netCDF4 as nc
 import numpy as np
@@ -55,6 +56,19 @@ class TestNetCDFLoad(tests.IrisTest):
         cube = iris.load_cube(tests.get_data_path(
             ('NetCDF', 'global', 'xyt', 'SMALL_hires_wind_u_for_ipcc4.nc')))
         self.assertCML(cube, ('netcdf', 'netcdf_global_xyt_hires.cml'))
+
+    def test_missing_time_bounds(self):
+        # Check we can cope with a missing bounds variable.
+        with self.temp_filename(suffix='nc') as filename:
+            # Tweak a copy of the test data file to rename (we can't delete)
+            # the time bounds variable.
+            src = tests.get_data_path(('NetCDF', 'global', 'xyt',
+                                       'SMALL_hires_wind_u_for_ipcc4.nc'))
+            shutil.copyfile(src, filename)
+            dataset = nc.Dataset(filename, mode='a')
+            dataset.renameVariable('time_bnds', 'foo')
+            dataset.close()
+            cube = iris.load_cube(filename, 'eastward_wind')
 
     def test_load_global_xyzt_gems(self):
         # Test loading single xyzt CF-netCDF file (multi-cube).

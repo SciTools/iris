@@ -966,7 +966,10 @@ fc_extras
         # Determine bounds, prefering standard bounds over climatology.
         cf_bounds_var = None
         if attr_bounds is not None:
-            cf_bounds_var = cf_coord_var.cf_group.bounds[attr_bounds]
+            # No need to raise a warning if the bounds variable is missing,
+            # it will already have been done by iris.fileformats.cf
+            if attr_bounds in cf_coord_var.cf_group.bounds:
+                cf_bounds_var = cf_coord_var.cf_group.bounds[attr_bounds]
         elif attr_climatology is not None:
             cf_bounds_var = cf_coord_var.cf_group.climatology[attr_climatology]
 
