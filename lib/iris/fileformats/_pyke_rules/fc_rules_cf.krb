@@ -964,11 +964,18 @@ fc_extras
         attr_climatology = getattr(cf_coord_var, CF_ATTR_CLIMATOLOGY, None)
 
         # Determine bounds, prefering standard bounds over climatology.
+        # NB. No need to raise a warning if the bounds/climatology
+        # variable is missing, as that will already have been done by
+        # iris.fileformats.cf.
         cf_bounds_var = None
         if attr_bounds is not None:
-            cf_bounds_var = cf_coord_var.cf_group.bounds[attr_bounds]
+            bounds_vars = cf_coord_var.cf_group.bounds
+            if attr_bounds in bounds_vars:
+                cf_bounds_var = bounds_vars[attr_bounds]
         elif attr_climatology is not None:
-            cf_bounds_var = cf_coord_var.cf_group.climatology[attr_climatology]
+            climatology_vars = cf_coord_var.cf_group.climatology
+            if attr_climatology in climatology_vars:
+                cf_bounds_var = climatology_vars[attr_climatology]
 
         if attr_bounds is not None and attr_climatology is not None:
             warnings.warn('Ignoring climatology in favour of bounds attribute '
