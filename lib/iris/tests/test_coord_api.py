@@ -840,6 +840,14 @@ class TestAuxCoordEquality(tests.IrisTest):
         aux = iris.coords.AuxCoord(0)
         self.assertIs(aux.__eq__(Terry()), NotImplemented)
         self.assertIs(aux.__ne__(Terry()), NotImplemented)
+    
+    def test_gregorian_standard(self):
+        g70 = iris.unit.Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')
+        s70 = iris.unit.Unit('hours since 1970-01-01 00:00:00', calendar='standard')
+        gt = iris.coords.DimCoord([1,2,3,4,5], "time", units=g70)
+        st = iris.coords.DimCoord([1,2,3,4,5], "time", units=s70)
+        self.assertEqual(gt, st)
+
 
 
 class TestDimCoordEquality(tests.IrisTest):

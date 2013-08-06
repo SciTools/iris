@@ -1692,8 +1692,11 @@ class Unit(iris.util._OrderedHashable):
             return False
 
         # Compare calendar as UDUNITS cannot handle calendars.
-        if self.calendar != other.calendar:
-            return False
+        if (self.calendar in ['gregorian', 'standard'] and 
+            other.calendar in ['gregorian', 'standard']):
+                pass
+        elif self.calendar != other.calendar:
+                return False
 
         # Compare UDUNITS.
         res = _ut_compare(self.ut_unit, other.ut_unit)
