@@ -1458,12 +1458,18 @@ class ProtoCube(object):
             if not cube.coord_dims(coord) and coord.shape == (1,):
                 # Extract the scalar coordinate data and metadata.
                 scalar_defns.append(coord._as_defn())
-                scalar_values.append(coord.cell(0))
-                points_dtype = coord.points.dtype
-                if coord.bounds is not None:
-                    bounds_dtype = coord.bounds.dtype
+                # Because we know there's a single Cell in the
+                # coordinate, it's quicker to roll our own than use
+                # Coord.cell().
+                points = coord.points
+                bounds = coord.bounds
+                points_dtype = points.dtype
+                if bounds is not None:
+                    bounds_dtype = bounds.dtype
+                    bounds = bounds[0]
                 else:
                     bounds_dtype = None
+                scalar_values.append(iris.coords.Cell(points[0], bounds))
                 kwargs = {}
                 if isinstance(coord, iris.coords.DimCoord):
                     kwargs['circular'] = coord.circular
