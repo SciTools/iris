@@ -116,6 +116,19 @@ class TestNetCDFLoad(tests.IrisTest):
                                  'tmean_1910_1910.nc')))
         self.assertCML(cube, ('netcdf', 'netcdf_tmerc_and_climatology.cml'))
 
+    def test_missing_climatology(self):
+        # Check we can cope with a missing climatology variable.
+        with self.temp_filename(suffix='nc') as filename:
+            # Tweak a copy of the test data file to rename (we can't delete)
+            # the climatology variable.
+            src = tests.get_data_path(('NetCDF', 'transverse_mercator',
+                                       'tmean_1910_1910.nc'))
+            shutil.copyfile(src, filename)
+            dataset = nc.Dataset(filename, mode='a')
+            dataset.renameVariable('climatology_bounds', 'foo')
+            dataset.close()
+            cube = iris.load_cube(filename, 'Mean temperature')
+
     def test_cell_methods(self):
         # Test exercising CF-netCDF cell method parsing.
         cubes = iris.load(tests.get_data_path(('NetCDF', 'testing',
