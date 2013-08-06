@@ -216,7 +216,7 @@ class TestBasicMaths(tests.IrisTest):
     def test_addition_different_attributes(self):
         a = self.cube.copy()
         b = self.cube.copy()
-        b.attributes['my attribute'] = 'foobar'
+        b.local_attributes['my attribute'] = 'foobar'
         c = a + b        
         self.assertEqual(c.standard_name, None)
         self.assertAttributesEqual(c.attributes, {'history': 'air_temperature + air_temperature'})
@@ -340,7 +340,7 @@ class TestDivideAndMultiply(tests.IrisTest):
     def test_multiplication_different_attributes(self):
         a = self.cube.copy()
         b = self.cube.copy()
-        b.attributes['my attribute'] = 'foobar'
+        b.local_attributes['my attribute'] = 'foobar'
         c = a * b        
         self.assertEqual(c.standard_name, None)
         self.assertAttributesEqual(c.attributes, {'history': 'air_temperature * air_temperature'})

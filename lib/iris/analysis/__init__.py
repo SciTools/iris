@@ -1002,5 +1002,6 @@ class _Groupby(object):
 def clear_phenomenon_identity(cube):
     """Helper function to clear the standard_name, attributes, and cell_methods of a cube."""
     cube.rename(None)
-    cube.attributes.clear()
+    cube.local_attributes.clear()
+    cube.global_attributes.clear()
     cube.cell_methods = tuple()

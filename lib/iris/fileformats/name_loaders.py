@@ -345,13 +345,13 @@ def _generate_cubes(header, column_headings, coords, data_arrays):
         for key, value in header.iteritems():
             if value is not None and value != '' and \
                     key not in headings:
-                cube.attributes[key] = value
+                cube.local_attributes[key] = value
 
         # Add the Column Headings as attributes
         for key, value in field_headings.iteritems():
             if value is not None and value != '' and \
                     key not in headings:
-                cube.attributes[key] = value
+                cube.local_attributes[key] = value
 
         yield cube
 

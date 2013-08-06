@@ -43,7 +43,7 @@ class TestIterateFunctions(tests.IrisTest):
         self.coord_names = ['grid_latitude', 'grid_longitude']
 
         # Modify elements of cube_b to introduce additional differences
-        self.cube_b.attributes['source'] = 'Iris iterate test case'
+        self.cube_b.local_attributes['source'] = 'Iris iterate test case'
         self.cube_b.add_aux_coord(iris.coords.AuxCoord(23, long_name='other'))
 
     def test_izip_no_args(self):

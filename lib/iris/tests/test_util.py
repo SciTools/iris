@@ -182,8 +182,8 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_a = stock.realistic_4d()
         test_cube_b = stock.realistic_4d()
         
-        test_cube_a.attributes['Conventions'] = 'CF-1.5'
-        test_cube_b.attributes['Conventions'] = 'CF-1.6'
+        test_cube_a.global_attributes['Conventions'] = 'CF-1.5'
+        test_cube_b.global_attributes['Conventions'] = 'CF-1.6'
         
         iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_str_IO)
         return_str = return_str_IO.getvalue()
@@ -229,8 +229,8 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_a = stock.realistic_4d()
         test_cube_b = stock.realistic_4d().collapsed('model_level_number', iris.analysis.MEAN)
 
-        test_cube_a.attributes['Conventions'] = 'CF-1.5'
-        test_cube_b.attributes['Conventions'] = 'CF-1.6'
+        test_cube_a.global_attributes['Conventions'] = 'CF-1.5'
+        test_cube_b.global_attributes['Conventions'] = 'CF-1.6'
         test_cube_a.standard_name = "relative_humidity"
         test_cube_a.units = iris.unit.Unit('m')
 

@@ -239,7 +239,7 @@ class TestCubeStringRepresentations(IrisDotTest):
     def test_dot_simple_pp(self):
         # Test dot output of a 2d cube loaded from pp.
         cube = self.cube_2d
-        cube.attributes['my_attribute'] = 'foobar'
+        cube.local_attributes['my_attribute'] = 'foobar'
         self.check_dot(cube, ('file_load', 'global_pp.dot'))
         
         pt = cube.coord('time')
@@ -250,7 +250,7 @@ class TestCubeStringRepresentations(IrisDotTest):
         
         del pt.attributes['monty']
         del pt.attributes['brain']
-        del cube.attributes['my_attribute']
+        del cube.local_attributes['my_attribute']
        
     # TODO hybrid height and dot output - relatitionship links
     def test_dot_4d(self):
@@ -326,7 +326,7 @@ class TestCubeStringRepresentations(IrisDotTest):
     def test_unicode_attribute(self):
         unicode_str = unichr(40960) + u'abcd' + unichr(1972)
         cube = iris.tests.stock.simple_1d()
-        cube.attributes['source'] = unicode_str
+        cube.local_attributes['source'] = unicode_str
         self.assertString(str(cube), ('cdm', 'str_repr',
                                       'unicode_attribute.__str__.txt'))
         self.assertString(unicode(cube), ('cdm', 'str_repr',
@@ -692,18 +692,22 @@ class TestCubeAPI(TestCube2d):
         self.assertEqual(self.t.long_name, 'test 2d dimensional cube')
         self.assertIsNone(self.t.var_name)
         self.assertEqual(self.t.units, 'meters')
-        self.assertEqual(self.t.attributes, {})
+        self.assertEqual(self.t.local_attributes, {})
+        self.assertEqual(self.t.global_attributes, {})
         self.assertEqual(self.t.cell_methods, ())
 
     def test_metadata_tuple(self):
-        metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'}, ())
+        metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'},
+                    {'foobar': '23'}, ())
         self.t.metadata = metadata
         self.assertEqual(self.t.standard_name, 'air_pressure')
         self.assertEqual(self.t.long_name, 'foo')
         self.assertEqual(self.t.var_name, 'bar')
         self.assertEqual(self.t.units, '')
-        self.assertEqual(self.t.attributes, metadata[4])
-        self.assertIsNot(self.t.attributes, metadata[4])
+        self.assertEqual(self.t.local_attributes, metadata[4])
+        self.assertIsNot(self.t.local_attributes, metadata[4])
+        self.assertEqual(self.t.global_attributes, metadata[5])
+        self.assertIsNot(self.t.global_attributes, metadata[5])
         self.assertEqual(self.t.cell_methods, ())
 
     def test_metadata_dict(self):
@@ -711,15 +715,22 @@ class TestCubeAPI(TestCube2d):
                     'long_name': 'foo',
                     'var_name': 'bar',
                     'units': '',
-                    'attributes': {'random': '12'},
+                    'local_attributes': {'random': '12'},
+                    'global_attributes': {'foobar': '23'},
                     'cell_methods': ()}
         self.t.metadata = metadata
         self.assertEqual(self.t.standard_name, 'air_pressure')
         self.assertEqual(self.t.long_name, 'foo')
         self.assertEqual(self.t.var_name, 'bar')
         self.assertEqual(self.t.units, '')
-        self.assertEqual(self.t.attributes, metadata['attributes'])
-        self.assertIsNot(self.t.attributes, metadata['attributes'])
+        self.assertEqual(self.t.local_attributes,
+                         metadata['local_attributes'])
+        self.assertIsNot(self.t.local_attributes,
+                         metadata['local_attributes'])
+        self.assertEqual(self.t.global_attributes,
+                         metadata['global_attributes'])
+        self.assertIsNot(self.t.global_attributes,
+                         metadata['global_attributes'])
         self.assertEqual(self.t.cell_methods, ())
 
     def test_metadata_attrs(self):
@@ -729,28 +740,34 @@ class TestCubeAPI(TestCube2d):
         metadata.long_name = 'foo'
         metadata.var_name = 'bar'
         metadata.units = ''
-        metadata.attributes = {'random': '12'}
+        metadata.local_attributes = {'random': '12'}
+        metadata.global_attributes = {'foobar': '23'}
         metadata.cell_methods = ()
         self.t.metadata = metadata
         self.assertEqual(self.t.standard_name, 'air_pressure')
         self.assertEqual(self.t.long_name, 'foo')
         self.assertEqual(self.t.var_name, 'bar')
         self.assertEqual(self.t.units, '')
-        self.assertEqual(self.t.attributes, metadata.attributes)
-        self.assertIsNot(self.t.attributes, metadata.attributes)
+        self.assertEqual(self.t.local_attributes, metadata.local_attributes)
+        self.assertIsNot(self.t.local_attributes, metadata.local_attributes)
+        self.assertEqual(self.t.global_attributes, metadata.global_attributes)
+        self.assertIsNot(self.t.global_attributes, metadata.global_attributes)
         self.assertEqual(self.t.cell_methods, ())
 
     def test_metadata_fail(self):
+        # Not enough variables.
         with self.assertRaises(TypeError):
-            self.t.metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'})
-        with self.assertRaises(TypeError):
-            self.t.metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'}, (), ())
+            self.t.metadata = ('air_pressure', 'foo', 'bar', '',
+                               {'random': '12'}, {'foobar': '23'})
+
         with self.assertRaises(TypeError):
             self.t.metadata = {'standard_name': 'air_pressure',
                                'long_name': 'foo',
                                'var_name': 'bar',
                                'units': '',
-                               'attributes': {'random': '12'}}
+                               'local_attributes': {'random': '12'},
+                               'global_attributes': {'foobar': '23'}}
+
         with self.assertRaises(TypeError):
             class Metadata(object): pass
             metadata = Metadata()
@@ -758,8 +775,106 @@ class TestCubeAPI(TestCube2d):
             metadata.long_name = 'foo'
             metadata.var_name = 'bar'
             metadata.units = ''
-            metadata.attributes = {'random': '12'}
+            metadata.local_attributes = {'random': '12'}
+            metadata.global_attributes = {'foobar': '23'}
             self.t.metadata = metadata
+
+        # Too many variables.
+        with self.assertRaises(TypeError):
+            self.t.metadata = ('air_pressure', 'foo', 'bar', '', {'random': '12'},
+                               {'foobar': '23'}, (), ())
+
+
+class TestCubeAttributes(TestCube2d):
+    def test_set_local(self):
+        self.t.local_attributes['foo'] = 'bar'
+        self.assertEqual(self.t.local_attributes['foo'], 'bar')
+        self.assertEqual(self.t.attributes['foo'], 'bar')
+
+    def test_set_global(self):
+        self.t.global_attributes['foo'] = 'bar'
+        self.assertEqual(self.t.global_attributes['foo'], 'bar')
+        self.assertEqual(self.t.attributes['foo'], 'bar')
+
+    def test_del_local(self):
+        key = 'foo'
+        self.t.local_attributes[key] = 'foobar'
+        self.assertIn(key, self.t.local_attributes)
+        del self.t.local_attributes[key]
+        self.assertNotIn(key, self.t.local_attributes)
+
+    def test_del_global(self):
+        key = 'foo'
+        self.t.global_attributes[key] = 'foobar'
+        self.assertIn(key, self.t.global_attributes)
+        del self.t.global_attributes[key]
+        self.assertNotIn(key, self.t.global_attributes)
+
+    def test_clear_local(self):
+        self.t.local_attributes['foo'] = 'bar'
+        self.t.global_attributes['alice'] = 'bob'
+        self.t.local_attributes.clear()
+        self.assertEqual(self.t.local_attributes, {})
+        self.assertEqual(self.t.attributes, self.t.global_attributes)
+
+    def test_clear_global(self):
+        self.t.local_attributes['foo'] = 'bar'
+        self.t.global_attributes['alice'] = 'bob'
+        self.t.global_attributes.clear()
+        self.assertEqual(self.t.global_attributes, {})
+        self.assertEqual(self.t.attributes, self.t.local_attributes)
+
+    def test_update_local(self):
+        other = dict(foo='bar', fruit='orange')
+        self.t.local_attributes.update(other)
+        self.assertEqual(self.t.local_attributes, other)
+        self.assertEqual(self.t.attributes, other)
+
+    def test_update_global(self):
+        other = dict(foo='bar', fruit='orange')
+        self.t.global_attributes.update(other)
+        self.assertEqual(self.t.global_attributes, other)
+        self.assertEqual(self.t.attributes, other)
+
+    def test_forbidden_keys(self):
+        forbidden_keys = ('standard_name', 'long_name', 'units', 'bounds',
+                          'axis', 'calendar', 'leap_month', 'leap_year',
+                          'month_lengths', 'coordinates', 'grid_mapping',
+                          'climatology', 'cell_methods', 'formula_terms',
+                          'compress', 'missing_value', 'add_offset',
+                          'scale_factor', 'valid_max', 'valid_min',
+                          'valid_range', '_FillValue')
+        for key in forbidden_keys:
+            with self.assertRaises(ValueError):
+                self.t.local_attributes[key] = 'foobar'
+            with self.assertRaises(ValueError):
+                self.t.global_attributes[key] = 'foobar'
+
+    def test_read_only(self):
+        # Add
+        with self.assertRaises(TypeError):
+            self.t.attributes['foo'] = 'bar'
+        # Modify
+        self.t.local_attributes['foo'] = 'bar'
+        with self.assertRaises(TypeError):
+            self.t.attributes['foo'] = 'apple'
+        # Remove
+        with self.assertRaises(TypeError):
+            del self.t.attributes['foo']
+        with self.assertRaises(AttributeError):
+            self.t.attributes.pop('foo')
+        # Update
+        with self.assertRaises(AttributeError):
+            self.t.attributes.update(dict(fruit='orange'))
+        # Assign
+        with self.assertRaises(AttributeError):
+            self.t.attributes = dict(fruit='orange')
+
+    def test_precedence(self):
+        self.t.local_attributes = dict(foo='bar', fruit='orange')
+        self.t.global_attributes = dict(bar='foo', fruit='apple')
+        expected = dict(foo='bar', bar='foo', fruit='orange')
+        self.assertEqual(self.t.attributes, expected)
 
 
 class TestCubeEquality(TestCube2d):
@@ -776,19 +891,19 @@ class TestCubeEquality(TestCube2d):
     
     def test_attributes_inequality(self):
         r = self.t.copy()
-        r.attributes['new_thing'] = None
+        r.local_attributes['new_thing'] = None
         self.assertNotEqual(self.t, r)
 
     def test_array_attributes(self):
         r = self.t.copy()
-        r.attributes['things'] = np.arange(3)
+        r.local_attributes['things'] = np.arange(3)
         s = r.copy()
         self.assertEqual(s, r)
 
-        s.attributes['things'] = np.arange(2)
+        s.local_attributes['things'] = np.arange(2)
         self.assertNotEqual(s, r)
 
-        del s.attributes['things']
+        del s.local_attributes['things']
         self.assertNotEqual(s, r)
 
     def test_cell_methods_inequality(self):
@@ -807,19 +922,25 @@ class TestCubeEquality(TestCube2d):
         r = self.t.copy()
         r.add_cell_method(iris.coords.CellMethod('mean', coords='dim1'))
         self.assertFalse(self.t.is_compatible(r))
-        # Different attributes.
+        # Different local_attributes.
         r = self.t.copy()
-        self.t.attributes['source']= 'bob'
-        r.attributes['source'] = 'alice'
+        self.t.local_attributes['source']= 'bob'
+        r.local_attributes['source'] = 'alice'
         self.assertFalse(self.t.is_compatible(r))
+        # Different global_attributes.
+        r = self.t.copy()
+        self.t.global_attributes['fruit']= 'apple'
+        r.global_attributes['fruit'] = 'orange'
+        self.assertFalse(self.t.is_compatible(r))
+
 
     def test_compatible(self):
         r = self.t.copy()
         self.assertTrue(self.t.is_compatible(r))
         # The following changes should not affect compatibility.
         # Different non-common attributes.
-        self.t.attributes['source']= 'bob'
-        r.attributes['origin'] = 'alice'
+        self.t.local_attributes['source']= 'bob'
+        r.local_attributes['origin'] = 'alice'
         self.assertTrue(self.t.is_compatible(r))
         # Different coordinates.
         r.remove_coord('dim1')
@@ -830,6 +951,18 @@ class TestCubeEquality(TestCube2d):
         # Different var_names (but equal name()).
         r.var_name = 'foo'
         self.assertTrue(self.t.is_compatible(r))
+        # Same common attributes, but one in local
+        # one in global.
+        self.t.local_attributes['source']= 'bob'
+        r.global_attributes['source'] = 'bob'
+        self.assertTrue(self.t.is_compatible(r))
+        # Different common global attributes, but overriden
+        # by local_attributes so combined attributes match.
+        self.t.global_attributes['fruit']= 'apple'
+        r.global_attributes['fruit'] = 'orange'
+        r.local_attributes['fruit'] = 'apple'
+        self.assertTrue(self.t.is_compatible(r))
+
 
     def test_is_compatible_ignore(self):
         r = self.t.copy()
@@ -1046,7 +1179,7 @@ class TestTrimAttributes(tests.IrisTest):
         cube = iris.tests.stock.realistic_4d()
         attrib_key = "gorf"
         attrib_val = 23
-        cube.attributes[attrib_key] = attrib_val
+        cube.local_attributes[attrib_key] = attrib_val
         
         summary = cube.summary() # Get the cube summary
         

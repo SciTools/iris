@@ -12,5 +12,5 @@ air_potential_temperature / (K)     (grid_latitude: 100; grid_longitude: 100)
           model_level_number: 1
           sigma: 0.999424, bound=(1.0, 0.998464)
           time: 2009-09-09 17:10:00
-     Attributes:
+     Local attributes:
           source: Iris test case

@@ -250,7 +250,7 @@ class TestPPSaveRules(tests.IrisTest, pp.PPTest):
         for _, process_desc in iris.fileformats.pp.LBPROC_PAIRS[1:]:
             # Get basic cube and set process flag manually
             ll_cube = stock.lat_lon_cube()
-            ll_cube.attributes["ukmo__process_flags"] = (process_desc,)
+            ll_cube.local_attributes["ukmo__process_flags"] = (process_desc,)
     
             # Save cube to pp
             temp_filename = iris.util.create_temp_filename(".pp")
@@ -269,7 +269,8 @@ class TestPPSaveRules(tests.IrisTest, pp.PPTest):
 
         for lbproc, descriptions in multiple_map.iteritems():
             ll_cube = stock.lat_lon_cube()
-            ll_cube.attributes["ukmo__process_flags"] = descriptions
+            ll_cube.local_attributes["ukmo__process_flags"] = descriptions
+
             
             # Save cube to pp
             temp_filename = iris.util.create_temp_filename(".pp")

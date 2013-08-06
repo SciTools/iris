@@ -45,7 +45,7 @@ For instance, suppose we have a cube:
               altitude                       -                      x                 x                    x
          Scalar coordinates:
               forecast_reference_time: 2009-11-19 04:00:00
-         Attributes:
+         Local attributes:
               STASH: m01s00i004
               source: Data from Met Office Unified Model 7.03
 
@@ -73,7 +73,7 @@ we can pass the coordinate name and the aggregation definition to the
               level_height: 696.667 m, bound=(0.0, 1393.33) m
               model_level_number: 10, bound=(1, 19)
               sigma: 0.92293, bound=(0.84586, 1.0)
-         Attributes:
+         Local attributes:
               STASH: m01s00i004
               history: Mean of air_potential_temperature over model_level_number
               source: Data from Met Office Unified Model 7.03
@@ -125,7 +125,7 @@ These areas can now be passed to the ``collapsed`` method as weights:
               grid_latitude: 1.51455 degrees, bound=(0.1443, 2.8848) degrees
               grid_longitude: 358.749 degrees, bound=(357.494, 360.005) degrees
               surface_altitude: 399.625 m, bound=(-14.0, 813.25) m
-         Attributes:
+         Local attributes:
               STASH: m01s00i004
               history: Mean of air_potential_temperature over grid_longitude, grid_latitude
               source: Data from Met Office Unified Model 7.03
@@ -207,10 +207,11 @@ Printing this cube now shows that two extra coordinates exist on the cube:
               season_year                    x             -              -
          Scalar coordinates:
               forecast_period: 0 hours
-         Attributes:
-              Conventions: CF-1.5
+         Local attributes:
               STASH: m01s00i024
               history: Mean of surface_temperature aggregated over month, year
+         Global attributes:
+              Conventions: CF-1.5
          Cell methods:
               mean: month, year
 

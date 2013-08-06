@@ -143,11 +143,3 @@ class CFVariableMixin(object):
                 raise ValueError('{!r} is not a valid CF variable name because'
                                  ' it contains whitespace.'.format(name))
         self._var_name = name
-
-    @property
-    def attributes(self):
-        return self._attributes
-
-    @attributes.setter
-    def attributes(self, attributes):
-        self._attributes = LimitedAttributeDict(attributes or {})

@@ -32,10 +32,11 @@ We have already seen a basic string representation of a cube when printing:
               forecast_period: 0.0 hours
               forecast_reference_time: 2006-06-15 00:00:00
               time: 2006-06-15 00:00:00
-         Attributes:
-              Conventions: CF-1.5
+         Local attributes:
               STASH: m01s16i222
               source: Data from Met Office Unified Model 6.01
+         Global attributes:
+              Conventions: CF-1.5
 
 
 This representation is equivalent to passing the cube to the :func:`str` function.  This function can be used on 
@@ -105,6 +106,21 @@ cube with the :attr:`Cube.cell_methods <iris.cube.Cube.cell_methods>` attribute:
 
     print cube.cell_methods
 
+Cubes can also contain additional arbitrary metadata stored in either the :attr:`~iris.cube.Cube.local_attributes`
+dictionary or the :attr:`~iris.cube.Cube.global_attributes` dictionary. The latter of these is intended for CF
+global attributes. Both of these dictionaries are Python dict objects (with a small set of prohibited keys) that
+can be accessed and modified in the usual way, for example::
+
+    print cube.local_attributes['source']
+    del cube.local_attributes['source']
+    cube.local_attributes.update(other_attributes)
+    cube.global_attributes.clear()
+
+As a convenience, cubes also have an :attr:`~iris.cube.Cube.attributes` dictionary. This is a read-only collection of
+the attribute metadata built from a combination of :attr:`~iris.cube.Cube.local_attributes` and
+:attr:`~iris.cube.Cube.global_attributes` where :attr:`~local_attributes` take precedence over
+:attr:`~iris.cube.Cube.global_attributes` if there are any common keys.
+
 
 Accessing coordinates on the cube
 ---------------------------------
@@ -163,10 +179,11 @@ We can add and remove coordinates via :func:`Cube.add_dim_coord<iris.cube.Cube.a
               forecast_reference_time: 2006-06-15 00:00:00
               my_custom_coordinate: 1
               time: 2006-06-15 00:00:00
-         Attributes:
-              Conventions: CF-1.5
+         Local attributes:
               STASH: m01s16i222
               source: Data from Met Office Unified Model 6.01
+         Global attributes:
+              Conventions: CF-1.5
 
 
 The coordinate ``my_custom_coordinate`` now exists on the cube and is listed under the non-dimensioned single valued scalar coordinates.

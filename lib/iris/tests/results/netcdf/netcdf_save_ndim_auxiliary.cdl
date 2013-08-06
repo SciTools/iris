@@ -8,11 +8,6 @@ variables:
 		pr:standard_name = "precipitation_flux" ;
 		pr:long_name = "Precipitation" ;
 		pr:units = "kg m-2 s-1" ;
-		pr:NCO = "4.1.0" ;
-		pr:experiment = "ER3" ;
-		pr:history = "Thu Nov 29 10:45:50 2012: /project/ukmo/rhel6/nco/bin/ncks -d time,0,3 new_rotPole_precipitation.nc small_rotPole_precipitation.nc" ;
-		pr:institution = "DMI" ;
-		pr:source = "HIRHAM" ;
 		pr:cell_methods = "time: mean" ;
 		pr:grid_mapping = "rotated_latitude_longitude" ;
 		pr:coordinates = "lat lon" ;
@@ -50,4 +45,9 @@ variables:
 
 // global attributes:
 		:Conventions = "CF-1.5" ;
+		:NCO = "4.1.0" ;
+		:experiment = "ER3" ;
+		:history = "Thu Nov 29 10:45:50 2012: /project/ukmo/rhel6/nco/bin/ncks -d time,0,3 new_rotPole_precipitation.nc small_rotPole_precipitation.nc" ;
+		:institution = "DMI" ;
+		:source = "HIRHAM" ;
 }

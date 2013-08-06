@@ -45,10 +45,82 @@ import iris.exceptions
 import iris.fileformats.rules
 import iris.util
 
-from iris._cube_coord_common import CFVariableMixin
+from iris._cube_coord_common import CFVariableMixin, LimitedAttributeDict
 
 
 __all__ = ['Cube', 'CubeList', 'CubeMetadata']
+
+
+class ImmutableDict(collections.Mapping):
+    """
+    An immutable dictionary-like object.
+
+    """
+    def __init__(self, dictionary=None, **kwargs):
+        self._data = {}
+        if dictionary is not None:
+            self._data.update(dictionary)
+        if kwargs:
+            self._data.update(kwargs)
+
+    def __repr__(self):
+        return repr(self._data)
+
+    def __cmp__(self, other):
+        if isinstance(other, ImmutableDict):
+            return cmp(self._data, other._data)
+        else:
+            return cmp(self._data, other)
+
+    def __len__(self):
+        return len(self._data)
+
+    def __getitem__(self, key):
+        return self._data[key]
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def copy(self):
+        if self.__class__ is ImmutableDict:
+            return ImmutableDict(self._data.copy())
+        _data = self._data
+        try:
+            self._data = {}
+            c = copy.copy(self)
+        finally:
+            self._data = _data
+        c.update(self)
+        return c
+
+    def keys(self):
+        return self._data.keys()
+
+    def items(self):
+        return self._data.items()
+
+    def iteritems(self):
+        return self._data.iteritems()
+
+    def iterkeys(self):
+        return self._data.iterkeys()
+
+    def itervalues(self):
+        return self._data.itervalues()
+
+    def values(self):
+        return self._data.values()
+
+    def has_key(self, key):
+        return key in self._data
+
+    def get(self, key, failobj=None):
+        if key not in self:
+            return failobj
+        return self[key]
+
+    def __contains__(self, key):
+        return key in self._data
 
 
 class CubeMetadata(collections.namedtuple('CubeMetadata',
@@ -56,7 +128,8 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
                                            'long_name',
                                            'var_name',
                                            'units',
-                                           'attributes',
+                                           'local_attributes',
+                                           'global_attributes',
                                            'cell_methods'])):
     """
     Represents the phenomenon metadata for a single :class:`Cube`.
@@ -72,6 +145,19 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
 
         """
         return self.standard_name or self.long_name or self.var_name or default
+
+    @property
+    def attributes(self):
+        """
+        An immutable dictionary of attributes built from a combination
+        of :attr:`~local_attributes` and :attr:`~global_attributes` where
+        :attr:`~local_attributes` take precedence over
+        :attr:`~global_attributes`.
+
+        """
+        attributes = self.global_attributes.copy()
+        attributes.update(self.local_attributes)
+        return ImmutableDict(attributes)
 
 
 # The XML namespace to use for CubeML documents
@@ -365,7 +451,7 @@ class Cube(CFVariableMixin):
                   pressure: 1000.0 hPa
                   time: 1996-12-01 00:00:00, \
 bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
-             Attributes:
+             Local attributes:
                   STASH: m01s16i203
                   source: Data from Met Office Unified Model
              Cell methods:
@@ -407,7 +493,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         * units
             The unit of the cube, e.g. ``"m s-1"`` or ``"kelvin"``.
         * attributes
-            A dictionary of cube attributes
+            A dictionary of cube attributes. See
+            :attr:`~iris.cube.Cube.local_attributes`,
+            :attr:`~iris.cube.Cube.global_attributes` and
+            :attr:`~iris.cube.Cube.attributes`.
         * cell_methods
             A tuple of CellMethod objects, generally set by Iris, e.g.
             ``(CellMethod("mean", coords='latitude'), )``.
@@ -468,7 +557,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         #: A dictionary, with a few restricted keys, for arbitrary
         #: Cube metadata.
-        self.attributes = attributes
+        self.local_attributes = attributes
+
+        #: A dictionary, with a few restricted keys, for CF global
+        #: attribute metadata.
+        self.global_attributes = {}
 
         # Coords
         self._dim_coords_and_dims = []
@@ -501,6 +594,35 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 self.add_aux_factory(factory)
 
     @property
+    def local_attributes(self):
+        return self._local_attributes
+
+    @local_attributes.setter
+    def local_attributes(self, attributes):
+        self._local_attributes = LimitedAttributeDict(attributes or {})
+
+    @property
+    def global_attributes(self):
+        return self._global_attributes
+
+    @global_attributes.setter
+    def global_attributes(self, attributes):
+        self._global_attributes = LimitedAttributeDict(attributes or {})
+
+    @property
+    def attributes(self):
+        """
+        An immutable dictionary of attributes built from a combination
+        of :attr:`~local_attributes` and :attr:`~global_attributes` where
+        :attr:`~local_attributes` take precedence over
+        :attr:`~global_attributes`.
+
+        """
+        attributes = self.global_attributes.copy()
+        attributes.update(self.local_attributes)
+        return ImmutableDict(attributes)
+
+    @property
     def metadata(self):
         """
         An instance of :class:`CubeMetadata` describing the phenomenon.
@@ -513,7 +635,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         return CubeMetadata(self.standard_name, self.long_name, self.var_name,
-                            self.units, self.attributes, self.cell_methods)
+                            self.units, self.local_attributes,
+                            self.global_attributes, self.cell_methods)
 
     @metadata.setter
     def metadata(self, value):
@@ -1549,9 +1672,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             #
             # Generate summary of cube attributes.
             #
-            if self.attributes:
+            if self.local_attributes:
                 attribute_lines = []
-                for name, value in sorted(self.attributes.iteritems()):
+                for name, value in sorted(self.local_attributes.iteritems()):
                     value = unicode(value)
                     if name == 'history':
                         value = re.sub("[\d\/]{8} [\d\:]{8} Iris\: ", '',
@@ -1562,7 +1685,20 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                                                   name=name,
                                                                   value=value)
                     attribute_lines.append(line)
-                summary += '\n     Attributes:\n' + '\n'.join(attribute_lines)
+                summary += '\n     Local attributes:\n' + '\n'.join(
+                    attribute_lines)
+
+            if self.global_attributes:
+                attribute_lines = []
+                for name, value in sorted(self.global_attributes.iteritems()):
+                    value = iris.util.clip_string(unicode(value))
+                    line = u'{pad:{width}}{name}: {value}'.format(pad=' ',
+                                                                  width=indent,
+                                                                  name=name,
+                                                                  value=value)
+                    attribute_lines.append(line)
+                summary += '\n     Global attributes:\n' + '\n'.join(
+                    attribute_lines)
 
             #
             # Generate summary of cube cell methods
@@ -2195,10 +2331,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         string = '%s Iris: %s' % (timestamp, string)
 
         try:
-            history = self.attributes['history']
-            self.attributes['history'] = '%s\n%s' % (history, string)
+            history = self.local_attributes['history']
+            self.local_attributes['history'] = '%s\n%s' % (history, string)
         except KeyError:
-            self.attributes['history'] = string
+            self.local_attributes['history'] = string
 
     # START ANALYSIS ROUTINES
 
@@ -2251,12 +2387,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                  Scalar coordinates:
                       forecast_period: 0 hours
                       longitude: 180.0 degrees, bound=(0.0, 360.0) degrees
-                 Attributes:
-                      Conventions: CF-1.5
+                 Local attributes:
                       STASH: m01s00i024
                       history: Mean of surface_temperature aggregated \
 over month, year
             Mean of surface_temperature...
+                 Global attributes:
+                      Conventions: CF-1.5
                  Cell methods:
                       mean: month, year
                       mean: longitude
@@ -2396,12 +2533,13 @@ over month, year
             x            -              -
                  Scalar coordinates:
                       forecast_period: 0 hours
-                 Attributes:
-                      Conventions: CF-1.5
+                 Local attributes:
                       STASH: m01s00i024
                       history: Mean of surface_temperature aggregated \
 over month, year
             Mean of surface_temperature...
+                 Global attributes:
+                      Conventions: CF-1.5
                  Cell methods:
                       mean: month, year
                       mean: year
@@ -2538,7 +2676,7 @@ over month, year
                  Scalar coordinates:
                       forecast_reference_time: 2011-07-23 00:00:00
                       realization: 10
-                 Attributes:
+                 Local attributes:
                       STASH: m01s00i024
                       source: Data from Met Office Unified Model 7.06
                  Cell methods:
@@ -2561,7 +2699,7 @@ over month, year
                  Scalar coordinates:
                       forecast_reference_time: 2011-07-23 00:00:00
                       realization: 10
-                 Attributes:
+                 Local attributes:
                       STASH: m01s00i024
                       history: Mean of surface_temperature with a rolling \
 window of length 3 over tim...

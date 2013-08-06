@@ -146,7 +146,7 @@ class TestLoadCubes(tests.IrisTest):
         orog_cube.data = orog_coord.points
         orog_cube.rename('surface_altitude')
         orog_cube.units = orog_coord.units
-        orog_cube.attributes = orog_coord.attributes
+        orog_cube.local_attributes = orog_coord.attributes
 
         # We're going to test for the presence of the hybrid height
         # stuff later, so let's make sure it's not already there!

@@ -461,13 +461,13 @@ class FunctionRule(Rule):
                 except ValueError:
                     msg = 'Ignoring PP invalid units {!r}'.format(obj.value)
                     warnings.warn(msg)
-                    cube.attributes['invalid_units'] = obj.value
+                    cube.local_attributes['invalid_units'] = obj.value
                     cube.units = iris.unit._UNKNOWN_UNIT_STRING
             else:
                 setattr(cube, obj.name, obj.value)
             
         elif isinstance(obj, CMCustomAttribute):
-            cube.attributes[obj.name] = obj.value
+            cube.local_attributes[obj.name] = obj.value
 
         elif isinstance(obj, Factory):
             factory = obj
@@ -768,7 +768,7 @@ def _make_cube(field, converter):
         except ValueError:
             msg = 'Ignoring PP invalid units {!r}'.format(units)
             warnings.warn(msg)
-            cube.attributes['invalid_units'] = units
+            cube.local_attributes['invalid_units'] = units
             cube.units = iris.unit._UNKNOWN_UNIT_STRING
 
     return cube, factories, references

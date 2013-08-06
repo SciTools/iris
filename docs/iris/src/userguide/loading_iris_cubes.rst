@@ -92,7 +92,7 @@ list indexing can be used:
               altitude                       -                      x                 x                    x
          Scalar coordinates:
               forecast_reference_time: 2009-11-19 04:00:00
-         Attributes:
+         Local attributes:
               STASH: m01s00i004
               source: Data from Met Office Unified Model 7.03
 
