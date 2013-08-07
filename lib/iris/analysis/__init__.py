@@ -429,13 +429,20 @@ class WeightedAggregator(Aggregator):
 
 
 def _percentile(data, axis, percent, **kwargs):
-    # NB. scipy.stats.mstats.scoreatpercentile always works across just the first
-    # dimension of its input data, and  returns a result that has one fewer
-    # dimension than the input.
+    # NB. scipy.stats.mstats.scoreatpercentile always works across just the
+    # first dimension of its input data, and  returns a result that has one
+    # fewer dimension than the input.
     # So shape=(3, 4, 5) -> shape(4, 5)
-    if axis != 0:
-        data = data.swapaxes(0, axis)
-    return np.array(scipy.stats.mstats.scoreatpercentile(data, percent, **kwargs), ndmin=1)
+    data = np.rollaxis(data, axis)
+    shape = data.shape[1:]
+    if shape:
+        data = data.reshape([data.shape[0], np.prod(shape)])
+    result = scipy.stats.mstats.scoreatpercentile(data, percent, **kwargs)
+    if not ma.isMaskedArray(data) and not ma.is_masked(result):
+        result = np.asarray(result)
+    if shape:
+        result = result.reshape(shape)
+    return result
 
 
 def _count(array, function, axis, **kwargs):

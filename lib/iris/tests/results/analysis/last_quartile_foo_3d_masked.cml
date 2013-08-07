@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube long_name="thingness" units="1">
+    <attributes>
+      <attribute name="history" value="Percentile (75%) of thingness over wibble"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord id="c7efdd09" points="[90, 0, -90]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="int64"/>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="a523d045" points="[-180, -90, 0, 90]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="int64"/>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[10.0, 30.0]]" id="a2260f1f" long_name="wibble" points="[20.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="percentile (75%)">
+        <coord name="wibble"/>
+      </cellMethod>
+    </cellMethods>
+    <data byteorder="little" dtype="float64" mask_order="C" order="C" shape="(3, 4)" state="loaded"/>
+  </cube>
+</cubes>
