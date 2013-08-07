@@ -30,6 +30,7 @@ import iris.coords
 import iris.coords as icoords
 import iris.tests as tests
 from iris.coord_systems import GeogCS, RotatedGeogCS
+import numpy.ma as ma
 
 
 def lat_lon_cube():
@@ -168,7 +169,7 @@ def simple_3d_w_multidim_coords(with_bounds=True):
     [[[ 0  1  2  3]
       [ 4  5  6  7]
       [ 8  9 10 11]]
-    
+
      [[12 13 14 15]
       [16 17 18 19]
       [20 21 22 23]]]
@@ -177,26 +178,99 @@ def simple_3d_w_multidim_coords(with_bounds=True):
     cube = Cube(np.arange(24, dtype=np.int32).reshape((2, 3, 4)))
     cube.long_name = 'thingness'
     cube.units = '1'
-    
-    y_points = np.array([[  2.5,   7.5,  12.5,  17.5],
-                            [ 10. ,  17.5,  27.5,  42.5],
-                            [ 15. ,  22.5,  32.5,  50. ]])
-    y_bounds = np.array([[[0, 5], [5, 10], [10, 15], [15, 20]], 
-                            [[5, 15], [15, 20], [20, 35], [35, 50]],
-                            [[10, 20], [20, 25], [25, 40], [40, 60]]], dtype=np.int32)
-    y_coord = iris.coords.AuxCoord(points=y_points, long_name='bar', units='1', bounds=y_bounds if with_bounds else None)
-    x_points = np.array([[ -7.5,   7.5,  22.5,  37.5],
-                            [-12.5,   4. ,  26.5,  47.5],
-                            [  2.5,  14. ,  36.5,  44. ]])
-    x_bounds = np.array([[[-15, 0], [0, 15], [15, 30], [30, 45]], 
-                            [[-25, 0], [0, 8], [8, 45], [45, 50]],
-                            [[-5, 10], [10, 18],  [18, 55], [18, 70]]], dtype=np.int32)
-    x_coord = iris.coords.AuxCoord(points=x_points, long_name='foo', units='1', bounds=x_bounds if with_bounds else None)
-    wibble_coord = iris.coords.DimCoord(np.array([ 10.,  30.], dtype=np.float32), long_name='wibble', units='1')
+
+    y_points = np.array([[2.5, 7.5, 12.5, 17.5],
+                         [10., 17.5, 27.5, 42.5],
+                         [15., 22.5, 32.5, 50.]])
+    y_bounds = np.array([[[0, 5], [5, 10], [10, 15], [15, 20]],
+                         [[5, 15], [15, 20], [20, 35], [35, 50]],
+                         [[10, 20], [20, 25], [25, 40], [40, 60]]],
+                        dtype=np.int32)
+    y_coord = iris.coords.AuxCoord(points=y_points, long_name='bar',
+                                   units='1',
+                                   bounds=y_bounds if with_bounds else None)
+    x_points = np.array([[-7.5, 7.5, 22.5, 37.5],
+                         [-12.5, 4., 26.5, 47.5],
+                         [2.5, 14., 36.5, 44.]])
+    x_bounds = np.array([[[-15, 0], [0, 15], [15, 30], [30, 45]],
+                         [[-25, 0], [0, 8], [8, 45], [45, 50]],
+                         [[-5, 10], [10, 18],  [18, 55], [18, 70]]],
+                        dtype=np.int32)
+    x_coord = iris.coords.AuxCoord(points=x_points, long_name='foo',
+                                   units='1',
+                                   bounds=x_bounds if with_bounds else None)
+    wibble_coord = iris.coords.DimCoord(np.array([10., 30.],
+                                                 dtype=np.float32),
+                                        long_name='wibble', units='1')
 
     cube.add_dim_coord(wibble_coord, [0])
     cube.add_aux_coord(y_coord, [1, 2])
     cube.add_aux_coord(x_coord, [1, 2])
+    return cube
+
+
+def simple_3d():
+    """
+    Returns an abstract three dimensional cube.
+
+    >>>print simple_3d()
+    thingness / (1)                     (wibble: 2; latitude: 3; longitude: 4)
+     Dimension coordinates:
+          wibble                           x            -             -
+          latitude                         -            x             -
+          longitude                        -            -             x
+
+    >>> print simple_3d().data
+    [[[ 0  1  2  3]
+      [ 4  5  6  7]
+      [ 8  9 10 11]]
+
+     [[12 13 14 15]
+      [16 17 18 19]
+      [20 21 22 23]]]
+
+    """
+    cube = Cube(np.arange(24, dtype=np.int32).reshape((2, 3, 4)))
+    cube.long_name = 'thingness'
+    cube.units = '1'
+    wibble_coord = iris.coords.DimCoord(np.array([10., 30.],
+                                                 dtype=np.float32),
+                                        long_name='wibble', units='1')
+    lon = iris.coords.DimCoord([-180, -90, 0, 90],
+                               standard_name='longitude',
+                               units='degrees', circular=True)
+    lat = iris.coords.DimCoord([90, 0, -90],
+                               standard_name='latitude', units='degrees')
+    cube.add_dim_coord(wibble_coord, [0])
+    cube.add_dim_coord(lat, [1])
+    cube.add_dim_coord(lon, [2])
+    return cube
+
+
+def simple_3d_mask():
+    """
+    Returns an abstract three dimensional cube that has data masked.
+
+    >>>print simple_3d_mask()
+    thingness / (1)                     (wibble: 2; latitude: 3; longitude: 4)
+     Dimension coordinates:
+          wibble                           x            -             -
+          latitude                         -            x             -
+          longitude                        -            -             x
+
+    >>> print simple_3d_mask().data
+    [[[-- -- -- --]
+      [-- -- -- --]
+      [-- 9 10 11]]
+
+    [[12 13 14 15]
+     [16 17 18 19]
+     [20 21 22 23]]]
+
+    """
+    cube = simple_3d()
+    cube.data = ma.asanyarray(cube.data)
+    cube.data = ma.masked_less_equal(cube.data, 8.)
     return cube
 
 
