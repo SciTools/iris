@@ -102,12 +102,14 @@ class TestFileFormatPicker(tests.IrisTest):
 
         # Packaged grib, magic number offset by set length, this length is
         # specific to WMO bulletin headers
-        binary_string = fp.WMO_BULLETIN_HEADER_LENGTH * '\x00' + 'GRIB'
-        with BytesIO('rw') as bh:
-            bh.write(binary_string)
-            bh.name = 'fake_file_handle'
-            a = iff.FORMAT_AGENT.get_spec(bh.name, bh)
-        self.assertEqual(a.name, 'WMO GRIB Bulletin')
+        header_lengths = [21, 42]
+        for header_length in header_lengths:
+            binary_string = header_length * '\x00' + 'GRIB'
+            with BytesIO('rw') as bh:
+                bh.write(binary_string)
+                bh.name = 'fake_file_handle'
+                a = iff.FORMAT_AGENT.get_spec(bh.name, bh)
+            self.assertTrue(a.name.startswith('WMO GRIB Bulletin'))
 
     def test_open_dap(self):
         # tests that *ANY* http or https URL is seen as an OPeNDAP service.
