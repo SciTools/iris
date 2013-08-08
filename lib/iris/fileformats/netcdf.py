@@ -1232,7 +1232,7 @@ def save(cube, filename, netcdf_format='NETCDF4'):
         cubes.append(cube)
     else:
         cubes = cube
-        
+
     # Check the global_attributes are common across all cubes.
     global_attributes = cubes[0].global_attributes
     for cube in cubes[1:]:

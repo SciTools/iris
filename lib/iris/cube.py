@@ -2114,19 +2114,22 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             cube_xml_element.setAttribute('var_name', self.var_name)
         cube_xml_element.setAttribute('units', str(self.units))
 
-        if self.attributes:
-            attributes_element = doc.createElement('attributes')
-            for name in sorted(self.attributes.iterkeys()):
+        def add_attributes_element(attributes, element_name):
+            attributes_element = doc.createElement(element_name)
+            for name in sorted(attributes.iterkeys()):
                 attribute_element = doc.createElement('attribute')
                 attribute_element.setAttribute('name', name)
+                value = str(attributes[name])
                 if name == 'history':
-                    value = re.sub("[\d\/]{8} [\d\:]{8} Iris\: ", '',
-                                   str(self.attributes[name]))
-                else:
-                    value = str(self.attributes[name])
+                    value = re.sub("[\d\/]{8} [\d\:]{8} Iris\: ", '', value)
                 attribute_element.setAttribute('value', value)
                 attributes_element.appendChild(attribute_element)
             cube_xml_element.appendChild(attributes_element)
+
+        if self.local_attributes:
+            add_attributes_element(self.local_attributes, 'local_attributes')
+        if self.global_attributes:
+            add_attributes_element(self.global_attributes, 'global_attributes')
 
         coords_xml_element = doc.createElement("coords")
         for coord in sorted(self.coords(), key=lambda coord: coord.name()):

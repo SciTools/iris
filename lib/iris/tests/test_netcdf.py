@@ -480,7 +480,6 @@ class TestNetCDFSave(tests.IrisTest):
             with self.assertRaises(ValueError):
                 iris.save(cubes, filename)
 
-
     @iris.tests.skip_data
     def test_netcdf_hybrid_height(self):
         # Test saving a CF-netCDF file which contains a hybrid height
