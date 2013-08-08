@@ -207,10 +207,10 @@ def load_cubes(filespecs, callback=None):
 
 iris.fileformats.FORMAT_AGENT.add_spec(
     iris.io.format_picker.FormatSpecification(
-        'ABF', iris.io.format_picker.FILE_EXTENSION,
+        'ABF', iris.io.format_picker.FileExtension(),
         '.abf', load_cubes, priority=3))
 
 iris.fileformats.FORMAT_AGENT.add_spec(
     iris.io.format_picker.FormatSpecification(
-        'ABL', iris.io.format_picker.FILE_EXTENSION,
+        'ABL', iris.io.format_picker.FileExtension(),
         '.abl', load_cubes, priority=3))

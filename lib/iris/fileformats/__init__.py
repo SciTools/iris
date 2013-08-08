@@ -20,7 +20,6 @@ A package for converting cubes to and from specific file formats.
 """
 
 import iris.io.format_picker as fp
-from iris.io.format_picker import FormatSpecification as FormatSpec
 import ff
 import grib
 import name
@@ -47,116 +46,125 @@ FORMAT_AGENT.__doc__ = "The FORMAT_AGENT is responsible for identifying the " \
 #
 # PP files.
 #
-FORMAT_AGENT.add_spec(FormatSpec('UM Post Processing file (PP)',
-                                 fp.MAGIC_NUMBER_32_BIT,
-                                 0x00000100,
-                                 pp.load_cubes,
-                                 priority=5))
+FORMAT_AGENT.add_spec(fp.FormatSpecification('UM Post Processing file (PP)',
+                                             fp.MagicNumber(4),
+                                             0x00000100,
+                                             pp.load_cubes,
+                                             priority=5))
 
 
-FORMAT_AGENT.add_spec(FormatSpec('UM Post Processing file (PP) little-endian',
-                                 fp.MAGIC_NUMBER_32_BIT,
-                                 0x00010000,
-                                 _pp_little_endian,
-                                 priority=3))
+FORMAT_AGENT.add_spec(
+    fp.FormatSpecification('UM Post Processing file (PP) little-endian',
+                           fp.MagicNumber(4),
+                           0x00010000,
+                           _pp_little_endian,
+                           priority=3))
 
 
 #
 # GRIB files.
 #
-FORMAT_AGENT.add_spec(FormatSpec('GRIB',
-                                 fp.MAGIC_NUMBER_32_BIT,
-                                 0x47524942,
-                                 grib.load_cubes,
-                                 priority=5))
+FORMAT_AGENT.add_spec(fp.FormatSpecification('GRIB',
+                                             fp.MagicNumber(4),
+                                             0x47524942,
+                                             grib.load_cubes,
+                                             priority=5))
 
 
-FORMAT_AGENT.add_spec(FormatSpec('WMO GRIB Bulletin',
-                                 fp.MAGIC_NUMBER_32_BIT_WMO_BULLETIN,
-                                 0x47524942,
-                                 grib.load_cubes,
-                                 priority=3))
+FORMAT_AGENT.add_spec(fp.FormatSpecification('WMO GRIB Bulletin (21 bytes)',
+                                             fp.MagicNumber(4, offset=21),
+                                             0x47524942,
+                                             grib.load_cubes,
+                                             priority=3))
+
+
+FORMAT_AGENT.add_spec(fp.FormatSpecification('WMO GRIB Bulletin (42 bytes)',
+                                             fp.MagicNumber(4, offset=42),
+                                             0x47524942,
+                                             grib.load_cubes,
+                                             priority=3))
 
 #
 # netCDF files.
 #
-FORMAT_AGENT.add_spec(FormatSpec('NetCDF',
-                                 fp.MAGIC_NUMBER_32_BIT,
-                                 0x43444601,
-                                 netcdf.load_cubes,
-                                 priority=5))
+FORMAT_AGENT.add_spec(fp.FormatSpecification('NetCDF',
+                                             fp.MagicNumber(4),
+                                             0x43444601,
+                                             netcdf.load_cubes,
+                                             priority=5))
 
 
-FORMAT_AGENT.add_spec(FormatSpec('NetCDF 64 bit offset format',
-                                 fp.MAGIC_NUMBER_32_BIT,
-                                 0x43444602,
-                                 netcdf.load_cubes,
-                                 priority=5))
+FORMAT_AGENT.add_spec(fp.FormatSpecification('NetCDF 64 bit offset format',
+                                             fp.MagicNumber(4),
+                                             0x43444602,
+                                             netcdf.load_cubes,
+                                             priority=5))
 
 
 # This covers both v4 and v4 classic model.
-FORMAT_AGENT.add_spec(FormatSpec('NetCDF_v4',
-                                 fp.MAGIC_NUMBER_64_BIT,
-                                 0x894844460D0A1A0A,
-                                 netcdf.load_cubes,
-                                 priority=5))
+FORMAT_AGENT.add_spec(fp.FormatSpecification('NetCDF_v4',
+                                             fp.MagicNumber(8),
+                                             0x894844460D0A1A0A,
+                                             netcdf.load_cubes,
+                                             priority=5))
 
 
-_nc_dap = FormatSpec('NetCDF OPeNDAP',
-                     fp.URI_PROTOCOL, 
-                     lambda protocol: protocol in ['http', 'https'],
-                     netcdf.load_cubes,
-                     priority=6)
+_nc_dap = fp.FormatSpecification(
+    'NetCDF OPeNDAP',
+    fp.UriProtocol(),
+    lambda protocol: protocol in ['http', 'https'],
+    netcdf.load_cubes,
+    priority=6)
 FORMAT_AGENT.add_spec(_nc_dap)
 del _nc_dap
 
 #
 # UM Fieldsfiles.
 #
-FORMAT_AGENT.add_spec(FormatSpec('UM Fieldsfile (FF) pre v3.1',
-                                 fp.MAGIC_NUMBER_64_BIT,
-                                 0x000000000000000F,
-                                 ff.load_cubes,
-                                 priority=3))
+FORMAT_AGENT.add_spec(fp.FormatSpecification('UM Fieldsfile (FF) pre v3.1',
+                                             fp.MagicNumber(8),
+                                             0x000000000000000F,
+                                             ff.load_cubes,
+                                             priority=3))
 
 
-FORMAT_AGENT.add_spec(FormatSpec('UM Fieldsfile (FF) post v5.2',
-                                 fp.MAGIC_NUMBER_64_BIT,
-                                 0x0000000000000014,
-                                 ff.load_cubes,
-                                 priority=4))
+FORMAT_AGENT.add_spec(fp.FormatSpecification('UM Fieldsfile (FF) post v5.2',
+                                             fp.MagicNumber(8),
+                                             0x0000000000000014,
+                                             ff.load_cubes,
+                                             priority=4))
 
 
-FORMAT_AGENT.add_spec(FormatSpec('UM Fieldsfile (FF) ancillary',
-                                 fp.MAGIC_NUMBER_64_BIT,
-                                 0xFFFFFFFFFFFF8000,
-                                 ff.load_cubes,
-                                 priority=3))
+FORMAT_AGENT.add_spec(fp.FormatSpecification('UM Fieldsfile (FF) ancillary',
+                                             fp.MagicNumber(8),
+                                             0xFFFFFFFFFFFF8000,
+                                             ff.load_cubes,
+                                             priority=3))
 
 
-FORMAT_AGENT.add_spec(FormatSpec('UM Fieldsfile (FF) converted '
-                                 'with ieee to 32 bit',
-                                 fp.MAGIC_NUMBER_32_BIT,
-                                 0x00000014,
-                                 ff.load_cubes_32bit_ieee,
-                                 priority=3))
+FORMAT_AGENT.add_spec(fp.FormatSpecification('UM Fieldsfile (FF) converted '
+                                             'with ieee to 32 bit',
+                                             fp.MagicNumber(4),
+                                             0x00000014,
+                                             ff.load_cubes_32bit_ieee,
+                                             priority=3))
 
 
 #
 # NIMROD files.
 #
-FORMAT_AGENT.add_spec(FormatSpec('NIMROD',
-                                 fp.MAGIC_NUMBER_32_BIT,
-                                 0x00000200,
-                                 nimrod.load_cubes,
-                                 priority=3))
+FORMAT_AGENT.add_spec(fp.FormatSpecification('NIMROD',
+                                             fp.MagicNumber(4),
+                                             0x00000200,
+                                             nimrod.load_cubes,
+                                             priority=3))
 
 #
 # NAME files.
 #
-FORMAT_AGENT.add_spec(FormatSpec('NAME III',
-                                 fp.LEADING_LINE,
-                                 lambda line: line.lstrip().startswith(
-                                     "NAME III"),
-                                 name.load_cubes,
-                                 priority=5))
+FORMAT_AGENT.add_spec(
+    fp.FormatSpecification('NAME III',
+                           fp.LeadingLine(),
+                           lambda line: line.lstrip().startswith("NAME III"),
+                           name.load_cubes,
+                           priority=5))
