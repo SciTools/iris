@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="TRACER_AIR_CONCENTRATION" units="g/m3">
-    <attributes>
+    <local_attributes>
       <attribute name="End of release" value="1200UTC 26/01/2010"/>
       <attribute name="Forecast duration" value="3 hours"/>
       <attribute name="Met data" value="NWP Flow.4km50L_Flow"/>
@@ -17,7 +17,7 @@
       <attribute name="Start of release" value="0900UTC 26/01/2010"/>
       <attribute name="Time Av or Int" value="003 hr time averaged"/>
       <attribute name="Title" value="BIRMINGHAM 26012010 0907Z"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord bounds="[[52.36655, 52.3676555276],
@@ -55,7 +55,7 @@
     <data byteorder="little" dtype="float32" order="C" shape="(200, 200)" state="loaded"/>
   </cube>
   <cube long_name="TRACER_DOSAGE" units="g s/m3">
-    <attributes>
+    <local_attributes>
       <attribute name="End of release" value="1200UTC 26/01/2010"/>
       <attribute name="Forecast duration" value="3 hours"/>
       <attribute name="Met data" value="NWP Flow.4km50L_Flow"/>
@@ -71,7 +71,7 @@
       <attribute name="Start of release" value="0900UTC 26/01/2010"/>
       <attribute name="Time Av or Int" value="003 hr time integrated"/>
       <attribute name="Title" value="BIRMINGHAM 26012010 0907Z"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord bounds="[[52.36655, 52.3676555276],
@@ -109,7 +109,7 @@
     <data byteorder="little" dtype="float32" order="C" shape="(200, 200)" state="loaded"/>
   </cube>
   <cube long_name="TRACER_WET_DEPOSITION" units="g/m2">
-    <attributes>
+    <local_attributes>
       <attribute name="End of release" value="1200UTC 26/01/2010"/>
       <attribute name="Forecast duration" value="3 hours"/>
       <attribute name="Met data" value="NWP Flow.4km50L_Flow"/>
@@ -125,7 +125,7 @@
       <attribute name="Start of release" value="0900UTC 26/01/2010"/>
       <attribute name="Time Av or Int" value="003 hr time integrated"/>
       <attribute name="Title" value="BIRMINGHAM 26012010 0907Z"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord bounds="[[52.36655, 52.3676555276],
@@ -163,7 +163,7 @@
     <data byteorder="little" dtype="float32" order="C" shape="(200, 200)" state="loaded"/>
   </cube>
   <cube long_name="TRACER_DRY_DEPOSITION" units="g/m2">
-    <attributes>
+    <local_attributes>
       <attribute name="End of release" value="1200UTC 26/01/2010"/>
       <attribute name="Forecast duration" value="3 hours"/>
       <attribute name="Met data" value="NWP Flow.4km50L_Flow"/>
@@ -179,7 +179,7 @@
       <attribute name="Start of release" value="0900UTC 26/01/2010"/>
       <attribute name="Time Av or Int" value="003 hr time integrated"/>
       <attribute name="Title" value="BIRMINGHAM 26012010 0907Z"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord bounds="[[52.36655, 52.3676555276],
@@ -217,7 +217,7 @@
     <data byteorder="little" dtype="float32" order="C" shape="(200, 200)" state="loaded"/>
   </cube>
   <cube long_name="TRACER_TOTAL_DEPOSITION" units="g/m2">
-    <attributes>
+    <local_attributes>
       <attribute name="End of release" value="1200UTC 26/01/2010"/>
       <attribute name="Forecast duration" value="3 hours"/>
       <attribute name="Met data" value="NWP Flow.4km50L_Flow"/>
@@ -233,7 +233,7 @@
       <attribute name="Start of release" value="0900UTC 26/01/2010"/>
       <attribute name="Time Av or Int" value="003 hr time integrated"/>
       <attribute name="Title" value="BIRMINGHAM 26012010 0907Z"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord bounds="[[52.36655, 52.3676555276],

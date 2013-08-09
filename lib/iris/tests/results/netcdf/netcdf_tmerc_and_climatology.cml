@@ -1,14 +1,14 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="Mean temperature" units="degrees_celsius" var_name="tmean">
-    <attributes>
+    <global_attributes>
       <attribute name="Conventions" value="CF-1.6"/>
       <attribute name="Note" value="This dataset is for test purposes only"/>
       <attribute name="history" value="Conversion from ESRI grid"/>
       <attribute name="institution" value="Met Office"/>
       <attribute name="source" value="EWB2"/>
       <attribute name="title" value="UK annual mean tmean"/>
-    </attributes>
+    </global_attributes>
     <coords>
       <coord datadims="[1, 2]">
         <auxCoord id="5ffde89e" long_name="latitude" points="[[60.6606964512, 60.668112276, 60.6754683456,

@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube standard_name="air_pressure_at_sea_level" units="Pa">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s16i222"/>
       <attribute name="history" value="Median of air_pressure_at_sea_level over grid_latitude, grid_longitude"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.01"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord id="73141289" points="[0.0, 0.999999996275, 2.00000000373, 3.0,

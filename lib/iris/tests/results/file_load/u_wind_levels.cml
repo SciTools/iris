@@ -1,10 +1,10 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -52,10 +52,10 @@
     <data byteorder="little" checksum="0x127b39e8" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -103,10 +103,10 @@
     <data byteorder="little" checksum="0x88c4545" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -154,10 +154,10 @@
     <data byteorder="little" checksum="-0x3769232d" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -205,10 +205,10 @@
     <data byteorder="little" checksum="0x3df23f98" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -256,10 +256,10 @@
     <data byteorder="little" checksum="-0x5682ee23" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -307,10 +307,10 @@
     <data byteorder="little" checksum="0x24173b24" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -358,10 +358,10 @@
     <data byteorder="little" checksum="0x16761c14" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -409,10 +409,10 @@
     <data byteorder="little" checksum="-0x90a91db" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -460,10 +460,10 @@
     <data byteorder="little" checksum="0x57a3823b" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -511,10 +511,10 @@
     <data byteorder="little" checksum="-0x27be8882" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -562,10 +562,10 @@
     <data byteorder="little" checksum="-0x3bc3d5f5" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -613,10 +613,10 @@
     <data byteorder="little" checksum="0x8bf7abd" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -664,10 +664,10 @@
     <data byteorder="little" checksum="0x5870c1e0" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -715,10 +715,10 @@
     <data byteorder="little" checksum="0x7cac5103" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -766,10 +766,10 @@
     <data byteorder="little" checksum="-0x32d29d4f" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -817,10 +817,10 @@
     <data byteorder="little" checksum="0x4e1b7ef5" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -868,10 +868,10 @@
     <data byteorder="little" checksum="0x104081c2" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -919,10 +919,10 @@
     <data byteorder="little" checksum="0x392ef79f" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -970,10 +970,10 @@
     <data byteorder="little" checksum="-0x20924109" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -1021,10 +1021,10 @@
     <data byteorder="little" checksum="-0x78e4b118" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -1072,10 +1072,10 @@
     <data byteorder="little" checksum="0x3cee95b4" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -1123,10 +1123,10 @@
     <data byteorder="little" checksum="0x76208cc7" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -1174,10 +1174,10 @@
     <data byteorder="little" checksum="-0x5f0a95f6" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -1225,10 +1225,10 @@
     <data byteorder="little" checksum="-0x3a9ab69a" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -1276,10 +1276,10 @@
     <data byteorder="little" checksum="-0x21ebbe19" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -1327,10 +1327,10 @@
     <data byteorder="little" checksum="-0x8f3a9cc" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -1378,10 +1378,10 @@
     <data byteorder="little" checksum="-0x1d2d6d7f" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -1429,10 +1429,10 @@
     <data byteorder="little" checksum="-0x301cb4b3" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -1480,10 +1480,10 @@
     <data byteorder="little" checksum="0x4cb07673" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -1531,10 +1531,10 @@
     <data byteorder="little" checksum="0x47c8d38a" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -1582,10 +1582,10 @@
     <data byteorder="little" checksum="0x6c15a2c3" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -1633,10 +1633,10 @@
     <data byteorder="little" checksum="-0x46ddacf4" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -1684,10 +1684,10 @@
     <data byteorder="little" checksum="0x5020a5d1" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -1735,10 +1735,10 @@
     <data byteorder="little" checksum="-0x1cf71406" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -1786,10 +1786,10 @@
     <data byteorder="little" checksum="0x50f626b0" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -1837,10 +1837,10 @@
     <data byteorder="little" checksum="0x19624929" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -1888,10 +1888,10 @@
     <data byteorder="little" checksum="0x4c54b2ff" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>

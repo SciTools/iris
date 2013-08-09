@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="source" value="Data from Met Office Unified Model"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord id="73141289" points="[868320, 876960, 885600, 894240]" shape="(4,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>

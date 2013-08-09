@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="VOLCANIC_ASH_AIR_CONCENTRATION" units="g/m3">
-    <attributes>
+    <local_attributes>
       <attribute name="End of release" value="0830UTC 28/03/2022"/>
       <attribute name="Forecast duration" value="87648 hours"/>
       <attribute name="Location" value="Birmingham"/>
@@ -17,7 +17,7 @@
       <attribute name="Species Category" value="VOLCANIC"/>
       <attribute name="Start of release" value="0830UTC 28/03/2012"/>
       <attribute name="Title" value="KATLA_20120401_12Z"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="a42bcac2" points="[52.4771]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
@@ -47,7 +47,7 @@
     <data byteorder="little" dtype="float64" order="C" shape="(132,)" state="loaded"/>
   </cube>
   <cube long_name="VOLCANIC_ASH_AIR_CONCENTRATION" units="g/m3">
-    <attributes>
+    <local_attributes>
       <attribute name="End of release" value="0830UTC 28/03/2022"/>
       <attribute name="Forecast duration" value="87648 hours"/>
       <attribute name="Location" value="Bristol"/>
@@ -63,7 +63,7 @@
       <attribute name="Species Category" value="VOLCANIC"/>
       <attribute name="Start of release" value="0830UTC 28/03/2012"/>
       <attribute name="Title" value="KATLA_20120401_12Z"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="a42bcac2" points="[51.45]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">

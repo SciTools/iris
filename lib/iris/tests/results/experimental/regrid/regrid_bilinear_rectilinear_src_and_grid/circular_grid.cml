@@ -1,10 +1,10 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube standard_name="air_temperature" units="K">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s16i203"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0, 1]">
         <auxCoord id="c56f646c" points="[[nan, nan, 260.259277344, 260.259277344],

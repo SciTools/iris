@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube standard_name="air_temperature" units="unknown" var_name="cube_1">
-    <attributes>
+    <local_attributes>
       <attribute name="invalid_units" value="kevin"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="b62ac022" points="[100]" shape="(1,)" standard_name="height" units="Unit('meters')" value_type="int32" var_name="height"/>

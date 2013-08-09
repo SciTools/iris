@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube standard_name="leaf_area_index" units="%">
-    <attributes>
+    <local_attributes>
       <attribute name="source" value="Boston University"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord bounds="[[-90.0, -89.9166666667],

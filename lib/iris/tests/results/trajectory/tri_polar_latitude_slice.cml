@@ -1,7 +1,12 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="Temperature" standard_name="sea_water_potential_temperature" units="degC" var_name="votemper">
-    <attributes>
+    <local_attributes>
+      <attribute name="interval_operation" value="5760.0"/>
+      <attribute name="interval_write" value="86400.0"/>
+      <attribute name="short_name" value="votemper"/>
+    </local_attributes>
+    <global_attributes>
       <attribute name="Conventions" value="CF-1.1"/>
       <attribute name="DOMAIN_DIM_N001" value="x"/>
       <attribute name="DOMAIN_DIM_N002" value="y"/>
@@ -23,11 +28,8 @@
       <attribute name="TimeStamp" value="2008-SEP-09 11:18:37 GMT+0000"/>
       <attribute name="file_name" value="ORCA2_1d_00010101_00010101_grid_T_0000.nc"/>
       <attribute name="history" value="Mon Apr  2 10:25:46 2012: /project/ukmo/rhel6/nco/bin/ncks -v votemper,deptht_bounds,nav_lat,nav_lon,areat,latt_bounds,lont_bounds ORCA2_1d_00010101_00010101_grid_T_0000.nc votemper.nc"/>
-      <attribute name="interval_operation" value="5760.0"/>
-      <attribute name="interval_write" value="86400.0"/>
       <attribute name="production" value="An IPSL model"/>
-      <attribute name="short_name" value="votemper"/>
-    </attributes>
+    </global_attributes>
     <coords>
       <coord datadims="[1]">
         <dimCoord bounds="[[0.0, 10.0],

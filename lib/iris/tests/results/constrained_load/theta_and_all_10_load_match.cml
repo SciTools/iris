@@ -1,10 +1,10 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube standard_name="air_potential_temperature" units="K">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -140,10 +140,10 @@
     <data byteorder="little" checksum="0x7b0108a9" dtype="float32" order="C" shape="(38, 145, 192)"/>
   </cube>
   <cube standard_name="air_potential_temperature" units="K">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -190,10 +190,10 @@
     <data byteorder="little" checksum="0x45a44f1a" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="eastward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i002"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -241,10 +241,10 @@
     <data byteorder="little" checksum="-0x27be8882" dtype="float32" order="C" shape="(145, 192)"/>
   </cube>
   <cube standard_name="northward_wind" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i003"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
@@ -292,10 +292,10 @@
     <data byteorder="little" checksum="0x31d04486" dtype="float32" order="C" shape="(144, 192)"/>
   </cube>
   <cube standard_name="specific_humidity" units="1">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s00i010"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[26280]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>

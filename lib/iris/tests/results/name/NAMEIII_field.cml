@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="TRACER_AIR_CONCENTRATION" units="g s / m^3">
-    <attributes>
+    <local_attributes>
       <attribute name="End of release" value="02/11/2009 21:00 UTC"/>
       <attribute name="Ensemble Av" value="No ensemble averaging"/>
       <attribute name="Horizontal Av or Int" value="No horizontal averaging"/>
@@ -23,7 +23,7 @@
       <attribute name="Start of release" value="02/11/2009 18:00 UTC"/>
       <attribute name="Time Av or Int" value="4hr 0min integral"/>
       <attribute name="Vertical Av or Int" value="Boundary layer average"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord bounds="[[50.611, 50.612],
@@ -60,7 +60,7 @@
     <data byteorder="little" dtype="float32" order="C" shape="(200, 200)" state="loaded"/>
   </cube>
   <cube long_name="TRACER_AIR_CONCENTRATION" units="g / m^3">
-    <attributes>
+    <local_attributes>
       <attribute name="End of release" value="02/11/2009 21:00 UTC"/>
       <attribute name="Ensemble Av" value="No ensemble averaging"/>
       <attribute name="Horizontal Av or Int" value="No horizontal averaging"/>
@@ -82,7 +82,7 @@
       <attribute name="Start of release" value="02/11/2009 18:00 UTC"/>
       <attribute name="Time Av or Int" value="1hr 0min average"/>
       <attribute name="Vertical Av or Int" value="Boundary layer average"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord bounds="[[50.611, 50.612],
@@ -119,7 +119,7 @@
     <data byteorder="little" dtype="float32" order="C" shape="(200, 200)" state="loaded"/>
   </cube>
   <cube long_name="TRACER_DRY_DEPOSITION" units="g / m^2">
-    <attributes>
+    <local_attributes>
       <attribute name="End of release" value="02/11/2009 21:00 UTC"/>
       <attribute name="Ensemble Av" value="No ensemble averaging"/>
       <attribute name="Horizontal Av or Int" value="No horizontal averaging"/>
@@ -140,7 +140,7 @@
       <attribute name="Species Category" value="CHEMISTRY-SPECIES"/>
       <attribute name="Start of release" value="02/11/2009 18:00 UTC"/>
       <attribute name="Time Av or Int" value="4hr 0min integral"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord bounds="[[50.611, 50.612],
@@ -177,7 +177,7 @@
     <data byteorder="little" dtype="float32" order="C" shape="(200, 200)" state="loaded"/>
   </cube>
   <cube long_name="TRACER_WET_DEPOSITION" units="g / m^2">
-    <attributes>
+    <local_attributes>
       <attribute name="End of release" value="02/11/2009 21:00 UTC"/>
       <attribute name="Ensemble Av" value="No ensemble averaging"/>
       <attribute name="Horizontal Av or Int" value="No horizontal averaging"/>
@@ -198,7 +198,7 @@
       <attribute name="Species Category" value="CHEMISTRY-SPECIES"/>
       <attribute name="Start of release" value="02/11/2009 18:00 UTC"/>
       <attribute name="Time Av or Int" value="4hr 0min integral"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord bounds="[[50.611, 50.612],
@@ -235,7 +235,7 @@
     <data byteorder="little" dtype="float32" order="C" shape="(200, 200)" state="loaded"/>
   </cube>
   <cube long_name="TRACER_DEPOSITION" units="g / m^2">
-    <attributes>
+    <local_attributes>
       <attribute name="End of release" value="02/11/2009 21:00 UTC"/>
       <attribute name="Ensemble Av" value="No ensemble averaging"/>
       <attribute name="Horizontal Av or Int" value="No horizontal averaging"/>
@@ -256,7 +256,7 @@
       <attribute name="Species Category" value="CHEMISTRY-SPECIES"/>
       <attribute name="Start of release" value="02/11/2009 18:00 UTC"/>
       <attribute name="Time Av or Int" value="4hr 0min integral"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord bounds="[[50.611, 50.612],

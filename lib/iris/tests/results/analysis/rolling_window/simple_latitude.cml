@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="temperature" units="kelvin">
-    <attributes>
+    <local_attributes>
       <attribute name="history" value="Mean of temperature with a rolling window of length 2 over latitude"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord bounds="[[0.0, 5.0],

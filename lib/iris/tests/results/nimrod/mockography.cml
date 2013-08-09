@@ -1,10 +1,10 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="(MOCK) 2km mean orography" units="metres">
-    <attributes>
+    <local_attributes>
       <attribute name="field_code" value="73"/>
       <attribute name="source" value="GLOBE DTM"/>
-    </attributes>
+    </local_attributes>
     <coords/>
     <cellMethods/>
     <data byteorder="little" checksum="0x71e7c202" dtype="int64" order="C" shape="(10, 10)"/>

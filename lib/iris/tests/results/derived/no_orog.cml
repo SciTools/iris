@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube standard_name="air_potential_temperature" units="K">
-    <attributes>
+    <local_attributes>
       <attribute name="source" value="Iris test case"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[1]">
         <auxCoord bounds="[[0.0, 13.3333],

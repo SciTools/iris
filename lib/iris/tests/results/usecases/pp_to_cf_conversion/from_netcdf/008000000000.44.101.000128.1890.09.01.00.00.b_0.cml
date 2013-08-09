@@ -1,11 +1,13 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube units="unknown" var_name="unknown">
-    <attributes>
-      <attribute name="Conventions" value="CF-1.5"/>
+    <local_attributes>
       <attribute name="STASH" value="m??s44i101"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
-    </attributes>
+    </local_attributes>
+    <global_attributes>
+      <attribute name="Conventions" value="CF-1.5"/>
+    </global_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord id="2c4b8a59" points="[5.0, 15.0, 25.0, 35.1, 47.85, 67.0, 95.75,
