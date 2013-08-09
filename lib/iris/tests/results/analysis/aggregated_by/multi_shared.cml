@@ -41,6 +41,17 @@
 		[10, 11],
 		[12, 14],
 		[15, 15],
+		[16, 17]]" id="f2bf14cc" points="[1.0, 3.5, 12.0, 7.0, 9.0, 10.5, 13.0, 15.0, 16.5]" shape="(9,)" standard_name="model_level_number" units="Unit('1')" value_type="float64"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[0, 2],
+		[3, 4],
+		[5, 19],
+		[6, 8],
+		[9, 9],
+		[10, 11],
+		[12, 14],
+		[15, 15],
 		[16, 17]]" id="5f88ebd6" long_name="sigma" points="[1.0, 3.5, 12.0, 7.0, 9.0, 10.5, 13.0, 15.0, 16.5]" shape="(9,)" units="Unit('1')" value_type="float64"/>
       </coord>
     </coords>

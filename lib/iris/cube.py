@@ -2381,19 +2381,19 @@ over month, year
             >>> new_cube = cube.aggregated_by('year', iris.analysis.MEAN)
             >>> print new_cube
             surface_temperature / (K)           \
-(*ANONYMOUS*: 5; latitude: 18; longitude: 432)
+(time: 5; latitude: 18; longitude: 432)
                  Dimension coordinates:
+                      time                      \
+     x            -              -
                       latitude                  \
-            -            x              -
+     -            x              -
                       longitude                 \
-            -            -              x
+     -            -              x
                  Auxiliary coordinates:
                       forecast_reference_time   \
-            x            -              -
-                      time                      \
-            x            -              -
+     x            -              -
                       year                      \
-            x            -              -
+     x            -              -
                  Scalar coordinates:
                       forecast_period: 0 hours
                  Attributes:
@@ -2445,7 +2445,8 @@ over month, year
         # Create the resulting aggregate-by cube and remove the original
         # coordinates which are going to be groupedby.
         key = [slice(None, None)] * self.ndim
-        key[dimension_to_groupby] = (0,) * len(groupby)
+        # Generate unique index tuple key to maintain monotonicity.
+        key[dimension_to_groupby] = tuple(range(len(groupby)))
         key = tuple(key)
         aggregateby_cube = self[key]
         for coord in groupby_coords + shared_coords:
@@ -2485,8 +2486,17 @@ over month, year
                                    groupby_coords,
                                    aggregate=True, **kwargs)
         # Replace the appropriate coordinates within the aggregate-by cube.
+        dim_coord, = self.coords(dimensions=dimension_to_groupby,
+                                 dim_coords=True) or [None]
         for coord in groupby.coords:
-            aggregateby_cube.add_aux_coord(coord.copy(), dimension_to_groupby)
+            if dim_coord is not None and \
+                    dim_coord._as_defn() == coord._as_defn() and \
+                    isinstance(coord, iris.coords.DimCoord):
+                aggregateby_cube.add_dim_coord(coord.copy(),
+                                               dimension_to_groupby)
+            else:
+                aggregateby_cube.add_aux_coord(coord.copy(),
+                                               dimension_to_groupby)
         # Attatch the aggregate-by data into the aggregate-by cube.
         aggregateby_cube.data = aggregateby_data
 
