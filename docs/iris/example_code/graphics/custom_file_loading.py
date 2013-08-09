@@ -10,16 +10,20 @@ To create a format specification we need to define the following:
 * format_name - Some text that describes the format specification we are creating
 * file_element - FileElement object describing the element which identifies
                  this FormatSpecification.
-    Possible values are:
+    Some examples are:
     
-    ``iris.io.format_picker.MagicNumber(n, o)`` - The n bytes from the file \
-    at offset o.
+    ``iris.io.format_picker.MagicNumber(4, 0x00054321)`` - A 4-byte value, \
+    0x00054321
     
-    ``iris.io.format_picker.FileExtension()`` - The file's extension.
+    ``iris.io.format_picker.FileExtension('.foo')`` - A 'foo' file extension.
     
-    ``iris.io.format_picker.LeadingLine()``  - The first line of the file.
+    ``iris.io.format_picker.LeadingLine(lambda l: l.startswith('bar'))``  - \
+    A first line starting with 'bar'
 
-* file_element_value - The value that the file_element should take if a file matches this FormatSpecification
+    ``iris.io.format_picker.RoamingMagicNumber(4, 0x00054321, 100)`` - \
+    A 4-byte value, 0x00054321, occuring somewhere in the first 100-bytes of \
+    the file.
+
 * handler (optional) - A generator function that will be called when the file specification has been identified. This function is
   provided by the user and provides the means to parse the whole file. If no handler function is provided, then identification
   is still possible without any handling.
@@ -195,9 +199,10 @@ def NAME_to_cube(filenames, callback):
 
 # Create a format_picker specification of the NAME file format giving it a
 # priority greater than the built in NAME loader.
-_NAME_III_spec = format_picker.FormatSpecification('Name III', format_picker.LeadingLine(),
-                                      lambda line: line.startswith("NAME III"), NAME_to_cube,
-                                      priority=6)
+_NAME_III_spec = format_picker.FormatSpecification(
+    'Name III',
+    format_picker.LeadingLine(lambda line: line.startswith("NAME III")),
+    NAME_to_cube, priority=6)
 
 # Register the NAME loader with iris
 iris.fileformats.FORMAT_AGENT.add_spec(_NAME_III_spec)

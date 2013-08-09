@@ -102,7 +102,6 @@ class FormatAgent(object):
             tested.
 
         """
-        element_cache = {}
         for format_spec in self._format_specs:
             # For the case where a buffer_obj is None (such as for the
             # http protocol) skip any specs which require a fh - they
@@ -110,39 +109,12 @@ class FormatAgent(object):
             if buffer_obj is None and format_spec.file_element.requires_fh:
                 continue
 
-            fmt_elem = format_spec.file_element
-            fmt_elem_value = format_spec.file_element_value
-
-            # cache the results for each file element
-            if repr(fmt_elem) not in element_cache:
-                # N.B. File oriented as this is assuming seekable stream.
-                if buffer_obj is not None and buffer_obj.tell() != 0:
-                    # reset the buffer if tell != 0
-                    buffer_obj.seek(0)
- 
-                element_cache[repr(fmt_elem)] = \
-                    fmt_elem.get_element(basename, buffer_obj)
-
-            # If we have a callable object, then call it and tests its result, otherwise test using basic equality
-            if isinstance(fmt_elem_value, collections.Callable):
-                matches = fmt_elem_value(element_cache[repr(fmt_elem)])
-            elif element_cache[repr(fmt_elem)] == fmt_elem_value:
-                matches = True
-            else:
-                matches = False
-
+            matches = format_spec.file_element.check(basename, buffer_obj)
             if matches:
                 return format_spec
 
-        printable_values = {}
-        for key, value in element_cache.iteritems():
-            value = str(value)
-            if len(value) > 50:
-                value = value[:50] + '...'
-            printable_values[key] = value
-        msg = ('No format specification could be found for the given buffer.'
-               ' File element cache:\n {}'.format(printable_values))
-        raise ValueError(msg)
+        raise ValueError(
+            'No matching format specification could be found.\n')
 
 
 class FormatSpecification(object):
@@ -153,7 +125,7 @@ class FormatSpecification(object):
     a FileElement, such as filename extension or 32-bit magic number, with an associated value for format identification.
 
     """
-    def __init__(self, format_name, file_element, file_element_value, handler=None, priority=0):
+    def __init__(self, format_name, file_element, handler=None, priority=0):
         """
         Constructs a new FormatSpecification given the format_name and particular FileElements
 
@@ -161,8 +133,7 @@ class FormatSpecification(object):
 
         * format_name - string name of fileformat being described
         * file_element - FileElement instance of the element which identifies this FormatSpecification
-        * file_element_value - The value that the file_element should take if a file matches this FormatSpecification
-
+        
         Kwargs:
 
         * handler - function which will be called when the specification has been identified and is required to handler a format.
@@ -175,23 +146,13 @@ class FormatSpecification(object):
 
 
         self._file_element = file_element
-        self._file_element_value = file_element_value
         self._format_name = format_name
         self._handler = handler
         self.priority = priority
 
-    def __hash__(self):
-        # Hashed by specification for consistent ordering in FormatAgent (including self._handler in this hash
-        # for example would order randomly according to object id)
-        return hash(self._file_element)
-
     @property
     def file_element(self):
         return self._file_element
-
-    @property
-    def file_element_value(self):
-        return self._file_element_value
 
     @property
     def name(self):
@@ -207,12 +168,12 @@ class FormatSpecification(object):
         if not isinstance(other, FormatSpecification):
             return NotImplemented
 
-        return cmp( (-self.priority, hash(self)), (-other.priority, hash(other)) )
+        return cmp( (-self.priority, str(self)), (-other.priority, str(other)) )
 
     def __repr__(self):
         # N.B. loader is not always going to provide a nice repr if it is a lambda function, hence a prettier version is available in __str__
-        return 'FormatSpecification(%r, %r, %r, handler=%r, priority=%s)' % (self._format_name, self._file_element,
-                                                                            self._file_element_value, self.handler, self.priority)
+        return 'FormatSpecification(%r, %r, handler=%r, priority=%s)' % (
+            self._format_name, self._file_element, self.handler, self.priority)
 
     def __str__(self):
         return '%s%s (priority %s)' % (self.name, ' (no handler available)' if self.handler is None else '',  self.priority)
@@ -223,7 +184,7 @@ class FileElement(object):
     Represents a specific aspect of a FileFormat which can be identified using the given element getter function.
 
     """
-    def __init__(self, requires_fh=True):
+    def __init__(self, expected_value, requires_fh=True):
         """
         Constructs a new FileElement given a name and a file element getter function.
 
@@ -242,52 +203,92 @@ class FileElement(object):
         .. note::  The given file buffer will always be at the start of the buffer (i.e. have tell() of 0).
 
         """
+        self._expected_value = expected_value
         self.requires_fh = requires_fh
     
-    def get_element(self, basename, file_handle):
+    def _get_element(self, basename, file_handle):
         """Called when identifying the element of a file that this FileElement is representing."""
-        raise NotImplementedError("get_element must be defined in a subclass")
-        
+        raise NotImplementedError("_get_element must be defined in a subclass")
+
+    def check(self, basename, buffer):
+        """Check if the expected value is present."""
+        if buffer is not None and buffer.tell() != 0:
+            buffer.seek(0)
+        value = self._get_element(basename, buffer)
+
+        # Does the retrieved value match the expected value?
+        if isinstance(self._expected_value, collections.Callable):
+            matches = self._expected_value(value)
+        elif value == self._expected_value:
+            matches = True
+        else:
+            matches = False
+
+        return matches
+
     def __hash__(self):
         return hash(repr(self))
-    
+
     def __repr__(self):
-        return '{}()'.format(self.__class__.__name__)
+        return '{}({})'.format(self.__class__.__name__, self._expected_value)
 
 
 class MagicNumber(FileElement):
     """A :class:`FileElement` that returns a byte sequence in the file."""
     len_formats = {4: ">L", 8: ">Q"}
 
-    def __init__(self, num_bytes, offset=None):
+    def __init__(self, num_bytes, expected_value):
         if num_bytes not in self.len_formats:
             raise ValueError("Unhandled byte length")
-        FileElement.__init__(self, '{}-bit magic number'.format(num_bytes * 8))
+        FileElement.__init__(self, expected_value)
         self._num_bytes = num_bytes
-        self._offset = offset
 
-    def get_element(self, basename, file_handle):
+    def _get_element(self, basename, file_handle):
         fmt = self.len_formats[self._num_bytes]
-        if self._offset is not None:
-            file_handle.seek(self._offset)
         bytes = file_handle.read(self._num_bytes)
         if len(bytes) != self._num_bytes:
             raise EOFError(file_handle.name)
         return struct.unpack(fmt, bytes)[0]
 
     def __repr__(self):
-        return 'MagicNumber({}, {})'.format(self._num_bytes, self._offset)
+        return 'MagicNumber({}, {})'.format(
+            self._num_bytes, self._expected_value)
+
+
+class RoamingMagicNumber(MagicNumber):
+    """A :class:`MagicNumber` that can appear in the first n bytes."""
+
+    def __init__(self, num_bytes, expected_value, search_range):
+        MagicNumber.__init__(self, num_bytes, expected_value)
+        self._search_range = search_range
+        # We can cache this now
+        self._expected_bytes = struct.pack(self.len_formats[self._num_bytes],
+                                           self._expected_value)
+
+    def _get_element(self, basename, file_handle):
+        bytes = file_handle.read(self._search_range)
+        if len(bytes) < self._num_bytes:
+            raise EOFError(file_handle.name)
+        try:
+            bytes.index(self._expected_bytes)
+        except ValueError:
+            return None
+        return self._expected_value
+
+    def __repr__(self):
+        return 'RoamingMagicNumber({}, {}, {})'.format(
+            self._num_bytes, self._expected_value, self._search_range)
 
 
 class FileExtension(FileElement):
     """A :class:`FileElement` that returns the extension from the filename."""
-    def get_element(self, basename, file_handle):
+    def _get_element(self, basename, file_handle):
         return os.path.splitext(basename)[1]
 
 
 class LeadingLine(FileElement):
     """A :class:`FileElement` that returns the first line from the file."""
-    def get_element(self, basename, file_handle):
+    def _get_element(self, basename, file_handle):
         return file_handle.readline()
 
 
@@ -297,9 +298,8 @@ class UriProtocol(FileElement):
     using :func:`~iris.io.decode_uri`.
 
     """
-    def __init__(self):
-        FileElement.__init__(self, requires_fh=False)
+    def __init__(self, expected_value):
+        FileElement.__init__(self, expected_value, requires_fh=False)
 
-    def get_element(self, basename, file_handle):
+    def _get_element(self, basename, file_handle):
         return iris.io.decode_uri(basename)[0]
-
