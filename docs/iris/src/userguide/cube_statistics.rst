@@ -223,7 +223,7 @@ These two coordinates can now be used to aggregate by season and climate-year:
     ...     ['clim_season', 'season_year'], 
     ...     iris.analysis.MEAN)
     >>> print repr(annual_seasonal_mean)
-    <iris 'Cube' of surface_temperature / (K) (*ANONYMOUS*: 19; latitude: 18; longitude: 432)>
+    <iris 'Cube' of surface_temperature / (K) (time: 19; latitude: 18; longitude: 432)>
     
 The primary change in the cube is that the cube's data has been 
 reduced in the 'time' dimension by aggregation (taking means, in this case). 
@@ -264,7 +264,7 @@ do not cover a three month period (note: judged here as > 3*28 days):
     >>> three_months_bound = iris.Constraint(time=spans_three_months)
     >>> full_season_means = annual_seasonal_mean.extract(three_months_bound)
     >>> full_season_means
-    <iris 'Cube' of surface_temperature / (K) (*ANONYMOUS*: 17; latitude: 18; longitude: 432)>
+    <iris 'Cube' of surface_temperature / (K) (time: 17; latitude: 18; longitude: 432)>
 
 The final result now represents the seasonal mean temperature for 17 seasons 
 from jja-2006 to jja-2010:

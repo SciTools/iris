@@ -18,6 +18,16 @@
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[0, 0],
+		[1, 2],
+		[3, 5],
+		[6, 9],
+		[10, 14],
+		[15, 20],
+		[21, 27],
+		[28, 35]]" id="f2bf14cc" points="[0.0, 1.5, 4.0, 7.5, 12.0, 17.5, 24.0, 31.5]" shape="(8,)" standard_name="model_level_number" units="Unit('1')" value_type="float64"/>
+      </coord>
     </coords>
     <cellMethods>
       <cellMethod method="root mean square">
