@@ -62,7 +62,11 @@ class TestAggregateBy(tests.IrisTest):
                                                    long_name='height',
                                                    units='m')
 
+        model_level = iris.coords.DimCoord(range(z_points.size),
+                                           standard_name='model_level_number')
+
         self.cube_single.add_aux_coord(self.coord_z_single, 0)
+        self.cube_single.add_dim_coord(model_level, 0)
         self.cube_single.add_dim_coord(coord_lon, 1)
         self.cube_single.add_dim_coord(coord_lat, 2)
 
@@ -89,8 +93,12 @@ class TestAggregateBy(tests.IrisTest):
                                                    long_name='level',
                                                    units='1')
 
+        model_level = iris.coords.DimCoord(range(z1_points.size),
+                                           standard_name='model_level_number')
+
         self.cube_multi.add_aux_coord(self.coord_z1_multi, 0)
         self.cube_multi.add_aux_coord(self.coord_z2_multi, 0)
+        self.cube_multi.add_dim_coord(model_level, 0)
         self.cube_multi.add_dim_coord(coord_lon.copy(), 1)
         self.cube_multi.add_dim_coord(coord_lat.copy(), 2)
 
@@ -155,6 +163,7 @@ class TestAggregateBy(tests.IrisTest):
         # mean group-by with single coordinate name.
         aggregateby_cube = self.cube_single.aggregated_by('height',
                                                           iris.analysis.MEAN)
+
         self.assertCML(aggregateby_cube,
                        ('analysis', 'aggregated_by', 'single.cml'))
 
@@ -184,7 +193,7 @@ class TestAggregateBy(tests.IrisTest):
 
     def test_single_shared(self):
         z2_points = np.arange(36, dtype=np.int32)
-        coord_z2 = iris.coords.AuxCoord(z2_points, long_name='model_level',
+        coord_z2 = iris.coords.AuxCoord(z2_points, long_name='wibble',
                                         units='1')
         self.cube_single.add_aux_coord(coord_z2, 0)
 
