@@ -385,6 +385,16 @@ class TestGribLoad(tests.GraphicsTest):
             ('GRIB', 'gaussian', 'regular_gg.grib2')))
         self.assertCML(cube, ('grib_load', 'regular_gg_grib2.cml'))
 
+    def test_quasi_regular(self):
+        cube = iris.load_cube(tests.get_data_path(
+            ("GRIB", "quasi-regular", "quasi_regular.grib1")))
+        self.assertCML(cube, ("grib_load", "quasi_regular_grib1.cml"))
+
+        qplt.pcolormesh(cube)
+        plt.gca().coastlines()
+        plt.title("quasi-regular grib1")
+        self.check_graphic()
+
 
 class TestGribTimecodes(tests.GraphicsTest):
     def _run_timetests(self, test_set):
