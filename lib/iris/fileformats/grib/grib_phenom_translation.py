@@ -196,7 +196,7 @@ def _make_grib2_to_cf_table():
         return (grib2_key, cf_data)
 
     # Interpret the grib2 info from grib_cf_map
-    for cfdata, grib2data in grcf.CF_TO_GRIB2.iteritems():
+    for grib2data, cfdata in grcf.GRIB2_TO_CF.iteritems():
         assert grib2data.edition == 2
         association_entry = _make_grib2_cf_entry(
             param_discipline=grib2data.discipline,

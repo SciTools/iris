@@ -47,6 +47,13 @@ import collections
 # * albedo in Grib2 changed to a *percentage* (but still a fraction in Grib1)
 # * air_temperature unit "kelvin" changed to "K", as udunits requires it.
 # * 'soil_temperature' added
+# * more grib2 translations :--
+#   * "atmosphere_mass_content_of_water_vapor"  -->  [2, 0, 1, 64] / "kg m-2"
+#     * ( Grib2 = "Total column integrated water vapour / kg m-2" )
+#   * "land_binary_mask"  -->  [2, 2, 0, 0]
+#     * same as "land_area_fraction", but obviously save-only
+#   * "surface_altitude"  -->  [2, 2, 0, 7]
+#     * ( Grib2 = "Model terrain height / m" )
 
 # OUTSTANDING QUESTIONS:
 # Remarks regarding the Metarelate output format
@@ -104,7 +111,7 @@ GRIB2_TO_CF = {
 	G2param(2, 0, 1, 22): CFname(None, "cloud_mixing_ratio", "kg kg-1"),
 	G2param(2, 0, 1, 3): CFname(None, "precipitable_water", "kg m-2"),
 	G2param(2, 0, 14, 0): CFname("atmosphere_mole_content_of_ozone", None, "Dobson"),
-	G2param(2, 0, 19, 1): CFname(None, "grib_physical_atmosphere_albedo", 1),
+	G2param(2, 0, 19, 1): CFname(None, "grib_physical_atmosphere_albedo", "%"),
 	G2param(2, 0, 2, 1): CFname("wind_speed", None, "m s-1"),
 	G2param(2, 0, 2, 10): CFname("atmosphere_absolute_vorticity", None, "s-1"),
 	G2param(2, 0, 2, 2): CFname("x_wind", None, "m s-1"),
@@ -130,6 +137,8 @@ GRIB2_TO_CF = {
 	G2param(2, 2, 0, 0): CFname("land_area_fraction", None, 1),
 	G2param(2, 2, 0, 1): CFname("surface_roughness_length", None, "m"),
     G2param(2, 2, 0, 2): CFname("soil_temperature", None, "K"),
+    G2param(2, 0, 1, 64): CFname("atmosphere_mass_content_of_water_vapor", None, "kg m-2"),
+    G2param(2, 2, 0, 7): CFname("surface_altitude", None, "m"),
 	}
 
 CFConstrained_TO_GRIB1Local = {
@@ -197,4 +206,7 @@ CF_TO_GRIB2 = {	CFname("x_wind", None, "m s-1"):G2param(2, 0, 2, 2),
  	CFname(None, "precipitable_water", "kg m-2"):G2param(2, 0, 1, 3),
  	CFname(None, "storm_relative_helicity", "J kg-1"):G2param(2, 0, 7, 8),
     CFname("dew_point_temperature", None, "K"):G2param(2, 0, 0, 6),
+    CFname("atmosphere_mass_content_of_water_vapor", None, "kg m-2"):G2param(2, 0, 1, 64),
+    CFname("surface_altitude", None, "m"):G2param(2, 2, 0, 7),
+    CFname("land_binary_mask", None, 1):G2param(2, 2, 0, 0),
 	}
