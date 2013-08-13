@@ -686,6 +686,13 @@ class TestConvert(TestUnit):
         u1point = np.array([ 54432000.], dtype=np.float32)
         with self.assertRaises(ValueError):
             u1.convert(u1point, u2)
+            
+    def test_gregorian_standard(self):
+        # Make sure "gregorian" and "standard" are equivalent.
+        g70 = Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')
+        s70 = Unit('hours since 1970-01-01 00:00:00', calendar='standard')
+        self.assertEqual(g70.convert(10, s70), 10)
+        self.assertEqual(s70.convert(10, g70), 10)
 
 
 class TestNumsAndDates(TestUnit):

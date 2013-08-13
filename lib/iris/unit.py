@@ -1064,7 +1064,7 @@ class Unit(iris.util._OrderedHashable):
             other.is_no_unit():
             result = False
         else:
-            result = self.calendar == other.calendar and _ut_are_convertible(self.ut_unit, other.ut_unit) != 0
+            result = _ut_are_convertible(self.ut_unit, other.ut_unit) != 0
         return result
 
     def convertible(self, other):
@@ -1692,8 +1692,11 @@ class Unit(iris.util._OrderedHashable):
             return False
 
         # Compare calendar as UDUNITS cannot handle calendars.
-        if self.calendar != other.calendar:
-            return False
+        if (self.calendar in ['gregorian', 'standard'] and 
+            other.calendar in ['gregorian', 'standard']):
+                pass
+        elif self.calendar != other.calendar:
+                return False
 
         # Compare UDUNITS.
         res = _ut_compare(self.ut_unit, other.ut_unit)
@@ -1777,10 +1780,11 @@ class Unit(iris.util._OrderedHashable):
         if self.is_convertible(other):
             # Use utime for converting reference times that are not using a
             # gregorian calendar as it handles these and udunits does not.
-            if self.is_time_reference() and self.calendar is not 'gregorian':
-                ut1 = self.utime()
-                ut2 = other.utime()
-                result = ut2.date2num(ut1.num2date(value_copy))
+            if (self.is_time_reference() and
+                self.calendar not in ['gregorian', 'standard']):
+                    ut1 = self.utime()
+                    ut2 = other.utime()
+                    result = ut2.date2num(ut1.num2date(value_copy))
             else:
                 ut_converter = _ut_get_converter(self.ut_unit, other.ut_unit)
                 if ut_converter:
