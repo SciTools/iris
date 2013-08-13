@@ -60,6 +60,19 @@ class TestCreation(TestUnit):
         u = Unit('   meter   ')
         self.assertTrue(u.name, 'meter')
 
+    def test_calendar(self):
+        calendar = unit.CALENDAR_365_DAY
+        u = Unit('hours since 1970-01-01 00:00:00', calendar=calendar)
+        self.assertEqual(u.calendar, calendar)
+
+    def test_no_calendar(self):
+        u = Unit('hours since 1970-01-01 00:00:00')
+        self.assertEqual(u.calendar, unit.CALENDAR_GREGORIAN)
+
+    def test_unknown_calendar(self):
+        with self.assertRaises(ValueError):
+            u = Unit('hours since 1970-01-01 00:00:00', calendar='wibble')
+
 
 class TestModulus(TestUnit):
     #
@@ -682,7 +695,7 @@ class TestConvert(TestUnit):
         # Test converting from one reference time to another between different
         # calendars raises an error.
         u1 = Unit('seconds since 1978-09-01 00:00:00', calendar='360_day')
-        u2 = Unit('seconds since 1979-04-01 00:00:00', calendar='georgian')
+        u2 = Unit('seconds since 1979-04-01 00:00:00', calendar='gregorian')
         u1point = np.array([ 54432000.], dtype=np.float32)
         with self.assertRaises(ValueError):
             u1.convert(u1point, u2)
