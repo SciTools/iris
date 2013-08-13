@@ -427,7 +427,7 @@ class GribWrapper(object):
 
         gridType = gribapi.grib_get_string(self.grib_message, "gridType")
 
-        if gridType=="regular_ll":
+        if gridType in ["regular_ll", "regular_gg"]:
             self.extra_keys['_x_coord_name'] = "longitude"
             self.extra_keys['_y_coord_name'] = "latitude"
             self.extra_keys['_coord_system'] = geoid
@@ -484,32 +484,28 @@ class GribWrapper(object):
         else:
             raise TranslationError("unhandled grid type: {}".format(gridType))
 
-        # x and y points, and circularity
         if gridType in ["regular_ll", "rotated_ll"]:
-            i_step = self.iDirectionIncrementInDegrees
+            self._regular_longitude_common()
             j_step = self.jDirectionIncrementInDegrees
-            if self.iScansNegatively:
-                i_step = -i_step
             if not self.jScansPositively:
                 j_step = -j_step
-            self._x_points = (np.arange(self.Ni, dtype=np.float64) * i_step +
-                              self.longitudeOfFirstGridPointInDegrees)
             self._y_points = (np.arange(self.Nj, dtype=np.float64) * j_step +
                               self.latitudeOfFirstGridPointInDegrees)
 
-            # circular x coord?
-            if "longitude" in self.extra_keys['_x_coord_name'] and self.Ni > 1:
-                # Is the gap from end to start smaller,
-                #  or about equal to the max step?
-                points = self._x_points
-                gap = 360.0 - abs(points[-1] - points[0]) 
-                max_step = abs(np.diff(points)).max()
-                if gap <= max_step:
-                    self.extra_keys['_x_circular'] = True
-                else:
-                    delta = 0.001
-                    if abs(1.0 - gap / max_step) < delta:
-                        self.extra_keys['_x_circular'] = True
+        elif gridType in ['regular_gg']:
+            # longitude coordinate is straight-forward
+            self._regular_longitude_common()
+            # get the distinct latitudes, and make sure they are sorted
+            # (south-to-north) and then put them in the right direction
+            # depending on the scan direction
+            latitude_points = gribapi.grib_get_double_array(
+                self.grib_message, 'distinctLatitudes').astype(np.float64)
+            latitude_points.sort()
+            if not self.jScansPositively:
+                # we require latitudes north-to-south
+                self._y_points = latitude_points[::-1]
+            else:
+                self._y_points = latitude_points
 
         elif gridType in ["polar_stereographic", "lambert"]:
             # convert the starting latlon into meters
@@ -530,6 +526,26 @@ class GribWrapper(object):
             
         else:
             raise TranslationError("unhandled grid type")
+
+    def _regular_longitude_common(self):
+        """Define a regular longitude dimension."""
+        i_step = self.iDirectionIncrementInDegrees
+        if self.iScansNegatively:
+            i_step = -i_step
+        self._x_points = (np.arange(self.Ni, dtype=np.float64) * i_step +
+                          self.longitudeOfFirstGridPointInDegrees)
+        if "longitude" in self.extra_keys['_x_coord_name'] and self.Ni > 1:
+            # Is the gap from end to start smaller,
+            #  or about equal to the max step?
+            points = self._x_points
+            gap = 360.0 - abs(points[-1] - points[0])
+            max_step = abs(np.diff(points)).max()
+            if gap <= max_step:
+                self.extra_keys['_x_circular'] = True
+            else:
+                delta = 0.001
+                if abs(1.0 - gap / max_step) < delta:
+                    self.extra_keys['_x_circular'] = True
         
     def _get_processing_done(self):
         """Determine the type of processing that was done on the data."""
