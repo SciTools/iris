@@ -12,15 +12,15 @@
         <dimCoord id="5b34144a" long_name="pressure" points="[101500.0]" shape="(1,)" units="Unit('Pa')" value_type="float64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="ac27fa63" points="[-2610912.97429, -2580912.97429, -2550912.97429,
-		..., 4709087.02571, 4739087.02571, 4769087.02571]" shape="(247,)" standard_name="projection_x_coordinate" units="Unit('unknown')" value_type="float64">
+        <dimCoord id="2de832e" points="[-2610912.97429, -2580912.97429, -2550912.97429,
+		..., 4709087.02571, 4739087.02571, 4769087.02571]" shape="(247,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64">
           <stereographic central_lat="90.0" central_lon="249.0" ellipsoid="GeogCS(6371229.0)" false_easting="0.0" false_northing="0.0" true_scale_lat="60.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="eac392a6" points="[-5972088.31685, -5942088.31685, -5912088.31685,
+        <dimCoord id="58c53373" points="[-5972088.31685, -5942088.31685, -5912088.31685,
 		..., -62088.3168487, -32088.3168487,
-		-2088.31684868]" shape="(200,)" standard_name="projection_y_coordinate" units="Unit('unknown')" value_type="float64">
+		-2088.31684868]" shape="(200,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64">
           <stereographic central_lat="90.0" central_lon="249.0" ellipsoid="GeogCS(6371229.0)" false_easting="0.0" false_northing="0.0" true_scale_lat="60.0"/>
         </dimCoord>
       </coord>

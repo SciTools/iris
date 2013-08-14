@@ -68,8 +68,8 @@ def convert(grib):
         dim_coords_and_dims.append((DimCoord(grib._x_points, grib._x_coord_name, units='degrees', coord_system=grib._coord_system, circular=grib._x_circular), 0))
 
     if grib.gridType in ["polar_stereographic", "lambert"]:
-        dim_coords_and_dims.append((DimCoord(grib._y_points, grib._y_coord_name, units=None, coord_system=grib._coord_system), 0))
-        dim_coords_and_dims.append((DimCoord(grib._x_points, grib._x_coord_name, units=None, coord_system=grib._coord_system), 1))
+        dim_coords_and_dims.append((DimCoord(grib._y_points, grib._y_coord_name, units="m", coord_system=grib._coord_system), 0))
+        dim_coords_and_dims.append((DimCoord(grib._x_points, grib._x_coord_name, units="m", coord_system=grib._coord_system), 1))
 
     if \
             (grib.edition == 1) and \
