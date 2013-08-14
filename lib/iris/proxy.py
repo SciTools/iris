@@ -54,4 +54,5 @@ def apply_proxy(module_name, dic):
         __import__(module_name)
         dic[name] = sys.modules[module_name]
     except ImportError:
+        sys.stderr.write('@@@@@@@@@@@@@@@ - import {} failed\n'.format(module_name))
         dic[name] = sys.modules[name] = FakeModule(name)
