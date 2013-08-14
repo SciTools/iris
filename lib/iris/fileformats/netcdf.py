@@ -32,6 +32,7 @@ import string
 import warnings
 
 import iris.proxy
+import netCDF4
 iris.proxy.apply_proxy('netCDF4', globals())
 import numpy as np
 import numpy.ma as ma
