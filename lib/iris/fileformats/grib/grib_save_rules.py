@@ -388,9 +388,9 @@ def type_of_statistical_processing(cube, grib, coord):
             stat_code = 0
         elif cell_method.method == 'accumulation':
             stat_code = 1
-        elif cell_method.method == 'minimum':
-            stat_code = 2
         elif cell_method.method == 'maximum':
+            stat_code = 2
+        elif cell_method.method == 'minimum':
             stat_code = 3
         elif cell_method.method == 'standard_deviation':
             stat_code = 6
