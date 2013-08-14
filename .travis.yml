@@ -39,22 +39,24 @@ install:
   - ./.travis_no_output sudo apt-get install libgeos-dev libproj-dev
   - ./.travis_no_output sudo apt-get install libudunits2-dev libhdf5-serial-dev netcdf-bin libnetcdf-dev
   - ./.travis_no_output sudo apt-get install make unzip python-sphinx graphviz
-  - ./.travis_no_output sudo /usr/bin/pip install pyke netCDF4 pandas
+  - ./.travis_no_output sudo /usr/bin/pip install pyke
+  - sudo /usr/bin/pip install netCDF4==1.0.2
+  - ./.travis_no_output sudo /usr/bin/pip install pandas
   - ./.travis_no_output sudo apt-get install openjdk-7-jre
   - ./.travis_no_output sudo apt-get install python-gdal
   - export LD_LIBRARY_PATH=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/server:$LD_LIBRARY_PATH
 
 # cfchecker
-  - ./.travis_no_output sudo /usr/bin/pip install cdat-lite
-  - ./.travis_no_output sudo /usr/bin/pip install cfchecker
+#  - ./.travis_no_output sudo /usr/bin/pip install cdat-lite
+#  - ./.travis_no_output sudo /usr/bin/pip install cfchecker
 # Using table 23 due to a bug present in the current version
-  - ./.travis_no_output wget http://cf-pcmdi.llnl.gov/documents/cf-standard-names/standard-name-table/23/cf-standard-name-table.xml
+#  - ./.travis_no_output wget http://cf-pcmdi.llnl.gov/documents/cf-standard-names/standard-name-table/23/cf-standard-name-table.xml
 #  - ./.travis_no_output wget http://cf-pcmdi.llnl.gov/documents/cf-standard-names/standard-name-table/current/cf-standard-name-table.xml
-  - ./.travis_no_output wget http://cf-pcmdi.llnl.gov/documents/cf-standard-names/area-type-table/current/area-type-table.xml
-  - echo '#!/usr/bin/env sh' > cfchecker
-  - echo "cfchecks -s `pwd`/cf-standard-name-table.xml -a `pwd`/area-type-table.xml -u /usr/share/xml/udunits/udunits2.xml \$1" >> cfchecker
-  - ./.travis_no_output sudo cp cfchecker /usr/local/bin/cfchecker
-  - ./.travis_no_output sudo chmod a+x /usr/local/bin/cfchecker
+#  - ./.travis_no_output wget http://cf-pcmdi.llnl.gov/documents/cf-standard-names/area-type-table/current/area-type-table.xml
+#  - echo '#!/usr/bin/env sh' > cfchecker
+#  - echo "cfchecks -s `pwd`/cf-standard-name-table.xml -a `pwd`/area-type-table.xml -u /usr/share/xml/udunits/udunits2.xml \$1" >> cfchecker
+#  - ./.travis_no_output sudo cp cfchecker /usr/local/bin/cfchecker
+#  - ./.travis_no_output sudo chmod a+x /usr/local/bin/cfchecker
 
 # grib api
   - ./.travis_no_output sudo apt-get install libjasper-dev
