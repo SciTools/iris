@@ -1361,6 +1361,13 @@ class DimCoord(Coord):
     def is_monotonic(self):
         return True
 
+    def xml_element(self, doc):
+        """Return DOM element describing this :class:`iris.coords.DimCoord`."""
+        element = super(DimCoord, self).xml_element(doc)
+        if self.circular:
+            element.setAttribute('circular', str(self.circular))
+        return element
+
 
 class AuxCoord(Coord):
     """A CF auxiliary coordinate."""

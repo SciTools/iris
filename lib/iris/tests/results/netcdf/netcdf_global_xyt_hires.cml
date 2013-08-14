@@ -39,7 +39,7 @@
 		..., 
 		[356.0625, 357.1875],
 		[357.1875, 358.3125],
-		[358.3125, 359.4375]]" id="410c27bf" long_name="longitude" points="[0.0, 1.125, 2.25, ..., 356.625, 357.75, 358.875]" shape="(320,)" standard_name="longitude" units="Unit('degrees')" value_type="float64" var_name="lon"/>
+		[358.3125, 359.4375]]" circular="True" id="410c27bf" long_name="longitude" points="[0.0, 1.125, 2.25, ..., 356.625, 357.75, 358.875]" shape="(320,)" standard_name="longitude" units="Unit('degrees')" value_type="float64" var_name="lon"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord bounds="[[71588.0, 71589.0],
