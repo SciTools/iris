@@ -50,6 +50,8 @@ def apply_proxy(module_name, dic):
 
     """
     name = module_name.split('.')[-1]
+    sys.stderr.write('############ name = {!r}\n'.format(name))
+    sys.stderr.write('############ module_name = {!r}\n'.format(module_name))
     try:
         __import__(module_name)
         dic[name] = sys.modules[module_name]
