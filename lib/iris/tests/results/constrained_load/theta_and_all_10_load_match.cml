@@ -68,7 +68,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -164,7 +164,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -214,7 +214,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
 		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
@@ -266,7 +266,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -316,7 +316,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
