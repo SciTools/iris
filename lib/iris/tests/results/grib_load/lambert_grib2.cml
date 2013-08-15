@@ -9,15 +9,15 @@
         <auxCoord id="64f42873" long_name="originating_centre" points="[	US National Weather Service, National Centres for Environmental Prediction]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="86742b88" points="[-2397017.06081, -2393017.06081, -2389017.06081,
-		..., 2386982.93919, 2390982.93919, 2394982.93919]" shape="(1199,)" standard_name="projection_x_coordinate" units="Unit('unknown')" value_type="float64">
+        <dimCoord id="c8464af7" points="[-2397017.06081, -2393017.06081, -2389017.06081,
+		..., 2386982.93919, 2390982.93919, 2394982.93919]" shape="(1199,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64">
           <lambertConformal central_lat="60.0" central_lon="262.0" ellipsoid="GeogCS(6371229.0)" false_easting="0" false_northing="0" secant_latitudes="(60.0, 30.0)"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="59c4bdf4" points="[-3860305.33224, -3856305.33224, -3852305.33224,
+        <dimCoord id="5561d9d4" points="[-3860305.33224, -3856305.33224, -3852305.33224,
 		..., -676305.332237, -672305.332237,
-		-668305.332237]" shape="(799,)" standard_name="projection_y_coordinate" units="Unit('unknown')" value_type="float64">
+		-668305.332237]" shape="(799,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64">
           <lambertConformal central_lat="60.0" central_lon="262.0" ellipsoid="GeogCS(6371229.0)" false_easting="0" false_northing="0" secant_latitudes="(60.0, 30.0)"/>
         </dimCoord>
       </coord>
