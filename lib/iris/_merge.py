@@ -242,6 +242,20 @@ class _CubeSignature(namedtuple('CubeSignature',
         :class:`iris.cube.Cube`.
 
     """
+    def kwargs(self):
+        """
+        Return a dict of keyword arguments suitable for
+        :meth:`iris.cube.Cube.__init__`.
+
+        """
+        kwargs = self.defn._asdict()
+        # Special handling of attributes dictionaries as we can
+        # only set iris.cube.Cube.local_attributes through __init__.
+        kwargs['attributes'] = kwargs['local_attributes']
+        del kwargs['local_attributes']
+        del kwargs['global_attributes']
+
+        return kwargs
 
 
 class _Skeleton(namedtuple('Skeleton',
@@ -1262,7 +1276,7 @@ class ProtoCube(object):
                                for coord, dim in self._dim_coords_and_dims]
         aux_coords_and_dims = [(deepcopy(coord), dims)
                                for coord, dims in self._aux_coords_and_dims]
-        kwargs = dict(zip(iris.cube.CubeMetadata._fields, signature.defn))
+        kwargs = signature.kwargs()
 
         # Create fully masked data, i.e. all missing.
         # (The CubeML checksum doesn't respect the mask, so we zero the
@@ -1279,7 +1293,12 @@ class ProtoCube(object):
         cube = iris.cube.Cube(data,
                               dim_coords_and_dims=dim_coords_and_dims,
                               aux_coords_and_dims=aux_coords_and_dims,
-                              data_manager=signature.data_manager, **kwargs)
+                              data_manager=signature.data_manager,
+                              **signature.kwargs())
+
+        # Set global_attributes (local_attributes are set via
+        # signature.kwargs() above).
+        cube.global_attributes = signature.defn.global_attributes
 
         # Add on any aux coord factories.
         for factory_defn in self._coord_signature.factory_defns:

@@ -6,6 +6,6 @@ air_temperature / (K)               (scalar cube)
           longitude: 0.0 degrees
           pressure: 1000.0 hPa
           time: 1998-12-01 00:00:00
-     Attributes:
+     Local attributes:
           STASH: m01s16i203
           source: Data from Met Office Unified Model

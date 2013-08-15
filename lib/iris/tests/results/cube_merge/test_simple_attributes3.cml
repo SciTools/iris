@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="thingness" units="1">
-    <attributes>
+    <local_attributes>
       <attribute name="my_attr1" value="foo"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[1]">
         <dimCoord id="7c9a33bf" long_name="bar" points="[2.5, 7.5, 12.5]" shape="(3,)" units="Unit('1')" value_type="float64"/>

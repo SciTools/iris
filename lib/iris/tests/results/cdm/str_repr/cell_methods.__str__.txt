@@ -7,7 +7,7 @@ air_temperature / (K)               (latitude: 73; longitude: 96)
           forecast_reference_time: 1998-03-06 03:00:00
           pressure: 1000.0 hPa
           time: 1998-12-01 00:00:00
-     Attributes:
+     Local attributes:
           STASH: m01s16i203
           source: Data from Met Office Unified Model
      Cell methods:

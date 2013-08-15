@@ -1,13 +1,13 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="Visibility" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="field_code" value="155"/>
       <attribute name="invalid_units" value="m/2-25k"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="UM?"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="4b769e0e" points="[355014.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>

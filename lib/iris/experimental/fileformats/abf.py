@@ -165,7 +165,7 @@ class ABFField(object):
 
         # TODO: Do they only come from Boston?
         # Attributes.
-        cube.attributes["source"] = "Boston University"
+        cube.local_attributes["source"] = "Boston University"
 
         return cube
 

@@ -1,10 +1,10 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube standard_name="air_pressure_at_sea_level" units="Pa">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s16i222"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.01"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <auxCoord id="73141289" points="[0.0, 3.99999999627, 5.00000000373, 2.00000000373]" shape="(4,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>

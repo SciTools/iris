@@ -35,7 +35,7 @@ import iris.exceptions
 import iris.unit
 import iris.util
 
-from iris._cube_coord_common import CFVariableMixin
+from iris._cube_coord_common import CFVariableMixin, LimitedAttributeDict
 
 
 class CoordDefn(collections.namedtuple('CoordDefn',
@@ -442,6 +442,14 @@ class Coord(CFVariableMixin):
     @abstractproperty
     def bounds(self):
         """Property containing the bound values as a numpy array"""
+
+    @property
+    def attributes(self):
+        return self._attributes
+
+    @attributes.setter
+    def attributes(self, attributes):
+        self._attributes = LimitedAttributeDict(attributes or {})
 
     def _repr_other_metadata(self):
         fmt = ''

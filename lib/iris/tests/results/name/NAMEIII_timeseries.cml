@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="CAESIUM-137_AIR_CONCENTRATION" units="Bq / m^3">
-    <attributes>
+    <local_attributes>
       <attribute name="End of release" value="17/11/2010 13:00 UTC"/>
       <attribute name="Ens Av" value="No ensemble averaging"/>
       <attribute name="Horizontal Av or Int" value="No horizontal averaging"/>
@@ -24,7 +24,7 @@
       <attribute name="Start of release" value="15/11/2010 13:00 UTC"/>
       <attribute name="Time Av or Int" value="1hr 0min average"/>
       <attribute name="Vertical Av or Int" value="Boundary layer average"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="a42bcac2" points="[53.4167]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
@@ -70,7 +70,7 @@
     <data byteorder="little" dtype="float64" order="C" shape="(72,)" state="loaded"/>
   </cube>
   <cube long_name="CAESIUM-137_AIR_CONCENTRATION" units="Bq s / m^3">
-    <attributes>
+    <local_attributes>
       <attribute name="End of release" value="17/11/2010 13:00 UTC"/>
       <attribute name="Ens Av" value="No ensemble averaging"/>
       <attribute name="Horizontal Av or Int" value="No horizontal averaging"/>
@@ -93,7 +93,7 @@
       <attribute name="Start of release" value="15/11/2010 13:00 UTC"/>
       <attribute name="Time Av or Int" value="1hr 0min integral"/>
       <attribute name="Vertical Av or Int" value="Boundary layer average"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="a42bcac2" points="[53.4167]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
@@ -139,7 +139,7 @@
     <data byteorder="little" dtype="float64" order="C" shape="(72,)" state="loaded"/>
   </cube>
   <cube long_name="CAESIUM-137_DRY_DEPOSITION_RATE" units="Bq / (m^2 s)">
-    <attributes>
+    <local_attributes>
       <attribute name="End of release" value="17/11/2010 13:00 UTC"/>
       <attribute name="Ens Av" value="No ensemble averaging"/>
       <attribute name="Horizontal Av or Int" value="No horizontal averaging"/>
@@ -161,7 +161,7 @@
       <attribute name="Species Category" value="RADIONUCLIDE"/>
       <attribute name="Start of release" value="15/11/2010 13:00 UTC"/>
       <attribute name="Time Av or Int" value="1hr 0min average"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="a42bcac2" points="[53.4167]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
@@ -207,7 +207,7 @@
     <data byteorder="little" dtype="float64" order="C" shape="(72,)" state="loaded"/>
   </cube>
   <cube long_name="CAESIUM-137_WET_DEPOSITION_RATE" units="Bq / (m^2 s)">
-    <attributes>
+    <local_attributes>
       <attribute name="End of release" value="17/11/2010 13:00 UTC"/>
       <attribute name="Ens Av" value="No ensemble averaging"/>
       <attribute name="Horizontal Av or Int" value="No horizontal averaging"/>
@@ -229,7 +229,7 @@
       <attribute name="Species Category" value="RADIONUCLIDE"/>
       <attribute name="Start of release" value="15/11/2010 13:00 UTC"/>
       <attribute name="Time Av or Int" value="1hr 0min average"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="a42bcac2" points="[53.4167]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
@@ -275,7 +275,7 @@
     <data byteorder="little" dtype="float64" order="C" shape="(72,)" state="loaded"/>
   </cube>
   <cube long_name="CAESIUM-137_DEPOSITION_RATE" units="Bq / (m^2 s)">
-    <attributes>
+    <local_attributes>
       <attribute name="End of release" value="17/11/2010 13:00 UTC"/>
       <attribute name="Ens Av" value="No ensemble averaging"/>
       <attribute name="Horizontal Av or Int" value="No horizontal averaging"/>
@@ -297,7 +297,7 @@
       <attribute name="Species Category" value="RADIONUCLIDE"/>
       <attribute name="Start of release" value="15/11/2010 13:00 UTC"/>
       <attribute name="Time Av or Int" value="1hr 0min average"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="a42bcac2" points="[53.4167]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">

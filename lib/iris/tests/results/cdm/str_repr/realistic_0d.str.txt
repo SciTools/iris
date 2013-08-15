@@ -9,5 +9,5 @@ air_potential_temperature / (K)     (scalar cube)
           sigma: 0.999424, bound=(1.0, 0.998464)
           surface_altitude: 413.937 m
           time: 2009-09-09 17:10:00
-     Attributes:
+     Local attributes:
           source: Iris test case

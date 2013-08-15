@@ -373,7 +373,7 @@ def _load_cube(engine, cf, cf_var, filename):
     # Attach untouched attributes of the associated CF-netCDF data variable to
     # the cube.
     for attr_name, attr_value in tmpvar:
-        _set_attributes(cube.attributes, attr_name, attr_value)
+        _set_attributes(cube.local_attributes, attr_name, attr_value)
 
     # Show pyke session statistics.
     _pyke_stats(engine, cf_var.cf_name)
@@ -551,6 +551,12 @@ class Saver(object):
         # variable to them
         cf_var_cube = self._add_aux_coords(cube, cf_var_cube, dimension_names,
                                            factory_defn)
+
+        # Add global attributes.
+        for attr_name in sorted(cube.global_attributes):
+            value = cube.global_attributes[attr_name]
+            if attr_name.lower() != 'conventions':
+                setattr(self._dataset, attr_name, value)
 
         if cf_profile_available:
             # Perform a CF patch of the dataset.
@@ -1137,9 +1143,10 @@ class Saver(object):
         if cube.units != 'unknown':
             cf_var.units = str(cube.units)
 
-        # Add any other cube attributes as CF-netCDF data variable attributes.
-        for attr_name in sorted(cube.attributes):
-            value = cube.attributes[attr_name]
+        # Add any other cube local_attributes as CF-netCDF data variable
+        # attributes.
+        for attr_name in sorted(cube.local_attributes):
+            value = cube.local_attributes[attr_name]
 
             if attr_name == 'STASH':
                 # Adopting provisional Metadata Conventions for representing MO
@@ -1150,8 +1157,7 @@ class Saver(object):
             if attr_name == "ukmo__process_flags":
                 value = " ".join([x.replace(" ", "_") for x in value])
 
-            if attr_name.lower() != 'conventions':
-                setattr(cf_var, attr_name, value)
+            setattr(cf_var, attr_name, value)
 
         self._dataset.Conventions = _CF_CONVENTIONS_VERSION
 
@@ -1226,6 +1232,14 @@ def save(cube, filename, netcdf_format='NETCDF4'):
         cubes.append(cube)
     else:
         cubes = cube
+
+    # Check the global_attributes are common across all cubes.
+    global_attributes = cubes[0].global_attributes
+    for cube in cubes[1:]:
+        if cube.global_attributes != global_attributes:
+            msg = 'Unable to save to a single netCDF file because the cubes ' \
+                  'in {!r} have different global_attributes.'.format(cubes)
+            raise ValueError(msg)
 
     # Initialise Manager for saving
     with Saver(filename, netcdf_format) as sman:

@@ -1,10 +1,10 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube standard_name="air_temperature" units="K">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s03i236"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="28d5141c" points="[1.5]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64">

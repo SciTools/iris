@@ -1,23 +1,27 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="Zonal Surface Wind Speed" standard_name="eastward_wind" units="m s-1" var_name="uas">
-    <attributes>
+    <local_attributes>
+      <attribute name="history" value=" At   15:14:34 on 01/13/2005: CMOR altered the data in the following ways: converted from type &quot;double&quot; to type &quot;real&quot;; replaced missing value flag (-9.99000E+02) with standard missing value (1.00000E+20);  lat dimension direction was reversed;"/>
+      <attribute name="original_name" value="10m zonal wind"/>
+      <attribute name="original_units" value="m/s"/>
+    </local_attributes>
+    <global_attributes>
       <attribute name="Conventions" value="CF-1.0"/>
       <attribute name="cmor_version" value="0.96"/>
       <attribute name="comment" value="This run was initiated from the end of the corresponding 20C3M run of CCSR/NIES/FRCGC (the same resolution as this run, realization = 1). The conditions including GHGs concentration and various aerosols emissions were changed according to the IPCC SRES A1B scenario in the course of this run."/>
       <attribute name="contact" value="Seita Emori (emori@nies.go.jp)"/>
       <attribute name="experiment_id" value="720 ppm stabilization experiment (SRES A1B)"/>
-      <attribute name="history" value=" At   15:14:34 on 01/13/2005: CMOR altered the data in the following ways: converted from type &quot;double&quot; to type &quot;real&quot;; replaced missing value flag (-9.99000E+02) with standard missing value (1.00000E+20);  lat dimension direction was reversed;"/>
+      <attribute name="history" value="Fri Nov 27 16:58:45 2009: ncks hires_wind_u_for_ipcc4.nc -o short.nc -d time,,30
+output from MIROC3.2  At 15:14:34 on 01/13/2005, CMOR rewrote data to comply with CF standards and IPCC Fourth Assessment requirements"/>
       <attribute name="institution" value="CCSR/NIES/FRCGC (Center for Climate System Research, Tokyo, Japan / National Institute for Environmental Studies, Ibaraki, Japan / Frontier Research Center for Global Change, Kanagawa, Japan)"/>
-      <attribute name="original_name" value="10m zonal wind"/>
-      <attribute name="original_units" value="m/s"/>
       <attribute name="project_id" value="IPCC Fourth Assessment"/>
       <attribute name="realization" value="1"/>
       <attribute name="references" value="K-1 Coupled GCM Description (K-1 Technical Report No.1) in preparation"/>
       <attribute name="source" value="MIROC3.2 (2004): atmosphere: AGCM (AGCM5.7b, T106 L56); ocean &amp; sea ice: COCO (COCO3.3, T106 4x6 tiling L48); land: MATSIRO (T106 2x2 tiling)"/>
       <attribute name="table_id" value="Table A2 (17 November 2004)"/>
       <attribute name="title" value="CCSR/NIES/FRCGC  model output prepared for IPCC Fourth Assessment 720 ppm stabilization experiment (SRES A1B)"/>
-    </attributes>
+    </global_attributes>
     <coords>
       <coord>
         <dimCoord id="4f26456c" long_name="height" points="[10.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64" var_name="height"/>

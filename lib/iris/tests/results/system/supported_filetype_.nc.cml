@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="System test data" units="m s-1" var_name="system_test_data">
-    <attributes>
+    <global_attributes>
       <attribute name="Conventions" value="CF-1.5"/>
-    </attributes>
+    </global_attributes>
     <coords>
       <coord>
         <dimCoord id="1d7d6eff" points="[9]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int64" var_name="forecast_period"/>

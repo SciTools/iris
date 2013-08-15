@@ -68,7 +68,8 @@ A cube consists of:
     * *dimension coordinates* - DimCoords which uniquely map to exactly one data dimension, ordered by dimension.
     * *auxiliary coordinates* - DimCoords or AuxCoords which map to as many data dimensions as the coordinate has dimensions.
    
- * an attributes dictionary which, other than some protected CF names, can hold arbitrary extra metadata.
+ * a local_attributes dictionary which, other than some protected CF names, can hold arbitrary extra metadata
+ * a global_attributes dictionary for storing CF global attribute metadata
  * a list of cell methods to represent operations which have already been applied to the data (e.g. "mean over time") 
  * a list of coordinate "factories" used for deriving coordinates from the values of other coordinates in the cube 
 
@@ -170,7 +171,7 @@ output as this is the quickest way of inspecting the contents of a cube. Here is
               altitude                       -                      x                 x                    x
          Scalar coordinates:
               forecast_reference_time: 2009-11-19 04:00:00
-         Attributes:
+         Local attributes:
               STASH: m01s00i004
               source: Data from Met Office Unified Model 7.03
 
@@ -187,6 +188,7 @@ Using this output we can deduce that:
    be made for the other dimension coordinates.
  * There are 7, not necessarily distinct, values in the ``level_height`` coordinate.
  * There is a single ``forecast_reference_time`` scalar coordinate representing the entire cube.
- * The cube has one further attribute relating to the  phenomenon. 
+ * The cube has two further attributes relating to the phenomenon.
    In this case the originating file format, PP, encodes information in a STASH code which in some cases can
-   be useful for identifying advanced experiment information relating to the phenomenon.
+   be useful for identifying advanced experiment information relating to the phenomenon. The file format also
+   encodes information on the model that produced the data which is interpreted as the source.

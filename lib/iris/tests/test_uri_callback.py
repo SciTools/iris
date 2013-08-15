@@ -98,8 +98,8 @@ class TestCallbacks(tests.IrisTest):
     
     def test_pp_callback(self):
         def pp_callback(cube, field, filename):
-            cube.attributes['filename'] = os.path.basename(filename)
-            cube.attributes['lbyr'] = field.lbyr
+            cube.local_attributes['filename'] = os.path.basename(filename)
+            cube.local_attributes['lbyr'] = field.lbyr
         fname = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
         cube = iris.load_cube(fname, callback=pp_callback)
         self.assertCML(cube, ['uri_callback', 'pp_global.cml'])

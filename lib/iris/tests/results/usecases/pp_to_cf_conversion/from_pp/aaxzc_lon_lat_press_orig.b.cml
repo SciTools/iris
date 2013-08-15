@@ -1,10 +1,10 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube standard_name="geopotential_height" units="m">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s16i202"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord id="73141289" points="[952556, 1125356]" shape="(2,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>

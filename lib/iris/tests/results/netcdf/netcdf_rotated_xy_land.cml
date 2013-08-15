@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="land area fraction of grid cell" standard_name="land_area_fraction" units="1" var_name="sftls">
-    <attributes>
+    <global_attributes>
       <attribute name="Conventions" value="CF-1.0"/>
       <attribute name="conventionsURL" value="http://www.cgd.ucar.edu/cms/eaton/cf-metadata/index.html"/>
       <attribute name="creation_date" value="2007-04-25 12:18:23"/>
@@ -10,7 +10,7 @@
       <attribute name="project_id" value="ENSEMBLES"/>
       <attribute name="realization" value="1"/>
       <attribute name="source" value="REMO"/>
-    </attributes>
+    </global_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord id="e065ce2a" long_name="latitude in rotated grid" points="[-20.57, -20.13, -19.69, ..., 19.91, 20.35, 20.79]" shape="(95,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32" var_name="rlat">

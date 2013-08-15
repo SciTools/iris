@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube standard_name="sea_water_salinity" units="unknown">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m02s00i102"/>
       <attribute name="invalid_units" value="1e3 psu @0.035"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[6477]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>

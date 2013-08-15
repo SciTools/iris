@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="Total column Carbon Dioxide" units="kg m**-2" var_name="tcco2">
-    <attributes>
+    <global_attributes>
       <attribute name="Conventions" value="CF-1.0"/>
       <attribute name="history" value="Thu Feb 11 10:56:57 2010: ncks total_column_co2.nc -o SMALL_total_column_co2.nc -d time,,30
 2009-09-02 08:23:49 GMT by mars2netcdf-0.92"/>
-    </attributes>
+    </global_attributes>
     <coords>
       <coord>
         <dimCoord id="7f2b6590" long_name="latitude" points="[90.0]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="latitude"/>

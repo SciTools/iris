@@ -1,10 +1,10 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube standard_name="sea_water_potential_temperature" units="degC">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m02s00i101"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord bounds="[[4.0, 6.0],

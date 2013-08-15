@@ -1,10 +1,12 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube units="unknown" var_name="unknown">
-    <attributes>
-      <attribute name="Conventions" value="CF-1.5"/>
+    <local_attributes>
       <attribute name="source" value="Data from Met Office Unified Model"/>
-    </attributes>
+    </local_attributes>
+    <global_attributes>
+      <attribute name="Conventions" value="CF-1.5"/>
+    </global_attributes>
     <coords>
       <coord datadims="[0]">
         <auxCoord id="1d7d6eff" points="[868320, 876960, 885600, 894240]" shape="(4,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32" var_name="forecast_period"/>

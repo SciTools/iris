@@ -553,21 +553,44 @@ class TestCubeMergeTheoretical(tests.IrisTest):
         self.assertCML(r[0], ('cube_merge', 'test_orig_point_cube.cml'))
         self.assertCML(r[1], ('cube_merge', 'test_orig_point_cube.cml'))
         
-        # test attribute merging
-        cube1.attributes['my_attr1'] = 'foo'
+        # test local_attributes merging
+        cube1.local_attributes['my_attr1'] = 'foo'
         r = iris.cube.CubeList([cube1, cube2]).merge()
         # result should be 2 cubes
         self.assertCML(r, ('cube_merge', 'test_simple_attributes1.cml'))
         
-        cube2.attributes['my_attr1'] = 'bar'
+        cube2.local_attributes['my_attr1'] = 'bar'
         r = iris.cube.CubeList([cube1, cube2]).merge()
         # result should be 2 cubes
         self.assertCML(r, ('cube_merge', 'test_simple_attributes2.cml'))
         
-        cube2.attributes['my_attr1'] = 'foo'
+        cube2.local_attributes['my_attr1'] = 'foo'
         r = iris.cube.CubeList([cube1, cube2]).merge()
         # result should be 1 cube
         self.assertCML(r, ('cube_merge', 'test_simple_attributes3.cml'))
+
+        # test global_attributes merging
+        cube1.global_attributes['my_global_attr'] = 'foo'
+        r = iris.cube.CubeList([cube1, cube2]).merge()
+        # result should be 2 cubes
+        self.assertCML(r, ('cube_merge', 'test_simple_attributes4.cml'))
+        
+        cube2.global_attributes['my_global_attr'] = 'bar'
+        r = iris.cube.CubeList([cube1, cube2]).merge()
+        # result should be 2 cubes
+        self.assertCML(r, ('cube_merge', 'test_simple_attributes5.cml'))
+        
+        cube2.global_attributes['my_global_attr'] = 'foo'
+        r = iris.cube.CubeList([cube1, cube2]).merge()
+        # result should be 1 cube
+        self.assertCML(r, ('cube_merge', 'test_simple_attributes6.cml'))
+
+        # test mixed global/local attributes merging
+        cube1.local_attributes['my_attr2'] = 'bar'
+        cube2.global_attributes['my_attr2'] = 'bar'
+        r = iris.cube.CubeList([cube1, cube2]).merge()
+        # result should be 2 cubes
+        self.assertCML(r, ('cube_merge', 'test_simple_attributes7.cml'))
 
 
 if __name__ == "__main__":

@@ -329,6 +329,7 @@ class CubeSignature(object):
         result = NotImplemented
 
         if isinstance(other, CubeSignature):
+
             # Only concatenate with fully described cubes.
             if self.anonymous or other.anonymous:
                 result = False
@@ -348,6 +349,21 @@ class CubeSignature(object):
         if result is not NotImplemented:
             result = not result
         return result
+
+    def kwargs(self):
+        """
+        Return a dict of keyword arguments suitable for
+        :meth:`iris.cube.Cube.__init__`.
+
+        """
+        kwargs = self.defn._asdict()
+        # Special handling of attributes dictionaries as we can
+        # only set iris.cube.Cube.local_attributes through __init__.
+        kwargs['attributes'] = kwargs['local_attributes']
+        del kwargs['local_attributes']
+        del kwargs['global_attributes']
+
+        return kwargs
 
 
 class CoordSignature(object):
@@ -539,11 +555,10 @@ class ProtoCube(object):
             data = self._build_data()
 
             # Build the new cube.
-            kwargs = cube_signature.defn._asdict()
             cube = iris.cube.Cube(data,
                                   dim_coords_and_dims=dim_coords_and_dims,
                                   aux_coords_and_dims=aux_coords_and_dims,
-                                  **kwargs)
+                                  **cube_signature.kwargs())
         else:
             # There are no other source-cubes to concatenate
             # with this proto-cube.

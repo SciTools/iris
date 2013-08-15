@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="thingness" units="1">
-    <attributes>
+    <local_attributes>
       <attribute name="history" value="Percentile (25%) of thingness over foo"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord bounds="[[0, 5],

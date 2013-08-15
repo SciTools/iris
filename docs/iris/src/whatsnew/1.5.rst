@@ -20,6 +20,15 @@ A summary of the main features added with version 1.5:
 * class:`iris.analysis.SUM` is now a weighted aggregator, allowing it to take a
   weights keyword argument.
 * Grib2 translations added for standard_name 'soil_temperature'.
+* Metadata previously stored in :attr:`iris.cube.Cube.attributes` is now divided
+  between :attr:`iris.cube.Cube.local_attributes` and
+  :attr:`iris.cube.Cube.global_attributes`. This metadata can still be accessed via
+  :attr:`iris.cube.Cube.attributes`, but this collection is now read-only. If you
+  wish to add/remove/modify attribute metadata, please use
+  :attr:`iris.cube.Cube.local_attributes`. In the case of certain CF global
+  attributes (e.g. title) it may be appropriate to use
+  :attr:`iris.cube.Cube.global_attributes`.
+
 
 Bugs fixed
 ----------
@@ -27,9 +36,14 @@ Bugs fixed
 
 Incompatible changes
 --------------------
-* N/A
+* :attr:`iris.cube.Cube.attributes` is now immutable and therefore cannot be
+  modified. :attr:`iris.cube.Cube.local_attributes` (or for certain metadata
+  :attr:`iris.cube.Cube.global_attributes`) should be modified instead.
 
 Deprecations
 ------------
 * The coords keyword argument for :func:`iris.plot.plot` and :func:`iris.quickplot.plot`
   has been deprecated due to the new API which accepts multiple cubes or coordinates.
+
+
+

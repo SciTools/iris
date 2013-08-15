@@ -279,7 +279,7 @@ class TestCubeExtract(TestMixin, tests.IrisTest):
         
         orig_cube = self.cube
         # add an attribute to the cubes
-        orig_cube.attributes['my_attribute'] = 'foobar'
+        orig_cube.local_attributes['my_attribute'] = 'foobar'
         
         cube = orig_cube.extract(iris.AttributeConstraint(my_attribute='foobar'))
         self.assertCML(cube, ('constrained_load', 'attribute_constraint.cml'))

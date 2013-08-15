@@ -32,7 +32,7 @@ from iris.fileformats.pp import STASH
 
 
 def callback_000003000000_16_202_000128_1860_09_01_00_00_b_pp(cube, field, filename):
-    cube.attributes['STASH'] = STASH(1, 16, 202)
+    cube.local_attributes['STASH'] = STASH(1, 16, 202)
     cube.standard_name = 'geopotential_height'
     cube.units = 'm'
 
@@ -47,7 +47,7 @@ def callback_HadCM2_ts_SAT_ann_18602100_b_pp(cube, field, filename):
     reset_pole('grid_longitude')
     cube.standard_name = 'air_temperature'
     cube.units = 'Celsius'
-    cube.attributes['STASH'] = STASH(1, 3, 236)
+    cube.local_attributes['STASH'] = STASH(1, 3, 236)
     # Force the height to 1.5m
     if cube.coords("height"):
         cube.remove_coord("height")
@@ -58,13 +58,13 @@ def callback_HadCM2_ts_SAT_ann_18602100_b_pp(cube, field, filename):
 def callback_model_b_pp(cube, field, filename):
     cube.standard_name = 'air_temperature'
     cube.units = 'K'
-    cube.attributes['STASH'] = STASH(1, 16, 203)
+    cube.local_attributes['STASH'] = STASH(1, 16, 203)
 
 
 def callback_integer_b_pp(cube, field, filename):
     cube.standard_name = 'land_binary_mask'
     cube.units = '1'
-    del cube.attributes['STASH']
+    del cube.local_attributes['STASH']
 
 
 def callback_001000000000_00_000_000000_1860_01_01_00_00_f_b_pp(cube, field, filename):

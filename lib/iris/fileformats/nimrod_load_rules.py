@@ -60,7 +60,7 @@ def units(cube, field):
         # Just add it as an attribute.
         warnings.warn("Unhandled units '{0}' recorded in cube attributes.".
                       format(units))
-        cube.attributes["invalid_units"] = units
+        cube.local_attributes["invalid_units"] = units
 
 
 def time(cube, field):
@@ -258,7 +258,7 @@ def attributes(cube, field):
         if hasattr(field, name):
             value = getattr(field, name)
             if value not in [field.int_mdi, field.float32_mdi]:
-                cube.attributes[name] = value
+                cube.local_attributes[name] = value
 
     add_attr("nimrod_version")
     add_attr("field_code")
@@ -282,7 +282,7 @@ def attributes(cube, field):
     add_attr("meteosat_id")
     add_attr("alphas_available")
 
-    cube.attributes["source"] = field.source.strip()
+    cube.local_attributes["source"] = field.source.strip()
 
 
 def run(field):

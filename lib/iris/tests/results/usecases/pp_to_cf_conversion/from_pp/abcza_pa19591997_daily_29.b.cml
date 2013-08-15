@@ -1,10 +1,10 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube standard_name="air_temperature" units="K">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s03i236"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord id="73141289" points="[1015224, 1015248, 1015272, ..., 1023792,
@@ -58,10 +58,10 @@
     <data byteorder="little" checksum="-0x7d4ef5f6" dtype="float32" order="C" shape="(360, 73, 96)"/>
   </cube>
   <cube standard_name="air_temperature" units="K">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s03i236"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord id="73141289" points="[1015224, 1015248, 1015272, ..., 1023792,
@@ -115,10 +115,10 @@
     <data byteorder="little" checksum="-0x26091009" dtype="float32" order="C" shape="(360, 73, 96)"/>
   </cube>
   <cube standard_name="precipitation_flux" units="kg m-2 s-1">
-    <attributes>
+    <local_attributes>
       <attribute name="STASH" value="m01s05i216"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
-    </attributes>
+    </local_attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord id="73141289" points="[1015224, 1015248, 1015272, ..., 1023792,

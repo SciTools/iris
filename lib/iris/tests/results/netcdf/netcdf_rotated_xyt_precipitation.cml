@@ -1,14 +1,14 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="Precipitation" standard_name="precipitation_flux" units="kg m-2 s-1" var_name="pr">
-    <attributes>
+    <global_attributes>
       <attribute name="Conventions" value="CF-1.0"/>
       <attribute name="NCO" value="4.1.0"/>
       <attribute name="experiment" value="ER3"/>
       <attribute name="history" value="Thu Nov 29 10:45:50 2012: /project/ukmo/rhel6/nco/bin/ncks -d time,0,3 new_rotPole_precipitation.nc small_rotPole_precipitation.nc"/>
       <attribute name="institution" value="DMI"/>
       <attribute name="source" value="HIRHAM"/>
-    </attributes>
+    </global_attributes>
     <coords>
       <coord datadims="[1]">
         <dimCoord id="6c8475aa" long_name="rotated latitude" points="[-20.68, -20.46, -20.24, ..., 20.46, 20.68, 20.9]" shape="(190,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32" var_name="rlat">
