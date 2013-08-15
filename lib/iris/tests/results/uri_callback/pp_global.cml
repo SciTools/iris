@@ -30,7 +30,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="63128986" points="[0.0, 3.75, 7.5, ..., 348.75, 352.5, 356.25]" shape="(96,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 3.75, 7.5, ..., 348.75, 352.5, 356.25]" shape="(96,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>

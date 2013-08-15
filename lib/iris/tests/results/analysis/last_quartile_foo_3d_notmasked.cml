@@ -9,7 +9,7 @@
         <dimCoord id="c7efdd09" points="[90, 0, -90]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="int64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="a523d045" points="[-180, -90, 0, 90]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="int64"/>
+        <dimCoord circular="True" id="a523d045" points="[-180, -90, 0, 90]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="int64"/>
       </coord>
       <coord>
         <dimCoord bounds="[[10.0, 30.0]]" id="a2260f1f" long_name="wibble" points="[20.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>

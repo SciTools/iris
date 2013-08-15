@@ -13,7 +13,7 @@
 		[100.0, 140.0],
 		[150.0, 200.0],
 		[210.0, 270.0],
-		[280.0, 360.0]]" id="db70a4f7" long_name="circ_height" points="[0.0, 15.0, 40.0, 75.0, 120.0, 175.0, 240.0,
+		[280.0, 360.0]]" circular="True" id="db70a4f7" long_name="circ_height" points="[0.0, 15.0, 40.0, 75.0, 120.0, 175.0, 240.0,
 		320.0]" shape="(8,)" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">

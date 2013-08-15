@@ -29,7 +29,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="e9b2bafc" points="[0.0, 3.749998, 7.499996, ..., 348.749814,
+        <dimCoord circular="True" id="e9b2bafc" points="[0.0, 3.749998, 7.499996, ..., 348.749814,
 		352.499812, 356.24981]" shape="(96,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS semi_major_axis="6378160.0" semi_minor_axis="6356684.7138"/>
         </dimCoord>
