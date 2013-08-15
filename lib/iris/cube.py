@@ -1824,23 +1824,25 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 raise TypeError(msg)
         return coords
 
-    def slices(self, coords_to_slice, ordered=True):
+    def slices(self, ref_to_slice, ordered=True):
         """
-        Return an iterator of all subcubes given the coordinates desired
-        to be present in each subcube.
+        Return an iterator of all subcubes given the coordinates or dimension
+        indices desired to be present in each subcube.
 
-        Parameters:
+        Args:
 
-        * coords_to_slice (string, coord or a list of strings/coords) :
-            Coordinate names/coordinates that will be returned in the subcubes
-            (i.e. the coordinate names/coordinates that are not iterated over).
-            They must all be orthogonal (i.e. point to different dimensions).
+        * ref_to_slice (string, coord, dimension index or a list of these):
+            Determines which dimensions will be returned in the subcubes (i.e.
+            the dimensions that are not iterated over).
+            A mix of input types can also be provided. They must all be
+            orthogonal (i.e. point to different dimensions).
 
         Kwargs:
 
-        * ordered: if True, the order which the coords to slice are given will
-            be the order in which they represent the data in the resulting
-            cube slices
+        * ordered: if True, the order which the coords to slice or data_dims
+            are given will be the order in which they represent the data in
+            the resulting cube slices.  If False, the order will follow that of
+            the source cube.  Default is True.
 
         Returns:
             An iterator of subcubes.
@@ -1853,39 +1855,50 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         if not isinstance(ordered, bool):
-            raise TypeError('Second argument to slices must be boolean.')
+            raise TypeError("'ordered' argument to slices must be boolean.")
 
-        # Convert any coordinate names to coordinates
-        coords = self._as_list_of_coords(coords_to_slice)
+        # Required to handle a mix between types
+        if not hasattr(ref_to_slice, '__iter__'):
+            ref_to_slice = [ref_to_slice]
 
-        # Get the union of all describing dimensions for the resulting cube(s)
-        requested_dims = set()
-        for coord in coords:
-            # if coord.ndim > 1:
-            #    raise iris.exceptions.CoordinateMultiDimError(coord)
-            dims = self.coord_dims(coord)
-            # TODO determine if we want to bother catching this as it has no
-            # effect
-            if not dims:
-                msg = "Requested an iterator over a coordinate (%s) which " \
-                      "does not describe a dimension." % coord.name()
-                raise ValueError(msg)
+        dim_to_slice = []
+        for ref in ref_to_slice:
+            try:
+                # attempt to handle as coordinate
+                coord = self._as_list_of_coords(ref)[0]
+                dims = self.coord_dims(coord)
+                if not dims:
+                    msg = ('Requested an iterator over a coordinate ({}) '
+                           'which does not describe a dimension.')
+                    msg = msg.format(coord.name())
+                    raise ValueError(msg)
+                dim_to_slice.extend(dims)
 
-            requested_dims.update(dims)
+            except TypeError:
+                try:
+                    # attempt to handle as dimension index
+                    dim = int(ref)
+                except ValueError:
+                    raise ValueError('{} Incompatible type {} for '
+                                     'slicing'.format(ref, type(ref)))
+                if dim < 0 or dim > self.ndim:
+                    msg = ('Requested an iterator over a dimension ({}) '
+                           'which does not exist.'.format(dim))
+                    raise ValueError(msg)
+                dim_to_slice.append(dim)
 
-        n_dim_mappings = sum(len(self.coord_dims(coord)) for coord in coords)
-        if len(requested_dims) != n_dim_mappings:
-            raise ValueError('The requested coordinates are not orthogonal.')
+        if len(set(dim_to_slice)) != len(dim_to_slice):
+            msg = 'The requested coordinates are not orthogonal.'
+            raise ValueError(msg)
 
         # Create a list with of the shape of our data
         dims_index = list(self.shape)
 
         # Set the dimensions which have been requested to length 1
-        for d in requested_dims:
+        for d in dim_to_slice:
             dims_index[d] = 1
 
-        return _SliceIterator(self, dims_index, requested_dims, ordered,
-                              coords)
+        return _SliceIterator(self, dims_index, dim_to_slice, ordered)
 
     # TODO: This is not used anywhere. Remove.
     @property
@@ -2219,7 +2232,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         Args:
 
-        * coords (string, coord or a list of strings/coords) :
+        * coords (string, coord or a list of strings/coords):
             Coordinate names/coordinates over which the cube should be
             collapsed.
 
@@ -2747,7 +2760,7 @@ def sorted_axes(axes):
 
 # See Cube.slice() for the definition/context.
 class _SliceIterator(collections.Iterator):
-    def __init__(self, cube, dims_index, requested_dims, ordered, coords):
+    def __init__(self, cube, dims_index, requested_dims, ordered):
         self._cube = cube
 
         # Let Numpy do some work in providing all of the permutations of our
@@ -2757,8 +2770,9 @@ class _SliceIterator(collections.Iterator):
         self._ndindex = np.ndindex(*dims_index)
 
         self._requested_dims = requested_dims
+        # indexing relating to sliced cube
+        self._mod_requested_dims = np.argsort(requested_dims)
         self._ordered = ordered
-        self._coords = coords
 
     def next(self):
         # NB. When self._ndindex runs out it will raise StopIteration for us.
@@ -2776,10 +2790,7 @@ class _SliceIterator(collections.Iterator):
         cube = self._cube[tuple(index_list)]
 
         if self._ordered:
-            transpose_order = []
-            for coord in self._coords:
-                transpose_order += sorted(cube.coord_dims(coord))
-            if transpose_order != range(len(cube.shape)):
-                cube.transpose(transpose_order)
+            if any(self._mod_requested_dims != range(len(cube.shape))):
+                cube.transpose(self._mod_requested_dims)
 
         return cube
