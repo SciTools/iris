@@ -19,6 +19,8 @@
 # importing anything else
 import iris.tests as tests
 
+import numpy as np
+
 import iris
 
 
@@ -35,6 +37,11 @@ class TestAbfLoad(tests.GraphicsTest):
     def test_load(self):
         cubes = iris.load(tests.get_data_path(('abf',
                                                'AVHRRBUVI01.1985apra.abf')))
+        # On a 32-bit platform the time coordinate will have 32-bit integers.
+        # We force them to 64-bit to ensure consistent test results.
+        time_coord = cubes[0].coord("time")
+        time_coord.points = np.array(time_coord.points, dtype=np.int64)
+        time_coord.bounds = np.array(time_coord.bounds, dtype=np.int64)
         self.assertCML(cubes, ("abf", "load.cml"))
 
 
