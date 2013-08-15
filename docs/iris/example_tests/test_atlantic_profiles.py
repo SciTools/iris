@@ -29,7 +29,7 @@ with extest_util.add_examples_to_path():
 class TestAtlanticProfiles(tests.GraphicsTest):
     """Test the atlantic_profiles example code."""
     def test_atlantic_profiles(self):
-        with extest_util.show_replaced_by_check_graphic(self):
+        with extest_util.show_replaced_by_check_graphic(self, tol=0.0014):
             atlantic_profiles.main()
 
 
