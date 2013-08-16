@@ -1015,7 +1015,8 @@ fc_extras
 
         # Determine whether the coordinate is circular.
         circular = False
-        if points_data.ndim == 1 and coord_name in [CF_VALUE_STD_NAME_LON, CF_VALUE_STD_NAME_GRID_LON]:
+        if points_data.ndim == 1 and (coord_name is None or
+                coord_name in [CF_VALUE_STD_NAME_LON, CF_VALUE_STD_NAME_GRID_LON]):
             diff = list(set(np.diff(points_data)))
             diff_approx_equal = True
             if len(points_data) > 1:
