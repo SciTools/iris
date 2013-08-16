@@ -1182,7 +1182,8 @@ fc_extras
             if attr_units == 'degrees':
                 attr_std_name = getattr(cf_var, CF_ATTR_STD_NAME, None)
                 if attr_std_name is not None:
-                    is_valid = attr_std_name.lower() == std_name_grid
+                    # Graceful acceptance of either longitude standard name.
+                    is_valid = attr_std_name.lower() in (std_name, std_name_grid)
                 else:
                     is_valid = False
                     # TODO: check that this interpretation of axis is correct.

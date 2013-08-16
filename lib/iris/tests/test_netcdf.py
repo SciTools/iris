@@ -183,6 +183,17 @@ class TestNetCDFLoad(tests.IrisTest):
         self.assertCML(cube0, ('netcdf', 'netcdf_units_0.cml'))
         self.assertCML(cube1, ('netcdf', 'netcdf_units_1.cml'))
 
+    def test_circularity_cycle(self):
+        data_path = ('NetCDF', 'global', 'xyt', 'SMALL_total_column_co2.nc')
+        cube = iris.load_cube(tests.get_data_path(data_path))
+        self.assertTrue(cube.coord('longitude').circular)
+
+        # Check still circular after save-load-cycle.
+        with self.temp_filename(suffix='.nc') as filename:
+            iris.save(cube, filename)
+            recycle = iris.load_cube(filename)
+            self.assertTrue(recycle.coord('longitude').circular)
+
 
 class TestSave(tests.IrisTest):
     def test_hybrid(self):
