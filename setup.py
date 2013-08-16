@@ -60,14 +60,17 @@ class TestRunner(setuptools.Command):
                                      'repositories so it appears to the '
                                      'tests that it does not exist.'),
                     ('system-tests', 's', 'Run only the limited subset of '
-                                          'system tests.')
+                                          'system tests.'),
+                    ('stop', 'x', 'Stop running tests after the first '
+                                  'error or failure'),
                    ]
     
-    boolean_options = ['no-data', 'system-tests']
+    boolean_options = ['no-data', 'system-tests', 'stop']
     
     def initialize_options(self):
         self.no_data = False
         self.system_tests = False
+        self.stop = False
     
     def finalize_options(self):
         if self.no_data:
@@ -78,6 +81,8 @@ class TestRunner(setuptools.Command):
             os.environ["override_test_data_repository"] = "true"
         if self.system_tests:
             print "Running system tests..."
+        if self.stop:
+            print "Stopping tests after the first error or failure"
 
     def run(self):
         if self.distribution.tests_require:
@@ -100,16 +105,21 @@ class TestRunner(setuptools.Command):
             regexp_pat = r'--match=^([Tt]est(?![Mm]ixin)|[Ss]ystem)'
 
         n_processors = max(multiprocessing.cpu_count() - 1, 1)
-        
+
+        args = ['', None, '--processes=%s' % n_processors,
+                '--verbosity=2', regexp_pat,
+                '--process-timeout=250']
+        if self.stop:
+            args.append('--stop')
+
         result = True
         for test in tests:
+            args[1] = test
             print
             print 'Running test discovery on %s with %s processors.' % (test, n_processors)
             # run the tests at module level i.e. my_module.tests 
             # - test must start with test/Test and must not contain the word Mixin.
-            result &= nose.run(argv=['', test, '--processes=%s' % n_processors,
-                               '--verbosity=2', regexp_pat,
-                               '--process-timeout=250'])
+            result &= nose.run(argv=args)
         if result is False:
             exit(1)
 
