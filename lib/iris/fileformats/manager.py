@@ -121,7 +121,10 @@ class DataManager(iris.util._OrderedHashable):
                     count = len(range(start, stop, step))
                     resultant_shape.append(count)
                 elif isinstance(key, tuple):
-                    resultant_shape.append(len(key))
+                    if key and isinstance(key[0], (bool, np.bool_)):
+                        resultant_shape.append(sum(key))
+                    else:
+                        resultant_shape.append(len(key))
                 elif isinstance(key, int):
                     pass
                 else:
@@ -226,8 +229,12 @@ class DataManager(iris.util._OrderedHashable):
         
                     # Sample the merged slice item with the index item.
                     if isinstance(index_item, tuple):
+                        if index_item and isinstance(index_item[0], (bool, np.bool_)):
+                            index_item = np.where(index_item)[0]
+
                         # Sample for each tuple item.
-                        merged_slice[i] = tuple([merged_slice_item[index] for index in index_item])
+                        merged_slice[i] = tuple([merged_slice_item[index]
+                                                 for index in index_item])
                     else:
                         # Sample with a slice or single scalar index.
                         merged_slice[i] = merged_slice_item[index_item]
