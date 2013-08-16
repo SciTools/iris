@@ -848,8 +848,11 @@ class Unit(iris.util._OrderedHashable):
             if _OP_SINCE in unit.lower():
                 if calendar is None:
                     calendar_ = CALENDAR_GREGORIAN
-                else:
+                elif calendar in CALENDARS:
                     calendar_ = calendar
+                else:
+                    raise ValueError('{!r} is an unsupported calendar.'.format(
+                                     calendar))
         self._init(category, ut_unit, calendar_, unit)
 
     def _raise_error(self, msg):
