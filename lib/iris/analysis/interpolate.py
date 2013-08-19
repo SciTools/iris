@@ -340,7 +340,7 @@ def nearest_neighbour_data_value(cube, sample_points):
         A list of tuple pairs mapping coordinate instances or unique coordinate names in the cube to point values.
 
     Returns:
-        The tuple of indices which will select the point in the cube closest to the supplied coordinate values.
+        The data value at the point in the cube closest to the supplied coordinate values.
 
     """
     indices = nearest_neighbour_indices(cube, sample_points)
