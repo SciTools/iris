@@ -5,7 +5,6 @@ dimensions:
 	longitude = 10 ;
 variables:
 	float unknown(time, latitude, longitude) ;
-		unknown:source = "Data from Met Office Unified Model" ;
 		unknown:cell_methods = "time: mean (interval: 1 hour)" ;
 		unknown:grid_mapping = "latitude_longitude" ;
 		unknown:coordinates = "forecast_period forecast_reference_time height" ;
@@ -41,5 +40,6 @@ variables:
 		height:long_name = "height" ;
 
 // global attributes:
+		:source = "Data from Met Office Unified Model" ;
 		:Conventions = "CF-1.5" ;
 }

@@ -77,6 +77,16 @@ _CF_ATTRS = ['add_offset', 'ancillary_variables', 'axis', 'bounds', 'calendar',
              'positive', 'scale_factor', 'standard_error_multiplier',
              'standard_name', 'units', 'valid_max', 'valid_min', 'valid_range']
 
+# CF attributes that should not be global.
+_CF_DATA_ATTRS = ['standard_error_multiplier', 'flag_masks', 'flag_meanings',
+                  'flag_values']
+
+# CF attributes that should only be global.
+_CF_GLOBAL_ATTRS = ['conventions', 'history', 'title']
+
+# UKMO specific attributes that should not be global.
+_UKMO_DATA_ATTRS = ['STASH', 'ukmo__um_stash_source', 'ukmo__process_flags']
+
 _CF_CONVENTIONS_VERSION = 'CF-1.5'
 
 _FactoryDefn = collections.namedtuple('_FactoryDefn', ('primary', 'std_name',
@@ -510,7 +520,7 @@ class Saver(object):
         self._dataset.sync()
         self._dataset.close()
 
-    def write(self, cube):
+    def write(self, cube, local_keys=None):
         """
         Wrapper for saving cubes to a NetCDF file.
 
@@ -518,6 +528,13 @@ class Saver(object):
 
         * cube (:class:`iris.cube.Cube`):
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
+
+        Kwargs:
+
+        * local_keys (iterable of strings):
+            An interable of cube attribute keys. Any cube attributes with
+            matching keys will become attributes on the data variable rather
+            than global attributes.
 
         Returns:
             None.
@@ -542,7 +559,8 @@ class Saver(object):
         self._create_cf_dimensions(dimension_names)
 
         # Create the associated cube CF-netCDF data variable.
-        cf_var_cube = self._create_cf_data_variable(cube, dimension_names)
+        cf_var_cube = self._create_cf_data_variable(cube, dimension_names,
+                                                    local_keys)
 
         # Add coordinate variables and return factory definitions
         factory_defn = self._add_dim_coords(cube, dimension_names)
@@ -552,10 +570,44 @@ class Saver(object):
         cf_var_cube = self._add_aux_coords(cube, cf_var_cube, dimension_names,
                                            factory_defn)
 
+        # Add data variable-only attribute names to local_keys.
+        if local_keys is None:
+            local_keys = set()
+        else:
+            local_keys = set(local_keys)
+        local_keys.update(_CF_DATA_ATTRS, _UKMO_DATA_ATTRS)
+
+        # Add global attributes taking into account local_keys.
+        global_attributes = {k: v for k, v in cube.attributes.iteritems() if k
+                             not in local_keys and k.lower() != 'conventions'}
+        self.update_global_attributes(global_attributes)
+
         if cf_profile_available:
             # Perform a CF patch of the dataset.
             iris.site_configuration['cf_patch'](profile, self._dataset,
                                                 cf_var_cube)
+
+    def update_global_attributes(self, attributes=None, **kwargs):
+        """
+        Update the CF global attributes based on the provided
+        iterable/dictionary and/or keyword arguments.
+
+        Args:
+
+        * attributes (dict or iterable of key, value pairs):
+            CF global attributes to be updated.
+
+        """
+        if attributes is not None:
+            # Handle sequence e.g. [('fruit', 'apple'), ...].
+            if not hasattr(attributes, 'keys'):
+                attributes = dict(attributes)
+
+            for attr_name in sorted(attributes):
+                setattr(self._dataset, attr_name, attributes[attr_name])
+
+        for attr_name in sorted(kwargs):
+            setattr(self._dataset, attr_name, kwargs[attr_name])
 
     def _create_cf_dimensions(self, dimension_names):
         """
@@ -1095,7 +1147,7 @@ class Saver(object):
             # Refer to grid var
             cf_var_cube.grid_mapping = cs.grid_mapping_name
 
-    def _create_cf_data_variable(self, cube, dimension_names):
+    def _create_cf_data_variable(self, cube, dimension_names, local_keys=None):
         """
         Create CF-netCDF data variable for the cube and any associated grid
         mapping.
@@ -1108,6 +1160,12 @@ class Saver(object):
             The associated cube being saved to CF-netCDF file.
         * dimension_names (list):
             String names for each dimension of the cube.
+
+        Kwargs:
+
+        * local_keys (iterable of strings):
+            An interable of cube attribute keys. Any cube attributes
+            with matching keys will become attributes on the data variable.
 
         Returns:
             The newly created CF-netCDF data variable.
@@ -1137,8 +1195,21 @@ class Saver(object):
         if cube.units != 'unknown':
             cf_var.units = str(cube.units)
 
-        # Add any other cube attributes as CF-netCDF data variable attributes.
-        for attr_name in sorted(cube.attributes):
+        # Add data variable-only attribute names to local_keys.
+        if local_keys is None:
+            local_keys = set()
+        else:
+            local_keys = set(local_keys)
+        local_keys.update(_CF_DATA_ATTRS, _UKMO_DATA_ATTRS)
+
+        # Add any cube attributes whose keys are in local_keys as
+        # CF-netCDF data variable attributes.
+        attr_names = set(cube.attributes).intersection(local_keys)
+        for attr_name in sorted(attr_names):
+            # Do not output 'conventions' attribute.
+            if attr_name.lower() == 'conventions':
+                continue
+
             value = cube.attributes[attr_name]
 
             if attr_name == 'STASH':
@@ -1150,10 +1221,13 @@ class Saver(object):
             if attr_name == "ukmo__process_flags":
                 value = " ".join([x.replace(" ", "_") for x in value])
 
-            if attr_name.lower() != 'conventions':
-                setattr(cf_var, attr_name, value)
+            if attr_name in _CF_GLOBAL_ATTRS:
+                msg = '{attr_name!r} is being added as CF data variable ' \
+                      'attribute, but {attr_name!r} should only be a CF ' \
+                      'global attribute.'.format(attr_name=attr_name)
+                warnings.warn(msg)
 
-        self._dataset.Conventions = _CF_CONVENTIONS_VERSION
+            setattr(cf_var, attr_name, value)
 
         # Create the CF-netCDF data variable cell method attribute.
         cell_methods = self._create_cf_cell_methods(cube, dimension_names)
@@ -1194,7 +1268,7 @@ class Saver(object):
         return '{}_{}'.format(varname, num)
 
 
-def save(cube, filename, netcdf_format='NETCDF4'):
+def save(cube, filename, netcdf_format='NETCDF4', local_keys=None):
     """
     Save cube(s) to a netCDF file, given the cube and the filename.
 
@@ -1213,6 +1287,11 @@ def save(cube, filename, netcdf_format='NETCDF4'):
         Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
         'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
 
+    * local_keys (iterable of strings):
+        An interable of cube attribute keys. Any cube attributes with
+        matching keys will become attributes on the data variable rather
+        than global attributes.
+
     Returns:
         None.
 
@@ -1227,8 +1306,32 @@ def save(cube, filename, netcdf_format='NETCDF4'):
     else:
         cubes = cube
 
+    if local_keys is None:
+        local_keys = set()
+    else:
+        local_keys = set(local_keys)
+
+    # Determine the attribute keys that are common across all cubes and
+    # thereby extend the collection of local_keys for attributes
+    # that should be attributes on data variables.
+    attributes = cubes[0].attributes
+    common_keys = set(attributes)
+    for cube in cubes[1:]:
+        keys = set(cube.attributes)
+        local_keys.update(keys.symmetric_difference(common_keys))
+        common_keys.intersection_update(keys)
+        different_value_keys = []
+        for key in common_keys:
+            if attributes[key] != cube.attributes[key]:
+                different_value_keys.append(key)
+        common_keys.difference_update(different_value_keys)
+        local_keys.update(different_value_keys)
+
     # Initialise Manager for saving
     with Saver(filename, netcdf_format) as sman:
         # Iterate through the cubelist.
         for cube in cubes:
-            sman.write(cube)
+            sman.write(cube, local_keys)
+
+        # Add conventions attribute.
+        sman.update_global_attributes(Conventions=_CF_CONVENTIONS_VERSION)
