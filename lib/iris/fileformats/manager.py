@@ -170,13 +170,20 @@ class DataManager(iris.util._OrderedHashable):
                                     for index in deferred_slice])
         
         # Apply the slice to a new data manager (to be deferred)
-        new_data_manager = DataManager( data_shape=deepcopy(self._orig_data_shape),
+        defered_slices = self.deferred_slices + (new_deferred_slice, )
+        new_data_manager = self.new_data_manager(defered_slices)
+
+        return new_proxy_array, new_data_manager
+
+    def new_data_manager(self, deferred_slices=Ellipsis):
+        """
+        Creates a new data manager instance with the given deferred slice.
+
+        """
+        return self.__class__(data_shape=deepcopy(self._orig_data_shape),
                               data_type=deepcopy(self.data_type),
                               mdi=deepcopy(self.mdi),
-                              deferred_slices=self.deferred_slices + (new_deferred_slice, ),
-                              )
-        
-        return new_proxy_array, new_data_manager
+                              deferred_slices=deferred_slices)
 
     def _deferred_slice_merge(self):
         """Determine the single slice that is equivalent to all the accumulated deferred slices."""

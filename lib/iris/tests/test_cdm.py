@@ -879,7 +879,7 @@ class TestCubeEquality(TestCube2d):
         r.remove_coord('dim1')
         self.assertTrue(self.t.is_compatible(r))
         # Different data.
-        r.data = np.zeros(r.data.shape)
+        r.data = np.zeros(r.shape)
         self.assertTrue(self.t.is_compatible(r))
         # Different var_names (but equal name()).
         r.var_name = 'foo'

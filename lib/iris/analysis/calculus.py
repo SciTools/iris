@@ -320,9 +320,9 @@ def _copy_cube_transformed(src_cube, data, coord_func):
 
 def _curl_change_z(src_cube, z_coord, prototype_diff):
     # New data
-    ind = [slice(None, None)] * src_cube.data.ndim 
-    z_dim = src_cube.coord_dims(z_coord)[0] 
-    ind[z_dim] = slice(-1, None) 
+    ind = [slice(None, None)] * src_cube.ndim
+    z_dim = src_cube.coord_dims(z_coord)[0]
+    ind[z_dim] = slice(-1, None)
     new_data = np.append(src_cube.data, src_cube.data[tuple(ind)], z_dim)
     
     # The existing z_coord doesn't fit the new data so make a
