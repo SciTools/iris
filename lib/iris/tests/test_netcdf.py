@@ -25,6 +25,8 @@ import iris.tests as tests
 
 import os
 import shutil
+import stat
+import tempfile
 import warnings
 
 import mock
@@ -33,6 +35,7 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
+import iris.fileformats.netcdf
 import iris.std_names
 import iris.util
 import iris.coord_systems as icoord_systems
@@ -184,6 +187,30 @@ class TestNetCDFLoad(tests.IrisTest):
 
         self.assertCML(cube0, ('netcdf', 'netcdf_units_0.cml'))
         self.assertCML(cube1, ('netcdf', 'netcdf_units_1.cml'))
+
+
+class SaverPermissions(tests.IrisTest):
+    def test_noexist_directory(self):
+        # Test capture of suitable exception raised on writing to a
+        # non-existent directory.
+        dir_name = os.path.join(tempfile.gettempdir(), 'non_existent_dir')
+        fnme = os.path.join(dir_name, 'tmp.nc')
+        with self.assertRaises(IOError):
+            with iris.fileformats.netcdf.Saver(fnme, 'NETCDF4'):
+                pass
+
+    def test_bad_permissions(self):
+        # Non-exhaustive check that wrong permissions results in a suitable
+        # exception being raised.
+        dir_name = tempfile.mkdtemp()
+        fnme = os.path.join(dir_name, 'tmp.nc')
+        try:
+            os.chmod(dir_name, stat.S_IREAD)
+            with self.assertRaises(IOError):
+                iris.fileformats.netcdf.Saver(fnme, 'NETCDF4')
+            self.assertFalse(os.path.exists(fnme))
+        finally:
+            os.rmdir(dir_name)
 
 
 class TestSave(tests.IrisTest):
