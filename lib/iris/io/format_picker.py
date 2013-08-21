@@ -54,7 +54,7 @@ import os
 import struct
 
 
-from iris.io import decode_uri
+import iris.io
 
 
 class FormatAgent(object):
@@ -290,4 +290,4 @@ class UriProtocol(FileElement):
         FileElement.__init__(self, requires_fh=False)
 
     def get_element(self, basename, file_handle):
-        return decode_uri(basename)[0]
+        return iris.io.decode_uri(basename)[0]

@@ -26,9 +26,7 @@ import numpy as np
 
 from iris.exceptions import NotYetImplementedError
 from iris.fileformats.manager import DataManager
-from iris.fileformats._ff_cross_references import (STASH_GRID, X_COORD_U_GRID,
-                                                   Y_COORD_V_GRID,
-                                                   HANDLED_GRIDS)
+from iris.fileformats._ff_cross_references import STASH_GRID
 import pp
 
 
@@ -102,6 +100,20 @@ _LBUSER_DTYPE_LOOKUP = {1: '>f{word_depth}',
                         2: '>i{word_depth}',
                         3: '>i{word_depth}',
                         'default': '>f{word_depth}', }
+
+
+#: Codes used in STASH_TO_GRID which indicate the x coordinate is on the
+#: edge of the cell.
+X_COORD_U_GRID = (18,)
+
+#: Codes used in STASH_TO_GRID which indicate the y coordinate is on the
+#: edge of the cell.
+Y_COORD_V_GRID = (19,)
+
+#: Grid codes found in the STASH master which are currently known to be
+#: handled correctly. A warning is issued if a grid is found which is not
+#: handled.
+HANDLED_GRIDS = (1, 2, 3, 4, 5) + X_COORD_U_GRID + Y_COORD_V_GRID
 
 
 class FFHeader(object):
@@ -339,7 +351,7 @@ class FF2PP(object):
             data_depth, data_type = self._payload(field)
             # Determine PP field data shape.
             data_shape = (field.lbrow, field.lbnpt)
-            # set x and y coordinates if they are defined as arrays
+
             grid = STASH_GRID.get(str(field.stash), None)
 
             if grid is None:

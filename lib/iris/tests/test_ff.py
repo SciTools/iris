@@ -165,16 +165,18 @@ class TestFFVariableResolutionGrid(tests.IrisTest):
         self.filename = tests.get_data_path(('FF', 'n48_multi_field'))
 
         self.ff2pp = ff.FF2PP(self.filename)
-        self.ff2pp._ff_header = self.ff_header = ff.FFHeader(self.filename)
+        self.ff_header = self.ff2pp._ff_header
 
         data_shape = (73, 96)
         delta = np.sin(np.linspace(0, np.pi * 5, data_shape[1])) * 5
         lons = np.linspace(0, 180, data_shape[1]) + delta
         lons = np.vstack([lons[:-1], lons[:-1] + 0.5 * np.diff(lons)]).T
+        lons = np.reshape(lons, lons.shape, order='F')
 
         delta = np.sin(np.linspace(0, np.pi * 5, data_shape[0])) * 5
-        lats = np.linspace(0, 180, data_shape[0]) + delta
+        lats = np.linspace(-90, 90, data_shape[0]) + delta
         lats = np.vstack([lats[:-1], lats[:-1] + 0.5 * np.diff(lats)]).T
+        lats = np.reshape(lats, lats.shape, order='F')
 
         self.ff_header.column_dependent_constants = lons
         self.ff_header.row_dependent_constants = lats
@@ -189,9 +191,11 @@ class TestFFVariableResolutionGrid(tests.IrisTest):
         def new_make_pp_field(header_values):
             field = self.orig_make_pp_field(header_values)
             field.stash = self.ff2pp._custom_stash
-            field.bdx = field.bdy = ff.IMDI
+            field.bdx = field.bdy = field.bmdi
             return field
 
+        # Replace the pp module function with this new function;
+        # this gets called in PP2FF.
         pp.make_pp_field = new_make_pp_field
 
     def tearDown(self):
