@@ -35,9 +35,8 @@ import netcdftime
 
 import iris.config
 import iris.fileformats.rules
-import iris.io
 import iris.unit
-import iris.fileformats.manager
+from iris.fileformats.manager import DataManager
 import iris.fileformats.pp_rules
 import iris.coord_systems
 import iris.proxy
@@ -1437,7 +1436,7 @@ def load(filename, read_data=False):
         else:
             # NB. This makes a 0-dimensional array
             pp_field._data = np.array(PPDataProxy(filename, pp_file.tell(), data_len, pp_field.lbpack))
-            pp_field._data_manager = iris.fileformats.manager.DataManager(data_shape, data_type, pp_field.bmdi)
+            pp_field._data_manager = DataManager(data_shape, data_type, pp_field.bmdi)
 
             # Skip the data
             pp_file_seek(data_len, os.SEEK_CUR)

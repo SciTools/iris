@@ -16,16 +16,6 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#: Codes used in STASH_TO_GRID which indicate the x coordinate is on the
-#: edge of the cell.
-X_COORD_U_GRID = (18,)
-#: Codes used in STASH_TO_GRID which indicate the y coordinate is on the
-#: edge of the cell.
-Y_COORD_V_GRID = (19,)
-
-HANDLED_GRIDS = (1, 2, 3, 4, 5) + X_COORD_U_GRID + Y_COORD_V_GRID
-
-
 STASH_GRID = {
     "m01s00i001": 1,
     "m01s00i002": 18,
