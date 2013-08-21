@@ -135,8 +135,9 @@ def interpolate(cube, sample_points, method=None):
         
 
     For example::
-            sample_points = [('latitude', [45, 45, 45]), ('longitude', [-60, -50, -40])]
-            interpolated_cube = interpolate(cube, sample_points)
+    
+        sample_points = [('latitude', [45, 45, 45]), ('longitude', [-60, -50, -40])]
+        interpolated_cube = interpolate(cube, sample_points)
 
     """
     if method not in [None, "linear", "nearest"]:
