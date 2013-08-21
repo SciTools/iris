@@ -25,6 +25,7 @@ Test the Fieldsfile file loading plugin and FFHeader.
 import iris.tests as tests
 
 import collections
+import warnings
 
 import mock
 import numpy as np
@@ -32,11 +33,10 @@ import numpy as np
 import iris
 import iris.fileformats.ff as ff
 import iris.fileformats.pp as pp
-import iris.iterate
 
 
 _MockField = collections.namedtuple('_MockField',
-                                    'lbext lblrec lbnrec lbpack lbuser')
+                                    'lbext,lblrec,lbnrec,lbpack,lbuser')
 _MockLbpack = collections.namedtuple('_MockLbpack', 'n1')
 
 # PP-field: LBPACK N1 values.
@@ -99,88 +99,30 @@ class TestFFHeader(tests.IrisTest):
                          (2011, 7, 10, 21, 0, 0, 191))
         self.assertEqual(self.ff_header.misc_validity_time,
                          (2012, 4, 30, 18, 12, 13, -32768))
-        self.assertEqual(self.ff_header.integer_constants, (257, 46))
-        self.assertEqual(self.ff_header.real_constants, (303, 38))
-        self.assertEqual(self.ff_header.level_dependent_constants,
-                         (341, 71, 8))
-        self.assertEqual(self.ff_header.row_dependent_constants,
-                         (0, -1073741824, -1073741824))
-        self.assertEqual(self.ff_header.column_dependent_constants,
-                         (0, -1073741824, -1073741824))
-        self.assertEqual(self.ff_header.fields_of_constants,
-                         (0, -1073741824, -1073741824))
-        self.assertEqual(self.ff_header.extra_constants, (0, -1073741824))
-        self.assertEqual(self.ff_header.temp_historyfile, (0, -1073741824))
-        self.assertEqual(self.ff_header.compressed_field_index1,
-                         (0, -1073741824))
-        self.assertEqual(self.ff_header.compressed_field_index2,
-                         (0, -1073741824))
-        self.assertEqual(self.ff_header.compressed_field_index3,
-                         (0, -1073741824))
+        self.assertEqual(self.ff_header.integer_constants.shape, (46, ))
+        self.assertEqual(self.ff_header.real_constants.shape, (38, ))
+        self.assertEqual(self.ff_header.level_dependent_constants.shape,
+                         (71, 8))
+        self.assertIsNone(self.ff_header.row_dependent_constants)
+        self.assertIsNone(self.ff_header.column_dependent_constants)
+        self.assertIsNone(self.ff_header.fields_of_constants)
+        self.assertIsNone(self.ff_header.extra_constants)
+        self.assertIsNone(self.ff_header.temp_historyfile)
+        self.assertIsNone(self.ff_header.compressed_field_index1)
+        self.assertIsNone(self.ff_header.compressed_field_index2)
+        self.assertIsNone(self.ff_header.compressed_field_index3)
         self.assertEqual(self.ff_header.lookup_table, (909, 64, 5))
         self.assertEqual(self.ff_header.total_prognostic_fields, 3119)
         self.assertEqual(self.ff_header.data, (2049, 2961, -32768))
 
     def test_str(self):
-        target = """FF Header:
-    data_set_format_version: 20
-    sub_model: 1
-    vert_coord_type: 5
-    horiz_grid_type: 0
-    dataset_type: 3
-    run_identifier: 0
-    experiment_number: -32768
-    calendar: 1
-    grid_staggering: 3
-    time_type: -32768
-    projection_number: -32768
-    model_version: 802
-    obs_file_type: -32768
-    last_fieldop_type: -32768
-    first_validity_time: (2011, 7, 10, 18, 0, 0, 191)
-    last_validity_time: (2011, 7, 10, 21, 0, 0, 191)
-    misc_validity_time: (2012, 4, 30, 18, 12, 13, -32768)
-    integer_constants: (257, 46)
-    real_constants: (303, 38)
-    level_dependent_constants: (341, 71, 8)
-    row_dependent_constants: (0, -1073741824, -1073741824)
-    column_dependent_constants: (0, -1073741824, -1073741824)
-    fields_of_constants: (0, -1073741824, -1073741824)
-    extra_constants: (0, -1073741824)
-    temp_historyfile: (0, -1073741824)
-    compressed_field_index1: (0, -1073741824)
-    compressed_field_index2: (0, -1073741824)
-    compressed_field_index3: (0, -1073741824)
-    lookup_table: (909, 64, 5)
-    total_prognostic_fields: 3119
-    data: (2049, 2961, -32768)"""
-        self.assertEqual(str(self.ff_header), target)
+        self.assertString(str(self.ff_header), ('FF', 'ffheader.txt'))
 
     def test_repr(self):
         target = "FFHeader('" + self.filename + "')"
         self.assertEqual(repr(self.ff_header), target)
 
-    def test_valid(self):
-        for header in self.valid_headers:
-            self.assertTrue(self.ff_header.valid(header))
-        for header in self.invalid_headers:
-            self.assertFalse(self.ff_header.valid(header))
-        with self.assertRaises(AttributeError):
-            self.ff_header.valid('foobar')
-
-    def test_address_coverage(self):
-        for header in self.valid_headers + self.invalid_headers:
-            self.assertIsInstance(self.ff_header.address(header), np.int64)
-        with self.assertRaises(AttributeError):
-            self.ff_header.address('not_a_real_header')
-
-    def test_address_value(self):
-        self.assertEqual(self.ff_header.address('integer_constants'), 2056)
-        for header in self.invalid_headers:
-            self.assertEqual(self.ff_header.address(header), 0)
-
     def test_shape(self):
-        self.assertEqual(self.ff_header.shape('integer_constants'), (46,))
         self.assertEqual(self.ff_header.shape('data'), (2961, -32768))
 
 
@@ -217,13 +159,73 @@ class TestFFieee32(tests.IrisTest):
             self.assertEqual(ff32, ff64)
 
 
-class TestFFPayload(tests.IrisTest):
-    filename = 'mockery'
+@iris.tests.skip_data
+class TestFFVariableResolutionGrid(tests.IrisTest):
+    def setUp(self):
+        self.filename = tests.get_data_path(('FF', 'n48_multi_field'))
 
+        self.ff2pp = ff.FF2PP(self.filename)
+        self.ff2pp._ff_header = self.ff_header = ff.FFHeader(self.filename)
+
+        data_shape = (73, 96)
+        delta = np.sin(np.linspace(0, np.pi * 5, data_shape[1])) * 5
+        lons = np.linspace(0, 180, data_shape[1]) + delta
+        lons = np.vstack([lons[:-1], lons[:-1] + 0.5 * np.diff(lons)]).T
+
+        delta = np.sin(np.linspace(0, np.pi * 5, data_shape[0])) * 5
+        lats = np.linspace(0, 180, data_shape[0]) + delta
+        lats = np.vstack([lats[:-1], lats[:-1] + 0.5 * np.diff(lats)]).T
+
+        self.ff_header.column_dependent_constants = lons
+        self.ff_header.row_dependent_constants = lats
+
+        self.U_grid_x = lons[:, 1]
+        self.V_grid_y = lats[:-1, 1]
+        self.P_grid_x = lons[:, 0]
+        self.P_grid_y = lats[:, 0]
+
+        self.orig_make_pp_field = pp.make_pp_field
+
+        def new_make_pp_field(header_values):
+            field = self.orig_make_pp_field(header_values)
+            field.stash = self.ff2pp._custom_stash
+            field.bdx = field.bdy = field.bmdi
+            return field
+
+        pp.make_pp_field = new_make_pp_field
+
+    def tearDown(self):
+        pp.make_pp_field = self.orig_make_pp_field
+
+    def _check_stash(self, stash, x_coord, y_coord):
+        self.ff2pp._custom_stash = stash
+        field = next(iter(self.ff2pp))
+        self.assertArrayEqual(x_coord, field.x, ('x_coord was incorrect for '
+                                                 'stash {}'.format(stash)))
+        self.assertArrayEqual(y_coord, field.y, ('y_coord was incorrect for '
+                                                 'stash {}'.format(stash)))
+
+    def test_p(self):
+        self._check_stash('m01s00i001', self.P_grid_x, self.P_grid_y)
+
+    def test_u(self):
+        self._check_stash('m01s00i002', self.U_grid_x, self.P_grid_y)
+
+    def test_v(self):
+        self._check_stash('m01s00i003', self.P_grid_x, self.V_grid_y)
+
+    def test_unhandled_grid_type(self):
+        with mock.patch('warnings.warn') as warn_fn:
+            self._check_stash('m01s00i005', self.P_grid_x, self.P_grid_y)
+            self.assertIn("Assuming the data is on a P grid.",
+                          warn_fn.call_args[0][0])
+
+
+class TestFFPayload(tests.IrisTest):
     def _test_payload(self, mock_field, expected_depth, expected_type):
         with mock.patch('iris.fileformats.ff.FFHeader') as mock_header:
             mock_header.return_value = None
-            ff2pp = ff.FF2PP(self.filename)
+            ff2pp = ff.FF2PP('Not real')
             data_depth, data_type = ff2pp._payload(mock_field)
             self.assertEqual(data_depth, expected_depth)
             self.assertEqual(data_type, expected_type)
