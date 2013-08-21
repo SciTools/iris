@@ -355,17 +355,17 @@ def non_hybrid_surfaces(cube, grib):
         gribapi.grib_set_long(grib, "scaledValueOfSecondFixedSurface", -1)
     else:
         # bounded : set lower+upper surfaces
-        output_v = v_coord.units.convert(v_coord.bounds[0, 0], output_unit)
+        output_v = v_coord.units.convert(v_coord.bounds[0], output_unit)
         if output_v[0] - abs(output_v[0]) or output_v[1] - abs(output_v[1]):
             warnings.warn("Vertical level encoding problem: scaling required.")
         gribapi.grib_set_long(grib, "typeOfFirstFixedSurface", grib_v_code)
-        gribapi.grib_set_long(grib, "scaleFactorOfFirstFixedSurface", 0)
-        gribapi.grib_set_long(grib, "scaledValueOfFirstFixedSurface",
-                              output_v[0])
         gribapi.grib_set_long(grib, "typeOfSecondFixedSurface", grib_v_code)
+        gribapi.grib_set_long(grib, "scaleFactorOfFirstFixedSurface", 0)
         gribapi.grib_set_long(grib, "scaleFactorOfSecondFixedSurface", 0)
+        gribapi.grib_set_long(grib, "scaledValueOfFirstFixedSurface",
+                              int(output_v[0]))
         gribapi.grib_set_long(grib, "scaledValueOfSecondFixedSurface",
-                              output_v[1])
+                              int(output_v[1]))
 
 
 def surfaces(cube, grib):
