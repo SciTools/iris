@@ -93,7 +93,7 @@ class TestPPHeaderDerived(unittest.TestCase):
 
     def setUp(self):
         self.pp = pp.PPField2()
-        self.pp.lbuser = [0, 1, 2, 3]
+        self.pp.lbuser = (0, 1, 2, 3, 4, 5, 6)
         self.pp.lbtim = 11
         self.pp.lbproc = 65539
 
@@ -121,7 +121,27 @@ class TestPPHeaderDerived(unittest.TestCase):
         self.assertEqual(self.pp.lbproc.flag1, 1)
         self.assertEqual(self.pp.lbproc.flag65536, 1)
         self.assertEqual(self.pp.lbproc.flag131072, 0)
-       
+    
+    def test_set_lbuser(self):
+        self.pp.stash = 'm02s12i003'
+        self.assertEqual(self.pp.stash, pp.STASH(2, 12, 3))
+        self.pp.lbuser[6] = 5
+        self.assertEqual(self.pp.stash, pp.STASH(5, 12, 3))
+        self.pp.lbuser[3] = 4321
+        self.assertEqual(self.pp.stash, pp.STASH(5, 4, 321))
+    
+    def test_set_stash(self):
+        self.pp.stash = 'm02s12i003'
+        self.assertEqual(self.pp.stash, pp.STASH(2, 12, 3))
+
+        self.pp.stash = pp.STASH(3, 13, 4)
+        self.assertEqual(self.pp.stash, pp.STASH(3, 13, 4))
+        self.assertEqual(self.pp.lbuser[3], self.pp.stash.lbuser3())
+        self.assertEqual(self.pp.lbuser[6], self.pp.stash.lbuser6())
+        
+        with self.assertRaises(ValueError):
+            self.pp.stash = (4, 15, 5)
+        
     def test_lbproc_bad_access(self):
         try:
             print self.pp.lbproc.flag65537

@@ -125,7 +125,10 @@ class TestPPStash(tests.IrisTest):
         with self.assertRaises(TypeError):
             self.assertEqual('m01s02i003', iris.fileformats.pp.STASH.from_msi(['m01s02i003']))
 
-
+    def test_stash_lbuser(self):
+        stash = iris.fileformats.pp.STASH(2, 32, 456)
+        self.assertEqual(stash.lbuser6(), 2)
+        self.assertEqual(stash.lbuser3(), 32456)
 
 if __name__ == "__main__":
     tests.main()

@@ -42,7 +42,6 @@ import iris.coords
 import iris._constraints
 import iris._merge
 import iris.exceptions
-import iris.fileformats.rules
 import iris.util
 
 from iris._cube_coord_common import CFVariableMixin

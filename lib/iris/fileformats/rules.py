@@ -794,7 +794,6 @@ def load_cubes(filenames, user_callback, loader):
 
             if cube is None:
                 continue
-
             # Cross referencing
             for reference in references:
                 name = reference.name
