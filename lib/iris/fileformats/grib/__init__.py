@@ -638,7 +638,8 @@ def regularise(grib_message):
     values = gribapi.grib_get_double_array(grib_message, "values")
     
     ny = gribapi.grib_get_long(grib_message, "Ny")
-    y_step = gribapi.grib_get_double(grib_message, "jDirectionIncrementInDegrees")
+    y_step = gribapi.grib_get_double(grib_message,
+                                     "jDirectionIncrementInDegrees")
     if not gribapi.grib_get_long(grib_message, "jScansPositively"):
         y_step *= -1
     
@@ -652,12 +653,15 @@ def regularise(grib_message):
     
     # Regularise the data on to the new grid
     xx, yy = np.meshgrid(new_lons, new_lats)
-    new_values = scipy.interpolate.griddata((lons, lats), values, zip(xx.flat, yy.flat))
+    new_values = scipy.interpolate.griddata((lons, lats), values,
+                                            zip(xx.flat, yy.flat))
     
     # Set new stuff
     gribapi.grib_set_long(grib_message, "Nx", int(new_nx))
-    gribapi.grib_set_double(grib_message, "iDirectionIncrementInDegrees", float(new_x_step))
+    gribapi.grib_set_double(grib_message,
+                            "iDirectionIncrementInDegrees", float(new_x_step))
     gribapi.grib_set_double_array(grib_message, "values", new_values)
+    gribapi.grib_set_long(grib_message, "jPointsAreConsecutive", 0)
     
     gribapi.grib_set_long(grib_message, "pvlLocation", -1)
     gribapi.grib_set_long(grib_message, "PLPresent",0)
