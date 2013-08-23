@@ -109,39 +109,35 @@ def convert(f):
 
     if \
             (f.bdx != 0.0) and \
-            (f.bdx != f.bmdi) and \
             (len(f.lbcode) != 5) and \
             (f.lbcode[0] == 1):
         dim_coords_and_dims.append((DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt, standard_name=f._x_coord_name(), units='degrees', circular=(f.lbhem in [0, 4]), coord_system=f.coord_system()), 1))
 
     if \
             (f.bdx != 0.0) and \
-            (f.bdx != f.bmdi) and \
             (len(f.lbcode) != 5) and \
             (f.lbcode[0] == 2):
         dim_coords_and_dims.append((DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt, standard_name=f._x_coord_name(), units='degrees', circular=(f.lbhem in [0, 4]), coord_system=f.coord_system(), with_bounds=True), 1))
 
     if \
             (f.bdy != 0.0) and \
-            (f.bdy != f.bmdi) and \
             (len(f.lbcode) != 5) and \
             (f.lbcode[0] == 1):
         dim_coords_and_dims.append((DimCoord.from_regular(f.bzy, f.bdy, f.lbrow, standard_name=f._y_coord_name(), units='degrees', coord_system=f.coord_system()), 0))
 
     if \
             (f.bdy != 0.0) and \
-            (f.bdy != f.bmdi) and \
             (len(f.lbcode) != 5) and \
             (f.lbcode[0] == 2):
         dim_coords_and_dims.append((DimCoord.from_regular(f.bzy, f.bdy, f.lbrow, standard_name=f._y_coord_name(), units='degrees', coord_system=f.coord_system(), with_bounds=True), 0))
 
     if \
-            (f.bdy == 0.0 or f.bdy == f.bmdi) and \
+            (f.bdy == 0.0) and \
             (len(f.lbcode) != 5 or (len(f.lbcode) == 5 and f.lbcode.iy == 10)):
         dim_coords_and_dims.append((DimCoord(f.y, standard_name=f._y_coord_name(), units='degrees', bounds=f.y_bounds, coord_system=f.coord_system()), 0))
 
     if \
-            (f.bdx == 0.0 or f.bdx == f.bmdi) and \
+            (f.bdx == 0.0) and \
             (len(f.lbcode) != 5 or (len(f.lbcode) == 5 and f.lbcode.ix == 11)):
         dim_coords_and_dims.append((DimCoord(f.x, standard_name=f._x_coord_name(),  units='degrees', bounds=f.x_bounds, circular=(f.lbhem in [0, 4]), coord_system=f.coord_system()), 1))
 
@@ -154,19 +150,19 @@ def convert(f):
     if \
             (len(f.lbcode) == 5) and \
             (f.lbcode.ix == 10) and \
-            (f.bdx != 0 and f.bdx != f.bmdi):
+            (f.bdx != 0):
         dim_coords_and_dims.append((DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt, standard_name=f._y_coord_name(), units='degrees', coord_system=f.coord_system()), 1))
 
     if \
             (len(f.lbcode) == 5) and \
             (f.lbcode.iy == 1) and \
-            (f.bdy == 0 or f.bdy == f.bmdi):
+            (f.bdy == 0):
         dim_coords_and_dims.append((DimCoord(f.y, long_name='pressure', units='hPa', bounds=f.y_bounds), 0))
 
     if \
             (len(f.lbcode) == 5) and \
             (f.lbcode.ix == 1) and \
-            (f.bdx == 0 or f.bdx == f.bmdi):
+            (f.bdx == 0):
         dim_coords_and_dims.append((DimCoord(f.x, long_name='pressure', units='hPa', bounds=f.x_bounds), 1))
 
     if \
@@ -297,6 +293,11 @@ def convert(f):
             (f.lbvc == 8) and \
             (len(f.lbcode) != 5 or (len(f.lbcode) == 5 and 1 not in [f.lbcode.ix, f.lbcode.iy])):
         aux_coords_and_dims.append((DimCoord(f.blev, long_name='pressure', units='hPa'), None))
+
+    if \
+            (len(f.lbcode) != 5) and \
+            (f.lbvc == 9):
+        aux_coords_and_dims.append((DimCoord(f.lblev, standard_name='model_level_number', attributes={'positive': 'up'}), None))
 
     if f.lbvc == 65:
         aux_coords_and_dims.append((DimCoord(f.lblev, standard_name='model_level_number', attributes={'positive': 'up'}), None))
