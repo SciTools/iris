@@ -382,7 +382,6 @@ class TestGribLoad(tests.GraphicsTest):
 
         qplt.pcolormesh(cube)
         plt.gca().coastlines()
-        plt.gca().gridlines()
         plt.title("quasi-regular grib1")
         self.check_graphic()
 

@@ -645,6 +645,7 @@ def regularise(grib_message):
     
     new_nx = max(gribapi.grib_get_long_array(grib_message, "pl"))
     new_x_step = (max(lons) - min(lons)) / (new_nx - 1)
+    new_x_step *= 0.99999  # Don't go too far, or we get nans from griddata.
     if gribapi.grib_get_long(grib_message, "iScansNegatively"):
         new_x_step *= -1
     
