@@ -21,7 +21,7 @@ install:
   - export CARTOPY_REF="fcec835d18fc5f6b6994b6f230e17dd3c6a4dc23"
   - export CARTOPY_SUFFIX=$(echo "${CARTOPY_REF}" | sed "s/^v//")
 
-  - export IRIS_TEST_DATA_REF="cbf0c72955f3c5a4c52aa6389f30fba0f5329a02"
+  - export IRIS_TEST_DATA_REF="89bb2ce50e5f407614f097cd47927eac0bdcd50b"
   - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
 
   - export IRIS_SAMPLE_DATA_REF="2f279384eab2dcdef1728331ce1b22c95f775437"

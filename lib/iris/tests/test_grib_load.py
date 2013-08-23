@@ -375,6 +375,16 @@ class TestGribLoad(tests.GraphicsTest):
         plt.title("lambert grib2")
         self.check_graphic()
 
+    def test_regular_gg_grib1(self):
+        cube = iris.load_cube(tests.get_data_path(
+            ('GRIB', 'gaussian', 'regular_gg.grib1')))
+        self.assertCML(cube, ('grib_load', 'regular_gg_grib1.cml'))
+
+    def test_regular_gg_grib2(self):
+        cube = iris.load_cube(tests.get_data_path(
+            ('GRIB', 'gaussian', 'regular_gg.grib2')))
+        self.assertCML(cube, ('grib_load', 'regular_gg_grib2.cml'))
+
 
 class TestGribTimecodes(tests.GraphicsTest):
     def _run_timetests(self, test_set):

@@ -56,6 +56,18 @@ def convert(grib):
         dim_coords_and_dims.append((DimCoord(grib._x_points, grib._x_coord_name, units='degrees', coord_system=grib._coord_system, circular=grib._x_circular), 0))
 
     if \
+            (grib.gridType=="regular_gg") and \
+            (grib.jPointsAreConsecutive == 0):
+        dim_coords_and_dims.append((DimCoord(grib._y_points, grib._y_coord_name, units='degrees', coord_system=grib._coord_system), 0))
+        dim_coords_and_dims.append((DimCoord(grib._x_points, grib._x_coord_name, units='degrees', coord_system=grib._coord_system, circular=grib._x_circular), 1))
+
+    if \
+            (grib.gridType=="regular_gg") and \
+            (grib.jPointsAreConsecutive == 1):
+        dim_coords_and_dims.append((DimCoord(grib._y_points, grib._y_coord_name, units='degrees', coord_system=grib._coord_system), 1))
+        dim_coords_and_dims.append((DimCoord(grib._x_points, grib._x_coord_name, units='degrees', coord_system=grib._coord_system, circular=grib._x_circular), 0))
+
+    if \
             (grib.gridType=="rotated_ll") and \
             (grib.jPointsAreConsecutive == 0):
         dim_coords_and_dims.append((DimCoord(grib._y_points, grib._y_coord_name, units='degrees', coord_system=grib._coord_system), 0))
