@@ -2041,7 +2041,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 if not data.flags['C_CONTIGUOUS'] and \
                         not data.flags['F_CONTIGUOUS']:
                     data = np.ascontiguousarray(data)
-                crc = hex(zlib.crc32(data))
+                # Fill in masked values to avoid the checksum being
+                # sensitive to unused numbers.
+                if isinstance(data, ma.MaskedArray):
+                    crc = hex(zlib.crc32(data.filled()))
+                else:
+                    crc = hex(zlib.crc32(data))
                 data_xml_element.setAttribute("checksum", crc)
                 if isinstance(data, ma.core.MaskedArray):
                     crc = hex(zlib.crc32(data.mask))
