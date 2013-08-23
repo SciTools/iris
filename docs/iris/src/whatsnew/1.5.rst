@@ -27,7 +27,9 @@ A summary of the main features added with version 1.5:
 
 Bugs fixed
 ----------
-* N/A
+* Shape of the Earth scale factors are now correctly interpreted by the GRIB
+  loader. They were previously used as a multiplier for the given value but
+  should have been used as a decimal shift.
 
 Incompatible changes
 --------------------

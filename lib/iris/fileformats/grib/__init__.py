@@ -382,9 +382,9 @@ class GribWrapper(object):
             
         #custom sphere
         elif self.shapeOfTheEarth == 1:
-            geoid = \
-                coord_systems.GeogCS(self.scaledValueOfRadiusOfSphericalEarth * \
-                                     self.scaleFactorOfRadiusOfSphericalEarth)
+            geoid = coord_systems.GeogCS(
+                self.scaledValueOfRadiusOfSphericalEarth *
+                10 ** -self.scaleFactorOfRadiusOfSphericalEarth)
                     
         #IAU65 oblate sphere
         elif self.shapeOfTheEarth == 2:
@@ -393,8 +393,10 @@ class GribWrapper(object):
         #custom oblate spheroid (km)
         elif self.shapeOfTheEarth == 3:
             geoid = coord_systems.GeogCS(
-                semi_major_axis=self.scaledValueOfEarthMajorAxis * self.scaleFactorOfEarthMajorAxis * 1000.0,
-                semi_minor_axis=self.scaledValueOfEarthMinorAxis * self.scaleFactorOfEarthMinorAxis * 1000.0)
+                semi_major_axis=self.scaledValueOfEarthMajorAxis *
+                10 ** -self.scaleFactorOfEarthMajorAxis * 1000.,
+                semi_minor_axis=self.scaledValueOfEarthMinorAxis *
+                10 ** -self.scaleFactorOfEarthMinorAxis * 1000.)
             
         #IAG-GRS80 oblate spheroid
         elif self.shapeOfTheEarth == 4:
@@ -412,8 +414,10 @@ class GribWrapper(object):
         #custom oblate spheroid (m)
         elif self.shapeOfTheEarth == 7:
             geoid = coord_systems.GeogCS(
-                semi_major_axis=self.scaledValueOfEarthMajorAxis * self.scaleFactorOfEarthMajorAxis,
-                semi_minor_axis=self.scaledValueOfEarthMinorAxis * self.scaleFactorOfEarthMinorAxis)
+                semi_major_axis=self.scaledValueOfEarthMajorAxis *
+                10 ** -self.scaleFactorOfEarthMajorAxis,
+                semi_minor_axis=self.scaledValueOfEarthMinorAxis *
+                10 ** -self.scaleFactorOfEarthMinorAxis)
         
         elif self.shapeOfTheEarth == 8:
             raise ValueError("unhandled shape of earth : grib earth shape = 8")
