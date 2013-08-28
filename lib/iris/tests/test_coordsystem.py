@@ -23,6 +23,7 @@ import iris.tests as tests
 
 import logging
 
+import cartopy.crs
 import numpy as np
 
 import iris.cube
@@ -226,6 +227,68 @@ class Test_TransverseMercator_repr(tests.IrisTest):
                     "false_easting=-400.0, false_northing=100.0, scale_factor_at_central_meridian=0.9996012717, "\
                     "ellipsoid=GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909))"
         self.assertEqual(expected, repr(tm))
+
+
+class Test_TransverseMercator_as_cartopy_crs(tests.IrisTest):
+    def test_as_cartopy_crs(self):
+        latitude_of_projection_origin = 49.0
+        longitude_of_central_meridian = -2.0
+        false_easting = -40000.0
+        false_northing = 10000.0
+        scale_factor_at_central_meridian = 0.9996012717
+        ellipsoid = GeogCS(semi_major_axis=6377563.396,
+                           semi_minor_axis=6356256.909)
+
+        tmerc_cs = TransverseMercator(
+            latitude_of_projection_origin,
+            longitude_of_central_meridian,
+            false_easting,
+            false_northing,
+            scale_factor_at_central_meridian,
+            ellipsoid=ellipsoid)
+
+        expected = cartopy.crs.TransverseMercator(
+            central_longitude=longitude_of_central_meridian,
+            central_latitude=latitude_of_projection_origin,
+            false_easting=false_easting,
+            false_northing=false_northing,
+            scale_factor=scale_factor_at_central_meridian,
+            globe=cartopy.crs.Globe(semimajor_axis=6377563.396,
+                                    semiminor_axis=6356256.909))
+
+        res = tmerc_cs.as_cartopy_crs()
+        self.assertEqual(res, expected)
+
+
+class Test_TransverseMercator_as_cartopy_projection(tests.IrisTest):
+    def test_as_cartopy_projection(self):
+        latitude_of_projection_origin = 49.0
+        longitude_of_central_meridian = -2.0
+        false_easting = -40000.0
+        false_northing = 10000.0
+        scale_factor_at_central_meridian = 0.9996012717
+        ellipsoid = GeogCS(semi_major_axis=6377563.396,
+                           semi_minor_axis=6356256.909)
+
+        tmerc_cs = TransverseMercator(
+            latitude_of_projection_origin,
+            longitude_of_central_meridian,
+            false_easting,
+            false_northing,
+            scale_factor_at_central_meridian,
+            ellipsoid=ellipsoid)
+
+        expected = cartopy.crs.TransverseMercator(
+            central_longitude=longitude_of_central_meridian,
+            central_latitude=latitude_of_projection_origin,
+            false_easting=false_easting,
+            false_northing=false_northing,
+            scale_factor=scale_factor_at_central_meridian,
+            globe=cartopy.crs.Globe(semimajor_axis=6377563.396,
+                                    semiminor_axis=6356256.909))
+
+        res = tmerc_cs.as_cartopy_projection()
+        self.assertEqual(res, expected)
 
 
 class Test_LambertConformal(tests.GraphicsTest):

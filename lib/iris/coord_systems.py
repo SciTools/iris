@@ -388,7 +388,7 @@ class TransverseMercator(CoordSystem):
 
     def as_cartopy_crs(self):
         if self.ellipsoid is not None:
-            globe = self.self.ellipsoid.as_cartopy_globe()
+            globe = self.ellipsoid.as_cartopy_globe()
         else:
             globe = None
 
