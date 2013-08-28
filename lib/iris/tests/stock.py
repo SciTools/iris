@@ -371,6 +371,7 @@ def hybrid_height():
                           aux_factories=[hybrid_height])
     return cube
 
+
 def simple_4d_with_hybrid_height():
     cube = iris.cube.Cube(np.arange(3*4*5*6, dtype='i8').reshape(3,4,5,6), 
                           "air_temperature", units="K")

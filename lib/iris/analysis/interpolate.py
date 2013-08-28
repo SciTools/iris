@@ -130,12 +130,12 @@ def nearest_neighbour_indices(cube, sample_points):
     sample_points = points
     
     # Build up a list of indices to span the cube.
-    indices = [slice(None, None)] * cube.data.ndim
+    indices = [slice(None, None)] * cube.ndim
     
     # Build up a dictionary which maps the cube's data dimensions to a list (which will later
     # be populated by coordinates in the sample points list)
     dim_to_coord_map = {}
-    for i in range(cube.data.ndim):
+    for i in range(cube.ndim):
         dim_to_coord_map[i] = []
         
     # Iterate over all of the specifications provided by sample_points
@@ -222,7 +222,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
     sample_dims = sorted(list(sample_dims))
 
     # Extract a sub cube that lives in just the sampling space.
-    sample_space_slice = [0] * cube.data.ndim
+    sample_space_slice = [0] * cube.ndim
     for sample_dim in sample_dims:
         sample_space_slice[sample_dim] = slice(None, None)
     sample_space_slice = tuple(sample_space_slice)
@@ -270,7 +270,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
 
     # Turn sample_space_ndi into a main cube slice.
     # Map sample cube to main cube dims and leave the rest as a full slice.
-    main_cube_slice = [slice(None, None)] * cube.data.ndim
+    main_cube_slice = [slice(None, None)] * cube.ndim
     for sample_coord, sample_coord_dims in sample_space_coords_and_dims:
         # Find the coord in the main cube
         main_coord = cube.coord(sample_coord.name())
@@ -662,7 +662,7 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
         # Construct source data & source coordinate values suitable for
         # SciPy's interp1d.
         if getattr(src_coord, 'circular', False):
-            coord_slice_in_cube = [slice(None, None)] * cube.data.ndim
+            coord_slice_in_cube = [slice(None, None)] * cube.ndim
             coord_slice_in_cube[sample_dim] = slice(0, 1)
             modulus = np.array(src_coord.units.modulus or 0,
                                dtype=src_coord.dtype)
