@@ -27,6 +27,7 @@ import os
 import shutil
 import warnings
 
+import mock
 import netCDF4 as nc
 import numpy as np
 import numpy.ma as ma
@@ -616,15 +617,16 @@ class TestNetCDFSave(tests.IrisTest):
 
     def test_conflicting_global_attributes(self):
         # Should be data variable attributes, but raise a warning.
-        self.cube.attributes['history'] = 'Team A won.'
-        self.cube2.attributes['history'] = 'Team B won.'
+        attr_name = 'history'
+        self.cube.attributes[attr_name] = 'Team A won.'
+        self.cube2.attributes[attr_name] = 'Team B won.'
+        expected_msg = '{attr_name!r} is being added as CF data variable ' \
+                       'attribute, but {attr_name!r} should only be a CF ' \
+                       'global attribute.'.format(attr_name=attr_name)
         with self.temp_filename(suffix='.nc') as filename:
-            msg = 'Missing warning when saving global-only attribute to a ' \
-                  'data variable.'
-            with warnings.catch_warnings(record=True) as w:
-                warnings.simplefilter("always")
+            with mock.patch('warnings.warn') as warn:
                 iris.save([self.cube, self.cube2], filename)
-                self.assertTrue(w, msg)
+                warn.assert_called_with(expected_msg)
                 self.assertCDL(filename,
                                ('netcdf', 'netcdf_save_confl_global_attr.cdl'))
 
