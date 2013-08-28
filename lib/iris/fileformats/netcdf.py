@@ -1198,6 +1198,11 @@ def save(cube, filename, netcdf_format='NETCDF4'):
     """
     Save cube(s) to a netCDF file, given the cube and the filename.
 
+    * Iris will write CF 1.5 compliant NetCDF files.
+    * The attributes dictionaries on each cube in the saved cube list
+      will be compared and common attributes saved as NetCDF global
+      attributes where appropriate.
+
     Args:
 
     * cube (:class:`iris.cube.Cube` or :class:`iris.cube.CubeList`):

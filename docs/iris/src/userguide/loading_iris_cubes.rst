@@ -292,3 +292,19 @@ these two cubes into separate variables.
         1
         >>> print number_two
         2
+
+
+Saving Iris Cubes
+-----------------
+
+The :py:func:`iris.save` function saves one or more cubes to a file.
+
+If the filename includes a supported suffix then Iris will use the correct saver
+and the keyword argument `saver` is not required.
+
+    >>> import iris
+    >>> filename = iris.sample_data_path('uk_hires.pp')
+    >>> cubes = iris.load(filename)
+    >>> iris.save(cubes, '/tmp/uk_hires.nc')
+
+Iris is able to save to CF NetCDF (1.5), GRIB (edition 2) and Met Office PP formats.
