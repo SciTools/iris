@@ -22,7 +22,7 @@ import warnings
 
 import numpy as np
 
-from iris.aux_factory import HybridHeightFactory
+from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.fileformats.mosig_cf_map import MOSIG_STASH_TO_CF
 from iris.fileformats.rules import Factory, Reference, ReferenceTarget
