@@ -554,6 +554,11 @@ class TestNearestNeighbour(tests.IrisTest):
         self.assertEqual(indices, (20, 10))
         
         b = iris.analysis.interpolate.extract_nearest_neighbour(self.cube, point_spec) 
+
+        # Check that the data has not been loaded on either the original cube,
+        # nor the interpolated one.
+        self.assertIsNotNone(b._data_manager)
+        self.assertIsNotNone(self.cube._data_manager)
         self.assertCML(b, ('analysis', 'interpolation', 'nearest_neighbour_extract_latitude_longitude.cml'))
         
         value = iris.analysis.interpolate.nearest_neighbour_data_value(self.cube, point_spec)

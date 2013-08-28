@@ -165,7 +165,6 @@ def interpolate(cube, sample_points, method=None):
         for dim in dims:
             squish_my_dims.add(dim)
 
-
     # Derive the new cube's shape by filtering out all the dimensions we're about to sample,
     # and then adding a new dimension to accommodate all the sample points.
     remaining = [(dim, size) for dim, size in enumerate(cube.shape) if dim not in squish_my_dims]

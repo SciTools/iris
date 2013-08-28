@@ -256,7 +256,7 @@ def _add_subtract_common(operation_function, operation_symbol, operation_noun, o
         points = other.points
 
         if data_dimension is not None:
-            points_shape = [1] * cube.data.ndim
+            points_shape = [1] * cube.ndim
             points_shape[data_dimension] = -1
             points = points.reshape(points_shape)
 
@@ -443,7 +443,7 @@ def _multiply_divide_common(operation_function, operation_symbol,
         # If the axis is defined then shape the provided points so that we can do the
         # division (this is needed as there is no "axis" keyword to numpy's divide/multiply)
         if data_dimension is not None:
-            points_shape = [1] * cube.data.ndim
+            points_shape = [1] * cube.ndim
             points_shape[data_dimension] = -1
             points = points.reshape(points_shape)
         

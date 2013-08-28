@@ -123,7 +123,7 @@ def _get_plot_defn(cube, mode, ndims=2):
     """
     if cube.ndim != ndims:
         msg = 'Cube must be %s-dimensional. Got %s dimensions.'
-        raise ValueError(msg % (ndims, cube.data.ndim))
+        raise ValueError(msg % (ndims, cube.ndim))
 
     # Start by taking the DimCoords from each dimension.
     coords = [None] * ndims
