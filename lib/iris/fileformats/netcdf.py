@@ -78,11 +78,12 @@ _CF_ATTRS = ['add_offset', 'ancillary_variables', 'axis', 'bounds', 'calendar',
              'standard_name', 'units', 'valid_max', 'valid_min', 'valid_range']
 
 # CF attributes that should not be global.
-_CF_DATA_ATTRS = ['standard_error_multiplier', 'flag_masks', 'flag_meanings',
-                  'flag_values']
+_CF_DATA_ATTRS = ['flag_masks', 'flag_meanings', 'flag_values',
+                  'instance_dimension', 'sample_dimension',
+                  'standard_error_multiplier']
 
 # CF attributes that should only be global.
-_CF_GLOBAL_ATTRS = ['conventions', 'history', 'title']
+_CF_GLOBAL_ATTRS = ['conventions', 'featureType', 'history', 'title']
 
 # UKMO specific attributes that should not be global.
 _UKMO_DATA_ATTRS = ['STASH', 'ukmo__um_stash_source', 'ukmo__process_flags']
