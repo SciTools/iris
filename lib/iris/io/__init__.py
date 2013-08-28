@@ -261,7 +261,18 @@ def save(source, target, saver=None, **kwargs):
     """
     Save one or more Cubes to file (or other writable).
 
-    A custom saver can be provided, or Iris can select one based on filename.
+    Iris currently supports three file formats for saving, which it can
+    recognise by filename extension:
+
+        * netCDF - the Unidata network Common Data Format:
+            * see :func:`iris.fileformats.netcdf.save`
+        * GRIB2  - the WMO GRIdded Binary data format;
+            * see :func:`iris.fileformats.grib.save_grib2`
+        * PP     - the Met Office UM Post Processing Format.
+            * see :func:`iris.fileformats.pp.save`
+
+    A custom saver can be provided to the function to write to a different
+    file format.
 
     Args:
 
@@ -277,42 +288,29 @@ def save(source, target, saver=None, **kwargs):
                       If omitted, Iris will attempt to determine the format.
 
                       This keyword can be used to implement a custom save
-                      format (see below). Function form must be:
+                      format. Function form must be:
                       ``my_saver(cube, target)`` plus any custom keywords. It
                       is assumed that a saver will accept an ``append`` keyword
                       if it's file format can handle multiple cubes. See also
                       :func:`iris.io.add_saver`.
 
-    All other keywords are passed through to the saver function.
+    All other keywords are passed through to the saver function; see the
+    relevant saver documentation for more information on keyword arguments.
 
     Examples::
 
         # Save a cube to PP
-        iris.io.save(my_cube, "myfile.pp")
-        iris.io.save(my_cube_list, "myfile.pp", append=True)
+        iris.save(my_cube, "myfile.pp")
 
-        # Save cube to custom file format and provide format-specific argument.
-        # The walk keyword is passed through to my_spam_format.save.
-        import my_spam_format
-        iris.io.save(my_cube, "my_file.spam",
-                     saver=my_spam_format.save, walk="silly")
-
-        # Add a custom file format to the Iris session and save a cube list.
-        # When saving a cube list, Iris passes an append keyword to the saver.
-        iris.io.add_saver(".spam", my_spam_format.save)
-        iris.io.save(my_cube_list, "myfile.spam", walk="silly")
-
-        # Get help on the PP saver, for example to see it's accepted keywords.
-        help(iris.io.find_saver("pp"))
-
-        # Create and display PNG image of a DOT graph representation of a cube.
-        iris.io.save(my_cube, "my_file.dotpng", launch=True)
+        # Save a cube list to a PP file, appending to the contents of the file
+        # if it already exists
+        iris.save(my_cube_list, "myfile.pp", append=True)
 
         # Save a cube to netCDF, defaults to NETCDF4 file format
-        iris.io.save(my_cube, "myfile.nc")
+        iris.save(my_cube, "myfile.nc")
 
-        # Save a cube to netCDF using NETCDF3 file format
-        iris.io.save(my_cube, "myfile.nc", netcdf_format="NETCDF3_CLASSIC")
+        # Save a cube list to netCDF, using the NETCDF4_CLASSIC storage option
+        iris.save(my_cube_list, "myfile.nc", netcdf_format="NETCDF3_CLASSIC")
 
     """
     # Determine format from filename
