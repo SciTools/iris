@@ -4,7 +4,6 @@ variables:
 	float air_potential_temperature ;
 		air_potential_temperature:standard_name = "air_potential_temperature" ;
 		air_potential_temperature:units = "K" ;
-		air_potential_temperature:source = "Iris test case" ;
 		air_potential_temperature:grid_mapping = "rotated_latitude_longitude" ;
 		air_potential_temperature:coordinates = "forecast_period grid_latitude grid_longitude level_height model_level_number sigma surface_altitude time" ;
 	int rotated_latitude_longitude ;
@@ -55,5 +54,6 @@ variables:
 		time:calendar = "gregorian" ;
 
 // global attributes:
+		:source = "Iris test case" ;
 		:Conventions = "CF-1.5" ;
 }

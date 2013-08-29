@@ -4,7 +4,6 @@ dimensions:
 variables:
 	float unknown(depth, time) ;
 		unknown:ukmo__um_stash_source = "m??s44i101" ;
-		unknown:source = "Data from Met Office Unified Model" ;
 		unknown:cell_methods = "time: mean (interval: 24 hour)" ;
 	float depth(depth) ;
 		depth:axis = "Z" ;
@@ -18,5 +17,6 @@ variables:
 		time:calendar = "360_day" ;
 
 // global attributes:
+		:source = "Data from Met Office Unified Model" ;
 		:Conventions = "CF-1.5" ;
 }

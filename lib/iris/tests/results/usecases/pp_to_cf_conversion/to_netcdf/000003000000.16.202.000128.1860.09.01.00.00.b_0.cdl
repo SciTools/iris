@@ -8,7 +8,6 @@ variables:
 		geopotential_height:standard_name = "geopotential_height" ;
 		geopotential_height:units = "m" ;
 		geopotential_height:ukmo__um_stash_source = "m01s16i202" ;
-		geopotential_height:source = "Data from Met Office Unified Model" ;
 		geopotential_height:cell_methods = "time: mean (interval: 4 hour)" ;
 		geopotential_height:grid_mapping = "latitude_longitude" ;
 		geopotential_height:coordinates = "forecast_period forecast_reference_time time" ;
@@ -44,5 +43,6 @@ variables:
 	double time_bnds(bnds) ;
 
 // global attributes:
+		:source = "Data from Met Office Unified Model" ;
 		:Conventions = "CF-1.5" ;
 }

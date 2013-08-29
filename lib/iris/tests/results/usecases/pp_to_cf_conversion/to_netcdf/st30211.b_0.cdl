@@ -10,7 +10,6 @@ variables:
 		northward_ocean_heat_transport:standard_name = "northward_ocean_heat_transport" ;
 		northward_ocean_heat_transport:units = "PW" ;
 		northward_ocean_heat_transport:ukmo__um_stash_source = "m02s30i211" ;
-		northward_ocean_heat_transport:source = "Data from Met Office Unified Model" ;
 		northward_ocean_heat_transport:cell_methods = "time: mean" ;
 		northward_ocean_heat_transport:grid_mapping = "latitude_longitude" ;
 		northward_ocean_heat_transport:coordinates = "forecast_period forecast_reference_time" ;
@@ -46,5 +45,6 @@ variables:
 		forecast_reference_time:calendar = "360_day" ;
 
 // global attributes:
+		:source = "Data from Met Office Unified Model" ;
 		:Conventions = "CF-1.5" ;
 }

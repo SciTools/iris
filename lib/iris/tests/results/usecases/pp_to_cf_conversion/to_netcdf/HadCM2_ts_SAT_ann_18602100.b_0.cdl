@@ -7,7 +7,6 @@ variables:
 		air_temperature:standard_name = "air_temperature" ;
 		air_temperature:units = "Celsius" ;
 		air_temperature:ukmo__um_stash_source = "m01s03i236" ;
-		air_temperature:source = "Data from Met Office Unified Model" ;
 		air_temperature:cell_methods = "time: mean" ;
 		air_temperature:grid_mapping = "latitude_longitude" ;
 		air_temperature:coordinates = "height latitude longitude" ;
@@ -39,5 +38,6 @@ variables:
 	float longitude_bnds(site_number, bnds) ;
 
 // global attributes:
+		:source = "Data from Met Office Unified Model" ;
 		:Conventions = "CF-1.5" ;
 }

@@ -25,7 +25,9 @@ import iris.tests as tests
 
 import os
 import shutil
+import warnings
 
+import mock
 import netCDF4 as nc
 import numpy as np
 import numpy.ma as ma
@@ -587,6 +589,76 @@ class TestNetCDFSave(tests.IrisTest):
             iris.save(traj, temp_filename)
             reloaded = iris.load_cube(temp_filename)
             self.assertCML(reloaded, ('netcdf', 'save_load_traj.cml'))
+
+    def test_attributes(self):
+        # Should be global attributes.
+        self.cube.attributes['history'] = 'A long time ago...'
+        self.cube.attributes['title'] = 'Attribute test'
+        self.cube.attributes['foo'] = 'bar'
+        # Should be data varible attributes.
+        self.cube.attributes['standard_error_multiplier'] = 23
+        self.cube.attributes['flag_masks'] = 'a'
+        self.cube.attributes['flag_meanings'] = 'b'
+        self.cube.attributes['flag_values'] = 'c'
+        self.cube.attributes['STASH'] = iris.fileformats.pp.STASH(1, 2, 3)
+        # Should be overriden.
+        self.cube.attributes['conventions'] = 'TEST'
+        with self.temp_filename(suffix='.nc') as filename:
+            iris.save(self.cube, filename)
+            self.assertCDL(filename, ('netcdf', 'netcdf_save_attr.cdl'))
+
+    def test_conflicting_attributes(self):
+        # Should be data variable attributes.
+        self.cube.attributes['foo'] = 'bar'
+        self.cube2.attributes['foo'] = 'orange'
+        with self.temp_filename(suffix='.nc') as filename:
+            iris.save([self.cube, self.cube2], filename)
+            self.assertCDL(filename, ('netcdf', 'netcdf_save_confl_attr.cdl'))
+
+    def test_conflicting_global_attributes(self):
+        # Should be data variable attributes, but raise a warning.
+        attr_name = 'history'
+        self.cube.attributes[attr_name] = 'Team A won.'
+        self.cube2.attributes[attr_name] = 'Team B won.'
+        expected_msg = '{attr_name!r} is being added as CF data variable ' \
+                       'attribute, but {attr_name!r} should only be a CF ' \
+                       'global attribute.'.format(attr_name=attr_name)
+        with self.temp_filename(suffix='.nc') as filename:
+            with mock.patch('warnings.warn') as warn:
+                iris.save([self.cube, self.cube2], filename)
+                warn.assert_called_with(expected_msg)
+                self.assertCDL(filename,
+                               ('netcdf', 'netcdf_save_confl_global_attr.cdl'))
+
+    def test_no_global_attributes(self):
+        # Should all be data variable attributes.
+        # Different keys.
+        self.cube.attributes['a'] = 'a'
+        self.cube2.attributes['b'] = 'a'
+        self.cube3.attributes['c'] = 'a'
+        self.cube4.attributes['d'] = 'a'
+        self.cube5.attributes['e'] = 'a'
+        self.cube6.attributes['f'] = 'a'
+        # Different values.
+        self.cube.attributes['g'] = 'p'
+        self.cube2.attributes['g'] = 'q'
+        self.cube3.attributes['g'] = 'r'
+        self.cube4.attributes['g'] = 's'
+        self.cube5.attributes['g'] = 't'
+        self.cube6.attributes['g'] = 'u'
+        # One different value.
+        self.cube.attributes['h'] = 'v'
+        self.cube2.attributes['h'] = 'v'
+        self.cube3.attributes['h'] = 'v'
+        self.cube4.attributes['h'] = 'w'
+        self.cube5.attributes['h'] = 'v'
+        self.cube6.attributes['h'] = 'v'
+        cubes = [self.cube, self.cube2, self.cube3,
+                 self.cube4, self.cube5, self.cube6]
+        with self.temp_filename(suffix='.nc') as filename:
+            iris.save(cubes, filename)
+            self.assertCDL(filename, ('netcdf',
+                                      'netcdf_save_no_global_attr.cdl'))
 
 
 class TestCFStandardName(tests.IrisTest):
