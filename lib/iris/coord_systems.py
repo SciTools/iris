@@ -29,7 +29,7 @@ import cartopy.crs
 class CoordSystem(object):
     """
     Abstract base class for coordinate systems.
-    
+
     """
     __metaclass__ = ABCMeta
 
@@ -47,23 +47,23 @@ class CoordSystem(object):
     def xml_element(self, doc, attrs=None):
         """Default behaviour for coord systems."""
         # attrs - optional list of (k,v) items, used for alternate output
-        
+
         xml_element_name = type(self).__name__
         # lower case the first char
         first_char = xml_element_name[0]
         xml_element_name = xml_element_name.replace(first_char,
                                                     first_char.lower(),
                                                     1)
-        
+
         coord_system_xml_element = doc.createElement(xml_element_name)
-        
+
         if attrs is None:
             attrs = self.__dict__.items()
-        attrs.sort(key=lambda attr: attr[0])     
+        attrs.sort(key=lambda attr: attr[0])
 
-        for name, value in attrs: 
+        for name, value in attrs:
             coord_system_xml_element.setAttribute(name, str(value))
-        
+
         return coord_system_xml_element
 
     @abstractmethod
@@ -92,7 +92,7 @@ class GeogCS(CoordSystem):
     """
     A geographic (ellipsoidal) coordinate system, defined by the shape of
     the Earth and a prime meridian.
-    
+
     """
 
     grid_mapping_name = "latitude_longitude"
@@ -106,7 +106,7 @@ class GeogCS(CoordSystem):
 
             * semi_major_axis              -  of ellipsoid in metres
             * semi_minor_axis              -  of ellipsoid in metres
-            * inverse_flattening           -  of ellipsoid 
+            * inverse_flattening           -  of ellipsoid
             * longitude_of_prime_meridian  -  Can be used to specify the
                                               prime meridian on the ellipsoid
                                               in degrees. Default = 0.
@@ -170,7 +170,7 @@ class GeogCS(CoordSystem):
                 inverse_flattening = 1.0 / ((semi_major_axis - semi_minor_axis) /
                                             semi_major_axis)
 
-        # We didn't get enough to specify an ellipse. 
+        # We didn't get enough to specify an ellipse.
         else:
             raise ValueError("Insufficient ellipsoid specification")
 
@@ -185,7 +185,7 @@ class GeogCS(CoordSystem):
         
         #: Describes 'zero' on the ellipsoid in degrees.
         self.longitude_of_prime_meridian = float(longitude_of_prime_meridian)
-        
+
     def _pretty_attrs(self):
         attrs = [("semi_major_axis", self.semi_major_axis)]
         if self.semi_major_axis != self.semi_minor_axis:
@@ -235,9 +235,9 @@ class RotatedGeogCS(CoordSystem):
     A coordinate system with rotated pole, on an optional :class:`GeogCS`.
 
     """
-    
+
     grid_mapping_name = "rotated_latitude_longitude"
-    
+
     def __init__(self, grid_north_pole_latitude, grid_north_pole_longitude,
                  north_pole_grid_longitude=0, ellipsoid=None):
         """
@@ -250,20 +250,20 @@ class RotatedGeogCS(CoordSystem):
                                           pole in degrees.
             * grid_north_pole_longitude - The true longitude of the rotated
                                           pole in degrees.
-            
+
         Kwargs:
-        
+
             * north_pole_grid_longitude - Longitude of true north pole in
                                           rotated grid in degrees. Default = 0.
             * ellipsoid                 - Optional :class:`GeogCS` defining
                                           the ellipsoid.
 
         Examples::
-        
+
             rotated_cs = RotatedGeogCS(30, 30)
             another_cs = RotatedGeogCS(30, 30, ellipsoid=GeogCS(6400000, 6300000))
 
-        """ 
+        """
         #: The true latitude of the rotated pole in degrees.
         self.grid_north_pole_latitude = float(grid_north_pole_latitude)
 
@@ -320,29 +320,29 @@ class TransverseMercator(CoordSystem):
 
     """
 
-    grid_mapping_name = "transverse_mercator" 
+    grid_mapping_name = "transverse_mercator"
 
     def __init__(self, latitude_of_projection_origin,
                  longitude_of_central_meridian, false_easting, false_northing,
                  scale_factor_at_central_meridian, ellipsoid=None):
         """
         Constructs a TransverseMercator object.
-        
+
         Args:
-        
-            * latitude_of_projection_origin     
+
+            * latitude_of_projection_origin
                     True latitude of planar origin in degrees.
 
-            * longitude_of_central_meridian     
+            * longitude_of_central_meridian
                     True longitude of planar origin in degrees.
 
-            * false_easting                     
+            * false_easting
                     X offset from planar origin in metres.
 
-            * false_northing                    
+            * false_northing
                     Y offset from planar origin in metres.
 
-            * scale_factor_at_central_meridian  
+            * scale_factor_at_central_meridian
                     Reduces the cylinder to slice through the ellipsoid
                     (secant form). Used to provide TWO longitudes of zero
                     distortion in the area of interest.
@@ -353,7 +353,7 @@ class TransverseMercator(CoordSystem):
                     Optional :class:`GeogCS` defining the ellipsoid.
 
         Example::
-        
+
             airy1830 = GeogCS(6377563.396, 6356256.909)
             osgb = TransverseMercator(49, -2, 400000, -100000, 0.9996012717, ellipsoid=airy1830)
 
@@ -423,26 +423,26 @@ class Stereographic(CoordSystem):
 
     """
 
-    grid_mapping_name = "stereographic" 
+    grid_mapping_name = "stereographic"
 
     def __init__(self, central_lat, central_lon,
                  false_easting=0.0, false_northing=0.0,
                  true_scale_lat=None, ellipsoid=None):
         """
         Constructs a Stereographic coord system.
-        
+
         Args:
 
             * central_lat
                     The latitude of the pole.
 
-            * central_lon     
+            * central_lon
                     The central longitude, which aligns with the y axis.
-        
-            * false_easting                     
+
+            * false_easting
                     X offset from planar origin in metres. Defaults to 0.
 
-            * false_northing                    
+            * false_northing
                     Y offset from planar origin in metres. Defaults to 0.
 
         Kwargs:
@@ -492,7 +492,7 @@ class Stereographic(CoordSystem):
             self.central_lat, self.central_lon,
             self.false_easting, self.false_northing,
             self.true_scale_lat, globe)
-                                         
+
     def as_cartopy_projection(self):
         return self.as_cartopy_crs()
 

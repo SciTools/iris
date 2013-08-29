@@ -124,7 +124,7 @@ class Test_CoordSystem_xml_element(tests.IrisTest):
 class Test_GeogCS_construction(tests.IrisTest):
     # Test Ellipsoid constructor
     # Don't care about testing the units, it has no logic specific to this class.
-    
+
     def test_sphere_param(self):
         cs = GeogCS(6543210)
         self.assertXMLElement(cs, ("coord_systems", "GeogCS_init_sphere.xml"))
@@ -132,11 +132,11 @@ class Test_GeogCS_construction(tests.IrisTest):
     def test_no_major(self):
         cs = GeogCS(semi_minor_axis=6500000, inverse_flattening=151.42814163388104)
         self.assertXMLElement(cs, ("coord_systems", "GeogCS_init_no_major.xml"))
-    
+
     def test_no_minor(self):
         cs = GeogCS(semi_major_axis=6543210, inverse_flattening=151.42814163388104)
         self.assertXMLElement(cs, ("coord_systems", "GeogCS_init_no_minor.xml"))
-    
+
     def test_no_invf(self):
         cs = GeogCS(semi_major_axis=6543210, semi_minor_axis=6500000)
         self.assertXMLElement(cs, ("coord_systems", "GeogCS_init_no_invf.xml"))
@@ -145,12 +145,12 @@ class Test_GeogCS_construction(tests.IrisTest):
         # no params
         with self.assertRaises(ValueError):
             GeogCS()
-        
+
         # over specified
         with self.assertRaises(ValueError):
             GeogCS(6543210, 6500000, 151.42814163388104)
-        
-        # under specified 
+
+        # under specified
         with self.assertRaises(ValueError):
             GeogCS(None, 6500000, None)
         with self.assertRaises(ValueError):
@@ -158,13 +158,13 @@ class Test_GeogCS_construction(tests.IrisTest):
 
 
 class Test_GeogCS_repr(tests.IrisTest):
-    def test_repr(self): 
+    def test_repr(self):
         cs = GeogCS(6543210, 6500000)
         expected = "GeogCS(semi_major_axis=6543210.0, semi_minor_axis=6500000.0)"
         self.assertEqual(expected, repr(cs))
 
 class Test_GeogCS_str(tests.IrisTest):
-    def test_str(self): 
+    def test_str(self):
         cs = GeogCS(6543210, 6500000)
         expected = "GeogCS(semi_major_axis=6543210.0, semi_minor_axis=6500000.0)"
         self.assertEqual(expected, str(cs))
@@ -183,7 +183,7 @@ class Test_RotatedGeogCS_construction(tests.IrisTest):
 
 
 class Test_RotatedGeogCS_repr(tests.IrisTest):
-    def test_repr(self): 
+    def test_repr(self):
         rcs = RotatedGeogCS(30, 40, north_pole_grid_longitude=50, ellipsoid=GeogCS(6371229))
         expected = "RotatedGeogCS(30.0, 40.0, "\
                     "north_pole_grid_longitude=50.0, ellipsoid=GeogCS(6371229.0))"
@@ -199,7 +199,7 @@ class Test_RotatedGeogCS_repr(tests.IrisTest):
 
 
 class Test_RotatedGeogCS_str(tests.IrisTest):
-    def test_str(self): 
+    def test_str(self):
         rcs = RotatedGeogCS(30, 40, north_pole_grid_longitude=50, ellipsoid=GeogCS(6371229))
         expected = "RotatedGeogCS(30.0, 40.0, "\
                     "north_pole_grid_longitude=50.0, ellipsoid=GeogCS(6371229.0))"

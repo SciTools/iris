@@ -15,7 +15,7 @@ import iris.quickplot as qplt
 def main():
     fname = iris.sample_data_path('air_temp.pp')
     temperature = iris.load_cube(fname)
-    
+
     qplt.contourf(temperature, 15)
     plt.gca().coastlines()
     plt.show()

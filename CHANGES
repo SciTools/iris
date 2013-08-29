@@ -41,32 +41,130 @@ Deprecations
 Release 1.4 (unreleased)
 ========================
 
+:Release: 1.4.0
+:Date: 14 June 2013
 
-Features added
---------------
-* A new configuration variable called `iris.config.TEST_DATA_DIR`
-  has been added, replacing the previous combination of
-  `iris.config.MASTER_DATA_REPOSITORY` and
-  `iris.config.DATA_REPOSITORY`. This constant should be the path
-  to a directory containing the test data required by the unit tests. It can
-  be set by adding a ``test_data_dir`` entry to the ``Resources`` section of
-  site.cfg. See `iris.config` for more details.
-* One and two dimensional cubes can be converted to and from Pandas objects.
-  See `iris.pandas` for more details.
-* Experimental support has been added to `iris.load`,
-  `iris.load_cube` and `iris.load_cubes` for loading Cubes from
-  OPeNDAP URLs.
-* `iris.experimental.raster.export_geotiff` now provides experimental
-  GeoTiff export functionality.
-* Cubes with no vertical coordinate can now be output to Grib format. In these
-  cases, "Type of first fixed surface" is set to 1, "ground or water surface".
-  ( This is a common usage for data with no defined level, but may not be
-  strictly correct - see https://github.com/SciTools/iris/issues/519 ).
+* Saving multiple cubes to netcdf
+  https://github.com/SciTools/iris/pull/367
 
-Bugs fixed
-----------
-* N/A
+* Rework Coord nearest_neighbour to support circular cases
+  https://github.com/SciTools/iris/pull/391
 
+* Simplified resource configuration
+  https://github.com/SciTools/iris/pull/406
+
+* Helper function for regridding that returns x and y coords
+  https://github.com/SciTools/iris/pull/437
+
+* Added iris.tests.assertArrayAllClose 
+  https://github.com/SciTools/iris/pull/440
+
+* Add bilinear interpolation between rectilinear grids.
+  https://github.com/SciTools/iris/pull/442
+
+* Added tolerances to Coord.is_contiguous()
+  https://github.com/SciTools/iris/pull/459
+
+* Pandas interoperability
+  https://github.com/SciTools/iris/pull/439
+
+* Nimrod level type 12 (below ground)
+  https://github.com/SciTools/iris/pull/199
+
+* Modified logic in Unit.convert to handle numpy scalars
+  https://github.com/SciTools/iris/pull/472
+
+* Experimental OPeNDAP functionality.
+  https://github.com/SciTools/iris/pull/422
+
+* Experimental GeoTiff export functionality: 
+  `iris.experimental.raster.export_geotiff`
+
+* Added a PEP8 test to ensure coding standards
+  https://github.com/SciTools/iris/pull/476
+
+* Add licence header check to tests
+  https://github.com/SciTools/iris/issues/454
+
+* Cube merge string coords.
+  https://github.com/SciTools/iris/pull/475
+
+* Unambiguous season year naming
+  https://github.com/SciTools/iris/pull/490
+
+* Area weighted regridding
+  https://github.com/SciTools/iris/pull/464
+
+* Removal of strict constraint in izip().
+  https://github.com/SciTools/iris/pull/495
+
+* PP save with no time forecast.
+  https://github.com/SciTools/iris/pull/498
+
+* Load of nimrod files with multiple fields and period of interest
+  https://github.com/SciTools/iris/pull/507
+
+* Conservative regridding, preserving area sums
+  https://github.com/SciTools/iris/pull/453
+
+* Handle missing values from grib messages
+  https://github.com/SciTools/iris/pull/520
+
+* PP export rule to calculate forecast period
+  https://github.com/SciTools/iris/pull/514
+
+* Preserve masked arrays during aggregation
+  https://github.com/SciTools/iris/pull/527
+
+* Support for ieee 32bit fieldsfiles to iris.load
+  https://github.com/SciTools/iris/pull/297
+
+* NetCDF load support for transverse Mercator and climatology
+  https://github.com/SciTools/iris/pull/521
+
+* Polar stereo grib loading
+  https://github.com/SciTools/iris/pull/518
+
+* GRIB export of cubes with no vertical information
+  See https://github.com/SciTools/iris/issues/519 for ongoing discussion
+
+* GRIB2 parameter translation
+  https://github.com/SciTools/iris/pull/482
+  
+* Added depth rules for bounds
+  https://github.com/SciTools/iris/pull/451
+
+* Added a test for license checking of code files
+  https://github.com/SciTools/iris/pull/477
+  
+* Fixed netcdf save cubelist bug
+  https://github.com/SciTools/iris/pull/488
+  
+* Add an optimisation for single valued coordinate constraints
+  https://github.com/SciTools/iris/pull/428
+  
+* Improved error message within Cube.aggregated_by()
+  https://github.com/SciTools/iris/pull/504
+  
+* Change unit print-out
+  https://github.com/SciTools/iris/pull/465
+
+* Modified linear() to handle non-scalar length one coords
+  https://github.com/SciTools/iris/pull/508
+  
+* Propagate all coord names in construct midpoint
+  https://github.com/SciTools/iris/pull/499
+  
+* Resolved pickling issues with deferred loading
+  https://github.com/SciTools/iris/pull/511
+  
+* Modified plot.py to pass coords arg through to _map_common()
+  https://github.com/SciTools/iris/pull/463
+  
+* Use cartopy v0.8.0
+  https://github.com/SciTools/iris/pull/494
+  
+  
 Incompatible changes
 --------------------
 * As part of simplifying the mechanism for accessing test data
@@ -76,7 +174,8 @@ Incompatible changes
 
 Deprecations
 ------------
-* N/A
+* The *add_custom_season_** functions from coord_categorisation.py have been deprecated in favour of adding their functionality to the *add_season_** functions
+
 
 
 ----------------------------

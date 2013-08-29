@@ -29,14 +29,14 @@ import iris.fileformats
 import iris.fileformats.dot
 import iris.cube
 import iris.exceptions
-           
+
 
 #: Used by callbacks to specify that the given cube should not be loaded.
 NO_CUBE = 'NOCUBE'
 CALLBACK_DEPRECATION_MSG = "Callback functions with a return value are deprecated."
 
 
-# Saving routines, indexed by file extension. 
+# Saving routines, indexed by file extension.
 class _SaversDict(dict):
     """A dictionary that can only have string keys with no overlap."""
     def __setitem__(self, key, value):
@@ -56,33 +56,33 @@ _savers = _SaversDict()
 def run_callback(callback, cube, field, filename):
     """
     Runs the callback mechanism given the appropriate arguments.
-    
+
     Args:
-    
+
     * callback:
         A function to add metadata from the originating field and/or URI which obeys the following rules:
             1. Function signature must be: ``(cube, field, filename)``
             2. Must not return any value - any alterations to the cube must be made by reference
             3. If the cube is to be rejected the callback must raise an :class:`iris.exceptions.IgnoreCubeException`
-   
+
     .. note::
 
         It is possible that this function returns None for certain callbacks,
         the caller of this function should handle this case.
-        
+
     """
     #call the custom uri cm func, if provided, for every loaded cube
     if callback is None:
         return cube
-    
+
     try:
         result = callback(cube, field, filename) #  Callback can make changes to cube by reference
     except iris.exceptions.IgnoreCubeException:
         return None
-    else: 
+    else:
         if result is not None:
             #raise TypeError("Callback functions must have no return value.") # no deprecation support method
-            
+
             if isinstance(result, iris.cube.Cube):
                 # no-op
                 result = result
@@ -90,11 +90,11 @@ def run_callback(callback, cube, field, filename):
                 result = None
             else: # Invalid return type, raise exception
                 raise TypeError("Callback function returned an unhandled data type.")
-            
+
             # Warn the user that callbacks that return something are deprecated
             warnings.warn(CALLBACK_DEPRECATION_MSG)
             return result
-            
+
         else:
             return cube
 
@@ -102,31 +102,31 @@ def run_callback(callback, cube, field, filename):
 def decode_uri(uri, default='file'):
     r'''
     Decodes a single URI into scheme and scheme-specific parts.
-    
+
     In addition to well-formed URIs, it also supports bare file paths.
     Both Windows and UNIX style paths are accepted.
 
     .. testsetup::
-    
+
         from iris.io import *
 
     Examples:
         >>> from iris.io import decode_uri
         >>> print decode_uri('http://www.thing.com:8080/resource?id=a:b')
         ('http', '//www.thing.com:8080/resource?id=a:b')
-        
+
         >>> print decode_uri('file:///data/local/dataZoo/...')
         ('file', '///data/local/dataZoo/...')
-        
+
         >>> print decode_uri('/data/local/dataZoo/...')
         ('file', '/data/local/dataZoo/...')
-        
+
         >>> print decode_uri('file:///C:\data\local\dataZoo\...')
         ('file', '///C:\\data\\local\\dataZoo\\...')
-        
+
         >>> print decode_uri('C:\data\local\dataZoo\...')
         ('file', 'C:\\data\\local\\dataZoo\\...')
-        
+
         >>> print decode_uri('dataZoo/...')
         ('file', 'dataZoo/...')
 
@@ -147,31 +147,31 @@ def load_files(filenames, callback):
     """
     Takes a list of filenames which may also be globs, and optionally a
     callback function, and returns a generator of Cubes from the given files.
-    
+
     .. note::
 
         Typically, this function should not be called directly; instead, the
         intended interface for loading is :func:`iris.load`.
-    
+
     """
     # Remove any hostname component - currently unused
     filenames = [os.path.expanduser(fn[2:] if fn.startswith('//') else fn) for fn in filenames]
-    
-    # Try to expand all filenames as globs       
+
+    # Try to expand all filenames as globs
     glob_expanded = {fn : sorted(glob.glob(fn)) for fn in filenames}
-    
+
     # If any of the filenames or globs expanded to an empty list then raise an error
     if not all(glob_expanded.viewvalues()):
-        raise IOError("One or more of the files specified did not exist %s." % 
+        raise IOError("One or more of the files specified did not exist %s." %
         ["%s expanded to %s" % (pattern, expanded if expanded else "empty") for pattern, expanded in glob_expanded.iteritems()])
-    
+
     # Create default dict mapping iris format handler to its associated filenames
     handler_map = collections.defaultdict(list)
     for fn in sum([x for x in glob_expanded.viewvalues()], []):
-        with open(fn) as fh:         
+        with open(fn) as fh:
             handling_format_spec = iris.fileformats.FORMAT_AGENT.get_spec(os.path.basename(fn), fh)
             handler_map[handling_format_spec].append(fn)
-    
+
     # Call each iris format handler with the approriate filenames
     for handling_format_spec, fnames in handler_map.iteritems():
         for cube in handling_format_spec.handler(fnames, callback):
@@ -182,7 +182,7 @@ def load_http(urls, callback):
     """
     Takes a list of urls and a callback function, and returns a generator
     of Cubes from the given URLs.
-    
+
     .. note::
 
         Typically, this function should not be called directly; instead, the
@@ -220,14 +220,14 @@ def add_saver(file_extension, new_saver):
 
         * file_extension - A string such as "pp" or "my_format".
         * new_saver      - A function of the form ``my_saver(cube, target)``.
-        
+
     See also :func:`iris.io.save`
 
     """
     # Make sure it's a func with 2+ args
     if not hasattr(new_saver, "__call__") or new_saver.__code__.co_argcount < 2:
         raise ValueError("Saver routines must be callable with 2+ arguments.")
-    
+
     # Try to add this saver. Invalid keys will be rejected.
     _savers[file_extension] = new_saver
 
@@ -243,7 +243,7 @@ def find_saver(filespec):
     Returns:
         A save function or None.
         Save functions can be passed to :func:`iris.io.save`.
-    
+
     """
     _check_init_savers()
     matches = [ext for ext in _savers if filespec.lower().endswith('.' + ext) or

@@ -22,21 +22,21 @@ def find_package_tree(root_path, root_package):
     for (dir_path, dir_names, file_names) in os.walk(convert_path(root_path)):
         # Prune dir_names *in-place* to prevent unwanted directory recursion
         for dir_name in list(dir_names):
-            contains_init_file = os.path.isfile(os.path.join(dir_path, 
-                                                             dir_name, 
+            contains_init_file = os.path.isfile(os.path.join(dir_path,
+                                                             dir_name,
                                                              '__init__.py'))
             if dir_name in exclude_dirs or not contains_init_file:
                 dir_names.remove(dir_name)
         if dir_names:
             prefix = dir_path.split('/')[root_count:]
-            packages.extend(['.'.join([root_package] + prefix + [dir_name]) 
+            packages.extend(['.'.join([root_package] + prefix + [dir_name])
                                 for dir_name in dir_names])
     return packages
 
 
 def file_walk_relative(top, remove=''):
     """
-    Returns a generator of files from the top of the tree, removing 
+    Returns a generator of files from the top of the tree, removing
     the given prefix from the root/file result.
 
     """
@@ -56,7 +56,7 @@ def std_name_cmd(target_dir):
 class TestRunner(setuptools.Command):
     """Run the Iris tests under nose and multiprocessor for performance"""
     description = "run tests under nose and multiprocessor for performance"
-    user_options = [('no-data', 'n', 'Override the paths to the data ' 
+    user_options = [('no-data', 'n', 'Override the paths to the data '
                                      'repositories so it appears to the '
                                      'tests that it does not exist.'),
                     ('system-tests', 's', 'Run only the limited subset of '
@@ -64,7 +64,7 @@ class TestRunner(setuptools.Command):
                     ('stop', 'x', 'Stop running tests after the first '
                                   'error or failure'),
                    ]
-    
+
     boolean_options = ['no-data', 'system-tests', 'stop']
     
     def initialize_options(self):
@@ -75,7 +75,7 @@ class TestRunner(setuptools.Command):
     def finalize_options(self):
         if self.no_data:
             print "Running tests in no-data mode..."
-            
+
             # This enviroment variable will be propagated to all the processes that
             # nose.run creates allowing us to simluate the absence of test data
             os.environ["override_test_data_repository"] = "true"
@@ -117,7 +117,7 @@ class TestRunner(setuptools.Command):
             args[1] = test
             print
             print 'Running test discovery on %s with %s processors.' % (test, n_processors)
-            # run the tests at module level i.e. my_module.tests 
+            # run the tests at module level i.e. my_module.tests
             # - test must start with test/Test and must not contain the word Mixin.
             result &= nose.run(argv=args)
         if result is False:
@@ -128,7 +128,7 @@ class MakeStdNames(Command):
     """
     Generates the CF standard name module containing mappings from
     CF standard name to associated metadata.
-    
+
     """
     description = "generate CF standard name module"
     user_options = []
@@ -222,7 +222,7 @@ setup(
     package_dir={'': 'lib'},
     package_data={
         'iris': list(file_walk_relative('lib/iris/etc', remove='lib/iris/')) + \
-                list(file_walk_relative('lib/iris/tests/results', 
+                list(file_walk_relative('lib/iris/tests/results',
                                         remove='lib/iris/')) + \
                 ['fileformats/_pyke_rules/*.k?b'] + \
                 ['tests/stock*.npz']
@@ -243,6 +243,6 @@ setup(
             ]
         )
     },
-    cmdclass={'test': TestRunner, 'build_py': BuildPyWithExtras, 
+    cmdclass={'test': TestRunner, 'build_py': BuildPyWithExtras,
               'std_names': MakeStdNames, 'pyke_rules': MakePykeRules},
 )

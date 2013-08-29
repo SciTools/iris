@@ -152,7 +152,7 @@ class TestPPLoadRules(tests.IrisTest):
         # Set up standard name and T+24 constraint
         constraint = iris.Constraint('air_temperature', forecast_period=24)
         cubes = iris.load(data_path, constraint)
-        cubes = iris.cube.CubeList([cubes[0], cubes[3], cubes[1], cubes[2], cubes[4]]) 
+        cubes = iris.cube.CubeList([cubes[0], cubes[3], cubes[1], cubes[2], cubes[4]])
         self.assertCML(cubes, ('pp_rules', 'lbproc_mean_max_min.cml'))
 
     def test_custom_rules(self):
@@ -169,14 +169,14 @@ class TestPPLoadRules(tests.IrisTest):
             'IF',
             'f.lbuser[3] == 16203',
             'THEN',
-            'CMAttribute("standard_name", None)', 
-            'CMAttribute("long_name", "customised")'))) 
+            'CMAttribute("standard_name", None)',
+            'CMAttribute("long_name", "customised")')))
         f.close()
         iris.fileformats.pp.add_load_rules(temp_path)
         cube = iris.load_cube(data_path)
         self.assertEqual(cube.name(), 'customised')
         os.remove(temp_path)
-        
+
         # Back to default
         iris.fileformats.pp.reset_load_rules()
         cube = iris.load_cube(data_path)
@@ -185,15 +185,15 @@ class TestPPLoadRules(tests.IrisTest):
     def test_cell_methods(self):
         # Test cell methods are created for correct values of lbproc
         orig_file = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
-        
+
         # Values that result in cell methods being created
         cell_method_values = {128 : "mean", 4096 : "minimum", 8192 : "maximum"}
-        
+
         # Make test values as list of single bit values and some multiple bit values
         single_bit_values = list(iris.fileformats.pp.LBPROC_PAIRS)
         multiple_bit_values = [(128 + 64, ""), (4096 + 2096, ""), (8192 + 1024, "")]
         test_values = list(single_bit_values) + multiple_bit_values
-        
+
         for value, _ in test_values:
             f = iris.fileformats.pp.load(orig_file).next()
             f.lbproc = value # set value
@@ -201,27 +201,27 @@ class TestPPLoadRules(tests.IrisTest):
             # Write out pp file
             temp_filename = iris.util.create_temp_filename(".pp")
             f.save(open(temp_filename, 'wb'))
-        
+
             # Load pp file
             cube = iris.load_cube(temp_filename)
-        
+
             if value in cell_method_values:
                 # Check for cell method on cube
                 self.assertEqual(cube.cell_methods[0].method, cell_method_values[value])
             else:
                 # Check no cell method was created for values other than 128, 4096, 8192
                 self.assertEqual(len(cube.cell_methods), 0)
-        
-            os.remove(temp_filename)   
+
+            os.remove(temp_filename)
 
 
     def test_process_flags(self):
         # Test that process flags are created for correct values of lbproc
         orig_file = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
-   
+
         # Values that result in process flags attribute NOT being created
         omit_process_flags_values = (128, 4096, 8192)
-        
+
         # Test single flag values
         for value, _ in iris.fileformats.pp.LBPROC_PAIRS:
             f = iris.fileformats.pp.load(orig_file).next()
@@ -230,7 +230,7 @@ class TestPPLoadRules(tests.IrisTest):
             # Write out pp file
             temp_filename = iris.util.create_temp_filename(".pp")
             f.save(open(temp_filename, 'wb'))
-        
+
             # Load pp file
             cube = iris.load_cube(temp_filename)
 
@@ -240,15 +240,15 @@ class TestPPLoadRules(tests.IrisTest):
             else:
                 # Check ukmo__process_flags attribute contains correct values
                 self.assertIn(iris.fileformats.pp.lbproc_map[value], cube.attributes["ukmo__process_flags"])
-        
-            os.remove(temp_filename) 
+
+            os.remove(temp_filename)
 
         # Test multiple flag values
         multiple_bit_values = ((128, 64), (4096, 1024), (8192, 1024))
-        
+
         # Maps lbproc value to the process flags that should be created
         multiple_map = {sum(x) : [iris.fileformats.pp.lbproc_map[y] for y in x] for x in multiple_bit_values}
-        
+
         for bit_values in multiple_bit_values:
             f = iris.fileformats.pp.load(orig_file).next()
             f.lbproc = sum(bit_values) # set value
@@ -256,7 +256,7 @@ class TestPPLoadRules(tests.IrisTest):
             # Write out pp file
             temp_filename = iris.util.create_temp_filename(".pp")
             f.save(open(temp_filename, 'wb'))
-        
+
             # Load pp file
             cube = iris.load_cube(temp_filename)
 
@@ -272,7 +272,7 @@ class TestStdName(tests.IrisTest):
         fname = tests.get_data_path(['PP', 'simple_pp', 'bad_global.pp'])
         cube = iris.load_cube(fname)
         self.assertCML([cube], ['cube_io', 'pp', 'no_std_name.cml'])
-        
-        
+
+
 if __name__ == "__main__":
     tests.main()
