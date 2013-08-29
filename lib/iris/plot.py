@@ -198,6 +198,27 @@ def _broadcast_2d(u, v):
     return u, v
 
 
+def _invert_yaxis(v_coord):
+    """
+    Inverts the y-axis of the current plot based on conditions:
+
+        * If the y-axis is already inverted we don't want to re-invert it.
+        * If v_coord is None then it will not have any attributes.
+        * If neither of the above are true then invert y if v_coord has
+          attribute 'positive' set to 'down'.
+
+    Args:
+
+        * v_coord - the coord to be plotted on the y-axis
+
+    """
+    yaxis_is_inverted = plt.gca().yaxis_inverted()
+    if not yaxis_is_inverted and v_coord is not None:
+        attr_pve = v_coord.attributes.get('positive')
+        if attr_pve is not None and attr_pve.lower() == 'down':
+            plt.gca().invert_yaxis()
+
+
 def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     # NB. In the interests of clarity we use "u" and "v" to refer to the
     # horizontal and vertical axes on the matplotlib plot.
@@ -238,6 +259,9 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
         u, v = _broadcast_2d(u, v)
         draw_method = getattr(plt, draw_method_name)
         result = draw_method(u, v, data, *args, **kwargs)
+
+        # Invert y-axis if necessary.
+        _invert_yaxis(v_coord)
 
     return result
 
@@ -294,6 +318,9 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
             result = draw_method(*args, **kwargs)
         else:
             result = draw_method(u, v, data, *args, **kwargs)
+
+        # Invert y-axis if necessary.
+        _invert_yaxis(v_coord)
 
     return result
 
@@ -390,6 +417,9 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
         result = draw_method(*args, **kwargs)
     else:
         result = draw_method(u, v, *args, **kwargs)
+
+    # Invert y-axis if necessary.
+    _invert_yaxis(v_object)
 
     return result
 

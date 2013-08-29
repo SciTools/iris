@@ -405,8 +405,12 @@
 		[180.0, 233.333],
 		[233.333, 293.333],
 		[293.333, 360.0],
-		[360.0, 433.333]]" id="3092228b" long_name="level_height" points="[5.0, 21.6667, 45.0, 75.0, 111.667, 155.0, 205.0,
-		261.667, 325.0, 395.0]" shape="(10,)" standard_name="atmosphere_hybrid_height_coordinate" units="Unit('m')" value_type="float32" var_name="level_height"/>
+		[360.0, 433.333]]" id="1c9102f3" long_name="level_height" points="[5.0, 21.6667, 45.0, 75.0, 111.667, 155.0, 205.0,
+		261.667, 325.0, 395.0]" shape="(10,)" standard_name="atmosphere_hybrid_height_coordinate" units="Unit('m')" value_type="float32" var_name="level_height">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </auxCoord>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="1d7d6eff" points="[0.166666667908, 0.333333335817, 0.500000003725,
@@ -471,7 +475,11 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="f0c5855b" points="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]" shape="(10,)" standard_name="model_level_number" units="Unit('1')" value_type="int32" var_name="model_level_number"/>
+        <dimCoord id="d2cfc298" points="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]" shape="(10,)" standard_name="model_level_number" units="Unit('1')" value_type="int32" var_name="model_level_number">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
       </coord>
       <coord datadims="[1]">
         <auxCoord bounds="[[1.0, 0.998464],
