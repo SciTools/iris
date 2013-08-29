@@ -30,7 +30,7 @@ import numpy as np
 import iris.unit as unit
 
 
-Unit = unit.Unit 
+Unit = unit.Unit
 
 
 class TestUnit(tests.IrisTest):
@@ -47,7 +47,7 @@ class TestCreation(TestUnit):
     #
     def test_unit_fail_0(self):
         self.assertRaises(ValueError, Unit, 'wibble')
-        
+
     def test_unit_pass_0(self):
         u = Unit('    meter')
         self.assertTrue(u.name, 'meter')
@@ -104,19 +104,19 @@ class TestConvertible(TestUnit):
         u = Unit("meter")
         v = Unit("mile")
         self.assertTrue(u.is_convertible(v))
-        
+
     def test_convertible_fail_1(self):
         u = Unit('meter')
         v = Unit('unknown')
         self.assertFalse(u.is_convertible(v))
         self.assertFalse(v.is_convertible(u))
-        
+
     def test_convertible_fail_2(self):
         u = Unit('meter')
         v = Unit('no unit')
         self.assertFalse(u.is_convertible(v))
         self.assertFalse(v.is_convertible(u))
-        
+
     def test_convertible_fail_3(self):
         u = Unit('unknown')
         v = Unit('no unit')
@@ -139,7 +139,7 @@ class TestDimensionless(TestUnit):
     def test_dimensionless_fail_1(self):
         u = Unit('unknown')
         self.assertFalse(u.is_dimensionless())
-        
+
     def test_dimensionless_fail_2(self):
         u = Unit('no unit')
         self.assertFalse(u.is_dimensionless())
@@ -168,7 +168,7 @@ class TestFormat(TestUnit):
     def test_format_pass_4(self):
         u = Unit('?')
         self.assertEqual(u.format(), 'unknown')
-        
+
     def test_format_pass_5(self):
         u = Unit('nounit')
         self.assertEqual(u.format(), 'no_unit')
@@ -181,11 +181,11 @@ class TestName(TestUnit):
     def test_name_pass_0(self):
         u = Unit("newton")
         self.assertEqual(u.name, 'newton')
-        
+
     def test_name_pass_1(self):
         u = Unit('unknown')
         self.assertEqual(u.name, 'unknown')
-        
+
     def test_name_pass_2(self):
         u = Unit('no unit')
         self.assertEqual(u.name, 'no_unit')
@@ -198,11 +198,11 @@ class TestSymbol(TestUnit):
     def test_symbol_pass_0(self):
         u = Unit("joule")
         self.assertEqual(u.symbol, 'J')
-        
+
     def test_symbol_pass_1(self):
         u = Unit('unknown')
         self.assertEqual(u.symbol, unit._UNKNOWN_UNIT_SYMBOL)
-        
+
     def test_symbol_pass_2(self):
         u = Unit('no unit')
         self.assertEqual(u.symbol, unit._NO_UNIT_SYMBOL)
@@ -215,11 +215,11 @@ class TestDefinition(TestUnit):
     def test_definition_pass_0(self):
         u = Unit("joule")
         self.assertEqual(u.definition, 'm2.kg.s-2')
-        
+
     def test_definition_pass_1(self):
         u = Unit('unknown')
         self.assertEqual(u.definition, unit._UNKNOWN_UNIT_SYMBOL)
-        
+
     def test_definition_pass_2(self):
         u = Unit('no unit')
         self.assertEqual(u.definition, unit._NO_UNIT_SYMBOL)
@@ -232,11 +232,11 @@ class TestOffset(TestUnit):
     def test_offset_fail_0(self):
         u = Unit("meter")
         self.assertRaises(TypeError, operator.add, u, "naughty")
-        
+
     def test_offset_fail_1(self):
         u = Unit('unknown')
         self.assertEqual(u + 10, 'unknown')
-        
+
     def test_offset_fail_2(self):
         u = Unit('no unit')
         self.assertRaises(ValueError, operator.add, u, 10)
@@ -261,7 +261,7 @@ class TestOffsetByTime(TestUnit):
     def test_offset_by_time_fail_0(self):
         u = Unit("hour")
         self.assertRaises(TypeError, u.offset_by_time, "naughty")
-        
+
     def test_offset_by_time_fail_1(self):
         u = Unit("mile")
         self.assertRaises(ValueError, u.offset_by_time, 10)
@@ -287,11 +287,11 @@ class TestInvert(TestUnit):
     def test_invert_fail_0(self):
         u = Unit('unknown')
         self.assertEqual(u.invert(), u)
-        
+
     def test_invert_fail_1(self):
         u = Unit('no unit')
         self.assertRaises(ValueError, u.invert)
-    
+
     def test_invert_pass_0(self):
         u = Unit("newton")
         self.assertEqual(u.invert(), "m-1.kg-1.s2")
@@ -317,7 +317,7 @@ class TestRoot(TestUnit):
     def test_root_fail_3(self):
         u = Unit('unknown')
         self.assertEqual(u.root(2), u)
-        
+
     def test_root_fail_4(self):
         u = Unit('no unit')
         self.assertRaises(ValueError, u.root, 2)
@@ -338,7 +338,7 @@ class TestLog(TestUnit):
     def test_log_fail_1(self):
         u = Unit('unknown')
         self.assertEqual(u.log(10), u)
-        
+
     def test_log_fail_2(self):
         u = Unit('no unit')
         self.assertRaises(ValueError, u.log, 10)
@@ -358,13 +358,13 @@ class TestMultiply(TestUnit):
         v = Unit('meters')
         self.assertTrue((u * v).is_unknown())
         self.assertTrue((v * u).is_unknown())
-        
+
     def test_multiply_fail_3(self):
         u = Unit('unknown')
         v = Unit('no unit')
         self.assertRaises(ValueError, operator.mul, u, v)
         self.assertRaises(ValueError, operator.mul, v, u)
-        
+
     def test_multiply_fail_5(self):
         u = Unit('meters')
         v = Unit('no unit')
@@ -399,13 +399,13 @@ class TestDivide(TestUnit):
         v = Unit('meters')
         self.assertTrue((u / v).is_unknown())
         self.assertTrue((v / u).is_unknown())
-        
+
     def test_divide_fail_3(self):
         u = Unit('unknown')
         v = Unit('no unit')
         self.assertRaises(ValueError, operator.div, u, v)
         self.assertRaises(ValueError, operator.div, v, u)
-        
+
     def test_divide_fail_5(self):
         u = Unit('meters')
         v = Unit('no unit')
@@ -453,7 +453,7 @@ class TestPower(TestUnit):
         self.assertEqual(u ** 2, Unit('unknown'))
         self.assertEqual(u ** 3.0, Unit('unknown'))
         self.assertEqual(u ** 4L, Unit('unknown'))
-        
+
     def test_power_nounit(self):
         u = Unit('no unit')
         self.assertRaises(TypeError, operator.pow, u, "naughty")
@@ -468,11 +468,11 @@ class TestCopy(TestUnit):
     def test_copy_pass_0(self):
         u = Unit("joule")
         self.assertEqual(copy.copy(u) == u, True)
-        
+
     def test_copy_pass_1(self):
         u = Unit('unknown')
         self.assertTrue(copy.copy(u).is_unknown())
-        
+
     def test_copy_pass_2(self):
         u = Unit('no unit')
         self.assertTrue(copy.copy(u).is_no_unit())
@@ -737,7 +737,7 @@ class TestUnknown(TestUnit):
     def test_unknown_unit_fail_0(self):
         u = Unit('no unit')
         self.assertFalse(u.is_unknown())
-        
+
     def test_unknown_unit_fail_2(self):
         u = Unit('meters')
         self.assertFalse(u.is_unknown())
@@ -750,15 +750,15 @@ class TestNoUnit(TestUnit):
     def test_no_unit_pass_0(self):
         u = Unit('no_unit')
         self.assertTrue(u.is_no_unit())
-        
+
     def test_no_unit_pass_1(self):
         u = Unit('no unit')
         self.assertTrue(u.is_no_unit())
-        
+
     def test_no_unit_pass_2(self):
         u = Unit('no-unit')
         self.assertTrue(u.is_no_unit())
-        
+
     def test_no_unit_pass_3(self):
         u = Unit('nounit')
         self.assertTrue(u.is_no_unit())
@@ -771,7 +771,7 @@ class TestTimeReference(TestUnit):
     def test_time_reference_pass_0(self):
         u = Unit('hours since epoch')
         self.assertTrue(u.is_time_reference())
-        
+
     def test_time_reference_fail_0(self):
         u = Unit('hours')
         self.assertFalse(u.is_time_reference())
@@ -784,7 +784,7 @@ class TestTitle(TestUnit):
     def test_title_pass_0(self):
         u = Unit('meter')
         self.assertEqual(u.title(10), '10 meter')
-        
+
     def test_title_pass_1(self):
         u = Unit('hours since epoch', calendar=unit.CALENDAR_STANDARD)
         self.assertEqual(u.title(10), '1970-01-01 10:00:00')
@@ -817,7 +817,7 @@ class TestImmutable(TestUnit):
 
 
 class TestInPlace(TestUnit):
-    
+
     def test1(self):
         # Check conversions do not change original object
         c = unit.Unit('deg_c')
@@ -825,7 +825,7 @@ class TestInPlace(TestUnit):
 
         orig = np.arange(3, dtype=np.float32)
         converted = c.convert(orig, f)
-        
+
         with self.assertRaises(AssertionError):
             np.testing.assert_array_equal(orig, converted)
 

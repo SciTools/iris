@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -39,7 +39,7 @@ def diff_viewer(expected_fname, result_fname, diff_fname):
     ax.imshow(mimg.imread(result_fname))
     ax = plt.subplot(223, sharex=ax, sharey=ax)
     ax.imshow(mimg.imread(diff_fname))
-    
+
     def accept(event):
         # removes the expected result, and move the most recent result in
         print 'ACCEPTED NEW FILE: %s' % (os.path.basename(expected_fname), )
@@ -47,18 +47,18 @@ def diff_viewer(expected_fname, result_fname, diff_fname):
         shutil.copy2(result_fname, expected_fname)
         os.remove(diff_fname)
         plt.close()
-    
+
     def reject(event):
         print 'REJECTED: %s' % (os.path.basename(expected_fname), )
         plt.close()
-    
+
     ax_accept = plt.axes([0.7, 0.05, 0.1, 0.075])
     ax_reject = plt.axes([0.81, 0.05, 0.1, 0.075])
     bnext = mwidget.Button(ax_accept, 'Accept change')
     bnext.on_clicked(accept)
     bprev = mwidget.Button(ax_reject, 'Reject')
     bprev.on_clicked(reject)
-    
+
     plt.show()
 
 

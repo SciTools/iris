@@ -40,14 +40,14 @@ class TestTrajectory(tests.IrisTest):
         # basic 2-seg line along x
         waypoints = [ {'lat':0, 'lon':0}, {'lat':0, 'lon':1}, {'lat':0, 'lon':2} ]
         trajectory = iris.analysis.trajectory.Trajectory(waypoints, sample_count=21)
-        
+
         self.assertEqual(trajectory.length, 2.0)
         self.assertEqual(trajectory.sampled_points[19], {'lat': 0.0, 'lon': 1.9000000000000001})
-        
-        # 4-seg m-shape 
+
+        # 4-seg m-shape
         waypoints = [ {'lat':0, 'lon':0}, {'lat':1, 'lon':1}, {'lat':0, 'lon':2}, {'lat':1, 'lon':3}, {'lat':0, 'lon':4} ]
         trajectory = iris.analysis.trajectory.Trajectory(waypoints, sample_count=33)
-        
+
         self.assertEqual(trajectory.length, 5.6568542494923806)
         self.assertEqual(trajectory.sampled_points[31], {'lat': 0.12499999999999989, 'lon': 3.875})
 
@@ -63,11 +63,11 @@ class TestTrajectory(tests.IrisTest):
         cube.remove_aux_factory(cube.aux_factories[0])
         cube.remove_coord('surface_altitude')
         self.assertCML(cube, ('trajectory', 'big_cube.cml'))
-        
+
         # Pull out a single point
         single_point = cube.extract_by_trajectory([{'grid_latitude': -0.1188, 'grid_longitude': 359.57958984}])
         self.assertCML(single_point, ('trajectory', 'single_point.cml'))
-        
+
         # Extract a simple, axis-aligned trajectory that is similar to an indexing operation.
         # (It's not exactly the same because the source cube doesn't have regular spacing.)
         waypoints = [
@@ -82,7 +82,7 @@ class TestTrajectory(tests.IrisTest):
         plt.plot(cube[0, 0, 10, :].data)
         plt.plot(trajectory_cube[0, 0, :].data)
         self.check_graphic()
-        
+
         # Extract a zig-zag trajectory
         waypoints = [
             {'grid_latitude': -0.1188, 'grid_longitude': 359.5886},
@@ -129,7 +129,7 @@ class TestTrajectory(tests.IrisTest):
         plt.pcolormesh(plot_cube.data, vmin=cube.data.min(), vmax=cube.data.max())
         plt.colorbar()
         self.check_graphic()
-        
+
         # Try to request linear interpolation.
         # Not allowed, as we have multi-dimensional coords.
         self.assertRaises(iris.exceptions.CoordinateMultiDimError, iris.analysis.trajectory.interpolate, cube, sample_points, method="linear")
@@ -145,7 +145,7 @@ class TestTrajectory(tests.IrisTest):
 
         traj = (('grid_latitude',[20.5, 21.5, 22.5, 23.5]),
                 ('grid_longitude',[31, 32, 33, 34]))
-        xsec = iris.analysis.trajectory.interpolate(cube, traj, method='nearest')        
+        xsec = iris.analysis.trajectory.interpolate(cube, traj, method='nearest')
 
         # Check that creating the trajectory hasn't led to the original
         # data being loaded.

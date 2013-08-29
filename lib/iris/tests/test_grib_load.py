@@ -214,7 +214,7 @@ class TestGribLoad(tests.GraphicsTest):
             ('GRIB', 'missing_values', 'missing_values.grib2'))
         cubes = iris.load(gribfile)
         self.assertCML(cubes, ('grib_load', 'missing_values_grib2.cml'))
-        
+
     def test_y_fastest(self):
         cubes = iris.load(tests.get_data_path(("GRIB", "y_fastest",
                                                "y_fast.grib2")))
@@ -274,15 +274,15 @@ class TestGribLoad(tests.GraphicsTest):
         cube = old_compat_load("1.grib2")
         self.assertCML(cube, ("grib_load", "earth_shape_1.cml"))
 
-        #IAU65 oblate sphere 
+        #IAU65 oblate sphere
         cube = old_compat_load("2.grib2")
         self.assertCML(cube, ("grib_load", "earth_shape_2.cml"))
 
-        #custom oblate spheroid (km) 
+        #custom oblate spheroid (km)
         cube = old_compat_load("3.grib2")
         self.assertCML(cube, ("grib_load", "earth_shape_3.cml"))
 
-        #IAG-GRS80 oblate spheroid 
+        #IAG-GRS80 oblate spheroid
         cube = old_compat_load("4.grib2")
         self.assertCML(cube, ("grib_load", "earth_shape_4.cml"))
 
@@ -516,7 +516,7 @@ class TestGribTimecodes(tests.GraphicsTest):
 
     def test_load_probability_forecast(self):
         # Test GribWrapper interpretation of PDT 4.9 data.
-        # NOTE: 
+        # NOTE:
         #   Currently Iris has only partial support for PDT 4.9.
         #   Though it can load the data, key metadata (thresholds) is lost.
         #   At present, we are not testing for this.
@@ -527,12 +527,12 @@ class TestGribTimecodes(tests.GraphicsTest):
                               9)
         gribapi.grib_set_string(grib_message, 'stepRange', '10-55')
         grib_wrapper = iris.fileformats.grib.GribWrapper(grib_message)
-        
+
         # Check that it captures the statistics time period info.
         # (And for now, nothing else)
         self.assertEqual(
             grib_wrapper._referenceDateTime,
-            datetime.datetime(year=2007, month=03, day=23, 
+            datetime.datetime(year=2007, month=03, day=23,
                               hour=12, minute=0, second=0)
         )
         self.assertEqual(
@@ -548,7 +548,7 @@ class TestGribTimecodes(tests.GraphicsTest):
 
     def test_warn_unknown_pdts(self):
         # Test loading of an unrecognised GRIB Product Definition Template.
-        
+
         # Get a temporary file by name (deleted afterward by context).
         with self.temp_filename() as temp_gribfile_path:
             # Write a test grib message to the temporary file.

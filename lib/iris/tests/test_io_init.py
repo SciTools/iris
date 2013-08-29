@@ -78,16 +78,16 @@ class TestFileFormatPicker(tests.IrisTest):
             ('UM Fieldsfile (FF) ancillary',
                 ['FF', 'ancillary_fixed_length_header']),
 #            ('BUFR',
-#                ['BUFR', 'mss', 'BUFR_Samples', 
+#                ['BUFR', 'mss', 'BUFR_Samples',
 #                 'JUPV78_EGRR_121200_00002501']),
             ('NIMROD',
                 ['NIMROD', 'uk2km', 'WO0000000003452',
                  '201007020900_u1096_ng_ey00_visibility0180_screen_2km']),
 #            ('NAME',
-#                ['NAME', '20100509_18Z_variablesource_12Z_VAAC', 
+#                ['NAME', '20100509_18Z_variablesource_12Z_VAAC',
 #                 'Fields_grid1_201005110000.txt']),
         ]
-        
+
         # test that each filespec is identified as the expected format
         for (expected_format_name, file_spec) in test_specs:
             test_path = tests.get_data_path(file_spec)

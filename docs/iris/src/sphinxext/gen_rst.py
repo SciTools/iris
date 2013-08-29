@@ -133,7 +133,7 @@ Iris Examples
             fh.write(contents)
 
             #fh.write('\n\nKeywords: python, matplotlib, pylab, example, codex (see :ref:`how-to-search-examples`)')
-            fh.write('\n\n')            
+            fh.write('\n\n')
 
             fh.close()
 
