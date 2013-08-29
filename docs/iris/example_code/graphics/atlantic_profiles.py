@@ -10,6 +10,10 @@ equally applicable to atmospheric or other kinds of data.
 The data used are profiles of potential temperature and salinity in the
 Equatorial and South Atlantic, output from an ocean model.
 
+The y-axis of the first plot produced will be automatically inverted due to the
+presence of the attribute positive=down on the depth coordinate. This means
+depth values intuitively increase downward on the y-axis.
+
 """
 import iris
 import iris.iterate
@@ -57,7 +61,6 @@ def main():
     ax2.set_xlabel('Salinity / PSU', color=salinity_color)
     for ticklabel in ax2.get_xticklabels():
         ticklabel.set_color(salinity_color)
-    plt.gca().invert_yaxis()
     plt.tight_layout()
     plt.show()
 

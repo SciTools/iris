@@ -20,7 +20,11 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="4f26456c" long_name="height" points="[10.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64" var_name="height"/>
+        <dimCoord id="2d9a63" long_name="height" points="[10.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64" var_name="height">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
       </coord>
       <coord datadims="[1]">
         <dimCoord bounds="[[-90.0, -88.6247285576],

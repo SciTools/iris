@@ -8,7 +8,11 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="b7ab0ae3" points="[1.5]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64" var_name="height"/>
+        <dimCoord id="cdeba9ad" points="[1.5]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64" var_name="height">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
       </coord>
       <coord datadims="[1]">
         <dimCoord id="2718ad80" long_name="site_number" points="[1.0]" shape="(1,)" units="Unit('1')" value_type="float32" var_name="site_number"/>

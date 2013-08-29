@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -239,10 +239,17 @@ class TestCFReader(tests.IrisTest):
 @iris.tests.skip_data
 class TestLoad(tests.IrisTest):
     def test_attributes_empty(self):
-        filename = tests.get_data_path(('NetCDF', 'global', 'xyt', 'SMALL_hires_wind_u_for_ipcc4.nc'))
+        filename = tests.get_data_path(('NetCDF', 'global', 'xyt',
+                                        'SMALL_hires_wind_u_for_ipcc4.nc'))
         cube = iris.load_cube(filename)
-        self.assertEquals(cube.coord('height').attributes, {})
-        
+        self.assertEquals(cube.coord('time').attributes, {})
+
+    def test_attributes_contain_positive(self):
+        filename = tests.get_data_path(('NetCDF', 'global', 'xyt',
+                                        'SMALL_hires_wind_u_for_ipcc4.nc'))
+        cube = iris.load_cube(filename)
+        self.assertEquals(cube.coord('height').attributes['positive'], 'up')
+
     def test_attributes_populated(self):
         filename = tests.get_data_path(
             ('NetCDF', 'label_and_climate', 'small_FC_167_mon_19601101.nc'))

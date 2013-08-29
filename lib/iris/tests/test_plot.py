@@ -324,6 +324,34 @@ class Test1dQuickplotScatter(Test1dScatter):
         self.draw_method = qplt.scatter
 
 
+@iris.tests.skip_data
+class TestAttributePositive(tests.GraphicsTest):
+    def test_1d_positive_up(self):
+        path = tests.get_data_path(('NetCDF', 'ORCA2', 'votemper.nc'))
+        cube = iris.load_cube(path)
+        qplt.plot(cube.coord('depth'), cube[0, :, 60, 80])
+        self.check_graphic()
+
+    def test_1d_positive_down(self):
+        path = tests.get_data_path(('NetCDF', 'ORCA2', 'votemper.nc'))
+        cube = iris.load_cube(path)
+        qplt.plot(cube[0, :, 60, 80], cube.coord('depth'))
+        self.check_graphic()
+
+    def test_2d_positive_up(self):
+        path = tests.get_data_path(('NetCDF', 'testing',
+                                    'small_theta_colpex.nc'))
+        cube = iris.load_cube(path)[0, :, 42, :]
+        qplt.pcolormesh(cube)
+        self.check_graphic()
+
+    def test_2d_positive_down(self):
+        path = tests.get_data_path(('NetCDF', 'ORCA2', 'votemper.nc'))
+        cube = iris.load_cube(path)[0, :, 42, :]
+        qplt.pcolormesh(cube)
+        self.check_graphic()
+
+
 # Caches _load_4d_testcube so subsequent calls are faster
 def cache(fn, cache={}):
     def inner(*args, **kwargs):
