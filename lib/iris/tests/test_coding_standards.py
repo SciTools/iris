@@ -274,8 +274,9 @@ class TestLicenseHeaders(unittest.TestCase):
         elif len(years) == 11:
             start_year, end_year = int(years[:4]), int(years[7:])
         else:
-            raise ValueError('Unexpected year(s) string in copyright '
-                             'notice: {!r}'.format(years))
+            fname = getattr(fh, 'name', 'unknown filename')
+            raise ValueError("Unexpected year(s) string in {}'s copyright "
+                             "notice: {!r}".format(fname, years))
         return (start_year, end_year)
 
     @staticmethod
