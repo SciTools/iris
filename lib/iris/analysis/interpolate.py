@@ -57,16 +57,16 @@ def _cartesian_sample_points(sample_points, sample_point_coord_names):
     i_lat = i_lon = None
     i_non_latlon = range(len(sample_point_coord_names))
     for i, name in enumerate(sample_point_coord_names):
-        if "latitude" in name:  
+        if "latitude" in name:
             i_lat = i
             i_non_latlon.remove(i_lat)
-        if "longitude" in name:  
+        if "longitude" in name:
             i_lon = i
             i_non_latlon.remove(i_lon)
 
     if i_lat is None or i_lon is None:
         return sample_points.transpose()
-    
+
     num_points = len(sample_points[0])
     cartesian_points = [None] * num_points
 
@@ -81,7 +81,7 @@ def _cartesian_sample_points(sample_points, sample_point_coord_names):
         cartesian_point.append(x[p])
         cartesian_point.append(y[p])
         cartesian_point.append(z[p])
-        
+
     return cartesian_points
 
 
@@ -98,7 +98,7 @@ def nearest_neighbour_indices(cube, sample_points):
         (slice(None, None, None), 9, 12)
         >>> iris.analysis.interpolate.nearest_neighbour_indices(cube, [('latitude', 0)])
         (slice(None, None, None), 9, slice(None, None, None))
-    
+
     Args:
 
     * cube:
@@ -113,13 +113,13 @@ def nearest_neighbour_indices(cube, sample_points):
     if isinstance(sample_points, dict):
         warnings.warn('Providing a dictionary to specify points is deprecated. Please provide a list of (coordinate, values) pairs.')
         sample_points = sample_points.items()
-    
+
     if sample_points:
         try:
             coord, values = sample_points[0]
         except ValueError:
             raise ValueError('Sample points must be a list of (coordinate, value) pairs. Got %r.' % sample_points)
-    
+
     points = []
     for coord, values in sample_points:
         if isinstance(coord, basestring):
@@ -128,7 +128,7 @@ def nearest_neighbour_indices(cube, sample_points):
             coord = cube.coord(coord=coord)
         points.append((coord, values))
     sample_points = points
-    
+
     # Build up a list of indices to span the cube.
     indices = [slice(None, None)] * cube.ndim
     
@@ -137,64 +137,64 @@ def nearest_neighbour_indices(cube, sample_points):
     dim_to_coord_map = {}
     for i in range(cube.ndim):
         dim_to_coord_map[i] = []
-        
+
     # Iterate over all of the specifications provided by sample_points
     for coord, point in sample_points:
         data_dim = cube.coord_dims(coord)
-        
+
         # If no data dimension then we don't need to make any modifications to indices.
         if not data_dim:
-            continue        
+            continue
         elif len(data_dim) > 1:
             raise iris.exceptions.CoordinateMultiDimError("Nearest neighbour interpolation of multidimensional "
                                                           "coordinates is not supported.")
         data_dim = data_dim[0]
-        
+
         dim_to_coord_map[data_dim].append(coord)
-        
+
         #calculate the nearest neighbour
         min_index = coord.nearest_neighbour_index(point)
-        
+
         if getattr(coord, 'circular', False):
             warnings.warn("Nearest neighbour on a circular coordinate may not be picking the nearest point.", DeprecationWarning)
-        
+
         # If the dimension has already been interpolated then assert that the index from this coordinate
         # agrees with the index already calculated, otherwise we have a contradicting specification
         if indices[data_dim] != slice(None, None) and min_index != indices[data_dim]:
             raise ValueError('The coordinates provided (%s) over specify dimension %s.' %
                                         (', '.join([coord.name() for coord in dim_to_coord_map[data_dim]]), data_dim))
-                
+
         indices[data_dim] = min_index
-    
+
     return tuple(indices)
 
 
 def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
     """
     See documentation for :func:`iris.analysis.interpolate.nearest_neighbour_indices`.
-    
+
     This function is adapted for points sampling a multi-dimensional coord,
     and can currently only do nearest neighbour interpolation.
-    
+
     Because this function can be slow for multidimensional coordinates,
-    a 'cache' dictionary can be provided by the calling code. 
-    
+    a 'cache' dictionary can be provided by the calling code.
+
     """
-    
+
     # Developer notes:
     # A "sample space cube" is made which only has the coords and dims we are sampling on.
     # We get the nearest neighbour using this sample space cube.
-    
+
     if isinstance(sample_point, dict):
         warnings.warn('Providing a dictionary to specify points is deprecated. Please provide a list of (coordinate, values) pairs.')
         sample_point = sample_point.items()
-    
+
     if sample_point:
         try:
             coord, value = sample_point[0]
         except ValueError:
             raise ValueError('Sample points must be a list of (coordinate, value) pairs. Got %r.' % sample_point)
-    
+
     # Convert names to coords in sample_point
     point = []
     ok_coord_ids = set(map(id, cube.dim_coords + cube.aux_coords))
@@ -208,7 +208,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
                    ' not allowed.'.format(coord.name()))
             raise ValueError(msg)
         point.append((coord, value))
-        
+
     # Reformat sample_point for use in _cartesian_sample_points(), below.
     sample_point = np.array([[value] for coord, value in point])
     sample_point_coords = [coord for coord, value in point]
@@ -227,18 +227,18 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
         sample_space_slice[sample_dim] = slice(None, None)
     sample_space_slice = tuple(sample_space_slice)
     sample_space_cube = cube[sample_space_slice]
-    
+
     #...with just the sampling coords
     for coord in sample_space_cube.coords():
         if not coord.name() in sample_point_coord_names:
             sample_space_cube.remove_coord(coord)
-            
+
     # Order the sample point coords according to the sample space cube coords
     sample_space_coord_names = [coord.name() for coord in sample_space_cube.coords()]
     new_order = [sample_space_coord_names.index(name) for name in sample_point_coord_names]
     sample_point = np.array([sample_point[i] for i in new_order])
     sample_point_coord_names = [sample_point_coord_names[i] for i in new_order]
-    
+
     # Convert the sample point to cartesian coords.
     # If there is no latlon within the coordinate there will be no change.
     # Otherwise, geographic latlon is replaced with cartesian xyz.
@@ -254,7 +254,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
         sample_space_data_positions = np.empty((len(sample_space_coords_and_dims), sample_space_cube.data.size), dtype=float)
         for d, ndi in enumerate(np.ndindex(sample_space_cube.data.shape)):
             for c, (coord, coord_dims) in enumerate(sample_space_coords_and_dims):
-                # Index of this datum along this coordinate (could be nD). 
+                # Index of this datum along this coordinate (could be nD).
                 keys = tuple(ndi[ind] for ind in coord_dims) if coord_dims else slice(None, None)
                 # Position of this datum along this coordinate.
                 sample_space_data_positions[c][d] = coord.points[keys]
@@ -300,7 +300,7 @@ def extract_nearest_neighbour(cube, sample_points):
         <iris 'Cube' of surface_temperature / (K) (time: 54)>
         >>> iris.analysis.interpolate.extract_nearest_neighbour(cube, [('latitude', 0)])
         <iris 'Cube' of surface_temperature / (K) (time: 54; longitude: 432)>
-    
+
     Args:
 
     * cube:
@@ -330,8 +330,8 @@ def nearest_neighbour_data_value(cube, sample_points):
         Traceback (most recent call last):
         ...
         ValueError: The sample points [('latitude', 0)] was not specific enough to return a single value from the cube.
-    
-    
+
+
     Args:
 
     * cube:
@@ -348,7 +348,7 @@ def nearest_neighbour_data_value(cube, sample_points):
         if isinstance(ind, slice):
             raise ValueError('The sample points given (%s) were not specific enough to return a '
                              'single value from the cube.' % sample_points)
-    
+
     return cube.data[indices]
 
 
@@ -360,7 +360,7 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
     Fundamental input requirements:
         1) Both cubes must have a CoordSystem.
         2) The source 'x' and 'y' coordinates must not share data dimensions with any other coordinates.
-       
+
     In addition, the algorithm currently used requires:
         3) Both CS instances must be compatible:
             i.e. of the same type, with the same attribute values, and with compatible coordinates.
@@ -374,10 +374,10 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
         An instance of :class:`iris.cube.Cube` which supplies the horizontal grid definition.
 
     Kwargs:
-    
+
     * mode (string):
         Regridding interpolation algorithm to be applied, which may be one of the following:
-        
+
             * 'bilinear' for bi-linear interpolation (default), see :func:`iris.analysis.interpolate.linear`.
             * 'nearest' for nearest neighbour interpolation.
 
@@ -391,11 +391,11 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
     if (source_cs is None) != (grid_cs is None):
         raise ValueError("The source and grid cubes must both have a CoordSystem or both have None.")
 
-    # Condition 2: We can only have one x coordinate and one y coordinate with the source CoordSystem, and those coordinates 
-    # must be the only ones occupying their respective dimension 
+    # Condition 2: We can only have one x coordinate and one y coordinate with the source CoordSystem, and those coordinates
+    # must be the only ones occupying their respective dimension
     source_x = source_cube.coord(axis='x', coord_system=source_cs)
     source_y = source_cube.coord(axis='y', coord_system=source_cs)
-    
+
     source_x_dims = source_cube.coord_dims(source_x)
     source_y_dims = source_cube.coord_dims(source_y)
 
@@ -408,8 +408,8 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
         if dim_sharers:
             raise ValueError('No coordinates may share a dimension (dimension %s) with the x '
                              'coordinate, but (%s) do.' % (source_x_dim, dim_sharers))
-        
-    source_y_dim = None     
+
+    source_y_dim = None
     if source_y_dims:
         if len(source_y_dims) > 1:
             raise ValueError('The source y coordinate may not describe more than one data dimension.')
@@ -418,11 +418,11 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
         if dim_sharers:
             raise ValueError('No coordinates may share a dimension (dimension %s) with the y '
                              'coordinate, but (%s) do.' % (source_y_dim, dim_sharers))
-    
+
     if source_x_dim is not None and source_y_dim == source_x_dim:
         raise ValueError('The source x and y coords may not describe the same data dimension.')
 
-        
+
     # Condition 3
     # Check for compatible horizontal CSs. Currently that means they're exactly the same except for the coordinate
     # values.
@@ -445,11 +445,11 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
     x_coord = grid_x.copy()
     y_coord = grid_y.copy()
 
-    
+
     #
     # Adjust the data array to match the new grid.
     #
-    
+
     # get the new shape of the data
     new_shape = list(source_cube.shape)
     if source_x_dims:
@@ -463,7 +463,7 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
     # NB. A "column" is a slice constrained to a single XY point, which therefore extends over *all* the other axes.
     # For an XYZ cube this means a column only extends over Z and corresponds to the normal definition of "column".
     indices = [slice(None, None)] * new_data.ndim
-    
+
     if mode == 'bilinear':
         # Perform bilinear interpolation, passing through any keywords.
         points_dict = [(source_x, list(x_coord.points)), (source_y, list(y_coord.points))]
@@ -526,9 +526,9 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
 def regrid_to_max_resolution(cubes, **kwargs):
     """
     Returns all the cubes re-gridded to the highest horizontal resolution.
-    
+
     Horizontal resolution is defined by the number of grid points/cells covering the horizontal plane.
-    See :func:`iris.analysis.interpolation.regrid` regarding mode of interpolation. 
+    See :func:`iris.analysis.interpolation.regrid` regarding mode of interpolation.
 
     Args:
 
@@ -549,13 +549,13 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
     """
     Return a cube of the linearly interpolated points given the desired
     sample points.
-    
+
     Given a list of tuple pairs mapping coordinates to their desired
     values, return a cube with linearly interpolated values. If more
     than one coordinate is specified, the linear interpolation will be
     carried out in sequence, thus providing n-linear interpolation
     (bi-linear, tri-linear, etc.).
-    
+
     .. note::
 
         By definition, linear interpolation requires all coordinates to
@@ -566,33 +566,33 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
         If a specified coordinate is single valued its value will be
         extrapolated to the desired sample points by assuming a gradient of
         zero.
-    
+
     Args:
-    
+
     * cube
         The cube to be interpolated.
-        
+
     * sample_points
         List of one or more tuple pairs mapping coordinate to desired
         points to interpolate. Points may be a scalar or a numpy array
         of values.
-    
+
     Kwargs:
-    
+
     * extrapolation_mode - string - one of 'linear', 'nan' or 'error'
-    
+
         * If 'linear' the point will be calculated by extending the
           gradient of closest two points.
         * If 'nan' the extrapolation point will be put as a NAN.
         * If 'error' a value error will be raised notifying of the
           attempted extrapolation.
-    
+
     .. note::
 
         If the source cube's data, or any of its resampled coordinates,
         have an integer data type they will be promoted to a floating
         point data type in the result.
-     
+
     """
     if not isinstance(cube, iris.cube.Cube):
         raise ValueError('Expecting a cube instance, got %s' % type(cube))
@@ -604,7 +604,7 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
     # catch the case where a user passes a single (coord/name, value) pair rather than a list of pairs
     if sample_points and not (isinstance(sample_points[0], collections.Container) and not isinstance(sample_points[0], basestring)):
         raise TypeError('Expecting the sample points to be a list of tuple pairs representing (coord, points), got a list of %s.' % type(sample_points[0]))
-    
+
     points = []
     for (coord, values) in sample_points:
         if isinstance(coord, basestring):
@@ -647,7 +647,7 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
         for coord, cells in sample_points:
             result = linear(result, [(coord, cells)], extrapolation_mode=extrapolation_mode)
         return result
-    
+
     else:
         # Now we must be down to a single sample coordinate and its
         # values.
@@ -819,12 +819,12 @@ def _resample_coord(coord, src_coord, direction, target_points, interpolate):
     else:
         if getattr(src_coord, 'circular', False):
             coord_points = np.append(coord_points, coord_points[0])
-        
+
         # If the source coordinate was monotonic decreasing, we need to
         # flip this coordinate's values.
         if direction == -1:
             coord_points = iris.util.reverse(coord_points, axes=0)
-        
+
         new_points = interpolate(coord_points, target_points)
 
     # Watch out for DimCoord instances that are no longer monotonic
@@ -839,15 +839,15 @@ def _resample_coord(coord, src_coord, direction, target_points, interpolate):
 class Linear1dExtrapolator(object):
     """
     Extension class to :class:`scipy.interpolate.interp1d` to provide linear extrapolation.
-    
+
     See also: :mod:`scipy.interpolate`.
-    
+
     """
     def __init__(self, interpolator):
         """
         Given an already created :class:`scipy.interpolate.interp1d` instance, return a callable object
         which supports linear extrapolation.
-        
+
         """
         self._interpolator = interpolator
         self.x = interpolator.x
@@ -855,60 +855,60 @@ class Linear1dExtrapolator(object):
         self.y = interpolator.y
         """
         The y values given to the interpolator object.
-        
+
         .. note:: These are stored with the interpolator.axis last.
-        
+
         """
-        
+
     def all_points_in_range(self, requested_x):
         """Given the x points, do all of the points sit inside the interpolation range."""
         test = (requested_x >= self.x[0]) & (requested_x <= self.x[-1])
         if isinstance(test, np.ndarray):
             test = test.all()
         return test
-            
+
     def __call__(self, requested_x):
         if not self.all_points_in_range(requested_x):
             # cast requested_x to a numpy array if it is not already.
             if not isinstance(requested_x, np.ndarray):
                 requested_x = np.array(requested_x)
-                        
+
             # we need to catch the special case of providing a single value...
             remember_that_i_was_0d = requested_x.ndim == 0
-                
+
             requested_x = requested_x.flatten()
 
             gt = np.where(requested_x > self.x[-1])[0]
             lt = np.where(requested_x < self.x[0])[0]
             ok = np.where( (requested_x >= self.x[0]) & (requested_x <= self.x[-1]) )[0]
-            
+
             data_shape = list(self._interpolator.y.shape)
             data_shape[-1] = len(requested_x)
             result = np.empty(data_shape, dtype=self._interpolator(self.x[0]).dtype)
-            
+
             # Make a variable to represent the slice into the resultant data. (This will be updated in each of gt, lt & ok)
             interpolator_result_index = [slice(None, None)] * self._interpolator.y.ndim
-            
+
             if len(ok) != 0:
                 interpolator_result_index[-1] = ok
-                
+
                 r = self._interpolator(requested_x[ok])
                 # Reshape the properly formed array to put the interpolator.axis last i.e. dims 0, 1, 2 -> 0, 2, 1 if axis = 1
                 axes = range(r.ndim)
                 del axes[self._interpolator.axis]
                 axes.append(self._interpolator.axis)
-                                
+
                 result[interpolator_result_index] = r.transpose(axes)
-                 
+
             if len(lt) != 0:
                 interpolator_result_index[-1] = lt
-                
+
                 grad = (self.y[..., 1:2] - self.y[..., 0:1]) / (self.x[1] - self.x[0])
                 result[interpolator_result_index] = self.y[..., 0:1] + (requested_x[lt] - self.x[0]) * grad
-                
+
             if len(gt) != 0:
                 interpolator_result_index[-1] = gt
-                
+
                 grad = (self.y[..., -1:] - self.y[..., -2:-1]) / (self.x[-1] - self.x[-2])
                 result[interpolator_result_index] = self.y[..., -1:] + (requested_x[gt] - self.x[-1]) * grad
 
@@ -920,7 +920,7 @@ class Linear1dExtrapolator(object):
                 new_shape = list(result.shape)
                 del new_shape[self._interpolator.axis]
                 result = result.reshape(new_shape)
-            
+
             return result
         else:
             return self._interpolator(requested_x)

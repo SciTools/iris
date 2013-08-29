@@ -45,7 +45,7 @@ class TestPPStash(tests.IrisTest):
             self.assertNotEqual('m01s16i999', pp.stash)
             self.assertEqual(pp.stash, 'm01s16i203')
             self.assertNotEqual(pp.stash, 'm01s16i999')
-        
+
     def test_stash_against_stash(self):
         self.assertEqual(iris.fileformats.pp.STASH(1,2,3), iris.fileformats.pp.STASH(1,2,3))
         self.assertNotEqual(iris.fileformats.pp.STASH(1,2,3), iris.fileformats.pp.STASH(2,3,4))
@@ -121,7 +121,7 @@ class TestPPStash(tests.IrisTest):
 
         with self.assertRaises(TypeError):
             self.assertEqual(iris.fileformats.pp.STASH.from_msi(['m01s02i003']), 'm01s02i003')
-        
+
         with self.assertRaises(TypeError):
             self.assertEqual('m01s02i003', iris.fileformats.pp.STASH.from_msi(['m01s02i003']))
 

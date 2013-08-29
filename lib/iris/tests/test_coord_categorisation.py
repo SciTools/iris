@@ -202,7 +202,7 @@ class TestCategorisations(tests.IrisTest):
         ccat.add_season_year(cube, time_coord, name='season_years',
                              seasons=seasons)
         self.assertCML(cube, ('categorisation', 'customcheck.cml'))
-        
+
     def test_add_season_membership(self):
         # season membership identifies correct seasons?
         season = 'djf'
@@ -222,7 +222,7 @@ class TestCategorisations(tests.IrisTest):
                      ccat.add_season_number):
             with self.assertRaises(ValueError):
                 func(self.cube, 'time', name='my_category', seasons=seasons)
-        
+
     def test_add_season_repeated_months(self):
         # custom seasons with repeated months raises an error?
         seasons = ('djfm', 'mam', 'jja', 'son')

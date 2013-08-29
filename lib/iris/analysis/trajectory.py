@@ -34,7 +34,7 @@ class _Segment(object):
         #check keys
         if sorted(p0.keys()) != sorted(p1.keys()):
             raise ValueError("keys do not match")
-        
+
         self.pts = [p0, p1]
 
         #calculate our length
@@ -53,14 +53,14 @@ class Trajectory(object):
         Defines a trajectory using a sequence of waypoints.
 
         For example::
-        
+
             waypoints = [{'latitude': 45, 'longitude': -60}, {'latitude': 45, 'longitude': 0}]
             Trajectory(waypoints)
-        
+
         .. note:: All the waypoint dictionaries must contain the same coordinate names.
-        
+
         Args:
-        
+
         * waypoints
             A sequence of dictionaries, mapping coordinate names to values.
 
@@ -68,11 +68,11 @@ class Trajectory(object):
 
         * sample_count
             The number of sample positions to use along the trajectory.
-        
+
         """
         self.waypoints = waypoints
         self.sample_count = sample_count
-        
+
         # create line segments from the waypoints
         segments = [_Segment(self.waypoints[i], self.waypoints[i+1]) for i in range(len(self.waypoints) - 1)]
 
@@ -82,7 +82,7 @@ class Trajectory(object):
         # generate our sampled points
         self.sampled_points = []
         sample_step = self.length / (self.sample_count - 1)
-        
+
         #start with the first segment
         cur_seg_i = 0
         cur_seg = segments[cur_seg_i]
@@ -91,13 +91,13 @@ class Trajectory(object):
 
             # calculate the sample position along our total length
             sample_at_len = p * sample_step
-            
+
             # skip forward to the containing segment
             while(len_accum < sample_at_len and cur_seg_i < len(segments)):
                 cur_seg_i += 1
                 cur_seg = segments[cur_seg_i]
                 len_accum += cur_seg.length
-            
+
             # how far through the segment is our sample point?
             seg_start_len = len_accum - cur_seg.length
             seg_frac = (sample_at_len-seg_start_len) / cur_seg.length
@@ -107,10 +107,10 @@ class Trajectory(object):
             for key in cur_seg.pts[0].keys():
                 seg_coord_delta = cur_seg.pts[1][key] - cur_seg.pts[0][key]
                 new_sampled_point.update({key: cur_seg.pts[0][key] + seg_frac*seg_coord_delta})
-        
+
             # add this new sampled point
             self.sampled_points.append(new_sampled_point)
-            
+
     def __repr__(self):
         return 'Trajectory(%s, sample_count=%s)' % (self.waypoints, self.sample_count)
 
@@ -124,15 +124,15 @@ def interpolate(cube, sample_points, method=None):
     * cube
         The source Cube.
 
-    * sample_points 
+    * sample_points
         A sequence of coordinate (name) - values pairs.
-        
+
     Kwargs:
-    
+
     * method
         Request "linear" interpolation (default) or "nearest" neighbour.
         Only nearest neighbour is available when specifying multi-dimensional coordinates.
-        
+
 
     For example::
     
@@ -142,7 +142,7 @@ def interpolate(cube, sample_points, method=None):
     """
     if method not in [None, "linear", "nearest"]:
         raise ValueError("Unhandled interpolation specified : %s" % method)
-    
+
     # Convert any coordinate names to coords
     points = []
     for coord, values in sample_points:
@@ -224,15 +224,15 @@ def interpolate(cube, sample_points, method=None):
         if coord.ndim > 1:
             if method == "linear":
                 raise iris.exceptions.CoordinateMultiDimError("Cannot currently perform linear interpolation for multi-dimensional coordinates.")
-            method = "nearest" 
+            method = "nearest"
             break
 
     # Use a cache with _nearest_neighbour_indices_ndcoords()
     cache = {}
-    
+
     for i in range(trajectory_size):
         point = [(coord, values[i]) for coord, values in sample_points]
-        
+
         if method in ["linear", None]:
             column = iris.analysis.interpolate.linear(cube, point)
             new_cube.data[..., i] = column.data
@@ -240,14 +240,13 @@ def interpolate(cube, sample_points, method=None):
             column_index = iris.analysis.interpolate._nearest_neighbour_indices_ndcoords(cube, point, cache=cache)
             column = cube[column_index]
             new_cube.data[..., i] = column.data
-        
+
         # Fill in the empty squashed (non derived) coords.
         for column_coord in column.dim_coords + column.aux_coords:
             src_dims = cube.coord_dims(column_coord)
             if not squish_my_dims.isdisjoint(src_dims):
                 if len(column_coord.points) != 1:
                     raise Exception("Expected to find exactly one point. Found %d" % len(column_coord.points))
-                new_cube.coord(column_coord.name()).points[i] = column_coord.points[0] 
+                new_cube.coord(column_coord.name()).points[i] = column_coord.points[0]
 
     return new_cube
-

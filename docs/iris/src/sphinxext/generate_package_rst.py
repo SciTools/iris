@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -66,22 +66,22 @@ def auto_doc_module(file_path, import_name, root_package, package_toc=None, titl
     else:
         document_these = [[obj, r.__getattribute__(obj)] for obj in elems if not obj.startswith('_') and not inspect.ismodule(r.__getattribute__(obj))]
         is_from_this_module = lambda x, this_module=r.__name__: hasattr(x[1], '__module__') and x[1].__module__ == r.__name__
-    
+
         document_these = filter(is_from_this_module, document_these)
         sort_order = {'class': 2, 'function':1, None:0}
         # sort them according to sort_order dict
         document_these = sorted(document_these, key=lambda x: sort_order.get(lookup_object_type(x[1]),0))
-        
+
     tmp = ''
     for element, obj in document_these:
         tmp += '----------\n' + document_dict[lookup_object_type(obj)] % {'object_name': import_name + '.' + element,
                                                          'object_name_header_line':'+' * len(import_name + '.' + element),
                                                          'object_docstring': inspect.getdoc(obj),
                                                          }
-            
+
 
     module_elements = '\n'.join([' * :py:obj:`%s`' % (element) for element, obj in document_these])
-    
+
     tmp = r'''.. _%(import_name)s:
 
 %(title_underline)s
@@ -89,7 +89,7 @@ def auto_doc_module(file_path, import_name, root_package, package_toc=None, titl
 %(title_underline)s
 
 %(sidebar)s
-   
+
 .. currentmodule:: %(root_package)s
 
 .. automodule:: %(import_name)s
@@ -109,7 +109,7 @@ In this module:
     """ % {'package_toc_tree': package_toc}
     else:
        sidebar = ''
- 
+
     return tmp % {'title': title or import_name, 'title_underline': '=' * len(title or import_name), 'import_name': import_name, 'root_package':root_package, 'sidebar':sidebar, 'module_elements': module_elements}
 
 
@@ -119,12 +119,12 @@ def auto_doc_package(file_path, import_name, root_package, sub_packages):
    .. toctree::
       :maxdepth: 2
       :titlesonly:
-      
+
       %s
 
-   
+
 ''' % package_toc
-    
+
     if '.' in import_name:
         title = None
     else:
@@ -161,12 +161,12 @@ def do_package(package_name):
     for root, subFolders, files in os.walk(rootdir):
         for fname in files:
             name, ext = os.path.splitext(fname)
-            
+
             # skip some non-relevant files
-            if ( fname.startswith('.') or fname.startswith('#') or re.search("^_[^_]", fname) or 
+            if ( fname.startswith('.') or fname.startswith('#') or re.search("^_[^_]", fname) or
                  fname.find('.svn')>=0 or not (ext in ['.py', '.so']) ):
                 continue
-            
+
             rel_path = root_package + os.path.join(root, fname).split(rootdir)[-1]
             mod_folder = root_package + os.path.join(root).split(rootdir)[-1].replace('/','.')
 
@@ -178,7 +178,7 @@ def do_package(package_name):
                 module_folders.setdefault(mod_folder, []).append([import_name, rel_path])
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
-        
+
     for package, package_path in package_folder:
        if '._' in package or 'test' in package:
             continue
@@ -192,7 +192,7 @@ def do_package(package_name):
        package_dir = out_dir + package.replace('.', os.path.sep)
        if not os.path.exists(package_dir):
            os.makedirs(out_dir + package.replace('.', os.path.sep))
-           
+
        out_path = package_dir + '.rst'
        if not os.path.exists(out_path) or doc != ''.join(file(out_path, 'r').readlines()):
             print 'creating out of date/non-existant document %s' % out_path
