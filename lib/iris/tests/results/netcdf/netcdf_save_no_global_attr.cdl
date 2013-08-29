@@ -1,0 +1,48 @@
+dimensions:
+	dim0 = UNLIMITED ; // (2 currently)
+	dim0_0 = UNLIMITED ; // (1 currently)
+	dim0_1 = UNLIMITED ; // (10 currently)
+	dim0_2 = UNLIMITED ; // (20 currently)
+	dim1 = 2 ;
+	dim2 = 2 ;
+variables:
+	double temp(dim0, dim1) ;
+		temp:standard_name = "surface_temperature" ;
+		temp:units = "K" ;
+		temp:a = "a" ;
+		temp:g = "p" ;
+		temp:h = "v" ;
+	double temp2(dim0_0, dim1, dim2) ;
+		temp2:long_name = "Something Random" ;
+		temp2:units = "K" ;
+		temp2:b = "a" ;
+		temp2:g = "q" ;
+		temp2:h = "v" ;
+	double temp3(dim0, dim1, dim2) ;
+		temp3:long_name = "Something Random" ;
+		temp3:units = "K" ;
+		temp3:c = "a" ;
+		temp3:g = "r" ;
+		temp3:h = "v" ;
+	double temp_0(dim0_1) ;
+		temp_0:standard_name = "air_temperature" ;
+		temp_0:units = "K" ;
+		temp_0:d = "a" ;
+		temp_0:g = "s" ;
+		temp_0:h = "w" ;
+	double temp2_0(dim0_2) ;
+		temp2_0:long_name = "air_temperature" ;
+		temp2_0:units = "K" ;
+		temp2_0:e = "a" ;
+		temp2_0:g = "t" ;
+		temp2_0:h = "v" ;
+	double temp3_0(dim0_1) ;
+		temp3_0:long_name = "air_temperature" ;
+		temp3_0:units = "K" ;
+		temp3_0:f = "a" ;
+		temp3_0:g = "u" ;
+		temp3_0:h = "v" ;
+
+// global attributes:
+		:Conventions = "CF-1.5" ;
+}

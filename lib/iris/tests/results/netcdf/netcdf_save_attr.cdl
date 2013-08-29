@@ -1,0 +1,19 @@
+dimensions:
+	dim0 = UNLIMITED ; // (2 currently)
+	dim1 = 2 ;
+variables:
+	double temp(dim0, dim1) ;
+		temp:standard_name = "surface_temperature" ;
+		temp:units = "K" ;
+		temp:ukmo__um_stash_source = "m01s02i003" ;
+		temp:flag_masks = "a" ;
+		temp:flag_meanings = "b" ;
+		temp:flag_values = "c" ;
+		temp:standard_error_multiplier = 23L ;
+
+// global attributes:
+		:foo = "bar" ;
+		:history = "A long time ago..." ;
+		:title = "Attribute test" ;
+		:Conventions = "CF-1.5" ;
+}

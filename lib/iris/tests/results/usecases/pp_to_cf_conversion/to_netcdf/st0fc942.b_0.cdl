@@ -8,7 +8,6 @@ variables:
 	float unknown(pseudo_level, time, depth, grid_latitude) ;
 		unknown:_FillValue = -1.e+30f ;
 		unknown:ukmo__um_stash_source = "m02s00i???" ;
-		unknown:source = "Data from Met Office Unified Model" ;
 		unknown:cell_methods = "time: mean" ;
 		unknown:grid_mapping = "rotated_latitude_longitude" ;
 		unknown:coordinates = "forecast_period forecast_reference_time" ;
@@ -48,5 +47,6 @@ variables:
 		forecast_reference_time:calendar = "360_day" ;
 
 // global attributes:
+		:source = "Data from Met Office Unified Model" ;
 		:Conventions = "CF-1.5" ;
 }
