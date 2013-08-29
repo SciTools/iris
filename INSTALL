@@ -69,9 +69,13 @@ cartopy 0.5.0 or later (http://github.com/SciTools/cartopy/)
 
 Optional
 --------
-These are optional packages which you may want to install to use
-Iris with different file formats and to enable plotting functionality.
-All of these are required for the Iris test suite to run.
+These are optional packages which you may want to install to enable
+additonal Iris functionality such as plotting and
+loading/saving GRIB. These packages are required for the full Iris test
+suite to run.
+
+gdal 1.9.1 or later (https://pypi.python.org/pypi/GDAL/)
+    Python package for the Geospatial Data Abstraction Library (GDAL).
 
 graphviz 2.18 or later (http://www.graphviz.org/)
     Graph visualisation software.
@@ -90,6 +94,10 @@ mock 1.0.1 (http://pypi.python.org/pypi/mock/)
 
 nose 1.1.2 or later (http://nose.readthedocs.org/en/latest/)
     Python package for software testing. Iris is not compatible with nose2. 
+
+pandas 0.11.0 or later (http://pandas.pydata.org)
+    Python package providing high-performance, easy-to-use data structures and
+    data analysis tools.
 
 PythonImagingLibrary 1.1.7 or later (http://effbot.org/zone/pil-index.htm)
     Python package for image processing.
