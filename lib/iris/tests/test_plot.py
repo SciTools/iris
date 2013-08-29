@@ -869,5 +869,16 @@ class TestPlottingExceptions(tests.IrisTest):
             iplt.pcolormesh(cube, coords=['longitude', 'latitude'])
 
 
+@iris.tests.skip_data
+class TestPlotOtherCoordSystems(tests.GraphicsTest):
+    def test_plot_tmerc(self):
+        filename = tests.get_data_path(('NetCDF', 'transverse_mercator',
+                                        'tmean_1910_1910.nc'))
+        self.cube = iris.load_cube(filename)
+        iplt.pcolormesh(self.cube[0])
+        plt.gca().coastlines()
+        self.check_graphic()
+
+
 if __name__ == "__main__":
     tests.main()
