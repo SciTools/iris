@@ -22,7 +22,7 @@ import warnings
 
 import numpy as np
 
-from iris.aux_factory import HybridHeightFactory
+from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.fileformats.mosig_cf_map import MOSIG_STASH_TO_CF
 from iris.fileformats.rules import Factory, Reference, ReferenceTarget
@@ -154,7 +154,8 @@ def convert(f):
     if \
             (len(f.lbcode) == 5) and \
             (f.lbcode.ix == 10) and \
-            (f.bdx != 0 and f.bdx != f.bmdi):
+            (f.bdx != 0) and \
+            (f.bdx != f.bmdi):
         dim_coords_and_dims.append((DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt, standard_name=f._y_coord_name(), units='degrees', coord_system=f.coord_system()), 1))
 
     if \
@@ -269,11 +270,11 @@ def convert(f):
 
     if \
             (f.lbvc == 1) and \
-            (not (f.lbuser[6] == 1 and f.lbuser[3] == 3236)) and \
+            (not (str(f.stash) in ['m01s03i236', 'm01s03i237', 'm01s03i245', 'm01s03i247', 'm01s03i250'])) and \
             (f.blev != -1):
         aux_coords_and_dims.append((DimCoord(f.blev, standard_name='height', units='m', attributes={'positive': 'up'}), None))
 
-    if f.lbuser[6] == 1 and f.lbuser[3] == 3236:
+    if str(f.stash) in ['m01s03i236', 'm01s03i237', 'm01s03i245', 'm01s03i247', 'm01s03i250']:
         aux_coords_and_dims.append((DimCoord(1.5, standard_name='height', units='m', attributes={'positive': 'up'}), None))
 
     if \
