@@ -270,11 +270,11 @@ def convert(f):
 
     if \
             (f.lbvc == 1) and \
-            (not (f.lbuser[6] == 1 and f.lbuser[3] == 3236)) and \
+            (not (str(f.stash) in ['m01s03i236', 'm01s03i237', 'm01s03i245', 'm01s03i247', 'm01s03i250'])) and \
             (f.blev != -1):
         aux_coords_and_dims.append((DimCoord(f.blev, standard_name='height', units='m', attributes={'positive': 'up'}), None))
 
-    if f.lbuser[6] == 1 and f.lbuser[3] == 3236:
+    if str(f.stash) in ['m01s03i236', 'm01s03i237', 'm01s03i245', 'm01s03i247', 'm01s03i250']:
         aux_coords_and_dims.append((DimCoord(1.5, standard_name='height', units='m', attributes={'positive': 'up'}), None))
 
     if \
