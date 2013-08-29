@@ -510,8 +510,19 @@ class Saver(object):
         #: A dictionary, listing dimension names and corresponding length
         self._existing_dim = {}
         #: NetCDF dataset
-        self._dataset = netCDF4.Dataset(filename, mode='w',
-                                        format=netcdf_format)
+        try:
+            self._dataset = netCDF4.Dataset(filename, mode='w',
+                                            format=netcdf_format)
+        except RuntimeError:
+            dir_name = os.path.dirname(filename)
+            if not os.path.isdir(dir_name):
+                msg = 'No such file or directory: {}'.format(dir_name)
+                raise IOError(msg)
+            if not os.access(dir_name, os.R_OK | os.W_OK):
+                msg = 'Permission denied: {}'.format(filename)
+                raise IOError(msg)
+            else:
+                raise
 
     def __enter__(self):
         return self
