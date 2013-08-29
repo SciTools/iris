@@ -159,5 +159,35 @@ class Test_phenomenon(tests.IrisTest):
         mock_set_long.assert_any_call(grib, "parameterNumber", 22)
 
 
+class Test_type_of_statistical_processing(tests.IrisTest):
+    @mock.patch.object(gribapi, "grib_set_long")
+    def test_stats_type_min(self, mock_set_long):
+        grib = None
+        cube = iris.cube.Cube(np.array([1.0]))
+        time_unit = iris.unit.Unit('hours since 1970-01-01 00:00:00')
+        time_coord = iris.coords.DimCoord([0.0],
+                                          bounds=[0.0, 1],
+                                          standard_name='time',
+                                          units=time_unit)
+        cube.add_aux_coord(time_coord, ())
+        cube.add_cell_method(iris.coords.CellMethod('maximum', time_coord))
+        grib_save_rules.type_of_statistical_processing(cube, grib, time_coord)
+        mock_set_long.assert_any_call(grib, "typeOfStatisticalProcessing", 2)
+
+    @mock.patch.object(gribapi, "grib_set_long")
+    def test_stats_type_max(self, mock_set_long):
+        grib = None
+        cube = iris.cube.Cube(np.array([1.0]))
+        time_unit = iris.unit.Unit('hours since 1970-01-01 00:00:00')
+        time_coord = iris.coords.DimCoord([0.0],
+                                          bounds=[0.0, 1],
+                                          standard_name='time',
+                                          units=time_unit)
+        cube.add_aux_coord(time_coord, ())
+        cube.add_cell_method(iris.coords.CellMethod('minimum', time_coord))
+        grib_save_rules.type_of_statistical_processing(cube, grib, time_coord)
+        mock_set_long.assert_any_call(grib, "typeOfStatisticalProcessing", 3)
+
+
 if __name__ == "__main__":
     tests.main()
