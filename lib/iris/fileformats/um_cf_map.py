@@ -172,6 +172,7 @@ STASH_TO_CF = {
     "m01s03i236" : CFname(cfname="air_temperature", unit="K"),
     "m01s03i238" : CFname(cfname="soil_temperature", unit="K"),
     "m01s03i245" : CFname(cfname="relative_humidity", unit="%"),
+    "m01s03i250" : CFname(cfname="dew_point_temperature", unit="K"),
     "m01s03i313" : CFname(cfname="soil_moisture_content_at_field_capacity", unit="kg m-2"),
     "m01s03i332" : CFname(cfname="toa_outgoing_longwave_flux", unit="W m-2"),
     "m01s03i334" : CFname(cfname="water_potential_evaporation_flux", unit="kg m-2 s-1"),
@@ -373,6 +374,7 @@ STASH_TO_CF = {
     "m02s32i212" : CFname(cfname="tendency_of_sea_ice_thickness_due_to_thermodynamics", unit="m s-1"),
     "m02s32i219" : CFname(cfname="downward_eastward_stress_at_sea_ice_base", unit="Pa"),
     "m02s32i220" : CFname(cfname="downward_northward_stress_at_sea_ice_base", unit="Pa"),
+    "m01s16i256" : CFname(cfname="relative_humidity", unit="%"),
 }
 
 
