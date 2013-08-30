@@ -394,6 +394,51 @@ class TestDimCoordCreation(unittest.TestCase):
         b = iris.coords.DimCoord.from_coord(a)
         self.assertIsNot(a.coord_system, b.coord_system)
 
+    def test_DimCoord_from_regular(self):
+        zeroth = 10.0
+        step = 20.0
+        count = 100
+        kwargs = dict(standard_name='latitude',
+                      long_name='latitude',
+                      var_name='lat',
+                      units='degrees',
+                      attributes=dict(fruit='pear'),
+                      coord_system=iris.coord_systems.GeogCS(6371229),
+                      circular=False)
+
+        coord = iris.coords.DimCoord.from_regular(zeroth, step, count,
+                                                  **kwargs)
+        expected_points = np.arange(zeroth + step,
+                                    zeroth + (count + 1)*step,
+                                    step)
+        expected = iris.coords.DimCoord(expected_points, **kwargs)
+        self.assertIsInstance(coord, iris.coords.DimCoord)
+        self.assertEqual(coord, expected)
+
+    def test_DimCoord_from_regular_with_bounds(self):
+        zeroth = 3.0
+        step = 0.5
+        count = 20
+        kwargs = dict(standard_name='latitude',
+                      long_name='latitude',
+                      var_name='lat',
+                      units='degrees',
+                      attributes=dict(fruit='pear'),
+                      coord_system=iris.coord_systems.GeogCS(6371229),
+                      circular=False)
+
+        coord = iris.coords.DimCoord.from_regular(zeroth, step, count,
+                                                  with_bounds=True, **kwargs)
+        expected_points = np.arange(zeroth + step,
+                                    zeroth + (count + 1)*step,
+                                    step)
+        expected_bounds = np.transpose([expected_points - 0.5 * step,
+                                        expected_points + 0.5 * step])
+        expected = iris.coords.DimCoord(expected_points,
+                                        bounds=expected_bounds, **kwargs)
+        self.assertIsInstance(coord, iris.coords.DimCoord)
+        self.assertEqual(coord, expected)
+
 
 class TestCoordMaths(tests.IrisTest):
     def _build_coord(self, start=None, step=None, count=None):
