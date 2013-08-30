@@ -1226,6 +1226,7 @@ class DimCoord(Coord):
         coord._points = points
 
         if with_bounds:
+            delta = 0.5 * step
             bounds = np.concatenate([[points - delta], [points + delta]]).T
             bounds.flags.writeable = False
             coord._bounds = bounds

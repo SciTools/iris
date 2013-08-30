@@ -134,7 +134,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
             '*/iris/example_code/graphics/COP_1d_plot.py',
             '*/iris/example_code/graphics/COP_maps.py',
             '*/iris/example_code/graphics/SOI_filtering.py',
-            '*/iris/example_code/graphics/TEC.py',
             '*/iris/example_code/graphics/cross_section.py',
             '*/iris/example_code/graphics/custom_file_loading.py',
             '*/iris/example_code/graphics/global_map.py',

@@ -13,21 +13,33 @@ In all cases **the subset of a valid cube is itself a valid cube**.
 
 Cube extraction
 ^^^^^^^^^^^^^^^^
-A subset of a cube can be "extracted" from a multi-dimensional cube in order to reduce its dimensionality::
+A subset of a cube can be "extracted" from a multi-dimensional cube in order to reduce its dimensionality:
 
-    filename = iris.sample_data_path('hybrid_height.pp')
-    cube = iris.load_cube(filename)
-    print cube
-    equator_slice = cube.extract(iris.Constraint(grid_latitude=0))
-    print equator_slice
+    >>> import iris
+    >>> filename = iris.sample_data_path('space_weather.nc')
+    >>> cube = iris.load_cube(filename, 'electron density')
+    >>> equator_slice = cube.extract(iris.Constraint(grid_latitude=0))
+    >>> print equator_slice
+    electron density / (1E11 e/m^3)     (height: 29; grid_longitude: 31)
+         Dimension coordinates:
+              height                           x                   -
+              grid_longitude                   -                   x
+         Auxiliary coordinates:
+              latitude                         -                   x
+              longitude                        -                   x
+         Scalar coordinates:
+              grid_latitude: 0.0 degrees
+         Attributes:
+              Conventions: CF-1.5
 
-In this example we start with a 3 dimensional cube, with dimensions of ``height``, ``latitude`` and ``longitude``,
-and extract every point where the latitude is 0, resulting in a 2d cube with axes of ``height`` and ``longitude``.
+
+In this example we start with a 3 dimensional cube, with dimensions of ``height``, ``grid_latitude`` and ``grid_longitude``,
+and extract every point where the latitude is 0, resulting in a 2d cube with axes of ``height`` and ``grid_longitude``.
 
 
 .. warning::
 
-    Caution is required when using equality constraints with floating point coordinates such as ``latitude``. 
+    Caution is required when using equality constraints with floating point coordinates such as ``grid_latitude``.
     Printing the points of a coordinate does not necessarily show the full precision of the underlying number and it 
     is very easy return no matches to a constraint when one was expected.
     This can be avoided by using a function as the argument to the constraint::
@@ -43,29 +55,48 @@ and extract every point where the latitude is 0, resulting in a 2d cube with axe
         equator_constraint = iris.Constraint(grid_latitude=lambda cell: -0.1 < cell < 0.1)
 
 
-The extract method could be applied again to the *equator_slice* cube to get a further subset. 
+The extract method could be applied again to the *equator_slice* cube to get a further subset.
 
-For example to get a ``model_level_number`` of 10 at the equator the following line extends the previous example::
+For example to get a ``height`` of 9000 metres at the equator the following line extends the previous example::
 	
-	equator_model_level_10_slice = equator_slice.extract(iris.Constraint(model_level_number=10))
-	print equator_model_level_10_slice
+	equator_height_9km_slice = equator_slice.extract(iris.Constraint(height=9000))
+	print equator_height_9km_slice
 
-The two steps required to get ``model_level_number`` of 10 at the equator can be simplified into a single constraint::
+The two steps required to get ``height`` of 9000 m at the equator can be simplified into a single constraint::
 
-	filename = iris.sample_data_path('PP', 'globClim1', 'theta.pp')
-	cube = iris.load_cube(filename)
-	equator_model_level_10_slice = cube.extract(iris.Constraint(grid_latitude=0, model_level_number=10))
-	print equator_model_level_10_slice
+	equator_height_9km_slice = cube.extract(iris.Constraint(grid_latitude=0, height=9000))
+	print equator_height_9km_slice
 
 As we saw in :doc:`loading_iris_cubes` the result of :func:`iris.load` is a :class:`CubeList <iris.cube.CubeList>`. 
 The ``extract`` method also exists on a :class:`CubeList <iris.cube.CubeList>` and behaves in exactly the 
-same way as loading with constraints::
+same way as loading with constraints:
 
-	air_temp_and_fp_6 = iris.Constraint('air_potential_temperature', forecast_period=6)
-	level_10 = iris.Constraint(model_level_number=10)
-	filename = iris.sample_data_path('uk_hires.pp')
-	cubes = iris.load(filename).extract(air_temp_and_fp_6 & level_10)
-	print cubes
+    >>> import iris
+    >>> air_temp_and_fp_6 = iris.Constraint('air_potential_temperature', forecast_period=6)
+    >>> level_10 = iris.Constraint(model_level_number=10)
+    >>> filename = iris.sample_data_path('uk_hires.pp')
+    >>> cubes = iris.load(filename).extract(air_temp_and_fp_6 & level_10)
+    >>> print cubes
+    0: air_potential_temperature / (K)     (grid_latitude: 204; grid_longitude: 187)
+    >>> print cubes[0]
+    air_potential_temperature / (K)     (grid_latitude: 204; grid_longitude: 187)
+         Dimension coordinates:
+              grid_latitude                           x                    -
+              grid_longitude                          -                    x
+         Auxiliary coordinates:
+              surface_altitude                        x                    x
+         Derived coordinates:
+              altitude                                x                    x
+         Scalar coordinates:
+              forecast_period: 6.0 hours
+              forecast_reference_time: 2009-11-19 04:00:00
+              level_height: 395.0 m, bound=(360.0, 433.333) m
+              model_level_number: 10
+              sigma: 0.954993, bound=(0.958939, 0.95068)
+              time: 2009-11-19 10:00:00
+         Attributes:
+              STASH: m01s00i004
+              source: Data from Met Office Unified Model 7.03
 
 
 Cube iteration

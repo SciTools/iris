@@ -604,7 +604,7 @@ def contourf(cube, *args, **kwargs):
         if len(levels) > 0:
             # Draw the lines just *below* the polygons to ensure we minimise
             # any boundary shift.
-            zorder = result.collections[0].zorder - 1
+            zorder = result.collections[0].zorder - .1
             contour(cube, levels=levels, colors=colors, antialiased=True,
                     zorder=zorder, coords=coords)
 
