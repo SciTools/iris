@@ -2,10 +2,12 @@
 Ionosphere space weather
 ========================
 
-This space weather example plots a filled contour of rotated pole point data with a shaded relief image underlay.
-The plot shows aggregated vertical electron content in the ionosphere.
+This space weather example plots a filled contour of rotated pole point
+data with a shaded relief image underlay. The plot shows aggregated
+vertical electron content in the ionosphere.
 
-The plot exhibits an interesting outline effect due to excluding data values below a certain threshold.
+The plot exhibits an interesting outline effect due to excluding data
+values below a certain threshold.
 
 """
 
@@ -14,12 +16,6 @@ import numpy.ma as ma
 
 import iris
 import iris.quickplot as qplt
-
-
-def total_electron_content_filter(cube, field, filename):
-    # Filter out all cubes that don't have a matching 'long_name' attribute.
-    if hasattr(field, 'long_name') and field.long_name != 'total electron content':
-        raise iris.exceptions.IgnoreCubeException()
 
 
 def main():
