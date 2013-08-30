@@ -93,6 +93,7 @@ def nearest_neighbour_indices(cube, sample_points):
     dimensions. Any dimensions unspecified will default to a full slice.
 
     For example:
+
         >>> cube = iris.load_cube(iris.sample_data_path('ostia_monthly.nc'))
         >>> iris.analysis.interpolate.nearest_neighbour_indices(cube, [('latitude', 0), ('longitude', 10)])
         (slice(None, None, None), 9, 12)
@@ -295,6 +296,7 @@ def extract_nearest_neighbour(cube, sample_points):
     dimensions. Any dimensions unspecified will default to a full slice.
 
     For example:
+
         >>> cube = iris.load_cube(iris.sample_data_path('ostia_monthly.nc'))
         >>> iris.analysis.interpolate.extract_nearest_neighbour(cube, [('latitude', 0), ('longitude', 10)])
         <iris 'Cube' of surface_temperature / (K) (time: 54)>
@@ -323,6 +325,7 @@ def nearest_neighbour_data_value(cube, sample_points):
     dimensions.
 
     For example:
+
         >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
         >>> iris.analysis.interpolate.nearest_neighbour_data_value(cube, [('latitude', 0), ('longitude', 10)])
         299.21564
@@ -550,11 +553,23 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
     Return a cube of the linearly interpolated points given the desired
     sample points.
 
-    Given a list of tuple pairs mapping coordinates to their desired
-    values, return a cube with linearly interpolated values. If more
-    than one coordinate is specified, the linear interpolation will be
+    Given a list of tuple pairs mapping coordinates (or coordinate names)
+    to their desired values, return a cube with linearly interpolated values.
+    If more than one coordinate is specified, the linear interpolation will be
     carried out in sequence, thus providing n-linear interpolation
     (bi-linear, tri-linear, etc.).
+
+    .. testsetup::
+
+        import numpy as np
+
+    For example:
+
+        >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
+        >>> sample_points = [('latitude', np.linspace(-90, 90, 10)),
+        ...                  ('longitude', np.linspace(-180, 180, 20))]
+        >>> iris.analysis.interpolate.linear(cube, sample_points)
+        <iris 'Cube' of air_temperature / (K) (latitude: 10; longitude: 20)>
 
     .. note::
 
