@@ -834,7 +834,22 @@ class Saver(object):
 
         """
         if coord.has_bounds():
-            n_bounds = coord.bounds.shape[-1]
+            bounds = coord.bounds
+            if ((np.issubdtype(bounds.dtype, np.int64) or
+                    np.issubdtype(bounds.dtype, np.unsignedinteger)) and
+                    self._dataset.file_format in ('NETCDF3_CLASSIC',
+                                                  'NETCDF3_64BIT')):
+                # Cast to an integer type supported by netCDF3.
+                if not np.can_cast(bounds.max(), np.int32) or \
+                        not np.can_cast(bounds.min(), np.int32):
+                    msg = 'The data type of the bounds of coordinate {!r} is' \
+                          ' not supported by {} and its values cannot be' \
+                          ' safely cast to a supported integer type.'.format(
+                          coord.name(), self._dataset.file_format)
+                    raise ValueError(msg)
+                bounds = bounds.astype(np.int32)
+
+            n_bounds = bounds.shape[-1]
 
             if n_bounds == 2:
                 bounds_dimension_name = 'bnds'
@@ -847,9 +862,9 @@ class Saver(object):
 
             cf_var.bounds = cf_name + '_bnds'
             cf_var_bounds = self._dataset.createVariable(
-                cf_var.bounds, coord.bounds.dtype,
+                cf_var.bounds, bounds.dtype,
                 cf_var.dimensions + (bounds_dimension_name,))
-            cf_var_bounds[:] = coord.bounds
+            cf_var_bounds[:] = bounds
 
     def _get_cube_variable_name(self, cube):
         """
@@ -975,8 +990,23 @@ class Saver(object):
                 # must be the same as its dimension name.
                 cf_name = cf_dimensions[0]
 
+            points = coord.points
+            if ((np.issubdtype(points.dtype, np.int64) or
+                    np.issubdtype(points.dtype, np.unsignedinteger)) and
+                    self._dataset.file_format in ('NETCDF3_CLASSIC',
+                                                  'NETCDF3_64BIT')):
+                # Cast to an integer type supported by netCDF3.
+                if not np.can_cast(points.max(), np.int32) or \
+                        not np.can_cast(points.min(), np.int32):
+                    msg = 'The data type of coordinate {!r} is not supported' \
+                          ' by {} and its values cannot be safely cast to' \
+                          ' a supported integer type.'.format(
+                          coord.name(), self._dataset.file_format)
+                    raise ValueError(msg)
+                points = points.astype(np.int32)
+
             # Create the CF-netCDF variable.
-            cf_var = self._dataset.createVariable(cf_name, coord.points.dtype,
+            cf_var = self._dataset.createVariable(cf_name, points.dtype,
                                                   cf_dimensions)
 
             # Add the axis attribute for spatio-temporal CF-netCDF coordinates.
@@ -986,7 +1016,7 @@ class Saver(object):
                     cf_var.axis = axis.upper()
 
             # Add the data to the CF-netCDF variable.
-            cf_var[:] = coord.points
+            cf_var[:] = points
 
             # Create the associated CF-netCDF bounds variable.
             self._create_cf_bounds(coord, cf_var, cf_name)
@@ -1193,11 +1223,26 @@ class Saver(object):
         if isinstance(cube.data, ma.core.MaskedArray):
             fill_value = cube.data.fill_value
 
+        data = cube.data
+        if ((np.issubdtype(data.dtype, np.int64) or
+                np.issubdtype(data.dtype, np.unsignedinteger)) and
+                self._dataset.file_format in ('NETCDF3_CLASSIC',
+                                              'NETCDF3_64BIT')):
+            # Cast to an integer type supported by netCDF3.
+            if not np.can_cast(data.max(), np.int32) or \
+                    not np.can_cast(data.min(), np.int32):
+                msg = 'The data type of cube {!r} is not supported' \
+                      ' by {} and its values cannot be safely cast to' \
+                      ' a supported integer type.'.format(
+                      cube.name(), self._dataset.file_format)
+                raise ValueError(msg)
+            data = data.astype(np.int32)
+
         # Create the cube CF-netCDF data variable with data payload.
-        cf_var = self._dataset.createVariable(cf_name, cube.data.dtype,
+        cf_var = self._dataset.createVariable(cf_name, data.dtype,
                                               dimension_names,
                                               fill_value=fill_value)
-        cf_var[:] = cube.data
+        cf_var[:] = data
 
         if cube.standard_name:
             cf_var.standard_name = cube.standard_name
