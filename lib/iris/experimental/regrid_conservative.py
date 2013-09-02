@@ -47,15 +47,9 @@ def _convert_latlons(crs, x_array, y_array):
     return ll_values[..., 0], ll_values[..., 1]
 
 
-def _make_esmpy_field(x_coord, y_coord, ref_name='field',
-                      data=None, mask=None):
+def _make_esmpy_grid_from_coords(x_coord, y_coord):
     """
-    Create an ESMPy ESMF.Field on given coordinates.
-
-    Create a ESMF.Grid from the coordinates, defining corners and centre
-    positions as lats+lons.
-    Add a grid mask if provided.
-    Create and return a Field mapped on this Grid, setting data if provided.
+    Make an :class:`ESMF.Grid` from X and Y coordinates.
 
     Args:
 
@@ -63,17 +57,10 @@ def _make_esmpy_field(x_coord, y_coord, ref_name='field',
         One-dimensional coordinates of shape (nx,) and (ny,).
         Their contiguous bounds define an ESMF.Grid of shape (nx, ny).
 
-    Kwargs:
-
-    * data (:class:`numpy.ndarray`, shape (nx,ny)):
-        Set the Field data content.
-    * mask (:class:`numpy.ndarray`, boolean, shape (nx,ny)):
-        Add a mask item to the grid, assigning it 0/1 where mask=False/True.
-
     """
     # Create a Grid object describing the coordinate cells.
     dims = [len(coord.points) for coord in (x_coord, y_coord)]
-    dims = np.array(dims, dtype=np.int32)  # specific type required by ESMF.
+    dims = np.array(dims)  # must be an array
     grid = ESMF.Grid(dims)
 
     # Get all cell corner coordinates as true-lat-lons
@@ -83,10 +70,10 @@ def _make_esmpy_field(x_coord, y_coord, ref_name='field',
     lon_bounds, lat_bounds = _convert_latlons(grid_crs, x_bounds, y_bounds)
 
     # Add grid 'coord' element for corners, and fill with corner values.
-    grid.add_coords(staggerlocs=[ESMF.StaggerLoc.CORNER])
-    grid_corners_x = grid.get_coords(0, ESMF.StaggerLoc.CORNER)
+    grid.add_coords(staggerloc=[ESMF.StaggerLoc.CORNER])
+    grid_corners_x = grid.get_coords(0, staggerloc=ESMF.StaggerLoc.CORNER)
     grid_corners_x[:] = lon_bounds.T
-    grid_corners_y = grid.get_coords(1, ESMF.StaggerLoc.CORNER)
+    grid_corners_y = grid.get_coords(1, staggerloc=ESMF.StaggerLoc.CORNER)
     grid_corners_y[:] = lat_bounds.T
 
     # calculate the cell centre-points
@@ -114,11 +101,36 @@ def _make_esmpy_field(x_coord, y_coord, ref_name='field',
 
     # Add grid 'coord' element for centres + fill with centre-points values.
     grid.add_coords(staggerlocs=[ESMF.StaggerLoc.CENTER])
-    grid_centers_x = grid.get_coords(0, ESMF.StaggerLoc.CENTER)
+    grid_centers_x = grid.get_coords(0, staggerloc=ESMF.StaggerLoc.CENTER)
     grid_centers_x[:] = lon_points.T
-    grid_centers_y = grid.get_coords(1, ESMF.StaggerLoc.CENTER)
+    grid_centers_y = grid.get_coords(1, staggerloc=ESMF.StaggerLoc.CENTER)
     grid_centers_y[:] = lat_points.T
 
+    return grid
+
+
+def _make_esmpy_field(grid, ref_name='field',
+                      data=None, mask=None):
+    """
+    Make an ESMPy :class:`ESMF.Field` on a given coordinate grid.
+
+    Also optionally sets the data and/or mask.
+
+    Args:
+
+    * grid (:class:`ESMF.Grid`):
+        the grid the field is based on.
+
+    Kwargs:
+
+    * data (:class:`numpy.ndarray`, shape (nx,ny)):
+        Set the Field data content.
+    * mask (:class:`numpy.ndarray`, boolean, shape (nx,ny)):
+        Add a mask item to the grid, assigning it 0/1 where mask=False/True.
+    * ref_name (string):
+        Specify ESMF 'user friendly name'.
+
+    """
     # Add a mask item, if requested
     if mask is not None:
         grid.add_item(ESMF.GridItem.MASK,
@@ -131,7 +143,7 @@ def _make_esmpy_field(x_coord, y_coord, ref_name='field',
 
     # assign data content, if provided
     if data is not None:
-        field.data[:] = data
+        field[:] = data
 
     return field
 
@@ -172,10 +184,15 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
 
     .. note::
 
-        Initialises the ESMF Manager, if it was not already called.
-        This implements default Manager operations (e.g. logging).
+        This function requires that you have installed ESMPy (and ESMF).
+        See http://earthsystemcog.org/projects/esmpy/releases.
+        Tested with version 620_01b.
 
-        To alter this, make a prior call to ESMF.Manager().
+    .. note::
+
+        Unless already in use, the ESMF Manager will be initialised with its
+        default settings (e.g. logging is enabled).  To avoid this, call
+        ESMF.Manager() beforehand.
 
     """
     # Get source + target XY coordinate pairs and check they are suitable.
@@ -202,9 +219,6 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
 
     if not all(_valid_units(coord) for coord in src_coords + dst_coords):
         raise ValueError("Unsupported units: must be 'degrees' or 'm'.")
-
-    # Initialise the ESMF manager in case it was not already done.
-    ESMF.Manager()
 
     # Create a data array for the output cube.
     src_dims_xy = [source_cube.coord_dims(coord)[0] for coord in src_coords]
@@ -236,28 +250,39 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
             srcdata_mask = None
 
         # Construct ESMF Field objects on source and destination grids.
-        src_field = _make_esmpy_field(src_coords[0], src_coords[1],
+        src_grid = _make_esmpy_grid_from_coords(src_coords[0], src_coords[1])
+        src_field = _make_esmpy_field(src_grid,
                                       data=src_data_2d, mask=srcdata_mask)
-        dst_field = _make_esmpy_field(dst_coords[0], dst_coords[1])
+        dst_grid = _make_esmpy_grid_from_coords(dst_coords[0], dst_coords[1])
+        dst_field = _make_esmpy_field(dst_grid)
 
         # Make Field for destination coverage fraction (for missing data calc).
-        coverage_field = ESMF.Field(dst_field.grid, 'validmask_dst')
+        coverage_field = _make_esmpy_field(dst_grid, 'validmask_dst')
 
         # Do the actual regrid with ESMF.
-        mask_flag_values = np.array([1], dtype=np.int32)
+        mask_flag_values = np.array([1])  # N.B. must be an array
         regrid_method = ESMF.Regrid(src_field, dst_field,
                                     src_mask_values=mask_flag_values,
                                     regrid_method=ESMF.RegridMethod.CONSERVE,
                                     unmapped_action=ESMF.UnmappedAction.IGNORE,
                                     dst_frac_field=coverage_field)
         regrid_method(src_field, dst_field)
-        data = dst_field.data
+        # Create a masked version of the data.
+        data = np.ma.MaskedArray(dst_field.data)
+        # NOTE: for a Field, the 'data' property is the underlying _unmasked_
+        # data array, as EMSF.Field is now a subclass of numpy.ma.MaskedArray.
+        # However, accessing "MaskedArray(dst_field)" produces a warning:
+        # "AttributeError: 'Field' object has no attribute 'struct'".
+        # This is presumably a problem with the implementation, as a "real"
+        # MaskedArray would be okay with this.
 
-        # Convert destination 'coverage fraction' into a missing-data mask.
-        # Set = wherever part of cell goes outside source grid, or overlaps a
-        # masked source cell.
+        # Set data mask from the destination 'coverage fraction'.
+        # Masked = wherever part of cell goes outside source grid, or overlaps
+        # a masked source cell.
         coverage_tolerance_threshold = 1.0 - 1.0e-8
         data.mask = coverage_field.data < coverage_tolerance_threshold
+        # NOTE: Again, '.data' seems redundant/wrong, but without it this gives
+        # a warning (see related note above).
 
         # Transpose ESMF result dims (X,Y) back to the order of the source
         if (src_dims_xy[0] > src_dims_xy[1]):
