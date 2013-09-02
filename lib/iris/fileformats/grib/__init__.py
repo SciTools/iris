@@ -29,6 +29,7 @@ import warnings
 import cartopy
 import numpy as np
 import numpy.ma as ma
+import scipy.interpolate
 
 import iris.proxy
 iris.proxy.apply_proxy('gribapi', globals())
@@ -184,10 +185,6 @@ class GribWrapper(object):
 
     def _confirm_in_scope(self):
         """Ensure we have a grib flavour that we choose to support."""
-        #forbid quasi-regular grids
-        if (gribapi.grib_is_missing(self.grib_message, "Ni") or
-            gribapi.grib_is_missing(self.grib_message, "Nj")):
-            raise iris.exceptions.IrisError("Quasi-regular grids not yet handled.")
 
         #forbid alternate row scanning
         #(uncommon entry from GRIB2 flag table 3.4, also in GRIB1)
@@ -646,6 +643,51 @@ class GribWrapper(object):
                 unit.date2num(self._periodEndDateTime)]
 
 
+def is_quasi_regular_grib1(grib_message):
+    """Detect GRIB1 'thinned' a.k.a 'reduced' a.k.a 'quasi-regular' grid."""
+    if (gribapi.grib_get_long(grib_message, "edition") == 1 and
+        gribapi.grib_is_missing(grib_message, "Ni")):
+            return True
+    return False
+
+
+def regularise(grib_message):
+    
+    lats = gribapi.grib_get_double_array(grib_message, "latitudes")
+    lons = gribapi.grib_get_double_array(grib_message, "longitudes")
+    values = gribapi.grib_get_double_array(grib_message, "values")
+    
+    ny = gribapi.grib_get_long(grib_message, "Ny")
+    y_step = gribapi.grib_get_double(grib_message,
+                                     "jDirectionIncrementInDegrees")
+    if not gribapi.grib_get_long(grib_message, "jScansPositively"):
+        y_step *= -1
+    
+    new_nx = max(gribapi.grib_get_long_array(grib_message, "pl"))
+    new_x_step = (max(lons) - min(lons)) / (new_nx - 1)
+    new_x_step *= 0.99999  # Don't go too far, or we get nans from griddata.
+    if gribapi.grib_get_long(grib_message, "iScansNegatively"):
+        new_x_step *= -1
+    
+    new_lats = np.arange(ny) * y_step + lats[0]
+    new_lons = np.arange(new_nx) * new_x_step + lons[0]
+    
+    # Regularise the data on to the new grid
+    xx, yy = np.meshgrid(new_lons, new_lats)
+    new_values = scipy.interpolate.griddata((lons, lats), values,
+                                            zip(xx.flat, yy.flat))
+    
+    # Set new stuff
+    gribapi.grib_set_long(grib_message, "Nx", int(new_nx))
+    gribapi.grib_set_double(grib_message,
+                            "iDirectionIncrementInDegrees", float(new_x_step))
+    gribapi.grib_set_double_array(grib_message, "values", new_values)
+    gribapi.grib_set_long(grib_message, "jPointsAreConsecutive", 0)
+    
+    gribapi.grib_set_long(grib_message, "pvlLocation", -1)
+    gribapi.grib_set_long(grib_message, "PLPresent",0)
+
+
 def grib_generator(filename):
     """Returns a generator of GribWrapper fields from the given filename."""
     with open(filename, 'rb') as grib_file:
@@ -653,6 +695,10 @@ def grib_generator(filename):
             grib_message = gribapi.grib_new_from_file(grib_file)
             if grib_message is None:
                 break
+            
+            if is_quasi_regular_grib1(grib_message):
+                warnings.warn("Regularising GRIB1 message")
+                regularise(grib_message)
 
             grib_wrapper = GribWrapper(grib_message)
 
