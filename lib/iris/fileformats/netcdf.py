@@ -1117,6 +1117,15 @@ class Saver(object):
                     cs.grid_mapping_name, np.int32)
                 cf_var_grid.grid_mapping_name = cs.grid_mapping_name
 
+                def add_ellipsoid():
+                    if cs.ellipsoid:
+                        cf_var_grid.longitude_of_prime_meridian = (
+                            cs.ellipsoid.longitude_of_prime_meridian)
+                        cf_var_grid.semi_major_axis = (
+                            cs.ellipsoid.semi_major_axis)
+                        cf_var_grid.semi_minor_axis = (
+                            cs.ellipsoid.semi_minor_axis)
+
                 # latlon
                 if isinstance(cs, iris.coord_systems.GeogCS):
                     cf_var_grid.longitude_of_prime_meridian = (
@@ -1126,13 +1135,7 @@ class Saver(object):
 
                 # rotated latlon
                 elif isinstance(cs, iris.coord_systems.RotatedGeogCS):
-                    if cs.ellipsoid:
-                        cf_var_grid.longitude_of_prime_meridian = (
-                            cs.ellipsoid.longitude_of_prime_meridian)
-                        cf_var_grid.semi_major_axis = (
-                            cs.ellipsoid.semi_major_axis)
-                        cf_var_grid.semi_minor_axis = (
-                            cs.ellipsoid.semi_minor_axis)
+                    add_ellipsoid()
                     cf_var_grid.grid_north_pole_latitude = (
                         cs.grid_north_pole_latitude)
                     cf_var_grid.grid_north_pole_longitude = (
@@ -1142,8 +1145,15 @@ class Saver(object):
 
                 # tmerc
                 elif isinstance(cs, iris.coord_systems.TransverseMercator):
-                    warnings.warn('TransverseMercator coordinate system not '
-                                  'yet handled')
+                    add_ellipsoid()
+                    cf_var_grid.longitude_of_central_meridian = (
+                        cs.longitude_of_central_meridian)
+                    cf_var_grid.latitude_of_projection_origin = (
+                        cs.latitude_of_projection_origin)
+                    cf_var_grid.false_easting = cs.false_easting
+                    cf_var_grid.false_northing = cs.false_northing
+                    cf_var_grid.scale_factor_at_central_meridian = (
+                        cs.scale_factor_at_central_meridian)
 
                 # osgb (a specific tmerc)
                 elif isinstance(cs, iris.coord_systems.OSGB):
