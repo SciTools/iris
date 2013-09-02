@@ -34,6 +34,7 @@ import scipy.interpolate
 import iris.proxy
 iris.proxy.apply_proxy('gribapi', globals())
 
+from iris.analysis.interpolate import Linear1dExtrapolator
 import iris.coord_systems as coord_systems
 from iris.exceptions import TranslationError
 # NOTE: careful here, to avoid circular imports (as iris imports grib)
@@ -382,7 +383,7 @@ class GribWrapper(object):
             geoid = coord_systems.GeogCS(
                 self.scaledValueOfRadiusOfSphericalEarth *
                 10 ** -self.scaleFactorOfRadiusOfSphericalEarth)
-                    
+
         #IAU65 oblate sphere
         elif self.shapeOfTheEarth == 2:
             geoid = coord_systems.GeogCS(6378160, inverse_flattening=297.0)
@@ -532,17 +533,8 @@ class GribWrapper(object):
         self._x_points = (np.arange(self.Ni, dtype=np.float64) * i_step +
                           self.longitudeOfFirstGridPointInDegrees)
         if "longitude" in self.extra_keys['_x_coord_name'] and self.Ni > 1:
-            # Is the gap from end to start smaller,
-            #  or about equal to the max step?
-            points = self._x_points
-            gap = 360.0 - abs(points[-1] - points[0])
-            max_step = abs(np.diff(points)).max()
-            if gap <= max_step:
+            if _longitude_is_cyclic(self._x_points):
                 self.extra_keys['_x_circular'] = True
-            else:
-                delta = 0.001
-                if abs(1.0 - gap / max_step) < delta:
-                    self.extra_keys['_x_circular'] = True
 
     def _get_processing_done(self):
         """Determine the type of processing that was done on the data."""
@@ -643,49 +635,105 @@ class GribWrapper(object):
                 unit.date2num(self._periodEndDateTime)]
 
 
-def is_quasi_regular_grib1(grib_message):
-    """Detect GRIB1 'thinned' a.k.a 'reduced' a.k.a 'quasi-regular' grid."""
-    if (gribapi.grib_get_long(grib_message, "edition") == 1 and
-        gribapi.grib_is_missing(grib_message, "Ni")):
-            return True
-    return False
+def _longitude_is_cyclic(points):
+    """Work out if a set of longitude points is cyclic."""
+    # Is the gap from end to start smaller, or about equal to the max step?
+    gap = 360.0 - abs(points[-1] - points[0])
+    max_step = abs(np.diff(points)).max()
+    cyclic = False
+    if gap <= max_step:
+        cyclic = True
+    else:
+        delta = 0.001
+        if abs(1.0 - gap / max_step) < delta:
+            cyclic = True
+    return cyclic
 
 
-def regularise(grib_message):
+def _is_quasi_regular_grib(grib_message):
+    """Detect GRIB 'thinned' a.k.a 'reduced' a.k.a 'quasi-regular' grid."""
+    reduced_grids = ("reduced_ll", "reduced_gg")
+    return gribapi.grib_get(grib_message, 'gridType') in reduced_grids
 
+
+def _regularise(grib_message):
+    """
+    Transform a reduced grid to a regular grid using interpolation.
+
+    Uses 1d linear interpolation at constant latitude to make the grid
+    regular. If the longitude dimension is circular then this is taken
+    into account by the interpolation. If the longitude dimension is not
+    circular then extrapolation is allowed to make sure all end regular
+    grid points get a value. In practice this extrapolation is likely to
+    be minimal.
+
+    """
+    # Make sure to read any missing values as NaN.
+    gribapi.grib_set_double(grib_message, "missingValue", np.nan)
+
+    # Get full lat/lon/data values, these describe the latitude, longitude
+    # and data value of *every* point in the grid, they are not 1d monotonic
+    # coordinates.
     lats = gribapi.grib_get_double_array(grib_message, "latitudes")
     lons = gribapi.grib_get_double_array(grib_message, "longitudes")
     values = gribapi.grib_get_double_array(grib_message, "values")
 
-    ny = gribapi.grib_get_long(grib_message, "Ny")
-    y_step = gribapi.grib_get_double(grib_message,
-                                     "jDirectionIncrementInDegrees")
-    if not gribapi.grib_get_long(grib_message, "jScansPositively"):
-        y_step *= -1
-
+    # Compute the new longitude coordinate for the regular grid.
     new_nx = max(gribapi.grib_get_long_array(grib_message, "pl"))
     new_x_step = (max(lons) - min(lons)) / (new_nx - 1)
-    new_x_step *= 0.99999  # Don't go too far, or we get nans from griddata.
     if gribapi.grib_get_long(grib_message, "iScansNegatively"):
         new_x_step *= -1
-
-    new_lats = np.arange(ny) * y_step + lats[0]
     new_lons = np.arange(new_nx) * new_x_step + lons[0]
 
-    # Regularise the data on to the new grid
-    xx, yy = np.meshgrid(new_lons, new_lats)
-    new_values = scipy.interpolate.griddata((lons, lats), values,
-                                            zip(xx.flat, yy.flat))
+    # Retrieve the distinct latitudes from the GRIB message. GRIBAPI docs
+    # don't specify if these points are guaranteed to be oriented correctly so
+    # the safe option is to sort them into ascending (south-to-north) order
+    # and then reverse the order if necessary.
+    new_lats = gribapi.grib_get_double_array(grib_message, "distinctLatitudes")
+    new_lats.sort()
+    if not gribapi.grib_get_long(grib_message, "jScansPositively"):
+        new_lats = new_lats[::-1]
+    ny = new_lats.shape[0]
 
-    # Set new stuff
+    # Use 1d linear interpolation along latitude circles to regularise the
+    # reduced data.
+    cyclic = _longitude_is_cyclic(new_lons)
+    new_values = np.empty([ny, new_nx], dtype=values.dtype)
+    for ilat, lat in enumerate(new_lats):
+        idx = np.where(lats == lat)
+        llons = lons[idx]
+        vvalues = values[idx]
+        if cyclic:
+            # For cyclic data we insert dummy points at each end to ensure
+            # we can interpolate to all output longitudes using pure
+            # interpolation.
+            cgap = (360 - llons[-1] - llons[0])
+            llons = np.concatenate(
+                (llons[0:1] - cgap, llons, llons[-1:] + cgap))
+            vvalues = np.concatenate(
+                (vvalues[-1:], vvalues, vvalues[0:1]))
+            fixed_latitude_interpolator = scipy.interpolate.interp1d(
+                llons, vvalues)
+        else:
+            # Allow extrapolation for non-cyclic data sets to ensure we can
+            # interpolate to all output longitudes.
+            fixed_latitude_interpolator = Linear1dExtrapolator(
+                scipy.interpolate.interp1d(llons, vvalues))
+        new_values[ilat] = fixed_latitude_interpolator(new_lons)
+    new_values = new_values.flatten()
+
+    # Set flags for the regularised data.
+    if np.isnan(new_values).any():
+        # Account for any missing data.
+        gribapi.grib_set_double(grib_message, "missingValue", np.inf)
+        gribapi.grib_set(grib_message, "bitmapPresent", 1)
+        new_values = np.where(np.isnan(new_values), np.inf, new_values)
     gribapi.grib_set_long(grib_message, "Nx", int(new_nx))
     gribapi.grib_set_double(grib_message,
                             "iDirectionIncrementInDegrees", float(new_x_step))
     gribapi.grib_set_double_array(grib_message, "values", new_values)
     gribapi.grib_set_long(grib_message, "jPointsAreConsecutive", 0)
-
-    gribapi.grib_set_long(grib_message, "pvlLocation", -1)
-    gribapi.grib_set_long(grib_message, "PLPresent",0)
+    gribapi.grib_set_long(grib_message, "PLPresent", 0)
 
 
 def grib_generator(filename):
@@ -696,9 +744,9 @@ def grib_generator(filename):
             if grib_message is None:
                 break
 
-            if is_quasi_regular_grib1(grib_message):
-                warnings.warn("Regularising GRIB1 message")
-                regularise(grib_message)
+            if _is_quasi_regular_grib(grib_message):
+                warnings.warn("Regularising GRIB message.")
+                _regularise(grib_message)
 
             grib_wrapper = GribWrapper(grib_message)
 
