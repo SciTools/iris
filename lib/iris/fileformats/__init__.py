@@ -150,6 +150,14 @@ FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) converted '
                                           priority=3))
 
 
+FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) ancillary '
+                                          'converted with ieee to 32 bit',
+                                          MagicNumber(4),
+                                          0xFFFF8000,
+                                          ff.load_cubes_32bit_ieee,
+                                          priority=3))
+
+
 #
 # NIMROD files.
 #

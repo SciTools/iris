@@ -12,4 +12,5 @@
  * UM Fieldsfile (FF) pre v3.1 (priority 3)
  * UM Fieldsfile (FF) ancillary (priority 3)
  * UM Fieldsfile (FF) converted with ieee to 32 bit (priority 3)
+ * UM Fieldsfile (FF) ancillary converted with ieee to 32 bit (priority 3)
  * NIMROD (priority 3)
