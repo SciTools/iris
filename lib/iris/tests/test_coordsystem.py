@@ -170,6 +170,25 @@ class Test_GeogCS_str(tests.IrisTest):
         self.assertEqual(expected, str(cs))
 
 
+class Test_GeogCS_as_cartopy_globe(tests.IrisTest):
+    def test_as_cartopy_globe(self):
+        cs = GeogCS(6543210, 6500000)
+        # Can't check equality directly, so use the proj4 params instead.
+        res = cs.as_cartopy_globe().to_proj4_params()
+        expected = {'a': 6543210, 'b': 6500000}
+        self.assertEqual(res, expected)
+
+
+class Test_GeogCS_as_cartopy_crs(tests.IrisTest):
+    def test_as_cartopy_crs(self):
+        cs = GeogCS(6543210, 6500000)
+        res = cs.as_cartopy_crs()
+        globe = cartopy.crs.Globe(semimajor_axis=6543210.0,
+                                  semiminor_axis=6500000.0, ellipse=None)
+        expected = cartopy.crs.Geodetic(globe)
+        self.assertEqual(res, expected)
+
+
 class Test_RotatedGeogCS_construction(tests.IrisTest):
     def test_init(self):
         rcs = RotatedGeogCS(30, 40, north_pole_grid_longitude=50, ellipsoid=GeogCS(6371229))
@@ -254,7 +273,7 @@ class Test_TransverseMercator_as_cartopy_crs(tests.IrisTest):
             false_northing=false_northing,
             scale_factor=scale_factor_at_central_meridian,
             globe=cartopy.crs.Globe(semimajor_axis=6377563.396,
-                                    semiminor_axis=6356256.909))
+                                    semiminor_axis=6356256.909, ellipse=None))
 
         res = tmerc_cs.as_cartopy_crs()
         self.assertEqual(res, expected)
@@ -285,7 +304,7 @@ class Test_TransverseMercator_as_cartopy_projection(tests.IrisTest):
             false_northing=false_northing,
             scale_factor=scale_factor_at_central_meridian,
             globe=cartopy.crs.Globe(semimajor_axis=6377563.396,
-                                    semiminor_axis=6356256.909))
+                                    semiminor_axis=6356256.909, ellipse=None))
 
         res = tmerc_cs.as_cartopy_projection()
         self.assertEqual(res, expected)

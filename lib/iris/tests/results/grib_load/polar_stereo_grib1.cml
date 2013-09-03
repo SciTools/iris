@@ -9,14 +9,14 @@
         <auxCoord id="64f42873" long_name="originating_centre" points="[	US National Weather Service, National Centres for Environmental Prediction]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="564e7c24" points="[-1901281.47227, -1896518.47227, -1891755.47227,
-		..., 3423752.52773, 3428515.52773, 3433278.52773]" shape="(1121,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64">
+        <dimCoord id="564e7c24" points="[-1902539.27055, -1897776.27055, -1893013.27055,
+		..., 3422494.72945, 3427257.72945, 3432020.72945]" shape="(1121,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64">
           <stereographic central_lat="90.0" central_lon="-105.0" ellipsoid="GeogCS(6371229.0)" false_easting="0.0" false_northing="0.0" true_scale_lat="60.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="43ce4add" points="[-7612603.7289, -7607840.7289, -7603077.7289,
-		..., -3430689.7289, -3425926.7289, -3421163.7289]" shape="(881,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64">
+        <dimCoord id="43ce4add" points="[-7617639.869, -7612876.869, -7608113.869, ...,
+		-3435725.869, -3430962.869, -3426199.869]" shape="(881,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64">
           <stereographic central_lat="90.0" central_lon="-105.0" ellipsoid="GeogCS(6371229.0)" false_easting="0.0" false_northing="0.0" true_scale_lat="60.0"/>
         </dimCoord>
       </coord>
