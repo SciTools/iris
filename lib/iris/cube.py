@@ -2053,20 +2053,25 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # byte order to be native.
             if checksum:
                 data = self.data
-                # Ensure data is row-major contiguous for crc32 computation.
-                if not data.flags['C_CONTIGUOUS'] and \
-                        not data.flags['F_CONTIGUOUS']:
+
+                # Ensure consistent memory layout for checksums.
+                def normalise(data):
                     data = np.ascontiguousarray(data)
-                # Fill in masked values to avoid the checksum being
-                # sensitive to unused numbers.
+                    if data.dtype.newbyteorder('<') != data.dtype:
+                        data = data.byteswap(False)
+                        data.dtype = data.dtype.newbyteorder('<')
+                    return data
+
                 if isinstance(data, ma.MaskedArray):
-                    crc = hex(zlib.crc32(data.filled()))
-                else:
-                    crc = hex(zlib.crc32(data))
-                data_xml_element.setAttribute("checksum", crc)
-                if isinstance(data, ma.core.MaskedArray):
-                    crc = hex(zlib.crc32(data.mask))
+                    # Fill in masked values to avoid the checksum being
+                    # sensitive to unused numbers.
+                    crc = hex(zlib.crc32(normalise(data.filled())))
+                    data_xml_element.setAttribute("checksum", crc)
+                    crc = hex(zlib.crc32(normalise(data.mask)))
                     data_xml_element.setAttribute("mask_checksum", crc)
+                else:
+                    crc = hex(zlib.crc32(normalise(data)))
+                    data_xml_element.setAttribute("checksum", crc)
             elif self._data_manager is not None:
                 data_xml_element.setAttribute("state", "deferred")
             else:
@@ -2080,9 +2085,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
                 def _order(array):
                     order = ''
-                    if data.flags['C_CONTIGUOUS']:
+                    if array.flags['C_CONTIGUOUS']:
                         order = 'C'
-                    elif data.flags['F_CONTIGUOUS']:
+                    elif array.flags['F_CONTIGUOUS']:
                         order = 'F'
                     return order
                 data_xml_element.setAttribute('order', _order(data))
