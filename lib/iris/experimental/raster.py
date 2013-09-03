@@ -25,22 +25,39 @@ TODO: If this module graduates from experimental the (optional) GDAL
 
 """
 import numpy as np
-from osgeo import gdal
+from osgeo import gdal, osr
 
 import iris
-import iris.coord_systems as ics
+import iris.coord_systems
 import iris.unit
 
 
-def _gdal_write_array(cube_data, padf_transform, fname, ftype):
+_GDAL_DATATYPES = {
+    'i2': gdal.GDT_Int16,
+    'i4': gdal.GDT_Int32,
+    'u1': gdal.GDT_Byte,
+    'u2': gdal.GDT_UInt16,
+    'u4': gdal.GDT_UInt32,
+    'f4': gdal.GDT_Float32,
+    'f8': gdal.GDT_Float64,
+}
+
+
+def _gdal_write_array(x_min, x_step, y_max, y_step, coord_system, data, fname,
+                      ftype):
     """
-    Use GDAL WriteArray to export cube_data as a 32-bit raster image.
+    Use GDAL WriteArray to export data as a 32-bit raster image.
     Requires the array data to be of the form: North-at-top
     and West-on-left.
 
     Args:
-        * cube_data (numpy.ndarray): 2d array of values to export
-        * padf_transform (tuple): coefficients for affine transformation
+        * x_min: Minimum X coordinate bounds value.
+        * x_step: Change in X coordinate per cell.
+        * y_max: Maximum Y coordinate bounds value.
+        * y_step: Change in Y coordinate per cell.
+        * coord_system (iris.coord_systems.CoordSystem):
+            Coordinate system for X and Y.
+        * data (numpy.ndarray): 2d array of values to export
         * fname (string): Output file name.
         * ftype (string): Export file type.
 
@@ -49,21 +66,40 @@ def _gdal_write_array(cube_data, padf_transform, fname, ftype):
         Projection information is currently not written to the output.
 
     """
-    dtype = gdal.GDT_Float32
+    byte_order = data.dtype.str[0]
+    format = data.dtype.str[1:]
+    dtype = _GDAL_DATATYPES.get(format)
+    if dtype is None:
+        raise ValueError('Unsupported data type: {}'.format(data.dtype))
 
     driver = gdal.GetDriverByName(ftype)
-    data = driver.Create(fname, cube_data.shape[1], cube_data.shape[0],
-                         1, dtype)
+    gdal_dataset = driver.Create(fname, data.shape[1], data.shape[0],
+                                 1, dtype)
 
-    data.SetGeoTransform(padf_transform)
-    band = data.GetRasterBand(1)
+    # Where possible, set the projection.
+    if coord_system is not None:
+        srs = osr.SpatialReference()
+        proj4_defn = coord_system.as_cartopy_crs().proj4_init
+        # GDAL can't cope with "+proj=lonlat" which Cartopy produces.
+        proj4_defn = proj4_defn.replace('lonlat', 'longlat')
+        if srs.ImportFromProj4(proj4_defn):
+            msg = 'Unsupported coordinate system: {}'.format(coord_system)
+            raise ValueError(msg)
+        gdal_dataset.SetProjection(srs.ExportToWkt())
 
-    if isinstance(cube_data, np.ma.core.MaskedArray):
-        cube_data = cube_data.copy()
-        cube_data[cube_data.mask] = cube_data.fill_value
-        band.SetNoDataValue(float(cube_data.fill_value))
+    # Set the affine transformation coefficients.
+    padf_transform = (x_min, x_step, 0.0, y_max, 0.0, y_step)
+    gdal_dataset.SetGeoTransform(padf_transform)
 
-    band.WriteArray(cube_data)
+    band = gdal_dataset.GetRasterBand(1)
+    if isinstance(data, np.ma.core.MaskedArray):
+        data = data.copy()
+        data[data.mask] = data.fill_value
+        band.SetNoDataValue(float(data.fill_value))
+    # GeoTIFF always needs little-endian data.
+    if byte_order == '>':
+        data = data.astype(data.dtype.newbyteorder('<'))
+    band.WriteArray(data)
 
 
 def export_geotiff(cube, fname):
@@ -91,6 +127,10 @@ def export_geotiff(cube, fname):
         raise ValueError('Coordinates must have bounds, consider using '
                          'guess_bounds()')
 
+    if coord_x is None or coord_y is None or \
+       coord_x.coord_system != coord_y.coord_system:
+        raise ValueError('The X and Y coordinates must share a CoordSystem.')
+
     xy_step = []
     for coord in [coord_x, coord_y]:
         name = coord.name()
@@ -117,12 +157,27 @@ def export_geotiff(cube, fname):
 
     data = cube.data
 
-    if xy_step[1] > 0:
+    # Make sure we have a YX data layout.
+    if cube.coord_dims(coord_x) == 0:
+        data = data.T
+
+    x_step, y_step = xy_step
+    if y_step > 0:
         # Flip the data so North is at the top.
         data = data[::-1, :]
-        xy_step[1] *= -1
+        y_step *= -1
 
-    bbox_top = np.max(coord_y.bounds)
-    bbox_left = np.min(coord_x.bounds)
-    padf_transform = (bbox_left, xy_step[0], 0.0, bbox_top, 0.0, xy_step[1])
-    _gdal_write_array(data, padf_transform, fname, 'GTiff')
+    coord_system = coord_x.coord_system
+    x_bounds = coord_x.bounds
+    if isinstance(coord_system, iris.coord_systems.GeogCS):
+        big_indices = np.where(coord_x.points > 180)[0]
+        n_big = len(big_indices)
+        if n_big:
+            data = np.roll(data, n_big, axis=1)
+            x_bounds = x_bounds.copy()
+            x_bounds[big_indices] -= 360
+
+    x_min = np.min(x_bounds)
+    y_max = np.max(coord_y.bounds)
+    _gdal_write_array(x_min, x_step, y_max, y_step, coord_system, data, fname,
+                      'GTiff')
