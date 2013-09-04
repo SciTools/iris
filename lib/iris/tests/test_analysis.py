@@ -679,6 +679,25 @@ class TestAreaWeightGeneration(tests.IrisTest):
         sumweights = weights.sum(axis=3).sum(axis=2)  # sum over lon and lat
         self.assertArrayAlmostEqual(sumweights, 1)
 
+    def test_area_weights_non_contiguous(self):
+        # Slice the cube so that we have non-contiguous longitude
+        # bounds.
+        ind = (0, 1, 2, -3, -2, -1)
+        cube = self.cube[..., ind]
+        weights = iris.analysis.cartography.area_weights(cube)
+        expected = iris.analysis.cartography.area_weights(self.cube)[..., ind]
+        self.assertArrayEqual(weights, expected)
+
+    def test_area_weights_no_lon_bounds(self):
+        self.cube.coord('grid_longitude').bounds = None
+        with self.assertRaises(ValueError):
+            iris.analysis.cartography.area_weights(self.cube)
+
+    def test_area_weights_no_lat_bounds(self):
+        self.cube.coord('grid_latitude').bounds = None
+        with self.assertRaises(ValueError):
+            iris.analysis.cartography.area_weights(self.cube)
+
 
 @iris.tests.skip_data
 class TestLatitudeWeightGeneration(tests.IrisTest):
