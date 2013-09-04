@@ -139,7 +139,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
             '*/iris/example_code/graphics/global_map.py',
             '*/iris/example_code/graphics/hovmoller.py',
             '*/iris/example_code/graphics/lagged_ensemble.py',
-            '*/iris/example_code/graphics/rotated_pole_mapping.py',
             '*/iris/example_tests/test_COP_1d_plot.py',
             '*/iris/example_tests/test_COP_maps.py',
             '*/iris/example_tests/test_SOI_filtering.py',
