@@ -722,6 +722,8 @@ fc_extras
     CF_ATTR_GRID_FALSE_EASTING = 'false_easting'
     CF_ATTR_GRID_FALSE_NORTHING = 'false_northing'
     CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN = 'scale_factor_at_projection_origin'
+    CF_ATTR_GRID_SCALE_FACTOR_AT_CENT_MERIDIAN = 'scale_factor_at_central_meridian'
+    CF_ATTR_GRID_LON_OF_CENT_MERIDIAN = 'longitude_of_central_meridian'
     CF_ATTR_POSITIVE = 'positive'
     CF_ATTR_STD_NAME = 'standard_name'
     CF_ATTR_LONG_NAME = 'long_name'
@@ -864,14 +866,23 @@ fc_extras
 
         latitude_of_projection_origin = getattr(
             cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None)
-        longitude_of_projection_origin = getattr(
-            cf_grid_var, CF_ATTR_GRID_LON_OF_PROJ_ORIGIN, None)
+        longitude_of_central_meridian = getattr(
+            cf_grid_var, CF_ATTR_GRID_LON_OF_CENT_MERIDIAN, None)
         false_easting = getattr(
             cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
         false_northing = getattr(
             cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
-        scale_factor_at_projection_origin = getattr(
-            cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None)
+        scale_factor_at_central_meridian = getattr(
+            cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_CENT_MERIDIAN, None)
+
+        # The following accounts for the inconsistancy in the transverse
+        # mercator description within the CF spec.
+        if longitude_of_central_meridian is None:
+            longitude_of_central_meridian = getattr(
+                cf_grid_var, CF_ATTR_GRID_LON_OF_PROJ_ORIGIN, None)
+        if scale_factor_at_central_meridian is None:
+            scale_factor_at_central_meridian = getattr(
+                cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None)
 
         ellipsoid = None
         if major is not None or minor is not None or \
@@ -880,8 +891,9 @@ fc_extras
                                                   inverse_flattening)
 
         cs = iris.coord_systems.TransverseMercator(
-            latitude_of_projection_origin, longitude_of_projection_origin,
-            false_easting, false_northing, scale_factor_at_projection_origin)
+            latitude_of_projection_origin, longitude_of_central_meridian,
+            false_easting, false_northing, scale_factor_at_central_meridian,
+            ellipsoid)
 
         return cs
 
