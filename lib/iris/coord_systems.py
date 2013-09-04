@@ -220,14 +220,17 @@ class GeogCS(CoordSystem):
         return CoordSystem.xml_element(self, doc, attrs)
 
     def as_cartopy_crs(self):
-        return cartopy.crs.Geodetic()
+        return cartopy.crs.Geodetic(self.as_cartopy_globe())
 
     def as_cartopy_projection(self):
         return cartopy.crs.PlateCarree()
 
     def as_cartopy_globe(self):
+        # Explicitly set `ellipse` to None as a workaround for
+        # Cartopy setting WGS84 as the default.
         return cartopy.crs.Globe(semimajor_axis=self.semi_major_axis,
-                                 semiminor_axis=self.semi_minor_axis)
+                                 semiminor_axis=self.semi_minor_axis,
+                                 ellipse=None)
 
 
 class RotatedGeogCS(CoordSystem):
