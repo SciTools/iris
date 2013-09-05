@@ -4,7 +4,15 @@
     <attributes>
       <attribute name="Conventions" value="CF-1.6"/>
       <attribute name="Note" value="This dataset is for test purposes only"/>
-      <attribute name="history" value="Conversion from ESRI grid"/>
+      <attribute name="history" value="Thu Sep  5 10:17:53 2013: /project/ukmo/rhel6/nco/bin/ncatted tmean_1910_1910.nc -a longitude_of_central_meridian,crs,m,d,-2
+Wed Sep  4 16:47:15 2013: /project/ukmo/rhel6/nco/bin/ncatted tmean_1910_1910.nc -a scale_factor_at_central_meridian,crs,c,d,0.9996012717
+Wed Sep  4 16:46:53 2013: /project/ukmo/rhel6/nco/bin/ncatted tmean_1910_1910.nc -a scale_factor_at_projection_origin,crs,d,d,0.9996012717
+Wed Sep  4 16:45:54 2013: /project/ukmo/rhel6/nco/bin/ncatted tmean_1910_1910.nc -a longitude_of_central_meridian,crs,c,d,49.
+Wed Sep  4 16:45:36 2013: /project/ukmo/rhel6/nco/bin/ncatted tmean_1910_1910.nc -a longitude_of_central_meridian,crs,d,f,49.
+Wed Sep  4 16:45:27 2013: /project/ukmo/rhel6/nco/bin/ncatted tmean_1910_1910.nc -a longitude_of_central_meridian,crs,c,f,49.
+Wed Sep  4 16:44:10 2013: /project/ukmo/rhel6/nco/bin/ncatted tmean_1910_1910.nc -a longitude_of_central_meridian,crs,c,float,49.
+Wed Sep  4 16:43:20 2013: /project/ukmo/rhel6/nco/bin/ncatted tmean_1910_1910.nc -a longitude_of_projection_origin,crs,d,float,49.
+Conversion from ESRI grid"/>
       <attribute name="institution" value="Met Office"/>
       <attribute name="source" value="EWB2"/>
       <attribute name="title" value="UK annual mean tmean"/>
@@ -50,15 +58,15 @@
  		1.99301683617]]" shape="(290, 180)" standard_name="longitude" units="Unit('degrees')" value_type="float64" var_name="lon"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="8dd36522" long_name="projection_x_coordinate" points="[-197500.0, -192500.0, -187500.0, ..., 687500.0,
+        <dimCoord id="9cb7f900" long_name="projection_x_coordinate" points="[-197500.0, -192500.0, -187500.0, ..., 687500.0,
 		692500.0, 697500.0]" shape="(180,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64" var_name="x">
-          <transverseMercator ellipsoid="None" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
+          <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="4daf6692" long_name="projection_y_coordinate" points="[1247500.0, 1242500.0, 1237500.0, ..., -187500.0,
+        <dimCoord id="3da32419" long_name="projection_y_coordinate" points="[1247500.0, 1242500.0, 1237500.0, ..., -187500.0,
 		-192500.0, -197500.0]" shape="(290,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64" var_name="y">
-          <transverseMercator ellipsoid="None" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
+          <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
