@@ -429,7 +429,15 @@ class IrisTest(unittest.TestCase):
                                         'result-' + unique_id + '.png')
 
             if not os.path.isdir(os.path.dirname(result_fname)):
-                os.makedirs(os.path.dirname(result_fname))
+                # Handle race-condition where the directories are
+                # created sometime between the check above and the
+                # creation attempt below.
+                try:
+                    os.makedirs(os.path.dirname(result_fname))
+                except OSError as err:
+                    # Don't care about "File exists"
+                    if err.errno != 17:
+                        raise
 
             figure.savefig(result_fname)
 
