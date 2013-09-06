@@ -121,6 +121,28 @@ class TestNetCDFLoad(tests.IrisTest):
                                  'tmean_1910_1910.nc')))
         self.assertCML(cube, ('netcdf', 'netcdf_tmerc_and_climatology.cml'))
 
+    def test_load_tmerc_grid_with_projection_origin(self):
+        # Test loading a single CF-netCDF file with a transverse Mercator
+        # grid_mapping that uses longitude_of_projection_origin and
+        # scale_factor_at_projection_origin instead of
+        # longitude_of_central_meridian and scale_factor_at_central_meridian.
+        cube = iris.load_cube(
+            tests.get_data_path(('NetCDF', 'transverse_mercator',
+                                 'projection_origin_attributes.nc')))
+
+        expected = icoord_systems.TransverseMercator(
+            latitude_of_projection_origin=49.0,
+            longitude_of_central_meridian=-2.0,
+            false_easting=400000.0,
+            false_northing=-100000.0,
+            scale_factor_at_central_meridian=0.9996012717,
+            ellipsoid=icoord_systems.GeogCS(
+                semi_major_axis=6377563.396, semi_minor_axis=6356256.91))
+        self.assertEqual(cube.coord('projection_x_coordinate').coord_system,
+                         expected)
+        self.assertEqual(cube.coord('projection_y_coordinate').coord_system,
+                         expected)
+
     def test_missing_climatology(self):
         # Check we can cope with a missing climatology variable.
         with self.temp_filename(suffix='nc') as filename:
