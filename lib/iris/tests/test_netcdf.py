@@ -688,6 +688,103 @@ class TestNetCDFSave(tests.IrisTest):
                                       'netcdf_save_no_global_attr.cdl'))
 
 
+class TestNetCDF3SaveInteger(tests.IrisTest):
+    def setUp(self):
+        self.cube = iris.cube.Cube(np.zeros((2, 2), dtype=np.float64),
+                                   standard_name='surface_temperature',
+                                   long_name=None,
+                                   var_name='temp',
+                                   units='K')
+
+    def test_int64_dimension_coord_netcdf3(self):
+        coord = iris.coords.DimCoord(np.array([1, 2], dtype=np.int64),
+                                     long_name='x')
+        self.cube.add_dim_coord(coord, 0)
+        with self.temp_filename(suffix='.nc') as filename:
+            iris.save(self.cube, filename, netcdf_format='NETCDF3_CLASSIC')
+            reloaded = iris.load_cube(filename)
+            self.assertCML(reloaded, ('netcdf',
+                                      'int64_dimension_coord_netcdf3.cml'),
+                           checksum=False)
+
+    def test_int64_auxiliary_coord_netcdf3(self):
+        coord = iris.coords.AuxCoord(np.array([1, 2], dtype=np.int64),
+                                     long_name='x')
+        self.cube.add_aux_coord(coord, 0)
+        with self.temp_filename(suffix='.nc') as filename:
+            iris.save(self.cube, filename, netcdf_format='NETCDF3_CLASSIC')
+            reloaded = iris.load_cube(filename)
+            self.assertCML(reloaded, ('netcdf',
+                                      'int64_auxiliary_coord_netcdf3.cml'),
+                           checksum=False)
+
+    def test_int64_data_netcdf3(self):
+        self.cube.data = self.cube.data.astype(np.int64)
+        with self.temp_filename(suffix='.nc') as filename:
+            iris.save(self.cube, filename, netcdf_format='NETCDF3_CLASSIC')
+            reloaded = iris.load_cube(filename)
+            self.assertCML(reloaded, ('netcdf',
+                                      'int64_data_netcdf3.cml'))
+
+    def test_uint32_dimension_coord_netcdf3(self):
+        coord = iris.coords.DimCoord(np.array([1, 2], dtype=np.uint32),
+                                     long_name='x')
+        self.cube.add_dim_coord(coord, 0)
+        with self.temp_filename(suffix='.nc') as filename:
+            iris.save(self.cube, filename, netcdf_format='NETCDF3_CLASSIC')
+            reloaded = iris.load_cube(filename)
+            self.assertCML(reloaded, ('netcdf',
+                                      'uint32_dimension_coord_netcdf3.cml'),
+                           checksum=False)
+
+    def test_uint32_auxiliary_coord_netcdf3(self):
+        coord = iris.coords.AuxCoord(np.array([1, 2], dtype=np.uint32),
+                                     long_name='x')
+        self.cube.add_aux_coord(coord, 0)
+        with self.temp_filename(suffix='.nc') as filename:
+            iris.save(self.cube, filename, netcdf_format='NETCDF3_CLASSIC')
+            reloaded = iris.load_cube(filename)
+            self.assertCML(reloaded, ('netcdf',
+                                      'uint32_auxiliary_coord_netcdf3.cml'),
+                           checksum=False)
+
+    def test_uint32_data_netcdf3(self):
+        self.cube.data = self.cube.data.astype(np.uint32)
+        with self.temp_filename(suffix='.nc') as filename:
+            iris.save(self.cube, filename, netcdf_format='NETCDF3_CLASSIC')
+            reloaded = iris.load_cube(filename)
+            self.assertCML(reloaded, ('netcdf',
+                                      'uint32_data_netcdf3.cml'))
+
+    def test_uint64_dimension_coord_netcdf3(self):
+        # Points that cannot be safely cast to int32.
+        coord = iris.coords.DimCoord(np.array([0, 18446744073709551615],
+                                              dtype=np.uint64),
+                                     long_name='x')
+        self.cube.add_dim_coord(coord, 0)
+        with self.temp_filename(suffix='.nc') as filename:
+            with self.assertRaises(ValueError):
+                iris.save(self.cube, filename, netcdf_format='NETCDF3_CLASSIC')
+
+    def test_uint64_auxiliary_coord_netcdf3(self):
+        # Points that cannot be safely cast to int32.
+        coord = iris.coords.AuxCoord(np.array([0, 18446744073709551615],
+                                              dtype=np.uint64),
+                                     long_name='x')
+        self.cube.add_aux_coord(coord, 0)
+        with self.temp_filename(suffix='.nc') as filename:
+            with self.assertRaises(ValueError):
+                iris.save(self.cube, filename, netcdf_format='NETCDF3_CLASSIC')
+
+    def test_uint64_data_netcdf3(self):
+        # Data that cannot be safely cast to int32.
+        self.cube.data = self.cube.data.astype(np.uint64)
+        self.cube.data[0, 1] = 18446744073709551615
+        with self.temp_filename(suffix='.nc') as filename:
+            with self.assertRaises(ValueError):
+                iris.save(self.cube, filename, netcdf_format='NETCDF3_CLASSIC')
+
+
 class TestCFStandardName(tests.IrisTest):
     def setUp(self):
         pass
