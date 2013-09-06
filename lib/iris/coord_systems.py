@@ -410,7 +410,7 @@ class TransverseMercator(CoordSystem):
 class OSGB(TransverseMercator):
     """A Specific transverse mercator projection on a specific ellipsoid."""
     def __init__(self):
-        TransverseMercator.__init__(self, 49, -2, -400000, 100000, 0.9996012717,
+        TransverseMercator.__init__(self, 49, -2, 400000, -100000, 0.9996012717,
                                     GeogCS(6377563.396, 6356256.909))
 
     def as_cartopy_crs(self):
