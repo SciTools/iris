@@ -64,6 +64,8 @@ class TestGeoTiffExport(tests.GraphicsTest):
         fin = tests.get_data_path(('NetCDF', 'global', 'xyt',
                                    'SMALL_total_column_co2.nc'))
         cube = iris.load_cube(fin)[0]
+        # PIL doesn't support float64
+        cube.data = cube.data.astype('f4')
 
         # Ensure longitude values are continuous and monotonically increasing,
         # and discard the 'half cells' at the top and bottom of the UM output
@@ -89,6 +91,8 @@ class TestGeoTiffExport(tests.GraphicsTest):
         fin = tests.get_data_path(('NetCDF', 'global', 'xyt',
                                    'SMALL_total_column_co2.nc'))
         cube = iris.load_cube(fin)[0]
+        # PIL doesn't support float64
+        cube.data = cube.data.astype('f4')
 
         # Repeat the same data extract as above
         east = iris.Constraint(longitude=lambda cell: cell < 180)
