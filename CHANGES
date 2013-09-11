@@ -1,548 +1,1954 @@
-Release 1.5 (unreleased)
-========================
+2013-09-11
+ENH: Updated changes based on git commit log
+git log --format="%ad %s" --date=short --no-merges > CHANGES
 
+2013-09-11
+changes within whatnew based on review
 
-Features added
---------------
-* Scatter plots can now be produced using `iris.plot.scatter` and
-  `iris.quickplot.scatter`.
-* The functions `iris.plot.plot` and `iris.quickplot.plot` now take up to two
-  arguments, which may be cubes or coordinates, allowing the user to have full
-  control over what is plotted on each axis. The coords keyword argument is now
-  deprecated for these functions.
-* `iris.analysis.SUM` is now a weighted aggregator, allowing it to take a
-  weights keyword argument.
-* Grib2 translations added for standard_name 'soil_temperature'.
-* :meth:`iris.cube.Cube.slices` can now handle passing dimension index as well
-  as the currently supported types (string, coordinate), in order to slice in
-  cases where there is no coordinate associated with a dimension.
-* :mod:`iris.experimental.animate` now provides experimental animation support.
+2013-09-10
+ENH: Completed whatsnew
 
-Bugs fixed
-----------
-* Shape of the Earth scale factors are now correctly interpreted by the GRIB
-  loader. They were previously used as a multiplier for the given value but
-  should have been used as a decimal shift.
+2013-09-03
+Upgrade GeoTIFF export.
+Add support for various data types.
+Add support for coord systems.
+Map 0 to 360 longitudes into the -180 to 180 range.
 
-Incompatible changes
---------------------
-* N/A
+2013-09-06
+Support for projection_origin and central_meridian
 
-Deprecations
-------------
-* The coords keyword argument for `iris.plot.plot` and `iris.quickplot.plot`
-  has been deprecated due to the new API which accepts multiple cubes or
-  coordinates.
+2013-09-04
+BUG: Fixed typo in OSGB.
 
+2013-09-03
+Respect major/minor axes when converting to Cartopy.
 
-----------------------------
+2013-09-04
+Corrected 'temperature' var name to 'air_pressure', plus a couple of PEP8 changes
 
+2013-09-02
+Handle directory creation race condition.
 
-Release 1.4 (unreleased)
-========================
+2013-09-02
+Add netCDF export support for transverse Mercator.
 
-:Release: 1.4.0
-:Date: 14 June 2013
+2013-09-02
+Added support for UM fieldsfile ancillary files trunkated with ieee.
 
-* Saving multiple cubes to netcdf
-  https://github.com/SciTools/iris/pull/367
+2013-08-30
+Added example to iris.analysis.interpolate.linear docstring
 
-* Rework Coord nearest_neighbour to support circular cases
-  https://github.com/SciTools/iris/pull/391
+2013-08-30
+Bugfix to DimCoord.from_regular
 
-* Simplified resource configuration
-  https://github.com/SciTools/iris/pull/406
+2013-08-30
+Change zorder of contour lines drawn by contourf.
+This addresses the issue of objects appearing in between the filled
+and line contours drawn by contourf by reducing the difference in
+zorder between the two.
 
-* Helper function for regridding that returns x and y coords
-  https://github.com/SciTools/iris/pull/437
+2013-08-30
+Modified cube dim_coords and aux_coords docstrings
 
-* Added iris.tests.assertArrayAllClose 
-  https://github.com/SciTools/iris/pull/440
+2013-08-30
+Simplified ionosphere example. Closes #603.
+Also includes PEP8 changes.
 
-* Add bilinear interpolation between rectilinear grids.
-  https://github.com/SciTools/iris/pull/442
+2013-08-29
+Use space_weather.nc instead of missing file and enabled doctests
 
-* Added tolerances to Coord.is_contiguous()
-  https://github.com/SciTools/iris/pull/459
-
-* Pandas interoperability
-  https://github.com/SciTools/iris/pull/439
-
-* Nimrod level type 12 (below ground)
-  https://github.com/SciTools/iris/pull/199
-
-* Modified logic in Unit.convert to handle numpy scalars
-  https://github.com/SciTools/iris/pull/472
-
-* Experimental OPeNDAP functionality.
-  https://github.com/SciTools/iris/pull/422
-
-* Experimental GeoTiff export functionality: 
-  `iris.experimental.raster.export_geotiff`
-
-* Added a PEP8 test to ensure coding standards
-  https://github.com/SciTools/iris/pull/476
+2013-08-28
+doc updates for iris.save
 
-* Add licence header check to tests
-  https://github.com/SciTools/iris/issues/454
+2013-08-30
+Fix coding standards exclusions after 1.4.x merge.
 
-* Cube merge string coords.
-  https://github.com/SciTools/iris/pull/475
+2013-08-29
+Added gdal and pandas to INSTALL
 
-* Unambiguous season year naming
-  https://github.com/SciTools/iris/pull/490
-
-* Area weighted regridding
-  https://github.com/SciTools/iris/pull/464
-
-* Removal of strict constraint in izip().
-  https://github.com/SciTools/iris/pull/495
-
-* PP save with no time forecast.
-  https://github.com/SciTools/iris/pull/498
-
-* Load of nimrod files with multiple fields and period of interest
-  https://github.com/SciTools/iris/pull/507
-
-* Conservative regridding, preserving area sums
-  https://github.com/SciTools/iris/pull/453
-
-* Handle missing values from grib messages
-  https://github.com/SciTools/iris/pull/520
-
-* PP export rule to calculate forecast period
-  https://github.com/SciTools/iris/pull/514
-
-* Preserve masked arrays during aggregation
-  https://github.com/SciTools/iris/pull/527
-
-* Support for ieee 32bit fieldsfiles to iris.load
-  https://github.com/SciTools/iris/pull/297
-
-* NetCDF load support for transverse Mercator and climatology
-  https://github.com/SciTools/iris/pull/521
-
-* Polar stereo grib loading
-  https://github.com/SciTools/iris/pull/518
-
-* GRIB export of cubes with no vertical information
-  See https://github.com/SciTools/iris/issues/519 for ongoing discussion
-
-* GRIB2 parameter translation
-  https://github.com/SciTools/iris/pull/482
-  
-* Added depth rules for bounds
-  https://github.com/SciTools/iris/pull/451
-
-* Added a test for license checking of code files
-  https://github.com/SciTools/iris/pull/477
-  
-* Fixed netcdf save cubelist bug
-  https://github.com/SciTools/iris/pull/488
-  
-* Add an optimisation for single valued coordinate constraints
-  https://github.com/SciTools/iris/pull/428
-  
-* Improved error message within Cube.aggregated_by()
-  https://github.com/SciTools/iris/pull/504
-  
-* Change unit print-out
-  https://github.com/SciTools/iris/pull/465
-
-* Modified linear() to handle non-scalar length one coords
-  https://github.com/SciTools/iris/pull/508
-  
-* Propagate all coord names in construct midpoint
-  https://github.com/SciTools/iris/pull/499
-  
-* Resolved pickling issues with deferred loading
-  https://github.com/SciTools/iris/pull/511
-  
-* Modified plot.py to pass coords arg through to _map_common()
-  https://github.com/SciTools/iris/pull/463
-  
-* Use cartopy v0.8.0
-  https://github.com/SciTools/iris/pull/494
-  
-  
-Incompatible changes
---------------------
-* As part of simplifying the mechanism for accessing test data
-  `iris.io.select_data_path()`, `iris.config.DATA_REPOSITORY`,
-  `iris.config.MASTER_DATA_REPOSITORY` and
-  `iris.config.RESOURCE_DIR` have been removed.
-
-Deprecations
-------------
-* The *add_custom_season_** functions from coord_categorisation.py have been deprecated in favour of adding their functionality to the *add_season_** functions
-
-
-
-----------------------------
-
-
-Release 1.3 (27 March 2013)
-===========================
-
-Features added
---------------
-* Experimental support for loading ABF/ABL files.
-* Support in `iris.analysis.interpolate.linear` for longitude ranges
-  other than [-180, 180].
-* Support for customised CF profiles on export to netCDF.
-* The documentation now includes guidance on how to cite Iris.
-* The ability to calculate the exponential of a Cube, via
-  `iris.analysis.maths.exp()`.
-* Experimental support for concatenating Cubes along existing dimensions
-  via `iris.experimental.concatenate.concatenate()`.
-
-Bugs fixed
-----------
-* Printing a Cube now supports Unicode attribute values.
-* PP export now sets LBMIN correctly.
-* Converting between reference times now works correctly for
-  units with non-Gregorian calendars.
-* Slicing a CubeList now returns a CubeList instead of a normal list.
-
-Incompatible changes
---------------------
-* N/A
-
-Deprecations
-------------
-* The boolean methods/properties on the `Unit` class have been updated
-  to `is_...()` methods, in line with the project's naming conventions.
-
-  ========================== ======================
-  Deprecated property/method New method
-  ========================== ======================
-  convertible()              is_convertible()
-  dimensionless              is_dimensionless()
-  no_unit                    is_no_unit()
-  time_reference             is_time_reference()
-  unknown                    is_unknown()
-  ========================== ======================
-
-
-----------------------------
-
-
-Release 1.2 (7 March 2013)
-==========================
-
-
-Features added
---------------
-* :meth:`iris.cube.Cube.convert_units()` and
-  :meth:`iris.coords.Coord.convert_units()` have been added for straightforward
-  conversion of cubes and coordinates from one unit to another.
-* :attr:`iris.cube.Cube.var_name`, :attr:`iris.coords.Coord.var_name` and
-  :attr:`iris.aux_factory.AuxCoordFactory.var_name` attributes have been added.
-  This attribute represents the CF variable name of the object. It is populated
-  when loading from CF-netCDF files and is used when writing to CF-netCDF. A
-  var_name keyword argument has also been added to the
-  :meth:`iris.cube.Cube.coord()`, :meth:`iris.cube.Cube.coords()` and
-  :meth:`iris.cube.Cube.aux_factory()` methods.
-* :meth:`iris.coords.Coord.is_compatible()` has been added. This method is
-  used to determine whether two coordinates are sufficiently alike to
-  allow operations such as :meth:`iris.coords.Coord.intersect()` and
-  :func:`iris.analysis.interpolate.regrid()` to take place. A corresponding
-  method for cubes, :meth:`iris.cube.Cube.is_compatible()`, has also been
-  added.
-* Printing a :class:`~iris.cube.Cube` is now more user friendly with regards 
-  to dates and time. All *time* and *forecast_reference_time* scalar coordinates
-  now display human readable date/time information.
-* The units of a :class:`~iris.cube.Cube` are now shown when it is printed.
-* The area weights calculated by :func:`iris.analysis.cartography.area_weights`
-  may now be normalised relative to the total grid area.
-* Weights may now be passed to :meth:`iris.cube.Cube.rolling_window` aggregations,
-  thus allowing arbitrary digital filters to be applied to a :class:`~iris.cube.Cube`.
-
-Bugs fixed
-----------
-* The GRIB hindcast interpretation of negative forecast times can be enabled
-  via the :data:`iris.fileformats.grib.hindcast_workaround` flag.
-* The NIMROD file loader has been extended to cope with orography vertical
-  coordinates.
-
-Incompatible changes
---------------------
-* The deprecated :attr:`iris.cube.Cube.unit` and :attr:`iris.coords.Coord.unit`
-  attributes have been removed.
-
-Deprecations
-------------
-* The :meth:`iris.coords.Coord.unit_converted()` method has been deprecated.
-  Users should make a copy of the coordinate using
-  :meth:`iris.coords.Coord.copy()` and then call the
-  :meth:`iris.coords.Coord.convert_units()` method of the new coordinate.
-* With the addition of the var_name attribute the signatures of DimCoord and
-  AuxCoord have changed. This should have no impact if you are providing
-  parameters as keyword arguments, but it may cause issues if you are relying
-  on the position/order of the arguments.
-* Iteration over a :class:`~iris.cube.Cube` has been deprecated. Instead,
-  users should use :meth:`iris.cube.Cube.slices`.
-
-
-----------------------------
-
-
-Release 1.1 (7 Dec, 2012)
-=========================
-
-
-Features added
---------------
-* Support for Mac OS X.
-* GRIB1 import now supports time units of "3 hours".
-* Fieldsfile import now supports unpacked and "CRAY" 32-bit packed data
-  in 64-bit Fieldsfiles.
-* PP file import now supports "CRAY" 32-bit packed data.
-* Various performance improvements, particularly for netCDF import,
-  PP import, and constraints.
-* GRIB2 export now supports level types of altitude and height
-  (codes 102 and 103).
-* iris.analysis.cartography.area_weights now supports non-standard
-  dimension orders.
-* PP file import now adds the "forecast_reference_time" for fields
-  where LBTIM is 11, 12, 13, 31, or 32.
-* PP file import now supports LBTIM values of 1, 2, and 3.
-* Fieldsfile import now has some support for ancillary files.
-* Coordinate categorisation functions added for day-of-year and
-  user-defined seasons.
-* GRIB2 import now has partial support for probability data defined
-  with product template 4.9.
-
-Bugs fixed
-----------
-* PP export no longer attempts to set/overwrite the STASH code based on
-  the standard_name.
-* Cell comparisons now work consistently, which fixes a bug where
-  bounded_cell > point_cell compares the point to the bounds but,
-  point_cell < bounded_cell compares the points.
-* Fieldsfile import now correctly recognises pre v3.1 and post v5.2
-  versions, which fixes a bug where the two were interchanged.
-* iris.analysis.trajectory.interpolate now handles hybrid-height.
-
-Incompatible changes
---------------------
-* N/A
-
-Deprecations
-------------
-* N/A
-
-
-----------------------------
-
-
-Release 1.0 (15 Oct, 2012)
-==========================
-
-Features added
---------------
-* Iris can now represent hybrid-pressure vertical coordinates, and load
-  them from GRIB files.
-* Initial support for CF-style coordinate systems: lat-lon, rotated lat-lon,
-  and transverse Mercator (incl. OSGB).
-* Iris can now load NIMROD files.
-* Availability of Cynthia Brewer colour palettes.
-* Add a citation to a plot.
-* Readability improvements to Cube summary.
-* Ensures netCDF files are properly closed.
-* A more explicit set of load functions, which also allow the automatic
-  cube merging to be bypassed as a last resort.
-* Save netCDF files with an unlimited dimension.
-* The ability to project a cube with a lat-lon or rotated lat-lon coordinate
-  system into a range of map projections e.g. Polar Stereographic.
-
-Incompatible changes
---------------------
-* The "source" and "history" metadata are now represented as Cube
-  attributes, where previously they used coordinates.
-* With the change to cartopy, the function iris.plot.gcm() is obsolete
-  and has been removed.
-* Three functions have been removed from iris.analysis.cartography:
-  lat_lon_range(), get_lat_lon_grids(), and
-  get_lat_lon_contiguous_grids(). They have been replaced with
-  generalised versions: get_xy_grids()
-  and get_xy_contiguous_bounded_grids().
-* iris.plot.gcm, iris.plot.map_setup functions are now removed as part
-  of the change to using cartopy. See the "what's new" section for further
-  information on working with cartopy.
-* The method `Cube.coord_dims()` now returns a tuple instead of a list.
-
-Deprecations
-------------
-* The methods `Coord.cos()` and `Coord.sin()` have been deprecated.
-* The function `load_strict()` has been deprecated. Code should now use
-  `iris.load_cube()` and `iris.load_cubes()` instead.
-
-
-----------------------------
-
-
-Release 0.9 (14 Aug, 2012)
-==========================
- 
-Features added
---------------
-* Iris is now an open source project. See `Iris on github <https://github.com/SciTools/iris>`_.
-* Hybrid vertical coordinates are implemented with the new :class:`~iris.aux_factory.AuxCoordFactory`.
-* More graceful loading of units. See `here <https://github.com/SciTools/iris/pull/17>`_ for more details.
- 
-Incompatible changes
---------------------
-* The Iris data model is now fully aligned with the `CF data model <http://cf-pcmdi.llnl.gov/documents/cf-conventions/>`_ .
-  Iris remains file-format independent, as is the underlying CF data model.
-* Cube merging has been re-written for the new CF data model with the benefit that some corner cases are now better handled. 
-  Some users may find that their cubes, once merged, now have a smaller total shape and more intelligent handling of dimension coordinate picking.
-
-Deprecations
-------------
-* None
-
-
-----------------------------
-
-
-Release 0.8 (29 May, 2012)
-==========================
- 
-Features added
---------------
-* Cube trajectory extraction now supports irregular grids (ORCA2) using nearest-neighbour interpolation.
-* Support cube arithmetic with masked array data.
-* PP loading now utilises improved field-code to standard_name/unit mapping.
-* Upgraded to use centrally installed and managed version 2 of PP packing library.
-
-Incompatible changes
---------------------
-* The ability to add UK Met Office branding to plots has been moved to
-  the UK Met Office's internal `monty` library.
-* The ability to read colour palettes from the UKMO IDL library has been
-  moved to the UK Met Office's internal `monty` library.
- 
-Deprecations
-------------
-* None
-
-
-----------------------------
-
-
-Release 0.7 (23 Mar, 2012)
-==========================
-
-
-Features added
---------------
-* Cubes can now have missing data in the form of numpy masked arrays. All plotting and aggregating routines
-  should now support masked data handling without any user code changes necessary.
-* GRIB2 saving now supported for common cases. GRIB loading capabilities further extended.
-* NetCDF loading of multidimensional auxiliary data implemented, providing initial support for data with an ORCA grid.
-* Extended the number of PP STASH code to standard name mappings.
-* PP saving of non ``latitude, longitude`` cubes added.
-* Cube merging has been upgraded to support optimisation of ``time``, ``forecast_period`` and 
-  ``forecast_reference_time`` dimensionality.
-* Added new gallery entry highlighting NetCDF support for rotated pole data.
-* NetCDF saving should now be CF-1.5 compliant.
-* Custom made colour palettes from the UKMO IDL library can now be loaded as matplotlib colour
-  palettes (see :func:`iris.clrtools.load_clr`).
-* It is now possible to iterate over multiple cubes "in step", ensuring that the metadata is consistent between the 
-  given cubes (see :func:`iris.iterate.izip`).
-* Cell methods will now appear in the printout of a cube.
-* Supporting software dependency versions have been updated. Of particular note is matplotlib which has gone from version 1.0.1
-  up to `1.1.0 <http://matplotlib.sourceforge.net/users/whats_new.html#new-in-matplotlib-1-1>`_ . This may have a small impact on
-  some plot element placements.  
-
-Incompatible changes
---------------------
-* The call signature for custom loader functions handled via :class:`~iris.io.format_picker.FormatSpecification` has changed.  
-  Previously the signature was ``loader(filename, callback)`` and now looks like ``loader(filenames, callback)`` where ``filenames``
-  is an iterable of filenames.
-* Custom aggregators should now create :class:`iris.analysis.Aggregator` instances rather than defining 
-  a the partial creation of an Aggregate (i.e. ``partial(iris.analysis.Aggregate, ...)`` becomes ``iris.analysis.Aggregator(...)``.
-* PP STASH code ingestion is now stricter. In particular handling of partial stash codes (i.e. those without a model or section) 
-  is no longer done, meaning that some cubes which previously had a standard name may no longer have a standard name. 
-  Further work is planned to support field code translation which should provide more robust and accurate PP interpretations.
-* For parity with the CF-NetCDF community 'phenomenon_time' has now become 'time'.
-
-Deprecations
-------------
-* Callback functions to ``iris.load`` and ``iris.load_strict`` should no longer return a value.
-  Updated documentation can be found at :func:`iris.load`.
-
-
-----------------------------
-
-
-Release 0.6 (20 Jan, 2012)
-==========================
-
-Features added
---------------
-* The PP loader now supports PP fields with a header release number of 3.
-  (As used by the UM version 8.1)
-
-* Initial support for multidimensional coordinates (i.e. those which span multiple
-  cube data dimensions) with the standard ExplicitCoord class.
-
-* Added cube to CF-netCDF saving.
-
-* Print of a cube now supports multi-dimensional coordinates, and re-categorisation of
-  cube coordinates into "dimensioned", "scalar" and "other" (i.e. neither dimensioned or
-  scalar).
-
-* Provide support for CF-netCDF label variables and 1-D auxiliary coordinate variables.
-
-Incompatible changes
---------------------
-* The ``cube.coords`` dictionary has been replaced with the ``cube.coord`` and ``cube.coords`` methods 
-  for easier identification of coordinates.
-* ``iris.cdm.coords`` has been moved and separated to ``iris.coords and`` ``iris.coord_systems``.
-* CF-netCDF global attributes are now put in the cube "attributes" dictionary rather than
-  as scalar cube coordinates. Additionally any "unused" CF-netCDF variable attributes are also put in the 
-  cube "attributes" dictionary.
-
-Deprecations
-------------
-* ``cube.axes`` is now deprecated and read-only. A coordinate's dimensions on a cube can be  
-  found with the ``cube.coord_dims`` method. An interim cube convenience property
-  "axes" is provided to support legacy getter functionality.
-
-* ``cube.axis_length`` is now deprecated. A cube's shape can be determined with ``cube.shape``
-  and the dimensions to which a coordinate is associated can be determined with ``cube.coord_dims``.
-
-
-----------------------------
-
-Release 0.5 (31 Oct, 2011)
-==========================
-
-* Overhaul to NetCDF loading. Iris will now load a far wider variety of CF
-  compliant NetCDF files.
-
-* Cubes loaded from PP will now have the associated "STASH" code in MSI format
-  within the cube custom "attributes" dictionary.
-
-* Cubes now have an "attributes" dictionary which can be used for phenomenon
-  definition - cubes with different attributes are representing fundamentally
-  different phenomenon.
-
-* Strings can now be used to constrain standard name on load/extract.
-
-* Plotting routines now pick the colour palettes based on the cube to plot.
-
-* Added ability to derive area weights from a shapely geometry.
-
-* Cubes can now be operated on (added, multiplied, etc.) using numpy arrays.
-
-* New example of how to load custom ascii files into Cubes.
-
-* Percentile aggregation added.
-
-* Deferred data loading for Cubes loaded from netCDF.
-
-* Pickle support for cubes. Pickling should be reserved for short term storage and 
-  optimisation purposes only as pickle files will not be compatible across releases. 
+2013-08-29
+Makes TestLicenseHeaders error message better. Closes #505.
+
+2013-08-29
+Added the implied heights for several common PP STASH codes.
+
+2013-08-21
+ENH: Added support for checking netcdf file saving
+This commit adds permissions checking and path checking to the netcdf
+save within iris.  This tackles the generalised runtime error which
+results from netCDF4.
+
+2013-05-20
+implemented y-axis inversion on "positive: down" specified in vertical coord attrs
+
+2013-08-28
+Review actions
+
+2013-08-19
+Nearest neighbour indexing no longer loads the data.
+
+2013-08-28
+Review actions
+
+2013-08-28
+BF - allow model level GRIB files to be loaded. Closes #720.
+
+2013-08-28
+Review actions
+
+2013-08-02
+Added more complete tmerc to cartopy translation
+
+2013-08-13
+Added support for loading regular gaussian grids from GRIB files.
+
+2013-08-13
+BF - Correct Earth radius interpretation for GRIB, fixes #690.
+
+2013-06-13
+Calculates correlation between cubes
+
+2013-08-21
+Resolved circular imports in Iris.
+
+2013-07-12
+Added support for variable resolution fieldsfile loading.
+
+2013-08-21
+license header date
+
+2013-08-19
+Modified attribute behaviour for netCDF save.
+
+2013-08-20
+Update trajectory.py
+fix docstring format in `interpolate` method
+2013-08-19
+Update interpolate.py
+fix docstring of `nearest_neighbour_data_value`
+2013-08-13
+Add new stashcodes for dewpoint and RH.
+
+2013-08-16
+Make data checksum ignore masked values.
+
+2013-08-16
+Add minimal test for grib 4.8 template statistic coding.
+
+2013-05-08
+ENH: working animation of cubes
+This enhancement adds a wrapper for animating an iterator of cubes.
+This is an experimental feature as the API is likely prone to change.
+
+2013-08-16
+PEP 8 iris.fileformats.grib.grib_save_rules
+
+2013-07-25
+Added support for bool array indexing on a cube.
+
+2013-08-13
+Limit unit calendar argument
+
+2013-06-12
+ENH: Allow cube slicing by dimension index
+Currently only coordinates can be used to slice a given cube.  Since
+coordinates are not allways associated with dimensions of a cube, the
+ability to specify dimension and or mix of coordinate and dimension is
+added here to facilitate use.
+
+2013-08-14
+lamb/polar coord untis
+
+2013-08-14
+DimCoord CML circular flag.
+
+2013-08-14
+reordered phenomenon dictionaries
+
+2013-08-14
+Fix coding of maximum and minimum time-stats in Grib2 save.
+
+2013-08-14
+Fix netCDF4 python package at version 1.0.2 for travis-ci
+
+2013-08-02
+BUG: Fix broken test result TestAtlanticProfiles
+This commit increases the graphic tolerance this specific tests.
+Visual comparison of the test failure has been made and confirmation
+that it is correct.
+
+2013-08-09
+Correct dim coord behaviour for aggregated by.
+
+2013-07-10
+added 42-byte wmo header, requiring code tidy
+
+2013-08-07
+Updated docs to use latest what's new.
+
+2013-07-20
+update to handle up to 3 dimensional cube so that we call scoreatprecentile with only upto 2d data.
+
+2013-08-06
+Cope with missing climatology bounds.
+
+2013-08-05
+Cope with missing bounds
+
+2013-08-01
+Added Grib2 translations for 'soil_temperature'.
+
+2013-07-23
+abf for 32-bit arch
+
+2013-08-01
+ENH: Added support to setup.py for quick testing
+This commit passes through the 'stop' argument to nose allowing
+the developer to immediately see if an error results without
+continuing with the rest.  In unittests, this is referred to as the
+'failfast' option.
+
+2013-07-24
+Speed up coord addition during Cube construction
+
+2013-07-24
+Update converter interface
+
+2013-07-31
+PEP 8 iris.symbols
+
+2013-07-26
+Add new ocean profile plot example.
+
+2013-07-31
+PEP 8 iris.config
+
+2013-07-31
+Optimise Cell creation from scalar coordinate
+
+2013-07-31
+Fix indent typo in BitwiseInt
+
+2013-07-22
+Use id() based lookup to find aux_coords.
+
+2013-07-30
+MAINT: Refactoring of unit equality
+
+2013-07-30
+Use DimCoord.__new__ to construct object
+
+2013-07-22
+Global unit cache
+
+2013-07-24
+ne logic
+
+2013-07-29
+Fixup comments
+
+2013-07-24
+ENH: Optimised unit equality special method
+This commit results in a 5.4% gain over the _OrderedHashable equality
+method utilised for unit comparison.  This implements an interface
+through ctypes to UDUNITS ut_compare for efficient unit comparison.
+
+2013-07-26
+BUG: Fix pandas test for version update
+Iris pandas unit test currently fails due to a dtype mismatch between
+what pandas Timestamp class can handle with v.11 compared to v.12  This
+commit converts the input argument which instantiation this class
+to an integer, which is commonly accepted by both versions of pandas.
+
+2013-07-26
+Support qplt.show in extest.
+
+2013-07-25
+PEP 8 iris.aux_factory
+
+2013-07-22
+Cell is a named tuple
+Saves 5% load time of a workshop sample pp file.
+
+2013-07-25
+PEP 8 iris.coord_categorisation
+
+2013-07-25
+PEP 8 iris.cube
+
+2013-07-26
+Avoid version-specific formatting issues by checking data directly.
+
+2013-07-26
+Remove workaround from filtering example
+
+2013-07-24
+Switch to using DimCoord.from_regular
+
+2013-07-23
+Update PPA to get a working libgeos-dev
+
+2013-07-24
+BUG: Updated copyright dates on docs
+
+2013-07-22
+PEP 8 iris.quickplot
+
+2013-07-17
+NF - add 1D scatter plot functions.
+
+2013-06-07
+grib hind doc
+
+2013-05-29
+lambert grib
+
+2013-07-23
+test_ff for 32 -bit arch
+
+2013-07-22
+PEP 8 iris.exceptions
+
+2013-07-22
+Convert iris.analysis.SUM to a weighted aggregator. Closes #595.
+
+2013-07-22
+PEP 8 iris.palette
+
+2013-07-22
+PEP 8 iris.pandas
+
+2013-07-23
+TestPPSave for 32-bit arch
+
+2013-07-23
+Update PPA to get a working libgeos-dev
+
+2013-07-18
+PEP 8 iris._merge
+
+2013-07-18
+PEP 8 iris.fileformats.ff
+
+2013-07-18
+PEP 8 iris._cube_coord_common
+
+2013-07-17
+Convert post-item documentation to pre-item #: form
+
+2013-07-17
+Delete temp_test_output.txt
+Fix to #462.
+2013-04-16
+Added function to display differences between cubes that prevent compatibility.
+
+2013-07-16
+Remove quickplot unit label for time reference coordinates. Closes #615.
+1D plots in quickplot omit the units part of the axis label when the
+coordinate it represents is given as a time reference, and hence will
+have been converted to an absolute date/time.
+
+2013-07-15
+BUG: creating coordinate from another crs copy
+Currently, creating a coordinate from another using the coordinates
+from_coord static method, passes the coordinate system through by
+reference.
+
+2013-07-15
+Add show to quickplot. Closes #607.
+
+2013-07-15
+Remove obsolete methods
+
+2013-06-27
+Extend 1D plotting capabilities. Resolves #581.
+
+2013-07-12
+Add GRIB support and fix remaining issues/tests.
+
+2013-06-28
+MAINT: coord_dims speedup
+This commit offers to speedup the comparison of supplied coordinate with
+that on the cube by way of checking if its the same object, then
+comparing by way of metadata if object not found.  This in particular
+was targetting CubeList merging.
+
+2013-07-11
+Hack in pure-Python PP rules
+
+2013-06-27
+unit doc
+
+2013-07-04
+Added missing in_place keywords in analysis.math
+
+2013-07-02
+Adds Polar Stereo example code
+
+2013-06-25
+Corrected filtered values in SOI example.
+It is necessary to multiply the weighted rolling window by the sum
+of the filter weights to get the correct values.
+
+2013-07-02
+PEP8 fix.
+Issue only noticed by PEP8 v1.4.6.
+
+2013-07-02
+Consistant title
+
+2013-06-25
+name traj load
+
+2013-07-01
+BLD: change cf standard name table
+Current table contains a bug, this commit switches to an ealier
+table before this bug was introduced.
+
+2013-07-01
+removed workaround to multiple coordinates been present when plotting.
+
+2013-07-01
+BUG: fix travis ref
+Travis is currently pointing to the wrong sample data commit (tag),
+which results in numerous doctest and extest failures.
+
+2013-06-26
+fix doctest
+
+2013-06-19
+added packaged grib support WMO
+
+2013-06-25
+PEP8 fixes for cartography module
+
+2013-06-21
+NF - remove 1d restriction from cosine latitude weights
+
+2013-06-21
+Updated example to work with newer sample data.
+
+2013-06-21
+Corrected rendering of code examples.
+
+2013-06-19
+Fix to prevent unnecessary rebuild of pyke rules.
+
+2013-06-17
+Doc tweaks for custom season categorisation
+
+2013-06-15
+Reset warnings in testing.
+
+2013-06-14
+v1.4.1-dev
+
+2013-06-14
+v1.4.0
+
+2013-05-29
+NAME fileformat support.
+
+2013-06-12
+Switched from sample data to test data.
+
+2013-06-07
+PP save default gridded polar axis.
+
+2013-06-07
+Export to GeoTIFF refactor.
+
+2013-06-10
+wording of comment for build filepath improved
+
+2013-05-24
+Added support for checking coding standards of docs
+
+2013-06-06
+Restore version back to 1.4.0-dev
+
+2013-06-06
+Bumped version to 1.4.0rc1
+
+2013-06-05
+1.4 changelog and what's new
+
+2013-06-04
+MAIN: Removed all whitespace and file-end lines
+
+2013-06-04
+Added git clone depth of zero to travis CI config.
+
+2013-06-04
+Added git clone depth of zero to travis CI config.
+
+2013-06-04
+v1.5.0-dev
+
+2013-05-21
+polar stereo grib
+
+2013-06-04
+Review action.
+
+2013-06-03
+Updated to v1.3 of iris test data.
+
+2013-05-21
+Added test
+
+2013-05-20
+Added rules for transverse mercator grid.
+
+2013-05-17
+Added support for climatology bounds.
+
+2013-06-03
+PEP8 fixes for aggregation tests
+
+2013-05-07
+MAINT: update iris to use latest cartopy
+Changes include fixing the transform points tests, experimental
+regridding and the travis cartopy commit ref (v0.8.0).  iris pole
+rotate and unrotate indexing has also been fixed to comply with
+cartopy indexing of transform points.
+
+Behaviour change includes plots now being limited by projection limits
+rather than the data limits (where smaller than data limits).
+
+2013-05-28
+BF - preserve masked arrays during aggregation
+
+2013-05-23
+Added a ieee32 fieldsfile test.
+
+2013-01-10
+Adds support for ieee 32bit fieldsfiles to iris.load
+
+2013-05-31
+Review actions
+
+2013-05-30
+Review actions.
+
+2013-04-29
+Revised grib load+save: extra levels translation, and grib <-> cf phenomenon translation from metadata project.
+
+2013-04-18
+Review actions.
+
+2013-04-17
+Modified plot.py to pass coords arg through to _map_common()
+
+2013-05-23
+Moved to SHA for iris-test-data until we tag the next release.
+
+2013-05-21
+BF - handle missing values from grib messages
+
+2013-04-05
+Added ESMPy conservative regrid.
+
+2013-05-21
+Fixed PEP8 issues in netcdf.py
+
+2013-05-15
+New pp rule to calculate forecast period.
+
+2013-05-20
+Resolved pickling issues with deferred loading.
+
+2013-05-20
+Missing import
+
+2013-05-17
+Documentation change on coordinates parameter for slices()
+Update to first line of docstring.
+
+changed sub cubes to subcubes
+
+Documentation change on coordinates parameter for slices()
+
+Update to first line of docstring.
+
+changed sub cubes to subcubes
+
+Update to first line of docstring.
+
+changed sub cubes to subcubes
+
+2013-05-15
+Load of nimrod files with multiple fields and period of interest
+Signed-off-by: Andrew Munslow <munslowa@gmail.com>
+Update post PR review
+
+Signed-off-by: Andrew Munslow <munslowa@gmail.com>
+Test result for period of interest test
+
+Signed-off-by: Andrew Munslow <munslowa@gmail.com>
+Use updated version of test data
+
+old test files removed. extra newline added
+
+test_osgb_to_latlon now uses the first index of the time dimension for the test
+
+unused imports removed
+
+2013-05-10
+propogate all coord names in construct midpoint
+
+2013-05-17
+Fixed scalar issues.
+
+2013-05-16
+Review actions
+
+2013-05-15
+Modified linear() to handle non-scalar length one coords.
+
+2013-04-29
+Make tests optional that depend on pydot and pandas (optional installs).
+
+2013-05-14
+Tweak message and add a test
+
+2013-04-16
+NF - When a user tries to perform an aggregate_by that tries to collapse an uncollapsible coord (e.g. a string based coord), then an informative error message is raised
+
+2013-05-13
+PP save with no time forecast.
+
+2013-05-13
+Review actions.
+
+2013-05-08
+Removal of strict constraint in izip().
+
+2013-05-03
+PEP8 corrections to iterate.py.
+
+2013-05-02
+Refactor seasons categorisation functions.
+Deprecates the add_custom_season* functions in favour of adding their
+functionality to the existing season categorisation functions via a
+keyword argument.
+
+2013-05-02
+Review actions.
+
+2013-04-29
+Warn on deprecated defaults and deprecate the aliased functions.
+
+2013-04-16
+Update categorical coordinate names to match function names.
+
+2013-05-02
+Update licence dates.
+
+2013-04-04
+Area weighted regridding.
+
+2013-05-02
+Cope with non-numeric/Cell values.
+
+2013-05-02
+fixed netcdf save cubelist bug
+
+2013-05-01
+Fixed copyright date of an experimental file.
+
+2013-05-01
+Updates to erroneous copyright years based on git history.
+
+2013-04-24
+Merge handles string coords.
+
+2013-05-01
+Fix to license check logic
+
+2013-05-01
+Fixed copyright date on one of the tests.
+
+2013-03-28
+Add an optimisation for single valued coordinate constraints.
+
+2013-04-25
+Added a test for license checking of code files. Closes #454.
+
+2013-04-23
+gribsave int32 scalar
+
+2013-04-25
+Added a PEP8 test to ensure coding standards.
+
+2013-03-26
+Added geotiff to what's new v1.4
+
+2013-04-16
+Added tests for the OpenDAP load interface.
+
+2013-03-26
+Working OpenDAP functionality.
+
+2012-11-14
+nimrod level type 12
+
+2013-04-23
+Modified logic in Unit.convert to handle numpy scalars.
+
+2013-04-23
+pandas 0.11
+
+2013-04-08
+Pandas 1D & 2D
+
+2013-03-28
+pep8 __init__ and _constraints
+
+2013-04-17
+changed unit syntax
+
+2013-04-16
+Added tolerances to Coord.is_contiguous()
+
+2013-04-11
+Added cfchecker to travis-ci
+
+2013-04-04
+Safely build PyKE rule base.
+
+2013-04-12
+Added depth rules for bounds.
+
+2013-04-05
+Add bilinear interpolation between rectilinear grids. Includes review changes.
+
+2013-04-08
+Added iris.tests.assertArrayAllClose for array testing with relative tolerance.
+
+2013-04-08
+Fixed ref to old scitools.org page.
+
+2013-04-04
+Travis-CI non git clone of Cartopy.
+
+2013-04-05
+Review actions. Moved tests and improved docstring.
+
+2013-04-04
+Helper function for regridding that returns x and y coords.
+
+2013-04-04
+Force mpl v1.2.0 for Travis-CI.
+
+2013-03-27
+Bump version to v1.3.1-dev
+
+2013-03-27
+Release 1.3.0
+
+2013-03-26
+Fixed docstring.
+
+2013-03-25
+Fixed sphinx error when building netcdf save docs and added docstring to netcdf Saver to remove 'None' from docs.
+
+2013-03-25
+No byteorder attribute when not relevant.
+
+2013-03-25
+Update to iris-test-data v1.1
+
+2013-03-25
+Removed data_repository from site.cfg.template
+
+2013-03-22
+Update test results.
+
+2013-03-22
+Add endianness and array order info to Cube XML.
+
+2013-03-22
+Removal of iris.config.RESOURCE_DIR
+
+2013-03-22
+Remove redundant code.
+
+2013-03-19
+Removed data_repository and master_data_repository, simplifying resources to just sample_data_dir and test_data_dir.
+
+2013-03-05
+Rework Coord nearest_neighbour calc to support circular cases.
+
+2013-03-21
+Revert version to v1.3.0-dev
+
+2013-03-21
+Bump version to v1.3.0rc1
+
+2013-03-21
+Explicitly set the SHAs of dependencies in the travis.yml file.
+
+2013-03-20
+Update changelog and what's new pages for 1.3
+
+2013-03-20
+Moved from master to a specific commit for iris test data.
+
+2013-02-22
+multicube2netcdf
+
+2013-03-19
+Support for writing masked arrays and added ma test
+
+2013-03-19
+Bump version numbers
+
+2013-03-19
+Return a CubeList when slicing a CubeList
+
+2013-03-18
+Better handling of masked arrays
+
+2013-02-19
+Simplified GeoTiff export for iris.experimental
+
+2013-03-14
+corrected syntax for named tuple def
+
+2013-03-15
+Update to README.md to include Travis-CI build status.
+
+2013-03-14
+Experimental cube concatenate.
+
+2013-03-11
+fixed converting reference times
+
+2012-11-23
+add exponential
+
+2013-03-13
+review actions
+
+2013-03-13
+usecase cdl chagnes
+
+2013-03-13
+sorted cdl dim declarations
+
+2013-03-13
+review actions
+
+2013-03-12
+Copy button in docs.
+
+2013-03-09
+Iris citation added into user guide
+
+2013-03-12
+test data repo
+
+2013-01-18
+travis (full)
+
+2013-03-01
+removed most redundant imports
+
+2013-02-28
+flaked cube
+
+2013-02-28
+pep8 coords
+
+2013-02-28
+version 1.2.1-dev
+
+2013-02-28
+version 1.2.0
+
+2013-02-28
+travis: cartopy 0.6
+
+2013-02-21
+NetCDF CF profile support.
+
+2013-02-27
+Fix to extract_by_trajectory() docstring indentation.
+
+2013-02-22
+Attempt to fix pep8 issues in cube.py. long lines in code example docstrings remain.
+
+2013-02-25
+lbmin ppsave bugfix, closes #277
+
+2013-02-14
+Modified cube.summary() to handle unicode cube attributes.
+
+2013-02-22
+re-formatting
+
+2013-02-20
+Added missing blank lines after sphinx directives.
+
+2013-02-18
+Refactored is_x boolean methods in unit module.
+
+2012-12-06
+Various small documentation fixes + style improvements.
+
+2013-01-24
+Prevented the ability to add AuxCoord instances to the dim_coords.
+
+2013-02-11
+Basic support for varying longitude ranges.
+
+2013-02-14
+Use position independent code flag for compilation of gribapi
+
+2013-02-14
+Update module docstring
+
+2013-02-13
+Default tests to the 'agg' matplotlib backend.
+
+2013-01-14
+removal of pyprojdependency
+
+2013-02-11
+Corrected len(coord) to len(coord.points) and added test for relevant code path. No other cases of len(var_type_coord) found with grep -R "len("
+
+2012-10-19
+pcol msg fix
+
+2013-02-11
+Revert Iris version from 1.2.0-rc1 back to 1.2.0-dev.
+
+2012-11-22
+abf loading
+
+2013-02-08
+Changes for rc1.
+
+2013-02-08
+Increment version number
+
+2013-02-07
+review actions
+
+2013-02-07
+x coord name
+
+2013-02-07
+review actions
+
+2013-02-07
+Added ignore keyword arg to is_compatible().
+
+2013-02-07
+test result
+
+2013-02-06
+Added is_compatible methods.
+
+2013-02-06
+Revert area_weights calculation pending rewrite.
+
+2013-02-05
+Added var_name argument to cube.aux_factory() method.
+
+2013-01-17
+Added CF variable name attribute to cubes and coords.
+
+2012-10-29
+g1 duplicate rule
+
+2012-11-16
+proper nimrod rules and unit test
+
+2012-11-16
+mockography
+
+2012-11-15
+nimrod orog loading + line lengths
+
+2013-02-06
+Small style + readability fixes.
+
+2012-12-06
+Changes to cartography.py, copied from PR.212
+
+2012-10-19
+empty file handing
+
+2012-12-06
+Further changes to loading_iris_cubes.rst.
+
+2013-01-22
+human readable datetimes and cube unit printout
+
+2013-02-06
+Numpy namespace abbreviations in test code
+
+2013-02-05
+Removed arithmetic enhancements to avoid issues with temperature anomolies. Docstring improvements.
+
+2013-02-05
+Numpy namespace abbreviations in documentation
+
+2013-02-05
+Abbreviated masked array namespace
+All modules now use:
+    import numpy.ma as ma
+
+2013-02-05
+Abbreviated numpy namespace
+All modules now use:
+    import numpy as np
+
+2013-02-04
+Review actions.
+
+2012-12-20
+Added convert_units(), plus mod to allow arithmetic operations on compatible units and conversion of arrays of integers.
+
+2013-01-28
+Remove redundant method definition
+
+2013-01-28
+Remove obsolete dead code
+
+2013-01-28
+review action
+
+2013-01-28
+review action
+
+2013-01-28
+review action
+
+2013-01-25
+review actions
+
+2013-01-25
+restored patch awareness
+
+2013-01-24
+added switch
+
+2013-01-14
+removed api patch awareness
+
+2013-01-14
+review action
+
+2012-10-09
+missing result
+
+2012-10-09
+results change
+
+2012-10-09
+save working
+
+2012-10-08
+wip, save not working
+
+2013-01-25
+extest_remove_unused_import
+
+2013-01-24
+Review action.
+
+2013-01-23
+Re-added the missing extest image.
+
+2013-01-21
+Renamed the result image.
+
+2013-01-18
+Updated tolerances.
+
+2013-01-18
+Updated the extests to easily support image tolerances.
+
+2013-01-18
+Tweak docstring and comments
+
+2013-01-18
+Tidy cube.__iter__ docstring.
+
+2013-01-18
+Config doc-string changes.
+
+2013-01-16
+Added an example of rolling_window with weights.
+
+2013-01-17
+Consistent Cell-Cell ordering, and seperate Cell-scalar semantics.
+
+2013-01-17
+github/travis playbad repush
+
+2013-01-11
+travis (nodata)
+
+2013-01-15
+Updated INSTALL and iris.config documentation and added an example site.cfg.template
+
+2013-01-17
+Fixed issue introduced by #300.
+
+2013-01-14
+full data cml
+
+2013-01-14
+Reverted pp file-like handling change.
+
+2013-01-14
+Added test result file.
+
+2013-01-11
+python language
+
+2013-01-08
+travis
+
+2013-01-11
+rm superfluous sentence, related to closed PR #207
+
+2013-01-11
+rm incorrect dep of cart on pyproj, closes #177
+
+2013-01-10
+Review actions.
+
+2013-01-10
+Supported merging of accumulations.
+
+2012-12-07
+reverted class name
+
+2012-11-19
+review actions
+
+2012-11-19
+test
+
+2012-11-19
+xy grids from 2d coords
+
+2013-01-10
+Added a simple rule, which needed a lot more work to test it!.
+
+2013-01-08
+Fixed lone typo in PP rules. Closes #258.
+
+2013-01-07
+minor bug introduced in rebase
+
+2012-12-04
+made reference to pyproj under install
+
+2012-11-30
+Removed all references to basemap. closes #177
+
+2012-11-22
+Updated reference from basemap to cartopy in html
+
+2013-01-02
+NF - normalized area weights
+Adds a keyword argument to normalize area weights by the total grid
+area. Includes a simple test.
+
+2013-01-03
+Update to test results.
+
+2013-01-03
+Mod to coordinate names in NIMROD loader.
+
+2013-01-03
+Update version in __init__.py to v1.1.1-dev
+
+2013-01-03
+Update version in setup.py to v1.1.1-dev
+
+2013-01-03
+Update version in __init__.py for Release v1.1.0
+
+2013-01-03
+Update version in setup.py for Release v1.1.0
+
+2013-01-02
+NF - allow weights in rolling window aggregations
+Allowing weights to be used in rolling window aggregations means
+that the rolling_window method of a cube can be used to apply
+arbitrary digital filters.
+
+2012-12-31
+Update documentation URLs
+
+2012-12-20
+fixed test
+
+2012-11-29
+test
+
+2012-11-23
+g1 rule update
+
+2012-12-19
+Review rework.
+
+2012-12-19
+Review rework.
+
+2012-12-19
+Review rework.
+
+2012-12-19
+Update .travis.yml to 0.5.x
+
+2012-12-19
+Graceful PP loading of invalid units.
+
+2012-12-18
+Deal with netCDF non-strict monotonic coordinates and masked coordinates.
+
+2012-12-13
+Use numpy array operators
+
+2012-12-14
+revised cube iteration warning + test  : clearer test code  : don't use DeprecationWarning
+
+2012-12-03
+NF - add new weighting methods
+Add the ability to generate cosine of latitude weights.
+
+Externalises the broadcasting of weights to the shape of another
+array since this operation is likely to be useful elsewhere also.
+
+2012-12-11
+deprecate cube iteration.  : test included
+
+2012-12-13
+Update analysis RMS doc-string.
+
+2012-12-12
+Analysis root mean square calculation. Closes issue #274.
+
+2012-12-11
+Ocean depth PP rule and minor merge optimisation.
+
+2012-12-11
+Updated master version after the v1.1.x branch cut.
+
+2012-10-31
+enable all non-calendar grib time-unit codes.
+
+2012-10-31
+replace test_grib_load.py testcase "test_fp_units" with a Mock test.  - also small tweak to GribWrapper __init__, to prevent possible infinite loops
+
+2012-11-27
+replace big datafiles in test_regrid, test_merge  : (depending on new resource files)  : NOTE: also tiny fix in test_regrid ('nearest' for 'neatest')
+
+2012-11-29
+fix test_cf, test_netcdf for smaller resources  : 2 more files replaced - smaller versions extracted with NCO
+
+2012-12-10
+Added missing @iris.tests.skip_data decorators.
+
+2012-12-07
+Update version to 1.1.0-dev
+
+2012-12-07
+Update version to 1.1.0rc1
+
+2012-12-07
+Update Cartopy version to 0.5.0
+
+2012-12-07
+Set version number to 1.2.0-dev
+
+2012-12-07
+Change to use boundaed data for pcolormesh example, plus pep8 tweaks.
+
+2012-12-07
+review action
+
+2012-12-06
+Doc bugfixes.
+
+2012-12-06
+Remove contributors and fix typos.
+
+2012-12-06
+remove '1.0'
+
+2012-12-06
+Proposed re-wording in cube_statistics.rst
+
+2012-12-06
+Update documentation.
+
+2012-12-06
+Changes to whats_new.rst, copied from PR.212
+
+2012-12-06
+Changes to loading_iris_cubes.rst, copied from PR.212
+
+2012-12-06
+Changes to cube_statistics.rst, copied from PR.212
+
+2012-12-06
+Updated minimum dependency of cartopy to v0.5.
+
+2012-12-06
+result change after rebase
+
+2012-12-06
+review actions
+
+2012-12-05
+save netcdf traj
+
+2012-12-06
+result change after rebase
+
+2012-12-04
+review actions
+
+2012-11-27
+test
+
+2012-11-20
+hh traj
+
+2012-12-06
+Test result image changes.
+
+2012-11-13
+Added implicit out of place guess_bounds when using iris.plot.pcolor and iris.plot.pcolormesh on data with coords without bounds.
+
+2012-12-03
+NF - new coord categorisation functions
+
+2012-12-05
+BF - fix typo in udunits2 library locator
+
+2012-12-05
+Review actions.
+
+2012-12-05
+Coordinate CML id sorted for attribute dictionary.
+
+2012-11-30
+Fieldsfile ancillary loading capability with PP LBTIM=2 support. Closes #154 and closes #228.
+
+2012-11-23
+Constraint extract slice optimisation.
+
+2012-12-04
+Fixed failing doctest introduced by #248
+
+2012-12-04
+rebased and resolved CML conflicts
+
+2012-12-03
+Added lbtim.ib == 3 forecast_reference_time rule and followed through with tests & doctests all passing.
+
+2012-11-29
+PP load optimisation.
+
+2012-12-03
+small changes  : rename results file  : drop real-data test in test_hybrid
+
+2012-11-20
+test_hybrid and test_merge to use smaller resource files
+
+2012-10-24
+Update test results
+
+2012-10-24
+Fix coord XML element names. Fix cross-platform/version XML coord IDs. Rationalise tests.
+
+2012-10-30
+Fixed the pp_cf tests. Strange behaviour was due to deleting the files and expecting them to be re-generated correctly.
+
+2012-10-30
+Added forecast reference time to a field with lbtim of 11 (one of the most common lbtim-s)
+
+2012-12-03
+Worked on formatting the changes for OSX support.
+
+2012-12-03
+Fixed iris.unit to use the correct ctype types.
+
+2012-11-10
+BF - fix broadcasting of area weights
+The area_weights function no longer raises ValueError referring to
+broadcasting of shapes when the lat/lon grid does not occupy the
+rightmost dimensions of the cube.
+
+Support for lat/lon dimensions that are not next to one another
+is included.
+
+Support for weights generated from scalar coordinates is included.
+
+2012-12-03
+Fixed lowercase github link.
+
+2012-11-30
+Updated tests, all tested
+
+2012-11-30
+Update to reflect the publication of the CLA.
+
+2012-11-20
+replace large COLPEX files with 'stock' data in test_plot
+
+2012-11-27
+Tweak comment and error text
+
+2012-11-27
+tests (using mock!)
+
+2012-11-27
+first results
+
+2012-11-23
+Faster masked array creation in merge
+
+2012-11-22
+Faster masked array creation in DataManager.
+
+2012-11-23
+Updated test class. Closes #178
+
+2012-11-21
+Deferred loading of AuxCoord points/bounds.
+
+2012-11-23
+new test file for cube
+
+2012-11-22
+Changed data_dim to an argument not keyword
+
+2012-11-20
+Fieldsfile and PP support for unpacked and CRAY 32-bit packed data.
+
+2012-11-21
+Cache netCDF attributes.
+
+2012-11-20
+Replaced "format_associations" results-file with literal in test_io_init  - also small PEP8 tweaks
+Replaced "format_associations" - missed bits
+
+2012-11-19
+replace very large testfiles with small ones in test_format_picker()
+
+2012-11-19
+refactored test_io_init.TestFileFormatPicker.test_format_picker for more flexible testing usage
+
+2012-11-15
+grib_rules.txt: tidied string formatting test_grib_load.py:   added comments highlightling partial PDT4.9 support   fix bug in temporary file management : use 'unittest.temp_filename' in preference to 'tempfile'   use unittest.temp_filename in place of tempfile methods   various PEP8 fixes for layout + naming
+
+2012-11-15
+Update test results to use relevant Cartopy
+
+2012-11-15
+Add fake travis configuration
+
+2012-11-14
+fix test comment in test_grib_load
+
+2012-11-14
+added partial support for GRIB2 PDT4.9 ; tidied test_grib_load
+
+2012-11-14
+tidied new tests and revised for different proposed solution
+
+2012-11-13
+added tests for GRIB ProductDefinition 4.9 and to fail unrecognised PDTs
+
+2012-11-09
+review actions
+
+2012-11-07
+Move cell tests into a separate file and add some new tests.
+
+2012-11-12
+Add CONTRIBUTING.md
+Fixes #100.
+
+2012-11-07
+Reinstate PP save rules to set LBFC only.
+
+2012-11-07
+Remove redundant and erroneous standard_name to LBFC/STASH PP save rules.
+
+2012-10-24
+tidy up
+
+2012-10-22
+grib1 unit 10 handling
+
+2012-10-24
+Update version number
+
+2012-10-17
+Whitespace tweak
+
+2012-10-17
+Update Iris version for bug-fix development.
+
+2012-10-17
+Release version 1.0.0
+
+2012-10-17
+less whitespace
+
+2012-10-17
+credit
+
+2012-10-17
+Update to GitWash.
+
+2012-10-17
+logo
+
+2012-10-17
+Update to sphinx autodoc documentation.
+
+2012-10-17
+Update to visual test result following orthographic fix in cartopy.
+
+2012-10-16
+explained second test
+
+2012-10-16
+ safer shape check
+
+2012-10-16
+requested tidy ups
+
+2012-10-16
+modify tests
+
+2012-10-12
+contig handling
+
+2012-10-04
+preferred logic
+
+2012-10-01
+new cell cmp
+
+2012-10-11
+review action
+
+2012-10-02
+linear: numpy masked append workaround
+
+2012-10-11
+Refactor for gitwash get and build process.
+
+2012-10-11
+Gitwash build and Iris URL update.
+
+2012-10-09
+Update test_plot.test_missing_cs expected png result for non-brewer palette.
+
+2012-10-09
+Revert version back to 1.0.0-dev after rc1 tag
+
+2012-10-09
+Release version 1.0.0rc1
+
+2012-10-09
+Undo mistaken version change on master.
+
+2012-10-09
+Release version 1.0.0rc1
+
+2012-10-08
+Release 1.0.0 documentation changes.
+
+2012-10-08
+Avoid unnecessary analysis imports.
+
+2012-10-05
+Removed some comments.
+
+2012-10-05
+Updated use of bluemarble (and the method that is no more).
+
+2012-10-05
+Removed use of _pretend_unrotated
+
+2012-10-05
+A quick word about future plans
+
+2012-10-05
+Further word tweaks.
+
+2012-10-05
+Wordage tweaks
+
+2012-10-04
+Major tidy-up.
+
+2012-10-04
+Initial removal of map_setup
+
+2012-10-05
+review actions
+
+2012-10-05
+Documentation updates.
+
+2012-10-05
+Actions rework
+
+2012-10-05
+test plot no cs
+
+2012-10-05
+nocsplot
+
+2012-10-04
+Turn off auto palette selection of brewer
+
+2012-10-04
+grib1 time bound
+
+2012-10-04
+import tidy up
+
+2012-10-04
+Additions to CHANGES and what's new.
+
+2012-09-21
+Added cube project function to iris.analysis.cartography.
+
+2012-10-04
+rebase fix
+
+2012-10-03
+Fix to whitespace issues.
+
+2012-10-02
+review actions
+
+2012-10-01
+no default cf cs
+
+2012-10-03
+Removed abbreviating time to avoid 'hours' -> 'h' and 'hours since 1800-01-01 00:00:00 -6:00' -> 'h @ 18000101T060000.0000000 UTC'.
+
+2012-09-27
+Changes to results of visual tests due to axis label changes.
+
+2012-09-18
+Added use of iris.iterate.izip to example, tidied up long lines and removed undesirable assignment to cube.units. Modified axis labelling to remove '1' and use symbol where possible to avoid 'kelvin' replacing 'K' in some cases.
+
+2012-10-03
+Minor correction to what's new and CHANGES, plus apostrophe.
+
+2012-09-11
+New load API.
+
+2012-10-03
+Update to changelog plus testing.
+
+2012-10-02
+Using tuples to contain dimensions in coord to dim mapping rather than lists to prevent inadvertent side effects from mutable type. Cube.coord_dims() now returns a tuple of ints.
+
+2012-09-04
+cartopy replaces basemap
+
+2012-09-27
+Nimrod loader patch, no scaling, fixed test contour levels.
+
+2012-09-25
+Add a "What's new" page to the documentation.
+
+2012-10-01
+bug fix: collapse nd bounds
+
+2012-09-28
+Sort filenames to ensure consistent order
+
+2012-09-27
+Extend attribute comparison to deal with NumPy arrays.
+
+2012-09-27
+Renaming of methods, changes to docstrings and removal of centre parameter from as_cartopy_projection method.
+
+2012-09-26
+Addition of cartopy_crs method to CoordSystem. Extracted from bblay's pycarto branch.
+
+2012-09-25
+Fixed final test.
+
+2012-09-25
+Fixed outline plotting to use a mono-colour.
+
+2012-09-25
+fixed failing cmap test results
+
+2012-09-25
+remaining acceptable image changes
+
+2012-09-24
+more ok images (plt and qplt)
+
+2012-09-24
+test_gribload: image ok
+
+2012-09-24
+images ok
+
+2012-09-24
+acceptable images (other images not committed)
+
+2012-09-24
+images ok
+
+2012-09-24
+test_mapping
+
+2012-09-24
+image changes, all ok
+
+2012-09-24
+Made the extests pass (via idiff). One failing (unacceptable bluemarble switch due to Basemap version issue).
+
+2012-09-24
+Reverted the display option when running tests. Made idiff super cool.
+
+2012-09-24
+Added extest images.
+
+2012-09-24
+Removed checksums, added images, updated iris/tests/__init__.py
+
+2012-09-24
+Line tweakage
+
+2012-09-24
+Added real image testing.
+
+2012-09-21
+Review action rework.
+
+2012-09-19
+New tests, and review tweaks.
+
+2012-09-19
+Review actions.
+
+2012-09-18
+Re-introduce Cynthia Brewer palettes.
+
+2012-09-17
+Fixes to unguarded access to circular attribute.
+
+2012-09-17
+First cut of hybrid-pressure for GRIB. NB. Now allows transformation of reference cubes.
+
+2012-09-17
+Allow GRIB loader to handle cross-references
+
+2012-09-17
+Remove test_trui, and cut the fat from test_uri_callback.py.
+
+2012-09-17
+Tidy-up newlines
+
+2012-09-14
+Excluded dist and build dirs from header search and removed use of StandardError.
+
+2012-09-14
+Removal of test data dependency from test_iterate.py, plus tidy up of long lines.
+
+2012-09-14
+Clarify generation of test data
+
+2012-09-14
+Add copyright/licence header check... and missing header
+
+2012-09-01
+Tidy up test_ff and convert to much smaller n48 dataset.
+
+2012-09-13
+Doc updates for new scalar coord summary.
+
+2012-09-13
+Update to cube summary for bounded scalar coords.
+
+2012-09-11
+Speed up test_cube_to_pp by switching to realistic_4d. Avoid triggering deprecation message. Minor readability improvements.
+
+2012-09-12
+review actions
+
+2012-08-15
+NIMROD loading
+
+2012-09-10
+review actions
+
+2012-09-07
+Fix to bug causing files to remain open after loading netCDF files. Plus removal of some long lines and tidy up of dictionary comprehension.
+
+2012-09-05
+docs and tests
+
+2012-09-05
+review actions
+
+2012-09-03
+test results
+
+2012-09-03
+code
+
+2012-09-06
+Speed up the CDM tests (and reduce dependency on test data).
+
+2012-09-05
+Moved new result file to new location.
+
+2012-09-05
+Handle zero-dimensional cubes
+
+2012-08-31
+Make netCDF save outermost dimension as unlimited
+
+2012-09-05
+Exposed merge keyword argument to public load api.
+
+2012-09-05
+Added info on in-place builds and removed unused references from text.
+
+2012-09-05
+Increased required GRIB api version to 1.9.16.
+
+2012-09-04
+Completion of review actions. 1) Update to libmo_unpack licence. 2) Removal of redundant svn related code in setup.py
+
+2012-09-03
+Removal of outdated DEPENDENCIES.txt and updates to INSTALL.
+
+2012-09-03
+Moving of tests and results to lib/iris/tests and lib/iris/tests/results
+
+2012-09-03
+Removal of symlinks (move of content to follow in subsequent commit).
+
+2012-09-03
+Changes to setup.py, plus the addition of a MANIFEST.in file, to copy/install appropriate files during installation and building of source distributions.
+
+2012-08-07
+Add hybrid-pressure representation. Merge time-varying reference cubes, and upgrade interpolation to cope. Units checking in hybrid coordinate constructors.
+
+2012-08-29
+removed and working
+
+2012-08-29
+review action
+
+2012-08-22
+fixed typo
+
+2012-08-22
+fixed the typo
+
+2012-08-16
+updated URLs
+
+2012-08-09
+Deprecation of Coord.cos() and Coord.sin(). Equivalent private functions added to calculus.py where they are used.
+
+2012-08-15
+Convert source from coord to attribute. Fixes #10
+
+2012-08-14
+Fixed typo in userguide.
+
+2012-08-14
+Removed details of earlier api change from docs.
+
+2012-08-14
+Sample data review actions.
+
+2012-08-10
+Pyke rules unicode warning tweak. Fixes #27.
+
+2012-08-13
+0.9 changelog
+
+2012-08-13
+following pull request comments
+
+2012-08-10
+Removed TEST_COMPAT related test code and OLD_XML code in coords.py and cube.py.
+
+2012-08-13
+build install in docs
+
+2012-08-10
+Resolved conflicts. Tests all passing. Updated extest results to use new data.
+
+2012-08-10
+Tweak to documentation conf.py to reduce doc build size.
+
+2012-08-10
+Updated documentation/docstrings to make more sense when using the new sample data.
+
+2012-08-10
+Fully working sample data usage.
+
+2012-08-10
+installation instructions
+
+2012-08-10
+For #30, update gitwash folder
+
+2012-08-10
+patch for IE9 support
+
+2012-08-10
+Cube merge dimension hint and ordering.
+
+2012-08-08
+Newline on docstrings.
+
+2012-08-08
+Removed space.
+
+2012-08-07
+All tests passing, shortened cml.
+
+2012-08-07
+Converted test doc-string to a comment.
+
+2012-08-07
+Graceful netCDF unit loading.
+
+2012-08-07
+Updated system_tests
+
+2012-08-07
+Fixed unit usage and updated a warning to be more explicit.
+
+2012-08-06
+Added additional test for the cube summary
+
+2012-08-06
+Cube summary misalignment and coordinate name clipping. Fixes #4.
+
+2012-08-06
+Initial commit
+
