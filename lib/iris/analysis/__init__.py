@@ -33,6 +33,7 @@ from copy import deepcopy
 
 import numpy as np
 import numpy.ma as ma
+import scipy.interpolate
 import scipy.stats.mstats
 
 import iris.coords
@@ -488,6 +489,108 @@ def _sum(array, **kwargs):
     return rvalue
 
 
+def _peak(array, **kwargs):
+    def column_segments(column):
+        nan_indices = np.where(np.isnan(column))[0]
+        columns = []
+
+        if len(nan_indices) == 0:
+            columns.append(column)
+        else:
+            for index, nan_index in enumerate(nan_indices):
+                if index == 0:
+                    if index != nan_index:
+                        columns.append(column[:nan_index])
+                elif nan_indices[index - 1] != (nan_index - 1):
+                    columns.append(column[nan_indices[index - 1] + 1:
+                                   nan_index])
+            if nan_indices[-1] != len(column) - 1:
+                columns.append(column[nan_indices[-1] + 1:])
+        return columns
+
+    def interp_order(length):
+        if length == 1:
+            k = None
+        elif length > 5:
+            k = 5
+        else:
+            k = length - 1
+        return k
+
+
+    # Collapse array to its final data shape.
+    slices = [slice(None)] * array.ndim
+    slices[-1] = 0
+
+    if isinstance(array.dtype, np.float):
+        data = array[slices]
+    else:
+        # Cast non-float data type.
+        data = array.astype('float32')[slices]
+
+    # Generate nd-index iterator over array.
+    shape = list(array.shape)
+    shape[-1] = 1
+    ndindices = np.ndindex(*shape)
+
+    for ndindex in ndindices:
+        ndindex_slice = list(ndindex)
+        ndindex_slice[-1] = slice(None)
+        column_slice = array[tuple(ndindex_slice)]
+
+        # Check if the column slice contains a single value, nans only,
+        # masked values only or if the values are all equal.
+        equal_slice = np.ones(column_slice.size,
+                              dtype=column_slice.dtype) * column_slice[0]
+        if column_slice.size == 1 or \
+                all(np.isnan(column_slice)) or \
+                ma.count(column_slice) == 0 or \
+                np.all(np.equal(equal_slice, column_slice)):
+            continue
+
+        # Check if the column slice is masked.
+        if ma.isMaskedArray(column_slice):
+            # Check if the column slice contains only nans, without inf
+            # or -inf values, regardless of the mask.
+            if not np.any(np.isfinite(column_slice)) and \
+                    not np.any(np.isinf(column_slice)):
+                data[ndindex[:-1]] = np.nan
+                continue
+
+            # Replace masked values with nans.
+            column_slice = column_slice.filled(np.nan)
+
+        # Determine the column segments that require a fitted spline.
+        columns = column_segments(column_slice)
+        column_peaks = []
+
+        for column in columns:
+            # Determine the interpolation order for the spline fit.
+            k = interp_order(column.size)
+
+            if k is None:
+                column_peaks.append(column[0])
+                continue
+
+            tck = scipy.interpolate.splrep(range(column.size), column, k=k)
+            npoints = column.size * 100
+            points = np.linspace(0, column.size - 1, npoints)
+            spline = scipy.interpolate.splev(points, tck)
+
+            column_max = np.max(column)
+            spline_max = np.max(spline)
+            # Check if the max value of the spline is greater than the
+            # max value of the column.
+            if spline_max > column_max:
+                column_peaks.append(spline_max)
+            else:
+                column_peaks.append(column_max)
+
+        data[ndindex[:-1]] = np.max(column_peaks)
+
+    return data
+
+
 #
 # Common partial Aggregation class constructors.
 #
@@ -602,6 +705,29 @@ The minimum, as computed by :func:`numpy.ma.min`.
 For example, to compute zonal minimums::
 
     result = cube.collapsed('longitude', iris.analysis.MIN)
+
+"""
+
+
+PEAK = Aggregator('Peak of {standard_name:s} {action:s} {coord_names:s}',
+                  'peak',
+                  _peak)
+"""
+The global peak value, from a spline interpolation of the cube data,
+along the coordinate axis.
+
+The peak calculation takes into account nan values, therefore if the number
+of non-nan values is zero the result itself will be an array of nan values.
+
+The peak calculation also takes into account masked values, therefore if the
+number of non-masked values is zero the result itself will be a masked array.
+
+If multiple coordinates are to be collapsed, the peak calculations are
+performed individually, in sequence, for each coordinate specified.
+
+For example, to compute the peak over time::
+
+    result = cube.collapsed('time', iris.analysis.PEAK)
 
 """
 
