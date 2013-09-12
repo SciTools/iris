@@ -237,19 +237,19 @@ class IrisTest(unittest.TestCase):
             result = np.load(reference_path)
             if isinstance(result, np.lib.npyio.NpzFile):
                 self.assertIsInstance(cube.data, ma.MaskedArray, 'Cube data was not a masked array.')
-                mask = result['mask']
-                # clear the cube's data where it is masked to avoid any non-initialised array data
-                cube.data.data[cube.data.mask] = cube.data.fill_value
-                np.testing.assert_array_almost_equal(cube.data.data, result['data'], *args, **kwargs)
-                np.testing.assert_array_equal(cube.data.mask, mask, *args, **kwargs)
+                # Avoid comparing any non-initialised array data.
+                data = cube.data.filled()
+                np.testing.assert_array_almost_equal(data, result['data'],
+                                                     *args, **kwargs)
+                np.testing.assert_array_equal(cube.data.mask, result['mask'])
             else:
                 np.testing.assert_array_almost_equal(cube.data, result, *args, **kwargs)
         else:
             self._ensure_folder(reference_path)
             logger.warning('Creating result file: %s', reference_path)
             if isinstance(cube.data, ma.MaskedArray):
-                # clear the cube's data where it is masked to avoid any non-initialised array data
-                data = cube.data.data[cube.data.mask] = cube.data.fill_value
+                # Avoid recording any non-initialised array data.
+                data = cube.data.filled()
                 np.savez(file(reference_path, 'wb'), data=data, mask=cube.data.mask)
             else:
                 np.save(file(reference_path, 'wb'), cube.data)
