@@ -18,13 +18,13 @@ git:
 
 install:
 
-  - export CARTOPY_REF="1fe7438b8f203a19b5855c2491622ee9001bb62c"
+  - export CARTOPY_REF="v0.9.0"
   - export CARTOPY_SUFFIX=$(echo "${CARTOPY_REF}" | sed "s/^v//")
 
-  - export IRIS_TEST_DATA_REF="37b937e46f059e1dce4b78a80b323646b8c9ca4c"
+  - export IRIS_TEST_DATA_REF="v1.4"
   - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
 
-  - export IRIS_SAMPLE_DATA_REF="2f279384eab2dcdef1728331ce1b22c95f775437"
+  - export IRIS_SAMPLE_DATA_REF="v1.1"
   - export IRIS_SAMPLE_DATA_SUFFIX=$(echo "${IRIS_SAMPLE_DATA_REF}" | sed "s/^v//")
 
 # add repo
@@ -47,7 +47,11 @@ install:
 
 # cfchecker
   - ./.travis_no_output sudo /usr/bin/pip install cdat-lite
-  - ./.travis_no_output sudo /usr/bin/pip install cfchecker
+# cfchecker via pip normally works, but we've found the pip interface to fail intermittently,
+# therefore we specify the full download url.
+#  - ./.travis_no_output sudo /usr/bin/pip install cfchecker
+  - ./.travis_no_output sudo /usr/bin/pip install https://pypi.python.org/packages/source/c/cfchecker/cfchecker-2.0.3.tar.gz#md5=54e780e8688ac743d1e21448a3901061
+
 # Using table 23 due to a bug present in the current version
   - ./.travis_no_output wget http://cf-pcmdi.llnl.gov/documents/cf-standard-names/standard-name-table/23/cf-standard-name-table.xml
 #  - ./.travis_no_output wget http://cf-pcmdi.llnl.gov/documents/cf-standard-names/standard-name-table/current/cf-standard-name-table.xml
