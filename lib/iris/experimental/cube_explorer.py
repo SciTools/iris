@@ -135,25 +135,51 @@ class CubeExplorer(object):
         if type(dim) is str:
             dim, = self.cube.coord_dims(self.cube.coord(dim))
 
-        plt.subplots_adjust(right=self.button_setup.col_margin)
-
         if type(self.current_slice[dim]) is slice:
             raise TypeError("Cannot iterate over a displayed dimension")
 
-        but_pos_a = self.button_setup.initial_but_a_pos
-        but_pos_a[1] -= slot*self.button_setup.slot_diff
-        self._butts[names_tup[0]] = Button(plt.axes(but_pos_a), names_tup[0])
-        self._butt_fns[names_tup[0]] = self._get_nav_fn(dim, 'inc', circular)
-        self._butts[names_tup[0]].on_clicked(self._butt_fns[names_tup[0]])
+        butt_funcs_tup = (self._get_nav_fn(dim, 'inc', circular),
+                          self._get_nav_fn(dim, 'dec', circular))
+        self._add_butt_pair(names_tup, butt_funcs_tup, slot)
 
-        but_pos_b = self.button_setup.initial_but_b_pos
-        but_pos_b[1] -= slot*self.button_setup.slot_diff
-        self._butts[names_tup[1]] = Button(plt.axes(but_pos_b), names_tup[1])
-        self._butt_fns[names_tup[1]] = self._get_nav_fn(dim, 'dec', circular)
-        self._butts[names_tup[1]].on_clicked(self._butt_fns[names_tup[1]])
+    def add_color_range_buttons(self, names_tup, delta, slot):
+        """
+        Adds two buttons to expand/contract the displayed
+        color range.
 
-        # set axis back to plot
-        plt.sca(self.ax)
+        Args:
+
+        * name_tup
+            A tuple of two srtings to be the names of the
+            expand and collapse range buttons respectively.
+
+        * delta
+            The amount to expand/contract each end of the
+            color range i.e. a delta of x will lower vmin
+            by x and increase vmax by x, increasing the
+            range by 2x.
+
+        * slot
+            Level of the plot to display this button set
+
+        """
+        if "vmin" in self._plot_kwargs and "vmax" in self._plot_kwargs:
+            def inc_col(event):
+                self._plot_kwargs["vmax"] += delta
+                self._plot_kwargs["vmin"] -= delta
+                self._refresh_plot()
+
+            def dec_col(event):
+                self._plot_kwargs["vmax"] -= delta
+                self._plot_kwargs["vmin"] += delta
+                self._refresh_plot()
+
+            self._add_butt_pair(names_tup,
+                                (inc_col, dec_col),
+                                slot)
+        else:
+            raise KeyError("Please set initial vmin and vmax values when"
+                           " initialising the cube_explorer.")
 
     def add_animate_buttons(self, dim, names_tup, slot=0, refresh_rate=0.2):
         """
@@ -177,28 +203,8 @@ class CubeExplorer(object):
 
         """
 
-        if type(dim) is str:
-            dim, = self.cube.coord_dims(self.cube.coord(dim))
-
-        plt.subplots_adjust(right=0.85)
-
-        self._butts[names_tup[0]] = Button(plt.axes([0.875,
-                                                     0.85-(slot*0.15),
-                                                     0.11, 0.05]),
-                                           names_tup[0])
-        self._butts[names_tup[1]] = Button(plt.axes([0.875,
-                                                     0.79-(slot*0.15),
-                                                     0.11, 0.05]),
-                                           names_tup[1])
-        play_fn, stop_fn = self._get_ani_fns(dim, refresh_rate)
-        self._butt_fns[names_tup[0]] = play_fn
-        self._butt_fns[names_tup[1]] = stop_fn
-
-        self._butts[names_tup[0]].on_clicked(self._butt_fns[names_tup[0]])
-        self._butts[names_tup[1]].on_clicked(self._butt_fns[names_tup[1]])
-
-        # set axis back to plot
-        plt.sca(self.ax)
+        butt_funcs_tup = self._get_ani_fns(dim, refresh_rate)
+        self._add_butt_pair(names_tup, butt_funcs_tup, slot)
 
     def add_picker(self, plot_func, *args, **kwargs):
         """
@@ -249,6 +255,28 @@ class CubeExplorer(object):
             plt.show()
 
         self.ax.figure.canvas.mpl_connect('pick_event', _on_pick)
+
+    def _add_butt_pair(self, names_tup, butt_funcs_tup, slot):
+        """
+        Assigns two functions to two buttons
+
+        """
+        plt.subplots_adjust(right=self.button_setup.col_margin)
+
+        but_pos_a = self.button_setup.initial_but_a_pos
+        but_pos_a[1] -= slot*self.button_setup.slot_diff
+        self._butts[names_tup[0]] = Button(plt.axes(but_pos_a), names_tup[0])
+        self._butt_fns[names_tup[0]] = butt_funcs_tup[0]
+        self._butts[names_tup[0]].on_clicked(self._butt_fns[names_tup[0]])
+
+        but_pos_b = self.button_setup.initial_but_b_pos
+        but_pos_b[1] -= slot*self.button_setup.slot_diff
+        self._butts[names_tup[1]] = Button(plt.axes(but_pos_b), names_tup[1])
+        self._butt_fns[names_tup[1]] = butt_funcs_tup[1]
+        self._butts[names_tup[1]].on_clicked(self._butt_fns[names_tup[1]])
+
+        # set axis back to plot
+        plt.sca(self.ax)
 
     def _make_plot(self):
         """
