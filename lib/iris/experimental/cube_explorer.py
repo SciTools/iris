@@ -202,6 +202,11 @@ class CubeExplorer(object):
             Number of seconds to wait between each frame.
 
         """
+        if type(dim) is str:
+            dim, = self.cube.coord_dims(self.cube.coord(dim))
+
+        if type(self.current_slice[dim]) is slice:
+            raise TypeError("Cannot iterate over a displayed dimension")
 
         butt_funcs_tup = self._get_ani_fns(dim, refresh_rate)
         self._add_butt_pair(names_tup, butt_funcs_tup, slot)
