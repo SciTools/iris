@@ -83,6 +83,12 @@ class CubeExplorer(object):
             Index tuple which gives a slice of cube
             which is compatible with plot_func.
 
+        Kwargs:
+
+        * hook:
+            A function that accepts the cube explorer
+            object to allow formatting of the plot.
+
         """
 
         self.cube = cube
@@ -207,8 +213,15 @@ class CubeExplorer(object):
             A plotting function that accepts a cube
             consisting of all the non-displayed dimensions.
 
+        Kwargs:
+
+        * hook:
+            A function that accepts the axes object of the
+            pop up plot, and the cube explorer object to
+            allow formatting of the pop up plot.
+
         """
-        ax_hook = kwargs.pop('ax_hook', None)
+        hook = kwargs.pop('hook', None)
         # add picker option to plot
         self._plot_kwargs['picker'] = kwargs.pop('picker', True)
         self._refresh_plot()
@@ -230,9 +243,9 @@ class CubeExplorer(object):
 
             plt.figure(num=None)
             plot_func(self.cube[tuple(s)], *args, **kwargs)
-            if ax_hook is not None:
-                ax = plt.gca()
-                ax_hook(ax)
+            if hook is not None:
+                popup_ax = plt.gca()
+                hook(popup_ax, self)
             plt.show()
 
         self.ax.figure.canvas.mpl_connect('pick_event', _on_pick)
