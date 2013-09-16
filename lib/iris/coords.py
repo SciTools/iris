@@ -938,14 +938,32 @@ class Coord(CFVariableMixin):
 
     def guess_bounds(self, bound_position=0.5):
         """
-        Try to add bounds to this coordinate using the coordinate's points.
+        Add contiguous bounds to a coordinate, calculated from its points.
+
+        Puts a cell boundary at the specified fraction between each point and
+        the next, plus extrapolated lowermost and uppermost bound points, so
+        that each point lies within a cell.
+
+        With regularly spaced points, the resulting bounds will also be
+        regular, and all points lie at the same position within their cell.
+        With irregular points, the first and last cells are given the same
+        widths as the ones next to them.
 
         Kwargs:
 
         * bound_position - The desired position of the bounds relative to the
                            position of the points.
 
-        This method only works for coordinates with ``coord.ndim == 1``.
+        .. note::
+
+            An error is raised if the coordinate already has bounds, is not
+            one-dimensional, or is not monotonic.
+
+        .. note::
+
+            Unevenly spaced values, such from a wrapped longitude range, can
+            produce unexpected results :  In such cases you should assign
+            suitable values directly to the bounds property, instead.
 
         """
         self.bounds = self._guess_bounds(bound_position)
