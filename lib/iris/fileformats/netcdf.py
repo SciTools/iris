@@ -93,11 +93,20 @@ _CF_CONVENTIONS_VERSION = 'CF-1.5'
 
 _FactoryDefn = collections.namedtuple('_FactoryDefn', ('primary', 'std_name',
                                                        'formula_terms_format'))
+
+_OCEAN_SIGMA_Z_FORMAT = 'sigma: {sigma} eta: {eta} depth: {depth} ' \
+    'depth_c: {depth_c} nsigma: {nsigma} zlev: {zlev}'
+
 _FACTORY_DEFNS = {
     iris.aux_factory.HybridHeightFactory: _FactoryDefn(
         primary='delta',
         std_name='atmosphere_hybrid_height_coordinate',
-        formula_terms_format='a: {delta} b: {sigma} orog: {orography}'), }
+        formula_terms_format='a: {delta} b: {sigma} orog: {orography}'),
+    iris.aux_factory.OceanSigmaZFactory: _FactoryDefn(
+        primary='zlev',
+        std_name='ocean_sigma_z_coordinate',
+        formula_terms_format=_OCEAN_SIGMA_Z_FORMAT),
+}
 
 
 class CFNameCoordMap(object):
@@ -398,22 +407,35 @@ def _load_aux_factory(engine, cf, filename, cube):
     Convert any CF-netCDF dimensionless coordinate to an AuxCoordFactory.
 
     """
+    def coord_from_var_name(name):
+        for coord, cf_var_name in engine.provides['coordinates']:
+            if cf_var_name == name:
+                return coord
+        raise ValueError('Unable to find coordinate for variable '
+                         '{!r}'.format(name))
+
     formula_type = engine.requires.get('formula_type')
 
     if formula_type == 'atmosphere_hybrid_height_coordinate':
-        def coord_from_var_name(name):
-            mapping = engine.provides['coordinates']
-            for coord, cf_var_name in engine.provides['coordinates']:
-                if cf_var_name == name:
-                    return coord
-            raise ValueError('Unable to find coordinate for variable '
-                             '{!r}'.format(name))
-        # Convert term names to coordinates (via netCDF variable names).
+        # Get the associated coordinates of the formula terms.
         terms_to_var_names = engine.requires['formula_terms']
         delta = coord_from_var_name(terms_to_var_names['a'])
         sigma = coord_from_var_name(terms_to_var_names['b'])
         orography = coord_from_var_name(terms_to_var_names['orog'])
         factory = iris.aux_factory.HybridHeightFactory(delta, sigma, orography)
+        cube.add_aux_factory(factory)
+
+    if formula_type == 'ocean_sigma_z_coordinate':
+        # Get the associated coordinates of the formula terms.
+        terms_to_var_names = engine.requires['formula_terms']
+        sigma = coord_from_var_name(terms_to_var_names['sigma'])
+        eta = coord_from_var_name(terms_to_var_names['eta'])
+        depth = coord_from_var_name(terms_to_var_names['depth'])
+        depth_c = coord_from_var_name(terms_to_var_names['depth_c'])
+        nsigma = coord_from_var_name(terms_to_var_names['nsigma'])
+        zlev = coord_from_var_name(terms_to_var_names['zlev'])
+        factory = iris.aux_factory.OceanSigmaZFactory(sigma, eta, depth,
+                                                      depth_c, nsigma, zlev)
         cube.add_aux_factory(factory)
 
 

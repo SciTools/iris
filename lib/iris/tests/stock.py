@@ -24,13 +24,12 @@ import os.path
 import numpy as np
 import numpy.ma as ma
 
-from iris.cube import Cube
 import iris.aux_factory
+from iris.coord_systems import GeogCS, RotatedGeogCS
+from iris.cube import Cube
 import iris.coords
 import iris.coords as icoords
 import iris.tests as tests
-from iris.coord_systems import GeogCS, RotatedGeogCS
-import numpy.ma as ma
 
 
 def lat_lon_cube():
@@ -371,6 +370,68 @@ def hybrid_height():
                           aux_factories=[hybrid_height])
     return cube
 
+
+def ocean_sigma_z():
+    """
+    Returns a four-dimensional (t, z, y, x) ocean sigma z stock cube.
+
+    """
+    t, z, y, x = shape = (2, 5, 2, 3)
+    data = np.arange(t * z * y * x, dtype=np.int32).reshape(shape)
+
+    latitude = iris.coords.DimCoord(np.arange(y, dtype=np.float32),
+                                    standard_name='latitude',
+                                    var_name='latitude',
+                                    units='degrees')
+    longitude = iris.coords.DimCoord(np.arange(x, dtype=np.float32),
+                                     standard_name='longitude',
+                                     var_name='longitude',
+                                     units='degrees')
+    model_level = iris.coords.DimCoord(np.arange(z, dtype=np.int32),
+                                       standard_name='model_level_number',
+                                       var_name='model_level_number')
+    time = iris.coords.DimCoord(np.arange(t) * 24., standard_name='time',
+                                var_name='time',
+                                units='hours since epoch')
+    sigma = iris.coords.AuxCoord(np.arange(-1, -(z + 1), -1, dtype=np.float32),
+                                 long_name='sigma',
+                                 var_name='sigma')
+    eta_data = np.ones((t, y, x), dtype=np.float32) * \
+        np.arange(2).reshape(t, 1, 1) + 1
+    eta = iris.coords.AuxCoord(eta_data,
+                               long_name='eta', var_name='eta', units='m')
+    depth_data = np.arange(y * x, dtype=np.float32).reshape(y, x) + 1 * 100
+    depth = iris.coords.AuxCoord(depth_data,
+                                 standard_name='depth',
+                                 var_name='depth',
+                                 units='m')
+    depth_c = iris.coords.AuxCoord(50., long_name='depth_c',
+                                   var_name='depth_c', units='m')
+    nsigma = iris.coords.AuxCoord(2, long_name='nsigma', var_name='nsigma')
+    attributes = dict(invalid_standard_name='ocean_sigma_z_coordinate')
+    zlev = iris.coords.AuxCoord(np.arange(z, dtype=np.float32),
+                                long_name='zlev', var_name='zlev', units='m',
+                                attributes=attributes)
+    ocean_sigma_z = iris.aux_factory.OceanSigmaZFactory(sigma, eta, depth,
+                                                        depth_c, nsigma, zlev)
+    cube = iris.cube.Cube(data,
+                          standard_name='sea_water_potential_temperature',
+                          var_name='sea_water_potential_temperature',
+                          units='K',
+                          attributes=dict(Conventions='CF-1.5'),
+                          dim_coords_and_dims=[(time, 0),
+                                               (model_level, 1),
+                                               (latitude, 2),
+                                               (longitude, 3)],
+                          aux_coords_and_dims=[(sigma, 1),
+                                               (eta, (0, 2, 3)),
+                                               (depth, (2, 3)),
+                                               (depth_c, ()),
+                                               (nsigma, ()),
+                                               (zlev, 1)],
+                          aux_factories=[ocean_sigma_z])
+    return cube
+    
 
 def simple_4d_with_hybrid_height():
     cube = iris.cube.Cube(np.arange(3*4*5*6, dtype='i8').reshape(3,4,5,6),

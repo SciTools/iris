@@ -454,7 +454,7 @@ class _CFFormulaTermsVariable(CFVariable):
             if nc_var_att is not None:
                 for match_item in _CF_PARSE.finditer(nc_var_att):
                     match_group = match_item.groupdict()
-                    term_name = match_group['lhs']
+                    term_name = match_group['lhs'].lower()
                     variable_name = match_group['rhs']
 
                     if variable_name not in ignore:
@@ -463,9 +463,10 @@ class _CFFormulaTermsVariable(CFVariable):
                                 message = 'Missing CF-netCDF formula term variable %r, referenced by netCDF variable %r'
                                 warnings.warn(message % (variable_name, nc_var_name))
                         else:
-                            result[variable_name] = _CFFormulaTermsVariable(variable_name,
-                                                                            variables[variable_name],
-                                                                            nc_var_name, term_name)
+                            formula_terms = result.setdefault(nc_var_name, [])
+                            formula_terms.append(_CFFormulaTermsVariable(variable_name, 
+                                                                         variables[variable_name], 
+                                                                         nc_var_name, term_name))
 
         return result
 
@@ -843,10 +844,13 @@ class CFReader(object):
             self.cf_group[name] = CFDataVariable(name, self._dataset.variables[name])
 
         # Identify and register all CF formula terms with the relevant CF variables.
-        formula_terms = _CFFormulaTermsVariable.identify(self._dataset.variables)
-        for cf_var in formula_terms.itervalues():
-            if cf_var.cf_name in self.cf_group:
-                self.cf_group[cf_var.cf_name].add_formula_term(cf_var.cf_root, cf_var.cf_term)
+        formula_terms_by_root = _CFFormulaTermsVariable.identify(
+            self._dataset.variables)
+        for formula_terms in formula_terms_by_root.itervalues():
+            for cf_var in formula_terms:
+                if cf_var.cf_name in self.cf_group:
+                    self.cf_group[cf_var.cf_name].add_formula_term(
+                        cf_var.cf_root, cf_var.cf_term)
 
     def _build_cf_groups(self):
         """Build the first order relationships between CF-netCDF variables."""

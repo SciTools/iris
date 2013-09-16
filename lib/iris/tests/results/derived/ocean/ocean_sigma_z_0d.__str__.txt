@@ -1,0 +1,15 @@
+sea_water_potential_temperature / (K) (scalar cube)
+     Scalar coordinates:
+          depth: 100.0 m
+          depth_c: 50.0 m
+          eta: 1.0 m
+          latitude: 0.0 degrees
+          longitude: 0.0 degrees
+          model_level_number: 0
+          nsigma: 2
+          sea_surface_height_above_reference_ellipsoid: 0.0 m
+          sigma: -1.0
+          time: 1970-01-01 00:00:00
+          zlev: 0.0 m
+     Attributes:
+          Conventions: CF-1.5

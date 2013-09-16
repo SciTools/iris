@@ -1,0 +1,84 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube standard_name="sea_water_potential_temperature" units="K" var_name="sea_water_potential_temperature">
+    <attributes>
+      <attribute name="Conventions" value="CF-1.5"/>
+    </attributes>
+    <coords>
+      <coord datadims="[2, 3]">
+        <auxCoord id="75d4896e" points="[[100.0, 101.0, 102.0],
+		[103.0, 104.0, 105.0]]" shape="(2, 3)" standard_name="depth" units="Unit('m')" value_type="float32" var_name="depth"/>
+      </coord>
+      <coord datadims="[0, 2, 3]">
+        <auxCoord id="88f339a7" long_name="eta" points="[[[1.0, 1.0, 1.0],
+ 		[1.0, 1.0, 1.0]],
+
+		[[2.0, 2.0, 2.0],
+ 		[2.0, 2.0, 2.0]]]" shape="(2, 2, 3)" units="Unit('m')" value_type="float64" var_name="eta"/>
+      </coord>
+      <coord datadims="[2]">
+        <dimCoord id="c7efdd09" points="[0.0, 1.0]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="latitude"/>
+      </coord>
+      <coord datadims="[3]">
+        <dimCoord id="a523d045" points="[0.0, 1.0, 2.0]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="longitude"/>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="f2bf14cc" points="[0, 1, 2, 3, 4]" shape="(5,)" standard_name="model_level_number" units="Unit('1')" value_type="int32" var_name="model_level_number"/>
+      </coord>
+      <coord>
+        <auxCoord id="8cbc98cf" long_name="nsigma" points="[2]" shape="(1,)" units="Unit('1')" value_type="int64" var_name="nsigma"/>
+      </coord>
+      <coord datadims="[0, 1, 2, 3]">
+        <auxCoord id="5e7bbdc1" points="[[[[0.0, 0.0, 0.0],
+  		[0.0, 0.0, 0.0]],
+
+ 		[[-1.0, -1.0, -1.0],
+  		[-1.0, -1.0, -1.0]],
+
+ 		[[2.0, 2.0, 2.0],
+  		[2.0, 2.0, 2.0]],
+
+ 		[[3.0, 3.0, 3.0],
+  		[3.0, 3.0, 3.0]],
+
+ 		[[4.0, 4.0, 4.0],
+  		[4.0, 4.0, 4.0]]],
+
+
+		[[[0.0, 0.0, 0.0],
+  		[0.0, 0.0, 0.0]],
+
+ 		[[-2.0, -2.0, -2.0],
+  		[-2.0, -2.0, -2.0]],
+
+ 		[[2.0, 2.0, 2.0],
+  		[2.0, 2.0, 2.0]],
+
+ 		[[3.0, 3.0, 3.0],
+  		[3.0, 3.0, 3.0]],
+
+ 		[[4.0, 4.0, 4.0],
+  		[4.0, 4.0, 4.0]]]]" shape="(2, 5, 2, 3)" standard_name="sea_surface_height_above_reference_ellipsoid" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+      <coord datadims="[1]">
+        <auxCoord id="5f88ebd6" long_name="sigma" points="[-1.0, -2.0, -3.0, -4.0, -5.0]" shape="(5,)" units="Unit('1')" value_type="float32" var_name="sigma"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="6a1b3c16" points="[0.0, 24.0]" shape="(2,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64" var_name="time"/>
+      </coord>
+      <coord datadims="[1]">
+        <auxCoord id="affea393" long_name="zlev" points="[0.0, 1.0, 2.0, 3.0, 4.0]" shape="(5,)" units="Unit('m')" value_type="float32" var_name="zlev">
+          <attributes>
+            <attribute name="invalid_standard_name" value="ocean_sigma_z_coordinate"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data byteorder="little" checksum="-0x268aa64c" dtype="int32" order="C" shape="(2, 5, 2, 3)"/>
+  </cube>
+</cubes>
