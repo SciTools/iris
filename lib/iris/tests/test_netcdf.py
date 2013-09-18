@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -43,6 +43,21 @@ import iris.std_names
 import iris.util
 import iris.coord_systems as icoord_systems
 import iris.tests.stock as stock
+
+
+@tests.skip_data
+def _write_nc_var(ds, name, dims=(), data=None, attributes={}):
+    """Helper to create a new netCDF4 Variable in a dataset."""
+    if data is None:
+        datatype = 'c'
+    else:
+        data = np.array(data)
+        datatype = data.dtype
+    nc_var = ds.createVariable(name, datatype, dims)
+    for att_name, att_val in attributes.iteritems():
+        nc_var.setncattr(att_name, att_val)
+    if data is not None:
+        nc_var[:] = data
 
 
 @tests.skip_data

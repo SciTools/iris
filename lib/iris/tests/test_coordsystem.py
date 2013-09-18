@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -311,12 +311,12 @@ class Test_TransverseMercator_as_cartopy_projection(tests.IrisTest):
 class Test_LambertConformal(tests.GraphicsTest):
 
     def test_north_cutoff(self):
-        lcc = LambertConformal(0, 0, secant_latitudes=(30, 60))
+        lcc = LambertConformal(0, 0, standard_parallels=(30, 60))
         ccrs = lcc.as_cartopy_crs()
         self.assertEqual(ccrs.cutoff, -30)
 
     def test_south_cutoff(self):
-        lcc = LambertConformal(0, 0, secant_latitudes=(-30, -60))
+        lcc = LambertConformal(0, 0, standard_parallels=(-30, -60))
         ccrs = lcc.as_cartopy_crs()
         self.assertEqual(ccrs.cutoff, 30)
 

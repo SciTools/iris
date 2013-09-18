@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2015, Met Office
 #
 # This file is part of Iris.
 #
@@ -559,7 +559,7 @@ class GribWrapper(object):
             LambertConformal = iris.coord_systems.LambertConformal
             self.extra_keys['_coord_system'] = LambertConformal(
                 self.LaDInDegrees, self.LoVInDegrees, 0, 0,
-                secant_latitudes=(self.Latin1InDegrees, self.Latin2InDegrees),
+                standard_parallels=(self.Latin1InDegrees, self.Latin2InDegrees),
                 ellipsoid=geoid)
         else:
             raise TranslationError("unhandled grid type: {}".format(gridType))

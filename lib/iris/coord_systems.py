@@ -22,6 +22,7 @@ Definitions of coordinate systems.
 from __future__ import (absolute_import, division, print_function)
 
 from abc import ABCMeta, abstractmethod
+import numpy as np
 import warnings
 
 import cartopy
@@ -704,7 +705,7 @@ class LambertConformal(CoordSystem):
 
     def __init__(self, central_lat=39.0, central_lon=-96.0,
                  false_easting=0.0, false_northing=0.0,
-                 secant_latitudes=(33, 45), ellipsoid=None):
+                 standard_parallels=(33, 45), ellipsoid=None):
         """
         Constructs a LambertConformal coord system.
 
@@ -724,8 +725,8 @@ class LambertConformal(CoordSystem):
 
         Kwargs:
 
-            * secant_latitudes
-                    Latitudes of secant intersection.
+            * standard_parallels
+                    Latitudes of secant intersection.  One or two values.
 
             * ellipsoid
                     :class:`GeogCS` defining the ellipsoid.
@@ -735,10 +736,9 @@ class LambertConformal(CoordSystem):
             Default arguments are for the familiar USA map:
             central_lon=-96.0, central_lat=39.0,
             false_easting=0.0, false_northing=0.0,
-            secant_latitudes=(33, 45)
+            standard_parallels=(33, 45)
 
         """
-
         #: True latitude of planar origin in degrees.
         self.central_lat = central_lat
         #: True longitude of planar origin in degrees.
@@ -747,23 +747,23 @@ class LambertConformal(CoordSystem):
         self.false_easting = false_easting
         #: Y offset from planar origin in metres.
         self.false_northing = false_northing
-        #: The two standard parallels of the cone.
-        self.secant_latitudes = secant_latitudes
+        #: The standard parallel(s) of the cone.
+        self.standard_parallels = list(np.array(standard_parallels, ndmin=1))
         #: Ellipsoid definition.
         self.ellipsoid = ellipsoid
 
     def __repr__(self):
         return "LambertConformal(central_lat={!r}, central_lon={!r}, "\
                "false_easting={!r}, false_northing={!r}, "\
-               "secant_latitudes={!r}, ellipsoid={!r})".format(
+               "standard_parallels={!r}, ellipsoid={!r})".format(
                    self.central_lat, self.central_lon,
                    self.false_easting, self.false_northing,
-                   self.secant_latitudes, self.ellipsoid)
+                   self.standard_parallels, self.ellipsoid)
 
     def as_cartopy_crs(self):
         # We're either north or south polar. Set a cutoff accordingly.
-        if self.secant_latitudes is not None:
-            lats = self.secant_latitudes
+        if self.standard_parallels is not None:
+            lats = self.standard_parallels
             max_lat = lats[0] if abs(lats[0]) > abs(lats[1]) else lats[1]
             cutoff = -30 if max_lat > 0 else 30
         else:
@@ -774,11 +774,11 @@ class LambertConformal(CoordSystem):
         else:
             globe = ccrs.Globe()
 
-        # Cartopy v0.12 deprecated the use of secant_latitudes.
+        # Cartopy v0.12 deprecated the use of standard_parallels.
         if cartopy.__version__ < '0.12':
-            conic_position = dict(secant_latitudes=self.secant_latitudes)
+            conic_position = dict(secant_latitudes=self.standard_parallels)
         else:
-            conic_position = dict(standard_parallels=self.secant_latitudes)
+            conic_position = dict(standard_parallels=self.standard_parallels)
 
         return ccrs.LambertConformal(
             central_longitude=self.central_lon,
