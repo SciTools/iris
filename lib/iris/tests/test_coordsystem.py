@@ -322,6 +322,34 @@ class Test_LambertConformal(tests.GraphicsTest):
         ccrs = lcc.as_cartopy_crs()
         self.assertEqual(ccrs.cutoff, 30)
 
+    def test_default(self):
+        lcc = LambertConformal()
+        self.assertNotEqual(lcc.secant_latitudes[0], 0.0)
+        self.assertNotEqual(lcc.secant_latitudes[1], 0.0)
+        self.assertNotEqual(lcc.central_lat, 0.0)
+        self.assertNotEqual(lcc.central_lon, 0.0)
+
+    def test_modified_centre(self):
+        lcc = LambertConformal(75.2, -34.5)
+        self.assertNotEqual(lcc.secant_latitudes[0], 0.0)
+        self.assertNotEqual(lcc.secant_latitudes[1], 0.0)
+        self.assertEqual(lcc.central_lat, 75.2)
+        self.assertEqual(lcc.central_lon, -34.5)
+
+    def test_modified_parallels(self):
+        lcc = LambertConformal(secant_latitudes=(25.4, 57.3))
+        self.assertEqual(lcc.secant_latitudes[0], 25.4)
+        self.assertEqual(lcc.secant_latitudes[1], 57.3)
+        self.assertEqual(lcc.central_lat, 0.0)
+        self.assertEqual(lcc.central_lon, 0.0)
+
+    def test_1sp(self):
+        lcc = LambertConformal(secant_latitudes=43.2)
+        self.assertEqual(lcc.secant_latitudes[0], 43.2)
+        self.assertEqual(lcc.secant_latitudes[1], 43.2)
+        self.assertEqual(lcc.central_lat, 0.0)
+        self.assertEqual(lcc.central_lon, 0.0)
+
 
 if __name__ == "__main__":
     tests.main()

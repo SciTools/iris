@@ -44,6 +44,20 @@ import iris.coord_systems as icoord_systems
 import iris.tests.stock as stock
 
 
+def _write_nc_var(ds, name, dims=(), data=None, attributes={}):
+    """Helper to create a new netCDF4 Variable in a dataset."""
+    if data is None:
+        datatype = 'c'
+    else:
+        data = np.array(data)
+        datatype = data.dtype
+    nc_var = ds.createVariable(name, datatype, dims)
+    for att_name, att_val in attributes.iteritems():
+        nc_var.setncattr(att_name, att_val)
+    if data is not None:
+        nc_var[:] = data
+
+
 @iris.tests.skip_data
 class TestNetCDFLoad(tests.IrisTest):
     def test_monotonic(self):
@@ -144,6 +158,65 @@ class TestNetCDFLoad(tests.IrisTest):
                          expected)
         self.assertEqual(cube.coord('projection_y_coordinate').coord_system,
                          expected)
+
+    def _test_load_lambert_conformal(self, parallels, centre_latlons):
+        # Check load of Lambert Conformal with given parameters.
+        central_lat, central_lon = centre_latlons
+        # create a temporary netcdf file + read a cube from it
+        with self.temp_filename(suffix='.nc') as temp_ncpath:
+            with nc.Dataset(temp_ncpath, 'w') as ds:
+                nx, ny = 6, 4
+                ds.createDimension('x', nx)
+                ds.createDimension('y', ny)
+                _write_nc_var(ds, 'x', dims=('x'),
+                              data=np.linspace(0.0, 100.0, nx),
+                              attributes=
+                                  {'units': 'km',
+                                   'standard_name': 'projection_x_coordinate'})
+                _write_nc_var(ds, 'y', dims=('y'),
+                              data=np.linspace(0.0, 100.0, ny),
+                              attributes=
+                                  {'units': 'km',
+                                   'standard_name': 'projection_y_coordinate'})
+                _write_nc_var(
+                    ds, 'Lambert_Conformal',
+                    attributes={'grid_mapping_name':
+                                'lambert_conformal_conic',
+                                'standard_parallel': parallels,
+                                'latitude_of_projection_origin': central_lat,
+                                'longitude_of_central_meridian': central_lon})
+                _write_nc_var(ds, 'temperature', dims=('y', 'x'),
+                              data=np.zeros((ny, nx)),
+                              attributes={'units': 'K',
+                                          'standard_name': 'air_temperature',
+                                          'grid_mapping': 'Lambert_Conformal'})
+            # load file as a single cube
+            cube, = iris.fileformats.netcdf.load_cubes([temp_ncpath])
+
+        # test cube properties as required
+        x_coord = cube.coord(axis='x')
+        self.assertEqual(x_coord.name(), 'projection_x_coordinate')
+        cs = x_coord.coord_system
+        self.assertEqual(cs.grid_mapping_name, 'lambert_conformal')
+        self.assertEqual(cs.central_lat, central_lat)
+        self.assertEqual(cs.central_lon, central_lon)
+        if len(parallels) == 1:
+            self.assertEqual(cs.secant_latitudes,
+                             (parallels[0], parallels[0]))
+        else:
+            self.assertEqual(cs.secant_latitudes, parallels)
+
+    def test_load_lambert_conformal_1sp(self):
+        # Check Lambert Conformal load with a single parallel.
+        self._test_load_lambert_conformal(
+            parallels=(50.0,),
+            centre_latlons=(50.0, 107.0))
+
+    def test_load_lambert_conformal_2sp(self):
+        # Check Lambert Conformal load with two parallels.
+        self._test_load_lambert_conformal(
+            parallels=(-35.3, -73.0),
+            centre_latlons=(-51.2, 137.0))
 
     def test_missing_climatology(self):
         # Check we can cope with a missing climatology variable.
