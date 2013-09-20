@@ -477,7 +477,7 @@ class TestAggregators(tests.IrisTest):
         # verify 2d weighted sum is correct
         cube = tests.stock.simple_2d()
         weights = np.array([.3, .4, .3])
-        weights = iris.util.broadcast_weights(weights, cube.data, [0])
+        weights = iris.util.broadcast_to_shape(weights, cube.shape, [0])
         result = cube.collapsed('bar', iris.analysis.SUM, weights=weights)
         self.assertArrayAlmostEqual(result.data, np.array([4., 5., 6., 7.]))
         self.assertCML(result, ('analysis', 'sum_weighted_2d.cml'),

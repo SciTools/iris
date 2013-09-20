@@ -357,20 +357,17 @@ def area_weights(cube, normalize=False):
         raise iris.exceptions.NotYetImplementedError(
             "Point-based weighting algorithm not yet identified")
 
-    # Do we need to transpose?
-    # Quadrant_area always returns shape (y,x)
-    # Does the cube have them the other way round?
-    if lon_dim < lat_dim:
-        ll_weights = ll_weights.transpose()
-
     # Normalize the weights if necessary.
     if normalize:
         ll_weights /= ll_weights.sum()
 
-    # Now we create an array of weights for each cell.
-    broad_weights = iris.util.broadcast_weights(ll_weights,
-                                                cube.data,
-                                                (lat_dim, lon_dim))
+    # Now we create an array of weights for each cell. This process will
+    # handle adding the required extra dimensions and also take care of
+    # the order of dimensions.
+    broadcast_dims = filter(lambda x: x is not None, (lat_dim, lon_dim))
+    broad_weights = iris.util.broadcast_to_shape(ll_weights.squeeze(),
+                                                 cube.shape,
+                                                 broadcast_dims)
 
     return broad_weights
 
@@ -441,16 +438,14 @@ def cosine_latitude_weights(cube):
                       'clipped to the valid range.',
                       UserWarning)
     points = lat.points
-    if len(lat_dims) > 1:
-        # Ensure the dimension order of the points array matches the cube.
-        order = np.argsort(lat_dims)
-        points = points.transpose(order)
     l_weights = np.cos(points).clip(0., 1.)
 
-    # Create weights for each grid point.
-    broad_weights = iris.util.broadcast_weights(l_weights,
-                                                cube.data,
-                                                lat_dims)
+    # Create weights for each grid point. This operation handles adding extra
+    # dimensions and also the order of the dimensions.
+    broadcast_dims = filter(lambda x: x is not None, lat_dims)
+    broad_weights = iris.util.broadcast_to_shape(l_weights.squeeze(),
+                                                 cube.shape,
+                                                 broadcast_dims)
 
     return broad_weights
 
