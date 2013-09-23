@@ -35,6 +35,7 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
+import iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc as pyke_rules
 import iris.fileformats.netcdf
 import iris.std_names
 import iris.util
@@ -209,6 +210,28 @@ class TestNetCDFLoad(tests.IrisTest):
 
         self.assertCML(cube0, ('netcdf', 'netcdf_units_0.cml'))
         self.assertCML(cube1, ('netcdf', 'netcdf_units_1.cml'))
+
+
+class TestNetCDFCRS(tests.IrisTest):
+    def setUp(self):
+        class Var(object):
+            pass
+
+        self.grid = Var()
+
+    def test_lat_lon_major_minor(self):
+        major = 63781370
+        minor = 63567523
+        self.grid.semi_major_axis = major
+        self.grid.semi_minor_axis = minor
+        crs = pyke_rules.build_coordinate_system(self.grid)
+        self.assertEqual(crs, icoord_systems.GeogCS(major, minor))
+
+    def test_lat_lon_earth_radius(self):
+        earth_radius = 63700000
+        self.grid.earth_radius = earth_radius
+        crs = pyke_rules.build_coordinate_system(self.grid)
+        self.assertEqual(crs, icoord_systems.GeogCS(earth_radius))
 
 
 class SaverPermissions(tests.IrisTest):
