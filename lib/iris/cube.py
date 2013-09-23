@@ -2064,11 +2064,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
                 if isinstance(data, ma.MaskedArray):
                     # Fill in masked values to avoid the checksum being
-                    # sensitive to unused numbers.
-                    crc = hex(zlib.crc32(normalise(data.filled())))
+                    # sensitive to unused numbers. Use a fixed value so
+                    # a change in fill_value doesn't affect the
+                    # checksum.
+                    crc = hex(zlib.crc32(normalise(data.filled(0))))
                     data_xml_element.setAttribute("checksum", crc)
                     crc = hex(zlib.crc32(normalise(data.mask)))
                     data_xml_element.setAttribute("mask_checksum", crc)
+                    data_xml_element.setAttribute('fill_value',
+                                                  str(data.fill_value))
                 else:
                     crc = hex(zlib.crc32(normalise(data)))
                     data_xml_element.setAttribute("checksum", crc)
