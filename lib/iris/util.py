@@ -26,6 +26,7 @@ import os
 import sys
 import tempfile
 import time
+import warnings
 
 import numpy as np
 import numpy.ma as ma
@@ -59,14 +60,47 @@ def broadcast_weights(weights, array, dims):
         longitude dimension in *array*.
 
     """
-    # Create a shape array, which *weights* can be re-shaped to, allowing
+    warnings.warn('utils.broadcast_weights() will be depreciated in the next'
+                  'version of Iris. Please use utils.broadcast_array() instead.')
+    broadcast_array(weights, array, dims)
+
+
+def broadcast_array(sub_array, array, dims):
+    """
+    Broadcast a sub_array array to the shape of another array.
+
+    Each dimension of the sub_array array must correspond to a dimension
+    of the other array.
+
+    Args:
+
+    * sub_array (:class:`numpy.ndarray`-like):
+        An array of sub_array to broadcast.
+
+    * array (:class:`numpy.ndarray`-like):
+        An array whose shape is the target shape for *sub_array*.
+
+    * dims (:class:`list` :class:`tuple` etc.):
+        A sequence of dimension indices, specifying which dimensions of
+        *array* are represented in *sub_array*. The order the dimensions
+        are given in is not important, but the order of the dimensions
+        in *sub_array* should be the same as the relative ordering of the
+        corresponding dimensions in *array*. For example, if *array* is
+        4d with dimensions (ntime, nlev, nlat, nlon) and *sub_array*
+        provides latitude-longitude grid weightings then *dims* could be
+        set to [2, 3] or [3, 2] but *sub_array* must have shape
+        (nlat, nlon) since the latitude dimension comes before the
+        longitude dimension in *array*.
+
+    """
+    # Create a shape array, which *sub_array* can be re-shaped to, allowing
     # them to be broadcast with *array*.
-    weights_shape = np.ones(array.ndim)
+    sub_array_shape = np.ones(array.ndim)
     for dim in dims:
         if dim is not None:
-            weights_shape[dim] = array.shape[dim]
+            sub_array_shape[dim] = array.shape[dim]
     # Broadcast the arrays together.
-    return np.broadcast_arrays(weights.reshape(weights_shape), array)[0]
+    return np.broadcast_arrays(sub_array.reshape(sub_array_shape), array)[0]
 
 
 def delta(ndarray, dimension, circular=False):
