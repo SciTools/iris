@@ -26,6 +26,7 @@ import os
 import sys
 import tempfile
 import time
+import warnings
 
 import numpy as np
 import numpy.ma as ma
@@ -37,6 +38,10 @@ def broadcast_weights(weights, array, dims):
 
     Each dimension of the weights array must correspond to a dimension
     of the other array.
+
+    .. deprecated:: 1.6
+
+       Please use :func:`~iris.util.broadcast_to_shape()`.
 
     Args:
 
@@ -59,6 +64,10 @@ def broadcast_weights(weights, array, dims):
         longitude dimension in *array*.
 
     """
+    warnings.warn('broadcast_weights() is deprecated and will be removed '
+                  'in a future release. Consider converting existing code '
+                  'to use broadcast_to_shape() as a replacement.',
+                  stacklevel=2)
     # Create a shape array, which *weights* can be re-shaped to, allowing
     # them to be broadcast with *array*.
     weights_shape = np.ones(array.ndim)
@@ -67,6 +76,64 @@ def broadcast_weights(weights, array, dims):
             weights_shape[dim] = array.shape[dim]
     # Broadcast the arrays together.
     return np.broadcast_arrays(weights.reshape(weights_shape), array)[0]
+
+
+def broadcast_to_shape(array, shape, dim_map):
+    """
+    Broadcast an array to a given shape.
+
+    Each dimension of the array must correspond to a dimension in the
+    given shape. Striding is used to repeat the array until it matches
+    the desired shape, returning repeated views on the original array.
+    If you need to write to the resulting array, make a copy first.
+
+    Args:
+
+    * array (:class:`numpy.ndarray`-like)
+        An array to broadcast.
+
+    * shape (:class:`list`, :class:`tuple` etc.):
+        The shape the array should be broadcast to.
+
+    * dim_map (:class:`list`, :class:`tuple` etc.):
+        A mapping of the dimensions of *array* to their corresponding
+        element in *shape*. *dim_map* must be the same length as the
+        number of dimensions in *array*. Each element of *dim_map*
+        corresponds to a dimension of *array* and its value provides
+        the index in *shape* which the dimension of *array* corresponds
+        to, so the first element of *dim_map* gives the index of *shape*
+        that corresponds to the first dimension of *array* etc.
+
+    Examples:
+
+    Broadcasting an array of shape (2, 3) to the shape (5, 2, 6, 3)
+    where the first dimension of the array corresponds to the second
+    element of the desired shape and the second dimension of the array
+    corresponds to the fourth element of the desired shape::
+
+        a = np.array([[1, 2, 3], [4, 5, 6]])
+        b = broadcast_to_shape(a, (5, 2, 6, 3), (1, 3))
+
+    Broadcasting an array of shape (48, 96) to the shape (96, 48, 12)::
+
+        # a is an array of shape (48, 96)
+        result = broadcast_to_shape(a, (96, 48, 12), (1, 0))
+
+    """
+    if len(dim_map) != array.ndim:
+        # We must check for this condition here because we cannot rely on
+        # getting an error from numpy if the dim_map argument is not the
+        # correct length, we might just get a segfault.
+        raise ValueError('dim_map must have an entry for every '
+                         'dimension of the input array')
+    strides = [0] * len(shape)
+    for idim, dim in enumerate(dim_map):
+        if shape[dim] != array.shape[idim]:
+            # We'll get garbage values if the dimensions of array are not
+            # those indicated by shape.
+            raise ValueError('shape and array are not compatible')
+        strides[dim] = array.strides[idim]
+    return np.lib.stride_tricks.as_strided(array, shape=shape, strides=strides)
 
 
 def delta(ndarray, dimension, circular=False):

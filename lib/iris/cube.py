@@ -2734,8 +2734,8 @@ window of length 3 over tim...
                     raise ValueError('Weights for rolling window aggregation '
                                      'must be a 1d array with the same length '
                                      'as the window.')
-                newkwargs['weights'] = iris.util.broadcast_weights(
-                    weights, rolling_window_data, [dimension + 1])
+                newkwargs['weights'] = iris.util.broadcast_to_shape(
+                    weights, rolling_window_data.shape, (dimension + 1,))
         new_cube.data = aggregator.aggregate(rolling_window_data,
                                              axis=dimension + 1,
                                              **newkwargs)
