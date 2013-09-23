@@ -672,6 +672,24 @@ class TestAreaWeightGeneration(tests.IrisTest):
         weights = iris.analysis.cartography.area_weights(cube)
         self.assertEqual(weights.shape, cube.shape)
 
+    def test_area_weights_singleton_latitude(self):
+        # singleton (1-point) latitude dimension
+        cube = self.cube[:, :, 0:1, :]
+        weights = iris.analysis.cartography.area_weights(cube)
+        self.assertEqual(weights.shape, cube.shape)
+
+    def test_area_weights_singleton_longitude(self):
+        # singleton (1-point) longitude dimension
+        cube = self.cube[:, :, :, 0:1]
+        weights = iris.analysis.cartography.area_weights(cube)
+        self.assertEqual(weights.shape, cube.shape)
+
+    def test_area_weights_singletons(self):
+        # singleton (1-point) latitude and longitude dimensions
+        cube = self.cube[:, :, 0:1, 0:1]
+        weights = iris.analysis.cartography.area_weights(cube)
+        self.assertEqual(weights.shape, cube.shape)
+
     def test_area_weights_normalized(self):
         # normalized area weights must sum to one over lat/lon dimensions.
         weights = iris.analysis.cartography.area_weights(self.cube,
@@ -721,6 +739,14 @@ class TestLatitudeWeightGeneration(tests.IrisTest):
         self.assertAlmostEqual(weights[0, 0],
                                np.cos(np.deg2rad(self.lat1d[0])))
 
+    def test_cosine_latitude_weights_1d_singleton(self):
+        # singleton (1-point) 1d latitude coordinate (time, lat, lon)
+        cube = self.cube_dim_lat[:, 0:1, :]
+        weights = iris.analysis.cartography.cosine_latitude_weights(cube)
+        self.assertEqual(weights.shape, cube.shape)
+        self.assertAlmostEqual(weights[0, 0, 0],
+                               np.cos(np.deg2rad(self.lat1d[0])))
+
     def test_cosine_latitude_weights_1d(self):
         # 1d latitude coordinate (time, lat, lon)
         weights = iris.analysis.cartography.cosine_latitude_weights(
@@ -748,6 +774,30 @@ class TestLatitudeWeightGeneration(tests.IrisTest):
         self.assertEqual(weights.shape, self.cube_dim_lat.shape)
         self.assertArrayAlmostEqual(weights[0, 0, :],
                                     np.cos(np.deg2rad(self.lat1d)))
+
+    def test_cosine_latitude_weights_2d_singleton1(self):
+        # 2d latitude coordinate with first dimension singleton
+        cube = self.cube_aux_lat[:, 0:1, :]
+        weights = iris.analysis.cartography.cosine_latitude_weights(cube)
+        self.assertEqual(weights.shape, cube.shape)
+        self.assertArrayAlmostEqual(weights[0, :, :],
+                                    np.cos(np.deg2rad(self.lat2d[0:1, :])))
+
+    def test_cosine_latitude_weights_2d_singleton2(self):
+        # 2d latitude coordinate with second dimension singleton
+        cube = self.cube_aux_lat[:, :, 0:1]
+        weights = iris.analysis.cartography.cosine_latitude_weights(cube)
+        self.assertEqual(weights.shape, cube.shape)
+        self.assertArrayAlmostEqual(weights[0, :, :],
+                                    np.cos(np.deg2rad(self.lat2d[:, 0:1])))
+
+    def test_cosine_latitude_weights_2d_singleton3(self):
+        # 2d latitude coordinate with both dimensions singleton
+        cube = self.cube_aux_lat[:, 0:1, 0:1]
+        weights = iris.analysis.cartography.cosine_latitude_weights(cube)
+        self.assertEqual(weights.shape, cube.shape)
+        self.assertArrayAlmostEqual(weights[0, :, :],
+                                    np.cos(np.deg2rad(self.lat2d[0:1, 0:1])))
 
     def test_cosine_latitude_weights_2d(self):
         # 2d latitude coordinate (time, lat, lon)

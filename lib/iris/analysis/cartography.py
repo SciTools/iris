@@ -365,7 +365,12 @@ def area_weights(cube, normalize=False):
     # handle adding the required extra dimensions and also take care of
     # the order of dimensions.
     broadcast_dims = filter(lambda x: x is not None, (lat_dim, lon_dim))
-    broad_weights = iris.util.broadcast_to_shape(ll_weights.squeeze(),
+    wshape = []
+    for idim, dim in zip((0, 1), (lat_dim, lon_dim)):
+        if dim is not None:
+            wshape.append(ll_weights.shape[idim])
+    ll_weights = ll_weights.reshape(wshape)
+    broad_weights = iris.util.broadcast_to_shape(ll_weights,
                                                  cube.shape,
                                                  broadcast_dims)
 
@@ -443,7 +448,12 @@ def cosine_latitude_weights(cube):
     # Create weights for each grid point. This operation handles adding extra
     # dimensions and also the order of the dimensions.
     broadcast_dims = filter(lambda x: x is not None, lat_dims)
-    broad_weights = iris.util.broadcast_to_shape(l_weights.squeeze(),
+    wshape = []
+    for idim, dim in enumerate(lat_dims):
+        if dim is not None:
+            wshape.append(l_weights.shape[idim])
+    l_weights = l_weights.reshape(wshape)
+    broad_weights = iris.util.broadcast_to_shape(l_weights,
                                                  cube.shape,
                                                  broadcast_dims)
 
