@@ -1133,16 +1133,16 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
         # This pp field has no missing data values
         cube = iris.load_cube(tests.get_data_path(["PP", "mdi_handmade_small", "mdi_test_1000_3.pp"]))
 
-        self.assertTrue(isinstance(cube.data, np.ndarray), "Expected a numpy.ndarray")
+        self.assertIsInstance(cube.data, np.ndarray)
 
     def test_masked_field(self):
         # This pp field has some missing data values
         cube = iris.load_cube(tests.get_data_path(["PP", "mdi_handmade_small", "mdi_test_1000_0.pp"]))
-        self.assertTrue(isinstance(cube.data, ma.core.MaskedArray), "Expected a numpy.ma.core.MaskedArray")
+        self.assertIsInstance(cube.data, ma.core.MaskedArray)
 
     def test_missing_file(self):
         cube = self._load_3d_cube()
-        self.assertTrue(isinstance(cube.data, ma.core.MaskedArray), "Expected a numpy.ma.core.MaskedArray")
+        self.assertIsInstance(cube.data, ma.core.MaskedArray)
         self.assertCML(cube, ('cdm', 'masked_cube.cml'))
         
     def test_slicing(self):
@@ -1151,16 +1151,16 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
         # Test the slicing before deferred loading
         full_slice = cube[3]
         partial_slice = cube[0]
-        self.assertTrue(isinstance(full_slice.data, np.ndarray), "Expected a numpy array")
-        self.assertTrue(isinstance(partial_slice.data, ma.core.MaskedArray), "Expected a numpy.ma.core.MaskedArray")
+        self.assertIsInstance(full_slice.data, np.ndarray)
+        self.assertIsInstance(partial_slice.data, ma.core.MaskedArray)
         self.assertEqual(ma.count_masked(partial_slice._data), 25)
 
         # Test the slicing is consistent after deferred loading
         cube.data
         full_slice = cube[3]
         partial_slice = cube[0]
-        self.assertTrue(isinstance(full_slice.data, np.ndarray), "Expected a numpy array")
-        self.assertTrue(isinstance(partial_slice.data, ma.core.MaskedArray), "Expected a numpy.ma.core.MaskedArray")
+        self.assertIsInstance(full_slice.data, np.ndarray)
+        self.assertIsInstance(partial_slice.data, ma.core.MaskedArray)
         self.assertEqual(ma.count_masked(partial_slice._data), 25)
 
     def test_save_and_merge(self):
