@@ -14,6 +14,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x22238b77" dtype="float32" mask_checksum="-0x73ce52cf" mask_order="C" order="C" shape="(4, 2)"/>
+    <data byteorder="little" checksum="0x5528b2e9" dtype="float32" fill_value="1e+20" mask_checksum="-0x73ce52cf" mask_order="C" order="C" shape="(4, 2)"/>
   </cube>
 </cubes>

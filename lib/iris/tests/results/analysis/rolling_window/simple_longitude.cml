@@ -19,6 +19,6 @@
         <coord name="longitude"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" checksum="-0x72bf1ecf" dtype="float64" mask_checksum="-0x19f6eb52" mask_order="C" order="C" shape="(3, 3)"/>
+    <data byteorder="little" checksum="-0x72bf1ecf" dtype="float64" fill_value="1e+20" mask_checksum="-0x19f6eb52" mask_order="C" order="C" shape="(3, 3)"/>
   </cube>
 </cubes>
