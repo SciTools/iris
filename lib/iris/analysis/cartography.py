@@ -287,8 +287,7 @@ def area_weights(cube, normalize=False):
         If False, weights are grid cell areas. If True, weights are grid
         cell areas divided by the total grid area.
 
-    The cube must have coordinates 'latitude' and 'longitude' with contiguous
-    bounds.
+    The cube must have coordinates 'latitude' and 'longitude' with bounds.
 
     Area weights are calculated for each lat/lon cell as:
 
@@ -334,9 +333,9 @@ def area_weights(cube, normalize=False):
     lon_dim = cube.coord_dims(lon)
     lon_dim = lon_dim[0] if lon_dim else None
 
-    # Ensure they have contiguous bounds
-    if (not lat.is_contiguous()) or (not lon.is_contiguous()):
-        msg = "Currently need contiguous bounds to calculate area weights"
+    if not (lat.has_bounds() and lon.has_bounds()):
+        msg = "Coordinates {!r} and {!r} must have bounds to determine " \
+              "the area weights.".format(lat.name(), lon.name())
         raise ValueError(msg)
 
     # Convert from degrees to radians
@@ -345,17 +344,11 @@ def area_weights(cube, normalize=False):
     lon = lon.copy()
     lon.convert_units('radians')
 
-    # Create 2D weights from bounds
-    if lat.has_bounds() and lon.has_bounds():
-        # Use the geographical area as the weight for each cell
-        # Convert latitudes to co-latitude. I.e from -90 --> +90  to  0 --> pi
-        ll_weights = _quadrant_area(lat.bounds + np.pi / 2.,
-                                    lon.bounds, radius_of_earth)
-
-    # Create 2D weights from points
-    else:
-        raise iris.exceptions.NotYetImplementedError(
-            "Point-based weighting algorithm not yet identified")
+    # Create 2D weights from bounds.
+    # Use the geographical area as the weight for each cell
+    # Convert latitudes to co-latitude. I.e from -90 --> +90  to  0 --> pi
+    ll_weights = _quadrant_area(lat.bounds + np.pi / 2.,
+                                lon.bounds, radius_of_earth)
 
     # Normalize the weights if necessary.
     if normalize:
