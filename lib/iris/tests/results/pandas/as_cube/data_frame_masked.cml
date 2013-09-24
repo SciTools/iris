@@ -10,6 +10,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="0x52f1bda6" dtype="float64" mask_checksum="-0x1215b28c" mask_order="C" order="C" shape="(2, 5)"/>
+    <data byteorder="little" checksum="-0x27c9ba71" dtype="float64" fill_value="1e+20" mask_checksum="-0x1215b28c" mask_order="C" order="C" shape="(2, 5)"/>
   </cube>
 </cubes>
