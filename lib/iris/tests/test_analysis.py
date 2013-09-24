@@ -577,8 +577,16 @@ class TestRotatedPole(tests.IrisTest):
 @iris.tests.skip_data
 class TestAreaWeights(tests.IrisTest):
     def test_area_weights(self):
-        small_cube = iris.tests.stock.simple_pp()[10:42:8, 35:67:8]
-        self.assertCML(small_cube, ('analysis', 'areaweights_original.cml'))
+        small_cube = iris.tests.stock.simple_pp()
+        # Get offset, subsampled region: small enough to test against literals
+        small_cube = small_cube[10:, 35:]
+        small_cube = small_cube[::8, ::8]
+        small_cube = small_cube[:5, :4]
+        # pre-check non-data properties
+        self.assertCML(small_cube, ('analysis', 'areaweights_original.cml'),
+                       checksum=False)
+
+        # check area-weights values
         small_cube.coord('latitude').guess_bounds()
         small_cube.coord('longitude').guess_bounds()
         area_weights = iris.analysis.cartography.area_weights(small_cube)
@@ -586,14 +594,16 @@ class TestAreaWeights(tests.IrisTest):
             [[3.11955916e+12, 3.11956058e+12, 3.11955916e+12, 3.11956058e+12],
              [5.21950793e+12, 5.21951031e+12, 5.21950793e+12, 5.21951031e+12],
              [6.68991432e+12, 6.68991737e+12, 6.68991432e+12, 6.68991737e+12],
-             [7.35341320e+12, 7.35341655e+12, 7.35341320e+12, 7.35341655e+12]],
+             [7.35341320e+12, 7.35341655e+12, 7.35341320e+12, 7.35341655e+12],
+             [7.12998265e+12, 7.12998589e+12, 7.12998265e+12, 7.12998589e+12]],
             dtype=np.float64)
         self.assertArrayAllClose(area_weights, expected_results, rtol=1e-8)
 
         # Check there was no residual change
         small_cube.coord('latitude').bounds = None
         small_cube.coord('longitude').bounds = None
-        self.assertCML(small_cube, ('analysis', 'areaweights_original.cml'))
+        self.assertCML(small_cube, ('analysis', 'areaweights_original.cml'),
+                       checksum=False)
 
     def test_quadrant_area(self):
 
