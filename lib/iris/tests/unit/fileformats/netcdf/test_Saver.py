@@ -29,7 +29,7 @@ from iris.fileformats.netcdf import Saver
 
 
 class Test_write(tests.IrisTest):
-    def _cube(self, ellipsoid=None):
+    def _transverse_mercator_cube(self, ellipsoid=None):
         data = np.arange(12).reshape(3, 4)
         cube = Cube(data, 'air_pressure_anomaly')
         trans_merc = TransverseMercator(49.0, -2.0, -400000.0, 100000.0,
@@ -45,7 +45,7 @@ class Test_write(tests.IrisTest):
     def test_transverse_mercator(self):
         # Create a Cube with a transverse Mercator coordinate system.
         ellipsoid = GeogCS(6377563.396, 6356256.909)
-        cube = self._cube(ellipsoid)
+        cube = self._transverse_mercator_cube(ellipsoid)
         with self.temp_filename('nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube)
@@ -54,13 +54,41 @@ class Test_write(tests.IrisTest):
 
     def test_transverse_mercator_no_ellipsoid(self):
         # Create a Cube with a transverse Mercator coordinate system.
-        cube = self._cube()
+        cube = self._transverse_mercator_cube()
         with self.temp_filename('nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube)
             self.assertCDL(nc_path, ('unit', 'fileformats', 'netcdf', 'Saver',
                                      'write',
                                      'transverse_mercator_no_ellipsoid.cdl'))
+
+    def _simple_cube(self, dtype):
+        data = np.arange(12, dtype=dtype).reshape(3, 4)
+        points = np.arange(3, dtype=dtype)
+        bounds = np.arange(6, dtype=dtype).reshape(3, 2)
+        cube = Cube(data, 'air_pressure_anomaly')
+        coord = DimCoord(points, bounds=bounds)
+        cube.add_dim_coord(coord, 0)
+        return cube
+
+    def test_little_endian(self):
+        # Create a Cube with little-endian data.
+        cube = self._simple_cube('<f4')
+        with self.temp_filename('nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube)
+            self.assertCDL(nc_path, ('unit', 'fileformats', 'netcdf', 'Saver',
+                                     'write', 'endian.cdl'), flags='')
+
+    def test_big_endian(self):
+        # Create a Cube with big-endian data.
+        cube = self._simple_cube('>f4')
+        with self.temp_filename('nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube)
+            self.assertCDL(nc_path, ('unit', 'fileformats', 'netcdf', 'Saver',
+                                     'write', 'endian.cdl'), flags='')
+
 
 if __name__ == "__main__":
     tests.main()
