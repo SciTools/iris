@@ -17,13 +17,13 @@
       </coord>
       <coord datadims="[1]">
         <dimCoord id="ec257f34" points="[90.0, 87.5, 85.0, 82.5, 80.0, 77.5, 75.0, 72.5,
-		70.0, 67.5, 65.0, 62.5, 60.0]" shape="(13,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="latitude">
+		70.0, 67.5, 65.0, 62.5, 60.0]" shape="(13,)" standard_name="latitude" units="Unit('degrees')" value_type="float64" var_name="latitude">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[2]">
         <dimCoord id="3784d01a" points="[0.0, 3.75, 7.5, 11.25, 15.0, 18.75, 22.5, 26.25,
-		30.0, 33.75]" shape="(10,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="longitude">
+		30.0, 33.75]" shape="(10,)" standard_name="longitude" units="Unit('degrees')" value_type="float64" var_name="longitude">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>

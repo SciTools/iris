@@ -125,7 +125,7 @@ class TestMappingSubRegion(tests.IrisTest):
                           )
 
         np_testing.assert_array_almost_equal(iplt.default_projection_extent(self.cube),
-                                             (313.01998901, 391.11999512, -22.48999977, 24.80999947)
+                                             (313.01998901, 391.11998859, -22.48999977, 24.80999997)
                                              )
 
 @iris.tests.skip_data
@@ -184,12 +184,12 @@ class TestBoundedCube(tests.IrisTest):
 
         np_testing.assert_array_almost_equal(
              iplt.default_projection_extent(self.cube),
-             [0., 360., -89.99995422, 89.99998474]
+             [0., 360., -89.99994659, 89.99998474]
                                              )
 
         np_testing.assert_array_almost_equal(
              iplt.default_projection_extent(self.cube, mode=iris.coords.BOUND_MODE),
-             (-1.87499952, 358.12500048, -91.24995422, 91.24998474)
+             (-1.87499952, 358.12500048, -91.24994612, 91.24998426)
                                              )
 
 

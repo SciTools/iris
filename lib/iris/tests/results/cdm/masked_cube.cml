@@ -15,14 +15,14 @@
       <coord datadims="[1]">
         <dimCoord id="44153592" points="[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0,
 		9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0,
-		17.0, 18.0, 19.0]" shape="(20,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
+		17.0, 18.0, 19.0]" shape="(20,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float64">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="0.0" grid_north_pole_longitude="90.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[2]">
         <dimCoord id="3899bace" points="[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0,
 		9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0,
-		17.0, 18.0, 19.0]" shape="(20,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
+		17.0, 18.0, 19.0]" shape="(20,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float64">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="0.0" grid_north_pole_longitude="90.0"/>
         </dimCoord>
       </coord>

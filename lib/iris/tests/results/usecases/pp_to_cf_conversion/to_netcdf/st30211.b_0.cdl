@@ -28,11 +28,11 @@ variables:
 		time:standard_name = "time" ;
 		time:calendar = "360_day" ;
 	double time_bnds(time, bnds) ;
-	float latitude(latitude) ;
+	double latitude(latitude) ;
 		latitude:axis = "Y" ;
 		latitude:units = "degrees_north" ;
 		latitude:standard_name = "latitude" ;
-	float longitude(longitude) ;
+	double longitude(longitude) ;
 		longitude:axis = "X" ;
 		longitude:units = "degrees_east" ;
 		longitude:standard_name = "longitude" ;
