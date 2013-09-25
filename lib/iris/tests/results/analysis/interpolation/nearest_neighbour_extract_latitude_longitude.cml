@@ -16,12 +16,12 @@
         <dimCoord id="f92a483" long_name="i" points="[20.0]" shape="(1,)" units="Unit('meters')" value_type="float32"/>
       </coord>
       <coord>
-        <dimCoord id="a42bcac2" points="[40.0]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[40.0000038147]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="63128986" points="[37.5]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="63128986" points="[37.4999904633]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>

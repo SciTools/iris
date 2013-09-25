@@ -24,7 +24,7 @@
         </auxCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="8f406936" long_name="site_number" points="[1.0, 2.0, 3.0]" shape="(3,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord id="8f406936" long_name="site_number" points="[1.0, 2.0, 3.0]" shape="(3,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord id="9be2c77a" points="[670020.0, 670380.0, 670740.0, ..., 755340.0,

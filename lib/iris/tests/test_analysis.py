@@ -656,12 +656,12 @@ class TestAreaWeights(tests.IrisTest):
         small_cube.coord('longitude').guess_bounds()
         area_weights = iris.analysis.cartography.area_weights(small_cube)
         expected_results = np.array(
-            [[3.11955916e+12, 3.11956058e+12, 3.11955916e+12, 3.11956058e+12],
-             [5.21950793e+12, 5.21951031e+12, 5.21950793e+12, 5.21951031e+12],
-             [6.68991432e+12, 6.68991737e+12, 6.68991432e+12, 6.68991737e+12],
-             [7.35341320e+12, 7.35341655e+12, 7.35341320e+12, 7.35341655e+12],
-             [7.12998265e+12, 7.12998589e+12, 7.12998265e+12, 7.12998589e+12]],
-            dtype=np.float64)
+            [[3.11955952e+12, 3.11955952e+12, 3.11955952e+12, 3.11955952e+12],
+             [5.21951221e+12, 5.21951221e+12, 5.21951221e+12, 5.21951221e+12],
+             [6.68991529e+12, 6.68991529e+12, 6.68991529e+12, 6.68991529e+12],
+             [7.35341662e+12, 7.35341662e+12, 7.35341662e+12, 7.35341662e+12],
+             [7.12998821e+12, 7.12998821e+12, 7.12998821e+12, 7.12998821e+12]],
+        dtype=np.float64)
         self.assertArrayAllClose(area_weights, expected_results, rtol=1e-8)
 
         # Check there was no residual change

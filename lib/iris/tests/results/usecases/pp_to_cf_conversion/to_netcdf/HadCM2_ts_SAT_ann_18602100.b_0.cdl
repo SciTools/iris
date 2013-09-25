@@ -20,7 +20,7 @@ variables:
 		time:units = "days since 0000-01-01 00:00:00" ;
 		time:standard_name = "time" ;
 		time:calendar = "360_day" ;
-	float site_number(site_number) ;
+	double site_number(site_number) ;
 		site_number:units = "1" ;
 		site_number:long_name = "site_number" ;
 	double height ;
