@@ -282,8 +282,9 @@ class IrisTest(unittest.TestCase):
         else:
             self._ensure_folder(reference_path)
             logger.warning('Creating result file: %s', reference_path)
-            open(reference_path, 'w').writelines(line.encode('utf-8') for
-                                                 line in item)
+            open(reference_path, 'w').writelines(
+                part.encode('utf-8') if isinstance(part, unicode) else part
+                for part in item)
 
     def assertXMLElement(self, obj, reference_filename):
         """
