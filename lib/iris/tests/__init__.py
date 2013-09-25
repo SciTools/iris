@@ -174,7 +174,7 @@ class IrisTest(unittest.TestCase):
 
         self.assertCML(cubes, reference_filename, checksum=False)
 
-    def assertCDL(self, netcdf_filename, reference_filename):
+    def assertCDL(self, netcdf_filename, reference_filename, flags='-h'):
         """
         Converts the given CF-netCDF file to CDL for comparison with
         the reference CDL file, or creates the reference file if it
@@ -184,8 +184,16 @@ class IrisTest(unittest.TestCase):
         # Convert the netCDF file to CDL file format.
         cdl_filename = iris.util.create_temp_filename(suffix='.cdl')
 
+        if flags is None:
+            flags = []
+        elif isinstance(flags, basestring):
+            flags = flags.split()
+        else:
+            flags = map(str, flags)
+
         with open(cdl_filename, 'w') as cdl_file:
-            subprocess.check_call(['ncdump', '-h', netcdf_filename], stderr=cdl_file, stdout=cdl_file)
+            subprocess.check_call(['ncdump'] + flags + [netcdf_filename],
+                                  stderr=cdl_file, stdout=cdl_file)
 
         # Ingest the CDL for comparison, excluding first line.
         with open(cdl_filename, 'r') as cdl_file:

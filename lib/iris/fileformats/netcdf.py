@@ -870,7 +870,7 @@ class Saver(object):
 
             cf_var.bounds = cf_name + '_bnds'
             cf_var_bounds = self._dataset.createVariable(
-                cf_var.bounds, bounds.dtype,
+                cf_var.bounds, bounds.dtype.newbyteorder('='),
                 cf_var.dimensions + (bounds_dimension_name,))
             cf_var_bounds[:] = bounds
 
@@ -1003,8 +1003,8 @@ class Saver(object):
                                               coord)
 
             # Create the CF-netCDF variable.
-            cf_var = self._dataset.createVariable(cf_name, points.dtype,
-                                                  cf_dimensions)
+            cf_var = self._dataset.createVariable(
+                cf_name, points.dtype.newbyteorder('='), cf_dimensions)
 
             # Add the axis attribute for spatio-temporal CF-netCDF coordinates.
             if coord in cf_coordinates:
@@ -1234,7 +1234,8 @@ class Saver(object):
         data = self._ensure_valid_dtype(cube.data, 'cube', cube)
 
         # Create the cube CF-netCDF data variable with data payload.
-        cf_var = self._dataset.createVariable(cf_name, data.dtype,
+        cf_var = self._dataset.createVariable(cf_name,
+                                              data.dtype.newbyteorder('='),
                                               dimension_names,
                                               fill_value=fill_value)
         cf_var[:] = data
