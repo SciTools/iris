@@ -25,6 +25,7 @@ import numpy as np
 
 import iris
 from iris.analysis import WeightedAggregator, Aggregator
+import iris.tests.unit
 
 
 class Test_xml(tests.IrisTest):
@@ -33,7 +34,7 @@ class Test_xml(tests.IrisTest):
         data = np.ma.arange(12).reshape(3, 4)
         data[1, 2] = np.ma.masked
         cube = iris.cube.Cube(data)
-        self.assertCML(cube, ('unit', 'cube', 'Cube', 'xml', 'mask.cml'))
+        self.assertCML(cube)
 
         # If we change the underlying value before masking it, the
         # checksum should be unaffected.
@@ -41,7 +42,7 @@ class Test_xml(tests.IrisTest):
         data[1, 2] = 42
         data[1, 2] = np.ma.masked
         cube = iris.cube.Cube(data)
-        self.assertCML(cube, ('unit', 'cube', 'Cube', 'xml', 'mask.cml'))
+        self.assertCML(cube)
 
 
 class Test_collapsed__warning(tests.IrisTest):

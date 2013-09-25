@@ -22,6 +22,7 @@ import iris.tests as tests
 
 import numpy as np
 
+import iris
 from iris.coord_systems import GeogCS, TransverseMercator
 from iris.coords import DimCoord
 from iris.cube import Cube
@@ -49,8 +50,7 @@ class Test_write(tests.IrisTest):
         with self.temp_filename('nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube)
-            self.assertCDL(nc_path, ('unit', 'fileformats', 'netcdf', 'Saver',
-                                     'write', 'transverse_mercator.cdl'))
+            self.assertCDL(nc_path)
 
     def test_transverse_mercator_no_ellipsoid(self):
         # Create a Cube with a transverse Mercator coordinate system.
@@ -58,9 +58,7 @@ class Test_write(tests.IrisTest):
         with self.temp_filename('nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube)
-            self.assertCDL(nc_path, ('unit', 'fileformats', 'netcdf', 'Saver',
-                                     'write',
-                                     'transverse_mercator_no_ellipsoid.cdl'))
+            self.assertCDL(nc_path)
 
     def _simple_cube(self, dtype):
         data = np.arange(12, dtype=dtype).reshape(3, 4)
@@ -77,8 +75,7 @@ class Test_write(tests.IrisTest):
         with self.temp_filename('nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube)
-            self.assertCDL(nc_path, ('unit', 'fileformats', 'netcdf', 'Saver',
-                                     'write', 'endian.cdl'), flags='')
+            self.assertCDL(nc_path, basename='endian', flags='')
 
     def test_big_endian(self):
         # Create a Cube with big-endian data.
@@ -86,8 +83,7 @@ class Test_write(tests.IrisTest):
         with self.temp_filename('nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube)
-            self.assertCDL(nc_path, ('unit', 'fileformats', 'netcdf', 'Saver',
-                                     'write', 'endian.cdl'), flags='')
+            self.assertCDL(nc_path, basename='endian', flags='')
 
 
 if __name__ == "__main__":
