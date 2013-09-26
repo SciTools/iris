@@ -18,6 +18,10 @@
 Test iris.util
 
 """
+# import iris tests first so that some things can be initialised before
+# importing anything else
+import iris.tests as tests
+
 import inspect
 import os
 import StringIO
@@ -25,6 +29,8 @@ import unittest
 
 import numpy as np
 
+import iris.analysis
+import iris.coords
 import iris.tests.stock as stock
 import iris.util
 
@@ -268,6 +274,80 @@ class TestBroadcastToShape(iris.tests.IrisTest):
         for i in xrange(5):
             for j in xrange(4):
                 self.assertArrayEqual(b[i, :, j, :].T, a)
+
+
+class TestAsCompatibleShape(tests.IrisTest):
+    def test_slice(self):
+        cube = tests.stock.realistic_4d()
+        sliced = cube[1, :, 2, :-2]
+        expected = cube[1:2, :, 2:3, :-2]
+        res = iris.util.as_compatible_shape(sliced, cube)
+        self.assertEqual(res, expected)
+
+    def test_transpose(self):
+        cube = tests.stock.realistic_4d()
+        transposed = cube.copy()
+        transposed.transpose()
+        expected = cube
+        res = iris.util.as_compatible_shape(transposed, cube)
+        self.assertEqual(res, expected)
+
+    def test_slice_and_transpose(self):
+        cube = tests.stock.realistic_4d()
+        sliced_and_transposed = cube[1, :, 2, :-2]
+        sliced_and_transposed.transpose()
+        expected = cube[1:2, :, 2:3, :-2]
+        res = iris.util.as_compatible_shape(sliced_and_transposed, cube)
+        self.assertEqual(res, expected)
+
+    def test_collapsed(self):
+        cube = tests.stock.realistic_4d()
+        collapsed = cube.collapsed('model_level_number', iris.analysis.MEAN)
+        expected_shape = list(cube.shape)
+        expected_shape[1] = 1
+        expected_data = collapsed.data.reshape(expected_shape)
+        res = iris.util.as_compatible_shape(collapsed, cube)
+        self.assertCML(res, ('util', 'as_compatible_shape_collapsed.cml'),
+                       checksum=False)
+        self.assertArrayEqual(expected_data, res.data)
+        self.assertArrayEqual(expected_data.mask, res.data.mask)
+
+    def test_reduce_dimensionality(self):
+        # Test that as_compatible_shape() can demote
+        # length one dimensions to scalars.
+        cube = tests.stock.realistic_4d()
+        src = cube[:, 2:3]
+        expected = reduced = cube[:, 2]
+        res = iris.util.as_compatible_shape(src, reduced)
+        self.assertEqual(res, expected)
+
+    def test_anonymous_dims(self):
+        cube = tests.stock.realistic_4d()
+        # Move all coords from dim_coords to aux_coords.
+        for coord in cube.dim_coords:
+            dim = cube.coord_dims(coord)
+            cube.remove_coord(coord)
+            cube.add_aux_coord(coord, dim)
+
+        sliced = cube[1, :, 2, :-2]
+        expected = cube[1:2, :, 2:3, :-2]
+        res = iris.util.as_compatible_shape(sliced, cube)
+        self.assertEqual(res, expected)
+
+    def test_scalar_auxcoord(self):
+        def dim_to_aux(cube, coord_name):
+            """Convert coordinate on cube from DimCoord to AuxCoord."""
+            coord = cube.coord(coord_name)
+            coord = iris.coords.AuxCoord.from_coord(coord)
+            cube.replace_coord(coord)
+
+        cube = tests.stock.realistic_4d()
+        src = cube[:, :, 3]
+        dim_to_aux(src, 'grid_latitude')
+        expected = cube[:, :, 3:4]
+        dim_to_aux(expected, 'grid_latitude')
+        res = iris.util.as_compatible_shape(src, cube)
+        self.assertEqual(res, expected)
 
 
 if __name__ == '__main__':
