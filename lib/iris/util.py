@@ -21,6 +21,7 @@ Miscellaneous utility functions.
 
 import abc
 import collections
+import copy
 import inspect
 import os
 import sys
@@ -30,6 +31,9 @@ import warnings
 
 import numpy as np
 import numpy.ma as ma
+
+import iris
+import iris.exceptions
 
 
 def broadcast_weights(weights, array, dims):
@@ -934,3 +938,104 @@ def format_array(arr):
     return np.core.arrayprint._formatArray(arr, ffunc, len(arr.shape), max_line_len=50,
                                               next_line_prefix='\t\t', separator=', ',
                                               edge_items=3, summary_insert=summary_insert)[:-1]
+
+
+def as_compatible_shape(src_cube, target_cube):
+    """
+    Return a cube with added length one dimensions to match the dimensionality
+    and dimension ordering of `target_cube`.
+
+    This function can be used to add the dimensions that have been collapsed,
+    aggregated or sliced out, promoting scalar coordinates to length one
+    dimension coordinates where necessary. It operates by matching coordinate
+    metadata to infer the dimensions that need modifying, so the provided
+    cubes must have coordinates with the same metadata
+    (see :class:`iris.coords.CoordDefn`).
+
+    .. note:: This function will load and copy the data payload of `src_cube`.
+
+    Args:
+
+    * src_cube:
+        An instance of :class:`iris.cube.Cube` with missing dimensions.
+
+    * target_cube:
+        An instance of :class:`iris.cube.Cube` with the desired dimensionality.
+
+    Returns:
+        A instance of :class:`iris.cube.Cube` with the same dimensionality as
+        `target_cube` but with the data and coordinates from `src_cube`
+        suitably reshaped to fit.
+
+    """
+    dim_mapping = {}
+    for coord in target_cube.aux_coords + target_cube.dim_coords:
+        dims = target_cube.coord_dims(coord)
+        try:
+            collapsed_dims = src_cube.coord_dims(coord)
+        except iris.exceptions.CoordinateNotFoundError:
+            continue
+        if collapsed_dims:
+            if len(collapsed_dims) == len(dims):
+                for dim_from, dim_to in zip(dims, collapsed_dims):
+                    dim_mapping[dim_from] = dim_to
+        elif dims:
+            for dim_from in dims:
+                dim_mapping[dim_from] = None
+
+    if len(dim_mapping) != target_cube.ndim:
+        raise ValueError('Insufficient or conflicting coordinate '
+                         'metadata. Cannot infer dimension mapping '
+                         'to restore cube dimensions.')
+
+    new_shape = [1] * target_cube.ndim
+    for dim_from, dim_to in dim_mapping.iteritems():
+        if dim_to is not None:
+            new_shape[dim_from] = src_cube.shape[dim_to]
+
+    new_data = src_cube.data.copy()
+
+    # Transpose the data (if necessary) to prevent assignment of
+    # new_shape doing anything except adding length one dims.
+    order = [v for k, v in sorted(dim_mapping.items()) if v is not None]
+    if order != sorted(order):
+        new_order = [order.index(i) for i in range(len(order))]
+        new_data = np.transpose(new_data, new_order).copy()
+
+    new_cube = iris.cube.Cube(new_data.reshape(new_shape))
+    new_cube.metadata = copy.deepcopy(src_cube.metadata)
+
+    # Record a mapping from old coordinate IDs to new coordinates,
+    # for subsequent use in creating updated aux_factories.
+    coord_mapping = {}
+
+    def add_coord(coord):
+        """Closure used to add a suitably reshaped coord to new_cube."""
+        dims = target_cube.coord_dims(coord)
+        shape = [new_cube.shape[dim] for dim in dims]
+        if not shape:
+            shape = [1]
+        points = coord.points.reshape(shape)
+        bounds = None
+        if coord.has_bounds():
+            bounds = coord.bounds.reshape(shape + [coord.nbounds])
+        new_coord = coord.copy(points=points, bounds=bounds)
+        # If originally in dim_coords, add to dim_coords, otherwise add to
+        # aux_coords.
+        if target_cube.coords(coord=coord, dim_coords=True):
+            try:
+                new_cube.add_dim_coord(new_coord, dims)
+            except ValueError:
+                # Catch cases where the coord is an AuxCoord and therefore
+                # cannot be added to dim_coords.
+                new_cube.add_aux_coord(new_coord, dims)
+        else:
+            new_cube.add_aux_coord(new_coord, dims)
+        coord_mapping[id(coord)] = new_coord
+
+    for coord in src_cube.aux_coords + src_cube.dim_coords:
+        add_coord(coord)
+    for factory in src_cube.aux_factories:
+        new_cube.add_aux_factory(factory.updated(coord_mapping))
+
+    return new_cube
