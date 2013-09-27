@@ -1,0 +1,22 @@
+What's new in Iris 1.6
+**********************
+
+:Release: 1.6.0
+:Date: unreleased
+
+
+Iris 1.6 features
+=================
+* N/A
+
+Bugs fixed
+----------
+* N/A
+
+Incompatible changes
+--------------------
+* N/A
+
+Deprecations
+------------
+* N/A
