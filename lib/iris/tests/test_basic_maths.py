@@ -218,8 +218,8 @@ class TestBasicMaths(tests.IrisTest):
         b = self.cube.copy()
         b.attributes['my attribute'] = 'foobar'
         c = a + b        
-        self.assertEqual(c.standard_name, None)
-        self.assertAttributesEqual(c.attributes, {'history': 'air_temperature + air_temperature'})
+        self.assertIsNone(c.standard_name)
+        self.assertEqual(c.attributes, {})
 
 
 @iris.tests.skip_data
@@ -342,8 +342,8 @@ class TestDivideAndMultiply(tests.IrisTest):
         b = self.cube.copy()
         b.attributes['my attribute'] = 'foobar'
         c = a * b        
-        self.assertEqual(c.standard_name, None)
-        self.assertAttributesEqual(c.attributes, {'history': 'air_temperature * air_temperature'})
+        self.assertIsNone(c.standard_name)
+        self.assertEqual(c.attributes, {})
 
     def test_multiplication_in_place(self):
         a = self.cube.copy()

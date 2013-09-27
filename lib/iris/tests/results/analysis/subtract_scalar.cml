@@ -1,9 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube units="K">
-    <attributes>
-      <attribute name="history" value="air_temperature - 200"/>
-    </attributes>
     <coords>
       <coord>
         <dimCoord id="73141289" points="[6477]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>

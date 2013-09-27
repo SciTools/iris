@@ -678,9 +678,4 @@ def project(cube, target_proj, nx=None, ny=None):
     # Copy metadata across
     new_cube.metadata = cube.metadata
 
-    # Record transform in cube's history
-    new_cube.add_history('Converted from {} to {}'.format(
-        type(source_cs).__name__,
-        type(target_proj).__name__))
-
     return new_cube, extent

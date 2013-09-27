@@ -354,25 +354,6 @@ class IrisTest(unittest.TestCase):
         """
         np.testing.assert_allclose(a, b, rtol=rtol, atol=atol, **kwargs)
 
-    def assertAttributesEqual(self, attr1, attr2):
-        """
-        Asserts two mappings (dictionaries) are equal after
-        stripping out all timestamps of the form 'dd/mm/yy hh:mm:ss Iris: '
-        from values associated with a key of 'history'. This allows
-        tests that compare the attributes property of cubes to be
-        independent of timestamp.
-
-        """
-        def attr_filter(attr):
-            result = {}
-            for key, value in attr.iteritems():
-                if key == 'history':
-                    value = re.sub("[\d\/]{8} [\d\:]{8} Iris\: ", '', str(value))
-                else:
-                    value = str(value)
-            return result
-        return self.assertEqual(attr_filter(attr1), attr_filter(attr2))
-
     @contextlib.contextmanager
     def temp_filename(self, suffix=''):
         filename = iris.util.create_temp_filename(suffix)

@@ -60,8 +60,6 @@ but with the data representing their difference:
          Scalar coordinates:
               forecast_reference_time: 1859-09-01 06:00:00
               height: 1.5 m
-         Attributes:
-              history: air_temperature - air_temperature (ignoring forecast_period, time)
 
 
 .. note::

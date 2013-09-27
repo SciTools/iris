@@ -3,7 +3,6 @@
   <cube standard_name="air_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s16i203"/>
-      <attribute name="history" value="Converted from Geodetic to Robinson"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
     </attributes>
     <coords>

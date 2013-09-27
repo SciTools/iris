@@ -1,9 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="derivative_of_x_wind_wrt_x" units="0.277777777777778 meter-second^-1">
-    <attributes>
-      <attribute name="history" value="differential of x_wind wrt to x"/>
-    </attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord id="9eb36add" long_name="x" points="[0.5, 1.5, 2.5, 3.5]" shape="(4,)" units="Unit('count')" value_type="float32"/>

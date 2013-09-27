@@ -1,9 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="derivative_of_x_wind_wrt_latitude" units="15.9154943091895 meter-second^-1-radian^-1">
-    <attributes>
-      <attribute name="history" value="differential of x_wind wrt to latitude"/>
-    </attributes>
     <coords>
       <coord datadims="[1]">
         <dimCoord id="a42bcac2" points="[-87.75, -83.25, -78.75, -74.25, -69.75, -65.25,

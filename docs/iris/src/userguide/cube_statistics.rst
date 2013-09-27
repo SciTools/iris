@@ -75,7 +75,6 @@ we can pass the coordinate name and the aggregation definition to the
               sigma: 0.92293, bound=(0.84586, 1.0)
          Attributes:
               STASH: m01s00i004
-              history: Mean of air_potential_temperature over model_level_number
               source: Data from Met Office Unified Model 7.03
          Cell methods:
               mean: model_level_number
@@ -127,7 +126,6 @@ These areas can now be passed to the ``collapsed`` method as weights:
               surface_altitude: 399.625 m, bound=(-14.0, 813.25) m
          Attributes:
               STASH: m01s00i004
-              history: Mean of air_potential_temperature over grid_longitude, grid_latitude
               source: Data from Met Office Unified Model 7.03
          Cell methods:
               mean: grid_longitude, grid_latitude
@@ -210,7 +208,6 @@ Printing this cube now shows that two extra coordinates exist on the cube:
          Attributes:
               Conventions: CF-1.5
               STASH: m01s00i024
-              history: Mean of surface_temperature aggregated over month, year
          Cell methods:
               mean: month, year
 

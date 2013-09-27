@@ -2,7 +2,6 @@
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
-      <attribute name="history" value="Mean of air_potential_temperature over grid_longitude, time"/>
       <attribute name="source" value="Iris test case"/>
     </attributes>
     <coords>
