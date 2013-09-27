@@ -103,6 +103,9 @@ class ABFField(object):
         self.data = self.data[::-1]
         # Any percentages greater than 100 represent missing data.
         self.data = ma.masked_greater(self.data, 100)
+        # The default fill value is 999999(!), so we choose something
+        # more sensible. NB. 999999 % 256 = 63 = bad.
+        self.data.fill_value = 255
 
     def to_cube(self):
         """Return a new :class:`~iris.cube.Cube` from this ABFField."""
@@ -203,14 +206,3 @@ def load_cubes(filespecs, callback=None):
                     continue
 
             yield cube
-
-
-iris.fileformats.FORMAT_AGENT.add_spec(
-    iris.io.format_picker.FormatSpecification(
-        'ABF', iris.io.format_picker.FileExtension(),
-        '.abf', load_cubes, priority=3))
-
-iris.fileformats.FORMAT_AGENT.add_spec(
-    iris.io.format_picker.FormatSpecification(
-        'ABL', iris.io.format_picker.FileExtension(),
-        '.abl', load_cubes, priority=3))

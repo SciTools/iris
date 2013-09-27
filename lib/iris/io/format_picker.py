@@ -134,7 +134,15 @@ class FormatAgent(object):
             if matches:
                 return format_spec
 
-        raise ValueError('No format specification could be found for the given buffer. File element cache:\n %s' % element_cache)
+        printable_values = {}
+        for key, value in element_cache.iteritems():
+            value = str(value)
+            if len(value) > 50:
+                value = value[:50] + '...'
+            printable_values[key] = value
+        msg = ('No format specification could be found for the given buffer.'
+               ' File element cache:\n {}'.format(printable_values))
+        raise ValueError(msg)
 
 
 class FormatSpecification(object):
@@ -199,7 +207,7 @@ class FormatSpecification(object):
         if not isinstance(other, FormatSpecification):
             return NotImplemented
 
-        return cmp( (-self.priority, hash(self)), (-other.priority, hash(self)) )
+        return cmp( (-self.priority, hash(self)), (-other.priority, hash(other)) )
 
     def __repr__(self):
         # N.B. loader is not always going to provide a nice repr if it is a lambda function, hence a prettier version is available in __str__
