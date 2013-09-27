@@ -19,8 +19,10 @@ A package for converting cubes to and from specific file formats.
 
 """
 
-from iris.io.format_picker import (FormatAgent, FormatSpecification,
-                                   MagicNumber, UriProtocol, LeadingLine)
+from iris.io.format_picker import (FileExtension, FormatAgent,
+                                   FormatSpecification, MagicNumber,
+                                   UriProtocol, LeadingLine)
+import abf
 import ff
 import grib
 import name
@@ -176,3 +178,14 @@ FORMAT_AGENT.add_spec(
                         lambda line: line.lstrip().startswith("NAME III"),
                         name.load_cubes,
                         priority=5))
+
+
+#
+# ABF/ABL
+#
+FORMAT_AGENT.add_spec(FormatSpecification('ABF', FileExtension(), '.abf',
+                                          abf.load_cubes, priority=3))
+
+
+FORMAT_AGENT.add_spec(FormatSpecification('ABL', FileExtension(), '.abl',
+                                          abf.load_cubes, priority=3))
