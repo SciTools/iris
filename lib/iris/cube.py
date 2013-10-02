@@ -306,19 +306,11 @@ class CubeList(list):
         """
         return self.extract(constraints, strict=True)
 
-    def merge(self, unique=True):
+    def _generate_protocubes(self):
         """
-        Returns the :class:`CubeList` resulting from merging this
-        :class:`CubeList`.
-
-        Kwargs:
-
-        * unique:
-            If True, raises `iris.exceptions.DuplicateDataError` if
-            duplicate cubes are detected.
+        Register each of our cubes with its appropriate ProtoCube.
 
         """
-        # Register each of our cubes with its appropriate ProtoCube.
         proto_cubes_by_name = {}
         for cube in self:
             name = cube.standard_name
@@ -333,13 +325,33 @@ class CubeList(list):
             if proto_cube is None:
                 proto_cube = iris._merge.ProtoCube(cube)
                 proto_cubes.append(proto_cube)
+        return proto_cubes_by_name
 
-        # Extract all the merged cubes from the ProtoCubes.
+    def _generate_merged_cubes(self, proto_cubes_by_name, unique):
+        """
+        Extract all the merged cubes from the ProtoCubes.
+
+        """
         merged_cubes = CubeList()
         for name in sorted(proto_cubes_by_name):
             for proto_cube in proto_cubes_by_name[name]:
                 merged_cubes.extend(proto_cube.merge(unique=unique))
+        return merged_cubes
 
+    def merge(self, unique=True):
+        """
+        Returns the :class:`CubeList` resulting from merging this
+        :class:`CubeList`.
+
+        Kwargs:
+
+        * unique:
+            If True, raises `iris.exceptions.DuplicateDataError` if
+            duplicate cubes are detected.
+
+        """
+        proto_cubes_by_name = self._generate_protocubes()
+        merged_cubes = self._generate_merged_cubes(proto_cubes_by_name, unique)
         return merged_cubes
 
 
