@@ -23,6 +23,7 @@ import operator
 
 import numpy as np
 
+import iris.coords
 import iris.exceptions
 
 
@@ -248,11 +249,13 @@ class _CoordConstraint(object):
         if callable(self._coord_thing):
             call_func = self._coord_thing
         elif (isinstance(self._coord_thing, collections.Iterable) and
-              not isinstance(self._coord_thing, basestring)):
+                not isinstance(self._coord_thing,
+                               (basestring, iris.coords.Cell))):
             call_func = lambda cell: cell in list(self._coord_thing)
         else:
             call_func = lambda c: c == self._coord_thing
-            try_quick = isinstance(coord, iris.coords.DimCoord)
+            try_quick = (isinstance(coord, iris.coords.DimCoord) and
+                         not isinstance(self._coord_thing, iris.coords.Cell))
 
         # Simple, yet dramatic, optimisation for the monotonic case.
         if try_quick:
