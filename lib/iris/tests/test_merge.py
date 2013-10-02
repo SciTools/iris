@@ -22,6 +22,8 @@ Test the cube merging mechanism.
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
+import StringIO
+
 import numpy as np
 
 import iris
@@ -568,6 +570,157 @@ class TestCubeMergeTheoretical(tests.IrisTest):
         r = iris.cube.CubeList([cube1, cube2]).merge()
         # result should be 1 cube
         self.assertCML(r, ('cube_merge', 'test_simple_attributes3.cml'))
+
+
+class TestProtocube_Unique(tests.IrisTest):
+    def setUp(self):
+        self.dim_coord1 = iris.coords.DimCoord(
+            points=np.array([-1, 0]), long_name='dim_tmp_name')
+        self.dim_coord2 = iris.coords.DimCoord(
+            points=np.array([-1, 0]), long_name='dim_tmp_name2')
+        self.aux_coord1 = iris.coords.AuxCoord(
+            points=np.array([-1, 0]), long_name='aux_tmp_name')
+        self.aux_coord2 = iris.coords.AuxCoord(
+            points=np.array([-1, 0]), long_name='aux_tmp_name2')
+        self.scalar_coord = iris.coords.AuxCoord(
+            1, long_name='tmp_scalar_coord')
+
+        self.cube = iris.cube.Cube(np.arange(4).reshape(2, 2),
+                                   standard_name='air_temperature')
+
+        self.cube2 = iris.cube.Cube(np.arange(4).reshape(2, 2) + 1,
+                                    standard_name='air_temperature')
+
+        self.cubelist = iris.cube.CubeList([self.cube, self.cube2])
+        self.return_str_IO = StringIO.StringIO()
+
+    def test_different_defn(self):
+        self.cube.long_name = 'tmp1'
+        self.cube2.long_name = 'tmp2'
+        self.cubelist.describe_merge(output_file=self.return_str_IO)
+        return_str = self.return_str_IO.getvalue()
+        self.assertString(return_str, 'proto_diff_defn.str.txt')
+
+    def test_different_data_shape(self):
+        self.cube = iris.cube.Cube(
+            np.arange(4), standard_name='air_temperature')
+        cubelist = iris.cube.CubeList([self.cube, self.cube2])
+        cubelist.describe_merge(output_file=self.return_str_IO)
+        return_str = self.return_str_IO.getvalue()
+        self.assertString(return_str, 'proto_diff_datashape.str.txt')
+
+    def test_different_name(self):
+        self.cube.standard_name = 'specific_humidity'
+        self.cubelist.describe_merge(output_file=self.return_str_IO)
+        return_str = self.return_str_IO.getvalue()
+        self.assertString(return_str, 'proto_diff_name_n_shape.str.txt')
+
+    def test_different_name_n_shape(self):
+        self.cube = iris.cube.Cube(
+            np.arange(4), standard_name='specific_humidity')
+        cubelist = iris.cube.CubeList([self.cube, self.cube2])
+        cubelist.describe_merge(output_file=self.return_str_IO)
+        return_str = self.return_str_IO.getvalue()
+        self.assertString(return_str, 'proto_diff_name_n_shape.str.txt')
+
+    def test_different_attribute(self):
+        self.cube.attributes.update({'test_attr': 'some attr'})
+        self.cube2.attributes.update({'test_attr': 'other attr'})
+        self.cubelist.describe_merge(output_file=self.return_str_IO)
+        return_str = self.return_str_IO.getvalue()
+        self.assertString(return_str, 'proto_diff_attribute.txt')
+
+    def test_missing_sttribute(self):
+        self.cube.attributes.update({'test_attr': 1})
+        self.cubelist.describe_merge(output_file=self.return_str_IO)
+        return_str = self.return_str_IO.getvalue()
+        self.assertString(return_str, 'proto_diff_miss_attribute.txt')
+
+    def test_different_missing_scalar(self):
+        self.cube.add_aux_coord(self.scalar_coord, None)
+        self.cubelist.describe_merge(output_file=self.return_str_IO)
+        return_str = self.return_str_IO.getvalue()
+        self.assertString(return_str, 'proto_diff_miss_scalar.txt')
+
+    def test_different_multi_scalar(self):
+        # combining same coord, diff coord
+        scalar_coord1 = iris.coords.AuxCoord(1, long_name='tmp_scalar_coord1')
+        scalar_coord2 = iris.coords.AuxCoord(1, long_name='tmp_scalar_coord2')
+        scalar_coord3 = iris.coords.AuxCoord(2, long_name='tmp_scalar_coord3')
+        self.cube.add_aux_coord(scalar_coord1.copy(), None)
+        self.cube.add_aux_coord(scalar_coord2.copy(), None)
+        self.cube2.add_aux_coord(scalar_coord1.copy(), None)
+        self.cube2.add_aux_coord(scalar_coord3.copy(), None)
+        self.cubelist.describe_merge(output_file=self.return_str_IO)
+        return_str = self.return_str_IO.getvalue()
+        self.assertString(return_str, 'proto_diff_miss_multi_scalar.txt')
+
+    def test_missing_vector(self):
+        self.cube.add_dim_coord(self.dim_coord1.copy(), 0)
+        self.cube.add_dim_coord(self.dim_coord2.copy(), 1)
+        self.cube2.add_dim_coord(self.dim_coord1.copy(), 0)
+        self.cubelist.describe_merge(output_file=self.return_str_IO)
+        return_str = self.return_str_IO.getvalue()
+        self.assertString(return_str, 'proto_diff_missing_vector.str.txt')
+
+    def test_different_vector(self):
+        self.cube.add_dim_coord(self.dim_coord1.copy(), 0)
+        modified_coord = self.dim_coord1.copy()
+        modified_coord.points[0] = 10
+        self.cube2.add_dim_coord(modified_coord, 0)
+        self.cubelist.describe_merge(output_file=self.return_str_IO)
+        return_str = self.return_str_IO.getvalue()
+        self.assertString(return_str, 'proto_diff_vector_points.str.txt')
+
+    def test_missing_factory(self):
+        cube1 = iris.tests.stock.hybrid_height()
+        cube2 = cube1.copy()
+        cube2.remove_aux_factory(cube2.aux_factory())
+        iris.cube.CubeList([cube1, cube2]).describe_merge(
+            output_file=self.return_str_IO)
+        return_str = self.return_str_IO.getvalue()
+        self.assertString(return_str, 'proto_diff_miss_factory.str.txt')
+
+    def test_aux_as_dim(self):
+        self.cube.add_dim_coord(self.dim_coord1.copy(), 0)
+        self.cube2.add_aux_coord(self.dim_coord1.copy(), 0)
+        self.cubelist.describe_merge(
+            output_file=self.return_str_IO)
+        return_str = self.return_str_IO.getvalue()
+        self.assertString(return_str, 'proto_diff_dim_as_aux.str.txt')
+
+    def test_multi_cube_aux_as_dim(self):
+        # Auxiliary coordinates as dimension coordinates
+        cube3 = self.cube.copy()
+        self.cube.add_dim_coord(self.dim_coord1.copy(), 0)
+        self.cube2.add_aux_coord(self.dim_coord1.copy(), 0)
+        cube3.add_aux_coord(self.dim_coord1.copy(), 0)
+        cubelist = iris.cube.CubeList([self.cube, self.cube2, cube3])
+        cubelist.describe_merge(output_file=self.return_str_IO)
+        return_str = self.return_str_IO.getvalue()
+        self.assertString(
+            return_str, 'proto_diff_multi_cube_dim_as_aux.str.txt')
+
+    def test_multi_cube_diff_miss_scalar(self):
+        # Missing scalar coordinate
+        cube3 = self.cube.copy()
+        scalar_coord1 = iris.coords.AuxCoord(1, long_name='tmp_scalar_coord1')
+        scalar_coord2 = iris.coords.AuxCoord(1, long_name='tmp_scalar_coord2')
+        self.cube.add_aux_coord(scalar_coord1, None)
+        self.cube2.add_aux_coord(scalar_coord2, None)
+        cubelist = iris.cube.CubeList([self.cube, self.cube2, cube3])
+        cubelist.describe_merge(output_file=self.return_str_IO)
+        return_str = self.return_str_IO.getvalue()
+        self.assertString(
+            return_str, 'proto_diff_multi_cube_diff_miss_scalar.txt')
+
+    def test_output_file(self):
+        # Missing scalar coordinate and written to a file
+        self.cube.add_aux_coord(self.scalar_coord, None)
+        with self.temp_filename() as filename:
+            with open(filename, 'w') as f:
+                self.cubelist.describe_merge(output_file=f)
+            self.assertFilesEqual(filename, 'proto_diff_miss_scalar.txt')
 
 
 if __name__ == "__main__":

@@ -1,0 +1,2 @@
+Determining differences between cubes of name: air_temperature
+attribute keys: test_attr not common to both signatures

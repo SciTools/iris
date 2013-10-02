@@ -58,8 +58,41 @@ class CoordDefn(collections.namedtuple('CoordDefn',
         """
         return self.standard_name or self.long_name or self.var_name or default
 
+    def _difference(self, other):
+        str_return = []
+        msg_beg = 'Coordinates of names: ({}, {}) differ:'.format(
+            self.name(), other.name())
+        for field in self._fields:
+            val1 = getattr(self, field)
+            val2 = getattr(other, field)
+            if val1 != val2:
+                if field == 'attributes':
+                    attrib_self = getattr(self, field)
+                    attrib_other = getattr(other, field)
 
-# Coordinate cell styles. Used in plot and cartography.
+                    missing_attrib = (set(attrib_self.keys()) -
+                                      set(attrib_other.keys()))
+                    if missing_attrib:
+                        miss_string = (', '.join(str(val) for
+                                       val in missing_attrib))
+                        msg = ('{} attribute keys: {} not common to both '
+                               'signatures'.format(msg_beg, miss_string))
+                        str_return.append(msg)
+                    for key, item in attrib_self.iteritems():
+                        if key in attrib_other:
+                            if item != attrib_other[key]:
+                                msg = '{} {}: {} differs: {}, {}'.format(
+                                    msg_beg, field, key, item,
+                                    attrib_other[key])
+                                str_return.append(msg)
+                else:
+                    str_return.append(
+                        '{} {} differs: {}, {}'.format(
+                            msg_beg, field, val1, val2))
+        return str_return
+
+
+# cell styles. Used in plot and cartography.
 POINT_MODE = 0
 BOUND_MODE = 1
 

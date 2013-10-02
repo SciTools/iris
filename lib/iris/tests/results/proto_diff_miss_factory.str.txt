@@ -1,0 +1,2 @@
+Determining differences between cubes of name: air_temperature
+Factory coordinate index(0): 'HybridHeightFactory' not common to both cubes

@@ -99,6 +99,23 @@ class _CoordAndDims(namedtuple('CoordAndDims',
         A tuple of the data dimesion/s spanned by the coordinate.
 
     """
+    def _difference(self, other):
+        differences = []
+        if self != other:
+            differences.extend(
+                self.coord._as_defn()._difference(other.coord._as_defn()))
+            if (self.coord.points != other.coord.points).any():
+                msg = "{} coordinate: '{}' points differ".format(
+                    self.coord.__class__.__name__, self.coord.name())
+                differences.append(msg)
+            if self.dims != other.dims:
+                msg = ("{} coordinate: '{}' differs by dimension association: "
+                       "{}")
+                msg = msg.format(
+                    self.coord.__class__.__name__, self.coord.name(),
+                    ', '.join([str(dim) for dim in [self.dims, other.dims]]))
+                differences.append(msg)
+        return differences
 
 
 class _ScalarCoordPayload(namedtuple('ScalarCoordPayload',
@@ -214,6 +231,50 @@ class _CoordSignature(namedtuple('CoordSignature',
         A list of :class:`_FactoryDefn` instances.
 
     """
+    def _difference(self, other):
+        differences = []
+
+        for field in self._fields:
+            val1 = getattr(self, field)
+            val2 = getattr(other, field)
+            if val1 != val2:
+                tmp_difference = None
+                loop_over = val1
+                comp_with = val2
+                if len(val1) == 0 and len(val2) != 0:
+                    loop_over = val2
+                    comp_with = val1
+                for ind, item in enumerate(loop_over):
+                    try:
+                        tmp_difference = item._difference(comp_with[ind])
+                        if tmp_difference:
+                            differences.extend(tmp_difference)
+                        elif item != val2[ind]:
+                            raise RuntimeError(
+                                'Unable to determine difference')
+                    except IndexError:
+                        if field == 'scalar_defns':
+                            description = 'Scalar coordinate'
+                            coord_name = item.name()
+                        elif field == 'vector_dim_coords_and_dims':
+                            description = 'Dimension coordinate'
+                            coord_name = item.coord.name()
+                        elif field == 'vector_aux_coords_and_dims':
+                            description = 'Auxiliary coordinate'
+                            coord_name = item.coord.name()
+                        elif field == 'factory_defns':
+                            description = 'Factory coordinate'
+                            coord_name = item.class_.__name__
+                        else:
+                            raise TypeError(
+                                'Type: {} not handled'.format(field))
+                        msg = ("{} index({}): '{}' not common to both "
+                               'cubes'.format(description, ind, coord_name))
+                        tmp_difference = True
+                        differences.append(msg)
+                if not tmp_difference:
+                    raise RuntimeError('Unable to determine all differences')
+        return differences
 
 
 class _CubeSignature(namedtuple('CubeSignature',
@@ -242,6 +303,22 @@ class _CubeSignature(namedtuple('CubeSignature',
         :class:`iris.cube.Cube`.
 
     """
+    def _difference(self, other):
+        differences = []
+        for field in self._fields:
+            val1 = getattr(self, field)
+            val2 = getattr(other, field)
+            if val1 != val2:
+                if field == 'defn':
+                    defn_diff = self.defn._difference(other.defn)
+                    if defn_diff:
+                        differences.extend(defn_diff)
+                    else:
+                        raise RuntimeError('Unable to determine difference')
+                else:
+                    msg = '{} differs: {},{}'.format(field, val1, val2)
+                    differences.append(msg)
+        return differences
 
 
 class _Skeleton(namedtuple('Skeleton',
@@ -279,6 +356,19 @@ class _FactoryDefn(namedtuple('_FactoryDefn',
         corresponding coordinate definition. Sorted on dependency key.
 
     """
+    def _difference(self, other):
+        differences = []
+        if self != other:
+            self_class = self.class_.__name__
+            other_class = other.class_.__name__
+            if self_class != other_class:
+                msg = 'Factory coordinates differ: {}'.format(
+                    ', '.join([self_class, other_class]))
+            else:
+                msg = 'Factory coordinate: {} differs between cubes'.format(
+                    self_class)
+            differences.append(msg)
+        return differences
 
 
 class _Relation(namedtuple('Relation',
@@ -317,6 +407,33 @@ def _is_combination(name):
 
     """
     return _COMBINATION_JOIN in str(name)
+
+
+def _protocube_unique(proto_cubes_by_name):
+    """
+    Determine differences between protocubes.
+
+    """
+    differences = []
+    names = set(proto_cubes_by_name.keys())
+    if len(names) > 1:
+        differences.append('Cube names differ: {}'.format(', '.join(names)))
+
+    for name, proto_cubes_iterable in proto_cubes_by_name.iteritems():
+        # Use the first protocube as a point of refernce
+        cube_sig_comp = proto_cubes_iterable[0]._cube_signature
+        coord_sig_comp = proto_cubes_iterable[0]._coord_signature
+        if len(proto_cubes_iterable) > 1:
+            msg = 'Determining differences between cubes of name: {}'
+            differences.append(msg.format(name))
+            for proto in proto_cubes_iterable:
+                # inspect cube_signature
+                differences.extend(
+                    cube_sig_comp._difference(proto._cube_signature))
+                differences.extend(
+                    coord_sig_comp._difference(proto._coord_signature))
+
+    return differences
 
 
 def build_indexes(positions):

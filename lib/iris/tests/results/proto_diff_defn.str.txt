@@ -1,0 +1,2 @@
+Determining differences between cubes of name: air_temperature
+long_name differs: tmp1,tmp2
