@@ -39,6 +39,7 @@ import iris.analysis.trajectory
 import iris.aux_factory
 import iris.coord_systems
 import iris.coords
+import iris._concatenate
 import iris._constraints
 import iris._merge
 import iris.exceptions
@@ -317,6 +318,47 @@ class CubeList(list):
             If True, raises `iris.exceptions.DuplicateDataError` if
             duplicate cubes are detected.
 
+        This combines cubes with different values of an auxiliary scalar
+        coordinate, by constructing a new dimension.
+
+        .. testsetup::
+
+            import iris
+            c1 = iris.cube.Cube([0,1,2], long_name='some_parameter')
+            xco = iris.coords.DimCoord([11, 12, 13], long_name='x_vals')
+            c1.add_dim_coord(xco, 0)
+            c1.add_aux_coord(iris.coords.AuxCoord([100], long_name='y_vals'))
+            c2 = c1.copy()
+            c2.coord('y_vals').points = [200]
+
+        For example::
+
+            >>> print c1
+            some_parameter / (unknown)          (x_vals: 3)
+                 Dimension coordinates:
+                      x_vals                           x
+                 Scalar coordinates:
+                      y_vals: 100
+            >>> print c2
+            some_parameter / (unknown)          (x_vals: 3)
+                 Dimension coordinates:
+                      x_vals                           x
+                 Scalar coordinates:
+                      y_vals: 200
+            >>> cube_list = iris.cube.CubeList([c1, c2])
+            >>> new_cube = cube_list.merge()[0]
+            >>> print new_cube
+            some_parameter / (unknown)          (y_vals: 2; x_vals: 3)
+                 Dimension coordinates:
+                      y_vals                           x          -
+                      x_vals                           -          x
+            >>> print new_cube.coord('y_vals').points
+            [100 200]
+            >>>
+
+        Contrast this with :meth:`iris.cube.CubeList.concatenate`, which joins
+        cubes along an existing dimension.
+
         """
         # Register each of our cubes with its appropriate ProtoCube.
         proto_cubes_by_name = {}
@@ -341,6 +383,69 @@ class CubeList(list):
                 merged_cubes.extend(proto_cube.merge(unique=unique))
 
         return merged_cubes
+
+    def concatenate(self):
+        """
+        Concatenate the cubes over their common dimensions.
+
+        Returns:
+            A new :class:`iris.cube.CubeList` of concatenated
+            :class:`iris.cube.Cube` instances.
+
+        This combines cubes with a common dimension coordinate, but occupying
+        different regions of the coordinate value.  The cubes are joined across
+        that dimension.
+
+        .. testsetup::
+
+            import iris
+            import numpy as np
+            xco = iris.coords.DimCoord([11, 12, 13, 14], long_name='x_vals')
+            yco1 = iris.coords.DimCoord([4, 5], long_name='y_vals')
+            yco2 = iris.coords.DimCoord([7, 9, 10], long_name='y_vals')
+            c1 = iris.cube.Cube(np.zeros((2,4)), long_name='some_parameter')
+            c1.add_dim_coord(xco, 1)
+            c1.add_dim_coord(yco1, 0)
+            c2 = iris.cube.Cube(np.zeros((3,4)), long_name='some_parameter')
+            c2.add_dim_coord(xco, 1)
+            c2.add_dim_coord(yco2, 0)
+
+        For example::
+
+            >>> print c1
+            some_parameter / (unknown)          (y_vals: 2; x_vals: 4)
+                 Dimension coordinates:
+                      y_vals                           x          -
+                      x_vals                           -          x
+            >>> print c1.coord('y_vals').points
+            [4 5]
+            >>> print c2
+            some_parameter / (unknown)          (y_vals: 3; x_vals: 4)
+                 Dimension coordinates:
+                      y_vals                           x          -
+                      x_vals                           -          x
+            >>> print c2.coord('y_vals').points
+            [ 7  9 10]
+            >>> cube_list = iris.cube.CubeList([c1, c2])
+            >>> new_cube = cube_list.concatenate()[0]
+            >>> print new_cube
+            some_parameter / (unknown)          (y_vals: 5; x_vals: 4)
+                 Dimension coordinates:
+                      y_vals                           x          -
+                      x_vals                           -          x
+            >>> print new_cube.coord('y_vals').points
+            [ 4  5  7  9 10]
+            >>>
+
+        Contrast this with :meth:`iris.cube.CubeList.merge`, which makes a new
+        dimension from values of an auxiliary scalar coordinate.
+
+        .. warning::
+
+            This routine will load your data payload!
+
+        """
+        return iris._concatenate.concatenate(self)
 
 
 class Cube(CFVariableMixin):

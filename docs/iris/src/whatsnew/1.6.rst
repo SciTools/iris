@@ -4,6 +4,11 @@ What's new in Iris 1.6
 :Release: 1.6.0
 :Date: unreleased
 
+Incompatible changes
+--------------------
+* The previously experimental 'concatenate' function is now a method of a
+  :class:`iris.cube.CubeList`, see :meth:`iris.cube.CubeList.concatenate`.  The
+  functionality is unchanged.
 
 Iris 1.6 features
 =================

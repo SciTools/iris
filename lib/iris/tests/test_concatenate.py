@@ -26,10 +26,10 @@ import iris.tests as tests
 import numpy as np
 import numpy.ma as ma
 
+from iris._concatenate import _CubeSignature as ConcatenateCubeSignature
 import iris.cube
 from iris.coords import DimCoord, AuxCoord
 import iris.tests.stock as stock
-from iris.experimental.concatenate import concatenate as cube_concatenate
 
 
 def _make_cube(x, y, data, aux=None, offset=0, scalar=None):
@@ -210,7 +210,8 @@ def concatenate(cubes, order=None):
     if order is None:
         order = 'C'
 
-    result = cube_concatenate(cubes)
+    cubelist = iris.cube.CubeList(cubes)
+    result = cubelist.concatenate()
 
     for cube in result:
         if ma.isMaskedArray(cube.data):
@@ -229,10 +230,6 @@ def concatenate(cubes, order=None):
 class TestSimple(tests.IrisTest):
     def test_empty(self):
         cubes = iris.cube.CubeList()
-        self.assertEqual(concatenate(cubes), iris.cube.CubeList())
-        cubes = []
-        self.assertEqual(concatenate(cubes), iris.cube.CubeList())
-        cubes = ()
         self.assertEqual(concatenate(cubes), iris.cube.CubeList())
 
     def test_single(self):
@@ -874,7 +871,7 @@ class TestCubeSignatureEquality(tests.IrisTest):
     def test_not_implemented(self):
         class Terry(object):
             pass
-        sig = iris.experimental.concatenate.CubeSignature(iris.cube.Cube(0))
+        sig = ConcatenateCubeSignature(iris.cube.Cube(0))
         self.assertIs(sig.__eq__(Terry()), NotImplemented)
         self.assertIs(sig.__ne__(Terry()), NotImplemented)
 
