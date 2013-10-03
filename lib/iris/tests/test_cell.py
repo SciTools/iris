@@ -128,6 +128,21 @@ class TestCells(unittest.TestCase):
         self.assertEquals(self.d.__eq__(Terry()), NotImplemented)
         self.assertEquals(self.d.__ne__(Terry()), NotImplemented)
 
+    def test_numpy_int_equality(self):
+        dtypes = (np.int, np.int16, np.int32, np.int64)
+        for dtype in dtypes:
+            val = dtype(3)
+            cell = iris.coords.Cell(val, None)
+            self.assertEqual(cell, val)
+
+    def test_numpy_float_equality(self):
+        dtypes = (np.float, np.float16, np.float32, np.float64,
+                  np.float128, np.double)
+        for dtype in dtypes:
+            val = dtype(3.2)
+            cell = iris.coords.Cell(val, None)
+            self.assertEqual(cell, val, dtype)
+
     def test_coord_bounds_cmp(self):
         self.e = iris.coords.Cell(0.7, [1.1, 1.9])
         self.assertTrue(self.e == 1.6)
