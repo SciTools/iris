@@ -153,7 +153,7 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
         compared.
 
         """
-        if isinstance(other, (int, float)):
+        if isinstance(other, (int, float, np.number)):
             if self.bound is not None:
                 return self.contains_point(other)
             else:
