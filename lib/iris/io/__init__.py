@@ -143,6 +143,36 @@ def decode_uri(uri, default='file'):
     return scheme, part
 
 
+def expand_filespecs(file_specs):
+    """
+    Work out matching file paths from a list of file-specs.
+
+    Args:
+
+    * file_specs (iterable of string):
+        File paths which may contain '~' elements or wildcards.
+
+    Returns:
+        A dictionary of {globspec: file-paths-list}.  The 'globspec's retain
+        any wildcards but have any '~' elements expanded.
+
+    """
+    # Remove any hostname component - currently unused
+    filenames = [os.path.expanduser(fn[2:] if fn.startswith('//') else fn)
+                 for fn in file_specs]
+
+    # Try to expand all filenames as globs
+    glob_expanded = {fn : sorted(glob.glob(fn)) for fn in filenames}
+
+    # If any of the specs expanded to an empty list then raise an error
+    if not all(glob_expanded.viewvalues()):
+        raise IOError("One or more of the files specified did not exist %s." %
+        ["%s expanded to %s" % (pattern, expanded if expanded else "empty")
+         for pattern, expanded in glob_expanded.iteritems()])
+
+    return glob_expanded
+
+
 def load_files(filenames, callback):
     """
     Takes a list of filenames which may also be globs, and optionally a
@@ -154,16 +184,7 @@ def load_files(filenames, callback):
         intended interface for loading is :func:`iris.load`.
 
     """
-    # Remove any hostname component - currently unused
-    filenames = [os.path.expanduser(fn[2:] if fn.startswith('//') else fn) for fn in filenames]
-
-    # Try to expand all filenames as globs
-    glob_expanded = {fn : sorted(glob.glob(fn)) for fn in filenames}
-
-    # If any of the filenames or globs expanded to an empty list then raise an error
-    if not all(glob_expanded.viewvalues()):
-        raise IOError("One or more of the files specified did not exist %s." %
-        ["%s expanded to %s" % (pattern, expanded if expanded else "empty") for pattern, expanded in glob_expanded.iteritems()])
+    glob_expanded = expand_filespecs(filenames)
 
     # Create default dict mapping iris format handler to its associated filenames
     handler_map = collections.defaultdict(list)

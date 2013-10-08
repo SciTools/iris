@@ -24,6 +24,7 @@ import collections
 import copy
 import inspect
 import os
+import os.path
 import sys
 import tempfile
 import time
@@ -1039,3 +1040,60 @@ def as_compatible_shape(src_cube, target_cube):
         new_cube.add_aux_factory(factory.updated(coord_mapping))
 
     return new_cube
+
+
+def file_is_newer_than(result_path, source_paths):
+    """
+    Check that source files have not changed since a saved result was stored.
+
+    If a stored result depends entirely on known 'sources', it need only be
+    re-built when one of them changes.  This function can be used to test that
+    by comparing file timestamps.
+
+    Args:
+
+    * result_path (string):
+        The filepath of a file containing some derived result data.
+    * source_paths (string or iterable of strings):
+        The path(s) to the original datafiles used to make the result.  May
+        include wildcards and '~' expansions (like Iris load paths), but not
+        URIs.
+
+    Returns:
+        True if all the sources are older than the result, else False.
+
+        If any of the file paths describes no existing files, an exception will
+        be raised.
+
+    .. note::
+        There are obvious caveats to using file timestamps for this, as correct
+        usage depends on how the sources might change.  For example, a file
+        could be replaced by one of the same name, but an older timestamp.
+
+        If wildcards and '~' expansions are used, this introduces even more
+        uncertainty, as then you cannot even be sure that the resulting list of
+        file names is the same as the originals.  For example, some files may
+        have been deleted or others added.
+
+    .. note::
+        The result file may often be a :mod:`pickle` file.  In that case, it
+        also depends on the relevant module sources, so extra caution is
+        required.  Ideally, an additional check on iris.__version__ is advised.
+
+    """
+    # Accept a string as a single source path
+    if isinstance(source_paths, basestring):
+        source_paths = [source_paths]
+    # Fix our chosen timestamp function
+    file_date = os.path.getmtime
+    # Get the 'result file' time
+    result_timestamp = file_date(result_path)
+    # Get all source filepaths, with normal Iris.io load helper function
+    possibles = iris.io.expand_filespecs(source_paths)
+    # Compare each filetime, for each spec, with the 'result time'
+    for paths in possibles.itervalues():
+        for path in paths:
+            source_timestamp = file_date(path)
+            if source_timestamp >= result_timestamp:
+                return False
+    return True
