@@ -1089,11 +1089,10 @@ def file_is_newer_than(result_path, source_paths):
     # Get the 'result file' time
     result_timestamp = file_date(result_path)
     # Get all source filepaths, with normal Iris.io load helper function
-    possibles = iris.io.expand_filespecs(source_paths)
+    source_file_paths = iris.io.expand_filespecs(source_paths)
     # Compare each filetime, for each spec, with the 'result time'
-    for paths in possibles.itervalues():
-        for path in paths:
-            source_timestamp = file_date(path)
-            if source_timestamp >= result_timestamp:
-                return False
+    for path in source_file_paths:
+        source_timestamp = file_date(path)
+        if source_timestamp >= result_timestamp:
+            return False
     return True

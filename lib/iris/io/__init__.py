@@ -153,8 +153,8 @@ def expand_filespecs(file_specs):
         File paths which may contain '~' elements or wildcards.
 
     Returns:
-        A dictionary of {globspec: file-paths-list}.  The 'globspec's retain
-        any wildcards but have any '~' elements expanded.
+        A list of matching file paths.  If any of the file-specs matches no
+        existing files, an exception is raised.
 
     """
     # Remove any hostname component - currently unused
@@ -165,12 +165,13 @@ def expand_filespecs(file_specs):
     glob_expanded = {fn : sorted(glob.glob(fn)) for fn in filenames}
 
     # If any of the specs expanded to an empty list then raise an error
-    if not all(glob_expanded.viewvalues()):
+    value_lists = glob_expanded.viewvalues()
+    if not all(value_lists):
         raise IOError("One or more of the files specified did not exist %s." %
         ["%s expanded to %s" % (pattern, expanded if expanded else "empty")
          for pattern, expanded in glob_expanded.iteritems()])
 
-    return glob_expanded
+    return sum(value_lists, [])
 
 
 def load_files(filenames, callback):
@@ -184,11 +185,11 @@ def load_files(filenames, callback):
         intended interface for loading is :func:`iris.load`.
 
     """
-    glob_expanded = expand_filespecs(filenames)
+    all_file_paths = expand_filespecs(filenames)
 
     # Create default dict mapping iris format handler to its associated filenames
     handler_map = collections.defaultdict(list)
-    for fn in sum([x for x in glob_expanded.viewvalues()], []):
+    for fn in all_file_paths:
         with open(fn) as fh:
             handling_format_spec = iris.fileformats.FORMAT_AGENT.get_spec(os.path.basename(fn), fh)
             handler_map[handling_format_spec].append(fn)
