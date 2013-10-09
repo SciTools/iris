@@ -7,7 +7,9 @@ What's new in Iris 1.6
 
 Iris 1.6 features
 =================
-* N/A
+* A new utility function makes it easy to "shortcut" slow calculations or
+  file loads by caching stored results. See
+  :meth:`iris.util.file_is_newer_than`.
 
 Bugs fixed
 ----------
