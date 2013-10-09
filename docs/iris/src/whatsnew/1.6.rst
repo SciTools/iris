@@ -15,6 +15,10 @@ Iris 1.6 features
 * A new utility function makes it easy to "shortcut" slow calculations or
   file loads by caching stored results. See
   :meth:`iris.util.file_is_newer_than`.
+* A new experimental function removes any non-matching attributes from a group
+  of cubes.  This can assist in merging cubes which only differ in their
+  attributes.  See
+  :meth:`iris.experimental.equalise_cubes.equalise_attributes`.
 
 Bugs fixed
 ----------
