@@ -145,7 +145,7 @@ def decode_uri(uri, default='file'):
 
 def expand_filespecs(file_specs):
     """
-    Work out matching file paths from a list of file-specs.
+    Find all matching file paths from a list of file-specs.
 
     Args:
 
