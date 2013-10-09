@@ -14,4 +14,4 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the iris.cube module."""
+"""Unit tests for the :mod:`iris.cube` module."""
