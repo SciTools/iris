@@ -1044,7 +1044,8 @@ def as_compatible_shape(src_cube, target_cube):
 
 def file_is_newer_than(result_path, source_paths):
     """
-    Check that source files have not changed since a saved result was stored.
+    Return whether the 'result' file has a later modification time than all of
+    the 'source' files.
 
     If a stored result depends entirely on known 'sources', it need only be
     re-built when one of them changes.  This function can be used to test that
