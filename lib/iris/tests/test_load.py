@@ -39,12 +39,9 @@ class TestLoad(tests.IrisTest):
             tests.get_data_path(['PP', 'aPPglob1', 'global.pp']),
             tests.get_data_path(['PP', '_guaranteed_non_exist.pp']),
         )
-        try:
+        with self.assertRaises(IOError) as error_trap:
             cubes = iris.load(paths)
-        except Exception as error:
-            pass
-        self.assertIsInstance(error, IOError)
-        self.assertTrue(error.message.startswith(
+        self.assertTrue(error_trap.exception.message.startswith(
             'One or more of the files specified did not exist'))
 
     def test_nonexist_wild(self):
@@ -52,12 +49,9 @@ class TestLoad(tests.IrisTest):
             tests.get_data_path(['PP', 'aPPglob1', 'global.pp']),
             tests.get_data_path(['PP', '_guaranteed_non_exist_*.pp']),
         )
-        try:
+        with self.assertRaises(IOError) as error_trap:
             cubes = iris.load(paths)
-        except Exception as error:
-            pass
-        self.assertIsInstance(error, IOError)
-        self.assertTrue(error.message.startswith(
+        self.assertTrue(error_trap.exception.message.startswith(
             'One or more of the files specified did not exist'))
 
     def test_bogus(self):

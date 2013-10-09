@@ -106,30 +106,22 @@ class TestFileIsNewer(tests.IrisTest):
         self._test(False, 'example_result', ['older_sour*', 'newer_sour*'])
 
     def test_error_missing_result(self):
-        try:
+        with self.assertRaises(OSError) as error_trap:
             self._test(False, 'non_exist', ['older_sour*'])
-        except Exception as error:
-            pass
-        self.assertIsInstance(error, OSError)
+        error = error_trap.exception
         self.assertEqual(error.strerror, 'No such file or directory')
         self.assertEqual(error.filename, self._name2path('non_exist'))
 
     def test_error_missing_source(self):
-        try:
+        with self.assertRaises(IOError) as error_trap:
             self._test(False, 'example_result', ['older_sour*', 'non_exist'])
-        except Exception as error:
-            pass
-        self.assertIsInstance(error, IOError)
-        self.assertTrue(error.message.startswith(
+        self.assertTrue(error_trap.exception.message.startswith(
             'One or more of the files specified did not exist'))
 
     def test_error_missing_wild(self):
-        try:
+        with self.assertRaises(IOError) as error_trap:
             self._test(False, 'example_result', ['older_sour*', 'unknown_*'])
-        except Exception as error:
-            pass
-        self.assertIsInstance(error, IOError)
-        self.assertTrue(error.message.startswith(
+        self.assertTrue(error_trap.exception.message.startswith(
             'One or more of the files specified did not exist'))
 
 
