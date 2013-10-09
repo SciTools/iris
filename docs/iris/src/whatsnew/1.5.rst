@@ -141,6 +141,9 @@ Bugs fixed
   data file that exists.
 * Zorder of contour lines drawn by :func:`~iris.plot.contourf` has been changed
   to address issue of objects appearing in-between line and filled contours.
+* Coord comparisons now function correctly when comparing to numpy scalars.
+* Cube loading constraints and :meth:`iris.cube.Cube.extract` correctly
+  implement cell equality methods.
 
 
 Incompatible changes
