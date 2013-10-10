@@ -100,6 +100,7 @@ class TestSavePP(TestSaveMethods):
         with self.assertRaises(ValueError):
             save_by_filehandle(self.temp_filename1, self.temp_filename2, self.cube1, pp.save, binary_mode = False)
 
+
 class TestSaveDot(TestSaveMethods):
     """Test saving cubes to DOT format"""
     ext = ".dot"
