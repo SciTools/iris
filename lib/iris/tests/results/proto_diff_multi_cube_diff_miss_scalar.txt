@@ -1,0 +1,3 @@
+Determining differences between cubes of name: air_temperature
+Coordinates of names: (tmp_scalar_coord1, tmp_scalar_coord2) differ: long_name differs: tmp_scalar_coord1, tmp_scalar_coord2
+Scalar coordinate index(0): 'tmp_scalar_coord1' not common to both cubes

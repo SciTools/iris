@@ -1,0 +1,3 @@
+Determining differences between cubes of name: air_temperature
+Dimension coordinate index(0): 'dim_tmp_name' not common to both cubes
+Auxiliary coordinate index(0): 'dim_tmp_name' not common to both cubes

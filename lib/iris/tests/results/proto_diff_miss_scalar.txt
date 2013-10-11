@@ -1,0 +1,2 @@
+Determining differences between cubes of name: air_temperature
+Scalar coordinate index(0): 'tmp_scalar_coord' not common to both cubes

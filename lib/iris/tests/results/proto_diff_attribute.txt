@@ -1,0 +1,2 @@
+Determining differences between cubes of name: air_temperature
+attributes: test_attr differs: some attr,other attr
