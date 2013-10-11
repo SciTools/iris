@@ -83,8 +83,9 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
                     attrib_self = getattr(self, field)
                     attrib_other = getattr(other, field)
 
-                    missing_attrib = (set(attrib_self.keys()) -
-                                      set(attrib_other.keys()))
+                    set_a = set(attrib_self.keys())
+                    set_b = set(attrib_other.keys())
+                    missing_attrib = set_a.symmetric_difference(set_b)
                     if missing_attrib:
                         miss_string = (', '.join(str(val) for
                                        val in missing_attrib))
