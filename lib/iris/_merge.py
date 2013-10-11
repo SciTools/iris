@@ -270,10 +270,7 @@ class _CoordSignature(namedtuple('CoordSignature',
                                 'Type: {} not handled'.format(field))
                         msg = ("{} index({}): '{}' not common to both "
                                'cubes'.format(description, ind, coord_name))
-                        tmp_difference = True
                         differences.append(msg)
-                if not tmp_difference:
-                    raise RuntimeError('Unable to determine all differences')
         return differences
 
 
