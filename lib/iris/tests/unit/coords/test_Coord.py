@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the :class:`iris.coords.Coord`."""
+"""Unit tests for the :class:`iris.coords.Coord` class."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -118,6 +118,29 @@ class Test_collapsed(tests.IrisTest):
                     index_slice = (slice(None),) + tuple(index)
                     self.assertArrayEqual(kwargs['bounds'][index_slice],
                                           self._serialize(bounds[index_slice]))
+
+
+class Test_is_compatible(tests.IrisTest):
+    def setUp(self):
+        self.test_coord = AuxCoord([1.])
+        self.other_coord = self.test_coord.copy()
+
+    def test_noncommon_array_attrs_compatible(self):
+        # Non-common array attributes should be ok.
+        self.test_coord.attributes['array_test'] = np.array([1.0, 2, 3])
+        self.assertTrue(self.test_coord.is_compatible(self.other_coord))
+
+    def test_matching_array_attrs_compatible(self):
+        # Matching array attributes should be ok.
+        self.test_coord.attributes['array_test'] = np.array([1.0, 2, 3])
+        self.other_coord.attributes['array_test'] = np.array([1.0, 2, 3])
+        self.assertTrue(self.test_coord.is_compatible(self.other_coord))
+
+    def test_different_array_attrs_incompatible(self):
+        # Differing array attributes should make coords incompatible.
+        self.test_coord.attributes['array_test'] = np.array([1.0, 2, 3])
+        self.other_coord.attributes['array_test'] = np.array([1.0, 2, 777.7])
+        self.assertFalse(self.test_coord.is_compatible(self.other_coord))
 
 
 if __name__ == '__main__':
