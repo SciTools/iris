@@ -903,6 +903,25 @@ class TestRollingWindow(tests.IrisTest):
 
         self.assertRaises(ValueError, self.cube.rolling_window, 'longitude', iris.analysis.MEAN, window=0)
 
+    def test_longitude_masked(self):
+        self.cube.data = ma.array(self.cube.data,
+                                  mask=[[True, True, True, True],
+                                        [True, False, True, True],
+                                        [False, False, False, False]])
+        res_cube = self.cube.rolling_window('longitude',
+                                            iris.analysis.MEAN,
+                                            window=2)
+
+        expected_result = np.ma.array([[-99., -99., -99.],
+                                       [12., 12., -99.],
+                                       [15., 11., 8.]],
+                                      mask=[[True, True, True],
+                                            [False, False, True],
+                                            [False, False, False]],
+                                      dtype=np.float64)
+
+        self.assertMaskedArrayEqual(expected_result, res_cube.data)
+
     def test_longitude_circular(self):
         cube = self.cube
         cube.coord('longitude').circular = True
