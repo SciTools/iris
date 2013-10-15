@@ -34,7 +34,9 @@ install:
 
 # install deps
   - ./.travis_no_output sudo apt-get install python-scipy cython python-pip
-  - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors shapely nose pyshp pep8 mock
+  - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors shapely nose
+  - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors pyshp pep8 mock
+  - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors setuptools
   - ./.travis_no_output sudo /usr/bin/pip install matplotlib==1.2.0
   - ./.travis_no_output sudo apt-get install libgeos-dev libproj-dev
   - ./.travis_no_output sudo apt-get install libudunits2-dev libhdf5-serial-dev netcdf-bin libnetcdf-dev
@@ -70,10 +72,6 @@ install:
   - ../../.travis_no_output sudo /usr/bin/python setup.py install
   - cd ../..
 
-# distutils
-  - ./.travis_no_output wget http://python-distribute.org/distribute_setup.py
-  - ./.travis_no_output sudo /usr/bin/python distribute_setup.py
-
 # cartopy
   - ./.travis_no_output wget -O cartopy.zip https://github.com/SciTools/cartopy/archive/${CARTOPY_REF}.zip
   - ./.travis_no_output unzip -q cartopy.zip
@@ -81,7 +79,11 @@ install:
   - cd cartopy
   - ../.travis_no_output /usr/bin/python setup.py install --user
   - cd ..
-  
+
+# Pre-load Natural Earth data to avoid multiple, overlapping downloads.
+# i.e. There should be no DownloadWarning reports in the log.
+  - /usr/bin/python -c 'import cartopy; cartopy.io.shapereader.natural_earth()'
+
 # mo_unpack
   - ./.travis_no_output wget https://puma.nerc.ac.uk/trac/UM_TOOLS/raw-attachment/wiki/unpack/unpack-030712.tgz
   - ./.travis_no_output tar -xf unpack-030712.tgz
