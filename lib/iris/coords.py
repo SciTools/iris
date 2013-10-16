@@ -631,24 +631,6 @@ class Coord(CFVariableMixin):
                 self.bounds = self.units.convert(self.bounds, unit)
         self.units = unit
 
-    def unit_converted(self, new_unit):
-        """
-        Return a coordinate converted to a given unit.
-
-        .. deprecated:: 1.2
-            Make a copy of the coordinate using
-            :meth:`~iris.coords.Coord.copy()` and then use
-            :meth:`~iris.coords.Coord.convert_units()`.
-
-        """
-        msg = "The 'unit_converted' method is deprecated. Make a copy of "\
-              "the coordinate and use the in-place 'convert_units' "\
-              "method."
-        warnings.warn(msg, UserWarning, stacklevel=2)
-        new_coord = self.copy()
-        new_coord.convert_units(new_unit)
-        return new_coord
-
     def cells(self):
         """
         Returns an iterable of Cell instances for this Coord.
@@ -1087,30 +1069,6 @@ class Coord(CFVariableMixin):
                 result_index = (result_index - index_offset) % self.shape[0]
 
         return result_index
-
-    def sin(self):
-        """
-        Return a coordinate which represents sin(this coordinate).
-
-        .. deprecated:: 1.0
-            This method has been deprecated.
-
-        """
-        warnings.warn('Coord.sin() has been deprecated.')
-        import iris.analysis.calculus
-        return iris.analysis.calculus._coord_sin(self)
-
-    def cos(self):
-        """
-        Return a coordinate which represents cos(this coordinate).
-
-        .. deprecated:: 1.0
-            This method has been deprecated.
-
-        """
-        warnings.warn('Coord.cos() has been deprecated.')
-        import iris.analysis.calculus
-        return iris.analysis.calculus._coord_cos(self)
 
     def xml_element(self, doc):
         """Return a DOM element describing this Coord."""
