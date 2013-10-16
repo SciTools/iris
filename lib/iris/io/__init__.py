@@ -227,11 +227,19 @@ def _check_init_savers():
     # TODO: Raise a ticket to resolve the cyclic import error that requires
     # us to initialise this on first use. Probably merge io and fileformats.
     if "pp" not in _savers:
+        def _netcdf(cube, target):
+            import iris.fileformats.netcdf
+            iris.fileformats.netcdf.save(cube, target)
+
+        def _grib(cube, target):
+            import iris.fileformats.grib
+            iris.fileformats.grib.save_grib2(cube, target)
+
         _savers.update({"pp": iris.fileformats.pp.save,
-                        "nc": iris.fileformats.netcdf.save,
+                        "nc": _netcdf,
                         "dot": iris.fileformats.dot.save,
                         "dotpng": iris.fileformats.dot.save_png,
-                        "grib2": iris.fileformats.grib.save_grib2})
+                        "grib2": _grib})
 
 
 def add_saver(file_extension, new_saver):
