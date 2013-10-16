@@ -35,6 +35,7 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
+import iris.analysis.trajectory
 import iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc as pyke_rules
 import iris.fileformats.netcdf
 import iris.std_names
