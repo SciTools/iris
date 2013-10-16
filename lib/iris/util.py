@@ -631,47 +631,6 @@ def _build_full_slice_given_keys(keys, ndim):
     return full_slice
 
 
-def _wrap_function_for_method(function, docstring=None):
-    """
-    Returns a wrapper function modified to be suitable for use as a method.
-
-    The wrapper function renames the first argument as "self" and allows an alternative docstring, thus
-    allowing the built-in help(...) routine to display appropriate output.
-
-    """
-    # Generate the Python source for the wrapper function.
-    # NB. The first argument is replaced with "self".
-    args, varargs, varkw, defaults = inspect.getargspec(function)
-    if defaults is None:
-        basic_args = ['self'] + args[1:]
-        default_args = []
-        simple_default_args = []
-    else:
-        cutoff = -len(defaults)
-        basic_args = ['self'] + args[1:cutoff]
-        default_args = ['%s=%r' % pair for pair in zip(args[cutoff:], defaults)]
-        simple_default_args = args[cutoff:]
-    var_arg = [] if varargs is None else ['*' + varargs]
-    var_kw = [] if varkw is None else ['**' + varkw]
-    arg_source = ', '.join(basic_args + default_args + var_arg + var_kw)
-    simple_arg_source = ', '.join(basic_args + simple_default_args + var_arg + var_kw)
-    source = 'def %s(%s):\n    return function(%s)' % (function.func_name, arg_source, simple_arg_source)
-
-    # Compile the wrapper function
-    # NB. There's an outstanding bug with "exec" where the locals and globals dictionaries must be the same
-    # if we're to get closure behaviour.
-    my_locals = {'function': function}
-    exec source in my_locals, my_locals
-
-    # Update the docstring if required, and return the modified function
-    wrapper = my_locals[function.func_name]
-    if docstring is None:
-        wrapper.__doc__ = function.__doc__
-    else:
-        wrapper.__doc__ = docstring
-    return wrapper
-
-
 class _MetaOrderedHashable(abc.ABCMeta):
     """
     A metaclass that ensures that non-abstract subclasses of _OrderedHashable

@@ -33,8 +33,6 @@ from copy import deepcopy
 
 import numpy as np
 import numpy.ma as ma
-import scipy.interpolate
-import scipy.stats.mstats
 
 import iris.coords
 
@@ -430,6 +428,8 @@ class WeightedAggregator(Aggregator):
 
 
 def _percentile(data, axis, percent, **kwargs):
+    import scipy.stats.mstats
+
     # NB. scipy.stats.mstats.scoreatpercentile always works across just the
     # first dimension of its input data, and  returns a result that has one
     # fewer dimension than the input.
@@ -490,6 +490,8 @@ def _sum(array, **kwargs):
 
 
 def _peak(array, **kwargs):
+    import scipy.interpolate
+
     def column_segments(column):
         nan_indices = np.where(np.isnan(column))[0]
         columns = []
@@ -615,9 +617,13 @@ For example, the number of ensembles with precipitation exceeding 10 (in cube da
 """
 
 
+def _gmean(array, axis, **kwargs):
+    import scipy.stats.mstats
+    return scipy.stats.mstats.gmean(array, axis=axis, **kwargs)
+
 GMEAN = Aggregator('Geometric mean of {standard_name:s} {action:s} {coord_names:s}',
                 'geometric_mean',
-                scipy.stats.mstats.gmean)
+                _gmean)
 """
 The geometric mean, as computed by :func:`scipy.stats.mstats.gmean`.
 
@@ -628,9 +634,13 @@ For example, to compute zonal geometric means::
 """
 
 
+def _hmean(array, axis, **kwargs):
+    import scipy.stats.mstats
+    return scipy.stats.mstats.hmean(array, axis=axis, **kwargs)
+
 HMEAN = Aggregator('Harmonic mean of {standard_name:s} {action:s} {coord_names:s}',
                 'harmonic_mean',
-                scipy.stats.mstats.hmean)
+                _hmean)
 """
 The harmonic mean, as computed by :func:`scipy.stats.mstats.hmean`.
 
