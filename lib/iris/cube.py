@@ -35,7 +35,6 @@ import numpy.ma as ma
 import iris.analysis
 import iris.analysis.maths
 import iris.analysis.interpolate
-import iris.analysis.trajectory
 import iris.aux_factory
 import iris.coord_systems
 import iris.coords
@@ -1716,19 +1715,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                                     name_padding=1)
 
     def __iter__(self):
-        """
-        .. deprecated:: 1.2
-            Use :meth:`iris.cube.Cube.slices` instead.
-
-        """
-        # Emit a warning about iterating over the cube.
-        # __getitem__ makes this possible, but now deprecated as confusing.
-        warnings.warn('Cube iteration has been deprecated: '
-                      'please use Cube.slices() instead.')
-
-        # Return a simple first-index iterator, equivalent to that produced
-        # with __getitem__, if __iter__ was not defined.
-        return (self[i] for i in range(self.shape[0]))
+        raise TypeError('Cube is not iterable')
 
     def __getitem__(self, keys):
         """
@@ -1875,52 +1862,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Cast the constraint into a proper constraint if it is not so already
         constraint = iris._constraints.as_constraint(constraint)
         return constraint.extract(self)
-
-    def extract_by_trajectory(self, points):
-        """
-        Extract a sub-cube at the given n-dimensional points.
-
-        .. deprecated:: 0.6
-            Please use :func:`iris.analysis.trajectory.interpolate` instead
-            of this method.
-
-        Args:
-
-        * points
-            **Either** Array of dicts with identical keys, for example::
-
-                [{'latitude': 0, 'longitude': 0},
-                 {'latitude': 1, 'longitude': 1}]
-
-            **Or** a :class:`iris.analysis.trajectory.Trajectory` instance.
-
-        The coordinates specified by the points will be boiled down into a
-        single data dimension. (This is so we can make a cube from points
-        [(0, 0), (1, 0), (1, 1)] for example)
-
-        """
-        warnings.warn('Cube.extract_by_trajectory() has been deprecated - '
-                      'please use iris.analysis.trajectory.interpolate().')
-
-        if isinstance(points, iris.analysis.trajectory.Trajectory):
-            points = points.sampled_points
-        else:
-            # Do all points have matching coord names?
-            coord_names = points[0].viewkeys()
-            for point in points[1:]:
-                if point.viewkeys() ^ coord_names:
-                    raise ValueError('Point coordinates are inconsistent.')
-
-        # Re-write as a sequence of coordinate-values pairs.
-        sample_points = []
-        for coord_name in points[0].keys():
-            coord = self.coord(coord_name)
-            values = [point[coord_name] for point in points]
-            sample_points.append((coord, values))
-
-        trajectory_cube = iris.analysis.trajectory.interpolate(self,
-                                                               sample_points)
-        return trajectory_cube
 
     def _as_list_of_coords(self, names_or_coords):
         """

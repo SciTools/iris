@@ -22,7 +22,32 @@ Bugs fixed
 
 Incompatible changes
 --------------------
-* N/A
+* :meth:`iris.cube.Cube.extract_by_trajectory()` has been removed.
+  Instead, use :func:`iris.analysis.trajectory.interpolate()`.
+* :func:`iris.load_strict()` has been removed.
+  Code should now use the :func:`iris.load_cube()` and
+  :func:`iris.load_cubes()` functions instead.
+* :meth:`iris.coords.Coord.cos()` and :meth:`iris.coords.Coord.sin()`
+  have been removed.
+* :meth:`iris.coords.Coord.unit_converted()` has been removed.
+  Instead, make a copy of the coordinate using
+  :meth:`iris.coords.Coord.copy()` and then call the
+  :meth:`iris.coords.Coord.convert_units()` method of the new
+  coordinate.
+* Iteration over a :class:`~iris.cube.Cube` has been removed. Instead,
+  use :meth:`iris.cube.Cube.slices()`.
+* The following boolean methods/properties on the
+  :class:`~iris.unit.Unit` class have been removed.
+
+  ====================================== ===========================================
+  Removed property/method                New method
+  ====================================== ===========================================
+  :meth:`~iris.unit.Unit.convertible()`  :meth:`~iris.unit.Unit.is_convertible()`
+  :attr:`~iris.unit.Unit.dimensionless`  :meth:`~iris.unit.Unit.is_dimensionless()`
+  :attr:`~iris.unit.Unit.no_unit`        :meth:`~iris.unit.Unit.is_no_unit()`
+  :attr:`~iris.unit.Unit.time_reference` :meth:`~iris.unit.Unit.is_time_reference()`
+  :attr:`~iris.unit.Unit.unknown`        :meth:`~iris.unit.Unit.is_unknown()`
+  ====================================== ===========================================
 
 Deprecations
 ------------

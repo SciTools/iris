@@ -534,17 +534,9 @@ class Test2dIndexing(TestCube2d):
 
 class TestIteration(TestCube2d):
     def test_cube_iteration(self):
-        # Check that creating a cube iterator generates a warning.
-        with warnings.catch_warnings():
-            warnings.simplefilter('error')
-            with self.assertRaises(UserWarning):
-                for subcube in self.t:  # warning->error, so this *fails*
-                    pass
-        # Check we can step through the items, and their shape and number.
-        subcubes = [subcube for subcube in self.t]
-        self.assertEqual(len(subcubes), self.t.shape[0])
-        for subcube in subcubes:
-            self.assertEqual(subcube.shape, self.t.shape[1:])
+        with self.assertRaises(TypeError):
+            for subcube in self.t:
+                pass
 
 
 class Test2dSlicing(TestCube2d):
