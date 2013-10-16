@@ -249,15 +249,6 @@ class TestCubeListConstraint(RelaxedConstraintMixin, tests.IrisTest):
 
 
 @iris.tests.skip_data
-class TestCubeLoadStrictConstraint(StrictConstraintMixin, tests.IrisTest):
-    suffix = 'load_strict'
-
-    def load_match(self, files, constraints):
-        cubes = iris.load_strict(files, constraints)
-        return cubes
-
-
-@iris.tests.skip_data
 class TestCubeListStrictConstraint(StrictConstraintMixin, tests.IrisTest):
     suffix = 'load_strict'
 

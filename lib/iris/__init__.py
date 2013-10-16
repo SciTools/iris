@@ -113,7 +113,7 @@ import iris.io
 __version__ = '1.6.0-dev'
 
 # Restrict the names imported when using "from iris import *"
-__all__ = ['load', 'load_cube', 'load_cubes', 'load_raw', 'load_strict',
+__all__ = ['load', 'load_cube', 'load_cubes', 'load_raw',
            'save', 'Constraint', 'AttributeConstraint', 'sample_data_path',
            'site_configuration']
 
@@ -300,41 +300,6 @@ def load_raw(uris, constraints=None, callback=None):
 
     """
     return _load_collection(uris, constraints, callback).cubes()
-
-
-def load_strict(uris, constraints=None, callback=None):
-    """
-    Loads exactly one Cube for each constraint.
-
-    .. deprecated:: 0.9
-
-        Use :func:`load_cube` or :func:`load_cubes` instead.
-
-    Args:
-
-    * uris:
-        One or more filenames/URIs.
-
-    Kwargs:
-
-    * constraints:
-        One or more constraints.
-    * callback:
-        A modifier/filter function.
-
-    Returns:
-        An :class:`iris.cube.CubeList` if multiple constraints were
-        supplied, or a single :class:`iris.cube.Cube` otherwise.
-
-    """
-    warnings.warn('The `load_strict` function is deprecated. Please use'
-                  ' `load_cube` or `load_cubes` instead.', stacklevel=2)
-    constraints = iris._constraints.list_of_constraints(constraints)
-    if len(constraints) == 1:
-        result = load_cube(uris, constraints, callback)
-    else:
-        result = load_cubes(uris, constraints, callback)
-    return result
 
 
 save = iris.io.save

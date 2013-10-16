@@ -65,7 +65,9 @@ class TestTrajectory(tests.IrisTest):
         self.assertCML(cube, ('trajectory', 'big_cube.cml'))
 
         # Pull out a single point
-        single_point = cube.extract_by_trajectory([{'grid_latitude': -0.1188, 'grid_longitude': 359.57958984}])
+        single_point = iris.analysis.trajectory.interpolate(
+            cube, [('grid_latitude', [-0.1188]),
+                   ('grid_longitude', [359.57958984])])
         self.assertCML(single_point, ('trajectory', 'single_point.cml'))
 
         # Extract a simple, axis-aligned trajectory that is similar to an indexing operation.
@@ -75,7 +77,16 @@ class TestTrajectory(tests.IrisTest):
             {'grid_latitude': -0.1188, 'grid_longitude': 359.66870117}
         ]
         trajectory = iris.analysis.trajectory.Trajectory(waypoints, sample_count=100)
-        trajectory_cube = cube.extract_by_trajectory(trajectory)
+        def traj_to_sample_points(trajectory):
+            sample_points = []
+            src_points = trajectory.sampled_points
+            for name in src_points[0].iterkeys():
+                values = [point[name] for point in src_points]
+                sample_points.append((name, values))
+            return sample_points
+        sample_points = traj_to_sample_points(trajectory)
+        trajectory_cube = iris.analysis.trajectory.interpolate(cube,
+                                                               sample_points)
         self.assertCML(trajectory_cube, ('trajectory', 'constant_latitude.cml'))
 
         # Sanity check the results against a simple slice
@@ -90,7 +101,9 @@ class TestTrajectory(tests.IrisTest):
             {'grid_latitude': -0.0468, 'grid_longitude': 359.6246},
         ]
         trajectory = iris.analysis.trajectory.Trajectory(waypoints, sample_count=100)
-        trajectory_cube = cube.extract_by_trajectory(trajectory)
+        sample_points = traj_to_sample_points(trajectory)
+        trajectory_cube = iris.analysis.trajectory.interpolate(cube,
+                                                               sample_points)
         self.assertCML(trajectory_cube, ('trajectory', 'zigzag.cml'))
 
         # Sanity check the results against a simple slice

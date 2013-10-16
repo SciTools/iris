@@ -1032,19 +1032,6 @@ class Unit(iris.util._OrderedHashable):
         """
         return self.calendar is not None
 
-    @property
-    def time_reference(self):
-        """
-        .. deprecated:: 1.3
-            Please use the :meth:`~iris.unit.Unit.is_time_reference`
-            method instead.
-
-        """
-        msg = "The 'time_reference' property is deprecated. "\
-              "Please use the 'is_time_reference' method instead."
-        warnings.warn(msg, UserWarning, stacklevel=2)
-        return self.is_time_reference()
-
     def title(self, value):
         """
         Return the unit value as a title string.
@@ -1131,18 +1118,6 @@ class Unit(iris.util._OrderedHashable):
                       _ut_are_convertible(self.ut_unit, other.ut_unit) != 0)
         return result
 
-    def convertible(self, other):
-        """
-        .. deprecated:: 1.3
-            Please use the :meth:`~iris.unit.Unit.is_convertible` method
-            instead.
-
-        """
-        msg = "The 'convertible' method is deprecated. "\
-              "Please use the 'is_convertible' method instead."
-        warnings.warn(msg, UserWarning, stacklevel=2)
-        return self.is_convertible(other)
-
     def is_dimensionless(self):
         """
         Return whether the unit is dimensionless.
@@ -1164,19 +1139,6 @@ class Unit(iris.util._OrderedHashable):
         return (self.category == _CATEGORY_UDUNIT and
                 bool(_ut_is_dimensionless(self.ut_unit)))
 
-    @property
-    def dimensionless(self):
-        """
-        .. deprecated:: 1.3
-            Please use the :meth:`~iris.unit.Unit.is_dimensionless`
-            method instead.
-
-        """
-        msg = "The 'dimensionless' property is deprecated. "\
-              "Please use the 'is_dimensionless' method instead."
-        warnings.warn(msg, UserWarning, stacklevel=2)
-        return self.is_dimensionless()
-
     def is_unknown(self):
         """
         Return whether the unit is defined to be an *unknown* unit.
@@ -1196,17 +1158,6 @@ class Unit(iris.util._OrderedHashable):
 
         """
         return self.category == _CATEGORY_UNKNOWN
-
-    @property
-    def unknown(self):
-        """
-        .. deprecated:: 1.3
-            Please use the :meth:`~iris.unit.Unit.is_unknown` method instead.
-        """
-        msg = "The 'unknown' property is deprecated. "\
-              "Please use the 'is_unknown' method instead."
-        warnings.warn(msg, UserWarning, stacklevel=2)
-        return self.is_unknown()
 
     def is_no_unit(self):
         """
@@ -1231,17 +1182,6 @@ class Unit(iris.util._OrderedHashable):
 
         """
         return self.category == _CATEGORY_NO_UNIT
-
-    @property
-    def no_unit(self):
-        """
-        .. deprecated:: 1.3
-            Please use the :meth:`~iris.unit.Unit.is_no_unit` method instead.
-        """
-        msg = "The 'no_unit' property is deprecated. "\
-              "Please use the 'is_no_unit' method instead."
-        warnings.warn(msg, UserWarning, stacklevel=2)
-        return self.is_no_unit()
 
     def format(self, option=None):
         """
