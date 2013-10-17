@@ -44,7 +44,7 @@ class TestGribLookupTableType(itests.IrisTest):
 
 
 class TestGribPhenomenonLookup(itests.IrisTest):
-    def test_grib1_lookup(self):
+    def test_grib1_cf_lookup(self):
         def check_grib1_cf(param,
                            standard_name, long_name, units,
                            height=None,
@@ -75,7 +75,7 @@ class TestGribPhenomenonLookup(itests.IrisTest):
         check_grib1_cf(9999, None, "grib_skin_temperature", "K",
                        expect_none=True)
 
-    def test_grib2_lookup(self):
+    def test_grib2_cf_lookup(self):
         def check_grib2_cf(discipline, category, number,
                            standard_name, long_name, units,
                            expect_none=False):
@@ -95,6 +95,12 @@ class TestGribPhenomenonLookup(itests.IrisTest):
         check_grib2_cf(0, 19, 1, None, "grib_physical_atmosphere_albedo", "%")
         check_grib2_cf(2, 0, 2, "soil_temperature", None, "K")
         check_grib2_cf(10, 2, 0, "sea_ice_area_fraction", None, 1)
+        check_grib2_cf(2, 0, 0, "land_area_fraction", None, 1)
+        check_grib2_cf(0, 19, 1, None, "grib_physical_atmosphere_albedo", "%")
+        check_grib2_cf(0, 1, 64,
+                       "atmosphere_mass_content_of_water_vapor", None,
+                       "kg m-2")
+        check_grib2_cf(2, 0, 7, "surface_altitude", None, "m")
 
         # These should fail
         check_grib2_cf(9999, 2, 0, "sea_ice_area_fraction", None, 1,
@@ -104,7 +110,7 @@ class TestGribPhenomenonLookup(itests.IrisTest):
         check_grib2_cf(10, 2, 9999, "sea_ice_area_fraction", None, 1,
                        expect_none=True)
 
-    def test_cf_lookup(self):
+    def test_cf_grib2_lookup(self):
         def check_cf_grib2(standard_name, long_name,
                            discipline, category, number, units,
                            expect_none=False):
@@ -125,6 +131,14 @@ class TestGribPhenomenonLookup(itests.IrisTest):
                        0, 0, 0, 'K')
         check_cf_grib2("soil_temperature", None,
                        2, 0, 2, "K")
+        check_cf_grib2("land_area_fraction", None,
+                       2, 0, 0, '1')
+        check_cf_grib2("land_binary_mask", None,
+                       2, 0, 0, '1')
+        check_cf_grib2("atmosphere_mass_content_of_water_vapor", None,
+                       0, 1, 64, "kg m-2")
+        check_cf_grib2("surface_altitude", None,
+                       2, 0, 7, "m")
 
         # These should fail
         check_cf_grib2("air_temperature", "user_long_UNRECOGNISED",
