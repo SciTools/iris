@@ -180,8 +180,7 @@ class TestNetCDFLoad(tests.IrisTest):
                                    'standard_name': 'projection_y_coordinate'})
                 _write_nc_var(
                     ds, 'Lambert_Conformal',
-                    attributes={'grid_mapping_name':
-                                'lambert_conformal_conic',
+                    attributes={'grid_mapping_name': 'lambert_conformal_conic',
                                 'standard_parallel': parallels,
                                 'latitude_of_projection_origin': central_lat,
                                 'longitude_of_central_meridian': central_lon})
@@ -306,6 +305,70 @@ class TestNetCDFCRS(tests.IrisTest):
         self.grid.earth_radius = earth_radius
         crs = pyke_rules.build_coordinate_system(self.grid)
         self.assertEqual(crs, icoord_systems.GeogCS(earth_radius))
+
+    def test_lat_lon_no_ellipsoid(self):
+        # check for a 'plain' grid_mapping var with no ellipsoid information.
+        with self.temp_filename(suffix='.nc') as temp_ncpath:
+            with nc.Dataset(temp_ncpath, 'w') as ds:
+                nx, ny = 6, 4
+                ds.createDimension('x', nx)
+                ds.createDimension('y', ny)
+                _write_nc_var(ds, 'x', dims=('x'),
+                              data=np.linspace(0.0, 100.0, nx),
+                              attributes=
+                                  {'units': 'degrees_east',
+                                   'standard_name': 'longitude'})
+                _write_nc_var(ds, 'y', dims=('y'),
+                              data=np.linspace(0.0, 100.0, ny),
+                              attributes=
+                                  {'units': 'degrees_north',
+                                   'standard_name': 'latitude'})
+                _write_nc_var(
+                    ds, 'grid_mapping_latlon',
+                    attributes={'grid_mapping_name': 'latitude_longitude'})
+                _write_nc_var(
+                    ds, 'temperature', dims=('y', 'x'),
+                    data=np.zeros((ny, nx)),
+                    attributes={'units': 'K',
+                                'standard_name': 'air_temperature',
+                                'grid_mapping': 'grid_mapping_latlon'})
+            # load file as a single cube
+            cube, = iris.fileformats.netcdf.load_cubes([temp_ncpath])
+
+        # test resulting cube properties
+        x_coord = cube.coord(axis='x')
+        self.assertEqual(x_coord.name(), 'longitude')
+        self.assertIsNone(x_coord.coord_system)
+
+    def test_lat_lon_no_grid_mapping(self):
+        # check that a 'plain' latlon grid has no ellipsoid.
+        with self.temp_filename(suffix='.nc') as temp_ncpath:
+            with nc.Dataset(temp_ncpath, 'w') as ds:
+                nx, ny = 6, 4
+                ds.createDimension('x', nx)
+                ds.createDimension('y', ny)
+                _write_nc_var(ds, 'x', dims=('x'),
+                              data=np.linspace(0.0, 100.0, nx),
+                              attributes=
+                                  {'units': 'degrees_east',
+                                   'standard_name': 'longitude'})
+                _write_nc_var(ds, 'y', dims=('y'),
+                              data=np.linspace(0.0, 100.0, ny),
+                              attributes=
+                                  {'units': 'degrees_north',
+                                   'standard_name': 'latitude'})
+                _write_nc_var(
+                    ds, 'temperature', dims=('y', 'x'),
+                    data=np.zeros((ny, nx)),
+                    attributes={'units': 'K',
+                                'standard_name': 'air_temperature'})
+            # load file as a single cube
+            cube, = iris.fileformats.netcdf.load_cubes([temp_ncpath])
+
+        # test resulting cube properties
+        x_coord = cube.coord(axis='x')
+        self.assertEqual(x_coord.name(), 'longitude')
+        self.assertIsNone(x_coord.coord_system)
 
 
 class SaverPermissions(tests.IrisTest):
