@@ -34,7 +34,7 @@ import warnings
 import numpy as np
 
 from iris.fileformats.grib import _grib_cf_map as grcf
-import iris.std_names
+import iris.semantics.std_names
 import iris.unit
 
 
@@ -96,7 +96,7 @@ def _make_grib1_cf_table():
                                        centre_number=int(centre_number),
                                        param_number=int(param_number))
         if standard_name is not None:
-            if standard_name not in iris.std_names.STD_NAMES:
+            if standard_name not in iris.semantics.std_names.STD_NAMES:
                 warnings.warn('{} is not a recognised CF standard name '
                               '(skipping).'.format(standard_name))
                 return None
@@ -183,7 +183,7 @@ def _make_grib2_to_cf_table():
                                        param_category=int(param_category),
                                        param_number=int(param_number))
         if standard_name is not None:
-            if standard_name not in iris.std_names.STD_NAMES:
+            if standard_name not in iris.semantics.std_names.STD_NAMES:
                 warnings.warn('{} is not a recognised CF standard name '
                               '(skipping).'.format(standard_name))
                 return None
@@ -242,7 +242,7 @@ def _make_cf_to_grib2_table():
         assert standard_name is not None or long_name is not None
         if standard_name is not None:
             long_name = None
-            if standard_name not in iris.std_names.STD_NAMES:
+            if standard_name not in iris.semantics.std_names.STD_NAMES:
                 warnings.warn('{} is not a recognised CF standard name '
                               '(skipping).'.format(standard_name))
                 return None

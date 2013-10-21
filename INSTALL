@@ -15,7 +15,6 @@ We strongly encourage people to contribute to Iris and for this type of
 development activity an in-place build can be useful. Once you've cloned 
 the Iris git repository you can perform an in-place build by entering::
 
-  python setup.py std_names
   python setup.py build_ext --inplace
 
 Details of other setup.py options and commands can be found by entering::

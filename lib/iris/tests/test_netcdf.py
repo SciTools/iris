@@ -38,7 +38,7 @@ import iris
 import iris.analysis.trajectory
 import iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc as pyke_rules
 import iris.fileformats.netcdf
-import iris.std_names
+import iris.semantics.std_names
 import iris.util
 import iris.coord_systems as icoord_systems
 import iris.tests.stock as stock
@@ -837,11 +837,12 @@ class TestCFStandardName(tests.IrisTest):
 
     def test_std_name_lookup_pass(self):
         # Test performing a CF standard name look-up hit.
-        self.assertTrue('time' in iris.std_names.STD_NAMES)
+        self.assertTrue('time' in iris.semantics.std_names.STD_NAMES)
 
     def test_std_name_lookup_fail(self):
         # Test performing a CF standard name look-up miss.
-        self.assertFalse('phenomenon_time' in iris.std_names.STD_NAMES)
+        self.assertFalse('phenomenon_time' in
+                         iris.semantics.std_names.STD_NAMES)
 
 
 @iris.tests.skip_data

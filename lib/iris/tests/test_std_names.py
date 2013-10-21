@@ -17,7 +17,7 @@
 
 import unittest
 
-from iris.std_names import STD_NAMES
+from iris.semantics.std_names import STD_NAMES
 
 
 class TestStandardNames(unittest.TestCase):
