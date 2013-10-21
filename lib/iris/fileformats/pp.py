@@ -1072,6 +1072,11 @@ class PPField(object):
         # populate lbuser[0] to have the data's datatype
         if data.dtype == np.dtype('>f4'):
             lb[HEADER_DICT['lbuser'][0]] = 1
+        elif data.dtype == np.dtype('>f8'):
+            warnings.warn("Downcasting array precision from float64 to float32 for save."
+                          "If float64 precision is required then please save in a different format")
+            data = data.astype('>f4')
+            lb[HEADER_DICT['lbuser'][0]] = 1
         elif data.dtype == np.dtype('>i4'):
             # NB: there is no physical difference between lbuser[0] of 2 or 3 so we encode just 2
             lb[HEADER_DICT['lbuser'][0]] = 2
