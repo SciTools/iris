@@ -27,11 +27,9 @@ import os
 import warnings
 
 import cartopy
+import gribapi
 import numpy as np
 import numpy.ma as ma
-
-import iris.proxy
-iris.proxy.apply_proxy('gribapi', globals())
 
 import iris.coord_systems as coord_systems
 from iris.exceptions import TranslationError

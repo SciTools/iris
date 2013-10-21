@@ -34,7 +34,6 @@ import numpy.ma as ma
 
 import iris.analysis
 import iris.analysis.maths
-import iris.analysis.interpolate
 import iris.aux_factory
 import iris.coord_systems
 import iris.coords
@@ -2290,13 +2289,17 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     # START ANALYSIS ROUTINES
 
-    regridded = iris.util._wrap_function_for_method(
-        iris.analysis.interpolate.regrid,
+    def regridded(self, grid_cube, mode='bilinear', **kwargs):
         """
         Returns a new cube with values derived from this cube on the
         horizontal grid specified by the grid_cube.
 
-        """)
+        See :func:`iris.analysis.interpolate.regrid` for more detail.
+
+        """
+        import iris.analysis.interpolate
+        return iris.analysis.interpolate.regridded(self, grid_cube, mode,
+                                                   **kwargs)
 
     # END ANALYSIS ROUTINES
 

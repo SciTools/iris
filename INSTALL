@@ -49,17 +49,8 @@ python 2.7 or later (http://www.python.org/)
 numpy 1.6 or later (http://numpy.scipy.org/)
     Python package for scientific computing including a powerful N-dimensional array object.
 
-scipy 0.10 or later (http://www.scipy.org/)
-    Python package for scientific computing.
-
 udunits2 2.1.24 or later (http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html)
     C library for units of physical quantities.
-
-netcdf4-python 0.9.9 or later (http://netcdf4-python.googlecode.com/)
-    Python interface to the netCDF version 4 C library.
-
-PyKE 1.1.1 or later (http://pyke.sourceforge.net/)
-    Python knowledge-based inference engine.
 
 setuptools 0.6c11 or later (http://pypi.python.org/pypi/setuptools/)
     Python package for installing/removing python packages.
@@ -92,6 +83,9 @@ mock 1.0.1 (http://pypi.python.org/pypi/mock/)
     Python mocking and patching package for testing. Note that this package
     is only required to support the Iris unit tests.
 
+netcdf4-python 0.9.9 or later (http://netcdf4-python.googlecode.com/)
+    Python interface to the netCDF version 4 C library.
+
 nose 1.1.2 or later (http://nose.readthedocs.org/en/latest/)
     Python package for software testing. Iris is not compatible with nose2. 
 
@@ -99,8 +93,14 @@ pandas 0.11.0 or later (http://pandas.pydata.org)
     Python package providing high-performance, easy-to-use data structures and
     data analysis tools.
 
+PyKE 1.1.1 or later (http://pyke.sourceforge.net/)
+    Python knowledge-based inference engine.
+
 PythonImagingLibrary 1.1.7 or later (http://effbot.org/zone/pil-index.htm)
     Python package for image processing.
+
+scipy 0.10 or later (http://www.scipy.org/)
+    Python package for scientific computing.
 
 shapely 1.2.14 (https://github.com/Toblerity/Shapely)
     Python package for the manipulation and analysis of planar geometric objects.

@@ -31,8 +31,7 @@ import os.path
 import string
 import warnings
 
-import iris.proxy
-iris.proxy.apply_proxy('netCDF4', globals())
+import netCDF4
 import numpy as np
 import numpy.ma as ma
 from pyke import knowledge_engine
