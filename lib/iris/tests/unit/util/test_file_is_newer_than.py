@@ -22,10 +22,10 @@ Test function :meth:`iris.util.test_file_is_newer`.
 # importing anything else
 import iris.tests as tests
 
+import os
 import os.path
 import shutil
 import tempfile
-import time
 import unittest
 
 from iris.util import file_is_newer_than
@@ -45,13 +45,15 @@ class TestFileIsNewer(tests.IrisTest):
         create_file_names = ['older_source_1', 'older_source_2',
                              'example_result',
                              'newer_source_1', 'newer_source_2']
-        # create test files in given name order (!important!)
-        for file_name in create_file_names:
+        # create testfiles + ensure distinct 'mtime's in the required order.
+        for i_file, file_name in enumerate(create_file_names):
             file_path = self._name2path(file_name)
-            with open(file_path, 'w') as file:
-                file.write('..content..')
-            # Needs a tiny pause to prevent possibly equal timestamps
-            time.sleep(0.002)
+            with open(file_path, 'w') as test_file:
+                test_file.write('..content..')
+            # Ensure 'mtime's are adequately separated and after create times.
+            mtime = os.stat(file_path).st_mtime
+            mtime += 5.0 + 10.0 * i_file
+            os.utime(file_path, (mtime, mtime))
 
     def tearDown(self):
         # destroy whole contents of temporary directory
