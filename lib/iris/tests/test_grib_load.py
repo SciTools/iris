@@ -385,6 +385,21 @@ class TestGribLoad(tests.GraphicsTest):
             ('GRIB', 'gaussian', 'regular_gg.grib2')))
         self.assertCML(cube, ('grib_load', 'regular_gg_grib2.cml'))
 
+    def test_reduced_ll(self):
+        cube = iris.load_cube(tests.get_data_path(
+            ("GRIB", "reduced", "reduced_ll.grib1")))
+        self.assertCML(cube, ("grib_load", "reduced_ll_grib1.cml"))
+
+    def test_reduced_gg(self):
+        cube = iris.load_cube(tests.get_data_path(
+            ("GRIB", "reduced", "reduced_gg.grib2")))
+        self.assertCML(cube, ("grib_load", "reduced_gg_grib2.cml"))
+
+    def test_reduced_missing(self):
+        cube = iris.load_cube(tests.get_data_path(
+            ("GRIB", "reduced", "reduced_ll_missing.grib1")))
+        self.assertCML(cube, ("grib_load", "reduced_ll_missing_grib1.cml"))
+
 
 class TestGribTimecodes(tests.GraphicsTest):
     def _run_timetests(self, test_set):
