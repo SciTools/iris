@@ -46,16 +46,13 @@ class TestFileIsNewer(tests.IrisTest):
                              'example_result',
                              'newer_source_1', 'newer_source_2']
         # create testfiles + ensure distinct 'mtime's in the required order.
-        mtime_offset = 5.0
-        mtime_offset_increment = 10.0
-        for file_name in create_file_names:
+        for i_file, file_name in enumerate(create_file_names):
             file_path = self._name2path(file_name)
             with open(file_path, 'w') as test_file:
                 test_file.write('..content..')
-            # Ensure 'mtime's are adequately separated
-            mtime = os.stat(self._name2path(create_file_names[0])).st_mtime
-            mtime += mtime_offset
-            mtime_offset += mtime_offset_increment
+            # Ensure 'mtime's are adequately separated and after create times.
+            mtime = os.stat(file_path).st_mtime
+            mtime += 5.0 + 10.0 * i_file
             os.utime(file_path, (mtime, mtime))
 
     def tearDown(self):
