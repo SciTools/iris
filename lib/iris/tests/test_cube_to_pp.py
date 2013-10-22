@@ -213,14 +213,6 @@ class FakePPEnvironment(object):
 
 
 class TestPPSaveRules(tests.IrisTest, pp.PPTest):
-
-    def setUp(self):
-        # establish "awkward" values for a regular points testcase.
-        # (These values break 0.1% accuracy if calculated in float32)
-        self.tricky_nx = 37
-        self.tricky_dx = 0.0135
-        self.tricky_x0 = 360.0 - 324 * self.tricky_dx
-
     def test_default_coord_system(self):
         GeogCS = iris.coord_systems.GeogCS
         cube = iris.tests.stock.lat_lon_cube()
@@ -308,44 +300,8 @@ class TestPPSaveRules(tests.IrisTest, pp.PPTest):
             self.assertEqual(field.lbvc, lbvc)
             self.assertEqual(field.lblev, lblev)
             self.assertEqual(field.blev, blev)
-
-    def test_from_regular(self):
-        # Check that a coord with "awkward" point values is regular.
-        sample_coord = iris.coords.DimCoord.from_regular(zeroth=self.tricky_x0,
-                                                         step=self.tricky_dx,
-                                                         count=self.tricky_nx)
-        step_value = iris.fileformats.rules.regular_step(sample_coord)
-        self.assertArrayAllClose(step_value, self.tricky_dx)
-
-    def test_save_x_regular(self):
-        # Check that "awkward" point values save to PP as a regular grid.
-        # Make a cube with x coordinate defined by the "awkward" values.
-        ny = 2
-        data = np.zeros((ny, self.tricky_nx))
-        test_cube = iris.cube.Cube(data)
-        x_coord = iris.coords.DimCoord.from_regular(
-            zeroth=self.tricky_x0,
-            step=self.tricky_dx,
-            count=self.tricky_nx,
-            standard_name='longitude',
-            units='degrees_east')
-        y_coord = iris.coords.DimCoord(
-            [1,2],
-            standard_name='latitude',
-            units='degrees_north')
-        test_cube.add_dim_coord(y_coord, 0)
-        test_cube.add_dim_coord(x_coord, 1)
-        # Make PP field with minimal properties for the save rules to run.
-        test_pp_field = ff_pp.PPField3()
-        test_pp_field.lbfc = 0
-        test_pp_field.lbvc = 0
-        # Call pp.save internals to test coordinate saving logic.
-        ff_pp._ensure_save_rules_loaded()
-        ff_pp._save_rules.verify(test_cube, test_pp_field)
-        # Check that result is a regular x-coordinate.
-        self.assertArrayAllClose(test_pp_field.bdx, self.tricky_dx)
-
-
+        
+        
 def fields_from_cube(cubes):
     """
     Return an iterator of PP fields generated from saving the given cube(s)
