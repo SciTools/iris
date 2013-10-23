@@ -23,7 +23,8 @@ def main():
     for cube in temperature.slices('longitude'):
 
         # Create a string label to identify this cube (i.e. latitude: value).
-        cube_label = 'latitude: %s' % cube.coord('latitude').points[0]
+        cube_label = 'latitude: {:4.1f}'.format(
+            cube.coord('latitude').points[0])
 
         # Plot the cube, and associate it with a label.
         qplt.plot(cube, label=cube_label)

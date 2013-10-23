@@ -121,7 +121,7 @@ These areas can now be passed to the ``collapsed`` method as weights:
               altitude                       -                      x
          Scalar coordinates:
               forecast_reference_time: 2009-11-19 04:00:00
-              grid_latitude: 1.51455 degrees, bound=(0.1443, 2.8848) degrees
+              grid_latitude: 1.51455006888 degrees, bound=(0.144300222397, 2.88479991537) degrees
               grid_longitude: 358.749 degrees, bound=(357.494, 360.005) degrees
               surface_altitude: 399.625 m, bound=(-14.0, 813.25) m
          Attributes:
