@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube long_name="thingness" units="1">
+    <attributes>
+      <attribute name="history" value="Root mean square of thingness over foo"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[0, 5],
+		[5, 10],
+		[10, 15]]" id="7c9a33bf" long_name="bar" points="[2.5, 7.5, 12.5]" shape="(3,)" units="Unit('1')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[-15, 45]]" id="549be28b" long_name="foo" points="[15.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="root mean square">
+        <coord name="foo"/>
+      </cellMethod>
+    </cellMethods>
+    <data byteorder="little" dtype="float64" order="C" shape="(3,)" state="loaded"/>
+  </cube>
+</cubes>

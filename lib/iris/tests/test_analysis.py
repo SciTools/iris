@@ -482,6 +482,23 @@ class TestAggregators(tests.IrisTest):
         self.assertCML(result, ('analysis', 'sum_weighted_2d.cml'),
                        checksum=False)
 
+    def test_weighted_rms(self):
+        cube = tests.stock.simple_2d()
+        # modify cube data so that the results are nice numbers
+        cube.data = np.array([[4, 7, 10, 8],
+                              [21, 30, 12, 24],
+                              [14, 16, 20, 8]],
+                             dtype=np.float64)
+        weights = np.array([[1, 4, 3, 2],
+                            [6, 4.5, 1.5, 3],
+                            [2, 1, 1.5, 0.5]],
+                           dtype=np.float64)
+        expected_result = np.array([8.0, 24.0, 16.0])
+        result = cube.collapsed('foo', iris.analysis.RMS, weights=weights)
+        self.assertArrayAlmostEqual(result.data, expected_result)
+        self.assertCML(result, ('analysis', 'rms_weighted_2d.cml'),
+                       checksum=False)
+
 
 @iris.tests.skip_data
 class TestRotatedPole(tests.IrisTest):

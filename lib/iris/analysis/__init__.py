@@ -465,8 +465,10 @@ def _proportion(array, function, axis, **kwargs):
 
 
 def _rms(array, axis, **kwargs):
-    n_elements = array.shape[axis]
-    return np.sqrt(np.sum(np.square(array), axis=axis) / n_elements)
+    rval = np.sqrt(ma.average(np.square(array), axis=axis, **kwargs))
+    if not ma.isMaskedArray(array):
+        rval = np.asarray(rval)
+    return rval
 
 
 def _sum(array, **kwargs):
@@ -788,15 +790,22 @@ Similarly, the proportion of times precipitation exceeded 10 (in cube data units
 """
 
 
-RMS = Aggregator('Root mean square of {standard_name} {action} {coord_names}',
-                 'root mean square',
-                 _rms)
+RMS = WeightedAggregator(
+    'Root mean square of {standard_name} {action} {coord_names}',
+    'root mean square',
+    _rms)
 """
 The root mean square, as computed by ((x0**2 + x1**2 + ... + xN-1**2) / N) ** 0.5.
 
 For example, to compute zonal root mean square::
 
     result = cube.collapsed('longitude', iris.analysis.RMS)
+
+Additional kwargs available:
+
+* weights
+    Optional array of floats. If supplied, the shape must match the
+    cube. The weights are applied to the squares when taking the mean.
 
 """
 
