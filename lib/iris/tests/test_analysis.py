@@ -1088,7 +1088,7 @@ class TestProject(tests.GraphicsTest):
         gs.tight_layout(plt.gcf())
 
         # Verify resulting plot
-        self.check_graphic(tol=6e-4)
+        self.check_graphic(tol=6.5e-4)
 
     @iris.tests.skip_data
     def test_no_coord_system(self):

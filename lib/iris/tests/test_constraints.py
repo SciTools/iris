@@ -78,6 +78,18 @@ class TestSimple(tests.IrisTest):
         sub_list = self.slices.extract(constraint)
         self.assertEqual(len(sub_list), 6)
 
+    def test_cell_equal_bounds(self):
+        cell = self.slices[0].coord('level_height').cell(0)
+        constraint = iris.Constraint(level_height=cell)
+        sub_list = self.slices.extract(constraint)
+        self.assertEqual(len(sub_list), 6)
+
+    def test_cell_different_bounds(self):
+        cell = iris.coords.Cell(10, bound=(9, 11))
+        constraint = iris.Constraint(model_level_number=cell)
+        sub_list = self.slices.extract(constraint)
+        self.assertEqual(len(sub_list), 0)
+
 
 class TestMixin(object):
     """
