@@ -249,33 +249,6 @@ class TestDescribeDiff(iris.tests.IrisTest):
                               'incompatible_cubes.str.txt')
 
 
-class TestBroadcastToShape(iris.tests.IrisTest):
-
-    def test_same_shape(self):
-        # broadcast to current shape should result in no change
-        a = np.random.random([2, 3])
-        b = iris.util.broadcast_to_shape(a, a.shape, (0, 1))
-        self.assertArrayEqual(b, a)
-
-    def test_added_dimensions(self):
-        # test adding a leading dimension and a dimension separating those in
-        # the input array
-        a = np.random.random([2, 3])
-        b = iris.util.broadcast_to_shape(a, (5, 2, 4, 3), (1, 3))
-        for i in xrange(5):
-            for j in xrange(4):
-                self.assertArrayEqual(b[i, :, j, :], a)
-
-    def test_added_dimensions_transpose(self):
-        # test adding dimensions and having the dimensions of the input
-        # transposed
-        a = np.random.random([2, 3])
-        b = iris.util.broadcast_to_shape(a, (5, 3, 4, 2), (3, 1))
-        for i in xrange(5):
-            for j in xrange(4):
-                self.assertArrayEqual(b[i, :, j, :].T, a)
-
-
 class TestAsCompatibleShape(tests.IrisTest):
     def test_slice(self):
         cube = tests.stock.realistic_4d()
