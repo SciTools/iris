@@ -22,6 +22,7 @@
 import iris.tests as tests
 
 import numpy as np
+import numpy.ma as ma
 
 from iris.util import broadcast_to_shape
 
@@ -51,6 +52,15 @@ class Test_broadcast_to_shape(tests.IrisTest):
         for i in xrange(5):
             for j in xrange(4):
                 self.assertArrayEqual(b[i, :, j, :].T, a)
+
+    def test_masked(self):
+        # masked arrays are also accepted
+        a = np.random.random([2, 3])
+        m = ma.array(a, mask=[[0, 1, 0], [0, 1, 1]])
+        b = broadcast_to_shape(m, (5, 3, 4, 2), (3, 1))
+        for i in xrange(5):
+            for j in xrange(4):
+                self.assertMaskedArrayEqual(b[i, :, j, :].T, m)
 
 
 if __name__ == '__main__':

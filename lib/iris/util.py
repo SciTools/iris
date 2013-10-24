@@ -138,7 +138,21 @@ def broadcast_to_shape(array, shape, dim_map):
             # those indicated by shape.
             raise ValueError('shape and array are not compatible')
         strides[dim] = array.strides[idim]
-    return np.lib.stride_tricks.as_strided(array, shape=shape, strides=strides)
+    array_view = np.lib.stride_tricks.as_strided(array,
+                                                 shape=shape,
+                                                 strides=strides)
+    if ma.isMaskedArray(array):
+        # If the input array is a masked array we must apply the same
+        # technique to the mask as well as the values, but using the
+        # knowledge that the mask is the same shape as the array.
+        mstrides = [0] * len(shape)
+        for idim, dim in enumerate(dim_map):
+            mstrides[dim] = array.mask.strides[idim]
+        mask = np.lib.stride_tricks.as_strided(array.mask,
+                                               shape=shape,
+                                               strides=mstrides)
+        array_view = ma.array(array_view, mask=mask)
+    return array_view
 
 
 def delta(ndarray, dimension, circular=False):
