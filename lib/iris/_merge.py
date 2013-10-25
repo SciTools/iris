@@ -99,13 +99,19 @@ class _CoordAndDims(namedtuple('CoordAndDims',
         A tuple of the data dimesion/s spanned by the coordinate.
 
     """
-    def _difference(self, other):
+    def describe_difference(self, other):
         differences = []
         if self != other:
             differences.extend(
-                self.coord._as_defn()._difference(other.coord._as_defn()))
+                describe_a_difference(
+                    self.coord._as_defn(),
+                    other.coord._as_defn()))
             if (self.coord.points != other.coord.points).any():
                 msg = "{} coordinate: '{}' points differ".format(
+                    self.coord.__class__.__name__, self.coord.name())
+                differences.append(msg)
+            if (self.coord.bounds != other.coord.bounds):
+                msg = "{} coordinate: '{}' bounds differ".format(
                     self.coord.__class__.__name__, self.coord.name())
                 differences.append(msg)
             if self.dims != other.dims:
@@ -231,7 +237,7 @@ class _CoordSignature(namedtuple('CoordSignature',
         A list of :class:`_FactoryDefn` instances.
 
     """
-    def _difference(self, other):
+    def describe_difference(self, other):
         differences = []
 
         for field in self._fields:
@@ -246,7 +252,8 @@ class _CoordSignature(namedtuple('CoordSignature',
                     comp_with = val1
                 for ind, item in enumerate(loop_over):
                     try:
-                        tmp_difference = item._difference(comp_with[ind])
+                        tmp_difference = describe_a_difference(
+                            item, comp_with[ind])
                         if tmp_difference:
                             differences.extend(tmp_difference)
                         elif item != val2[ind]:
@@ -300,14 +307,14 @@ class _CubeSignature(namedtuple('CubeSignature',
         :class:`iris.cube.Cube`.
 
     """
-    def _difference(self, other):
+    def describe_difference(self, other):
         differences = []
         for field in self._fields:
             val1 = getattr(self, field)
             val2 = getattr(other, field)
             if val1 != val2:
                 if field == 'defn':
-                    defn_diff = self.defn._difference(other.defn)
+                    defn_diff = describe_a_difference(self.defn, other.defn)
                     if defn_diff:
                         differences.extend(defn_diff)
                     else:
@@ -353,7 +360,7 @@ class _FactoryDefn(namedtuple('_FactoryDefn',
         corresponding coordinate definition. Sorted on dependency key.
 
     """
-    def _difference(self, other):
+    def describe_difference(self, other):
         differences = []
         if self != other:
             self_class = self.class_.__name__
@@ -406,7 +413,66 @@ def _is_combination(name):
     return _COMBINATION_JOIN in str(name)
 
 
-def _protocube_unique(proto_cubes_by_name):
+def _coord_definition_described(first, second):
+    # This function specifically describes the difference between coordinate
+    # signatures.
+    msg_beg = 'Coordinates of names: ({}, {}) differ: '.format(
+        first.name(), second.name())
+    return _describe_definition(first, second, msg_beg)
+
+
+def _describe_definition(first, second, msg_beg=None):
+    # This function is currently suitable for any 'definition' but
+    # specifically tailored for CoordDefn and CubeDefn.
+    if not msg_beg:
+        msg_beg = ''
+    str_return = []
+    for field in first._fields:
+        val1 = getattr(first, field)
+        val2 = getattr(second, field)
+        if val1 != val2:
+            if field == 'attributes':
+                attrib_first = getattr(first, field)
+                attrib_second = getattr(second, field)
+
+                set_a = set(attrib_first.keys())
+                set_b = set(attrib_second.keys())
+                missing_attrib = set_a.symmetric_difference(set_b)
+                if missing_attrib:
+                    miss_string = (', '.join(str(val) for
+                                   val in missing_attrib))
+                    msg = ('{}attribute keys: {} not common to both '
+                           'signatures'.format(msg_beg, miss_string))
+                    str_return.append(msg)
+                for key, item in attrib_first.iteritems():
+                    if key in attrib_second:
+                        if item != attrib_second[key]:
+                            msg = "{}{}: {} differs: '{}','{}'".format(
+                                msg_beg, field, key, item,
+                                attrib_second[key])
+                            str_return.append(msg)
+            else:
+                str_return.append(
+                    "{}{} differs: '{}', '{}'".format(
+                        msg_beg, field, val1, val2))
+    return str_return
+
+
+def describe_a_difference(first, second):
+    def _describe_generic(first, second):
+        return first.describe_difference(second)
+
+    assert type(first) == type(second)
+    function_map = {
+        iris.coords.CoordDefn: _coord_definition_described,
+        iris.cube.CubeMetadata: _describe_definition,
+    }
+    diff_func = function_map.get(type(first), _describe_generic)
+
+    return diff_func(first, second)
+
+
+def protocube_unique(proto_cubes_by_name):
     """
     Determine differences between protocubes.
 
@@ -423,12 +489,17 @@ def _protocube_unique(proto_cubes_by_name):
         if len(proto_cubes_iterable) > 1:
             msg = 'Determining differences between cubes of name: {}'
             differences.append(msg.format(name))
+
             for proto in proto_cubes_iterable:
                 # inspect cube_signature
                 differences.extend(
-                    cube_sig_comp._difference(proto._cube_signature))
+                    describe_a_difference(
+                        cube_sig_comp,
+                        proto._cube_signature))
                 differences.extend(
-                    coord_sig_comp._difference(proto._coord_signature))
+                    describe_a_difference(
+                        coord_sig_comp,
+                        proto._coord_signature))
 
     return differences
 

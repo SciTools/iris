@@ -73,36 +73,6 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
         """
         return self.standard_name or self.long_name or self.var_name or default
 
-    def _difference(self, other):
-        str_return = []
-        for field in CubeMetadata._fields:
-            val1 = getattr(self, field)
-            val2 = getattr(other, field)
-            if val1 != val2:
-                if field == 'attributes':
-                    attrib_self = getattr(self, field)
-                    attrib_other = getattr(other, field)
-
-                    set_a = set(attrib_self.keys())
-                    set_b = set(attrib_other.keys())
-                    missing_attrib = set_a.symmetric_difference(set_b)
-                    if missing_attrib:
-                        miss_string = (', '.join(str(val) for
-                                       val in missing_attrib))
-                        msg = ('attribute keys: {} not common to both '
-                               'signatures'.format(miss_string))
-                        str_return.append(msg)
-                    for key, item in attrib_self.iteritems():
-                        if key in attrib_other:
-                            if item != attrib_other[key]:
-                                msg = '{}: {} differs: {},{}'.format(
-                                    field, key, item, attrib_other[key])
-                                str_return.append(msg)
-                else:
-                    str_return.append(
-                        '{} differs: {},{}'.format(field, val1, val2))
-        return str_return
-
 
 # The XML namespace to use for CubeML documents
 XML_NAMESPACE_URI = "urn:x-iris:cubeml-0.2"
@@ -407,7 +377,7 @@ class CubeList(list):
             output_file = sys.stdout
 
         proto_cubes_by_name = self._generate_protocubes()
-        protocube_differences = iris._merge._protocube_unique(
+        protocube_differences = iris._merge.protocube_unique(
             proto_cubes_by_name)
 
         output_file.write('\n'.join(str(val) for val in

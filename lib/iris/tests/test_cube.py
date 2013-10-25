@@ -96,38 +96,5 @@ class TestEquality(tests.IrisTest):
         self.assertIs(cube.__ne__(Terry()), NotImplemented)
 
 
-class TestCubeMetadata(tests.IrisTest):
-    def _test(self, metadata_a, metadata_b, result_ab, result_ba):
-        # This test ensures that coverage is in both directions.
-        # i.e. A-B and B-A
-        diff = metadata_a._difference(metadata_b)
-        self.assertEqual(diff, result_ab)
-
-        diff = metadata_b._difference(metadata_a)
-        self.assertEqual(diff, result_ba)
-
-    def _initialise_object(
-            self, standard_name=None, long_name=None, var_name=None,
-            units=None, attributes=None, cell_methods=None):
-        return iris.cube.CubeMetadata(standard_name, long_name, var_name,
-                                      units, attributes, cell_methods)
-
-    def test_different_standard_name(self):
-        metadata_a = self._initialise_object(standard_name='tmpA')
-        metadata_b = self._initialise_object(standard_name='tmpB')
-
-        res_ab = ['standard_name differs: tmpA,tmpB']
-        res_ba = ['standard_name differs: tmpB,tmpA']
-        self._test(metadata_a, metadata_b, res_ab, res_ba)
-
-    def test_missing_attributes(self):
-        metadata_a = self._initialise_object(attributes={'1': 1})
-        metadata_b = self._initialise_object(attributes={})
-
-        res_ab = ['attribute keys: 1 not common to both signatures']
-        res_ba = res_ab
-        self._test(metadata_a, metadata_b, res_ab, res_ba)
-
-
 if __name__ == "__main__":
     tests.main()
