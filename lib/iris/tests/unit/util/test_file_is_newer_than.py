@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Test function :meth:`iris.util.test_file_is_newer`.
+Test function :func:`iris.util.test_file_is_newer`.
 
 """
 # import iris tests first so that some things can be initialised before
@@ -26,13 +26,12 @@ import os
 import os.path
 import shutil
 import tempfile
-import unittest
 
 from iris.util import file_is_newer_than
 
 
 class TestFileIsNewer(tests.IrisTest):
-    """Test the :meth:`iris.util.file_is_newer_than` function."""
+    """Test the :func:`iris.util.file_is_newer_than` function."""
 
     def _name2path(self, filename):
         """Add the temporary dirpath to a filename to make a full path."""
@@ -128,4 +127,4 @@ class TestFileIsNewer(tests.IrisTest):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    tests.main()
