@@ -106,19 +106,25 @@ class _CoordAndDims(namedtuple('CoordAndDims',
                 describe_a_difference(
                     self.coord._as_defn(),
                     other.coord._as_defn()))
+            import ipdb; ipdb.set_trace()
+            if self.coord.__class__.__name__ != other.coord.__class__.__name__:
+                msg = "Uncomon coord types: ({}:'{}, {}:'{}')".format(
+                    self.coord.name(), self.coord.__class__.__name__,
+                    other.coord.name(), other.coord.__class__.__name__)
+                differences.append(msg)
             if (self.coord.points != other.coord.points).any():
-                msg = "{} coordinate: '{}' points differ".format(
-                    self.coord.__class__.__name__, self.coord.name())
+                msg = "Coordinates: ('{}', '{}'): points differ".format(
+                    self.coord.name(), other.coord.name())
                 differences.append(msg)
-            if (self.coord.bounds != other.coord.bounds):
-                msg = "{} coordinate: '{}' bounds differ".format(
-                    self.coord.__class__.__name__, self.coord.name())
+            if np.any(self.coord.bounds != other.coord.bounds):
+                msg = "Coordinates: ('{}', '{}'): bounds differ".format(
+                    self.coord.name(), other.coord.name())
                 differences.append(msg)
-            if self.dims != other.dims:
-                msg = ("{} coordinate: '{}' differs by dimension association: "
-                       "{}")
+            if np.any(self.dims != other.dims):
+                msg = ("Coordinates: ('{}', '{}'): differ by dimension "
+                    'association: {}')
                 msg = msg.format(
-                    self.coord.__class__.__name__, self.coord.name(),
+                    self.coord.name(), other.coord.name(),
                     ', '.join([str(dim) for dim in [self.dims, other.dims]]))
                 differences.append(msg)
         return differences
