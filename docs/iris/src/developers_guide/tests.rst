@@ -50,7 +50,7 @@ above with test classes named:
 
 So a unit test of :py:meth:`iris.cube.Cube.xml` which examines the handling
 of masked data might be named:
-    `Test_write.test_checksum_ignores_masked_values`.
+    `Test_xml.test_checksum_ignores_masked_values`.
 
 Functions
 ---------
