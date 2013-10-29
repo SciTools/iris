@@ -316,12 +316,37 @@ class Aggregator(object):
         This function is usually used in conjunction with update_metadata(),
         which should be passed the same keyword arguments.
 
+        Kwards:
+
+        * mdtol (float):
+            Tolerance of missing data. The value returned will be masked if
+            the fraction of data to missing data is less than or equal to
+            mdtol.  mdtol=0 means no missing data is tolerated while mdtol=1
+            will return the resulting value from the aggregation function.
+            Default mdtol=1.
+
+        * kwargs:
+            All keyword arguments apart from those specified above, are
+            passed through to the data aggregation function.
+
         Returns:
             The aggregated data.
 
         """
         kwargs = dict(self._kwargs.items() + kwargs.items())
-        return self.call_func(data, axis=axis, **kwargs)
+
+        mdtol = None
+        if 'mdtol' in kwargs:
+            mdtol = kwargs.pop('mdtol')
+
+        result = self.call_func(data, axis=axis, **kwargs)
+        if (mdtol is not None and ma.isMaskedArray(data) and
+                ma.isMaskedArray(result)):
+            fraction_not_missing = (data.count(axis=axis) / data.shape[axis])
+            mask_update = 1 - mdtol > fraction_not_missing
+            result.mask = result.mask | mask_update
+
+        return result
 
     def update_metadata(self, cube, coords, **kwargs):
         """
