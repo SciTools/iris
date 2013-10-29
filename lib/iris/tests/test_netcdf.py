@@ -121,6 +121,87 @@ class TestNetCDFLoad(tests.IrisTest):
         self.assertIsInstance(cube.coord('latitude')._points,
                               iris.aux_factory.LazyArray)
 
+    def test_load_rotated_extracase(self):
+        # Check load of Rotated data with specific grid parameters.
+        # create a temporary netcdf file + read a cube from it
+        with self.temp_filename(suffix='.nc') as temp_ncpath:
+            with nc.Dataset(temp_ncpath, 'w') as ds:
+                nx, ny = 6, 4
+                ds.createDimension('x', nx)
+                ds.createDimension('y', ny)
+                _write_nc_var(ds, 'x', dims=('x'),
+                              data=np.linspace(0.0, 100.0, nx),
+                              attributes=
+                                  {'units': 'degrees',
+                                   'standard_name': 'grid_longitude'})
+                _write_nc_var(ds, 'y', dims=('y'),
+                              data=np.linspace(0.0, 70.0, ny),
+                              attributes=
+                                  {'units': 'degrees',
+                                   'standard_name': 'grid_latitude'})
+                _write_nc_var(
+                    ds, 'grid_map_var',
+                    attributes={
+                        'grid_mapping_name': 'rotated_latitude_longitude',
+                        'grid_north_pole_latitude': 32.5,
+                        'grid_north_pole_longitude': 170.0})
+                _write_nc_var(ds, 'temperature', dims=('y', 'x'),
+                              data=np.zeros((ny, nx)),
+                              attributes={'units': 'K',
+                                          'standard_name': 'air_temperature',
+                                          'grid_mapping': 'grid_map_var'})
+            # load file as a single cube
+            cube, = iris.fileformats.netcdf.load_cubes([temp_ncpath])
+
+        # test cube properties as required
+        x_coord = cube.coord(axis='x')
+        self.assertEqual(x_coord.name(), 'grid_longitude')
+        cs = x_coord.coord_system
+        self.assertEqual(cs.grid_mapping_name, 'rotated_latitude_longitude')
+        self.assertEqual(cs.grid_north_pole_latitude, 32.5)
+        self.assertEqual(cs.grid_north_pole_longitude, 170.0)
+
+    def test_load_rotated_partial_extracase(self):
+        # Check load of Rotated data with specific grid parameters.
+        # create a temporary netcdf file + read a cube from it
+        with self.temp_filename(suffix='.nc') as temp_ncpath:
+            with nc.Dataset(temp_ncpath, 'w') as ds:
+                nx, ny = 6, 4
+                ds.createDimension('x', nx)
+                ds.createDimension('y', ny)
+                _write_nc_var(ds, 'x', dims=('x'),
+                              data=np.linspace(0.0, 100.0, nx),
+                              attributes=
+                                  {'units': 'degrees',
+                                   'standard_name': 'grid_longitude'})
+                _write_nc_var(ds, 'y', dims=('y'),
+                              data=np.linspace(0.0, 70.0, ny),
+                              attributes=
+                                  {'units': 'degrees',
+                                   'standard_name': 'grid_latitude'})
+                _write_nc_var(
+                    ds, 'grid_map_var',
+                    attributes={
+                        'grid_mapping_name': 'rotated_latitude_longitude'})
+#                              ,
+#                        'grid_north_pole_latitude': 32.5,
+#                        'grid_north_pole_longitude': 170.0})
+                _write_nc_var(ds, 'temperature', dims=('y', 'x'),
+                              data=np.zeros((ny, nx)),
+                              attributes={'units': 'K',
+                                          'standard_name': 'air_temperature',
+                                          'grid_mapping': 'grid_map_var'})
+            # load file as a single cube
+            cube, = iris.fileformats.netcdf.load_cubes([temp_ncpath])
+
+        # test cube properties as required
+        x_coord = cube.coord(axis='x')
+        self.assertEqual(x_coord.name(), 'grid_longitude')
+        cs = x_coord.coord_system
+        self.assertEqual(cs.grid_mapping_name, 'rotated_latitude_longitude')
+        self.assertEqual(cs.grid_north_pole_latitude, 90.0)
+        self.assertEqual(cs.grid_north_pole_longitude, 0.0)
+
     def test_load_rotated_xyt_precipitation(self):
         # Test loading single xyt rotated pole CF-netCDF file.
         cube = iris.load_cube(
