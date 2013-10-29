@@ -456,3 +456,87 @@ class AttributeConstraint(Constraint):
 
     def __repr__(self):
         return 'AttributeConstraint(%r)' % self._attributes
+
+
+class TimeConstraint(Constraint):
+    """
+    Calendar-related selections within time coordinates.
+
+    """
+
+    def __init__(self, hour=None, coord='time'):
+        """
+        Creates a TimeConstraint which can be used for filtering
+        cube loading or cube list extraction.
+
+        .. note:: In this early version, only hour-of-day is supported.
+
+        Kwargs:
+
+        * hour (int or None):
+            The hour of the day to select, as an integer between 0 and
+            23 inclusive. Setting to None selects all hours.
+
+        * coord (string):
+            The name of the time coordinate to examine.
+
+        For example, to select only data which relates to midday::
+
+            iris.TimeConstraint(hour=12)
+
+        .. note::
+
+            Coordinate bounds are *ignored* when applying this
+            constraint to a Cube.
+
+        """
+        if hour is not None:
+            hour = int(hour)
+            if hour < 0 or hour > 23:
+                raise ValueError('`hour` must be in range 0 to 23 inclusive')
+        self._hour = hour
+        self._coord = coord
+        Constraint.__init__(self)
+
+    @property
+    def hour(self):
+        """
+        The hour of the day to select.
+
+        An integer between 0 and 23 inclusive, or None to select all hours.
+
+        """
+        return self._hour
+
+    @property
+    def coord(self):
+        """The name of the coordinate to examine."""
+        return self._coord
+
+    def __repr__(self):
+        return 'TimeConstraint(hour={})'.format(self.hour)
+
+    def _CIM_extract(self, cube):
+        try:
+            coord = cube.coord(self.coord)
+        except iris.exceptions.CoordinateNotFoundError:
+            coord = None
+
+        result_cim = _ColumnIndexManager(len(cube.shape))
+        if coord is None:
+            # No time coordinate
+            result_cim.all_false()
+        elif self._hour is not None:
+            n2d = coord.units.num2date
+            dims = cube.coord_dims(coord)
+            if len(dims) > 1:
+                raise iris.exceptions.CoordinateMultiDimError(coord)
+            if dims:
+                # Vector time coordinate
+                result_cim[dims[0]] = np.array(
+                    [n2d(point).hour == self._hour for point in coord.points])
+            else:
+                # Scalar time coordinate
+                if n2d(coord.points[0]).hour != self._hour:
+                    result_cim.all_false()
+        return result_cim

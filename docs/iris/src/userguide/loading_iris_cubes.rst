@@ -163,6 +163,15 @@ a specific ``model_level_number``::
     level_10 = iris.Constraint(model_level_number=10)
     cubes = iris.load(filename, level_10)
 
+When dealing with time coordinates, it can sometimes be more convenient
+to use the :class:`iris.TimeConstraint` class. For example, to constrain
+the load to match only data for 11:00::
+
+    filename = iris.sample_data_path('uk_hires.pp')
+    hour_11 = iris.TimeConstraint(hour=11)
+    cubes = iris.load(filename, hour_11)
+
+
 Constraints can be combined using ``&`` to represent a more restrictive 
 constraint to ``load``::
 
