@@ -334,17 +334,18 @@ class Aggregator(object):
 
         """
         kwargs = dict(self._kwargs.items() + kwargs.items())
-
-        mdtol = None
-        if 'mdtol' in kwargs:
-            mdtol = kwargs.pop('mdtol')
+        mdtol = kwargs.pop('mdtol', None)
 
         result = self.call_func(data, axis=axis, **kwargs)
-        if (mdtol is not None and ma.isMaskedArray(data) and
-                ma.isMaskedArray(result)):
-            fraction_not_missing = (data.count(axis=axis) / data.shape[axis])
+        if (mdtol is not None and ma.isMaskedArray(data)):
+            fraction_not_missing = (
+                data.count(axis=axis) / data.shape[axis])
             mask_update = 1 - mdtol > fraction_not_missing
-            result.mask = result.mask | mask_update
+            if ma.isMaskedArray(result):
+                result.mask = result.mask | mask_update
+            else:
+                if mask_update:
+                    result = np.NaN
 
         return result
 

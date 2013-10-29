@@ -301,6 +301,33 @@ class TestMissingData(tests.IrisTest):
         np.testing.assert_array_equal(cube.data, np.array([6, 18, 17]))
 
 
+class TestMultiCoord(tests.IrisTest):
+    def setUp(self):
+        data = ma.array([[1, 2], [4, 5]], dtype=np.float32,
+            mask=[[False, True], [False, True]])
+        cube = iris.cube.Cube(data, long_name="test_data", units="1")
+        lat_coord = iris.coords.DimCoord(np.array([1, 2], dtype=np.float32),
+            long_name="lat", units="1")
+        lon_coord = iris.coords.DimCoord(np.array([3, 4], dtype=np.float32),
+            long_name="lon", units="1")
+        cube.add_dim_coord(lat_coord, 0)
+        cube.add_dim_coord(lon_coord, 1)
+        self.cube = cube
+
+    def test_multi_coord_no_mdtol(self):
+        collapsed = self.cube.collapsed(
+            [self.cube.coord('lat'), self.cube.coord('lon')],
+            iris.analysis.COUNT, function=lambda data_value: data_value > 0)
+        self.assertEqual(collapsed.data, 2)
+
+    def test_multi_coord_mdtol(self):
+        collapsed = self.cube.collapsed(
+            [self.cube.coord('lat'), self.cube.coord('lon')],
+            iris.analysis.COUNT, function=lambda data_value: data_value > 0,
+            mdtol=0.2)
+        self.assertTrue(np.isnan(collapsed.data).all())
+
+
 class TestAggregators(tests.IrisTest):
     def test_percentile_1d(self):
         cube = tests.stock.simple_1d()
