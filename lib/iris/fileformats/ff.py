@@ -285,6 +285,7 @@ class FF2PP(object):
 
         return data_depth, data_type
 
+    @pp._defer_land_compressed
     def _extract_field(self):
         # FF table pointer initialisation based on FF LOOKUP table
         # configuration.
@@ -319,6 +320,8 @@ class FF2PP(object):
             y_p = self._ff_header.row_dependent_constants[:, 0]
             if self._ff_header.row_dependent_constants.shape[1] == 2:
                 y_v = self._ff_header.row_dependent_constants[:-1, 1]
+
+        land_mask = pp._LandMask(None)
 
         # Process each FF LOOKUP table entry.
         while table_count:
@@ -371,8 +374,10 @@ class FF2PP(object):
             if grid in Y_COORD_V_GRID:
                 field.y = y_v
 
+            must_defer = field.lbpack.n2 != 0
+
             # Determine whether to read the associated PP field data.
-            if self._read_data:
+            if not must_defer and self._read_data:
                 # Move file pointer to the start of the current PP field data.
                 ff_file_seek(data_offset, os.SEEK_SET)
                 # Get the PP field data.
@@ -382,10 +387,16 @@ class FF2PP(object):
                 field._data_manager = None
             else:
                 proxy = pp.PPDataProxy(self._filename, data_offset,
-                                       data_depth, field.lbpack)
+                                       data_depth, field.lbpack, land_mask)
                 field._data = np.array(proxy)
                 field._data_manager = DataManager(data_shape, data_type,
                                                   field.bmdi)
+
+            if field.stash == 'm01s00i030':
+                if land_mask.land_mask_field is None:
+                    land_mask.land_mask_field = field
+                land_mask = pp._LandMask(field)
+
             yield field
         ff_file.close()
         return
