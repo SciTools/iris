@@ -301,31 +301,52 @@ class TestMissingData(tests.IrisTest):
         np.testing.assert_array_equal(cube.data, np.array([6, 18, 17]))
 
 
-class TestMultiCoord(tests.IrisTest):
+class TestAggregator_mdtol_keyword(tests.IrisTest):
     def setUp(self):
         data = ma.array([[1, 2], [4, 5]], dtype=np.float32,
-            mask=[[False, True], [False, True]])
+                        mask=[[False, True], [False, True]])
         cube = iris.cube.Cube(data, long_name="test_data", units="1")
         lat_coord = iris.coords.DimCoord(np.array([1, 2], dtype=np.float32),
-            long_name="lat", units="1")
+                                         long_name="lat", units="1")
         lon_coord = iris.coords.DimCoord(np.array([3, 4], dtype=np.float32),
-            long_name="lon", units="1")
+                                         long_name="lon", units="1")
         cube.add_dim_coord(lat_coord, 0)
         cube.add_dim_coord(lon_coord, 1)
         self.cube = cube
 
+    def test_single_coord_no_mdtol(self):
+        collapsed = self.cube.collapsed(
+            self.cube.coord('lat'), iris.analysis.MEAN)
+        t = ma.array([2.5, 5.], mask=[False, True])
+        self.assertMaskedArrayEqual(collapsed.data, t)
+
+    def test_single_coord_mdtol(self):
+        self.cube.data.mask = np.array([[False, True], [False, False]])
+        collapsed = self.cube.collapsed(
+            self.cube.coord('lat'), iris.analysis.MEAN, mdtol=0.5)
+        t = ma.array([2.5, 5], mask=[False, False])
+        self.assertMaskedArrayEqual(collapsed.data, t)
+
+    def test_single_coord_mdtol_alt(self):
+        self.cube.data.mask = np.array([[False, True], [False, False]])
+        collapsed = self.cube.collapsed(
+            self.cube.coord('lat'), iris.analysis.MEAN, mdtol=0.4)
+        t = ma.array([2.5, 5], mask=[False, True])
+        self.assertMaskedArrayEqual(collapsed.data, t)
+
     def test_multi_coord_no_mdtol(self):
         collapsed = self.cube.collapsed(
             [self.cube.coord('lat'), self.cube.coord('lon')],
-            iris.analysis.COUNT, function=lambda data_value: data_value > 0)
-        self.assertEqual(collapsed.data, 2)
+            iris.analysis.MEAN)
+        t = np.array([2.5])
+        self.assertArrayEqual(collapsed.data, t)
 
     def test_multi_coord_mdtol(self):
         collapsed = self.cube.collapsed(
             [self.cube.coord('lat'), self.cube.coord('lon')],
-            iris.analysis.COUNT, function=lambda data_value: data_value > 0,
-            mdtol=0.2)
-        self.assertTrue(np.isnan(collapsed.data).all())
+            iris.analysis.MEAN, mdtol=0.4)
+        t = ma.array([2.5], mask=[True])
+        self.assertMaskedArrayEqual(collapsed.data, t)
 
 
 class TestAggregators(tests.IrisTest):

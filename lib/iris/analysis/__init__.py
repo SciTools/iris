@@ -316,7 +316,7 @@ class Aggregator(object):
         This function is usually used in conjunction with update_metadata(),
         which should be passed the same keyword arguments.
 
-        Kwards:
+        Kwargs:
 
         * mdtol (float):
             Tolerance of missing data. The value returned will be masked if
@@ -338,14 +338,15 @@ class Aggregator(object):
 
         result = self.call_func(data, axis=axis, **kwargs)
         if (mdtol is not None and ma.isMaskedArray(data)):
-            fraction_not_missing = (
-                data.count(axis=axis) / data.shape[axis])
+            fraction_not_missing = data.count(axis=axis) / data.shape[axis]
             mask_update = 1 - mdtol > fraction_not_missing
             if ma.isMaskedArray(result):
                 result.mask = result.mask | mask_update
             else:
-                if mask_update:
-                    result = np.NaN
+                result = ma.array(result, mask=mask_update)
+                if result.ndim is 0:
+                    result = result * np.array([1])
+                    result.mask = result.mask[np.newaxis]
 
         return result
 
