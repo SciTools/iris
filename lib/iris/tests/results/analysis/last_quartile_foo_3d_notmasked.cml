@@ -1,9 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="thingness" units="1">
-    <attributes>
-      <attribute name="history" value="Percentile (75%) of thingness over wibble"/>
-    </attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord id="c7efdd09" points="[90, 0, -90]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="int64"/>

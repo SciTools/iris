@@ -1,9 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="test_data" units="1">
-    <attributes>
-      <attribute name="history" value="Mean of test_data over lat, lon"/>
-    </attributes>
     <coords>
       <coord>
         <auxCoord bounds="[[0.0, 2.0]]" id="506cfa9f" long_name="dummy" points="[1.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>

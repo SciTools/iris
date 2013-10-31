@@ -115,7 +115,7 @@ def _construct_midpoint_coord(coord, circular=None):
     return mid_point_coord
 
 
-def cube_delta(cube, coord, update_history=True):
+def cube_delta(cube, coord):
     """
     Given a cube calculate the difference between each value in the given coord's direction.
 
@@ -163,10 +163,6 @@ def cube_delta(cube, coord, update_history=True):
     for cube_coord in cube.coords(dimensions=delta_dim):
         delta_cube.replace_coord(_construct_midpoint_coord(cube_coord, circular=getattr(coord, 'circular', False)))
 
-    if update_history:
-        # Add history
-        delta_cube.add_history('Delta of %s wrt %s' % (delta_cube.name(), coord.name()))
-
     delta_cube.rename('change_in_%s_wrt_%s' % (delta_cube.name(), coord.name()))
 
     return delta_cube
@@ -203,10 +199,9 @@ def differentiate(cube, coord_to_differentiate):
     .. note:: Spherical differentiation does not occur in this routine.
 
     """
-    # Get the delta cube in the required differential direction. Don't add this to the resultant
-    # cube's history as we will do that ourself.
+    # Get the delta cube in the required differential direction.
     # This operation results in a copy of the original cube.
-    delta_cube = cube_delta(cube, coord_to_differentiate, update_history=False)
+    delta_cube = cube_delta(cube, coord_to_differentiate)
 
     if isinstance(coord_to_differentiate, basestring):
         coord = cube.coord(coord_to_differentiate)
@@ -216,13 +211,8 @@ def differentiate(cube, coord_to_differentiate):
     delta_coord = _construct_delta_coord(coord)
     delta_dim = cube.coord_dims(coord)[0]
 
-    # calculate delta_cube / delta_coord to give the differential. Don't update the history, as we will
-    # do this ourself.
-    delta_cube = iris.analysis.maths.divide(delta_cube, delta_coord, delta_dim,
-                                            update_history=False)
-
-    # Update the history of the new cube
-    delta_cube.add_history('differential of %s wrt to %s' % (cube.name(), coord.name()) )
+    # calculate delta_cube / delta_coord to give the differential.
+    delta_cube = iris.analysis.maths.divide(delta_cube, delta_coord, delta_dim)
 
     # Update the standard name
     delta_cube.rename(('derivative_of_%s_wrt_%s' % (cube.name(), coord.name())) )
@@ -246,7 +236,7 @@ def _curl_subtract(a, b):
     elif b is None:
         return a.copy()
     else:
-        return iris.analysis.maths.subtract(a, b, update_history=False)
+        return iris.analysis.maths.subtract(a, b)
 
 
 def _curl_differentiate(cube, coord):
@@ -392,7 +382,7 @@ def _trig_method(coord, trig_function):
     return trig_coord
 
 
-def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
+def curl(i_cube, j_cube, k_cube=None, ignore=None):
     r'''
     Calculate the 3d curl of the given vector of cubes.
 
@@ -598,15 +588,6 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None, update_history=True):
     for direction, cube in zip(vector_quantity_names, result):
         if cube is not None:
             cube.rename('%s curl of %s' % (direction, phenomenon_name))
-
-            if update_history:
-                # Add history in place
-                if k_cube is None:
-                    cube.add_history('%s cmpt of the curl of %s and %s%s' % \
-                                     (direction, i_cube.name(), j_cube.name(), ignore_string))
-                else:
-                    cube.add_history('%s cmpt of the curl of %s, %s and %s%s' % \
-                                     (direction, i_cube.name(), j_cube.name(), k_cube.name(), ignore_string))
 
     return result
 

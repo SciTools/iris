@@ -1,9 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="change_in_x_wind_wrt_x" units="km/h">
-    <attributes>
-      <attribute name="history" value="Delta of x_wind wrt x"/>
-    </attributes>
     <coords>
       <coord datadims="[0]">
         <dimCoord id="9eb36add" long_name="x" points="[0.5, 1.5, 2.5, 3.5]" shape="(4,)" units="Unit('count')" value_type="float32"/>

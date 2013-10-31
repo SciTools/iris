@@ -1,9 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="thingness" units="1">
-    <attributes>
-      <attribute name="history" value="Sum of thingness over bar, foo"/>
-    </attributes>
     <coords>
       <coord>
         <auxCoord bounds="[[0, 60]]" id="7c9a33bf" long_name="bar" points="[30.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>

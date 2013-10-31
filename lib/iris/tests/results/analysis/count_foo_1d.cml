@@ -1,9 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="thingness" units="1">
-    <attributes>
-      <attribute name="history" value="Count of thingness over foo"/>
-    </attributes>
     <coords>
       <coord>
         <dimCoord bounds="[[0, 11]]" id="549be28b" long_name="foo" points="[5]" shape="(1,)" units="Unit('1')" value_type="int32"/>

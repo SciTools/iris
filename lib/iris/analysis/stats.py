@@ -149,8 +149,6 @@ def pearsonr(cube_a, cube_b, corr_coords=None):
     corrs_cube = iris.cube.Cube(corrs)
     corrs_cube.long_name = "Pearson's r"
     corrs_cube.units = "1"
-    corrs_cube.add_history("%s correlation between %s and %s"
-                           % (corr_coords, cube_a.name(), cube_b.name()))
     for i, dim in enumerate(res_ind):
         c = cube_a.dim_coords[dim]
         corrs_cube.add_dim_coord(c, i)

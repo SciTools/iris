@@ -3,8 +3,6 @@
   <cube standard_name="air_pressure_at_sea_level" units="Pa">
     <attributes>
       <attribute name="STASH" value="m01s16i222"/>
-      <attribute name="history" value="Maximum of air_pressure_at_sea_level over grid_latitude
-Maximum of air_pressure_at_sea_level over grid_longitude"/>
       <attribute name="source" value="Data from Met Office Unified Model 6.01"/>
     </attributes>
     <coords>

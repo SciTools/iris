@@ -52,7 +52,15 @@ Incompatible changes
   :attr:`~iris.unit.Unit.time_reference` :meth:`~iris.unit.Unit.is_time_reference()`
   :attr:`~iris.unit.Unit.unknown`        :meth:`~iris.unit.Unit.is_unknown()`
   ====================================== ===========================================
+* As a result of deprecating :meth:`iris.cube.Cube.add_history` and removing the
+  automatic appending of history by operations such as cube arithmatic,
+  collapsing, and aggregating, the signatures of a number of functions within
+  :mod:`iris.analysis.maths` have been modified along with that of
+  :class:`iris.analysis.Aggregator` and :class:`iris.analysis.WeightedAggregator`.
 
 Deprecations
 ------------
-* N/A
+* :meth:`iris.cube.Cube.add_history` has been deprecated in favour
+  of users modifying/creating the history metadata directly. This is
+  because the automatic behaviour did not deliver a sufficiently complete,
+  auditable history and often prevented the merging of cubes.

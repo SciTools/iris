@@ -1,9 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube long_name="temperature" units="kelvin">
-    <attributes>
-      <attribute name="history" value="Mean of temperature aggregated over height, level"/>
-    </attributes>
     <coords>
       <coord datadims="[0]">
         <auxCoord bounds="[[19, 17],

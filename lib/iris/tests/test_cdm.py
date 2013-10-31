@@ -257,12 +257,6 @@ class TestCubeStringRepresentations(IrisDotTest):
         cube = iris.tests.stock.realistic_4d()
         self.check_dot(cube, ('file_load', '4d_pp.dot'))
         
-    def test_multiline_history_summary(self):
-        c = self.cube_2d
-        # subtract two cubes from each other to make 2 lines of history
-        c = (c - c) - (c - c)
-        self.assertString(str(c), ('cdm', 'str_repr', 'muliple_history.__str__.txt'))
-        
     def test_cubelist_string(self):
         cube_list = iris.cube.CubeList([iris.tests.stock.realistic_4d(),
                                         iris.tests.stock.global_pp()])
@@ -331,15 +325,6 @@ class TestCubeStringRepresentations(IrisDotTest):
                                       'unicode_attribute.__str__.txt'))
         self.assertString(unicode(cube), ('cdm', 'str_repr',
                                           'unicode_attribute.__unicode__.txt'))
-
-    def test_unicode_history(self):
-        unicode_str = unichr(40960) + u'wxyz' + unichr(1972)
-        cube = iris.tests.stock.simple_1d()
-        cube.add_history(unicode_str)
-        self.assertString(str(cube), ('cdm', 'str_repr',
-                                      'unicode_history.__str__.txt'))
-        self.assertString(unicode(cube), ('cdm', 'str_repr',
-                                          'unicode_history.__unicode__.txt'))
 
 
 @iris.tests.skip_data
@@ -881,8 +866,8 @@ class TestCubeEquality(TestCube2d):
         r = self.t.copy()
         self.assertTrue(self.t.is_compatible(r))
         # Different histories.
-        self.t.add_history('One history.')
-        r.add_history('An alternative history.')
+        self.t.attributes['history'] = 'One history.'
+        r.attributes['history'] = 'An alternative history.'
         self.assertFalse(self.t.is_compatible(r))
         # Use ignore keyword.
         self.assertTrue(self.t.is_compatible(r, ignore='history'))
@@ -1029,7 +1014,6 @@ class TestCubeCollapsed(tests.IrisTest):
     def partial_compare(self, dual, single):
         result = iris.analysis.coord_comparison(dual, single)
         self.assertEqual(len(result['not_equal']), 0)
-        self.assertNotEqual(dual.attributes['history'], single.attributes['history'], 'dual and single stage history are equal')
         self.assertEqual(dual.name(), single.name(), "dual and single stage standard_names differ")
         self.assertEqual(dual.units, single.units, "dual and single stage units differ")
         self.assertEqual(dual.shape, single.shape, "dual and single stage shape differ")
@@ -1062,7 +1046,7 @@ class TestCubeCollapsed(tests.IrisTest):
 
         self.assertCML(cube, ('cube_collapsed', 'original.cml'))
 
-        # Compare 2-stage collapsing with a single stage collapse over 2 Coords (ignoring history).
+        # Compare 2-stage collapsing with a single stage collapse over 2 Coords.
         self.collapse_test_common(cube, 'grid_latitude', 'grid_longitude', decimal=1)
         self.collapse_test_common(cube, 'grid_longitude', 'grid_latitude', decimal=1)
 

@@ -279,14 +279,12 @@ def coord_comparison(*cubes):
 class Aggregator(object):
     """Convenience class that supports common aggregation functionality."""
 
-    def __init__(self, history, cell_method, call_func, **kwargs):
+    def __init__(self, cell_method, call_func, **kwargs):
         """
         Create an aggregator for the given call_func.
 
         Args:
 
-        * history (string):
-            History string that supports string format substitution.
         * cell_method (string):
             Cell method string that supports string format substitution.
         * call_func (callable):
@@ -298,8 +296,6 @@ class Aggregator(object):
             Passed through to call_func.
 
         """
-        #: Cube history string that supports string format substitution.
-        self.history = history
         #: Cube cell method string.
         self.cell_method = cell_method
         #: Data aggregation function.
@@ -325,7 +321,7 @@ class Aggregator(object):
 
     def update_metadata(self, cube, coords, **kwargs):
         """
-        Update cube history and cell method metadata w.r.t the aggregation function.
+        Update cube cell method metadata w.r.t the aggregation function.
 
         Args:
 
@@ -351,18 +347,6 @@ class Aggregator(object):
                 raise TypeError('Coordinate instance expected to the Aggregator object.')
             coord_names.append(coord.name())
 
-        action = kwargs.pop('action', 'over')
-        if kwargs.pop('aggregate', False):
-            action = 'aggregated ' + action
-
-        # Add standard items to the history dictionary.
-        history_dict = deepcopy(self._kwargs)
-        history_dict['standard_name'] = cube.name()
-        history_dict['coord_names'] = ', '.join(coord_names)
-        history_dict['action'] = action
-        history_dict.update(kwargs)
-        # Add history in-place.
-        cube.add_history(self.history.format(**history_dict))
         # Add a cell method.
         method_name = self.cell_method.format(**kwargs)
         cell_method = iris.coords.CellMethod(method_name, coord_names)
@@ -388,8 +372,8 @@ class Aggregator(object):
 
 class WeightedAggregator(Aggregator):
 
-    def __init__(self, history, cell_method, call_func, **kwargs):
-        Aggregator.__init__(self, history, cell_method, call_func, **kwargs)
+    def __init__(self, cell_method, call_func, **kwargs):
+        Aggregator.__init__(self, cell_method, call_func, **kwargs)
 
         #: A list of keywords that trigger weighted behaviour.
         self._weighting_keywords = ["returned", "weights"]
@@ -596,9 +580,7 @@ def _peak(array, **kwargs):
 #
 # Common partial Aggregation class constructors.
 #
-COUNT = Aggregator('Count of {standard_name:s} {action:s} {coord_names:s}',
-                                       'count',
-                                       _count)
+COUNT = Aggregator('count', _count)
 """
 The number of data that match the given function.
 
@@ -617,9 +599,7 @@ For example, the number of ensembles with precipitation exceeding 10 (in cube da
 """
 
 
-GMEAN = Aggregator('Geometric mean of {standard_name:s} {action:s} {coord_names:s}',
-                'geometric_mean',
-                scipy.stats.mstats.gmean)
+GMEAN = Aggregator('geometric_mean', scipy.stats.mstats.gmean)
 """
 The geometric mean, as computed by :func:`scipy.stats.mstats.gmean`.
 
@@ -630,9 +610,7 @@ For example, to compute zonal geometric means::
 """
 
 
-HMEAN = Aggregator('Harmonic mean of {standard_name:s} {action:s} {coord_names:s}',
-                'harmonic_mean',
-                scipy.stats.mstats.hmean)
+HMEAN = Aggregator('harmonic_mean', scipy.stats.mstats.hmean)
 """
 The harmonic mean, as computed by :func:`scipy.stats.mstats.hmean`.
 
@@ -645,9 +623,7 @@ For example, to compute zonal harmonic means::
 """
 
 
-MAX = Aggregator('Maximum of {standard_name:s} {action:s} {coord_names:s}',
-              'maximum',
-              ma.max)
+MAX = Aggregator('maximum', ma.max)
 """
 The maximum, as computed by :func:`numpy.ma.max`.
 
@@ -658,9 +634,7 @@ For example, to compute zonal maximums::
 """
 
 
-MEAN = WeightedAggregator('Mean of {standard_name:s} {action:s} {coord_names:s}',
-               'mean',
-               ma.average)
+MEAN = WeightedAggregator('mean', ma.average)
 """
 The mean, as computed by :func:`numpy.ma.average`.
 
@@ -685,9 +659,7 @@ For example::
 """
 
 
-MEDIAN = Aggregator('Median of {standard_name:s} {action:s} {coord_names:s}',
-                 'median',
-                 ma.median)
+MEDIAN = Aggregator('median', ma.median)
 """
 The median, as computed by :func:`numpy.ma.median`.
 
@@ -698,9 +670,7 @@ For example, to compute zonal medians::
 """
 
 
-MIN = Aggregator('Minimum of {standard_name:s} {action:s} {coord_names:s}',
-              'minimum',
-              ma.min)
+MIN = Aggregator('minimum', ma.min)
 """
 The minimum, as computed by :func:`numpy.ma.min`.
 
@@ -711,9 +681,7 @@ For example, to compute zonal minimums::
 """
 
 
-PEAK = Aggregator('Peak of {standard_name:s} {action:s} {coord_names:s}',
-                  'peak',
-                  _peak)
+PEAK = Aggregator('peak', _peak)
 """
 The global peak value, from a spline interpolation of the cube data,
 along the coordinate axis.
@@ -734,12 +702,10 @@ For example, to compute the peak over time::
 """
 
 
-PERCENTILE = Aggregator('Percentile ({percent}%) of {standard_name:s} {action:s} {coord_names:s}',
-                  'percentile ({percent}%)',
-                  _percentile,
-                  alphap=1,
-                  betap=1,
-                  )
+PERCENTILE = Aggregator('percentile ({percent}%)',
+                        _percentile,
+                        alphap=1,
+                        betap=1)
 """
 The percentile, as computed by :func:`scipy.stats.mstats.scoreatpercentile`.
 
@@ -760,9 +726,7 @@ For example, to compute the 90th percentile over time::
 """
 
 
-PROPORTION = Aggregator('Proportion of {standard_name:s} {action:s} {coord_names:s}',
-                                       'proportion',
-                                       _proportion)
+PROPORTION = Aggregator('proportion', _proportion)
 """
 The proportion, as a decimal, of data that match the given function.
 
@@ -790,10 +754,7 @@ Similarly, the proportion of times precipitation exceeded 10 (in cube data units
 """
 
 
-RMS = WeightedAggregator(
-    'Root mean square of {standard_name} {action} {coord_names}',
-    'root mean square',
-    _rms)
+RMS = WeightedAggregator('root mean square', _rms)
 """
 The root mean square, as computed by ((x0**2 + x1**2 + ... + xN-1**2) / N) ** 0.5.
 
@@ -810,10 +771,7 @@ Additional kwargs available:
 """
 
 
-STD_DEV = Aggregator('Standard deviation of {standard_name:s} {action:s} {coord_names:s} (delta degrees of freedom: {ddof:d})',
-                  'standard_deviation',
-                  ma.std,
-                  ddof=1)
+STD_DEV = Aggregator('standard_deviation', ma.std, ddof=1)
 """
 The standard deviation, as computed by :func:`numpy.ma.std`.
 
@@ -834,9 +792,7 @@ For example, to obtain the biased standard deviation::
 """
 
 
-SUM = WeightedAggregator('Sum of {standard_name:s} {action:s} {coord_names:s}',
-                         'sum',
-                         _sum)
+SUM = WeightedAggregator('sum', _sum)
 """
 The sum of a dataset, as computed by :func:`numpy.ma.sum`.
 
@@ -864,10 +820,7 @@ For example to compute a weighted rolling sum (e.g., to apply a digital filter):
 """
 
 
-VARIANCE = Aggregator('Variance of {standard_name:s} {action:s} {coord_names:s} (delta degrees of freedom: {ddof:d})',
-                   'variance',
-                   ma.var,
-                   ddof=1)
+VARIANCE = Aggregator('variance', ma.var, ddof=1)
 """
 The variance, as computed by :func:`numpy.ma.var`.
 

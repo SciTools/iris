@@ -1671,11 +1671,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             if self.attributes:
                 attribute_lines = []
                 for name, value in sorted(self.attributes.iteritems()):
-                    value = unicode(value)
-                    if name == 'history':
-                        value = re.sub("[\d\/]{8} [\d\:]{8} Iris\: ", '',
-                                       value)
-                    value = iris.util.clip_string(value)
+                    value = iris.util.clip_string(unicode(value))
                     line = u'{pad:{width}}{name}: {value}'.format(pad=' ',
                                                                   width=indent,
                                                                   name=name,
@@ -2057,11 +2053,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             for name in sorted(self.attributes.iterkeys()):
                 attribute_element = doc.createElement('attribute')
                 attribute_element.setAttribute('name', name)
-                if name == 'history':
-                    value = re.sub("[\d\/]{8} [\d\:]{8} Iris\: ", '',
-                                   str(self.attributes[name]))
-                else:
-                    value = str(self.attributes[name])
+                value = str(self.attributes[name])
                 attribute_element.setAttribute('value', value)
                 attributes_element.appendChild(attribute_element)
             cube_xml_element.appendChild(attributes_element)
@@ -2278,7 +2270,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Add the given string to the cube's history.
         If the history coordinate does not exist, then one will be created.
 
+        .. deprecated:: 1.6
+            Add/modify history metadata within
+            attr:`~iris.cube.Cube.attributes` as needed.
+
         """
+        warnings.warn("Cube.add_history() has been deprecated - "
+                      "please modify/create cube.attributes['history'] "
+                      "as needed.")
+
         timestamp = datetime.datetime.now().strftime("%d/%m/%y %H:%M:%S")
         string = '%s Iris: %s' % (timestamp, string)
 
@@ -2342,9 +2342,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                  Attributes:
                       Conventions: CF-1.5
                       STASH: m01s00i024
-                      history: Mean of surface_temperature aggregated \
-over month, year
-            Mean of surface_temperature...
                  Cell methods:
                       mean: month, year
                       mean: longitude
@@ -2522,9 +2519,6 @@ over month, year
                  Attributes:
                       Conventions: CF-1.5
                       STASH: m01s00i024
-                      history: Mean of surface_temperature aggregated \
-over month, year
-            Mean of surface_temperature...
                  Cell methods:
                       mean: month, year
                       mean: year
@@ -2696,8 +2690,6 @@ over month, year
                       realization: 10
                  Attributes:
                       STASH: m01s00i024
-                      history: Mean of surface_temperature with a rolling \
-window of length 3 over tim...
                       source: Data from Met Office Unified Model 7.06
                  Cell methods:
                       mean: time (1 hour)
