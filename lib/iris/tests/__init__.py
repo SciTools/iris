@@ -314,9 +314,8 @@ class IrisTest(unittest.TestCase):
         unmasked values and masks to be identical.
 
         """
-        np.testing.assert_array_equal(a, b)
         np.testing.assert_array_equal(a.mask, b.mask)
-
+        np.testing.assert_array_equal(a[~a.mask].data, b[~b.mask].data)
 
     def assertArrayAlmostEqual(self, a, b):
         np.testing.assert_array_almost_equal(a, b)
@@ -329,7 +328,7 @@ class IrisTest(unittest.TestCase):
 
         """
         np.testing.assert_array_equal(a.mask, b.mask)
-        np.testing.assert_array_almost_equal(a, b)
+        np.testing.assert_array_almost_equal(a[~a.mask].data, b[~b.mask].data)
 
     def assertArrayAllClose(self, a, b, rtol=1.0e-7, atol=0.0, **kwargs):
         """
