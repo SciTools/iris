@@ -33,7 +33,7 @@ class Test_aggregate(tests.IrisTest):
     # function don't matter, only how these are dealt with by the aggregate
     # method.
     def setUp(self):
-        self.TEST = Aggregator('Tests data aggregation function', 'test', None)
+        self.TEST = Aggregator('test', None)
         self.array = ma.array([[1, 2, 3],
                                [4, 5, 6]],
                               mask=[[False, True, False],
