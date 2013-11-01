@@ -131,27 +131,26 @@ def broadcast_to_shape(array, shape, dim_map):
         # correct length, we might just get a segfault.
         raise ValueError('dim_map must have an entry for every '
                          'dimension of the input array')
-    strides = [0] * len(shape)
-    for idim, dim in enumerate(dim_map):
-        if shape[dim] != array.shape[idim]:
-            # We'll get garbage values if the dimensions of array are not
-            # those indicated by shape.
-            raise ValueError('shape and array are not compatible')
-        strides[dim] = array.strides[idim]
-    array_view = np.lib.stride_tricks.as_strided(array,
-                                                 shape=shape,
-                                                 strides=strides)
-    if ma.isMaskedArray(array):
-        # If the input array is a masked array we must apply the same
-        # technique to the mask as well as the values, but using the
-        # knowledge that the mask is the same shape as the array.
-        mstrides = [0] * len(shape)
+
+    def _broadcast_helper(a):
+        strides = [0] * len(shape)
         for idim, dim in enumerate(dim_map):
-            mstrides[dim] = array.mask.strides[idim]
-        mask = np.lib.stride_tricks.as_strided(array.mask,
-                                               shape=shape,
-                                               strides=mstrides)
-        array_view = ma.array(array_view, mask=mask)
+            if shape[dim] != a.shape[idim]:
+                # We'll get garbage values if the dimensions of array are not
+                # those indicated by shape.
+                raise ValueError('shape and array are not compatible')
+            strides[dim] = a.strides[idim]
+        return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
+
+    array_view = _broadcast_helper(array)
+    if ma.isMaskedArray(array):
+        if array.mask is ma.nomask:
+            # Degenerate masks can be applied as-is.
+            mask_view = array.mask
+        else:
+            # Mask arrays need to be handled in the same way as the data array.
+            mask_view = _broadcast_helper(array.mask)
+        array_view = ma.array(array_view, mask=mask_view)
     return array_view
 
 

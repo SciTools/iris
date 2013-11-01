@@ -62,6 +62,15 @@ class Test_broadcast_to_shape(tests.IrisTest):
             for j in xrange(4):
                 self.assertMaskedArrayEqual(b[i, :, j, :].T, m)
 
+    def test_masked_degenerate(self):
+        # masked arrays can have degenerate masks too
+        a = np.random.random([2, 3])
+        m = ma.array(a)
+        b = broadcast_to_shape(m, (5, 3, 4, 2), (3, 1))
+        for i in xrange(5):
+            for j in xrange(4):
+                self.assertMaskedArrayEqual(b[i, :, j, :].T, m)
+
 
 if __name__ == '__main__':
     tests.main()
