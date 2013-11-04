@@ -37,28 +37,9 @@ NAMEII_FIELD_DATETIME_FORMAT = '%H%M%Z %d/%m/%Y'
 NAMEII_TIMESERIES_DATETIME_FORMAT = '%d/%m/%Y  %H:%M:%S'
 
 
-class NAMECoord(collections.namedtuple(
-        'NAMECoord', ['name', 'dimension', 'points', 'bounds'])):
-    # Allow optional parameters
-    def __new__(cls, name, dimension, points, bounds=None):
-        return super(NAMECoord, cls).__new__(
-            cls, name, dimension, points, bounds)
-    # Handling of numpy arrays for equality
-    def __eq__(self, other):
-        fields = self._fields
-        for field in fields:
-            foo = getattr(self, field)
-            bar =  getattr(other, field)
-
-            if isinstance(foo, np.ndarray):
-                if not isinstance(bar, np.ndarray):
-                    return False
-                if foo.shape != bar.shape and (foo != bar).any():
-                    return False
-            else:
-                if foo != bar:
-                    return False
-        return True
+NAMECoord = collections.namedtuple('NAMECoord', ['name',
+                                                 'dimension',
+                                                 'values'])
 
 
 def _split_name_and_units(name):
@@ -157,13 +138,13 @@ def _build_lat_lon_for_NAME_field(header):
     step = header['X grid resolution']
     count = header['X grid size']
     pts = start + np.arange(count, dtype=np.float64) * step
-    lon = NAMECoord(name='longitude', dimension=1, points=pts)
+    lon = NAMECoord(name='longitude', dimension=1, values=pts)
 
     start = header['Y grid origin']
     step = header['Y grid resolution']
     count = header['Y grid size']
     pts = start + np.arange(count, dtype=np.float64) * step
-    lat = NAMECoord(name='latitude', dimension=0, points=pts)
+    lat = NAMECoord(name='latitude', dimension=0, values=pts)
 
     return lat, lon
 
@@ -184,7 +165,7 @@ def _build_lat_lon_for_NAME_timeseries(column_headings):
             new_Xlocation_column_header.append(t)
     column_headings['X'] = new_Xlocation_column_header
     lon = NAMECoord(name='longitude', dimension=None,
-                    points=column_headings['X'])
+                    values=column_headings['X'])
 
     new_Ylocation_column_header = []
     for t in column_headings['Y']:
@@ -195,7 +176,7 @@ def _build_lat_lon_for_NAME_timeseries(column_headings):
             new_Ylocation_column_header.append(t)
     column_headings['Y'] = new_Ylocation_column_header
     lat = NAMECoord(name='latitude', dimension=None,
-                    points=column_headings['Y'])
+                    values=column_headings['Y'])
 
     return lat, lon
 
@@ -275,6 +256,67 @@ def _parse_units(units):
     return units
 
 
+def cf_height_from_name(z_coord):
+    # NAMEII - integer only.
+    # Match against height agl and asl.
+    pattern = re.compile(r'^From\s*(?P<lower_bound>[0-9]+)\s*-\s*'
+                          '(?P<upper_bound>[0-9]+)m\s*(?P<type>asl|agl)'
+                          '(?P<extra>.*)')
+    # Match against flight level.
+    pattern_fl = re.compile(r'^From\s*(?P<type>FL)(?P<lower_bound>[0-9]+)'
+                             '\s*-\s*FL(?P<upper_bound>[0-9]+)'
+                             '(?P<extra>.*)')
+
+    # NAMEIII - integer/float support.
+    # Match scalar against height agl and asl.
+    pattern_scalar = re.compile(r'Z\s*=\s*(?P<point>[0-9]+(\.[0-9]+)?)'
+                                '\s*m\s*(?P<type>agl|asl)(?P<extra>.*)')
+    # Match scalar against flight level.
+    pattern_scalar_fl = re.compile(r'Z\s*=\s*'
+                                   '(?P<point>[0-9]+(\.[0-9]+)?)'
+                                   '(?P<type>FL)'
+                                   '(?P<extra>.*)')
+
+    type_name = {'agl': 'height', 'asl': 'altitude', 'FL': 'flight_level'}
+    patterns = [pattern, pattern_fl, pattern_scalar, pattern_scalar_fl]
+
+    name = None
+    units = 'no-unit'
+    points = z_coord
+    bounds = None
+    standard_name = None
+    long_name = 'z' 
+    for pattern in patterns:
+        match = pattern.match(z_coord)
+        if match:
+            match = match.groupdict()
+            name = match['type']
+            if match['extra']:
+                raise RuntimeError(
+                    'Unable to interpret z-coordinate due to extra '
+                    'information: {}'.format(match))
+
+            # Interpret points if present.
+            if 'point' in match:
+                points = float(match['point'])
+            # Interpret points from bounds.
+            elif 'lower_bound' in match and 'upper_bound' in match:
+                bounds = np.array([float(match['lower_bound']),
+                                   float(match['upper_bound'])])
+                points = bound.sum() / 2.
+
+            if name in ['height', 'altitude']:
+                units = 'm' 
+                standard_name = name
+            elif name == 'flight_level':
+                units = 'unknown'
+                long_name = name
+
+            break
+
+    return points, bounds, standard_name, long_name, units
+
+
 def _generate_cubes(header, column_headings, coords, data_arrays):
     """
     Yield :class:`iris.cube.Cube` instances given
@@ -303,11 +345,11 @@ def _generate_cubes(header, column_headings, coords, data_arrays):
         # recognised by Iris.
         cube.units = _parse_units(field_headings['Unit'])
 
-        # Define and add the singular coordinates of the field (time etc.)
-        if 'Z' in field_headings:
-            cube.add_aux_coord(AuxCoord(field_headings['Z'],
-                                        long_name='z',
-                                        units='no-unit'))
+        # Define and add the singular coordinates of the field (flight
+        # level, time etc.)
+        cube.add_aux_coord(AuxCoord(field_headings['Z'],
+                                    long_name='z',
+                                    units='no-unit'))
 
         # Define the time unit and use it to serialise the datetime for
         # the time coordinate.
@@ -316,60 +358,41 @@ def _generate_cubes(header, column_headings, coords, data_arrays):
 
         # Build time, latitude and longitude coordinates.
         for coord in coords:
-            pts = coord.points
-            bounds = None
+            pts = coord.values
             coord_sys = None
-            long_name = None
-            standard_name = coord.name
             if coord.name == 'latitude' or coord.name == 'longitude':
                 coord_units = 'degrees'
                 coord_sys = iris.coord_systems.GeogCS(EARTH_RADIUS)
             if coord.name == 'time':
                 coord_units = time_unit
-                pts = time_unit.date2num(coord.points)
-            if coord.name == 'height' or coord.name == 'altitude':
-                coord_units = 'm'
-                bounds = coord.bounds
-            if coord.name == 'flight_level':
-                long_name = coord.name
-                standard_name = None
-                coord_units = 'unknown'
-            if coord.name == 'air_pressure':
-                coord_units = 'Pa'
+                pts = time_unit.date2num(coord.values)
 
             if coord.dimension is not None:
                 icoord = DimCoord(points=pts,
-                                  standard_name=standard_name,
-                                  long_name=long_name,
+                                  standard_name=coord.name,
                                   units=coord_units,
-                                  coord_system=coord_sys,
-                                  bounds=bounds)
+                                  coord_system=coord_sys)
                 if coord.name == 'time' and 'Av or Int period' in \
                         field_headings:
-                    dt = coord.points - \
+                    dt = coord.values - \
                         field_headings['Av or Int period']
                     bnds = time_unit.date2num(
-                        np.vstack((dt, coord.points)).T)
+                        np.vstack((dt, coord.values)).T)
                     icoord.bounds = bnds
-                elif coord.bounds is None:
+                else:
                     icoord.guess_bounds()
                 cube.add_dim_coord(icoord, coord.dimension)
             else:
-                boundi = None
-                if bounds is not None:
-                    boundi = bounds[i]
                 icoord = AuxCoord(points=pts[i],
-                                  standard_name=standard_name,
-                                  long_name=long_name,
+                                  standard_name=coord.name,
                                   coord_system=coord_sys,
-                                  units=coord_units,
-                                  bounds=boundi)
+                                  units=coord_units)
                 if coord.name == 'time' and 'Av or Int period' in \
                         field_headings:
-                    dt = coord.points - \
+                    dt = coord.values - \
                         field_headings['Av or Int period']
                     bnds = time_unit.date2num(
-                        np.vstack((dt, coord.points)).T)
+                        np.vstack((dt, coord.values)).T)
                     icoord.bounds = bnds[i, :]
                 cube.add_aux_coord(icoord)
 
@@ -445,7 +468,7 @@ def load_NAMEIII_field(filename):
 
         # Build a time coordinate.
         tdim = NAMECoord(name='time', dimension=None,
-                         points=np.array(column_headings['Time']))
+                         values=np.array(column_headings['Time']))
 
         # Build regular latitude and longitude coordinates.
         lat, lon = _build_lat_lon_for_NAME_field(header)
@@ -461,80 +484,6 @@ def load_NAMEIII_field(filename):
         data_arrays = _read_data_arrays(file_handle, n_arrays, shape)
 
     return _generate_cubes(header, column_headings, coords, data_arrays)
-
-
-def cf_height_from_name(z_coord):
-    # NAMEII - integer only.
-    # Match against height agl and asl.
-    pattern = re.compile(r'^From\s*(?P<lower_bound>[0-9]+)\s*-\s*'
-                          '(?P<upper_bound>[0-9]+)m\s*(?P<type>asl|agl)'
-                          '(?P<extra>.*)')
-    # Match against flight level.
-    pattern_fl = re.compile(r'^From\s*(?P<type>FL)(?P<lower_bound>[0-9]+)'
-                             '\s*-\s*FL(?P<upper_bound>[0-9]+)'
-                             '(?P<extra>.*)')
-
-    # NAMEIII - integer/float support.
-    # Match scalar against height agl and asl.
-    pattern_scalar = re.compile(r'Z\s*=\s*(?P<point>[0-9]+(\.[0-9]+)?)'
-                                '\s*m\s*(?P<type>agl|asl)(?P<extra>.*)')
-    # Match scalar against flight level.
-    pattern_scalar_fl = re.compile(r'Z\s*=\s*'
-                                   '(?P<point>[0-9]+(\.[0-9]+)?)'
-                                   '(?P<type>FL)'
-                                   '(?P<extra>.*)')
-
-    type_name = {'agl': 'height', 'asl': 'altitude', 'FL': 'flight_level'}
-    patterns = [pattern, pattern_fl, pattern_scalar, pattern_scalar_fl]
-
-    height_coord = None
-    points = []
-    bounds = []
-    name = set()
-    for pattern in patterns:
-        for z in z_coord:
-            match = pattern.match(z)
-            if match:
-                match = match.groupdict()
-                if match['extra']:
-                    raise RuntimeError(
-                        'Unable to interpret z-coordinate due to extra '
-                        'information: {}'.format(match))
-
-                name.add(type_name[match['type']])
-
-                if len(name) is not 1:
-                    raise TypeError(
-                        'Inconsistent units for z-coordinate: {}'.format(name))
-    
-                # Interpret points or bounds
-                if 'lower_bound' in match and 'upper_bound' in match:
-                    bounds.append([float(match['lower_bound']),
-                                   float(match['upper_bound'])])
-                if 'point' in match:
-                    points.append(float(match['point']))
-        # Ensure that only one pattern match is used
-        if name:
-            break
-
-    if bounds and not points:
-        # calculate points using bounds
-        bounds = np.array(bounds)
-        points = (bounds[:, 1] + bounds[:, 0]) / 2
-    elif points and not bounds:
-        points = np.array(points)
-        bounds = None
-
-    # Check that if interpreted, that we have interpreted them all.
-    height_coord = None
-    if name:
-        if len(points) != len(z_coord):
-            raise RuntimeError('Not all z-coordinate points could be '
-                               'interpreted')
-        else:
-            height_coord = NAMECoord(name=name.pop(), dimension=None,
-                                     points=points, bounds=bounds)
-    return height_coord
 
 
 def load_NAMEII_field(filename):
@@ -573,11 +522,6 @@ def load_NAMEII_field(filename):
             cols = [col.strip() for col in file_handle.next().split(',')]
             column_headings[column_header_name] = cols[4:-1]
 
-        # Convert Z strings to numeric values and create coord
-        height = cf_height_from_name(column_headings['Z'])
-        if height:
-            column_headings.pop('Z')
-
         # Convert the time to python datetimes
         new_time_column_header = []
         for i, t in enumerate(column_headings['Time']):
@@ -599,12 +543,12 @@ def load_NAMEII_field(filename):
 
         # Build a time coordinate.
         tdim = NAMECoord(name='time', dimension=None,
-                         points=np.array(column_headings['Time']))
+                         values=np.array(column_headings['Time']))
 
         # Build regular latitude and longitude coordinates.
         lat, lon = _build_lat_lon_for_NAME_field(header)
 
-        coords = [lon, lat, tdim, height]
+        coords = [lon, lat, tdim]
 
         # Skip the blank line after the column headings.
         file_handle.next()
@@ -684,7 +628,7 @@ def load_NAMEIII_timeseries(filename):
 
         data_arrays = [np.array(l) for l in data_lists]
         time_array = np.array(time_list)
-        tdim = NAMECoord(name='time', dimension=0, points=time_array)
+        tdim = NAMECoord(name='time', dimension=0, values=time_array)
 
         coords = [lon, lat, tdim]
 
@@ -749,7 +693,7 @@ def load_NAMEII_timeseries(filename):
 
         data_arrays = [np.array(l) for l in data_lists]
         time_array = np.array(time_list)
-        tdim = NAMECoord(name='time', dimension=0, points=time_array)
+        tdim = NAMECoord(name='time', dimension=0, values=time_array)
 
         coords = [lon, lat, tdim]
 
