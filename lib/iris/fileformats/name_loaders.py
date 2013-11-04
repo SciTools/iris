@@ -256,31 +256,56 @@ def _parse_units(units):
     return units
 
 
+class NAMEIrisBridge(collections.namedtuple(
+        'NAMEIrisBridge', ['units', 'standard_name', 'long_name',
+                           'points', 'bounds'])):
+    # Handling of numpy arrays for equality
+    def __eq__(self, other):
+        fields = self._fields
+        for field in fields:
+            foo = getattr(self, field)
+            bar =  getattr(other, field)
+
+            if isinstance(foo, np.ndarray):
+                if not isinstance(bar, np.ndarray):
+                    return False
+                if foo.shape != bar.shape and (foo != bar).any():
+                    return False
+            else:
+                if foo != bar:
+                    return False
+        return True
+
+
 def cf_height_from_name(z_coord):
-    # NAMEII - integer only.
-    # Match against height agl and asl.
-    pattern = re.compile(r'^From\s*(?P<lower_bound>[0-9]+)\s*-\s*'
-                          '(?P<upper_bound>[0-9]+)m\s*(?P<type>asl|agl)'
-                          '(?P<extra>.*)')
+    # NAMEII - integer/float support.
+    # Match against height agl, asl and Pa.
+    pattern = re.compile(r'^From\s*'
+                         '(?P<lower_bound>[0-9]+(\.[0-9]+)?)'
+                         '\s*-\s*'
+                         '(?P<upper_bound>[0-9]+(\.[0-9]+)?)'
+                         '\s*(?P<type>m\s*asl|m\s*agl|Pa)'
+                         '(?P<extra>.*)')
+                             
     # Match against flight level.
-    pattern_fl = re.compile(r'^From\s*(?P<type>FL)(?P<lower_bound>[0-9]+)'
-                             '\s*-\s*FL(?P<upper_bound>[0-9]+)'
-                             '(?P<extra>.*)')
+    pattern_fl = re.compile(r'^From\s*'
+                            '(?P<type>FL)'
+                            '(?P<lower_bound>[0-9]+(\.[0-9]+)?)'
+                            '\s*-\s*FL'
+                            '(?P<upper_bound>[0-9]+(\.[0-9]+)?)'
+                            '(?P<extra>.*)')
 
     # NAMEIII - integer/float support.
-    # Match scalar against height agl and asl.
-    pattern_scalar = re.compile(r'Z\s*=\s*(?P<point>[0-9]+(\.[0-9]+)?)'
-                                '\s*m\s*(?P<type>agl|asl)(?P<extra>.*)')
-    # Match scalar against flight level.
-    pattern_scalar_fl = re.compile(r'Z\s*=\s*'
-                                   '(?P<point>[0-9]+(\.[0-9]+)?)'
-                                   '(?P<type>FL)'
-                                   '(?P<extra>.*)')
+    # Match scalar against height agl, asl, Pa, FL
+    pattern_scalar = re.compile(r'Z\s*=\s*'
+                                '(?P<point>[0-9]+(\.[0-9]+)?)'
+                                '\s*(?P<type>m\s*agl|m\s*asl|FL|Pa)'
+                                '(?P<extra>.*)')
 
-    type_name = {'agl': 'height', 'asl': 'altitude', 'FL': 'flight_level'}
-    patterns = [pattern, pattern_fl, pattern_scalar, pattern_scalar_fl]
+    type_name = {'magl': 'height', 'masl': 'altitude', 'FL': 'flight_level',
+                 'Pa': 'air_pressure'}
+    patterns = [pattern, pattern_fl, pattern_scalar]
 
-    name = None
     units = 'no-unit'
     points = z_coord
     bounds = None
@@ -290,7 +315,7 @@ def cf_height_from_name(z_coord):
         match = pattern.match(z_coord)
         if match:
             match = match.groupdict()
-            name = match['type']
+            name = type_name[match['type'].replace(' ', '')]
             if match['extra']:
                 raise RuntimeError(
                     'Unable to interpret z-coordinate due to extra '
@@ -302,19 +327,22 @@ def cf_height_from_name(z_coord):
             # Interpret points from bounds.
             elif 'lower_bound' in match and 'upper_bound' in match:
                 bounds = np.array([float(match['lower_bound']),
-                                   float(match['upper_bound'])])
-                points = bound.sum() / 2.
+                                             float(match['upper_bound'])])
+                points = bounds.sum() / 2.
 
             if name in ['height', 'altitude']:
                 units = 'm' 
                 standard_name = name
+            elif name == 'air_pressure':
+                units = 'Pa'
+                standard_name = name
             elif name == 'flight_level':
                 units = 'unknown'
                 long_name = name
-
             break
 
-    return points, bounds, standard_name, long_name, units
+    result = NAMEIrisBridge(units, standard_name, long_name, points, bounds) 
+    return result
 
 
 def _generate_cubes(header, column_headings, coords, data_arrays):
@@ -347,9 +375,12 @@ def _generate_cubes(header, column_headings, coords, data_arrays):
 
         # Define and add the singular coordinates of the field (flight
         # level, time etc.)
-        cube.add_aux_coord(AuxCoord(field_headings['Z'],
-                                    long_name='z',
-                                    units='no-unit'))
+        data = cf_height_from_name(field_headings['Z'])
+        cube.add_aux_coord(AuxCoord(data.points,
+                                    long_name=data.long_name,
+                                    standard_name=data.standard_name,
+                                    units=data.units,
+                                    bounds=data.bounds))
 
         # Define the time unit and use it to serialise the datetime for
         # the time coordinate.
