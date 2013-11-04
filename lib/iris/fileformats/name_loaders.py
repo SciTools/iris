@@ -264,7 +264,7 @@ class NAMEIrisBridge(collections.namedtuple(
         fields = self._fields
         for field in fields:
             foo = getattr(self, field)
-            bar =  getattr(other, field)
+            bar = getattr(other, field)
 
             if isinstance(foo, np.ndarray):
                 if not isinstance(bar, np.ndarray):
@@ -286,7 +286,7 @@ def cf_height_from_name(z_coord):
                          '(?P<upper_bound>[0-9]+(\.[0-9]+)?)'
                          '\s*(?P<type>m\s*asl|m\s*agl|Pa)'
                          '(?P<extra>.*)')
-                             
+
     # Match against flight level.
     pattern_fl = re.compile(r'^From\s*'
                             '(?P<type>FL)'
@@ -310,7 +310,7 @@ def cf_height_from_name(z_coord):
     points = z_coord
     bounds = None
     standard_name = None
-    long_name = 'z' 
+    long_name = 'z'
     for pattern in patterns:
         match = pattern.match(z_coord)
         if match:
@@ -327,11 +327,11 @@ def cf_height_from_name(z_coord):
             # Interpret points from bounds.
             elif 'lower_bound' in match and 'upper_bound' in match:
                 bounds = np.array([float(match['lower_bound']),
-                                             float(match['upper_bound'])])
+                                   float(match['upper_bound'])])
                 points = bounds.sum() / 2.
 
             if name in ['height', 'altitude']:
-                units = 'm' 
+                units = 'm'
                 standard_name = name
             elif name == 'air_pressure':
                 units = 'Pa'
@@ -341,7 +341,7 @@ def cf_height_from_name(z_coord):
                 long_name = name
             break
 
-    result = NAMEIrisBridge(units, standard_name, long_name, points, bounds) 
+    result = NAMEIrisBridge(units, standard_name, long_name, points, bounds)
     return result
 
 
