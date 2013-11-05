@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Unit tests for the :class:`iris.analysis.name_loaders.cf_height_from_name`
+Unit tests for the :class:`iris.analysis.name_loaders._cf_height_from_name`
 function.
 
 """
@@ -26,14 +26,14 @@ import iris.tests as tests
 
 import numpy as np
 
-from iris.fileformats.name_loaders import cf_height_from_name, NAMEIrisBridge
+from iris.fileformats.name_loaders import _cf_height_from_name, NAMEIrisBridge
 
 
 class TestAll_NAMEII(tests.IrisTest):
     # NAMEII formats are defined by bounds, not points
     def test_bounded_height_above_ground(self):
         data = 'From     0 -   100m agl'
-        res = cf_height_from_name(data)
+        res = _cf_height_from_name(data)
         com = NAMEIrisBridge(
             units='m', points=50.0, bounds=np.array([0., 100.]),
             standard_name='height', long_name='z')
@@ -41,7 +41,7 @@ class TestAll_NAMEII(tests.IrisTest):
 
     def test_bounded_flight_level(self):
         data = 'From FL0 - FL100'
-        res = cf_height_from_name(data)
+        res = _cf_height_from_name(data)
         com = NAMEIrisBridge(
             units='unknown', points=50.0, bounds=np.array([0., 100.]),
             standard_name=None, long_name='flight_level')
@@ -49,7 +49,7 @@ class TestAll_NAMEII(tests.IrisTest):
 
     def test_bounded_height_above_sea_level(self):
         data = 'From     0 -   100m asl'
-        res = cf_height_from_name(data)
+        res = _cf_height_from_name(data)
         com = NAMEIrisBridge(
             units='m', points=50.0, bounds=np.array([0., 100.]),
             standard_name='altitude', long_name='z')
@@ -60,26 +60,26 @@ class TestAll_NAMEII(tests.IrisTest):
         # the string (agl).
         data = 'From     0 -   100m agl and stuff'
         with self.assertRaises(RuntimeError):
-            cf_height_from_name(data)
+            _cf_height_from_name(data)
 
     def test_malformed_height_above_sea_level(self):
         # Parse height above ground level with additional stuff on the end of
         # the string (agl).
         data = 'From     0 -   100m asl and stuff'
         with self.assertRaises(RuntimeError):
-            cf_height_from_name(data)
+            _cf_height_from_name(data)
 
     def test_malformed_flight_level(self):
         # Parse height above ground level with additional stuff on the end of
         # the string (agl).
         data = 'From FL0 - FL100 and stuff'
         with self.assertRaises(RuntimeError):
-            cf_height_from_name(data)
+            _cf_height_from_name(data)
 
     def test_float_bounded_height_above_ground(self):
         # Parse height above ground level when its a float.
         data = 'From     0.0 -   100.0m agl'
-        res = cf_height_from_name(data)
+        res = _cf_height_from_name(data)
         com = NAMEIrisBridge(
             units='m', points=50.0, bounds=np.array([0., 100.]),
             standard_name='height', long_name='z')
@@ -88,7 +88,7 @@ class TestAll_NAMEII(tests.IrisTest):
     def test_float_bounded_height_flight_level(self):
         # Parse height above ground level, as a float (agl).
         data = 'From FL0.0 - FL100.0'
-        res = cf_height_from_name(data)
+        res = _cf_height_from_name(data)
         com = NAMEIrisBridge(
             units='unknown', points=50.0, bounds=np.array([0., 100.]),
             standard_name=None, long_name='flight_level')
@@ -97,7 +97,7 @@ class TestAll_NAMEII(tests.IrisTest):
     def test_float_bounded_height_above_sea_level(self):
         # Parse height above ground level as a float (agl).
         data = 'From     0.0 -   100.0m asl'
-        res = cf_height_from_name(data)
+        res = _cf_height_from_name(data)
         com = NAMEIrisBridge(
             units='m', points=50.0, bounds=np.array([0., 100.]),
             standard_name='altitude', long_name='z')
@@ -107,7 +107,7 @@ class TestAll_NAMEII(tests.IrisTest):
         # Parse height information when there is no match.
         # No interpretation, just returns default values.
         data = 'Vertical integral'
-        res = cf_height_from_name(data)
+        res = _cf_height_from_name(data)
         com = NAMEIrisBridge(
             units='no-unit', points='Vertical integral', bounds=None,
             standard_name=None, long_name='z')
@@ -116,7 +116,7 @@ class TestAll_NAMEII(tests.IrisTest):
     def test_pressure(self):
         # Parse air_pressure string.
         data = 'From     0 -   100 Pa'
-        res = cf_height_from_name(data)
+        res = _cf_height_from_name(data)
         com = NAMEIrisBridge(
             units='Pa', points=50.0, bounds=np.array([0., 100.]),
             standard_name='air_pressure', long_name='z')
@@ -127,7 +127,7 @@ class TestAll_NAMEIII(tests.IrisTest):
     # NAMEII formats are defined by points, not boudns.
     def test_height_above_ground(self):
         data = 'Z = 50.00000 m agl'
-        res = cf_height_from_name(data)
+        res = _cf_height_from_name(data)
         com = NAMEIrisBridge(
             units='m', points=50.0, bounds=None,
             standard_name='height', long_name='z')
@@ -135,7 +135,7 @@ class TestAll_NAMEIII(tests.IrisTest):
 
     def test_height_flight_level(self):
         data = 'Z = 50.00000 FL'
-        res = cf_height_from_name(data)
+        res = _cf_height_from_name(data)
         com = NAMEIrisBridge(
             units='unknown', points=50.0, bounds=None,
             standard_name=None, long_name='flight_level')
@@ -143,7 +143,7 @@ class TestAll_NAMEIII(tests.IrisTest):
 
     def test_height_above_sea_level(self):
         data = 'Z = 50.00000 m asl'
-        res = cf_height_from_name(data)
+        res = _cf_height_from_name(data)
         com = NAMEIrisBridge(
             units='m', points=50.0, bounds=None,
             standard_name='altitude', long_name='z')
@@ -154,26 +154,26 @@ class TestAll_NAMEIII(tests.IrisTest):
         # end (agl).
         data = 'Z = 50.00000 m agl and stuff'
         with self.assertRaises(RuntimeError):
-            cf_height_from_name(data)
+            _cf_height_from_name(data)
 
     def test_malformed_height_above_sea_level(self):
         # Parse height above ground level, with additional stuff at string
         # end (agl).
         data = 'Z = 50.00000 m asl and stuff'
         with self.assertRaises(RuntimeError):
-            cf_height_from_name(data)
+            _cf_height_from_name(data)
 
     def test_malformed_flight_level(self):
         # Parse height above ground level (agl), with additional stuff at
         # string end.
         data = 'Z = 50.00000 FL and stuff'
         with self.assertRaises(RuntimeError):
-            cf_height_from_name(data)
+            _cf_height_from_name(data)
 
     def test_integer_height_above_ground(self):
         # Parse height above ground level when its an integer.
         data = 'Z = 50 m agl'
-        res = cf_height_from_name(data)
+        res = _cf_height_from_name(data)
         com = NAMEIrisBridge(
             units='m', points=50.0, bounds=None,
             standard_name='height', long_name='z')
@@ -182,7 +182,7 @@ class TestAll_NAMEIII(tests.IrisTest):
     def test_integer_height_flight_level(self):
         # Parse flight level when its an integer.
         data = 'Z = 50 FL'
-        res = cf_height_from_name(data)
+        res = _cf_height_from_name(data)
         com = NAMEIrisBridge(
             units='unknown', points=50.0, bounds=None,
             standard_name=None, long_name='flight_level')
@@ -191,7 +191,7 @@ class TestAll_NAMEIII(tests.IrisTest):
     def test_integer_height_above_sea_level(self):
         # Parse height above sea level (agl) when its an integer.
         data = 'Z = 50 m asl'
-        res = cf_height_from_name(data)
+        res = _cf_height_from_name(data)
         com = NAMEIrisBridge(
             units='m', points=50.0, bounds=None,
             standard_name='altitude', long_name='z')
@@ -200,7 +200,7 @@ class TestAll_NAMEIII(tests.IrisTest):
     def test_pressure(self):
         # Parse pressure.
         data = 'Z = 50.00000 Pa'
-        res = cf_height_from_name(data)
+        res = _cf_height_from_name(data)
         com = NAMEIrisBridge(
             units='Pa', points=50.0, bounds=None,
             standard_name='air_pressure', long_name='z')

@@ -237,7 +237,8 @@ def _parse_units(units):
                    'oz': '1',          # ounces
                    'deg': 'degree',    # angular degree
                    'oktas': '1',       # oktas
-                   'deg C': 'deg_C'    # degrees celcius
+                   'deg C': 'deg_C',   # degrees celcius
+                   'FL': 'unknown'     # flight level
                    }
 
     units = unit_mapper.get(units, units)
@@ -256,6 +257,7 @@ def _parse_units(units):
     return units
 
 
+# Hold attributes that allow coordinate creation.
 class NAMEIrisBridge(collections.namedtuple(
         'NAMEIrisBridge', ['units', 'standard_name', 'long_name',
                            'points', 'bounds'])):
@@ -277,7 +279,26 @@ class NAMEIrisBridge(collections.namedtuple(
         return True
 
 
-def cf_height_from_name(z_coord):
+def _cf_height_from_name(z_coord):
+    """
+    Parser for the z component of field headings.
+
+    This parse is specifically for handling the z component of NAME field
+    headings, which include height above ground level, height above sea level
+    and flight level etc.  This function returns attributes suitable for an
+    iris coordinate.
+
+    Args:
+
+    * z_coord (list):
+        A field heading, specifically the z component.
+
+    Returns:
+        An instance of :class:`NAMEIrisBridge` suitable for supplying iris
+        coordinate creation with the necessary attributes.
+
+    """
+
     # NAMEII - integer/float support.
     # Match against height agl, asl and Pa.
     pattern = re.compile(r'^From\s*'
@@ -315,7 +336,8 @@ def cf_height_from_name(z_coord):
         match = pattern.match(z_coord)
         if match:
             match = match.groupdict()
-            name = type_name[match['type'].replace(' ', '')]
+            units = match['type'].replace(' ', '')
+            name = type_name[units]
             if match['extra']:
                 raise RuntimeError(
                     'Unable to interpret z-coordinate due to extra '
@@ -331,14 +353,14 @@ def cf_height_from_name(z_coord):
                 points = bounds.sum() / 2.
 
             if name in ['height', 'altitude']:
-                units = 'm'
+                units = units[0]
                 standard_name = name
             elif name == 'air_pressure':
-                units = 'Pa'
                 standard_name = name
             elif name == 'flight_level':
-                units = 'unknown'
                 long_name = name
+            units = _parse_units(units)
+
             break
 
     result = NAMEIrisBridge(units, standard_name, long_name, points, bounds)
@@ -375,7 +397,7 @@ def _generate_cubes(header, column_headings, coords, data_arrays):
 
         # Define and add the singular coordinates of the field (flight
         # level, time etc.)
-        data = cf_height_from_name(field_headings['Z'])
+        data = _cf_height_from_name(field_headings['Z'])
         cube.add_aux_coord(AuxCoord(data.points,
                                     long_name=data.long_name,
                                     standard_name=data.standard_name,
