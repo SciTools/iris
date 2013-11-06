@@ -14,12 +14,15 @@
         <dimCoord id="bb6a74ca" points="[243363.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="forecast_reference_time"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="3131281b" points="[0.0, 3.75, 7.5, 11.25, 15.0, 18.75, 22.5, 26.25,
-		30.0, 33.75]" shape="(10,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="latitude"/>
+        <auxCoord id="3131281b" points="[0.0, 3.74999904633, 7.49999809265, 11.249997139,
+		14.9999961853, 18.7499952316, 22.499994278,
+		26.2499933243, 29.9999923706, 33.7499914169]" shape="(10,)" standard_name="latitude" units="Unit('degrees')" value_type="float64" var_name="latitude"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="566c7ff8" points="[90.0, 87.5, 85.0, 82.5, 80.0, 77.5, 75.0, 72.5,
-		70.0, 67.5]" shape="(10,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="longitude"/>
+        <auxCoord id="566c7ff8" points="[89.9999847412, 87.4999856949, 84.9999866486,
+		82.4999876022, 79.9999885559, 77.4999895096,
+		74.9999904633, 72.4999914169, 69.9999923706,
+		67.4999933243]" shape="(10,)" standard_name="longitude" units="Unit('degrees')" value_type="float64" var_name="longitude"/>
       </coord>
       <coord>
         <dimCoord id="b21c2dd7" long_name="pressure" points="[1000.0]" shape="(1,)" units="Unit('hPa')" value_type="float32" var_name="pressure"/>

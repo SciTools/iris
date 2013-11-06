@@ -13,7 +13,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -25,8 +25,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -64,7 +64,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -76,8 +76,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -115,7 +115,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -127,8 +127,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -166,7 +166,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -178,8 +178,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -217,7 +217,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -229,8 +229,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -268,7 +268,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -280,8 +280,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -319,7 +319,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -331,8 +331,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -370,7 +370,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -382,8 +382,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -421,7 +421,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -433,8 +433,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -472,7 +472,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -484,8 +484,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -523,7 +523,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -535,8 +535,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -574,7 +574,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -586,8 +586,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -625,7 +625,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -637,8 +637,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -676,7 +676,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -688,8 +688,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -727,7 +727,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -739,8 +739,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -778,7 +778,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -790,8 +790,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -829,7 +829,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -841,8 +841,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -880,7 +880,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -892,8 +892,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -931,7 +931,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -943,8 +943,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -982,7 +982,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -994,8 +994,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1033,7 +1033,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1045,8 +1045,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1084,7 +1084,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1096,8 +1096,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1135,7 +1135,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1147,8 +1147,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1186,7 +1186,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1198,8 +1198,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1237,7 +1237,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1249,8 +1249,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1288,7 +1288,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1300,8 +1300,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1339,7 +1339,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1351,8 +1351,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1390,7 +1390,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1402,8 +1402,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1441,7 +1441,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1453,8 +1453,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1492,7 +1492,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1504,8 +1504,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1543,7 +1543,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1555,8 +1555,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1594,7 +1594,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1606,8 +1606,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1645,7 +1645,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1657,8 +1657,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1696,7 +1696,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1708,8 +1708,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1747,7 +1747,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1759,8 +1759,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1798,7 +1798,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1810,8 +1810,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1849,7 +1849,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1861,8 +1861,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1900,7 +1900,7 @@
         <dimCoord id="f8c7ad26" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1912,8 +1912,8 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.312, 357.188,
-		359.062]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.9375, 2.8125, 4.6875, ..., 355.3125, 357.1875,
+		359.0625]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1952,7 +1952,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -1964,7 +1964,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2003,7 +2003,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2015,7 +2015,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2054,7 +2054,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2066,7 +2066,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2105,7 +2105,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2117,7 +2117,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2156,7 +2156,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2168,7 +2168,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2207,7 +2207,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2219,7 +2219,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2258,7 +2258,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2270,7 +2270,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2309,7 +2309,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2321,7 +2321,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2360,7 +2360,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2372,7 +2372,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2411,7 +2411,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2423,7 +2423,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2462,7 +2462,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2474,7 +2474,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2513,7 +2513,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2525,7 +2525,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2564,7 +2564,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2576,7 +2576,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2615,7 +2615,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2627,7 +2627,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2666,7 +2666,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2678,7 +2678,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2717,7 +2717,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2729,7 +2729,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2768,7 +2768,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2780,7 +2780,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2819,7 +2819,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2831,7 +2831,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2870,7 +2870,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2882,7 +2882,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2921,7 +2921,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2933,7 +2933,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2972,7 +2972,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -2984,7 +2984,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3023,7 +3023,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3035,7 +3035,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3074,7 +3074,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3086,7 +3086,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3125,7 +3125,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3137,7 +3137,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3176,7 +3176,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3188,7 +3188,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3227,7 +3227,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3239,7 +3239,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3278,7 +3278,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3290,7 +3290,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3329,7 +3329,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3341,7 +3341,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3380,7 +3380,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3392,7 +3392,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3431,7 +3431,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3443,7 +3443,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3482,7 +3482,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3494,7 +3494,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3533,7 +3533,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3545,7 +3545,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3584,7 +3584,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3596,7 +3596,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3635,7 +3635,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3647,7 +3647,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3686,7 +3686,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3698,7 +3698,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3737,7 +3737,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3749,7 +3749,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3788,7 +3788,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3800,7 +3800,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3839,7 +3839,7 @@
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -3851,7 +3851,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="63128986" points="[0.0, 1.875, 3.75, ..., 354.375, 356.25, 358.125]" shape="(192,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>

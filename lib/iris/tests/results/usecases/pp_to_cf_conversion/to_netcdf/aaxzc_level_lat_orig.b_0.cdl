@@ -27,7 +27,7 @@ variables:
 		pressure:axis = "Z" ;
 		pressure:units = "hPa" ;
 		pressure:long_name = "pressure" ;
-	float latitude(latitude) ;
+	double latitude(latitude) ;
 		latitude:axis = "Y" ;
 		latitude:units = "degrees_north" ;
 		latitude:standard_name = "latitude" ;

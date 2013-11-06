@@ -13,12 +13,14 @@
         <dimCoord id="f8c7ad26" points="[246987.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="a42bcac2" points="[65.0, 45.0, 25.0, 5.00002, -15.0]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="a42bcac2" points="[64.9999966621, 45.0000061989, 25.0000157356,
+		5.00002527237, -14.9999651909]" shape="(5,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="63128986" points="[131.25, 161.25, 191.25, 221.25]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="63128986" points="[131.249966621, 161.249958992, 191.249951363,
+		221.249943733]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
