@@ -26,7 +26,9 @@ import iris.tests as tests
 
 import numpy as np
 
-from iris.fileformats.name_loaders import _cf_height_from_name, NAMEIrisBridge
+from iris.coords import AuxCoord
+from iris.exceptions import TranslationError
+from iris.fileformats.name_loaders import _cf_height_from_name
 
 
 class TestAll_NAMEII(tests.IrisTest):
@@ -34,7 +36,7 @@ class TestAll_NAMEII(tests.IrisTest):
     def test_bounded_height_above_ground(self):
         data = 'From     0 -   100m agl'
         res = _cf_height_from_name(data)
-        com = NAMEIrisBridge(
+        com = AuxCoord(
             units='m', points=50.0, bounds=np.array([0., 100.]),
             standard_name='height', long_name='z')
         self.assertEqual(com, res)
@@ -42,7 +44,7 @@ class TestAll_NAMEII(tests.IrisTest):
     def test_bounded_flight_level(self):
         data = 'From FL0 - FL100'
         res = _cf_height_from_name(data)
-        com = NAMEIrisBridge(
+        com = AuxCoord(
             units='unknown', points=50.0, bounds=np.array([0., 100.]),
             standard_name=None, long_name='flight_level')
         self.assertEqual(com, res)
@@ -50,7 +52,7 @@ class TestAll_NAMEII(tests.IrisTest):
     def test_bounded_height_above_sea_level(self):
         data = 'From     0 -   100m asl'
         res = _cf_height_from_name(data)
-        com = NAMEIrisBridge(
+        com = AuxCoord(
             units='m', points=50.0, bounds=np.array([0., 100.]),
             standard_name='altitude', long_name='z')
         self.assertEqual(com, res)
@@ -59,28 +61,28 @@ class TestAll_NAMEII(tests.IrisTest):
         # Parse height above ground level with additional stuff on the end of
         # the string (agl).
         data = 'From     0 -   100m agl and stuff'
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(TranslationError):
             _cf_height_from_name(data)
 
     def test_malformed_height_above_sea_level(self):
         # Parse height above ground level with additional stuff on the end of
         # the string (agl).
         data = 'From     0 -   100m asl and stuff'
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(TranslationError):
             _cf_height_from_name(data)
 
     def test_malformed_flight_level(self):
         # Parse height above ground level with additional stuff on the end of
         # the string (agl).
         data = 'From FL0 - FL100 and stuff'
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(TranslationError):
             _cf_height_from_name(data)
 
     def test_float_bounded_height_above_ground(self):
         # Parse height above ground level when its a float.
         data = 'From     0.0 -   100.0m agl'
         res = _cf_height_from_name(data)
-        com = NAMEIrisBridge(
+        com = AuxCoord(
             units='m', points=50.0, bounds=np.array([0., 100.]),
             standard_name='height', long_name='z')
         self.assertEqual(com, res)
@@ -89,7 +91,7 @@ class TestAll_NAMEII(tests.IrisTest):
         # Parse height above ground level, as a float (agl).
         data = 'From FL0.0 - FL100.0'
         res = _cf_height_from_name(data)
-        com = NAMEIrisBridge(
+        com = AuxCoord(
             units='unknown', points=50.0, bounds=np.array([0., 100.]),
             standard_name=None, long_name='flight_level')
         self.assertEqual(com, res)
@@ -98,7 +100,7 @@ class TestAll_NAMEII(tests.IrisTest):
         # Parse height above ground level as a float (agl).
         data = 'From     0.0 -   100.0m asl'
         res = _cf_height_from_name(data)
-        com = NAMEIrisBridge(
+        com = AuxCoord(
             units='m', points=50.0, bounds=np.array([0., 100.]),
             standard_name='altitude', long_name='z')
         self.assertEqual(com, res)
@@ -108,7 +110,7 @@ class TestAll_NAMEII(tests.IrisTest):
         # No interpretation, just returns default values.
         data = 'Vertical integral'
         res = _cf_height_from_name(data)
-        com = NAMEIrisBridge(
+        com = AuxCoord(
             units='no-unit', points='Vertical integral', bounds=None,
             standard_name=None, long_name='z')
         self.assertEqual(com, res)
@@ -117,7 +119,7 @@ class TestAll_NAMEII(tests.IrisTest):
         # Parse air_pressure string.
         data = 'From     0 -   100 Pa'
         res = _cf_height_from_name(data)
-        com = NAMEIrisBridge(
+        com = AuxCoord(
             units='Pa', points=50.0, bounds=np.array([0., 100.]),
             standard_name='air_pressure', long_name='z')
         self.assertEqual(com, res)
@@ -128,7 +130,7 @@ class TestAll_NAMEIII(tests.IrisTest):
     def test_height_above_ground(self):
         data = 'Z = 50.00000 m agl'
         res = _cf_height_from_name(data)
-        com = NAMEIrisBridge(
+        com = AuxCoord(
             units='m', points=50.0, bounds=None,
             standard_name='height', long_name='z')
         self.assertEqual(com, res)
@@ -136,7 +138,7 @@ class TestAll_NAMEIII(tests.IrisTest):
     def test_height_flight_level(self):
         data = 'Z = 50.00000 FL'
         res = _cf_height_from_name(data)
-        com = NAMEIrisBridge(
+        com = AuxCoord(
             units='unknown', points=50.0, bounds=None,
             standard_name=None, long_name='flight_level')
         self.assertEqual(com, res)
@@ -144,7 +146,7 @@ class TestAll_NAMEIII(tests.IrisTest):
     def test_height_above_sea_level(self):
         data = 'Z = 50.00000 m asl'
         res = _cf_height_from_name(data)
-        com = NAMEIrisBridge(
+        com = AuxCoord(
             units='m', points=50.0, bounds=None,
             standard_name='altitude', long_name='z')
         self.assertEqual(com, res)
@@ -153,28 +155,28 @@ class TestAll_NAMEIII(tests.IrisTest):
         # Parse height above ground level, with additonal stuff at the string
         # end (agl).
         data = 'Z = 50.00000 m agl and stuff'
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(TranslationError):
             _cf_height_from_name(data)
 
     def test_malformed_height_above_sea_level(self):
         # Parse height above ground level, with additional stuff at string
         # end (agl).
         data = 'Z = 50.00000 m asl and stuff'
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(TranslationError):
             _cf_height_from_name(data)
 
     def test_malformed_flight_level(self):
         # Parse height above ground level (agl), with additional stuff at
         # string end.
         data = 'Z = 50.00000 FL and stuff'
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(TranslationError):
             _cf_height_from_name(data)
 
     def test_integer_height_above_ground(self):
         # Parse height above ground level when its an integer.
         data = 'Z = 50 m agl'
         res = _cf_height_from_name(data)
-        com = NAMEIrisBridge(
+        com = AuxCoord(
             units='m', points=50.0, bounds=None,
             standard_name='height', long_name='z')
         self.assertEqual(com, res)
@@ -183,7 +185,7 @@ class TestAll_NAMEIII(tests.IrisTest):
         # Parse flight level when its an integer.
         data = 'Z = 50 FL'
         res = _cf_height_from_name(data)
-        com = NAMEIrisBridge(
+        com = AuxCoord(
             units='unknown', points=50.0, bounds=None,
             standard_name=None, long_name='flight_level')
         self.assertEqual(com, res)
@@ -192,7 +194,7 @@ class TestAll_NAMEIII(tests.IrisTest):
         # Parse height above sea level (agl) when its an integer.
         data = 'Z = 50 m asl'
         res = _cf_height_from_name(data)
-        com = NAMEIrisBridge(
+        com = AuxCoord(
             units='m', points=50.0, bounds=None,
             standard_name='altitude', long_name='z')
         self.assertEqual(com, res)
@@ -201,7 +203,7 @@ class TestAll_NAMEIII(tests.IrisTest):
         # Parse pressure.
         data = 'Z = 50.00000 Pa'
         res = _cf_height_from_name(data)
-        com = NAMEIrisBridge(
+        com = AuxCoord(
             units='Pa', points=50.0, bounds=None,
             standard_name='air_pressure', long_name='z')
         self.assertEqual(com, res)

@@ -237,7 +237,7 @@ def _parse_units(units):
                    'oz': '1',          # ounces
                    'deg': 'degree',    # angular degree
                    'oktas': '1',       # oktas
-                   'deg C': 'deg_C',   # degrees celcius
+                   'deg C': 'deg_C',   # degrees Celsius
                    'FL': 'unknown'     # flight level
                    }
 
@@ -257,36 +257,14 @@ def _parse_units(units):
     return units
 
 
-# Hold attributes that allow coordinate creation.
-class NAMEIrisBridge(collections.namedtuple(
-        'NAMEIrisBridge', ['units', 'standard_name', 'long_name',
-                           'points', 'bounds'])):
-    # Handling of numpy arrays for equality
-    def __eq__(self, other):
-        fields = self._fields
-        for field in fields:
-            foo = getattr(self, field)
-            bar = getattr(other, field)
-
-            if isinstance(foo, np.ndarray):
-                if not isinstance(bar, np.ndarray):
-                    return False
-                if foo.shape != bar.shape and (foo != bar).any():
-                    return False
-            else:
-                if foo != bar:
-                    return False
-        return True
-
-
 def _cf_height_from_name(z_coord):
     """
     Parser for the z component of field headings.
 
     This parse is specifically for handling the z component of NAME field
     headings, which include height above ground level, height above sea level
-    and flight level etc.  This function returns attributes suitable for an
-    iris coordinate.
+    and flight level etc.  This function returns an iris coordinate
+    representing this field heading.
 
     Args:
 
@@ -294,8 +272,8 @@ def _cf_height_from_name(z_coord):
         A field heading, specifically the z component.
 
     Returns:
-        An instance of :class:`NAMEIrisBridge` suitable for supplying iris
-        coordinate creation with the necessary attributes.
+        An instance of :class:`iris.coords.AuxCoord` representing the
+        interpretation of the supplied field heading.
 
     """
 
@@ -339,7 +317,7 @@ def _cf_height_from_name(z_coord):
             units = match['type'].replace(' ', '')
             name = type_name[units]
             if match['extra']:
-                raise RuntimeError(
+                raise iris.exceptions.TranslationError(
                     'Unable to interpret z-coordinate due to extra '
                     'information: {}'.format(match))
 
@@ -347,7 +325,7 @@ def _cf_height_from_name(z_coord):
             if 'point' in match:
                 points = float(match['point'])
             # Interpret points from bounds.
-            elif 'lower_bound' in match and 'upper_bound' in match:
+            else:
                 bounds = np.array([float(match['lower_bound']),
                                    float(match['upper_bound'])])
                 points = bounds.sum() / 2.
@@ -363,8 +341,10 @@ def _cf_height_from_name(z_coord):
 
             break
 
-    result = NAMEIrisBridge(units, standard_name, long_name, points, bounds)
-    return result
+    coord = AuxCoord(points, units=units, standard_name=standard_name,
+                     long_name=long_name, bounds=bounds)
+
+    return coord
 
 
 def _generate_cubes(header, column_headings, coords, data_arrays):
@@ -397,12 +377,8 @@ def _generate_cubes(header, column_headings, coords, data_arrays):
 
         # Define and add the singular coordinates of the field (flight
         # level, time etc.)
-        data = _cf_height_from_name(field_headings['Z'])
-        cube.add_aux_coord(AuxCoord(data.points,
-                                    long_name=data.long_name,
-                                    standard_name=data.standard_name,
-                                    units=data.units,
-                                    bounds=data.bounds))
+        z_coord = _cf_height_from_name(field_headings['Z'])
+        cube.add_aux_coord(z_coord)
 
         # Define the time unit and use it to serialise the datetime for
         # the time coordinate.
