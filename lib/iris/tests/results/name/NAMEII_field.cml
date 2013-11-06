@@ -19,6 +19,9 @@
       <attribute name="Title" value="BIRMINGHAM 26012010 0907Z"/>
     </attributes>
     <coords>
+      <coord>
+        <dimCoord bounds="[[0.0, 100.0]]" id="f4f30ef" points="[50.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64"/>
+      </coord>
       <coord datadims="[0]">
         <dimCoord bounds="[[52.36655, 52.3676555276],
 		[52.3676555276, 52.3687610552],
@@ -46,9 +49,6 @@
       </coord>
       <coord>
         <dimCoord bounds="[[351249.0, 351252.0]]" id="6a1b3c16" points="[351252.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
-      </coord>
-      <coord>
-        <auxCoord id="49f4f2c2" long_name="z" points="[From     0 -   100m agl]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -73,6 +73,9 @@
       <attribute name="Title" value="BIRMINGHAM 26012010 0907Z"/>
     </attributes>
     <coords>
+      <coord>
+        <dimCoord bounds="[[0.0, 100.0]]" id="f4f30ef" points="[50.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64"/>
+      </coord>
       <coord datadims="[0]">
         <dimCoord bounds="[[52.36655, 52.3676555276],
 		[52.3676555276, 52.3687610552],
@@ -100,9 +103,6 @@
       </coord>
       <coord>
         <dimCoord bounds="[[351249.0, 351252.0]]" id="6a1b3c16" points="[351252.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
-      </coord>
-      <coord>
-        <auxCoord id="49f4f2c2" long_name="z" points="[From     0 -   100m agl]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
     </coords>
     <cellMethods/>

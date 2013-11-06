@@ -237,7 +237,8 @@ def _parse_units(units):
                    'oz': '1',          # ounces
                    'deg': 'degree',    # angular degree
                    'oktas': '1',       # oktas
-                   'deg C': 'deg_C'    # degrees celcius
+                   'deg C': 'deg_C',   # degrees Celsius
+                   'FL': 'unknown'     # flight level
                    }
 
     units = unit_mapper.get(units, units)
@@ -254,6 +255,96 @@ def _parse_units(units):
         units = iris.unit.Unit(None)
 
     return units
+
+
+def _cf_height_from_name(z_coord):
+    """
+    Parser for the z component of field headings.
+
+    This parse is specifically for handling the z component of NAME field
+    headings, which include height above ground level, height above sea level
+    and flight level etc.  This function returns an iris coordinate
+    representing this field heading.
+
+    Args:
+
+    * z_coord (list):
+        A field heading, specifically the z component.
+
+    Returns:
+        An instance of :class:`iris.coords.AuxCoord` representing the
+        interpretation of the supplied field heading.
+
+    """
+
+    # NAMEII - integer/float support.
+    # Match against height agl, asl and Pa.
+    pattern = re.compile(r'^From\s*'
+                         '(?P<lower_bound>[0-9]+(\.[0-9]+)?)'
+                         '\s*-\s*'
+                         '(?P<upper_bound>[0-9]+(\.[0-9]+)?)'
+                         '\s*(?P<type>m\s*asl|m\s*agl|Pa)'
+                         '(?P<extra>.*)')
+
+    # Match against flight level.
+    pattern_fl = re.compile(r'^From\s*'
+                            '(?P<type>FL)'
+                            '(?P<lower_bound>[0-9]+(\.[0-9]+)?)'
+                            '\s*-\s*FL'
+                            '(?P<upper_bound>[0-9]+(\.[0-9]+)?)'
+                            '(?P<extra>.*)')
+
+    # NAMEIII - integer/float support.
+    # Match scalar against height agl, asl, Pa, FL
+    pattern_scalar = re.compile(r'Z\s*=\s*'
+                                '(?P<point>[0-9]+(\.[0-9]+)?)'
+                                '\s*(?P<type>m\s*agl|m\s*asl|FL|Pa)'
+                                '(?P<extra>.*)')
+
+    type_name = {'magl': 'height', 'masl': 'altitude', 'FL': 'flight_level',
+                 'Pa': 'air_pressure'}
+    patterns = [pattern, pattern_fl, pattern_scalar]
+
+    units = 'no-unit'
+    points = z_coord
+    bounds = None
+    standard_name = None
+    long_name = 'z'
+    for pattern in patterns:
+        match = pattern.match(z_coord)
+        if match:
+            match = match.groupdict()
+            # Do not interpret if there is additional information to the match
+            if match['extra']:
+                break
+            units = match['type'].replace(' ', '')
+            name = type_name[units]
+
+            # Interpret points if present.
+            if 'point' in match:
+                points = float(match['point'])
+            # Interpret points from bounds.
+            else:
+                bounds = np.array([float(match['lower_bound']),
+                                   float(match['upper_bound'])])
+                points = bounds.sum() / 2.
+
+            long_name = None
+            if name in ['height', 'altitude']:
+                units = units[0]
+                standard_name = name
+            elif name == 'air_pressure':
+                standard_name = name
+            elif name == 'flight_level':
+                long_name = name
+            units = _parse_units(units)
+
+            break
+
+    coord = AuxCoord(points, units=units, standard_name=standard_name,
+                     long_name=long_name, bounds=bounds)
+
+    return coord
 
 
 def _generate_cubes(header, column_headings, coords, data_arrays):
@@ -286,9 +377,8 @@ def _generate_cubes(header, column_headings, coords, data_arrays):
 
         # Define and add the singular coordinates of the field (flight
         # level, time etc.)
-        cube.add_aux_coord(AuxCoord(field_headings['Z'],
-                                    long_name='z',
-                                    units='no-unit'))
+        z_coord = _cf_height_from_name(field_headings['Z'])
+        cube.add_aux_coord(z_coord)
 
         # Define the time unit and use it to serialise the datetime for
         # the time coordinate.
