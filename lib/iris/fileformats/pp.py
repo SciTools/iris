@@ -671,8 +671,9 @@ class PPDataProxy(object):
         # Load the appropriate proxy data conveniently with a context manager.
         with open(self.path, 'rb') as pp_file:
             pp_file.seek(self.offset, os.SEEK_SET)
-            data = _read_data(pp_file, self.lbpack, self.data_len, data_shape,
-                              data_type, mdi, self.mask)
+            data_bytes = pp_file.read(self.data_len)
+            data = _read_data_bytes(data_bytes, self.lbpack, data_shape,
+                                    data_type, mdi, self.mask)
 
         # Identify which index items in the deferred slice are tuples.
         tuple_dims = [i for i, value in enumerate(deferred_slice) if isinstance(value, tuple)]
@@ -729,33 +730,34 @@ class PPDataProxy(object):
         return result
 
 
-def _read_data(pp_file, lbpack, data_len, data_shape, data_type, mdi,
-               mask=None):
+def _read_data_bytes(data_bytes, lbpack, data_shape, data_type, mdi,
+                     mask=None):
     """
     Read the data from the given file object given its precise
     location in the file.
 
     """
     if lbpack.n1 == 0:
-        data = np.fromfile(pp_file, dtype=data_type,
-                           count=data_len / data_type.itemsize)
+        data = np.frombuffer(data_bytes, dtype=data_type)
     elif lbpack.n1 == 1:
-        data = pp_file.read(data_len)
+        data = np.frombuffer(data_bytes, dtype=data_type)
+        data.setflags(write=True)
+        print data_shape, data
+        print data.shape
         data = pp_packing.wgdos_unpack(data, data_shape[0],
                                        data_shape[1], mdi)
     elif lbpack.n1 == 2:
-        data = np.fromfile(pp_file, dtype=data_type,
-                           count=data_len / data_type.itemsize)
+        data = np.frombuffer(data_bytes, dtype=data_type)
     elif lbpack.n1 == 4:
-        data = np.fromfile(pp_file, dtype=data_type,
-                           count=data_len / data_type.itemsize)
-        data = pp_packing.rle_decode(data, data_shape[0], data_shape[1], mdi)
+#        data = np.frombuffer(data, dtype=data_type)
+        data = pp_packing.rle_decode(data_bytes, data_shape[0], data_shape[1], mdi)
     else:
         raise iris.exceptions.NotYetImplementedError(
                 'PP fields with LBPACK of %s are not yet supported.' % lbpack)
 
     # Ensure the data is in the native byte order
     if not data.dtype.isnative:
+        data.setflags(write=True)
         data.byteswap(True)
         data.dtype = data.dtype.newbyteorder('=')
 
@@ -788,6 +790,69 @@ def _read_data(pp_file, lbpack, data_len, data_shape, data_type, mdi,
         data = ma.masked_values(data, mdi, copy=False)
 
     return data
+
+
+#def _read_data(pp_file, lbpack, data_len, data_shape, data_type, mdi,
+#               mask=None):
+#    """
+#    Read the data from the given file object given its precise
+#    location in the file.
+#
+#    """
+#    if lbpack.n1 == 0:
+#        data = np.fromfile(pp_file, dtype=data_type,
+#                           count=data_len / data_type.itemsize)
+#    elif lbpack.n1 == 1:
+#        data = pp_file.read(data_len)
+#        data = pp_packing.wgdos_unpack(data, data_shape[0],
+#                                       data_shape[1], mdi)
+#    elif lbpack.n1 == 2:
+#        data = np.fromfile(pp_file, dtype=data_type,
+#                           count=data_len / data_type.itemsize)
+#    elif lbpack.n1 == 4:
+#        data = np.fromfile(pp_file, dtype=data_type,
+#                           count=data_len / data_type.itemsize)
+#        data = pp_packing.rle_decode(data, data_shape[0], data_shape[1], mdi)
+#    else:
+#        raise iris.exceptions.NotYetImplementedError(
+#                'PP fields with LBPACK of %s are not yet supported.' % lbpack)
+#
+#    # Ensure the data is in the native byte order
+#    if not data.dtype.isnative:
+#        data.byteswap(True)
+#        data.dtype = data.dtype.newbyteorder('=')
+#
+#    if lbpack.n2 == 2:
+#        # For land/sea compressed fields, I encourage you to read the UM source at
+#        # src/control/packing_tools/mask_compression.F90
+#        if mask is None:
+#            raise ValueError('No mask was found to unpack the data. '
+#                             'Could not load.')
+#        land_mask = mask.land_mask
+#        new_data = np.ma.masked_all(land_mask.shape)
+#        if lbpack.n3 == 1:
+#            # Land mask packed data.
+#            new_data.mask = ~land_mask
+#            new_data[land_mask] = data[:land_mask.sum()]
+#        elif lbpack.n3 == 2:
+#            # Sea mask packed data (sea mask comes from land inverted).
+#            new_data.mask = land_mask
+#            new_data[~land_mask] = data[:(~land_mask).sum()]
+#        else:
+#            raise ValueError('Unsupported mask compression.')
+#        data = new_data
+#
+#    else:
+#        # Reform in row-column order
+#        data.shape = data_shape
+#
+#    # Mask the array?
+#    if mdi in data:
+#        data = ma.masked_values(data, mdi, copy=False)
+#
+#    return data
+
+
 
 
 # The special headers of the PPField classes which get some improved functionality
@@ -1239,8 +1304,10 @@ class PPField(object):
             y_name = "grid_latitude"
         return y_name
 
-    def read_data(self, ff_file, pp_data_depth, pp_data_shape, pp_data_type):
-        return _read_data(ff_file, self.lbpack, pp_data_depth, pp_data_shape, pp_data_type, self.bmdi)
+#    def read_data(self, ff_file, pp_data_depth, pp_data_shape, pp_data_type):
+#        data_bytes = ff_file.read(pp_data_depth)
+#        return _read_data_bytes(data_bytes, self.lbpack, pp_data_shape,
+#                                pp_data_type, self.bmdi)
 
     def copy(self):
         """
@@ -1438,50 +1505,56 @@ class _LandMask(object):
         return np.logical_not(self.land_mask)
 
 
-def _defer_land_compressed(func):
-    """
-    Takes the field generating load function, and holds on to fields which
-    need to defer loading until after a "land mask" field is available.
-    """
-    def fix_lbrow_lbnpt(field):
-        # Get hold of the _LandMask instance for this field.
-        land_mask = field._data.item().mask
-        if land_mask.land_mask_field is None:
-            raise ValueError('No land mask found in this file. '
-                             'Could be a warning...')
+#def _defer_land_compressed(func):
+#    """
+#    Takes the field generating load function, and holds on to fields which
+#    need to defer loading until after a "land mask" field is available.
+#    """
+#    def fix_lbrow_lbnpt(field):
+#        # Get hold of the _LandMask instance for this field.
+#        land_mask = field._data.item().mask
+#        if land_mask.land_mask_field is None:
+#            raise ValueError('No land mask found in this file. '
+#                             'Could be a warning...')
+#
+#        current_dm = field._data_manager
+#        field._data_manager = DataManager(land_mask.shape,
+#                                          current_dm.data_type,
+#                                          current_dm.mdi)
+#        field.lbrow, field.lbnpt = land_mask.shape
+#        return field
+#
+#    @functools.wraps(func)
+#    def deferred_mask_packed_fields(*args, **kwargs):
+#        # Wraps the load generator to capture any fields which can't be
+#        # yielded yet if there isn't enough information to uncompress the land
+#        # masked data array.
+#        deferred_fields = []
+#        for field in func(*args, **kwargs):
+#            if field.lbpack.n2 == 2:
+#                # If we've already got a land mask, then we can continue to
+#                # fixup the field and yield it; otherwise we have to defer it.
+#                if field._data.item().mask.land_mask_field is not None:
+#                    yield fix_lbrow_lbnpt(field)
+#                else:
+#                    deferred_fields.append(field)
+#            else:
+#                yield field
+#
+#        for field in deferred_fields:
+#            yield fix_lbrow_lbnpt(field)
+#
+#    return deferred_mask_packed_fields
 
-        current_dm = field._data_manager
-        field._data_manager = DataManager(land_mask.shape,
-                                          current_dm.data_type,
-                                          current_dm.mdi)
-        field.lbrow, field.lbnpt = land_mask.shape
-        return field
 
-    @functools.wraps(func)
-    def deferred_mask_packed_fields(*args, **kwargs):
-        # Wraps the load generator to capture any fields which can't be
-        # yielded yet if there isn't enough information to uncompress the land
-        # masked data array.
-        deferred_fields = []
-        for field in func(*args, **kwargs):
-            if field.lbpack.n2 == 2:
-                # If we've already got a land mask, then we can continue to
-                # fixup the field and yield it; otherwise we have to defer it.
-                if field._data.item().mask.land_mask_field is not None:
-                    yield fix_lbrow_lbnpt(field)
-                else:
-                    deferred_fields.append(field)
-            else:
-                yield field
+DeferredBytes = collections.namedtuple('DeferredBytes', 'fname, position, n_bytes')
+#@_defer_land_compressed
 
-        for field in deferred_fields:
-            yield fix_lbrow_lbnpt(field)
-
-    return deferred_mask_packed_fields
-
-
-@_defer_land_compressed
 def load(filename, read_data=False):
+    return load_inner(_field_gen(filename, read_data_bytes=read_data),
+                      read_data=read_data)
+
+def load_inner(fields, read_data=False):
     """
     Return an iterator of PPFields given a filename.
 
@@ -1501,6 +1574,44 @@ def load(filename, read_data=False):
             print field
 
     """
+    land_mask = _LandMask(None)
+    deferred_fields = []
+    for field in itertools.chain(fields, deferred_fields):
+        if field.stash == 'm01s00i030':
+            if land_mask.land_mask_field is None:
+                land_mask.land_mask_field = field
+            land_mask = _LandMask(field)
+
+        if field.lbpack.n2 == 2:
+            if land_mask.land_mask_field is None:
+                if field in deferred_fields:
+                    raise ValueError('Could be an error.')
+                else:
+                    deferred_fields.append(field)
+                    continue
+            elif field.lbrow == 0 or field.lbnpt == 0:
+                field.lbrow, field.lbnpt = land_mask.shape
+
+        data_shape = (field.lbrow, field.lbnpt)
+
+        if read_data:
+            data_bytes, dtype = field._data
+            field._data = _read_data_bytes(data_bytes, field.lbpack, data_shape, dtype,
+                                           field.bmdi, land_mask)
+            field._data_manager = None
+        else:
+            # NB. This makes a 0-dimensional array
+            deferred_bytes, dtype = field._data
+            assert isinstance(deferred_bytes, DeferredBytes)
+            field._data = np.array(PPDataProxy(deferred_bytes.fname, deferred_bytes.position,
+                                               deferred_bytes.n_bytes, field.lbpack, land_mask))
+            field._data_manager = DataManager(data_shape, dtype, field.bmdi)
+
+        
+        yield field
+
+
+def _field_gen(filename, read_data_bytes):
     pp_file = open(filename, 'rb')
 
     # Get a reference to the seek method on the file
@@ -1508,7 +1619,7 @@ def load(filename, read_data=False):
     pp_file_seek = pp_file.seek
     pp_file_read = pp_file.read
 
-    land_mask = _LandMask(None)
+#    land_mask = _LandMask(None)
 
     # Keep reading until we reach the end of file
     while True:
@@ -1542,23 +1653,16 @@ def load(filename, read_data=False):
 
         # Derive size and datatype of payload
         data_len = len_of_data_plus_extra - extra_len
-        data_type = LBUSER_DTYPE_LOOKUP.get(pp_field.lbuser[0], LBUSER_DTYPE_LOOKUP['default'])
 
-        data_shape = (pp_field.lbrow, pp_field.lbnpt)
 
-        lbpack = pp_field.lbpack
-        must_defer = lbpack.n2 == 2
-
-        if not must_defer and read_data:
-            pp_field._data = pp_field.read_data(pp_file, data_len, data_shape, data_type)
-            pp_field._data_manager = None
+        if read_data_bytes:
+            # Read the actual bytes. This can then be converted to a numpy array
+            # at a higher level.
+            pp_field._data = pp_file.read(data_len)
         else:
-            # NB. This makes a 0-dimensional array
-            pp_field._data = np.array(PPDataProxy(filename, pp_file.tell(), data_len, pp_field.lbpack,
-                                                  land_mask))
-            pp_field._data_manager = DataManager(data_shape, data_type, pp_field.bmdi)
-
-            # Skip the data
+            # Provide enough context to read the data bytes later on.
+            pp_field._data = DeferredBytes(filename, pp_file.tell(), data_len)
+            # Seek over the actual data payload.
             pp_file_seek(data_len, os.SEEK_CUR)
 
         # Do we have any extra data to deal with?
@@ -1567,14 +1671,7 @@ def load(filename, read_data=False):
 
         # Skip that last 4 byte record telling me the length of the field I have already read
         pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)
-
-        if pp_field.stash == 'm01s00i030':
-            if land_mask.land_mask_field is None:
-                land_mask.land_mask_field = pp_field
-            land_mask = _LandMask(pp_field)
-
         yield pp_field
-
     pp_file.close()
 
 

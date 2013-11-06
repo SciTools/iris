@@ -20,6 +20,7 @@ Provides support for virtual cube data and deferred loading.
 """
 
 from copy import deepcopy
+import collections
 import types
 
 import numpy as np
@@ -72,6 +73,9 @@ class _HashableSlice(iris.util._OrderedHashable):
 
         """
         return slice(self.start, self.stop, self.step)
+
+
+DeferredBytes = collections.namedtuple('DeferredBytes', 'fname, position, n_bytes')
 
 
 class DataManager(iris.util._OrderedHashable):
