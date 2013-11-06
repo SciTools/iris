@@ -19,6 +19,8 @@ Iris 1.6 features
   of cubes.  This can assist in merging cubes which only differ in their
   attributes.  See
   :meth:`iris.experimental.equalise_cubes.equalise_attributes`.
+* Staggered grid support for Fieldsfiles extended to type 6 (Arakawa C grid
+  with v at poles).
 
 Bugs fixed
 ----------

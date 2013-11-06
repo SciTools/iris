@@ -284,21 +284,7 @@ class FF2PP(object):
 
         return data_depth, data_type
 
-    def _extract_field(self):
-        # FF table pointer initialisation based on FF LOOKUP table
-        # configuration.
-        lookup_table = self._ff_header.lookup_table
-        table_index, table_entry_depth, table_count = lookup_table
-        table_offset = (table_index - 1) * self._word_depth       # in bytes
-        table_entry_depth = table_entry_depth * self._word_depth  # in bytes
-        # Open the FF for processing.
-        ff_file = open(self._ff_header.ff_filename, 'rb')
-        ff_file_seek = ff_file.seek
-
-        # Check for an instantaneous dump.
-        if self._ff_header.dataset_type == 1:
-            table_count = self._ff_header.total_prognostic_fields
-
+    def _det_typeC_grid_coord(self):
         # Define the T, U, and V grid coordinates. The theta values are
         # stored in the first element of the second dimension on the
         # column/row dependent constants, and if it exists the U and V grid
@@ -319,7 +305,53 @@ class FF2PP(object):
             if self._ff_header.row_dependent_constants.shape[1] == 2:
                 y_v = self._ff_header.row_dependent_constants[:-1, 1]
 
+        return x_p, y_p, x_u, y_v
+
+    def _det_typeC_vpole_grid_coord(self):
+        # As :meth:`_det_typeC_grid_coord` only with v at the poles.
+        x_p, y_p, x_u, y_v = (None, None, None, None)
+        if self._ff_header.column_dependent_constants is not None:
+            x_p = self._ff_header.column_dependent_constants[:, 0]
+            if self._ff_header.column_dependent_constants.shape[1] == 2:
+                x_u = self._ff_header.column_dependent_constants[:, 1]
+        if self._ff_header.row_dependent_constants is not None:
+            y_p = self._ff_header.row_dependent_constants[:-1, 0]
+            if self._ff_header.row_dependent_constants.shape[1] == 2:
+                y_v = self._ff_header.row_dependent_constants[:, 1]
+
+        return x_p, y_p, x_u, y_v
+
+    def _extract_field(self):
+        # FF table pointer initialisation based on FF LOOKUP table
+        # configuration.
+
+        # Interpret grid coordinates based on grid staggering type.
+        grid_staggering = {3: self._det_typeC_grid_coord,
+                           6: self._det_typeC_vpole_grid_coord}
+
+        lookup_table = self._ff_header.lookup_table
+        table_index, table_entry_depth, table_count = lookup_table
+        table_offset = (table_index - 1) * self._word_depth       # in bytes
+        table_entry_depth = table_entry_depth * self._word_depth  # in bytes
+        # Open the FF for processing.
+        ff_file = open(self._ff_header.ff_filename, 'rb')
+        ff_file_seek = ff_file.seek
+
+        # Check for an instantaneous dump.
+        if self._ff_header.dataset_type == 1:
+            table_count = self._ff_header.total_prognostic_fields
+
         is_boundary_packed = self._ff_header.dataset_type == 5
+
+        # Interpret grid points
+        if self._ff_header.grid_staggering in grid_staggering:
+            x_p, y_p, x_u, y_v = grid_staggering[
+                self._ff_header.grid_staggering]()
+        else:
+            warnings.warn(
+                'Staggered grid type: {} not currently interpreted, assuming '
+                'standard C-grid'.format(self._ff_header.grid_staggering))
+            x_p, y_p, x_u, y_v = grid_staggering[3]()
 
         # Process each FF LOOKUP table entry.
         while table_count:
