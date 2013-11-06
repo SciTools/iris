@@ -25,7 +25,6 @@ import warnings
 import numpy as np
 
 from iris.exceptions import NotYetImplementedError
-from iris.fileformats.manager import DataManager
 from iris.fileformats._ff_cross_references import STASH_GRID
 import pp
 
@@ -285,6 +284,7 @@ class FF2PP(object):
 
         return data_depth, data_type
 
+#    @pp._defer_land_compressed
     def _extract_field(self):
         # FF table pointer initialisation based on FF LOOKUP table
         # configuration.
@@ -371,27 +371,21 @@ class FF2PP(object):
             if grid in Y_COORD_V_GRID:
                 field.y = y_v
 
-            # Determine whether to read the associated PP field data.
             if self._read_data:
-                # Move file pointer to the start of the current PP field data.
+                # Read the actual bytes. This can then be converted to a numpy array
+                # at a higher level.
                 ff_file_seek(data_offset, os.SEEK_SET)
-                # Get the PP field data.
-                data = field.read_data(ff_file, data_depth, data_shape,
-                                       data_type)
-                field._data = data
-                field._data_manager = None
+                field._data = [ff_file.read(data_depth), data_type]
             else:
-                proxy = pp.PPDataProxy(self._filename, data_offset,
-                                       data_depth, field.lbpack)
-                field._data = np.array(proxy)
-                field._data_manager = DataManager(data_shape, data_type,
-                                                  field.bmdi)
+                # Provide enough context to read the data bytes later on.
+                field._data = [pp.DeferredBytes(self._filename, data_offset,
+                                                data_depth), data_type]
+
             yield field
         ff_file.close()
-        return
 
     def __iter__(self):
-        return self._extract_field()
+        return pp.load_inner(self._extract_field(), read_data=self._read_data)
 
 
 def load_cubes(filenames, callback):
