@@ -20,7 +20,7 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord bounds="[[0.0, 100.0]]" id="5b5327e7" long_name="z" points="[50.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64"/>
+        <dimCoord bounds="[[0.0, 100.0]]" id="f4f30ef" points="[50.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord bounds="[[52.36655, 52.3676555276],
@@ -74,7 +74,7 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord bounds="[[0.0, 100.0]]" id="5b5327e7" long_name="z" points="[50.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64"/>
+        <dimCoord bounds="[[0.0, 100.0]]" id="f4f30ef" points="[50.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord bounds="[[52.36655, 52.3676555276],

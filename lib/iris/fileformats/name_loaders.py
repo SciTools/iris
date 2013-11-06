@@ -314,12 +314,11 @@ def _cf_height_from_name(z_coord):
         match = pattern.match(z_coord)
         if match:
             match = match.groupdict()
+            # Do not interpret if there is additional information to the match
+            if match['extra']:
+                break
             units = match['type'].replace(' ', '')
             name = type_name[units]
-            if match['extra']:
-                raise iris.exceptions.TranslationError(
-                    'Unable to interpret z-coordinate due to extra '
-                    'information: {}'.format(match))
 
             # Interpret points if present.
             if 'point' in match:
@@ -330,6 +329,7 @@ def _cf_height_from_name(z_coord):
                                    float(match['upper_bound'])])
                 points = bounds.sum() / 2.
 
+            long_name = None
             if name in ['height', 'altitude']:
                 units = units[0]
                 standard_name = name
