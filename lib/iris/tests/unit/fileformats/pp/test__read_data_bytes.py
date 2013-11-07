@@ -26,7 +26,7 @@ import numpy as np
 import iris.fileformats.pp as pp
 
 
-class Test_read_data__land_packed(tests.IrisTest):
+class Test__read_data_bytes__land_packed(tests.IrisTest):
     def setUp(self):
         # Sets up some useful arrays for use with the land/sea mask
         # decompression.
@@ -70,29 +70,25 @@ class Test_read_data__land_packed(tests.IrisTest):
         # Check basic land unpacking.
         field_data = self.land_masked_data
         result = self.check_read_data(field_data, 120, self.land_mask)
-        # XXX Needn't be almost...
-        self.assertMaskedArrayAlmostEqual(result, self.decomp_land_data)
+        self.assertMaskedArrayEqual(result, self.decomp_land_data)
 
     def test_land_masked_data_too_long(self):
         # Check land unpacking with field data that is larger than the mask.
         field_data = np.tile(self.land_masked_data, 2)
         result = self.check_read_data(field_data, 120, self.land_mask)
-        # XXX Needn't be almost...
-        self.assertMaskedArrayAlmostEqual(result, self.decomp_land_data)
+        self.assertMaskedArrayEqual(result, self.decomp_land_data)
 
     def test_sea_mask(self):
         # Check basic land unpacking.
         field_data = self.sea_masked_data
         result = self.check_read_data(field_data, 220, self.land_mask)
-        # XXX Needn't be almost...
-        self.assertMaskedArrayAlmostEqual(result, self.decomp_sea_data)
+        self.assertMaskedArrayEqual(result, self.decomp_sea_data)
 
     def test_sea_masked_data_too_long(self):
         # Check sea unpacking with field data that is larger than the mask.
         field_data = np.tile(self.sea_masked_data, 2)
         result = self.check_read_data(field_data, 220, self.land_mask)
-        # XXX Needn't be almost...
-        self.assertMaskedArrayAlmostEqual(result, self.decomp_sea_data)
+        self.assertMaskedArrayEqual(result, self.decomp_sea_data)
 
     def test_bad_lbpack(self):
         # Check basic land unpacking.

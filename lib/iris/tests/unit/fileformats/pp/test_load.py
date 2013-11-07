@@ -150,5 +150,20 @@ class Test__field_gen(PPLoadTest):
             np.fromfile.assert_has_calls(calls)
 
 
+class Test_load(tests.IrisTest):
+    def test_call_structure(self):
+        # Check that the load function calls the two necessary utility
+        # functions.
+        extract_result = mock.Mock()
+        with mock.patch('iris.fileformats.pp._interpret_fields',
+                        autospec=True, return_value=iter([])) as interpret:
+            with mock.patch('iris.fileformats.pp._field_gen', autospec=True,
+                            return_value=extract_result) as _field_gen:
+                pp.load('mock', read_data=True)
+
+        interpret.assert_called_once_with(extract_result)
+        _field_gen.assert_called_once_with('mock', read_data_bytes=True)
+
+
 if __name__ == "__main__":
     tests.main()

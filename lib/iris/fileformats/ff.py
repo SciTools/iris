@@ -383,8 +383,7 @@ class FF2PP(object):
         ff_file.close()
 
     def __iter__(self):
-        return pp._interpret_fields(self._extract_field(),
-                                    read_data=self._read_data)
+        return pp._interpret_fields(self._extract_field())
 
 
 def load_cubes(filenames, callback):

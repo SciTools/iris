@@ -20,27 +20,29 @@
 # importing anything else.
 import iris.tests as tests
 
-from copy import deepcopy
-
 import mock
 
 import iris.fileformats.ff as ff
 
 
 class Test_FF2PP___iter__(tests.IrisTest):
-    def test_call_structure(self):
+    @mock.patch('iris.fileformats.ff.FFHeader')
+    def test_call_structure(self, _FFHeader):
         # Check that the iter method calls the two necessary utility
         # functions
         extract_result = mock.Mock()
-        with mock.patch('iris.fileformats.pp._interpret_fields',
-                        return_value=iter([])) as interpret:
-            with mock.patch('iris.fileformats.ff.FF2PP._extract_field',
-                            return_value=extract_result) as extract:
-                with mock.patch('iris.fileformats.ff.FFHeader'):
-                    list(iter(ff.FF2PP('mock', read_data='read_data_value')))
-        interpret.assert_called_once_with(extract_result,
-                                          read_data='read_data_value')
-        extract.assert_called_once_with()
+        interpret_patch = mock.patch('iris.fileformats.pp._interpret_fields',
+                                     autospec=True, return_value=iter([]))
+        extract_patch = mock.patch('iris.fileformats.ff.FF2PP._extract_field',
+                                   autospec=True, return_value=extract_result)
+
+        FF2PP_instance = ff.FF2PP('mock')
+        with interpret_patch as interpret, extract_patch as extract:
+            list(iter(FF2PP_instance))
+
+        interpret.assert_called_once_with(extract_result)
+        extract.assert_called_once_with(FF2PP_instance)
+
 
 if __name__ == "__main__":
     tests.main()

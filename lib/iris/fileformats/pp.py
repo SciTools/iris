@@ -732,8 +732,8 @@ class PPDataProxy(object):
 def _read_data_bytes(data_bytes, lbpack, data_shape, data_type, mdi,
                      mask=None):
     """
-    Read the data from the given file object given its precise
-    location in the file.
+    Convert the already read binary data payload into a numpy array, unpacking
+    and decompressing as per the F3 specification.
 
     """
     if lbpack.n1 in (0, 2):
@@ -752,7 +752,6 @@ def _read_data_bytes(data_bytes, lbpack, data_shape, data_type, mdi,
 
     # Ensure the data is in the native byte order
     if not data.dtype.isnative:
-
         data.byteswap(True)
         data.dtype = data.dtype.newbyteorder('=')
 
@@ -766,6 +765,9 @@ def _read_data_bytes(data_bytes, lbpack, data_shape, data_type, mdi,
         if lbpack.n3 == 1:
             # Land mask packed data.
             new_data.mask = sea_mask
+            # Sometimes the data comes in longer than it should be (i.e. it
+            # looks like the compressed data is compressed, but the trailing
+            # data hasn't been clipped off!).
             new_data[land_mask] = data[:land_mask.sum()]
         elif lbpack.n3 == 2:
             # Sea mask packed data.
@@ -1424,15 +1426,16 @@ def load(filename, read_data=False):
             print field
 
     """
-    return _interpret_fields(_field_gen(filename, read_data_bytes=read_data),
-                             read_data=read_data)
+    return _interpret_fields(_field_gen(filename, read_data_bytes=read_data))
 
 
-def _interpret_fields(fields, read_data=False):
+def _interpret_fields(fields):
     """
     Turn the fields read with load and FF2PP._extract_field into useable
-    fields. One of the primary purposes of this function is to convert
-    "deferred bytes" into either "deferred arrays" or actual numpy arrays.
+    fields. One of the primary purposes of this function is to either convert
+    "deferred bytes" into "deferred arrays" or "loaded bytes" into actual
+    numpy arrays (via the _create_field_data) function.
+
     """
     land_mask = None
     landmask_compressed_fields = []
@@ -1444,17 +1447,16 @@ def _interpret_fields(fields, read_data=False):
 
         # Handle land compressed data payloads.
         if field.lbpack.n2 == 2:
-            # If we don't have the land mask yet, we shouldn't yeild the field.
+            # If we don't have the land mask yet, we shouldn't yield the field.
             if land_mask is None:
                 landmask_compressed_fields.append(field)
                 continue
 
             # Land compressed fields don't have a lbrow and lbnpt.
-            if field.lbrow == 0 or field.lbnpt == 0:
-                field.lbrow, field.lbnpt = land_mask.lbrow, land_mask.lbnpt
+            field.lbrow, field.lbnpt = land_mask.lbrow, land_mask.lbnpt
 
         data_shape = (field.lbrow, field.lbnpt)
-        _create_field_data(field, data_shape, land_mask, read_data=read_data)
+        _create_field_data(field, data_shape, land_mask)
         yield field
 
     if landmask_compressed_fields:
@@ -1467,16 +1469,18 @@ def _interpret_fields(fields, read_data=False):
             mask_shape = (land_mask.lbrow, land_mask.lbnpt)
 
         for field in landmask_compressed_fields:
-            if field.lbrow == 0 or field.lbnpt == 0:
-                field.lbrow, field.lbnpt = mask_shape
-            _create_field_data(field, (field.lbrow, field.lbnpt),
-                               land_mask, read_data=read_data)
+            field.lbrow, field.lbnpt = mask_shape
+            _create_field_data(field, (field.lbrow, field.lbnpt), land_mask)
             yield field
 
 
-def _create_field_data(field, data_shape, land_mask, read_data):
-    if read_data:
-        # Get hold of the LoadedArrayBytes instance.
+def _create_field_data(field, data_shape, land_mask):
+    """
+    Modifies a field's ``_data`` attribute either by:
+     * converting DeferredArrayBytes into a "deferred array".
+     * converting LoadedArrayBytes into an actual numpy array.
+    """
+    if isinstance(field._data, LoadedArrayBytes):
         loaded_bytes = field._data
         field._data = _read_data_bytes(loaded_bytes.bytes, field.lbpack, data_shape,
                                        loaded_bytes.dtype, field.bmdi, land_mask)
