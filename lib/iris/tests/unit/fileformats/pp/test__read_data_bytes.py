@@ -63,8 +63,8 @@ class Test_read_data__land_packed(tests.IrisTest):
                         return_value=np.arange(3)):
             with self.assertRaises(ValueError):
                 pp._read_data_bytes(mock.Mock(), self.create_lbpack(120),
-                              (3, 4), np.dtype('>f4'),
-                              -999, mask=None)
+                                    (3, 4), np.dtype('>f4'),
+                                    -999, mask=None)
 
     def test_land_mask(self):
         # Check basic land unpacking.

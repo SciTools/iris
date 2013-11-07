@@ -52,7 +52,6 @@ class PPLoadTest(tests.IrisTest):
             yield
 
 
-
 class Test__interpret_fields__land_packed_fields(PPLoadTest):
     def setUp(self):
         self.pp_field = mock.Mock(lblrec=1, lbext=0, lbuser=[0],
@@ -88,7 +87,8 @@ class Test__interpret_fields__land_packed_fields(PPLoadTest):
     def test_deferred_mask_field(self):
         # Check that the order of the load is yielded last if the mask
         # hasn't yet been seen.
-        result = list(pp._interpret_fields([self.pp_field, self.land_mask_field]))
+        result = list(pp._interpret_fields([self.pp_field,
+                                            self.land_mask_field]))
         self.assertEqual(result, [self.land_mask_field, self.pp_field])
 
     def test_not_deferred_mask_field(self):

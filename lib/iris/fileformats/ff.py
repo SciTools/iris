@@ -369,14 +369,16 @@ class FF2PP(object):
                 field.y = y_v
 
             if self._read_data:
-                # Read the actual bytes. This can then be converted to a numpy array
-                # at a higher level.
+                # Read the actual bytes. This can then be converted to a
+                # numpy array at a higher level.
                 ff_file_seek(data_offset, os.SEEK_SET)
-                field._data = pp.LoadedArrayBytes(ff_file.read(data_depth), data_type)
+                field._data = pp.LoadedArrayBytes(ff_file.read(data_depth),
+                                                  data_type)
             else:
                 # Provide enough context to read the data bytes later on.
-                field._data = pp.DeferredArrayBytes(self._filename, data_offset,
-                                                    data_depth, data_type)
+                field._data = pp.DeferredArrayBytes(self._filename,
+                                                    data_offset, data_depth,
+                                                    data_type)
             yield field
         ff_file.close()
 

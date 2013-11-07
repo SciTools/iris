@@ -22,7 +22,6 @@ Provides UK Met Office Post Process (PP) format specific capabilities.
 import abc
 import collections
 from copy import deepcopy
-import functools
 import itertools
 import operator
 import os
