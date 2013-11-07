@@ -24,8 +24,11 @@ install:
   - export IRIS_TEST_DATA_REF="3378fe68c00ca7f31895ab6630a59a39ccef94e3"
   - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
 
-  - export IRIS_SAMPLE_DATA_REF="2e7c73504e3d675d97dc8a2c2939f9fd2cfe51f1"
+  - export IRIS_SAMPLE_DATA_REF="02db7bf6f45561298d14122f440582fa372226d9"
   - export IRIS_SAMPLE_DATA_SUFFIX=$(echo "${IRIS_SAMPLE_DATA_REF}" | sed "s/^v//")
+
+# Switch off virtualenv so we can use apt-get for Python packages.
+  - deactivate
 
 # add repo
   - ./.travis_no_output sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3E5C1192
@@ -118,14 +121,13 @@ install:
   - ln -s $(pwd)/lib/iris /home/travis/.local/lib/python2.7/site-packages/iris
   - ./.travis_no_output /usr/bin/python setup.py pyke_rules
 
-  
 script:
   - /usr/bin/python setup.py test
 
-#  - echo --- RUNNING DOCTESTS ---
-#  - cd $(pwd)/docs/iris
-#  - make doctest
+  - cd $(pwd)/docs/iris
+# Make html produces an error when run on Travis that does not affect any downstream functionality but causes the build to fail spuriously.
+# The following gets around this error, which should be investigated further in the future.
+  - echo `make clean html`
 
-#  - echo --- RUNNING EXTESTS ---
-#  - make extest
-
+  - make doctest
+  - make extest
