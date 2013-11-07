@@ -503,7 +503,7 @@ class TestSplittableIntEquality(unittest.TestCase):
 class TestPPDataProxyEquality(unittest.TestCase):
     def test_not_implemented(self):
         class Terry(object): pass
-        pox = pp.PPDataProxy("john", "michael", "eric", "graham")
+        pox = pp.PPDataProxy("john", "michael", "eric", "graham", "brian")
         self.assertIs(pox.__eq__(Terry()), NotImplemented)
         self.assertIs(pox.__ne__(Terry()), NotImplemented)
 
