@@ -61,10 +61,13 @@ class Test__read_data_bytes__land_packed(tests.IrisTest):
     def test_no_land_mask(self):
         with mock.patch('numpy.frombuffer',
                         return_value=np.arange(3)):
-            with self.assertRaises(ValueError):
+            with self.assertRaises(ValueError) as err:
                 pp._read_data_bytes(mock.Mock(), self.create_lbpack(120),
                                     (3, 4), np.dtype('>f4'),
                                     -999, mask=None)
+            self.assertEqual(str(err.exception),
+                             ('No mask was found to unpack the data. '
+                              'Could not load.'))
 
     def test_land_mask(self):
         # Check basic land unpacking.
