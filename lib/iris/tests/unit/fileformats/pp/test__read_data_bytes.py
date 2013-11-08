@@ -28,26 +28,26 @@ import numpy as np
 import iris.fileformats.pp as pp
 
 
-class Test__read_data_bytes__latteral_boundary_compression(tests.IrisTest):
+class Test__read_data_bytes__lateral_boundary_compression(tests.IrisTest):
     def setUp(self):
         self.data_shape = 30, 40
-        y_rim, x_rim, halo = 2, 3, 4
+        y_halo, x_halo, rim = 2, 3, 4
 
         data_len = np.prod(self.data_shape)
         decompressed = np.arange(data_len).reshape(*self.data_shape)
         decompressed *= np.arange(self.data_shape[1]) % 3 + 1
 
         decompressed_mask = np.zeros(self.data_shape, np.bool)
-        decompressed_mask[y_rim+halo:-(y_rim+halo),
-                          x_rim+halo:-(x_rim+halo)] = True
+        decompressed_mask[y_halo+rim:-(y_halo+rim),
+                          x_halo+rim:-(x_halo+rim)] = True
 
         self.decompressed = np.ma.masked_array(decompressed,
                                                mask=decompressed_mask)
 
-        self.north = decompressed[-(y_rim+halo):, :]
-        self.east = decompressed[y_rim+halo:-(y_rim+halo), -(x_rim+halo):]
-        self.south = decompressed[:y_rim+halo, :]
-        self.west = decompressed[y_rim+halo:-(y_rim+halo), :x_rim+halo]
+        self.north = decompressed[-(y_halo+rim):, :]
+        self.east = decompressed[y_halo+rim:-(y_halo+rim), -(x_halo+rim):]
+        self.south = decompressed[:y_halo+rim, :]
+        self.west = decompressed[y_halo+rim:-(y_halo+rim), :x_halo+rim]
 
         # Get the bytes of the north, east, south, west arrays combined.
         buf = io.BytesIO()
@@ -57,7 +57,7 @@ class Test__read_data_bytes__latteral_boundary_compression(tests.IrisTest):
         buf.write(self.west.copy())
         buf.seek(0)
         self.data_payload_bytes = buf.read()
-    
+
     def test_boundary_decompression(self):
         boundary_packing = mock.Mock(rim_width=4, x_halo=3, y_halo=2)
         lbpack = mock.Mock(n1=0, boundary_packing=boundary_packing)

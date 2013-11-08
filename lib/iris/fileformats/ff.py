@@ -373,8 +373,8 @@ class FF2PP(object):
             if is_boundary_packed:
                 name_mapping = dict(rim_width=slice(4, 6), y_halo=slice(2, 4),
                                     x_halo=slice(0, 2))
-                field.lbpack.boundary_packing = pp.SplittableInt(
-                                        field.lbuser[2], name_mapping)
+                b_packing = pp.SplittableInt(field.lbuser[2], name_mapping)
+                field.lbpack.boundary_packing = b_packing
                 # Fix the lbrow and lbnpt to be the actual size of the data
                 # array, since the field is no longer a "boundary" fields file
                 # field.
@@ -387,8 +387,17 @@ class FF2PP(object):
                 # Update the x and y coordinates for this field. Note: it may
                 # be that this needs to update x and y also, but that is yet
                 # to be confirmed.
-                field.bzx -= field.bdx * field.lbpack.boundary_packing.x_halo
-                field.bzy -= field.bdy * field.lbpack.boundary_packing.y_halo
+                if (field.bdx in (0, field.bmdi) or
+                        field.bdy in (0, field.bmdi)):
+                    warnings.warn('The LBC field has non-trivial x or y '
+                                  'coordinates and have not been updated to '
+                                  'take the boundary size into account. If '
+                                  'you get this message, your x and y '
+                                  'coordinates of the boundary condition '
+                                  'fields may be incorrect.')
+                else:
+                    field.bzx -= field.bdx * b_packing.x_halo
+                    field.bzy -= field.bdy * b_packing.y_halo
 
             if self._read_data:
                 # Read the actual bytes. This can then be converted to a
