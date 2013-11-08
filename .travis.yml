@@ -122,7 +122,7 @@ install:
   - ./.travis_no_output /usr/bin/python setup.py pyke_rules
 
 script:
-  - /usr/bin/python setup.py test
+  - /usr/bin/python setup.py test --example-tests
 
   - cd $(pwd)/docs/iris
 # Make html produces an error when run on Travis that does not affect any downstream functionality but causes the build to fail spuriously.
@@ -130,4 +130,3 @@ script:
   - echo `make clean html`
 
   - make doctest
-  - make extest
