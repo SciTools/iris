@@ -319,6 +319,8 @@ class FF2PP(object):
             if self._ff_header.row_dependent_constants.shape[1] == 2:
                 y_v = self._ff_header.row_dependent_constants[:-1, 1]
 
+        is_boundary_packed = self._ff_header.dataset_type == 5
+
         # Process each FF LOOKUP table entry.
         while table_count:
             table_count -= 1
@@ -367,6 +369,40 @@ class FF2PP(object):
                 field.x = x_u
             if grid in Y_COORD_V_GRID:
                 field.y = y_v
+
+            if is_boundary_packed:
+                name_mapping = dict(rim_width=slice(4, 6), y_halo=slice(2, 4),
+                                    x_halo=slice(0, 2))
+                b_packing = pp.SplittableInt(field.lbuser[2], name_mapping)
+                field.lbpack.boundary_packing = b_packing
+                # Fix the lbrow and lbnpt to be the actual size of the data
+                # array, since the field is no longer a "boundary" fields file
+                # field.
+                # Note: The documentation states that lbrow (y) doesn't
+                # contain the halo rows, but no such comment exists at UM v8.5
+                # for lbnpt (x). Experimentation has shown that lbnpt also
+                # excludes the halo size.
+                field.lbrow += 2 * field.lbpack.boundary_packing.y_halo
+                field.lbnpt += 2 * field.lbpack.boundary_packing.x_halo
+                # Update the x and y coordinates for this field. Note: it may
+                # be that this needs to update x and y also, but that is yet
+                # to be confirmed.
+                if (field.bdx in (0, field.bmdi) or
+                        field.bdy in (0, field.bmdi)):
+                    warnings.warn('The LBC field has non-trivial x or y '
+                                  'coordinates and have not been updated to '
+                                  'take the boundary size into account. If '
+                                  'you get this message, your x and y '
+                                  'coordinates of the boundary condition '
+                                  'fields may be incorrect.')
+                else:
+                    if field.bdy < 0:
+                        warnings.warn('The LBC has a bdy less than 0. No '
+                                      'case has previously been seen of '
+                                      'this, and the decompression may be '
+                                      'erroneous.')
+                    field.bzx -= field.bdx * b_packing.x_halo
+                    field.bzy -= field.bdy * b_packing.y_halo
 
             if self._read_data:
                 # Read the actual bytes. This can then be converted to a

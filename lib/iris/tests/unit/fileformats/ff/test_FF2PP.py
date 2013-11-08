@@ -20,9 +20,13 @@
 # importing anything else.
 import iris.tests as tests
 
+import contextlib
+
 import mock
+import numpy as np
 
 import iris.fileformats.ff as ff
+import iris.fileformats.pp as pp
 
 
 class Test_FF2PP___iter__(tests.IrisTest):
@@ -42,6 +46,111 @@ class Test_FF2PP___iter__(tests.IrisTest):
 
         interpret.assert_called_once_with(extract_result)
         extract.assert_called_once_with(FF2PP_instance)
+
+
+class Test_FF2PP__extract_field__LBC_format(tests.IrisTest):
+    @contextlib.contextmanager
+    def mock_for_extract_field(self, fields):
+        """
+        A context manager to ensure FF2PP._extract_field gets a field
+        instance looking like the next one in the "fields" iterable from
+        the "make_pp_field" call.
+
+        """
+        with mock.patch('iris.fileformats.ff.FFHeader'):
+            ff2pp = ff.FF2PP('mock')
+            ff2pp._ff_header.lookup_table = [0, 0, len(fields)]
+
+        with mock.patch('numpy.fromfile', return_value=[0]), \
+                mock.patch('__builtin__.open'), \
+                mock.patch('struct.unpack_from', return_value=[4]), \
+                mock.patch('iris.fileformats.pp.make_pp_field',
+                           side_effect=fields), \
+                mock.patch('iris.fileformats.ff.FF2PP._payload',
+                           return_value=(0, 0)):
+            yield ff2pp
+
+    def test_LBC_header(self):
+        bzx, bzy = -10, 15
+        field = mock.Mock(lbegin=0, stash='m01s00i001',
+                          lbrow=10, lbnpt=12, bdx=1, bdy=1, bzx=bzx, bzy=bzy,
+                          lbuser=[None, None, 121416])
+        with self.mock_for_extract_field([field]) as ff2pp:
+            ff2pp._ff_header.dataset_type = 5
+            result = list(ff2pp._extract_field())
+
+        self.assertEqual([field], result)
+        self.assertEqual(field.lbrow, 10 + 14 * 2)
+        self.assertEqual(field.lbnpt, 12 + 16 * 2)
+
+        name_mapping_dict = dict(rim_width=slice(4, 6), y_halo=slice(2, 4),
+                                 x_halo=slice(0, 2))
+        boundary_packing = pp.SplittableInt(121416, name_mapping_dict)
+
+        self.assertEqual(field.lbpack.boundary_packing, boundary_packing)
+        self.assertEqual(field.bzy, bzy - boundary_packing.y_halo * field.bdy)
+        self.assertEqual(field.bzx, bzx - boundary_packing.x_halo * field.bdx)
+
+    def check_non_trivial_coordinate_warning(self, field):
+        field.lbegin = 0
+        field.stash = 'm01s31i020'
+        field.lbrow = 10
+        field.lbnpt = 12
+        field.lbuser = [None, None, 121416]
+        orig_bdx, orig_bdy = field.bdx, field.bdy
+
+        with self.mock_for_extract_field([field]) as ff2pp:
+            ff2pp._ff_header.dataset_type = 5
+            with mock.patch('warnings.warn') as warn:
+                list(ff2pp._extract_field())
+
+        # Check the values are unchanged.
+        self.assertEqual(field.bdy, orig_bdy)
+        self.assertEqual(field.bdx, orig_bdx)
+
+        # Check a warning was raised with a suitable message.
+        warn_error_tmplt = 'Unexpected warning message: {}'
+        non_trivial_coord_warn_msg = warn.call_args[0][0]
+        msg = 'The LBC field has non-trivial x or y coordinates'
+        self.assertTrue(non_trivial_coord_warn_msg.startswith(msg),
+                        warn_error_tmplt.format(non_trivial_coord_warn_msg))
+
+    def test_LCB_header_non_trivial_coords_both(self):
+        # Check a warning is raised when both bdx and bdy are bad.
+        field = mock.Mock(bdx=0, bdy=0, bzx=10, bzy=10)
+        self.check_non_trivial_coordinate_warning(field)
+
+        field.bdy = field.bdx = field.bmdi
+        self.check_non_trivial_coordinate_warning(field)
+
+    def test_LCB_header_non_trivial_coords_x(self):
+        # Check a warning is raised when bdx is bad.
+        field = mock.Mock(bdx=0, bdy=10, bzx=10, bzy=10)
+        self.check_non_trivial_coordinate_warning(field)
+
+        field.bdx = field.bmdi
+        self.check_non_trivial_coordinate_warning(field)
+
+    def test_LCB_header_non_trivial_coords_y(self):
+        # Check a warning is raised when bdy is bad.
+        field = mock.Mock(bdx=10, bdy=0, bzx=10, bzy=10)
+        self.check_non_trivial_coordinate_warning(field)
+
+        field.bdy = field.bmdi
+        self.check_non_trivial_coordinate_warning(field)
+
+    def test_negative_bdy(self):
+        # Check a warning is raised when bdy is negative,
+        # we don't yet know what "north" means in this case.
+        field = mock.Mock(bdx=10, bdy=-10, bzx=10, bzy=10, lbegin=0,
+                          lbuser=[0, 0, 121416], lbrow = 10, lbnpt = 12)
+        with self.mock_for_extract_field([field]) as ff2pp:
+            ff2pp._ff_header.dataset_type = 5
+            with mock.patch('warnings.warn') as warn:
+                list(ff2pp._extract_field())
+        msg = 'The LBC has a bdy less than 0.'
+        self.assertTrue(warn.call_args[0][0].startswith(msg),
+                        'Northwards bdy warning not correctly raised.')
 
 
 if __name__ == "__main__":

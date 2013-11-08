@@ -410,7 +410,7 @@ class SplittableInt(object):
 
         # if the key returns a list of values, then combine them together to an integer
         if isinstance(val, list):
-            val = sum([ 10**i * val for i, val in enumerate(val)])
+            val = sum([10**i * val for i, val in enumerate(val)])
 
         return val
 
@@ -755,7 +755,49 @@ def _read_data_bytes(data_bytes, lbpack, data_shape, data_type, mdi,
         data.byteswap(True)
         data.dtype = data.dtype.newbyteorder('=')
 
-    if lbpack.n2 == 2:
+    if hasattr(lbpack, 'boundary_packing'):
+        # Convert a long string of numbers into a "lateral boundary
+        # condition" array, which is split into 4 quartiles, North
+        # East, South, West and where North and South contain the corners.
+        
+        boundary_packing = lbpack.boundary_packing
+        compressed_data = data
+        data = np.ma.masked_all(data_shape)
+
+        boundary_height = boundary_packing.y_halo + boundary_packing.rim_width
+        boundary_width = boundary_packing.x_halo + boundary_packing.rim_width
+        y_height, x_width = data_shape
+        # The height of the east and west components.
+        mid_height = y_height - 2 * boundary_height
+        
+        n_s_shape = boundary_height, x_width
+        e_w_shape = mid_height, boundary_width
+        
+        # Keep track of our current position in the array.
+        current_posn = 0
+        
+        north = compressed_data[:boundary_height*x_width]
+        current_posn += len(north)
+        data[-boundary_height:, :] = north.reshape(*n_s_shape)
+
+        east = compressed_data[current_posn:
+                               current_posn + boundary_width * mid_height]
+        current_posn += len(east)
+        data[boundary_height:-boundary_height,
+             -boundary_width:] = east.reshape(*e_w_shape)
+
+        south = compressed_data[current_posn:
+                                current_posn + boundary_height * x_width]
+        current_posn += len(south)
+        data[:boundary_height, :] = south.reshape(*n_s_shape)
+        
+        west = compressed_data[current_posn:
+                               current_posn + boundary_width * mid_height]
+        current_posn += len(west)
+        data[boundary_height:-boundary_height,
+             :boundary_width] = west.reshape(*e_w_shape)
+
+    elif lbpack.n2 == 2:
         if mask is None:
             raise ValueError('No mask was found to unpack the data. '
                              'Could not load.')
