@@ -63,14 +63,16 @@ class TestRunner(setuptools.Command):
                                           'system tests.'),
                     ('stop', 'x', 'Stop running tests after the first '
                                   'error or failure'),
+                    ('example-tests', 'e', 'Also run the example code tests.')
                    ]
 
-    boolean_options = ['no-data', 'system-tests', 'stop']
+    boolean_options = ['no-data', 'system-tests', 'stop', 'example-tests']
     
     def initialize_options(self):
         self.no_data = False
         self.system_tests = False
         self.stop = False
+        self.example_tests = False
     
     def finalize_options(self):
         if self.no_data:
@@ -95,6 +97,9 @@ class TestRunner(setuptools.Command):
             path = os.path.join(lib_dir, mod)
             if mod != '.svn' and os.path.exists(os.path.join(path, 'tests')):
                 tests.append('%s.tests' % mod)
+        if self.example_tests:
+            tests.append(os.path.join(script_path, 'docs', 'iris',
+                                      'example_tests'))
 
         if not tests:
             raise CommandError('No tests found in %s/*/tests' % lib_dir)
