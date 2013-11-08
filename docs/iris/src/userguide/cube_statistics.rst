@@ -208,7 +208,6 @@ Printing this cube now shows that two extra coordinates exist on the cube:
          Attributes:
               Conventions: CF-1.5
               STASH: m01s00i024
-              history: 21/06/13 14:18:45 Iris: Mean of surface_temperature aggregated over month,...
          Cell methods:
               mean: month, year
 

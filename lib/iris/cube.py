@@ -2342,8 +2342,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                  Attributes:
                       Conventions: CF-1.5
                       STASH: m01s00i024
-                      history: 21/06/13 14:18:45 Iris: \
-Mean of surface_temperature aggregated over month,...
                  Cell methods:
                       mean: month, year
                       mean: longitude
@@ -2521,8 +2519,6 @@ Mean of surface_temperature aggregated over month,...
                  Attributes:
                       Conventions: CF-1.5
                       STASH: m01s00i024
-                      history: 21/06/13 14:18:45 Iris: \
-Mean of surface_temperature aggregated over month,...
                  Cell methods:
                       mean: month, year
                       mean: year
