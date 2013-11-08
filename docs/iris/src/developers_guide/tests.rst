@@ -6,14 +6,18 @@ There are three categories of tests within Iris:
  - Integration tests
  - Legacy tests
 
-All code changes should be accompanied by one or more unit tests, and by
-zero or more integration tests. New tests should not be added to the
-legacy tests.
+Ideally, all code changes should be accompanied by one or more unit
+tests, and by zero or more integration tests. And where possible, new
+tests should not be added to the legacy tests.
+
+But if in any doubt about what tests to add or how to write them please
+feel free to submit a pull-request in any state and ask for assistance.
+
 
 Unit tests
 ==========
 
-All code changes should be accompanied by enough unit tests to give a
+Code changes should be accompanied by enough unit tests to give a
 high degree of confidence that the change works as expected. In
 addition, the unit tests can help describe the intent behind a change.
 
@@ -42,15 +46,29 @@ to the aspect of the tested method which they address.
 All unit tests for :py:class:`iris.cube.Cube` must reside in:
     `lib/iris/tests/unit/cube/test_Cube.py`
 
-All unit tests for :py:meth:`iris.cube.Cube.xml` must reside in the file
-above with test classes named:
-    `Test_xml`
+Within that file the tests might look something like:
 
-    or something like `Test_xml__checksum`
+.. code-block:: python
 
-So a unit test of :py:meth:`iris.cube.Cube.xml` which examines the handling
-of masked data might be named:
-    `Test_xml.test_checksum_ignores_masked_values`.
+    # Tests for the Cube.xml() method.
+    class Test_xml(tests.IrisTest):
+        def test_some_general_stuff(self):
+            ...
+
+    # Tests for the Cube.xml() method, focussing on the behaviour of
+    # the checksums.
+    class Test_xml__checksum(tests.IrisTest):
+        def test_checksum_ignores_masked_values(self):
+            ...
+
+    # Tests for the Cube.add_dim_coord() method.
+    class Test_add_dim_coord(tests.IrisTest):
+        def test_normal_usage(self):
+            ...
+
+        def test_coord_already_present(self):
+            ...
+
 
 Functions
 ---------
@@ -70,14 +88,22 @@ All unit tests for :py:func:`iris.experimental.raster.export_geotiff`
 must reside in:
     `lib/iris/tests/unit/experimental/raster/test_export_geotiff.py`
 
-With tests classes named:
-    `TestAll`
+Within that file the tests might look something like:
 
-    or something like `TestGeoTransform`
+.. code-block:: python
 
-So a unit test of :py:func:`iris.experimental.raster.export_geotiff`
-which examines the handling of 16-bit integer data might be named:
-    `TestDtypeAndValues.test_int16`
+    # Tests focussing on the handling of different data types.
+    class TestDtypeAndValues(tests.IrisTest):
+        def test_int16(self):
+            ...
+
+        def test_int16_big_endian(self):
+            ...
+
+    # Tests focussing on the handling of different projections.
+    class TestProjection(tests.IrisTest):
+        def test_no_ellipsoid(self):
+            ...
 
 
 Integration tests
