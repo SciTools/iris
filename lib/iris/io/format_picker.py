@@ -260,20 +260,22 @@ class MagicNumber(FileElement):
     len_formats = {4: ">L", 8: ">Q"}
 
     def __init__(self, num_bytes, offset=None):
-        if num_bytes not in self.len_formats:
-            raise ValueError("Unhandled byte length")
         FileElement.__init__(self, '{}-bit magic number'.format(num_bytes * 8))
         self._num_bytes = num_bytes
         self._offset = offset
 
     def get_element(self, basename, file_handle):
-        fmt = self.len_formats[self._num_bytes]
         if self._offset is not None:
             file_handle.seek(self._offset)
         bytes = file_handle.read(self._num_bytes)
+        fmt = self.len_formats.get(self._num_bytes)
         if len(bytes) != self._num_bytes:
             raise EOFError(file_handle.name)
-        return struct.unpack(fmt, bytes)[0]
+        if fmt is None:
+            result = bytes
+        else:
+            result = struct.unpack(fmt, bytes)[0]
+        return result
 
     def __repr__(self):
         return 'MagicNumber({}, {})'.format(self._num_bytes, self._offset)
