@@ -139,6 +139,19 @@ class Test_FF2PP__extract_field__LBC_format(tests.IrisTest):
         field.bdy = field.bmdi
         self.check_non_trivial_coordinate_warning(field)
 
+    def test_negative_bdy(self):
+        # Check a warning is raised when bdy is negative,
+        # we don't yet know what "north" means in this case.
+        field = mock.Mock(bdx=10, bdy=-10, bzx=10, bzy=10, lbegin=0,
+                          lbuser=[0, 0, 121416], lbrow = 10, lbnpt = 12)
+        with self.mock_for_extract_field([field]) as ff2pp:
+            ff2pp._ff_header.dataset_type = 5
+            with mock.patch('warnings.warn') as warn:
+                list(ff2pp._extract_field())
+        msg = 'The LBC has a bdy less than 0.'
+        self.assertTrue(warn.call_args[0][0].startswith(msg),
+                        'Northwards bdy warning not correctly raised.')
+
 
 if __name__ == "__main__":
     tests.main()

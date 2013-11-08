@@ -396,6 +396,11 @@ class FF2PP(object):
                                   'coordinates of the boundary condition '
                                   'fields may be incorrect.')
                 else:
+                    if field.bdy < 0:
+                        warnings.warn('The LBC has a bdy less than 0. No '
+                                      'case has previously been seen of '
+                                      'this, and the decompression may be '
+                                      'erroneous.')
                     field.bzx -= field.bdx * b_packing.x_halo
                     field.bzy -= field.bdy * b_packing.y_halo
 
