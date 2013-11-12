@@ -6,6 +6,9 @@
         <dimCoord id="73141289" points="[2]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
       </coord>
       <coord>
+        <dimCoord id="f4f30ef" points="[2.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64"/>
+      </coord>
+      <coord>
         <auxCoord id="64f42873" long_name="originating_centre" points="[	US National Weather Service, National Centres for Environmental Prediction]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord datadims="[1]">

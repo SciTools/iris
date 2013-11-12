@@ -23,6 +23,7 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
+import iris.exceptions
 import iris.unit
 from iris.fileformats.rules import is_regular, regular_step
 from iris.fileformats.grib import grib_phenom_translation as gptx
@@ -49,11 +50,6 @@ def gribbability_check(cube):
     # Time period exists?
     if not cube.coords("time"):
         raise iris.exceptions.TranslationError("time coord not found")
-
-    # Forecast period exists?
-    if not cube.coords("forecast_period"):
-        raise iris.exceptions.TranslationError(
-            "forecast_period coord not found")
 
 
 ###########################
@@ -233,35 +229,62 @@ def obs_time_after_cutoff(cube, grib):
     gribapi.grib_set_long(grib, "minutesAfterDataCutoff", 0)
 
 
+def missing_forecast_period(cube):
+    # We have no way of knowing the CF forecast reference time.
+    # Set GRIB reference time to "verifying time of forecast",
+    # and the forecast period to 0h.
+    warnings.warn('No CF forecast_period. Setting reference time to mean '
+                  '"verifying time of forecast", "forecast time" = 0h')
+
+    t_coord = cube.coord("time")
+    t = t_coord.bounds[0, 0] if t_coord.has_bounds() else t_coord.points[0]
+    rt = t_coord.units.num2date(t)
+    rt_meaning = 2  # "verification time of forecast"
+
+    fp = 0
+    fp_meaning = 1  # hours
+
+    return rt, rt_meaning, fp, fp_meaning
+
+
 def time_range(cube, grib):
     """Grib encoding of forecast_period."""
-    fp_coord = cube.coord("forecast_period")
-    if fp_coord.has_bounds():
-        raise iris.exceptions.TranslationError(
-            "Bounds not expected for 'forecast_period'")
+    try:
+        fp_coord = cube.coord("forecast_period")
+    except iris.exceptions.CoordinateNotFoundError:
+        fp_coord = None
 
-    if fp_coord.units == iris.unit.Unit("hours"):
-        grib_time_code = 1
-    elif fp_coord.units == iris.unit.Unit("minutes"):
-        grib_time_code = 0
-    elif fp_coord.units == iris.unit.Unit("seconds"):
-        grib_time_code = 13
+    if fp_coord is not None:
+        if fp_coord.has_bounds():
+            raise iris.exceptions.TranslationError(
+                "Bounds not expected for 'forecast_period'")
+
+        if fp_coord.units == iris.unit.Unit("hours"):
+            grib_time_code = 1
+        elif fp_coord.units == iris.unit.Unit("minutes"):
+            grib_time_code = 0
+        elif fp_coord.units == iris.unit.Unit("seconds"):
+            grib_time_code = 13
+        else:
+            raise iris.exceptions.TranslationError(
+                "Unexpected units for 'forecast_period' : %s" % fp_coord.units)
+
+        fp = fp_coord.points[0]
+        if fp - int(fp):
+            warnings.warn("forecast_period encoding problem: "
+                          "scaling required.")
+        fp = int(fp)
+
+        # Turn negative forecast times into grib negative numbers?
+        from iris.fileformats.grib import hindcast_workaround
+        if hindcast_workaround and fp < 0:
+            msg = "Encoding negative forecast period from {} to ".format(fp)
+            fp = 2**31 + abs(fp)
+            msg += "{}".format(np.int32(fp))
+            warnings.warn(msg)
+
     else:
-        raise iris.exceptions.TranslationError(
-            "Unexpected units for 'forecast_period' : %s" % fp_coord.units)
-
-    fp = fp_coord.points[0]
-    if fp - int(fp):
-        warnings.warn("forecast_period encoding problem: scaling required.")
-    fp = int(fp)
-
-    # Turn negative forecast times into grib negative numbers?
-    from iris.fileformats.grib import hindcast_workaround
-    if hindcast_workaround and fp < 0:
-        msg = "Encoding negative forecast period from {} to ".format(fp)
-        fp = 2**31 + abs(fp)
-        msg += "{}".format(np.int32(fp))
-        warnings.warn(msg)
+        _, _, fp, grib_time_code = missing_forecast_period(cube)
 
     gribapi.grib_set_long(grib, "indicatorOfUnitOfTimeRange", grib_time_code)
     gribapi.grib_set_long(grib, "forecastTime", fp)
@@ -391,16 +414,9 @@ def type_of_statistical_processing(cube, grib, coord):
     cell_method = cube.cell_methods[-1]
     coord_names = cell_method.coord_names
     if len(coord_names) == 1 and coord_names[0] == coord.name():
-        if cell_method.method == 'mean':
-            stat_code = 0
-        elif cell_method.method == 'accumulation':
-            stat_code = 1
-        elif cell_method.method == 'maximum':
-            stat_code = 2
-        elif cell_method.method == 'minimum':
-            stat_code = 3
-        elif cell_method.method == 'standard_deviation':
-            stat_code = 6
+        stat_codes = {'mean': 0, 'sum': 1, 'maximum': 2, 'minimum': 3,
+                      'standard_deviation': 6}
+        stat_code = stat_codes[cell_method.method]
     if stat_code == 255:
         warnings.warn("Unable to determine type of statistical processing")
     gribapi.grib_set_long(grib, "typeOfStatisticalProcessing", stat_code)
@@ -509,21 +525,39 @@ def centre(cube, grib):
 
 
 def reference_time(cube, grib):
-    # analysis, forecast start, verify time, obs time,
-    # (start of forecast for now)
-    gribapi.grib_set_long(grib, "significanceOfReferenceTime", 1)
+    # Set the reference time.
+    # (analysis, forecast start, verify time, obs time, etc)
+    try:
+        fp_coord = cube.coord("forecast_period")
+    except iris.exceptions.CoordinateNotFoundError:
+        fp_coord = None
 
-    # calculate reference time
-    pt_coord = cube.coord("time")
-    # always in hours
-    pt = pt_coord.bounds[0, 0] if pt_coord.has_bounds() else pt_coord.points[0]
-    ft = cube.coord("forecast_period").points[0]   # always in hours
-    rt = pt - ft
-    rt = iris.unit.num2date(rt, pt_coord.units.name, pt_coord.units.calendar)
-    gribapi.grib_set_long(grib, "dataDate", "%04d%02d%02d" % (rt.year,
-                                                              rt.month,
-                                                              rt.day))
-    gribapi.grib_set_long(grib, "dataTime", "%02d%02d" % (rt.hour, rt.minute))
+    # Calculate "model start time" to use as the reference time?
+    if fp_coord is not None:
+        # Convert fp and t to hours so we can subtract.
+        fp = fp_coord.units.convert(fp_coord.points[0], 'hours')
+        t_coord = cube.coord("time").copy()
+        hours_since = iris.unit.Unit("hours since epoch",
+                                     calendar=t_coord.units.calendar)
+        t_coord.convert_units(hours_since)
+        t = t_coord.bounds[0, 0] if t_coord.has_bounds() else t_coord.points[0]
+
+        rt = hours_since.num2date(t - fp)
+        rt_meaning = 1  # "start of forecast"
+
+    # We can't calculate the model start time without a forecast_period.
+    else:
+        rt, rt_meaning, _, _ = missing_forecast_period(cube)
+
+    gribapi.grib_set_long(grib, "significanceOfReferenceTime", rt_meaning)
+    gribapi.grib_set_long(
+        grib, "dataDate", "%04d%02d%02d" % (rt.year, rt.month, rt.day))
+    gribapi.grib_set_long(
+        grib, "dataTime", "%02d%02d" % (rt.hour, rt.minute))
+
+    # TODO: Set the calendar, when we find out what happened to the proposal!
+    # http://tinyurl.com/oefqgv6
+    # I was sure it was approved for pre-operational use but it's not there.
 
 
 def identification(cube, grib):

@@ -24,10 +24,10 @@ import warnings
 
 import numpy as np
 
-from iris.coords import AuxCoord, DimCoord
+from iris.coords import AuxCoord, DimCoord, CellMethod
 import iris.coord_systems
 import iris.cube
-import iris.exceptions
+from iris.exceptions import TranslationError
 import iris.unit
 
 
@@ -347,7 +347,8 @@ def _cf_height_from_name(z_coord):
     return coord
 
 
-def _generate_cubes(header, column_headings, coords, data_arrays):
+def _generate_cubes(header, column_headings, coords, data_arrays,
+                    cell_methods=None):
     """
     Yield :class:`iris.cube.Cube` instances given
     the headers, column headings, coords and data_arrays extracted
@@ -443,7 +444,23 @@ def _generate_cubes(header, column_headings, coords, data_arrays):
                     key not in headings:
                 cube.attributes[key] = value
 
+        if cell_methods is not None:
+            cube.add_cell_method(cell_methods[i])
+
         yield cube
+
+
+def _build_cell_methods(av_or_ints):
+    cell_methods = []
+    for av_or_int in av_or_ints:
+        if 'average' in av_or_int or 'averaged' in av_or_int:
+            method = 'mean'
+        elif 'integral' in av_or_int or 'integrated' in av_or_int:
+            method = 'sum'
+        else:
+            raise TranslationError("Unhandled time statistic")
+        cell_methods.append(CellMethod(method, 'time'))
+    return cell_methods
 
 
 def load_NAMEIII_field(filename):
@@ -499,6 +516,8 @@ def load_NAMEIII_field(filename):
         tdim = NAMECoord(name='time', dimension=None,
                          values=np.array(column_headings['Time']))
 
+        cell_methods = _build_cell_methods(column_headings['Time Av or Int'])
+
         # Build regular latitude and longitude coordinates.
         lat, lon = _build_lat_lon_for_NAME_field(header)
 
@@ -512,7 +531,8 @@ def load_NAMEIII_field(filename):
         shape = (header['Y grid size'], header['X grid size'])
         data_arrays = _read_data_arrays(file_handle, n_arrays, shape)
 
-    return _generate_cubes(header, column_headings, coords, data_arrays)
+    return _generate_cubes(header, column_headings, coords, data_arrays,
+                           cell_methods)
 
 
 def load_NAMEII_field(filename):
@@ -574,6 +594,8 @@ def load_NAMEII_field(filename):
         tdim = NAMECoord(name='time', dimension=None,
                          values=np.array(column_headings['Time']))
 
+        cell_methods = _build_cell_methods(column_headings['Time Av or Int'])
+
         # Build regular latitude and longitude coordinates.
         lat, lon = _build_lat_lon_for_NAME_field(header)
 
@@ -587,7 +609,8 @@ def load_NAMEII_field(filename):
         shape = (header['Y grid size'], header['X grid size'])
         data_arrays = _read_data_arrays(file_handle, n_arrays, shape)
 
-    return _generate_cubes(header, column_headings, coords, data_arrays)
+    return _generate_cubes(header, column_headings, coords, data_arrays,
+                           cell_methods)
 
 
 def load_NAMEIII_timeseries(filename):
