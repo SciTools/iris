@@ -67,25 +67,13 @@ FORMAT_AGENT.add_spec(
 #
 # GRIB files.
 #
-FORMAT_AGENT.add_spec(FormatSpecification('GRIB',
-                                          MagicNumber(4),
-                                          0x47524942,
-                                          grib.load_cubes,
-                                          priority=5))
+# NB. Because this is such a "fuzzy" check, we give this a very low
+# priority to avoid collateral damage from false positives.
+FORMAT_AGENT.add_spec(
+    FormatSpecification('GRIB', MagicNumber(100),
+                        lambda header_bytes: 'GRIB' in header_bytes,
+                        grib.load_cubes, priority=1))
 
-
-FORMAT_AGENT.add_spec(FormatSpecification('WMO GRIB Bulletin (21 bytes)',
-                                          MagicNumber(4, offset=21),
-                                          0x47524942,
-                                          grib.load_cubes,
-                                          priority=3))
-
-
-FORMAT_AGENT.add_spec(FormatSpecification('WMO GRIB Bulletin (42 bytes)',
-                                          MagicNumber(4, offset=42),
-                                          0x47524942,
-                                          grib.load_cubes,
-                                          priority=3))
 
 #
 # netCDF files.
