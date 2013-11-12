@@ -199,12 +199,12 @@ def param_code(cube, grib):
         gribapi.grib_set_long(grib, "parameterNumber",
                               int(grib2_info.number))
     else:
-        gribapi.grib_set_long(grib, "discipline", 0)
-        gribapi.grib_set_long(grib, "parameterCategory", 0)
-        gribapi.grib_set_long(grib, "parameterNumber", 0)
+        gribapi.grib_set_long(grib, "discipline", 255)
+        gribapi.grib_set_long(grib, "parameterCategory", 255)
+        gribapi.grib_set_long(grib, "parameterNumber", 255)
         warnings.warn('Unable to determine Grib2 parameter code for cube.\n'
                       'discipline, parameterCategory and parameterNumber '
-                      'have been zeroed.')
+                      'have been set to "missing".')
 
 
 def generating_process_type(cube, grib):
