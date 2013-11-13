@@ -21,6 +21,9 @@ Iris 1.6 features
   :meth:`iris.experimental.equalise_cubes.equalise_attributes`.
 * Staggered grid support for Fieldsfiles extended to type 6 (Arakawa C grid
   with v at poles).
+* New method on the cube which automatically handles area weighting when
+  collapsing.  See
+  :meth:`iris.cube.Cube.weighted_collapsed`.
 
 Bugs fixed
 ----------

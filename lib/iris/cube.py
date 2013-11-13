@@ -2465,7 +2465,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Collapse one or more dimensions over the cube utilising spacial area
         weights, given the coordinate/s and an aggregation.
 
-        This method acts as a wrapper to :method:`iris.cube.Cube.collapsed` to
+        This method acts as a wrapper to :meth:`~iris.cube.Cube.collapsed` to
         simplify the API for performing aggregations suitable with area
         weightings.
 
@@ -2488,7 +2488,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         .. note::
 
-            See :method:`~iris.cube.Cube.collapsed` for further information.
+            See :meth:`iris.cube.Cube.collapsed` for further information.
             Bounds will be guessed where appropriate.
 
         """
