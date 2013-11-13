@@ -43,9 +43,12 @@ def main():
     pre_industrial = iris.load_cube(iris.sample_data_path('pre-industrial.pp'),
                                     north_america)
 
-    pre_industrial_mean = pre_industrial.collapsed(['latitude', 'longitude'], iris.analysis.MEAN)
-    e1_mean = e1.collapsed(['latitude', 'longitude'], iris.analysis.MEAN)
-    a1b_mean = a1b.collapsed(['latitude', 'longitude'], iris.analysis.MEAN)
+    pre_industrial_mean = pre_industrial.weighted_collapsed(
+        ['latitude', 'longitude'], iris.analysis.MEAN)
+    e1_mean = e1.weighted_collapsed(['latitude', 'longitude'],
+                                    iris.analysis.MEAN)
+    a1b_mean = a1b.weighted_collapsed(['latitude', 'longitude'],
+                                      iris.analysis.MEAN)
 
     # Show ticks 30 years apart
     plt.gca().xaxis.set_major_locator(mdates.YearLocator(30))
