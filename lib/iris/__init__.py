@@ -115,7 +115,7 @@ __version__ = '1.6.0-dev'
 # Restrict the names imported when using "from iris import *"
 __all__ = ['load', 'load_cube', 'load_cubes', 'load_raw',
            'save', 'Constraint', 'AttributeConstraint', 'TimeConstraint',
-           'sample_data_path', 'site_configuration']
+           'TimeRangeConstraint', 'sample_data_path', 'site_configuration']
 
 
 # When required, log the usage of Iris.
@@ -126,6 +126,7 @@ if iris.config.IMPORT_LOGGER:
 Constraint = iris._constraints.Constraint
 AttributeConstraint = iris._constraints.AttributeConstraint
 TimeConstraint = iris._constraints.TimeConstraint
+TimeRangeConstraint = iris._constraints.TimeRangeConstraint
 
 
 # Initialise the site configuration dictionary.

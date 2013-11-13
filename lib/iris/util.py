@@ -23,6 +23,7 @@ import abc
 import collections
 import copy
 import inspect
+import netcdftime
 import os
 import os.path
 import sys
@@ -1117,3 +1118,12 @@ def file_is_newer_than(result_path, source_paths):
         if source_timestamp >= result_timestamp:
             return False
     return True
+
+
+def _fix_netcdftime_datetime(dt, unit):
+    # Fix netcdftime bug: netcdftime.datetime(2000, 03, 31).dayofyr
+    # Happens to work with datetime objects too.
+    fix_unit = "days since {}".format(str(dt))
+    fix_utime = netcdftime.utime(fix_unit, calendar=unit.calendar)
+    dt = fix_utime.num2date(0)
+    return dt
