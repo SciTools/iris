@@ -134,9 +134,9 @@ class Test_phenomenon(tests.IrisTest):
         grib = None
         cube = iris.cube.Cube(np.array([1.0]))
         grib_save_rules.param_code(cube, grib)
-        mock_set_long.assert_any_call(grib, "discipline", 0)
-        mock_set_long.assert_any_call(grib, "parameterCategory", 0)
-        mock_set_long.assert_any_call(grib, "parameterNumber", 0)
+        mock_set_long.assert_any_call(grib, "discipline", 255)
+        mock_set_long.assert_any_call(grib, "parameterCategory", 255)
+        mock_set_long.assert_any_call(grib, "parameterNumber", 255)
 
     @mock.patch.object(gribapi, "grib_set_long")
     def test_phenom_known_standard_name(self, mock_set_long):
