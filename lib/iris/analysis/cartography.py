@@ -101,14 +101,27 @@ def rotate_pole(lons, lats, pole_lon, pole_lat):
     return rotated_lon, rotated_lat
 
 
-def _get_lat_lon_coords(cube):
+def get_lat_lon_coords(cube):
+    """
+    Returns single coordinates matching the names 'latitude' 'longitude'.
+
+    Args:
+
+    * cube (:class:`iris.cube.Cube`):
+        The cube on which to extract the coordinates.
+
+    Returns:
+        lat, lon tuple matching the names 'latitude' and 'longitude' on the
+        given cube.
+
+    """
     lat_coords = filter(lambda coord: "latitude" in coord.name(),
                         cube.coords())
     lon_coords = filter(lambda coord: "longitude" in coord.name(),
                         cube.coords())
     if len(lat_coords) > 1 or len(lon_coords) > 1:
         raise ValueError(
-            "Calling _get_lat_lon_coords() with multiple lat or lon coords"
+            "Calling get_lat_lon_coords() with multiple lat or lon coords"
             " is currently disallowed")
     lat_coord = lat_coords[0]
     lon_coord = lon_coords[0]
@@ -317,7 +330,7 @@ def area_weights(cube, normalize=False):
 
     # Get the lon and lat coords and axes
     try:
-        lat, lon = _get_lat_lon_coords(cube)
+        lat, lon = get_lat_lon_coords(cube)
     except IndexError:
         raise ValueError('Cannot get latitude/longitude '
                          'coordinates from cube {!r}.'.format(cube.name()))
@@ -495,7 +508,7 @@ def project(cube, target_proj, nx=None, ny=None):
 
     """
     try:
-        lat_coord, lon_coord = _get_lat_lon_coords(cube)
+        lat_coord, lon_coord = get_lat_lon_coords(cube)
     except IndexError:
         raise ValueError('Cannot get latitude/longitude '
                          'coordinates from cube {!r}.'.format(cube.name()))

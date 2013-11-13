@@ -24,7 +24,6 @@ import collections
 import copy
 import datetime
 import operator
-import re
 import UserDict
 import warnings
 import zlib
@@ -33,8 +32,9 @@ import numpy as np
 import numpy.ma as ma
 
 import iris.analysis
-import iris.analysis.maths
+import iris.analysis.cartography
 import iris.analysis.interpolate
+import iris.analysis.maths
 import iris.aux_factory
 import iris.coord_systems
 import iris.coords
@@ -2459,6 +2459,56 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         aggregator.update_metadata(collapsed_cube, coords, axis=-1, **kwargs)
         result = aggregator.post_process(collapsed_cube, data_result, **kwargs)
         return result
+
+    def weighted_collapsed(self, coords, aggregator, **kwargs):
+        """
+        Collapse one or more dimensions over the cube utilising spacial area
+        weights, given the coordinate/s and an aggregation.
+
+        This method acts as a wrapper to :method:`iris.cube.Cube.collapsed` to
+        simplify the API for performing aggregations suitable with area
+        weightings.
+
+        Args:
+
+        * coords (string, coord or a list of strings/coords):
+            Coordinate names/coordinates over which the cube should be
+            collapsed.
+
+        * aggregator (:class:`iris.analysis.Aggregator`):
+            Aggregator to be applied for collapse operation.
+
+        Kwargs:
+
+        * kwargs:
+            Aggregation function keyword arguments.
+
+        Returns:
+            Collapsed cube.
+
+        .. note::
+
+            See :method:`~iris.cube.Cube.collapsed` for further information.
+            Bounds will be guessed where appropriate.
+
+        """
+        if not isinstance(aggregator, iris.analysis.WeightedAggregator):
+            msg = ('Aggregation function does not support spacial area '
+                   'weights, continuing without determining these weights')
+            warnings.warn(msg)
+        else:
+            if 'weights' in kwargs:
+                msg = 'Specified weights overide spacial area weights'
+                warnings.warn(msg)
+            else:
+                lat, lon = iris.analysis.cartography.get_lat_lon_coords(self)
+                if not lat.has_bounds():
+                    lat.guess_bounds()
+                if not lon.has_bounds():
+                    lon.guess_bounds()
+                grid_areas = iris.analysis.cartography.area_weights(self)
+                kwargs['weights'] = grid_areas
+        return self.collapsed(coords, aggregator, **kwargs)
 
     def aggregated_by(self, coords, aggregator, **kwargs):
         """
