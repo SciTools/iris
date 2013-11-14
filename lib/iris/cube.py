@@ -2378,6 +2378,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Convert any coordinate names to coordinates
         coords = self._as_list_of_coords(coords)
 
+        if (isinstance(aggregator, iris.analysis.WeightedAggregator) and
+                not aggregator.uses_weighting(**kwargs)):
+            msg = "Collapsing spatial coordinate '{}' without weighting"
+            for coord in coords:
+                if 'latitude' in coord.name() or 'longitude' in coord.name():
+                    warnings.warn(msg.format(coord.name()))
+
         # Determine the dimensions we need to collapse (and those we don't)
         if aggregator.cell_method == 'peak':
             dims_to_collapse = [list(self.coord_dims(coord))
