@@ -101,13 +101,13 @@ _LBUSER_DTYPE_LOOKUP = {1: '>f{word_depth}',
                         'default': '>f{word_depth}', }
 
 
-#: Codes used in STASH_TO_GRID which indicate the x coordinate is on the
+#: Codes used in STASH_GRID which indicate the x coordinate is on the
 #: edge of the cell.
-X_COORD_U_GRID = (18,)
+X_COORD_U_GRID = (11, 18,)
 
-#: Codes used in STASH_TO_GRID which indicate the y coordinate is on the
+#: Codes used in STASH_GRID which indicate the y coordinate is on the
 #: edge of the cell.
-Y_COORD_V_GRID = (19,)
+Y_COORD_V_GRID = (11, 19,)
 
 #: Grid codes found in the STASH master which are currently known to be
 #: handled correctly. A warning is issued if a grid is found which is not

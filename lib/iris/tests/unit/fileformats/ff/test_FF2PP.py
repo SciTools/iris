@@ -116,7 +116,7 @@ class Test_FF2PP__extract_field__LBC_format(tests.IrisTest):
         self.assertTrue(non_trivial_coord_warn_msg.startswith(msg),
                         warn_error_tmplt.format(non_trivial_coord_warn_msg))
 
-    def test_LCB_header_non_trivial_coords_both(self):
+    def test_LBC_header_non_trivial_coords_both(self):
         # Check a warning is raised when both bdx and bdy are bad.
         field = mock.Mock(bdx=0, bdy=0, bzx=10, bzy=10)
         self.check_non_trivial_coordinate_warning(field)
@@ -124,7 +124,7 @@ class Test_FF2PP__extract_field__LBC_format(tests.IrisTest):
         field.bdy = field.bdx = field.bmdi
         self.check_non_trivial_coordinate_warning(field)
 
-    def test_LCB_header_non_trivial_coords_x(self):
+    def test_LBC_header_non_trivial_coords_x(self):
         # Check a warning is raised when bdx is bad.
         field = mock.Mock(bdx=0, bdy=10, bzx=10, bzy=10)
         self.check_non_trivial_coordinate_warning(field)
@@ -132,7 +132,7 @@ class Test_FF2PP__extract_field__LBC_format(tests.IrisTest):
         field.bdx = field.bmdi
         self.check_non_trivial_coordinate_warning(field)
 
-    def test_LCB_header_non_trivial_coords_y(self):
+    def test_LBC_header_non_trivial_coords_y(self):
         # Check a warning is raised when bdy is bad.
         field = mock.Mock(bdx=10, bdy=0, bzx=10, bzy=10)
         self.check_non_trivial_coordinate_warning(field)
