@@ -24,7 +24,6 @@ import numpy as np
 
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
-from iris.fileformats.mosig_cf_map import MOSIG_STASH_TO_CF
 from iris.fileformats.rules import Factory, Reference, ReferenceTarget
 from iris.fileformats.um_cf_map import LBFC_TO_CF, STASH_TO_CF
 from iris.unit import Unit
@@ -358,22 +357,17 @@ def convert(f):
         standard_name = "sea_surface_wave_significant_height"
         units = "m"
 
-    if str(f.stash) in MOSIG_STASH_TO_CF:
-        standard_name = MOSIG_STASH_TO_CF[str(f.stash)].name
-        units = MOSIG_STASH_TO_CF[str(f.stash)].unit
-        long_name = None
-
     if str(f.stash) in STASH_TO_CF:
-        standard_name = STASH_TO_CF[str(f.stash)].cfname
-        units = STASH_TO_CF[str(f.stash)].unit
-        long_name = None
+        standard_name = STASH_TO_CF[str(f.stash)].standard_name
+        units = STASH_TO_CF[str(f.stash)].units
+        long_name = STASH_TO_CF[str(f.stash)].long_name
 
     if \
             (not f.stash.is_valid) and \
             (f.lbfc in LBFC_TO_CF):
-        standard_name = LBFC_TO_CF[f.lbfc].cfname
-        units = LBFC_TO_CF[f.lbfc].unit
-        long_name = None
+        standard_name = LBFC_TO_CF[f.lbfc].standard_name
+        units = LBFC_TO_CF[f.lbfc].units
+        long_name = LBFC_TO_CF[f.lbfc].long_name
 
     if f.lbuser[3] == 33:
         references.append(ReferenceTarget('orography', None))
