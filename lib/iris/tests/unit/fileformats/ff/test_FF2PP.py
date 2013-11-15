@@ -26,6 +26,7 @@ import mock
 import numpy as np
 import warnings
 
+from iris.fileformats.ff import FF2PP
 import iris.fileformats.ff as ff
 import iris.fileformats.pp as pp
 
@@ -364,6 +365,32 @@ class Test__extract_field__grid_staggering(tests.IrisTest):
         res.next()
         self.assertFalse(ff.FF2PP._det_typeC_grid_coord.called)
         ff.FF2PP._det_typeC_vpole_grid_coord.assert_called_once_with()
+
+
+class Test__select_grid(tests.IrisTest):
+    def setUp(self):
+        self.xp = mock.sentinel.xp
+        self.xu = mock.sentinel.xu
+        self.yp = mock.sentinel.yp
+        self.yv = mock.sentinel.yv
+
+    def _test(self, grid, expected):
+        with mock.patch('iris.fileformats.ff.FFHeader'):
+            ff2pp = FF2PP('dummy')
+        result = ff2pp._select_grid(grid, self.xp, self.xu, self.yp, self.yv)
+        self.assertEqual(result, expected)
+
+    def test_pp(self):
+        self._test(1, (self.xp, self.yp))
+
+    def test_pu(self):
+        self._test(18, (self.xu, self.yp))
+
+    def test_up(self):
+        self._test(19, (self.xp, self.yv))
+
+    def test_uu(self):
+        self._test(11, (self.xu, self.yv))
 
 
 if __name__ == "__main__":

@@ -321,6 +321,15 @@ class FF2PP(object):
 
         return x_p, y_p, x_u, y_v
 
+    def _select_grid(self, grid, x_p, x_u, y_p, y_v):
+        x = x_p
+        y = y_p
+        if grid in X_COORD_U_GRID:
+            x = x_u
+        if grid in Y_COORD_V_GRID:
+            y = y_v
+        return x, y
+
     def _extract_field(self):
         # FF table pointer initialisation based on FF LOOKUP table
         # configuration.
@@ -395,12 +404,7 @@ class FF2PP(object):
                               'loader. Assuming the data is on a P grid.'
                               ''.format(field.stash, grid))
 
-            field.x = x_p
-            field.y = y_p
-            if grid in X_COORD_U_GRID:
-                field.x = x_u
-            if grid in Y_COORD_V_GRID:
-                field.y = y_v
+            field.x, field.y = self._select_grid(grid, x_p, x_u, y_p, y_v)
 
             if is_boundary_packed:
                 name_mapping = dict(rim_width=slice(4, 6), y_halo=slice(2, 4),
