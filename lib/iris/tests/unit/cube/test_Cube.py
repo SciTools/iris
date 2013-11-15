@@ -86,11 +86,7 @@ class Test_collapsed__warning(tests.IrisTest):
                 return_value=False)
 
             coords = ['latitude', 'longitude']
-            self.cube.collapsed(
-                coords, aggregator_instance, somekeyword='bla')
-
-            aggregator_instance.uses_weighting.assert_called_once_with(
-                somekeyword='bla')
+            self.cube.collapsed(coords, aggregator_instance)
 
             msg = "Collapsing spatial coordinate '{}' without weighting"
             for coord in coords:
@@ -112,11 +108,7 @@ class Test_collapsed__warning(tests.IrisTest):
                 return_value=True)
 
             coords = ['latitude', 'longitude']
-            self.cube.collapsed(coords, aggregator_instance,
-                                somekeyword='bla', weights=weights)
-
-            aggregator_instance.uses_weighting.assert_called_once_with(
-                somekeyword='bla', weights=weights)
+            self.cube.collapsed(coords, aggregator_instance, weights=weights)
 
             msg = "Collapsing spatial coordinate '{}' without weighting"
             for coord in coords:
@@ -134,10 +126,7 @@ class Test_collapsed__warning(tests.IrisTest):
                 return_value=False)
 
             coords = ['grid_latitude', 'grid_longitude']
-            self.cube.collapsed(coords, aggregator_instance, somekeyword='bla')
-
-            aggregator_instance.uses_weighting.assert_called_once_with(
-                somekeyword='bla')
+            self.cube.collapsed(coords, aggregator_instance)
 
             msg = "Collapsing spatial coordinate '{}' without weighting"
             for coord in coords:
@@ -159,10 +148,7 @@ class Test_collapsed__warning(tests.IrisTest):
                 return_value=False)
 
             coords = ['grid_latitude', 'wibble']
-            self.cube.collapsed(coords, aggregator_instance, somekeyword='bla')
-
-            aggregator_instance.uses_weighting.assert_called_once_with(
-                somekeyword='bla')
+            self.cube.collapsed(coords, aggregator_instance)
 
             msg = "Collapsing spatial coordinate '{}' without weighting"
             for coord in coords:
