@@ -2383,11 +2383,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             msg = "Collapsing spatial coordinate '{}' without weighting"
             lat_match = filter(lambda coord: 'latitude' in coord.name(),
                                coords)
-            lon_match = filter(lambda coord: 'longitude' in coord.name(),
-                               coords)
-            if lat_match and lon_match:
-                lat_lon_match = lat_match + lon_match
-                for coord in lat_lon_match:
+            if lat_match:
+                for coord in lat_match:
                     warnings.warn(msg.format(coord.name()))
 
         # Determine the dimensions we need to collapse (and those we don't)
