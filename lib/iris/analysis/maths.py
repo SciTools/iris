@@ -113,7 +113,7 @@ def _assert_compatible(cube, other):
                          "The cube's shape was %s and the array's shape was %s" % (err, cube.shape, other.shape))
 
     if cube.shape != data_view.shape:
-        raise ValueError("The array operation would increase the dimensionality of the cube. The new cubes data would "
+        raise ValueError("The array operation would increase the dimensionality of the cube. The new cube's data would "
                          "have had to become: %s" % (data_view.shape, ))
 
 
@@ -122,7 +122,7 @@ def add(cube, other, dim=None, ignore=True, in_place=False):
     Calculate the sum of two cubes, or the sum of a cube and a coordinate or scalar
     value.
 
-    When summing two cubes, they must both have the same coordinate systems & data resolution.
+    When summing two cubes, they must both have the same coordinate systems.
 
     When adding a coordinate to a cube, they must both share the same number of elements
     along a shared axis.
@@ -155,9 +155,9 @@ def subtract(cube, other, dim=None, ignore=True, in_place=False):
     Calculate the difference between two cubes, or the difference between
     a cube and a coordinate or scalar value.
 
-    When subtracting two cubes, they must both have the same coordinate systems & data resolution.
+    When subtracting two cubes, they must both have the same coordinate systems.
 
-    When subtracting a coordinate to a cube, they must both share the same number of elements
+    When subtracting a coordinate from a cube, they must both share the same number of elements
     along a shared axis.
 
     Args:
@@ -254,28 +254,77 @@ def _add_subtract_common(operation_function, operation_symbol, operation_noun, o
     elif isinstance(other, iris.cube.Cube):
         # Deal with cube addition/subtraction by cube
 
-        # get a coordinate comparison of this cube and the cube to do the operation with
-        coord_comp = iris.analysis.coord_comparison(cube, other)
+        # Ensure broadcasting is possible and that cube would not change shape
+        _assert_compatible(cube, other.data)
+        
+        # Compare the coords of the corresponding data dimensions
+        # (if broadcasting, cube may have more leading dimensions than other)
+        cube_shared_dims = range(cube.ndim)[-other.ndim:]
+        other_shared_dims = range(other.ndim)
 
-        if coord_comp['transposable']:
-            raise ValueError('Cubes cannot be %s, differing axes. '
-                                 'cube.transpose() may be required to re-order the axes.' % operation_past_tense)
+        try:
+            cube_shared_coords = [cube.coord(dimensions=cube_dim,
+                                             dim_coords=True)
+                                  for cube_dim in cube_shared_dims]
+            other_shared_coords = [other.coord(dimensions=other_dim,
+                                               dim_coords=True)
+                                   for other_dim in other_shared_dims]
+        except iris.exceptions.CoordinateNotFoundError:
+            return NotImplemented
+
+        for cube_coord, other_coord in zip(cube_shared_coords,
+                                           other_shared_coords):
+            # cube_coord and other_coord are both DimCoords and both
+            # represent the same single data dimension when broadcasting
+            error_msg = ("Cubes cannot be {0}, {1} for dimension {2} on 'cube'"
+                         " ({3}) does not match corresponding {1} for dimension"
+                         " {4} on 'other' ({5})")
+            # Coordinate metadata must match
+            if not (cube_coord._as_defn() == other_coord._as_defn()):
+                raise ValueError(error_msg(operation_past_tense,
+                                           'coordinate metadata',
+                                           cube.coord_dims(cube_coord)[0],
+                                           cube_coord.name(),
+                                           other.coord_dims(other_coord)[0],
+                                           other_coord.name()))
+                
+            # Points comparison
+            eq = iris.util.array_equal(cube_coord.points, other_coord.points)
+            # Bounds comparison
+            if eq:
+                if (cube_coord.bounds is not None
+                    and other_coord.bounds is not None):
+                    
+                    eq = iris.util.array_equal(cube_coord.bounds,
+                                               other_coord.bounds)
+                else:
+                    eq = (cube_coord.bounds is None
+                          and other_coord.bounds is None)
+
+            if not eq and not (len(cube_coord.points) > 1
+                               and len(other_coord.points) == 1):
+                raise ValueError(error_msg(operation_past_tense,
+                                           'coordinate points and bounds',
+                                           cube.coord_dims(cube_coord)[0],
+                                           cube_coord.name(),
+                                           other.coord_dims(other_coord)[0],
+                                           other_coord.name() +
+                                           " and 'other' can not be "
+                                           "broadcasted"))
 
         # provide a deprecation warning if the ignore keyword has been set
         if ignore is not True:
             warnings.warn('The "ignore" keyword has been deprecated in add/subtract. This functionality is now automatic. '
                           'The provided value to "ignore" has been ignored, and has been automatically calculated.')
 
-        bad_coord_grps = (coord_comp['ungroupable_and_dimensioned'] + coord_comp['resamplable'])
-        if bad_coord_grps:
-            raise ValueError('This operation cannot be performed as there are differing coordinates (%s) remaining '
-                             'which cannot be ignored.' % ', '.join({coord_grp.name() for coord_grp in bad_coord_grps}))
-
         if in_place:
             new_cube = cube
             operation_function(new_cube.data, other.data, new_cube.data)
         else:
             new_cube = cube.copy(data=operation_function(cube.data, other.data))
+
+        # get a coordinate comparison of this cube and the cube to do the operation with
+        coord_comp = iris.analysis.coord_comparison(cube, other)
 
         # If a coordinate is to be ignored - remove it
         ignore = filter(None, [coord_grp[0] for coord_grp in coord_comp['ignorable']])
