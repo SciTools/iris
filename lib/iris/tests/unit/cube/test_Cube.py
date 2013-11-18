@@ -60,17 +60,40 @@ class Test_collapsed__warning(tests.IrisTest):
         self.cube.add_aux_coord(grid_lon, 1)
         self.cube.add_aux_coord(wibble, 1)
 
+    def _aggregator(self, uses_weighting):
+        # Returns a mock aggregator with a mocked method (uses_weighting)
+        # which returns the given True/False condition.
+        aggregator = mock.Mock(spec=WeightedAggregator)
+        aggregator.cell_method = None
+        aggregator.uses_weighting = mock.Mock(return_value=uses_weighting)
+
+        return aggregator
+
+    def _assert_warn_collapse_without_weight(self, coords, warnings):
+        # Ensure that warning is raised.
+        msg = "Collapsing spatial coordinate '{!r}' without weighting"
+        for coord in coords:
+            self.assertIn(
+                msg.format(coord), [str(warn.message) for warn in warnings])
+
+    def _assert_nowarn_collapse_without_weight(self, coords, warnings):
+        # Ensure that warning is not rised.
+        msg = "Collapsing spatial coordinate '{!r}' without weighting"
+        for coord in coords:
+            self.assertNotIn(
+                msg.format(coord), [str(warn.message) for warn in warnings])
+
     def test_lat_lon_noweighted_aggregator(self):
         # Collapse latitude coordinate with unweighted aggregator.
-        warnings.simplefilter("always")
-        aggregator_instance = mock.Mock(spec=Aggregator)
-        aggregator_instance.cell_method = None
+        aggregator = mock.Mock(spec=Aggregator)
+        aggregator.cell_method = None
         coords = ['latitude', 'longitude']
 
         with warnings.catch_warnings(record=True) as w:
-            self.cube.collapsed(coords, aggregator_instance, somekeyword='bla')
+            warnings.simplefilter("always")
+            self.cube.collapsed(coords, aggregator, somekeyword='bla')
 
-        msg = "Collapsing spatial coordinate '{}' without weighting"
+        msg = "Collapsing spatial coordinate '{!r}' without weighting"
         for coord in coords:
             self.assertNotIn(
                 msg.format(coord), [str(warn.message) for warn in w])
@@ -78,78 +101,54 @@ class Test_collapsed__warning(tests.IrisTest):
     def test_lat_lon_weighted_aggregator(self):
         # Collapse latitude coordinate with weighted aggregator without
         # providing weights.
-        warnings.simplefilter("always")
-        aggregator_instance = mock.Mock(spec=WeightedAggregator)
-        aggregator_instance.cell_method = None
-        aggregator_instance.uses_weighting = mock.Mock(
-            return_value=False)
+        aggregator = self._aggregator(False)
         coords = ['latitude', 'longitude']
 
         with warnings.catch_warnings(record=True) as w:
-            self.cube.collapsed(coords, aggregator_instance)
+            warnings.simplefilter("always")
+            self.cube.collapsed(coords, aggregator)
 
-        msg = "Collapsing spatial coordinate '{}' without weighting"
         coords = filter(lambda coord: 'latitude' in coord, coords)
-        for coord in coords:
-            self.assertIn(
-                msg.format(coord), [str(warn.message) for warn in w])
+        self._assert_warn_collapse_without_weight(coords, w)
 
     def test_lat_lon_weighted_aggregator_with_weights(self):
         # Collapse latitude coordinate with a weighted aggregators and
         # providing suitable weights.
         weights = np.array([[0.1, 0.5], [0.3, 0.2]])
-        warnings.simplefilter("always")
-        aggregator_instance = mock.Mock(spec=WeightedAggregator)
-        aggregator_instance.cell_method = None
-        aggregator_instance.uses_weighting = mock.Mock(
-            return_value=True)
+        aggregator = self._aggregator(True)
         coords = ['latitude', 'longitude']
 
         with warnings.catch_warnings(record=True) as w:
-            self.cube.collapsed(coords, aggregator_instance, weights=weights)
+            warnings.simplefilter("always")
+            self.cube.collapsed(coords, aggregator, weights=weights)
 
-        msg = "Collapsing spatial coordinate '{}' without weighting"
-        for coord in coords:
-            self.assertNotIn(
-                msg.format(coord), [str(warn.message) for warn in w])
+        self._assert_nowarn_collapse_without_weight(coords, w)
 
     def test_lat_lon_weighted_aggregator_alt(self):
         # Collapse grid_latitude coordinate with weighted aggregator without
         # providing weights.  Tests coordinate matching logic.
-        warnings.simplefilter("always")
-        aggregator_instance = mock.Mock(spec=WeightedAggregator)
-        aggregator_instance.cell_method = None
-        aggregator_instance.uses_weighting = mock.Mock(
-            return_value=False)
+        aggregator = self._aggregator(False)
         coords = ['grid_latitude', 'grid_longitude']
 
         with warnings.catch_warnings(record=True) as w:
-            self.cube.collapsed(coords, aggregator_instance)
+            warnings.simplefilter("always")
+            self.cube.collapsed(coords, aggregator)
 
-        msg = "Collapsing spatial coordinate '{}' without weighting"
         coords = filter(lambda coord: 'latitude' in coord, coords)
-        for coord in coords:
-            self.assertIn(
-                msg.format(coord), [str(warn.message) for warn in w])
+        self._assert_warn_collapse_without_weight(coords, w)
 
     def test_no_lat_weighted_aggregator_mixed(self):
         # Collapse grid_latitude and an unmatched coordinate (not lat/lon)
         # with weighted aggregator without providing weights.
         # Tests coordinate matching logic.
-        warnings.simplefilter("always")
-        aggregator_instance = mock.Mock(spec=WeightedAggregator)
-        aggregator_instance.cell_method = None
-        aggregator_instance.uses_weighting = mock.Mock(
-            return_value=False)
+        aggregator = self._aggregator(False)
         coords = ['wibble']
 
         with warnings.catch_warnings(record=True) as w:
-            self.cube.collapsed(coords, aggregator_instance)
+            warnings.simplefilter("always")
+            self.cube.collapsed(coords, aggregator)
 
-        msg = "Collapsing spatial coordinate '{}' without weighting"
-        for coord in coords:
-            self.assertNotIn(
-                msg.format(coord), [str(warn.message) for warn in w])
+        self._assert_nowarn_collapse_without_weight(coords, w)
 
 
 if __name__ == "__main__":
