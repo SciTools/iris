@@ -130,6 +130,8 @@ These areas can now be passed to the ``collapsed`` method as weights:
          Cell methods:
               mean: grid_longitude, grid_latitude
 
+Alternatively, a wrapper which performs this functionality for the user is
+available through the following method :method:`cube.weighted_collapsed`.
 
 
 Partially reducing data dimensions

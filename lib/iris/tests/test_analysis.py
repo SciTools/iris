@@ -180,6 +180,21 @@ class TestAnalysisWeights(tests.IrisTest):
         # Test collpasing of non data coord
         self.assertRaises(iris.exceptions.CoordinateCollapseError, e.collapsed, 'pressure', iris.analysis.MEAN)
 
+    def test_weighted_collapse(self):
+        cube = iris.tests.stock.lat_lon_cube()
+        cube_com = cube.copy()
+
+        res = cube.weighted_collapsed('latitude', iris.analysis.MEAN)
+
+        cube_com.coord('latitude').guess_bounds()
+        cube_com.coord('longitude').guess_bounds()
+        grid_areas = iris.analysis.cartography.area_weights(cube_com)
+        com = cube_com.collapsed(
+            'latitude', iris.analysis.MEAN, weights=grid_areas)
+
+        self.assertEqual(res, com)
+
+
 @iris.tests.skip_data
 class TestAnalysisBasic(tests.IrisTest):
     def setUp(self):
