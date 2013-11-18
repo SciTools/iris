@@ -26,6 +26,7 @@ import mock
 import numpy as np
 import warnings
 
+from iris.fileformats.ff import FF2PP
 import iris.fileformats.ff as ff
 import iris.fileformats.pp as pp
 
@@ -116,7 +117,7 @@ class Test_FF2PP__extract_field__LBC_format(tests.IrisTest):
         self.assertTrue(non_trivial_coord_warn_msg.startswith(msg),
                         warn_error_tmplt.format(non_trivial_coord_warn_msg))
 
-    def test_LCB_header_non_trivial_coords_both(self):
+    def test_LBC_header_non_trivial_coords_both(self):
         # Check a warning is raised when both bdx and bdy are bad.
         field = mock.Mock(bdx=0, bdy=0, bzx=10, bzy=10)
         self.check_non_trivial_coordinate_warning(field)
@@ -124,7 +125,7 @@ class Test_FF2PP__extract_field__LBC_format(tests.IrisTest):
         field.bdy = field.bdx = field.bmdi
         self.check_non_trivial_coordinate_warning(field)
 
-    def test_LCB_header_non_trivial_coords_x(self):
+    def test_LBC_header_non_trivial_coords_x(self):
         # Check a warning is raised when bdx is bad.
         field = mock.Mock(bdx=0, bdy=10, bzx=10, bzy=10)
         self.check_non_trivial_coordinate_warning(field)
@@ -132,7 +133,7 @@ class Test_FF2PP__extract_field__LBC_format(tests.IrisTest):
         field.bdx = field.bmdi
         self.check_non_trivial_coordinate_warning(field)
 
-    def test_LCB_header_non_trivial_coords_y(self):
+    def test_LBC_header_non_trivial_coords_y(self):
         # Check a warning is raised when bdy is bad.
         field = mock.Mock(bdx=10, bdy=0, bzx=10, bzy=10)
         self.check_non_trivial_coordinate_warning(field)
@@ -364,6 +365,32 @@ class Test__extract_field__grid_staggering(tests.IrisTest):
         res.next()
         self.assertFalse(ff.FF2PP._det_typeC_grid_coord.called)
         ff.FF2PP._det_typeC_vpole_grid_coord.assert_called_once_with()
+
+
+class Test__select_grid(tests.IrisTest):
+    def setUp(self):
+        self.xp = mock.sentinel.xp
+        self.xu = mock.sentinel.xu
+        self.yp = mock.sentinel.yp
+        self.yv = mock.sentinel.yv
+
+    def _test(self, grid, expected):
+        with mock.patch('iris.fileformats.ff.FFHeader'):
+            ff2pp = FF2PP('dummy')
+        result = ff2pp._select_grid(grid, self.xp, self.xu, self.yp, self.yv)
+        self.assertEqual(result, expected)
+
+    def test_pp(self):
+        self._test(1, (self.xp, self.yp))
+
+    def test_pu(self):
+        self._test(18, (self.xu, self.yp))
+
+    def test_up(self):
+        self._test(19, (self.xp, self.yv))
+
+    def test_uu(self):
+        self._test(11, (self.xu, self.yv))
 
 
 if __name__ == "__main__":
