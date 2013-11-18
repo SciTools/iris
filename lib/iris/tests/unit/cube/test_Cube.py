@@ -72,9 +72,12 @@ class Test_collapsed__warning(tests.IrisTest):
     def _assert_warn_collapse_without_weight(self, coords, warnings):
         # Ensure that warning is raised.
         msg = "Collapsing spatial coordinate '{!r}' without weighting"
+        warnings = {str(warn.message): warn for warn in warnings}
         for coord in coords:
             self.assertIn(
-                msg.format(coord), [str(warn.message) for warn in warnings])
+                msg.format(coord), warnings)
+            self.assertTrue(
+                issubclass(warnings[msg.format(coord)].category, UserWarning))
 
     def _assert_nowarn_collapse_without_weight(self, coords, warnings):
         # Ensure that warning is not rised.
