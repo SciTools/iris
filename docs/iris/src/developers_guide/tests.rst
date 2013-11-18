@@ -76,7 +76,7 @@ When testing a function all the tests must reside in the module:
     `lib/iris/tests/unit/<fully/qualified/module>/test_<function_name>.py`
 
 Within this test module there must be one or more test classes:
- - Either: `TestAll`
+ - Either: `Test`
  - Or: `TestAspectOfFunction`
 
 And within those test classes, the test methods must be named according
