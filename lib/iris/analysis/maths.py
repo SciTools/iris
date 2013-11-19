@@ -258,8 +258,23 @@ def _add_subtract_common(operation_function, operation_symbol, operation_noun, o
         coord_comp = iris.analysis.coord_comparison(cube, other)
 
         if coord_comp['transposable']:
-            raise ValueError('Cubes cannot be %s, differing axes. '
-                                 'cube.transpose() may be required to re-order the axes.' % operation_past_tense)
+            # User does not need to transpose their cubes if numpy
+            # array broadcasting will make the dimensions match
+            broadcast_padding = cube.ndim - other.ndim
+            coord_dims_equal = True
+            for coord_group in coord_comp['transposable']:
+                cube_coord, other_coord = coord_group.coords
+                cube_coord_dims = cube.coord_dims(coord=cube_coord)
+                other_coord_dims = other.coord_dims(coord=other_coord)
+                other_coord_dims_broadcasted = tuple(
+                    [dim + broadcast_padding for dim in other_coord_dims])
+                if cube_coord_dims != other_coord_dims_broadcasted:
+                    coord_dims_equal = False
+
+            if not coord_dims_equal:
+                raise ValueError('Cubes cannot be %s, differing axes. '
+                                 'cube.transpose() may be required to '
+                                 're-order the axes.' % operation_past_tense)
 
         # provide a deprecation warning if the ignore keyword has been set
         if ignore is not True:
