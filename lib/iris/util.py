@@ -1024,6 +1024,68 @@ def format_array(arr):
                                            summary_insert=summary_insert)[:-1]
 
 
+def new_axis(src_cube, scalar_coord=None):
+    """
+    Create a new axis as the leading dimension of the cube, promoting a scalar
+    coordinate if specified.
+
+    Args:
+
+    * src_cube (:class:`iris.cube.Cube`)
+        Source cube on which to generate a new axis.
+
+    Kwargs:
+
+    * scalar_coord (:class:`iris.coord.Coord` or 'string')
+        Scalar coordinate to promote to a dimension coordinate.
+
+    Returns:
+        A new :class:`iris.cube.Cube` instance with one extra leading dimension
+        (length 1).
+
+    For example::
+
+        >>> cube.shape
+        (360, 360)
+        >>> ncube = iris.util.new_axis(cube, 'time')
+        >>> ncube.shape
+        (1, 360, 360)
+
+    .. warning::
+
+        Calling this method will trigger any deferred loading, causing the
+        data array of the cube to be loaded into memory.
+
+    """
+    if scalar_coord is not None:
+        if isinstance(scalar_coord, basestring):
+            scalar_coord = src_cube.coord(name=scalar_coord)
+        else:
+            scalar_coord = src_cube.coord(coord=scalar_coord)
+
+    # Indexing numpy arrays requires loading deferred data here returning a
+    # copy of the data with a new leading dimension.
+    new_cube = iris.cube.Cube(src_cube.data[None])
+    new_cube.metadata = src_cube.metadata
+
+    for coord in src_cube.aux_coords:
+        if scalar_coord and scalar_coord == coord:
+            dim_coord = iris.coords.DimCoord.from_coord(coord)
+            new_cube.add_dim_coord(dim_coord, 0)
+        else:
+            dims = np.array(src_cube.coord_dims(coord)) + 1
+            new_cube.add_aux_coord(coord.copy(), dims)
+
+    for coord in src_cube.dim_coords:
+        coord_dims = np.array(src_cube.coord_dims(coord)) + 1
+        new_cube.add_dim_coord(coord.copy(), coord_dims)
+
+    for factory in src_cube.aux_factories:
+        new_cube.add_aux_factory(copy.deepcopy(factory))
+
+    return new_cube
+
+
 def as_compatible_shape(src_cube, target_cube):
     """
     Return a cube with added length one dimensions to match the dimensionality
