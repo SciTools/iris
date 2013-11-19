@@ -835,42 +835,55 @@ class Coord(CFVariableMixin):
 
         """
         if isinstance(dims_to_collapse, (int, np.integer)):
-            dims_to_collapse = set([dims_to_collapse])
+            dims_to_collapse = [dims_to_collapse]
 
-        if dims_to_collapse is None:
-            dims_to_collapse = set(range(self.ndim))
+        if dims_to_collapse is not None and \
+                set(range(self.ndim)) != set(dims_to_collapse):
+            raise ValueError('Cannot partially collapse a coordinate (%s).'
+                             % self.name())
+
+        if self.units in ['no_unit', 'unknown']:
+            # Collapse the coordinate by serializing the points and
+            # bounds as strings.
+            serialize = lambda x: '|'.join([str(i) for i in x.flatten()])
+            bounds = None
+            if self.bounds is not None:
+                shape = self.bounds.shape[1:]
+                bounds = []
+                for index in np.ndindex(shape):
+                    index_slice = (slice(None),) + tuple(index)
+                    bounds.append(serialize(self.bounds[index_slice]))
+                dtype = np.dtype('S{}'.format(max(map(len, bounds))))
+                bounds = np.array(bounds, dtype=dtype).reshape((1,) + shape)
+            points = serialize(self.points)
+            dtype = np.dtype('S{}'.format(len(points)))
+            # Create the new collapsed coordinate.
+            coord = self.copy(points=np.array(points, dtype=dtype),
+                              bounds=bounds)
         else:
-            if set(range(self.ndim)) != set(dims_to_collapse):
-                raise ValueError('Cannot partially collapse a coordinate (%s).'
-                                 % self.name())
+            # Collapse the coordinate by calculating the bounded extremes.
+            if self.ndim > 1:
+                msg = 'Collapsing a multi-dimensional coordinate. ' \
+                    'Metadata may not be fully descriptive for {!r}.'
+                warnings.warn(msg.format(self.name()))
+            elif not self.is_contiguous():
+                msg = 'Collapsing a non-contiguous coordinate. ' \
+                    'Metadata may not be fully descriptive for {!r}.'
+                warnings.warn(msg.format(self.name()))
 
-        # Warn about non-contiguity.
-        if self.ndim > 1:
-            warnings.warn('Collapsing a multi-dimensional coordinate. '
-                          'Metadata may not be fully descriptive for "%s".' %
-                          self.name())
-        elif not self.is_contiguous():
-            warnings.warn('Collapsing a non-contiguous coordinate. Metadata '
-                          'may not be fully descriptive for "%s".' %
-                          self.name())
+            # Create bounds for the new collapsed coordinate.
+            item = self.bounds if self.bounds is not None else self.points
+            lower, upper = np.min(item), np.max(item)
+            bounds_dtype = item.dtype
+            bounds = [lower, upper]
+            # Create points for the new collapsed coordinate.
+            points_dtype = self.points.dtype
+            points = [(lower + upper) * 0.5]
 
-        # Create bounds for the new collapsed coordinate.
-        if self.bounds is not None:
-            lower_bound, upper_bound = np.min(self.bounds), np.max(self.bounds)
-            bounds_dtype = self.bounds.dtype
-        else:
-            lower_bound, upper_bound = np.min(self.points), np.max(self.points)
-            bounds_dtype = self.points.dtype
-
-        points_dtype = self.points.dtype
-
-        # Create the new collapsed coordinate.
-        coord_collapsed = self.copy(points=np.array([(lower_bound +
-                                                      upper_bound) * 0.5],
-                                                    dtype=points_dtype),
-                                    bounds=np.array([lower_bound, upper_bound],
-                                                    dtype=bounds_dtype))
-        return coord_collapsed
+            # Create the new collapsed coordinate.
+            coord = self.copy(points=np.array(points, dtype=points_dtype),
+                              bounds=np.array(bounds, dtype=bounds_dtype))
+        return coord
 
     def _guess_bounds(self, bound_position=0.5):
         """
