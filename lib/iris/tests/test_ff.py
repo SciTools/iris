@@ -181,7 +181,7 @@ class TestFFVariableResolutionGrid(tests.IrisTest):
         self.ff_header.column_dependent_constants = lons
         self.ff_header.row_dependent_constants = lats
 
-        self.U_grid_x = lons[:, 1]
+        self.U_grid_x = lons[:-1, 1]
         self.V_grid_y = lats[:-1, 1]
         self.P_grid_x = lons[:, 0]
         self.P_grid_y = lats[:, 0]
