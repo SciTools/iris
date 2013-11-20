@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the `iris._constraints.TimeRangeConstraint` class."""
+"""Unit tests for `iris.experimental.constraints.TimeRangeConstraint`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -22,7 +22,7 @@ import iris.tests as tests
 
 import numpy as np
 
-from iris._constraints import TimeRangeConstraint
+from iris.experimental.constraints import TimeRangeConstraint
 from iris.coords import AuxCoord, DimCoord
 import iris.cube
 import iris.unit
