@@ -107,16 +107,217 @@ X_COORD_U_GRID = (11, 18, 27)
 
 #: Codes used in STASH_GRID which indicate the y coordinate is on the
 #: edge of the cell.
-Y_COORD_V_GRID = (11, 19)
+Y_COORD_V_GRID = (11, 19, 28)
 
 #: Grid codes found in the STASH master which are currently known to be
 #: handled correctly. A warning is issued if a grid is found which is not
 #: handled.
-HANDLED_GRIDS = (1, 2, 3, 4, 5) + X_COORD_U_GRID + Y_COORD_V_GRID
+HANDLED_GRIDS = (1, 2, 3, 4, 5, 26, 29) + X_COORD_U_GRID + Y_COORD_V_GRID
+
+# REAL constants header names
+REAL_EW_SPACING = 0
+REAL_NS_SPACING = 1
+REAL_FIRST_LAT = 2
+REAL_FIRST_LON = 3
+REAL_POLE_LAT = 4
+REAL_POLE_LON = 5
+
+
+class Grid(object):
+    """
+    An abstract class representing the default/file-level grid
+    definition for a FieldsFile.
+
+    """
+    def __init__(self, column_dependent_constants, row_dependent_constants,
+                 real_constants, horiz_grid_type):
+        """
+        Create a Grid from the relevant sections of the FFHeader.
+
+        Args:
+
+        * column_dependent_constants (numpy.ndarray):
+            The `column_dependent_constants` from a FFHeader.
+
+        * row_dependent_constants (numpy.ndarray):
+            The `row_dependent_constants` from a FFHeader.
+
+        * real_constants (numpy.ndarray):
+            The `real_constants` from a FFHeader.
+
+        * horiz_grid_type (integer):
+            `horiz_grid_type` from a FFHeader.
+
+        """
+        self.column_dependent_constants = column_dependent_constants
+        self.row_dependent_constants = row_dependent_constants
+        self.ew_spacing = real_constants[REAL_EW_SPACING]
+        self.ns_spacing = real_constants[REAL_NS_SPACING]
+        self.first_lat = real_constants[REAL_FIRST_LAT]
+        self.first_lon = real_constants[REAL_FIRST_LON]
+        self.pole_lat = real_constants[REAL_POLE_LAT]
+        self.pole_lon = real_constants[REAL_POLE_LON]
+        self.horiz_grid_type = horiz_grid_type
+
+    def vectors(self, subgrid):
+        """
+        Return the X and Y coordinate vectors for the given sub-grid of
+        this grid.
+
+        Args:
+
+        * subgrid (integer):
+            A "grid type code" as described in UM documentation paper C4.
+
+        Returns:
+            A 2-tuple of X-vector, Y-vector.
+
+        """
+        x_p, x_u = self._x_vectors()
+        y_p, y_v = self._y_vectors()
+        x = x_p
+        y = y_p
+        if subgrid in X_COORD_U_GRID:
+            x = x_u
+        if subgrid in Y_COORD_V_GRID:
+            y = y_v
+        return x, y
+
+
+class ArakawaC(Grid):
+    """
+    An abstract class representing an Arakawa C-grid.
+
+    """
+    def _x_vectors(self):
+        x_p, x_u = None, None
+        if self.column_dependent_constants is not None:
+            x_p = self.column_dependent_constants[:, 0]
+            if self.column_dependent_constants.shape[1] == 2:
+                # Check for wrap-around.
+                if self.horiz_grid_type in (0, 4, 100, 104):
+                    x_u = self.column_dependent_constants[:-1, 1]
+                else:
+                    x_u = self.column_dependent_constants[:, 1]
+        return x_p, x_u
+
+
+class NewDynamics(ArakawaC):
+    """
+    An Arakawa C-grid as used by UM New Dynamics.
+
+    The theta and u points are at the poles.
+
+    """
+    def _y_vectors(self):
+        y_p, y_v = None, None
+        if self.row_dependent_constants is not None:
+            y_p = self.row_dependent_constants[:, 0]
+            if self.row_dependent_constants.shape[1] == 2:
+                y_v = self.row_dependent_constants[:-1, 1]
+        return y_p, y_v
+
+    def regular_x(self, subgrid):
+        """
+        Return the "zeroth" value and step for the X coordinate on the
+        given sub-grid of this grid.
+
+        Args:
+
+        * subgrid (integer):
+            A "grid type code" as described in UM documentation paper C4.
+
+        Returns:
+            A 2-tuple of BZX, BDX.
+
+        """
+        bdx = self.ew_spacing
+        bzx = self.first_lon - bdx
+        if subgrid in X_COORD_U_GRID:
+            bzx += 0.5 * bdx
+        return bzx, bdx
+
+    def regular_y(self, subgrid):
+        """
+        Return the "zeroth" value and step for the Y coordinate on the
+        given sub-grid of this grid.
+
+        Args:
+
+        * subgrid (integer):
+            A "grid type code" as described in UM documentation paper C4.
+
+        Returns:
+            A 2-tuple of BZY, BDY.
+
+        """
+        bdy = self.ns_spacing
+        bzy = self.first_lat - bdy
+        if subgrid in Y_COORD_V_GRID:
+            bzy += 0.5 * bdy
+        return bzy, bdy
+
+
+class ENDGame(ArakawaC):
+    """
+    An Arakawa C-grid as used by UM ENDGame.
+
+    The v points are at the poles.
+
+    """
+    def _y_vectors(self):
+        y_p, y_v = None, None
+        if self.row_dependent_constants is not None:
+            y_p = self.row_dependent_constants[:-1, 0]
+            if self.row_dependent_constants.shape[1] == 2:
+                y_v = self.row_dependent_constants[:, 1]
+        return y_p, y_v
+
+    def regular_x(self, subgrid):
+        """
+        Return the "zeroth" value and step for the X coordinate on the
+        given sub-grid of this grid.
+
+        Args:
+
+        * subgrid (integer):
+            A "grid type code" as described in UM documentation paper C4.
+
+        Returns:
+            A 2-tuple of BZX, BDX.
+
+        """
+        bdx = self.ew_spacing
+        bzx = self.first_lon - bdx
+        if subgrid in X_COORD_U_GRID:
+            bzx += 0.5 * bdx
+        return bzx, bdx
+
+    def regular_y(self, subgrid):
+        """
+        Return the "zeroth" value and step for the Y coordinate on the
+        given sub-grid of this grid.
+
+        Args:
+
+        * subgrid (integer):
+            A "grid type code" as described in UM documentation paper C4.
+
+        Returns:
+            A 2-tuple of BZY, BDY.
+
+        """
+        bdy = self.ns_spacing
+        bzy = self.first_lat - bdy
+        if subgrid in Y_COORD_V_GRID:
+            bzy -= 0.5 * bdy
+        return bzy, bdy
 
 
 class FFHeader(object):
     """A class to represent the FIXED_LENGTH_HEADER section of a FieldsFile."""
+
+    GRID_STAGGERING_CLASS = {3: NewDynamics, 6: ENDGame}
 
     def __init__(self, filename, word_depth=DEFAULT_FF_WORD_DEPTH):
         """
@@ -220,6 +421,19 @@ class FFHeader(object):
             raise AttributeError(msg.format(self.__class_.__name__, name))
         return value
 
+    def grid(self):
+        """Return the Grid definition for the FieldsFile."""
+        grid_class = self.GRID_STAGGERING_CLASS.get(self.grid_staggering)
+        if grid_class is None:
+            grid_class = NewDynamics
+            warnings.warn(
+                'Staggered grid type: {} not currently interpreted, assuming '
+                'standard C-grid'.format(self.grid_staggering))
+        grid = grid_class(self.column_dependent_constants,
+                          self.row_dependent_constants,
+                          self.real_constants, self.horiz_grid_type)
+        return grid
+
 
 class FF2PP(object):
     """A class to extract the individual PPFields from within a FieldsFile."""
@@ -284,52 +498,6 @@ class FF2PP(object):
 
         return data_depth, data_type
 
-    def _det_U_grid_coord(self):
-        # Determine horizontal grid components.
-        x_p, x_u = (None, None)
-        if self._ff_header.column_dependent_constants is not None:
-            x_p = self._ff_header.column_dependent_constants[:, 0]
-            if self._ff_header.column_dependent_constants.shape[1] == 2:
-                # Wrap around for global field
-                if self._ff_header.horiz_grid_type == 0:
-                    x_u = self._ff_header.column_dependent_constants[:-1, 1]
-                else:
-                    x_u = self._ff_header.column_dependent_constants[:, 1]
-        return x_p, x_u
-
-    def _det_typeC_grid_coord(self):
-        # Define the T, U, and V grid coordinates. The theta values are
-        # stored in the first element of the second dimension on the
-        # column/row dependent constants, and if it exists the U and V grid
-        # coordinates can be found on the second element of the second
-        # dimension.
-        x_p, y_p, x_u, y_v = (None, None, None, None)
-        x_p, x_u = self._det_U_grid_coord()
-        if self._ff_header.row_dependent_constants is not None:
-            y_p = self._ff_header.row_dependent_constants[:, 0]
-            if self._ff_header.row_dependent_constants.shape[1] == 2:
-                y_v = self._ff_header.row_dependent_constants[:-1, 1]
-        return x_p, y_p, x_u, y_v
-
-    def _det_typeC_vpole_grid_coord(self):
-        # As :meth:`_det_typeC_grid_coord` only with v at the poles.
-        x_p, y_p, x_u, y_v = (None, None, None, None)
-        x_p, x_u = self._det_U_grid_coord()
-        if self._ff_header.row_dependent_constants is not None:
-            y_p = self._ff_header.row_dependent_constants[:-1, 0]
-            if self._ff_header.row_dependent_constants.shape[1] == 2:
-                y_v = self._ff_header.row_dependent_constants[:, 1]
-        return x_p, y_p, x_u, y_v
-
-    def _select_grid(self, grid, x_p, x_u, y_p, y_v):
-        x = x_p
-        y = y_p
-        if grid in X_COORD_U_GRID:
-            x = x_u
-        if grid in Y_COORD_V_GRID:
-            y = y_v
-        return x, y
-
     def _det_border(self, field_dim, halo_dim):
         # Update field coordinates for a variable resolution LBC file where
         # the resolution of the very edge (within the rim width) is assumed to
@@ -370,10 +538,6 @@ class FF2PP(object):
         # FF table pointer initialisation based on FF LOOKUP table
         # configuration.
 
-        # Interpret grid coordinates based on grid staggering type.
-        grid_staggering = {3: self._det_typeC_grid_coord,
-                           6: self._det_typeC_vpole_grid_coord}
-
         lookup_table = self._ff_header.lookup_table
         table_index, table_entry_depth, table_count = lookup_table
         table_offset = (table_index - 1) * self._word_depth       # in bytes
@@ -388,15 +552,7 @@ class FF2PP(object):
 
         is_boundary_packed = self._ff_header.dataset_type == 5
 
-        # Interpret grid points
-        if self._ff_header.grid_staggering in grid_staggering:
-            x_p, y_p, x_u, y_v = grid_staggering[
-                self._ff_header.grid_staggering]()
-        else:
-            warnings.warn(
-                'Staggered grid type: {} not currently interpreted, assuming '
-                'standard C-grid'.format(self._ff_header.grid_staggering))
-            x_p, y_p, x_u, y_v = grid_staggering[3]()
+        grid = self._ff_header.grid()
 
         # Process each FF LOOKUP table entry.
         while table_count:
@@ -428,19 +584,30 @@ class FF2PP(object):
             # Determine PP field payload depth and type.
             data_depth, data_type = self._payload(field)
 
-            grid = STASH_GRID.get(str(field.stash), None)
+            subgrid = STASH_GRID.get(str(field.stash), None)
 
-            if grid is None:
+            if subgrid is None:
                 warnings.warn('The STASH code {0} was not found in the '
                               'STASH to grid type mapping. Picking the P '
                               'position as the cell type'.format(field.stash))
-            elif grid not in HANDLED_GRIDS:
+            elif subgrid not in HANDLED_GRIDS:
                 warnings.warn('The stash code {} is on a grid {} which has '
                               'not been explicitly handled by the fieldsfile '
                               'loader. Assuming the data is on a P grid.'
-                              ''.format(field.stash, grid))
+                              ''.format(field.stash, subgrid))
 
-            field.x, field.y = self._select_grid(grid, x_p, x_u, y_p, y_v)
+            field.x, field.y = grid.vectors(subgrid)
+
+            # Use the per-file grid if no per-field metadata is available.
+            no_x = field.bzx in (0, field.bmdi) and field.x is None
+            no_y = field.bzy in (0, field.bmdi) and field.y is None
+            if no_x and no_y:
+                field.bzx, field.bdx = grid.regular_x(subgrid)
+                field.bzy, field.bdy = grid.regular_y(subgrid)
+                field.bplat = grid.pole_lat
+                field.bplon = grid.pole_lon
+            elif no_x or no_y:
+                warnings.warn('Partially missing X or Y coordinate values.')
 
             if is_boundary_packed:
                 name_mapping = dict(rim_width=slice(4, 6), y_halo=slice(2, 4),
