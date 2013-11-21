@@ -245,6 +245,16 @@ class _CoordConstraint(object):
             msg = 'Cannot apply constraints to multidimensional coordinates'
             raise iris.exceptions.CoordinateMultiDimError(msg)
 
+        if coord.units.is_time_reference():
+            def cell_upgrade(cell, coord):
+                if cell.bound is not None:
+                    bound = coord.units.num2date(cell.bound)
+                point = coord.units.num2date(cell.point)
+                return iris.coords.DatetimeCell(point, bound, coord)
+        else:
+            # Do nothing.
+            cell_upgrade = lambda cell, coord: cell
+
         try_quick = False
         if callable(self._coord_thing):
             call_func = self._coord_thing
@@ -265,10 +275,10 @@ class _CoordConstraint(object):
                 try_quick = False
         if try_quick:
             r = np.zeros(coord.shape, dtype=np.bool)
-            if coord.cell(i) == self._coord_thing:
+            if cell_upgrade(coord.cell(i), coord) == self._coord_thing:
                 r[i] = True
         else:
-            r = np.array([call_func(cell) for cell in coord.cells()])
+            r = np.array([call_func(cell_upgrade(cell, coord)) for cell in coord.cells()])
         if dims:
             cube_cim[dims[0]] = r
         elif not all(r):
@@ -281,13 +291,14 @@ class _ColumnIndexManager(object):
     A class to represent column aligned slices which can be operated on
     using ``&``, ``|`` or ``^``.
 
-    ::
-
-        # 4 Dimensional slices
-        import numpy as np
-        cim = _ColumnIndexManager(4)
-        cim[1] = np.array([3, 4, 5]) > 3
-        print cim.as_slice()
+    >>> # Create a 2-d index manager
+    >>> cim = _ColumnIndexManager(2)
+    >>> # Provide an index on the second dimension (Note: now it knows
+    >>> # the length of that dimension as well as values of interest).
+    >>> cim[1] = np.array([3, 20, 100]) > 3
+    >>> # Observe that we can get the slice that would marry up to the index.
+    >>> print cim.as_slice()
+    (slice(None, None, None), slice(1, 3, 1))
 
     """
     def __init__(self, ndims):
