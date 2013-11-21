@@ -285,6 +285,7 @@ class FF2PP(object):
         return data_depth, data_type
 
     def _det_U_grid_coord(self):
+        # Determine horizontal grid components.
         x_p, x_u = (None, None)
         if self._ff_header.column_dependent_constants is not None:
             x_p = self._ff_header.column_dependent_constants[:, 0]
@@ -329,10 +330,10 @@ class FF2PP(object):
             y = y_v
         return x, y
 
-    def _det_xy_border(self, field_dim, halo_dim):
-        # Update field.x or field.y for a variable resolution LBC file where
-        # the resolution of the very edge (within rim_width) is assumed to be
-        # the resolution of the halo.
+    def _det_border(self, field_dim, halo_dim):
+        # Update field coordinates for a variable resolution LBC file where
+        # the resolution of the very edge (within the rim width) is assumed to
+        # be same as the halo.
         def range_order(range1, range2, resolution):
             # Handles whether increasing/decreasing ranges.
             if np.sign(resolution) > 0:
@@ -343,27 +344,26 @@ class FF2PP(object):
                 lower = range2
             return lower, upper
 
+        # Ensure that the resolution is the same on both edges.
         res_low = np.array([field_dim[1] - field_dim[0]])
         res_high = np.array([field_dim[-1] - field_dim[-2]])
         if not np.allclose(res_low, res_high):
-            msg = ('The LBC field has non-trivial x or y '
-                   'coordinates and have not been updated to take '
-                   'the boundary size into account. If you get '
-                   'this message, your x and y coordinates of the '
-                   'boundary condition fields may be incorrect.')
+            msg = ('The x or y coordinates of your boundary condition field '
+                   'may be incorrect, not having taken into account the '
+                   'boundary size.')
             warnings.warn(msg)
         else:
             range2 = field_dim[0] - res_low
             range1 = field_dim[0] - halo_dim * res_low
             lower, upper = range_order(range1, range2, res_low)
-            below = np.linspace(lower, upper, halo_dim)
+            extra_before = np.linspace(lower, upper, halo_dim)
 
             range1 = field_dim[-1] + res_high
             range2 = field_dim[-1] + halo_dim * res_high
             lower, upper = range_order(range1, range2, res_high)
-            above = np.linspace(lower, upper, halo_dim)
+            extra_after = np.linspace(lower, upper, halo_dim)
 
-            field_dim = np.concatenate([below, field_dim, above])
+            field_dim = np.concatenate([extra_before, field_dim, extra_after])
         return field_dim
 
     def _extract_field(self):
@@ -461,8 +461,8 @@ class FF2PP(object):
                 # to be confirmed.
                 if (field.bdx in (0, field.bmdi) or
                         field.bdy in (0, field.bmdi)):
-                    field.x = self._det_xy_border(field.x, b_packing.x_halo)
-                    field.y = self._det_xy_border(field.y, b_packing.y_halo)
+                    field.x = self._det_border(field.x, b_packing.x_halo)
+                    field.y = self._det_border(field.y, b_packing.y_halo)
                 else:
                     if field.bdy < 0:
                         warnings.warn('The LBC has a bdy less than 0. No '

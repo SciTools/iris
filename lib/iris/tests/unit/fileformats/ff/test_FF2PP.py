@@ -115,7 +115,9 @@ class Test_FF2PP__extract_field__LBC_format(tests.IrisTest):
         # Check a warning was raised with a suitable message.
         warn_error_tmplt = 'Unexpected warning message: {}'
         non_trivial_coord_warn_msg = warn.call_args[0][0]
-        msg = 'The LBC field has non-trivial x or y coordinates'
+        msg = ('The x or y coordinates of your boundary condition field may '
+               'be incorrect, not having taken into account the boundary '
+               'size.')
         self.assertTrue(non_trivial_coord_warn_msg.startswith(msg),
                         warn_error_tmplt.format(non_trivial_coord_warn_msg))
 
@@ -398,7 +400,7 @@ class Test__select_grid(tests.IrisTest):
         self._test(11, (self.xu, self.yv))
 
 
-class Test__det_xy_border(tests.IrisTest):
+class Test__det_border(tests.IrisTest):
     def setUp(self):
         _FFH_patch = mock.patch('iris.fileformats.ff.FFHeader')
         _FFH_patch.start()
@@ -410,13 +412,12 @@ class Test__det_xy_border(tests.IrisTest):
         ff2pp = FF2PP('dummy')
         field_x = np.array([1, 2, 10])
 
-        msg = ('The LBC field has non-trivial x or y coordinates and have not '
-               'been updated to take the boundary size into account. If you '
-               'get this message, your x and y coordinates of the boundary '
-               'condition fields may be incorrect.')
+        msg = ('The x or y coordinates of your boundary condition field may '
+               'be incorrect, not having taken into account the boundary '
+               'size.')
 
         with mock.patch('warnings.warn') as warn:
-            result = ff2pp._det_xy_border(field_x, None)
+            result = ff2pp._det_border(field_x, None)
         warn.assert_called_with(msg)
         self.assertIs(result, field_x)
 
@@ -425,7 +426,7 @@ class Test__det_xy_border(tests.IrisTest):
         ff2pp = FF2PP('dummy')
         field_x = np.array([1, 2, 3])
         com = np.array([0, 1, 2, 3, 4])
-        result = ff2pp._det_xy_border(field_x, 1)
+        result = ff2pp._det_border(field_x, 1)
         self.assertArrayEqual(result, com)
 
     def test_decreasing_field_values(self):
@@ -433,7 +434,7 @@ class Test__det_xy_border(tests.IrisTest):
         ff2pp = FF2PP('dummy')
         field_x = np.array([3, 2, 1])
         com = np.array([4, 3, 2, 1, 0])
-        result = ff2pp._det_xy_border(field_x, 1)
+        result = ff2pp._det_border(field_x, 1)
         self.assertArrayEqual(result, com)
 
 
