@@ -109,7 +109,7 @@ def _make_grib1_cf_table():
         return (grib1_key, cf_data)
 
     # Interpret the imported Grib1-to-CF table.
-    for (grib1data, cfdata) in grcf.GRIB1Local_TO_CF.iteritems():
+    for (grib1data, cfdata) in grcf.GRIB1_LOCAL_TO_CF.iteritems():
         assert grib1data.edition == 1
         association_entry = _make_grib1_cf_entry(
             table2_version=grib1data.t2version,
@@ -117,14 +117,14 @@ def _make_grib1_cf_table():
             param_number=grib1data.iParam,
             standard_name=cfdata.standard_name,
             long_name=cfdata.long_name,
-            units=cfdata.unit)
+            units=cfdata.units)
         if association_entry is not None:
             key, value = association_entry
             table[key] = value
 
     # Do the same for special Grib1 codes that include an implied height level.
     for (grib1data, (cfdata, extra_dimcoord)) \
-            in grcf.GRIB1LocalConstrained_TO_CF.iteritems():
+            in grcf.GRIB1_LOCAL_TO_CF_CONSTRAINED.iteritems():
         assert grib1data.edition == 1
         if extra_dimcoord.standard_name != 'height':
             raise ValueError('Got implied dimension coord of "{}", '
@@ -144,7 +144,7 @@ def _make_grib1_cf_table():
             param_number=int(grib1data.iParam),
             standard_name=cfdata.standard_name,
             long_name=cfdata.long_name,
-            units=cfdata.unit,
+            units=cfdata.units,
             set_height=extra_dimcoord.points[0])
         if association_entry is not None:
             key, value = association_entry
@@ -204,7 +204,7 @@ def _make_grib2_to_cf_table():
             param_number=grib2data.number,
             standard_name=cfdata.standard_name,
             long_name=cfdata.long_name,
-            units=cfdata.unit)
+            units=cfdata.units)
         if association_entry is not None:
             key, value = association_entry
             table[key] = value
@@ -258,7 +258,7 @@ def _make_cf_to_grib2_table():
     # Interpret the imported CF-to-Grib2 table into a lookup table
     for cfdata, grib2data in grcf.CF_TO_GRIB2.iteritems():
         assert grib2data.edition == 2
-        iris_units = iris.unit.Unit(cfdata.unit)
+        iris_units = iris.unit.Unit(cfdata.units)
         association_entry = _make_cf_grib2_entry(
             standard_name=cfdata.standard_name,
             long_name=cfdata.long_name,
