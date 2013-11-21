@@ -71,10 +71,15 @@ class TestMonotonic(unittest.TestCase):
     def test_monotonic_strict(self):
         b = np.array([3, 5.3, 4])
         self.assertNotMonotonic(b, strict=True)
+        self.assertNotMonotonic(b)
 
         b = np.array([3, 5.3, 5.3])
         self.assertNotMonotonic(b, strict=True)
-        self.assertMonotonic(b)
+        self.assertMonotonic(b, direction=1)
+        
+        b = b[::-1]
+        self.assertNotMonotonic(b, strict=True)
+        self.assertMonotonic(b, direction=-1)
 
         b = np.array([0.0])
         self.assertRaises(ValueError, iris.util.monotonic, b)
