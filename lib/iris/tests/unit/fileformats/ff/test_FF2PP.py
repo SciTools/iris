@@ -103,6 +103,8 @@ class Test_FF2PP__extract_field__LBC_format(tests.IrisTest):
 
         with self.mock_for_extract_field([field]) as ff2pp:
             ff2pp._ff_header.dataset_type = 5
+            ff2pp._select_grid = mock.Mock(
+                return_value=(np.array([1, 2, 6]), np.array([1, 2, 6])))
             with mock.patch('warnings.warn') as warn:
                 list(ff2pp._extract_field())
 
@@ -113,13 +115,16 @@ class Test_FF2PP__extract_field__LBC_format(tests.IrisTest):
         # Check a warning was raised with a suitable message.
         warn_error_tmplt = 'Unexpected warning message: {}'
         non_trivial_coord_warn_msg = warn.call_args[0][0]
-        msg = 'The LBC field has non-trivial x or y coordinates'
+        msg = ('The x or y coordinates of your boundary condition field may '
+               'be incorrect, not having taken into account the boundary '
+               'size.')
         self.assertTrue(non_trivial_coord_warn_msg.startswith(msg),
                         warn_error_tmplt.format(non_trivial_coord_warn_msg))
 
     def test_LBC_header_non_trivial_coords_both(self):
         # Check a warning is raised when both bdx and bdy are bad.
-        field = mock.Mock(bdx=0, bdy=0, bzx=10, bzy=10)
+        field = mock.Mock(
+            bdx=0, bdy=0, bzx=10, bzy=10, x=np.array([1, 2, 6]))
         self.check_non_trivial_coordinate_warning(field)
 
         field.bdy = field.bdx = field.bmdi
@@ -382,15 +387,55 @@ class Test__select_grid(tests.IrisTest):
 
     def test_pp(self):
         self._test(1, (self.xp, self.yp))
+        self._test(29, (self.xp, self.yp))
 
     def test_pu(self):
         self._test(18, (self.xu, self.yp))
+        self._test(27, (self.xu, self.yp))
 
     def test_up(self):
         self._test(19, (self.xp, self.yv))
 
     def test_uu(self):
         self._test(11, (self.xu, self.yv))
+
+
+class Test__det_border(tests.IrisTest):
+    def setUp(self):
+        _FFH_patch = mock.patch('iris.fileformats.ff.FFHeader')
+        _FFH_patch.start()
+        self.addCleanup(_FFH_patch.stop)
+
+    def test_unequal_spacing_eitherside(self):
+        # Ensure that we do not interpret the case where there is not the same
+        # spacing on the lower edge as the upper edge.
+        ff2pp = FF2PP('dummy')
+        field_x = np.array([1, 2, 10])
+
+        msg = ('The x or y coordinates of your boundary condition field may '
+               'be incorrect, not having taken into account the boundary '
+               'size.')
+
+        with mock.patch('warnings.warn') as warn:
+            result = ff2pp._det_border(field_x, None)
+        warn.assert_called_with(msg)
+        self.assertIs(result, field_x)
+
+    def test_increasing_field_values(self):
+        # Field where its values a increasing.
+        ff2pp = FF2PP('dummy')
+        field_x = np.array([1, 2, 3])
+        com = np.array([0, 1, 2, 3, 4])
+        result = ff2pp._det_border(field_x, 1)
+        self.assertArrayEqual(result, com)
+
+    def test_decreasing_field_values(self):
+        # Field where its values a decreasing.
+        ff2pp = FF2PP('dummy')
+        field_x = np.array([3, 2, 1])
+        com = np.array([4, 3, 2, 1, 0])
+        result = ff2pp._det_border(field_x, 1)
+        self.assertArrayEqual(result, com)
 
 
 if __name__ == "__main__":
