@@ -47,7 +47,8 @@ install:
   - ./.travis_no_output sudo /usr/bin/pip install netCDF4==1.0.2
   - ./.travis_no_output sudo /usr/bin/pip install pyke pandas
   - ./.travis_no_output sudo apt-get install openjdk-7-jre
-  - ./.travis_no_output sudo apt-get install python-gdal
+  - ./.travis_no_output sudo apt-get install libgdal1h=1.10.0-1~precise1
+  - ./.travis_no_output sudo apt-get install python-gdal=1.10.0-1~precise1
   - export LD_LIBRARY_PATH=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/server:$LD_LIBRARY_PATH
 
 # cfchecker
