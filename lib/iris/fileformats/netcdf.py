@@ -552,6 +552,12 @@ class Saver(object):
         Returns:
             None.
 
+        .. note::
+
+            The outermost dimension is saved with NetCDF dimension variable
+            length 'UNLIMITED'.  See :func:`iris.util.new_axis` on how to
+            promote scalar coordinates to the outermost dimension.
+
         """
         if len(cube.aux_factories) > 1:
             raise ValueError('Multiple auxiliary factories are not supported.')

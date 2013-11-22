@@ -14,13 +14,17 @@ Iris 1.6 features
 =================
 * A new utility function makes it easy to "shortcut" slow calculations or
   file loads by caching stored results. See
-  :meth:`iris.util.file_is_newer_than`.
+  :func:`iris.util.file_is_newer_than`.
 * A new experimental function removes any non-matching attributes from a group
   of cubes.  This can assist in merging cubes which only differ in their
   attributes.  See
   :meth:`iris.experimental.equalise_cubes.equalise_attributes`.
 * Staggered grid support for Fieldsfiles extended to type 6 (Arakawa C grid
   with v at poles).
+* A new utility function is now available for creating a new cube axis as the
+  leading dimension and in doing so, promoting a scalar coordinate if
+  specified.  See
+  :func:`iris.util.new_axis`.
 
 Bugs fixed
 ----------
