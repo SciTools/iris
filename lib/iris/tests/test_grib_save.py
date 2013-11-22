@@ -229,12 +229,6 @@ class TestHandmade(tests.IrisTest):
         self.assertRaises(iris.exceptions.TranslationError, iris.save, cube, saved_grib)
         os.remove(saved_grib)
 
-    def test_cube_time_no_forecast(self):
-        cube = self._cube_time_no_forecast()
-        saved_grib = iris.util.create_temp_filename(suffix='.grib2')
-        self.assertRaises(iris.exceptions.TranslationError, iris.save, cube, saved_grib)
-        os.remove(saved_grib)
-
     def test_cube_with_time_bounds(self):
         cube = self._cube_with_time_bounds()
         saved_grib = iris.util.create_temp_filename(suffix='.grib2')

@@ -598,6 +598,7 @@ class TestGribSimple(tests.IrisTest):
         # define a level type (NB these 2 are effectively the same)
         grib.levelType = 1
         grib.typeOfFirstFixedSurface = 1
+        grib.typeOfSecondFixedSurface = 1
         return grib
 
     def cube_from_message(self, grib):

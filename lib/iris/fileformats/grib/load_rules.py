@@ -316,6 +316,24 @@ def convert(grib):
             (grib._cf_data.set_height is not None):
         aux_coords_and_dims.append((DimCoord(points=grib._cf_data.set_height,  long_name="height", units="m", attributes={'positive':'up'}), None))
 
+
+    if \
+            (grib.edition == 2) and \
+            (grib.typeOfFirstFixedSurface != grib.typeOfSecondFixedSurface):
+        warnings.warn("Different vertical bound types not yet handled.")
+
+    if \
+            (grib.edition == 2) and \
+            (grib.typeOfFirstFixedSurface == 103) and \
+            (grib.typeOfSecondFixedSurface == 255):
+        aux_coords_and_dims.append((DimCoord(points=grib.scaledValueOfFirstFixedSurface/(10.0**grib.scaleFactorOfFirstFixedSurface), standard_name="height", units="m"), None))
+
+    if \
+            (grib.edition == 2) and \
+            (grib.typeOfFirstFixedSurface == 103) and \
+            (grib.typeOfSecondFixedSurface != 255):
+        aux_coords_and_dims.append((DimCoord(points=0.5*(grib.scaledValueOfFirstFixedSurface/(10.0**grib.scaleFactorOfFirstFixedSurface) + grib.scaledValueOfSecondFixedSurface/(10.0**grib.scaleFactorOfSecondFixedSurface)), standard_name="height", units="m", bounds=[grib.scaledValueOfFirstFixedSurface/(10.0**grib.scaleFactorOfFirstFixedSurface) , grib.scaledValueOfSecondFixedSurface/(10.0**grib.scaleFactorOfSecondFixedSurface)]), None))
+
     if \
             (grib.edition == 2) and \
             (grib.typeOfFirstFixedSurface == 100) and \

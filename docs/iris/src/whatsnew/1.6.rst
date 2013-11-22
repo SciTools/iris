@@ -25,6 +25,9 @@ Iris 1.6 features
   leading dimension and in doing so, promoting a scalar coordinate if
   specified.  See
   :func:`iris.util.new_axis`.
+* Interpreting cell methods from NAME.
+* GRIB2 export without forecast_period, enabling NAME to GRIB2. 
+* Loading height levels from GRIB2. 
 
 Bugs fixed
 ----------
