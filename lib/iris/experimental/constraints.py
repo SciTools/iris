@@ -58,9 +58,9 @@ class TimeRangeConstraint(Constraint):
         """
         Convenience method to extract the day of the year from either a
         :class:`datetime.datetime` or a :class:`netcdftime.datetime`.
-        
+
         Caution: See also :func:`iris.util._fix_netcdftime_datetime`.
-        
+
         """
         # netcdf.datetime?
         if hasattr(dt, 'dayofyr'):
