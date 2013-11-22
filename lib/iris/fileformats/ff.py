@@ -212,8 +212,8 @@ class ArakawaC(Grid):
         if self.column_dependent_constants is not None:
             x_p = self.column_dependent_constants[:, 0]
             if self.column_dependent_constants.shape[1] == 2:
-                # Check for wrap-around.
-                if self.horiz_grid_type in (0, 4, 100, 104):
+                # Wrap around for global field
+                if self.horiz_grid_type == 0:
                     x_u = self.column_dependent_constants[:-1, 1]
                 else:
                     x_u = self.column_dependent_constants[:, 1]
