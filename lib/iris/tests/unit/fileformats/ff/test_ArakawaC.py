@@ -55,5 +55,40 @@ class Test__x_vectors(tests.IrisTest):
                    xu=np.array([0, 10, 20]))
 
 
+class Test_regular_x(tests.IrisTest):
+    def _test(self, subgrid, bzx, bdx):
+        grid = ArakawaC(None, None, [4.0, None, None, -5.0, None, None], None)
+        result_bzx, result_bdx = grid.regular_x(subgrid)
+        self.assertEqual(result_bzx, bzx)
+        self.assertEqual(result_bdx, bdx)
+
+    def test_theta_subgrid(self):
+        self._test(1, -9.0, 4.0)
+
+    def test_u_subgrid(self):
+        self._test(11, -7.0, 4.0)
+
+
+class Test_regular_y(tests.IrisTest):
+    def _test(self, v_offset, subgrid, bzy, bdy):
+        grid = ArakawaC(None, None, [None, 4.0, 45.0, None, None, None], None)
+        grid._v_offset = v_offset
+        result_bzy, result_bdy = grid.regular_y(subgrid)
+        self.assertEqual(result_bzy, bzy)
+        self.assertEqual(result_bdy, bdy)
+
+    def test_theta_subgrid_NewDynamics(self):
+        self._test(0.5, 1, 41.0, 4.0)
+
+    def test_v_subgrid_NewDynamics(self):
+        self._test(0.5, 11, 43.0, 4.0)
+
+    def test_theta_subgrid_ENDGame(self):
+        self._test(-0.5, 1, 41.0, 4.0)
+
+    def test_v_subgrid_ENDGame(self):
+        self._test(-0.5, 11, 39.0, 4.0)
+
+
 if __name__ == "__main__":
     tests.main()

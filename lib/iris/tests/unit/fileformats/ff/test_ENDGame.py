@@ -26,6 +26,13 @@ import numpy as np
 from iris.fileformats.ff import ENDGame
 
 
+class Test(tests.IrisTest):
+    def test_class_attributes(self):
+        reals = np.arange(6) + 100
+        grid = ENDGame(None, None, reals, None)
+        self.assertEqual(grid._v_offset, -0.5)
+
+
 class Test__y_vectors(tests.IrisTest):
     def _test(self, row, yp, yv):
         reals = np.arange(6) + 100
@@ -44,34 +51,6 @@ class Test__y_vectors(tests.IrisTest):
     def test_2d(self):
         self._test(row=np.array([[0, 0], [1, 10], [2, 20], [3, 30]]),
                    yp=np.array([0, 1, 2]), yv=np.array([0, 10, 20, 30]))
-
-
-class Test_regular_x(tests.IrisTest):
-    def _test(self, subgrid, bzx, bdx):
-        grid = ENDGame(None, None, [4.0, None, None, -5.0, None, None], None)
-        result_bzx, result_bdx = grid.regular_x(subgrid)
-        self.assertEqual(result_bzx, bzx)
-        self.assertEqual(result_bdx, bdx)
-
-    def test_theta_subgrid(self):
-        self._test(1, -9.0, 4.0)
-
-    def test_u_subgrid(self):
-        self._test(11, -7.0, 4.0)
-
-
-class Test_regular_y(tests.IrisTest):
-    def _test(self, subgrid, bzy, bdy):
-        grid = ENDGame(None, None, [None, 4.0, 45.0, None, None, None], None)
-        result_bzy, result_bdy = grid.regular_y(subgrid)
-        self.assertEqual(result_bzy, bzy)
-        self.assertEqual(result_bdy, bdy)
-
-    def test_theta_subgrid(self):
-        self._test(1, 41.0, 4.0)
-
-    def test_v_subgrid(self):
-        self._test(11, 39.0, 4.0)
 
 
 if __name__ == "__main__":

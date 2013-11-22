@@ -219,22 +219,6 @@ class ArakawaC(Grid):
                     x_u = self.column_dependent_constants[:, 1]
         return x_p, x_u
 
-
-class NewDynamics(ArakawaC):
-    """
-    An Arakawa C-grid as used by UM New Dynamics.
-
-    The theta and u points are at the poles.
-
-    """
-    def _y_vectors(self):
-        y_p, y_v = None, None
-        if self.row_dependent_constants is not None:
-            y_p = self.row_dependent_constants[:, 0]
-            if self.row_dependent_constants.shape[1] == 2:
-                y_v = self.row_dependent_constants[:-1, 1]
-        return y_p, y_v
-
     def regular_x(self, subgrid):
         """
         Return the "zeroth" value and step for the X coordinate on the
@@ -272,8 +256,27 @@ class NewDynamics(ArakawaC):
         bdy = self.ns_spacing
         bzy = self.first_lat - bdy
         if subgrid in Y_COORD_V_GRID:
-            bzy += 0.5 * bdy
+            bzy += self._v_offset * bdy
         return bzy, bdy
+
+
+class NewDynamics(ArakawaC):
+    """
+    An Arakawa C-grid as used by UM New Dynamics.
+
+    The theta and u points are at the poles.
+
+    """
+
+    _v_offset = 0.5
+
+    def _y_vectors(self):
+        y_p, y_v = None, None
+        if self.row_dependent_constants is not None:
+            y_p = self.row_dependent_constants[:, 0]
+            if self.row_dependent_constants.shape[1] == 2:
+                y_v = self.row_dependent_constants[:-1, 1]
+        return y_p, y_v
 
 
 class ENDGame(ArakawaC):
@@ -283,6 +286,9 @@ class ENDGame(ArakawaC):
     The v points are at the poles.
 
     """
+
+    _v_offset = -0.5
+
     def _y_vectors(self):
         y_p, y_v = None, None
         if self.row_dependent_constants is not None:
@@ -290,46 +296,6 @@ class ENDGame(ArakawaC):
             if self.row_dependent_constants.shape[1] == 2:
                 y_v = self.row_dependent_constants[:, 1]
         return y_p, y_v
-
-    def regular_x(self, subgrid):
-        """
-        Return the "zeroth" value and step for the X coordinate on the
-        given sub-grid of this grid.
-
-        Args:
-
-        * subgrid (integer):
-            A "grid type code" as described in UM documentation paper C4.
-
-        Returns:
-            A 2-tuple of BZX, BDX.
-
-        """
-        bdx = self.ew_spacing
-        bzx = self.first_lon - bdx
-        if subgrid in X_COORD_U_GRID:
-            bzx += 0.5 * bdx
-        return bzx, bdx
-
-    def regular_y(self, subgrid):
-        """
-        Return the "zeroth" value and step for the Y coordinate on the
-        given sub-grid of this grid.
-
-        Args:
-
-        * subgrid (integer):
-            A "grid type code" as described in UM documentation paper C4.
-
-        Returns:
-            A 2-tuple of BZY, BDY.
-
-        """
-        bdy = self.ns_spacing
-        bzy = self.first_lat - bdy
-        if subgrid in Y_COORD_V_GRID:
-            bzy -= 0.5 * bdy
-        return bzy, bdy
 
 
 class FFHeader(object):
