@@ -54,10 +54,10 @@ class Test_grid(tests.IrisTest):
         self.assertIs(grid.horiz_grid_type, mock.sentinel.horiz_grid_type)
 
     def test_new_dynamics(self):
-        self._test(3)
+        self._test_grid_staggering(3)
 
     def test_end_game(self):
-        self._test(6)
+        self._test_grid_staggering(6)
 
     def test_unknown(self):
         header = self._header(0)

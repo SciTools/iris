@@ -53,7 +53,7 @@ class Test_vectors(tests.IrisTest):
         self.yp = mock.sentinel.yp
         self.yv = mock.sentinel.yv
 
-    def _test(self, subgrid, expected):
+    def _test_subgrid_vectors(self, subgrid, expected):
         grid = Grid(None, None, (None,) * 6, None)
         dummy_vectors = (self.xp, self.yp, self.xu, self.yv)
         grid._x_vectors = mock.Mock(return_value=(self.xp, self.xu))
@@ -63,51 +63,51 @@ class Test_vectors(tests.IrisTest):
 
     def test_1(self):
         # Data on atmospheric theta points.
-        self._test(1, (self.xp, self.yp))
+        self._test_subgrid_vectors(1, (self.xp, self.yp))
 
     def test_2(self):
         # Data on atmospheric theta points, values over land only.
-        self._test(2, (self.xp, self.yp))
+        self._test_subgrid_vectors(2, (self.xp, self.yp))
 
     def test_3(self):
         # Data on atmospheric theta points, values over sea only.
-        self._test(3, (self.xp, self.yp))
+        self._test_subgrid_vectors(3, (self.xp, self.yp))
 
     def test_4(self):
         # Data on atmospheric zonal theta points.
-        self._test(4, (self.xp, self.yp))
+        self._test_subgrid_vectors(4, (self.xp, self.yp))
 
     def test_5(self):
         # Data on atmospheric meridional theta points.
-        self._test(5, (self.xp, self.yp))
+        self._test_subgrid_vectors(5, (self.xp, self.yp))
 
     def test_11(self):
         # Data on atmospheric uv points.
-        self._test(11, (self.xu, self.yv))
+        self._test_subgrid_vectors(11, (self.xu, self.yv))
 
     def test_18(self):
         # Data on atmospheric u points on the 'c' grid.
-        self._test(18, (self.xu, self.yp))
+        self._test_subgrid_vectors(18, (self.xu, self.yp))
 
     def test_19(self):
         # Data on atmospheric v points on the 'c' grid.
-        self._test(19, (self.xp, self.yv))
+        self._test_subgrid_vectors(19, (self.xp, self.yv))
 
     def test_26(self):
         # Lateral boundary data at atmospheric theta points.
-        self._test(26, (self.xp, self.yp))
+        self._test_subgrid_vectors(26, (self.xp, self.yp))
 
     def test_27(self):
         # Lateral boundary data at atmospheric u points.
-        self._test(27, (self.xu, self.yp))
+        self._test_subgrid_vectors(27, (self.xu, self.yp))
 
     def test_28(self):
         # Lateral boundary data at atmospheric v points.
-        self._test(28, (self.xp, self.yv))
+        self._test_subgrid_vectors(28, (self.xp, self.yv))
 
     def test_29(self):
         # Orography field for atmospheric LBCs.
-        self._test(29, (self.xp, self.yp))
+        self._test_subgrid_vectors(29, (self.xp, self.yp))
 
 
 if __name__ == "__main__":
