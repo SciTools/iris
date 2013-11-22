@@ -32,7 +32,7 @@ install:
 
 # add repo
   - ./.travis_no_output sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3E5C1192
-  - yes | ./.travis_no_output sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
+  - yes | ./.travis_no_output sudo add-apt-repository ppa:ubuntugis/ppa
   - ./.travis_no_output sudo apt-get update
 
 # install deps
@@ -47,7 +47,7 @@ install:
   - ./.travis_no_output sudo /usr/bin/pip install netCDF4==1.0.2
   - ./.travis_no_output sudo /usr/bin/pip install pyke pandas
   - ./.travis_no_output sudo apt-get install openjdk-7-jre
-  - ./.travis_no_output sudo apt-get install python-gdal
+  - sudo apt-get install python-gdal
   - export LD_LIBRARY_PATH=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/server:$LD_LIBRARY_PATH
 
 # cfchecker
