@@ -159,6 +159,22 @@ class Grid(object):
         self.pole_lon = real_constants[REAL_POLE_LON]
         self.horiz_grid_type = horiz_grid_type
 
+    def _x_vectors(self, subgrid):
+        # Abstract method to return the X vector for the given sub-grid.
+        raise NotImplementedError()
+
+    def _y_vectors(self, subgrid):
+        # Abstract method to return the X vector for the given sub-grid.
+        raise NotImplementedError()
+
+    def regular_x(self, subgrid):
+        # Abstract method to return BZX, BDX for the given sub-grid.
+        raise NotImplementedError()
+
+    def regular_y(self, subgrid):
+        # Abstract method to return BZY, BDY for the given sub-grid.
+        raise NotImplementedError()
+
     def vectors(self, subgrid):
         """
         Return the X and Y coordinate vectors for the given sub-grid of
