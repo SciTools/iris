@@ -114,7 +114,9 @@ Y_COORD_V_GRID = (11, 19, 28)
 #: handled.
 HANDLED_GRIDS = (1, 2, 3, 4, 5, 26, 29) + X_COORD_U_GRID + Y_COORD_V_GRID
 
-# REAL constants header names
+# REAL constants header names as described by UM documentation paper F3.
+# NB. These are zero-based indices as opposed to the one-based indices
+# used in F3.
 REAL_EW_SPACING = 0
 REAL_NS_SPACING = 1
 REAL_FIRST_LAT = 2

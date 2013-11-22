@@ -27,7 +27,9 @@ from iris.fileformats.ff import Grid
 
 
 class Test___init__(tests.IrisTest):
-    def test(self):
+    def test_attributes(self):
+        # Ensure the constructor initialises all the grid's attributes
+        # correctly, including unpacking values from the REAL constants.
         reals = (mock.sentinel.ew, mock.sentinel.ns,
                  mock.sentinel.first_lat, mock.sentinel.first_lon,
                  mock.sentinel.pole_lat, mock.sentinel.pole_lon)

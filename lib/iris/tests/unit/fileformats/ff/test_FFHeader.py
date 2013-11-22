@@ -42,7 +42,7 @@ class Test_grid(tests.IrisTest):
         header.horiz_grid_type = mock.sentinel.horiz_grid_type
         return header
 
-    def _test(self, grid_staggering):
+    def _test_grid_staggering(self, grid_staggering):
         header = self._header(grid_staggering)
         with mock.patch.dict(FFHeader.GRID_STAGGERING_CLASS,
                              {grid_staggering: MyGrid}):
