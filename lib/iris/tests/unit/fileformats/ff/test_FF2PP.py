@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the :class:`iris.fileformat.FF2PP` class instance."""
+"""Unit tests for the :class:`iris.fileformat.ff.FF2PP` class."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -24,14 +24,13 @@ import contextlib
 
 import mock
 import numpy as np
-import warnings
 
 from iris.fileformats.ff import FF2PP
 import iris.fileformats.ff as ff
 import iris.fileformats.pp as pp
 
 
-class Test_FF2PP___iter__(tests.IrisTest):
+class Test____iter__(tests.IrisTest):
     @mock.patch('iris.fileformats.ff.FFHeader')
     def test_call_structure(self, _FFHeader):
         # Check that the iter method calls the two necessary utility
@@ -50,9 +49,9 @@ class Test_FF2PP___iter__(tests.IrisTest):
         extract.assert_called_once_with(FF2PP_instance)
 
 
-class Test_FF2PP__extract_field__LBC_format(tests.IrisTest):
+class Test__extract_field__LBC_format(tests.IrisTest):
     @contextlib.contextmanager
-    def mock_for_extract_field(self, fields):
+    def mock_for_extract_field(self, fields, x=None, y=None):
         """
         A context manager to ensure FF2PP._extract_field gets a field
         instance looking like the next one in the "fields" iterable from
@@ -61,7 +60,10 @@ class Test_FF2PP__extract_field__LBC_format(tests.IrisTest):
         """
         with mock.patch('iris.fileformats.ff.FFHeader'):
             ff2pp = ff.FF2PP('mock')
-            ff2pp._ff_header.lookup_table = [0, 0, len(fields)]
+        ff2pp._ff_header.lookup_table = [0, 0, len(fields)]
+        grid = mock.Mock()
+        grid.vectors = mock.Mock(return_value=(x, y))
+        ff2pp._ff_header.grid = mock.Mock(return_value=grid)
 
         with mock.patch('numpy.fromfile', return_value=[0]), \
                 mock.patch('__builtin__.open'), \
@@ -101,10 +103,10 @@ class Test_FF2PP__extract_field__LBC_format(tests.IrisTest):
         field.lbuser = [None, None, 121416]
         orig_bdx, orig_bdy = field.bdx, field.bdy
 
-        with self.mock_for_extract_field([field]) as ff2pp:
+        x = np.array([1, 2, 6])
+        y = np.array([1, 2, 6])
+        with self.mock_for_extract_field([field], x, y) as ff2pp:
             ff2pp._ff_header.dataset_type = 5
-            ff2pp._select_grid = mock.Mock(
-                return_value=(np.array([1, 2, 6]), np.array([1, 2, 6])))
             with mock.patch('warnings.warn') as warn:
                 list(ff2pp._extract_field())
 
@@ -123,8 +125,7 @@ class Test_FF2PP__extract_field__LBC_format(tests.IrisTest):
 
     def test_LBC_header_non_trivial_coords_both(self):
         # Check a warning is raised when both bdx and bdy are bad.
-        field = mock.Mock(
-            bdx=0, bdy=0, bzx=10, bzy=10, x=np.array([1, 2, 6]))
+        field = mock.Mock(bdx=0, bdy=0, bzx=10, bzy=10)
         self.check_non_trivial_coordinate_warning(field)
 
         field.bdy = field.bdx = field.bmdi
@@ -158,246 +159,6 @@ class Test_FF2PP__extract_field__LBC_format(tests.IrisTest):
         msg = 'The LBC has a bdy less than 0.'
         self.assertTrue(warn.call_args[0][0].startswith(msg),
                         'Northwards bdy warning not correctly raised.')
-
-
-class Test__det_typeC_vpole_grid_coord(tests.IrisTest):
-    @mock.patch('iris.fileformats.ff.FFHeader')
-    def test_no_col_dep_no_row_dep(self, _FFHEADER):
-        # No column/row dependent constants present.
-        FF2PP_instance = ff.FF2PP('mock')
-        FF2PP_instance._ff_header.column_dependent_constants = None
-        FF2PP_instance._ff_header.row_dependent_constants = None
-
-        res = FF2PP_instance._det_typeC_vpole_grid_coord()
-        com = (None, None, None, None)
-        self.assertEqual(res, com)
-
-    @mock.patch('iris.fileformats.ff.FFHeader')
-    def test_yes_col_dep_no_row_dep_1dim(self, _FFHEADER):
-        # 1-D column dependent constants present.
-        FF2PP_instance = ff.FF2PP('mock')
-        col_cons = np.array([[0], [1], [2], [3]])
-        row_cons = None
-        FF2PP_instance._ff_header.column_dependent_constants = col_cons
-        FF2PP_instance._ff_header.row_dependent_constants = row_cons
-
-        res = FF2PP_instance._det_typeC_vpole_grid_coord()
-        com = (np.array([0, 1, 2, 3]), None, None, None)
-        for coord_ind in range(len(res)):
-            self.assertArrayEqual(res[coord_ind], com[coord_ind])
-
-    @mock.patch('iris.fileformats.ff.FFHeader')
-    def test_no_col_dep_yes_row_dep_1dim(self, _FFHEADER):
-        # 1-D row dependent constants present.
-        FF2PP_instance = ff.FF2PP('mock')
-        col_cons = None
-        row_cons = np.array([[0], [1], [2], [3]])
-        FF2PP_instance._ff_header.column_dependent_constants = col_cons
-        FF2PP_instance._ff_header.row_dependent_constants = row_cons
-
-        res = FF2PP_instance._det_typeC_vpole_grid_coord()
-        com = (None, np.array([0, 1, 2]), None, None)
-        for coord_ind in range(len(res)):
-            self.assertArrayEqual(res[coord_ind], com[coord_ind])
-
-    @mock.patch('iris.fileformats.ff.FFHeader')
-    def test_yes_col_dep_no_row_dep_2dim(self, _FFHEADER):
-        # 2-D column dependent constants present.
-        FF2PP_instance = ff.FF2PP('mock')
-        col_cons = np.array([[0, 0], [1, 10], [2, 20], [3, 30]])
-        row_cons = None
-        FF2PP_instance._ff_header.column_dependent_constants = col_cons
-        FF2PP_instance._ff_header.row_dependent_constants = row_cons
-
-        res = FF2PP_instance._det_typeC_vpole_grid_coord()
-        com = (np.array([0, 1, 2, 3]), None,
-               np.array([0, 10, 20, 30]), None)
-        for coord_ind in range(len(res)):
-            self.assertArrayEqual(res[coord_ind], com[coord_ind])
-
-    @mock.patch('iris.fileformats.ff.FFHeader')
-    def test_no_col_dep_yes_row_dep_2dim(self, _FFHEADER):
-        # 2-D row dependent constants present.
-        FF2PP_instance = ff.FF2PP('mock')
-        col_cons = None
-        row_cons = np.array([[0, 0], [1, 10], [2, 20], [3, 30]])
-        FF2PP_instance._ff_header.column_dependent_constants = col_cons
-        FF2PP_instance._ff_header.row_dependent_constants = row_cons
-
-        res = FF2PP_instance._det_typeC_vpole_grid_coord()
-        com = (None, np.array([0, 1, 2]),
-               None, np.array([0, 10, 20, 30]))
-        for coord_ind in range(len(res)):
-            self.assertArrayEqual(res[coord_ind], com[coord_ind])
-
-
-class Test__det_typeC_grid_coord(tests.IrisTest):
-    @mock.patch('iris.fileformats.ff.FFHeader')
-    def test_no_col_dep_no_row_dep(self, _FFHEADER):
-        # No column/row dependent constants present.
-        FF2PP_instance = ff.FF2PP('mock')
-        FF2PP_instance._ff_header.column_dependent_constants = None
-        FF2PP_instance._ff_header.row_dependent_constants = None
-
-        res = FF2PP_instance._det_typeC_grid_coord()
-        com = (None, None, None, None)
-        self.assertEqual(res, com)
-
-    @mock.patch('iris.fileformats.ff.FFHeader')
-    def test_yes_col_dep_no_row_dep_1dim(self, _FFHEADER):
-        # 1-D column dependent constants present.
-        FF2PP_instance = ff.FF2PP('mock')
-        col_cons = np.array([[0], [1], [2], [3]])
-        row_cons = None
-        FF2PP_instance._ff_header.column_dependent_constants = col_cons
-        FF2PP_instance._ff_header.row_dependent_constants = row_cons
-
-        res = FF2PP_instance._det_typeC_grid_coord()
-        com = (np.array([0, 1, 2, 3]), None, None, None)
-        for coord_ind in range(len(res)):
-            self.assertArrayEqual(res[coord_ind], com[coord_ind])
-
-    @mock.patch('iris.fileformats.ff.FFHeader')
-    def test_no_col_dep_yes_row_dep_1dim(self, _FFHEADER):
-        # 1-D row dependent constants present.
-        FF2PP_instance = ff.FF2PP('mock')
-        col_cons = None
-        row_cons = np.array([[0], [1], [2], [3]])
-        FF2PP_instance._ff_header.column_dependent_constants = col_cons
-        FF2PP_instance._ff_header.row_dependent_constants = row_cons
-
-        res = FF2PP_instance._det_typeC_grid_coord()
-        com = (None, np.array([0, 1, 2, 3]), None, None)
-        for coord_ind in range(len(res)):
-            self.assertArrayEqual(res[coord_ind], com[coord_ind])
-
-    @mock.patch('iris.fileformats.ff.FFHeader')
-    def test_yes_col_dep_no_row_dep_2dim(self, _FFHEADER):
-        # 2-D column dependent constants present.
-        FF2PP_instance = ff.FF2PP('mock')
-        col_cons = np.array([[0, 0], [1, 10], [2, 20], [3, 30]])
-        row_cons = None
-        FF2PP_instance._ff_header.column_dependent_constants = col_cons
-        FF2PP_instance._ff_header.row_dependent_constants = row_cons
-
-        res = FF2PP_instance._det_typeC_grid_coord()
-        com = (np.array([0, 1, 2, 3]), None,
-               np.array([0, 10, 20, 30]), None)
-        for coord_ind in range(len(res)):
-            self.assertArrayEqual(res[coord_ind], com[coord_ind])
-
-    @mock.patch('iris.fileformats.ff.FFHeader')
-    def test_no_col_dep_yes_row_dep_2dim(self, _FFHEADER):
-        # 2-D row dependent constants present.
-        FF2PP_instance = ff.FF2PP('mock')
-        col_cons = None
-        row_cons = np.array([[0, 0], [1, 10], [2, 20], [3, 30]])
-        FF2PP_instance._ff_header.column_dependent_constants = col_cons
-        FF2PP_instance._ff_header.row_dependent_constants = row_cons
-
-        res = FF2PP_instance._det_typeC_grid_coord()
-        com = (None, np.array([0, 1, 2, 3]),
-               None, np.array([0, 10, 20]))
-        for coord_ind in range(len(res)):
-            self.assertArrayEqual(res[coord_ind], com[coord_ind])
-
-
-class Test__extract_field__grid_staggering(tests.IrisTest):
-    def setUp(self):
-        _ppfield_patch = mock.patch('iris.fileformats.pp.make_pp_field')
-        _ppfield_patch.start()
-        self.addCleanup(_ppfield_patch.stop)
-
-        _open_patch = mock.patch('__builtin__.open')
-        _open_patch.start()
-        self.addCleanup(_open_patch.stop)
-
-        _fromfile_patch = mock.patch('numpy.fromfile', return_value=[0])
-        _fromfile_patch.start()
-        self.addCleanup(_fromfile_patch.stop)
-
-        _FFHEADER_patch = mock.patch('iris.fileformats.ff.FFHeader')
-        _FFHEADER_patch.start()
-        self.addCleanup(_FFHEADER_patch.stop)
-
-        _typeC_grid_patch = mock.patch(
-            'iris.fileformats.ff.FF2PP._det_typeC_grid_coord',
-            return_value=(None, None, None, None))
-        _typeC_grid_patch.start()
-        self.addCleanup(_typeC_grid_patch.stop)
-
-        _typeC_grid_vpole_patch = mock.patch(
-            'iris.fileformats.ff.FF2PP._det_typeC_vpole_grid_coord',
-            return_value=(None, None, None, None))
-        _typeC_grid_vpole_patch.start()
-        self.addCleanup(_typeC_grid_vpole_patch.stop)
-
-        FF2PP_instance = ff.FF2PP('mock')
-        FF2PP_instance._ff_header.lookup_table = (0, 0, 1)
-        FF2PP_instance._payload = mock.Mock(return_value=(0, 0))
-        self.FF2PP_instance = FF2PP_instance
-
-    def test_no_grid_staggering(self):
-        # No grid staggering specified.
-        self.FF2PP_instance._ff_header.grid_staggering = None
-
-        res = self.FF2PP_instance._extract_field()
-        warning_msg = ('Staggered grid type: None not currently interpreted, '
-                       'assuming standard C-grid')
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            res.next()
-            self.assertTrue(warning_msg in [str(warn.message) for warn in w])
-            index = [str(warn.message) for warn in w].index(warning_msg)
-            self.assertTrue(issubclass(w[index].category, UserWarning))
-        self.assertFalse(ff.FF2PP._det_typeC_vpole_grid_coord.called)
-        ff.FF2PP._det_typeC_grid_coord.assert_called_once_with()
-
-    def test_grid_stagger_eq3(self):
-        # Arakawa type C grid.
-        self.FF2PP_instance._ff_header.grid_staggering = 3
-
-        res = self.FF2PP_instance._extract_field()
-        res.next()
-        self.assertFalse(ff.FF2PP._det_typeC_vpole_grid_coord.called)
-        ff.FF2PP._det_typeC_grid_coord.assert_called_once_with()
-
-    def test_grid_stagger_eq6(self):
-        # Arakawa type C grid with v at pole.
-        self.FF2PP_instance._ff_header.grid_staggering = 6
-
-        res = self.FF2PP_instance._extract_field()
-        res.next()
-        self.assertFalse(ff.FF2PP._det_typeC_grid_coord.called)
-        ff.FF2PP._det_typeC_vpole_grid_coord.assert_called_once_with()
-
-
-class Test__select_grid(tests.IrisTest):
-    def setUp(self):
-        self.xp = mock.sentinel.xp
-        self.xu = mock.sentinel.xu
-        self.yp = mock.sentinel.yp
-        self.yv = mock.sentinel.yv
-
-    def _test(self, grid, expected):
-        with mock.patch('iris.fileformats.ff.FFHeader'):
-            ff2pp = FF2PP('dummy')
-        result = ff2pp._select_grid(grid, self.xp, self.xu, self.yp, self.yv)
-        self.assertEqual(result, expected)
-
-    def test_pp(self):
-        self._test(1, (self.xp, self.yp))
-        self._test(29, (self.xp, self.yp))
-
-    def test_pu(self):
-        self._test(18, (self.xu, self.yp))
-        self._test(27, (self.xu, self.yp))
-
-    def test_up(self):
-        self._test(19, (self.xp, self.yv))
-
-    def test_uu(self):
-        self._test(11, (self.xu, self.yv))
 
 
 class Test__det_border(tests.IrisTest):
