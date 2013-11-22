@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Unit tests for :func:`iris.analysis.name_loaders._generate_cubes`.
+Unit tests for :func:`iris.fileformats.name_loaders._build_cell_methods`.
 
 """
 

@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the `iris.cube.Cube` class."""
+"""Integration tests for NAME to GRIB2 interoperability."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -33,8 +33,20 @@ def name_cb(cube, field, filename):
 
 
 class TestNameToGRIB(tests.IrisTest):
-    def _assert_cube_equal(self, path_name, path_result):
-        pass
+
+    def check_common(self, name_cube, grib_cube):
+        self.assertTrue(np.allclose(name_cube.data, name_cube.data))
+        self.assertTrue(
+            np.allclose(name_cube.coord('latitude').points,
+                        grib_cube.coord('latitude').points))
+        self.assertTrue(
+            np.allclose(name_cube.coord('longitude').points,
+                        grib_cube.coord('longitude').points - 360))
+
+        for c in ['height', 'time']:
+            if name_cube.coords(c):
+                self.assertEqual(name_cube.coord(c),
+                                 grib_cube.coord(c))
 
     def test_name2_field(self):
         filepath = tests.get_data_path(('NAME', 'NAMEII_field.txt'))
@@ -44,19 +56,7 @@ class TestNameToGRIB(tests.IrisTest):
                 iris.save(name_cube, temp_filename)
                 grib_cube = iris.load_cube(temp_filename, callback=name_cb)
 
-                self.assertTrue(np.allclose(name_cube.data, grib_cube.data))
-                self.assertTrue(
-                    np.allclose(name_cube.coord('latitude').points,
-                                grib_cube.coord('latitude').points))
-                self.assertTrue(
-                    np.allclose(name_cube.coord('longitude').points,
-                                grib_cube.coord('longitude').points - 360))
-
-                for c in ['height', 'time']:
-                    if name_cube.coords(c):
-                        self.assertEqual(name_cube.coord(c),
-                                         grib_cube.coord(c))
-
+                self.check_common(name_cube, grib_cube)
                 self.assertCML(
                     grib_cube, tests.get_result_path(
                         ('integration', 'name_grib', 'NAMEII',
@@ -70,20 +70,7 @@ class TestNameToGRIB(tests.IrisTest):
                 iris.save(name_cube, temp_filename)
                 grib_cube = iris.load_cube(temp_filename, callback=name_cb)
 
-                self.assertTrue(np.allclose(name_cube.data, grib_cube.data))
-                self.assertTrue(
-                    np.allclose(name_cube.coord('latitude').points,
-                                grib_cube.coord('latitude').points))
-                # Starting lon must be 0->360 in grib, it's -2 in name_cube.
-                self.assertTrue(
-                    np.allclose(name_cube.coord('longitude').points,
-                                grib_cube.coord('longitude').points - 360))
-
-                for c in ['height', 'time']:
-                    if name_cube.coords(c):
-                        self.assertEqual(name_cube.coord(c),
-                                         grib_cube.coord(c))
-
+                self.check_common(name_cube, grib_cube)
                 self.assertCML(
                     grib_cube, tests.get_result_path(
                         ('integration', 'name_grib', 'NAMEIII',
