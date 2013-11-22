@@ -250,7 +250,7 @@ class _CoordConstraint(object):
                 if cell.bound is not None:
                     bound = coord.units.num2date(cell.bound)
                 point = coord.units.num2date(cell.point)
-                return iris.coords.DatetimeCell(point, bound, coord)
+                return iris.coords.Cell(point, bound)
         else:
             # Do nothing.
             cell_upgrade = lambda cell, coord: cell

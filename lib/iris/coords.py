@@ -182,7 +182,10 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
         Non-Cell vs Cell comparison is used to define Constraint matching.
 
         """
-        if not isinstance(other, (int, float, iris.pdatetime.PartialDateTime, np.number, Cell)):
+        if not isinstance(other, (int, float, np.number,
+                                  iris.pdatetime.PartialDateTime,
+                                  iris.pdatetime.known_time_implementations,
+                                  Cell)):
             raise ValueError("Unexpected type of other {}".format(type(other)))
         if operator_method not in (operator.gt, operator.lt,
                                    operator.ge, operator.le):
@@ -279,14 +282,6 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
             raise ValueError('Point cannot exist inside an unbounded cell.')
 
         return np.min(self.bound) <= point <= np.max(self.bound)
-
-
-class DatetimeCell(Cell):
-    # This subclass adds no attributes.
-    def __new__(cls, point, bound=None, orig_coord=None):
-        self = Cell.__new__(cls, point, bound)
-        self.orig_coord = orig_coord
-        return self
 
 
 class Coord(CFVariableMixin):
