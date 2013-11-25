@@ -32,6 +32,7 @@ import numpy as np
 
 import iris.aux_factory
 import iris.exceptions
+from iris.pdatetime import PartialDateTime
 import iris.unit
 import iris.util
 
@@ -71,7 +72,7 @@ BOUND_POSITION_END = 1
 # Private named tuple class for coordinate groups.
 _GroupbyItem = collections.namedtuple('GroupbyItem',
                                       'groupby_point, groupby_slice')
-import iris.pdatetime
+
 
 class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
     """
@@ -182,11 +183,18 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
         Non-Cell vs Cell comparison is used to define Constraint matching.
 
         """
-        if not isinstance(other, (int, float, np.number,
-                                  iris.pdatetime.PartialDateTime,
-                                  iris.pdatetime.known_time_implementations,
-                                  Cell)):
-            raise ValueError("Unexpected type of other {}".format(type(other)))
+        if not isinstance(other, (int, float, np.number, Cell,
+                                  PartialDateTime.known_time_implementations,
+                                  PartialDateTime)):
+            raise ValueError("Unexpected type of other".format())
+        import datetime
+        import netcdftime
+        if (isinstance(self.point, (datetime.datetime,
+                                    netcdftime.datetime)) and  
+                       not isinstance(other, (PartialDateTime.known_time_implementations,
+                                   PartialDateTime))):
+            warnings.warn('A comparison is taking place between a cell with datetimes and a numeric. Is this an old style constraint? You know datetimes are much richer?')
+        
         if operator_method not in (operator.gt, operator.lt,
                                    operator.ge, operator.le):
             raise ValueError("Unexpected operator_method")
@@ -635,9 +643,14 @@ class Coord(CFVariableMixin):
                 self.bounds = self.units.convert(self.bounds, unit)
         self.units = unit
 
-    def cells(self):
+    def cells(self, extended=True):
         """
         Returns an iterable of Cell instances for this Coord.
+
+        Kwargs:
+        
+         * extended - Whether to update date based cells into datetime
+                      instances. Default True.
 
         For example::
 
@@ -645,7 +658,10 @@ class Coord(CFVariableMixin):
               ...
 
         """
-        return _CellIterator(self)
+        if self.ndim != 1:
+            raise iris.exceptions.CoordinateMultiDimError(self)
+        for index in xrange(self.shape[0]):
+            yield self.cell(index, extended=extended)
 
     def _sanity_check_contiguous(self):
         if self.ndim != 1:
@@ -811,10 +827,20 @@ class Coord(CFVariableMixin):
         raise IrisError('Coord.index() is no longer available.'
                         ' Use Coord.nearest_neighbour_index() instead.')
 
-    def cell(self, index):
+    def cell(self, index, extended=True):
         """
         Return the single :class:`Cell` instance which results from slicing the
         points/bounds with the given index.
+        
+        Args:
+        
+         * index - The index into the 1d coordinate for which a cell is
+                   desired.
+        
+        Kwargs:
+        
+         * extended - Whether to update date based cells into datetime
+                      instances. Default True.
 
         """
         index = iris.util._build_full_slice_given_keys(index, self.ndim)
@@ -827,6 +853,11 @@ class Coord(CFVariableMixin):
         bound = None
         if self.bounds is not None:
             bound = tuple(np.array(self.bounds[index], ndmin=1).flatten())
+
+        if extended and self.units.is_time_reference():
+            point = self.units.num2date(point)
+            if bound is not None:
+                bound = self.units.num2date(bound)
 
         return Cell(point, bound)
 
@@ -1566,20 +1597,6 @@ class CellMethod(iris.util._OrderedHashable):
                 cellMethod_xml_element.appendChild(coord_xml_element)
 
         return cellMethod_xml_element
-
-
-# See Coord.cells() for the description/context.
-class _CellIterator(collections.Iterator):
-    def __init__(self, coord):
-        self._coord = coord
-        if coord.ndim != 1:
-            raise iris.exceptions.CoordinateMultiDimError(coord)
-        self._indices = iter(xrange(coord.shape[0]))
-
-    def next(self):
-        # NB. When self._indices runs out it will raise StopIteration for us.
-        i = self._indices.next()
-        return self._coord.cell(i)
 
 
 # See ExplicitCoord._group() for the description/context.

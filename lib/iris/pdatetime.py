@@ -3,7 +3,7 @@ import netcdftime
 import datetime
 import operator
 
-known_time_implementations = (datetime.datetime, datetime.time, datetime.date, netcdftime.datetime)
+
 
 
 _partial_datetime_fields = ['year', 'month', 'day', 'hour', 'minute',
@@ -13,6 +13,10 @@ _partial_datetime_fields = ['year', 'month', 'day', 'hour', 'minute',
 
 class PartialDateTime(collections.namedtuple('PartialDateTime',
                                              _partial_datetime_fields)):
+    
+    known_time_implementations = (datetime.datetime, datetime.time,
+                                  datetime.date, netcdftime.datetime)
+    
     @property
     def timetuple(self):
         # http://bugs.python.org/issue8005
@@ -48,7 +52,7 @@ class PartialDateTime(collections.namedtuple('PartialDateTime',
         return not self == other
 
     def _compare(self, op, other):
-        if not isinstance(other, known_time_implementations):
+        if not isinstance(other, PartialDateTime.known_time_implementations):
             result = NotImplemented
         elif isinstance(other, PartialDateTime):
             # This is a harder problem, so for now, just don't implement it.
@@ -67,21 +71,21 @@ class PartialDateTime(collections.namedtuple('PartialDateTime',
         return result
 
 #
-#if __name__ == '__main__':
-#    from iris.pdatetime import PartialDateTime
-#    p = PartialDateTime(year=2010)
-#
-#    d = datetime.datetime(2011, 1, 1)
-#    print p > d, d <= p
-#    print p < d, d >= p
-#
-##    print operator.gt(p, d)
-##    print operator.gt(d, p)
-#
-#    import iris
-#    cell = iris.coords.Cell(d)
-#    print cell > p, p <= cell
-#    print cell < p, p >= cell
+if __name__ == '__main__':
+    from iris.pdatetime import PartialDateTime
+    p = PartialDateTime(year=2010)
+
+    d = datetime.datetime(2011, 1, 1)
+    print p > d, d <= p
+    print p < d, d >= p
+
+#    print operator.gt(p, d)
+#    print operator.gt(d, p)
+
+    import iris
+    cell = iris.coords.Cell(d)
+    print cell > p, p <= cell
+    print cell < p, p >= cell
 #
 #
 #    # Interfaces for time constraints:
@@ -115,27 +119,9 @@ class PartialDateTime(collections.namedtuple('PartialDateTime',
 #    cube.extract(spring_summer & iris.Constraint(time=PartialDateTime(day=1, hour=12)))
 #
 #
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#    cube = iris.load_cube(iris.sample_data_path('A1B_north_america.nc'))
-#    print cube
-#
-#    print cube.extract(iris.Constraint(time=PartialDateTime(year=2009)))
-#
-##    print cube.extract(iris.Constraint(time=lambda cell: PartialDateTime(year=2010) == cell.point))
-#
-#    gt_2010 = cube.extract(iris.Constraint(time=lambda cell: cell.point > PartialDateTime(year=2010)))
-#
-#    gt_2010 = cube.extract(iris.Constraint(time=lambda cell: PartialDateTime(year=2010) < cell <= PartialDateTime(year=2060)))
-#    print gt_2010.coord('time')
+    cube = iris.load_cube(iris.sample_data_path('A1B_north_america.nc'))
+    gt_2010 = cube.extract(iris.Constraint(time=lambda cell: PartialDateTime(year=2010) < cell <= PartialDateTime(year=2060)))
+    print gt_2010.coord('time')
 #
 #
 ##    print gt_2010.coord('time')

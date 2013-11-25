@@ -1619,16 +1619,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                             pad=' ', width=indent + len(coord.name()) + 2)
                         coord_cell_str = line_sep.join(coord_cell_split) + unit
                     else:
-                        # Human readable times
-                        if coord.units.is_time_reference():
-                            coord_cell_cpoint = coord.units.num2date(
-                                coord_cell.point)
-                            if coord_cell.bound is not None:
-                                coord_cell_cbound = coord.units.num2date(
-                                    coord_cell.bound)
-                        else:
-                            coord_cell_cpoint = coord_cell.point
-                            coord_cell_cbound = coord_cell.bound
+                        coord_cell_cpoint = coord_cell.point
+                        coord_cell_cbound = coord_cell.bound
 
                         coord_cell_str = '{!s}{}'.format(coord_cell_cpoint,
                                                          unit)

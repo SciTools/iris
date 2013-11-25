@@ -245,16 +245,6 @@ class _CoordConstraint(object):
             msg = 'Cannot apply constraints to multidimensional coordinates'
             raise iris.exceptions.CoordinateMultiDimError(msg)
 
-        if coord.units.is_time_reference():
-            def cell_upgrade(cell, coord):
-                if cell.bound is not None:
-                    bound = coord.units.num2date(cell.bound)
-                point = coord.units.num2date(cell.point)
-                return iris.coords.Cell(point, bound)
-        else:
-            # Do nothing.
-            cell_upgrade = lambda cell, coord: cell
-
         try_quick = False
         if callable(self._coord_thing):
             call_func = self._coord_thing
@@ -275,10 +265,10 @@ class _CoordConstraint(object):
                 try_quick = False
         if try_quick:
             r = np.zeros(coord.shape, dtype=np.bool)
-            if cell_upgrade(coord.cell(i), coord) == self._coord_thing:
+            if coord.cell(i) == self._coord_thing:
                 r[i] = True
         else:
-            r = np.array([call_func(cell_upgrade(cell, coord)) for cell in coord.cells()])
+            r = np.array([call_func(cell) for cell in coord.cells()])
         if dims:
             cube_cim[dims[0]] = r
         elif not all(r):

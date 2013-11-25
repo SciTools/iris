@@ -25,7 +25,7 @@ import numpy as np
 import warnings
 
 import iris
-from iris.pdatetime import PartialDateTime, known_time_implementations
+from iris.pdatetime import PartialDateTime
 from datetime import datetime
 import netcdftime
 import operator
@@ -122,7 +122,8 @@ class Test__compare(tests.IrisTest):
         pd = PartialDateTime(*range(9))
         with patched_isinstance(return_value=False) as new_isinstance:
             self.assertEqual(pd._compare(operator.gt, 1), NotImplemented)
-        new_isinstance.assert_called_once_with(1, known_time_implementations)
+        new_isinstance.assert_called_once_with(
+                            1, PartialDateTime.known_time_implementations)
 
     def test_skipped_None_attributes(self):
         # Check that attributes with a value of None are skipped.
