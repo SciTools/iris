@@ -195,8 +195,8 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
                                (PartialDateTime.known_time_implementations,
                                PartialDateTime))):
             msg = ('A comparison is taking place between a cell with '
-                   'datetimes and a numeric. Is this an old style constraint?'
-                   'You know datetimes are much richer?')
+                   'datetimes and a numeric. Is this an old style '
+                   'constraint? You know datetimes are much richer?')
             warnings.warn(msg)
 
         if operator_method not in (operator.gt, operator.lt,

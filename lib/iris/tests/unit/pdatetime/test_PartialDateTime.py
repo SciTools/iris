@@ -20,14 +20,14 @@
 # importing anything else.
 import iris.tests as tests
 
+from contextlib import contextmanager
 import mock
-
-from iris.pdatetime import PartialDateTime
-from datetime import datetime
-import netcdftime
 import operator
 
-from contextlib import contextmanager
+from datetime import datetime
+import netcdftime
+
+from iris.pdatetime import PartialDateTime
 
 
 @contextmanager
@@ -85,12 +85,22 @@ class Test_timetuple(tests.IrisTest):
         pd = PartialDateTime(*range(9))
         self.assertEqual(pd.timetuple, tuple(range(9)))
 
+    def test_datetime_python(self):
+        # Ensure that 'bug' is still present with datetime object comparison.
+        # If NotImplemented is raised, then the timetuple workaround can be
+        # removed.
+        NoTuple = type('NoTuple', PartialDateTime.__bases__,
+                       dict(PartialDateTime.__dict__))
+        del NoTuple.timetuple
+
+        with self.assertRaises(TypeError):
+            datetime(1, 1, 1) <= NoTuple(1, 1, 1)
+
 
 class Test__compare(tests.IrisTest):
-    def mocked_partial_datetime(self,
-                                year=None, month=None, day=None, hour=None,
-                                minute=None, second=None, microsecond=None,
-                                tzinfo=None, calendar=None):
+    def mocked_partial_datetime(
+            self, year=None, month=None, day=None, hour=None, minute=None,
+            second=None, microsecond=None, tzinfo=None, calendar=None):
         """
         Construct a mocked PartialDateTime, with a _fields attribute and
         such that it is an iterator of the given "iter_values".
@@ -123,9 +133,21 @@ class Test__compare(tests.IrisTest):
             1, PartialDateTime.known_time_implementations)
 
     def test_skipped_None_attributes(self):
-        # Check that attributes with a value of None are skipped.
-        # TODO
-        pass
+        # Check that attributes with value of None are skipped.
+        op = mock.Mock(name='operator')
+        other = mock.Mock(name='partial_rhs', spec=datetime)
+        pd = mock.Mock(name='partial_lhs', spec=PartialDateTime,
+                       _fields=['year', 'hour', 'tzinfo'])
+        pd.__iter__ = mock.Mock(return_value=iter([0, None, 1]))
+
+        # Call the _compare unbound method.
+        PartialDateTime._compare(pd, op, other)
+
+        # Check that underneath we're calling the comparison operator on the
+        # appropriate attributes.
+        self.assertEqual(op.mock_calls,
+                         [mock.call(0, other.year),
+                          mock.call(1, other.tzinfo)])
 
     def test_normal_attribute_comparison(self):
         # Check that the comparison is taking all normal attributes into
@@ -160,14 +182,13 @@ class Test__compare(tests.IrisTest):
         pd1 = self.mocked_partial_datetime(calendar=calendar)
         dt = mock.Mock(spec=netcdftime.datetime, calendar=calendar)
 
-        self.assertIsInstance(PartialDateTime._compare(pd1, operator.gt, dt),
-                              bool)
+        self.assertIsInstance(
+            PartialDateTime._compare(pd1, operator.gt, dt), bool)
         calendar.__eq__.assert_called_once_with(calendar)
 
     def test_calendar_attribute_default(self):
         # Check that the comparison is taking the calendar attribute into
         # account.
-        # TODO
         calendar = mock.Mock(name='calendar')
         calendar.__eq__ = mock.Mock(return_value=True)
         pd1 = self.mocked_partial_datetime(calendar=calendar)
@@ -197,14 +218,6 @@ class Test__compare(tests.IrisTest):
         with self.assertRaises(AttributeError) as err:
             pd._compare(op, other)
         self.assertEqual(err.exception.message, 'month')
-
-    def test_compare_partial_datetimes(self):
-        # Check that two PartialDateTimes being compared use the underlying
-        # tuple comparison.
-        pd1 = self.mocked_partial_datetime()
-        pd2 = self.mocked_partial_datetime()
-        self.assertEqual(PartialDateTime._compare(pd1, None, pd2),
-                         NotImplemented)
 
 
 if __name__ == "__main__":
