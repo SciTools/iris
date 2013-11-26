@@ -21,10 +21,7 @@
 import iris.tests as tests
 
 import mock
-import numpy as np
-import warnings
 
-import iris
 from iris.pdatetime import PartialDateTime
 from datetime import datetime
 import netcdftime
@@ -123,7 +120,7 @@ class Test__compare(tests.IrisTest):
         with patched_isinstance(return_value=False) as new_isinstance:
             self.assertEqual(pd._compare(operator.gt, 1), NotImplemented)
         new_isinstance.assert_called_once_with(
-                            1, PartialDateTime.known_time_implementations)
+            1, PartialDateTime.known_time_implementations)
 
     def test_skipped_None_attributes(self):
         # Check that attributes with a value of None are skipped.
@@ -131,7 +128,8 @@ class Test__compare(tests.IrisTest):
         pass
 
     def test_normal_attribute_comparison(self):
-        # Check that the comparison is taking all normal attributes into account.
+        # Check that the comparison is taking all normal attributes into
+        # account.
         op = mock.Mock(name='operator')
         other = mock.Mock(name='partial_rhs', spec=datetime)
         # It doesn't matter which fields we specify in the mock. The fact that
@@ -146,9 +144,9 @@ class Test__compare(tests.IrisTest):
         # Check that underneath we're calling the comparison operator on the
         # appropriate attributes.
         self.assertEqual(op.mock_calls,
-                          [mock.call(0, other.year),
-                           mock.call(1, other.hour),
-                           mock.call(2, other.tzinfo)])
+                         [mock.call(0, other.year),
+                          mock.call(1, other.hour),
+                          mock.call(2, other.tzinfo)])
 
         # Check the contents of the _fields class attribute.
         self.assertEqual(PartialDateTime._fields,
@@ -167,7 +165,8 @@ class Test__compare(tests.IrisTest):
         calendar.__eq__.assert_called_once_with(calendar)
 
     def test_calendar_attribute_default(self):
-        # Check that the comparison is taking the calendar attribute into account.
+        # Check that the comparison is taking the calendar attribute into
+        # account.
         # TODO
         calendar = mock.Mock(name='calendar')
         calendar.__eq__ = mock.Mock(return_value=True)

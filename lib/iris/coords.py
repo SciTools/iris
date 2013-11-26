@@ -189,12 +189,16 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
             raise ValueError("Unexpected type of other".format())
         import datetime
         import netcdftime
-        if (isinstance(self.point, (datetime.datetime,
-                                    netcdftime.datetime)) and  
-                       not isinstance(other, (PartialDateTime.known_time_implementations,
-                                   PartialDateTime))):
-            warnings.warn('A comparison is taking place between a cell with datetimes and a numeric. Is this an old style constraint? You know datetimes are much richer?')
-        
+        if (isinstance(self.point,
+                       (datetime.datetime, netcdftime.datetime)) and
+                not isinstance(other,
+                               (PartialDateTime.known_time_implementations,
+                               PartialDateTime))):
+            msg = ('A comparison is taking place between a cell with '
+                   'datetimes and a numeric. Is this an old style constraint?'
+                   'You know datetimes are much richer?')
+            warnings.warn(msg)
+
         if operator_method not in (operator.gt, operator.lt,
                                    operator.ge, operator.le):
             raise ValueError("Unexpected operator_method")
@@ -648,7 +652,7 @@ class Coord(CFVariableMixin):
         Returns an iterable of Cell instances for this Coord.
 
         Kwargs:
-        
+
          * extended - Whether to update date based cells into datetime
                       instances. Default True.
 
@@ -824,21 +828,22 @@ class Coord(CFVariableMixin):
         Return the index of a given Cell in this Coord.
 
         """
-        raise IrisError('Coord.index() is no longer available.'
-                        ' Use Coord.nearest_neighbour_index() instead.')
+        msg = ('Coord.index() is no longer available.  Use '
+               'Coord.nearest_neighbour_index() instead.')
+        raise iris.exceptions.IrisError(msg)
 
     def cell(self, index, extended=True):
         """
         Return the single :class:`Cell` instance which results from slicing the
         points/bounds with the given index.
-        
+
         Args:
-        
+
          * index - The index into the 1d coordinate for which a cell is
                    desired.
-        
+
         Kwargs:
-        
+
          * extended - Whether to update date based cells into datetime
                       instances. Default True.
 
