@@ -23,60 +23,64 @@ import iris.tests as tests
 
 import mock
 import numpy as np
+
 from iris.coord_categorisation import add_categorised_coord
 
 
 class Test_add_categorised_coord(tests.IrisTest):
+
+    def setUp(self):
+        # Factor out common variables and objects.
+        self.cube = mock.Mock(name='cube', coords=mock.Mock(return_value=[]))
+        self.coord = mock.Mock(name='coord',
+                               points=np.arange(12).reshape(3, 4))
+        self.units = 'units'
+        self.vectorised = mock.Mock(name='vectorized_result')
 
     def test_vectorise_call(self):
         # Check that the function being passed through gets called with
         # numpy.vectorize, before being applied to the points array.
         # The reason we use numpy.vectorize is to support multi-dimensional
         # coordinate points.
-        cube = mock.Mock(name='cube', coords=mock.Mock(return_value=[]))
-        coord = mock.Mock(name='coord', points=np.arange(12).reshape(3, 4))
-        units = 'units'
-        vectorised = mock.Mock(name='vectorized_result')
         fn = lambda coord, v: v**2
 
         with mock.patch('numpy.vectorize',
-                        return_value=vectorised) as vectorise_patch:
+                        return_value=self.vectorised) as vectorise_patch:
             with mock.patch('iris.coords.AuxCoord') as aux_coord_constructor:
-                add_categorised_coord(cube, 'foobar', coord, fn, units=units)
+                add_categorised_coord(self.cube, 'foobar', self.coord, fn,
+                                      units=self.units)
 
         # Check the constructor of AuxCoord gets called with the
         # appropriate arguments.
         # Start with the vectorised function.
         vectorise_patch.assert_called_once_with(fn)
         # Check the vectorize wrapper gets called with the appropriate args.
-        vectorised.assert_called_once_with(coord, coord.points)
+        self.vectorised.assert_called_once_with(self.coord, self.coord.points)
         # Check the AuxCoord constructor itself.
         aux_coord_constructor.assert_called_once_with(
-            vectorised(coord, coord.points),
-            units=units,
-            attributes=coord.attributes.copy())
+            self.vectorised(self.coord, self.coord.points),
+            units=self.units,
+            attributes=self.coord.attributes.copy())
         # And check adding the aux coord to the cube mock.
-        cube.add_aux_coord.assert_called_once_with(aux_coord_constructor(),
-                                                   cube.coord_dims(coord))
+        self.cube.add_aux_coord.assert_called_once_with(
+            aux_coord_constructor(), self.cube.coord_dims(self.coord))
 
     def test_string_vectorised(self):
         # Check that special case handling of a vectorized string returning
         # function is taking place.
-        cube = mock.Mock(name='cube', coords=mock.Mock(return_value=[]))
-        coord = mock.Mock(name='coord', points=np.arange(12).reshape(3, 4))
-        units = 'units'
-        vectorised = mock.Mock(name='vectorized_result')
         fn = lambda coord, v: '0123456789'[:v]
 
         with mock.patch('numpy.vectorize',
-                        return_value=vectorised) as vectorise_patch:
+                        return_value=self.vectorised) as vectorise_patch:
             with mock.patch('iris.coords.AuxCoord') as aux_coord_constructor:
-                add_categorised_coord(cube, 'foobar', coord, fn, units=units)
+                add_categorised_coord(self.cube, 'foobar', self.coord, fn,
+                                      units=self.units)
 
         self.assertEqual(
             aux_coord_constructor.call_args[0][0],
-            vectorise_patch(fn, otypes=[object])(coord, coord.points)
+            vectorise_patch(fn, otypes=[object])(self.coord, self.coord.points)
             .astype('|S64'))
+
 
 if __name__ == '__main__':
     tests.main()

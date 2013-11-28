@@ -74,7 +74,7 @@ def add_categorised_coord(cube, name, from_coord, category_function,
     # support multi-dimensional coords.
     # Test whether the result contains strings. If it does we must manually
     # force the dtype because of a numpy bug (see numpy #3270 on GitHub).
-    result = category_function(from_coord, from_coord.points.flatten()[0])
+    result = category_function(from_coord, from_coord.points.ravel()[0])
     if isinstance(result, basestring):
         str_vectorised_fn = np.vectorize(category_function, otypes=[object])
         vectorised_fn = lambda *args: str_vectorised_fn(*args).astype('|S64')
