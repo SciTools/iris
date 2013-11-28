@@ -21,7 +21,10 @@ Test the constrained cube loading mechanism.
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
+import numpy as np
+
 import iris
+from iris.pdatetime import PartialDateTime 
 import iris.tests.stock as stock
 
 
@@ -89,6 +92,27 @@ class TestSimple(tests.IrisTest):
         constraint = iris.Constraint(model_level_number=cell)
         sub_list = self.slices.extract(constraint)
         self.assertEqual(len(sub_list), 0)
+
+
+class TestTimeConstraint(tests.IrisTest):
+    def setUp(self):
+        self.cube = iris.cube.Cube(np.arange(4))
+        
+        time = iris.coords.DimCoord(
+            np.arange(4), "time", units="hours since epoch")
+        self.cube.add_dim_coord(time, 0)
+
+    def test_constraint_time_with_number(self):
+        constraint = iris.Constraint(time=3)
+        cube = self.cube.extract(constraint)
+        com_coord = self.cube.coord('time')[-1]
+        self.assertEqual(cube.coord('time'), com_coord)
+
+    def test_constrain_time_with_partial(self):
+        constraint = iris.Constraint(time=PartialDateTime(hour=3))
+        cube = self.cube.extract(constraint)
+        com_coord = self.cube.coord('time')[-1]
+        self.assertEqual(cube.coord('time'), com_coord)
 
 
 class TestMixin(object):
