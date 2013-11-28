@@ -492,9 +492,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Args:
 
         * data
-            A numpy array containing the phenomenon values or a data manager
-            object. This object defines the shape of the cube and the value
-            in each cell.
+            An object, usually a numpy array, containing the phenomenon
+            values or a data manager object. This object defines the shape
+            of the cube and the value in each cell.
+
+            If the object contains phenomenon values it can be a numpy
+            array, an array subclass or an *array_like* as described in
+            :func:`numpy.asarray`.
 
             See :attr:`Cube.data<iris.cube.Cube.data>` and
             :class:`iris.fileformats.manager.DataManager`
