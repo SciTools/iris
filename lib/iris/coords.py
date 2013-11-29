@@ -322,8 +322,9 @@ class Coord(CFVariableMixin):
             The :class:`~iris.unit.Unit` of the coordinate's values.
             Can be a string, which will be converted to a Unit object.
         * bounds
-            An array of values describing the bounds of each cell. The shape
-            of the array must be compatible with the points array.
+            An array of values describing the bounds of each cell.  There are
+            two bounds for every point and so the shape of the bounds should
+            be (len(points), 2).
         * attributes
             A dictionary containing other cf and user-defined attributes.
         * coord_system
@@ -409,8 +410,8 @@ class Coord(CFVariableMixin):
                   being copied.
 
         * bounds: A bounds array for the new coordinate.
-                  This must be the compatible with the points array of the
-                  coordinate being created.
+                  There are two bounds for every point and so the
+                  shape of the bounds should be (len(points), 2).
 
         .. note:: If the points argument is specified and bounds are not, the
                   resulting coordinate will have no bounds.
@@ -1320,8 +1321,7 @@ class DimCoord(Coord):
             # Ensure the bounds are a compatible shape.
             bounds = np.array(bounds, ndmin=2)
             if self.shape != bounds.shape[:-1]:
-                raise ValueError("Bounds shape must be compatible with points "
-                                 "shape.")
+                raise ValueError("Bounds shape must be (len(points), 2).")
             # Checks for numeric and monotonic
             if not np.issubdtype(bounds.dtype, np.number):
                 raise ValueError('The bounds array must be numeric.')
