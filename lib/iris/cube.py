@@ -2380,7 +2380,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         if (isinstance(aggregator, iris.analysis.WeightedAggregator) and
                 not aggregator.uses_weighting(**kwargs)):
-            msg = "Collapsing spatial coordinate '{!r}' without weighting"
+            msg = "Collapsing spatial coordinate {!r} without weighting"
             lat_match = filter(lambda coord: 'latitude' in coord.name(),
                                coords)
             if lat_match:
