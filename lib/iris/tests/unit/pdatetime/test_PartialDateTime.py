@@ -20,11 +20,6 @@
 # importing anything else.
 import iris.tests as tests
 
-# In python 2.x when in __main__ __builtins__ is the built-in module, but
-# __builtin__ when in any other module.
-# NOTE: __builtin__ has been renamed to builtins in python 3.x
-import __builtin__
-from contextlib import contextmanager
 import mock
 import operator
 
@@ -32,39 +27,7 @@ from datetime import datetime
 import netcdftime
 
 from iris.pdatetime import PartialDateTime
-
-
-@contextmanager
-def patched_isinstance(*args, **kwargs):
-    """
-    Provides a context manager to patch isinstance, which cannot be patched
-    in the usual way due to mock's own internal use.
-
-    In order to patch isinstance, the isinstance patched function dances
-    around the problem by temporarily reverting to the original isinstance
-    during the mock call stage.
-
-    """
-    # Take a copy of the original isinstance.
-    isinstance_orig = isinstance
-
-    with mock.patch('__builtin__.isinstance',
-                    *args, **kwargs) as isinstance_patched:
-        # Take a copy of the "callable" function of the patched isinstance.
-        mocked_callable = isinstance_patched._mock_call
-
-        # Define a function which reverts isinstance to the original before
-        # actually running the mocked callable.
-        def revert_isinstance_then_call(*args, **kwargs):
-            try:
-                __builtin__.isinstance = isinstance_orig
-                return mocked_callable(*args, **kwargs)
-            finally:
-                __builtin__.isinstance = isinstance_patched
-
-        # Update the patched isinstance to use the newly defined function.
-        isinstance_patched._mock_call = revert_isinstance_then_call
-        yield isinstance_patched
+import iris.tests.unit as unit
 
 
 class Test___init__(tests.IrisTest):
@@ -131,7 +94,7 @@ class Test__compare(tests.IrisTest):
         # Check that "known_time_implementations" is used to check whether a
         # type can be compared with a PartialDateTime.
         pd = PartialDateTime(*range(9))
-        with patched_isinstance(return_value=False) as new_isinstance:
+        with unit.patched_isinstance(return_value=False) as new_isinstance:
             self.assertEqual(pd._compare(operator.gt, 1), NotImplemented)
         new_isinstance.assert_called_once_with(
             1, PartialDateTime.known_time_implementations)
