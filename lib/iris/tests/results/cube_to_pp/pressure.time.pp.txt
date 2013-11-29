@@ -34,7 +34,7 @@
    lblev: 0
    lbrsvd: (0, 0, 0, 0)
    lbsrce: 0
-   lbuser: (1, 0, 0, 0, 0, 0, 0)
+   lbuser: (1, -99, 0, 0, 0, 0, 0)
    brsvd: (0.0, 0.0, 0.0, 0.0)
    bdatum: 0.0
    bacc: 0.0
