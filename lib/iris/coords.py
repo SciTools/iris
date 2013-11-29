@@ -849,39 +849,6 @@ class Coord(CFVariableMixin):
                       instances. Default True.
 
         """
-        class _Idatetime(datetime.datetime):
-            # Custom datetime subclass capable of returning point as a number.
-            def __new__(cls, unit, *args, **kwargs):
-                return datetime.datetime.__new__(cls, *args, **kwargs)
-
-            def __init__(self, unit, *args, **kwargs):
-                super(datetime.datetime, self).__init__(*args, **kwargs)
-                self.unit = unit
-
-            def __float__(self):
-                return self.unit.date2num(self)
-
-            def __eq__(self, other):
-                if isinstance(other, (int, float)):
-                    msg = ('Comparing datetime object cell points with '
-                           'numeric objects (int, float) is being deprecated, '
-                           'consider switching to using '
-                           'iris.pdatetime.PartialDateTime objects')
-                    warnings.warn(msg)
-                    return self.__float__() == other
-                else:
-                    return super(datetime.datetime, self).__eq__(other)
-
-        def _cus_datetime_from_datetime(dt):
-            # Convert datetime object into our custom datetime subclass capable
-            # of returning a numeric rep. for backwards compatibility.
-            # Custom datetime class can be removed when backwards
-            # compatibiility of comparing cell points (datetime objects) with
-            # numeric values is no longer neccessary.
-            return _Idatetime(unit=self.units, year=dt.year, month=dt.month,
-                day=dt.month, hour=dt.hour, minute=dt.minute, second=dt.second,
-                microsecond=dt.microsecond, tzinfo=dt.tzinfo)
-            
         index = iris.util._build_full_slice_given_keys(index, self.ndim)
 
         point = tuple(np.array(self.points[index], ndmin=1).flatten())
@@ -894,11 +861,12 @@ class Coord(CFVariableMixin):
             bound = tuple(np.array(self.bounds[index], ndmin=1).flatten())
 
         if extended and self.units.is_time_reference():
-            dt = self.units.num2date(point)[0]
-            point = _cus_datetime_from_datetime(dt)
+            point = self.units.num2date(point)[0]
+            point = _datetime_numeric_comparison(self.units, point)
+
             if bound is not None:
-                dt = self.units.num2date(bound)
-                point = _cus_datetime_from_datetime(dt)
+                bound = self.units.num2date(bound)
+                bound = _datetime_numeric_comparison(self.units, bound)
 
         return Cell(point, bound)
 
@@ -1659,3 +1627,69 @@ class _GroupIterator(collections.Iterator):
         group = _GroupbyItem(m, slice(self._start, stop))
         self._start = stop
         return group
+
+
+class _Idatetime(datetime.datetime):
+    # Custom datetime subclass capable of returning point as a number.
+    # Required only for backwards compatibility with constraining a time coord
+    # by numeric values rather than partial datetimes.
+    def __new__(cls, unit, *args, **kwargs):
+        return datetime.datetime.__new__(cls, *args, **kwargs)
+
+    def __init__(self, unit, *args, **kwargs):
+        super(datetime.datetime, self).__init__(*args, **kwargs)
+        self.unit = unit
+
+    def __float__(self):
+        return self.unit.date2num(self)
+
+    def __eq__(self, other):
+        if isinstance(other, (int, float)):
+            msg = ('Comparing datetime objects with numeric objects (int, '
+                   'float) is being deprecated, consider switching to using '
+                   'iris.pdatetime.PartialDateTime objects')
+            warnings.warn(msg)
+            return self.__float__() == other
+        else:
+            return super(datetime.datetime, self).__eq__(other)
+
+
+def _datetime_numeric_comparison(unit, datetimes):
+    def _cus_datetime_from_datetime(dt):
+        # Convert datetime object into our custom datetime subclass capable
+        # of returning a numeric rep. for backwards compatibility.
+        # Custom datetime class can be removed when backwards
+        # compatibiility of comparing cell points (datetime objects) with
+        # numeric values is no longer neccessary.
+        return _Idatetime(
+            unit=unit, year=dt.year, month=dt.month, day=dt.day,
+            hour=dt.hour, minute=dt.minute, second=dt.second,
+            microsecond=dt.microsecond, tzinfo=dt.tzinfo)
+
+    def __float__(self):
+        return self.unit.date2num(self)
+
+    def __eq__(self, other):
+        if isinstance(other, (int, float)):
+            msg = ('Comparing netcdftime.datetime objects with numeric '
+                   'objects (int, float) is being deprecated, consider '
+                   'switching to using iris.pdatetime.PartialDateTime '
+                   'objects')
+            warnings.warn(msg)
+            return self.__float__() == other
+        else:
+            return super(datetime.datetime, self).__eq__(other)
+
+    if not isinstance(datetimes, collections.Iterable):
+        datetimes = [datetimes]
+    for ind, datetime in enumerate(datetimes):
+        try:
+            # datetime object (immutable object)
+            datetimes[ind].unit = unit
+            datetimes[ind].__float__ = __float__
+            datetimes[ind].__eq__ = __eq__
+        except AttributeError:
+            # netcdftime.datetime object (standard python class)
+            datetimes[ind] = _cus_datetime_from_datetime(datetime)
+
+    return datetimes

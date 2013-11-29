@@ -250,16 +250,19 @@ class _CoordConstraint(object):
         if callable(self._coord_thing):
             call_func = self._coord_thing
         elif (isinstance(self._coord_thing, collections.Iterable) and
-                not isinstance(self._coord_thing, (basestring,
-                    iris.coords.Cell,
-                    PartialDateTime.known_time_implementations,
-                    PartialDateTime))):
+                not isinstance(self._coord_thing,
+                               (basestring, iris.coords.Cell,
+                               PartialDateTime.known_time_implementations,
+                               PartialDateTime))):
             call_func = lambda cell: cell in list(self._coord_thing)
         else:
             call_func = lambda c: c == self._coord_thing
-            try_quick = (isinstance(coord, iris.coords.DimCoord) and
-                not isinstance(self._coord_thing, (iris.coords.Cell,
-                PartialDateTime.known_time_implementations, PartialDateTime)))
+            try_quick = (
+                isinstance(coord, iris.coords.DimCoord) and
+                not isinstance(self._coord_thing,
+                               (iris.coords.Cell,
+                                PartialDateTime.known_time_implementations,
+                                PartialDateTime)))
 
         # Simple, yet dramatic, optimisation for the monotonic case.
         if try_quick:

@@ -127,7 +127,11 @@ class Test_cell_extended(tests.IrisTest):
         cell_patch.start()
         self.addCleanup(cell_patch.stop)
 
-        self.numdate = mock.Mock(name='date')
+        datetime_patch = mock.patch('datetime.datetime')
+        datetime_patch.start()
+        self.addCleanup(datetime_patch.stop)
+
+        self.numdate = [mock.Mock(name='date')]
         numdate_patch = mock.patch(
             'iris.unit.Unit.num2date', return_value=self.numdate)
         numdate_patch.start()

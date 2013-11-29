@@ -20,6 +20,10 @@
 # importing anything else.
 import iris.tests as tests
 
+# In python 2.x when in __main__ __builtins__ is the built-in module, but
+# __builtin__ when in any other module.
+# NOTE: __builtin__ has been renamed to builtins in python 3.x
+import __builtin__
 from contextlib import contextmanager
 import mock
 import operator
@@ -53,10 +57,10 @@ def patched_isinstance(*args, **kwargs):
         # actually running the mocked callable.
         def revert_isinstance_then_call(*args, **kwargs):
             try:
-                __builtins__.isinstance = isinstance_orig
+                __builtin__.isinstance = isinstance_orig
                 return mocked_callable(*args, **kwargs)
             finally:
-                __builtins__.isinstance = isinstance_patched
+                __builtin__.isinstance = isinstance_patched
 
         # Update the patched isinstance to use the newly defined function.
         isinstance_patched._mock_call = revert_isinstance_then_call
