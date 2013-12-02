@@ -168,7 +168,12 @@ THEN
     pp.lbtim.ib = 2
     pp.t1 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0])
     pp.t2 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1])
-    pp.lbft = scalar_coord(cm, 'forecast_period').points[0]
+#   t2_hours_since = Unit("hours since epoch").date2num(pp.t2)
+#   t_dt = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').points[0])
+#   t_hours_since = Unit("hours since epoch").date2num(t_dt)
+#   r_hours_since = (t_hours_since - fp_hours)  # Still assuming forecast_period is in hours
+#   pp.lbft = t2_hours_since - r_hours_since
+    pp.lbft = Unit("hours since epoch").date2num(pp.t2) - (Unit("hours since epoch").date2num(scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').points[0])) - scalar_coord(cm, 'forecast_period').points[0])
 
 IF
     # Handle missing forecast period using time and forecast reference time.
@@ -218,9 +223,9 @@ IF
 THEN
     pp.lbtim.ia = 0
     pp.lbtim.ib = 2
-    pp.lbft = scalar_coord(cm, 'forecast_period').points[0]
     pp.t1 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0, 0])
     pp.t2 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0, 1])
+    pp.lbft = Unit("hours since epoch").date2num(pp.t2) - (Unit("hours since epoch").date2num(scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').points[0])) - scalar_coord(cm, 'forecast_period').points[0])
 
 
 #climatiological time mean - spanning years - djf
@@ -235,7 +240,6 @@ IF
 THEN
     pp.lbtim.ia = 0
     pp.lbtim.ib = 3
-    pp.lbft = scalar_coord(cm, 'forecast_period').points[0]
 
     pp.t1 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0])
     pp.t2 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1])
@@ -246,6 +250,7 @@ THEN
     self.conditional_warning(scalar_coord(cm, 'time').bounds[0,0] != scalar_coord(cm, 'time').units.date2num(pp.t1), "modified t1 for climatological seasonal mean")
     self.conditional_warning(scalar_coord(cm, 'time').bounds[0,1] != scalar_coord(cm, 'time').units.date2num(pp.t2), "modified t2 for climatological seasonal mean")
 
+    pp.lbft = Unit("hours since epoch").date2num(pp.t2) - (Unit("hours since epoch").date2num(scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').points[0])) - scalar_coord(cm, 'forecast_period').points[0])
 
 #climatiological time mean - spanning years - mam
 IF
@@ -259,7 +264,6 @@ IF
 THEN
     pp.lbtim.ia = 0
     pp.lbtim.ib = 3
-    pp.lbft = scalar_coord(cm, 'forecast_period').points[0]
 
     pp.t1 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0])
     pp.t2 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1])
@@ -269,6 +273,8 @@ THEN
     
     self.conditional_warning(scalar_coord(cm, 'time').bounds[0,0] != scalar_coord(cm, 'time').units.date2num(pp.t1), "modified t1 for climatological seasonal mean")
     self.conditional_warning(scalar_coord(cm, 'time').bounds[0,1] != scalar_coord(cm, 'time').units.date2num(pp.t2), "modified t2 for climatological seasonal mean")
+
+    pp.lbft = Unit("hours since epoch").date2num(pp.t2) - (Unit("hours since epoch").date2num(scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').points[0])) - scalar_coord(cm, 'forecast_period').points[0])
 
 #climatiological time mean - spanning years - jja
 IF
@@ -282,7 +288,6 @@ IF
 THEN
     pp.lbtim.ia = 0
     pp.lbtim.ib = 3
-    pp.lbft = scalar_coord(cm, 'forecast_period').points[0]
 
     pp.t1 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0])
     pp.t2 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1])
@@ -292,6 +297,8 @@ THEN
     
     self.conditional_warning(scalar_coord(cm, 'time').bounds[0,0] != scalar_coord(cm, 'time').units.date2num(pp.t1), "modified t1 for climatological seasonal mean")
     self.conditional_warning(scalar_coord(cm, 'time').bounds[0,1] != scalar_coord(cm, 'time').units.date2num(pp.t2), "modified t2 for climatological seasonal mean")
+
+    pp.lbft = Unit("hours since epoch").date2num(pp.t2) - (Unit("hours since epoch").date2num(scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').points[0])) - scalar_coord(cm, 'forecast_period').points[0])
 
 #climatiological time mean - spanning years - son
 IF
@@ -305,7 +312,6 @@ IF
 THEN
     pp.lbtim.ia = 0
     pp.lbtim.ib = 3
-    pp.lbft = scalar_coord(cm, 'forecast_period').points[0]
 
     pp.t1 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0])
     pp.t2 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1])
@@ -315,6 +321,8 @@ THEN
     
     self.conditional_warning(scalar_coord(cm, 'time').bounds[0,0] != scalar_coord(cm, 'time').units.date2num(pp.t1), "modified t1 for climatological seasonal mean")
     self.conditional_warning(scalar_coord(cm, 'time').bounds[0,1] != scalar_coord(cm, 'time').units.date2num(pp.t2), "modified t2 for climatological seasonal mean")
+
+    pp.lbft = Unit("hours since epoch").date2num(pp.t2) - (Unit("hours since epoch").date2num(scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').points[0])) - scalar_coord(cm, 'forecast_period').points[0])
 
 #360 day calendar
 IF
