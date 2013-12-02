@@ -358,14 +358,22 @@ class TestDimCoordCreation(unittest.TestCase):
         
     def test_dim_coord_restrictions(self):
         # 1d
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegexp(ValueError, 'must be 1-dim'):
             iris.coords.DimCoord([[1,2,3], [4,5,6]]) 
         # monotonic
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegexp(ValueError, 'must be strictly monotonic'):
             iris.coords.DimCoord([1,2,99,4,5]) 
         # monotonic bounds
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegexp(ValueError, 
+                                     'monotonicity.*consistent.*all bounds'):
             iris.coords.DimCoord([1,2,3], bounds=[[1, 12], [2, 9], [3, 6]])
+        # shapes of points and bounds
+        with self.assertRaisesRegexp(ValueError, 'len\(points\)'):
+            iris.coords.DimCoord([1,2,3], bounds=[0.5, 1.5, 2.5, 3.5])
+        # another example of shapes of points and bounds
+        with self.assertRaisesRegexp(ValueError, 'len\(points\)'):
+            iris.coords.DimCoord([1,2,3], bounds=[[0.5, 1.5],[1.5, 2.5]])
+
         # numeric
         with self.assertRaises(ValueError):
             iris.coords.DimCoord(['Jan', 'Feb', 'March'])
