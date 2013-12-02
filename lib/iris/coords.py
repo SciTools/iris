@@ -31,6 +31,7 @@ import zlib
 import datetime
 import netcdftime
 import numpy as np
+from types import MethodType
 
 import iris.aux_factory
 import iris.exceptions
@@ -1678,7 +1679,12 @@ def _datetime_numeric_comparison(unit, datetimes):
             warnings.warn(msg)
             return self.__float__() == other
         else:
-            return super(datetime.datetime, self).__eq__(other)
+            # netcdftime.datetime equality does not return NotImplemented!
+            try:
+                fmt = '%Y-%m-%d %H:%M:%S'
+                return self.strftime(fmt) == other.strftime(fmt)
+            except AttributeError:
+                return NotImplemented
 
     if not isinstance(datetimes, collections.Iterable):
         datetimes = [datetimes]
@@ -1686,8 +1692,10 @@ def _datetime_numeric_comparison(unit, datetimes):
         try:
             # datetime object (immutable object)
             datetimes[ind].unit = unit
-            datetimes[ind].__float__ = __float__
-            datetimes[ind].__eq__ = __eq__
+            datetimes[ind].__float__ = MethodType(
+                __float__, datetimes[ind], netcdftime.datetime)
+            datetimes[ind].__eq__ = MethodType(
+                __eq__, datetimes[ind], netcdftime.datetime)
         except AttributeError:
             # netcdftime.datetime object (standard python class)
             datetimes[ind] = _cus_datetime_from_datetime(datetime)

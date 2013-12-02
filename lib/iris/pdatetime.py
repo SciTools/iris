@@ -27,8 +27,10 @@ import operator
 
 
 _partial_datetime_fields = ['year', 'month', 'day', 'hour', 'minute',
-                            'second', 'microsecond', 'tzinfo',
-                            'calendar']
+                            'second', 'microsecond']
+# NOTE: 'calendar' and 'tzinfo' is not included as PartialDateTime is not
+# calendar aware, i.e. the comparison operators do not consider the date
+# values and adjustment by tzinfo or calendar.
 
 
 class PartialDateTime(collections.namedtuple('PartialDateTime',
@@ -46,46 +48,95 @@ class PartialDateTime(collections.namedtuple('PartialDateTime',
         return tuple(self)
 
     def __new__(cls, year=None, month=None, day=None, hour=None,
-                minute=None, second=None, microsecond=None,
-                tzinfo=None, calendar=None):
+                minute=None, second=None, microsecond=None):
         return super(PartialDateTime, cls).__new__(cls, year, month, day,
                                                    hour, minute, second,
-                                                   microsecond, tzinfo,
-                                                   calendar)
+                                                   microsecond)
 
     def __gt__(self, other):
-        return self._compare(operator.gt, other)
+        result = self._compare(other)
+        if result is False:
+            result = self._comparison_x(operator.gt, other)
+        return result
 
     def __lt__(self, other):
-        return self._compare(operator.lt, other)
+        result = self._compare(other)
+        if result is False:
+            result = self._comparison_x(operator.lt, other)
+        return result
 
     def __ge__(self, other):
-        return self._compare(operator.ge, other)
+        result = self._compare(other)
+        if result is False:
+            result = self._comparison_xe(operator.ge, other)
+        return result
 
     def __le__(self, other):
-        return self._compare(operator.le, other)
+        result = self._compare(other)
+        if result is False:
+            result = self._comparison_xe(operator.le, other)
+        return result
 
     def __eq__(self, other):
-        return self._compare(operator.eq, other)
+        result = self._compare(other)
+        if result is False:
+            result = self._comparison_eq(operator.eq, other)
+        return result
 
     def __ne__(self, other):
-        return not self == other
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+        return result
 
-    def _compare(self, op, other):
+    def _comparison_x(self, op, other):
+        # Handling of comparison operators that stop on first anything other
+        # than a 'None', which represents the case where 'a == b' (i.e. skip
+        # this field).
+        result = False
+        for attr_name, attr in zip(self._fields, self):
+            if attr is not None:
+                result = op(attr, getattr(other, attr_name))
+                if result is False:
+                    if attr == getattr(other, attr_name):
+                        result = None
+                if result in (True, False, NotImplemented):
+                    break
+        if result is None:
+            result = False
+        return result
+
+    def _comparison_xe(self, op, other):
+        # Handling of comparison operators that stop on first True.
+        result = False
+        for attr_name, attr in zip(self._fields, self):
+            if attr is not None:
+                result = op(attr, getattr(other, attr_name))
+                if result is True:
+                    if attr == getattr(other, attr_name):
+                        result = None
+                if result in (True, False, NotImplemented):
+                    break
+        if result is None:
+            result = True
+        return result
+
+    def _comparison_eq(self, op, other):
+        # Handling of comparison operators that stop on first True.
+        result = False
+        for attr_name, attr in zip(self._fields, self):
+            if attr is not None:
+                result = op(attr, getattr(other, attr_name))
+                if result in (False, NotImplemented):
+                    break
+        return result
+
+    def _compare(self, other):
         if not isinstance(other, PartialDateTime.known_time_implementations):
             result = NotImplemented
         elif isinstance(other, PartialDateTime):
             # This is a harder problem, so for now, just don't implement it.
             result = NotImplemented
         else:
-            result = True
-            for attr_name, attr in zip(self._fields, self):
-                if result and attr is not None:
-                    if attr_name == 'calendar':
-                        calendar = getattr(other, 'calendar', 'gregorian')
-                        result = attr == calendar
-                        if op is operator.ne:
-                            result = not result
-                    else:
-                        result = op(attr, getattr(other, attr_name))
+            result = False
         return result

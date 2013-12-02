@@ -24,8 +24,12 @@ import mock
 import operator
 
 from datetime import datetime
+import netcdftime
+import numpy as np
 
 from iris.coords import Cell
+from iris.pdatetime import PartialDateTime
+import iris.tests.unit as unit
 
 
 class Test___common_cmp__(tests.IrisTest):
@@ -73,6 +77,28 @@ class Test___common_cmp__(tests.IrisTest):
         with mock.patch('warnings.warn') as warn:
             test_cell.__common_cmp__(other, op)
         self.assertFalse(warn.called)
+
+
+class Test___eq__(tests.IrisTest):
+    def test_datetime_cell(self):
+        dt = mock.Mock(spec=datetime)
+        cell = Cell(point='dummy', bound=None)
+
+        with unit.patched_isinstance(return_value=True) as new_isinstance:
+            cell.__eq__(dt)
+        new_isinstance.assert_called_once_with(
+            dt, (int, float, np.number, PartialDateTime,
+                 PartialDateTime.known_time_implementations))
+
+    def test_PartialDateTime_cell(self):
+        dt = mock.Mock(spec=PartialDateTime)
+        cell = Cell(point='dummy', bound=None)
+
+        with unit.patched_isinstance(return_value=True) as new_isinstance:
+            cell.__eq__(dt)
+        new_isinstance.assert_called_once_with(
+            dt, (int, float, np.number, PartialDateTime,
+                 PartialDateTime.known_time_implementations))
 
 
 if __name__ == '__main__':

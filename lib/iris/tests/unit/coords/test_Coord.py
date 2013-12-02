@@ -115,7 +115,7 @@ class Test_index(tests.IrisTest):
         self.assertEqual(err.exception.message, msg)
 
 
-class Test_cell_extended(tests.IrisTest):
+class Test_cell__extended(tests.IrisTest):
     # Use of the extended keyword.
     def setUp(self):
         slice_patch = mock.patch(

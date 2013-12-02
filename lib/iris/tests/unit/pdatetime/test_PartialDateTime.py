@@ -24,7 +24,6 @@ import mock
 import operator
 
 from datetime import datetime
-import netcdftime
 
 from iris.pdatetime import PartialDateTime
 import iris.tests.unit as unit
@@ -49,8 +48,8 @@ class Test_timetuple(tests.IrisTest):
     def test_time_tuple(self):
         # Check that the PartialDateTime class implements a timetuple (needed
         # because of http://bugs.python.org/issue8005).
-        pd = PartialDateTime(*range(9))
-        self.assertEqual(pd.timetuple, tuple(range(9)))
+        pd = PartialDateTime(*range(7))
+        self.assertEqual(pd.timetuple, tuple(range(7)))
 
     def test_datetime_python(self):
         # Ensure that 'bug' is still present with datetime object comparison.
@@ -67,7 +66,7 @@ class Test_timetuple(tests.IrisTest):
 class Test__compare(tests.IrisTest):
     def mocked_partial_datetime(
             self, year=None, month=None, day=None, hour=None, minute=None,
-            second=None, microsecond=None, tzinfo=None, calendar=None):
+            second=None, microsecond=None):
         """
         Construct a mocked PartialDateTime, with a _fields attribute and
         such that it is an iterator of the given "iter_values".
@@ -77,8 +76,7 @@ class Test__compare(tests.IrisTest):
                             _fields=PartialDateTime._fields,
                             year=year, month=month, day=day, hour=hour,
                             minute=minute, second=second,
-                            microsecond=microsecond, tzinfo=tzinfo,
-                            calendar=calendar)
+                            microsecond=microsecond)
         iter_values = [getattr(partial, field_name)
                        for field_name in partial._fields]
         partial.__iter__ = mock.Mock(return_value=iter(iter_values))
@@ -87,104 +85,209 @@ class Test__compare(tests.IrisTest):
     def test_type_not_implemented(self):
         # Check that NotImplemented is returned for bad types (an int in
         # this case).
-        pd = PartialDateTime(*range(9))
-        self.assertEqual(pd._compare(operator.gt, 1), NotImplemented)
+        pd = PartialDateTime(*range(7))
+        self.assertEqual(pd._compare(1), NotImplemented)
 
     def test_not_implemented_types(self):
         # Check that "known_time_implementations" is used to check whether a
         # type can be compared with a PartialDateTime.
-        pd = PartialDateTime(*range(9))
+        pd = PartialDateTime(*range(7))
         with unit.patched_isinstance(return_value=False) as new_isinstance:
-            self.assertEqual(pd._compare(operator.gt, 1), NotImplemented)
+            self.assertEqual(pd._compare(1), NotImplemented)
         new_isinstance.assert_called_once_with(
             1, PartialDateTime.known_time_implementations)
 
-    def test_skipped_None_attributes(self):
-        # Check that attributes with value of None are skipped.
-        op = mock.Mock(name='operator')
-        other = mock.Mock(name='partial_rhs', spec=datetime)
-        pd = mock.Mock(name='partial_lhs', spec=PartialDateTime,
-                       _fields=['year', 'hour', 'tzinfo'])
-        pd.__iter__ = mock.Mock(return_value=iter([0, None, 1]))
 
-        # Call the _compare unbound method.
-        PartialDateTime._compare(pd, op, other)
+class _Test_operator(object):
+    def _other(self):
+        self.other = mock.Mock(name='datetime_cmp', spec=datetime, year=3,
+                               month=3, day=3, second=3)
 
-        # Check that underneath we're calling the comparison operator on the
-        # appropriate attributes.
-        self.assertEqual(op.mock_calls,
-                         [mock.call(0, other.year),
-                          mock.call(1, other.tzinfo)])
+    def test_no_difference(self):
+        res = self.op(PartialDateTime(year=3, month=3, day=3, second=3),
+                      self.other)
+        self.assertIs(self.return_value['no_difference'], res)
 
-    def test_normal_attribute_comparison(self):
-        # Check that the comparison is taking all normal attributes into
-        # account.
-        op = mock.Mock(name='operator')
-        other = mock.Mock(name='partial_rhs', spec=datetime)
-        # It doesn't matter which fields we specify in the mock. The fact that
-        # those that *are* being tested are checked is the important part.
-        pd = mock.Mock(name='partial_lhs', spec=PartialDateTime,
-                       _fields=['year', 'hour', 'tzinfo'])
-        pd.__iter__ = mock.Mock(return_value=iter(xrange(100)))
+    def test_item1_lo(self):
+        res = self.op(PartialDateTime(year=1, month=3, second=3),
+                      self.other)
+        self.assertIs(self.return_value['item1_lo'], res)
 
-        # Call the _compare unbound method.
-        PartialDateTime._compare(pd, op, other)
+    def test_item1_hi(self):
+        res = self.op(PartialDateTime(year=5, month=3, day=4),
+                      self.other)
+        self.assertIs(self.return_value['item1_hi'], res)
 
-        # Check that underneath we're calling the comparison operator on the
-        # appropriate attributes.
-        self.assertEqual(op.mock_calls,
-                         [mock.call(0, other.year),
-                          mock.call(1, other.hour),
-                          mock.call(2, other.tzinfo)])
+    def test_item2_lo(self):
+        res = self.op(PartialDateTime(year=3, month=1, second=3),
+                      self.other)
+        self.assertIs(self.return_value['item2_lo'], res)
 
-        # Check the contents of the _fields class attribute.
-        self.assertEqual(PartialDateTime._fields,
-                         ('year', 'month', 'day', 'hour', 'minute', 'second',
-                          'microsecond', 'tzinfo', 'calendar'))
+    def test_item2_hi(self):
+        res = self.op(PartialDateTime(year=3, month=5, day=4),
+                      self.other)
+        self.assertIs(self.return_value['item2_hi'], res)
 
-    def test_calendar_comparison(self):
-        # Check that an equality comparison is used for calendar attributes.
-        calendar = mock.Mock(name='calendar')
-        calendar.__eq__ = mock.Mock(return_value=True)
-        pd1 = self.mocked_partial_datetime(calendar=calendar)
-        dt = mock.Mock(spec=netcdftime.datetime, calendar=calendar)
+    def test_item3_lo(self):
+        res = self.op(PartialDateTime(year=3, month=3, second=1),
+                      self.other)
+        self.assertIs(self.return_value['item3_lo'], res)
 
-        self.assertIsInstance(
-            PartialDateTime._compare(pd1, operator.gt, dt), bool)
-        calendar.__eq__.assert_called_once_with(calendar)
+    def test_item3_hi(self):
+        res = self.op(PartialDateTime(year=3, month=3, day=5),
+                      self.other)
+        self.assertIs(self.return_value['item3_hi'], res)
 
-    def test_calendar_attribute_default(self):
-        # Check that the comparison is taking the calendar attribute into
-        # account.
-        calendar = mock.Mock(name='calendar')
-        calendar.__eq__ = mock.Mock(return_value=True)
-        pd1 = self.mocked_partial_datetime(calendar=calendar)
-        dt = mock.Mock(spec=datetime)
+    def test_mix_hi_lo(self):
+        res = self.op(PartialDateTime(year=5, month=1, day=5),
+                      self.other)
+        self.assertIs(self.return_value['mix_hi_lo'], res)
 
-        result = PartialDateTime._compare(pd1, operator.eq, dt)
-        calendar.__eq__.assert_called_once_with('gregorian')
-        # The result should now be the result of calling __eq__.
-        self.assertTrue(result)
+    def test_mix_lo_hi(self):
+        res = self.op(PartialDateTime(year=1, month=5, day=5),
+                      self.other)
+        self.assertIs(self.return_value['mix_lo_hi'], res)
 
-    def test_negated_calendar_attribute(self):
-        # Check the ne operator, as the result needs to be negated.
-        calendar = mock.Mock(name='calendar')
-        calendar.__eq__ = mock.Mock(return_value=True)
-        pd1 = self.mocked_partial_datetime(calendar=calendar)
-        dt = mock.Mock(spec=datetime)
 
-        result = PartialDateTime._compare(pd1, operator.ne, dt)
-        self.assertFalse(result)
+class Test___eq__(tests.IrisTest, _Test_operator):
+    def setUp(self):
+        self.op = operator.eq
+        self._other()
+        self.return_value = {
+            'no_difference': True, 'item1_lo': False, 'item1_hi': False,
+            'item2_lo': False, 'item2_hi': False, 'item3_lo': False,
+            'item3_hi': False, 'mix_hi_lo': False, 'mix_lo_hi': False}
 
-    def test_missing_attribute(self):
-        # Test the case where self has attributes other doesn't.
-        op = mock.Mock(name='operator')
-        other = mock.Mock(spec=datetime, name='other')
-        del other.month
-        pd = PartialDateTime(*range(9))
-        with self.assertRaises(AttributeError) as err:
-            pd._compare(op, other)
-        self.assertEqual(err.exception.message, 'month')
+
+class Test___ne__(tests.IrisTest, _Test_operator):
+    def setUp(self):
+        self.op = operator.ne
+        self._other()
+        self.return_value = {
+            'no_difference': False, 'item1_lo': True, 'item1_hi': True,
+            'item2_lo': True, 'item2_hi': True, 'item3_lo': True,
+            'item3_hi': True, 'mix_hi_lo': True, 'mix_lo_hi': True}
+
+
+class Test___gt__(tests.IrisTest, _Test_operator):
+    def setUp(self):
+        self.op = operator.gt
+        self._other()
+        self.return_value = {
+            'no_difference': False, 'item1_lo': False, 'item1_hi': True,
+            'item2_lo': False, 'item2_hi': True, 'item3_lo': False,
+            'item3_hi': True, 'mix_hi_lo': True, 'mix_lo_hi': False}
+
+
+class Test___lt__(tests.IrisTest, _Test_operator):
+    def setUp(self):
+        self.op = operator.lt
+        self._other()
+        self.return_value = {
+            'no_difference': False, 'item1_lo': True, 'item1_hi': False,
+            'item2_lo': True, 'item2_hi': False, 'item3_lo': True,
+            'item3_hi': False, 'mix_hi_lo': False, 'mix_lo_hi': True}
+
+
+class Test___ge__(tests.IrisTest, _Test_operator):
+    def setUp(self):
+        self.op = operator.ge
+        self._other()
+        self.return_value = {
+            'no_difference': True, 'item1_lo': False, 'item1_hi': True,
+            'item2_lo': False, 'item2_hi': True, 'item3_lo': False,
+            'item3_hi': True, 'mix_hi_lo': True, 'mix_lo_hi': False}
+
+
+class Test___le__(tests.IrisTest, _Test_operator):
+    def setUp(self):
+        self.op = operator.le
+        self._other()
+        self.return_value = {
+            'no_difference': True, 'item1_lo': True, 'item1_hi': False,
+            'item2_lo': True, 'item2_hi': False, 'item3_lo': True,
+            'item3_hi': False, 'mix_hi_lo': False, 'mix_lo_hi': True}
+
+
+class Test__comparison_x(tests.IrisTest):
+    def setUp(self):
+        self.other = mock.Mock(name='datetime_cmp', spec=datetime, year=3,
+                               month=3, day=3, hour=3)
+        self.pd = mock.Mock(name='dummy_pdt', spec=PartialDateTime,
+                            _fields=['year', 'month', 'day'])
+        self.op = mock.Mock(name='operator')
+
+    def test_skip_missing_attribute(self):
+        # Test that each attribute is compared between self and other, other
+        # than self attributes of None.
+        self.pd.__iter__ = mock.Mock(return_value=iter([0, None, 1]))
+        PartialDateTime._comparison_x(self.pd, self.op, self.other)
+
+        self.assertEqual(self.op.mock_calls,
+                         [mock.call(0, self.other.year),
+                          mock.call(1, self.other.day)])
+
+    def test_return_false_with_no_attrib(self):
+        # Ensure that false is returned when no attribute is compared against.
+        self.pd.__iter__ = mock.Mock(return_value=iter([None, None, None]))
+        res = PartialDateTime._comparison_x(self.pd, self.op, self.other)
+
+        self.assertFalse(self.op.called)
+        self.assertIs(res, False)
+
+
+class Test__comparison_xe(tests.IrisTest):
+    def setUp(self):
+        self.other = mock.Mock(name='datetime_cmp', spec=datetime, year=3,
+                               month=3, day=3, hour=3)
+        self.pd = mock.Mock(name='dummy_pdt', spec=PartialDateTime,
+                            _fields=['year', 'month', 'day'])
+        self.op = mock.Mock(name='operator')
+
+    def test_skip_missing_attribute(self):
+        # Test that each attribute is compared between self and other, other
+        # than self attributes of None.
+        self.pd.__iter__ = mock.Mock(return_value=iter([0, None, 1]))
+        PartialDateTime._comparison_xe(self.pd, self.op, self.other)
+
+        self.assertEqual(self.op.mock_calls,
+                         [mock.call(0, self.other.year),
+                          mock.call(1, self.other.day)])
+
+    def test_return_false_with_no_attrib(self):
+        # Ensure that false is returned when no attribute is compared against.
+        self.pd.__iter__ = mock.Mock(return_value=iter([None, None, None]))
+        res = PartialDateTime._comparison_xe(self.pd, self.op, self.other)
+
+        self.assertFalse(self.op.called)
+        self.assertIs(res, False)
+
+
+class Test__comparison_eq(tests.IrisTest):
+    def setUp(self):
+        self.other = mock.Mock(name='datetime_cmp', spec=datetime, year=3,
+                               month=3, day=3, hour=3)
+        self.pd = mock.Mock(name='dummy_pdt', spec=PartialDateTime,
+                            _fields=['year', 'month', 'day'])
+        self.op = mock.Mock(name='operator')
+
+    def test_skip_missing_attribute(self):
+        # Test that each attribute is compared between self and other, other
+        # than self attributes of None.
+        self.pd.__iter__ = mock.Mock(return_value=iter([0, None, 1]))
+        PartialDateTime._comparison_eq(self.pd, self.op, self.other)
+
+        self.assertEqual(self.op.mock_calls,
+                         [mock.call(0, self.other.year),
+                          mock.call(1, self.other.day)])
+
+    def test_return_false_with_no_attrib(self):
+        # Ensure that false is returned when no attribute is compared against.
+        self.pd.__iter__ = mock.Mock(return_value=iter([None, None, None]))
+        res = PartialDateTime._comparison_eq(self.pd, self.op, self.other)
+
+        self.assertFalse(self.op.called)
+        self.assertIs(res, False)
 
 
 if __name__ == "__main__":
