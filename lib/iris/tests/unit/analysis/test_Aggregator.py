@@ -20,7 +20,7 @@
 # importing anything else.
 import iris.tests as tests
 
-from mock import patch
+from mock import patch, sentinel, Mock
 import numpy as np
 import numpy.ma as ma
 
@@ -198,6 +198,26 @@ class Test_aggregate(tests.IrisTest):
             result = self.TEST.aggregate(self.array, axis, mdtol=.45)
             self.assertMaskedArrayEqual(result, self.expected_result_axis1)
         mock_method.assert_called_once_with(self.array, axis=axis)
+
+
+class Test_update_metadata(tests.IrisTest):
+    def test_no_units_change(self):
+        # If the Aggregator has no units_func then the units should be
+        # left unchanged.
+        aggregator = Aggregator('', None)
+        cube = Mock(units=sentinel.units)
+        aggregator.update_metadata(cube, [])
+        self.assertIs(cube.units, sentinel.units)
+
+    def test_units_change(self):
+        # If the Aggregator has a units_func then the new units should
+        # be defined by its return value.
+        units_func = Mock(return_value=sentinel.new_units)
+        aggregator = Aggregator('', None, units_func)
+        cube = Mock(units=sentinel.units)
+        aggregator.update_metadata(cube, [])
+        units_func.assert_called_once_with(sentinel.units)
+        self.assertEqual(cube.units, sentinel.new_units)
 
 
 if __name__ == "__main__":
