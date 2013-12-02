@@ -96,9 +96,6 @@ class PPTest(object):
         for pp_field in pp_fields:
             for word_name in unused:
                 setattr(pp_field, word_name, 0)
-            lbuser = list(pp_field.lbuser)
-            lbuser[1] = 0
-            pp_field.lbuser = tuple(lbuser)
 
         # Save the textual representation of the PP fields
         with open(txt_path, 'w') as txt_file:

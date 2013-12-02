@@ -1818,6 +1818,8 @@ def save(cube, target, append=False, field_coords=None):
         pp_field.lbcode = 1     # Grid code.
         pp_field.bmks = 1.0     # Some scaley thing.
         pp_field.lbproc = 0
+        # From UM doc F3: "Set to -99 if LBEGIN not known"
+        pp_field.lbuser[1] = -99
 
         # Set the data
         pp_field.data = slice2D.data
