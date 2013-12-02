@@ -33,7 +33,7 @@
 		1000.0]" shape="(15,)" units="Unit('hPa')" value_type="float32" var_name="pressure"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[7861680.0, 7948080.0]]" id="2789ad5b" points="[7904880.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="time"/>
+        <dimCoord bounds="[[7861680.0, 7948080.0]]" id="2789ad5b" points="[7948080.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="time"/>
       </coord>
     </coords>
     <cellMethods>
