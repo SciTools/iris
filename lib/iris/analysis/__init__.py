@@ -614,12 +614,13 @@ The number of data that match the given function.
 Args:
 
 * function:
-    A function which returns True or False given a value in the data array.
+    A function which converts an array of data values into a corresponding
+    array of True/False values.
 
 For example, the number of ensembles with precipitation exceeding 10 (in cube data units) could be calculated with::
 
     result = precip_cube.collapsed('ensemble_member', iris.analysis.COUNT,
-                                   function=lambda data_value: data_value > 10)
+                                   function=lambda values: values > 10)
 
 .. seealso:: :func:`iris.analysis.PROPORTION`
 
@@ -763,18 +764,19 @@ zero the result itself will be a masked array.
 Args:
 
 * function:
-    A function which returns True or False given a value in the data array.
+    A function which converts an array of data values into a corresponding
+    array of True/False values.
 
 For example, the probability of precipitation exceeding 10 (in cube data units) across ensemble members
 could be calculated with::
 
     result = precip_cube.collapsed('ensemble_member', iris.analysis.PROPORTION,
-                                   function=lambda data_value: data_value > 10)
+                                   function=lambda values: values > 10)
 
 Similarly, the proportion of times precipitation exceeded 10 (in cube data units) could be calculated with::
 
     result = precip_cube.collapsed('time', iris.analysis.PROPORTION,
-                                   function=lambda data_value: data_value > 10)
+                                   function=lambda values: values > 10)
 
 .. seealso:: :func:`iris.analysis.COUNT`
 
