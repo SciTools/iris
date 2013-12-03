@@ -466,7 +466,7 @@ class Cube(CFVariableMixin):
                   forecast_period: 6477 hours
                   forecast_reference_time: 1998-03-01 03:00:00
                   pressure: 1000.0 hPa
-                  time: 1996-12-01 00:00:00, \
+                  time: 1998-12-01 00:00:00, \
 bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
              Attributes:
                   STASH: m01s16i203
