@@ -41,7 +41,7 @@ class Test(TestGribSimple):
         cube.add_dim_coord(time_coord, 0)
         cube.add_aux_coord(fp_coord, 0)
         return cube
-    
+
     def test_time_point(self):
         cube = self._cube()
         rt, rt_meaning, fp, fp_meaning = _non_missing_forecast_period(cube)
