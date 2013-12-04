@@ -1705,7 +1705,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         warnings.warn('Cube.assert_valid() has been deprecated.')
 
     def __str__(self):
-        return self.summary().encode(errors='replace')
+        # Explicitly enforce utf-8 encoding rather then rely
+        # on the system default encoding.
+        return self.summary().encode(encoding='utf-8', errors='replace')
 
     def __unicode__(self):
         return self.summary()
