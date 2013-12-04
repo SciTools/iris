@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the `iris.cube.Cube` class."""
+"""Test function :func:`iris.util.new_axis`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
