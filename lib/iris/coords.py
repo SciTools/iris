@@ -23,23 +23,21 @@ from __future__ import division
 from abc import ABCMeta, abstractproperty
 import collections
 import copy
+import datetime
 from itertools import chain, izip_longest
 import operator
 import warnings
 import zlib
 
-import datetime
 import netcdftime
 import numpy as np
-from types import MethodType
-
-import iris.aux_factory
-import iris.exceptions
-from iris.pdatetime import PartialDateTime
-import iris.unit
-import iris.util
 
 from iris._cube_coord_common import CFVariableMixin
+import iris.aux_factory
+import iris.exceptions
+import iris.partial_datetime as ipd
+import iris.unit
+import iris.util
 
 
 class CoordDefn(collections.namedtuple('CoordDefn',
@@ -157,8 +155,8 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
         compared.
 
         """
-        if isinstance(other, (int, float, np.number, PartialDateTime,
-                              PartialDateTime.known_time_implementations)):
+        if isinstance(other, (int, float, np.number, ipd.PartialDateTime,
+                              ipd.PartialDateTime.known_time_implementations)):
             if self.bound is not None:
                 return self.contains_point(other)
             else:
@@ -186,20 +184,27 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
         Cell vs Cell comparison is used to define a strict order.
         Non-Cell vs Cell comparison is used to define Constraint matching.
 
+        .. deprecated:: 1.6
+
+            Comparison between cell objects that contain datetimes with
+            numeric values is considered deprecated.
+
         """
-        if not isinstance(other, (int, float, np.number, Cell,
-                                  PartialDateTime.known_time_implementations,
-                                  PartialDateTime)):
+        if not isinstance(
+                other,
+                (int, float, np.number, Cell,
+                 ipd.PartialDateTime.known_time_implementations,
+                 ipd.PartialDateTime)):
             raise ValueError("Unexpected type of other".format())
         if (isinstance(self.point,
                        (datetime.datetime, netcdftime.datetime)) and
                 not isinstance(other,
-                               (PartialDateTime.known_time_implementations,
-                               PartialDateTime))):
+                               (ipd.PartialDateTime.known_time_implementations,
+                                ipd.PartialDateTime))):
             msg = ('A comparison is taking place between a cell with '
-                   'datetimes and a numeric. Is this an old style '
-                   'constraint? You know datetimes are much richer?')
-            warnings.warn(msg)
+                   'datetimes and a numeric. Comparison with numeric values '
+                   'has been deprecated in favour of datetime objects.')
+            warnings.warn(msg, DeprecationWarning)
 
         if operator_method not in (operator.gt, operator.lt,
                                    operator.ge, operator.le):
@@ -649,14 +654,15 @@ class Coord(CFVariableMixin):
                 self.bounds = self.units.convert(self.bounds, unit)
         self.units = unit
 
-    def cells(self, extended=True):
+    def cells(self, make_dt=True):
         """
         Returns an iterable of Cell instances for this Coord.
 
         Kwargs:
 
-         * extended - Whether to update date based cells into datetime
-                      instances. Default True.
+         * make_dt (bool):
+             Whether to update date based cells into datetime instances.
+             Default True.
 
         For example::
 
@@ -667,7 +673,7 @@ class Coord(CFVariableMixin):
         if self.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(self)
         for index in xrange(self.shape[0]):
-            yield self.cell(index, extended=extended)
+            yield self.cell(index, make_dt=make_dt)
 
     def _sanity_check_contiguous(self):
         if self.ndim != 1:
@@ -834,20 +840,21 @@ class Coord(CFVariableMixin):
                'Coord.nearest_neighbour_index() instead.')
         raise iris.exceptions.IrisError(msg)
 
-    def cell(self, index, extended=True):
+    def cell(self, index, make_dt=True):
         """
         Return the single :class:`Cell` instance which results from slicing the
         points/bounds with the given index.
 
         Args:
 
-         * index - The index into the 1d coordinate for which a cell is
-                   desired.
+         * index (int):
+            The index into the 1d coordinate for which a cell is desired.
 
         Kwargs:
 
-         * extended - Whether to update date based cells into datetime
-                      instances. Default True.
+         * make_dt (bool):
+            Whether to update date based cells into datetime instances.
+            Default True.
 
         """
         index = iris.util._build_full_slice_given_keys(index, self.ndim)
@@ -861,13 +868,13 @@ class Coord(CFVariableMixin):
         if self.bounds is not None:
             bound = tuple(np.array(self.bounds[index], ndmin=1).flatten())
 
-        if extended and self.units.is_time_reference():
+        if make_dt and self.units.is_time_reference():
             point = self.units.num2date(point)[0]
-            point = _datetime_numeric_comparison(self.units, point)
+            point = ipd.enhance_datetimes(self.units, point)
 
             if bound is not None:
                 bound = self.units.num2date(bound)
-                bound = _datetime_numeric_comparison(self.units, bound)
+                bound = ipd.enhance_datetimes(self.units, bound)
 
         return Cell(point, bound)
 
@@ -1628,76 +1635,3 @@ class _GroupIterator(collections.Iterator):
         group = _GroupbyItem(m, slice(self._start, stop))
         self._start = stop
         return group
-
-
-class _Idatetime(datetime.datetime):
-    # Custom datetime subclass capable of returning point as a number.
-    # Required only for backwards compatibility with constraining a time coord
-    # by numeric values rather than partial datetimes.
-    def __new__(cls, unit, *args, **kwargs):
-        return datetime.datetime.__new__(cls, *args, **kwargs)
-
-    def __init__(self, unit, *args, **kwargs):
-        super(datetime.datetime, self).__init__(*args, **kwargs)
-        self.unit = unit
-
-    def __float__(self):
-        return self.unit.date2num(self)
-
-    def __eq__(self, other):
-        if isinstance(other, (int, float)):
-            msg = ('Comparing datetime objects with numeric objects (int, '
-                   'float) is being deprecated, consider switching to using '
-                   'iris.pdatetime.PartialDateTime objects')
-            warnings.warn(msg)
-            return self.__float__() == other
-        else:
-            return super(datetime.datetime, self).__eq__(other)
-
-
-def _datetime_numeric_comparison(unit, datetimes):
-    def _cus_datetime_from_datetime(dt):
-        # Convert datetime object into our custom datetime subclass capable
-        # of returning a numeric rep. for backwards compatibility.
-        # Custom datetime class can be removed when backwards
-        # compatibiility of comparing cell points (datetime objects) with
-        # numeric values is no longer neccessary.
-        return _Idatetime(
-            unit=unit, year=dt.year, month=dt.month, day=dt.day,
-            hour=dt.hour, minute=dt.minute, second=dt.second,
-            microsecond=dt.microsecond, tzinfo=dt.tzinfo)
-
-    def __float__(self):
-        return self.unit.date2num(self)
-
-    def __eq__(self, other):
-        if isinstance(other, (int, float)):
-            msg = ('Comparing netcdftime.datetime objects with numeric '
-                   'objects (int, float) is being deprecated, consider '
-                   'switching to using iris.pdatetime.PartialDateTime '
-                   'objects')
-            warnings.warn(msg)
-            return self.__float__() == other
-        else:
-            # netcdftime.datetime equality does not return NotImplemented!
-            try:
-                fmt = '%Y-%m-%d %H:%M:%S'
-                return self.strftime(fmt) == other.strftime(fmt)
-            except AttributeError:
-                return NotImplemented
-
-    if not isinstance(datetimes, collections.Iterable):
-        datetimes = [datetimes]
-    for ind, datetime in enumerate(datetimes):
-        try:
-            # datetime object (immutable object)
-            datetimes[ind].unit = unit
-            datetimes[ind].__float__ = MethodType(
-                __float__, datetimes[ind], netcdftime.datetime)
-            datetimes[ind].__eq__ = MethodType(
-                __eq__, datetimes[ind], netcdftime.datetime)
-        except AttributeError:
-            # netcdftime.datetime object (standard python class)
-            datetimes[ind] = _cus_datetime_from_datetime(datetime)
-
-    return datetimes

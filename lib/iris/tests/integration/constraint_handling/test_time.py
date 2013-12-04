@@ -23,7 +23,7 @@ import iris.tests as tests
 import numpy as np
 
 import iris
-from iris.pdatetime import PartialDateTime
+from iris.partial_datetime import PartialDateTime
 
 
 class TestTimeConstraint_basic(tests.IrisTest):
@@ -73,6 +73,12 @@ class TestTimeConstraint_basic(tests.IrisTest):
         time_hi = PartialDateTime(year=1971, month=1)
         cube = self.cube.extract(iris.Constraint(
             time=lambda cell: time_lo <= cell.point <= time_hi))
+        com_coord = self.cube.coord('time')[:-1]
+        self.assertEqual(cube.coord('time'), com_coord)
+
+    def test_extract_range_number(self):
+        cube = self.cube.extract(iris.Constraint(
+            time=lambda cell: 0 <= cell.point <= 8640))
         com_coord = self.cube.coord('time')[:-1]
         self.assertEqual(cube.coord('time'), com_coord)
 

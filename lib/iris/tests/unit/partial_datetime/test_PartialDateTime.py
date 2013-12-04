@@ -14,18 +14,17 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the `iris.pdatetime.PartialDateTime` class."""
+"""Unit tests for the `iris.partial_datetime.PartialDateTime` class."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
+from datetime import datetime
 import mock
 import operator
 
-from datetime import datetime
-
-from iris.pdatetime import PartialDateTime
+from iris.partial_datetime import PartialDateTime
 import iris.tests.unit as unit
 
 

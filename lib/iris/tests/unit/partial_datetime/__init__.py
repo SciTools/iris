@@ -14,4 +14,4 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the :mod:`iris.pdatetime` module."""
+"""Unit tests for the :mod:`iris.partial_datetime` module."""

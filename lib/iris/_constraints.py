@@ -25,7 +25,7 @@ import numpy as np
 
 import iris.coords
 import iris.exceptions
-from iris.pdatetime import PartialDateTime
+from iris.partial_datetime import PartialDateTime
 
 
 class Constraint(object):

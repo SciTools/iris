@@ -19,25 +19,161 @@ Class for representing partial datetime attributes for sophisticated
 constraint handling involving reference time coordinates.
 
 """
+import netcdftime
 
 import collections
 import datetime
-import netcdftime
 import operator
+import warnings
 
 
-_partial_datetime_fields = ['year', 'month', 'day', 'hour', 'minute',
-                            'second', 'microsecond']
-# NOTE: 'calendar' and 'tzinfo' is not included as PartialDateTime is not
-# calendar aware, i.e. the comparison operators do not consider the date
-# values and adjustment by tzinfo or calendar.
+def enhance_datetimes(unit, datetimes):
+    """
+    Wrap our datetime-like objects, enhancing them with numeric comparison
+    capabilities.
+
+    Args:
+
+    * wrapped_object (:class:'datetime.datetime' or \
+:class:'netcdftime.datetime'):
+        This object or iterable of this object is to be wrapped.
+    * unit (:class:'iris.unit.Unit'):
+        Unit to be associated with the given datetime-like objects.
+
+    Returns:
+        An iterable of wrapped datetype-like object with capability for
+        numeric comparison through unit handling.
+
+    .. deprecated:: 1.6
+
+        Datetimes comparison with numeric values is considered deprecated.
+        See :class:'iris.partial_datetime.PartialDateTime'.
+
+    """
+    if not isinstance(datetimes, collections.Iterable):
+        datetimes = [datetimes]
+    for ind, dt in enumerate(datetimes):
+        datetimes[ind] = DatetimeWrap(dt, unit)
+    return datetimes
 
 
-class PartialDateTime(collections.namedtuple('PartialDateTime',
-                                             _partial_datetime_fields)):
+class DatetimeWrap(object):
+    def __init__(self, wrapped_object, unit):
+        """
+        Wrapper around a datetime-like object giving capability of numeric
+        comparison.
+
+        Required only for backwards compatibility with constraining a time
+        coord by numeric values rather than partial datetimes.
+
+        Args:
+
+        * wrapped_object (:class:'datetime.datetime' or \
+:class:'netcdftime.datetime'):
+            This object is the object to be wrapped.
+        * unit (:class:'iris.unit.Unit'):
+            Unit to be associated with the given datetime-like object.
+
+        Returns:
+            A wrapped version of the given datetype-like object with
+            capability for numeric comparison through unit handling.
+
+        .. deprecated:: 1.6
+
+            Wrapping datetime-like objects for enhancement is for handling
+            datetime comparison with numeric values, which is considered
+            deprecated.  See :class:'iris.partial_datetime.PartialDateTime'.
+
+        """
+        self.wrapped_object = wrapped_object
+        self.unit = unit
+
+    def __getattribute__(self, attr):
+        # Defining the getattribute special method in this way avoids infinite
+        # recursion.
+        try:
+            wrapped_object = object.__getattribute__(self, 'wrapped_object')
+            return getattr(wrapped_object, attr)
+        except AttributeError:
+            return object.__getattribute__(self, attr)
+
+    def __str__(self):
+        return self.wrapped_object.__str__()
+
+    def __repr__(self):
+        return self.wrapped_object.__repr__()
+
+    def __float__(self):
+        return self.unit.date2num(self.wrapped_object)
+
+    def __gt__(self, other):
+        return self._compare(operator.gt, other)
+
+    def __lt__(self, other):
+        return self._compare(operator.lt, other)
+
+    def __ge__(self, other):
+        return self._compare(operator.ge, other)
+
+    def __le__(self, other):
+        return self._compare(operator.le, other)
+
+    def __eq__(self, other):
+        return self._compare(operator.eq, other)
+
+    def __ne__(self, other):
+        return self._compare(operator.ne, other)
+
+    def _compare(self, op, other):
+        if isinstance(other, (int, float)):
+            msg = ('Comparing datetime objects with numeric objects (int, '
+                   'float) is being deprecated, consider switching to using '
+                   'iris.partial_datetime.PartialDateTime objects')
+            warnings.warn(msg, DeprecationWarning)
+            return op(float(self), other)
+        else:
+            # Netcdftime does not return NotImplemented
+            try:
+                return op(self.wrapped_object, other)
+            except AttributeError:
+                return NotImplemented
+
+
+class PartialDateTime(collections.namedtuple(
+        'PartialDateTime',
+        ['year', 'month', 'day', 'hour', 'minute', 'second', 'microsecond'])):
+    """
+    Object which allows datetime-like object partial comparisons.
+
+    Args:
+
+    * year (int):
+        Default is None.
+    * month (int):
+        Default is None.
+    * day (int):
+        Default is None
+    * hour (int):
+        Default is None
+    * minute (int):
+        Default is None
+    * second (int):
+        Default is None
+    * microsecond (int):
+        Default is None
+
+    .. note::
+
+        'calendar' and 'tzinfo' arguments of the datetime object are not
+        accepted, as PartialDateTime is currently not calendar aware, i.e. the
+        comparison operators do not consider the date but the numeric values
+        that represent them.
+
+    """
 
     known_time_implementations = (datetime.datetime, datetime.time,
-                                  datetime.date, netcdftime.datetime)
+                                  datetime.date, netcdftime.datetime,
+                                  DatetimeWrap)
 
     @property
     def timetuple(self):

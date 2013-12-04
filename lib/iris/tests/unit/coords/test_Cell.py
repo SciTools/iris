@@ -20,15 +20,15 @@
 # importing anything else.
 import iris.tests as tests
 
+from datetime import datetime
 import mock
+import netcdftime
 import operator
 
-from datetime import datetime
-import netcdftime
 import numpy as np
 
 from iris.coords import Cell
-from iris.pdatetime import PartialDateTime
+from iris.partial_datetime import PartialDateTime
 import iris.tests.unit as unit
 
 
@@ -62,9 +62,9 @@ class Test___common_cmp__(tests.IrisTest):
         with mock.patch('warnings.warn') as warn:
             test_cell.__common_cmp__(other, op)
         msg = ('A comparison is taking place between a cell with datetimes '
-               'and a numeric. Is this an old style constraint? You know '
-               'datetimes are much richer?')
-        warn.assert_called_with(msg)
+               'and a numeric. Comparison with numeric values has been '
+               'deprecated in favour of datetime objects.')
+        warn.assert_called_with(msg, DeprecationWarning)
 
     def test_comparison_datetime_with_datetime(self):
         # Ensure that no warning is issued when comparing datetime compatible
