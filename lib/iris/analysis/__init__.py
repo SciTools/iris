@@ -279,7 +279,7 @@ def coord_comparison(*cubes):
 class Aggregator(object):
     """Convenience class that supports common aggregation functionality."""
 
-    def __init__(self, cell_method, call_func, **kwargs):
+    def __init__(self, cell_method, call_func, units_func=None, **kwargs):
         """
         Create an aggregator for the given call_func.
 
@@ -292,6 +292,8 @@ class Aggregator(object):
 
         Kwargs:
 
+        * units_func (callable):
+            Units conversion function.
         * kwargs:
             Passed through to call_func.
 
@@ -300,6 +302,8 @@ class Aggregator(object):
         self.cell_method = cell_method
         #: Data aggregation function.
         self.call_func = call_func
+        #: Unit conversion function.
+        self.units_func = units_func
 
         self._kwargs = kwargs
 
@@ -378,6 +382,10 @@ class Aggregator(object):
         method_name = self.cell_method.format(**kwargs)
         cell_method = iris.coords.CellMethod(method_name, coord_names)
         cube.add_cell_method(cell_method)
+
+        # Update the units if required.
+        if self.units_func is not None:
+            cube.units = self.units_func(cube.units)
 
     def post_process(self, collapsed_cube, data_result, **kwargs):
         """
@@ -607,7 +615,7 @@ def _peak(array, **kwargs):
 #
 # Common partial Aggregation class constructors.
 #
-COUNT = Aggregator('count', _count)
+COUNT = Aggregator('count', _count, lambda units: 1)
 """
 The number of data that match the given function.
 
@@ -754,7 +762,7 @@ For example, to compute the 90th percentile over time::
 """
 
 
-PROPORTION = Aggregator('proportion', _proportion)
+PROPORTION = Aggregator('proportion', _proportion, lambda units: 1)
 """
 The proportion, as a decimal, of data that match the given function.
 
@@ -849,7 +857,7 @@ For example to compute a weighted rolling sum (e.g., to apply a digital filter):
 """
 
 
-VARIANCE = Aggregator('variance', ma.var, ddof=1)
+VARIANCE = Aggregator('variance', ma.var, lambda units: units * units, ddof=1)
 """
 The variance, as computed by :func:`numpy.ma.var`.
 
