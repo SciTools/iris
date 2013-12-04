@@ -44,7 +44,7 @@ class TimeRangeConstraint(Constraint):
 
         Example::
 
-            nov_dec = TimeRangeConstraint(day_of_year=((11, 01), (12,31))
+            nov_dec = TimeRangeConstraint(day_of_year=((11, 01), (12, 31)))
 
         """
         self.day_of_year, self.coord = day_of_year, coord

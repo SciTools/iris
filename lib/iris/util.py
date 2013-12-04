@@ -23,7 +23,6 @@ import abc
 import collections
 import copy
 import inspect
-import netcdftime
 import os
 import os.path
 import sys
@@ -31,6 +30,7 @@ import tempfile
 import time
 import warnings
 
+import netcdftime
 import numpy as np
 import numpy.ma as ma
 
