@@ -294,6 +294,11 @@ def convert(f):
         aux_coords_and_dims.append((DimCoord(f.blev, standard_name='depth', units='m', bounds=[f.brsvd[0], f.brlev], attributes={'positive': 'down'}), None))
 
     if \
+            (len(f.lbcode) != 5) and \
+            (f.lbvc == 6):
+        aux_coords_and_dims.append((DimCoord(f.blev, standard_name='model_level_number', attributes={'positive': 'down'}), None))
+
+    if \
             (f.lbvc == 8) and \
             (len(f.lbcode) != 5 or (len(f.lbcode) == 5 and 1 not in [f.lbcode.ix, f.lbcode.iy])):
         aux_coords_and_dims.append((DimCoord(f.blev, long_name='pressure', units='hPa'), None))

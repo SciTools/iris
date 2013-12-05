@@ -32,6 +32,13 @@
         </dimCoord>
       </coord>
       <coord>
+        <dimCoord id="acd2e4a5" points="[1.0]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="float64">
+          <attributes>
+            <attribute name="positive" value="down"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord>
         <dimCoord id="6a1b3c16" points="[363984.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
