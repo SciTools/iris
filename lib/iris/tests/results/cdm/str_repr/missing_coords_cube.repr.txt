@@ -1,0 +1,1 @@
+<iris 'Cube' of air_potential_temperature / (K) (-- : 6; -- : 70; grid_latitude: 100; grid_longitude: 100)>

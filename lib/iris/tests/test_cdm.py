@@ -256,7 +256,16 @@ class TestCubeStringRepresentations(IrisDotTest):
     def test_dot_4d(self):
         cube = iris.tests.stock.realistic_4d()
         self.check_dot(cube, ('file_load', '4d_pp.dot'))
-        
+
+    def test_missing_coords(self):
+        cube = iris.tests.stock.realistic_4d()
+        cube.remove_coord('time')
+        cube.remove_coord('model_level_number')
+        self.assertString(repr(cube),
+                          ('cdm', 'str_repr', 'missing_coords_cube.repr.txt'))
+        self.assertString(str(cube),
+                          ('cdm', 'str_repr', 'missing_coords_cube.str.txt'))
+
     def test_cubelist_string(self):
         cube_list = iris.cube.CubeList([iris.tests.stock.realistic_4d(),
                                         iris.tests.stock.global_pp()])
