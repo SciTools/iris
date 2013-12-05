@@ -25,16 +25,15 @@ import mock
 import numpy as np
 
 from iris.fileformats.grib.grib_save_rules import _non_missing_forecast_period
-from iris.tests.test_grib_load import TestGribSimple
 import iris.unit
 
 
-class Test(TestGribSimple):
+class Test(tests.IrisTest):
     def _cube(self, t_bounds=False):
         time_coord = iris.coords.DimCoord(15, standard_name='time',
                                           units='hours since epoch')
         if t_bounds:
-            time_coord.bounds = [[8, 12]]
+            time_coord.bounds = [[8, 100]]
         fp_coord = iris.coords.DimCoord(10, standard_name='forecast_period',
                                         units='hours')
         cube = iris.cube.Cube([23])
