@@ -233,15 +233,15 @@ def _non_missing_forecast_period(cube):
     # Calculate "model start time" to use as the reference time.
     fp_coord = cube.coord("forecast_period")
 
-    # Convert fp and t to hours so we can subtract.
-    fp = fp_coord.units.convert(fp_coord.points[0], 'hours')
+    # Convert fp and t to hours so we can subtract to calculate R.
+    cf_fp_hrs = fp_coord.units.convert(fp_coord.points[0], 'hours')
     t_coord = cube.coord("time").copy()
     hours_since = iris.unit.Unit("hours since epoch",
                                  calendar=t_coord.units.calendar)
     t_coord.convert_units(hours_since)
-    t = t_coord.bounds[0, 0] if t_coord.has_bounds() else t_coord.points[0]
 
-    rt = hours_since.num2date(t - fp)
+    rt_num = t_coord.points[0] - cf_fp_hrs
+    rt = hours_since.num2date(rt_num)
     rt_meaning = 1  # "start of forecast"
 
     # Forecast period
@@ -259,7 +259,13 @@ def _non_missing_forecast_period(cube):
         raise iris.exceptions.TranslationError(
             "Unexpected units for 'forecast_period' : %s" % fp_coord.units)
 
-    fp = fp_coord.points[0]
+    # Convert fp meaning from Iris (R to t) to grib (R to start-of-period)
+    if not t_coord.has_bounds():
+        fp = fp_coord.points[0]
+    else:
+        fp = t_coord.bounds[0][0] - rt_num
+        fp = iris.unit.Unit('hours').convert(fp, fp_coord.units)
+
     if fp - int(fp):
         warnings.warn("forecast_period encoding problem: "
                       "scaling required.")

@@ -63,7 +63,7 @@ def convert(f):
             (f.lbtim.ic in [1, 2]) and \
             ((len(f.lbcode) != 5) or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])):
         aux_coords_and_dims.append((DimCoord(f.lbft, standard_name='forecast_period', units='hours'), None))
-        aux_coords_and_dims.append((DimCoord((f.time_unit('hours').date2num(f.t1) + f.time_unit('hours').date2num(f.t2)) / 2.0, standard_name='time', units=f.time_unit('hours'), bounds=f.time_unit('hours').date2num([f.t1, f.t2])), None))
+        aux_coords_and_dims.append((DimCoord(f.time_unit('hours').date2num(f.t2), standard_name='time', units=f.time_unit('hours'), bounds=f.time_unit('hours').date2num([f.t1, f.t2])), None))
         aux_coords_and_dims.append((DimCoord(f.time_unit('hours').date2num(f.t2) - f.lbft, standard_name='forecast_reference_time', units=f.time_unit('hours')), None))
 
     if \
@@ -71,7 +71,7 @@ def convert(f):
             (f.lbtim.ic in [1, 2]) and \
             ((len(f.lbcode) != 5) or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])):
         aux_coords_and_dims.append((DimCoord(f.lbft, standard_name='forecast_period', units='hours'), None))
-        aux_coords_and_dims.append((DimCoord((f.time_unit('hours').date2num(f.t1) + f.time_unit('hours').date2num(f.t2)) / 2.0, standard_name='time', units=f.time_unit('hours'), bounds=f.time_unit('hours').date2num([f.t1, f.t2])), None))
+        aux_coords_and_dims.append((DimCoord(f.time_unit('hours').date2num(f.t2), standard_name='time', units=f.time_unit('hours'), bounds=f.time_unit('hours').date2num([f.t1, f.t2])), None))
         aux_coords_and_dims.append((DimCoord(f.time_unit('hours').date2num(f.t2) - f.lbft, standard_name='forecast_reference_time', units=f.time_unit('hours')), None))
 
     if \

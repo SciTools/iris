@@ -25,7 +25,7 @@
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[2003760.0, 2090160.0]]" id="2789ad5b" points="[2046960.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="time"/>
+        <dimCoord bounds="[[2003760.0, 2090160.0]]" id="2789ad5b" points="[2090160.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="time"/>
       </coord>
     </coords>
     <cellMethods>

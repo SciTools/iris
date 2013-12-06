@@ -130,7 +130,7 @@
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0]" shape="(38,)" units="Unit('1')" value_type="float32" var_name="sigma"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[163440.0, 165600.0]]" id="2789ad5b" points="[164520.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="time"/>
+        <dimCoord bounds="[[163440.0, 165600.0]]" id="2789ad5b" points="[165600.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="time"/>
       </coord>
     </coords>
     <cellMethods>
