@@ -169,6 +169,15 @@ class PartialDateTime(collections.namedtuple(
         comparison operators do not consider the date but the numeric values
         that represent them.
 
+    For Example:
+
+    >>> from iris.partial_datetime import PartialDateTime
+    >>> import datetime
+    >>> pdt = PartialDateTime(year=1970)
+    >>> dt = datetime.datetime(1970, 1, 1, 6, 0, 0)
+    >>> pdt == dt
+    True
+
     """
 
     known_time_implementations = (datetime.datetime, datetime.time,

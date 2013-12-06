@@ -27,7 +27,25 @@ Iris 1.6 features
   :func:`iris.util.new_axis`.
 * Interpreting cell methods from NAME.
 * GRIB2 export without forecast_period, enabling NAME to GRIB2. 
-* Loading height levels from GRIB2. 
+* Loading height levels from GRIB2.
+* New partial datetime support for comparison operations with datetime-like
+  objects. See :class:`iris.partial_datetime.PartialDateTime`.
+
+  .. code-block:: python
+ 
+    # Datetime-like partial object comparisons.
+    pdt = PartialDateTime(year=1970)
+    dt = datetime.datetime(1970, 1, 1, 6, 0, 0)
+    pdt == dt
+
+  .. code-block:: python
+
+    # Constraining based on partial datetimes (matching dates, ignoring
+    # difference by day etc. in this case).
+    time_lo = PartialDateTime(year=1970, month=1)
+    time_hi = PartialDateTime(year=1971, month=1)
+    cube = self.cube.extract(iris.Constraint(
+        time=lambda cell: time_lo <= cell <= time_hi))
 
 Bugs fixed
 ----------
@@ -73,3 +91,5 @@ Deprecations
   of users modifying/creating the history metadata directly. This is
   because the automatic behaviour did not deliver a sufficiently complete,
   auditable history and often prevented the merging of cubes.
+* :meth:`iris.cube.Cube.extract` how deprecates the use of numeric values with
+  extraction for time coordinates.
