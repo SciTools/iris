@@ -131,15 +131,17 @@ def decode_uri(uri, default='file'):
         ('file', 'dataZoo/...')
 
     '''
-    # Catch bare UNIX and Windows paths
-    i = uri.find(':')
-    if i == -1 or re.match('[a-zA-Z]:', uri):
+    # make sure scheme has at least 2 letters to avoid windows drives
+    # put - last in the brackets so it refers to the character, not a range
+    # reference on valid schemes: http://tools.ietf.org/html/std66#section-3.1
+    match = re.match(r"^([a-zA-Z][a-zA-Z0-9+.-]+):(.+)", uri)
+    if match:
+        scheme = match.group(1)
+        part = match.group(2)
+    else:
+        # Catch bare UNIX and Windows paths
         scheme = default
         part = uri
-    else:
-        scheme = uri[:i]
-        part = uri[i + 1:]
-
     return scheme, part
 
 
