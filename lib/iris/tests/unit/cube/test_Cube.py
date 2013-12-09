@@ -22,7 +22,6 @@ import iris.tests as tests
 
 import mock
 import numpy as np
-import warnings
 
 import iris
 from iris.analysis import WeightedAggregator, Aggregator
@@ -69,22 +68,17 @@ class Test_collapsed__warning(tests.IrisTest):
 
         return aggregator
 
-    def _assert_warn_collapse_without_weight(self, coords, warnings):
+    def _assert_warn_collapse_without_weight(self, coords, warn):
         # Ensure that warning is raised.
-        msg = "Collapsing spatial coordinate '{!r}' without weighting"
-        warnings = {str(warn.message): warn for warn in warnings}
+        msg = "Collapsing spatial coordinate {!r} without weighting"
         for coord in coords:
-            self.assertIn(
-                msg.format(coord), warnings)
-            self.assertTrue(
-                issubclass(warnings[msg.format(coord)].category, UserWarning))
+            self.assertIn(mock.call(msg.format(coord)), warn.call_args_list)
 
-    def _assert_nowarn_collapse_without_weight(self, coords, warnings):
+    def _assert_nowarn_collapse_without_weight(self, coords, warn):
         # Ensure that warning is not rised.
-        msg = "Collapsing spatial coordinate '{!r}' without weighting"
+        msg = "Collapsing spatial coordinate {!r} without weighting"
         for coord in coords:
-            self.assertNotIn(
-                msg.format(coord), [str(warn.message) for warn in warnings])
+            self.assertNotIn(mock.call(msg.format(coord)), warn.call_args_list)
 
     def test_lat_lon_noweighted_aggregator(self):
         # Collapse latitude coordinate with unweighted aggregator.
@@ -92,14 +86,10 @@ class Test_collapsed__warning(tests.IrisTest):
         aggregator.cell_method = None
         coords = ['latitude', 'longitude']
 
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
+        with mock.patch('warnings.warn') as warn:
             self.cube.collapsed(coords, aggregator, somekeyword='bla')
 
-        msg = "Collapsing spatial coordinate '{!r}' without weighting"
-        for coord in coords:
-            self.assertNotIn(
-                msg.format(coord), [str(warn.message) for warn in w])
+        self._assert_nowarn_collapse_without_weight(coords, warn)
 
     def test_lat_lon_weighted_aggregator(self):
         # Collapse latitude coordinate with weighted aggregator without
@@ -107,12 +97,11 @@ class Test_collapsed__warning(tests.IrisTest):
         aggregator = self._aggregator(False)
         coords = ['latitude', 'longitude']
 
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
+        with mock.patch('warnings.warn') as warn:
             self.cube.collapsed(coords, aggregator)
 
         coords = filter(lambda coord: 'latitude' in coord, coords)
-        self._assert_warn_collapse_without_weight(coords, w)
+        self._assert_warn_collapse_without_weight(coords, warn)
 
     def test_lat_lon_weighted_aggregator_with_weights(self):
         # Collapse latitude coordinate with a weighted aggregators and
@@ -121,11 +110,10 @@ class Test_collapsed__warning(tests.IrisTest):
         aggregator = self._aggregator(True)
         coords = ['latitude', 'longitude']
 
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
+        with mock.patch('warnings.warn') as warn:
             self.cube.collapsed(coords, aggregator, weights=weights)
 
-        self._assert_nowarn_collapse_without_weight(coords, w)
+        self._assert_nowarn_collapse_without_weight(coords, warn)
 
     def test_lat_lon_weighted_aggregator_alt(self):
         # Collapse grid_latitude coordinate with weighted aggregator without
@@ -133,12 +121,11 @@ class Test_collapsed__warning(tests.IrisTest):
         aggregator = self._aggregator(False)
         coords = ['grid_latitude', 'grid_longitude']
 
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
+        with mock.patch('warnings.warn') as warn:
             self.cube.collapsed(coords, aggregator)
 
         coords = filter(lambda coord: 'latitude' in coord, coords)
-        self._assert_warn_collapse_without_weight(coords, w)
+        self._assert_warn_collapse_without_weight(coords, warn)
 
     def test_no_lat_weighted_aggregator_mixed(self):
         # Collapse grid_latitude and an unmatched coordinate (not lat/lon)
@@ -147,11 +134,10 @@ class Test_collapsed__warning(tests.IrisTest):
         aggregator = self._aggregator(False)
         coords = ['wibble']
 
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
+        with mock.patch('warnings.warn') as warn:
             self.cube.collapsed(coords, aggregator)
 
-        self._assert_nowarn_collapse_without_weight(coords, w)
+        self._assert_nowarn_collapse_without_weight(coords, warn)
 
 
 if __name__ == "__main__":
