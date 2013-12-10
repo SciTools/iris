@@ -2323,6 +2323,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         Kwargs:
 
+        * weights:
+            Optional array of floats. If set, specifies that the aggregator
+            should use this array for area-weighting.
+
+            Values for LatLon area weights may be calculated using
+            :func:`iris.analysis.cartography.area_weights`.
+            
+            ..Note:
+                The array's shape must match the cube.
+
         * kwargs:
             Aggregation function keyword arguments.
 
