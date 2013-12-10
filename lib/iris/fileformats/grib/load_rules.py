@@ -315,6 +315,14 @@ def convert(grib):
             (grib._cf_data.set_height is not None):
         aux_coords_and_dims.append((DimCoord(points=grib._cf_data.set_height,  long_name="height", units="m", attributes={'positive':'up'}), None))
 
+    if \
+            (grib.edition == 1) and \
+            (grib.levelType == 'ml') and \
+            (hasattr(grib, 'pv')):
+        aux_coords_and_dims.append((AuxCoord(grib.level, standard_name='model_level_number', attributes={'positive': 'up'}), None))
+        aux_coords_and_dims.append((DimCoord(grib.pv[grib.level], long_name='level_pressure', units='Pa'), None))
+        aux_coords_and_dims.append((AuxCoord(grib.pv[grib.numberOfCoordinatesValues/2 + grib.level], long_name='sigma'), None))
+        factories.append(Factory(HybridPressureFactory, [{'long_name': 'level_pressure'}, {'long_name': 'sigma'}, Reference('surface_pressure')]))
 
     if \
             (grib.edition == 2) and \
