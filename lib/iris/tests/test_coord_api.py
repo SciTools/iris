@@ -368,10 +368,10 @@ class TestDimCoordCreation(unittest.TestCase):
                                      'monotonicity.*consistent.*all bounds'):
             iris.coords.DimCoord([1,2,3], bounds=[[1, 12], [2, 9], [3, 6]])
         # shapes of points and bounds
-        with self.assertRaisesRegexp(ValueError, 'len\(points\)'):
+        with self.assertRaisesRegexp(ValueError, 'shape of the bounds array'):
             iris.coords.DimCoord([1,2,3], bounds=[0.5, 1.5, 2.5, 3.5])
         # another example of shapes of points and bounds
-        with self.assertRaisesRegexp(ValueError, 'len\(points\)'):
+        with self.assertRaisesRegexp(ValueError, 'shape of the bounds array'):
             iris.coords.DimCoord([1,2,3], bounds=[[0.5, 1.5],[1.5, 2.5]])
 
         # numeric
