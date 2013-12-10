@@ -89,7 +89,7 @@ class Test_GribLevels(tests.IrisTest):
         self.assertIn(Reference(name='surface_pressure'), factories[0].args)
 
         ml_ref = CoordDefn('model_level_number', None, None, Unit('1'),
-                        {'positive': 'up'}, None)
+                           {'positive': 'up'}, None)
         lp_ref = CoordDefn(None, 'level_pressure', None, Unit('Pa'), {}, None)
         s_ref = CoordDefn(None, 'sigma', None, Unit('1'), {}, None)
 
@@ -97,7 +97,7 @@ class Test_GribLevels(tests.IrisTest):
         self.assertIn(ml_ref, aux_coord_defns)
         self.assertIn(lp_ref, aux_coord_defns)
         self.assertIn(s_ref, aux_coord_defns)
-        
+
 
 if __name__ == "__main__":
     tests.main()
