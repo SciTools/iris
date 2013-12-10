@@ -535,8 +535,9 @@ def monotonic(array, strict=False, return_direction=False):
     # Identify the directions of the largest/most-positive and
     # smallest/most-negative steps.
     d = np.diff(array)
-    sign_max_d = np.sign(d[np.argmax(d)])
-    sign_min_d = np.sign(d[np.argmin(d)])
+
+    sign_max_d = np.sign(np.max(d))
+    sign_min_d = np.sign(np.min(d))
 
     if strict:
         monotonic = sign_max_d == sign_min_d and sign_max_d != 0
@@ -546,10 +547,14 @@ def monotonic(array, strict=False, return_direction=False):
                     (sign_min_d == sign_max_d == 0)
 
     if return_direction:
-        direction = sign_max_d or 1
+        if sign_max_d == 0:
+            direction = sign_min_d
+        else:
+            direction = sign_max_d
+
         return monotonic, direction
-    else:
-        return monotonic
+
+    return monotonic
 
 
 def column_slices_generator(full_slice, ndims):
