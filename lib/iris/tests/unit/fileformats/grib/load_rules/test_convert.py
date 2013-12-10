@@ -20,15 +20,21 @@
 # importing anything else
 import iris.tests as tests
 
+import gribapi
 import mock
 
-from iris.coords import DimCoord
+from iris.aux_factory import HybridPressureFactory
+from iris.coords import DimCoord, CoordDefn
+from iris.fileformats.grib import GribWrapper
 from iris.fileformats.grib.load_rules import convert
 from iris.tests.test_grib_load import TestGribSimple
-import iris.tests.unit.fileformats
+from iris.fileformats.rules import Reference
+from iris.tests.unit.fileformats import TestField
+from iris.unit import Unit
 
 
-class Test_GribLevels(TestGribSimple):
+class Test_GribLevels_Mock(TestGribSimple):
+    # Unit test levels with mocking.
     def test_grib2_height(self):
         grib = self.mock_grib()
         grib.edition = 2
@@ -71,7 +77,7 @@ class Test_GribLevels(TestGribSimple):
             "Different vertical bound types not yet handled.")
 
 
-class TestBoundedTime(iris.tests.unit.fileformats.TestField):
+class TestBoundedTime(TestField):
     @staticmethod
     def is_forecast_period(coord):
         return (coord.standard_name == 'forecast_period' and
@@ -140,6 +146,29 @@ class TestBoundedTime(iris.tests.unit.fileformats.TestField):
     def test_product_template_9(self):
         self.assert_bounded_message(edition=2,
                                     productDefinitionTemplateNumber=9)
+
+
+class Test_GribLevels(tests.IrisTest):
+    def test_grib1_hybrid_height(self):
+        gm = gribapi.grib_new_from_samples('regular_gg_ml_grib1')
+        gw = GribWrapper(gm)
+        results = convert(gw)
+
+        factories = results[0]
+        self.assertEqual(factories[0].factory_class, HybridPressureFactory)
+        self.assertIn({'long_name': 'level_pressure'}, factories[0].args)
+        self.assertIn({'long_name': 'sigma'}, factories[0].args)
+        self.assertIn(Reference(name='surface_pressure'), factories[0].args)
+
+        ml_ref = CoordDefn('model_level_number', None, None, Unit('1'),
+                        {'positive': 'up'}, None)
+        lp_ref = CoordDefn(None, 'level_pressure', None, Unit('Pa'), {}, None)
+        s_ref = CoordDefn(None, 'sigma', None, Unit('1'), {}, None)
+
+        aux_coord_defns = [coord._as_defn() for coord, dim in results[8]]
+        self.assertIn(ml_ref, aux_coord_defns)
+        self.assertIn(lp_ref, aux_coord_defns)
+        self.assertIn(s_ref, aux_coord_defns)
 
 
 if __name__ == "__main__":
