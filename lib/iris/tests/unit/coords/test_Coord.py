@@ -26,6 +26,7 @@ import mock
 import numpy as np
 
 from iris.coords import AuxCoord
+import iris.exceptions
 
 
 Pair = namedtuple('Pair', 'points bounds')
@@ -79,6 +80,97 @@ class Test_collapsed(tests.IrisTest):
                     index_slice = (slice(None),) + tuple(index)
                     self.assertArrayEqual(kwargs['bounds'][index_slice],
                                           self._serialize(bounds[index_slice]))
+
+
+class Test_cells(tests.IrisTest):
+    def test_exception_multidim(self):
+        # Ensure that an exception is raised with multidimensional coordinates.
+        coord = AuxCoord(np.zeros(4).reshape(2, 2))
+        with self.assertRaises(iris.exceptions.CoordinateMultiDimError):
+            coord.cells().next()
+
+    def test_cell_method_call_default(self):
+        # Ensure cell method is called and with the correct parameters.
+        coord = AuxCoord(np.zeros(4))
+        with mock.patch('iris.coords.Coord.cell') as cell_patch:
+            coord.cells().next()
+        cell_patch.assert_called_with(0, make_dt=True)
+
+    def test_cell_method_call_make_dt(self):
+        # Ensure cell method is called and with the correct parameters.
+        coord = AuxCoord(np.zeros(4))
+        with mock.patch('iris.coords.Coord.cell') as cell_patch:
+            coord.cells(make_dt=False).next()
+        cell_patch.assert_called_with(0, make_dt=False)
+
+
+class Test_index(tests.IrisTest):
+    def test_raise_exception(self):
+        coord = AuxCoord(np.zeros(4))
+        cell = mock.Mock(name='cell')
+        with self.assertRaises(iris.exceptions.IrisError) as err:
+            coord.index(cell)
+        msg = ('Coord.index() is no longer available.  Use '
+               'Coord.nearest_neighbour_index() instead.')
+        self.assertEqual(err.exception.message, msg)
+
+
+class Test_cell__make_dt(tests.IrisTest):
+    # Use of the make_dt keyword.
+    def setUp(self):
+        slice_patch = mock.patch(
+            'iris.util._build_full_slice_given_keys', return_value=0)
+        slice_patch.start()
+        self.addCleanup(slice_patch.stop)
+
+        cell_patch = mock.patch('iris.coords.Cell')
+        cell_patch.start()
+        self.addCleanup(cell_patch.stop)
+
+        datetime_patch = mock.patch('datetime.datetime')
+        datetime_patch.start()
+        self.addCleanup(datetime_patch.stop)
+
+        self.numdate = [mock.Mock(name='date')]
+        numdate_patch = mock.patch(
+            'iris.unit.Unit.num2date', return_value=self.numdate)
+        numdate_patch.start()
+        self.addCleanup(numdate_patch.stop)
+
+        self.coord = AuxCoord(np.zeros(4), units='unknown')
+
+    def test_make_dt_false(self):
+        # Supplying make_dt false keyword.
+        self.coord.cell(0, make_dt=False)
+        iris.coords.Cell.assert_called_with((0.0,), None)
+
+    def test_make_dt_no_bound_time_ref(self):
+        # Extended keyword and is time reference unit.
+        with mock.patch(
+                'iris.unit.Unit.is_time_reference', return_value=True):
+            self.coord.cell(0, make_dt=True)
+            iris.coords.Cell.assert_called_with(self.numdate, None)
+            self.assertEqual(iris.unit.Unit.is_time_reference.call_count, 1)
+            self.assertEqual(iris.unit.Unit.num2date.call_count, 1)
+
+    def test_make_dt_no_bound_no_time_ref(self):
+        # Extended keyword and is time reference unit.
+        with mock.patch(
+                'iris.unit.Unit.is_time_reference', return_value=False):
+            self.coord.cell(0, make_dt=True)
+            iris.coords.Cell.assert_called_with((0.0,), None)
+            self.assertEqual(iris.unit.Unit.is_time_reference.call_count, 1)
+            self.assertEqual(iris.unit.Unit.num2date.call_count, 0)
+
+    def test_make_dt_bound_time_ref(self):
+        # Extended keyword with bounds and has time reference unit.
+        self.coord.bounds = np.zeros(8).reshape(4, 2)
+        with mock.patch(
+                'iris.unit.Unit.is_time_reference', return_value=True):
+            self.coord.cell(0, make_dt=True)
+            iris.coords.Cell.assert_called_with(self.numdate, self.numdate)
+            self.assertEqual(iris.unit.Unit.is_time_reference.call_count, 1)
+            self.assertEqual(iris.unit.Unit.num2date.call_count, 2)
 
 
 if __name__ == '__main__':

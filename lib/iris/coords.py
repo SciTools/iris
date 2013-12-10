@@ -23,19 +23,21 @@ from __future__ import division
 from abc import ABCMeta, abstractproperty
 import collections
 import copy
+import datetime
 from itertools import chain, izip_longest
 import operator
 import warnings
 import zlib
 
+import netcdftime
 import numpy as np
 
+from iris._cube_coord_common import CFVariableMixin
 import iris.aux_factory
 import iris.exceptions
+import iris.partial_datetime as ipd
 import iris.unit
 import iris.util
-
-from iris._cube_coord_common import CFVariableMixin
 
 
 class CoordDefn(collections.namedtuple('CoordDefn',
@@ -153,7 +155,8 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
         compared.
 
         """
-        if isinstance(other, (int, float, np.number)):
+        if isinstance(other, (int, float, np.number, ipd.PartialDateTime,
+                              ipd.PartialDateTime.known_time_implementations)):
             if self.bound is not None:
                 return self.contains_point(other)
             else:
@@ -181,9 +184,28 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
         Cell vs Cell comparison is used to define a strict order.
         Non-Cell vs Cell comparison is used to define Constraint matching.
 
+        .. deprecated:: 1.6
+
+            Comparison between cell objects that contain datetimes with
+            numeric values is considered deprecated.
+
         """
-        if not isinstance(other, (int, float, np.number, Cell)):
-            raise ValueError("Unexpected type of other")
+        if not isinstance(
+                other,
+                (int, float, np.number, Cell,
+                 ipd.PartialDateTime.known_time_implementations,
+                 ipd.PartialDateTime)):
+            raise ValueError("Unexpected type of other".format())
+        if (isinstance(self.point,
+                       (datetime.datetime, netcdftime.datetime)) and
+                not isinstance(other,
+                               (ipd.PartialDateTime.known_time_implementations,
+                                ipd.PartialDateTime))):
+            msg = ('A comparison is taking place between a cell with '
+                   'datetimes and a numeric. Comparison with numeric values '
+                   'has been deprecated in favour of datetime objects.')
+            warnings.warn(msg, DeprecationWarning)
+
         if operator_method not in (operator.gt, operator.lt,
                                    operator.ge, operator.le):
             raise ValueError("Unexpected operator_method")
@@ -637,9 +659,15 @@ class Coord(CFVariableMixin):
                 self.bounds = self.units.convert(self.bounds, unit)
         self.units = unit
 
-    def cells(self):
+    def cells(self, make_dt=True):
         """
         Returns an iterable of Cell instances for this Coord.
+
+        Kwargs:
+
+         * make_dt (bool):
+             Whether to update date based cells into datetime instances.
+             Default True.
 
         For example::
 
@@ -647,7 +675,10 @@ class Coord(CFVariableMixin):
               ...
 
         """
-        return _CellIterator(self)
+        if self.ndim != 1:
+            raise iris.exceptions.CoordinateMultiDimError(self)
+        for index in xrange(self.shape[0]):
+            yield self.cell(index, make_dt=make_dt)
 
     def _sanity_check_contiguous(self):
         if self.ndim != 1:
@@ -810,13 +841,25 @@ class Coord(CFVariableMixin):
         Return the index of a given Cell in this Coord.
 
         """
-        raise IrisError('Coord.index() is no longer available.'
-                        ' Use Coord.nearest_neighbour_index() instead.')
+        msg = ('Coord.index() is no longer available.  Use '
+               'Coord.nearest_neighbour_index() instead.')
+        raise iris.exceptions.IrisError(msg)
 
-    def cell(self, index):
+    def cell(self, index, make_dt=True):
         """
         Return the single :class:`Cell` instance which results from slicing the
         points/bounds with the given index.
+
+        Args:
+
+         * index (int):
+            The index into the 1d coordinate for which a cell is desired.
+
+        Kwargs:
+
+         * make_dt (bool):
+            Whether to update date based cells into datetime instances.
+            Default True.
 
         """
         index = iris.util._build_full_slice_given_keys(index, self.ndim)
@@ -829,6 +872,14 @@ class Coord(CFVariableMixin):
         bound = None
         if self.bounds is not None:
             bound = tuple(np.array(self.bounds[index], ndmin=1).flatten())
+
+        if make_dt and self.units.is_time_reference():
+            point = self.units.num2date(point)[0]
+            point = ipd.enhance_datetimes(self.units, point)
+
+            if bound is not None:
+                bound = self.units.num2date(bound)
+                bound = ipd.enhance_datetimes(self.units, bound)
 
         return Cell(point, bound)
 
@@ -1570,20 +1621,6 @@ class CellMethod(iris.util._OrderedHashable):
                 cellMethod_xml_element.appendChild(coord_xml_element)
 
         return cellMethod_xml_element
-
-
-# See Coord.cells() for the description/context.
-class _CellIterator(collections.Iterator):
-    def __init__(self, coord):
-        self._coord = coord
-        if coord.ndim != 1:
-            raise iris.exceptions.CoordinateMultiDimError(coord)
-        self._indices = iter(xrange(coord.shape[0]))
-
-    def next(self):
-        # NB. When self._indices runs out it will raise StopIteration for us.
-        i = self._indices.next()
-        return self._coord.cell(i)
 
 
 # See ExplicitCoord._group() for the description/context.

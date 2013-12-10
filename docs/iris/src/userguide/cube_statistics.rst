@@ -257,7 +257,7 @@ do not cover a three month period (note: judged here as > 3*28 days):
 
 .. doctest:: aggregation
 
-    >>> spans_three_months = lambda t: (t.bound[1] - t.bound[0]) > 3*28*24.0
+    >>> spans_three_months = lambda t: ((t.bound[1].year * 12 + t.bound[1].month) - (t.bound[0].year * 12 + t.bound[0].month)) >= 3
     >>> three_months_bound = iris.Constraint(time=spans_three_months)
     >>> full_season_means = annual_seasonal_mean.extract(three_months_bound)
     >>> full_season_means

@@ -25,6 +25,7 @@ import numpy as np
 
 import iris.coords
 import iris.exceptions
+from iris.partial_datetime import PartialDateTime
 
 
 class Constraint(object):
@@ -250,12 +251,18 @@ class _CoordConstraint(object):
             call_func = self._coord_thing
         elif (isinstance(self._coord_thing, collections.Iterable) and
                 not isinstance(self._coord_thing,
-                               (basestring, iris.coords.Cell))):
+                               (basestring, iris.coords.Cell,
+                               PartialDateTime.known_time_implementations,
+                               PartialDateTime))):
             call_func = lambda cell: cell in list(self._coord_thing)
         else:
             call_func = lambda c: c == self._coord_thing
-            try_quick = (isinstance(coord, iris.coords.DimCoord) and
-                         not isinstance(self._coord_thing, iris.coords.Cell))
+            try_quick = (
+                isinstance(coord, iris.coords.DimCoord) and
+                not isinstance(self._coord_thing,
+                               (iris.coords.Cell,
+                                PartialDateTime.known_time_implementations,
+                                PartialDateTime)))
 
         # Simple, yet dramatic, optimisation for the monotonic case.
         if try_quick:
@@ -281,13 +288,14 @@ class _ColumnIndexManager(object):
     A class to represent column aligned slices which can be operated on
     using ``&``, ``|`` or ``^``.
 
-    ::
-
-        # 4 Dimensional slices
-        import numpy as np
-        cim = _ColumnIndexManager(4)
-        cim[1] = np.array([3, 4, 5]) > 3
-        print cim.as_slice()
+    >>> # Create a 2-d index manager
+    >>> cim = _ColumnIndexManager(2)
+    >>> # Provide an index on the second dimension (Note: now it knows
+    >>> # the length of that dimension as well as values of interest).
+    >>> cim[1] = np.array([3, 20, 100]) > 3
+    >>> # Observe that we can get the slice that would marry up to the index.
+    >>> print cim.as_slice()
+    (slice(None, None, None), slice(1, 3, 1))
 
     """
     def __init__(self, ndims):
