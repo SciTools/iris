@@ -805,14 +805,6 @@ class Coord(CFVariableMixin):
         # a deferred load unnecessarily.
         return self._points.shape
 
-    def index(self, cell):
-        """
-        Return the index of a given Cell in this Coord.
-
-        """
-        raise IrisError('Coord.index() is no longer available.'
-                        ' Use Coord.nearest_neighbour_index() instead.')
-
     def cell(self, index):
         """
         Return the single :class:`Cell` instance which results from slicing the
