@@ -1446,8 +1446,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Add the dim_coord names that participate in the associated data
         # dimensions.
         for dim in xrange(len(self.shape)):
-            for coord in self.coords(contains_dimension=dim, dim_coords=True):
-                dim_names[dim].add(coord.name())
+            dim_coords = self.coords(contains_dimension=dim, dim_coords=True)
+            if dim_coords:
+                dim_names[dim].add(dim_coords[0].name())
+            else:
+                dim_names[dim].add('-- ')
 
         # Convert axes sets to lists and sort.
         dim_names = [sorted(names, key=sorted_axes) for names in dim_names]
@@ -1457,7 +1460,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             dimension_header = 'scalar cube'
         else:
             dimension_header = '; '.join(
-                [', '.join(dim_names[dim] or ['*ANONYMOUS*']) +
+                [', '.join(dim_names[dim]) +
                  ': %d' % dim_shape for dim, dim_shape in
                  enumerate(self.shape)])
 
