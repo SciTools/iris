@@ -2312,12 +2312,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Collapse one or more dimensions over the cube given the coordinate/s
         and an aggregation.
 
-        Examples of aggregations that may be used include count
-        (:data:`~iris.analysis.COUNT`) and max (:data:`~iris.analysis.MAX`).
+        Examples of aggregations that may be used include
+        :data:`~iris.analysis.COUNT` and :data:`~iris.analysis.MAX`.
 
-        Weighted aggregations (:class:`~iris.analysis.WeightedAggregator`) may
-        also be supplied. These include mean (:data:`~iris.analysis.MEAN`) and
-        sum (:data:`~iris.analysis.SUM`).
+        Weighted aggregations (:class:`iris.analysis.WeightedAggregator`) may
+        also be supplied. These include :data:`~iris.analysis.MEAN` and
+        sum :data:`~iris.analysis.SUM`.
 
         Weighted aggregations support an optional *weights* keyword argument.
         If set, this should be supplied as an array of weights whose shape
