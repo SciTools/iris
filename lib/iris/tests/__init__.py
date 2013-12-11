@@ -34,6 +34,7 @@ import contextlib
 import difflib
 import filecmp
 import gzip
+import inspect
 import logging
 import os
 import os.path
@@ -159,6 +160,41 @@ class IrisTest(unittest.TestCase):
 
     def _assert_cml(self, cube_xml, reference_xml, reference_filename):
         self._assert_str_same(reference_xml, cube_xml, reference_filename, 'CML')
+        
+    def result_path(self, basename=None, ext=''):
+        """
+        Return the full path to a test result, generated from the \
+        calling file, class and, optionally, method.
+
+        Optional kwargs :
+
+            * basename    - File basename. If omitted, this is \
+                            generated from the calling method.
+            * ext         - Appended file extension.
+
+        """
+        if ext and not ext.startswith('.'):
+            ext = '.' + ext
+
+        # Generate the folder name from the calling file name.
+        path = os.path.abspath(inspect.getfile(self.__class__))
+        path = os.path.splitext(path)[0]
+        sub_path = path.rsplit('iris', 1)[1].split('tests', 1)[1][1:]
+
+        # Generate the file name from the calling function name?
+        if basename is None:
+            stack = inspect.stack()
+            for frame in stack[1:]:
+                if 'test_' in frame[3]:
+                    basename = frame[3].replace('test_', '')
+                    break
+        filename = basename + ext
+
+        result = os.path.join(get_result_path(''),
+                              sub_path.replace('test_', ''),
+                              self.__class__.__name__.replace('Test_', ''),
+                              filename)
+        return result
 
     def assertCMLApproxData(self, cubes, reference_filename, *args, **kwargs):
         # passes args and kwargs on to approx equal
@@ -174,13 +210,17 @@ class IrisTest(unittest.TestCase):
 
         self.assertCML(cubes, reference_filename, checksum=False)
 
-    def assertCDL(self, netcdf_filename, reference_filename, flags='-h'):
+    def assertCDL(self, netcdf_filename, reference_filename=None, flags='-h',
+                  basename=None):
         """
         Converts the given CF-netCDF file to CDL for comparison with
         the reference CDL file, or creates the reference file if it
         doesn't exist.
 
         """
+        if reference_filename is None:
+            reference_filename = self.result_path(basename, "cdl")
+        
         # Convert the netCDF file to CDL file format.
         cdl_filename = iris.util.create_temp_filename(suffix='.cdl')
 
@@ -211,7 +251,8 @@ class IrisTest(unittest.TestCase):
         reference_path = get_result_path(reference_filename)
         self._check_same(cdl, reference_path, reference_filename, type_comparison_name='CDL')
 
-    def assertCML(self, cubes, reference_filename, checksum=True):
+    def assertCML(self, cubes, reference_filename=None, checksum=True,
+                  basename=None):
         """
         Checks the given cubes match the reference file, or creates the
         reference file if it doesn't exist.
@@ -219,6 +260,8 @@ class IrisTest(unittest.TestCase):
         """
         if isinstance(cubes, iris.cube.Cube):
             cubes = [cubes]
+        if reference_filename is None:
+            reference_filename = self.result_path(basename, "cml")
 
         if isinstance(cubes, (list, tuple)):
             xml = iris.cube.CubeList(cubes).xml(checksum=checksum)
