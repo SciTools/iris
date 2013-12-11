@@ -380,6 +380,11 @@ class TestExponentiate(tests.IrisTest):
         self.assertArrayEqual(e.data, a.data ** 0.5)
         self.assertRaises(ValueError, iris.analysis.maths.exponentiate, a, 0.3)
 
+    def test_invalid_exponentiate(self):
+        exponent = np.random.randn(*self.cube.data.shape)
+        with self.assertRaises(ValueError):
+            pow(self.cube, exponent)
+
 
 class TestExponential(tests.IrisTest):
     def setUp(self):

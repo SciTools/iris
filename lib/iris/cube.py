@@ -2261,11 +2261,17 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     def __sub__(self, other):
         return iris.analysis.maths.subtract(self, other, ignore=True)
+    __rsub__ = __sub__
 
     __mul__ = iris.analysis.maths.multiply
     __rmul__ = iris.analysis.maths.multiply
     __div__ = iris.analysis.maths.divide
+    __rdiv__ = iris.analysis.maths.divide
     __truediv__ = iris.analysis.maths.divide
+    __ge__ = iris.analysis.maths.greater_equal
+    __le__ = iris.analysis.maths.less_equal
+    __gt__ = iris.analysis.maths.greater
+    __lt__ = iris.analysis.maths.less
     __pow__ = iris.analysis.maths.exponentiate
     # END OPERATOR OVERLOADS
 
