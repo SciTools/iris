@@ -53,6 +53,35 @@ class TestVertical(tests.IrisTest):
         self.assertEqual(field.lbvc, 6)
         self.assertEqual(field.blev, soil_level)
 
+    def test_potential_temperature_level_round_trip(self):
+        """Check save+load for data on 'potential temperature' levels."""
+        # Use pp.load_cubes() to convert a fake PPField into a Cube.
+        # NB. Use MagicMock so that SplittableInt header items, such as
+        # LBCODE, support len().
+        potm_value = 22.5
+        field = mock.MagicMock(lbvc=19, blev=potm_value,
+                               stash=iris.fileformats.pp.STASH(1, 0, 9),
+                               lbuser=[0] * 7, lbrsvd=[0] * 4)
+        load = mock.Mock(return_value=iter([field]))
+        with mock.patch('iris.fileformats.pp.load', new=load) as load:
+            cube = next(iris.fileformats.pp.load_cubes('DUMMY'))
+
+        self.assertIn('soil', cube.standard_name)
+        self.assertEqual(len(cube.coords('air_potential_temperature')), 1)
+        self.assertEqual(cube.coord('air_potential_temperature').points,
+                         potm_value)
+
+        # Now use the save rules to convert the Cube back into a PPField.
+        field = iris.fileformats.pp.PPField3()
+        field.lbfc = 0
+        field.lbvc = 0
+        iris.fileformats.pp._ensure_save_rules_loaded()
+        iris.fileformats.pp._save_rules.verify(cube, field)
+
+        # Check the vertical coordinate is as originally specified.
+        self.assertEqual(field.lbvc, 19)
+        self.assertEqual(field.blev, potm_value)
+
 
 if __name__ == "__main__":
     tests.main()

@@ -23,6 +23,7 @@ import iris.tests as tests
 import mock
 
 from iris.fileformats.pp_rules import convert
+from iris.util import guess_coord_axis
 
 
 class TestLBVC(tests.IrisTest):
@@ -41,6 +42,25 @@ class TestLBVC(tests.IrisTest):
         coord, dims = coords_and_dims[0]
         self.assertEqual(coord.points, 1234)
         self.assertIsNone(coord.bounds)
+        self.assertEqual(guess_coord_axis(coord), 'Z')
+
+    def test_potential_temperature_levels(self):
+        potm_value = 27.32
+        field = mock.MagicMock(lbvc=19, blev=potm_value)
+        (factories, references, standard_name, long_name, units,
+         attributes, cell_methods, dim_coords_and_dims,
+         aux_coords_and_dims) = convert(field)
+
+        def is_potm_level_coord(coord_and_dims):
+            coord, dims = coord_and_dims
+            return coord.standard_name == 'air_potential_temperature'
+
+        coords_and_dims = filter(is_potm_level_coord, aux_coords_and_dims)
+        self.assertEqual(len(coords_and_dims), 1)
+        coord, dims = coords_and_dims[0]
+        self.assertArrayEqual(coord.points, [potm_value])
+        self.assertIsNone(coord.bounds)
+        self.assertEqual(guess_coord_axis(coord), 'Z')
 
 
 if __name__ == "__main__":
