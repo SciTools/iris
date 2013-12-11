@@ -21,6 +21,7 @@ Basic mathematical and statistical operations.
 from __future__ import division
 import warnings
 import math
+import textwrap
 
 import numpy as np
 
@@ -49,8 +50,7 @@ def abs(cube, in_place=False):
         and additional metadata added.
 
     """
-    return _math_op_common(cube, np.abs, cube.units,
-                           in_place=in_place)
+    return _unary_op_common(cube, np.abs, cube.units, in_place=in_place)
 
 
 def intersection_of_cubes(cube, other_cube):
@@ -127,7 +127,7 @@ def _assert_matching_units(cube, other, operation_noun):
 
 
 def _assert_dimensionless_units(cube, operation_noun):
-    if hasattr(cube, 'units') and cube.units != '1':
+    if hasattr(cube, 'units') and not cube.units.is_dimensionless():
         raise iris.exceptions.NotYetImplementedError(
             'Non-dimensionless units (%s) %s not implemented' %
             (cube.units, operation_noun))
@@ -268,111 +268,124 @@ def _add_subtract_common(operation_function, operation_symbol, operation_noun,
     return new_cube
 
 
-# I would like to add `equal` and `not_equal`, but that would change the API
+_BINARY_OP_DOC = """
+{description!s}
+
+Args:
+
+* cube:
+    An instance of :class:`iris.cube.Cube`.
+* other:
+    An instance of :class:`iris.cube.Cube` or :class:`iris.coords.Coord`, or a
+    number.
+
+Kwargs:
+
+* dim:
+    If supplying a coord with no match on the cube, you must supply the
+    dimension to process.
+
+Returns:
+    An instance of :class:`iris.cube.Cube`.
+"""
 
 
+def _add_cmp_docstring(*args, **kwargs):
+    def wrapper(func):
+        desc = ("Calculate the truth value of (`cube {!s} other`) "
+                "element-wise between a cube and another cube, coordinate or "
+                "number")
+        func.__doc__ = _BINARY_OP_DOC.format(
+            description=textwrap.fill(desc.format(*args, **kwargs)))
+        return func
+    return wrapper
+
+
+def _cmp_common(operation_function, cube, other, dim=None):
+    operation_noun = operation_function.__name__
+    _assert_matching_units(cube, other, operation_noun)
+    return _binary_op_common(operation_function, operation_noun, cube, other,
+                             iris.unit.as_unit('1'), dim, in_place=False)
+
+
+@_add_cmp_docstring('==')
+def equal(cube, other, dim=None):
+    return _cmp_common(np.equal, cube, other, dim)
+
+
+@_add_cmp_docstring('!=')
+def not_equal(cube, other, dim=None):
+    return _cmp_common(np.not_equal, cube, other, dim)
+
+
+@_add_cmp_docstring('>=')
 def greater_equal(cube, other, dim=None):
-    """
-    Calculate the truth value of (`cube >= other`) element-wise between a cube
-    and another cube, coordinate or number
-
-    Args:
-
-    * cube:
-        An instance of :class:`iris.cube.Cube`.
-    * other:
-        An instance of :class:`iris.cube.Cube` or :class:`iris.coords.Coord`, or a number.
-
-    Kwargs:
-
-    * dim:
-        If supplying a coord with no match on the cube, you must supply the dimension to process.
-
-    Returns:
-        An instance of :class:`iris.cube.Cube`.
-
-    """
-    _assert_matching_units(cube, other, 'greater_equal')
-    return _binary_op_common(np.greater_equal, 'greater_equal', cube, other,
-                             '1', dim, in_place=False)
+    return _cmp_common(np.greater_equal, cube, other, dim)
 
 
+@_add_cmp_docstring('<=')
 def less_equal(cube, other, dim=None):
-    """
-    Calculate the truth value of (`cube <= other`) element-wise between a cube
-    and another cube, coordinate or number
-
-    Args:
-
-    * cube:
-        An instance of :class:`iris.cube.Cube`.
-    * other:
-        An instance of :class:`iris.cube.Cube` or :class:`iris.coords.Coord`, or a number.
-
-    Kwargs:
-
-    * dim:
-        If supplying a coord with no match on the cube, you must supply the dimension to process.
-
-    Returns:
-        An instance of :class:`iris.cube.Cube`.
-
-    """
-    _assert_matching_units(cube, other, 'less_equal')
-    return _binary_op_common(np.less_equal, 'less_equal', cube, other, '1',
-                             dim, in_place=False)
+    return _cmp_common(np.less_equal, cube, other, dim)
 
 
+@_add_cmp_docstring('>')
 def greater(cube, other, dim=None):
-    """
-    Calculate the truth value of (`cube > other`) element-wise between a cube
-    and another cube, coordinate or number
-
-    Args:
-
-    * cube:
-        An instance of :class:`iris.cube.Cube`.
-    * other:
-        An instance of :class:`iris.cube.Cube` or :class:`iris.coords.Coord`, or a number.
-
-    Kwargs:
-
-    * dim:
-        If supplying a coord with no match on the cube, you must supply the dimension to process.
-
-    Returns:
-        An instance of :class:`iris.cube.Cube`.
-
-    """
-    _assert_matching_units(cube, other, 'greater')
-    return _binary_op_common(np.greater, 'greater', cube, other, '1', dim,
-                             in_place=False)
+    return _cmp_common(np.greater, cube, other, dim)
 
 
+@_add_cmp_docstring('<')
 def less(cube, other, dim=None):
+    return _cmp_common(np.less, cube, other, dim)
+
+
+def _add_bitwise_binary_docstring(*args, **kwargs):
+    def wrapper(func):
+        desc = ("Compute the bit-wise {!s} (`cube {!s} other`) element-wise "
+                "between a cube and another cube, coordinate or number")
+        func.__doc__ = _BINARY_OP_DOC.format(
+            description=textwrap.fill(desc.format(*args, **kwargs)))
+        return func
+    return wrapper
+
+
+@_add_bitwise_binary_docstring('AND', '&')
+def bitwise_and(cube, other, dim=None):
+    _assert_dimensionless_units(cube, 'bitwise_and')
+    return _cmp_common(np.bitwise_and, cube, other, dim)
+
+
+@_add_bitwise_binary_docstring('OR', '|')
+def bitwise_or(cube, other, dim=None):
+    _assert_dimensionless_units(cube, 'bitwise_or')
+    return _cmp_common(np.bitwise_or, cube, other, dim)
+
+
+@_add_bitwise_binary_docstring('XOR', '^')
+def bitwise_xor(cube, other, dim=None):
+    _assert_dimensionless_units(cube, 'bitwise_xor')
+    return _cmp_common(np.bitwise_xor, cube, other, dim)
+
+
+def bitwise_not(cube, in_place=False):
     """
-    Calculate the truth value of (`cube < other`) element-wise between a cube
-    and another cube, coordinate or number
+    Compute bit-wise NOT, or bit-wise inversion, element-wise to a cube (`~cube`)
 
     Args:
 
     * cube:
         An instance of :class:`iris.cube.Cube`.
-    * other:
-        An instance of :class:`iris.cube.Cube` or :class:`iris.coords.Coord`, or a number.
 
     Kwargs:
 
-    * dim:
-        If supplying a coord with no match on the cube, you must supply the dimension to process.
+    * in_place:
+        Whether to create a new Cube, or alter the given "cube".
 
     Returns:
         An instance of :class:`iris.cube.Cube`.
-
     """
-    _assert_matching_units(cube, other, 'less')
-    return _binary_op_common(np.less, 'less', cube, other, '1', dim,
-                             in_place=False)
+    _assert_dimensionless_units(cube, 'bitwise_not')
+    return _unary_op_common(cube, np.bitwise_not, iris.unit.Unit('1'),
+                           in_place=in_place)
 
 
 def multiply(cube, other, dim=None, in_place=False):
@@ -441,25 +454,17 @@ def _binary_op_common(operation_function, operation_noun, cube, other,
     if isinstance(other, iris.coords.Coord):
         other = _broadcast_cube_coord_data(cube, other, operation_noun, dim)
     elif isinstance(other, iris.cube.Cube):
+        # TODO: add intelligent broadcasting along coordinate dimensions and
+        # verify that dimensions match
         other = other.data
     # don't worry about checking for other data types because
     # _assert_compatible validates that they are broadcast compatible with
     # cube.data
     _assert_compatible(cube, other)
 
-    # the logic here really should be replaced by a call to _math_op_common but
-    # that function doesn't actually do in-place operations
-    if in_place:
-        new_cube = cube
-        operation_function(new_cube.data, other, new_cube.data)
-    else:
-        new_cube = cube.copy(data=operation_function(cube.data, other))
-
-    # Update the metadata
-    iris.analysis.clear_phenomenon_identity(new_cube)
-    new_cube.units = new_unit
-
-    return new_cube
+    def unary_func(x, out=None):
+        return operation_function(x, other, out)
+    return _unary_op_common(cube, unary_func, new_unit, in_place)
 
 
 def _broadcast_cube_coord_data(cube, other, operation_noun, dim=None):
@@ -477,8 +482,9 @@ def _broadcast_cube_coord_data(cube, other, operation_noun, dim=None):
                 coord_dims = cube.coord_dims(other)
                 data_dimension = coord_dims[0] if coord_dims else None
             except iris.exceptions.CoordinateNotFoundError:
-                raise ValueError("Could not determine dimension for mul/div. "
-                                 "Use mul(coord, dim=dim)")
+                raise ValueError(("Could not determine dimension for %s. "
+                                  "Use %s(cube, coord, dim=dim)")
+                                 % operation_noun)
 
     if other.ndim != 1:
         raise iris.exceptions.CoordinateMultiDimError(other)
@@ -499,9 +505,47 @@ def _broadcast_cube_coord_data(cube, other, operation_noun, dim=None):
     return points
 
 
+def _positive(cube):
+    return cube
+
+
+def negative(cube, in_place=False):
+    """
+    Calculate the element-wise negative of a cube (`-cube`)
+
+    Args:
+
+    * cube:
+        An instance of :class:`iris.cube.Cube`.
+
+    Returns:
+        An instance of :class:`iris.cube.Cube`.
+    """
+    return _unary_op_common(cube, np.negative, cube.units, in_place)
+
+
+def reciprocal(cube, in_place=False):
+    """
+    Calculate the element-wise reciprocal of a cube (`1/cube`)
+
+    Args:
+
+    * cube:
+        An instance of :class:`iris.cube.Cube`.
+
+    Returns:
+        An instance of :class:`iris.cube.Cube`.
+    """
+    def safe_reciprocal(x, out=None):
+        # cast to float in over to avoid issues with integers
+        return np.reciprocal(np.asanyarray(x, dtype=float), out)
+    return _unary_op_common(cube, safe_reciprocal, cube.units ** -1, in_place)
+
+
 def exponentiate(cube, exponent, dim=None, in_place=False):
     """
-    Returns the result of the given cube to the power of a scalar.
+    Returns the exponential of a cube to the power of another cube, coordinate
+    or number (`cube ** exponent`)
 
     Args:
 
@@ -528,7 +572,7 @@ def exponentiate(cube, exponent, dim=None, in_place=False):
     operation_noun = 'exponentiate'
     _assert_dimensionless_units(exponent, operation_noun)
     if cube.units == '1':
-        new_unit = '1'
+        new_unit = cube.units
     else:
         if isinstance(exponent, iris.coords.Coord):
             exponent = _broadcast_cube_coord_data(cube, exponent,
@@ -546,6 +590,36 @@ def exponentiate(cube, exponent, dim=None, in_place=False):
                              new_unit, dim, in_place)
 
 
+def reverse_exponentiate(cube, base, dim=None):
+    """
+    Returns the result of the exponential of a cube with the base given by
+    another cube, coordinate or number (`base ** cube`)
+
+    Args:
+
+    * cube:
+        An instance of :class:`iris.cube.Cube`. Must have units '1'.
+    * base:
+        An instance of :class:`iris.cube.Cube` or :class:`iris.coords.Coord`,
+        or a number. If a cube, must have units '1'.
+
+    Kwargs:
+
+    * in_place:
+        Whether to create a new Cube, or alter the given "cube".
+
+    Returns:
+        An instance of :class:`iris.cube.Cube`.
+    """
+    operation_noun = 'reverse_exponentiate'
+    _assert_dimensionless_units(cube, operation_noun)
+    _assert_dimensionless_units(base, operation_noun)
+    def rpower(x1, x2):
+        return np.power(x2, x1)
+    return _binary_op_common(rpower, operation_noun, cube, base, cube.units,
+                             dim, in_place=False)
+
+
 def exp(cube, in_place=False):
     """
     Calculate the exponential (exp(x)) of the cube.
@@ -553,11 +627,7 @@ def exp(cube, in_place=False):
     Args:
 
     * cube:
-        An instance of :class:`iris.cube.Cube`.
-
-    .. note::
-
-        Taking an exponential will return a cube with dimensionless units.
+        An instance of :class:`iris.cube.Cube`. Must have units '1'.
 
     Kwargs:
 
@@ -568,8 +638,13 @@ def exp(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _math_op_common(cube, np.exp, iris.unit.Unit('1'),
-                           in_place=in_place)
+    try:
+        _assert_dimensionless_units(cube, 'exp')
+    except iris.exceptions.NotYetImplementedError:
+        warnings.warn('accepting cubes with non-dimensionless units has been '
+                      'deprecated for exp')
+    return _unary_op_common(cube, np.exp, iris.unit.Unit('1'),
+                            in_place=in_place)
 
 
 def log(cube, in_place=False):
@@ -590,8 +665,8 @@ def log(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _math_op_common(cube, np.log, cube.units.log(math.e),
-                           in_place=in_place)
+    return _unary_op_common(cube, np.log, cube.units.log(math.e),
+                            in_place=in_place)
 
 
 def log2(cube, in_place=False):
@@ -612,7 +687,7 @@ def log2(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _math_op_common(cube, np.log2, cube.units.log(2),
+    return _unary_op_common(cube, np.log2, cube.units.log(2),
                            in_place=in_place)
 
 
@@ -634,22 +709,16 @@ def log10(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _math_op_common(cube, np.log10, cube.units.log(10),
-                           in_place=in_place)
+    return _unary_op_common(cube, np.log10, cube.units.log(10),
+                            in_place=in_place)
 
 
-def _math_op_common(cube, math_op, new_unit, in_place):
-
-    data = math_op(cube.data)
-
+def _unary_op_common(cube, operation_function, new_unit, in_place):
     if in_place:
-        copy_cube = cube
-        copy_cube.data = data
+        new_cube = cube
+        new_cube.data = operation_function(new_cube.data, new_cube.data)
     else:
-        copy_cube = cube.copy(data)
-
-    # Update the metadata
-    iris.analysis.clear_phenomenon_identity(copy_cube)
-    copy_cube.units = new_unit
-
-    return copy_cube
+        new_cube = cube.copy(data=operation_function(cube.data))
+    iris.analysis.clear_phenomenon_identity(new_cube)
+    new_cube.units = new_unit
+    return new_cube
