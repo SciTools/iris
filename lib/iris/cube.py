@@ -2312,6 +2312,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Collapse one or more dimensions over the cube given the coordinate/s
         and an aggregation.
 
+        Examples of aggregations that may be used include
+        :data:`~iris.analysis.COUNT` and :data:`~iris.analysis.MAX`.
+
+        Weighted aggregations (:class:`iris.analysis.WeightedAggregator`) may
+        also be supplied. These include :data:`~iris.analysis.MEAN` and
+        sum :data:`~iris.analysis.SUM`.
+
+        Weighted aggregations support an optional *weights* keyword argument.
+        If set, this should be supplied as an array of weights whose shape
+        matches the cube. Values for latitude-longitude area weights may be
+        calculated using :func:`iris.analysis.cartography.area_weights`.
+
         Args:
 
         * coords (string, coord or a list of strings/coords):

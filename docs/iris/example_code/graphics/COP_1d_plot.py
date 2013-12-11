@@ -24,7 +24,7 @@ import iris
 import iris.plot as iplt
 import iris.quickplot as qplt
 
-import iris.analysis.calculus
+import iris.analysis.cartography
 import matplotlib.dates as mdates
 
 
@@ -43,9 +43,27 @@ def main():
     pre_industrial = iris.load_cube(iris.sample_data_path('pre-industrial.pp'),
                                     north_america)
 
-    pre_industrial_mean = pre_industrial.collapsed(['latitude', 'longitude'], iris.analysis.MEAN)
-    e1_mean = e1.collapsed(['latitude', 'longitude'], iris.analysis.MEAN)
-    a1b_mean = a1b.collapsed(['latitude', 'longitude'], iris.analysis.MEAN)
+    # Generate area-weights array. As e1 and a1b are on the same grid we can
+    # do this just once and re-use.
+    # This method requires bounds on lat/lon coords, so first we must guess
+    # these.
+    e1.coord('latitude').guess_bounds()
+    e1.coord('longitude').guess_bounds()
+    e1_grid_areas = iris.analysis.cartography.area_weights(e1)
+    pre_industrial.coord('latitude').guess_bounds()
+    pre_industrial.coord('longitude').guess_bounds()
+    pre_grid_areas = iris.analysis.cartography.area_weights(pre_industrial)
+
+    # Now perform an area-weighted collape for each dataset:
+    pre_industrial_mean = pre_industrial.collapsed(['latitude', 'longitude'],
+                                                   iris.analysis.MEAN,
+                                                   weights=pre_grid_areas)
+    e1_mean = e1.collapsed(['latitude', 'longitude'],
+                           iris.analysis.MEAN,
+                           weights=e1_grid_areas)
+    a1b_mean = a1b.collapsed(['latitude', 'longitude'],
+                             iris.analysis.MEAN,
+                             weights=e1_grid_areas)
 
     # Show ticks 30 years apart
     plt.gca().xaxis.set_major_locator(mdates.YearLocator(30))
