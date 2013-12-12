@@ -97,9 +97,11 @@ Format-specific translation behaviour can be modified by using:
     :func:`iris.fileformats.grib.add_load_rules`
 
 """
+import contextlib
 import itertools
 import logging
 import os
+import threading
 import warnings
 
 import iris.config
@@ -115,7 +117,7 @@ __version__ = '1.6.0-dev'
 # Restrict the names imported when using "from iris import *"
 __all__ = ['load', 'load_cube', 'load_cubes', 'load_raw',
            'save', 'Constraint', 'AttributeConstraint', 'TimeConstraint',
-           'sample_data_path', 'site_configuration']
+           'sample_data_path', 'site_configuration', 'FUTURE']
 
 
 # When required, log the usage of Iris.
@@ -126,6 +128,84 @@ if iris.config.IMPORT_LOGGER:
 Constraint = iris._constraints.Constraint
 AttributeConstraint = iris._constraints.AttributeConstraint
 TimeConstraint = iris._constraints.TimeConstraint
+
+
+class Future(threading.local):
+    """
+    Run-time configuration options.
+
+    To adjust the values simply update the relevant attribute from
+    within your code. For example::
+
+        iris.FUTURE.cell_datetime_objects = True
+
+    If Iris code is executed with multiple threads, note the values of
+    these options are thread-specific.
+
+    Currently, the only option available is `cell_datetime_objects` which
+    controls whether the :meth:`iris.coords.Coord.cell()` method returns
+    time coordinate values as simple numbers or as time objects with
+    attributes for year, month, day, etc. In particular, this allows one
+    to express certain time constraints using a simpler, more
+    transparent syntax, such as::
+
+        # To select all data defined at midday.
+        Constraint(time=lambda cell: cell.point.hour == 12)
+
+        # To ignore the 29th of February.
+        Constraint(time=lambda cell: cell.point.day != 29 and
+                                     cell.point.month != 2)
+
+    """
+
+    def __init__(self, cell_datetime_objects=False):
+        """This one's for the init"""
+        self.__dict__['cell_datetime_objects'] = cell_datetime_objects
+
+    def __repr__(self):
+        return 'Future(cell_datetime_objects={})'.format(
+            self.cell_datetime_objects)
+
+    def __setattr__(self, name, value):
+        if name not in self.__dict__:
+            msg = "'Future' object has no attribute {!r}".format(name)
+            raise AttributeError(msg)
+        self.__dict__[name] = value
+
+    @contextlib.contextmanager
+    def context(self, **kwargs):
+        """
+        Return a context manager which allows temporary modification of
+        the option values for the active thread.
+
+        On entry to the `with` statement, all keyword arguments are
+        applied to the Future object. On exit from the `with`
+        statement, the previous state is restored.
+
+        For example::
+
+            with iris.FUTURE.context():
+                iris.FUTURE.cell_datetime_objects = True
+                # ... code which expects time objects
+
+        Or more concisely::
+
+            with iris.FUTURE.context(cell_datetime_objects=True):
+                # ... code which expects time objects
+
+        """
+        # Save the current context
+        current_state = self.__dict__.copy()
+        # Update the state
+        for name, value in kwargs.iteritems():
+            setattr(self, name, value)
+        yield
+        # Return the state
+        self.__dict__.clear()
+        self.__dict__.update(current_state)
+
+
+FUTURE = Future()
 
 
 # Initialise the site configuration dictionary.

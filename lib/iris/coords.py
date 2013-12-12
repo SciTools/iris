@@ -810,6 +810,13 @@ class Coord(CFVariableMixin):
         Return the single :class:`Cell` instance which results from slicing the
         points/bounds with the given index.
 
+        .. note::
+
+            If `iris.FUTURE.cell_datetime_objects` is True, then this
+            method will return Cell objects whose `points` and `bounds`
+            attributes contain either datetime.datetime instances or
+            netcdftime.datetime instances (depending on the calendar).
+
         """
         index = iris.util._build_full_slice_given_keys(index, self.ndim)
 
@@ -821,6 +828,12 @@ class Coord(CFVariableMixin):
         bound = None
         if self.bounds is not None:
             bound = tuple(np.array(self.bounds[index], ndmin=1).flatten())
+
+        if iris.FUTURE.cell_datetime_objects:
+            if self.units.is_time_reference():
+                point = self.units.num2date(point)
+                if bound is not None:
+                    bound = self.units.num2date(bound)
 
         return Cell(point, bound)
 

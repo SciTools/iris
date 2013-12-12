@@ -20,15 +20,54 @@
 # importing anything else.
 import iris.tests as tests
 
-from collections import namedtuple
-import mock
+import datetime
+import collections
 
+import mock
 import numpy as np
 
-from iris.coords import AuxCoord
+from iris.coords import AuxCoord, Coord
 
 
-Pair = namedtuple('Pair', 'points bounds')
+Pair = collections.namedtuple('Pair', 'points bounds')
+
+
+class Test_cell(tests.IrisTest):
+    def _mock_coord(self):
+        coord = mock.Mock(spec=Coord, ndim=1,
+                          points=np.array([mock.sentinel.time]),
+                          bounds=np.array([[mock.sentinel.lower,
+                                            mock.sentinel.upper]]))
+        return coord
+
+    def test_time_as_number(self):
+        # Make sure Coord.cell() normally returns the values straight
+        # out of the Coord's points/bounds arrays.
+        coord = self._mock_coord()
+        cell = Coord.cell(coord, 0)
+        self.assertIs(cell.point, mock.sentinel.time)
+        self.assertEquals(cell.bound,
+                          (mock.sentinel.lower, mock.sentinel.upper))
+
+    def test_time_as_object(self):
+        # When iris.FUTURE.cell_datetime_objects is True, ensure
+        # Coord.cell() converts the point/bound values to "datetime"
+        # objects.
+        coord = self._mock_coord()
+        coord.units.num2date = mock.Mock(
+            side_effect=[mock.sentinel.datetime,
+                         (mock.sentinel.datetime_lower,
+                          mock.sentinel.datetime_upper)])
+        with mock.patch('iris.FUTURE', cell_datetime_objects=True):
+            cell = Coord.cell(coord, 0)
+        self.assertIs(cell.point, mock.sentinel.datetime)
+        self.assertEquals(cell.bound,
+                          (mock.sentinel.datetime_lower,
+                           mock.sentinel.datetime_upper))
+        self.assertEqual(coord.units.num2date.call_args_list,
+                         [mock.call((mock.sentinel.time,)),
+                          mock.call((mock.sentinel.lower,
+                                     mock.sentinel.upper))])
 
 
 class Test_collapsed(tests.IrisTest):
