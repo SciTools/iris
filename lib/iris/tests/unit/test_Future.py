@@ -26,9 +26,9 @@ from iris import Future
 class Test___setattr__(tests.IrisTest):
     def test_valid_attribute(self):
         future = Future()
-        new_value = not future.cell_time_objects
-        future.cell_time_objects = new_value
-        self.assertEqual(future.cell_time_objects, new_value)
+        new_value = not future.cell_datetime_objects
+        future.cell_datetime_objects = new_value
+        self.assertEqual(future.cell_datetime_objects, new_value)
 
     def test_invalid_attribute(self):
         future = Future()
@@ -38,20 +38,20 @@ class Test___setattr__(tests.IrisTest):
 
 class Test_context(tests.IrisTest):
     def test_no_args(self):
-        future = Future(cell_time_objects=False)
-        self.assertFalse(future.cell_time_objects)
+        future = Future(cell_datetime_objects=False)
+        self.assertFalse(future.cell_datetime_objects)
         with future.context():
-            self.assertFalse(future.cell_time_objects)
-            future.cell_time_objects = True
-            self.assertTrue(future.cell_time_objects)
-        self.assertFalse(future.cell_time_objects)
+            self.assertFalse(future.cell_datetime_objects)
+            future.cell_datetime_objects = True
+            self.assertTrue(future.cell_datetime_objects)
+        self.assertFalse(future.cell_datetime_objects)
 
     def test_with_arg(self):
-        future = Future(cell_time_objects=False)
-        self.assertFalse(future.cell_time_objects)
-        with future.context(cell_time_objects=True):
-            self.assertTrue(future.cell_time_objects)
-        self.assertFalse(future.cell_time_objects)
+        future = Future(cell_datetime_objects=False)
+        self.assertFalse(future.cell_datetime_objects)
+        with future.context(cell_datetime_objects=True):
+            self.assertTrue(future.cell_datetime_objects)
+        self.assertFalse(future.cell_datetime_objects)
 
     def test_invalid_arg(self):
         future = Future()

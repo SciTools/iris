@@ -812,7 +812,7 @@ class Coord(CFVariableMixin):
 
         .. note::
 
-            If `iris.FUTURE.cell_time_objects` is True, then this
+            If `iris.FUTURE.cell_datetime_objects` is True, then this
             method will return Cell objects whose `points` and `bounds`
             attributes contain either datetime.datetime instances or
             netcdftime.datetime instances (depending on the calendar).
@@ -829,7 +829,7 @@ class Coord(CFVariableMixin):
         if self.bounds is not None:
             bound = tuple(np.array(self.bounds[index], ndmin=1).flatten())
 
-        if iris.FUTURE.cell_time_objects:
+        if iris.FUTURE.cell_datetime_objects:
             if self.units.is_time_reference():
                 point = self.units.num2date(point)
                 if bound is not None:

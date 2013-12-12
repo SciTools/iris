@@ -50,7 +50,7 @@ class Test_cell(tests.IrisTest):
                           (mock.sentinel.lower, mock.sentinel.upper))
 
     def test_time_as_object(self):
-        # When iris.FUTURE.cell_time_objects is True, ensure
+        # When iris.FUTURE.cell_datetime_objects is True, ensure
         # Coord.cell() converts the point/bound values to "datetime"
         # objects.
         coord = self._mock_coord()
@@ -58,7 +58,7 @@ class Test_cell(tests.IrisTest):
             side_effect=[mock.sentinel.datetime,
                          (mock.sentinel.datetime_lower,
                           mock.sentinel.datetime_upper)])
-        with mock.patch('iris.FUTURE', cell_time_objects=True):
+        with mock.patch('iris.FUTURE', cell_datetime_objects=True):
             cell = Coord.cell(coord, 0)
         self.assertIs(cell.point, mock.sentinel.datetime)
         self.assertEquals(cell.bound,

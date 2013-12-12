@@ -137,12 +137,12 @@ class Future(threading.local):
     To adjust the values simply update the relevant attribute from
     within your code. For example::
 
-        iris.FUTURE.cell_time_objects = True
+        iris.FUTURE.cell_datetime_objects = True
 
     If Iris code is executed with multiple threads, note the values of
     these options are thread-specific.
 
-    Currently, the only option available is `cell_time_objects` which
+    Currently, the only option available is `cell_datetime_objects` which
     controls whether the :meth:`iris.coords.Coord.cell()` method returns
     time coordinate values as simple numbers or as time objects with
     attributes for year, month, day, etc. In particular, this allows one
@@ -158,12 +158,13 @@ class Future(threading.local):
 
     """
 
-    def __init__(self, cell_time_objects=False):
+    def __init__(self, cell_datetime_objects=False):
         """This one's for the init"""
-        self.__dict__['cell_time_objects'] = cell_time_objects
+        self.__dict__['cell_datetime_objects'] = cell_datetime_objects
 
     def __repr__(self):
-        return 'Future(cell_time_objects={})'.format(self.cell_time_objects)
+        return 'Future(cell_datetime_objects={})'.format(
+            self.cell_datetime_objects)
 
     def __setattr__(self, name, value):
         if name not in self.__dict__:
@@ -184,12 +185,12 @@ class Future(threading.local):
         For example::
 
             with iris.FUTURE.context():
-                iris.FUTURE.cell_time_objects = True
+                iris.FUTURE.cell_datetime_objects = True
                 # ... code which expects time objects
 
         Or more concisely::
 
-            with iris.FUTURE.context(cell_time_objects=True):
+            with iris.FUTURE.context(cell_datetime_objects=True):
                 # ... code which expects time objects
 
         """
