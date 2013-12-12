@@ -44,6 +44,9 @@ class TestDecodeUri(unittest.TestCase):
             'http://www.somehost.com:8080/resource/thing.grib': (
                 'http', '//www.somehost.com:8080/resource/thing.grib'
             ),
+            '/data/local/someDir/2013-11-25T13:49:17.632797': (
+                'file', '/data/local/someDir/2013-11-25T13:49:17.632797'
+            ),
         }
         for uri, pair in tests.items():
             self.assertEqual(pair, iris.io.decode_uri(uri))
