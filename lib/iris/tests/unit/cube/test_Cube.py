@@ -25,7 +25,7 @@ import numpy as np
 
 import iris
 from iris.analysis import WeightedAggregator, Aggregator
-import iris.tests.unit
+from iris.cube import Cube
 
 
 class Test_xml(tests.IrisTest):
@@ -139,6 +139,17 @@ class Test_collapsed__warning(tests.IrisTest):
             self.cube.collapsed(coords, aggregator)
 
         self._assert_nowarn_collapse_without_weight(coords, warn)
+
+
+class Test_summary(tests.IrisTest):
+    def test_cell_time_objects(self):
+        # Check the scalar coordinate summary still works even when
+        # iris.FUTURE.cell_time_objects is True.
+        cube = Cube(0)
+        cube.add_aux_coord(iris.coords.AuxCoord(42, units='hours since epoch'))
+        with mock.patch('iris.FUTURE', cell_time_objects=True):
+            summary = cube.summary()
+        self.assertIn('1970-01-02 18:00:00', summary)
 
 
 if __name__ == "__main__":

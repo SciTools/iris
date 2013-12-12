@@ -1612,7 +1612,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
                     # Format cell depending on type of point and whether it
                     # has a bound
-                    coord_cell = coord.cell(0)
+                    with iris.FUTURE.context(cell_time_objects=False):
+                        coord_cell = coord.cell(0)
                     if isinstance(coord_cell.point, basestring):
                         # Indent string type coordinates
                         coord_cell_split = [iris.util.clip_string(str(item))

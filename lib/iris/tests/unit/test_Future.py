@@ -1,0 +1,64 @@
+# (C) British Crown Copyright 2013, Met Office
+#
+# This file is part of Iris.
+#
+# Iris is free software: you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Iris is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+"""Unit tests for the `iris.Future` class."""
+
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests
+
+from iris import Future
+
+
+class Test___setattr__(tests.IrisTest):
+    def valid_attribute(self):
+        future = Future()
+        new_value = not future.cell_time_objects
+        future.cell_time_objects = new_value
+        self.assertEqual(future.cell_time_objects, new_value)
+
+    def invalid_attribute(self):
+        future = Future()
+        with self.assertRaises(AttributeError):
+            future.numberwang = 7
+
+
+class Test_context(tests.IrisTest):
+    def test_no_args(self):
+        future = Future(cell_time_objects=False)
+        self.assertFalse(future.cell_time_objects)
+        with future.context():
+            self.assertFalse(future.cell_time_objects)
+            future.cell_time_objects = True
+            self.assertTrue(future.cell_time_objects)
+        self.assertFalse(future.cell_time_objects)
+
+    def test_with_arg(self):
+        future = Future(cell_time_objects=False)
+        self.assertFalse(future.cell_time_objects)
+        with future.context(cell_time_objects=True):
+            self.assertTrue(future.cell_time_objects)
+        self.assertFalse(future.cell_time_objects)
+
+    def test_invalid_arg(self):
+        future = Future()
+        with self.assertRaises(AttributeError):
+            with future.context(this_does_not_exist=True):
+                pass
+
+
+if __name__ == "__main__":
+    tests.main()
