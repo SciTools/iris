@@ -24,13 +24,13 @@ from iris import Future
 
 
 class Test___setattr__(tests.IrisTest):
-    def valid_attribute(self):
+    def test_valid_attribute(self):
         future = Future()
         new_value = not future.cell_time_objects
         future.cell_time_objects = new_value
         self.assertEqual(future.cell_time_objects, new_value)
 
-    def invalid_attribute(self):
+    def test_invalid_attribute(self):
         future = Future()
         with self.assertRaises(AttributeError):
             future.numberwang = 7
@@ -57,6 +57,9 @@ class Test_context(tests.IrisTest):
         future = Future()
         with self.assertRaises(AttributeError):
             with future.context(this_does_not_exist=True):
+                # Don't need to do anything here... the context manager
+                # will (assuming it's working!) have already raised the
+                # exception we're looking for.
                 pass
 
 

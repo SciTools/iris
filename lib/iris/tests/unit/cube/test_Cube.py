@@ -147,7 +147,7 @@ class Test_summary(tests.IrisTest):
         # iris.FUTURE.cell_time_objects is True.
         cube = Cube(0)
         cube.add_aux_coord(iris.coords.AuxCoord(42, units='hours since epoch'))
-        with mock.patch('iris.FUTURE', cell_time_objects=True):
+        with iris.FUTURE.context(cell_time_objects=True):
             summary = cube.summary()
         self.assertIn('1970-01-02 18:00:00', summary)
 
