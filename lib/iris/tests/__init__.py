@@ -160,16 +160,16 @@ class IrisTest(unittest.TestCase):
 
     def _assert_cml(self, cube_xml, reference_xml, reference_filename):
         self._assert_str_same(reference_xml, cube_xml, reference_filename, 'CML')
-
-    def result_path(self, basename=None, ext=''):
+        
+    def reference_filename(self, basename=None, ext=''):
         """
-        Return the full path to a test result, generated from the \
-        calling file, class and, optionally, method.
+        Return a relative path to a test result, named according to the calling
+        TestCase and its location in the test's submodule structure.
 
         Optional kwargs :
 
-            * basename    - File basename. If omitted, this is \
-                            generated from the calling method.
+            * basename    - Result file basename. If omitted, this is \
+                            generated from the calling method name.
             * ext         - Appended file extension.
 
         """
@@ -190,8 +190,7 @@ class IrisTest(unittest.TestCase):
                     break
         filename = basename + ext
 
-        result = os.path.join(get_result_path(''),
-                              sub_path.replace('test_', ''),
+        result = os.path.join(sub_path.replace('test_', ''),
                               self.__class__.__name__.replace('Test_', ''),
                               filename)
         return result
@@ -217,10 +216,31 @@ class IrisTest(unittest.TestCase):
         the reference CDL file, or creates the reference file if it
         doesn't exist.
 
+        Args:
+        
+            netcdf_filename - The filename under investigation. 
+        
+        Kwargs:
+        
+            reference_filename - Relative subpath in the results folder.
+                                 If omitted, the result path is generated 
+                                 automatically from the calling method's name
+                                 and module heirarchy using
+                                 :meth:`~IrisTest.reference_filename`.
+                                
+            basename - If *reference_filename* is not specified, causing the
+                       result path to be generated automatically, this
+                       keyword can be used to force a particular filename.
+                       Used when multiple tests in a test class wish to
+                       share a single result file.
+                       
+            flags - arguments to *ncdump*.
+
         """
         if reference_filename is None:
-            reference_filename = self.result_path(basename, "cdl")
-
+            reference_filename = self.reference_filename(basename, "cdl")
+        reference_path = get_result_path(reference_filename)
+        
         # Convert the netCDF file to CDL file format.
         cdl_filename = iris.util.create_temp_filename(suffix='.cdl')
 
@@ -248,7 +268,6 @@ class IrisTest(unittest.TestCase):
         cdl = ''.join(lines)
 
         os.remove(cdl_filename)
-        reference_path = get_result_path(reference_filename)
         self._check_same(cdl, reference_path, reference_filename, type_comparison_name='CDL')
 
     def assertCML(self, cubes, reference_filename=None, checksum=True,
@@ -257,17 +276,37 @@ class IrisTest(unittest.TestCase):
         Checks the given cubes match the reference file, or creates the
         reference file if it doesn't exist.
 
+        Args:
+        
+            cubes - The cubes under investigation. 
+        
+        Kwargs:
+        
+            reference_filename - Relative subpath in the results folder.
+                                 If omitted, the result path is generated 
+                                 automatically from the calling method's name
+                                 and module heirarchy using
+                                 :meth:`~IrisTest.reference_filename`.
+                                
+            basename - If *reference_filename* is not specified, causing the
+                       result path to be generated automatically, this
+                       keyword can be used to force a particular filename.
+                       Used when multiple tests in a test class wish to
+                       share a single result file.
+                       
+            checksum - Passed through to :meth:`iris.cube.CubeList.xml`. 
+
         """
         if isinstance(cubes, iris.cube.Cube):
             cubes = [cubes]
         if reference_filename is None:
-            reference_filename = self.result_path(basename, "cml")
+            reference_filename = self.reference_filename(basename, "cml")
+        reference_path = get_result_path(reference_filename)
 
         if isinstance(cubes, (list, tuple)):
             xml = iris.cube.CubeList(cubes).xml(checksum=checksum, order=False)
         else:
             xml = cubes.xml(checksum=checksum, order=False)
-        reference_path = get_result_path(reference_filename)
         self._check_same(xml, reference_path, reference_filename)
 
     def assertTextFile(self, source_filename, reference_filename, desc="text file"):
@@ -314,7 +353,29 @@ class IrisTest(unittest.TestCase):
             logger.warning('Creating result file: %s', reference_path)
             shutil.copy(test_filename, reference_path)
 
-    def assertString(self, string, reference_filename):
+    def assertString(self, string, reference_filename=None, basename=None):
+        """
+        Args:
+        
+            string - The string under investigation. 
+        
+        Kwargs:
+        
+            reference_filename - Relative subpath in the results folder.
+                                 If omitted, the result path is generated 
+                                 automatically from the calling method's name
+                                 and module heirarchy using
+                                 :meth:`~IrisTest.reference_filename`.
+                                
+            basename - If *reference_filename* is not specified, causing the
+                       result path to be generated automatically, this
+                       keyword can be used to force a particular filename.
+                       Used when multiple tests in a test class wish to
+                       share a single result file.
+
+        """
+        if reference_filename is None:
+            reference_filename = self.result_path(basename, "txt")
         reference_path = get_result_path(reference_filename)
         # If the test string is a unicode string, encode as
         # utf-8 before comparison to the reference string.
