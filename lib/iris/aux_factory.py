@@ -714,3 +714,176 @@ class HybridPressureFactory(AuxCoordFactory):
                       'These will be disregarded.'.format(new_coord.name())
                 warnings.warn(msg, UserWarning, stacklevel=2)
             self.surface_pressure = new_coord
+
+
+class HybridCoordinateFactory(AuxCoordFactory):
+    """
+    Defines a hybrid coordinate factory with the formula:
+        c = A * sigma + B * pressure
+
+    """
+
+    def __init__(self, A,# sigma,
+                 B, pressure=None):
+        """
+        Creates a hybrid-height coordinate factory with the formula:
+            c = A * sigma + B * pressure
+
+        Args:
+
+        * A: Coord
+            The coordinate providing the `A` term.
+        * sigma: Coord
+            The coordinate providing the `sigma` term.
+        * B: Coord
+            The coordinate providing the `B` term.
+        * pressure: Coord
+            The coordinate providing the `pressure` term.
+
+        """
+        super(HybridCoordinateFactory, self).__init__()
+
+        if A.nbounds not in (0, 2):
+            raise ValueError('Invalid A coordinate: must have either 0 or'
+                             ' 2 bounds.')
+        if B.nbounds not in (0, 2):
+            raise ValueError('Invalid B coordinate: must have either 0 or'
+                             ' 2 bounds.')
+#        if B.nbounds:
+#            msg = 'Surface pressure coordinate {!r} has bounds.' \
+#                  ' These will be disregarded.'.format(surface_pressure.name())
+#            warnings.warn(msg, UserWarning, stacklevel=2)
+#        if pressure.nbounds:
+#            msg = 'Surface pressure coordinate {!r} has bounds.' \
+#                  ' These will be disregarded.'.format(surface_pressure.name())
+#            warnings.warn(msg, UserWarning, stacklevel=2)
+
+        self.A = A
+#        self.sigma = sigma
+        self.B = B
+        self.surface_pressure = pressure
+
+        self.standard_name = 'air_pressure'
+        self.units = '1'
+#        if delta is None and pressure is None:
+#            raise ValueError('Unable to determine units: no delta or'
+#                             ' surface_pressure available.')
+#        incompatible = (delta and surface_pressure and
+#                        delta.units != surface_pressure.units)
+#        if incompatible:
+#            raise ValueError('Incompatible units: delta and surface_pressure'
+#                             ' must have the same units.')
+#        self.units = (delta and delta.units) or surface_pressure.units
+#        if not self.units.is_convertible('Pa'):
+#            raise ValueError('Invalid units: delta and/or surface_pressure'
+#                             ' must be expressed in pressure units.')
+        self.attributes = {}
+
+    @property
+    def dependencies(self):
+        """
+        Returns a dictionary mapping from constructor argument names to
+        the corresponding coordinates.
+
+        """
+        return {'A': self.A, 'B': self.B, 'pressure': self.surface_pressure}
+
+    def _derive(self, A, B, pressure):
+        return A + B * pressure
+
+    def make_coord(self, coord_dims_func):
+        """
+        Returns a new :class:`iris.coords.AuxCoord` as defined by this
+        factory.
+
+        Args:
+
+        * coord_dims_func:
+            A callable which can return the list of dimensions relevant
+            to a given coordinate.
+            See :meth:`iris.cube.Cube.coord_dims()`.
+
+        """
+        # Which dimensions are relevant?
+        derived_dims = self.derived_dims(coord_dims_func)
+
+        dependency_dims = self._dependency_dims(coord_dims_func)
+
+        # Build a "lazy" points array.
+        nd_points_by_key = self._remap(dependency_dims, derived_dims)
+
+        # Define the function here to obtain a closure.
+        def calc_points():
+            return self._derive(nd_points_by_key['A'],
+                                nd_points_by_key['B'],
+                                nd_points_by_key['surface_pressure'],
+                                )
+        shape = self._shape(nd_points_by_key)
+        points = LazyArray(shape, calc_points)
+
+        bounds = None
+        if ((self.A and self.A.nbounds) or
+                (self.B and self.B.nbounds)):
+            # Build a "lazy" bounds array.
+            nd_values_by_key = self._remap_with_bounds(dependency_dims,
+                                                       derived_dims)
+
+            # Define the function here to obtain a closure.
+            def calc_bounds():
+                A = nd_values_by_key['A']
+                B = nd_values_by_key['B']
+                surface_pressure = nd_values_by_key['surface_pressure']
+                ok_bound_shapes = [(), (1,), (2,)]
+                if A.shape[-1:] not in ok_bound_shapes:
+                    raise ValueError('Invalid delta coordinate bounds.')
+                if B.shape[-1:] not in ok_bound_shapes:
+                    raise ValueError('Invalid sigma coordinate bounds.')
+                if surface_pressure.shape[-1:] not in [(), (1,)]:
+                    warnings.warn('Surface pressure coordinate has bounds. '
+                                  'These are being disregarded.')
+                    surface_pressure_pts = nd_points_by_key['surface_pressure']
+                    surface_pressure_pts_shape = list(
+                        surface_pressure_pts.shape)
+                    surface_pressure = surface_pressure_pts.reshape(
+                        surface_pressure_pts_shape.append(1))
+                return self._derive(A, B, surface_pressure)
+            b_shape = self._shape(nd_values_by_key)
+            bounds = LazyArray(b_shape, calc_bounds)
+
+        hybrid_pressure = iris.coords.AuxCoord(
+            points, standard_name=self.standard_name, long_name=self.long_name,
+            var_name=self.var_name, units=self.units, bounds=bounds,
+            attributes=self.attributes, coord_system=self.coord_system)
+        return hybrid_pressure
+
+    def update(self, old_coord, new_coord=None):
+        """
+        Notifies the factory of the removal/replacement of a coordinate
+        which might be a dependency.
+
+        Args:
+
+        * old_coord:
+            The coordinate to be removed/replaced.
+        * new_coord:
+            If None, any dependency using old_coord is removed, othewise
+            any dependency using old_coord is updated to use new_coord.
+
+        """
+        if self.A is old_coord:
+            if new_coord and new_coord.nbounds not in (0, 2):
+                raise ValueError('Invalid delta coordinate:'
+                                 ' must have either 0 or 2 bounds.')
+            self.A = new_coord
+        elif self.B is old_coord:
+            if new_coord and new_coord.nbounds not in (0, 2):
+                raise ValueError('Invalid sigma coordinate:'
+                                 ' must have either 0 or 2 bounds.')
+            self.B = new_coord
+        elif self.surface_pressure is old_coord:
+            if new_coord and new_coord.nbounds:
+                msg = 'Surface pressure coordinate {!r} has bounds. ' \
+                      'These will be disregarded.'.format(new_coord.name())
+                warnings.warn(msg, UserWarning, stacklevel=2)
+            self.surface_pressure = new_coord
+

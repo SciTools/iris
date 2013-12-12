@@ -22,7 +22,7 @@ import warnings
 
 import numpy as np
 
-from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
+from iris.aux_factory import HybridHeightFactory, HybridPressureFactory, HybridCoordinateFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.fileformats.rules import Factory, Reference, ReferenceTarget
 from iris.fileformats.um_cf_map import LBFC_TO_CF, STASH_TO_CF
@@ -307,6 +307,13 @@ def convert(f):
             (f.lbvc == 19):
         aux_coords_and_dims.append((DimCoord(f.blev, standard_name='air_potential_temperature', units='K', attributes={'positive': 'up'}), None))
 
+    if f.lbvc == 9:
+        aux_coords_and_dims.append((DimCoord(f.lblev, standard_name='model_level_number', attributes={'positive': 'up'}), None))
+        aux_coords_and_dims.append((DimCoord(f.blev, long_name='B value of level', units='m', bounds=[f.brlev, f.brsvd[0]], attributes={'positive': 'up'}), None))
+        aux_coords_and_dims.append((AuxCoord(f.bhlev, long_name='A value of level', bounds=[f.bhrlev, f.brsvd[1]]), None))
+        factories.append(Factory(HybridCoordinateFactory, [{'long_name': 'A value of level'}, {'long_name': 'B value of level'},
+                                                           Reference('surface_air_pressure')]))
+
     if f.lbvc == 65:
         aux_coords_and_dims.append((DimCoord(f.lblev, standard_name='model_level_number', attributes={'positive': 'up'}), None))
         aux_coords_and_dims.append((DimCoord(f.blev, long_name='level_height', units='m', bounds=[f.brlev, f.brsvd[0]], attributes={'positive': 'up'}), None))
@@ -380,6 +387,9 @@ def convert(f):
 
     if f.lbuser[3] == 33:
         references.append(ReferenceTarget('orography', None))
+    
+    if f.lbuser[3] == 409:
+        references.append(ReferenceTarget('surface_air_pressure', None))
 
     return (factories, references, standard_name, long_name, units, attributes,
             cell_methods, dim_coords_and_dims, aux_coords_and_dims)
