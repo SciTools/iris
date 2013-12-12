@@ -533,7 +533,10 @@ class Saver(object):
         self._dataset.sync()
         self._dataset.close()
 
-    def write(self, cube, local_keys=None):
+    def write(self, cube, local_keys=None, unlimited_dimensions=None,
+              zlib=False, complevel=4, shuffle=True, fletcher32=False,
+              contiguous=False, chunksizes=None, endian='native',
+              least_significant_digit=None):
         """
         Wrapper for saving cubes to a NetCDF file.
 
@@ -549,14 +552,73 @@ class Saver(object):
             matching keys will become attributes on the data variable rather
             than global attributes.
 
+        * unlimited_dimensions (container of strings):
+            Explicit list of dimension names to save with the NetCDF dimension
+            variable length 'UNLIMITED'. By default, the outermost dimension is
+            for each cube is used. Only the 'NETCDF4' format supports multiple
+            'UNLIMITED' dimensions.
+
+        * zlib (bool):
+            If `True`, the data will be compressed in the netCDF file using
+            gzip compression (default `False`).
+
+        * complevel (int):
+            An integer between 1 and 9 describing the level of compression
+            desired (default 4). Ignored if `zlib=False`.
+
+        * shuffle (bool):
+            If `True`, the HDF5 shuffle filter will be applied before
+            compressing the data (default `True`). This significantly improves
+            compression. Ignored if `zlib=False`.
+
+        * fletcher32 (bool):
+            If `True`, the Fletcher32 HDF5 checksum algorithm is activated to
+            detect errors. Default `False`.
+
+        * contiguous (bool):
+            If `True`, the variable data is stored contiguously on disk.
+            Default `False`. Setting to `True` for a variable with an unlimited
+            dimension will trigger an error.
+
+        * chunksizes (tuple of int):
+            Used to manually specify the HDF5 chunksizes for each dimension of
+            the variable. A detailed discussion of HDF chunking and I/O
+            performance is available here:
+            http://www.hdfgroup.org/HDF5/doc/H5.user/Chunking.html Basically,
+            you want the chunk size for each dimension to match as closely as
+            possible the size of the data block that users will read from the
+            file. `chunksizes` cannot be set if `contiguous=True`.
+
+        * endian (string):
+            Used to control whether the data is stored in little or big endian
+            format on disk. Possible values are 'little', 'big' or 'native'
+            (default). The library will automatically handle endian conversions
+            when the data is read, but if the data is always going to be read
+            on a computer with the opposite format as the one used to create
+            the file, there may be some performance advantage to be gained by
+            setting the endian-ness.
+
+        * least_significant_digit (int):
+            If `least_significant_digit` is specified, variable data will be
+            truncated (quantized). In conjunction with `zlib=True` this
+            produces 'lossy', but significantly more efficient compression. For
+            example, if `least_significant_digit=1`, data will be quantized
+            using `numpy.around(scale*data)/scale`, where `scale = 2**bits`,
+            and `bits` is determined so that a precision of 0.1 is retained (in
+            this case `bits=4`). From
+            http://www.cdc.noaa.gov/cdc/conventions/cdc_netcdf_standard.shtml:
+            "least_significant_digit -- power of ten of the smallest decimal
+            place in unpacked data that is a reliable value." Default is None,
+            or no quantization, or 'lossless' compression.
+
         Returns:
             None.
 
         .. note::
 
-            The outermost dimension is saved with NetCDF dimension variable
-            length 'UNLIMITED'.  See :func:`iris.util.new_axis` on how to
-            promote scalar coordinates to the outermost dimension.
+            The `zlib`, `complevel`, `shuffle`, `fletcher32`, `contiguous`,
+            `chunksizes` and `endian` keywords are silently ignored for netCDF
+            3 files that do not use HDF5.
 
         """
         if len(cube.aux_factories) > 1:
@@ -575,11 +637,14 @@ class Saver(object):
         dimension_names = self._get_dim_names(cube)
 
         # Create the CF-netCDF data dimensions.
-        self._create_cf_dimensions(dimension_names)
+        self._create_cf_dimensions(dimension_names, unlimited_dimensions)
 
         # Create the associated cube CF-netCDF data variable.
-        cf_var_cube = self._create_cf_data_variable(cube, dimension_names,
-                                                    local_keys)
+        cf_var_cube = self._create_cf_data_variable(
+            cube, dimension_names, local_keys, zlib=zlib, complevel=complevel,
+            shuffle=shuffle, fletcher32=fletcher32, contiguous=contiguous,
+            chunksizes=chunksizes, endian=endian,
+            least_significant_digit=least_significant_digit)
 
         # Add coordinate variables and return factory definitions
         factory_defn = self._add_dim_coords(cube, dimension_names)
@@ -628,29 +693,36 @@ class Saver(object):
         for attr_name in sorted(kwargs):
             setattr(self._dataset, attr_name, kwargs[attr_name])
 
-    def _create_cf_dimensions(self, dimension_names):
+    def _create_cf_dimensions(self, dimension_names,
+                              unlimited_dimensions=None):
         """
         Create the CF-netCDF data dimensions.
-
-        Create the CF-netCDF data dimensions, making the outermost dimension
-        an unlimited dimension.
 
         Args:
 
         * dimension_names (list):
             Names associated with the dimensions of the cube.
 
+        Kwargs:
+
+        * unlimited_dimensions (container of string):
+            List of dimension names to make unlimited. By default, the
+            outermost dimension is made unlimited.
+
         Returns:
             None.
 
         """
-        if dimension_names:
-            if dimension_names[0] not in self._dataset.dimensions:
-                self._dataset.createDimension(dimension_names[0], None)
-        for dim_name in dimension_names[1:]:
+        if unlimited_dimensions is None and dimension_names:
+            unlimited_dimensions = [dimension_names[0]]
+
+        for dim_name in dimension_names:
             if dim_name not in self._dataset.dimensions:
-                self._dataset.createDimension(dim_name,
-                                              self._existing_dim[dim_name])
+                if dim_name in unlimited_dimensions:
+                    size = None
+                else:
+                    size = self._existing_dim[dim_name]
+                self._dataset.createDimension(dim_name, size)
 
     def _add_aux_coords(self, cube, cf_var_cube, dimension_names,
                         factory_defn):
@@ -1203,15 +1275,14 @@ class Saver(object):
             # Refer to grid var
             cf_var_cube.grid_mapping = cs.grid_mapping_name
 
-    def _create_cf_data_variable(self, cube, dimension_names, local_keys=None):
+    def _create_cf_data_variable(self, cube, dimension_names, local_keys=None,
+                                 **kwargs):
         """
         Create CF-netCDF data variable for the cube and any associated grid
         mapping.
 
         Args:
 
-        * dataset (:class:`netCDF4.Dataset`):
-            The CF-netCDF data file being created.
         * cube (:class:`iris.cube.Cube`):
             The associated cube being saved to CF-netCDF file.
         * dimension_names (list):
@@ -1222,6 +1293,9 @@ class Saver(object):
         * local_keys (iterable of strings):
             An interable of cube attribute keys. Any cube attributes
             with matching keys will become attributes on the data variable.
+
+        All other keywords are passed through to the dataset's `createVariable`
+        method.
 
         Returns:
             The newly created CF-netCDF data variable.
@@ -1240,10 +1314,9 @@ class Saver(object):
         data = self._ensure_valid_dtype(cube.data, 'cube', cube)
 
         # Create the cube CF-netCDF data variable with data payload.
-        cf_var = self._dataset.createVariable(cf_name,
-                                              data.dtype.newbyteorder('='),
-                                              dimension_names,
-                                              fill_value=fill_value)
+        cf_var = self._dataset.createVariable(
+            cf_name, data.dtype.newbyteorder('='), dimension_names,
+            fill_value=fill_value, **kwargs)
         cf_var[:] = data
 
         if cube.standard_name:
@@ -1328,7 +1401,10 @@ class Saver(object):
         return '{}_{}'.format(varname, num)
 
 
-def save(cube, filename, netcdf_format='NETCDF4', local_keys=None):
+def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
+         unlimited_dimensions=None, zlib=False, complevel=4, shuffle=True,
+         fletcher32=False, contiguous=False, chunksizes=None, endian='native',
+         least_significant_digit=None):
     """
     Save cube(s) to a netCDF file, given the cube and the filename.
 
@@ -1336,6 +1412,9 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None):
     * The attributes dictionaries on each cube in the saved cube list
       will be compared and common attributes saved as NetCDF global
       attributes where appropriate.
+    * Keyword arguments specifying how to save the data are applied
+      to each cube. To use different settings for different cubes, use
+      the NetCDF Context manager (:class:`~Saver`) directly.
 
     Args:
 
@@ -1357,8 +1436,72 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None):
         matching keys will become attributes on the data variable rather
         than global attributes.
 
+    * unlimited_dimensions (container of strings):
+        Explicit list of dimension names to save with the NetCDF dimension
+        variable length 'UNLIMITED'. By default, the outermost dimension is for
+        each cube is used. Only the 'NETCDF4' format supports multiple
+        'UNLIMITED' dimensions.
+
+    * zlib (bool):
+        If `True`, the data will be compressed in the netCDF file using gzip
+        compression (default `False`).
+
+    * complevel (int):
+        An integer between 1 and 9 describing the level of compression desired
+        (default 4). Ignored if `zlib=False`.
+
+    * shuffle (bool):
+        If `True`, the HDF5 shuffle filter will be applied before compressing
+        the data (default `True`). This significantly improves compression.
+        Ignored if `zlib=False`.
+
+    * fletcher32 (bool):
+        If `True`, the Fletcher32 HDF5 checksum algorithm is activated to
+        detect errors. Default `False`.
+
+    * contiguous (bool):
+        If `True`, the variable data is stored contiguously on disk. Default
+        `False`. Setting to `True` for a variable with an unlimited dimension
+        will trigger an error.
+
+    * chunksizes (tuple of int):
+        Used to manually specify the HDF5 chunksizes for each dimension of the
+        variable. A detailed discussion of HDF chunking and I/O performance is
+        available here: http://www.hdfgroup.org/HDF5/doc/H5.user/Chunking.html
+        Basically, you want the chunk size for each dimension to match as
+        closely as possible the size of the data block that users will read
+        from the file. `chunksizes` cannot be set if `contiguous=True`.
+
+    * endian (string):
+        Used to control whether the data is stored in little or big endian
+        format on disk. Possible values are 'little', 'big' or 'native'
+        (default). The library will automatically handle endian conversions
+        when the data is read, but if the data is always going to be read on a
+        computer with the opposite format as the one used to create the file,
+        there may be some performance advantage to be gained by setting the
+        endian-ness.
+
+    * least_significant_digit (int):
+        If `least_significant_digit` is specified, variable data will be
+        truncated (quantized). In conjunction with `zlib=True` this produces
+        'lossy', but significantly more efficient compression. For example, if
+        `least_significant_digit=1`, data will be quantized using
+        `numpy.around(scale*data)/scale`, where `scale = 2**bits`, and `bits`
+        is determined so that a precision of 0.1 is retained (in this case
+        `bits=4`). From
+        http://www.cdc.noaa.gov/cdc/conventions/cdc_netcdf_standard.shtml:
+        "least_significant_digit -- power of ten of the smallest decimal place
+        in unpacked data that is a reliable value." Default is None, or no
+        quantization, or 'lossless' compression.
+
     Returns:
         None.
+
+    .. note::
+
+        The `zlib`, `complevel`, `shuffle`, `fletcher32`, `contiguous`,
+        `chunksizes` and `endian` keywords are silently ignored for netCDF 3
+        files that do not use HDF5.
 
     .. seealso::
 
@@ -1396,7 +1539,9 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None):
     with Saver(filename, netcdf_format) as sman:
         # Iterate through the cubelist.
         for cube in cubes:
-            sman.write(cube, local_keys)
+            sman.write(cube, local_keys, unlimited_dimensions, zlib, complevel,
+                       shuffle, fletcher32, contiguous, chunksizes, endian,
+                       least_significant_digit)
 
         # Add conventions attribute.
         sman.update_global_attributes(Conventions=_CF_CONVENTIONS_VERSION)

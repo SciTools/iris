@@ -20,6 +20,8 @@
 # importing anything else.
 import iris.tests as tests
 
+import mock
+import netCDF4 as nc
 import numpy as np
 
 import iris
@@ -84,6 +86,52 @@ class Test_write(tests.IrisTest):
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube)
             self.assertCDL(nc_path, basename='endian', flags='')
+
+    def test_zlib(self):
+        cube = self._simple_cube('>f4')
+        with mock.patch('iris.fileformats.netcdf.netCDF4') as api:
+            with Saver('/dummy/path', 'NETCDF4') as saver:
+                saver.write(cube, zlib=True)
+        dataset = api.Dataset.return_value
+        create_var_calls = mock.call.createVariable(
+            'air_pressure_anomaly', np.dtype('float32'), ['dim0', 'dim1'],
+            fill_value=None, shuffle=True, least_significant_digit=None,
+            contiguous=False, zlib=True, fletcher32=False,
+            endian='native', complevel=4, chunksizes=None).call_list()
+        dataset.assert_has_calls(create_var_calls)
+
+    def test_least_significant_digit(self):
+        cube = Cube(np.array([1.23, 4.56, 7.89]),
+                    standard_name='surface_temperature', long_name=None,
+                    var_name='temp', units='K')
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube, least_significant_digit=1)
+            cube_saved = iris.load_cube(nc_path)
+            self.assertEquals(
+                cube_saved.attributes['least_significant_digit'], 1)
+            self.assertFalse(np.all(cube.data == cube_saved.data))
+            self.assertArrayAllClose(cube.data, cube_saved.data, 0.1)
+
+    def test_default_unlimited_dimensions(self):
+        cube = self._simple_cube('>f4')
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube)
+            ds = nc.Dataset(nc_path)
+            self.assertTrue(ds.dimensions['dim0'].isunlimited())
+            self.assertFalse(ds.dimensions['dim1'].isunlimited())
+            ds.close()
+
+    def test_custom_unlimited_dimensions(self):
+        cube = self._simple_cube('>f4')
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube, unlimited_dimensions=['dim0', 'dim1'])
+            ds = nc.Dataset(nc_path)
+            self.assertTrue(ds.dimensions['dim0'].isunlimited())
+            self.assertTrue(ds.dimensions['dim1'].isunlimited())
+            ds.close()
 
 
 if __name__ == "__main__":
