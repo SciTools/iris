@@ -2265,28 +2265,32 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     __pow__ = iris.analysis.maths.exponentiate
     __rpow__ = iris.analysis.maths.reverse_exponentiate
-    __ipow__ = functools.partial(iris.analysis.maths.exponentiate,
-                                 in_place=True)
+    def __ipow__(self, other):
+        return iris.analysis.maths.exponentiate(self, other, in_place=True)
 
     def __add__(self, other):
         return iris.analysis.maths.add(self, other, ignore=True)
     __radd__ = __add__
-    __iadd__ = functools.partial(iris.analysis.maths.add, in_place=True)
+    def __iadd__(self, other):
+        return iris.analysis.maths.add(self, other, in_place=True)
 
     def __sub__(self, other):
         return iris.analysis.maths.subtract(self, other, ignore=True)
     def __rsub__(self, other):
         return -self + other
-    __isub__ = functools.partial(iris.analysis.maths.subtract, in_place=True)
+    def __isub__(self, other):
+        return iris.analysis.maths.subtract(self, other, in_place=True)
 
     __mul__ = iris.analysis.maths.multiply
     __rmul__ = __mul__
-    __imul__ = functools.partial(iris.analysis.maths.multiply, in_place=True)
+    def __imul__(self, other):
+        return iris.analysis.maths.multiply(self, other, in_place=True)
 
     __div__ = iris.analysis.maths.divide
     def __rdiv__(self, other):
         return iris.analysis.maths.reciprocal(self) * other
-    __idiv__ = functools.partial(iris.analysis.maths.divide, in_place=True)
+    def __idiv__(self, other):
+        return iris.analysis.maths.divide(self, other, in_place=True)
     __truediv__ = iris.analysis.maths.divide
 
     __ge__ = iris.analysis.maths.greater_equal
@@ -2298,17 +2302,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     __and__ = iris.analysis.maths.bitwise_and
     __rand__ = iris.analysis.maths.bitwise_and
-    __iand__ = functools.partial(iris.analysis.maths.bitwise_and,
-                                 in_place=True)
+    def __iand__(self, other):
+        return iris.analysis.maths.bitwise_and(self, other, in_place=True)
 
     __or__ = iris.analysis.maths.bitwise_or
     __ror__ = iris.analysis.maths.bitwise_or
-    __ior__ = functools.partial(iris.analysis.maths.bitwise_or, in_place=True)
+    def __ior__(self, other):
+        return iris.analysis.maths.bitwise_or(self, other, in_place=True)
 
     __xor__ = iris.analysis.maths.bitwise_xor
     __rxor__ = iris.analysis.maths.bitwise_xor
-    __ixor__ = functools.partial(iris.analysis.maths.bitwise_xor,
-                                 in_place=True)
+    def __ixor__(self, other):
+        return iris.analysis.maths.bitwise_xor(self, other, in_place=True)
     # END OPERATOR OVERLOADS
 
     def add_history(self, string):

@@ -484,7 +484,7 @@ def _broadcast_cube_coord_data(cube, other, operation_noun, dim=None):
             except iris.exceptions.CoordinateNotFoundError:
                 raise ValueError(("Could not determine dimension for %s. "
                                   "Use %s(cube, coord, dim=dim)")
-                                 % operation_noun)
+                                 % (operation_noun, operation_noun))
 
     if other.ndim != 1:
         raise iris.exceptions.CoordinateMultiDimError(other)
