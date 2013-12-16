@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -87,6 +87,14 @@ class TranslationError(IrisError):
 class IgnoreCubeException(IrisError):
     """
     Raised from a callback function when a cube should be ignored on load.
+
+    """
+    pass
+
+
+class MergeError(IrisError):
+    """
+    Raised when merge is expected to, but fails to, produce a single cube."
 
     """
     pass

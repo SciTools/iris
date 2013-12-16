@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -71,6 +71,37 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
 
         """
         return self.standard_name or self.long_name or self.var_name or default
+
+    def _difference_attrs(self, other):
+        """
+        Return a list of the attributes which make this != other.
+
+        .. note:
+            Must match __eq__ definition, i.e. result == [] IFF self == other.
+
+        """
+        diff_keys = []
+        for field in self._fields:
+            self_field = getattr(self, field)
+            other_field = getattr(other, field)
+            if self_field != other_field:
+                if field == 'attributes':
+                    own_keys = sorted(self.attributes.keys())
+                    if sorted(other.attributes.keys()) != own_keys:
+                        diff_note = 'attributes sets differ.'
+                    else:
+                        diff_attrs = [
+                            key for key in own_keys
+                            if self.attributes[key] != other.attributes[key]]
+                        diff_attrs = ', '.join(diff_attrs)
+                        diff_note = 'attributes differ: {}.'.format(diff_attrs)
+                elif field == 'cell_methods':
+                    diff_note = 'cell_methods differ.'
+                else:
+                    values_str = '{!r} != {!r}'.format(self_field, other_field)
+                    diff_note = '{} differs: {}.'.format(field, values_str)
+                diff_keys.append(diff_note)
+        return diff_keys
 
 
 # The XML namespace to use for CubeML documents
@@ -305,6 +336,35 @@ class CubeList(list):
 
         """
         return self.extract(constraints, strict=True)
+
+    def merge_cube(self):
+        """
+        Merge into a single Cube, or raise an error explaining why it cannot.
+
+        For example::
+
+            >>> cube_1 = iris.cube.Cube([1, 2], attributes={'this':1})
+            >>> cube_1.add_aux_coord(iris.coords.DimCoord([3, 4],
+            ...    long_name='z'), (0,))
+            >>> cube_2 = cube_1.copy()
+            >>> cube_2.coord('z').points[0] = 7
+            >>> single_cube = iris.cube.CubeList([cube_1, cube_2]).merge_cube()
+            ...
+            iris.exceptions.MergeError: Failed to merge into a single cube:
+              auxiliary coordinate "z" has different points.
+
+        """
+        if not self:
+            raise ValueError("can't merge an empty CubeList")
+
+        # Register each of our cubes with a single ProtoCube.
+        proto_cube = iris._merge.ProtoCube(self[0])
+        for cube in self[1:]:
+            proto_cube.register(cube, fail_if_not=True)
+
+        # Extract the merged cube from the ProtoCube.
+        merged_cube = proto_cube.merge()
+        return merged_cube
 
     def merge(self, unique=True):
         """
