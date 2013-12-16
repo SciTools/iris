@@ -306,7 +306,7 @@ def convert(f):
     if \
             (len(f.lbcode) != 5) and \
             (f.lbvc == 19):
-        aux_coords_and_dims.append((DimCoord(f.blev, standard_name='air_potential_temperature', units='K', attributes={'positive': 'down'}), None))
+        aux_coords_and_dims.append((DimCoord(f.blev, standard_name='air_potential_temperature', units='K', attributes={'positive': 'up'}), None))
 
     if f.lbvc == 65:
         aux_coords_and_dims.append((DimCoord(f.lblev, standard_name='model_level_number', attributes={'positive': 'up'}), None))
