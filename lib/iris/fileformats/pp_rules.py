@@ -303,6 +303,11 @@ def convert(f):
             (len(f.lbcode) != 5 or (len(f.lbcode) == 5 and 1 not in [f.lbcode.ix, f.lbcode.iy])):
         aux_coords_and_dims.append((DimCoord(f.blev, long_name='pressure', units='hPa'), None))
 
+    if \
+            (len(f.lbcode) != 5) and \
+            (f.lbvc == 19):
+        aux_coords_and_dims.append((DimCoord(f.blev, standard_name='air_potential_temperature', units='K', attributes={'positive': 'up'}), None))
+
     if f.lbvc == 65:
         aux_coords_and_dims.append((DimCoord(f.lblev, standard_name='model_level_number', attributes={'positive': 'up'}), None))
         aux_coords_and_dims.append((DimCoord(f.blev, long_name='level_height', units='m', bounds=[f.brlev, f.brsvd[0]], attributes={'positive': 'up'}), None))

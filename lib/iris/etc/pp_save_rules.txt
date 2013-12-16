@@ -643,6 +643,23 @@ THEN
     pp.lblev = scalar_coord(cm, 'model_level_number').points[0]
     pp.blev = scalar_coord(cm, 'model_level_number').points[0]
 
+# single potential-temperature level
+IF
+    scalar_coord(cm, 'air_potential_temperature') is not None
+    not scalar_coord(cm, 'air_potential_temperature').bounds
+    # The following `is None` checks ensure this rule does not get run
+    # if any of the previous LBVC setting rules have run. It gives these
+    # rules something of an IF-THEN-ELSE structure.
+    scalar_coord(cm, 'air_pressure') is None
+    scalar_coord(cm, 'depth') is None
+    scalar_coord(cm, 'height') is None
+    scalar_coord(cm, 'pressure') is None
+    scalar_coord(cm, 'model_level_number') is None
+THEN
+    pp.lbvc = 19
+    pp.lblev = scalar_coord(cm, 'air_potential_temperature').points[0]
+    pp.blev = scalar_coord(cm, 'air_potential_temperature').points[0]
+
 # single hybrid_height level (reversed from the equivalent load rule)
 IF
     scalar_coord(cm, 'model_level_number') is not None
