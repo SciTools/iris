@@ -72,6 +72,16 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
         """
         return self.standard_name or self.long_name or self.var_name or default
 
+    def diffs(self, other):
+        diffs = []
+        for field in self._fields:
+            self_field = getattr(self, field)
+            other_field = getattr(other, field)
+            if self_field != other_field:
+                detail = '{!r} != {!r}'.format(self_field, other_field)
+                diffs.append('{} {}'.format(field, detail))
+        return diffs
+
 
 # The XML namespace to use for CubeML documents
 XML_NAMESPACE_URI = "urn:x-iris:cubeml-0.2"
@@ -305,6 +315,23 @@ class CubeList(list):
 
         """
         return self.extract(constraints, strict=True)
+
+    def merged_cube(self):
+        """
+        Return a single Cube or fail.
+
+        """
+        if not self:
+            raise ValueError("can't merge an empty CubeList")
+
+        # Register each of our cubes with a single ProtoCube.
+        proto_cube = iris._merge.ProtoCube(self[0])
+        for cube in self[1:]:
+            proto_cube.register(cube, or_fail=True)
+
+        # Extract the merged cube from the ProtoCube.
+        merged_cube = proto_cube.merge()
+        return merged_cube
 
     def merge(self, unique=True):
         """

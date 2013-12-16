@@ -1,0 +1,8 @@
+cube differences:
+  data_shape: (3,) != (2,)
+  data_type: int64 != int8
+  mdi: None != 57
+  cube.standard_name 'air_temperature' != 'air_pressure'
+  cube.var_name 'Arthur' != 'Nudge'
+  cube.attributes {'mint': 'thin'} != {'mint': 'waffer-thin', 'stuffed': 'yes'}
+  cube.cell_methods () != (CellMethod(method='monty', coord_names=('python',), intervals=(), comments=()),)

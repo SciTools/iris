@@ -23,6 +23,7 @@ Typically the cube merge process is handled by
 """
 from collections import namedtuple
 from copy import deepcopy
+import warnings
 
 import numpy as np
 import numpy.ma as ma
@@ -214,6 +215,53 @@ class _CoordSignature(namedtuple('CoordSignature',
         A list of :class:`_FactoryDefn` instances.
 
     """
+    def match(self, other, or_fail=False, fail_verbose=False):
+
+        def get_diffs(a, b):
+            diffs = [i for i in a if not i in b]
+            diffs.extend([i for i in b if not i in a])
+            return diffs
+
+        match = self == other
+        if or_fail and not match:
+            msg = 'coord differences:\n'
+
+            if self.scalar_defns != other.scalar_defns:
+                diffs = get_diffs(self.scalar_defns, other.scalar_defns)
+                for diff in diffs:
+                    if fail_verbose:
+                        detail = str(diff)
+                    else:
+                        detail = (diff.standard_name
+                                  or diff.long_name or diff.var_name)
+                    msg += '  scalar coord: {}\n'.format(detail)
+            self_vdcd = self.vector_dim_coords_and_dims
+            other_vdcd = other.vector_dim_coords_and_dims
+            if self_vdcd != other_vdcd:
+                diffs = get_diffs(self_vdcd, other_vdcd)
+                for diff in diffs:
+                    if fail_verbose:
+                        detail = str(diff)
+                    else:
+                        detail = (diff[0].standard_name
+                                  or diff[0].long_name or diff[0].var_name)
+                    msg += '  dim coord: {}\n'.format(detail)
+            self_vacd = self.vector_aux_coords_and_dims
+            other_vacd = other.vector_aux_coords_and_dims
+            if self_vacd != other_vacd:
+                diffs = get_diffs(self_vacd, other_vacd)
+                for diff in diffs:
+                    if fail_verbose:
+                        detail = str(diff)
+                    else:
+                        detail = (diff[0].standard_name
+                                  or diff[0].long_name or diff[0].var_name)
+                    msg += '  aux coord: {}\n'.format(detail)
+            if self.factory_defns != other.factory_defns:
+                msg += '  factory_defn: different\n'
+
+            raise iris.exceptions.MergeError(msg)
+        return match
 
 
 class _CubeSignature(namedtuple('CubeSignature',
@@ -242,6 +290,30 @@ class _CubeSignature(namedtuple('CubeSignature',
         :class:`iris.cube.Cube`.
 
     """
+    def match(self, other, or_fail=False):
+        match = self == other
+        if or_fail and not match:
+            msg = 'cube differences:\n'
+
+            if self.data_shape != other.data_shape:
+                msg += '  data_shape: {} != {}\n'.format(self.data_shape,
+                                                         other.data_shape)
+            if self.data_manager != other.data_manager:
+                msg += '  data_manager: different\n'
+
+            if self.data_type != other.data_type:
+                msg += '  data_type: {} != {}\n'.format(self.data_type,
+                                                        other.data_type)
+            if self.mdi != other.mdi:
+                msg += '  mdi: {} != {}\n'.format(self.mdi, other.mdi)
+
+            if self.defn != other.defn:
+                defn_diffs = self.defn.diffs(other.defn)
+                for defn_diff in defn_diffs:
+                    msg += '  cube.{}\n'.format(defn_diff)
+
+            raise iris.exceptions.MergeError(msg)
+        return match
 
 
 class _Skeleton(namedtuple('Skeleton',
@@ -1038,7 +1110,7 @@ class ProtoCube(object):
 
         return merged_cubes
 
-    def register(self, cube):
+    def register(self, other_cube, or_fail=False, fail_verbose=False):
         """
         Add a compatible :class:`iris.cube.Cube` as a source-cube for
         merging under this :class:`ProtoCube`.
@@ -1049,25 +1121,36 @@ class ProtoCube(object):
 
         Args:
 
-        * cube:
+        * other_cube:
             Candidate :class:`iris.cube.Cube` to be associated with
             this :class:`ProtoCube`.
+
+        Kwargs:
+
+        * or_fail:
+            Raise a MergeError if registration fails. Default = False.
+
+        * fail_verbose
+            If raising a MergeError, provide verbose coordinate information.
+            Default = False.
 
         Returns:
             True iff the :class:`iris.cube.Cube` is compatible with
             this :class:`ProtoCube`.
 
         """
-        match = self._cube_signature == self._build_signature(cube)
+        other_cube_signature = self._build_signature(other_cube)
+        match = self._cube_signature.match(other_cube_signature, or_fail)
 
         if match:
-            coord_payload = self._extract_coord_payload(cube)
+            coord_payload = self._extract_coord_payload(other_cube)
             signature = coord_payload.as_signature()
-            match = self._coord_signature == signature
+            match = self._coord_signature.match(signature,
+                                                or_fail, fail_verbose)
 
         if match:
             # Register the cube as a source-cube for this ProtoCube.
-            self._add_cube(cube, coord_payload)
+            self._add_cube(other_cube, coord_payload)
 
         return match
 
