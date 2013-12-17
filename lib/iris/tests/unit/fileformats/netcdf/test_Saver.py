@@ -49,7 +49,7 @@ class Test_write(tests.IrisTest):
         # Create a Cube with a transverse Mercator coordinate system.
         ellipsoid = GeogCS(6377563.396, 6356256.909)
         cube = self._transverse_mercator_cube(ellipsoid)
-        with self.temp_filename('nc') as nc_path:
+        with self.temp_filename('.nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube)
             self.assertCDL(nc_path)
@@ -57,7 +57,7 @@ class Test_write(tests.IrisTest):
     def test_transverse_mercator_no_ellipsoid(self):
         # Create a Cube with a transverse Mercator coordinate system.
         cube = self._transverse_mercator_cube()
-        with self.temp_filename('nc') as nc_path:
+        with self.temp_filename('.nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube)
             self.assertCDL(nc_path)
@@ -74,7 +74,7 @@ class Test_write(tests.IrisTest):
     def test_little_endian(self):
         # Create a Cube with little-endian data.
         cube = self._simple_cube('<f4')
-        with self.temp_filename('nc') as nc_path:
+        with self.temp_filename('.nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube)
             self.assertCDL(nc_path, basename='endian', flags='')
@@ -82,7 +82,7 @@ class Test_write(tests.IrisTest):
     def test_big_endian(self):
         # Create a Cube with big-endian data.
         cube = self._simple_cube('>f4')
-        with self.temp_filename('nc') as nc_path:
+        with self.temp_filename('.nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube)
             self.assertCDL(nc_path, basename='endian', flags='')
@@ -104,7 +104,7 @@ class Test_write(tests.IrisTest):
         cube = Cube(np.array([1.23, 4.56, 7.89]),
                     standard_name='surface_temperature', long_name=None,
                     var_name='temp', units='K')
-        with self.temp_filename('nc') as nc_path:
+        with self.temp_filename('.nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube, least_significant_digit=1)
             cube_saved = iris.load_cube(nc_path)
@@ -115,7 +115,7 @@ class Test_write(tests.IrisTest):
 
     def test_default_unlimited_dimensions(self):
         cube = self._simple_cube('>f4')
-        with self.temp_filename('nc') as nc_path:
+        with self.temp_filename('.nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube)
             ds = nc.Dataset(nc_path)
@@ -125,7 +125,7 @@ class Test_write(tests.IrisTest):
 
     def test_no_unlimited_dimensions(self):
         cube = self._simple_cube('>f4')
-        with self.temp_filename('nc') as nc_path:
+        with self.temp_filename('.nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube, unlimited_dimensions=[])
             ds = nc.Dataset(nc_path)
@@ -135,7 +135,7 @@ class Test_write(tests.IrisTest):
 
     def test_invalid_unlimited_dimensions(self):
         cube = self._simple_cube('>f4')
-        with self.temp_filename('nc') as nc_path:
+        with self.temp_filename('.nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 # should not raise an exception
                 saver.write(cube, unlimited_dimensions=['not_found'])
@@ -145,7 +145,7 @@ class Test_write(tests.IrisTest):
         unlimited_dimensions = ['projection_y_coordinate',
                                 'projection_x_coordinate']
         # test coordinates by name
-        with self.temp_filename('nc') as nc_path:
+        with self.temp_filename('.nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube, unlimited_dimensions=unlimited_dimensions)
             ds = nc.Dataset(nc_path)
@@ -153,7 +153,7 @@ class Test_write(tests.IrisTest):
                 self.assertTrue(ds.dimensions[dim].isunlimited())
             ds.close()
         # test coordinate arguments
-        with self.temp_filename('nc') as nc_path:
+        with self.temp_filename('.nc') as nc_path:
             coords = [cube.coord(dim) for dim in unlimited_dimensions]
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube, unlimited_dimensions=coords)

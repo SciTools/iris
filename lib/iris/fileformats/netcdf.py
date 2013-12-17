@@ -718,8 +718,9 @@ class Saver(object):
 
         """
         unlimited_dim_names = []
-        if unlimited_dimensions is None and dimension_names:
-            unlimited_dim_names.append(dimension_names[0])
+        if unlimited_dimensions is None:
+            if dimension_names:
+                unlimited_dim_names.append(dimension_names[0])
         else:
             for coord in unlimited_dimensions:
                 try:
