@@ -104,7 +104,7 @@ class Test_write(tests.IrisTest):
         cube = Cube(np.array([1.23, 4.56, 7.89]),
                     standard_name='surface_temperature', long_name=None,
                     var_name='temp', units='K')
-        with self.temp_filename('.nc') as nc_path:
+        with self.temp_filename('nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube, least_significant_digit=1)
             cube_saved = iris.load_cube(nc_path)
@@ -115,7 +115,7 @@ class Test_write(tests.IrisTest):
 
     def test_default_unlimited_dimensions(self):
         cube = self._simple_cube('>f4')
-        with self.temp_filename('.nc') as nc_path:
+        with self.temp_filename('nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube)
             ds = nc.Dataset(nc_path)
@@ -123,14 +123,43 @@ class Test_write(tests.IrisTest):
             self.assertFalse(ds.dimensions['dim1'].isunlimited())
             ds.close()
 
-    def test_custom_unlimited_dimensions(self):
+    def test_no_unlimited_dimensions(self):
         cube = self._simple_cube('>f4')
-        with self.temp_filename('.nc') as nc_path:
+        with self.temp_filename('nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
-                saver.write(cube, unlimited_dimensions=['dim0', 'dim1'])
+                saver.write(cube, unlimited_dimensions=[])
             ds = nc.Dataset(nc_path)
-            self.assertTrue(ds.dimensions['dim0'].isunlimited())
-            self.assertTrue(ds.dimensions['dim1'].isunlimited())
+            for dim in ds.dimensions.itervalues():
+                self.assertFalse(dim.isunlimited())
+            ds.close()
+
+    def test_invalid_unlimited_dimensions(self):
+        cube = self._simple_cube('>f4')
+        with self.temp_filename('nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                # should not raise an exception
+                saver.write(cube, unlimited_dimensions=['not_found'])
+
+    def test_custom_unlimited_dimensions(self):
+        cube = self._transverse_mercator_cube()
+        unlimited_dimensions = ['projection_y_coordinate',
+                                'projection_x_coordinate']
+        # test coordinates by name
+        with self.temp_filename('nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube, unlimited_dimensions=unlimited_dimensions)
+            ds = nc.Dataset(nc_path)
+            for dim in unlimited_dimensions:
+                self.assertTrue(ds.dimensions[dim].isunlimited())
+            ds.close()
+        # test coordinate arguments
+        with self.temp_filename('nc') as nc_path:
+            coords = [cube.coord(dim) for dim in unlimited_dimensions]
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube, unlimited_dimensions=coords)
+            ds = nc.Dataset(nc_path)
+            for dim in unlimited_dimensions:
+                self.assertTrue(ds.dimensions[dim].isunlimited())
             ds.close()
 
 

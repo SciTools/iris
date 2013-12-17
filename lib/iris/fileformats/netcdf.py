@@ -552,11 +552,14 @@ class Saver(object):
             matching keys will become attributes on the data variable rather
             than global attributes.
 
-        * unlimited_dimensions (container of strings):
-            Explicit list of dimension names to save with the NetCDF dimension
-            variable length 'UNLIMITED'. By default, the outermost dimension is
-            for each cube is used. Only the 'NETCDF4' format supports multiple
-            'UNLIMITED' dimensions.
+        * unlimited_dimensions (iterable of strings and/or
+          :class:`iris.coords.Coord` objects):
+            Explicit list of coordinate names (or coordinate objects) to save
+            with the NetCDF dimension variable length 'UNLIMITED'. By default,
+            the outermost (first) dimension for each cube is used. Only the
+            'NETCDF4' format supports multiple 'UNLIMITED' dimensions. To save
+            no unlimited dimensions, use `unlimited_dimensions=[]` (an empty
+            list).
 
         * zlib (bool):
             If `True`, the data will be compressed in the netCDF file using
@@ -637,7 +640,7 @@ class Saver(object):
         dimension_names = self._get_dim_names(cube)
 
         # Create the CF-netCDF data dimensions.
-        self._create_cf_dimensions(dimension_names, unlimited_dimensions)
+        self._create_cf_dimensions(cube, dimension_names, unlimited_dimensions)
 
         # Create the associated cube CF-netCDF data variable.
         cf_var_cube = self._create_cf_data_variable(
@@ -693,32 +696,45 @@ class Saver(object):
         for attr_name in sorted(kwargs):
             setattr(self._dataset, attr_name, kwargs[attr_name])
 
-    def _create_cf_dimensions(self, dimension_names,
+    def _create_cf_dimensions(self, cube, dimension_names,
                               unlimited_dimensions=None):
         """
         Create the CF-netCDF data dimensions.
 
         Args:
 
-        * dimension_names (list):
-            Names associated with the dimensions of the cube.
+        * cube (:class:`iris.cube.Cube`):
+            A :class:`iris.cube.Cube` in which to lookup coordinates.
 
         Kwargs:
 
-        * unlimited_dimensions (container of string):
-            List of dimension names to make unlimited. By default, the
+        * unlimited_dimensions (iterable of strings and/or
+          :class:`iris.coords.Coord` objects):
+            List of coordinates to make unlimited. By default, the
             outermost dimension is made unlimited.
 
         Returns:
             None.
 
         """
+        unlimited_dim_names = []
         if unlimited_dimensions is None and dimension_names:
-            unlimited_dimensions = [dimension_names[0]]
+            unlimited_dim_names.append(dimension_names[0])
+        else:
+            for coord in unlimited_dimensions:
+                try:
+                    if not isinstance(coord, iris.coords.Coord):
+                        coord = cube.coord(coord)
+                    dim_name = self._get_coord_variable_name(cube, coord)
+                    unlimited_dim_names.append(dim_name)
+                except iris.exceptions.CoordinateNotFoundError:
+                    # coordinate isn't used for this cube, but it might be
+                    # used for a different one
+                    pass
 
         for dim_name in dimension_names:
             if dim_name not in self._dataset.dimensions:
-                if dim_name in unlimited_dimensions:
+                if dim_name in unlimited_dim_names:
                     size = None
                 else:
                     size = self._existing_dim[dim_name]
@@ -1436,11 +1452,13 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         matching keys will become attributes on the data variable rather
         than global attributes.
 
-    * unlimited_dimensions (container of strings):
-        Explicit list of dimension names to save with the NetCDF dimension
-        variable length 'UNLIMITED'. By default, the outermost dimension is for
-        each cube is used. Only the 'NETCDF4' format supports multiple
-        'UNLIMITED' dimensions.
+    * unlimited_dimensions (iterable of strings and/or
+      :class:`iris.coords.Coord` objects):
+        Explicit list of coordinate names (or coordinate objects) to save with
+        the NetCDF dimension variable length 'UNLIMITED'. By default, the
+        outermost (first) dimension for each cube is used. Only the 'NETCDF4'
+        format supports multiple 'UNLIMITED' dimensions. To save no unlimited
+        dimensions, use `unlimited_dimensions=[]` (an empty list).
 
     * zlib (bool):
         If `True`, the data will be compressed in the netCDF file using gzip
