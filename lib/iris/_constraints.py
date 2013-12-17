@@ -20,6 +20,7 @@ Provides objects for building up expressions useful for pattern matching.
 """
 import collections
 import operator
+import warnings
 
 import numpy as np
 
@@ -469,6 +470,12 @@ class TimeConstraint(Constraint):
         Creates a TimeConstraint which can be used for filtering
         cube loading or cube list extraction.
 
+        .. note::
+            .. deprecated:: 1.6
+                Please use the 'cell_datetime_objects' option in
+                :data:`iris.FUTURE` instead. Refer to
+                :ref:`using-time-constraints`.
+
         .. note:: In this early version, only hour-of-day is supported.
 
         Kwargs:
@@ -490,6 +497,11 @@ class TimeConstraint(Constraint):
             constraint to a Cube.
 
         """
+        warnings.warn('Use of iris.TimeConstraint has been deprecated. Please '
+                      'use the "cell_datetime_objects" runtime option '
+                      'instead, which can be enabled via iris.FUTURE.',
+                      UserWarning
+                      )
         if hour is not None:
             hour = int(hour)
             if hour < 0 or hour > 23:

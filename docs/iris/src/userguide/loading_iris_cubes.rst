@@ -163,15 +163,6 @@ a specific ``model_level_number``::
     level_10 = iris.Constraint(model_level_number=10)
     cubes = iris.load(filename, level_10)
 
-When dealing with time coordinates, it can sometimes be more convenient
-to use the :class:`iris.TimeConstraint` class. For example, to constrain
-the load to match only data for 11:00::
-
-    filename = iris.sample_data_path('uk_hires.pp')
-    hour_11 = iris.TimeConstraint(hour=11)
-    cubes = iris.load(filename, hour_11)
-
-
 Constraints can be combined using ``&`` to represent a more restrictive 
 constraint to ``load``::
 
@@ -220,6 +211,86 @@ then specific STASH codes can be filtered::
 
     For advanced usage there are further examples in the 
     :class:`iris.Constraint` reference documentation. 
+
+.. _using-time-constraints:
+
+Constraining on Time
+^^^^^^^^^^^^^^^^^^^^
+Iris follows NetCDF-CF rules in representing time coordinate values as pure
+numbers, where the relationship to calendar times is specified by the units
+(e.g. "hours since 1970-01-01 00:00:00").
+However, when constraining by time we usually want to test calendar-related
+aspects such as hours of the day or months of the year.
+This is obviously awkward to express as a test on time coordinate values, so Iris
+provides special features to facilitate this:
+
+Firstly, Iris can be configured so that when it evaluates Constraint
+expressions, it will convert time-coordinate values (points and bounds) from
+pure numbers into :class:`datetime.datetime`-like objects for calendar-based
+testing.  As this feature is not backwards compatible, it must be explicitly
+enabled by setting an option in :class:`iris.Future` (see documentation):
+
+    >>> filename = iris.sample_data_path('uk_hires.pp')
+    >>> cons_name = iris.Constraint('air_potential_temperature')
+    >>> cube_all = iris.load_cube(filename, cons_name)
+    >>> print 'All times :\n', cube_all.coord('time')
+    All times :
+    DimCoord([2009-11-19 10:00:00, 2009-11-19 11:00:00, 2009-11-19 12:00:00], standard_name='time', calendar='gregorian')
+    >>> hour_11 = iris.Constraint(time=lambda cell: cell.point.hour == 11)
+    >>> with iris.FUTURE.context(cell_datetime_objects=True):
+    ...     cube_11 = iris.load_cube(filename, cons_name & hour_11)
+    >>> print 'Selected times :\n', cube_11.coord('time')
+    Selected times :
+    DimCoord([2009-11-19 11:00:00], standard_name='time', calendar='gregorian')
+
+Secondly, the :class:`iris.time` module provides flexible time comparison
+facilities.  An :class:`iris.time.PartialDateTime` object can be compared to
+objects such as :class:`datetime.datetime` instances, and this comparison will
+then test only those 'aspects' which the PartialDateTime instance defines:
+
+    >>> import datetime
+    >>> from iris.time import PartialDateTime as Pdt
+    >>> dt = datetime.datetime(2011, 3, 7)
+    >>> print dt > Pdt(month=2)
+    True
+    >>> print dt != Pdt(day=7)
+    False
+    >>> print dt == Pdt(month=3) and dt < Pdt(day=4)
+    False
+    >>> print dt == Pdt(month=3) and dt < Pdt(month=6, day=4)
+    True
+    >>> 
+
+These two facilities can be combined to provide straightforward calendar-based
+time selections when loading or extracting data:
+
+>>> file_path = iris.sample_data_path('SOI_Darwin.nc')
+>>> cube_all = iris.load_cube(file_path)
+>>> print 'All times == months 1866-2013:\n', cube_all.coord('time')
+All times == months 1866-2013:
+DimCoord([1866-01-01 00:00:00, 1866-02-01 00:00:00, 1866-03-01 00:00:00, ...,
+       2013-10-01 00:00:00, 2013-11-01 00:00:00, 2013-12-01 00:00:00], standard_name=u'time', calendar=u'gregorian', var_name='time')
+>>> spring_start = Pdt(month=3, day=20)
+>>> spring_end = Pdt(month=6, day=21)
+>>> constrain_spring = iris.Constraint(time=lambda cell: cell.point >= spring_start and cell.point < spring_end)
+>>> with iris.FUTURE.context(cell_datetime_objects=True):
+...     selected = iris.load_cube(file_path, constrain_spring)
+... 
+>>> print 'Selected times == spring dates:\n', selected.coord('time')[:15]
+Selected times == spring dates:
+DimCoord([1866-04-01 00:00:00, 1866-05-01 00:00:00, 1866-06-01 00:00:00,
+       1867-04-01 00:00:00, 1867-05-01 00:00:00, 1867-06-01 00:00:00,
+       1868-04-01 00:00:00, 1868-05-01 00:00:00, 1868-06-01 00:00:00,
+       1869-04-01 00:00:00, 1869-05-01 00:00:00, 1869-06-01 00:00:00,
+       1870-04-01 00:00:00, 1870-05-01 00:00:00, 1870-06-01 00:00:00], standard_name=u'time', calendar=u'gregorian', var_name='time')
+>>> 
+
+.. note::
+
+    The limited scope of the 'cell_datetime_objects' feature does not
+    provide for cells *themselves* to test against PartialDateTime objects,
+    only their points or bounds.  So, for instance, it is **not** yet possible
+    to write simply ```Constraint(time=PartialDateTime(hour=11)))```.
 
 
 Strict loading

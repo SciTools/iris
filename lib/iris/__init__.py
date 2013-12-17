@@ -117,7 +117,7 @@ __version__ = '1.6.0-dev'
 # Restrict the names imported when using "from iris import *"
 __all__ = ['load', 'load_cube', 'load_cubes', 'load_raw',
            'save', 'Constraint', 'AttributeConstraint', 'TimeConstraint',
-           'sample_data_path', 'site_configuration', 'FUTURE']
+           'sample_data_path', 'site_configuration', 'Future', 'FUTURE']
 
 
 # When required, log the usage of Iris.
@@ -131,35 +131,36 @@ TimeConstraint = iris._constraints.TimeConstraint
 
 
 class Future(threading.local):
-    """
-    Run-time configuration options.
-
-    To adjust the values simply update the relevant attribute from
-    within your code. For example::
-
-        iris.FUTURE.cell_datetime_objects = True
-
-    If Iris code is executed with multiple threads, note the values of
-    these options are thread-specific.
-
-    Currently, the only option available is `cell_datetime_objects` which
-    controls whether the :meth:`iris.coords.Coord.cell()` method returns
-    time coordinate values as simple numbers or as time objects with
-    attributes for year, month, day, etc. In particular, this allows one
-    to express certain time constraints using a simpler, more
-    transparent syntax, such as::
-
-        # To select all data defined at midday.
-        Constraint(time=lambda cell: cell.point.hour == 12)
-
-        # To ignore the 29th of February.
-        Constraint(time=lambda cell: cell.point.day != 29 and
-                                     cell.point.month != 2)
-
-    """
+    """Run-time configuration controller."""
 
     def __init__(self, cell_datetime_objects=False):
-        """This one's for the init"""
+        """
+        A container for run-time options controls.
+
+        To adjust the values simply update the relevant attribute from
+        within your code. For example::
+
+            iris.FUTURE.cell_datetime_objects = True
+
+        If Iris code is executed with multiple threads, note the values of
+        these options are thread-specific.
+
+        Currently, the only option available is `cell_datetime_objects` which
+        controls whether the :meth:`iris.coords.Coord.cell()` method returns
+        time coordinate values as simple numbers or as time objects with
+        attributes for year, month, day, etc. In particular, this allows one
+        to express certain time constraints using a simpler, more
+        transparent syntax, such as::
+
+            # To select all data defined at midday.
+            Constraint(time=lambda cell: cell.point.hour == 12)
+
+            # To ignore the 29th of February.
+            Constraint(time=lambda cell: cell.point.day != 29 and
+                                         cell.point.month != 2)
+
+        For more details, see :ref:`using-time-constraints`.
+        """
         self.__dict__['cell_datetime_objects'] = cell_datetime_objects
 
     def __repr__(self):
@@ -205,6 +206,7 @@ class Future(threading.local):
         self.__dict__.update(current_state)
 
 
+#: Object containing all the Iris run-time options.
 FUTURE = Future()
 
 
