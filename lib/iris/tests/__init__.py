@@ -29,6 +29,7 @@ switched to "tkagg" to allow the interactive visual inspection of
 graphical test results.
 
 """
+import codecs
 import collections
 import contextlib
 import difflib
@@ -328,14 +329,18 @@ class IrisTest(unittest.TestCase):
 
     def _check_same(self, item, reference_path, reference_filename, type_comparison_name='CML'):
         if os.path.isfile(reference_path):
-            reference = ''.join(open(reference_path, 'r').readlines())
+            with codecs.open(reference_path, 'rb', encoding='utf-8') as fh:
+                reference = ''.join(fh.readlines())
             self._assert_str_same(reference, item, reference_filename, type_comparison_name)
         else:
             self._ensure_folder(reference_path)
             logger.warning('Creating result file: %s', reference_path)
-            open(reference_path, 'w').writelines(
-                part.encode('utf-8') if isinstance(part, unicode) else part
-                for part in item)
+            with codecs.open(reference_path, 'wb', encoding='utf-8') as fh:
+                if isinstance(item, basestring) or \
+                        not isinstance(item, collections.Iterable):
+                    fh.write(item)
+                else:
+                    fh.writelines(item)
 
     def assertXMLElement(self, obj, reference_filename):
         """
