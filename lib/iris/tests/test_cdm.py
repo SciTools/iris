@@ -21,8 +21,10 @@ Test cube indexing, slicing, and extracting, and also the dot graphs.
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
+from contextlib import contextmanager
 import os
 import re
+import sys
 import warnings
 
 import numpy as np
@@ -235,6 +237,10 @@ class TestCubeStringRepresentations(IrisDotTest):
     def setUp(self):
         path = tests.get_data_path(('PP', 'simple_pp', 'global.pp'))
         self.cube_2d = iris.load_cube(path)
+        # Generate the unicode cube up here now it's used in two tests.
+        unicode_str = unichr(40960) + u'abcd' + unichr(1972)
+        self.unicode_cube = iris.tests.stock.simple_1d()
+        self.unicode_cube.attributes['source'] = unicode_str
 
     def test_dot_simple_pp(self):
         # Test dot output of a 2d cube loaded from pp.
@@ -326,14 +332,31 @@ class TestCubeStringRepresentations(IrisDotTest):
         cube.add_aux_coord(aux, 0)
         self.assertString(str(cube), ('cdm', 'str_repr', 'simple.__str__.txt'))
 
+    @contextmanager
+    def unicode_encoding_change(self, new_encoding):
+        default_encoding = sys.getdefaultencoding()
+        reload(sys).setdefaultencoding(new_encoding)
+        yield
+        sys.setdefaultencoding(default_encoding)
+
+    def test_adjusted_default_encoding(self):
+        # Test cube str representation on non-system-default encodings.
+        # Doing this requires access to a sys method that is removed by default
+        # so reload sys to restore access.
+        # Note this does not currently work with utf-16 or utf-32.
+        with self.unicode_encoding_change('utf-8'):
+            self.assertString(str(self.unicode_cube),
+                              ('cdm', 'str_repr',
+                               'unicode_attribute.__str__.utf8.txt'))
+        with self.unicode_encoding_change('ascii'):
+            self.assertString(str(self.unicode_cube),
+                              ('cdm', 'str_repr',
+                               'unicode_attribute.__str__.ascii.txt'))
+
     def test_unicode_attribute(self):
-        unicode_str = unichr(40960) + u'abcd' + unichr(1972)
-        cube = iris.tests.stock.simple_1d()
-        cube.attributes['source'] = unicode_str
-        self.assertString(str(cube), ('cdm', 'str_repr',
-                                      'unicode_attribute.__str__.txt'))
-        self.assertString(unicode(cube), ('cdm', 'str_repr',
-                                          'unicode_attribute.__unicode__.txt'))
+        self.assertString(
+            unicode(self.unicode_cube), ('cdm', 'str_repr',
+                                         'unicode_attribute.__unicode__.txt'))
 
 
 @iris.tests.skip_data
