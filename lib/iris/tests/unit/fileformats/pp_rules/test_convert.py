@@ -23,6 +23,8 @@ import iris.tests as tests
 import mock
 import types
 
+import numpy as np
+
 from iris.fileformats.pp_rules import convert
 from iris.util import guess_coord_axis
 from iris.fileformats.pp import SplittableInt
@@ -31,41 +33,97 @@ import iris.unit
 
 
 class TestLBVC(tests.IrisTest):
-    def test_soil_levels(self):
-        field = mock.MagicMock(lbvc=6, lblev=1234)
+    @staticmethod
+    def _is_potm_level_coord(coord):
+        return (coord.standard_name == 'air_potential_temperature' and
+                coord.attributes['positive'] == 'up')
+
+    @staticmethod
+    def _is_model_level_number_coord(coord):
+        return (coord.standard_name == 'model_level_number' and
+                coord.units.is_dimensionless() and
+                coord.attributes['positive'] == 'up')
+
+    @staticmethod
+    def _is_reference_pressure_coord(coord):
+        return (coord.name() == 'reference_pressure' and
+                coord.units == 'Pa')
+
+    @staticmethod
+    def _is_sigma_coord(coord):
+        return (coord.name() == 'sigma' and
+                coord.units.is_dimensionless())
+
+    @staticmethod
+    def is_soil_model_level_number_coord(coord):
+        return (coord.long_name == 'soil_model_level_number' and
+                coord.units.is_dimensionless() and
+                coord.attributes['positive'] == 'down')
+
+    def _test_for_coord(self, field, coord_predicate, expected_points,
+                        expected_bounds):
         (factories, references, standard_name, long_name, units,
          attributes, cell_methods, dim_coords_and_dims,
          aux_coords_and_dims) = convert(field)
 
-        def is_soil_model_level_coord(coord_and_dims):
-            coord, dims = coord_and_dims
-            return coord.long_name == 'soil_model_level_number'
+        # Check for one and only one matching coordinate.    
+        matching_coords = [coord for coord, _ in aux_coords_and_dims if
+                           coord_predicate(coord)]
+        self.assertEqual(len(matching_coords), 1)
+        coord = matching_coords[0]
 
-        coords_and_dims = filter(is_soil_model_level_coord,
-                                 aux_coords_and_dims)
-        self.assertEqual(len(coords_and_dims), 1)
-        coord, dims = coords_and_dims[0]
-        self.assertEqual(coord.points, 1234)
-        self.assertIsNone(coord.bounds)
-        self.assertEqual(guess_coord_axis(coord), 'Z')
+        # Check points and bounds.
+        if expected_points is not None:
+            self.assertArrayEqual(coord.points, expected_points)
+
+        if expected_bounds is None:
+            self.assertIsNone(coord.bounds)
+        else:
+            self.assertArrayEqual(coord.bounds, expected_bounds)
+
+    def test_soil_levels(self):
+        level = 1234
+        field = mock.MagicMock(lbvc=6, blev=level)
+        self._test_for_coord(field, TestLBVC._is_soil_model_level_number_coord,
+                             expected_points=np.array([level]),
+                             expected_bounds=None)
+
+    def test_hybrid_pressure_levels(self):
+        level = 5678
+        field = mock.MagicMock(lbvc=9, lblev=level,
+                               blev=20, brlev=23, bhlev=42,
+                               bhrlev=45, brsvd=[17, 40])
+        self._test_for_coord(field, TestLBVC._is_model_level_number_coord,
+                             expected_points=np.array([level]),
+                             expected_bounds=None)
+
+    def test_hybrid_pressure_reference_pressure(self):
+        field = mock.MagicMock(lbvc=9, lblev=5678,
+                               blev=20, brlev=23, bhlev=12,
+                               bhrlev=11, brsvd=[17, 13])
+        self._test_for_coord(field, TestLBVC._is_reference_pressure_coord,
+                             expected_points=np.array([1.0]),
+                             expected_bounds=None)
+
+    def test_hybrid_pressure_sigma(self):
+        sigma_point = 12.0
+        sigma_lower_bound = 11.0
+        sigma_upper_bound = 13.0
+        field = mock.MagicMock(lbvc=9, lblev=5678,
+                               blev=20, brlev=23, bhlev=sigma_point,
+                               bhrlev=sigma_lower_bound,
+                               brsvd=[17, sigma_upper_bound])
+        self._test_for_coord(field, TestLBVC._is_sigma_coord,
+                             expected_points=np.array([sigma_point]),
+                             expected_bounds=np.array([[sigma_lower_bound,
+                                                        sigma_upper_bound]]))
 
     def test_potential_temperature_levels(self):
         potm_value = 27.32
         field = mock.MagicMock(lbvc=19, blev=potm_value)
-        (factories, references, standard_name, long_name, units,
-         attributes, cell_methods, dim_coords_and_dims,
-         aux_coords_and_dims) = convert(field)
-
-        def is_potm_level_coord(coord_and_dims):
-            coord, dims = coord_and_dims
-            return coord.standard_name == 'air_potential_temperature'
-
-        coords_and_dims = filter(is_potm_level_coord, aux_coords_and_dims)
-        self.assertEqual(len(coords_and_dims), 1)
-        coord, dims = coords_and_dims[0]
-        self.assertArrayEqual(coord.points, [potm_value])
-        self.assertIsNone(coord.bounds)
-        self.assertEqual(guess_coord_axis(coord), 'Z')
+        self._test_for_coord(field, TestLBVC._is_potm_level_coord,
+                             expected_points=np.array([potm_value]),
+                             expected_bounds=None)
 
 
 class TestLBTIM(tests.IrisTest):

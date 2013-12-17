@@ -15,20 +15,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
-# DO NOT EDIT DIRECTLY
-# Auto-generated from SciTools/iris-code-generators:tools/gen_rules.py
+# Historically this was auto-generated from
+# SciTools/iris-code-generators:tools/gen_rules.py
 
 import warnings
 
 import numpy as np
 
-from iris.aux_factory import HybridHeightFactory, HybridPressureFactory, HybridCoordinateFactory
+from iris.aux_factory import HybridHeightFactory, HybridPressureFactory, \
+    HybridPressureFactoryWithReferencePressure
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.fileformats.rules import Factory, Reference, ReferenceTarget
 from iris.fileformats.um_cf_map import LBFC_TO_CF, STASH_TO_CF
 from iris.unit import Unit
 import iris.fileformats.pp
 import iris.unit
+
+
+# Constants
+PP_HYBRID_COORDINATE_REFERENCE_PRESSURE = 1
 
 
 def convert(f):
@@ -307,12 +312,30 @@ def convert(f):
             (f.lbvc == 19):
         aux_coords_and_dims.append((DimCoord(f.blev, standard_name='air_potential_temperature', units='K', attributes={'positive': 'up'}), None))
 
+    # Hybrid pressure coordinate
     if f.lbvc == 9:
-        aux_coords_and_dims.append((DimCoord(f.lblev, standard_name='model_level_number', attributes={'positive': 'up'}), None))
-        aux_coords_and_dims.append((DimCoord(f.blev, long_name='B value of level', units='m', bounds=[f.brlev, f.brsvd[0]], attributes={'positive': 'up'}), None))
-        aux_coords_and_dims.append((AuxCoord(f.bhlev, long_name='A value of level', bounds=[f.bhrlev, f.brsvd[1]]), None))
-        factories.append(Factory(HybridCoordinateFactory, [{'long_name': 'A value of level'}, {'long_name': 'B value of level'},
-                                                           Reference('surface_air_pressure')]))
+        model_level_number = DimCoord(f.lblev,
+                                      standard_name='model_level_number',
+                                      attributes={'positive': 'up'})
+        delta = DimCoord(f.blev,
+                         long_name='delta',
+                         bounds=[f.brlev, f.brsvd[0]])
+        reference_pressure = DimCoord(PP_HYBRID_COORDINATE_REFERENCE_PRESSURE,
+                                      long_name='reference_pressure',
+                                      units='Pa')
+        sigma = AuxCoord(f.bhlev,
+                         long_name='sigma',
+                         bounds=[f.bhrlev, f.brsvd[1]])
+
+        aux_coords_and_dims.extend([(model_level_number, None),
+                                    (delta, None),
+                                    (reference_pressure, None),
+                                    (sigma, None)])
+        factories.append(Factory(HybridPressureFactoryWithReferencePressure,
+                                 [{'long_name': 'delta'},
+                                  {'long_name': 'reference_pressure'},
+                                  {'long_name': 'sigma'},
+                                  Reference('surface_air_pressure')]))
 
     if f.lbvc == 65:
         aux_coords_and_dims.append((DimCoord(f.lblev, standard_name='model_level_number', attributes={'positive': 'up'}), None))
@@ -387,7 +410,7 @@ def convert(f):
 
     if f.lbuser[3] == 33:
         references.append(ReferenceTarget('orography', None))
-    
+
     if f.lbuser[3] == 409:
         references.append(ReferenceTarget('surface_air_pressure', None))
 
