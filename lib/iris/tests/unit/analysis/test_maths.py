@@ -38,3 +38,7 @@ class TestBasicMaths(tests.IrisTest):
         with self.assertRaises(TypeError):
             iris.analysis.maths.multiply(self.cube, 'not a cube',
                                          in_place=True)
+        # test addition separately because it currently follows a different
+        # code path from general binary operators
+        with self.assertRaises(TypeError):
+            iris.analysis.maths.add('not a cube', 123)
