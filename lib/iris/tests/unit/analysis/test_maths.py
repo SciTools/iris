@@ -16,7 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
 
-# import iris tests first so that some things can be initialised before importing anything else
+# import iris tests first so that some things can be initialised before
+# importing anything else
 import iris.tests as tests
 
 import iris
