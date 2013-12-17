@@ -338,12 +338,16 @@ class TestCubeStringRepresentations(IrisDotTest):
         reload(sys).setdefaultencoding(new_encoding)
         yield
         sys.setdefaultencoding(default_encoding)
+        del sys.setdefaultencoding
 
     def test_adjusted_default_encoding(self):
         # Test cube str representation on non-system-default encodings.
         # Doing this requires access to a sys method that is removed by default
         # so reload sys to restore access.
         # Note this does not currently work with utf-16 or utf-32.
+
+        # Run assertions inside 'with' statement to ensure test file is 
+        # accurately re-created.
         with self.unicode_encoding_change('utf-8'):
             self.assertString(str(self.unicode_cube),
                               ('cdm', 'str_repr',
