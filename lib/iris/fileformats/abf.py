@@ -76,7 +76,7 @@ class ABFField(object):
 
     def __getattr__(self, key):
         # Do we need to load now?
-        if not hasattr(self, "data"):
+        if key == 'data' and 'data' not in self.__dict__:
             self._read()
         try:
             return self.__dict__[key]
@@ -95,17 +95,17 @@ class ABFField(object):
         self.month = month_numbers[self.month]
 
         # Data is 8 bit bigendian.
-        self.data = np.fromfile(self._filename, dtype='>u1').reshape(X_SIZE,
-                                                                     Y_SIZE)
+        data = np.fromfile(self._filename, dtype='>u1').reshape(X_SIZE, Y_SIZE)
         # Iris' preferred dimensional ordering is (y,x).
-        self.data = self.data.transpose()
+        data = data.transpose()
         # Flip, for a positive step through the Y dimension.
-        self.data = self.data[::-1]
+        data = data[::-1]
         # Any percentages greater than 100 represent missing data.
-        self.data = ma.masked_greater(self.data, 100)
+        data = ma.masked_greater(data, 100)
         # The default fill value is 999999(!), so we choose something
         # more sensible. NB. 999999 % 256 = 63 = bad.
-        self.data.fill_value = 255
+        data.fill_value = 255
+        self.data = data
 
     def to_cube(self):
         """Return a new :class:`~iris.cube.Cube` from this ABFField."""
