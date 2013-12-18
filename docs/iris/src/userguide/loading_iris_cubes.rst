@@ -226,19 +226,19 @@ provides special features to facilitate this:
 
 Firstly, Iris can be configured so that when it evaluates Constraint
 expressions, it will convert time-coordinate values (points and bounds) from
-pure numbers into :class:`datetime.datetime`-like objects for calendar-based
-testing.  As this feature is not backwards compatible, it must be explicitly
-enabled by setting an option in :class:`iris.Future` (see documentation):
+pure numbers into :class:`~datetime.datetime`-like objects for calendar-based
+testing.  This feature is not backwards compatible so for now it must be
+explicitly enabled by setting an option in :class:`iris.Future`:
 
     >>> filename = iris.sample_data_path('uk_hires.pp')
-    >>> cons_name = iris.Constraint('air_potential_temperature')
-    >>> cube_all = iris.load_cube(filename, cons_name)
+    >>> cube_all = iris.load_cube(filename, 'air_potential_temperature')
     >>> print 'All times :\n', cube_all.coord('time')
     All times :
     DimCoord([2009-11-19 10:00:00, 2009-11-19 11:00:00, 2009-11-19 12:00:00], standard_name='time', calendar='gregorian')
     >>> hour_11 = iris.Constraint(time=lambda cell: cell.point.hour == 11)
     >>> with iris.FUTURE.context(cell_datetime_objects=True):
-    ...     cube_11 = iris.load_cube(filename, cons_name & hour_11)
+    ...     cube_11 = cube_all.extract(hour_11)
+    ... 
     >>> print 'Selected times :\n', cube_11.coord('time')
     Selected times :
     DimCoord([2009-11-19 11:00:00], standard_name='time', calendar='gregorian')
@@ -249,16 +249,12 @@ objects such as :class:`datetime.datetime` instances, and this comparison will
 then test only those 'aspects' which the PartialDateTime instance defines:
 
     >>> import datetime
-    >>> from iris.time import PartialDateTime as Pdt
+    >>> from iris.time import PartialDateTime
     >>> dt = datetime.datetime(2011, 3, 7)
-    >>> print dt > Pdt(month=2)
+    >>> print dt > PartialDateTime(year=2010, month=6)
     True
-    >>> print dt != Pdt(day=7)
+    >>> print dt > PartialDateTime(month=6)
     False
-    >>> print dt == Pdt(month=3) and dt < Pdt(day=4)
-    False
-    >>> print dt == Pdt(month=3) and dt < Pdt(month=6, day=4)
-    True
     >>> 
 
 These two facilities can be combined to provide straightforward calendar-based
@@ -270,19 +266,19 @@ time selections when loading or extracting data:
 All times == months 1866-2013:
 DimCoord([1866-01-01 00:00:00, 1866-02-01 00:00:00, 1866-03-01 00:00:00, ...,
        2013-10-01 00:00:00, 2013-11-01 00:00:00, 2013-12-01 00:00:00], standard_name=u'time', calendar=u'gregorian', var_name='time')
->>> spring_start = Pdt(month=3, day=20)
->>> spring_end = Pdt(month=6, day=21)
->>> constrain_spring = iris.Constraint(time=lambda cell: cell.point >= spring_start and cell.point < spring_end)
+>>> yeardays_first = PartialDateTime(month=8, day=12)
+>>> yeardays_last = PartialDateTime(month=12, day=10)
+>>> constrain_yeardays = iris.Constraint(time=lambda cell: cell.point >= yeardays_first and cell.point <= yeardays_last)
 >>> with iris.FUTURE.context(cell_datetime_objects=True):
-...     selected = iris.load_cube(file_path, constrain_spring)
+...     selected = iris.load_cube(file_path, constrain_yeardays)
 ... 
->>> print 'Selected times == spring dates:\n', selected.coord('time')[:15]
-Selected times == spring dates:
-DimCoord([1866-04-01 00:00:00, 1866-05-01 00:00:00, 1866-06-01 00:00:00,
-       1867-04-01 00:00:00, 1867-05-01 00:00:00, 1867-06-01 00:00:00,
-       1868-04-01 00:00:00, 1868-05-01 00:00:00, 1868-06-01 00:00:00,
-       1869-04-01 00:00:00, 1869-05-01 00:00:00, 1869-06-01 00:00:00,
-       1870-04-01 00:00:00, 1870-05-01 00:00:00, 1870-06-01 00:00:00], standard_name=u'time', calendar=u'gregorian', var_name='time')
+>>> print 'Selected times == in-period days:\n', selected.coord('time')[:15]
+Selected times == in-period days:
+DimCoord([1866-09-01 00:00:00, 1866-10-01 00:00:00, 1866-11-01 00:00:00,
+       1866-12-01 00:00:00, 1867-09-01 00:00:00, 1867-10-01 00:00:00,
+       1867-11-01 00:00:00, 1867-12-01 00:00:00, 1868-09-01 00:00:00,
+       1868-10-01 00:00:00, 1868-11-01 00:00:00, 1868-12-01 00:00:00,
+       1869-09-01 00:00:00, 1869-10-01 00:00:00, 1869-11-01 00:00:00], standard_name=u'time', calendar=u'gregorian', var_name='time')
 >>> 
 
 .. note::
