@@ -637,6 +637,7 @@ IF
     scalar_coord(cm, 'depth') is None
     scalar_coord(cm, 'height') is None
     scalar_coord(cm, 'pressure') is None
+    cm.standard_name is not None
     'soil' in cm.standard_name
 THEN
     pp.lbvc = 6
