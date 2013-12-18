@@ -554,9 +554,10 @@ class Saver(object):
 
         * unlimited_dimensions (iterable of strings and/or
           :class:`iris.coords.Coord` objects):
-            Explicit list of coordinate names (or coordinate objects) to save
-            with the NetCDF dimension variable length 'UNLIMITED'. By default,
-            the outermost (first) dimension for each cube is used. Only the
+            Explicit list of coordinate names (or coordinate objects)
+            corresponding to coordinate dimensions of `cube` to save with the
+            NetCDF dimension variable length 'UNLIMITED'. By default, the
+            outermost (first) dimension for each cube is used. Only the
             'NETCDF4' format supports multiple 'UNLIMITED' dimensions. To save
             no unlimited dimensions, use `unlimited_dimensions=[]` (an empty
             list).
@@ -587,7 +588,7 @@ class Saver(object):
             Used to manually specify the HDF5 chunksizes for each dimension of
             the variable. A detailed discussion of HDF chunking and I/O
             performance is available here:
-            http://www.hdfgroup.org/HDF5/doc/H5.user/Chunking.html Basically,
+            http://www.hdfgroup.org/HDF5/doc/H5.user/Chunking.html. Basically,
             you want the chunk size for each dimension to match as closely as
             possible the size of the data block that users will read from the
             file. `chunksizes` cannot be set if `contiguous=True`.
@@ -611,8 +612,8 @@ class Saver(object):
             this case `bits=4`). From
             http://www.cdc.noaa.gov/cdc/conventions/cdc_netcdf_standard.shtml:
             "least_significant_digit -- power of ten of the smallest decimal
-            place in unpacked data that is a reliable value." Default is None,
-            or no quantization, or 'lossless' compression.
+            place in unpacked data that is a reliable value". Default is
+            `None`, or no quantization, or 'lossless' compression.
 
         Returns:
             None.
@@ -724,14 +725,17 @@ class Saver(object):
         else:
             for coord in unlimited_dimensions:
                 try:
-                    if not isinstance(coord, iris.coords.Coord):
-                        coord = cube.coord(coord)
-                    dim_name = self._get_coord_variable_name(cube, coord)
-                    unlimited_dim_names.append(dim_name)
+                    if isinstance(coord, basestring):
+                        coord = cube.coord(name=coord, dim_coords=True)
+                    else:
+                        coord = cube.coord(coord=coord, dim_coords=True)
                 except iris.exceptions.CoordinateNotFoundError:
                     # coordinate isn't used for this cube, but it might be
                     # used for a different one
                     pass
+                else:
+                    dim_name = self._get_coord_variable_name(cube, coord)
+                    unlimited_dim_names.append(dim_name)
 
         for dim_name in dimension_names:
             if dim_name not in self._dataset.dimensions:
@@ -1455,11 +1459,12 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
 
     * unlimited_dimensions (iterable of strings and/or
       :class:`iris.coords.Coord` objects):
-        Explicit list of coordinate names (or coordinate objects) to save with
-        the NetCDF dimension variable length 'UNLIMITED'. By default, the
-        outermost (first) dimension for each cube is used. Only the 'NETCDF4'
-        format supports multiple 'UNLIMITED' dimensions. To save no unlimited
-        dimensions, use `unlimited_dimensions=[]` (an empty list).
+        Explicit list of coordinate names (or coordinate objects) corresponding
+        to coordinate dimensions of `cube` to save with the NetCDF dimension
+        variable length 'UNLIMITED'. By default, the outermost (first)
+        dimension for each cube is used. Only the 'NETCDF4' format supports
+        multiple 'UNLIMITED' dimensions. To save no unlimited dimensions, use
+        `unlimited_dimensions=[]` (an empty list).
 
     * zlib (bool):
         If `True`, the data will be compressed in the netCDF file using gzip
@@ -1486,7 +1491,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
     * chunksizes (tuple of int):
         Used to manually specify the HDF5 chunksizes for each dimension of the
         variable. A detailed discussion of HDF chunking and I/O performance is
-        available here: http://www.hdfgroup.org/HDF5/doc/H5.user/Chunking.html
+        available here: http://www.hdfgroup.org/HDF5/doc/H5.user/Chunking.html.
         Basically, you want the chunk size for each dimension to match as
         closely as possible the size of the data block that users will read
         from the file. `chunksizes` cannot be set if `contiguous=True`.
@@ -1510,7 +1515,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         `bits=4`). From
         http://www.cdc.noaa.gov/cdc/conventions/cdc_netcdf_standard.shtml:
         "least_significant_digit -- power of ten of the smallest decimal place
-        in unpacked data that is a reliable value." Default is None, or no
+        in unpacked data that is a reliable value". Default is `None`, or no
         quantization, or 'lossless' compression.
 
     Returns:
