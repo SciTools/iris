@@ -62,6 +62,19 @@ class Test_context(tests.IrisTest):
                 # exception we're looking for.
                 pass
 
+    def test_exception(self):
+        # Check that an interrupted context block restores the initial state.
+        class LocalTestException(Exception):
+            pass
+
+        future = Future(cell_datetime_objects=False)
+        try:
+            with future.context(cell_datetime_objects=True):
+                raise LocalTestException()
+        except LocalTestException:
+            pass
+        self.assertEqual(future.cell_datetime_objects, False)
+
 
 if __name__ == "__main__":
     tests.main()
