@@ -99,7 +99,8 @@ def intersection_of_cubes(cube, other_cube):
 
 def _assert_is_cube(cube):
     if not isinstance(cube, iris.cube.Cube):
-        raise TypeError('The "cube" argument must be an instance of iris.Cube.')
+        raise TypeError('The "cube" argument must be an instance of '
+                        'iris.cube.Cube.')
 
 
 def _assert_compatible(cube, other):
