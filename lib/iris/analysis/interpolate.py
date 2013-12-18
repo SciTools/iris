@@ -110,6 +110,11 @@ def nearest_neighbour_indices(cube, sample_points):
     Returns:
         The tuple of indices which will select the point in the cube closest to the supplied coordinate values.
 
+    .. note::
+
+        Nearest neighbour interpolation of multidimensional coordinates is not
+        yet supported.
+
     """
     if isinstance(sample_points, dict):
         warnings.warn('Providing a dictionary to specify points is deprecated. Please provide a list of (coordinate, values) pairs.')
@@ -368,6 +373,7 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
         3) Both CS instances must be compatible:
             i.e. of the same type, with the same attribute values, and with compatible coordinates.
         4) No new data dimensions can be created.
+        5) Source cube coordinates to map to a single dimension.
 
     Args:
 
@@ -386,6 +392,12 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
 
     Returns:
         A new :class:`iris.cube.Cube` instance.
+
+    .. note::
+
+        The masked status of values are currently ignored.  See :func:\
+`~iris.experimental.regrid.regrid_bilinear_rectilinear_src_and_grid`
+        for regrid support with mask awareness.
 
     """
     # Condition 1
@@ -593,7 +605,7 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
     * sample_points
         List of one or more tuple pairs mapping coordinate to desired
         points to interpolate. Points may be a scalar or a numpy array
-        of values.
+        of values.  Multi-dimensional coordinates are not supported.
 
     Kwargs:
 

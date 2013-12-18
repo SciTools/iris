@@ -18,6 +18,7 @@
 Various utilities and numeric transformations relevant to cartography.
 
 """
+import copy
 import itertools
 import math
 import warnings
@@ -493,6 +494,11 @@ def project(cube, target_proj, nx=None, ny=None):
         beyond the geographical extent of the source cube using a nearest
         neighbour approach.
 
+    .. note::
+
+        lat-lon coordinates are currently required for the source cube, however
+        they can be 1 or 2 dimensions.  Masked arrays are handled.
+
     """
     try:
         lat_coord, lon_coord = _get_lat_lon_coords(cube)
@@ -532,8 +538,9 @@ def project(cube, target_proj, nx=None, ny=None):
         source_x, source_y = np.meshgrid(source_x, source_y)
 
     # Calculate target grid
+    target_proj_cart = target_proj
     if isinstance(target_proj, iris.coord_systems.CoordSystem):
-        target_proj = target_proj.as_cartopy_projection()
+        target_proj_cart = target_proj.as_cartopy_projection()
 
     # Resolution of new grid
     if nx is None:
@@ -542,7 +549,7 @@ def project(cube, target_proj, nx=None, ny=None):
         ny = source_x.shape[0]
 
     target_x, target_y, extent = cartopy.img_transform.mesh_projection(
-        target_proj, nx, ny)
+        target_proj_cart, nx, ny)
 
     # Determine dimension mappings - expect either 1d or 2d
     if lat_coord.ndim != lon_coord.ndim:
@@ -620,7 +627,8 @@ def project(cube, target_proj, nx=None, ny=None):
         index[ydim] = slice(None, None)
         new_data[index] = cartopy.img_transform.regrid(ll_slice.data,
                                                        source_x, source_y,
-                                                       source_cs, target_proj,
+                                                       source_cs,
+                                                       target_proj_cart,
                                                        target_x, target_y)
 
         ## Mask out points beyond extent
@@ -633,14 +641,28 @@ def project(cube, target_proj, nx=None, ny=None):
     # Create new cube
     new_cube = iris.cube.Cube(new_data)
 
+    # Associate target crs with resulting cube if possible (is an iris crs)
+    tar_coord_sys = None
+    if isinstance(target_proj, iris.coord_systems.CoordSystem):
+        tar_coord_sys = target_proj
+    else:
+        msg = ('Unable to associate crs: {} with target projection '
+               'coordinates, as it is not an iris supported coordinate system')
+        warnings.warn(msg.format(target_proj.__class__))
+
     # Add new grid coords
-    x_coord = iris.coords.DimCoord(target_x[0, :], 'projection_x_coordinate')
-    y_coord = iris.coords.DimCoord(target_y[:, 0], 'projection_y_coordinate')
+    x_coord = iris.coords.DimCoord(
+        target_x[0, :], 'projection_x_coordinate',
+        coord_system=copy.copy(tar_coord_sys))
+    y_coord = iris.coords.DimCoord(
+        target_y[:, 0], 'projection_y_coordinate',
+        coord_system=copy.copy(tar_coord_sys))
+
     new_cube.add_dim_coord(x_coord, xdim)
     new_cube.add_dim_coord(y_coord, ydim)
 
     # Add resampled lat/lon in original coord system
-    source_desired_xy = source_cs.transform_points(target_proj,
+    source_desired_xy = source_cs.transform_points(target_proj_cart,
                                                    target_x.flatten(),
                                                    target_y.flatten())
     new_lon_points = source_desired_xy[:, 0].reshape(ny, nx)
