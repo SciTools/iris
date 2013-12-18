@@ -199,10 +199,12 @@ class Future(threading.local):
         # Update the state
         for name, value in kwargs.iteritems():
             setattr(self, name, value)
-        yield
-        # Return the state
-        self.__dict__.clear()
-        self.__dict__.update(current_state)
+        try:
+            yield
+        finally:
+            # Return the state
+            self.__dict__.clear()
+            self.__dict__.update(current_state)
 
 
 FUTURE = Future()
