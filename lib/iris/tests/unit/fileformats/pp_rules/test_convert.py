@@ -55,7 +55,7 @@ class TestLBVC(tests.IrisTest):
                 coord.units.is_dimensionless())
 
     @staticmethod
-    def is_soil_model_level_number_coord(coord):
+    def _is_soil_model_level_number_coord(coord):
         return (coord.long_name == 'soil_model_level_number' and
                 coord.units.is_dimensionless() and
                 coord.attributes['positive'] == 'down')
@@ -83,7 +83,7 @@ class TestLBVC(tests.IrisTest):
 
     def test_soil_levels(self):
         level = 1234
-        field = mock.MagicMock(lbvc=6, blev=level)
+        field = mock.MagicMock(lbvc=6, lblev=level)
         self._test_for_coord(field, TestLBVC._is_soil_model_level_number_coord,
                              expected_points=np.array([level]),
                              expected_bounds=None)
