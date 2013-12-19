@@ -218,7 +218,7 @@ Constraining on Time
 ^^^^^^^^^^^^^^^^^^^^
 Iris follows NetCDF-CF rules in representing time coordinate values as pure
 numbers, where the relationship to calendar times is specified by the units
-(e.g. "hours since 1970-01-01 00:00:00").
+(e.g. "days since 1970-01-01").
 However, when constraining by time we usually want to test calendar-related
 aspects such as hours of the day or months of the year.
 This is obviously awkward to express as a test on time coordinate values, so Iris
@@ -257,29 +257,42 @@ then test only those 'aspects' which the PartialDateTime instance defines:
     False
     >>> 
 
-These two facilities can be combined to provide straightforward calendar-based
-time selections when loading or extracting data:
+.. testsetup::
 
->>> file_path = iris.sample_data_path('SOI_Darwin.nc')
->>> cube_all = iris.load_cube(file_path)
->>> print 'All times == months 1866-2013:\n', cube_all.coord('time')
-All times == months 1866-2013:
-DimCoord([1866-01-01 00:00:00, 1866-02-01 00:00:00, 1866-03-01 00:00:00, ...,
-       2013-10-01 00:00:00, 2013-11-01 00:00:00, 2013-12-01 00:00:00], standard_name=u'time', calendar=u'gregorian', var_name='time')
->>> yeardays_first = PartialDateTime(month=8, day=12)
->>> yeardays_last = PartialDateTime(month=12, day=10)
->>> constrain_yeardays = iris.Constraint(time=lambda cell: cell.point >= yeardays_first and cell.point <= yeardays_last)
->>> with iris.FUTURE.context(cell_datetime_objects=True):
-...     selected = iris.load_cube(file_path, constrain_yeardays)
-... 
->>> print 'Selected times == in-period days:\n', selected.coord('time')[:15]
-Selected times == in-period days:
-DimCoord([1866-09-01 00:00:00, 1866-10-01 00:00:00, 1866-11-01 00:00:00,
-       1866-12-01 00:00:00, 1867-09-01 00:00:00, 1867-10-01 00:00:00,
-       1867-11-01 00:00:00, 1867-12-01 00:00:00, 1868-09-01 00:00:00,
-       1868-10-01 00:00:00, 1868-11-01 00:00:00, 1868-12-01 00:00:00,
-       1869-09-01 00:00:00, 1869-10-01 00:00:00, 1869-11-01 00:00:00], standard_name=u'time', calendar=u'gregorian', var_name='time')
->>> 
+    import numpy as np
+    cube_mondays = iris.cube.Cube(np.arange(150), long_name='data', units='1')
+    co_mondays = iris.coords.DimCoord(7*np.arange(150), standard_name='time', units='days since 2007-04-09')
+    cube_mondays.add_dim_coord(co_mondays, 0)
+
+These two facilities can be combined to provide straightforward calendar-based
+time selections when loading or extracting data.
+
+For example, if we have a time sequence extending over multiple years ...
+
+    >>> print "All times == Mondays:\n  starts: {}\n  ...\n  ends: {}".format(cube_mondays.coord('time')[:5], cube_mondays.coord('time')[-5:])
+    All times == Mondays:
+      starts: DimCoord([2007-04-09 00:00:00, 2007-04-16 00:00:00, 2007-04-23 00:00:00,
+           2007-04-30 00:00:00, 2007-05-07 00:00:00], standard_name='time', calendar='gregorian')
+      ...
+      ends: DimCoord([2010-01-18 00:00:00, 2010-01-25 00:00:00, 2010-02-01 00:00:00,
+           2010-02-08 00:00:00, 2010-02-15 00:00:00], standard_name='time', calendar='gregorian')
+
+... we can select only points within a certain part of the year::
+
+    >>> swithuns_first = PartialDateTime(month=7, day=15)
+    >>> swithuns_last = PartialDateTime(month=8, day=24)
+    >>> constrain_time = iris.Constraint(time=lambda cell: cell.point >= swithuns_first and cell.point <= swithuns_last)
+    >>> with iris.FUTURE.context(cell_datetime_objects=True):
+    ...   selected = cube_mondays.extract(constrain_time)
+    ... 
+    >>> print 'Selected times == in-period Mondays:\n', selected.coord('time')
+    Selected times == in-period Mondays:
+    DimCoord([2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
+           2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00,
+           2008-07-21 00:00:00, 2008-07-28 00:00:00, 2008-08-04 00:00:00,
+           2008-08-11 00:00:00, 2008-08-18 00:00:00, 2009-07-20 00:00:00,
+           2009-07-27 00:00:00, 2009-08-03 00:00:00, 2009-08-10 00:00:00,
+           2009-08-17 00:00:00, 2009-08-24 00:00:00], standard_name='time', calendar='gregorian')
 
 .. note::
 
