@@ -1,0 +1,1 @@
+"test_array" cube_a attribute value "[1 2 3]" is not compatible with cube_b attribute value "[1 7 3]"

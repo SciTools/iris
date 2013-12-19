@@ -761,7 +761,7 @@ class Coord(CFVariableMixin):
                     ignore = (ignore,)
                 common_keys = common_keys.difference(ignore)
             for key in common_keys:
-                if self.attributes[key] != other.attributes[key]:
+                if np.any(self.attributes[key] != other.attributes[key]):
                     compatible = False
                     break
 

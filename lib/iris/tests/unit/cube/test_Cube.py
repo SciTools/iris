@@ -23,9 +23,10 @@ import iris.tests as tests
 import mock
 import numpy as np
 
-import iris
+from iris import FUTURE
 from iris.analysis import WeightedAggregator, Aggregator
 from iris.cube import Cube
+from iris.coords import AuxCoord, DimCoord
 
 
 class Test_xml(tests.IrisTest):
@@ -33,7 +34,7 @@ class Test_xml(tests.IrisTest):
         # Mask out an single element.
         data = np.ma.arange(12).reshape(3, 4)
         data[1, 2] = np.ma.masked
-        cube = iris.cube.Cube(data)
+        cube = Cube(data)
         self.assertCML(cube)
 
         # If we change the underlying value before masking it, the
@@ -41,18 +42,18 @@ class Test_xml(tests.IrisTest):
         data = np.ma.arange(12).reshape(3, 4)
         data[1, 2] = 42
         data[1, 2] = np.ma.masked
-        cube = iris.cube.Cube(data)
+        cube = Cube(data)
         self.assertCML(cube)
 
 
 class Test_collapsed__warning(tests.IrisTest):
     def setUp(self):
-        self.cube = iris.cube.Cube([[1, 2], [1, 2]])
-        lat = iris.coords.DimCoord([1, 2], standard_name='latitude')
-        lon = iris.coords.DimCoord([1, 2], standard_name='longitude')
-        grid_lat = iris.coords.AuxCoord([1, 2], standard_name='grid_latitude')
-        grid_lon = iris.coords.AuxCoord([1, 2], standard_name='grid_longitude')
-        wibble = iris.coords.AuxCoord([1, 2], long_name='wibble')
+        self.cube = Cube([[1, 2], [1, 2]])
+        lat = DimCoord([1, 2], standard_name='latitude')
+        lon = DimCoord([1, 2], standard_name='longitude')
+        grid_lat = AuxCoord([1, 2], standard_name='grid_latitude')
+        grid_lon = AuxCoord([1, 2], standard_name='grid_longitude')
+        wibble = AuxCoord([1, 2], long_name='wibble')
 
         self.cube.add_dim_coord(lat, 0)
         self.cube.add_dim_coord(lon, 1)
@@ -146,10 +147,33 @@ class Test_summary(tests.IrisTest):
         # Check the scalar coordinate summary still works even when
         # iris.FUTURE.cell_datetime_objects is True.
         cube = Cube(0)
-        cube.add_aux_coord(iris.coords.AuxCoord(42, units='hours since epoch'))
-        with iris.FUTURE.context(cell_datetime_objects=True):
+        cube.add_aux_coord(AuxCoord(42, units='hours since epoch'))
+        with FUTURE.context(cell_datetime_objects=True):
             summary = cube.summary()
         self.assertIn('1970-01-02 18:00:00', summary)
+
+
+class Test_is_compatible(tests.IrisTest):
+    def setUp(self):
+        self.test_cube = Cube([1.])
+        self.other_cube = self.test_cube.copy()
+
+    def test_noncommon_array_attrs_compatible(self):
+        # Non-common array attributes should be ok.
+        self.test_cube.attributes['array_test'] = np.array([1.0, 2, 3])
+        self.assertTrue(self.test_cube.is_compatible(self.other_cube))
+
+    def test_matching_array_attrs_compatible(self):
+        # Matching array attributes should be ok.
+        self.test_cube.attributes['array_test'] = np.array([1.0, 2, 3])
+        self.other_cube.attributes['array_test'] = np.array([1.0, 2, 3])
+        self.assertTrue(self.test_cube.is_compatible(self.other_cube))
+
+    def test_different_array_attrs_incompatible(self):
+        # Differing array attributes should make the cubes incompatible.
+        self.test_cube.attributes['array_test'] = np.array([1.0, 2, 3])
+        self.other_cube.attributes['array_test'] = np.array([1.0, 2, 777.7])
+        self.assertFalse(self.test_cube.is_compatible(self.other_cube))
 
 
 if __name__ == "__main__":
