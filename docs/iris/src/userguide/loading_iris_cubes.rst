@@ -260,32 +260,35 @@ then test only those 'aspects' which the PartialDateTime instance defines:
 .. testsetup::
 
     import numpy as np
-    cube_mondays = iris.cube.Cube(np.arange(150), long_name='data', units='1')
-    co_mondays = iris.coords.DimCoord(7*np.arange(150), standard_name='time', units='days since 2007-04-09')
-    cube_mondays.add_dim_coord(co_mondays, 0)
+    long_ts = iris.cube.Cube(np.arange(150), long_name='data', units='1')
+    _mondays = iris.coords.DimCoord(7 * np.arange(150), standard_name='time', units='days since 2007-04-09')
+    long_ts.add_dim_coord(_mondays, 0)
 
 These two facilities can be combined to provide straightforward calendar-based
 time selections when loading or extracting data.
 
-For example, if we have a time sequence extending over multiple years ...
+For example, if we have a time sequence representing the first day of the week
+over multiple years:
 
-    >>> print "All times == Mondays:\n  starts: {}\n  ...\n  ends: {}".format(cube_mondays.coord('time')[:5], cube_mondays.coord('time')[-5:])
-    All times == Mondays:
-      starts: DimCoord([2007-04-09 00:00:00, 2007-04-16 00:00:00, 2007-04-23 00:00:00,
-           2007-04-30 00:00:00, 2007-05-07 00:00:00], standard_name='time', calendar='gregorian')
-      ...
-      ends: DimCoord([2010-01-18 00:00:00, 2010-01-25 00:00:00, 2010-02-01 00:00:00,
-           2010-02-08 00:00:00, 2010-02-15 00:00:00], standard_name='time', calendar='gregorian')
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE, +ELLIPSIS
+    
+    >>> print long_ts.coord('time')
+    DimCoord([2007-04-09 00:00:00, 2007-04-16 00:00:00, 2007-04-23 00:00:00,
+              ...
+              2010-02-01 00:00:00, 2010-02-08 00:00:00, 2010-02-15 00:00:00],
+             standard_name='time', calendar='gregorian')
 
-... we can select only points within a certain part of the year::
+We can select points within a certain part of the year, in this case between
+the 15th of July through to the 25th of August, by combining the datetime cell
+functionality with PartialDateTime::
 
     >>> st_swithuns_daterange = iris.Constraint(
     ...     time=lambda cell: PartialDateTime(month=7, day=15) < cell.point < PartialDateTime(month=8, day=25))
     >>> with iris.FUTURE.context(cell_datetime_objects=True):
-    ...   selected = cube_mondays.extract(st_swithuns_daterange)
+    ...   long_ts_st_swithuns = cube_mondays.extract(st_swithuns_daterange)
     ... 
-    >>> print 'Selected times == in-period Mondays:\n', selected.coord('time')
-    Selected times == in-period Mondays:
+    >>> print long_ts_st_swithuns.coord('time')
     DimCoord([2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
            2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00,
            2008-07-21 00:00:00, 2008-07-28 00:00:00, 2008-08-04 00:00:00,
