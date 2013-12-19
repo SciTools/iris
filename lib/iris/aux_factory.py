@@ -750,11 +750,34 @@ class HybridPressureFactoryWithReferencePressure(AuxCoordFactory):
         """
         super(HybridPressureFactoryWithReferencePressure, self).__init__()
 
+        # Check that provided coords meet necessary conditions.
+        self._check_dependencies(delta, reference_pressure, sigma,
+                                 surface_air_pressure)
+        
+        self.delta = delta
+        self.reference_pressure = reference_pressure
+        self.sigma = sigma
+        self.surface_air_pressure = surface_air_pressure
+        
+        self.standard_name = 'air_pressure'
+        self.attributes = {}
+
+    @property
+    def units(self):
+        if self.delta is not None and self.reference_pressure is not None:
+            units = self.reference_pressure.units
+        else:
+            units = self.surface_air_pressure.units
+        return units
+
+    @staticmethod
+    def _check_dependencies(delta, reference_pressure, sigma,
+                            surface_air_pressure):
         # Check for sufficient coordinates.
-        if (delta is None or reference_pressure is None) and \
-                surface_air_pressure is None:
+        if ((delta is None or reference_pressure is None) and
+                (sigma is None or surface_air_pressure is None)):
             msg = 'Unable to contruct hybrid pressure coordinate factory: ' \
-                  'no delta/reference_pressure or surface_air_pressure ' \
+                  'no delta/reference_pressure or sigma/surface_air_pressure '\
                   'coordinates.'
             raise ValueError(msg)
 
@@ -786,22 +809,14 @@ class HybridPressureFactoryWithReferencePressure(AuxCoordFactory):
             raise ValueError(msg)
 
         if delta is not None and reference_pressure is not None:
-            self.units = reference_pressure.units
+            units = reference_pressure.units
         else:
-            self.units = surface_air_pressure.units
+            units = surface_air_pressure.units
 
-        if not self.units.is_convertible('Pa'):
+        if not units.is_convertible('Pa'):
             msg = 'Invalid units: reference_pressure and/or ' \
                 'surface_air_pressure must be expressed in units of pressure.'
             raise ValueError(msg)
-
-        self.delta = delta
-        self.reference_pressure = reference_pressure
-        self.sigma = sigma
-        self.surface_air_pressure = surface_air_pressure
-
-        self.standard_name = 'air_pressure'
-        self.attributes = {}
 
     @property
     def dependencies(self):
@@ -908,25 +923,17 @@ class HybridPressureFactoryWithReferencePressure(AuxCoordFactory):
             any dependency using old_coord is updated to use new_coord.
 
         """
-        if self.delta is old_coord:
-            if new_coord and new_coord.nbounds not in (0, 2):
-                raise ValueError('Invalid delta coordinate:'
-                                 ' must have either 0 or 2 bounds.')
-            self.delta = new_coord
-        elif self.reference_pressure is old_coord:
-            if new_coord and new_coord.nbounds:
-                msg = 'Reference pressure coordinate {!r} has bounds. ' \
-                      'These will be disregarded.'.format(new_coord.name())
-                warnings.warn(msg, UserWarning, stacklevel=2)
-            self.reference_pressure = new_coord
-        elif self.sigma is old_coord:
-            if new_coord and new_coord.nbounds not in (0, 2):
-                raise ValueError('Invalid sigma coordinate:'
-                                 ' must have either 0 or 2 bounds.')
-            self.sigma = new_coord
-        elif self.surface_air_pressure is old_coord:
-            if new_coord and new_coord.nbounds:
-                msg = 'Surface pressure coordinate {!r} has bounds. ' \
-                      'These will be disregarded.'.format(new_coord.name())
-                warnings.warn(msg, UserWarning, stacklevel=2)
-            self.surface_air_pressure = new_coord
+        new_dependencies = self.dependencies
+        for name, coord in self.dependencies.items():
+            if old_coord is coord:
+                new_dependencies[name] = new_coord
+                break
+
+        try:
+            self._check_dependencies(**new_dependencies)
+        except ValueError as e:
+            msg = 'Failed to update dependencies. ' + e.message
+            raise ValueError(msg)
+        else:
+            setattr(self, name, new_coord)
+
