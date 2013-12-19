@@ -45,12 +45,10 @@ def abs(cube, in_place=False):
         Whether to create a new Cube, or alter the given "cube".
 
     Returns:
-        Cube of same dimensionality as Cube provided, with absolute data using :func:`numpy.abs`
-        and additional metadata added.
+        An instance of :class:`iris.cube.Cube`.
 
     """
-    return _math_op_common(cube, np.abs, cube.units,
-                           in_place=in_place)
+    return _math_op_common(cube, np.abs, cube.units, in_place=in_place)
 
 
 def intersection_of_cubes(cube, other_cube):
@@ -99,6 +97,12 @@ def intersection_of_cubes(cube, other_cube):
     return new_cube_self, new_cube_other
 
 
+def _assert_is_cube(cube):
+    if not isinstance(cube, iris.cube.Cube):
+        raise TypeError('The "cube" argument must be an instance of '
+                        'iris.cube.Cube.')
+
+
 def _assert_compatible(cube, other):
     """Checks to see if cube.data and another array can be broadcast to the same shape using ``numpy.broadcast_arrays``."""
     # This code previously returned broadcasted versions of the cube data and the other array.
@@ -117,6 +121,17 @@ def _assert_compatible(cube, other):
                          "have had to become: %s" % (data_view.shape, ))
 
 
+def _assert_matching_units(cube, other, operation_noun):
+    """
+    Check that the units of the cube and the other item are the same, or if
+    the other does not have a unit, skip this test
+    """
+    if cube.units != getattr(other, 'units', cube.units):
+        raise iris.exceptions.NotYetImplementedError(
+            'Differing units (%s & %s) %s not implemented' %
+            (cube.units, other.units, operation_noun))
+
+
 def add(cube, other, dim=None, ignore=True, in_place=False):
     """
     Calculate the sum of two cubes, or the sum of a cube and a coordinate or scalar
@@ -132,8 +147,8 @@ def add(cube, other, dim=None, ignore=True, in_place=False):
     * cube:
         An instance of :class:`iris.cube.Cube`.
     * other:
-        An instance of :class:`iris.cube.Cube`, :class:`iris.coords.Coord`,
-        or a scalar.
+        An instance of :class:`iris.cube.Cube` or :class:`iris.coords.Coord`,
+        or a number or :class:`numpy.ndarray`.
 
     Kwargs:
 
@@ -146,8 +161,8 @@ def add(cube, other, dim=None, ignore=True, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _add_subtract_common(np.add, '+', 'addition', 'added',
-                                cube, other, dim=dim, ignore=ignore, in_place=in_place)
+    return _add_subtract_common(np.add, 'addition', 'added', cube, other,
+                                dim=dim, ignore=ignore, in_place=in_place)
 
 
 def subtract(cube, other, dim=None, ignore=True, in_place=False):
@@ -165,8 +180,8 @@ def subtract(cube, other, dim=None, ignore=True, in_place=False):
     * cube:
         An instance of :class:`iris.cube.Cube`.
     * other:
-        An instance of :class:`iris.cube.Cube`, :class:`iris.coords.Coord`,
-        or a scalar.
+        An instance of :class:`iris.cube.Cube` or :class:`iris.coords.Coord`,
+        or a number or :class:`numpy.ndarray`.
 
     Kwargs:
 
@@ -179,12 +194,14 @@ def subtract(cube, other, dim=None, ignore=True, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _add_subtract_common(np.subtract, '-', 'subtraction', 'subtracted',
-                                cube, other, dim=dim, ignore=ignore, in_place=in_place)
+    return _add_subtract_common(np.subtract, 'subtraction', 'subtracted', cube,
+                                other, dim=dim, ignore=ignore,
+                                in_place=in_place)
 
 
-def _add_subtract_common(operation_function, operation_symbol, operation_noun, operation_past_tense,
-                         cube, other, dim=None, ignore=True, in_place=False):
+def _add_subtract_common(operation_function, operation_noun,
+                         operation_past_tense, cube, other, dim=None,
+                         ignore=True, in_place=False):
     """
     Function which shares common code between addition and subtraction of cubes.
 
@@ -194,67 +211,12 @@ def _add_subtract_common(operation_function, operation_symbol, operation_noun, o
     operation_past_tense - the past tense of the operation (e.g. 'subtracted')
 
     """
-    if not isinstance(cube, iris.cube.Cube):
-        raise TypeError('The "cube" argument must be an instance of iris.Cube.')
+    _assert_is_cube(cube)
+    _assert_matching_units(cube, other, operation_noun)
 
-    if isinstance(other, (int, float)):
-        # Promote scalar to a coordinate and associate unit type with cube unit type
-        other = np.array(other)
-
-    # Check that the units of the cube and the other item are the same, or if the other does not have a unit, skip this test
-    if cube.units != getattr(other, 'units', cube.units) :
-        raise iris.exceptions.NotYetImplementedError('Differing units (%s & %s) %s not implemented' % \
-                                                     (cube.units, other.units, operation_noun))
-
-    if isinstance(other, np.ndarray):
-        _assert_compatible(cube, other)
-
-        if in_place:
-            new_cube = cube
-            operation_function(new_cube.data, other, new_cube.data)
-        else:
-            new_cube = cube.copy(data=operation_function(cube.data, other))
-    elif isinstance(other, iris.coords.Coord):
-        # Deal with cube addition/subtraction by coordinate
-
-        # What dimension are we processing?
-        data_dimension = None
-        if dim is not None:
-            # Ensure the given dim matches the coord
-            if other in cube.coords() and cube.coord_dims(other) != [dim]:
-                raise ValueError("dim provided does not match dim found for coord")
-            data_dimension = dim
-        else:
-            # Try and get a coord dim
-            if other.shape != (1,):
-                try:
-                    coord_dims = cube.coord_dims(other)
-                    data_dimension = coord_dims[0] if coord_dims else None
-                except iris.exceptions.CoordinateNotFoundError:
-                    raise ValueError("Could not determine dimension for add/sub. Use add(coord, dim=dim)")
-
-        if other.ndim != 1:
-            raise iris.exceptions.CoordinateMultiDimError(other)
-
-        if other.has_bounds():
-            warnings.warn('%s by a bounded coordinate not well defined, ignoring bounds.' % operation_noun)
-
-        points = other.points
-
-        if data_dimension is not None:
-            points_shape = [1] * cube.ndim
-            points_shape[data_dimension] = -1
-            points = points.reshape(points_shape)
-
-        if in_place:
-            new_cube = cube
-            operation_function(new_cube.data, points, new_cube.data)
-        else:
-            new_cube = cube.copy(data=operation_function(cube.data, points))
-    elif isinstance(other, iris.cube.Cube):
-        # Deal with cube addition/subtraction by cube
-
-        # get a coordinate comparison of this cube and the cube to do the operation with
+    if isinstance(other, iris.cube.Cube):
+        # get a coordinate comparison of this cube and the cube to do the
+        # operation with
         coord_comp = iris.analysis.coord_comparison(cube, other)
 
         if coord_comp['transposable']:
@@ -278,33 +240,31 @@ def _add_subtract_common(operation_function, operation_symbol, operation_noun, o
 
         # provide a deprecation warning if the ignore keyword has been set
         if ignore is not True:
-            warnings.warn('The "ignore" keyword has been deprecated in add/subtract. This functionality is now automatic. '
-                          'The provided value to "ignore" has been ignored, and has been automatically calculated.')
+            warnings.warn('The "ignore" keyword has been deprecated in '
+                          'add/subtract. This functionality is now automatic. '
+                          'The provided value to "ignore" has been ignored, '
+                          'and has been automatically calculated.')
 
-        bad_coord_grps = (coord_comp['ungroupable_and_dimensioned'] + coord_comp['resamplable'])
+        bad_coord_grps = (coord_comp['ungroupable_and_dimensioned']
+                          + coord_comp['resamplable'])
         if bad_coord_grps:
-            raise ValueError('This operation cannot be performed as there are differing coordinates (%s) remaining '
-                             'which cannot be ignored.' % ', '.join({coord_grp.name() for coord_grp in bad_coord_grps}))
+            raise ValueError('This operation cannot be performed as there are '
+                             'differing coordinates (%s) remaining '
+                             'which cannot be ignored.'
+                             % ', '.join({coord_grp.name() for coord_grp
+                                          in bad_coord_grps}))
+    else:
+        coord_comp = None
 
-        if in_place:
-            new_cube = cube
-            operation_function(new_cube.data, other.data, new_cube.data)
-        else:
-            new_cube = cube.copy(data=operation_function(cube.data, other.data))
+    new_cube = _binary_op_common(operation_function, operation_noun, cube,
+                                 other, cube.units, dim, in_place)
 
+    if coord_comp:
         # If a coordinate is to be ignored - remove it
-        ignore = filter(None, [coord_grp[0] for coord_grp in coord_comp['ignorable']])
-        if not ignore:
-            ignore_string = ''
-        else:
-            ignore_string = ' (ignoring %s)' % ', '.join([coord.name() for coord in ignore])
+        ignore = filter(None, [coord_grp[0] for coord_grp
+                               in coord_comp['ignorable']])
         for coord in ignore:
             new_cube.remove_coord(coord)
-
-    else:
-        return NotImplemented
-
-    iris.analysis.clear_phenomenon_identity(new_cube)
 
     return new_cube
 
@@ -318,7 +278,8 @@ def multiply(cube, other, dim=None, in_place=False):
     * cube:
         An instance of :class:`iris.cube.Cube`.
     * other:
-        An instance of :class:`iris.cube.Cube` or :class:`iris.coords.Coord`, or a number.
+        An instance of :class:`iris.cube.Cube` or :class:`iris.coords.Coord`,
+        or a number or :class:`numpy.ndarray`.
 
     Kwargs:
 
@@ -329,9 +290,11 @@ def multiply(cube, other, dim=None, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _multiply_divide_common(np.multiply, '*', 'multiplication',
-                                   cube, other, dim=dim,
-                                   in_place=in_place)
+    _assert_is_cube(cube)
+    other_unit = getattr(other, 'units', '1')
+    new_unit = cube.units * other_unit
+    return _binary_op_common(np.multiply, 'multiplication', cube, other,
+                             new_unit, dim, in_place)
 
 
 def divide(cube, other, dim=None, in_place=False):
@@ -343,7 +306,8 @@ def divide(cube, other, dim=None, in_place=False):
     * cube:
         An instance of :class:`iris.cube.Cube`.
     * other:
-        An instance of :class:`iris.cube.Cube` or :class:`iris.coords.Coord`, or a number.
+        An instance of :class:`iris.cube.Cube` or :class:`iris.coords.Coord`,
+        or a number or :class:`numpy.ndarray`.
 
     Kwargs:
 
@@ -354,106 +318,11 @@ def divide(cube, other, dim=None, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _multiply_divide_common(np.divide, '/', 'division',
-                                   cube, other, dim=dim,
-                                   in_place=in_place)
-
-
-def _multiply_divide_common(operation_function, operation_symbol,
-                            operation_noun, cube, other, dim=None, 
-                            in_place=False):
-    """
-    Function which shares common code between multiplication and division of cubes.
-
-    operation_function   - function which does the operation (e.g. numpy.divide)
-    operation_symbol     - the textual symbol of the operation (e.g. '/')
-    operation_noun       - the noun of the operation (e.g. 'division')
-    operation_past_tense - the past tense of the operation (e.g. 'divided')
-
-    .. seealso:: For information on the dim keyword argument see :func:`multiply`.
-
-    """
-    if not isinstance(cube, iris.cube.Cube):
-        raise TypeError('The "cube" argument must be an instance of iris.Cube.')
-
-    if isinstance(other, (int, float)):
-        other = np.array(other)
-
-    other_unit = None
-
-    if isinstance(other, np.ndarray):
-        _assert_compatible(cube, other)
-        
-        if in_place:
-            new_cube = cube
-            new_cube.data = operation_function(cube.data, other)
-        else:
-            new_cube = cube.copy(data=operation_function(cube.data, other))
-        
-        other_unit = '1'
-    elif isinstance(other, iris.coords.Coord):
-        # Deal with cube multiplication/division by coordinate
-
-        # What dimension are we processing?
-        data_dimension = None
-        if dim is not None:
-            # Ensure the given dim matches the coord
-            if other in cube.coords() and cube.coord_dims(other) != [dim]:
-                raise ValueError("dim provided does not match dim found for coord")
-            data_dimension = dim
-        else:
-            # Try and get a coord dim
-            if other.shape != (1,):
-                try:
-                    coord_dims = cube.coord_dims(other)
-                    data_dimension = coord_dims[0] if coord_dims else None
-                except iris.exceptions.CoordinateNotFoundError:
-                    raise ValueError("Could not determine dimension for mul/div. Use mul(coord, dim=dim)")
-
-        if other.ndim != 1:
-            raise iris.exceptions.CoordinateMultiDimError(other)
-
-        if other.has_bounds():
-            warnings.warn('%s by a bounded coordinate not well defined, ignoring bounds.' % operation_noun)
-
-        points = other.points
-
-        # If the axis is defined then shape the provided points so that we can do the
-        # division (this is needed as there is no "axis" keyword to numpy's divide/multiply)
-        if data_dimension is not None:
-            points_shape = [1] * cube.ndim
-            points_shape[data_dimension] = -1
-            points = points.reshape(points_shape)
-        
-        if in_place:
-            new_cube = cube
-            new_cube.data = operation_function(cube.data, points)
-        else:
-            new_cube = cube.copy(data=operation_function(cube.data, points))
-
-        other_unit = other.units
-    elif isinstance(other, iris.cube.Cube):
-        # Deal with cube multiplication/division by cube
-        
-        if in_place:
-            new_cube = cube
-            new_cube.data = operation_function(cube.data, other.data)
-        else:
-            new_cube = cube.copy(data=operation_function(cube.data, other.data))
-        
-        other_unit = other.units
-    else:
-        return NotImplemented
-
-    # Update the units
-    if operation_function == np.multiply:
-        new_cube.units = cube.units * other_unit
-    elif operation_function == np.divide:
-        new_cube.units = cube.units / other_unit
-
-    iris.analysis.clear_phenomenon_identity(new_cube)
-
-    return new_cube
+    _assert_is_cube(cube)
+    other_unit = getattr(other, 'units', '1')
+    new_unit = cube.units / other_unit
+    return _binary_op_common(np.divide, 'divison', cube, other, new_unit, dim,
+                             in_place)
 
 
 def exponentiate(cube, exponent, in_place=False):
@@ -481,8 +350,10 @@ def exponentiate(cube, exponent, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    custom_pow = lambda data: pow(data, exponent)
-    return _math_op_common(cube, custom_pow, cube.units ** exponent,
+    _assert_is_cube(cube)
+    def power(data, out=None):
+        return np.power(data, exponent, out)
+    return _math_op_common(cube, power, cube.units ** exponent,
                            in_place=in_place)
 
 
@@ -578,18 +449,94 @@ def log10(cube, in_place=False):
                            in_place=in_place)
 
 
-def _math_op_common(cube, math_op, new_unit, in_place):
+def _binary_op_common(operation_function, operation_noun, cube, other,
+                      new_unit, dim=None, in_place=False):
+    """
+    Function which shares common code between binary operations.
 
-    data = math_op(cube.data)
+    operation_function   - function which does the operation (e.g. numpy.divide)
+    operation_noun       - the noun of the operation (e.g. 'division')
+    cube                 - the cube whose data is used as the first argument
+                           to `operation_function`
+    other                - the cube, coord, ndarray or number whose data is
+                           used as the second argument
+    new_unit             - unit for the resulting quantity
+    dim                  - dimension along which to apply `other` if it's a
+                           coordinate that is not found in `cube`
+    in_place             - whether or not to apply the operation in place to
+                           `cube` and `cube.data`
+    """
+    _assert_is_cube(cube)
 
-    if in_place:
-        copy_cube = cube
-        copy_cube.data = data
+    if isinstance(other, iris.coords.Coord):
+        other = _broadcast_cube_coord_data(cube, other, operation_noun, dim)
+    elif isinstance(other, iris.cube.Cube):
+        # TODO: add intelligent broadcasting along coordinate dimensions for
+        # all binary operators, not just + and -
+        other = other.data
+    # don't worry about checking for other data types (such as scalers or
+    # np.ndarrays) because _assert_compatible validates that they are broadcast
+    # compatible with cube.data
+    _assert_compatible(cube, other)
+
+    def unary_func(x, out=None):
+        ret = operation_function(x, other, out)
+        if ret is NotImplemented:
+            # explicitly raise the TypeError, so it gets raised even if, for
+            # example, `iris.analysis.maths.multiply(cube, other)` is called
+            # directly instead of `cube * other`
+            raise TypeError('cannot %s %r and %r objects' %
+                            (operation_function.__name__, type(x).__name__,
+                             type(other).__name__))
+        return ret
+    return _math_op_common(cube, unary_func, new_unit, in_place)
+
+
+def _broadcast_cube_coord_data(cube, other, operation_noun, dim=None):
+    # What dimension are we processing?
+    data_dimension = None
+    if dim is not None:
+        # Ensure the given dim matches the coord
+        if other in cube.coords() and cube.coord_dims(other) != [dim]:
+            raise ValueError("dim provided does not match dim found for coord")
+        data_dimension = dim
     else:
-        copy_cube = cube.copy(data)
+        # Try and get a coord dim
+        if other.shape != (1,):
+            try:
+                coord_dims = cube.coord_dims(other)
+                data_dimension = coord_dims[0] if coord_dims else None
+            except iris.exceptions.CoordinateNotFoundError:
+                raise ValueError("Could not determine dimension for %s. "
+                                 "Use %s(cube, coord, dim=dim)"
+                                 % (operation_noun, operation_noun))
 
-    # Update the metadata
-    iris.analysis.clear_phenomenon_identity(copy_cube)
-    copy_cube.units = new_unit
+    if other.ndim != 1:
+        raise iris.exceptions.CoordinateMultiDimError(other)
 
-    return copy_cube
+    if other.has_bounds():
+        warnings.warn('%s by a bounded coordinate not well defined, ignoring '
+                      'bounds.' % operation_noun)
+
+    points = other.points
+
+    # If the `data_dimension` is defined then shape the provided points for
+    # proper array broadcasting
+    if data_dimension is not None:
+        points_shape = [1] * cube.ndim
+        points_shape[data_dimension] = -1
+        points = points.reshape(points_shape)
+
+    return points
+
+
+def _math_op_common(cube, operation_function, new_unit, in_place=False):
+    _assert_is_cube(cube)
+    if in_place:
+        new_cube = cube
+        operation_function(new_cube.data, out=new_cube.data)
+    else:
+        new_cube = cube.copy(data=operation_function(cube.data))
+    iris.analysis.clear_phenomenon_identity(new_cube)
+    new_cube.units = new_unit
+    return new_cube
