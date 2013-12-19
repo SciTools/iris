@@ -4,12 +4,6 @@ What's new in Iris 1.6
 :Release: 1.6.0
 :Date: unreleased
 
-Incompatible changes
---------------------
-* The previously experimental 'concatenate' function is now a method of a
-  :class:`iris.cube.CubeList`, see :meth:`iris.cube.CubeList.concatenate`.  The
-  functionality is unchanged.
-
 Iris 1.6 features
 =================
 * A new utility function makes it easy to "shortcut" slow calculations or
@@ -18,7 +12,9 @@ Iris 1.6 features
 * A new experimental function removes any non-matching attributes from a group
   of cubes.  This can assist in merging cubes which only differ in their
   attributes.  See
-  :meth:`iris.experimental.equalise_cubes.equalise_attributes`.
+  :func:`iris.experimental.equalise_cubes.equalise_attributes`.
+* :func:iris.experimental.regrid_conservative_via_esmpy upgraded to work with
+  ESMPy version "ESMPy_620_01b".
 * Staggered grid support for Fieldsfiles extended to type 6 (Arakawa C grid
   with v at poles).
 * A new utility function is now available for creating a new cube axis as the
@@ -51,6 +47,9 @@ Incompatible changes
   use :meth:`iris.cube.Cube.slices()`.
 * The following boolean methods/properties on the
   :class:`~iris.unit.Unit` class have been removed.
+* The previously experimental 'concatenate' function is now a method of a
+  :class:`iris.cube.CubeList`, see :meth:`iris.cube.CubeList.concatenate`.  The
+  functionality is unchanged.
 
   ====================================== ===========================================
   Removed property/method                New method

@@ -373,7 +373,7 @@ class TestConservativeRegrid(tests.IrisTest):
         c2.add_dim_coord(x_coord_2, 1)
 
         # NOTE: at present, this causes an error inside ESMF ...
-        context = self.assertRaises(NameError)
+        context = self.assertRaises(ValueError)
         global_cell_supported = False
         if global_cell_supported:
             context = _donothing_context_manager()
