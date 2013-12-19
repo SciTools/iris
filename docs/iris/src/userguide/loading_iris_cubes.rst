@@ -279,11 +279,10 @@ For example, if we have a time sequence extending over multiple years ...
 
 ... we can select only points within a certain part of the year::
 
-    >>> swithuns_first = PartialDateTime(month=7, day=15)
-    >>> swithuns_last = PartialDateTime(month=8, day=24)
-    >>> constrain_time = iris.Constraint(time=lambda cell: cell.point >= swithuns_first and cell.point <= swithuns_last)
+    >>> st_swithuns_daterange = iris.Constraint(
+    ...     time=lambda cell: PartialDateTime(month=7, day=15) < cell.point < PartialDateTime(month=8, day=25))
     >>> with iris.FUTURE.context(cell_datetime_objects=True):
-    ...   selected = cube_mondays.extract(constrain_time)
+    ...   selected = cube_mondays.extract(st_swithuns_daterange)
     ... 
     >>> print 'Selected times == in-period Mondays:\n', selected.coord('time')
     Selected times == in-period Mondays:

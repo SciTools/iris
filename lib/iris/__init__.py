@@ -102,7 +102,6 @@ import itertools
 import logging
 import os
 import threading
-import warnings
 
 import iris.config
 import iris.cube
