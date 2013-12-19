@@ -151,6 +151,7 @@ class TestVertical(tests.IrisTest):
         pressure_field = iris.fileformats.pp.PPField3()
         pressure_field.lbfc = 0
         pressure_field.lbvc = 0
+        pressure_field.brsvd = [None, None]
         pressure_field.lbuser = [None] * 7
         iris.fileformats.pp._ensure_save_rules_loaded()
         iris.fileformats.pp._save_rules.verify(pressure_cube, pressure_field)
@@ -158,6 +159,7 @@ class TestVertical(tests.IrisTest):
         data_field = iris.fileformats.pp.PPField3()
         data_field.lbfc = 0
         data_field.lbvc = 0
+        data_field.brsvd = [None, None]
         data_field.lbuser = [None] * 7
         data_cube.standard_name = 'air_temperature'  # XXX Workaround until #892
         iris.fileformats.pp._save_rules.verify(data_cube, data_field)

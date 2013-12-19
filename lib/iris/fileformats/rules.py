@@ -594,6 +594,14 @@ def scalar_cell_method(cube, method, coord_name):
     return found_cell_method
 
 
+def has_aux_factory(cube, aux_factory_class):
+    """Try to find an aux factory instance on the cube of the given type."""
+    for factory in cube.aux_factories:
+        if isinstance(factory, aux_factory_class):
+            return True
+    return False
+
+
 class _ReferenceError(Exception):
     """Signals an invalid/missing reference field."""
     pass
