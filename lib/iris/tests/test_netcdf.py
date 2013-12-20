@@ -44,6 +44,20 @@ import iris.coord_systems as icoord_systems
 import iris.tests.stock as stock
 
 
+def _write_nc_var(ds, name, dims=(), data=None, attributes={}):
+    """Helper to create a new netCDF4 Variable in a dataset."""
+    if data is None:
+        datatype = 'c'
+    else:
+        data = np.array(data)
+        datatype = data.dtype
+    nc_var = ds.createVariable(name, datatype, dims)
+    for att_name, att_val in attributes.iteritems():
+        nc_var.setncattr(att_name, att_val)
+    if data is not None:
+        nc_var[:] = data
+
+
 @iris.tests.skip_data
 class TestNetCDFLoad(tests.IrisTest):
     def test_monotonic(self):
@@ -107,6 +121,87 @@ class TestNetCDFLoad(tests.IrisTest):
         self.assertIsInstance(cube.coord('latitude')._points,
                               iris.aux_factory.LazyArray)
 
+    def test_load_rotated_extracase(self):
+        # Check load of Rotated data with specific grid parameters.
+        # create a temporary netcdf file + read a cube from it
+        with self.temp_filename(suffix='.nc') as temp_ncpath:
+            with nc.Dataset(temp_ncpath, 'w') as ds:
+                nx, ny = 6, 4
+                ds.createDimension('x', nx)
+                ds.createDimension('y', ny)
+                _write_nc_var(ds, 'x', dims=('x'),
+                              data=np.linspace(0.0, 100.0, nx),
+                              attributes=
+                                  {'units': 'degrees',
+                                   'standard_name': 'grid_longitude'})
+                _write_nc_var(ds, 'y', dims=('y'),
+                              data=np.linspace(0.0, 70.0, ny),
+                              attributes=
+                                  {'units': 'degrees',
+                                   'standard_name': 'grid_latitude'})
+                _write_nc_var(
+                    ds, 'grid_map_var',
+                    attributes={
+                        'grid_mapping_name': 'rotated_latitude_longitude',
+                        'grid_north_pole_latitude': 32.5,
+                        'grid_north_pole_longitude': 170.0})
+                _write_nc_var(ds, 'temperature', dims=('y', 'x'),
+                              data=np.zeros((ny, nx)),
+                              attributes={'units': 'K',
+                                          'standard_name': 'air_temperature',
+                                          'grid_mapping': 'grid_map_var'})
+            # load file as a single cube
+            cube, = iris.fileformats.netcdf.load_cubes([temp_ncpath])
+
+        # test cube properties as required
+        x_coord = cube.coord(axis='x')
+        self.assertEqual(x_coord.name(), 'grid_longitude')
+        cs = x_coord.coord_system
+        self.assertEqual(cs.grid_mapping_name, 'rotated_latitude_longitude')
+        self.assertEqual(cs.grid_north_pole_latitude, 32.5)
+        self.assertEqual(cs.grid_north_pole_longitude, 170.0)
+
+    def test_load_rotated_partial_extracase(self):
+        # Check load of Rotated data with specific grid parameters.
+        # create a temporary netcdf file + read a cube from it
+        with self.temp_filename(suffix='.nc') as temp_ncpath:
+            with nc.Dataset(temp_ncpath, 'w') as ds:
+                nx, ny = 6, 4
+                ds.createDimension('x', nx)
+                ds.createDimension('y', ny)
+                _write_nc_var(ds, 'x', dims=('x'),
+                              data=np.linspace(0.0, 100.0, nx),
+                              attributes=
+                                  {'units': 'degrees',
+                                   'standard_name': 'grid_longitude'})
+                _write_nc_var(ds, 'y', dims=('y'),
+                              data=np.linspace(0.0, 70.0, ny),
+                              attributes=
+                                  {'units': 'degrees',
+                                   'standard_name': 'grid_latitude'})
+                _write_nc_var(
+                    ds, 'grid_map_var',
+                    attributes={
+                        'grid_mapping_name': 'rotated_latitude_longitude'})
+#                              ,
+#                        'grid_north_pole_latitude': 32.5,
+#                        'grid_north_pole_longitude': 170.0})
+                _write_nc_var(ds, 'temperature', dims=('y', 'x'),
+                              data=np.zeros((ny, nx)),
+                              attributes={'units': 'K',
+                                          'standard_name': 'air_temperature',
+                                          'grid_mapping': 'grid_map_var'})
+            # load file as a single cube
+            cube, = iris.fileformats.netcdf.load_cubes([temp_ncpath])
+
+        # test cube properties as required
+        x_coord = cube.coord(axis='x')
+        self.assertEqual(x_coord.name(), 'grid_longitude')
+        cs = x_coord.coord_system
+        self.assertEqual(cs.grid_mapping_name, 'rotated_latitude_longitude')
+        self.assertEqual(cs.grid_north_pole_latitude, 90.0)
+        self.assertEqual(cs.grid_north_pole_longitude, 0.0)
+
     def test_load_rotated_xyt_precipitation(self):
         # Test loading single xyt rotated pole CF-netCDF file.
         cube = iris.load_cube(
@@ -144,6 +239,91 @@ class TestNetCDFLoad(tests.IrisTest):
                          expected)
         self.assertEqual(cube.coord('projection_y_coordinate').coord_system,
                          expected)
+
+    def _test_load_lambert_conformal(self, parallels, centre_latlons,
+                                     expect_no_cs=False):
+        # Check load of Lambert Conformal with given parameters.
+        central_lat, central_lon = centre_latlons
+        # create a temporary netcdf file + read a cube from it
+        with self.temp_filename(suffix='.nc') as temp_ncpath:
+            with nc.Dataset(temp_ncpath, 'w') as ds:
+                nx, ny = 6, 4
+                ds.createDimension('x', nx)
+                ds.createDimension('y', ny)
+                _write_nc_var(ds, 'x', dims=('x'),
+                              data=np.linspace(0.0, 100.0, nx),
+                              attributes=
+                                  {'units': 'km',
+                                   'standard_name': 'projection_x_coordinate'})
+                _write_nc_var(ds, 'y', dims=('y'),
+                              data=np.linspace(0.0, 100.0, ny),
+                              attributes=
+                                  {'units': 'km',
+                                   'standard_name': 'projection_y_coordinate'})
+                cs_attrs = {'grid_mapping_name': 'lambert_conformal_conic'}
+                if parallels:
+                    cs_attrs['standard_parallel'] = parallels
+                if central_lat is not None:
+                    cs_attrs['latitude_of_projection_origin'] = central_lat
+                if central_lon is not None:
+                    cs_attrs['longitude_of_central_meridian'] = central_lon
+                _write_nc_var(ds, 'Lambert_Conformal', attributes=cs_attrs)
+                _write_nc_var(ds, 'temperature', dims=('y', 'x'),
+                              data=np.zeros((ny, nx)),
+                              attributes={'units': 'K',
+                                          'standard_name': 'air_temperature',
+                                          'grid_mapping': 'Lambert_Conformal'})
+            # load file as a single cube
+            cube, = iris.fileformats.netcdf.load_cubes([temp_ncpath])
+
+        # test cube properties as required
+        x_coord = cube.coord(axis='x')
+        self.assertEqual(x_coord.name(), 'projection_x_coordinate')
+        cs = getattr(x_coord, 'coord_system', None)
+        if expect_no_cs:
+            self.assertIsNone(cs)
+        else:
+            self.assertEqual(cs.grid_mapping_name, 'lambert_conformal')
+            self.assertEqual(cs.central_lat, central_lat)
+            self.assertEqual(cs.central_lon, central_lon)
+            if len(parallels) == 1:
+                self.assertEqual(cs.secant_latitudes,
+                                 (parallels[0], parallels[0]))
+            else:
+                self.assertEqual(cs.secant_latitudes, parallels)
+
+    def test_load_lambert_conformal_1sp(self):
+        # Check Lambert Conformal load with a single parallel.
+        self._test_load_lambert_conformal(
+            parallels=(50.0,),
+            centre_latlons=(50.0, 107.0))
+
+    def test_load_lambert_conformal_2sp(self):
+        # Check Lambert Conformal load with two parallels.
+        self._test_load_lambert_conformal(
+            parallels=(-35.3, -73.0),
+            centre_latlons=(-51.2, 137.0))
+
+    def test_load_lambert_conformal_noparallels(self):
+        # Check Lambert Conformal load with no map centre.
+        self._test_load_lambert_conformal(
+            parallels=None,
+            centre_latlons=(-51.2, 137.0),
+            expect_no_cs=True)
+
+    def test_load_lambert_conformal_nocentrelat(self):
+        # Check Lambert Conformal load with no map centre.
+        self._test_load_lambert_conformal(
+            parallels=(-35.3, -73.0),
+            centre_latlons=(None, 137.0),
+            expect_no_cs=True)
+
+    def test_load_lambert_conformal_nocentrelon(self):
+        # Check Lambert Conformal load with no map centre.
+        self._test_load_lambert_conformal(
+            parallels=(-35.3, -73.0),
+            centre_latlons=(-51.2, None),
+            expect_no_cs=True)
 
     def test_missing_climatology(self):
         # Check we can cope with a missing climatology variable.
@@ -233,6 +413,70 @@ class TestNetCDFCRS(tests.IrisTest):
         self.grid.earth_radius = earth_radius
         crs = pyke_rules.build_coordinate_system(self.grid)
         self.assertEqual(crs, icoord_systems.GeogCS(earth_radius))
+
+    def test_lat_lon_no_ellipsoid(self):
+        # check for a 'plain' grid_mapping var with no ellipsoid information.
+        with self.temp_filename(suffix='.nc') as temp_ncpath:
+            with nc.Dataset(temp_ncpath, 'w') as ds:
+                nx, ny = 6, 4
+                ds.createDimension('x', nx)
+                ds.createDimension('y', ny)
+                _write_nc_var(ds, 'x', dims=('x'),
+                              data=np.linspace(0.0, 100.0, nx),
+                              attributes=
+                                  {'units': 'degrees_east',
+                                   'standard_name': 'longitude'})
+                _write_nc_var(ds, 'y', dims=('y'),
+                              data=np.linspace(0.0, 100.0, ny),
+                              attributes=
+                                  {'units': 'degrees_north',
+                                   'standard_name': 'latitude'})
+                _write_nc_var(
+                    ds, 'grid_mapping_latlon',
+                    attributes={'grid_mapping_name': 'latitude_longitude'})
+                _write_nc_var(
+                    ds, 'temperature', dims=('y', 'x'),
+                    data=np.zeros((ny, nx)),
+                    attributes={'units': 'K',
+                                'standard_name': 'air_temperature',
+                                'grid_mapping': 'grid_mapping_latlon'})
+            # load file as a single cube
+            cube, = iris.fileformats.netcdf.load_cubes([temp_ncpath])
+
+        # test resulting cube properties
+        x_coord = cube.coord(axis='x')
+        self.assertEqual(x_coord.name(), 'longitude')
+        self.assertIsNone(x_coord.coord_system)
+
+    def test_lat_lon_no_grid_mapping(self):
+        # check that a 'plain' latlon grid has no ellipsoid.
+        with self.temp_filename(suffix='.nc') as temp_ncpath:
+            with nc.Dataset(temp_ncpath, 'w') as ds:
+                nx, ny = 6, 4
+                ds.createDimension('x', nx)
+                ds.createDimension('y', ny)
+                _write_nc_var(ds, 'x', dims=('x'),
+                              data=np.linspace(0.0, 100.0, nx),
+                              attributes=
+                                  {'units': 'degrees_east',
+                                   'standard_name': 'longitude'})
+                _write_nc_var(ds, 'y', dims=('y'),
+                              data=np.linspace(0.0, 100.0, ny),
+                              attributes=
+                                  {'units': 'degrees_north',
+                                   'standard_name': 'latitude'})
+                _write_nc_var(
+                    ds, 'temperature', dims=('y', 'x'),
+                    data=np.zeros((ny, nx)),
+                    attributes={'units': 'K',
+                                'standard_name': 'air_temperature'})
+            # load file as a single cube
+            cube, = iris.fileformats.netcdf.load_cubes([temp_ncpath])
+
+        # test resulting cube properties
+        x_coord = cube.coord(axis='x')
+        self.assertEqual(x_coord.name(), 'longitude')
+        self.assertIsNone(x_coord.coord_system)
 
 
 class SaverPermissions(tests.IrisTest):

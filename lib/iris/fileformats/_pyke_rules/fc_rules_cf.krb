@@ -94,6 +94,27 @@ fc_provides_grid_mapping_transverse_mercator
         python coordinate_system = build_transverse_mercator_coordinate_system(engine, cf_grid_var)
         python engine.provides['coordinate_system'] = coordinate_system
         facts_cf.provides(coordinate_system, transverse_mercator)
+        facts_cf.provides(coordinate_system_is_non_latlon)
+        python engine.rule_triggered.add(rule.name)
+
+#
+# Context:
+#   This rule will trigger iff a grid_mapping() case specific fact
+#   has been asserted that refers to a Lambert Conformal coordinate system.
+#
+# Purpose:
+#   Creates the LambertConformal coordinate system.
+#
+fc_provides_grid_mapping_lambert_conformal
+    foreach
+        facts_cf.grid_mapping($grid_mapping)
+        check is_grid_mapping(engine, $grid_mapping, CF_GRID_MAPPING_LAMBERT_CONFORMAL)
+    assert
+        python cf_grid_var = engine.cf_var.cf_group.grid_mappings[$grid_mapping]
+        python coordinate_system = build_lambert_conformal_coordinate_system(engine, cf_grid_var)
+        python engine.provides['coordinate_system'] = coordinate_system
+        facts_cf.provides(coordinate_system, lambert_conformal)
+        facts_cf.provides(coordinate_system_is_non_latlon)
         python engine.rule_triggered.add(rule.name)
 
 #
@@ -486,7 +507,7 @@ fc_build_coordinate_longitude_nocs
 #
 # Context:
 #   This rule will trigger iff a projection_x_coordinate coordinate exists and
-#   a transverse Mercator coordinate system exists.
+#   we have a coordinate system which uses a non-latlon projection
 #
 # Purpose:
 #   Add the projection_x_coordinate coordinate into the cube.
@@ -494,19 +515,20 @@ fc_build_coordinate_longitude_nocs
 fc_build_coordinate_projection_x_transverse_mercator
     foreach
         facts_cf.provides(coordinate, projection_x_coordinate, $coordinate)
-        facts_cf.provides(coordinate_system, transverse_mercator)
+        facts_cf.provides(coordinate_system_is_non_latlon)
     assert
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_PROJ_X,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.provides['coordinate_system'],
+                                          convert_units_string='m')
         python engine.rule_triggered.add(rule.name)
 
 
 #
 # Context:
 #   This rule will trigger iff a projection_y_coordinate coordinate exists and
-#   a transverse Mercator coordinate system exists.
+#   we have a coordinate system which uses a non-latlon projection
 #
 # Purpose:
 #   Add the projection_y_coordinate coordinate into the cube.
@@ -514,12 +536,13 @@ fc_build_coordinate_projection_x_transverse_mercator
 fc_build_coordinate_projection_y_transverse_mercator
     foreach
         facts_cf.provides(coordinate, projection_y_coordinate, $coordinate)
-        facts_cf.provides(coordinate_system, transverse_mercator)
+        facts_cf.provides(coordinate_system_is_non_latlon)
     assert
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_PROJ_Y,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.provides['coordinate_system'],
+                                          convert_units_string='m')
         python engine.rule_triggered.add(rule.name)
 
 
@@ -720,6 +743,8 @@ fc_extras
     CF_ATTR_GRID_SEMI_MINOR_AXIS = 'semi_minor_axis'
     CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN = 'latitude_of_projection_origin'
     CF_ATTR_GRID_LON_OF_PROJ_ORIGIN = 'longitude_of_projection_origin'
+    CF_ATTR_GRID_LON_OF_CENTRAL_MERIDIAN = 'longitude_of_central_meridian'
+    CF_ATTR_GRID_STANDARD_PARALLEL = 'standard_parallel'
     CF_ATTR_GRID_FALSE_EASTING = 'false_easting'
     CF_ATTR_GRID_FALSE_NORTHING = 'false_northing'
     CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN = 'scale_factor_at_projection_origin'
@@ -830,21 +855,23 @@ fc_extras
         if major is None and minor is None and inverse_flattening is None:
             major = getattr(cf_grid_var, CF_ATTR_GRID_EARTH_RADIUS, None) 
 
-        return major, minor, inverse_flattening
+        ellipsoid = None
+        if major is not None or minor is not None or inverse_flattening is not None:
+            ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
+
+        return ellipsoid
 
 
     ################################################################################
     def build_coordinate_system(cf_grid_var):
         """Create a coordinate system from the CF-netCDF grid mapping variable."""
-        major, minor, inverse_flattening = _get_ellipsoid(cf_grid_var)
-
-        return iris.coord_systems.GeogCS(major, minor, inverse_flattening)
+        return _get_ellipsoid(cf_grid_var)
 
 
     ################################################################################
     def build_rotated_coordinate_system(engine, cf_grid_var):
         """Create a rotated coordinate system from the CF-netCDF grid mapping variable."""
-        major, minor, inverse_flattening = _get_ellipsoid(cf_grid_var)
+        ellipsoid = _get_ellipsoid(cf_grid_var)
 
         north_pole_latitude = getattr(cf_grid_var, CF_ATTR_GRID_NORTH_POLE_LAT, 90.0)
         north_pole_longitude = getattr(cf_grid_var, CF_ATTR_GRID_NORTH_POLE_LON, 0.0)
@@ -853,9 +880,6 @@ fc_extras
 
         north_pole_grid_lon = getattr(cf_grid_var, CF_ATTR_GRID_NORTH_POLE_GRID_LON, 0.0)
 
-        ellipsoid = None
-        if major is not None or minor is not None or inverse_flattening is not None:
-            ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
         rcs = iris.coord_systems.RotatedGeogCS(north_pole_latitude, north_pole_longitude,
                                                north_pole_grid_lon, ellipsoid)
@@ -870,7 +894,7 @@ fc_extras
         grid mapping variable.
 
         """
-        major, minor, inverse_flattening = _get_ellipsoid(cf_grid_var)
+        ellipsoid = _get_ellipsoid(cf_grid_var)
 
         latitude_of_projection_origin = getattr(
             cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None)
@@ -892,16 +916,49 @@ fc_extras
             scale_factor_at_central_meridian = getattr(
                 cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None)
 
-        ellipsoid = None
-        if major is not None or minor is not None or \
-                inverse_flattening is not None:
-            ellipsoid = iris.coord_systems.GeogCS(major, minor,
-                                                  inverse_flattening)
-
         cs = iris.coord_systems.TransverseMercator(
             latitude_of_projection_origin, longitude_of_central_meridian,
             false_easting, false_northing, scale_factor_at_central_meridian,
             ellipsoid)
+
+        return cs
+
+    def build_lambert_conformal_coordinate_system(engine, cf_grid_var):
+        """
+        Create a Lambert Conformal coordinate system from the CF-netCDF
+        grid_mapping variable.
+
+        """
+        ellipsoid = _get_ellipsoid(cf_grid_var)
+
+        standard_parallels = getattr(
+            cf_grid_var, CF_ATTR_GRID_STANDARD_PARALLEL, None)
+        longitude_of_central_meridian = getattr(
+            cf_grid_var, CF_ATTR_GRID_LON_OF_CENTRAL_MERIDIAN, None)
+        latitude_of_projection_origin = getattr(
+            cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None)
+        false_easting = getattr(
+            cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
+        false_northing = getattr(
+            cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
+
+        # Disallow underspecified cases as, although the CF spec implies that
+        # various control parameters may be absent, it doesn't unabiguously
+        # define the meaning.  (From context, probably PROJ4 defaults -- but
+        # those are not spelt out either!)
+        spec_ok = standard_parallels is not None and \
+                  longitude_of_central_meridian is not None and \
+                  latitude_of_projection_origin is not None
+        if spec_ok:
+            cs = iris.coord_systems.LambertConformal(
+                central_lat=latitude_of_projection_origin,
+                central_lon=longitude_of_central_meridian,
+                false_easting=false_easting,
+                false_northing=false_northing,
+                secant_latitudes=standard_parallels,
+                ellipsoid=ellipsoid)
+        else:
+            cs = None
 
         return cs
 
@@ -1006,7 +1063,7 @@ fc_extras
 
 
     ################################################################################
-    def build_dimension_coordinate(engine, cf_coord_var, coord_name=None, coord_system=None):
+    def build_dimension_coordinate(engine, cf_coord_var, coord_name=None, coord_system=None, convert_units_string=None):
         """Create a dimension coordinate (DimCoord) and add it to the cube."""
 
         cf_var = engine.cf_var
@@ -1101,6 +1158,10 @@ fc_extras
             warnings.warn(msg.format(name=str(cf_coord_var.cf_name),
                                      error=e_msg))
         else:
+            # Convert to specific units if required
+            if convert_units_string:
+                fix_units = iris.unit.Unit(convert_units_string)
+                coord.convert_units(fix_units)
             # Add the dimension coordinate to the cube.
             if data_dims:
                 cube.add_dim_coord(coord, data_dims)

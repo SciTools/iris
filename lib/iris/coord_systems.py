@@ -21,6 +21,7 @@ Definitions of coordinate systems.
 
 from __future__ import division
 from abc import ABCMeta, abstractmethod
+import numpy as np
 import warnings
 
 import cartopy.crs
@@ -542,7 +543,7 @@ class LambertConformal(CoordSystem):
         Kwargs:
 
             * secant_latitudes
-                    Latitudes of secant intersection.
+                    Latitudes of secant intersection.  One or two values.
 
             * ellipsoid
                     :class:`GeogCS` defining the ellipsoid.
@@ -555,6 +556,14 @@ class LambertConformal(CoordSystem):
             secant_latitudes=(33, 45)
 
         """
+        # Convert standard parallels to a tuple-pair (from length 0, 1 or 2).
+        # Produces a 2SP equivalent of 1SP form : Cartopy requires 2SP form.
+        lats = np.array(secant_latitudes)
+        if lats.ndim < 1:
+            lats = (lats, lats)
+        elif len(lats) < 2:
+            lats = (lats[0], lats[0])
+        secant_latitudes = (float(lats[0]), float(lats[1]))
 
         #: True latitude of planar origin in degrees.
         self.central_lat = central_lat
