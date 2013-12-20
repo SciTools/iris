@@ -20,12 +20,30 @@
 # importing anything else.
 import iris.tests as tests
 
-from collections import Counter
-
 import mock
 import numpy as np
 
 from iris.fileformats.abf import ABFField
+
+
+class MethodCounter(object):
+    def __init__(self, method_name):
+        self.method_name = method_name
+        self.count = 0
+
+    def __enter__(self):
+        self.orig_method = getattr(ABFField, self.method_name)
+
+        def new_method(*args, **kwargs):
+            self.count += 1
+            self.orig_method(*args, **kwargs)
+
+        setattr(ABFField, self.method_name, new_method)
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        setattr(ABFField, self.method_name, self.orig_method)
+        return False
 
 
 class Test_data(tests.IrisTest):
@@ -33,27 +51,14 @@ class Test_data(tests.IrisTest):
         path = '0000000000000000jan00000'
         field = ABFField(path)
 
-        call_counts = Counter()
-
-        orig_getattr = ABFField.__getattr__
-        orig_read = ABFField._read
-
-        def new_getattr(self, key):
-            call_counts['getattr'] += 1
-            orig_getattr(self, key)
-
-        def new_read(self):
-            call_counts['read'] += 1
-            orig_read(self)
-
-        ABFField.__getattr__ = new_getattr
-        ABFField._read = new_read
-
         with mock.patch('iris.fileformats.abf.np.fromfile') as fromfile:
-            field.data
+            with MethodCounter('__getattr__') as getattr:
+                with MethodCounter('_read') as read:
+                    field.data
 
         fromfile.assert_called_once_with(path, dtype='>u1')
-        self.assertEqual(call_counts, {'read': 1, 'getattr': 1})
+        self.assertEqual(getattr.count, 1)
+        self.assertEqual(read.count, 1)
 
 
 if __name__ == "__main__":
