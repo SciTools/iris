@@ -520,19 +520,19 @@ class LambertConformal(CoordSystem):
 
     grid_mapping_name = "lambert_conformal"
 
-    def __init__(self, central_lat=None, central_lon=None,
+    def __init__(self, central_lat=39.0, central_lon=-96.0,
                  false_easting=0.0, false_northing=0.0,
-                 secant_latitudes=None, ellipsoid=None):
+                 secant_latitudes=(33, 45), ellipsoid=None):
         """
         Constructs a LambertConformal coord system.
 
         Args:
 
             * central_lat
-                    The latitude of the map centre.
+                    The latitude of "unitary scale".
 
             * central_lon
-                    The longitude of the map centre.
+                    The central longitude.
 
             * false_easting
                     X offset from planar origin in metres.
@@ -556,28 +556,14 @@ class LambertConformal(CoordSystem):
             secant_latitudes=(33, 45)
 
         """
-        # Replicate default PROJ4 behaviour (determined by experiment), which
-        # is: if no standard lats given, centre on standard US map, else (0,0).
-        if secant_latitudes is None:
-            secant_latitudes = (33, 45)
-            central_lat_default, central_lon_default = (39.0, -96.0)
-        else:
-            central_lat_default, central_lon_default = (0.0, 0.0)
-
         # Convert standard parallels to a tuple-pair (from length 0, 1 or 2).
         # Produces a 2SP equivalent of 1SP form : Cartopy requires 2SP form.
         lats = np.array(secant_latitudes)
         if lats.ndim < 1:
             lats = (lats, lats)
         elif len(lats) < 2:
-            lats = lats[[0, 0]]
+            lats = (lats[0], lats[0])
         secant_latitudes = (float(lats[0]), float(lats[1]))
-
-        # Implement the map centre default: Cartopy needs a lon_0 value.
-        if central_lat is None:
-            central_lat = central_lat_default
-        if central_lon is None:
-            central_lon = central_lon_default
 
         #: True latitude of planar origin in degrees.
         self.central_lat = central_lat
