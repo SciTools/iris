@@ -164,7 +164,6 @@ class TestVertical(tests.IrisTest):
         data_field.lbvc = 0
         data_field.brsvd = [None, None]
         data_field.lbuser = [None] * 7
-        data_cube.standard_name = 'air_temperature'  # XXX Workaround until #892
         iris.fileformats.pp._save_rules.verify(data_cube, data_field)
 
         # The reference surface field should have STASH=409

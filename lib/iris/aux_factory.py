@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -312,10 +312,15 @@ class AuxCoordFactory(CFVariableMixin):
                     shape.append(1)
                 nd_points.shape = shape
             else:
-                # If no coord, treat value as zero.
+                # If no coord, treat value as zero with required
+                # dimensionality.
                 # Use a float16 to provide `shape` attribute and avoid
                 # promoting other arguments to a higher precision.
-                nd_points = np.float16(0)
+                if derived_dims:
+                    shape = (1,) * len(derived_dims)
+                else:
+                    shape = (1,)
+                nd_points = np.zeros(shape, dtype=np.float16)
 
             nd_points_by_key[key] = nd_points
         return nd_points_by_key
@@ -357,10 +362,15 @@ class AuxCoordFactory(CFVariableMixin):
                     shape.append(1)
                 nd_values.shape = shape
             else:
-                # If no coord, treat value as zero.
+                # If no coord, treat value as zero array with required
+                # dimensionality (incl. extra 1 for bounds).
                 # Use a float16 to provide `shape` attribute and avoid
                 # promoting other arguments to a higher precision.
-                nd_values = np.float16(0)
+                if derived_dims:
+                    shape = (1,) * (len(derived_dims) + 1)
+                else:
+                    shape = (1, 1)
+                nd_values = np.zeros(shape, dtype=np.float16)
 
             nd_values_by_key[key] = nd_values
         return nd_values_by_key
@@ -753,12 +763,12 @@ class HybridPressureFactoryWithReferencePressure(AuxCoordFactory):
         # Check that provided coords meet necessary conditions.
         self._check_dependencies(delta, reference_pressure, sigma,
                                  surface_air_pressure)
-        
+
         self.delta = delta
         self.reference_pressure = reference_pressure
         self.sigma = sigma
         self.surface_air_pressure = surface_air_pressure
-        
+
         self.standard_name = 'air_pressure'
         self.attributes = {}
 
@@ -800,9 +810,10 @@ class HybridPressureFactoryWithReferencePressure(AuxCoordFactory):
         # Check units.
         if delta is not None and not delta.units.is_dimensionless():
             raise ValueError('Invalid units: delta must be dimensionless.')
-
+        if sigma is not None and not sigma.units.is_dimensionless():
+            raise ValueError('Invalid units: sigma must be dimensionless.')
         if delta is not None and reference_pressure is not None and \
-                surface_air_pressure is not None and \
+                sigma is not None and surface_air_pressure is not None and \
                 reference_pressure.units != surface_air_pressure.units:
             msg = 'Incompatible units: reference_pressure and ' \
                   'surface_air_pressure must have the same units.'
@@ -927,13 +938,10 @@ class HybridPressureFactoryWithReferencePressure(AuxCoordFactory):
         for name, coord in self.dependencies.items():
             if old_coord is coord:
                 new_dependencies[name] = new_coord
-                break
-
-        try:
-            self._check_dependencies(**new_dependencies)
-        except ValueError as e:
-            msg = 'Failed to update dependencies. ' + e.message
-            raise ValueError(msg)
-        else:
-            setattr(self, name, new_coord)
-
+                try:
+                    self._check_dependencies(**new_dependencies)
+                except ValueError as e:
+                    msg = 'Failed to update dependencies. ' + e.message
+                    raise ValueError(msg)
+                else:
+                    setattr(self, name, new_coord)

@@ -595,7 +595,11 @@ def scalar_cell_method(cube, method, coord_name):
 
 
 def has_aux_factory(cube, aux_factory_class):
-    """Try to find an aux factory instance on the cube of the given type."""
+    """
+    Try to find an class:`~iris.aux_factory.AuxCoordFactory` instance of the
+    specified type on the cube.
+
+    """
     for factory in cube.aux_factories:
         if isinstance(factory, aux_factory_class):
             return True
@@ -603,10 +607,19 @@ def has_aux_factory(cube, aux_factory_class):
 
 
 def aux_factory(cube, aux_factory_class):
-    """Return the aux factory instance from the cube of the given type."""
+    """
+    Return the class:`~iris.aux_factory.AuxCoordFactory` instance of the
+    specified type from a cube.
+
+    """
     aux_factories = [aux_factory for aux_factory in cube.aux_factories if
                      isinstance(aux_factory, aux_factory_class)]
-    assert len(aux_factories) == 1
+    if not aux_factories:
+        raise ValueError('Cube does not have an aux factory of '
+                         'type {!r}.'.format(aux_factory_class))
+    elif len(aux_factories) > 1:
+        raise ValueError('Cube has more than one aux factory of '
+                         'type {!r}.'.format(aux_factory_class))
     return aux_factories[0]
 
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
-# DO NOT EDIT DIRECTLY
-# Auto-generated from SciTools/iris-code-generators:tools/gen_rules.py
+# Historically this was auto-generated from
+# SciTools/iris-code-generators:tools/gen_rules.py
 
 import warnings
 

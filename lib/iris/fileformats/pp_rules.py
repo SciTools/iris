@@ -411,7 +411,7 @@ def convert(f):
     if f.lbuser[3] == 33:
         references.append(ReferenceTarget('orography', None))
 
-    if f.lbuser[3] == 409:
+    if f.lbuser[3] == 409 or f.lbuser[3] == 1:
         references.append(ReferenceTarget('surface_air_pressure', None))
 
     return (factories, references, standard_name, long_name, units, attributes,
