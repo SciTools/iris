@@ -340,15 +340,11 @@ class Test_LambertConformal(tests.GraphicsTest):
         lcc = LambertConformal(secant_latitudes=(25.4, 57.3))
         self.assertEqual(lcc.secant_latitudes[0], 25.4)
         self.assertEqual(lcc.secant_latitudes[1], 57.3)
-        self.assertEqual(lcc.central_lat, 0.0)
-        self.assertEqual(lcc.central_lon, 0.0)
 
     def test_1sp(self):
         lcc = LambertConformal(secant_latitudes=43.2)
         self.assertEqual(lcc.secant_latitudes[0], 43.2)
         self.assertEqual(lcc.secant_latitudes[1], 43.2)
-        self.assertEqual(lcc.central_lat, 0.0)
-        self.assertEqual(lcc.central_lon, 0.0)
 
 
 if __name__ == "__main__":

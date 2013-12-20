@@ -942,13 +942,23 @@ fc_extras
         false_northing = getattr(
             cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
 
-        cs = iris.coord_systems.LambertConformal(
-            central_lat=latitude_of_projection_origin,
-            central_lon=longitude_of_central_meridian,
-            false_easting=false_easting,
-            false_northing=false_northing,
-            secant_latitudes=standard_parallels,
-            ellipsoid=ellipsoid)
+        # Disallow underspecified cases as, although the CF spec implies that
+        # various control parameters may be absent, it doesn't unabiguously
+        # define the meaning.  (From context, probably PROJ4 defaults -- but
+        # those are not spelt out either!)
+        spec_ok = standard_parallels is not None and \
+                  longitude_of_central_meridian is not None and \
+                  latitude_of_projection_origin is not None
+        if spec_ok:
+            cs = iris.coord_systems.LambertConformal(
+                central_lat=latitude_of_projection_origin,
+                central_lon=longitude_of_central_meridian,
+                false_easting=false_easting,
+                false_northing=false_northing,
+                secant_latitudes=standard_parallels,
+                ellipsoid=ellipsoid)
+        else:
+            cs = None
 
         return cs
 
