@@ -48,7 +48,6 @@ class Test_register__cube_sig(tests.IrisTest):
         with self.assertRaises(MergeError) as arc:
             proto_cube.register(cube2, or_fail=True)
 
-#         print arc.exception.message
         self.assertTrue("cube differences:" in arc.exception.message,
                         arc.exception.message)
         for substr in substrs:
@@ -146,7 +145,6 @@ class Test_register__coord_sig(tests.IrisTest):
         with self.assertRaises(MergeError) as arc:
             proto_cube.register(cube2, or_fail=True, fail_verbose=verbose)
 
-#         print arc.exception.message
         self.assertTrue("coord differences:" in arc.exception.message,
                         arc.exception.message)
         for substr in substrs:
