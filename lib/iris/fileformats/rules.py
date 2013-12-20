@@ -602,6 +602,14 @@ def has_aux_factory(cube, aux_factory_class):
     return False
 
 
+def aux_factory(cube, aux_factory_class):
+    """Return the aux factory instance from the cube of the given type."""
+    aux_factories = [aux_factory for aux_factory in cube.aux_factories if
+                     isinstance(aux_factory, aux_factory_class)]
+    assert len(aux_factories) == 1
+    return aux_factories[0]
+
+
 class _ReferenceError(Exception):
     """Signals an invalid/missing reference field."""
     pass
