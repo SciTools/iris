@@ -148,20 +148,6 @@ def add_month_number(cube, coord, name=None):
         lambda coord, x: _pt_date(coord, x).month)
 
 
-def add_month_shortname(cube, coord, name='month'):
-    """
-    Add a categorical month coordinate, values 'Jan'..'Dec'.
-
-        .. deprecated:: 1.4
-            Please use :func:`~iris.coord_categorisation.add_month()`.
-
-    """
-    msg = "The 'add_month_shortname()' function is deprecated." \
-          " Please use 'add_month()' instead."
-    warnings.warn(msg, UserWarning, stacklevel=2)
-    add_month(cube, coord, name)
-
-
 def add_month_fullname(cube, coord, name=None):
     """Add a categorical month coordinate, values 'January'..'December'."""
     name = _check_default(name, 'month', 'month_fullname')
@@ -208,20 +194,6 @@ def add_weekday_number(cube, coord, name=None):
     add_categorised_coord(
         cube, name, coord,
         lambda coord, x: _pt_date(coord, x).weekday())
-
-
-def add_weekday_shortname(cube, coord, name='weekday'):
-    """
-    Add a categorical weekday coordinate, values 'Mon'..'Sun'.
-
-        .. deprecated:: 1.4
-            Please use :func:`~iris.coord_categorisation.add_weekday()`.
-
-    """
-    msg = "The 'add_weekday_shortname()' function is deprecated." \
-          " Please use 'add_weekday()' instead."
-    warnings.warn(msg, UserWarning, stacklevel=2)
-    add_weekday(cube, coord, name)
 
 
 def add_weekday_fullname(cube, coord, name=None):
@@ -315,20 +287,6 @@ def _month_season_numbers(seasons):
         for month in _months_in_season(season):
             month_season_numbers[month] = season_number
     return month_season_numbers
-
-
-def add_season_month_initials(cube, coord, name='season'):
-    """
-    Add a categorical season-of-year coordinate, values 'djf'..'son'.
-
-        .. deprecated:: 1.4
-            Please use :func:`~iris.coord_categorisation.add_season()`.
-
-    """
-    msg = "The 'add_season_month_initials()' function is deprecated." \
-          " Please use 'add_season()' instead."
-    warnings.warn(msg, UserWarning, stacklevel=2)
-    add_season(cube, coord, name)
 
 
 def add_season(cube, coord, name='season',

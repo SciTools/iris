@@ -49,11 +49,7 @@ DEPRECATED_DEFAULTS = (
 )
 
 
-DEPRECATED = (
-    ccat.add_month_shortname,
-    ccat.add_weekday_shortname,
-    ccat.add_season_month_initials,
-)
+DEPRECATED = tuple()
 
 
 class TestCategorisations(tests.IrisTest):
@@ -80,8 +76,7 @@ class TestCategorisations(tests.IrisTest):
     def test_bad_coord(self):
         for func in OK_DEFAULTS + DEPRECATED_DEFAULTS + DEPRECATED:
             with self.assertRaises(iris.exceptions.CoordinateNotFoundError):
-                with warnings.catch_warnings(record=True):
-                    func(self.cube, 'DOES NOT EXIST', 'my_category')
+                func(self.cube, 'DOES NOT EXIST', 'my_category')
 
     def test_deprecateds(self):
         no_warning = 'Missing deprecation warning for {0!r}'
@@ -143,23 +138,15 @@ class TestCategorisations(tests.IrisTest):
         ccat.add_day_of_year(cube, time_coord, 'my_day_of_year')
 
         ccat.add_month(cube, time_coord, 'my_month')
-        with warnings.catch_warnings(record=True):
-            ccat.add_month_shortname(cube, time_coord, 'my_month_shortname')
         ccat.add_month_fullname(cube, time_coord, 'my_month_fullname')
         ccat.add_month_number(cube, time_coord, 'my_month_number')
 
         ccat.add_weekday(cube, time_coord, 'my_weekday')
         ccat.add_weekday_number(cube, time_coord, 'my_weekday_number')
-        with warnings.catch_warnings(record=True):
-            ccat.add_weekday_shortname(cube, time_coord,
-                                       'my_weekday_shortname')
         ccat.add_weekday_fullname(cube, time_coord, 'my_weekday_fullname')
 
         ccat.add_season(cube, time_coord, 'my_season')
         ccat.add_season_number(cube, time_coord, 'my_season_number')
-        with warnings.catch_warnings(record=True):
-            ccat.add_season_month_initials(cube, time_coord,
-                                           'my_season_month_initials')
         ccat.add_season_year(cube, time_coord, 'my_season_year')
 
         # also test 'generic' categorisation interface
