@@ -29,25 +29,21 @@ import iris
 import iris.coord_categorisation as ccat
 
 
-OK_DEFAULTS = (
-    ccat.add_year,
-    ccat.add_month,
-    ccat.add_weekday,
-    ccat.add_season,
-    ccat.add_month_number,
-    ccat.add_month_fullname,
+CATEGORISATION_FUNCS = (
     ccat.add_day_of_month,
     ccat.add_day_of_year,
-    ccat.add_weekday_number,
+    ccat.add_weekday,
     ccat.add_weekday_fullname,
+    ccat.add_weekday_number,
+    ccat.add_month,
+    ccat.add_month_fullname,
+    ccat.add_month_number,
+    ccat.add_year,
+    ccat.add_season,
     ccat.add_season_number,
     ccat.add_season_year,
+    ccat.add_season_membership,
 )
-
-
-DEPRECATED_DEFAULTS = tuple()
-
-DEPRECATED = tuple()
 
 
 class TestCategorisations(tests.IrisTest):
@@ -72,58 +68,31 @@ class TestCategorisations(tests.IrisTest):
         self.time_coord = time_coord
 
     def test_bad_coord(self):
-        for func in OK_DEFAULTS + DEPRECATED_DEFAULTS + DEPRECATED:
+        for func in CATEGORISATION_FUNCS:
+            kwargs = {'name': 'my_category'}
+            if func is ccat.add_season_membership:
+                kwargs['season'] = 'djf'
             with self.assertRaises(iris.exceptions.CoordinateNotFoundError):
-                func(self.cube, 'DOES NOT EXIST', 'my_category')
-
-    def test_deprecateds(self):
-        no_warning = 'Missing deprecation warning for {0!r}'
-        no_result = 'Missing/incorrectly named result for {0!r}'
-
-        def check_deprecated(result_name, func, args=()):
-            with warnings.catch_warnings(record=True) as w:
-                warnings.simplefilter('always')
-                cube = self.cube.copy()
-                func(cube, 'time', *args)
-                self.assertEqual(len(w), 1, no_warning.format(func.func_name))
-                result_coords = cube.coords(result_name)
-                self.assertEqual(len(result_coords), 1,
-                                 no_result.format(func.func_name))
-
-        for func in DEPRECATED_DEFAULTS + DEPRECATED:
-            if func.func_name == 'add_season_year':
-                result_name = 'year'
-            else:
-                result_name = func.func_name.split('_')[1]
-            check_deprecated(result_name, func)
-
-        unexpected = 'Unexpected deprecation warning for {0!r}'
-        for func in OK_DEFAULTS:
-            with warnings.catch_warnings(record=True) as w:
-                warnings.simplefilter('always')
-                cube = self.cube.copy()
-                func(cube, 'time')
-                self.assertEqual(len(w), 0, unexpected.format(func.func_name))
-                result_name = '_'.join(func.func_name.split('_')[1:])
-                result_coords = cube.coords(result_name)
-                self.assertEqual(len(result_coords), 1,
-                                 no_result.format(func.func_name))
+                func(self.cube, 'DOES NOT EXIST', **kwargs)
 
     def test_explicit_result_names(self):
         result_name = 'my_category'
         fmt = 'Missing/incorrectly named result for {0!r}'
-        for func in OK_DEFAULTS + DEPRECATED_DEFAULTS + DEPRECATED:
+        for func in CATEGORISATION_FUNCS:
             # Specify source coordinate by name
             cube = self.cube.copy()
+            kwargs = {'name': result_name}
+            if func is ccat.add_season_membership:
+                kwargs['season'] = 'djf'
             with warnings.catch_warnings(record=True):
-                func(cube, 'time', result_name)
+                func(cube, 'time', **kwargs)
             result_coords = cube.coords(result_name)
             self.assertEqual(len(result_coords), 1, fmt.format(func.func_name))
             # Specify source coordinate by coordinate reference
             cube = self.cube.copy()
             time = cube.coord('time')
             with warnings.catch_warnings(record=True):
-                func(cube, time, result_name)
+                func(cube, time, **kwargs)
             result_coords = cube.coords(result_name)
             self.assertEqual(len(result_coords), 1, fmt.format(func.func_name))
 
