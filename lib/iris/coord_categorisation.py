@@ -29,7 +29,6 @@ All the functions provided here add a new coordinate to a cube.
 
 import calendar
 import collections
-import functools   # temporary for deprecations
 import warnings   # temporary for deprecations
 
 import numpy as np
@@ -490,63 +489,3 @@ def add_season_membership(cube, coord, season, name=None):
         return False
 
     add_categorised_coord(cube, name, coord, _season_membership)
-
-
-#-----------------------------------
-# Deprecated custom season functions
-#
-
-# A temporary decorator to manage the deprecation of the add_custom_season*
-# functions. Issues a warning prior to calling the function.
-def _custom_season_deprecation(func):
-    @functools.wraps(func)
-    def _wrapper(*args, **kwargs):
-        msg = "The '{0!s}()' function is deprecated." \
-              " Please use '{1!s}()' instead."
-        msg = msg.format(func.func_name, func.func_name.replace('_custom', ''))
-        warnings.warn(msg, stacklevel=2)
-        return func(*args, **kwargs)
-    return _wrapper
-
-
-@_custom_season_deprecation
-def add_custom_season(cube, coord, seasons, name='season'):
-    """
-        .. deprecated:: 1.4
-            Please use :func:`~iris.coord_categorisation.add_season()`.
-
-    """
-    return add_season(cube, coord, name=name, seasons=seasons)
-
-
-@_custom_season_deprecation
-def add_custom_season_number(cube, coord, seasons, name='season'):
-    """
-        .. deprecated:: 1.4
-            Please use
-            :func:`~iris.coord_categorisation.add_season_number()`.
-
-    """
-    return add_season_number(cube, coord, name=name, seasons=seasons)
-
-
-@_custom_season_deprecation
-def add_custom_season_year(cube, coord, seasons, name='year'):
-    """
-        .. deprecated:: 1.4
-            Please use
-            :func:`~iris.coord_categorisation.add_season_year()`.
-
-    """
-    return add_season_year(cube, coord, name=name, seasons=seasons)
-
-
-@_custom_season_deprecation
-def add_custom_season_membership(cube, coord, season, name='season'):
-    """
-        .. deprecated:: 1.4
-            Please use
-            :func:`~iris.coord_categorisation.add_season_membership()`.
-
-    """
-    return add_season_membership(cube, coord, season, name=name)

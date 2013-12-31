@@ -104,15 +104,6 @@ class TestCategorisations(tests.IrisTest):
                 result_name = func.func_name.split('_')[1]
             check_deprecated(result_name, func)
 
-        seasons = ('jfm', 'amj', 'jas', 'ond')
-        check_deprecated('season', ccat.add_custom_season_number,
-                         (seasons,))
-        check_deprecated('year', ccat.add_custom_season_year,
-                         (seasons,))
-        check_deprecated('season', ccat.add_custom_season_membership,
-                         ('mam',))
-        check_deprecated('season', ccat.add_custom_season, (seasons,))
-
         unexpected = 'Unexpected deprecation warning for {0!r}'
         for func in OK_DEFAULTS:
             with warnings.catch_warnings(record=True) as w:
