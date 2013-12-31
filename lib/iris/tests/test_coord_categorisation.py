@@ -34,10 +34,6 @@ OK_DEFAULTS = (
     ccat.add_month,
     ccat.add_weekday,
     ccat.add_season,
-)
-
-
-DEPRECATED_DEFAULTS = (
     ccat.add_month_number,
     ccat.add_month_fullname,
     ccat.add_day_of_month,
@@ -48,6 +44,8 @@ DEPRECATED_DEFAULTS = (
     ccat.add_season_year,
 )
 
+
+DEPRECATED_DEFAULTS = tuple()
 
 DEPRECATED = tuple()
 
@@ -106,7 +104,7 @@ class TestCategorisations(tests.IrisTest):
                 cube = self.cube.copy()
                 func(cube, 'time')
                 self.assertEqual(len(w), 0, unexpected.format(func.func_name))
-                result_name = func.func_name.split('_')[1]
+                result_name = '_'.join(func.func_name.split('_')[1:])
                 result_coords = cube.coords(result_name)
                 self.assertEqual(len(result_coords), 1,
                                  no_result.format(func.func_name))
