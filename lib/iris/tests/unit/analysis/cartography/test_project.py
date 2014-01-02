@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the :class:`iris.analysis.project` function."""
+"""Unit tests for the :func:`iris.analysis.cartography.project` function."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -49,13 +49,10 @@ class TestAll(tests.IrisTest):
         self.assertEqual(res.coord('projection_x_coordinate').coord_system,
                          self.tcs)
 
-    def test_isnot_iris_coord_system(self):
-        with mock.patch('warnings.warn') as warn:
-            res, _ = project(self.cube, ccrs.PlateCarree())
-        msg = ("Unable to associate crs: <class 'cartopy.crs.PlateCarree'> "
-               'with target projection coordinates, as it is not an iris '
-               'supported coordinate system')
-        self.assertIn(mock.call(msg), warn.call_args_list)
+        self.assertIsNot(res.coord('projection_y_coordinate').coord_system,
+                         self.tcs)
+        self.assertIsNot(res.coord('projection_x_coordinate').coord_system,
+                         self.tcs)
 
 
 if __name__ == "__main__":

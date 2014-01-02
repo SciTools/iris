@@ -119,6 +119,8 @@ Bugs fixed
 * ABF loader now correctly loads the ABF data payload once.
 * Support for 1D array :data:`iris.cube.cube.attributes`.
 * GRIB bounded level saving fix.
+* :func:`iris.analysis.cartography.project` now associates a coordinate system
+  with the resulting target cube, where applicable.
 
 Incompatible changes
 ====================
