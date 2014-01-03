@@ -357,8 +357,18 @@ class IrisTest(unittest.TestCase):
         unmasked values and masks to be identical.
 
         """
+        def unmasked_data_as_array(array):
+            if array.ndim == 0:
+                if array.mask:
+                    data = np.array([])
+                else:
+                    data = np.array([array.data])
+            else:
+                data = array.data[~array.mask]
+
         np.testing.assert_array_equal(a.mask, b.mask)
-        np.testing.assert_array_equal(a[~a.mask].data, b[~b.mask].data)
+        np.testing.assert_array_equal(unmasked_data_as_array(a),
+                                      unmasked_data_as_array(b))
 
     def assertArrayAlmostEqual(self, a, b):
         np.testing.assert_array_almost_equal(a, b)

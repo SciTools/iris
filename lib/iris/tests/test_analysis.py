@@ -160,10 +160,10 @@ class TestAnalysisWeights(tests.IrisTest):
         e.coord('longitude').bounds = None
         f, collapsed_area_weights = e.collapsed('latitude', iris.analysis.MEAN, weights=area_weights, returned=True)
         g = f.collapsed('longitude', iris.analysis.MEAN, weights=collapsed_area_weights)
-        # check it's a 1D, scalar cube (actually, it should really be 0D)!
-        self.assertEquals(g.shape, (1,))
+        # check it's a 0d, scalar cube
+        self.assertEquals(g.shape, ())
         # check the value - pp_area_avg's result of 287.927 differs by factor of 1.00002959
-        np.testing.assert_approx_equal(g.data[0], 287.935, significant=5)
+        np.testing.assert_approx_equal(g.data, 287.935, significant=5)
 
         #check we get summed weights even if we don't give any
         h, summed_weights = e.collapsed('latitude', iris.analysis.MEAN, returned=True)
