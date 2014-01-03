@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -369,16 +369,12 @@ def array_equal(array1, array2):
     additional support for arrays of strings.
 
     """
-    # Numpy provides an array_equal method but that does not support arrays of
-    # strings.
-    if array1.ndim == 0 or array2.ndim == 0:
-        eq = array1.ndim == 0 and array2.ndim == 0 and array1 == array2
-    elif len(array1) == len(array2):
-        eq = array1 == array2
-        if not isinstance(eq, bool):
-            eq = eq.all()
-    else:
+    array1, array2 = np.asarray(array1), np.asarray(array2)
+    if array1.shape != array2.shape:
         eq = False
+    else:
+        eq = bool(np.asarray(array1 == array2).all())
+
     return eq
 
 
