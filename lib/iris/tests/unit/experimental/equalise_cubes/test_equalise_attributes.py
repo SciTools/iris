@@ -32,11 +32,6 @@ import iris.tests.stock
 
 
 class TestEqualiseAttributes(tests.IrisTest):
-    """
-    Test the function
-    :meth:`iris.experimental.equalise_cubes.equalise_attributes`.
-
-    """
     def setUp(self):
         empty = Cube([])
 
