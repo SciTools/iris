@@ -1175,9 +1175,7 @@ class _Groupby(object):
             try:
                 new_points = np.array(new_bounds).mean(-1)
             except TypeError:
-                msg = 'The {0!r} coordinate on the collapsing dimension' \
-                      ' cannot be collapsed.'.format(coord.name())
-                raise ValueError(msg)
+                new_points = np.array(new_bounds)[:,0]
 
             try:
                 self.coords.append(coord.copy(points=new_points,

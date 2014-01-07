@@ -488,14 +488,6 @@ class TestAggregateBy(tests.IrisTest):
                           'height', iris.analysis.MEAN,
                           weights=[1, 2, 3, 4, 5])
 
-    def test_invalid_collapsed_coord(self):
-        label_coord = iris.coords.AuxCoord(['first', 'second', 'third'],
-                                           long_name='weird_name')
-        self.cube_single.add_aux_coord(label_coord, 2)
-        with self.assertRaises(ValueError) as context:
-            self.cube_single.aggregated_by('latitude', iris.analysis.MEAN)
-        self.assertIn('weird_name', context.exception.message)
-
 
 if __name__ == '__main__':
     unittest.main()
