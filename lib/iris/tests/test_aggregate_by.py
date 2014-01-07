@@ -488,6 +488,21 @@ class TestAggregateBy(tests.IrisTest):
                           'height', iris.analysis.MEAN,
                           weights=[1, 2, 3, 4, 5])
 
+    def test_bounded_string_coord(self):
+        cube = iris.cube.Cube([1, 2, 3])
+        cube.add_dim_coord(iris.coords.DimCoord([1, 2, 3], "height", "m"), 0)
+        cube.add_aux_coord(iris.coords.AuxCoord([1, 2, 2], long_name="cat"), 0)
+        cube.add_aux_coord(
+            iris.coords.AuxCoord(
+                ['1', '2', '3'], long_name="string coord",
+                bounds=[['0.5', '1.5'], ['1.5', '2.5'], ['2.5', '3.5']]), 0)
+        
+        agg_cube = cube.aggregated_by("cat", iris.analysis.MEAN)
+        self.assertArrayEqual(agg_cube.coord("string coord").points,
+                              ['0.5', '1.5'])
+        self.assertArrayEqual(agg_cube.coord("string coord").bounds,
+                              [['0.5', '1.5'], ['1.5', '3.5']])
+        
 
 if __name__ == '__main__':
     unittest.main()
