@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,6 +24,7 @@ Currently relies on matplotlib for image processing so limited to PNG format.
 
 import os.path
 import shutil
+import sys
 
 import matplotlib.pyplot as plt
 import matplotlib.image as mimg
@@ -80,4 +81,9 @@ def step_over_diffs():
 
 
 if __name__ == '__main__':
+    # Force iris.tests to use the ```tkagg``` backend by using the '-d'
+    # command-line argument as idiff is an interactive tool that requires a
+    # gui interface.
+    sys.argv.append('-d')
+
     step_over_diffs()
