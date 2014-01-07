@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,6 +28,8 @@ import iris
 import iris.analysis
 import iris.coord_systems
 import iris.coords
+import iris.tests.stock as stock
+from iris.unit import Unit
 
 
 class TestAggregateBy(tests.IrisTest):
@@ -488,13 +490,76 @@ class TestAggregateBy(tests.IrisTest):
                           'height', iris.analysis.MEAN,
                           weights=[1, 2, 3, 4, 5])
 
-    def test_invalid_collapsed_coord(self):
-        label_coord = iris.coords.AuxCoord(['first', 'second', 'third'],
-                                           long_name='weird_name')
+    def test_string_coord_agg_on(self):
+        cube = stock.simple_1d()
+        val_coord = iris.coords.AuxCoord([0, 0, 0, 1, 1, 2, 0, 0, 2, 0, 1],
+                                         long_name="val")
+        label_coord = iris.coords.AuxCoord(['alpha', 'alpha', 'alpha',
+                                           'beta', 'beta', 'gamma',
+                                           'alpha', 'alpha', 'gamma',
+                                           'alpha', 'beta'],
+                                           long_name='label', units='no_unit')
+        cube.add_aux_coord(val_coord, 0)
+        cube.add_aux_coord(label_coord, 0)
+        agg = cube.aggregated_by('label', iris.analysis.MEAN)
+        val_coord = iris.coords.AuxCoord(np.array([0., 1., 2.]),
+                                         bounds=np.array([[0, 0], [1, 1],
+                                                          [2, 2]]),
+                                         long_name='val')
+        label_coord = iris.coords.AuxCoord(np.array(['alpha', 'beta', 'gamma'],
+                                                    dtype='|S5'),
+                                           units=Unit('no_unit'),
+                                           long_name='label')
+        self.assertEqual(agg.coord('val'), val_coord)
+        self.assertEqual(agg.coord('label'), label_coord)
+
+    def test_string_coord_agg_ref(self):
+        cube = stock.simple_1d()
+        val_coord = iris.coords.AuxCoord([0, 0, 0, 1, 1, 2, 0, 0, 2, 0, 1],
+                                         long_name="val")
+        label_coord = iris.coords.AuxCoord(['alpha', 'alpha', 'beta',
+                                           'beta', 'alpha', 'gamma',
+                                           'alpha', 'alpha', 'alpha',
+                                           'gamma', 'beta'],
+                                           long_name='label', units='no_unit')
+        cube.add_aux_coord(val_coord, 0)
+        cube.add_aux_coord(label_coord, 0)
+
+        agg = cube.aggregated_by('val', iris.analysis.MEAN)
+        val_coord = iris.coords.AuxCoord(np.array([0,  1,  2]),
+                                         long_name='val')
+        exp0 = 'alpha|alpha|beta|alpha|alpha|gamma'
+        exp1 = 'beta|alpha|beta'
+        exp2 = 'gamma|alpha|'
+        label_coord = iris.coords.AuxCoord(np.array((exp0, exp1, exp2)),
+                                           units=Unit('no_unit'),
+                                           long_name='label')
+        self.assertEqual(agg.coord('val'), val_coord)
+        self.assertEqual(agg.coord('label'), label_coord)
+
+    def test_bounded_string_coord(self):
+        cat_coord = iris.coords.AuxCoord([0, 0, 0], long_name="cat")
+        label_coord = iris.coords.AuxCoord(
+            ['first', 'second', 'third'], long_name='weird_name',
+            bounds=[['0th', '2nd'], ['1st', '3rd'], ['2nd', '4th']])
+        self.cube_single.add_aux_coord(cat_coord, 2)
         self.cube_single.add_aux_coord(label_coord, 2)
-        with self.assertRaises(ValueError) as context:
-            self.cube_single.aggregated_by('latitude', iris.analysis.MEAN)
-        self.assertIn('weird_name', context.exception.message)
+
+        agg = self.cube_single.aggregated_by('cat', iris.analysis.MEAN)
+        self.assertEqual(agg.coord("weird_name").points,
+                         ['first|second|third'])
+        self.assertIsNone(agg.coord("weird_name").bounds)
+
+    def test_string_coord(self):
+        cat_coord = iris.coords.AuxCoord([0, 0, 0], long_name="cat")
+        label_coord = iris.coords.AuxCoord(
+            ['first', 'second', 'third'], long_name='weird_name')
+        self.cube_single.add_aux_coord(cat_coord, 2)
+        self.cube_single.add_aux_coord(label_coord, 2)
+
+        agg = self.cube_single.aggregated_by('cat', iris.analysis.MEAN)
+        self.assertEqual(agg.coord("weird_name").points,
+                         ['first|second|third'])
 
 
 if __name__ == '__main__':
