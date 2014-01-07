@@ -40,7 +40,7 @@ install:
   - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors shapely nose
   - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors pyshp pep8 mock
   - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors setuptools
-  - ./.travis_no_output sudo /usr/bin/pip install matplotlib==1.2.0
+  - ./.travis_no_output sudo /usr/bin/pip install matplotlib==1.3
   - ./.travis_no_output sudo apt-get install libgeos-dev libproj-dev
   - ./.travis_no_output sudo apt-get install libudunits2-dev libhdf5-serial-dev netcdf-bin libnetcdf-dev
   - ./.travis_no_output sudo apt-get install make unzip python-sphinx graphviz
