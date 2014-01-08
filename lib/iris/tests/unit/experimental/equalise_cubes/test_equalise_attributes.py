@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -32,11 +32,6 @@ import iris.tests.stock
 
 
 class TestEqualiseAttributes(tests.IrisTest):
-    """
-    Test the function
-    :meth:`iris.experimental.equalise_cubes.equalise_attributes`.
-
-    """
     def setUp(self):
         empty = Cube([])
 

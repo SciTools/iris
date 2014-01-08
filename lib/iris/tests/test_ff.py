@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -78,7 +78,7 @@ class TestFFHeader(tests.IrisTest):
         )
 
     def test_constructor(self):
-        """Test FieldsFile header attribute lookup."""
+        # Test FieldsFile header attribute lookup.
         self.assertEqual(self.ff_header.data_set_format_version, 20)
         self.assertEqual(self.ff_header.sub_model, 1)
         self.assertEqual(self.ff_header.vert_coord_type, 5)
@@ -132,7 +132,7 @@ class TestFF2PP2Cube(tests.IrisTest):
         self.filename = tests.get_data_path(('FF', 'n48_multi_field'))
 
     def test_unit_pass_0(self):
-        """Test FieldsFile to PPFields cube load."""
+        # Test FieldsFile to PPFields cube load.
         cube_by_name = collections.defaultdict(int)
         cubes = iris.load(self.filename)
         while cubes:

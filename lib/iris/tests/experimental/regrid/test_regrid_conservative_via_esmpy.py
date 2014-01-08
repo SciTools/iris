@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -294,7 +294,7 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertEqual(c1_to_c2.metadata, c1.metadata)
 
     def test_xy_transposed(self):
-        """Test effects of transposing X and Y in src/dst data."""
+        # Test effects of transposing X and Y in src/dst data.
         c1, c2 = self.stock_c1_c2
         testcube_xy = self.stock_regrid_c1toc2
 
@@ -313,14 +313,14 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertEqual(testcube_dst_transpose, testcube_xy)
 
     def test_same_grid(self):
-        """Test regridding onto the identical grid."""
+        # Test regridding onto the identical grid.
         # Use regrid with self as target.
         c1, _ = self.stock_c1_c2
         testcube = regrid_conservative_via_esmpy(c1, c1)
         self.assertEqual(testcube, c1)
 
     def test_global(self):
-        """Test global regridding."""
+        # Test global regridding.
         # Compute basic test data cubes.
         shape1 = (8, 6)
         xlim1 = 180.0 * (shape1[0] - 1) / shape1[0]
@@ -354,7 +354,7 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertArrayAllClose(c1toc2_areasum, c1_areasum, rtol=0.006)
 
     def test_global_collapse(self):
-        """Test regridding global data to a single cell."""
+        # Test regridding global data to a single cell.
         # Fetch 'standard' testcube data
         c1, _ = self.stock_c1_c2
         c1_areasum = self.stock_c1_areasum
@@ -383,7 +383,7 @@ class TestConservativeRegrid(tests.IrisTest):
             self.assertArrayAllClose(c1_to_global.data[0, 0], c1_areasum)
 
     def test_single_cells(self):
-        """Test handling of single-cell grids."""
+        # Test handling of single-cell grids.
         # Fetch 'standard' testcube data
         c1, c2 = self.stock_c1_c2
         c1_areasum = self.stock_c1_areasum
@@ -566,7 +566,7 @@ class TestConservativeRegrid(tests.IrisTest):
         self.assertArrayAllClose(c1to2to1_areasum, c1_areasum)
 
     def test_fail_no_cs(self):
-        """Test error when one coordinate has no coord_system."""
+        # Test error when one coordinate has no coord_system.
         shape1 = (5, 5)
         xlims1, ylims1 = ((-2, 2), (-2, 2))
         c1 = _make_test_cube(shape1, xlims1, ylims1)
@@ -583,10 +583,8 @@ class TestConservativeRegrid(tests.IrisTest):
             regrid_conservative_via_esmpy(c1, c2)
 
     def test_fail_different_cs(self):
-        """
-        Test error when either src or dst coords have different coord_systems.
-
-        """
+        # Test error when either src or dst coords have different
+        # coord_systems.
         shape1 = (5, 5)
         xlims1, ylims1 = ((-2, 2), (-2, 2))
         shape2 = (4, 4)
