@@ -217,46 +217,38 @@ class _CoordSignature(namedtuple('CoordSignature',
     """
     def match(self, other, or_fail=False, fail_verbose=False):
 
-        def get_diffs(a, b):
-            diffs = [i for i in a if not i in b]
-            diffs.extend([i for i in b if not i in a])
-            return diffs
+        def report_coord_diff(label, mine, others):
+            # scalar_defns or vector_dim_coords_and_dims
+            # or vector_aux_coords_and_dims
+            msg = ""
+            if mine != others:
+                diffs = [i for i in mine if not i in others]
+                diffs.extend([i for i in others if not i in mine])
+                for diff in diffs:
+                    if fail_verbose:
+                        detail = str(diff)
+                    else:
+                        # For diffs of vector coords and dims
+                        if not hasattr(diff, "standard_name"):
+                            diff = diff[0]
+                        detail = (diff.standard_name
+                                  or diff.long_name or diff.var_name)
+                    msg += '  {}: {}\n'.format(label, detail)
+            return msg
 
         match = self == other
         if or_fail and not match:
-            msg = 'coord differences:\n'
+            msg = 'coord differences:\n' \
+                + report_coord_diff("scalar coord",
+                                    self.scalar_defns,
+                                    other.scalar_defns) \
+                + report_coord_diff("dim coord",
+                                    self.vector_dim_coords_and_dims,
+                                    other.vector_dim_coords_and_dims) \
+                + report_coord_diff("aux coord",
+                                    self.vector_aux_coords_and_dims,
+                                    other.vector_aux_coords_and_dims)
 
-            if self.scalar_defns != other.scalar_defns:
-                diffs = get_diffs(self.scalar_defns, other.scalar_defns)
-                for diff in diffs:
-                    if fail_verbose:
-                        detail = str(diff)
-                    else:
-                        detail = (diff.standard_name
-                                  or diff.long_name or diff.var_name)
-                    msg += '  scalar coord: {}\n'.format(detail)
-            self_vdcd = self.vector_dim_coords_and_dims
-            other_vdcd = other.vector_dim_coords_and_dims
-            if self_vdcd != other_vdcd:
-                diffs = get_diffs(self_vdcd, other_vdcd)
-                for diff in diffs:
-                    if fail_verbose:
-                        detail = str(diff)
-                    else:
-                        detail = (diff[0].standard_name
-                                  or diff[0].long_name or diff[0].var_name)
-                    msg += '  dim coord: {}\n'.format(detail)
-            self_vacd = self.vector_aux_coords_and_dims
-            other_vacd = other.vector_aux_coords_and_dims
-            if self_vacd != other_vacd:
-                diffs = get_diffs(self_vacd, other_vacd)
-                for diff in diffs:
-                    if fail_verbose:
-                        detail = str(diff)
-                    else:
-                        detail = (diff[0].standard_name
-                                  or diff[0].long_name or diff[0].var_name)
-                    msg += '  aux coord: {}\n'.format(detail)
             if self.factory_defns != other.factory_defns:
                 msg += '  factory_defn: different\n'
 
@@ -1130,7 +1122,7 @@ class ProtoCube(object):
         * or_fail:
             Raise a MergeError if registration fails. Default = False.
 
-        * fail_verbose
+        * fail_verbose:
             If raising a MergeError, provide verbose coordinate information.
             Default = False.
 
