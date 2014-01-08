@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -72,6 +72,7 @@ GRIB2_TO_CF = {
     G2Param(2, 0, 1, 13): CFName('liquid_water_content_of_surface_snow', None, 'kg m-2'),
     G2Param(2, 0, 1, 22): CFName(None, 'cloud_mixing_ratio', 'kg kg-1'),
     G2Param(2, 0, 1, 64): CFName('atmosphere_mass_content_of_water_vapor', None, 'kg m-2'),
+    G2Param(2, 0, 2, 0): CFName('wind_from_direction', None, 'degrees'),
     G2Param(2, 0, 2, 1): CFName('wind_speed', None, 'm s-1'),
     G2Param(2, 0, 2, 2): CFName('x_wind', None, 'm s-1'),
     G2Param(2, 0, 2, 3): CFName('y_wind', None, 'm s-1'),
@@ -168,6 +169,7 @@ CF_TO_GRIB2 = {
     CFName('surface_altitude', None, 'm'): G2Param(2, 2, 0, 7),
     CFName('surface_roughness_length', None, 'm'): G2Param(2, 2, 0, 1),
     CFName('thickness_of_snowfall_amount', None, 'm'): G2Param(2, 0, 1, 11),
+    CFName('wind_from_direction', None, 'degrees'): G2Param(2, 0, 2, 0),
     CFName('wind_speed', None, 'm s-1'): G2Param(2, 0, 2, 1),
     CFName('x_wind', None, 'm s-1'): G2Param(2, 0, 2, 2),
     CFName('y_wind', None, 'm s-1'): G2Param(2, 0, 2, 3),
