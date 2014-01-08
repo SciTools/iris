@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -106,14 +106,10 @@ def experiment(cube, field):
 
 def proj_biaxial_ellipsoid(cube, field):
     """
-    Deal with 'biaxial ellipsoid', if present in the field.
-
-    Currently unhandled. Raises an exception if present.
+    Ellipsoid definition is currently ignored.
 
     """
-    if field.proj_biaxial_ellipsoid not in [field.int_mdi, 0]:
-        raise TranslationError("Biaxial ellipsoid %d not yet handled" %
-                               field.proj_biaxial_ellipsoid)
+    pass
 
 
 def tm_meridian_scaling(cube, field):
