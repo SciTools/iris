@@ -81,6 +81,37 @@ class Test(tests.IrisTest):
         array_b = np.ma.masked_array(['a', 'b', 'c'], mask=[1, 0, 1])
         self.assertTrue(array_equal(array_a, array_b))
 
+    def test_string_arrays_equal(self):
+        array_a = np.array(['abc', 'def', 'efg'])
+        array_b = np.array(['abc', 'def', 'efg'])
+        self.assertTrue(array_equal(array_a, array_b))
+
+    def test_string_arrays_different_contents(self):
+        array_a = np.array(['abc', 'def', 'efg'])
+        array_b = np.array(['abc', 'de', 'efg'])
+        self.assertFalse(array_equal(array_a, array_b))
+
+    def test_string_arrays_subset(self):
+        array_a = np.array(['abc', 'def', 'efg'])
+        array_b = np.array(['abc', 'def'])
+        self.assertFalse(array_equal(array_a, array_b))
+        self.assertFalse(array_equal(array_b, array_a))
+
+    def test_string_arrays_unequal_dimensionality(self):
+        array_a = np.array('abc')
+        array_b = np.array(['abc'])
+        array_c = np.array([['abc']])
+        self.assertFalse(array_equal(array_a, array_b))
+        self.assertFalse(array_equal(array_b, array_a))
+        self.assertFalse(array_equal(array_a, array_c))
+        self.assertFalse(array_equal(array_b, array_c))
+
+    def test_string_arrays_0d_and_scalar(self):
+        array_a = np.array('foobar')
+        self.assertTrue(array_equal(array_a, 'foobar'))
+        self.assertFalse(array_equal(array_a, 'foo'))
+        self.assertFalse(array_equal(array_a, 'foobar.'))
+
 
 if __name__ == '__main__':
     tests.main()
