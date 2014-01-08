@@ -21,6 +21,7 @@
 import iris.tests as tests
 
 import mock
+import numpy as np
 
 import iris.fileformats.pp
 
@@ -79,6 +80,77 @@ class TestVertical(tests.IrisTest):
         # Check the vertical coordinate is as originally specified.
         self.assertEqual(field.lbvc, 19)
         self.assertEqual(field.blev, potm_value)
+
+
+class TestCoordinateForms(tests.IrisTest):
+    def test_save_awkward_case_is_regular(self):
+        # Check that specific "awkward" values still save in a regular form.
+        nx = 3
+        ny = 2
+        x0 = np.float32(355.626)
+        dx = np.float32(0.0135)
+        data = np.zeros((ny, nx), dtype=np.float32)
+        test_cube = iris.cube.Cube(data)
+        x_coord = iris.coords.DimCoord.from_regular(
+            zeroth=x0,
+            step=dx,
+            count=nx,
+            standard_name='longitude',
+            units='degrees_east')
+        test_cube.add_dim_coord(x_coord, 1)
+        y0 = 20.5
+        dy = 3.72
+        y_coord = iris.coords.DimCoord.from_regular(
+            zeroth=y0,
+            step=dy,
+            count=ny,
+            standard_name='latitude',
+            units='degrees_north')
+        test_cube.add_dim_coord(y_coord, 0)
+        # Write to a temporary PP file and read it back as a PPField
+        with self.temp_filename('.pp') as pp_filepath:
+            iris.save(test_cube, pp_filepath)
+            pp_loader = iris.fileformats.pp.load(pp_filepath)
+            pp_field = pp_loader.next()
+        # Check that the result has the regular coordinates as expected.
+        self.assertAlmostEqual(pp_field.bzx, x0)  # N.B. *not* exact.
+        self.assertAlmostEqual(pp_field.lbnpt, nx)
+        self.assertAlmostEqual(pp_field.bzy, y0)
+        self.assertAlmostEqual(pp_field.bdy, dy)
+        self.assertAlmostEqual(pp_field.lbrow, ny)
+
+    def test_save_irregular(self):
+        # Check that a non-regular coordinate saves as expected.
+        nx = 3
+        ny = 2
+        x_values = [0.0, 1.1, 2.0]
+        data = np.zeros((ny, nx), dtype=np.float32)
+        test_cube = iris.cube.Cube(data)
+        x_coord = iris.coords.DimCoord(x_values,
+                                       standard_name='longitude',
+                                       units='degrees_east')
+        test_cube.add_dim_coord(x_coord, 1)
+        y0 = 20.5
+        dy = 3.72
+        y_coord = iris.coords.DimCoord.from_regular(
+            zeroth=y0,
+            step=dy,
+            count=ny,
+            standard_name='latitude',
+            units='degrees_north')
+        test_cube.add_dim_coord(y_coord, 0)
+        # Write to a temporary PP file and read it back as a PPField
+        with self.temp_filename('.pp') as pp_filepath:
+            iris.save(test_cube, pp_filepath)
+            pp_loader = iris.fileformats.pp.load(pp_filepath)
+            pp_field = pp_loader.next()
+        # Check that the result has the regular/irregular Y and X as expected.
+        self.assertAlmostEqual(pp_field.bdx, 0.0)
+        self.assertArrayAllClose(pp_field.x, x_values)
+        self.assertAlmostEqual(pp_field.lbnpt, nx)
+        self.assertAlmostEqual(pp_field.bzy, y0)
+        self.assertAlmostEqual(pp_field.bdy, dy)
+        self.assertAlmostEqual(pp_field.lbrow, ny)
 
 
 if __name__ == "__main__":
