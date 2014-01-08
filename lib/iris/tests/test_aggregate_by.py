@@ -496,13 +496,13 @@ class TestAggregateBy(tests.IrisTest):
             iris.coords.AuxCoord(
                 ['1', '2', '3'], long_name="string coord",
                 bounds=[['0.5', '1.5'], ['1.5', '2.5'], ['2.5', '3.5']]), 0)
-        
+
         agg_cube = cube.aggregated_by("cat", iris.analysis.MEAN)
         self.assertArrayEqual(agg_cube.coord("string coord").points,
                               ['0.5', '1.5'])
         self.assertArrayEqual(agg_cube.coord("string coord").bounds,
                               [['0.5', '1.5'], ['1.5', '3.5']])
-        
+
 
 if __name__ == '__main__':
     unittest.main()
