@@ -499,7 +499,7 @@ class TestAggregateBy(tests.IrisTest):
 
         agg_cube = cube.aggregated_by("cat", iris.analysis.MEAN)
         self.assertArrayEqual(agg_cube.coord("string coord").points,
-                              ['0.5', '1.5'])
+                              ['0.5|1.5', '1.5|3.5'])
         self.assertArrayEqual(agg_cube.coord("string coord").bounds,
                               [['0.5', '1.5'], ['1.5', '3.5']])
 

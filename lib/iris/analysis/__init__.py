@@ -1175,7 +1175,9 @@ class _Groupby(object):
             try:
                 new_points = np.array(new_bounds).mean(-1)
             except TypeError:
-                new_points = np.array(new_bounds)[:,0]
+                sjoin = lambda b: "|".join([str(i) for i in b])
+                str_list = [sjoin(b) for b in new_bounds]
+                new_points = np.array(str_list)
 
             try:
                 self.coords.append(coord.copy(points=new_points,
