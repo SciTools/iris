@@ -60,10 +60,13 @@ def run_callback(callback, cube, field, filename):
     Args:
 
     * callback:
-        A function to add metadata from the originating field and/or URI which obeys the following rules:
-            1. Function signature must be: ``(cube, field, filename)``
-            2. Must not return any value - any alterations to the cube must be made by reference
-            3. If the cube is to be rejected the callback must raise an :class:`iris.exceptions.IgnoreCubeException`
+        A function to add metadata from the originating field and/or URI which
+        obeys the following rules:
+            1. Function signature must be: ``(cube, field, filename)``.
+            2. Modifies the given cube inplace, unless a new cube is
+               returned by the function.
+            3. If the cube is to be rejected the callback must raise
+               an :class:`iris.exceptions.IgnoreCubeException`.
 
     .. note::
 
@@ -71,32 +74,23 @@ def run_callback(callback, cube, field, filename):
         the caller of this function should handle this case.
 
     """
-    #call the custom uri cm func, if provided, for every loaded cube
     if callback is None:
         return cube
 
+    # Call the callback function on the cube, generally the function will
+    # operate on the cube in place, but it is also possible that the function
+    # will return a completely new cube instance.
     try:
-        result = callback(cube, field, filename) #  Callback can make changes to cube by reference
+        result = callback(cube, field, filename)
     except iris.exceptions.IgnoreCubeException:
-        return None
+        result = None
     else:
-        if result is not None:
-            #raise TypeError("Callback functions must have no return value.") # no deprecation support method
-
-            if isinstance(result, iris.cube.Cube):
-                # no-op
-                result = result
-            elif result == NO_CUBE:
-                result = None
-            else: # Invalid return type, raise exception
-                raise TypeError("Callback function returned an unhandled data type.")
-
-            # Warn the user that callbacks that return something are deprecated
-            warnings.warn(CALLBACK_DEPRECATION_MSG)
-            return result
-
-        else:
-            return cube
+        if result is None:
+            result = cube
+        elif not isinstance(result, iris.cube.Cube):
+                raise TypeError("Callback function returned an "
+                                "unhandled data type.")
+    return result
 
 
 def decode_uri(uri, default='file'):

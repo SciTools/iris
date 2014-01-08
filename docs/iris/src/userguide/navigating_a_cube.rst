@@ -186,7 +186,7 @@ This is often caused by one of the following:
 To solve this, all of :func:`iris.load`, :func:`iris.load_cube`, and :func:`iris.load_cubes` support a callback keyword. 
 
 The callback is a user defined function which must have the calling sequence ``function(cube, field, filename)`` 
-which can make any modifications to the cube in-place.
+which can make any modifications to the cube in-place, or alternatively return a completely new cube instance.
 
 Suppose we wish to load a lagged ensemble dataset from the Met Office's GloSea4 model. 
 The data for this example represents 13 ensemble members of 6 one month timesteps; the logistics of the 
