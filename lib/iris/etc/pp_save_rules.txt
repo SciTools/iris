@@ -335,6 +335,12 @@ THEN
     pp.lbtim.ic = 1
 
 
+#365 day calendar
+IF
+    scalar_coord(cm, 'time') is not None
+    scalar_coord(cm, 'time').units.calendar == '365_day'
+THEN
+    pp.lbtim.ic = 4
 
 #####################
 ### grid and pole ###

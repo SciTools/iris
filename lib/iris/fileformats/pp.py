@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -999,7 +999,12 @@ class PPField(object):
     def calendar(self):
         """Return the calendar of the field."""
         # TODO #577 What calendar to return when ibtim.ic in [0, 3]
-        return iris.unit.CALENDAR_GREGORIAN if self.lbtim.ic != 2 else iris.unit.CALENDAR_360_DAY
+        calendar = iris.unit.CALENDAR_GREGORIAN
+        if self.lbtim.ic == 2:
+            calendar = iris.unit.CALENDAR_360_DAY
+        elif self.lbtim.ic == 4:
+            calendar = iris.unit.CALENDAR_365_DAY
+        return calendar
 
     def _read_extra_data(self, pp_file, file_reader, extra_len):
         """Read the extra data section and update the self appropriately."""

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,13 +26,15 @@ import mock
 import numpy as np
 
 from iris.fileformats.pp import PPField
-
+from iris.fileformats.pp import SplittableInt
 
 # The PPField class is abstract, so to test we define a minimal,
 # concrete subclass with the `t1` and `t2` properties.
 #
 # NB. We define dummy header items to allow us to zero the unused header
 # items when written to disk and get consistent results.
+
+
 class TestPPField(PPField):
 
     HEADER_DEFN = [
@@ -84,6 +86,22 @@ class Test_save(tests.IrisTest):
         self.assertEquals(checksum_32, checksum_64)
         warn.assert_called()
 
+
+class Test_calendar(tests.IrisTest):
+    def test_greg(self):
+        field = TestPPField()
+        field.lbtim = SplittableInt(1, {'ia': 2, 'ib': 1, 'ic': 0})
+        self.assertEqual(field.calendar, 'gregorian')
+
+    def test_360(self):
+        field = TestPPField()
+        field.lbtim = SplittableInt(2, {'ia': 2, 'ib': 1, 'ic': 0})
+        self.assertEqual(field.calendar, '360_day')
+
+    def test_365(self):
+        field = TestPPField()
+        field.lbtim = SplittableInt(4, {'ia': 2, 'ib': 1, 'ic': 0})
+        self.assertEqual(field.calendar, '365_day')
 
 if __name__ == "__main__":
     tests.main()
