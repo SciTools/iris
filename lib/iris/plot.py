@@ -759,6 +759,7 @@ def pcolor(cube, *args, **kwargs):
 
     """
     kwargs.setdefault('antialiased', True)
+    kwargs.setdefault('snap', False)
     result = _draw_2d_from_bounds('pcolor', cube, *args, **kwargs)
     return result
 
