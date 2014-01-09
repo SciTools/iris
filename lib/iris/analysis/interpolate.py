@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -897,12 +897,12 @@ class Linear1dExtrapolator(object):
             lt = np.where(requested_x < self.x[0])[0]
             ok = np.where( (requested_x >= self.x[0]) & (requested_x <= self.x[-1]) )[0]
 
-            data_shape = list(self._interpolator.y.shape)
+            data_shape = list(self.y.shape)
             data_shape[-1] = len(requested_x)
             result = np.empty(data_shape, dtype=self._interpolator(self.x[0]).dtype)
 
             # Make a variable to represent the slice into the resultant data. (This will be updated in each of gt, lt & ok)
-            interpolator_result_index = [slice(None, None)] * self._interpolator.y.ndim
+            interpolator_result_index = [slice(None, None)] * self.y.ndim
 
             if len(ok) != 0:
                 interpolator_result_index[-1] = ok
