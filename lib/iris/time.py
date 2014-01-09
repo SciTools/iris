@@ -34,9 +34,11 @@ class PartialDateTime(object):
     with :class:`datetime.datetime`-like instances.
 
     Comparisons are defined against any other class with all of the
-    attributes: year, month, day, hour, minute, second, microsecond.
+    attributes: year, month, day, hour, minute, and second.
     Notably, this includes :class:`datetime.datetime` and
-    :class:`netcdftime.datetime`.
+    :class:`netcdftime.datetime`. Comparison also extends to the
+    microsecond attribute for classes, such as
+    :class:`datetime.datetime`, which define it.
 
     A :class:`PartialDateTime` object is not limited to any particular
     calendar, so no restriction is placed on the range of values
@@ -105,12 +107,19 @@ class PartialDateTime(object):
             raise TypeError('Cannot order PartialDateTime instances.')
         result = False
         try:
-            for attr_name in self.__slots__:
+            # Everything except 'microsecond' is mandatory
+            for attr_name in self.__slots__[:-1]:
                 attr = getattr(self, attr_name)
                 other_attr = getattr(other, attr_name)
                 if attr is not None and attr != other_attr:
                     result = attr > other_attr
                     break
+            # 'microsecond' is optional
+            if result and hasattr(other, 'microsecond'):
+                attr = self.microsecond
+                other_attr = other.microsecond
+                if attr is not None and attr != other_attr:
+                    result = attr > other_attr
         except AttributeError:
             result = NotImplemented
         return result
@@ -124,12 +133,19 @@ class PartialDateTime(object):
         else:
             result = True
             try:
-                for attr_name in self.__slots__:
+                # Everything except 'microsecond' is mandatory
+                for attr_name in self.__slots__[:-1]:
                     attr = getattr(self, attr_name)
                     other_attr = getattr(other, attr_name)
                     if attr is not None and attr != other_attr:
                         result = False
                         break
+                # 'microsecond' is optional
+                if result and hasattr(other, 'microsecond'):
+                    attr = self.microsecond
+                    other_attr = other.microsecond
+                    if attr is not None and attr != other_attr:
+                        result = False
             except AttributeError:
                 result = NotImplemented
         return result

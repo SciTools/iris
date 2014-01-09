@@ -24,6 +24,7 @@ import datetime
 import operator
 
 import mock
+import netcdftime
 
 from iris.time import PartialDateTime
 
@@ -165,6 +166,16 @@ class Test___eq__(tests.IrisTest, _Test_operator):
         self.op = operator.eq
         self.expected_value = EQ_EXPECTATIONS
 
+    def test_netcdftime_equal(self):
+        pdt = PartialDateTime(month=3, microsecond=2)
+        other = netcdftime.datetime(year=2013, month=3, day=20, second=2)
+        self.assertTrue(pdt == other)
+
+    def test_netcdftime_not_equal(self):
+        pdt = PartialDateTime(month=3, microsecond=2)
+        other = netcdftime.datetime(year=2013, month=4, day=20, second=2)
+        self.assertFalse(pdt == other)
+
 
 class Test___ne__(tests.IrisTest, _Test_operator):
     def setUp(self):
@@ -176,6 +187,16 @@ class Test___gt__(tests.IrisTest, _Test_operator):
     def setUp(self):
         self.op = operator.gt
         self.expected_value = GT_EXPECTATIONS
+
+    def test_netcdftime_greater(self):
+        pdt = PartialDateTime(month=3, microsecond=2)
+        other = netcdftime.datetime(year=2013, month=2, day=20, second=3)
+        self.assertTrue(pdt > other)
+
+    def test_netcdftime_not_greater(self):
+        pdt = PartialDateTime(month=3, microsecond=2)
+        other = netcdftime.datetime(year=2013, month=3, day=20, second=3)
+        self.assertFalse(pdt > other)
 
 
 class Test___le__(tests.IrisTest, _Test_operator):
