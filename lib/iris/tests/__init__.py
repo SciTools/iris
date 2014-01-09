@@ -385,6 +385,10 @@ class IrisTest(unittest.TestCase):
         unmasked values and masks to be identical.
 
         """
+        # Check the shape as the masks may be boolean, and a comparison
+        # of the flattened unmasked data values may not pick up differences
+        # in shape.
+        self.assertEqual(a.shape, b.shape)
         np.testing.assert_array_equal(a.mask, b.mask)
         np.testing.assert_array_equal(self.unmasked_data_as_1d_array(a),
                                       self.unmasked_data_as_1d_array(b))
@@ -396,6 +400,10 @@ class IrisTest(unittest.TestCase):
         equal.
 
         """
+        # Check the shape as the masks may be boolean, and a comparison
+        # of the flattened unmasked data values may not pick up differences
+        # in shape.
+        self.assertEqual(a.shape, b.shape)
         np.testing.assert_array_equal(a.mask, b.mask)
         np.testing.assert_array_almost_equal(self.unmasked_data_as_1d_array(a),
                                              self.unmasked_data_as_1d_array(b))
