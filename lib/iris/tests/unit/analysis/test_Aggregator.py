@@ -154,7 +154,7 @@ class Test_aggregate(tests.IrisTest):
             self.assertArrayAlmostEqual(result, mock_return.copy())
         mock_method.assert_called_once_with(data, axis=axis)
 
-    def test_returning_array_len_one_mdtol(self):
+    def test_returning_scalar_mdtol(self):
         # Test the case when the data aggregation function returns a scalar and
         # turns it into a masked array.
         axis = -1
@@ -163,20 +163,20 @@ class Test_aggregate(tests.IrisTest):
         with patch.object(self.TEST, 'call_func',
                           return_value=mock_return) as mock_method:
             result = self.TEST.aggregate(data, axis, mdtol=1)
-            self.assertMaskedArrayEqual(result, ma.array([2], mask=[False]))
+            self.assertMaskedArrayEqual(result, ma.array(2, mask=False))
         mock_method.assert_called_once_with(data, axis=axis)
 
-    def test_returning_array_len_one_mdtol_alt(self):
+    def test_returning_scalar_mdtol_alt(self):
         # Test the case when the data aggregation function returns a scalar
         # with no tolerance for missing data values and turns it into a masked
-        # array of length one.
+        # array.
         axis = -1
         data = self.array.flatten()
         mock_return = 2
         with patch.object(self.TEST, 'call_func',
                           return_value=mock_return) as mock_method:
             result = self.TEST.aggregate(data, axis, mdtol=0)
-            self.assertMaskedArrayEqual(result, ma.array([2], mask=[True]))
+            self.assertMaskedArrayEqual(result, ma.array(2, mask=True))
         mock_method.assert_called_once_with(data, axis=axis)
 
     def test_returning_non_masked_array_from_masked_array(self):

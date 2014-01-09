@@ -345,7 +345,7 @@ class TestAggregator_mdtol_keyword(tests.IrisTest):
         collapsed = self.cube.collapsed(
             [self.cube.coord('lat'), self.cube.coord('lon')],
             iris.analysis.MEAN, mdtol=0.4)
-        t = ma.array([2.5], mask=[True])
+        t = ma.array(2.5, mask=True)
         self.assertMaskedArrayEqual(collapsed.data, t)
 
 
