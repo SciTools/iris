@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -101,6 +101,13 @@ class PartialDateTime(object):
         self.second = second
         #: The microsecond number as an integer, or None.
         self.microsecond = microsecond
+
+    def __repr__(self):
+        attr_pieces = ['{}={}'.format(name, getattr(self, name))
+                       for name in self.__slots__
+                       if getattr(self, name) is not None]
+        result = '{}({})'.format(type(self).__name__, ', '.join(attr_pieces))
+        return result
 
     def __gt__(self, other):
         if isinstance(other, type(self)):

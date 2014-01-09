@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -42,6 +42,25 @@ class Test___init__(tests.IrisTest):
         pd = PartialDateTime(microsecond=10)
         self.assertEqual(pd.year, None)
         self.assertEqual(pd.microsecond, 10)
+
+
+class Test___repr__(tests.IrisTest):
+    def test_full(self):
+        pd = PartialDateTime(*range(7))
+        result = repr(pd)
+        self.assertEqual(result, 'PartialDateTime(year=0, month=1, day=2,'
+                                 ' hour=3, minute=4, second=5,'
+                                 ' microsecond=6)')
+
+    def test_partial(self):
+        pd = PartialDateTime(month=2, day=30)
+        result = repr(pd)
+        self.assertEqual(result, 'PartialDateTime(month=2, day=30)')
+
+    def test_empty(self):
+        pd = PartialDateTime()
+        result = repr(pd)
+        self.assertEqual(result, 'PartialDateTime()')
 
 
 class Test_timetuple(tests.IrisTest):
