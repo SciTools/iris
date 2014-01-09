@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,11 +29,6 @@ import iris.fileformats
 import iris.fileformats.dot
 import iris.cube
 import iris.exceptions
-
-
-#: Used by callbacks to specify that the given cube should not be loaded.
-NO_CUBE = 'NOCUBE'
-CALLBACK_DEPRECATION_MSG = "Callback functions with a return value are deprecated."
 
 
 # Saving routines, indexed by file extension.
