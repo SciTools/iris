@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -98,8 +98,8 @@ class TestCoordinateForms(tests.IrisTest):
             standard_name='longitude',
             units='degrees_east')
         test_cube.add_dim_coord(x_coord, 1)
-        y0 = 20.5
-        dy = 3.72
+        y0 = np.float32(20.5)
+        dy = np.float32(3.72)
         y_coord = iris.coords.DimCoord.from_regular(
             zeroth=y0,
             step=dy,
@@ -114,6 +114,7 @@ class TestCoordinateForms(tests.IrisTest):
             pp_field = pp_loader.next()
         # Check that the result has the regular coordinates as expected.
         self.assertAlmostEqual(pp_field.bzx, x0)  # N.B. *not* exact.
+        self.assertAlmostEqual(pp_field.bdx, dx)
         self.assertAlmostEqual(pp_field.lbnpt, nx)
         self.assertAlmostEqual(pp_field.bzy, y0)
         self.assertAlmostEqual(pp_field.bdy, dy)
