@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -463,9 +463,17 @@ class Coord(CFVariableMixin):
         return result
 
     def _str_dates(self, dates_as_numbers):
-        # Chop off the 'array(' prefix and the ', dtype=object)'
-        # suffix.
-        return repr(self.units.num2date(dates_as_numbers))[6:-15]
+        date_obj_array = self.units.num2date(dates_as_numbers)
+        kwargs = {'separator': ', ', 'prefix': '      '}
+        try:
+            # With NumPy 1.7 we need to ask for 'str' formatting.
+            result = np.core.arrayprint.array2string(
+                date_obj_array, formatter={'numpystr': str}, **kwargs)
+        except TypeError:
+            # But in 1.6 we don't need to ask, and the option doesn't
+            # even exist!
+            result = np.core.arrayprint.array2string(date_obj_array, **kwargs)
+        return result
 
     def __str__(self):
         if self.units.is_time_reference():
