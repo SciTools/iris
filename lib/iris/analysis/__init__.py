@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -40,8 +40,9 @@ import iris.coords
 
 
 __all__ = ('COUNT', 'GMEAN', 'HMEAN', 'MAX', 'MEAN', 'MEDIAN', 'MIN',
-           'PERCENTILE', 'PROPORTION', 'RMS', 'STD_DEV', 'SUM', 'VARIANCE',
-            'coord_comparison', 'Aggregator', 'clear_phenomenon_identity')
+           'PEAK', 'PERCENTILE', 'PROPORTION', 'RMS', 'STD_DEV', 'SUM',
+           'VARIANCE', 'coord_comparison', 'Aggregator',
+           'clear_phenomenon_identity')
 
 
 class _CoordGroup(object):

@@ -4,42 +4,131 @@ What's new in Iris 1.6
 :Release: 1.6.0
 :Date: unreleased
 
-Incompatible changes
---------------------
-* The previously experimental 'concatenate' function is now a method of a
-  :class:`iris.cube.CubeList`, see :meth:`iris.cube.CubeList.concatenate`.  The
-  functionality is unchanged.
-
 Iris 1.6 features
 =================
-* A new utility function makes it easy to "shortcut" slow calculations or
-  file loads by caching stored results. See
-  :func:`iris.util.file_is_newer_than`.
-* A new experimental function removes any non-matching attributes from a group
-  of cubes.  This can assist in merging cubes which only differ in their
-  attributes.  See
-  :meth:`iris.experimental.equalise_cubes.equalise_attributes`.
+
+.. _showcase:
+
+.. admonition:: Showcase Feature - Back to the future ...
+
+    The new :data:`iris.FUTURE` global variable is a :class:`iris.Future`
+    instance that controls the run-time behaviour of Iris.
+
+    By setting :data:`iris.FUTURE.cell_datetime_objects` to *True*, a *time*
+    reference coordinate will return *datetime-like* objects when invoked
+    with :meth:`iris.coords.Coord.cell` or :meth:`iris.coords.Coord.cells`.
+
+    .. code-block:: python
+
+        >>> from iris.coords import DimCoord
+        >>> iris.FUTURE.cell_datetime_objects = True
+        >>> coord = DimCoord([1, 2, 3], 'time', units='hours since epoch')
+        >>> print [str(cell) for cell in coord.cells()]
+        ['1970-01-01 01:00:00', '1970-01-01 02:00:00', '1970-01-01 03:00:00']
+
+    Note that, either a :class:`datetime.datetime` or :class:`netcdftime.datetime`
+    object instance will be returned, depending on the calendar of the time
+    reference coordinate.
+
+    This capability permits the ability to express time constraints more
+    naturally when the cell represents a *datetime-like* object.
+
+    .. code-block:: python
+
+        # Ignore the 1st of January.
+        iris.Constraint(time=lambda cell: cell.point.month != 1 and cell.point.day != 1)
+
+    Note that, :class:`iris.Future` also supports a `context manager <http://docs.python.org/2/reference/datamodel.html#context-managers>`_
+    which allows multiple sections of code to execute with different run-time behaviour.
+
+    .. code-block:: python
+
+        >>> print iris.FUTURE
+        Future(cell_datetime_objects=False)
+        >>> with iris.FUTURE.context(cell_datetime_objects=True):
+        ...     # Code that expects to deal with datetime-like objects.
+        ...     print iris.FUTURE
+        ...
+        Future(cell_datetime_objects=True)
+        >>> print iris.FUTURE
+        Future(cell_datetime_objects=False)
+
+.. admonition:: Showcase Feature - Partial date/time ...
+
+    The :class:`iris.time.PartialDateTime` class provides the ability to perform
+    comparisons with other *datetime-like* objects such as
+    :class:`datetime.datetime` or :class:`netcdftime.datetime`.
+
+    The *year, month, day, hour, minute, second* and *microsecond* attributes of
+    a :class:`iris.time.PartialDateTime` object may be fully or partially specified
+    for any given comparison.
+
+    This is particularly useful for time based constraints, whilst enabling the
+    :data:`iris.FUTURE.cell_datetime_objects`, see :ref:`here <showcase>` for further
+    details on this new release feature.
+
+    .. code-block:: python
+
+        from iris.time import PartialDateTime
+
+        # Ignore the 1st of January.
+        iris.Constraint(time=lambda cell: cell.point != PartialDateTime(month=1, day=1))
+
+	# Constrain by a specific year.
+	iris.Constraint(time=PartialDateTime(year=2013))
+
+    Also see the User Guide :ref:`Constraining on Time <using-time-constraints>`
+    section for further commentary.
+
+* GRIB loading supports latitude/longitude or Gaussian reduced grids for
+  version 1 and version 2.
+* :ref:`A new utility function to assist with caching<caching>`.
+* :ref:`The RMS aggregator supports weights<rms>`.
+* :ref:`A new experimental function to equalise cube attributes<equalise>`.
+* :ref:`Collapsing a cube provides a tolerance level for missing-data<tolerance>`.
+* NAME loading supports vertical coordinates.
+* UM land/sea mask de-compression for Fieldsfiles and PP files.
+* Lateral boundary condition Fieldsfile support.
 * Staggered grid support for Fieldsfiles extended to type 6 (Arakawa C grid
   with v at poles).
-* A new utility function is now available for creating a new cube axis as the
-  leading dimension and in doing so, promoting a scalar coordinate if
-  specified.  See
-  :func:`iris.util.new_axis`.
+* Extend support for Fieldsfiles with grid codes 11, 26, 27, 28 and 29.
+* :ref:`Promoting a scalar coordinate to new leading cube dimension<promote>`.
 * Interpreting cell methods from NAME.
 * GRIB2 export without forecast_period, enabling NAME to GRIB2. 
-* Loading height levels from GRIB2. 
+* Loading height levels from GRIB2.
+* :func:`iris.coord_categorisation.add_categorised_coord` now supports
+  multi-dimensional coordinate categorisation.
+* Fieldsfiles and PP support for loading and saving of air potential temperature.
+* :func:`iris.experimental.regrid.regrid_weighted_curvilinear_to_rectilinear`
+  regrids curvilinear point data to a target rectilinear grid using associated
+  area weights.
+* Extended capability of the NetCDF saver :meth:`iris.fileformats.netcdf.Saver.write`
+  for fine-tune control of a :mod:`netCDF4.Variable`. Also allows multiple dimensions
+  to be nominated as *unlimited*.
+* :ref:`A new PEAK aggregator providing spline interpolation<peak>`.
+* A new utility function :func:`iris.util.broadcast_to_shape`.
+* A new utility function :func:`iris.util.as_compatible_shape`.
 
 Bugs fixed
-----------
-* N/A
+==========
+* :meth:`iris.cube.Cube.rolling_window` has been extended to support masked arrays.
+* :meth:`iris.cube.Cube.collapsed` now handles string coordinates.
+* Default LBUSER(2) to -99 for Fieldsfile and PP saving.
+* :func:`iris.util.monotonic` returns the correct direction.
+* File loaders correctly parse filenames containing colons.
+* ABF loader now correctly loads the ABF data payload once.
+* Support for 1D array :data:`iris.cube.cube.attributes`.
+* GRIB bounded level saving fix.
 
 Incompatible changes
---------------------
+====================
+* The experimental 'concatenate' function is now a method of a
+  :class:`iris.cube.CubeList`, see :meth:`iris.cube.CubeList.concatenate`. The
+  functionality is unchanged.
 * :meth:`iris.cube.Cube.extract_by_trajectory()` has been removed.
   Instead, use :func:`iris.analysis.trajectory.interpolate()`.
 * :func:`iris.load_strict()` has been removed.
-  Code should now use the :func:`iris.load_cube()` and
-  :func:`iris.load_cubes()` functions instead.
+  Instead, use :func:`iris.load_cube()` and :func:`iris.load_cubes()`.
 * :meth:`iris.coords.Coord.cos()` and :meth:`iris.coords.Coord.sin()`
   have been removed.
 * :meth:`iris.coords.Coord.unit_converted()` has been removed.
@@ -49,8 +138,7 @@ Incompatible changes
   coordinate.
 * Iteration over a :class:`~iris.cube.Cube` has been removed. Instead,
   use :meth:`iris.cube.Cube.slices()`.
-* The following boolean methods/properties on the
-  :class:`~iris.unit.Unit` class have been removed.
+* The following :class:`~iris.unit.Unit` deprecated methods/properties have been removed.
 
   ====================================== ===========================================
   Removed property/method                New method
@@ -62,14 +150,127 @@ Incompatible changes
   :attr:`~iris.unit.Unit.unknown`        :meth:`~iris.unit.Unit.is_unknown()`
   ====================================== ===========================================
 * As a result of deprecating :meth:`iris.cube.Cube.add_history` and removing the
-  automatic appending of history by operations such as cube arithmatic,
+  automatic appending of history by operations such as cube arithmetic,
   collapsing, and aggregating, the signatures of a number of functions within
   :mod:`iris.analysis.maths` have been modified along with that of
   :class:`iris.analysis.Aggregator` and :class:`iris.analysis.WeightedAggregator`.
+* The experimental ABF and ABL functionality has now been promoted to 
+  core functionality in :mod:`iris.fileformats.abf`.
+* The following :mod:`iris.coord_categorisation` deprecated functions have been
+  removed.
+
+  =============================================================== =======================================================
+  Removed function                                                New function
+  =============================================================== =======================================================
+  :func:`~iris.coord_categorisation.add_custom_season`            :func:`~iris.coord_categorisation.add_season`
+  :func:`~iris.coord_categorisation.add_custom_season_number`     :func:`~iris.coord_categorisation.add_season_number`
+  :func:`~iris.coord_categorisation.add_custom_season_year`       :func:`~iris.coord_categorisation.add_season_year`
+  :func:`~iris.coord_categorisation.add_custom_season_membership` :func:`~iris.coord_categorisation.add_season_membership`
+  =============================================================== =======================================================
 
 Deprecations
-------------
+============
 * :meth:`iris.cube.Cube.add_history` has been deprecated in favour
   of users modifying/creating the history metadata directly. This is
   because the automatic behaviour did not deliver a sufficiently complete,
   auditable history and often prevented the merging of cubes.
+* :func:`iris.util.broadcast_weights` has been deprecated and replaced
+  by the new utility function :func:`iris.util.broadcast_to_shape`.
+
+
+----
+
+
+.. _caching:
+
+A new utility function to assist with caching
+---------------------------------------------
+To assist with management of caching results to file, the new utility
+function :func:`iris.util.file_is_newer_than` may be used to easily determine whether
+the modification time of a specified cache file is newer than one or more other files.
+
+Typically, the use of caching is a means to circumvent the cost of repeating time
+consuming processing, or to reap the benefit of fast-loading a pickled cube.
+
+.. code-block:: python
+
+    # Determine whether to load from the cache or source.
+    if iris.util.file_is_newer(cache_file, source_file):
+        with open(cache_file, 'rb') as fh:
+            cube = cPickle.load(fh)
+    else:
+        cube = iris.load_cube(source_file)
+	
+	# Perhaps perform some intensive processing ...
+
+        # Create the cube cache.
+        with open(cache_file, 'wb') as fh:
+            cPickle.dump(cube, fh)
+
+
+.. _rms:
+
+The RPM aggregator supports weights
+===================================
+A :data:`iris.analysis.RMS` aggregator has been extended to allow the use of
+weights using the new keyword argument :data:`weights`.
+
+For example, a RMS weighted cube collapse is performed as follows:
+
+.. code-block:: python
+
+    from iris.analysis import RMS
+    collapsed_cube = cube.collapsed('height', RMS, weights=weights)
+
+
+.. _equalise:
+
+Equalise cube attributes
+========================
+To assist with :class:`iris.cube.Cube` merging, the new experimental in-place
+function :func:`iris.experimental.equalise_cubes.equalise_attributes` ensures
+that a sequence of cubes contains a common set of :data:`iris.cube.Cube.attributes`.
+
+This attempts to smooth the merging process by ensuring that all candidate cubes
+have the same attributes.
+
+
+.. _tolerance:
+
+Masking a collapsed result by missing-data tolerance
+====================================================
+The result from collapsing masked cube data may now be completely
+masked by providing a :data:`mdtol` missing-data tolerance keyword
+to :meth:`iris.cube.Cube.collapsed`.
+
+This tolerance provides a threshold that will **completely** mask the
+collapsed result whenever the fraction of data to missing-data is 
+less than or equal to the provided tolerance.
+
+
+.. _promote:
+
+Promote a scalar coordinate
+===========================
+The new utility function :func:`iris.util.new_axis` creates a new cube with
+a new leading dimension of size unity. If a scalar coordinate is provided, then
+the scalar coordinate is promoted to be the dimension coordinate for the new
+leading dimension.
+
+Note that, this function will load the data payload of the cube.
+
+
+.. _peak:
+
+A new PEAK aggregator providing spline interpolation
+====================================================
+The new :data:`iris.analysis.PEAK` aggregator calculates the global peak
+value from a spline interpolation of the :class:`iris.cube.Cube` data payload
+along a nominated coordinate axis.
+
+For example, to calculate the peak time:
+
+.. code-block:: python
+
+    from iris.analysis import PEAK
+    collapsed_cube = cube.collapsed('time', PEAK)
