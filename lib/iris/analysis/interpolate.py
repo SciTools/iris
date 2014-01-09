@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -559,6 +559,9 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
     carried out in sequence, thus providing n-linear interpolation
     (bi-linear, tri-linear, etc.).
 
+    If the input cube's data is masked, the result cube will have a data
+    mask interpolated to the new sample points
+
     .. testsetup::
 
         import numpy as np
@@ -775,8 +778,21 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
                 return new_fx
 
         # 2) Interpolate the data and produce our new Cube.
-        data = interpolate(data, sample_values, axis=sample_dim, copy=False)
-        new_cube = iris.cube.Cube(data)
+        if isinstance(data, ma.MaskedArray):
+            # interpolate data, ignoring the mask
+            new_data = interpolate(data.data, sample_values, axis=sample_dim,
+                                   copy=False)
+            # Mask out any results which contain a non-zero contribution
+            # from a masked value when interpolated from mask cast as 1,0.
+            mask_dataset = ma.getmaskarray(data).astype(float)
+            new_mask = interpolate(mask_dataset, sample_values,
+                                   axis=sample_dim, copy=False) > 0
+            # create new_data masked array
+            new_data = ma.MaskedArray(new_data, mask=new_mask)
+        else:
+            new_data = interpolate(data, sample_values, axis=sample_dim,
+                                   copy=False)
+        new_cube = iris.cube.Cube(new_data)
         new_cube.metadata = cube.metadata
 
         # If requested_points is an array scalar then `new_cube` will
