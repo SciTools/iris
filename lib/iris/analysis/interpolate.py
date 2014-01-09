@@ -851,6 +851,30 @@ def _resample_coord(coord, src_coord, direction, target_points, interpolate):
     return new_coord
 
 
+def _interp1d_rolls_y():
+    '''
+    Compares the array y passed into :class:`scipy.interpolate.interp1d`
+    to the class's internal represenation of y.
+
+    SciPy v0.13.x+ no longer rolls the axis of its internal representation
+    of y so we test for this occurring to prevent us subsequently
+    extrapolating along the wrong axis.
+
+    For further information on this change see, for example;
+        * https://github.com/scipy/scipy/commit/0d906d0fc54388464603c63119b9e35c9a9c4601
+          (the commit that introduced the change in behaviour).
+        * https://github.com/scipy/scipy/issues/2621
+          (a discussion on the change - note the issue is not resolved
+          at time of writing).
+
+    '''
+    y = np.arange(12).reshape(3, 4)
+    f = interp1d(np.arange(3), y, axis=0)
+    # Note: if the initial shape of y and the shape internal to interp1d
+    # are *not* the same then scipy.interp1d rolls y, hence this return:
+    return y.shape != f.y.shape
+
+
 class Linear1dExtrapolator(object):
     """
     Extension class to :class:`scipy.interpolate.interp1d` to provide linear extrapolation.
@@ -858,6 +882,8 @@ class Linear1dExtrapolator(object):
     See also: :mod:`scipy.interpolate`.
 
     """
+    roll_y = _interp1d_rolls_y()
+
     def __init__(self, interpolator):
         """
         Given an already created :class:`scipy.interpolate.interp1d` instance, return a callable object
@@ -874,6 +900,9 @@ class Linear1dExtrapolator(object):
         .. note:: These are stored with the interpolator.axis last.
 
         """
+        # Roll interpolator.axis to the end if scipy no longer does it for us.
+        if not self.roll_y:
+            self.y = np.rollaxis(self.y, self._interpolator.axis, self.y.ndim)
 
     def all_points_in_range(self, requested_x):
         """Given the x points, do all of the points sit inside the interpolation range."""
