@@ -1146,10 +1146,12 @@ class _Groupby(object):
 
         # Create new shared bounded coordinates.
         for coord in self._shared_coords:
+            source_points = []
             new_bounds = []
 
             # Construct list of coordinate group boundary pairs.
             for start, stop in groupby_bounds:
+                source_points.append(coord.points[start:stop+1])
                 if coord.has_bounds():
                     # Collapse group bounds into bounds.
                     if (getattr(coord, 'circular', False) and
@@ -1175,9 +1177,10 @@ class _Groupby(object):
             try:
                 new_points = np.array(new_bounds).mean(-1)
             except TypeError:
-                sjoin = lambda b: "|".join([str(i) for i in b])
-                str_list = [sjoin(b) for b in new_bounds]
+                sjoin = lambda pts: "|".join([str(pt) for pt in pts])
+                str_list = [sjoin(pts) for pts in source_points]
                 new_points = np.array(str_list)
+                new_bounds = None
 
             try:
                 self.coords.append(coord.copy(points=new_points,

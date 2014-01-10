@@ -488,20 +488,28 @@ class TestAggregateBy(tests.IrisTest):
                           'height', iris.analysis.MEAN,
                           weights=[1, 2, 3, 4, 5])
 
-    def test_bounded_string_coord(self):
-        cube = iris.cube.Cube([1, 2, 3])
-        cube.add_dim_coord(iris.coords.DimCoord([1, 2, 3], "height", "m"), 0)
-        cube.add_aux_coord(iris.coords.AuxCoord([1, 2, 2], long_name="cat"), 0)
-        cube.add_aux_coord(
-            iris.coords.AuxCoord(
-                ['1', '2', '3'], long_name="string coord",
-                bounds=[['0.5', '1.5'], ['1.5', '2.5'], ['2.5', '3.5']]), 0)
+    def test_string_coord(self):
+        cat_coord = iris.coords.AuxCoord([0, 0, 0], long_name="cat")
+        label_coord = iris.coords.AuxCoord(
+            ['first', 'second', 'third'], long_name='weird_name')
+        self.cube_single.add_aux_coord(cat_coord, 2)
+        self.cube_single.add_aux_coord(label_coord, 2)
 
-        agg_cube = cube.aggregated_by("cat", iris.analysis.MEAN)
-        self.assertArrayEqual(agg_cube.coord("string coord").points,
-                              ['0.5|1.5', '1.5|3.5'])
-        self.assertArrayEqual(agg_cube.coord("string coord").bounds,
-                              [['0.5', '1.5'], ['1.5', '3.5']])
+        agg = self.cube_single.aggregated_by('cat', iris.analysis.MEAN)
+        self.assertEqual(agg.coord("weird_name").points,
+                         ['first|second|third'])
+
+    def test_bounded_string_coord(self):
+        cat_coord = iris.coords.AuxCoord([0, 0, 0], long_name="cat")
+        label_coord = iris.coords.AuxCoord(
+            ['first', 'second', 'third'], long_name='weird_name',
+            bounds=[['0th', '2nd'], ['1st', '3rd'], ['2nd', '4th']])
+        self.cube_single.add_aux_coord(cat_coord, 2)
+        self.cube_single.add_aux_coord(label_coord, 2)
+
+        agg = self.cube_single.aggregated_by('cat', iris.analysis.MEAN)
+        self.assertEqual(agg.coord("weird_name").points,
+                         ['first|second|third'])
 
 
 if __name__ == '__main__':
