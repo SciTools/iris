@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -32,6 +32,14 @@ import iris.analysis.interpolate
 import iris.tests.stock
 from iris.analysis.interpolate import Linear1dExtrapolator
 import iris.analysis.interpolate as iintrp
+
+
+def normalise_order(cube):
+    # Avoid the crazy array ordering which results from using
+    # np.append() in NumPy 1.6.
+    # This is triggered in the `linear()` function when the circular
+    # flag is true.
+    cube.data = np.ascontiguousarray(cube.data)
 
 
 class TestLinearExtrapolator(tests.IrisTest):
@@ -416,10 +424,12 @@ class TestLinear1dInterpolation(tests.IrisTest):
         cube.add_aux_coord(other, 1)
         samples = [0, 60, 300]
         r = iris.analysis.interpolate.linear(cube, [('theta', samples)])
+        normalise_order(r)
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'circular_vs_non_circular.cml'))
 
     def test_simple_multiple_points_circular(self):
         r = iris.analysis.interpolate.linear(self.simple2d_cube_circular, [('theta', [0. , 60. , 120. , 180. ])])
+        normalise_order(r)
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_multiple_points_circular.cml'))
         
         # check that the values returned by theta 0 & 360 are the same...
@@ -513,7 +523,7 @@ class TestLinear1dInterpolation(tests.IrisTest):
         cube.coord('grid_longitude').circular = True
         # There's no result to test, just make sure we don't cause an exception with the scalar mask.
         _ = iris.analysis.interpolate.linear(cube, [('grid_longitude',0), ('grid_latitude',0)])
-    
+
 
 @iris.tests.skip_data
 class TestNearestLinearInterpolRealData(tests.IrisTest):
@@ -531,6 +541,7 @@ class TestNearestLinearInterpolRealData(tests.IrisTest):
     
     def test_circular(self):
         r = iris.analysis.interpolate.linear(self.cube, [('longitude', 359.8)])
+        normalise_order(r)
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'real_circular_2dslice.cml'))
         
         # check that the values returned by lon 0 & 360 are the same...
