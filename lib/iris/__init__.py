@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -73,14 +73,13 @@ All the load functions share very similar arguments:
             load_cube(uri, iris.AttributeConstraint(STASH='m01s00i004'))
 
     * callback:
-        A function to add metadata from the originating field and/or URI
-        which obeys the following rules:
-
-            1. Function signature must be: ``(cube, field, filename)``
-            2. Must not return any value - any alterations to the cube
-               must be made by reference
-            3. If the cube is to be rejected the callback must raise an
-               :class:`iris.exceptions.IgnoreCubeException`
+        A function to add metadata from the originating field and/or URI which
+        obeys the following rules:
+            1. Function signature must be: ``(cube, field, filename)``.
+            2. Modifies the given cube inplace, unless a new cube is
+               returned by the function.
+            3. If the cube is to be rejected the callback must raise
+               an :class:`iris.exceptions.IgnoreCubeException`.
 
         For example::
 
