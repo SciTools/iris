@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2012 - 2013, Met Office
+# (C) British Crown Copyright 2012 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -37,6 +37,9 @@ class TestAbfLoad(tests.GraphicsTest):
         time_coord = cubes[0].coord("time")
         time_coord.points = np.array(time_coord.points, dtype=np.int64)
         time_coord.bounds = np.array(time_coord.bounds, dtype=np.int64)
+        # Normalise the different array orders returned by version 1.6
+        # and 1.7 of NumPy.
+        cubes[0].data = cubes[0].data.copy(order='C')
         self.assertCML(cubes, ("abf", "load.cml"))
 
     def test_fill_value(self):
