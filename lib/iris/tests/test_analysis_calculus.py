@@ -57,8 +57,8 @@ class TestCubeDelta(tests.IrisTest):
         delta = iris.analysis.calculus.cube_delta(cube,
                                                   'projection_x_coordinate')
         delta_coord = delta.coord('projection_x_coordinate')
-        self.assertEqual(delta_coord, delta.coord(coord=coord))
-        self.assertEqual(coord, cube.coord(coord=delta_coord))
+        self.assertEqual(delta_coord, delta.coord(coord))
+        self.assertEqual(coord, cube.coord(delta_coord))
 
 
 class TestDeltaAndMidpoint(tests.IrisTest):

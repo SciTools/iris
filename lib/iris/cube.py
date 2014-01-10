@@ -760,7 +760,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         See also :meth:`Cube.remove_coord()<iris.cube.Cube.remove_coord>`.
 
         """
-        if self.coords(coord=coord):  # TODO: just fail on duplicate object
+        if self.coords(coord):  # TODO: just fail on duplicate object
             raise ValueError('Duplicate coordinates are not permitted.')
         self._add_unique_aux_coord(coord, data_dims)
 
@@ -825,7 +825,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         See also :meth:`Cube.remove_coord()<iris.cube.Cube.remove_coord>`.
 
         """
-        if self.coords(coord=dim_coord):
+        if self.coords(dim_coord):
             raise ValueError('The coordinate already exists on the cube. '
                              'Duplicate coordinates are not permitted.')
         # Check dimension is available
@@ -885,11 +885,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         See also :meth:`Cube.add_coord()<iris.cube.Cube.add_coord>`.
 
         """
-        if isinstance(coord, basestring):
-            coord = self.coord(name=coord)
-        else:
-            coord = self.coord(coord=coord)
-
+        coord = self.coord(coord)
         self._remove_coord(coord)
 
         for factory in self.aux_factories:
@@ -900,7 +896,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Replace the coordinate whose metadata matches the given coordinate.
 
         """
-        old_coord = self.coord(coord=new_coord)
+        old_coord = self.coord(new_coord)
         dims = self.coord_dims(old_coord)
         was_dimensioned = old_coord in self.dim_coords
         self._remove_coord(old_coord)
@@ -924,10 +920,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         Args:
 
-        * coord
-            The :class:`iris.coords.Coord` instance to look for.
+        * coord (string or coord)
+            The (name of the) coord to look for.
 
         """
+
+        coord = self.coord(coord)
+
         # Search for existing coordinate (object) on the cube, faster lookup
         # than equality - makes no functional difference.
         matches = [(dim,) for coord_, dim in self._dim_coords_and_dims if
@@ -935,46 +934,26 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if not matches:
             matches = [dims for coord_, dims in self._aux_coords_and_dims if
                        coord_ is coord]
-        if matches:
-            return matches[0]
-
-        ## Search by coord definition (slow)
-        target_defn = coord._as_defn()
-        # Search dim coords first
-        matches = [(dim,) for coord_, dim in self._dim_coords_and_dims if
-                   coord_._as_defn() == target_defn]
-
-        # Search aux coords
-        if not matches:
-            matches = [dims for coord_, dims in self._aux_coords_and_dims if
-                       coord_._as_defn() == target_defn]
 
         # Search derived aux coords
+        target_defn = coord._as_defn()
         if not matches:
             match = lambda factory: factory._as_defn() == target_defn
             factories = filter(match, self._aux_factories)
             matches = [factory.derived_dims(self.coord_dims) for factory in
                        factories]
 
+        # Deprecate name based searching
         ### Search by coord name, if have no match
         # XXX Where did this come from? And why isn't it reflected in the
         # docstring?
-
         if not matches:
+            warnings.warn('name based coord matching is deprecated and will '
+                          'be removed in a future release.',
+                          stacklevel=2)
             matches = [(dim,) for coord_, dim in self._dim_coords_and_dims if
                        coord_.name() == coord.name()]
-
-        # Search aux coords
-        if not matches:
-            matches = [dims for coord_, dims in self._aux_coords_and_dims if
-                       coord_.name() == coord.name()]
-
-#        # Search derived aux coords
-#        if not matches:
-#            match = lambda factory: factory.name() == coord.name()
-#            factories = filter(match, self._aux_factories)
-#            matches = [factory.derived_dims(self.coord_dims) for factory in
-#                       factories]
+        # Finish deprecate name based searching
 
         if not matches:
             raise iris.exceptions.CoordinateNotFoundError(coord.name())
@@ -1039,19 +1018,30 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         return factories[0]
 
-    def coords(self, name=None, standard_name=None, long_name=None,
-               var_name=None, attributes=None, axis=None,
+    def coords(self, name_or_coord=None, standard_name=None,
+               long_name=None, var_name=None, attributes=None, axis=None,
                contains_dimension=None, dimensions=None, coord=None,
-               coord_system=None, dim_coords=None):
+               coord_system=None, dim_coords=None, name=None):
         """
         Return a list of coordinates in this cube fitting the given criteria.
 
         Kwargs:
 
+        * name_or_coord
+            Either
+
+            (a) a :attr:`standard_name`, :attr:`long_name`, or
+            :attr:`var_name`. Defaults to value of `default`
+            (which itself defaults to `unknown`) as defined in
+            :class:`iris._cube_coord_common.CFVariableMixin`.
+
+            (b) a coordinate instance with metadata equal to that of
+            the desired coordinates. Accepts either a
+            :class:`iris.coords.DimCoord`, :class:`iris.coords.AuxCoord`,
+            :class:`iris.aux_factory.AuxCoordFactory`
+            or :class:`iris.coords.CoordDefn`.
         * name
-            The standard name or long name or default name of the desired
-            coordinate. If None, does not check for name. Also see,
-            :attr:`Cube.name`.
+            .. deprecated:: 1.6. Please use the name_or_coord kwarg.
         * standard_name
             The CF standard name of the desired coordinate. If None, does not
             check for standard name.
@@ -1076,10 +1066,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             with no data dimension can be found with an empty tuple or list
             (i.e. ``()`` or ``[]``). If None, does not check for dimensions.
         * coord
-            Whether the desired coordinates have metadata equal to the given
-            coordinate instance. If None, no check is done. Accepts either a
-            :class:'iris.coords.DimCoord`, :class:`iris.coords.AuxCoord` or
-            :class:`iris.coords.CoordDefn`.
+            .. deprecated:: 1.6. Please use the name_or_coord kwarg.
         * coord_system
             Whether the desired coordinates have coordinate systems equal to
             the given coordinate system. If None, no check is done.
@@ -1092,6 +1079,31 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         See also :meth:`Cube.coord()<iris.cube.Cube.coord>`.
 
         """
+        # Handle deprecated kwargs
+        if name is not None:
+            name_or_coord = name
+            warnings.warn('the name kwarg is deprecated and will be removed '
+                          'in a future release. Consider converting '
+                          'existing code to use the name_or_coord '
+                          'kwarg as a replacement.',
+                          stacklevel=2)
+        if coord is not None:
+            name_or_coord = coord
+            warnings.warn('the coord kwarg is deprecated and will be removed '
+                          'in a future release. Consider converting '
+                          'existing code to use the name_or_coord '
+                          'kwarg as a replacement.',
+                          stacklevel=2)
+        # Finish handling deprecated kwargs
+
+        name = None
+        coord = None
+
+        if isinstance(name_or_coord, basestring):
+            name = name_or_coord
+        else:
+            coord = name_or_coord
+
         coords_and_factories = []
 
         if dim_coords in [True, None]:
@@ -1175,10 +1187,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         return coords
 
-    def coord(self, name=None, standard_name=None, long_name=None,
-              var_name=None, attributes=None, axis=None,
+    def coord(self, name_or_coord=None, standard_name=None,
+              long_name=None, var_name=None, attributes=None, axis=None,
               contains_dimension=None, dimensions=None, coord=None,
-              coord_system=None, dim_coords=None):
+              coord_system=None, dim_coords=None, name=None):
         """
         Return a single coord given the same arguments as :meth:`Cube.coords`.
 
@@ -1194,12 +1206,30 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             documentation.
 
         """
-        coords = self.coords(name=name, standard_name=standard_name,
+        # Handle deprecated kwargs
+        if name is not None:
+            name_or_coord = name
+            warnings.warn('the name kwarg is deprecated and will be removed '
+                          'in a future release. Consider converting '
+                          'existing code to use the name_or_coord '
+                          'kwarg as a replacement.',
+                          stacklevel=2)
+        if coord is not None:
+            name_or_coord = coord
+            warnings.warn('the coord kwarg is deprecated and will be removed '
+                          'in a future release. Consider converting '
+                          'existing code to use the name_or_coord '
+                          'kwarg as a replacement.',
+                          stacklevel=2)
+        # Finish handling deprecated kwargs
+
+        coords = self.coords(name_or_coord=name_or_coord,
+                             standard_name=standard_name,
                              long_name=long_name, var_name=var_name,
                              attributes=attributes, axis=axis,
                              contains_dimension=contains_dimension,
                              dimensions=dimensions,
-                             coord=coord, coord_system=coord_system,
+                             coord_system=coord_system,
                              dim_coords=dim_coords)
 
         if len(coords) > 1:
@@ -1871,7 +1901,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise ValueError('coord_to_extract must be a valid Coord.')
 
         # Get the coord to extract from the cube
-        coord_to_extract = self.coord(coord=coord)
+        coord_to_extract = self.coord(coord)
         if len(self.coord_dims(coord_to_extract)) > 1:
             msg = "Currently, only 1D coords can be used to subset a cube"
             raise iris.exceptions.CoordinateMultiDimError(msg)
@@ -1911,10 +1941,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         coords = []
         for name_or_coord in names_or_coords:
-            if isinstance(name_or_coord, basestring):
+            if (isinstance(name_or_coord, basestring) or
+                    isinstance(name_or_coord, iris.coords.Coord)):
                 coords.append(self.coord(name_or_coord))
-            elif isinstance(name_or_coord, iris.coords.Coord):
-                coords.append(self.coord(coord=name_or_coord))
             else:
                 # Don't know how to handle this type
                 msg = "Don't know how to handle coordinate of type %s. " \
@@ -2819,7 +2848,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             new_points = np.mean(new_bounds, axis=-1)
 
             # wipe the coords points and set the bounds
-            new_coord = new_cube.coord(coord=coord_)
+            new_coord = new_cube.coord(coord_)
             new_coord.points = new_points
             new_coord.bounds = new_bounds
 

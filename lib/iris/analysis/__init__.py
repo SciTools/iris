@@ -278,13 +278,13 @@ def coord_comparison(*cubes):
         # dimension on their respective cubes
         # (None -> group describes a different dimension)
         diff_data_dim_fn = lambda cube, coord: \
-            cube.coord_dims(coord=coord) != first_cube.coord_dims(first_coord)
+            cube.coord_dims(coord) != first_cube.coord_dims(first_coord)
         if coord_group.matches_any(diff_data_dim_fn):
             different_data_dimension.add(coord_group)
 
         # get all coordinate groups which don't describe a dimension
         # (None -> doesn't describe a dimension)
-        no_data_dim_fn = lambda cube, coord: cube.coord_dims(coord=coord) == ()
+        no_data_dim_fn = lambda cube, coord: cube.coord_dims(coord) == ()
         if coord_group.matches_all(no_data_dim_fn):
             no_data_dimension.add(coord_group)
 

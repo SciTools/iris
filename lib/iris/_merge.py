@@ -1433,7 +1433,7 @@ class ProtoCube(object):
         for factory_defn in self._coord_signature.factory_defns:
             args = {}
             for key, defn in factory_defn.dependency_defns:
-                coord = cube.coord(coord=defn)
+                coord = cube.coord(defn)
                 args[key] = coord
             factory = factory_defn.class_(**args)
             cube.add_aux_factory(factory)

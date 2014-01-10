@@ -565,7 +565,7 @@ class RulesContainer(object):
 def scalar_coord(cube, coord_name):
     """Try to find a single-valued coord with the given name."""
     found_coord = None
-    for coord in cube.coords(name=coord_name):
+    for coord in cube.coords(coord_name):
         if coord.shape == (1,):
             found_coord = coord
             break
@@ -575,7 +575,7 @@ def scalar_coord(cube, coord_name):
 def vector_coord(cube, coord_name):
     """Try to find a one-dimensional, multi-valued coord with the given name."""
     found_coord = None
-    for coord in cube.coords(name=coord_name):
+    for coord in cube.coords(coord_name):
         if len(coord.shape) == 1 and coord.shape[0] > 1:
             found_coord = coord
             break
@@ -588,7 +588,7 @@ def scalar_cell_method(cube, method, coord_name):
     for cell_method in cube.cell_methods:
         if cell_method.method == method and len(cell_method.coord_names) == 1:
             name = cell_method.coord_names[0]
-            coords = cube.coords(name=name)
+            coords = cube.coords(name)
             if len(coords) == 1:
                 found_cell_method = cell_method
     return found_cell_method
@@ -693,7 +693,7 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
     try:
         target_coords = []
         for dim_coord in src_cube.dim_coords:
-            target_coords.append(target_cube.coord(coord=dim_coord))
+            target_coords.append(target_cube.coord(dim_coord))
     except iris.exceptions.CoordinateNotFoundError:
         # One of the src_cube's dim_coords didn't exist on the
         # target_cube... so we can't regrid (i.e. just return None).

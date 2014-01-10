@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -86,7 +86,7 @@ def intersection_of_cubes(cube, other_cube):
 
     # cubes must have matching coordinates
     for coord in cube.coords():
-        other_coord = other_cube.coord(coord=coord)
+        other_coord = other_cube.coord(coord)
 
         # Only intersect coordinates which are different, single values coordinates may differ.
         if coord.shape[0] > 1 and coord != other_coord:
@@ -226,8 +226,8 @@ def _add_subtract_common(operation_function, operation_noun,
             coord_dims_equal = True
             for coord_group in coord_comp['transposable']:
                 cube_coord, other_coord = coord_group.coords
-                cube_coord_dims = cube.coord_dims(coord=cube_coord)
-                other_coord_dims = other.coord_dims(coord=other_coord)
+                cube_coord_dims = cube.coord_dims(cube_coord)
+                other_coord_dims = other.coord_dims(other_coord)
                 other_coord_dims_broadcasted = tuple(
                     [dim + broadcast_padding for dim in other_coord_dims])
                 if cube_coord_dims != other_coord_dims_broadcasted:

@@ -1068,10 +1068,7 @@ def new_axis(src_cube, scalar_coord=None):
 
     """
     if scalar_coord is not None:
-        if isinstance(scalar_coord, basestring):
-            scalar_coord = src_cube.coord(name=scalar_coord)
-        else:
-            scalar_coord = src_cube.coord(coord=scalar_coord)
+        scalar_coord = src_cube.coord(scalar_coord)
 
     # Indexing numpy arrays requires loading deferred data here returning a
     # copy of the data with a new leading dimension.
@@ -1178,7 +1175,7 @@ def as_compatible_shape(src_cube, target_cube):
         new_coord = coord.copy(points=points, bounds=bounds)
         # If originally in dim_coords, add to dim_coords, otherwise add to
         # aux_coords.
-        if target_cube.coords(coord=coord, dim_coords=True):
+        if target_cube.coords(coord, dim_coords=True):
             try:
                 new_cube.add_dim_coord(new_coord, dims)
             except ValueError:
