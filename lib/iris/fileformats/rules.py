@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -40,6 +40,7 @@ import iris.cube
 import iris.exceptions
 import iris.fileformats.um_cf_map
 import iris.unit
+from iris.util import is_regular, regular_step
 
 RuleResult = collections.namedtuple('RuleResult', ['cube', 'matching_rules', 'factories'])
 Factory = collections.namedtuple('Factory', ['factory_class', 'args'])
@@ -232,33 +233,6 @@ class Reference(iris.util._OrderedHashable):
     A named placeholder for inter-field references.
 
     """
-
-
-# TODO: This function only uses data from a coord, and produces information only pertaining to a coord, so should it be in the coord.
-def is_regular(coord):
-    """Determine if the given coord is regular."""
-    try:
-        regular_step(coord)
-    except iris.exceptions.CoordinateNotRegularError:
-        return False
-    except (TypeError, ValueError):
-        return False
-    return True
-
-
-# TODO: This function only uses data from a coord, and produces information only pertaining to a coord, so should it be in the coord.
-def regular_step(coord):
-    """Return the regular step from a coord or fail."""
-    if coord.ndim != 1:
-        raise iris.exceptions.CoordinateMultiDimError("Expected 1D coord")
-    if coord.shape[0] < 2:
-        raise ValueError("Expected a non-scalar coord")
-
-    diffs = coord.points[1:] - coord.points[:-1]
-    avdiff = np.mean(diffs)
-    if not np.allclose(diffs, avdiff, rtol=0.001):  # TODO: This value is set for test_analysis to pass...
-        raise iris.exceptions.CoordinateNotRegularError("Coord %s is not regular" % coord.name())
-    return avdiff.astype(coord.points.dtype)
 
 
 def calculate_forecast_period(time, forecast_reference_time):

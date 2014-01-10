@@ -36,6 +36,7 @@ import iris.unit
 import iris.util
 
 from iris._cube_coord_common import CFVariableMixin
+from iris.util import is_regular
 
 
 class CoordDefn(collections.namedtuple('CoordDefn',
@@ -1232,6 +1233,10 @@ class DimCoord(Coord):
         points = (zeroth+step) + step*np.arange(count, dtype=np.float32)
         points.flags.writeable = False
         coord._points = points
+        if not is_regular(coord) and count > 1:
+            points = (zeroth+step) + step*np.arange(count, dtype=np.float64)
+            points.flags.writeable = False
+            coord._points = points
 
         if with_bounds:
             delta = 0.5 * step
