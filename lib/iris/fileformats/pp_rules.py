@@ -293,10 +293,9 @@ def convert(f):
             (f.brsvd[0] != f.brlev):
         aux_coords_and_dims.append((DimCoord(f.blev, standard_name='depth', units='m', bounds=[f.brsvd[0], f.brlev], attributes={'positive': 'down'}), None))
 
-    if \
-            (len(f.lbcode) != 5) and \
-            (f.lbvc == 6):
-        aux_coords_and_dims.append((DimCoord(f.blev, standard_name='model_level_number', attributes={'positive': 'down'}), None))
+    # soil level
+    if len(f.lbcode) != 5 and f.lbvc == 6:
+        aux_coords_and_dims.append((DimCoord(f.lblev, long_name='soil_model_level_number', attributes={'positive': 'down'}), None))
 
     if \
             (f.lbvc == 8) and \

@@ -32,7 +32,7 @@ class TestVertical(tests.IrisTest):
         # NB. Use MagicMock so that SplittableInt header items, such as
         # LBCODE, support len().
         soil_level = 1234
-        field = mock.MagicMock(lbvc=6, blev=soil_level,
+        field = mock.MagicMock(lbvc=6, lblev=soil_level,
                                stash=iris.fileformats.pp.STASH(1, 0, 9),
                                lbuser=[0] * 7, lbrsvd=[0] * 4)
         load = mock.Mock(return_value=iter([field]))
@@ -40,8 +40,9 @@ class TestVertical(tests.IrisTest):
             cube = next(iris.fileformats.pp.load_cubes('DUMMY'))
 
         self.assertIn('soil', cube.standard_name)
-        self.assertEqual(len(cube.coords('model_level_number')), 1)
-        self.assertEqual(cube.coord('model_level_number').points, soil_level)
+        self.assertEqual(len(cube.coords('soil_model_level_number')), 1)
+        self.assertEqual(cube.coord('soil_model_level_number').points,
+                         soil_level)
 
         # Now use the save rules to convert the Cube back into a PPField.
         field = iris.fileformats.pp.PPField3()
@@ -52,7 +53,7 @@ class TestVertical(tests.IrisTest):
 
         # Check the vertical coordinate is as originally specified.
         self.assertEqual(field.lbvc, 6)
-        self.assertEqual(field.blev, soil_level)
+        self.assertEqual(field.lblev, soil_level)
 
     def test_potential_temperature_level_round_trip(self):
         """Check save+load for data on 'potential temperature' levels."""
