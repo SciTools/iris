@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,6 +24,7 @@ import datetime
 import operator
 
 import mock
+import netcdftime
 
 from iris.time import PartialDateTime
 
@@ -41,6 +42,25 @@ class Test___init__(tests.IrisTest):
         pd = PartialDateTime(microsecond=10)
         self.assertEqual(pd.year, None)
         self.assertEqual(pd.microsecond, 10)
+
+
+class Test___repr__(tests.IrisTest):
+    def test_full(self):
+        pd = PartialDateTime(*range(7))
+        result = repr(pd)
+        self.assertEqual(result, 'PartialDateTime(year=0, month=1, day=2,'
+                                 ' hour=3, minute=4, second=5,'
+                                 ' microsecond=6)')
+
+    def test_partial(self):
+        pd = PartialDateTime(month=2, day=30)
+        result = repr(pd)
+        self.assertEqual(result, 'PartialDateTime(month=2, day=30)')
+
+    def test_empty(self):
+        pd = PartialDateTime()
+        result = repr(pd)
+        self.assertEqual(result, 'PartialDateTime()')
 
 
 class Test_timetuple(tests.IrisTest):
@@ -165,6 +185,16 @@ class Test___eq__(tests.IrisTest, _Test_operator):
         self.op = operator.eq
         self.expected_value = EQ_EXPECTATIONS
 
+    def test_netcdftime_equal(self):
+        pdt = PartialDateTime(month=3, microsecond=2)
+        other = netcdftime.datetime(year=2013, month=3, day=20, second=2)
+        self.assertTrue(pdt == other)
+
+    def test_netcdftime_not_equal(self):
+        pdt = PartialDateTime(month=3, microsecond=2)
+        other = netcdftime.datetime(year=2013, month=4, day=20, second=2)
+        self.assertFalse(pdt == other)
+
 
 class Test___ne__(tests.IrisTest, _Test_operator):
     def setUp(self):
@@ -176,6 +206,16 @@ class Test___gt__(tests.IrisTest, _Test_operator):
     def setUp(self):
         self.op = operator.gt
         self.expected_value = GT_EXPECTATIONS
+
+    def test_netcdftime_greater(self):
+        pdt = PartialDateTime(month=3, microsecond=2)
+        other = netcdftime.datetime(year=2013, month=2, day=20, second=3)
+        self.assertTrue(pdt > other)
+
+    def test_netcdftime_not_greater(self):
+        pdt = PartialDateTime(month=3, microsecond=2)
+        other = netcdftime.datetime(year=2013, month=3, day=20, second=3)
+        self.assertFalse(pdt > other)
 
 
 class Test___le__(tests.IrisTest, _Test_operator):
