@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -31,6 +31,7 @@ import iris.coords
 import iris.tests.stock
 
 from iris.coords import DimCoord
+from iris.tests.test_interpolation import normalise_order
 
 
 class TestCubeDelta(tests.IrisTest):
@@ -470,6 +471,7 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         result.data = result.data * 0  + 1
         np.testing.assert_array_almost_equal(result.data, r[2].data, decimal=4)
 
+        normalise_order(r[1])
         self.assertCML(r, ('analysis', 'calculus', 'curl_contrived_cartesian2.cml'), checksum=False)
 
     def test_contrived_spherical_curl1(self):
