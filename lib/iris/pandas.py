@@ -122,14 +122,19 @@ def _as_pandas_coord(coord):
 
 def _assert_shared(np_obj, pandas_obj):
     """Ensure the pandas object shares memory."""
-    if isinstance(pandas_obj, pandas.Series):
-        if not pandas_obj.base is np_obj:
-            raise AssertionError("Pandas Series does not share memory")
-    elif isinstance(pandas_obj, pandas.DataFrame):
-        if not pandas_obj[0].base.base.base is np_obj:
-            raise AssertionError("Pandas DataFrame does not share memory")
+    if hasattr(pandas_obj, 'base'):
+        base = pandas_obj.base
     else:
-        raise ValueError("Expected a Pandas Series or DataFrame")
+        base = pandas_obj[0].base
+    # Chase the stack of NumPy `base` references back to see if any of
+    # them are our original array.
+    while base is not None:
+        if base is np_obj:
+            return
+        # Take the next step up the stack of `base` references.
+        base = base.base
+    msg = 'Pandas {} does not share memory'.format(type(pandas_obj).__name__)
+    raise AssertionError(msg)
 
 
 def as_series(cube, copy=True):
