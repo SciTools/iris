@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -855,6 +855,7 @@ class TestSymbols(tests.GraphicsTest):
     def test_cloud_cover(self):
         iplt.symbols(range(10), [0] * 10, [iris.symbols.CLOUD_COVER[i]
                                            for i in range(10)], 0.375)
+        iplt.plt.axis('off')
         self.check_graphic()
 
 
