@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -912,7 +912,18 @@ class PPField(object):
 
         if hasattr(self, '_data_manager'):
             if self._data_manager is None:
-                self_attrs.append( ('data', self.data) )
+                data = self.data
+                # Output any masked data as separate `data` and `mask`
+                # components, to avoid the standard MaskedArray output
+                # which causes irrelevant discrepancies between NumPy
+                # v1.6 and v1.7.
+                if ma.isMaskedArray(data):
+                    # Force the fill value to zero to have the minimum
+                    # impact on the output style.
+                    self_attrs.append(('data.data', data.filled(0)))
+                    self_attrs.append(('data.mask', data.mask))
+                else:
+                    self_attrs.append(('data', self.data))
             else:
                 self_attrs.append( ('unloaded_data_manager', self._data_manager) )
                 self_attrs.append( ('unloaded_data_proxy', self._data) )

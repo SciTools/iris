@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -211,17 +211,18 @@ class TestPackedPP(IrisPPTest):
         
     def test_rle(self):
         r = pp.load(tests.get_data_path(('PP', 'ocean_rle', 'ocean_rle.pp')))
-        
+
         # Check that the result is a generator and convert to a list so that we can index and get the first one
         self.assertEqual( type(r), GeneratorType)
         r = list(r)
-         
+
         self.check_pp(r, ('PP', 'rle_unpacked.pp.txt'))
-        
-        # check that trying to save this field again raises an error (we cannot currently write RLE packed fields)
-        temp_filename = iris.util.create_temp_filename(".pp")
-        self.assertRaises(NotImplementedError, r[0].save, open(temp_filename, 'wb'))
-        os.remove(temp_filename)
+
+        # check that trying to save this field again raises an error
+        # (we cannot currently write RLE packed fields)
+        with self.temp_filename('.pp') as temp_filename:
+            with self.assertRaises(NotImplementedError):
+                r[0].save(open(temp_filename, 'wb'))
 
 
 @iris.tests.skip_data
