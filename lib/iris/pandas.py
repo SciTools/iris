@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -97,7 +97,13 @@ def as_cube(pandas_array, copy=True, calendars=None):
         raise ValueError("Only 1D or 2D Pandas arrays "
                          "can currently be conveted to Iris cubes.")
 
-    cube = Cube(np.ma.masked_invalid(pandas_array, copy=copy))
+    # Make the copy work consistently across NumPy 1.6 and 1.7.
+    # (When 1.7 takes a copy it preserves the C/Fortran ordering, but
+    # 1.6 doesn't. Since we don't care about preserving the order we can
+    # just force it back to C-order.)
+    order = 'C' if copy else 'A'
+    data = np.array(pandas_array, copy=copy, order=order)
+    cube = Cube(np.ma.masked_invalid(data, copy=False))
     _add_iris_coord(cube, "index", pandas_array.index, 0,
                     calendars.get(0, None))
     if pandas_array.ndim == 2:
