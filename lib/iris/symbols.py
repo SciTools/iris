@@ -22,7 +22,6 @@ Contains symbol definitions for use with :func:`iris.plot.symbols`.
 import itertools
 import math
 
-import matplotlib
 from matplotlib.patches import PathPatch
 from matplotlib.path import Path
 
@@ -31,9 +30,6 @@ import numpy as np
 
 __all__ = ('CLOUD_COVER',)
 
-
-# Current version of matplotlib (for backward compatibility test):
-MPL_VERSION = matplotlib.__version__
 
 # The thickness to use for lines, circles, etc.
 _THICKNESS = 0.1
@@ -189,13 +185,15 @@ def _wedge_fix(wedge_path):
     This fix should not have any side-effects once Path.wedge has been fixed,
     but will then be redundant and should be removed.
 
-    This is fixed in MPL v1.3. A check is performed to allow for backward
-    compatibility with MPL v1.2.x.
+    This is fixed in MPL v1.3, raising a RuntimeError. A check is performed to
+    allow for backward compatibility with MPL v1.2.x.
 
     '''
-    if MPL_VERSION != '1.3.1':
+    try:
         wedge_path.vertices[0] = 0
         wedge_path.vertices[-2:] = 0
+    except RuntimeError:
+        pass
     return wedge_path
 
 
