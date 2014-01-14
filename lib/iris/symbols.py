@@ -189,11 +189,9 @@ def _wedge_fix(wedge_path):
     allow for backward compatibility with MPL v1.2.x.
 
     '''
-    try:
+    if wedge_path.vertices.flags.writeable:
         wedge_path.vertices[0] = 0
         wedge_path.vertices[-2:] = 0
-    except RuntimeError:
-        pass
     return wedge_path
 
 
