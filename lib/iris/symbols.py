@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -179,12 +179,19 @@ def _backslash_path():
 
 
 def _wedge_fix(wedge_path):
-    # Fixes the problem with Path.wedge where it doesn't initialise the first,
-    # and last two vertices.
-    # This fix should not have any side-effects once Path.wedge has been fixed,
-    # but will then be redundant and should be removed.
-    wedge_path.vertices[0] = 0
-    wedge_path.vertices[-2:] = 0
+    '''
+    Fixes the problem with Path.wedge where it doesn't initialise the first,
+    and last two vertices.
+    This fix should not have any side-effects once Path.wedge has been fixed,
+    but will then be redundant and should be removed.
+
+    This is fixed in MPL v1.3, raising a RuntimeError. A check is performed to
+    allow for backward compatibility with MPL v1.2.x.
+
+    '''
+    if wedge_path.vertices.flags.writeable:
+        wedge_path.vertices[0] = 0
+        wedge_path.vertices[-2:] = 0
     return wedge_path
 
 
