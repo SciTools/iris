@@ -222,7 +222,7 @@ class _CoordSignature(namedtuple('CoordSignature',
 
     @staticmethod
     def _diagnose_coords_mismatch(coord_style, defns_a, defns_b,
-                                 dimlists_a=None, dimlists_b=None):
+                                  dimlists_a=None, dimlists_b=None):
         # Return reasons (strings) why coords-and-dims do not match.
         # 'coord_style' is one of 'scalar', 'dimension' or 'auxiliary'.
         # 'defns' elements are either CoordDefn (scalar) or Coord (aux/dim).
@@ -263,8 +263,8 @@ class _CoordSignature(namedtuple('CoordSignature',
                     diff_keys = defn_a._difference_attrs(defn_b)
                     msgs.append(
                         '{} coordinate "{}" has different {}.'.format(
-                        coord_style, name,
-                        ', '.join(diff_keys)))
+                            coord_style, name,
+                            ', '.join(diff_keys)))
             if coord_style != 'scalar':
                 # Also compare dims
                 for name, dims_a, dims_b in zip(names_a,
