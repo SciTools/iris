@@ -341,14 +341,15 @@ class CubeList(list):
         """
         Merge into a single Cube, or raise an error explaining why it cannot.
 
-        For example::
+        For example:
 
             >>> cube_1 = iris.cube.Cube([1, 2], attributes={'this':1})
             >>> cube_1.add_aux_coord(iris.coords.DimCoord([3, 4],
-            ...    long_name='z'), (0,))
+            ...     long_name='z'), (0,))
             >>> cube_2 = cube_1.copy()
             >>> cube_2.coord('z').points[0] = 7
             >>> single_cube = iris.cube.CubeList([cube_1, cube_2]).merge_cube()
+            Traceback (most recent call last):
             ...
             iris.exceptions.MergeError: Failed to merge into a single cube:
               auxiliary coordinate "z" has different points.
