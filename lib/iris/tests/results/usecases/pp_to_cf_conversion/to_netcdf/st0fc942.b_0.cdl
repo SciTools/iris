@@ -34,7 +34,7 @@ variables:
 		depth:units = "m" ;
 		depth:standard_name = "depth" ;
 		depth:positive = "down" ;
-	float grid_latitude(grid_latitude) ;
+	double grid_latitude(grid_latitude) ;
 		grid_latitude:axis = "Y" ;
 		grid_latitude:units = "degrees" ;
 		grid_latitude:standard_name = "grid_latitude" ;

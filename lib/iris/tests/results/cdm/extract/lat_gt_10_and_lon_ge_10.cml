@@ -22,7 +22,7 @@
 		63.75, 65.0, 66.25, 67.5, 68.75, 70.0, 71.25,
 		72.5, 73.75, 75.0, 76.25, 77.5, 78.75, 80.0,
 		81.25, 82.5, 83.75, 85.0, 86.25, 87.5, 88.75,
-		90.0]" shape="(64,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+		90.0]" shape="(64,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -78,7 +78,7 @@
       </coord>
       <coord datadims="[2]">
         <dimCoord id="63128986" points="[11.25, 13.125, 15.0, ..., 354.375, 356.25,
-		358.125]" shape="(186,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+		358.125]" shape="(186,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>

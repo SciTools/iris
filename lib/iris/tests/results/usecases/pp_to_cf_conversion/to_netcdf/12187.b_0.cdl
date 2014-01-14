@@ -21,11 +21,11 @@ variables:
 		model_level_number:units = "1" ;
 		model_level_number:standard_name = "model_level_number" ;
 		model_level_number:positive = "up" ;
-	float latitude(latitude) ;
+	double latitude(latitude) ;
 		latitude:axis = "Y" ;
 		latitude:units = "degrees_north" ;
 		latitude:standard_name = "latitude" ;
-	float longitude(longitude) ;
+	double longitude(longitude) ;
 		longitude:axis = "X" ;
 		longitude:units = "degrees_east" ;
 		longitude:standard_name = "longitude" ;

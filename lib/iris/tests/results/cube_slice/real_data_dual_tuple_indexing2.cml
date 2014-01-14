@@ -13,12 +13,13 @@
         <dimCoord id="f8c7ad26" points="[319536.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="3b3f362e" points="[-22.49, -22.05, -21.94, -22.27]" shape="(4,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
+        <auxCoord id="3b3f362e" points="[-22.4899997711, -22.0499997735, -21.9399997741,
+		-22.2699997723]" shape="(4,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float64">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </auxCoord>
       </coord>
       <coord datadims="[1]">
-        <auxCoord id="5036c64b" points="[313.35, 313.57, 313.57]" shape="(3,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
+        <auxCoord id="5036c64b" points="[313.349989012, 313.569989011, 313.569989011]" shape="(3,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float64">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </auxCoord>
       </coord>

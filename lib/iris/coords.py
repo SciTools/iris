@@ -1229,7 +1229,7 @@ class DimCoord(Coord):
         coord.coord_system = coord_system
         coord.circular = circular
 
-        points = (zeroth+step) + step*np.arange(count, dtype=np.float32)
+        points = (zeroth+step) + step*np.arange(count, dtype=np.float64)
         points.flags.writeable = False
         coord._points = points
 

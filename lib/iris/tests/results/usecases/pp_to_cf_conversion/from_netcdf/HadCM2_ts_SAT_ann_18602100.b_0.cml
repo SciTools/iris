@@ -21,7 +21,7 @@
 		[-1.875, 358.125]]" id="566c7ff8" points="[178.125, 178.125, 178.125]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="longitude"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="2718ad80" long_name="site_number" points="[1.0, 2.0, 3.0]" shape="(3,)" units="Unit('1')" value_type="float32" var_name="site_number"/>
+        <dimCoord id="2718ad80" long_name="site_number" points="[1.0, 2.0, 3.0]" shape="(3,)" units="Unit('1')" value_type="float64" var_name="site_number"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord id="6bc2e82a" points="[670020.0, 670380.0, 670740.0, ..., 755340.0,
