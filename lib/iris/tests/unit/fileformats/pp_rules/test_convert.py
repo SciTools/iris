@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -21,9 +21,13 @@
 import iris.tests as tests
 
 import mock
+import types
 
 from iris.fileformats.pp_rules import convert
 from iris.util import guess_coord_axis
+from iris.fileformats.pp import SplittableInt
+from iris.fileformats.pp import PPField3
+import iris.unit
 
 
 class TestLBVC(tests.IrisTest):
@@ -62,6 +66,28 @@ class TestLBVC(tests.IrisTest):
         self.assertIsNone(coord.bounds)
         self.assertEqual(guess_coord_axis(coord), 'Z')
 
+
+class TestLBTIM(tests.IrisTest):
+    def test_365_calendar(self):
+        f = mock.MagicMock(lbtim=SplittableInt(4, {'ia': 2, 'ib': 1, 'ic': 0}),
+                           lbyr=2013, lbmon=1, lbdat=1, lbhr=12, lbmin=0,
+                           lbsec=0,
+                           spec=PPField3)
+        f.time_unit = types.MethodType(PPField3.time_unit, f)
+        f.calendar = iris.unit.CALENDAR_365_DAY
+        (factories, references, standard_name, long_name, units,
+         attributes, cell_methods, dim_coords_and_dims,
+         aux_coords_and_dims) = convert(f)
+
+        def is_t_coord(coord_and_dims):
+            coord, dims = coord_and_dims
+            return coord.standard_name == 'time'
+
+        coords_and_dims = filter(is_t_coord, aux_coords_and_dims)
+        self.assertEqual(len(coords_and_dims), 1)
+        coord, dims = coords_and_dims[0]
+        self.assertEqual(guess_coord_axis(coord), 'T')
+        self.assertEqual(coord.units.calendar, '365_day')
 
 if __name__ == "__main__":
     tests.main()

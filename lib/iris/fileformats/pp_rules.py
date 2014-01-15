@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -45,14 +45,14 @@ def convert(f):
     if \
             (f.lbtim.ia == 0) and \
             (f.lbtim.ib == 0) and \
-            (f.lbtim.ic in [1, 2, 3]) and \
+            (f.lbtim.ic in [1, 2, 3, 4]) and \
             (len(f.lbcode) != 5 or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])):
         aux_coords_and_dims.append((DimCoord(f.time_unit('hours').date2num(f.t1), standard_name='time', units=f.time_unit('hours')), None))
 
     if \
             (f.lbtim.ia == 0) and \
             (f.lbtim.ib == 1) and \
-            (f.lbtim.ic in [1, 2, 3]) and \
+            (f.lbtim.ic in [1, 2, 3, 4]) and \
             (len(f.lbcode) != 5 or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])):
         aux_coords_and_dims.append((DimCoord(f.time_unit('hours', f.t2).date2num(f.t1), standard_name='forecast_period', units='hours'), None))
         aux_coords_and_dims.append((DimCoord(f.time_unit('hours').date2num(f.t1), standard_name='time', units=f.time_unit('hours')), None))
@@ -60,7 +60,7 @@ def convert(f):
 
     if \
             (f.lbtim.ib == 2) and \
-            (f.lbtim.ic in [1, 2]) and \
+            (f.lbtim.ic in [1, 2, 4]) and \
             ((len(f.lbcode) != 5) or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])):
         aux_coords_and_dims.append((DimCoord(f.lbft, standard_name='forecast_period', units='hours'), None))
         aux_coords_and_dims.append((DimCoord(f.time_unit('hours').date2num(f.t2), standard_name='time', units=f.time_unit('hours'), bounds=f.time_unit('hours').date2num([f.t1, f.t2])), None))
@@ -68,7 +68,7 @@ def convert(f):
 
     if \
             (f.lbtim.ib == 3) and \
-            (f.lbtim.ic in [1, 2]) and \
+            (f.lbtim.ic in [1, 2, 4]) and \
             ((len(f.lbcode) != 5) or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])):
         aux_coords_and_dims.append((DimCoord(f.lbft, standard_name='forecast_period', units='hours'), None))
         aux_coords_and_dims.append((DimCoord(f.time_unit('hours').date2num(f.t2), standard_name='time', units=f.time_unit('hours'), bounds=f.time_unit('hours').date2num([f.t1, f.t2])), None))
@@ -76,7 +76,7 @@ def convert(f):
 
     if \
             (f.lbtim.ib == 3) and \
-            (f.lbtim.ic in [1, 2]) and \
+            (f.lbtim.ic in [1, 2, 4]) and \
             ((len(f.lbcode) != 5) or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])) and \
             (f.lbmon == 12 and f.lbdat == 1 and f.lbhr == 0 and f.lbmin == 0) and \
             (f.lbmond == 3 and f.lbdatd == 1 and f.lbhrd == 0 and f.lbmind == 0):
@@ -84,7 +84,7 @@ def convert(f):
 
     if \
             (f.lbtim.ib == 3) and \
-            (f.lbtim.ic in [1, 2]) and \
+            (f.lbtim.ic in [1, 2, 4]) and \
             ((len(f.lbcode) != 5) or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])) and \
             (f.lbmon == 3 and f.lbdat == 1 and f.lbhr == 0 and f.lbmin == 0) and \
             (f.lbmond == 6 and f.lbdatd == 1 and f.lbhrd == 0 and f.lbmind == 0):
@@ -92,7 +92,7 @@ def convert(f):
 
     if \
             (f.lbtim.ib == 3) and \
-            (f.lbtim.ic in [1, 2]) and \
+            (f.lbtim.ic in [1, 2, 4]) and \
             ((len(f.lbcode) != 5) or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])) and \
             (f.lbmon == 6 and f.lbdat == 1 and f.lbhr == 0 and f.lbmin == 0) and \
             (f.lbmond == 9 and f.lbdatd == 1 and f.lbhrd == 0 and f.lbmind == 0):
@@ -100,7 +100,7 @@ def convert(f):
 
     if \
             (f.lbtim.ib == 3) and \
-            (f.lbtim.ic in [1, 2]) and \
+            (f.lbtim.ic in [1, 2, 4]) and \
             ((len(f.lbcode) != 5) or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])) and \
             (f.lbmon == 9 and f.lbdat == 1 and f.lbhr == 0 and f.lbmin == 0) and \
             (f.lbmond == 12 and f.lbdatd == 1 and f.lbhrd == 0 and f.lbmind == 0):
