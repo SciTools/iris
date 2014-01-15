@@ -35,10 +35,11 @@ import iris.analysis.interpolate as iintrp
 
 
 def normalise_order(cube):
-    # Avoid the crazy array ordering which results from using
-    # np.append() in NumPy 1.6.
-    # This is triggered in the `linear()` function when the circular
-    # flag is true.
+    # Avoid the crazy array ordering which results from using:
+    #   * np.append() in NumPy 1.6, which is triggered in the `linear()`
+    #     function when the circular flag is true.
+    #   * scipy.interpolate.interp1d in 0.11.0 which is used in
+    #     `Linear1dExtrapolator`.
     cube.data = np.ascontiguousarray(cube.data)
 
 
@@ -376,6 +377,7 @@ class TestLinear1dInterpolation(tests.IrisTest):
         other = iris.coords.DimCoord([1, 2, 3, 4], long_name='was_dim')
         cube.add_aux_coord(other, 0)
         r = iris.analysis.interpolate.linear(cube, [('dim1', [7, 3, 5])])
+        normalise_order(r)
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'dim_to_aux.cml'))
 
     def test_integer_interpol(self):
@@ -407,15 +409,18 @@ class TestLinear1dInterpolation(tests.IrisTest):
         cube.coord('dim1').guess_bounds()
         r = iris.analysis.interpolate.linear(cube, [('dim1', [4, 5])])
         np.testing.assert_array_equal(r.data, np.array([[ 1.5,  2.5,  3.5], [ 3. ,  4. ,  5. ]]))
+        normalise_order(r)
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_multiple_points.cml'))
 
     def test_simple_multiple_point(self):
         r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim1', [4, 5])])
         np.testing.assert_array_equal(r.data, np.array([[ 1.5,  2.5,  3.5], [ 3. ,  4. ,  5. ]]))
+        normalise_order(r)
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_multiple_points.cml'))
         
         # Check that numpy arrays specifications work
         r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim1', np.array([4, 5]))])
+        normalise_order(r)
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_multiple_points.cml'))
 
     def test_circular_vs_non_circular_coord(self):
@@ -495,6 +500,7 @@ class TestLinear1dInterpolation(tests.IrisTest):
     def test_shared_axis(self):
         c = self.simple2d_cube_extended
         r = iris.analysis.interpolate.linear(c, [('dim2', [3.5, 3.25])])
+        normalise_order(r)
         
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_shared_axis.cml'))
         
