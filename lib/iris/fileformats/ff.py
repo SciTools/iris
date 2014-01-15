@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,7 +25,7 @@ import warnings
 import numpy as np
 
 from iris.exceptions import NotYetImplementedError
-from iris.fileformats._ff_cross_references import STASH_GRID
+from iris.fileformats._ff_cross_references import STASH_TRANS
 import pp
 
 
@@ -568,7 +568,9 @@ class FF2PP(object):
             # Determine PP field payload depth and type.
             data_depth, data_type = self._payload(field)
 
-            subgrid = STASH_GRID.get(str(field.stash), None)
+            subgrid = None
+            if str(field.stash) in STASH_TRANS:
+                subgrid = STASH_TRANS[str(field.stash)].grid_code
 
             if subgrid is None:
                 warnings.warn('The STASH code {0} was not found in the '

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -60,27 +60,10 @@ THEN
     pp.lbuser[3] = 1000 * (cm.attributes['STASH'].section or 0) + (cm.attributes['STASH'].item or 0)
     pp.lbuser[6] = (cm.attributes['STASH'].model or 0)
 
-############################################
-# Attempt to derive LBFC from the STASH code
-#
-
-IF
-    'STASH' in cm.attributes
-    isinstance(cm.attributes['STASH'], iris.fileformats.pp.STASH)
-    cm.attributes['STASH'] == iris.fileformats.pp.STASH(1, 3, 236)
-THEN
-    pp.lbfc = 16
-
-IF
-    'STASH' in cm.attributes
-    isinstance(cm.attributes['STASH'], iris.fileformats.pp.STASH)
-    cm.attributes['STASH'] == iris.fileformats.pp.STASH(1, 16, 202)
-THEN
-    pp.lbfc = 1
 
 ############################################
 # Fallback to derive LBFC from the standard_name
-#
+# NOTE: The following rules shold be added to the CF_TO_LBFC table
 
 IF
     pp.lbfc == 0
@@ -703,3 +686,8 @@ IF
     (cm.name(),cm.units) in iris.fileformats.um_cf_map.CF_TO_LBFC
 THEN
     pp.lbfc = iris.fileformats.um_cf_map.CF_TO_LBFC[(cm.name(),cm.units)]
+
+IF
+    'STASH' in cm.attributes and str(cm.attributes['STASH']) in iris.fileformats._ff_cross_references.STASH_TRANS
+THEN
+    pp.lbfc = iris.fileformats._ff_cross_references.STASH_TRANS[str(cm.attributes['STASH'])].field_code
