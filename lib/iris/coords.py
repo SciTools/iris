@@ -153,7 +153,8 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
         compared.
 
         """
-        if isinstance(other, (int, float, np.number)):
+        if isinstance(other, (int, float, np.number)) or \
+                hasattr(other, 'timetuple'):
             if self.bound is not None:
                 return self.contains_point(other)
             else:
@@ -182,8 +183,10 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
         Non-Cell vs Cell comparison is used to define Constraint matching.
 
         """
-        if not isinstance(other, (int, float, np.number, Cell)):
-            raise ValueError("Unexpected type of other")
+        if not (isinstance(other, (int, float, np.number, Cell)) or
+                hasattr(other, 'timetuple')):
+            raise ValueError("Unexpected type of other "
+                             "{}.".format(type(other)))
         if operator_method not in (operator.gt, operator.lt,
                                    operator.ge, operator.le):
             raise ValueError("Unexpected operator_method")
