@@ -216,25 +216,25 @@ then specific STASH codes can be filtered::
 
 Constraining on Time
 ^^^^^^^^^^^^^^^^^^^^
-Iris follows NetCDF-CF rules in representing time coordinate values as pure
-numbers, where the relationship to calendar times is specified by the units
-(e.g. "days since 1970-01-01").
+Iris follows NetCDF-CF rules in representing time coordinate values as normalised,
+purely numeric, values which are normalised by the calendar specified in the coordinate's
+units (e.g. "days since 1970-01-01").
 However, when constraining by time we usually want to test calendar-related
-aspects such as hours of the day or months of the year.
-This is obviously awkward to express as a test on time coordinate values, so Iris
+aspects such as hours of the day or months of the year, so Iris
 provides special features to facilitate this:
 
 Firstly, Iris can be configured so that when it evaluates Constraint
 expressions, it will convert time-coordinate values (points and bounds) from
-pure numbers into :class:`~datetime.datetime`-like objects for calendar-based
+numbers into :class:`~datetime.datetime`-like objects for ease of calendar-based
 testing.  This feature is not backwards compatible so for now it must be
-explicitly enabled by setting an option in :class:`iris.Future`:
+explicitly enabled by setting the "cell_datetime_objects" option in :class:`iris.Future`:
 
     >>> filename = iris.sample_data_path('uk_hires.pp')
     >>> cube_all = iris.load_cube(filename, 'air_potential_temperature')
     >>> print 'All times :\n', cube_all.coord('time')
     All times :
     DimCoord([2009-11-19 10:00:00, 2009-11-19 11:00:00, 2009-11-19 12:00:00], standard_name='time', calendar='gregorian')
+    >>> # Define a function which accepts a datetime as its argument (this is simplified in later examples).
     >>> hour_11 = iris.Constraint(time=lambda cell: cell.point.hour == 11)
     >>> with iris.FUTURE.context(cell_datetime_objects=True):
     ...     cube_11 = cube_all.extract(hour_11)
@@ -257,20 +257,31 @@ then test only those 'aspects' which the PartialDateTime instance defines:
     False
     >>> 
 
-.. testsetup::
+These two facilities can be combined to provide straightforward calendar-based
+time selections when loading or extracting data.
+
+The previous constraint example can now be written as:
+
+   >>> the_11th_hour = iris.Constraint(time=iris.time.PartialDateTime(hour=11))
+   >>> with iris.FUTURE.context(cell_datetime_objects=True):
+   ...     print iris.load_cube(iris.sample_data_path('uk_hires.pp'),
+   ...                          'air_potential_temperature' & the_11th_hour).coord('time')
+   DimCoord([2009-11-19 11:00:00], standard_name='time', calendar='gregorian')
+
+A more complex example might be when there exists a time sequence representing the first day of every week
+for many years:
+
+
+.. testsetup:: timeseries_range
 
     import numpy as np
+    from iris.time import PartialDateTime
     long_ts = iris.cube.Cube(np.arange(150), long_name='data', units='1')
     _mondays = iris.coords.DimCoord(7 * np.arange(150), standard_name='time', units='days since 2007-04-09')
     long_ts.add_dim_coord(_mondays, 0)
 
-These two facilities can be combined to provide straightforward calendar-based
-time selections when loading or extracting data.
 
-For example, if we have a time sequence representing the first day of the week
-over multiple years:
-
-.. doctest::
+.. doctest:: timeseries_range
     :options: +NORMALIZE_WHITESPACE, +ELLIPSIS
     
     >>> print long_ts.coord('time')
@@ -281,14 +292,16 @@ over multiple years:
 
 We can select points within a certain part of the year, in this case between
 the 15th of July through to the 25th of August, by combining the datetime cell
-functionality with PartialDateTime::
+functionality with PartialDateTime:
+
+.. doctest:: timeseries_range
 
     >>> st_swithuns_daterange = iris.Constraint(
-    ...     time=lambda cell: PartialDateTime(month=7, day=15) < cell.point < PartialDateTime(month=8, day=25))
+    ...     time=lambda cell: PartialDateTime(month=7, day=15) < cell < PartialDateTime(month=8, day=25))
     >>> with iris.FUTURE.context(cell_datetime_objects=True):
-    ...   long_ts_st_swithuns = cube_mondays.extract(st_swithuns_daterange)
+    ...   within_st_swithuns = long_ts.extract(st_swithuns_daterange)
     ... 
-    >>> print long_ts_st_swithuns.coord('time')
+    >>> print within_st_swithuns.coord('time')
     DimCoord([2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
            2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00,
            2008-07-21 00:00:00, 2008-07-28 00:00:00, 2008-08-04 00:00:00,
@@ -296,12 +309,8 @@ functionality with PartialDateTime::
            2009-07-27 00:00:00, 2009-08-03 00:00:00, 2009-08-10 00:00:00,
            2009-08-17 00:00:00, 2009-08-24 00:00:00], standard_name='time', calendar='gregorian')
 
-.. note::
-
-    The limited scope of the 'cell_datetime_objects' feature does not
-    provide for cells *themselves* to test against PartialDateTime objects,
-    only their points or bounds.  So, for instance, it is **not** yet possible
-    to write simply ```Constraint(time=PartialDateTime(hour=11)))```.
+Notice how the dates printed are between the range specified in the ``st_swithuns_daterange``
+and that they span multiple years.
 
 
 Strict loading
