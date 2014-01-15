@@ -45,7 +45,8 @@ install:
   - ./.travis_no_output sudo apt-get install libudunits2-dev libhdf5-serial-dev netcdf-bin libnetcdf-dev
   - ./.travis_no_output sudo apt-get install make unzip python-sphinx graphviz
   - ./.travis_no_output sudo /usr/bin/pip install netCDF4==1.0.2
-  - ./.travis_no_output sudo /usr/bin/pip install pyke pandas
+  - ./.travis_no_output sudo /usr/bin/pip install pyke
+  - ./.travis_no_output sudo /usr/bin/pip install pandas==0.12.0
   - ./.travis_no_output sudo apt-get install openjdk-7-jre
   - sudo apt-get install python-gdal
   - export LD_LIBRARY_PATH=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/server:$LD_LIBRARY_PATH
