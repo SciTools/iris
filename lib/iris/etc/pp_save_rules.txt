@@ -63,7 +63,8 @@ THEN
 
 ############################################
 # Fallback to derive LBFC from the standard_name
-# NOTE: The following rules shold be added to the CF_TO_LBFC table
+# NOTE: The following rules are suspect, as units are not specified, once
+# specific units are identified, these rules can be migrated to CF_TO_LBFC.
 
 IF
     pp.lbfc == 0
