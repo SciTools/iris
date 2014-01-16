@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,12 +22,14 @@ import iris.tests as tests
 import os
 import tempfile
 
+import mock
 import numpy as np
 
 import iris
 import iris.coords
 import iris.coord_systems
 import iris.fileformats.pp as ff_pp
+from iris.fileformats.pp import PPField3
 import iris.io
 import iris.unit
 import iris.tests.pp as pp
@@ -194,6 +196,17 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
         self.add_coords_to_cube_and_test(
             iris.coords.DimCoord(f.z, standard_name='depth', units='m', bounds=f.z_bounds),
             iris.coords.DimCoord(f.y, standard_name='time', units=iris.unit.Unit('days since 0000-01-01 00:00:00', calendar=iris.unit.CALENDAR_360_DAY), bounds=f.y_bounds))
+
+    def test_365_calendar_export(self):
+        # test for 365 day calendar export
+        cube = stock.simple_pp()
+        new_unit = iris.unit.Unit('hours since 1970-01-01 00:00:00',
+                                  calendar=iris.unit.CALENDAR_365_DAY)
+        cube.coord('time').units = new_unit
+        pp_field = mock.MagicMock(spec=PPField3)
+        iris.fileformats.pp._ensure_save_rules_loaded()
+        iris.fileformats.pp._save_rules.verify(cube, pp_field)
+        self.assertEqual(pp_field.lbtim.ic, 4)
 
             
 class FakePPEnvironment(object):
