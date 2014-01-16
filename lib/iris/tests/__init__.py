@@ -160,7 +160,7 @@ class IrisTest(unittest.TestCase):
 
     def _assert_cml(self, cube_xml, reference_xml, reference_filename):
         self._assert_str_same(reference_xml, cube_xml, reference_filename, 'CML')
-        
+
     def result_path(self, basename=None, ext=''):
         """
         Return the full path to a test result, generated from the \
@@ -220,7 +220,7 @@ class IrisTest(unittest.TestCase):
         """
         if reference_filename is None:
             reference_filename = self.result_path(basename, "cdl")
-        
+
         # Convert the netCDF file to CDL file format.
         cdl_filename = iris.util.create_temp_filename(suffix='.cdl')
 
@@ -264,9 +264,9 @@ class IrisTest(unittest.TestCase):
             reference_filename = self.result_path(basename, "cml")
 
         if isinstance(cubes, (list, tuple)):
-            xml = iris.cube.CubeList(cubes).xml(checksum=checksum)
+            xml = iris.cube.CubeList(cubes).xml(checksum=checksum, order=False)
         else:
-            xml = cubes.xml(checksum=checksum)
+            xml = cubes.xml(checksum=checksum, order=False)
         reference_path = get_result_path(reference_filename)
         self._check_same(xml, reference_path, reference_filename)
 
@@ -347,7 +347,7 @@ class IrisTest(unittest.TestCase):
         pretty_xml = doc.toprettyxml(indent="  ")
         reference_path = get_result_path(reference_filename)
         self._check_same(pretty_xml, reference_path, reference_filename, type_comparison_name='XML')
-        
+
     def assertArrayEqual(self, a, b, err_msg=''):
         np.testing.assert_array_equal(a, b, err_msg=err_msg)
 

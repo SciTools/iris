@@ -230,7 +230,7 @@ class CubeList(list):
         result = CubeList(result)
         return result
 
-    def xml(self, checksum=False):
+    def xml(self, checksum=False, order=True):
         """Return a string of the XML that this list of cubes represents."""
         doc = Document()
         cubes_xml_element = doc.createElement("cubes")
@@ -238,7 +238,7 @@ class CubeList(list):
 
         for cube_obj in self:
             cubes_xml_element.appendChild(
-                cube_obj._xml_element(doc, checksum=checksum))
+                cube_obj._xml_element(doc, checksum=checksum, order=order))
 
         doc.appendChild(cubes_xml_element)
 
@@ -2031,21 +2031,22 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         self._aux_coords_and_dims = map(remap_aux_coord,
                                         self._aux_coords_and_dims)
 
-    def xml(self, checksum=False):
+    def xml(self, checksum=False, order=True):
         """
         Returns a fully valid CubeML string representation of the Cube.
 
         """
         doc = Document()
 
-        cube_xml_element = self._xml_element(doc, checksum=checksum)
+        cube_xml_element = self._xml_element(doc, checksum=checksum,
+                                             order=order)
         cube_xml_element.setAttribute("xmlns", XML_NAMESPACE_URI)
         doc.appendChild(cube_xml_element)
 
         # Print our newly created XML
         return doc.toprettyxml(indent="  ")
 
-    def _xml_element(self, doc, checksum=False):
+    def _xml_element(self, doc, checksum=False, order=True):
         cube_xml_element = doc.createElement("cube")
 
         if self.standard_name:
@@ -2143,7 +2144,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     elif array.flags['F_CONTIGUOUS']:
                         order = 'F'
                     return order
-                data_xml_element.setAttribute('order', _order(data))
+                if order:
+                    data_xml_element.setAttribute('order', _order(data))
 
                 # NB. dtype.byteorder can return '=', which is bad for
                 # cross-platform consistency - so we use dtype.str
@@ -2152,7 +2154,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 if byte_order:
                     data_xml_element.setAttribute('byteorder', byte_order)
 
-                if isinstance(data, ma.core.MaskedArray):
+                if order and isinstance(data, ma.core.MaskedArray):
                     data_xml_element.setAttribute('mask_order',
                                                   _order(data.mask))
             else:
