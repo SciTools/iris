@@ -24,7 +24,14 @@ def limit_colorbar_ticks(contour_object):
     number of ticks on the colorbar to 4.
 
     """
-    colorbar = contour_object.colorbar[0]
+    # Under Matplotlib v1.2.x the colorbar attribute of a contour object is
+    # a tuple containing the colorbar and an axes object, whereas under
+    # Matplotlib v1.3.x it is simply the colorbar.
+    try:
+        colorbar = contour_object.colorbar[0]
+    except AttributeError:
+        colorbar = contour_object.colorbar
+
     colorbar.locator = matplotlib.ticker.MaxNLocator(4)
     colorbar.update_ticks()
 
