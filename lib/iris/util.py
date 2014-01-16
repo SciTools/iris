@@ -917,6 +917,8 @@ def clip_string(the_str, clip_length=70, rider="..."):
 
 
 def ensure_array(a):
+    """.. deprecated:: 1.6"""
+
     if not isinstance(a, (np.ndarray, ma.core.MaskedArray)):
         a = np.array([a])
     return a

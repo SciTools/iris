@@ -351,17 +351,47 @@ class IrisTest(unittest.TestCase):
     def assertArrayEqual(self, a, b, err_msg=''):
         np.testing.assert_array_equal(a, b, err_msg=err_msg)
 
+    def assertArrayAlmostEqual(self, a, b):
+        np.testing.assert_array_almost_equal(a, b)
+
+    @staticmethod
+    def unmasked_data_as_1d_array(array):
+        """
+        Return the unmasked elements of a :class:`numpy.ma.MaskedArray` as
+        as a one-dimensional :class:`numpy.ndarray`.
+
+        Args:
+
+        * array (:class:`numpy.ma.MaskedArray`):
+            The masked array from which the unmasked elements are extracted.
+
+        Returns:
+           One-dimensional :class:`numpy.ndarray`.
+
+        """
+        if array.ndim == 0:
+            if array.mask:
+                data = np.array([])
+            else:
+                data = np.array([array.data])
+        else:
+            data = array.data[~array.mask]
+
+        return data
+
     def assertMaskedArrayEqual(self, a, b):
         """
         Check that masked arrays are equal. This requires the
         unmasked values and masks to be identical.
 
         """
+        # Check the shape as the masks may be boolean, and a comparison
+        # of the flattened unmasked data values may not pick up differences
+        # in shape.
+        self.assertEqual(a.shape, b.shape)
         np.testing.assert_array_equal(a.mask, b.mask)
-        np.testing.assert_array_equal(a[~a.mask].data, b[~b.mask].data)
-
-    def assertArrayAlmostEqual(self, a, b):
-        np.testing.assert_array_almost_equal(a, b)
+        np.testing.assert_array_equal(self.unmasked_data_as_1d_array(a),
+                                      self.unmasked_data_as_1d_array(b))
 
     def assertMaskedArrayAlmostEqual(self, a, b):
         """
@@ -370,8 +400,13 @@ class IrisTest(unittest.TestCase):
         equal.
 
         """
+        # Check the shape as the masks may be boolean, and a comparison
+        # of the flattened unmasked data values may not pick up differences
+        # in shape.
+        self.assertEqual(a.shape, b.shape)
         np.testing.assert_array_equal(a.mask, b.mask)
-        np.testing.assert_array_almost_equal(a[~a.mask].data, b[~b.mask].data)
+        np.testing.assert_array_almost_equal(self.unmasked_data_as_1d_array(a),
+                                             self.unmasked_data_as_1d_array(b))
 
     def assertArrayAllClose(self, a, b, rtol=1.0e-7, atol=0.0, **kwargs):
         """
