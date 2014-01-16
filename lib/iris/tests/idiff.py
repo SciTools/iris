@@ -65,10 +65,13 @@ def diff_viewer(expected_fname, result_fname, diff_fname):
 
 def step_over_diffs():
     import iris.tests
-    image_dir = os.path.join(os.path.dirname(iris.tests.__file__),
-                             'results', 'visual_tests')
-    diff_dir = os.path.join(os.path.dirname(iris.tests.__file__),
-                            'result_image_comparison')
+    image_dir = os.path.join(
+        os.path.realpath(os.path.dirname(iris.tests.__file__)),
+        'results', 'visual_tests')
+    base_dir = os.path.dirname(os.path.dirname(
+        os.path.realpath(os.path.dirname(iris.__file__))))
+
+    diff_dir = os.path.join(base_dir, 'iris_image_test_output')
 
     for expected_fname in sorted(os.listdir(image_dir)):
         result_path = os.path.join(diff_dir, 'result-' + expected_fname)
