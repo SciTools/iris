@@ -551,10 +551,10 @@ def failed_images_iter():
     diff_dir = os.path.join(os.getcwd(), 'iris_image_test_output')
 
     baselines = sorted(glob.glob(os.path.join(baseline_img_dir,
-                                              '*', '*.png')))
+                                              '*.png')))
     for expected_fname in baselines:
         # Get the absolute path of the expected image.
-        expected_fname = os.path.join(baseline_image_dir, expected_fname)
+        expected_fname = os.path.join(baseline_img_dir, expected_fname)
         result_fname = os.path.join(
             diff_dir, 'result-' + os.path.basename(expected_fname))
         diff_fname = result_fname[:-4] + '-failed-diff.png'
