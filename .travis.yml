@@ -125,9 +125,13 @@ install:
 script:
   - /usr/bin/python setup.py test --example-tests
 
-  - cd $(pwd)/docs/iris
-# Make html produces an error when run on Travis that does not affect any downstream functionality but causes the build to fail spuriously.
-# The following gets around this error, which should be investigated further in the future.
-  - echo `make clean html`
+#   - cd $(pwd)/docs/iris
+# # Make html produces an error when run on Travis that does not affect any downstream functionality but causes the build to fail spuriously.
+# # The following gets around this error, which should be investigated further in the future.
+#   - echo `make clean html`
 
-  - make doctest
+#  - make doctest
+
+after_failure:
+  - source ~/virtualenv/python2.7/bin/activate
+  - /usr/bin/python -c "import iris.tests; print iris.tests.failed_images_html()"
