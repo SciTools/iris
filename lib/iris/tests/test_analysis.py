@@ -557,10 +557,10 @@ class TestRotatedPole(tests.IrisTest):
             rlons, rlats, rcs.grid_north_pole_longitude,
             rcs.grid_north_pole_latitude)
         plt.scatter(x, y)
-        self.check_graphic(tol=0.002)
+        self.check_graphic()
 
         plt.scatter(rlons, rlats)
-        self.check_graphic(tol=0.002)
+        self.check_graphic()
 
     def test_all(self):
         path = tests.get_data_path(('PP', 'ukVorog', 'ukv_orog_refonly.pp'))
