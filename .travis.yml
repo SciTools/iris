@@ -125,10 +125,10 @@ install:
 script:
   - /usr/bin/python setup.py test --example-tests
 
-#   - cd $(pwd)/docs/iris
-# # Make html produces an error when run on Travis that does not affect any downstream functionality but causes the build to fail spuriously.
-# # The following gets around this error, which should be investigated further in the future.
-#   - echo `make clean html`
+  - cd $(pwd)/docs/iris
+# Make html produces an error when run on Travis that does not affect any downstream functionality but causes the build to fail spuriously.
+# The following gets around this error, which should be investigated further in the future.
+  - echo `make clean html`
 
 #  - make doctest
 

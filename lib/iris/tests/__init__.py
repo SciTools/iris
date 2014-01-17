@@ -33,6 +33,7 @@ import collections
 import contextlib
 import difflib
 import filecmp
+import glob
 import gzip
 import inspect
 import logging
