@@ -61,7 +61,7 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" dtype="float32" order="C" shape="(200, 200)" state="loaded"/>
+    <data byteorder="little" dtype="float32" shape="(200, 200)" state="loaded"/>
   </cube>
   <cube long_name="TRACER_AIR_CONCENTRATION" units="g / m^3">
     <attributes>
@@ -124,7 +124,7 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" dtype="float32" order="C" shape="(200, 200)" state="loaded"/>
+    <data byteorder="little" dtype="float32" shape="(200, 200)" state="loaded"/>
   </cube>
   <cube long_name="TRACER_DRY_DEPOSITION" units="g / m^2">
     <attributes>
@@ -186,7 +186,7 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" dtype="float32" order="C" shape="(200, 200)" state="loaded"/>
+    <data byteorder="little" dtype="float32" shape="(200, 200)" state="loaded"/>
   </cube>
   <cube long_name="TRACER_WET_DEPOSITION" units="g / m^2">
     <attributes>
@@ -248,7 +248,7 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" dtype="float32" order="C" shape="(200, 200)" state="loaded"/>
+    <data byteorder="little" dtype="float32" shape="(200, 200)" state="loaded"/>
   </cube>
   <cube long_name="TRACER_DEPOSITION" units="g / m^2">
     <attributes>
@@ -310,6 +310,6 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" dtype="float32" order="C" shape="(200, 200)" state="loaded"/>
+    <data byteorder="little" dtype="float32" shape="(200, 200)" state="loaded"/>
   </cube>
 </cubes>

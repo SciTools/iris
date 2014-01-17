@@ -14,7 +14,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="0x4fc3cae2" dtype="float32" order="C" shape="(2, 4)"/>
+    <data byteorder="little" checksum="0x4fc3cae2" dtype="float32" shape="(2, 4)"/>
   </cube>
   <cube units="unknown">
     <coords>
@@ -24,6 +24,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x7e568ae8" dtype="float32" order="C" shape="(2, 2)"/>
+    <data byteorder="little" checksum="-0x7e568ae8" dtype="float32" shape="(2, 2)"/>
   </cube>
 </cubes>

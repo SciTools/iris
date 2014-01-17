@@ -72,6 +72,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x2735ea03" dtype="int32" order="C" shape="(23,)"/>
+    <data byteorder="little" checksum="-0x2735ea03" dtype="int32" shape="(23,)"/>
   </cube>
 </cubes>

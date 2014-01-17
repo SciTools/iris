@@ -13,6 +13,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x7a85d5e5" dtype="float32" order="C" shape="(4,)"/>
+    <data byteorder="little" checksum="-0x7a85d5e5" dtype="float32" shape="(4,)"/>
   </cube>
 </cubes>

@@ -58,7 +58,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="0x2acdccca" dtype="int64" order="C" shape="(3, 4, 5, 6)"/>
+    <data byteorder="little" checksum="0x2acdccca" dtype="int64" shape="(3, 4, 5, 6)"/>
   </cube>
   <cube standard_name="air_temperature" units="K">
     <coords>
@@ -95,6 +95,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="0x11cdc1c8" dtype="float64" order="C" shape="(3, 4, 4)"/>
+    <data byteorder="little" checksum="0x11cdc1c8" dtype="float64" shape="(3, 4, 4)"/>
   </cube>
 </cubes>

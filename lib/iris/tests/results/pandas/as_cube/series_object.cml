@@ -7,6 +7,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="0x6c8f4e1c" dtype="int64" fill_value="999999" mask_checksum="no-masked-elements" mask_order="C" order="C" shape="(5,)"/>
+    <data byteorder="little" checksum="0x6c8f4e1c" dtype="int64" fill_value="999999" mask_checksum="no-masked-elements" shape="(5,)"/>
   </cube>
 </cubes>

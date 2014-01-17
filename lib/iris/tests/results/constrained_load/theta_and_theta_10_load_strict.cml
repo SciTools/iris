@@ -137,7 +137,7 @@
         <coord interval="1 hour" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" checksum="0x7b0108a9" dtype="float32" order="C" shape="(38, 145, 192)"/>
+    <data byteorder="little" checksum="0x7b0108a9" dtype="float32" shape="(38, 145, 192)"/>
   </cube>
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
@@ -187,6 +187,6 @@
         <coord interval="1 hour" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" checksum="0x45a44f1a" dtype="float32" order="C" shape="(145, 192)"/>
+    <data byteorder="little" checksum="0x45a44f1a" dtype="float32" shape="(145, 192)"/>
   </cube>
 </cubes>

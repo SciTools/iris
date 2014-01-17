@@ -16,7 +16,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="0xf7cfdf3" dtype="int32" fill_value="-2147483647" mask_checksum="-0x3f514d68" mask_order="C" order="C" shape="(3, 3, 3)"/>
+    <data byteorder="little" checksum="0xf7cfdf3" dtype="int32" fill_value="-2147483647" mask_checksum="-0x3f514d68" shape="(3, 3, 3)"/>
   </cube>
   <cube standard_name="eastward_wind" units="m s-1" var_name="wind2">
     <attributes>
@@ -34,7 +34,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x2b185cd1" dtype="int32" order="C" shape="(3, 3, 3)"/>
+    <data byteorder="little" checksum="-0x2b185cd1" dtype="int32" shape="(3, 3, 3)"/>
   </cube>
   <cube standard_name="eastward_wind" units="m s-1" var_name="wind1">
     <attributes>
@@ -52,6 +52,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x2b185cd1" dtype="int32" order="C" shape="(3, 3, 3)"/>
+    <data byteorder="little" checksum="-0x2b185cd1" dtype="int32" shape="(3, 3, 3)"/>
   </cube>
 </cubes>
