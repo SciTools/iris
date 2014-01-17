@@ -1146,43 +1146,52 @@ class _Groupby(object):
 
         # Create new shared bounded coordinates.
         for coord in self._shared_coords:
-            source_points = []
-            new_bounds = []
-
-            # Construct list of coordinate group boundary pairs.
-            for start, stop in groupby_bounds:
-                source_points.append(coord.points[start:stop+1])
-                if coord.has_bounds():
-                    # Collapse group bounds into bounds.
-                    if (getattr(coord, 'circular', False) and
-                            (stop + 1) == len(coord.points)):
-                        new_bounds.append([coord.bounds[start, 0],
-                                          coord.bounds[0, 0] +
-                                          coord.units.modulus])
-                    else:
-                        new_bounds.append([coord.bounds[start, 0],
-                                          coord.bounds[stop, 1]])
+            if coord.points.dtype.kind == 'S':
+                if coord.bounds is None:
+                    new_points = []
+                    new_bounds = None
+                    for key_slice in self._slices_by_key.itervalues():
+                        pts = [coord.points[i] for i in key_slice]
+                        new_point = '|'.join(pts)
+                        new_points.append(new_point)
                 else:
-                    # Collapse group points into bounds.
-                    if (getattr(coord, 'circular', False) and
-                            (stop + 1) == len(coord.points)):
-                        new_bounds.append([coord.points[start],
-                                          coord.points[0] +
-                                          coord.units.modulus])
-                    else:
-                        new_bounds.append([coord.points[start],
-                                          coord.points[stop]])
+                    msg =('collapsing the bounded string coordinate {0!r}'
+                          ' is not supported')
+                    msg = msg.format(coord.name())
+                    raise ValueError(msg)
+            else:
+                new_bounds = []
 
-            # Now create the new bounded group shared coordinate.
-            try:
-                new_points = np.array(new_bounds).mean(-1)
-            except TypeError:
-                import pdb
-                pdb.set_trace
-                sjoin = lambda pts: "|".join([str(pt) for pt in pts])
-                str_list = [sjoin(pts) for pts in source_points]
-                new_points = np.array(str_list)
-                new_bounds = None
+                # Construct list of coordinate group boundary pairs.
+                for start, stop in groupby_bounds:
+                    if coord.has_bounds():
+                        # Collapse group bounds into bounds.
+                        if (getattr(coord, 'circular', False) and
+                                (stop + 1) == len(coord.points)):
+                            new_bounds.append([coord.bounds[start, 0],
+                                              coord.bounds[0, 0] +
+                                              coord.units.modulus])
+                        else:
+                            new_bounds.append([coord.bounds[start, 0],
+                                              coord.bounds[stop, 1]])
+                    else:
+                        # Collapse group points into bounds.
+                        if (getattr(coord, 'circular', False) and
+                                (stop + 1) == len(coord.points)):
+                            new_bounds.append([coord.points[start],
+                                              coord.points[0] +
+                                              coord.units.modulus])
+                        else:
+                            new_bounds.append([coord.points[start],
+                                              coord.points[stop]])
+
+                # Now create the new bounded group shared coordinate.
+                try:
+                    new_points = np.array(new_bounds).mean(-1)
+                except TypeError:
+                    msg = 'The {0!r} coordinate on the collapsing dimension' \
+                          ' cannot be collapsed.'.format(coord.name())
+                    raise ValueError(msg)
 
             try:
                 self.coords.append(coord.copy(points=new_points,
