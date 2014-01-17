@@ -36,7 +36,7 @@ install:
   - ./.travis_no_output sudo apt-get update
 
 # install deps
-  - ./.travis_no_output sudo apt-get install python-scipy cython python-pip
+  - ./.travis_no_output sudo apt-get install cython python-pip
   - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors shapely nose
   - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors pyshp pep8 mock
   - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors setuptools
@@ -50,6 +50,8 @@ install:
   - ./.travis_no_output sudo apt-get install openjdk-7-jre
   - sudo apt-get install python-gdal
   - export LD_LIBRARY_PATH=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/server:$LD_LIBRARY_PATH
+  - wget http://ftp.uk.debian.org/debian/pool/main/p/python-scipy/python-scipy_0.13.2-1_amd64.deb
+  - sudo dpkg -i python-scipy_0.13.2-1_amd64.deb
 
 # cfchecker
   - ./.travis_no_output sudo /usr/bin/pip install cdat-lite
