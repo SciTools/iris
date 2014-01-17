@@ -510,6 +510,7 @@ class TestAggregateBy(tests.IrisTest):
         agg = self.cube_single.aggregated_by('cat', iris.analysis.MEAN)
         self.assertEqual(agg.coord("weird_name").points,
                          ['first|second|third'])
+        self.assertIsNone(agg.coord("weird_name").bounds)
 
 
 if __name__ == '__main__':
