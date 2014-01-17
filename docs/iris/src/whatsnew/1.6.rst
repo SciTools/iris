@@ -177,6 +177,12 @@ Deprecations
 * :func:`iris.util.broadcast_weights` has been deprecated and replaced
   by the new utility function :func:`iris.util.broadcast_to_shape`.
 
+New Contributors
+================
+Congratulations and thank you to `felicityguest <https://github.com/felicityguest>`_, `jkettleb <https://github.com/jkettleb>`_,
+`kwilliams-mo <https://github.com/kwilliams-mo>`_ and `shoyer <https://github.com/shoyer>`_ who all made their first contribution
+to Iris!
+
 
 ----
 
