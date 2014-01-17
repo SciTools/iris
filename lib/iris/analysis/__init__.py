@@ -22,8 +22,10 @@ Primarily, this module provides definitions of statistical operations, such as
 such as: :meth:`iris.cube.Cube.collapsed` and
 :meth:`iris.cube.Cube.aggregated_by`.
 
- .. note:: These statistical operations define how to transform both the
-           metadata and the data.
+ .. note::
+
+     These statistical operations define how to transform both the
+     metadata and the data.
 
 """
 from __future__ import division
@@ -46,7 +48,11 @@ __all__ = ('COUNT', 'GMEAN', 'HMEAN', 'MAX', 'MEAN', 'MEDIAN', 'MIN',
 
 
 class _CoordGroup(object):
-    """Represents a list of coordinates, one for each given cube. Which can be operated on conveniently."""
+    """
+    Represents a list of coordinates, one for each given cube. Which can be
+    operated on conveniently.
+
+    """
     def __init__(self, coords, cubes):
         self.coords = coords
         self.cubes = cubes
@@ -58,12 +64,18 @@ class _CoordGroup(object):
         return list(self).__getitem__(key)
 
     def _first_coord_w_cube(self):
-        """Return the first none None coordinate, and its associated cube as (cube, coord)."""
-        return filter(lambda cube_coord: cube_coord[1] is not None, zip(self.cubes, self.coords))[0]
+        """
+        Return the first none None coordinate, and its associated cube
+        as (cube, coord).
+
+        """
+        return filter(lambda cube_coord: cube_coord[1] is not None,
+                      zip(self.cubes, self.coords))[0]
 
     def __repr__(self):
         # No exact repr, so a helpful string is given instead
-        return '[' + ', '.join([coord.name() if coord is not None else 'None' for coord in self])  + ']'
+        return '[' + ', '.join([coord.name() if coord is not None
+                                else 'None' for coord in self]) + ']'
 
     def name(self):
         _, first_coord = self._first_coord_w_cube()
@@ -77,18 +89,24 @@ class _CoordGroup(object):
         return hash(self._oid_tuple())
 
     def __eq__(self, other):
-        # equals is overridden to guarantee that two _CoordGroups are only equal if their coordinates are the same objects (by object id)
-        # this is useful in the context of comparing _CoordGroups if they are part of a set operation such as that in coord_compare, but
-        # not useful in many other circumstances (i.e. deepcopying a _CoordGroups instance would mean that copy != original)
+        # equals is overridden to guarantee that two _CoordGroups are only
+        # equal if their coordinates are the same objects (by object id)
+        # this is useful in the context of comparing _CoordGroups if they are
+        # part of a set operation such as that in coord_compare, but
+        # not useful in many other circumstances (i.e. deepcopying a
+        # _CoordGroups instance would mean that copy != original)
         result = NotImplemented
         if isinstance(other, _CoordGroup):
             result = self._oid_tuple() == other._oid_tuple()
         return result
 
     def matches(self, predicate, default_val=True):
-        """Apply a function to a coord group returning a list of bools for each coordinate.
+        """
+        Apply a function to a coord group returning a list of bools
+        for each coordinate.
 
-        The predicate function should take exactly 2 arguments (cube, coord) and return a boolean.
+        The predicate function should take exactly 2 arguments (cube, coord)
+        and return a boolean.
 
         If None is in the coord group then return True.
 
@@ -101,7 +119,8 @@ class _CoordGroup(object):
 
     def matches_all(self, predicate):
         """
-        Return whether all coordinates match the given function after running it through :meth:`matches`.
+        Return whether all coordinates match the given function after running
+        it through :meth:`matches`.
 
         If None is in the coord group then return True.
 
@@ -110,7 +129,8 @@ class _CoordGroup(object):
 
     def matches_any(self, predicate):
         """
-        Return whether any coordinates match the given function after running it through :meth:`matches`.
+        Return whether any coordinates match the given function after running
+        it through :meth:`matches`.
 
         If None is in the coord group then return True.
 
@@ -120,35 +140,45 @@ class _CoordGroup(object):
 
 def coord_comparison(*cubes):
     """
-    Convenience function to help compare coordinates on one or more cubes by their metadata.
+    Convenience function to help compare coordinates on one or more cubes
+    by their metadata.
 
-    Return a dictionary where the key represents the statement, "Given these cubes list the coordinates
-    which, when grouped by metadata, are/have..."
+    Return a dictionary where the key represents the statement,
+    "Given these cubes list the coordinates which,
+    when grouped by metadata, are/have..."
 
     Keys:
 
     * grouped_coords
-       A list of coordinate groups of all the coordinates grouped together by their coordinate definition
+       A list of coordinate groups of all the coordinates grouped together
+       by their coordinate definition
     * ungroupable
-       A list of coordinate groups which contain at least one None, meaning not all Cubes provide an equivalent coordinate
+       A list of coordinate groups which contain at least one None,
+       meaning not all Cubes provide an equivalent coordinate
     * not_equal
-       A list of coordinate groups of which not all are equal (superset of ungroupable)
+       A list of coordinate groups of which not all are equal
+       (superset of ungroupable)
     * no_data_dimension
-       A list of coordinate groups of which all have no data dimensions on their respective cubes
+       A list of coordinate groups of which all have no data dimensions on
+       their respective cubes
     * scalar
        A list of coordinate groups of which all have shape (1, )
     * non_equal_data_dimension
-       A list of coordinate groups of which not all have the same data dimension on their respective cubes
+       A list of coordinate groups of which not all have the same
+       data dimension on their respective cubes
     * non_equal_shape
        A list of coordinate groups of which not all have the same shape
     * equal_data_dimension
-       A list of coordinate groups of which all have the same data dimension on their respective cubes
+       A list of coordinate groups of which all have the same data dimension
+       on their respective cubes
     * equal
        A list of coordinate groups of which all are equal
     * ungroupable_and_dimensioned
-       A list of coordinate groups of which not all cubes had an equivalent (in metadata) coordinate which also describe a data dimension
+       A list of coordinate groups of which not all cubes had an equivalent
+       (in metadata) coordinate which also describe a data dimension
     * dimensioned
-       A list of coordinate groups of which all describe a data dimension on their respective cubes
+       A list of coordinate groups of which all describe a data dimension on
+       their respective cubes
     * ignorable
        A list of scalar, ungroupable non_equal coordinate groups
     * resamplable
@@ -168,31 +198,38 @@ def coord_comparison(*cubes):
     # set of coordinates id()s of coordinates which have been processed
     processed_coords = set()
 
-    # iterate through all cubes, then by each coordinate in the cube looking for coordinate groups
+    # iterate through all cubes, then by each coordinate in the cube looking
+    # for coordinate groups
     for cube, coords in zip(cubes, all_coords):
         for coord in coords:
 
-            # if this coordinate has already been processed, then continue on to the next one
+            # if this coordinate has already been processed, then continue on
+            # to the next one
             if id(coord) in processed_coords:
                 continue
 
-            # setup a list to hold the coordinates which will be turned into a coordinate group and added to the grouped_coords list
+            # setup a list to hold the coordinates which will be turned into a
+            # coordinate group and added to the grouped_coords list
             this_coords_coord_group = []
 
             for other_cube_i, other_cube in enumerate(cubes):
-                # setup a variable to hold the coordinate which will be added to the coordinate group for this cube
+                # setup a variable to hold the coordinate which will be added
+                # to the coordinate group for this cube
                 coord_to_add_to_group = None
 
-                # don't bother checking if the current cube is the one we are trying to match coordinates too
+                # don't bother checking if the current cube is the one we are
+                # trying to match coordinates too
                 if other_cube is cube:
                     coord_to_add_to_group = coord
                 else:
                     # iterate through all coordinates in this cube
                     for other_coord in all_coords[other_cube_i]:
-                        # for optimisation, check that the name is equivalent *before* checking all of the metadata is equivalent
-                        if (id(other_coord) not in processed_coords and
-                                                other_coord.name() == coord.name() and
-                                                other_coord._as_defn() == coord._as_defn()):
+                        # for optimisation, check that the name is equivalent
+                        # *before* checking all of the metadata is equivalent
+                        eq = (id(other_coord) not in processed_coords and
+                              other_coord.name() == coord.name() and
+                              other_coord._as_defn() == coord._as_defn())
+                        if eq:
                             coord_to_add_to_group = other_coord
                             break
 
@@ -201,7 +238,8 @@ def coord_comparison(*cubes):
                     this_coords_coord_group.append(None)
                 else:
                     this_coords_coord_group.append(coord_to_add_to_group)
-                    # add the object id of the coordinate which is being added to the group to the processed coordinate list
+                    # add the object id of the coordinate which is being added
+                    # to the group to the processed coordinate list
                     processed_coords.add(id(coord_to_add_to_group))
 
             # add the group to the list of groups
@@ -218,7 +256,8 @@ def coord_comparison(*cubes):
     for coord_group in grouped_coords:
         first_cube, first_coord = coord_group._first_coord_w_cube()
 
-        # Get all coordinate groups which aren't complete (i.e. there is a None in the group)
+        # Get all coordinate groups which aren't complete (i.e. there is a
+        # None in the group)
         coord_is_None_fn = lambda cube, coord: coord is None
         if coord_group.matches_any(coord_is_None_fn):
             ungroupable.add(coord_group)
@@ -235,9 +274,11 @@ def coord_comparison(*cubes):
         if coord_group.matches_any(diff_shape_fn):
             different_shaped_coords.add(coord_group)
 
-        # Get all coordinate groups which don't all share the same data dimension on their respective cubes
+        # Get all coordinate groups which don't all share the same data
+        # dimension on their respective cubes
         # (None -> group describes a different dimension)
-        diff_data_dim_fn = lambda cube, coord: cube.coord_dims(coord=coord) != first_cube.coord_dims(first_coord)
+        diff_data_dim_fn = lambda cube, coord: \
+            cube.coord_dims(coord=coord) != first_cube.coord_dims(first_coord)
         if coord_group.matches_any(diff_data_dim_fn):
             different_data_dimension.add(coord_group)
 
@@ -262,15 +303,22 @@ def coord_comparison(*cubes):
     result['non_equal_data_dimension'] = different_data_dimension
     result['non_equal_shape'] = different_shaped_coords
 
-    result['equal_data_dimension'] = result['grouped_coords'] - result['non_equal_data_dimension']
+    result['equal_data_dimension'] = (result['grouped_coords'] -
+                                      result['non_equal_data_dimension'])
     result['equal'] = result['grouped_coords'] - result['not_equal']
-    result['dimensioned'] = result['grouped_coords'] - result['no_data_dimension']
-    result['ungroupable_and_dimensioned'] = result['ungroupable'] & result['dimensioned']
-    result['ignorable'] = (result['not_equal'] | result['ungroupable']) & result['no_data_dimension']
-    result['resamplable'] = result['not_equal'] & result['equal_data_dimension'] - result['scalar']
-    result['transposable'] = result['equal'] & result['non_equal_data_dimension']
+    result['dimensioned'] = (result['grouped_coords'] -
+                             result['no_data_dimension'])
+    result['ungroupable_and_dimensioned'] = (result['ungroupable'] &
+                                             result['dimensioned'])
+    result['ignorable'] = ((result['not_equal'] | result['ungroupable']) &
+                           result['no_data_dimension'])
+    result['resamplable'] = (result['not_equal'] &
+                             result['equal_data_dimension'] - result['scalar'])
+    result['transposable'] = (result['equal'] &
+                              result['non_equal_data_dimension'])
 
-    # for convenience, turn all of the sets in the dictionary into lists, sorted by the name of the group
+    # for convenience, turn all of the sets in the dictionary into lists,
+    # sorted by the name of the group
     for key, groups in result.iteritems():
         result[key] = sorted(groups, key=lambda group: group.name())
 
@@ -364,8 +412,9 @@ class Aggregator(object):
 
         Kwargs:
 
-        * This function is intended to be used in conjuction with aggregate() and should be
-          passed the same keywords (for example, the "percent" keyword for a percentile aggregator).
+        * This function is intended to be used in conjuction with aggregate()
+          and should be passed the same keywords (for example, the "percent"
+          keyword for a percentile aggregator).
 
         """
         kwargs = dict(self._kwargs.items() + kwargs.items())
@@ -376,7 +425,8 @@ class Aggregator(object):
         coord_names = []
         for coord in coords:
             if not isinstance(coord, iris.coords.Coord):
-                raise TypeError('Coordinate instance expected to the Aggregator object.')
+                raise TypeError('Coordinate instance expected to the '
+                                'Aggregator object.')
             coord_names.append(coord.name())
 
         # Add a cell method.
@@ -428,7 +478,8 @@ class WeightedAggregator(Aggregator):
         Process the result from :func:`iris.analysis.Aggregator.aggregate`.
 
         Ensures data is an array, when collapsed to a single value.
-        Returns a tuple(cube, weights) if a tuple(data, weights) was returned from :func:`iris.analysis.Aggregator.aggregate`.
+        Returns a tuple(cube, weights) if a tuple(data, weights) was returned
+        from :func:`iris.analysis.Aggregator.aggregate`.
 
         Args:
 
@@ -444,7 +495,8 @@ class WeightedAggregator(Aggregator):
             collapsed_cube.data = iris.util.ensure_array(collapsed_cube.data)
             result = (collapsed_cube, collapsed_weights)
         else:
-            result = Aggregator.post_process(self, collapsed_cube, data_result, **kwargs)
+            result = Aggregator.post_process(self, collapsed_cube,
+                                             data_result, **kwargs)
 
         return result
 
@@ -468,15 +520,18 @@ def _percentile(data, axis, percent, **kwargs):
 
 def _count(array, function, axis, **kwargs):
     if not callable(function):
-        raise ValueError('function must be a callable. Got %s.' % type(function))
+        raise ValueError('function must be a callable. Got %s.'
+                         % type(function))
     return ma.sum(function(array), axis=axis, **kwargs)
 
 
 def _proportion(array, function, axis, **kwargs):
-    # if the incoming array is masked use that to count the total number of values
+    # if the incoming array is masked use that to count the total number of
+    # values
     if isinstance(array, ma.MaskedArray):
         # calculate the total number of non-masked values across the given axis
-        total_non_masked = _count(array.mask, lambda v: v == False, axis=axis, **kwargs)
+        total_non_masked = _count(array.mask, np.logical_not,
+                                  axis=axis, **kwargs)
         total_non_masked = ma.masked_equal(total_non_masked, 0)
     else:
         total_non_masked = array.shape[axis]
@@ -538,7 +593,6 @@ def _peak(array, **kwargs):
         else:
             k = length - 1
         return k
-
 
     # Collapse array to its final data shape.
     slices = [slice(None)] * array.ndim
@@ -626,7 +680,8 @@ Args:
     A function which converts an array of data values into a corresponding
     array of True/False values.
 
-For example, the number of ensembles with precipitation exceeding 10 (in cube data units) could be calculated with::
+For example, the number of ensembles with precipitation exceeding 10
+(in cube data units) could be calculated with::
 
     result = precip_cube.collapsed('ensemble_member', iris.analysis.COUNT,
                                    function=lambda values: values > 10)
@@ -655,7 +710,10 @@ For example, to compute zonal harmonic means::
 
     result = cube.collapsed('longitude', iris.analysis.HMEAN)
 
-.. note:: The harmonic mean is only valid if all data values are greater than zero.
+.. note::
+
+    The harmonic mean is only valid if all data values are greater
+    than zero.
 
 """
 
@@ -684,14 +742,16 @@ Additional kwargs available:
 * weights
     Optional array of floats. If supplied, the shape must match the cube.
 
-    LatLon area weights can be calculated using :func:`iris.analysis.cartography.area_weights`.
+    LatLon area weights can be calculated using
+    :func:`iris.analysis.cartography.area_weights`.
 * returned
     Set this to True to indicate the collapsed weights are to be returned
     along with the collapsed data. Defaults to False.
 
 For example::
 
-    cube_out, weights_out = cube_in.collapsed(coord_names, iris.analysis.MEAN, weights=weights_in, returned=True)
+    cube_out, weights_out = cube_in.collapsed(coord_names, iris.analysis.MEAN,
+    weights=weights_in, returned=True)
 
 """
 
@@ -767,8 +827,8 @@ PROPORTION = Aggregator('proportion', _proportion, lambda units: 1)
 """
 The proportion, as a decimal, of data that match the given function.
 
-The proportion calculation takes into account masked values, therefore if the number of non-masked values is
-zero the result itself will be a masked array.
+The proportion calculation takes into account masked values, therefore if the
+number of non-masked values is zero the result itself will be a masked array.
 
 Args:
 
@@ -776,13 +836,14 @@ Args:
     A function which converts an array of data values into a corresponding
     array of True/False values.
 
-For example, the probability of precipitation exceeding 10 (in cube data units) across ensemble members
-could be calculated with::
+For example, the probability of precipitation exceeding 10
+(in cube data units) across ensemble members could be calculated with::
 
     result = precip_cube.collapsed('ensemble_member', iris.analysis.PROPORTION,
                                    function=lambda values: values > 10)
 
-Similarly, the proportion of times precipitation exceeded 10 (in cube data units) could be calculated with::
+Similarly, the proportion of times precipitation exceeded 10
+(in cube data units) could be calculated with::
 
     result = precip_cube.collapsed('time', iris.analysis.PROPORTION,
                                    function=lambda values: values > 10)
@@ -794,7 +855,8 @@ Similarly, the proportion of times precipitation exceeded 10 (in cube data units
 
 RMS = WeightedAggregator('root mean square', _rms)
 """
-The root mean square, as computed by ((x0**2 + x1**2 + ... + xN-1**2) / N) ** 0.5.
+The root mean square, as computed by
+((x0**2 + x1**2 + ... + xN-1**2) / N) ** 0.5.
 
 For example, to compute zonal root mean square::
 
@@ -849,7 +911,8 @@ Additional kwargs available:
     Set this to True to indicate the collapsed weights are to be returned
     along with the collapsed data. Defaults to False.
 
-For example to compute a weighted rolling sum (e.g., to apply a digital filter)::
+For example to compute a weighted rolling sum
+(e.g., to apply a digital filter)::
 
     weights = np.array([.1, .2, .4, .2, .1])
     result = cube.rolling_window('time', iris.analysis.SUM,
@@ -881,7 +944,8 @@ For example, to obtain the biased variance::
 
 class _Groupby(object):
     """
-    Convenience class to determine group slices over one or more group-by coordinates.
+    Convenience class to determine group slices over one or more group-by
+    coordinates.
 
     Generate the coordinate slices for the groups and calculate the
     new group-by coordinates and the new shared coordinates given the
@@ -911,7 +975,8 @@ class _Groupby(object):
         Kwargs:
 
         * shared_coords (list of :class:`iris.coords.Coord` instances):
-            One or more coordinates that share the same group-by coordinate axis.
+            One or more coordinates that share the same group-by
+            coordinate axis.
 
         """
         #: Group-by and shared coordinates that have been grouped.
@@ -922,16 +987,19 @@ class _Groupby(object):
         self._stop = None
         # Ensure group-by coordinates are iterable.
         if not isinstance(groupby_coords, collections.Iterable):
-            raise TypeError('groupby_coords must be a `collections.Iterable` type.')
+            raise TypeError('groupby_coords must be a '
+                            '`collections.Iterable` type.')
 
         # Add valid group-by coordinates.
         for coord in groupby_coords:
             self._add_groupby_coord(coord)
-        # Add the coordinates sharing the same axis as the group-by coordinates.
+        # Add the coordinates sharing the same axis as the group-by
+        # coordinates.
         if shared_coords is not None:
             # Ensure shared coordinates are iterable.
             if not isinstance(shared_coords, collections.Iterable):
-                raise TypeError('shared_coords must be a `collections.Iterable` type.')
+                raise TypeError('shared_coords must be a '
+                                '`collections.Iterable` type.')
             # Add valid shared coordinates.
             for coord in shared_coords:
                 self._add_shared_coord(coord)
@@ -954,9 +1022,11 @@ class _Groupby(object):
 
     def group(self):
         """
-        Calculate the groups and associated slices over one or more group-by coordinates.
+        Calculate the groups and associated slices over one or more group-by
+        coordinates.
 
-        Also creates new group-by and shared coordinates given the calculated group slices.
+        Also creates new group-by and shared coordinates given the calculated
+        group slices.
 
         Returns:
             A generator of the coordinate group slices.
@@ -971,29 +1041,41 @@ class _Groupby(object):
                     groups.append(iris.coords._GroupIterator(coord.points))
                     items.append(groups[-1].next())
 
-                # Construct the group slice for each group over the group-by coordinates.
-                # Keep constructing until all group-by coordinate groups are exhausted.
+                # Construct the group slice for each group over the group-by
+                # coordinates. Keep constructing until all group-by coordinate
+                # groups are exhausted.
                 while any([item is not None for item in items]):
-                    # Determine the extent (start, stop) of the group given each current group-by coordinate group.
-                    start = max([item.groupby_slice.start for item in items if item is not None])
-                    stop = min([item.groupby_slice.stop for item in items if item is not None])
-                    # Construct composite group key for the group using the start value from each group-by coordinate.
-                    key = tuple([coord._points[start] for coord in self._groupby_coords])
-                    # Associate group slice with group key within the ordered dictionary.
-                    self._slices_by_key.setdefault(key, []).append(slice(start, stop))
-                    # Prepare for the next group slice construction over the group-by coordinates.
+                    # Determine the extent (start, stop) of the group given
+                    # each current group-by coordinate group.
+                    start = max([item.groupby_slice.start for item in items
+                                 if item is not None])
+                    stop = min([item.groupby_slice.stop for item in items
+                                if item is not None])
+                    # Construct composite group key for the group using the
+                    # start value from each group-by coordinate.
+                    key = tuple([coord._points[start] for coord
+                                 in self._groupby_coords])
+                    # Associate group slice with group key within the ordered
+                    # dictionary.
+                    self._slices_by_key.setdefault(key, []).append(slice(start,
+                                                                         stop))
+                    # Prepare for the next group slice construction over the
+                    # group-by coordinates.
                     for item_index, item in enumerate(items):
                         if item is None:
                             continue
                         # Get coordinate current group slice.
                         groupby_slice = item.groupby_slice
-                        # Determine whether coordinate has spanned all its groups i.e. its full length
+                        # Determine whether coordinate has spanned all its
+                        # groups i.e. its full length
                         # or whether we need to get the coordinates next group.
                         if groupby_slice.stop == self._stop:
-                            # This coordinate has exhausted all its groups, so remove it.
+                            # This coordinate has exhausted all its groups,
+                            # so remove it.
                             items[item_index] = None
                         elif groupby_slice.stop == stop:
-                            # The current group of this coordinate is exhausted, so get the next one.
+                            # The current group of this coordinate is
+                            # exhausted, so get the next one.
                             items[item_index] = groups[item_index].next()
 
                 # Merge multiple slices together into one tuple.
@@ -1009,8 +1091,11 @@ class _Groupby(object):
         return
 
     def _slice_merge(self):
-        """Merge multiple slices into one tuple and collapse items from containing list."""
+        """
+        Merge multiple slices into one tuple and collapse items from
+        containing list.
 
+        """
         # Iterate over the ordered dictionary in order to reduce
         # multiple slices into a single tuple and collapse
         # all items from containing list.
@@ -1020,7 +1105,8 @@ class _Groupby(object):
                 groupby_indicies = []
 
                 for groupby_slice in groupby_slices:
-                    groupby_indicies.extend(range(groupby_slice.start, groupby_slice.stop))
+                    groupby_indicies.extend(range(groupby_slice.start,
+                                                  groupby_slice.stop))
 
                 self._slices_by_key[key] = tuple(groupby_indicies)
             else:
@@ -1044,7 +1130,6 @@ class _Groupby(object):
 
         # Create new group-by coordinates from the group-by slice.
         self.coords = [coord[groupby_slice] for coord in self._groupby_coords]
-
 
     def _compute_shared_coords(self):
         """Create the new shared coordinates given the group slices."""
@@ -1102,7 +1187,6 @@ class _Groupby(object):
                 self.coords.append(iris.coords.AuxCoord.from_coord(coord).copy(
                     points=new_points, bounds=new_bounds))
 
-
     def __len__(self):
         """Calculate the number of groups given the group-by coordinates."""
 
@@ -1118,15 +1202,20 @@ class _Groupby(object):
 
         if self._shared_coords_by_name:
             shared_coords = [coord.name() for coord in self._shared_coords]
-            shared_string =  ', shared_coords=%r)' % shared_coords
+            shared_string = ', shared_coords=%r)' % shared_coords
         else:
             shared_string = ')'
 
-        return '%s(%r%s' % (self.__class__.__name__, groupby_coords, shared_string)
+        return '%s(%r%s' % (self.__class__.__name__, groupby_coords,
+                            shared_string)
 
 
 def clear_phenomenon_identity(cube):
-    """Helper function to clear the standard_name, attributes, and cell_methods of a cube."""
+    """
+    Helper function to clear the standard_name, attributes, and
+    cell_methods of a cube.
+
+    """
     cube.rename(None)
     cube.attributes.clear()
     cube.cell_methods = tuple()
