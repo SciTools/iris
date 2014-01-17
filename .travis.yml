@@ -133,5 +133,6 @@ script:
 #  - make doctest
 
 after_failure:
+  - cd ../..
   - source ~/virtualenv/python2.7/bin/activate
   - /usr/bin/python -c "import iris.tests; print iris.tests.failed_images_html()"
