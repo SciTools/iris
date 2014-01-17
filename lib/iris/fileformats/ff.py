@@ -568,19 +568,19 @@ class FF2PP(object):
             # Determine PP field payload depth and type.
             data_depth, data_type = self._payload(field)
 
-            subgrid = None
-            if str(field.stash) in STASH_TRANS:
-                subgrid = STASH_TRANS[str(field.stash)].grid_code
-
-            if subgrid is None:
+            stash_entry = STASH_TRANS.get(str(field.stash), None)
+            if stash_entry is None:
+                subgrid = None
                 warnings.warn('The STASH code {0} was not found in the '
                               'STASH to grid type mapping. Picking the P '
                               'position as the cell type'.format(field.stash))
-            elif subgrid not in HANDLED_GRIDS:
-                warnings.warn('The stash code {} is on a grid {} which has '
-                              'not been explicitly handled by the fieldsfile '
-                              'loader. Assuming the data is on a P grid.'
-                              ''.format(field.stash, subgrid))
+            else:
+                subgrid = stash_entry.grid_code
+                if subgrid not in HANDLED_GRIDS:
+                    warnings.warn('The stash code {} is on a grid {} which '
+                                  'has not been explicitly handled by the '
+                                  'fieldsfile loader. Assuming the data is on '
+                                  'a P grid.'.format(field.stash, subgrid))
 
             field.x, field.y = grid.vectors(subgrid)
 
