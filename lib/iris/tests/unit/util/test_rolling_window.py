@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -65,6 +65,16 @@ class Test_rolling_window(tests.IrisTest):
                                     [[5, 6, 7], [6, 7, 8], [7, 8, 9]]],
                                    mask=[[[0, 0, 1], [0, 1, 0], [1, 0, 0]],
                                          [[1, 0, 1], [0, 1, 0], [1, 0, 0]]],
+                                   dtype=np.int32)
+        result = rolling_window(a, window=3, axis=1)
+        self.assertMaskedArrayEqual(result, expected_result)
+
+    def test_degenerate_mask(self):
+        a = ma.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]], dtype=np.int32)
+        expected_result = ma.array([[[0, 1, 2], [1, 2, 3], [2, 3, 4]],
+                                    [[5, 6, 7], [6, 7, 8], [7, 8, 9]]],
+                                   mask=[[[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+                                         [[0, 0, 0], [0, 0, 0], [0, 0, 0]]],
                                    dtype=np.int32)
         result = rolling_window(a, window=3, axis=1)
         self.assertMaskedArrayEqual(result, expected_result)
