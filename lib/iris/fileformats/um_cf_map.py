@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,7 +16,10 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 #
 # DO NOT EDIT: AUTO-GENERATED
+"""
+Provides UM/CF phenomenon translations.
 
+"""
 from collections import namedtuple
 
 
@@ -527,6 +530,7 @@ CF_TO_LBFC = {
     CFName('air_pressure', None, 'Pa'): 8,
     CFName('air_pressure_at_freezing_level', None, 'Pa'): 8,
     CFName('air_pressure_at_sea_level', None, 'Pa'): 8,
+    CFName('air_temperature', None, 'K'): 16,
     CFName('atmosphere_boundary_layer_thickness', None, 'm'): 5,
     CFName('atmosphere_eastward_stress_due_to_gravity_wave_drag', None, 'Pa'): 61,
     CFName('atmosphere_kinetic_energy_content', None, 'J m-2'): 63,
@@ -541,10 +545,12 @@ CF_TO_LBFC = {
     CFName('divergence_of_wind', None, 's-1'): 74,
     CFName('downward_heat_flux_in_sea_ice', None, 'W m-2'): 261,
     CFName('downward_heat_flux_in_soil', None, 'W m-2'): 1564,
+    CFName('eastward_wind', None, 'm s-1'): 56,
     CFName('ertel_potential_vorticity', None, 'K m2 kg-1 s-1'): 82,
     CFName('geopotential_height', None, 'm'): 1,
     CFName('lagrangian_tendency_of_air_pressure', None, 'Pa s-1'): 40,
     CFName('land_binary_mask', None, '1'): 395,
+    CFName('large_scale_rainfall_rate', None, 'm s-1'): 99,
     CFName('mass_fraction_of_carbon_dioxide_in_air', None, '1'): 1564,
     CFName('mass_fraction_of_cloud_liquid_water_in_air', None, '1'): 79,
     CFName('mass_fraction_of_dimethyl_sulfide_in_air', None, '1'): 1373,
@@ -565,6 +571,7 @@ CF_TO_LBFC = {
     CFName('mole_fraction_of_dichlorine_peroxide_in_air', None, '1'): 501,
     CFName('mole_fraction_of_hypochlorous_acid_in_air', None, '1'): 501,
     CFName('mole_fraction_of_nitrous_oxide_in_air', None, '1'): 501,
+    CFName('northward_wind', None, 'm s-1'): 57,
     CFName('rainfall_flux', None, 'kg m-2 s-1'): 97,
     CFName('relative_humidity', None, '%'): 88,
     CFName('root_depth', None, 'm'): 321,
@@ -572,6 +579,7 @@ CF_TO_LBFC = {
     CFName('sea_ice_area_fraction', None, '1'): 37,
     CFName('sea_ice_temperature', None, 'K'): 209,
     CFName('sea_ice_thickness', None, 'm'): 687,
+    CFName('sea_surface_elevation', None, 'm'): 608,
     CFName('snow_grain_size', None, '1e-6 m'): 1507,
     CFName('snowfall_amount', None, 'kg m-2'): 93,
     CFName('snowfall_flux', None, 'kg m-2 s-1'): 108,
@@ -636,4 +644,5 @@ CF_TO_LBFC = {
     CFName('volume_fraction_of_condensed_water_in_soil_at_wilting_point', None, '1'): 329,
     CFName('water_potential_evaporation_flux', None, 'kg m-2 s-1'): 115,
     CFName('wind_mixing_energy_flux_into_sea_water', None, 'W m-2'): 182,
+    CFName('wind_speed', None, 'm s-1'): 50,
     }

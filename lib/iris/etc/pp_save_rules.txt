@@ -61,55 +61,6 @@ THEN
     pp.lbuser[6] = (cm.attributes['STASH'].model or 0)
 
 
-############################################
-# Fallback to derive LBFC from the standard_name
-# NOTE: The following rules are suspect, as units are not specified, once
-# specific units are identified, these rules can be migrated to CF_TO_LBFC.
-
-IF
-    pp.lbfc == 0
-    cm.name() in ['geopotential_height']
-THEN
-    pp.lbfc = 1
-
-IF
-    pp.lbfc == 0
-    cm.name() in ['temperature', 'air_temperature']
-THEN
-    pp.lbfc = 16
-
-IF
-    pp.lbfc == 0
-    cm.name() in ['sea_surface_elevation']
-THEN
-    pp.lbfc = 608
-
-IF
-    cm.name() in ['wind_gust']
-THEN
-    pp.lbfc = 1694
-
-IF
-    cm.name() in ['wind_speed']
-THEN
-    pp.lbfc = 50
-
-IF
-    cm.name() in ['large_scale_rainfall_rate']
-THEN
-    pp.lbfc = 99
-
-IF
-    cm.name() in ['eastward_wind']
-THEN
-    pp.lbfc = 56
-
-IF
-    cm.name() in ['northward_wind']
-THEN
-    pp.lbfc = 57
-
-
 ######################################################
 ### time - lbtim, t1, t2 and lbft (but not lbproc) ###
 ######################################################
@@ -684,9 +635,9 @@ THEN
 
 # CFname mega rule
 IF
-    (cm.name(),cm.units) in iris.fileformats.um_cf_map.CF_TO_LBFC
+    (cm.standard_name, cm.long_name, str(cm.units)) in iris.fileformats.um_cf_map.CF_TO_LBFC
 THEN
-    pp.lbfc = iris.fileformats.um_cf_map.CF_TO_LBFC[(cm.name(),cm.units)]
+    pp.lbfc = iris.fileformats.um_cf_map.CF_TO_LBFC[(cm.standard_name, cm.long_name, str(cm.units))]
 
 IF
     'STASH' in cm.attributes
