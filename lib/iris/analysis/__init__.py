@@ -1151,13 +1151,11 @@ class _Groupby(object):
                     new_points = []
                     new_bounds = None
                     for key_slice in self._slices_by_key.itervalues():
-                        pts = [coord.points[i] for i in key_slice]
-                        new_point = '|'.join(pts)
-                        new_points.append(new_point)
+                        new_pt = '|'.join(coord.points[i] for i in key_slice)
+                        new_points.append(new_pt)
                 else:
                     msg =('collapsing the bounded string coordinate {0!r}'
-                          ' is not supported')
-                    msg = msg.format(coord.name())
+                          ' is not supported'.format(coord.name()))
                     raise ValueError(msg)
             else:
                 new_bounds = []
