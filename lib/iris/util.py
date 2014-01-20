@@ -353,11 +353,12 @@ def rolling_window(a, window=1, step=1, axis=-1):
                a.strides[axis + 1:])
     rw = np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
     if ma.isMaskedArray(a):
-        strides = (a.mask.strides[:axis] +
-                   (step * a.mask.strides[axis], a.mask.strides[axis]) +
-                   a.mask.strides[axis + 1:])
+        mask = ma.getmaskarray(a)
+        strides = (mask.strides[:axis] +
+                   (step * mask.strides[axis], mask.strides[axis]) +
+                   mask.strides[axis + 1:])
         rw = ma.array(rw, mask=np.lib.stride_tricks.as_strided(
-            a.mask, shape=shape, strides=strides))
+            mask, shape=shape, strides=strides))
     return rw
 
 
