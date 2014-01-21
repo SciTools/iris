@@ -50,6 +50,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float32" order="C" shape="(4, 4)" state="loaded"/>
+    <data byteorder="little" dtype="float32" shape="(4, 4)" state="loaded"/>
   </cube>
 </cubes>

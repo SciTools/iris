@@ -18,6 +18,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="0x63b2309e" dtype="float64" order="C" shape="(2, 2)"/>
+    <data byteorder="little" checksum="0x63b2309e" dtype="float64" shape="(2, 2)"/>
   </cube>
 </cubes>

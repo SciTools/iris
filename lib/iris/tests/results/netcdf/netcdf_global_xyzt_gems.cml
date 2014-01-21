@@ -24,7 +24,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="0x65252ed2" dtype="float64" order="C" shape="(1, 60, 181, 360)"/>
+    <data byteorder="little" checksum="0x65252ed2" dtype="float64" shape="(1, 60, 181, 360)"/>
   </cube>
   <cube long_name="Logarithm of surface pressure" units="no_unit" var_name="lnsp">
     <attributes>
@@ -50,6 +50,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x39ec5e0e" dtype="float64" fill_value="-32767.0" mask_checksum="0x5f099d34" mask_order="C" order="C" shape="(1, 60, 181, 360)"/>
+    <data byteorder="little" checksum="-0x39ec5e0e" dtype="float64" fill_value="-32767.0" mask_checksum="0x5f099d34" shape="(1, 60, 181, 360)"/>
   </cube>
 </cubes>

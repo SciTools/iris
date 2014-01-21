@@ -14,7 +14,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="int64" order="C" shape="(5, 6)" state="loaded"/>
+    <data byteorder="little" dtype="int64" shape="(5, 6)" state="loaded"/>
   </cube>
   <cube units="unknown">
     <coords>
@@ -30,7 +30,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="int64" order="C" shape="(5, 6)" state="loaded"/>
+    <data byteorder="little" dtype="int64" shape="(5, 6)" state="loaded"/>
   </cube>
   <cube units="unknown">
     <coords>
@@ -46,6 +46,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="int64" order="C" shape="(5, 6)" state="loaded"/>
+    <data byteorder="little" dtype="int64" shape="(5, 6)" state="loaded"/>
   </cube>
 </cubes>

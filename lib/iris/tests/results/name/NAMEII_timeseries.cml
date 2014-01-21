@@ -44,7 +44,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" order="C" shape="(132,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" shape="(132,)" state="loaded"/>
   </cube>
   <cube long_name="VOLCANIC_ASH_AIR_CONCENTRATION" units="g/m3">
     <attributes>
@@ -90,6 +90,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" order="C" shape="(132,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" shape="(132,)" state="loaded"/>
   </cube>
 </cubes>

@@ -29,6 +29,6 @@
         <coord interval="24 hour" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" checksum="0x6475db6b" dtype="float32" order="C" shape="(20, 16)"/>
+    <data byteorder="little" checksum="0x6475db6b" dtype="float32" shape="(20, 16)"/>
   </cube>
 </cubes>

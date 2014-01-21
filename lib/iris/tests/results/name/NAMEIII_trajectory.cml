@@ -36,7 +36,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" order="C" shape="(836,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="V Turb" units="unknown">
     <coords>
@@ -74,7 +74,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" order="C" shape="(836,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="W Turb" units="unknown">
     <coords>
@@ -112,7 +112,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" order="C" shape="(836,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="U Ambient" units="unknown">
     <coords>
@@ -150,7 +150,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" order="C" shape="(836,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="V Ambient" units="unknown">
     <coords>
@@ -188,7 +188,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" order="C" shape="(836,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="W Ambient" units="unknown">
     <coords>
@@ -226,7 +226,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" order="C" shape="(836,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="Sigma UU" units="unknown">
     <coords>
@@ -264,7 +264,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" order="C" shape="(836,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="Sigma VV" units="unknown">
     <coords>
@@ -302,7 +302,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" order="C" shape="(836,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="Sigma WW" units="unknown">
     <coords>
@@ -340,7 +340,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" order="C" shape="(836,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="Temperature" units="unknown">
     <coords>
@@ -378,7 +378,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" order="C" shape="(836,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="Pressure" units="unknown">
     <coords>
@@ -416,7 +416,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" order="C" shape="(836,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="Potential Temp" units="unknown">
     <coords>
@@ -454,7 +454,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" order="C" shape="(836,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="BL Depth" units="unknown">
     <coords>
@@ -492,7 +492,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" order="C" shape="(836,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="Cloud (oktas)" units="unknown">
     <coords>
@@ -530,7 +530,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" order="C" shape="(836,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="Rel Humidity" units="unknown">
     <coords>
@@ -568,7 +568,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" order="C" shape="(836,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="Wind Speed" units="unknown">
     <coords>
@@ -606,7 +606,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" order="C" shape="(836,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
   <cube long_name="Wind Direction" units="unknown">
     <coords>
@@ -644,6 +644,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" order="C" shape="(836,)" state="loaded"/>
+    <data byteorder="little" dtype="float64" shape="(836,)" state="loaded"/>
   </cube>
 </cubes>

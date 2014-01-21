@@ -59,6 +59,6 @@
         <coord name="model_level_number"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" dtype="float32" mask_order="C" order="C" shape="(100, 100)" state="loaded"/>
+    <data byteorder="little" dtype="float32" shape="(100, 100)" state="loaded"/>
   </cube>
 </cubes>
