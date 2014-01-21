@@ -663,21 +663,22 @@ THEN
     pp.bhlev = aux_factory(cm, iris.aux_factory.HybridHeightFactory).dependencies['sigma'].points[0]
     pp.bhrlev = aux_factory(cm, iris.aux_factory.HybridHeightFactory).dependencies['sigma'].bounds[0, 0]
     pp.brsvd[1] = aux_factory(cm, iris.aux_factory.HybridHeightFactory).dependencies['sigma'].bounds[0, 1]
-    
+
 # single hybrid pressure level
 IF
-    has_aux_factory(cm, iris.aux_factory.HybridPressureFactoryWithReferencePressure)
+    has_aux_factory(cm, iris.aux_factory.HybridPressureFactory)
 THEN
     pp.lbvc = 9
     pp.lblev = scalar_coord(cm, 'model_level_number').points[0]
-    
-    pp.blev = aux_factory(cm, iris.aux_factory.HybridPressureFactoryWithReferencePressure).dependencies['delta'].points[0]
-    pp.brlev = aux_factory(cm, iris.aux_factory.HybridPressureFactoryWithReferencePressure).dependencies['delta'].bounds[0, 0]
-    pp.brsvd[0] = aux_factory(cm, iris.aux_factory.HybridPressureFactoryWithReferencePressure).dependencies['delta'].bounds[0, 1]
-    
-    pp.bhlev = aux_factory(cm, iris.aux_factory.HybridPressureFactoryWithReferencePressure).dependencies['sigma'].points[0]
-    pp.bhrlev = aux_factory(cm, iris.aux_factory.HybridPressureFactoryWithReferencePressure).dependencies['sigma'].bounds[0, 0]
-    pp.brsvd[1] = aux_factory(cm, iris.aux_factory.HybridPressureFactoryWithReferencePressure).dependencies['sigma'].bounds[0, 1]
+
+    # Note that sigma and delta are swapped around from the hybrid height rules above.
+    pp.blev = aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['sigma'].points[0]
+    pp.brlev = aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['sigma'].bounds[0, 0]
+    pp.brsvd[0] = aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['sigma'].bounds[0, 1]
+
+    pp.bhlev = aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['delta'].points[0]
+    pp.bhrlev = aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['delta'].bounds[0, 0]
+    pp.brsvd[1] = aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['delta'].bounds[0, 1]
 
 
 #MDI

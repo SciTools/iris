@@ -22,8 +22,7 @@ import warnings
 
 import numpy as np
 
-from iris.aux_factory import HybridHeightFactory, HybridPressureFactory, \
-    HybridPressureFactoryWithReferencePressure
+from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.fileformats.rules import Factory, Reference, ReferenceTarget
 from iris.fileformats.um_cf_map import LBFC_TO_CF, STASH_TO_CF
@@ -317,23 +316,27 @@ def convert(f):
         model_level_number = DimCoord(f.lblev,
                                       standard_name='model_level_number',
                                       attributes={'positive': 'up'})
-        delta = DimCoord(f.blev,
-                         long_name='delta',
-                         bounds=[f.brlev, f.brsvd[0]])
-        reference_pressure = DimCoord(PP_HYBRID_COORDINATE_REFERENCE_PRESSURE,
-                                      long_name='reference_pressure',
-                                      units='Pa')
-        sigma = AuxCoord(f.bhlev,
+        # The following match the hybrid height scheme, but data has the
+        # blev and bhlev values the other way around.
+        #level_pressure = DimCoord(f.blev,
+        #                          long_name='level_pressure',
+        #                          units='Pa',
+        #                          bounds=[f.brlev, f.brsvd[0]])
+        #sigma = AuxCoord(f.bhlev,
+        #                 long_name='sigma',
+        #                 bounds=[f.bhrlev, f.brsvd[1]])
+        level_pressure = DimCoord(f.bhlev,
+                                  long_name='level_pressure',
+                                  units='Pa',
+                                  bounds=[f.bhrlev, f.brsvd[1]])
+        sigma = AuxCoord(f.blev,
                          long_name='sigma',
-                         bounds=[f.bhrlev, f.brsvd[1]])
-
+                         bounds=[f.brlev, f.brsvd[0]])
         aux_coords_and_dims.extend([(model_level_number, None),
-                                    (delta, None),
-                                    (reference_pressure, None),
+                                    (level_pressure, None),
                                     (sigma, None)])
-        factories.append(Factory(HybridPressureFactoryWithReferencePressure,
-                                 [{'long_name': 'delta'},
-                                  {'long_name': 'reference_pressure'},
+        factories.append(Factory(HybridPressureFactory,
+                                 [{'long_name': 'level_pressure'},
                                   {'long_name': 'sigma'},
                                   Reference('surface_air_pressure')]))
 
