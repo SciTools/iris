@@ -56,16 +56,7 @@ install:
 # cfchecker via pip normally works, but we've found the pip interface to fail intermittently,
 # therefore we specify the full download url.
 #  - ./.travis_no_output sudo /usr/bin/pip install cfchecker
-  - ./.travis_no_output sudo /usr/bin/pip install https://pypi.python.org/packages/source/c/cfchecker/cfchecker-2.0.3.tar.gz#md5=54e780e8688ac743d1e21448a3901061
-
-# Using table 23 due to a bug present in the current version
-  - ./.travis_no_output wget http://cf-pcmdi.llnl.gov/documents/cf-standard-names/standard-name-table/23/cf-standard-name-table.xml
-#  - ./.travis_no_output wget http://cf-pcmdi.llnl.gov/documents/cf-standard-names/standard-name-table/current/cf-standard-name-table.xml
-  - ./.travis_no_output wget http://cf-pcmdi.llnl.gov/documents/cf-standard-names/area-type-table/current/area-type-table.xml
-  - echo '#!/usr/bin/env sh' > cfchecker
-  - echo "cfchecks -s `pwd`/cf-standard-name-table.xml -a `pwd`/area-type-table.xml -u /usr/share/xml/udunits/udunits2.xml \$1" >> cfchecker
-  - ./.travis_no_output sudo cp cfchecker /usr/local/bin/cfchecker
-  - ./.travis_no_output sudo chmod a+x /usr/local/bin/cfchecker
+  - ./.travis_no_output sudo /usr/bin/pip install https://pypi.python.org/packages/source/c/cfchecker/cfchecker-2.0.5ceda.p1.tar.gz
 
 # grib api
   - ./.travis_no_output sudo apt-get install libjasper-dev
