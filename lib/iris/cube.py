@@ -551,7 +551,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         if data_manager is not None:
             self._data = data
-            self._data_manager = data_manager
+            self._data_manager = copy.deepcopy(data_manager)
         else:
             if isinstance(data, np.ndarray):
                 self._data = data
@@ -1760,21 +1760,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 data = self.data[first_slice]
         else:
             if use_data_proxy:
-                data = copy.deepcopy(self._data)
+                data = self._data
                 data_manager = copy.deepcopy(self._data_manager)
             else:
-                data = copy.deepcopy(self.data)
+                data = self.data
 
         for other_slice in slice_gen:
             if use_data_proxy:
                 data, data_manager = data_manager.getitem(data, other_slice)
             else:
                 data = data[other_slice]
-
-        # We don't want a view of the numpy array, so take a copy of it if
-        # it's not our own (this applies to proxy "empty data" arrays too)
-        if not data.flags['OWNDATA']:
-            data = data.copy()
 
         # We can turn a masked array into a normal array if it's full.
         if isinstance(data, ma.core.MaskedArray):
@@ -2012,10 +2007,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         elif len(new_order) != self.data.ndim:
             raise ValueError('Incorrect number of dimensions.')
 
-        # The data needs to be copied, otherwise this view of the transposed
-        # data will not be contiguous. Ensure not to assign via the cube.data
-        # setter property since we are reshaping the cube payload in-place.
-        self._data = np.transpose(self.data, new_order).copy()
+        # Ensure not to assign via the cube.data setter property since we are
+        # reshaping the cube payload in-place.
+        self._data = np.transpose(self.data, new_order)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
 
