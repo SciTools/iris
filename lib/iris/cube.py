@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -2115,7 +2115,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     # checksum.
                     crc = hex(zlib.crc32(normalise(data.filled(0))))
                     data_xml_element.setAttribute("checksum", crc)
-                    crc = hex(zlib.crc32(normalise(data.mask)))
+                    if ma.is_masked(data):
+                        crc = hex(zlib.crc32(normalise(data.mask)))
+                    else:
+                        crc = 'no-masked-elements'
                     data_xml_element.setAttribute("mask_checksum", crc)
                     data_xml_element.setAttribute('fill_value',
                                                   str(data.fill_value))

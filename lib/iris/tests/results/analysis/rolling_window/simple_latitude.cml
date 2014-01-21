@@ -15,6 +15,6 @@
         <coord name="latitude"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" checksum="-0x7b25d8b0" dtype="float64" fill_value="1e+20" mask_checksum="0x6522df69" mask_order="C" order="C" shape="(2, 4)"/>
+    <data byteorder="little" checksum="-0x7b25d8b0" dtype="float64" fill_value="1e+20" mask_checksum="no-masked-elements" mask_order="C" order="C" shape="(2, 4)"/>
   </cube>
 </cubes>
