@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2012 - 2013, Met Office
+# (C) British Crown Copyright 2012 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,7 +28,7 @@ with extest_util.add_examples_to_path():
 class TestSOIFiltering(tests.GraphicsTest):
     """Test the SOI_filtering example code."""
     def test_soi_filtering(self):
-        with extest_util.show_replaced_by_check_graphic(self, tol=0.0012):
+        with extest_util.show_replaced_by_check_graphic(self):
             SOI_filtering.main()
 
 

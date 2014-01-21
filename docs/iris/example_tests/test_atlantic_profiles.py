@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,7 +29,7 @@ with extest_util.add_examples_to_path():
 class TestAtlanticProfiles(tests.GraphicsTest):
     """Test the atlantic_profiles example code."""
     def test_atlantic_profiles(self):
-        with extest_util.show_replaced_by_check_graphic(self, tol=0.0014):
+        with extest_util.show_replaced_by_check_graphic(self, tol=14.0):
             atlantic_profiles.main()
 
 

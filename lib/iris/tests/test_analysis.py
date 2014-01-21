@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -557,10 +557,10 @@ class TestRotatedPole(tests.IrisTest):
             rlons, rlats, rcs.grid_north_pole_longitude,
             rcs.grid_north_pole_latitude)
         plt.scatter(x, y)
-        self.check_graphic(tol=0.002)
+        self.check_graphic()
 
         plt.scatter(rlons, rlats)
-        self.check_graphic(tol=0.002)
+        self.check_graphic()
 
     def test_all(self):
         path = tests.get_data_path(('PP', 'ukVorog', 'ukv_orog_refonly.pp'))
@@ -1153,7 +1153,7 @@ class TestProject(tests.GraphicsTest):
         gs.tight_layout(plt.gcf())
 
         # Verify resulting plot
-        self.check_graphic(tol=6.5e-4)
+        self.check_graphic(tol=1.0)
 
     @iris.tests.skip_data
     def test_no_coord_system(self):
