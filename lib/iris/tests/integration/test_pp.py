@@ -23,14 +23,11 @@ import iris.tests as tests
 import mock
 import numpy as np
 
-from iris.aux_factory import HybridHeightFactory, \
-    HybridPressureFactoryWithReferencePressure as HybridPressure
+from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord
 from iris.cube import Cube
 import iris.fileformats.pp
 import iris.fileformats.pp_rules
-from iris.fileformats.pp_rules import \
-    PP_HYBRID_COORDINATE_REFERENCE_PRESSURE as REFERENCE_PRESSURE
 
 
 class TestVertical(tests.IrisTest):
@@ -122,9 +119,9 @@ class TestVertical(tests.IrisTest):
         delta_lower, delta, delta_upper = 0.05, 0.1, 0.15
         data_field = field_with_data()
         data_field.configure_mock(lbvc=9, lblev=model_level,
-                                  blev=delta, brlev=delta_lower,
-                                  bhlev=sigma, bhrlev=sigma_lower,
-                                  brsvd=[delta_upper, sigma_upper])
+                                  bhlev=delta, bhrlev=delta_lower,
+                                  blev=sigma, brlev=sigma_lower,
+                                  brsvd=[sigma_upper, delta_upper])
 
         # Convert both fields to cubes.
         load = mock.Mock(return_value=iter([pressure_field, data_field]))
@@ -139,9 +136,7 @@ class TestVertical(tests.IrisTest):
         self._test_coord(data_cube, model_level,
                          standard_name='model_level_number')
         self._test_coord(data_cube, delta, [delta_lower, delta_upper],
-                         long_name='delta')
-        self._test_coord(data_cube, REFERENCE_PRESSURE,
-                         long_name='reference_pressure')
+                         long_name='level_pressure')
         self._test_coord(data_cube, sigma, [sigma_lower, sigma_upper],
                          long_name='sigma')
         aux_factories = data_cube.aux_factories
@@ -174,11 +169,11 @@ class TestVertical(tests.IrisTest):
         # specified.
         self.assertEqual(data_field.lbvc, 9)
         self.assertEqual(data_field.lblev, model_level)
-        self.assertEqual(data_field.blev, delta)
-        self.assertEqual(data_field.brlev, delta_lower)
-        self.assertEqual(data_field.bhlev, sigma)
-        self.assertEqual(data_field.bhrlev, sigma_lower)
-        self.assertEqual(data_field.brsvd, [delta_upper, sigma_upper])
+        self.assertEqual(data_field.bhlev, delta)
+        self.assertEqual(data_field.bhrlev, delta_lower)
+        self.assertEqual(data_field.blev, sigma)
+        self.assertEqual(data_field.brlev, sigma_lower)
+        self.assertEqual(data_field.brsvd, [sigma_upper, delta_upper])
 
     def test_hybrid_height_with_non_standard_coords(self):
         # Check the save rules are using the AuxFactory to find the
@@ -227,21 +222,17 @@ class TestVertical(tests.IrisTest):
         level_coord = AuxCoord(0, 'model_level_number')
         cube.add_aux_coord(level_coord)
         delta_coord = AuxCoord(delta, bounds=[[delta_lower, delta_upper]],
-                               long_name='moog')
-        reference_pressure_coord = AuxCoord(REFERENCE_PRESSURE, units='Pa')
+                               long_name='moog', units='Pa')
         sigma_coord = AuxCoord(sigma, bounds=[[sigma_lower, sigma_upper]],
                                long_name='mavis')
         surface_air_pressure_coord = AuxCoord(np.zeros((ny, nx)),
                                               'surface_air_pressure',
                                               units='Pa')
         cube.add_aux_coord(delta_coord)
-        cube.add_aux_coord(reference_pressure_coord)
         cube.add_aux_coord(sigma_coord)
         cube.add_aux_coord(surface_air_pressure_coord, (0, 1))
-        cube.add_aux_factory(HybridPressure(delta_coord,
-                                            reference_pressure_coord,
-                                            sigma_coord,
-                                            surface_air_pressure_coord))
+        cube.add_aux_factory(HybridPressureFactory(
+            delta_coord, sigma_coord, surface_air_pressure_coord))
 
         field = iris.fileformats.pp.PPField3()
         field.lbfc = 0
@@ -251,11 +242,11 @@ class TestVertical(tests.IrisTest):
         iris.fileformats.pp._ensure_save_rules_loaded()
         iris.fileformats.pp._save_rules.verify(cube, field)
 
-        self.assertEqual(field.blev, delta)
-        self.assertEqual(field.brlev, delta_lower)
-        self.assertEqual(field.bhlev, sigma)
-        self.assertEqual(field.bhrlev, sigma_lower)
-        self.assertEqual(field.brsvd, [delta_upper, sigma_upper])
+        self.assertEqual(field.bhlev, delta)
+        self.assertEqual(field.bhrlev, delta_lower)
+        self.assertEqual(field.blev, sigma)
+        self.assertEqual(field.brlev, sigma_lower)
+        self.assertEqual(field.brsvd, [sigma_upper, delta_upper])
 
 
 class TestCoordinateForms(tests.IrisTest):

@@ -207,7 +207,8 @@ class TestHybridPressure(tests.IrisTest):
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
             with self.assertRaises(UserWarning):
-                factory = HybridPressureFactory(surface_air_pressure=sigma)
+                factory = HybridPressureFactory(
+                    sigma=sigma, surface_air_pressure=sigma)
 
     def test_bounded_surface_pressure(self):
         # Start with everything normal

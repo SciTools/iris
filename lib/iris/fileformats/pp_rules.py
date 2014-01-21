@@ -31,10 +31,6 @@ import iris.fileformats.pp
 import iris.unit
 
 
-# Constants
-PP_HYBRID_COORDINATE_REFERENCE_PRESSURE = 1
-
-
 def convert(f):
     factories = []
     references = []
