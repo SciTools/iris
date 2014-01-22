@@ -33,6 +33,7 @@ import collections
 import contextlib
 import difflib
 import filecmp
+import glob
 import gzip
 import inspect
 import logging
@@ -539,3 +540,52 @@ def skip_data(fn):
         reason='Test(s) require external data.')
 
     return skip(fn)
+
+
+def failed_images_iter():
+    """
+    Return a generator of [expected, actual, diff] filenames for all failed
+    image tests since the test output directory was created.
+    """
+    baseline_img_dir = os.path.join(_RESULT_PATH, 'visual_tests')
+    diff_dir = os.path.join(os.getcwd(), 'iris_image_test_output')
+
+    baselines = sorted(glob.glob(os.path.join(baseline_img_dir,
+                                              '*.png')))
+    for expected_fname in baselines:
+        # Get the absolute path of the expected image.
+        expected_fname = os.path.join(baseline_img_dir, expected_fname)
+        result_fname = os.path.join(
+            diff_dir, 'result-' + os.path.basename(expected_fname))
+        diff_fname = result_fname[:-4] + '-failed-diff.png'
+        if os.path.exists(diff_fname):
+            yield expected_fname, result_fname, diff_fname
+
+
+def failed_images_html():
+    """
+    Generates HTML which shows the image failures side-by-side
+    when viewed in a web browser.
+    """
+    data_uri_template = '<img alt="{alt}" src="data:image/png;base64,{img}">'
+
+    def image_as_base64(fname):
+        with open(fname, "rb") as fh:
+            return fh.read().encode("base64").replace("\n", "")
+
+    html = ['<html>', '<body>']
+
+    for expected, actual, diff in failed_images_iter():
+        expected_html = data_uri_template.format(
+            alt='expected', img=image_as_base64(expected))
+        actual_html = data_uri_template.format(
+            alt='actual', img=image_as_base64(actual))
+        diff_html = data_uri_template.format(
+            alt='diff', img=image_as_base64(diff))
+
+        html.extend([expected, '</br>',
+                     expected_html, actual_html, diff_html,
+                     '</br><hr>'])
+
+    html.extend(['</html>', '</body>'])
+    return '\n'.join(html)
