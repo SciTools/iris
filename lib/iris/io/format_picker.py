@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -225,21 +225,11 @@ class FileElement(object):
     """
     def __init__(self, requires_fh=True):
         """
-        Constructs a new FileElement given a name and a file element getter function.
+        Constructs a new file element, which may require a file buffer.
 
-        Args:
+        Kwargs:
 
-        * name - The name (string) of what the element is representing
-        * element_getter_fn - Function which takes a buffer object and returns the value of the FileElement. The
-                            function must accept a single argument of a file buffer.
         * requires_fh - Whether this FileElement needs a file buffer.
-
-
-        An example of a FileElement would be a "32-bit magic number" which can be created with::
-
-            FileElement('32-bit magic number', lambda buffer_obj: struct.unpack('>L', buffer_obj.read(4))[0])
-
-        .. note::  The given file buffer will always be at the start of the buffer (i.e. have tell() of 0).
 
         """
         self.requires_fh = requires_fh
@@ -260,7 +250,7 @@ class MagicNumber(FileElement):
     len_formats = {4: ">L", 8: ">Q"}
 
     def __init__(self, num_bytes, offset=None):
-        FileElement.__init__(self, '{}-bit magic number'.format(num_bytes * 8))
+        FileElement.__init__(self)
         self._num_bytes = num_bytes
         self._offset = offset
 
