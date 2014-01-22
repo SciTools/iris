@@ -1154,8 +1154,8 @@ class _Groupby(object):
                         new_pt = '|'.join(coord.points[i] for i in key_slice)
                         new_points.append(new_pt)
                 else:
-                    msg =('collapsing the bounded string coordinate {0!r}'
-                          ' is not supported'.format(coord.name()))
+                    msg = ('collapsing the bounded string coordinate {0!r}'
+                           ' is not supported'.format(coord.name()))
                     raise ValueError(msg)
             else:
                 new_bounds = []
