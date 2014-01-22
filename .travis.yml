@@ -32,7 +32,9 @@ install:
 
 # add repo
   - ./.travis_no_output sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3E5C1192
-  - yes | ./.travis_no_output sudo add-apt-repository ppa:ubuntugis/ppa
+  - ./.travis_no_output sudo add-apt-repository -y ppa:ubuntugis/ppa
+# access to scipy 0.12.0 https://launchpad.net/~pylab/+archive/stable
+  - sudo add-apt-repository -y ppa:pylab/stable
   - ./.travis_no_output sudo apt-get update
 
 # install deps
