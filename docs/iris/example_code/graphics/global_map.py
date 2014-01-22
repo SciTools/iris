@@ -18,14 +18,13 @@ def main():
     temperature = iris.load_cube(fname)
 
     # Plot #1: contourf with axes longitude from -180 to 180
-    plt.figure()
+    fig = plt.figure(figsize=(12, 5))
+    plt.subplot(121)
     qplt.contourf(temperature, 15)
     plt.gca().coastlines()
-    plt.show()
 
     # Plot #2: contourf with axes longitude from 0 to 360
-    plt.figure()
-    ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=-180.0))
+    ax = plt.subplot(122, projection=ccrs.PlateCarree(central_longitude=-180.0))
     qplt.contourf(temperature, 15)
     plt.gca().coastlines()
     plt.show()
