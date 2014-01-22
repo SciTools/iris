@@ -24,7 +24,8 @@ def main():
     plt.gca().coastlines()
 
     # Plot #2: contourf with axes longitude from 0 to 360
-    ax = plt.subplot(122, projection=ccrs.PlateCarree(central_longitude=-180.0))
+    proj = ccrs.PlateCarree(central_longitude=-180.0)
+    ax = plt.subplot(122, projection=proj)
     qplt.contourf(temperature, 15)
     plt.gca().coastlines()
     plt.show()
