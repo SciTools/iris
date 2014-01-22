@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,6 +18,7 @@
 Various utilities and numeric transformations relevant to cartography.
 
 """
+import copy
 import itertools
 import math
 import warnings
@@ -455,12 +456,14 @@ def cosine_latitude_weights(cube):
 
 def project(cube, target_proj, nx=None, ny=None):
     """
-    Return a new cube that is the result of projecting a cube from its
-    coordinate system into a specified projection e.g. Robinson or Polar
-    Stereographic. This function is intended to be used in cases where the
-    cube's coordinates prevent one from directly visualising the data, e.g.
-    when the longitude and latitude are two dimensional and do not make up
-    a regular grid.
+    Nearest neighbour regrid to a specified target projection.
+
+    Return a new cube that is the result of projecting a cube with 1 or 2
+    dimensional latitude-longitude coordinates from its coordinate system into
+    a specified projection e.g. Robinson or Polar Stereographic.
+    This function is intended to be used in cases where the cube's coordinates
+    prevent one from directly visualising the data, e.g. when the longitude
+    and latitude are two dimensional and do not make up a regular grid.
 
     Args:
         * cube
@@ -471,9 +474,11 @@ def project(cube, target_proj, nx=None, ny=None):
             will be obtained.
     Kwargs:
         * nx
-            Desired number of sample points in the x direction.
+            Desired number of sample points in the x direction for a domain
+            covering the globe.
         * ny
-            Desired number of sample points in the y direction.
+            Desired number of sample points in the y direction for a domain
+            covering the globe.
 
     Returns:
         An instance of :class:`iris.cube.Cube` and a list describing the
@@ -481,17 +486,24 @@ def project(cube, target_proj, nx=None, ny=None):
 
     .. note::
 
+        This function assumes global data and will if necessary extrapolate
+        beyond the geographical extent of the source cube using a nearest
+        neighbour approach. nx and ny then include those points which are
+        outside of the target projection.
+
+    .. note::
+
+        Masked arrays are handled by passing their masked status to the
+        resulting nearest neighbour values.  If masked, the value in the
+        resulting cube is set to 0.
+
+    .. warning::
+
         This function uses a nearest neighbour approach rather than any form
         of linear/non-linear interpolation to determine the data value of each
         cell in the resulting cube. Consequently it may have an adverse effect
         on the statistics of the data e.g. the mean and standard deviation
         will not be preserved.
-
-    .. note::
-
-        This function assumes global data and will if necessary extrapolate
-        beyond the geographical extent of the source cube using a nearest
-        neighbour approach.
 
     """
     try:
@@ -532,7 +544,9 @@ def project(cube, target_proj, nx=None, ny=None):
         source_x, source_y = np.meshgrid(source_x, source_y)
 
     # Calculate target grid
+    target_cs = None
     if isinstance(target_proj, iris.coord_systems.CoordSystem):
+        target_cs = target_proj
         target_proj = target_proj.as_cartopy_projection()
 
     # Resolution of new grid
@@ -620,7 +634,8 @@ def project(cube, target_proj, nx=None, ny=None):
         index[ydim] = slice(None, None)
         new_data[index] = cartopy.img_transform.regrid(ll_slice.data,
                                                        source_x, source_y,
-                                                       source_cs, target_proj,
+                                                       source_cs,
+                                                       target_proj,
                                                        target_x, target_y)
 
         ## Mask out points beyond extent
@@ -634,8 +649,13 @@ def project(cube, target_proj, nx=None, ny=None):
     new_cube = iris.cube.Cube(new_data)
 
     # Add new grid coords
-    x_coord = iris.coords.DimCoord(target_x[0, :], 'projection_x_coordinate')
-    y_coord = iris.coords.DimCoord(target_y[:, 0], 'projection_y_coordinate')
+    x_coord = iris.coords.DimCoord(
+        target_x[0, :], 'projection_x_coordinate',
+        coord_system=copy.copy(target_cs))
+    y_coord = iris.coords.DimCoord(
+        target_y[:, 0], 'projection_y_coordinate',
+        coord_system=copy.copy(target_cs))
+
     new_cube.add_dim_coord(x_coord, xdim)
     new_cube.add_dim_coord(y_coord, ydim)
 
