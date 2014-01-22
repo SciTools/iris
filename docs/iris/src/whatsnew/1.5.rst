@@ -118,8 +118,8 @@ Bugs fixed
 * OSGB definition corrected.
 * Transverse Mercator on load now accepts the following interchangeably due to
   inconsistencies in CF documentation:
-   * +scale_factor_at_central_meridian <-> scale_factor_at_projection_origin
-   * +longitude_of_central_meridian <-> longitude_of_projection_origin
+  * +scale_factor_at_central_meridian <-> scale_factor_at_projection_origin
+  * +longitude_of_central_meridian <-> longitude_of_projection_origin
   (+recommended encoding)
 * Ellipse description now maintained when converting GeogCS to cartopy.
 * GeoTIFF export bug fixes.
