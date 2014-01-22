@@ -689,6 +689,7 @@ THEN
     pp.lbfc = iris.fileformats.um_cf_map.CF_TO_LBFC[(cm.name(),cm.units)]
 
 IF
-    'STASH' in cm.attributes and str(cm.attributes['STASH']) in iris.fileformats._ff_cross_references.STASH_TRANS
+    'STASH' in cm.attributes
+    str(cm.attributes['STASH']) in iris.fileformats._ff_cross_references.STASH_TRANS
 THEN
     pp.lbfc = iris.fileformats._ff_cross_references.STASH_TRANS[str(cm.attributes['STASH'])].field_code
