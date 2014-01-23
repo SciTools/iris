@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -945,7 +945,6 @@ fc_extras
         standard_name = getattr(cf_coord_var, CF_ATTR_STD_NAME, None)
         long_name = getattr(cf_coord_var, CF_ATTR_LONG_NAME, None)
         cf_name = str(cf_coord_var.cf_name)
-
         if standard_name is not None:
             if standard_name not in iris.std_names.STD_NAMES:
                 if long_name is not None:
@@ -962,8 +961,8 @@ fc_extras
                         standard_name = None
                         long_name = standard_name
         else:
-            if coord_name is not None:
-                standard_name = coord_name
+            if coord_name is not None and long_name is None:
+                long_name = coord_name
 
         # Last attempt to set the standard name to something meaningful.
         if standard_name is None:

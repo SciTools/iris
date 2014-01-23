@@ -50,13 +50,13 @@
  		1.99301683617]]" shape="(290, 180)" standard_name="longitude" units="Unit('degrees')" value_type="float64" var_name="lon"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="9cb7f900" long_name="projection_x_coordinate" points="[-197500.0, -192500.0, -187500.0, ..., 687500.0,
+        <dimCoord id="bf5ebcd9" points="[-197500.0, -192500.0, -187500.0, ..., 687500.0,
 		692500.0, 697500.0]" shape="(180,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64" var_name="x">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="3da32419" long_name="projection_y_coordinate" points="[1247500.0, 1242500.0, 1237500.0, ..., -187500.0,
+        <dimCoord id="e264baac" points="[1247500.0, 1242500.0, 1237500.0, ..., -187500.0,
 		-192500.0, -197500.0]" shape="(290,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64" var_name="y">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
@@ -73,6 +73,6 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" checksum="-0x60c896e8" dtype="float32" fill_value="-9999.0" mask_checksum="-0x3f24c2b2" shape="(1, 290, 180)"/>
+    <data byteorder="little" checksum="0x5b45d535" dtype="float32" fill_value="-9999.0" mask_checksum="-0x3f24c2b2" shape="(1, 290, 180)"/>
   </cube>
 </cubes>

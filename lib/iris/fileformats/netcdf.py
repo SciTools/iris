@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -901,9 +901,9 @@ class Saver(object):
 
         # TODO: Use #61 to get the units.
         if isinstance(coord.coord_system, iris.coord_systems.GeogCS):
-            if "latitude" in coord.standard_name:
+            if "lat" in coord.name():
                 units = 'degrees_north'
-            elif "longitude" in coord.standard_name:
+            elif "lon" in coord.name():
                 units = 'degrees_east'
 
         elif isinstance(coord.coord_system, iris.coord_systems.RotatedGeogCS):
