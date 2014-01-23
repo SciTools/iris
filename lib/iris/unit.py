@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -675,7 +675,8 @@ def num2date(time_value, unit, calendar):
         datetime.datetime(1970, 1, 1, 6, 0)
         >>> unit.num2date([6, 7], 'hours since 1970-01-01 00:00:00',
         ...               unit.CALENDAR_STANDARD)
-        array([1970-01-01 06:00:00, 1970-01-01 07:00:00], dtype=object)
+        array([datetime.datetime(1970, 1, 1, 6, 0),
+               datetime.datetime(1970, 1, 1, 7, 0)], dtype=object)
 
     """
 
@@ -1959,7 +1960,8 @@ class Unit(iris.util._OrderedHashable):
             >>> u.num2date(6)
             datetime.datetime(1970, 1, 1, 6, 0)
             >>> u.num2date([6, 7])
-            array([1970-01-01 06:00:00, 1970-01-01 07:00:00], dtype=object)
+            array([datetime.datetime(1970, 1, 1, 6, 0),
+                   datetime.datetime(1970, 1, 1, 7, 0)], dtype=object)
 
         """
         cdf_utime = self.utime()
