@@ -32,6 +32,7 @@ import numpy as np
 
 import iris.aux_factory
 import iris.exceptions
+import iris.time
 import iris.unit
 import iris.util
 
@@ -282,7 +283,16 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
         if self.bound is None:
             raise ValueError('Point cannot exist inside an unbounded cell.')
 
-        return np.min(self.bound) <= point <= np.max(self.bound)
+        min_bound = np.min(self.bound)
+        max_bound = np.max(self.bound)
+
+        if isinstance(point, iris.time.PartialDateTime):
+            res = ((min_bound <= point.blended(min_bound) <= max_bound) or
+                   (min_bound <= point.blended(max_bound) <= max_bound))
+        else:
+            res = min_bound <= point <= max_bound
+
+        return res
 
 
 class Coord(CFVariableMixin):

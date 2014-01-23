@@ -242,5 +242,54 @@ class Test___le__(tests.IrisTest, _Test_operator):
         self.expected_value = negate_expectations(GT_EXPECTATIONS)
 
 
+class Test_blended(tests.IrisTest):
+    def test_datetime(self):
+        pdt = PartialDateTime(month=1, second=23)
+        other = datetime.datetime(2000, 2, 3, 4, 5, 6, 7)
+        res = pdt.blended(other)
+        # From original PartialDateTime.
+        self.assertEqual(res.month, pdt.month)
+        self.assertEqual(res.second, pdt.second)
+        # From datetime.
+        self.assertEqual(res.year, other.year)
+        self.assertEqual(res.day, other.day)
+        self.assertEqual(res.hour, other.hour)
+        self.assertEqual(res.minute, other.minute)
+        self.assertEqual(res.microsecond, other.microsecond)
+
+    def test_partialdatetime(self):
+        pdt = PartialDateTime(year=2000, second=23)
+        other = PartialDateTime(month=1, second=48, microsecond=2)
+        res = pdt.blended(other)
+        # From original PartialDateTime.
+        self.assertEqual(res.year, pdt.year)
+        self.assertEqual(res.second, pdt.second)
+        # From other PartialDateTime.
+        self.assertEqual(res.month, other.month)
+        self.assertEqual(res.day, other.day)
+        self.assertEqual(res.hour, other.hour)
+        self.assertEqual(res.minute, other.minute)
+        self.assertEqual(res.microsecond, other.microsecond)
+
+    def test_self(self):
+        pdt = PartialDateTime(month=1, second=23)
+        res = pdt.blended(pdt)
+        self.assertEqual(res, pdt)
+        self.assertIsNot(res, pdt)
+
+    def test_no_undefined(self):
+        pdt = PartialDateTime(year=2000, month=1, day=1,
+                              hour=0, minute=0, second=0, microsecond=0)
+        other = datetime.datetime.now()
+        res = pdt.blended(other)
+        self.assertEqual(res, pdt)
+
+    def test_all_undefined(self):
+        pdt = PartialDateTime()
+        other = datetime.datetime.now()
+        res = pdt.blended(other)
+        self.assertEqual(res, other)
+
+
 if __name__ == "__main__":
     tests.main()
