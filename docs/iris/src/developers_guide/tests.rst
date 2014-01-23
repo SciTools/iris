@@ -23,7 +23,8 @@ addition, the unit tests can help describe the intent behind a change.
 
 The docstring for each test module must state the unit under test.
 For example:
-    `"""Unit tests for the `iris.experimental.raster.export_geotiff` function."""`
+
+    :literal:`"""Unit tests for the \`iris.experimental.raster.export_geotiff\` function."""`
 
 All unit tests must be placed and named according to the following
 structure:
@@ -31,12 +32,13 @@ structure:
 Classes
 -------
 When testing a class all the tests must reside in the module:
-    `lib/iris/tests/unit/<fully/qualified/module>/test_<ClassName>.py`
+
+    :literal:`lib/iris/tests/unit/<fully/qualified/module>/test_<ClassName>.py`
 
 Within this test module each tested method must have one or more
 corresponding test classes:
- - Either: `Test_name_of_public_method`
- - Or: `Test_name_of_public_method__aspect_of_method`
+- Either: `Test_name_of_public_method`
+- Or: `Test_name_of_public_method__aspect_of_method`
 
 And within those test classes, the test methods must be named according
 to the aspect of the tested method which they address.
@@ -44,7 +46,8 @@ to the aspect of the tested method which they address.
 **Examples**:
 
 All unit tests for :py:class:`iris.cube.Cube` must reside in:
-    `lib/iris/tests/unit/cube/test_Cube.py`
+
+    :literal:`lib/iris/tests/unit/cube/test_Cube.py`
 
 Within that file the tests might look something like:
 
@@ -73,11 +76,12 @@ Within that file the tests might look something like:
 Functions
 ---------
 When testing a function all the tests must reside in the module:
-    `lib/iris/tests/unit/<fully/qualified/module>/test_<function_name>.py`
+
+    :literal:`lib/iris/tests/unit/<fully/qualified/module>/test_<function_name>.py`
 
 Within this test module there must be one or more test classes:
- - Either: `Test`
- - Or: `TestAspectOfFunction`
+- Either: `Test`
+- Or: `TestAspectOfFunction`
 
 And within those test classes, the test methods must be named according
 to the aspect of the tested function which they address.
@@ -86,7 +90,8 @@ to the aspect of the tested function which they address.
 
 All unit tests for :py:func:`iris.experimental.raster.export_geotiff`
 must reside in:
-    `lib/iris/tests/unit/experimental/raster/test_export_geotiff.py`
+
+    :literal:`lib/iris/tests/unit/experimental/raster/test_export_geotiff.py`
 
 Within that file the tests might look something like:
 

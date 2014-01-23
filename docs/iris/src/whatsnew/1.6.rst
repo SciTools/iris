@@ -2,7 +2,7 @@ What's new in Iris 1.6
 **********************
 
 :Release: 1.6.0
-:Date: unreleased
+:Date: 23rd January 2014
 
 Iris 1.6 features
 =================
@@ -72,7 +72,7 @@ Iris 1.6 features
         from iris.time import PartialDateTime
 
         # Ignore the 1st of January.
-        iris.Constraint(time=lambda cell: cell.point != PartialDateTime(month=1, day=1))
+        iris.Constraint(time=lambda cell: cell != PartialDateTime(month=1, day=1))
 
 	# Constrain by a specific year.
 	iris.Constraint(time=PartialDateTime(year=2013))
@@ -108,6 +108,12 @@ Iris 1.6 features
 * :ref:`A new PEAK aggregator providing spline interpolation<peak>`.
 * A new utility function :func:`iris.util.broadcast_to_shape`.
 * A new utility function :func:`iris.util.as_compatible_shape`.
+* Iris tests can now be run on systems where directory write permissions
+  previously did not allow it.  This is achieved by writing to the current working
+  directory in such cases.
+* Support for 365 day calendar PP fields.
+* Added phenomenon translation between cf and grib2 for wind (from) direction.
+* PP files now retain lbfc value on save, derived from the stash attribute.
 
 Bugs fixed
 ==========
@@ -121,6 +127,16 @@ Bugs fixed
 * GRIB bounded level saving fix.
 * :func:`iris.analysis.cartography.project` now associates a coordinate system
   with the resulting target cube, where applicable.
+* :func:`iris.util.array_equal` now correctly ignores any mask if present,
+  matching the behaviour of :func:`numpy.array_equal` except with string array
+  support.
+* :func:`iris.analysis.interpolate.linear` now retains a mask in the resulting
+  cube.
+* :meth:`iris.coords.DimCoord.from_regular` now correctly returns a coordinate
+  which will always be regular as indicated by :func:`~iris.util.is_regular`.
+* :func:`iris.util.rolling_window` handling of masked arrays (degenerate
+  masks) fixed.
+* Exception no longer raised for any ellipsoid definition in nimrod loading.
 
 Incompatible changes
 ====================
@@ -168,6 +184,9 @@ Incompatible changes
   :func:`~iris.coord_categorisation.add_custom_season_number`     :func:`~iris.coord_categorisation.add_season_number`
   :func:`~iris.coord_categorisation.add_custom_season_year`       :func:`~iris.coord_categorisation.add_season_year`
   :func:`~iris.coord_categorisation.add_custom_season_membership` :func:`~iris.coord_categorisation.add_season_membership`
+  :func:`~iris.coord_categorisation.add_month_shortname`          :func:`~iris.coord_categorisation.add_month`
+  :func:`~iris.coord_categorisation.add_weekday_shortname`        :func:`~iris.coord_categorisation.add_weekday`
+  :func:`~iris.coord_categorisation.add_season_month_initials`    :func:`~iris.coord_categorisation.add_season`
   =============================================================== =======================================================
 
 Deprecations
@@ -178,6 +197,9 @@ Deprecations
   auditable history and often prevented the merging of cubes.
 * :func:`iris.util.broadcast_weights` has been deprecated and replaced
   by the new utility function :func:`iris.util.broadcast_to_shape`.
+* Callback mechanism `iris.run_callback` has had its deprecation of return
+  values revoked.  The callback can now return cube instances as well as
+  inplace changes to the cube.
 
 New Contributors
 ================
