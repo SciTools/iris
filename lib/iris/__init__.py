@@ -75,11 +75,12 @@ All the load functions share very similar arguments:
     * callback:
         A function to add metadata from the originating field and/or URI which
         obeys the following rules:
-            1. Function signature must be: ``(cube, field, filename)``.
-            2. Modifies the given cube inplace, unless a new cube is
-               returned by the function.
-            3. If the cube is to be rejected the callback must raise
-               an :class:`iris.exceptions.IgnoreCubeException`.
+
+        1. Function signature must be: ``(cube, field, filename)``.
+        2. Modifies the given cube inplace, unless a new cube is
+           returned by the function.
+        3. If the cube is to be rejected the callback must raise
+           an :class:`iris.exceptions.IgnoreCubeException`.
 
         For example::
 
