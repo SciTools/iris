@@ -176,5 +176,49 @@ class Test_is_compatible(tests.IrisTest):
         self.assertFalse(self.test_cube.is_compatible(self.other_cube))
 
 
+class Test_aggregated_by(tests.IrisTest):
+    def setUp(self):
+        self.cube = Cube(np.arange(11))
+        val_coord = AuxCoord([0, 0, 0, 1, 1, 2, 0, 0, 2, 0, 1],
+                             long_name="val")
+        label_coord = AuxCoord(['alpha', 'alpha', 'beta',
+                                'beta', 'alpha', 'gamma',
+                                'alpha', 'alpha', 'alpha',
+                                'gamma', 'beta'],
+                               long_name='label', units='no_unit')
+        self.cube.add_aux_coord(val_coord, 0)
+        self.cube.add_aux_coord(label_coord, 0)
+        self.mock_agg = mock.Mock(spec=Aggregator)
+        self.mock_agg.aggregate = mock.Mock(
+            return_value=mock.Mock(dtype='object'))
+
+    def test_string_coord_agg_by_label(self):
+        # Aggregate a cube on a string coordinate label where label
+        # and val entries are not in step; the resulting cube has a val
+        # coord of bounded cells and a label coord of single string entries.
+        res_cube = self.cube.aggregated_by('label', self.mock_agg)
+        val_coord = AuxCoord(np.array([1., 0.5, 1.]),
+                             bounds=np.array([[0, 2], [0, 1], [2, 0]]),
+                             long_name='val')
+        label_coord = AuxCoord(np.array(['alpha', 'beta', 'gamma']),
+                               long_name='label', units='no_unit')
+        self.assertEqual(res_cube.coord('val'), val_coord)
+        self.assertEqual(res_cube.coord('label'), label_coord)
+
+    def test_string_coord_agg_by_val(self):
+        # Aggregate a cube on a numeric coordinate val where label
+        # and val entries are not in step; the resulting cube has a label
+        # coord with serialised labels from the aggregated cells.
+        res_cube = self.cube.aggregated_by('val', self.mock_agg)
+        val_coord = AuxCoord(np.array([0,  1,  2]), long_name='val')
+        exp0 = 'alpha|alpha|beta|alpha|alpha|gamma'
+        exp1 = 'beta|alpha|beta'
+        exp2 = 'gamma|alpha'
+        label_coord = AuxCoord(np.array((exp0, exp1, exp2)),
+                               long_name='label', units='no_unit')
+        self.assertEqual(res_cube.coord('val'), val_coord)
+        self.assertEqual(res_cube.coord('label'), label_coord)
+
+
 if __name__ == "__main__":
     tests.main()

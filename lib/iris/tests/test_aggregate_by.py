@@ -490,54 +490,6 @@ class TestAggregateBy(tests.IrisTest):
                           'height', iris.analysis.MEAN,
                           weights=[1, 2, 3, 4, 5])
 
-    def helper_string_coord_agg(self):
-        # helper for test_string_coord_agg_{on|ref} tests
-        cube = stock.simple_1d()
-        val_coord = iris.coords.AuxCoord([0, 0, 0, 1, 1, 2, 0, 0, 2, 0, 1],
-                                         long_name="val")
-        label_coord = iris.coords.AuxCoord(['alpha', 'alpha', 'beta',
-                                           'beta', 'alpha', 'gamma',
-                                           'alpha', 'alpha', 'alpha',
-                                           'gamma', 'beta'],
-                                           long_name='label', units='no_unit')
-        cube.add_aux_coord(val_coord, 0)
-        cube.add_aux_coord(label_coord, 0)
-        return cube
-
-    def test_string_coord_agg_on(self):
-        # aggregate a 1D cube on label where label and val entries are not in
-        # step; the result cube has a val coord of bounded cells and a label
-        # coord of single string entries
-        cube = self.helper_string_coord_agg()
-        agg = cube.aggregated_by('label', iris.analysis.MEAN)
-        val_coord = iris.coords.AuxCoord(np.array([1., 0.5, 1.]),
-                                         bounds=np.array([[0, 2], [0, 1],
-                                                          [2, 0]]),
-                                         long_name='val')
-        label_coord = iris.coords.AuxCoord(np.array(['alpha', 'beta', 'gamma'],
-                                                    dtype='|S5'),
-                                           units=Unit('no_unit'),
-                                           long_name='label')
-        self.assertEqual(agg.coord('val'), val_coord)
-        self.assertEqual(agg.coord('label'), label_coord)
-
-    def test_string_coord_agg_ref(self):
-        # aggregate a 1D cube on val where label and val entries are not in
-        # step; the result cube has a label coord with an ordered list of
-        # labels from the aggregated cells.
-        cube = self.helper_string_coord_agg()
-        agg = cube.aggregated_by('val', iris.analysis.MEAN)
-        val_coord = iris.coords.AuxCoord(np.array([0,  1,  2]),
-                                         long_name='val')
-        exp0 = 'alpha|alpha|beta|alpha|alpha|gamma'
-        exp1 = 'beta|alpha|beta'
-        exp2 = 'gamma|alpha'
-        label_coord = iris.coords.AuxCoord(np.array((exp0, exp1, exp2)),
-                                           units=Unit('no_unit'),
-                                           long_name='label')
-        self.assertEqual(agg.coord('val'), val_coord)
-        self.assertEqual(agg.coord('label'), label_coord)
-
 
 if __name__ == '__main__':
     unittest.main()
