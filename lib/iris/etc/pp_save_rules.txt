@@ -618,8 +618,8 @@ THEN
 
 # single depth level (Non-dimensional soil model level)
 IF
-    scalar_coord(cm, 'model_level_number') is not None
-    not scalar_coord(cm, 'model_level_number').bounds
+    scalar_coord(cm, 'soil_model_level_number') is not None
+    not scalar_coord(cm, 'soil_model_level_number').bounds
     # The following `is None` checks ensure this rule does not get run
     # if any of the previous LBVC setting rules have run. It gives these
     # rules something of an IF-THEN-ELSE structure.
@@ -631,8 +631,8 @@ IF
     'soil' in cm.standard_name
 THEN
     pp.lbvc = 6
-    pp.lblev = scalar_coord(cm, 'model_level_number').points[0]
-    pp.blev = scalar_coord(cm, 'model_level_number').points[0]
+    pp.lblev = scalar_coord(cm, 'soil_model_level_number').points[0]
+    pp.blev = pp.lblev
 
 # single potential-temperature level
 IF

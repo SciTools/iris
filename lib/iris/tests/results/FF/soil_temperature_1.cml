@@ -32,7 +32,7 @@
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="acd2e4a5" points="[1.0]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="float64">
+        <dimCoord id="2eb202d2" long_name="soil_model_level_number" points="[1]" shape="(1,)" units="Unit('1')" value_type="int64">
           <attributes>
             <attribute name="positive" value="down"/>
           </attributes>

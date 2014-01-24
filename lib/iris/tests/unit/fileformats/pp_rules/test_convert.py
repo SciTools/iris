@@ -32,16 +32,17 @@ import iris.unit
 
 class TestLBVC(tests.IrisTest):
     def test_soil_levels(self):
-        field = mock.MagicMock(lbvc=6, blev=1234)
+        field = mock.MagicMock(lbvc=6, lblev=1234)
         (factories, references, standard_name, long_name, units,
          attributes, cell_methods, dim_coords_and_dims,
          aux_coords_and_dims) = convert(field)
 
-        def is_model_level_coord(coord_and_dims):
+        def is_soil_model_level_coord(coord_and_dims):
             coord, dims = coord_and_dims
-            return coord.standard_name == 'model_level_number'
+            return coord.long_name == 'soil_model_level_number'
 
-        coords_and_dims = filter(is_model_level_coord, aux_coords_and_dims)
+        coords_and_dims = filter(is_soil_model_level_coord,
+                                 aux_coords_and_dims)
         self.assertEqual(len(coords_and_dims), 1)
         coord, dims = coords_and_dims[0]
         self.assertEqual(coord.points, 1234)
