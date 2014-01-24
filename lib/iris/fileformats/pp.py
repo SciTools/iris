@@ -1300,7 +1300,13 @@ class PPField(object):
             for attr in self.__slots__:
                 attrs = [hasattr(self, attr), hasattr(other, attr)]
                 if all(attrs):
-                    if not np.all(getattr(self, attr) == getattr(other, attr)):
+                    self_attr = getattr(self, attr)
+                    other_attr = getattr(other, attr)
+                    if isinstance(self_attr, biggus.NumpyArrayAdapter):
+                        self_attr = self_attr.concrete
+                    if isinstance(other_attr, biggus.NumpyArrayAdapter):
+                        other_attr = other_attr.concrete
+                    if not np.all(self_attr == other_attr):
                         result = False
                         break
                 elif any(attrs):

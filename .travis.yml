@@ -20,7 +20,7 @@ install:
 
     # XXX This is a *TEMPORARY* hash that's only valid for my
     # rhattersley fork.
-  - export BIGGUS_REF="3332da4f106a09749f6ccc3ed1955e53e33b9e18"
+  - export BIGGUS_REF="b63c4452e7065107d8f21c15798c5ed8c42140c8"
   - export BIGGUS_SUFFIX=$(echo "${BIGGUS_REF}" | sed "s/^v//")
 
   - export CARTOPY_REF="v0.10.0"
