@@ -1,0 +1,20 @@
+coord differences:
+  scalar coord: ming
+  scalar coord: mong
+  scalar coord: moog
+  scalar coord: life
+  scalar coord: liff
+  scalar coord: like
+  dim coord: equinimity
+  dim coord: equinomity
+  dim coord: equinumity
+  dim coord: latitude
+  dim coord: longitude
+  dim coord: altitude
+  aux coord: ay
+  aux coord: bee
+  aux coord: cee
+  aux coord: one
+  aux coord: three
+  aux coord: two
+  factory_defn: different

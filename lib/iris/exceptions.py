@@ -90,3 +90,11 @@ class IgnoreCubeException(IrisError):
 
     """
     pass
+
+
+class MergeError(IrisError):
+    """
+    Raised when merge is expected to, but fails to, produce a single cube."
+
+    """
+    pass
