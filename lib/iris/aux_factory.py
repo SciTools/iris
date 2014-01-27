@@ -312,15 +312,10 @@ class AuxCoordFactory(CFVariableMixin):
                     shape.append(1)
                 nd_points.shape = shape
             else:
-                # If no coord, treat value as zero with required
-                # dimensionality.
+                # If no coord, treat value as zero.
                 # Use a float16 to provide `shape` attribute and avoid
                 # promoting other arguments to a higher precision.
-                if derived_dims:
-                    shape = (1,) * len(derived_dims)
-                else:
-                    shape = (1,)
-                nd_points = np.zeros(shape, dtype=np.float16)
+                nd_points = np.float16(0)
 
             nd_points_by_key[key] = nd_points
         return nd_points_by_key
@@ -362,21 +357,17 @@ class AuxCoordFactory(CFVariableMixin):
                     shape.append(1)
                 nd_values.shape = shape
             else:
-                # If no coord, treat value as zero array with required
-                # dimensionality (incl. extra 1 for bounds).
+                # If no coord, treat value as zero.
                 # Use a float16 to provide `shape` attribute and avoid
                 # promoting other arguments to a higher precision.
-                if derived_dims:
-                    shape = (1,) * (len(derived_dims) + 1)
-                else:
-                    shape = (1, 1)
-                nd_values = np.zeros(shape, dtype=np.float16)
+                nd_values = np.float16(0)
 
             nd_values_by_key[key] = nd_values
         return nd_values_by_key
 
     def _shape(self, nd_values_by_key):
-        nd_values = nd_values_by_key.values()
+        nd_values = sorted(nd_values_by_key.values(),
+                           key=lambda value: value.ndim)
         shape = list(nd_values.pop().shape)
         for array in nd_values:
             for i, size in enumerate(array.shape):
@@ -629,8 +620,7 @@ class HybridPressureFactory(AuxCoordFactory):
         # Check units.
         if sigma is not None and not sigma.units.is_dimensionless():
             raise ValueError('Invalid units: sigma must be dimensionless.')
-        if delta is not None and sigma is not None and \
-                surface_air_pressure is not None and \
+        if delta is not None and surface_air_pressure is not None and \
                 delta.units != surface_air_pressure.units:
             msg = 'Incompatible units: delta and ' \
                   'surface_air_pressure must have the same units.'

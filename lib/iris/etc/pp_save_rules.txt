@@ -654,6 +654,12 @@ THEN
 # single hybrid_height level
 IF
     has_aux_factory(cm, iris.aux_factory.HybridHeightFactory)
+    scalar_coord(cm, 'model_level_number') is not None
+    scalar_coord(cm, 'model_level_number').bounds is None
+    aux_factory(cm, iris.aux_factory.HybridHeightFactory).dependencies['delta'] is not None
+    aux_factory(cm, iris.aux_factory.HybridHeightFactory).dependencies['delta'].bounds is not None
+    aux_factory(cm, iris.aux_factory.HybridHeightFactory).dependencies['sigma'] is not None
+    aux_factory(cm, iris.aux_factory.HybridHeightFactory).dependencies['sigma'].bounds is not None
 THEN
     pp.lbvc = 65
     pp.lblev = scalar_coord(cm, 'model_level_number').points[0]
@@ -667,6 +673,12 @@ THEN
 # single hybrid pressure level
 IF
     has_aux_factory(cm, iris.aux_factory.HybridPressureFactory)
+    scalar_coord(cm, 'model_level_number') is not None
+    scalar_coord(cm, 'model_level_number').bounds is None
+    aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['delta'] is not None
+    aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['delta'].bounds is not None
+    aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['sigma'] is not None
+    aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['sigma'].bounds is not None
 THEN
     pp.lbvc = 9
     pp.lblev = scalar_coord(cm, 'model_level_number').points[0]

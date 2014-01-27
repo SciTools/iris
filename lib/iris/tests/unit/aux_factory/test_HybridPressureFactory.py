@@ -123,138 +123,95 @@ class Test_dependencies(tests.IrisTest):
 
 
 class Test_make_coord(tests.IrisTest):
-    def test_points_only(self):
-        delta = iris.coords.DimCoord(
+    @staticmethod
+    def coords_dims_func(coord):
+        mapping = dict(level_pressure=(0,), sigma=(0,),
+                       surface_air_pressure=(1, 2))
+        return mapping[coord.name()]
+
+    def setUp(self):
+        self.delta = iris.coords.DimCoord(
             [0.0, 1.0, 2.0], long_name='level_pressure', units='Pa')
-        sigma = iris.coords.DimCoord(
+        self.sigma = iris.coords.DimCoord(
             [1.0, 0.9, 0.8], long_name='sigma')
-        surface_air_pressure = iris.coords.AuxCoord(
+        self.surface_air_pressure = iris.coords.AuxCoord(
             np.arange(4).reshape(2, 2), 'surface_air_pressure',
             units='Pa')
 
-        def coords_dims_func(coord):
-            mapping = dict(level_pressure=(0,), sigma=(0,),
-                           surface_air_pressure=(1, 2))
-            return mapping[coord.name()]
-
+    def test_points_only(self):
         # Determine expected coord by manually broadcasting coord points
         # knowing the dimension mapping.
-        delta_pts = delta.points[..., np.newaxis, np.newaxis]
-        sigma_pts = sigma.points[..., np.newaxis, np.newaxis]
-        surf_pts = surface_air_pressure.points[np.newaxis, ...]
+        delta_pts = self.delta.points[..., np.newaxis, np.newaxis]
+        sigma_pts = self.sigma.points[..., np.newaxis, np.newaxis]
+        surf_pts = self.surface_air_pressure.points[np.newaxis, ...]
         expected_points = delta_pts + sigma_pts * surf_pts
         expected_coord = iris.coords.AuxCoord(expected_points,
                                               standard_name='air_pressure',
                                               units='Pa')
-
         factory = HybridPressureFactory(
-            delta=delta, sigma=sigma,
-            surface_air_pressure=surface_air_pressure)
-        derived_coord = factory.make_coord(coords_dims_func)
+            delta=self.delta, sigma=self.sigma,
+            surface_air_pressure=self.surface_air_pressure)
+        derived_coord = factory.make_coord(self.coords_dims_func)
         self.assertEqual(expected_coord, derived_coord)
 
     def test_none_delta(self):
-        sigma = iris.coords.DimCoord(
-            [1.0, 0.9, 0.8], long_name='sigma')
-        surface_air_pressure = iris.coords.AuxCoord(
-            np.arange(4).reshape(2, 2), 'surface_air_pressure',
-            units='Pa')
-
-        def coords_dims_func(coord):
-            mapping = dict(sigma=(0,),
-                           surface_air_pressure=(1, 2))
-            return mapping[coord.name()]
-
-        sigma_pts = sigma.points[..., np.newaxis, np.newaxis]
-        surf_pts = surface_air_pressure.points[np.newaxis, ...]
-        expected_points = sigma_pts * surf_pts
+        delta_pts = 0
+        sigma_pts = self.sigma.points[..., np.newaxis, np.newaxis]
+        surf_pts = self.surface_air_pressure.points[np.newaxis, ...]
+        expected_points = delta_pts + sigma_pts * surf_pts
         expected_coord = iris.coords.AuxCoord(expected_points,
                                               standard_name='air_pressure',
                                               units='Pa')
-
         factory = HybridPressureFactory(
-            sigma=sigma, surface_air_pressure=surface_air_pressure)
-        derived_coord = factory.make_coord(coords_dims_func)
+            sigma=self.sigma, surface_air_pressure=self.surface_air_pressure)
+        derived_coord = factory.make_coord(self.coords_dims_func)
         self.assertEqual(expected_coord, derived_coord)
 
     def test_none_sigma(self):
-        delta = iris.coords.DimCoord(
-            [0.0, 1.0, 2.0], long_name='level_pressure', units='Pa')
-        surface_air_pressure = iris.coords.AuxCoord(
-            np.arange(4).reshape(2, 2), 'surface_air_pressure',
-            units='Pa')
-
-        def coords_dims_func(coord):
-            mapping = dict(level_pressure=(0,),
-                           surface_air_pressure=(1, 2))
-            return mapping[coord.name()]
-
-        delta_pts = delta.points[..., np.newaxis, np.newaxis]
+        delta_pts = self.delta.points[..., np.newaxis, np.newaxis]
         sigma_pts = 0
-        surf_pts = surface_air_pressure.points[np.newaxis, ...]
+        surf_pts = self.surface_air_pressure.points[np.newaxis, ...]
         expected_points = delta_pts + sigma_pts * surf_pts
         expected_coord = iris.coords.AuxCoord(expected_points,
                                               standard_name='air_pressure',
                                               units='Pa')
         factory = HybridPressureFactory(
-            delta=delta, surface_air_pressure=surface_air_pressure)
-        derived_coord = factory.make_coord(coords_dims_func)
+            delta=self.delta, surface_air_pressure=self.surface_air_pressure)
+        derived_coord = factory.make_coord(self.coords_dims_func)
         self.assertEqual(expected_coord, derived_coord)
 
     def test_none_surface_air_pressure(self):
-        delta = iris.coords.DimCoord(
-            [0.0, 1.0, 2.0], long_name='level_pressure', units='Pa')
-        sigma = iris.coords.DimCoord(
-            [1.0, 0.9, 0.8], long_name='sigma')
-
-        def coords_dims_func(coord):
-            mapping = dict(level_pressure=(0,), sigma=(0,))
-            return mapping[coord.name()]
-
-        delta_pts = delta.points
-        expected_points = delta_pts
+        # Note absence of broadcasting as multidimensional coord
+        # is not present.
+        expected_points = self.delta.points
         expected_coord = iris.coords.AuxCoord(expected_points,
                                               standard_name='air_pressure',
                                               units='Pa')
-        factory = HybridPressureFactory(delta=delta, sigma=sigma)
-        derived_coord = factory.make_coord(coords_dims_func)
+        factory = HybridPressureFactory(delta=self.delta, sigma=self.sigma)
+        derived_coord = factory.make_coord(self.coords_dims_func)
         self.assertEqual(expected_coord, derived_coord)
 
     def test_with_bounds(self):
-        delta = iris.coords.DimCoord(
-            [0.0, 1.0, 2.0], long_name='level_pressure', units='Pa')
-        delta.guess_bounds(0)
-        sigma = iris.coords.DimCoord(
-            [1.0, 0.9, 0.8], long_name='sigma')
-        sigma.guess_bounds(0.5)
-        surface_air_pressure = iris.coords.AuxCoord(
-            np.arange(4).reshape(2, 2), 'surface_air_pressure',
-            units='Pa')
-
-        def coords_dims_func(coord):
-            mapping = dict(level_pressure=(0,), sigma=(0,),
-                           surface_air_pressure=(1, 2))
-            return mapping[coord.name()]
-
+        self.delta.guess_bounds(0)
+        self.sigma.guess_bounds(0.5)
         # Determine expected coord by manually broadcasting coord points
-        # and bounds knowing the dimension mapping.
-        delta_pts = delta.points[..., np.newaxis, np.newaxis]
-        sigma_pts = sigma.points[..., np.newaxis, np.newaxis]
-        surf_pts = surface_air_pressure.points[np.newaxis, ...]
+        # and bounds based on the dimension mapping.
+        delta_pts = self.delta.points[..., np.newaxis, np.newaxis]
+        sigma_pts = self.sigma.points[..., np.newaxis, np.newaxis]
+        surf_pts = self.surface_air_pressure.points[np.newaxis, ...]
         expected_points = delta_pts + sigma_pts * surf_pts
-        delta_vals = delta.bounds.reshape(3, 1, 1, 2)
-        sigma_vals = sigma.bounds.reshape(3, 1, 1, 2)
-        surf_vals = surface_air_pressure.points.reshape(1, 2, 2, 1)
+        delta_vals = self.delta.bounds.reshape(3, 1, 1, 2)
+        sigma_vals = self.sigma.bounds.reshape(3, 1, 1, 2)
+        surf_vals = self.surface_air_pressure.points.reshape(1, 2, 2, 1)
         expected_bounds = delta_vals + sigma_vals * surf_vals
         expected_coord = iris.coords.AuxCoord(expected_points,
                                               standard_name='air_pressure',
                                               units='Pa',
                                               bounds=expected_bounds)
-
         factory = HybridPressureFactory(
-            delta=delta, sigma=sigma,
-            surface_air_pressure=surface_air_pressure)
-        derived_coord = factory.make_coord(coords_dims_func)
+            delta=self.delta, sigma=self.sigma,
+            surface_air_pressure=self.surface_air_pressure)
+        derived_coord = factory.make_coord(self.coords_dims_func)
         self.assertEqual(expected_coord, derived_coord)
 
 

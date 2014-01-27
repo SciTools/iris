@@ -750,7 +750,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                                 coord.name(), i,
                                                 coord.shape[i]))
         elif coord.shape != (1,):
-            raise ValueError('missing data dimensions for multi-valued'
+            raise ValueError('Missing data dimensions for multi-valued'
                              ' coordinate {!r}'.format(coord.name()))
 
         self._aux_coords_and_dims.append([coord, data_dims])
