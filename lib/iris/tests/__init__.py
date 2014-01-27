@@ -218,23 +218,23 @@ class IrisTest(unittest.TestCase):
 
         Args:
         
-            netcdf_filename - The filename under investigation. 
+        * netcdf_filename - The filename under investigation. 
         
         Kwargs:
         
-            reference_filename - Relative subpath in the results folder.
-                                 If omitted, the result path is generated 
-                                 automatically from the calling method's name
-                                 and module heirarchy using
-                                 :meth:`~IrisTest.reference_filename`.
+        * reference_filename - Relative subpath in the results folder.
+                               If omitted, the result path is generated 
+                               automatically from the calling method's name
+                               and module heirarchy using
+                               :meth:`~IrisTest.reference_filename`.
                                 
-            basename - If *reference_filename* is not specified, causing the
-                       result path to be generated automatically, this
-                       keyword can be used to force a particular filename.
-                       Used when multiple tests in a test class wish to
-                       share a single result file.
+        * basename - If *reference_filename* is not specified, causing the
+                     result path to be generated automatically, this
+                     keyword can be used to force a particular filename.
+                     Used when multiple tests in a test class wish to
+                     share a single result file.
                        
-            flags - arguments to *ncdump*.
+        * flags - arguments to *ncdump*.
 
         """
         if reference_filename is None:
@@ -278,23 +278,23 @@ class IrisTest(unittest.TestCase):
 
         Args:
         
-            cubes - The cubes under investigation. 
+        * cubes - The cubes under investigation. 
         
         Kwargs:
         
-            reference_filename - Relative subpath in the results folder.
-                                 If omitted, the result path is generated 
-                                 automatically from the calling method's name
-                                 and module heirarchy using
-                                 :meth:`~IrisTest.reference_filename`.
+        * reference_filename - Relative subpath in the results folder.
+                               If omitted, the result path is generated 
+                               automatically from the calling method's name
+                               and module heirarchy using
+                               :meth:`~IrisTest.reference_filename`.
                                 
-            basename - If *reference_filename* is not specified, causing the
-                       result path to be generated automatically, this
-                       keyword can be used to force a particular filename.
-                       Used when multiple tests in a test class wish to
-                       share a single result file.
+        * basename - If *reference_filename* is not specified, causing the
+                     result path to be generated automatically, this
+                     keyword can be used to force a particular filename.
+                     Used when multiple tests in a test class wish to
+                     share a single result file.
                        
-            checksum - Passed through to :meth:`iris.cube.CubeList.xml`. 
+        * checksum - Passed through to :meth:`iris.cube.CubeList.xml`. 
 
         """
         if isinstance(cubes, iris.cube.Cube):
@@ -357,21 +357,21 @@ class IrisTest(unittest.TestCase):
         """
         Args:
         
-            string - The string under investigation. 
+        * string - The string under investigation. 
         
         Kwargs:
         
-            reference_filename - Relative subpath in the results folder.
-                                 If omitted, the result path is generated 
-                                 automatically from the calling method's name
-                                 and module heirarchy using
-                                 :meth:`~IrisTest.reference_filename`.
+        * reference_filename - Relative subpath in the results folder.
+                               If omitted, the result path is generated 
+                               automatically from the calling method's name
+                               and module heirarchy using
+                               :meth:`~IrisTest.reference_filename`.
                                 
-            basename - If *reference_filename* is not specified, causing the
-                       result path to be generated automatically, this
-                       keyword can be used to force a particular filename.
-                       Used when multiple tests in a test class wish to
-                       share a single result file.
+        * basename - If *reference_filename* is not specified, causing the
+                     result path to be generated automatically, this
+                     keyword can be used to force a particular filename.
+                     Used when multiple tests in a test class wish to
+                     share a single result file.
 
         """
         if reference_filename is None:
