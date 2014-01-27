@@ -52,7 +52,7 @@ numpy 1.6 or later (http://numpy.scipy.org/)
 scipy 0.10 or later (http://www.scipy.org/)
     Python package for scientific computing.
 
-udunits2 2.1.24 or later (http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html)
+udunits2 2.1.24 or later (http://www.unidata.ucar.edu/downloads/udunits/index.jsp)
     C library for units of physical quantities.
 
 netcdf4-python 0.9.9 or later (http://netcdf4-python.googlecode.com/)
@@ -80,7 +80,7 @@ gdal 1.9.1 or later (https://pypi.python.org/pypi/GDAL/)
 graphviz 2.18 or later (http://www.graphviz.org/)
     Graph visualisation software.
 
-grib-api 1.9.16 or later (http://www.ecmwf.int/products/data/software/download/grib_api.html)
+grib-api 1.9.16 or later (https://software.ecmwf.int/wiki/display/GRIB/Releases)
     API for the encoding and decoding WMO FM-92 GRIB edition 1 and 
     edition 2 messages. A compression library such as Jasper is required 
     to read JPEG2000 compressed GRIB2 files.
