@@ -235,6 +235,13 @@ def describe_diff(cube_a, cube_b, output_file=None):
 
         :meth:`iris.cube.Cube.is_compatible()`
 
+    .. Note::
+        
+        Compatibility does not guarantee that the two cubes are able to be
+        merged. Instead, this function is designed to provide a verbose
+        description of compatibility (a concept different to merging) between
+        the two cubes.
+
     """
 
     if output_file is None:

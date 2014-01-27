@@ -662,6 +662,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             :meth:`iris.util.describe_diff()`
 
+        .. Note::
+            
+            Compatibility as defined by this function does not guarantee that
+            the two cubes are able to be merged, instead it checks only the
+            four items quoted above for equality between the two cubes.
+
         """
         compatible = (self.name() == other.name() and
                       self.units == other.units and
