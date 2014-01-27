@@ -99,23 +99,6 @@ class TestLbfcProduction(tests.IrisTest):
         for test_case in test_cases:
             self.check_cubename_yields_lbfc(*test_case)
 
-    def test_names_to_lbfc_oldcases(self):
-        # Check the cases previously handled by specific name-only rules.
-        test_cases = [
-            ('air_temperature', 'K', 16),
-            ('geopotential_height', 'm', 1),
-            ('sea_surface_elevation', 'm', 608),
-            ('wind_speed', 'm s-1', 50),
-            ('large_scale_rainfall_rate', 'm s-1', 99),
-            ('eastward_wind', 'm s-1', 56),
-            ('northward_wind', 'm s-1', 57),
-            # NOTE: These cases (with non-standard names) were withdrawn:
-            # ('temperature', 'K', 16),
-            # ('wind_gust', 'm s-1', 1694),
-        ]
-        for test_case in test_cases:
-            self.check_cubename_yields_lbfc(*test_case)
-
 
 if __name__ == "__main__":
     tests.main()
