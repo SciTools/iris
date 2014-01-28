@@ -45,8 +45,8 @@ class TestLBVC(tests.IrisTest):
                 coord.attributes['positive'] == 'up')
 
     @staticmethod
-    def _is_reference_pressure_coord(coord):
-        return (coord.name() == 'reference_pressure' and
+    def _is_level_pressure_coord(coord):
+        return (coord.name() == 'level_pressure' and
                 coord.units == 'Pa')
 
     @staticmethod
@@ -88,7 +88,7 @@ class TestLBVC(tests.IrisTest):
                              expected_points=np.array([level]),
                              expected_bounds=None)
 
-    def test_hybrid_pressure_levels(self):
+    def test_hybrid_pressure_model_level_number(self):
         level = 5678
         field = mock.MagicMock(lbvc=9, lblev=level,
                                blev=20, brlev=23, bhlev=42,
@@ -97,22 +97,27 @@ class TestLBVC(tests.IrisTest):
                              expected_points=np.array([level]),
                              expected_bounds=None)
 
-    def test_hybrid_pressure_reference_pressure(self):
+    def test_hybrid_pressure_delta(self):
+        delta_point = 12.0
+        delta_lower_bound = 11.0
+        delta_upper_bound = 13.0
         field = mock.MagicMock(lbvc=9, lblev=5678,
-                               blev=20, brlev=23, bhlev=12,
-                               bhrlev=11, brsvd=[17, 13])
-        self._test_for_coord(field, TestLBVC._is_reference_pressure_coord,
-                             expected_points=np.array([1.0]),
-                             expected_bounds=None)
+                               blev=20, brlev=23, bhlev=delta_point,
+                               bhrlev=delta_lower_bound,
+                               brsvd=[17, delta_upper_bound])
+        self._test_for_coord(field, TestLBVC._is_level_pressure_coord,
+                             expected_points=np.array([delta_point]),
+                             expected_bounds=np.array([[delta_lower_bound,
+                                                        delta_upper_bound]]))
 
     def test_hybrid_pressure_sigma(self):
-        sigma_point = 12.0
-        sigma_lower_bound = 11.0
-        sigma_upper_bound = 13.0
+        sigma_point = 0.5
+        sigma_lower_bound = 0.6
+        sigma_upper_bound = 0.4
         field = mock.MagicMock(lbvc=9, lblev=5678,
-                               blev=20, brlev=23, bhlev=sigma_point,
-                               bhrlev=sigma_lower_bound,
-                               brsvd=[17, sigma_upper_bound])
+                               blev=sigma_point, brlev=sigma_lower_bound,
+                               bhlev=12, bhrlev=11,
+                               brsvd=[sigma_upper_bound, 13])
         self._test_for_coord(field, TestLBVC._is_sigma_coord,
                              expected_points=np.array([sigma_point]),
                              expected_bounds=np.array([[sigma_lower_bound,
