@@ -226,19 +226,19 @@ def vertical_coord(cube, field):
     v_type = field.vertical_coord_type
 
     if v_type not in [field.int_mdi, NIMROD_DEFAULT]:
-        vertical_code_name = VERTICAL_CODES.get(v_type, None)
-
         if FIELD_CODES.get(field.field_code, None) == "orography":
             orography_vertical_coord(cube, field)
-        elif vertical_code_name == "height":
-            height_vertical_coord(cube, field)
-        elif vertical_code_name == "altitude":
-            altitude_vertical_coord(cube, field)
-        elif vertical_code_name == "levels_below_ground":
-            levels_below_ground_vertical_coord(cube, field)
         else:
-            warnings.warn("Vertical coord {!r} not yet handled"
-                          "".format(v_type), TranslationWarning)
+            vertical_code_name = VERTICAL_CODES.get(v_type, None)
+            if vertical_code_name == "height":
+                height_vertical_coord(cube, field)
+            elif vertical_code_name == "altitude":
+                altitude_vertical_coord(cube, field)
+            elif vertical_code_name == "levels_below_ground":
+                levels_below_ground_vertical_coord(cube, field)
+            else:
+                warnings.warn("Vertical coord {!r} not yet handled"
+                              "".format(v_type), TranslationWarning)
 
 
 def ensemble_member(cube, field):
