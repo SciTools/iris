@@ -161,7 +161,7 @@ class TestTrajectory(tests.IrisTest):
 
         # Check that creating the trajectory hasn't led to the original
         # data being loaded.
-        self.assertFalse(cube.has_data())
+        self.assertTrue(cube.has_lazy_data())
         self.assertCML([cube, xsec], ('trajectory', 'hybrid_height.cml'))
 
 

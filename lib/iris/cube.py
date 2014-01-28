@@ -1350,8 +1350,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         self._my_data = data
 
-    def has_data(self):
-        return isinstance(self._my_data, np.ndarray)
+    def has_lazy_data(self):
+        return isinstance(self._my_data, biggus.Array)
 
     @property
     def dim_coords(self):
@@ -2115,14 +2115,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             else:
                 crc = hex(zlib.crc32(normalise(data)))
                 data_xml_element.setAttribute("checksum", crc)
-        elif not self.has_data():
+        elif self.has_lazy_data():
             data_xml_element.setAttribute("state", "deferred")
         else:
             data_xml_element.setAttribute("state", "loaded")
 
         # Add the dtype, and also the array and mask orders if the
         # data is loaded.
-        if self.has_data():
+        if not self.has_lazy_data():
             data = self.data
             dtype = data.dtype
 
@@ -2179,7 +2179,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     def _deepcopy(self, memo, data=None):
         if data is None:
-            if self.has_data() and self.ndim == 0:
+            if not self.has_lazy_data() and self.ndim == 0:
                 # Cope with NumPy's asymmetric (aka. "annoying!") behaviour
                 # of deepcopy on 0-d arrays.
                 new_cube_data = np.asanyarray(self.data)

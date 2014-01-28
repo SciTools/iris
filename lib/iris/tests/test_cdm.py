@@ -922,10 +922,10 @@ class TestDataManagerIndexing(TestCube2d):
         self.cube = iris.load_cube(tests.get_data_path(('PP', 'aPProt1', 'rotatedMHtimecube.pp')))
 
     def _is_lazy(self, cube):
-        self.assertFalse(cube.has_data())
+        self.assertTrue(cube.has_lazy_data())
 
     def _is_concrete(self, cube):
-        self.assertTrue(cube.has_data())
+        self.assertFalse(cube.has_lazy_data())
 
     def test_slices(self):
         lat_cube = self.cube.slices(['grid_latitude', ]).next()

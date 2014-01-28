@@ -1388,10 +1388,10 @@ class ProtoCube(object):
 
     def _add_cube(self, cube, coord_payload):
         """Create and add the source-cube skeleton to the ProtoCube."""
-        if cube.has_data():
-            data = cube.data
-        else:
+        if cube.has_lazy_data():
             data = cube.lazy_data()
+        else:
+            data = cube.data
         skeleton = _Skeleton(coord_payload.scalar.values, data)
         # Attempt to do something sensible with mixed scalar dtypes.
         for i, metadata in enumerate(coord_payload.scalar.metadata):

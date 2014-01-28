@@ -575,8 +575,8 @@ class TestNearestNeighbour(tests.IrisTest):
 
         # Check that the data has not been loaded on either the original cube,
         # nor the interpolated one.
-        self.assertFalse(b.has_data())
-        self.assertFalse(self.cube.has_data())
+        self.assertTrue(b.has_lazy_data())
+        self.assertTrue(self.cube.has_lazy_data())
         self.assertCML(b, ('analysis', 'interpolation', 'nearest_neighbour_extract_latitude_longitude.cml'))
         
         value = iris.analysis.interpolate.nearest_neighbour_data_value(self.cube, point_spec)

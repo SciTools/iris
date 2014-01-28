@@ -312,11 +312,11 @@ class TestCubeExtract(TestMixin, tests.IrisTest):
         # Ensure that the process of WHERE does not load data if there
         # was empty data to start with...
         cube = self.cube
-        self.assertFalse(cube.has_data())
+        self.assertTrue(cube.has_lazy_data())
         cube = self.cube.extract(self.level_10)
-        self.assertFalse(cube.has_data())
+        self.assertTrue(cube.has_lazy_data())
         cube = self.cube.extract(self.level_10).extract(self.level_10)
-        self.assertFalse(cube.has_data())
+        self.assertTrue(cube.has_lazy_data())
 
     def test_non_existant_coordinate(self):
         # Check the behaviour when a constraint is given for a coordinate which does not exist/span a dimension
