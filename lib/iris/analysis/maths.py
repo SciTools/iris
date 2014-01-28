@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -536,7 +536,9 @@ def _math_op_common(cube, operation_function, new_unit, in_place=False):
         new_cube = cube
         operation_function(new_cube.data, out=new_cube.data)
     else:
-        new_cube = cube.copy(data=operation_function(cube.data))
+        # use a slice to shallow copy the cube
+        new_cube = cube[:]
+        new_cube.data = operation_function(cube.data)
     iris.analysis.clear_phenomenon_identity(new_cube)
     new_cube.units = new_unit
     return new_cube
