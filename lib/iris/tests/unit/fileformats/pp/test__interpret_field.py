@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,9 +30,11 @@ import iris.fileformats.pp as pp
 
 class Test__interpret_fields__land_packed_fields(tests.IrisTest):
     def setUp(self):
+        # A field packed using a land/sea mask.
         self.pp_field = mock.Mock(lblrec=1, lbext=0, lbuser=[0],
                                   lbrow=0, lbnpt=0,
                                   lbpack=mock.Mock(n2=2))
+        # The field specifying the land/seamask.
         self.land_mask_field = mock.Mock(lblrec=1, lbext=0, lbuser=[0],
                                          lbrow=3, lbnpt=4,
                                          stash='m01s00i030',
@@ -47,8 +49,8 @@ class Test__interpret_fields__land_packed_fields(tests.IrisTest):
         list(pp._interpret_fields([mask, f1]))
         self.assertEqual(f1.lbrow, 3)
         self.assertEqual(f1.lbnpt, 4)
-        # Check the data manager's shape has been updated too.
-        self.assertEqual(f1._data_manager._orig_data_shape, (3, 4))
+        # Check the data's shape has been updated too.
+        self.assertEqual(f1._data.shape, (3, 4))
 
     def test_fix_lbrow_lbnpt_no_mask_available(self):
         # Check a warning is issued when loading a land masked field
@@ -89,9 +91,12 @@ class Test__interpret_fields__land_packed_fields(tests.IrisTest):
         f1 = deepcopy(self.pp_field)
         f2 = deepcopy(self.pp_field)
         self.assertIsNot(f1, f2)
-        list(pp._interpret_fields([f1, self.land_mask_field, f2]))
-        self.assertIs(f1._data.item().mask,
-                      f2._data.item().mask)
+        with mock.patch('iris.fileformats.pp.PPDataProxy') as PPDataProxy:
+            PPDataProxy.return_value = mock.MagicMock()
+            list(pp._interpret_fields([f1, self.land_mask_field, f2]))
+        for call in PPDataProxy.call_args_list:
+            positional_args = call[0]
+            self.assertIs(positional_args[7], self.land_mask_field)
 
 
 if __name__ == "__main__":

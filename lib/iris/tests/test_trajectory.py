@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,11 +19,11 @@
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
+import biggus
 import matplotlib.pyplot as plt
 import numpy as np
 
 import iris.analysis.trajectory
-from iris.fileformats.manager import DataManager
 import iris.tests.stock
 
 
@@ -152,9 +152,8 @@ class TestTrajectory(tests.IrisTest):
 
     def test_hybrid_height(self):
         cube = tests.stock.simple_4d_with_hybrid_height()
-        # Put a data manager on the cube so that we can test deferred loading.
-        cube._data_manager = ConcreteDataManager(cube.data)
-        cube._data = np.empty([])
+        # Put a biggus array on the cube so we can test deferred loading.
+        cube.lazy_data(biggus.NumpyArrayAdapter(cube.data))
 
         traj = (('grid_latitude',[20.5, 21.5, 22.5, 23.5]),
                 ('grid_longitude',[31, 32, 33, 34]))
@@ -162,31 +161,8 @@ class TestTrajectory(tests.IrisTest):
 
         # Check that creating the trajectory hasn't led to the original
         # data being loaded.
-        self.assertIsNotNone(cube._data_manager)
+        self.assertTrue(cube.has_lazy_data())
         self.assertCML([cube, xsec], ('trajectory', 'hybrid_height.cml'))
-
-
-class ConcreteDataManager(DataManager):
-    """
-    Implements the DataManager interface for a real array.
-    Useful for testing. Obsolete with biggus.
-
-    """
-    def __init__(self, concrete_array, deferred_slices=()):
-        DataManager.__init__(self, concrete_array.shape,
-                             concrete_array.dtype,
-                             mdi=None, deferred_slices=deferred_slices)
-        # Add the concrete array as an attribute on the manager.
-        object.__setattr__(self, 'concrete_array', concrete_array)
-
-    def load(self, proxy_array):
-        data = self.concrete_array[self._deferred_slice_merge()]
-        if not data.flags['C_CONTIGUOUS']:
-            data = data.copy()
-        return data
-
-    def new_data_manager(self, deferred_slices):
-        return ConcreteDataManager(self.concrete_array, deferred_slices)
 
 
 if __name__ == '__main__':

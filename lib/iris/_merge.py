@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,6 +24,7 @@ Typically the cube merge process is handled by
 from collections import namedtuple
 from copy import deepcopy
 
+import biggus
 import numpy as np
 import numpy.ma as ma
 
@@ -217,8 +218,8 @@ class _CoordSignature(namedtuple('CoordSignature',
 
 
 class _CubeSignature(namedtuple('CubeSignature',
-                                ['defn', 'data_shape', 'data_manager',
-                                 'data_type', 'mdi'])):
+                                ['defn', 'data_shape', 'data_type',
+                                 'fill_value'])):
     """
     Criterion for identifying a specific type of :class:`iris.cube.Cube`
     based on its metadata.
@@ -231,15 +232,12 @@ class _CubeSignature(namedtuple('CubeSignature',
     * data_shape:
         The data payload shape of a :class:`iris.cube.Cube`.
 
-    * data_manager:
-        The :class:`iris.fileformats.manager.DataManager` instance.
-
     * data_type:
         The data payload :class:`numpy.dtype` of a :class:`iris.cube.Cube`.
 
-    * mdi:
-        The missing data value associated with the data payload of a
-        :class:`iris.cube.Cube`.
+    * fill_value:
+        The value to be used to mark missing data in the data payload,
+        or None if no such value exists.
 
     """
 
@@ -933,7 +931,17 @@ class ProtoCube(object):
         self._dim_templates = []
         self._aux_templates = []
 
+        # During the merge this will contain the complete, merged shape
+        # of a result cube.
+        # E.g. Merging three (72, 96) cubes would give:
+        #      self._shape = (3, 72, 96).
         self._shape = []
+        # During the merge this will contain the shape of the "stack"
+        # of cubes used to create a single result cube.
+        # E.g. Merging three (72, 96) cubes would give:
+        #      self._stack_shape = (3,)
+        self._stack_shape = []
+
         self._nd_names = []
         self._cache_by_name = {}
         self._dim_coords_and_dims = []
@@ -942,6 +950,20 @@ class ProtoCube(object):
         # Dims offset by merged space higher dimensionality.
         self._vector_dim_coords_dims = []
         self._vector_aux_coords_dims = []
+
+    def _report_duplicate(self, nd_indexes, group_by_nd_index):
+        # Find the first offending source-cube with duplicate metadata.
+        index = [group_by_nd_index[nd_index][1]
+                 for nd_index in nd_indexes
+                 if len(group_by_nd_index[nd_index]) > 1][0]
+        name = self._cube_signature.defn.name()
+        scalars = []
+        for defn, value in zip(self._coord_signature.scalar_defns,
+                               self._skeletons[index].scalar_values):
+            scalars.append('%s=%r' % (defn.name(), value))
+        msg = 'Duplicate %r cube, with scalar coordinates %s'
+        msg = msg % (name, ', '.join(scalars))
+        raise iris.exceptions.DuplicateDataError(msg)
 
     def merge(self, unique=True):
         """
@@ -987,53 +1009,39 @@ class ProtoCube(object):
 
         # Check for unique data.
         if unique and group_depth > 1:
-            # Find the first offending source-cube with duplicate metadata.
-            index = [group_by_nd_index[nd_index][1]
-                     for nd_index in nd_indexes
-                     if len(group_by_nd_index[nd_index]) > 1][0]
-            name = self._cube_signature.defn.name()
-            scalars = []
-            for defn, value in zip(self._coord_signature.scalar_defns,
-                                   self._skeletons[index].scalar_values):
-                scalars.append('%s=%r' % (defn.name(), value))
-            msg = 'Duplicate %r cube, with scalar coordinates %s'
-            msg = msg % (name, ', '.join(scalars))
-            raise iris.exceptions.DuplicateDataError(msg)
+            self._report_duplicate(nd_indexes, group_by_nd_index)
 
         # Generate group-depth merged cubes from the source-cubes.
         for level in xrange(group_depth):
-            # The merged cube's data will be an array of data proxies
-            # for deferred loading.
-            merged_cube = self._get_cube()
-
+            # Stack up all the data from all of the relevant source
+            # cubes in a single biggus ArrayStack.
+            # If it turns out that all the source cubes already had
+            # their data loaded then at the end we can convert the
+            # ArrayStack back to a numpy array.
+            stack = np.empty(self._stack_shape, 'object')
+            all_have_data = True
             for nd_index in nd_indexes:
                 # Get the data of the current existing or last known
                 # good source-cube
                 group = group_by_nd_index[nd_index]
                 offset = min(level, len(group) - 1)
                 data = self._skeletons[group[offset]].data
-
-                # Slot the data into merged cube. The nd-index will have
-                # less dimensionality than that of the merged cube's
-                # data. The "missing" dimensions correspond to the
-                # dimensionality of the source-cubes data.
-                if nd_index:
-                    # The use of "flatten" allows us to cope with a
-                    # 0-dimensional array. Otherwise, the assignment
-                    # copies the 0-d *array* into the merged cube, and
-                    # not the contents of the array!
-                    if data.ndim == 0:
-                        merged_cube._data[nd_index] = data.flatten()[0]
-                    else:
-                        merged_cube._data[nd_index] = data
+                # Ensure the data is represented as a biggus.Array and
+                # slot that Array into the stack.
+                if isinstance(data, biggus.Array):
+                    all_have_data = False
                 else:
-                    merged_cube._data = data
+                    data = biggus.NumpyArrayAdapter(data)
+                stack[nd_index] = data
 
-            # Unmask the array only if it is filled.
-            if isinstance(merged_cube._data, ma.core.MaskedArray):
-                if ma.count_masked(merged_cube._data) == 0:
-                    merged_cube._data = merged_cube._data.filled()
-
+            merged_data = biggus.ArrayStack(stack)
+            if all_have_data:
+                merged_data = merged_data.masked_array()
+                # Unmask the array only if it is filled.
+                if (ma.isMaskedArray(merged_data) and
+                        ma.count_masked(merged_data) == 0):
+                    merged_data = merged_data.data
+            merged_cube = self._get_cube(merged_data)
             merged_cubes.append(merged_cube)
 
         return merged_cubes
@@ -1150,6 +1158,7 @@ class ProtoCube(object):
                     dim_by_name[name] = len(self._shape)
                     self._nd_names.append(name)
                     self._shape.append(len(cells))
+                    self._stack_shape.append(len(cells))
                     self._cache_by_name[name] = {cell: index for index, cell
                                                  in enumerate(cells)}
                 else:
@@ -1188,6 +1197,7 @@ class ProtoCube(object):
                             self._dim_templates.append(
                                 _Template(dim, points, bounds, kwargs))
                         self._shape.append(len(cells))
+                        self._stack_shape.append(len(cells))
                         self._cache_by_name[name] = {cell: index
                                                      for index, cell
                                                      in enumerate(cells)}
@@ -1249,12 +1259,10 @@ class ProtoCube(object):
         # deferred loading, this does NOT change the shape.
         self._shape.extend(signature.data_shape)
 
-    def _get_cube(self):
+    def _get_cube(self, data):
         """
-        Returns a cube containing all its coordinates and appropriately shaped
-        data that corresponds to this ProtoCube.
-
-        All the values in the cube's data array are masked.
+        Return a fully constructed cube for the given data, containing
+        all its coordinates and metadata.
 
         """
         signature = self._cube_signature
@@ -1264,22 +1272,10 @@ class ProtoCube(object):
                                for coord, dims in self._aux_coords_and_dims]
         kwargs = dict(zip(iris.cube.CubeMetadata._fields, signature.defn))
 
-        # Create fully masked data, i.e. all missing.
-        # (The CubeML checksum doesn't respect the mask, so we zero the
-        # underlying data to ensure repeatable checksums.)
-        if signature.data_manager is None:
-            data = ma.MaskedArray(np.zeros(self._shape,
-                                           signature.data_type),
-                                  mask=np.ones(self._shape, 'bool'),
-                                  fill_value=signature.mdi)
-        else:
-            data = ma.MaskedArray(np.zeros(self._shape, 'object'),
-                                  mask=np.ones(self._shape, 'bool'))
-
         cube = iris.cube.Cube(data,
                               dim_coords_and_dims=dim_coords_and_dims,
                               aux_coords_and_dims=aux_coords_and_dims,
-                              data_manager=signature.data_manager, **kwargs)
+                              **kwargs)
 
         # Add on any aux coord factories.
         for factory_defn in self._coord_signature.factory_defns:
@@ -1386,26 +1382,17 @@ class ProtoCube(object):
 
     def _build_signature(self, cube):
         """Generate the signature that defines this cube."""
-
-        defn = cube.metadata
-        data_shape = cube._data.shape
-        data_manager = cube._data_manager
-        mdi = None
-
-        if data_manager is None:
-            data_type = cube._data.dtype.name
-            if isinstance(cube.data, ma.core.MaskedArray):
-                mdi = cube.data.fill_value
-        else:
-            data_type = data_manager.data_type.name
-            mdi = data_manager.mdi
-
-        return _CubeSignature(defn, data_shape, data_manager, data_type, mdi)
+        array = cube.lazy_data()
+        return _CubeSignature(cube.metadata, cube.shape, array.dtype,
+                              array.fill_value)
 
     def _add_cube(self, cube, coord_payload):
         """Create and add the source-cube skeleton to the ProtoCube."""
-
-        skeleton = _Skeleton(coord_payload.scalar.values, cube._data)
+        if cube.has_lazy_data():
+            data = cube.lazy_data()
+        else:
+            data = cube.data
+        skeleton = _Skeleton(coord_payload.scalar.values, data)
         # Attempt to do something sensible with mixed scalar dtypes.
         for i, metadata in enumerate(coord_payload.scalar.metadata):
             if metadata.points_dtype > self._coord_metadata[i].points_dtype:

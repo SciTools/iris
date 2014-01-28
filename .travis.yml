@@ -18,6 +18,9 @@ git:
 
 install:
 
+  - export BIGGUS_REF="v0.3"
+  - export BIGGUS_SUFFIX=$(echo "${BIGGUS_REF}" | sed "s/^v//")
+
   - export CARTOPY_REF="v0.10.0"
   - export CARTOPY_SUFFIX=$(echo "${CARTOPY_REF}" | sed "s/^v//")
 
@@ -78,6 +81,14 @@ install:
   - cd python
   - ../../.travis_no_output sudo /usr/bin/python setup.py install
   - cd ../..
+
+# biggus
+  - ./.travis_no_output wget -O biggus.zip https://github.com/SciTools/biggus/archive/${BIGGUS_REF}.zip
+  - ./.travis_no_output unzip -q biggus.zip
+  - ln -s $(pwd)/biggus-${BIGGUS_SUFFIX} biggus
+  - cd biggus
+  - ../.travis_no_output /usr/bin/python setup.py install --user
+  - cd ..
 
 # cartopy
   - ./.travis_no_output wget -O cartopy.zip https://github.com/SciTools/cartopy/archive/${CARTOPY_REF}.zip

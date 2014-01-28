@@ -24,6 +24,7 @@ import os
 from types import GeneratorType
 import unittest
 
+import biggus
 import netcdftime
 
 import iris.fileformats
@@ -39,6 +40,7 @@ class TestPPCopy(tests.IrisTest):
     def test_copy_field_deferred(self):
         field = pp.load(self.filename).next()
         clone = field.copy()
+        self.assertIsInstance(clone._data, biggus.Array)
         self.assertEqual(field, clone)
         clone.lbyr = 666
         self.assertNotEqual(field, clone)
@@ -46,6 +48,7 @@ class TestPPCopy(tests.IrisTest):
     def test_deepcopy_field_deferred(self):
         field = pp.load(self.filename).next()
         clone = deepcopy(field)
+        self.assertIsInstance(clone._data, biggus.Array)
         self.assertEqual(field, clone)
         clone.lbyr = 666
         self.assertNotEqual(field, clone)
@@ -504,7 +507,8 @@ class TestSplittableIntEquality(unittest.TestCase):
 class TestPPDataProxyEquality(unittest.TestCase):
     def test_not_implemented(self):
         class Terry(object): pass
-        pox = pp.PPDataProxy("john", "michael", "eric", "graham", "brian")
+        pox = pp.PPDataProxy("john", "michael", "eric", "graham", "brian",
+                             "spam", "beans", "eggs")
         self.assertIs(pox.__eq__(Terry()), NotImplemented)
         self.assertIs(pox.__ne__(Terry()), NotImplemented)
 

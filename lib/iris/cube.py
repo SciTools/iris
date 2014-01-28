@@ -29,6 +29,7 @@ import UserDict
 import warnings
 import zlib
 
+import biggus
 import numpy as np
 import numpy.ma as ma
 
@@ -481,8 +482,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def __init__(self, data, standard_name=None, long_name=None,
                  var_name=None, units=None, attributes=None,
                  cell_methods=None, dim_coords_and_dims=None,
-                 aux_coords_and_dims=None, aux_factories=None,
-                 data_manager=None):
+                 aux_coords_and_dims=None, aux_factories=None):
         """
         Creates a cube with data and optional metadata.
 
@@ -492,16 +492,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Args:
 
         * data
-            An object, usually a numpy array, containing the phenomenon
-            values or a data manager object. This object defines the shape
-            of the cube and the value in each cell.
+            This object defines the shape of the cube and the phenomenon
+            value in each cell.
 
-            If the object contains phenomenon values it can be a numpy
-            array, an array subclass or an *array_like* as described in
-            :func:`numpy.asarray`.
+            It can be a biggus array, a numpy array, a numpy array
+            subclass (such as :class:`numpy.ma.MaskedArray`), or an
+            *array_like* as described in :func:`numpy.asarray`.
 
-            See :attr:`Cube.data<iris.cube.Cube.data>` and
-            :class:`iris.fileformats.manager.DataManager`
+            See :attr:`Cube.data<iris.cube.Cube.data>`.
 
         Kwargs:
 
@@ -529,11 +527,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         * aux_factories
             A list of auxiliary coordinate factories. See
             :mod:`iris.aux_factory`.
-        * data_manager
-            A :class:`iris.fileformats.manager.DataManager` instance. If a data
-            manager is provided, then the data should be a numpy array of data
-            proxy instances. See :class:`iris.fileformats.pp.PPDataProxy` or
-            :class:`iris.fileformats.netcdf.NetCDFDataProxy`.
 
         For example::
 
@@ -549,15 +542,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if isinstance(data, basestring):
             raise TypeError('Invalid data type: {!r}.'.format(data))
 
-        if data_manager is not None:
-            self._data = data
-            self._data_manager = data_manager
-        else:
-            if isinstance(data, np.ndarray):
-                self._data = data
-            else:
-                self._data = np.asarray(data)
-            self._data_manager = None
+        if not isinstance(data, (biggus.Array, ma.MaskedArray)):
+            data = np.asarray(data)
+        self._my_data = data
 
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
@@ -1257,19 +1244,56 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     @property
     def shape(self):
         """The shape of the data of this cube."""
-        if self._data_manager is None:
-            if self._data is None:
-                shape = ()
-            else:
-                shape = self._data.shape
-        else:
-            shape = self._data_manager.shape(self._data)
+        shape = self.lazy_data().shape
         return shape
 
     @property
     def ndim(self):
         """The number of dimensions in the data of this cube."""
         return len(self.shape)
+
+    def lazy_data(self, array=None):
+        """
+        Return a :class:`biggus.Array` representing the
+        multi-dimensional data of the Cube, and optionally provide a
+        new array of values.
+
+        Accessing this method will never cause the data to be loaded.
+        Similarly, calling methods on, or indexing, the returned Array
+        will not cause the Cube to have loaded data.
+
+        If the data have already been loaded for the Cube, the returned
+        Array will be a :class:`biggus.NumpyArrayAdapter` which wraps
+        the numpy array from `self.data`.
+
+        Kwargs:
+
+        * array (:class:`biggus.Array` or None):
+            When this is not None it sets the multi-dimensional data of
+            the cube to the given value.
+
+        Returns:
+            A :class:`biggus.Array` representing the multi-dimensional
+            data of the Cube.
+
+        """
+        if array is not None:
+            if not isinstance(array, biggus.Array):
+                raise TypeError('new values must be a biggus.Array')
+            if self.shape != array.shape:
+                # The _ONLY_ data reshape permitted is converting a
+                # 0-dimensional array into a 1-dimensional array of
+                # length one.
+                # i.e. self.shape = () and array.shape == (1,)
+                if self.shape or array.shape != (1,):
+                    raise ValueError('Require cube data with shape %r, got '
+                                     '%r.' % (self.shape, array.shape))
+            self._my_data = array
+        else:
+            array = self._my_data
+            if not isinstance(array, biggus.Array):
+                array = biggus.NumpyArrayAdapter(array)
+        return array
 
     @property
     def data(self):
@@ -1300,45 +1324,24 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (10, 20)
 
         """
-        # Cache the real data on first use
-        if self._data_manager is not None:
+        data = self._my_data
+        if not isinstance(data, np.ndarray):
             try:
-                self._data = self._data_manager.load(self._data)
-
-            except (MemoryError,
-                    self._data_manager.ArrayTooBigForAddressSpace), error:
-                dm_shape = self._data_manager.pre_slice_array_shape(self._data)
-                dm_dtype = self._data_manager.data_type
-                # if the data manager shape is not the same as the cube's
-                # shape, it is because there must be deferred indexing pending
-                # once the data has been read into memory. Make the error
-                # message for this nice.
-                if self.shape != dm_shape:
-                    msg = ("The cube's data array shape would have been %r, "
-                           "with the data manager needing a data shape of %r "
-                           "(before it can reduce to the cube's required "
-                           "size); the data type is %s.\n") % (dm_shape,
-                                                               self.shape,
-                                                               dm_dtype)
-                else:
-                    msg = 'The array shape would have been %r and the data ' \
-                          'type %s.\n' % (self.shape, dm_dtype)
-
-                if isinstance(error, MemoryError):
-                    raise MemoryError(
-                        "Failed to create the cube's data as there was not "
-                        "enough memory available.\n" + msg + "Consider "
-                        "freeing up variables or indexing the cube before "
-                        "getting its data.")
-                else:
-                    raise ValueError(
-                        "Failed to create the cube's data as there is not "
-                        "enough address space to represent the array.\n" +
-                        msg + "The cube will need to be reduced in order "
-                        "to load the data.")
-
-            self._data_manager = None
-        return self._data
+                data = data.masked_array()
+            except MemoryError:
+                msg = "Failed to create the cube's data as there was not" \
+                      " enough memory available.\n" \
+                      "The array shape would have been {0!r} and the data" \
+                      " type {1}.\n" \
+                      "Consider freeing up variables or indexing the cube" \
+                      " before getting its data."
+                msg = msg.format(self.shape, data.dtype)
+                raise MemoryError(msg)
+            # Unmask the array only if it is filled.
+            if ma.count_masked(data) == 0:
+                data = data.data
+            self._my_data = data
+        return data
 
     @data.setter
     def data(self, value):
@@ -1352,8 +1355,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 raise ValueError('Require cube data with shape %r, got '
                                  '%r.' % (self.shape, data.shape))
 
-        self._data = data
-        self._data_manager = None
+        self._my_data = data
+
+    def has_lazy_data(self):
+        return isinstance(self._my_data, biggus.Array)
 
     @property
     def dim_coords(self):
@@ -1755,33 +1760,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         except StopIteration:
             first_slice = None
 
-        # handle unloaded data
-        data_manager = None
-        use_data_proxy = self._data_manager is not None
-
         if first_slice is not None:
-            if use_data_proxy:
-                data, data_manager = self._data_manager.getitem(self._data,
-                                                                first_slice)
-            else:
-                data = self.data[first_slice]
+            data = self._my_data[first_slice]
         else:
-            if use_data_proxy:
-                data = copy.deepcopy(self._data)
-                data_manager = copy.deepcopy(self._data_manager)
-            else:
-                data = copy.deepcopy(self.data)
+            data = copy.deepcopy(self._my_data)
 
         for other_slice in slice_gen:
-            if use_data_proxy:
-                data, data_manager = data_manager.getitem(data, other_slice)
-            else:
-                data = data[other_slice]
+            data = data[other_slice]
 
-        # We don't want a view of the numpy array, so take a copy of it if
-        # it's not our own (this applies to proxy "empty data" arrays too)
-        if not data.flags['OWNDATA']:
-            data = data.copy()
+        # We don't want a view of the data, so take a copy of it if it's
+        # not already our own.
+        if isinstance(data, biggus.Array) or not data.flags['OWNDATA']:
+            data = copy.deepcopy(data)
 
         # We can turn a masked array into a normal array if it's full.
         if isinstance(data, ma.core.MaskedArray):
@@ -1789,7 +1779,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 data = data.filled()
 
         # Make the new cube slice
-        cube = Cube(data, data_manager=data_manager)
+        cube = Cube(data)
         cube.metadata = copy.deepcopy(self.metadata)
 
         # Record a mapping from old coordinate IDs to new coordinates,
@@ -2022,7 +2012,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # The data needs to be copied, otherwise this view of the transposed
         # data will not be contiguous. Ensure not to assign via the cube.data
         # setter property since we are reshaping the cube payload in-place.
-        self._data = np.transpose(self.data, new_order).copy()
+        self._my_data = np.transpose(self.data, new_order).copy()
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
 
@@ -2097,78 +2087,77 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             cell_methods_xml_element.appendChild(cell_method_xml_element)
         cube_xml_element.appendChild(cell_methods_xml_element)
 
-        if self._data is not None:
-            data_xml_element = doc.createElement("data")
+        data_xml_element = doc.createElement("data")
 
-            data_xml_element.setAttribute("shape", str(self.shape))
+        data_xml_element.setAttribute("shape", str(self.shape))
 
-            # NB. Getting a checksum triggers any deferred loading,
-            # in which case it also has the side-effect of forcing the
-            # byte order to be native.
-            if checksum:
-                data = self.data
+        # NB. Getting a checksum triggers any deferred loading,
+        # in which case it also has the side-effect of forcing the
+        # byte order to be native.
+        if checksum:
+            data = self.data
 
-                # Ensure consistent memory layout for checksums.
-                def normalise(data):
-                    data = np.ascontiguousarray(data)
-                    if data.dtype.newbyteorder('<') != data.dtype:
-                        data = data.byteswap(False)
-                        data.dtype = data.dtype.newbyteorder('<')
-                    return data
+            # Ensure consistent memory layout for checksums.
+            def normalise(data):
+                data = np.ascontiguousarray(data)
+                if data.dtype.newbyteorder('<') != data.dtype:
+                    data = data.byteswap(False)
+                    data.dtype = data.dtype.newbyteorder('<')
+                return data
 
-                if isinstance(data, ma.MaskedArray):
-                    # Fill in masked values to avoid the checksum being
-                    # sensitive to unused numbers. Use a fixed value so
-                    # a change in fill_value doesn't affect the
-                    # checksum.
-                    crc = hex(zlib.crc32(normalise(data.filled(0))))
-                    data_xml_element.setAttribute("checksum", crc)
-                    if ma.is_masked(data):
-                        crc = hex(zlib.crc32(normalise(data.mask)))
-                    else:
-                        crc = 'no-masked-elements'
-                    data_xml_element.setAttribute("mask_checksum", crc)
-                    data_xml_element.setAttribute('fill_value',
-                                                  str(data.fill_value))
+            if isinstance(data, ma.MaskedArray):
+                # Fill in masked values to avoid the checksum being
+                # sensitive to unused numbers. Use a fixed value so
+                # a change in fill_value doesn't affect the
+                # checksum.
+                crc = hex(zlib.crc32(normalise(data.filled(0))))
+                data_xml_element.setAttribute("checksum", crc)
+                if ma.is_masked(data):
+                    crc = hex(zlib.crc32(normalise(data.mask)))
                 else:
-                    crc = hex(zlib.crc32(normalise(data)))
-                    data_xml_element.setAttribute("checksum", crc)
-            elif self._data_manager is not None:
-                data_xml_element.setAttribute("state", "deferred")
+                    crc = 'no-masked-elements'
+                data_xml_element.setAttribute("mask_checksum", crc)
+                data_xml_element.setAttribute('fill_value',
+                                              str(data.fill_value))
             else:
-                data_xml_element.setAttribute("state", "loaded")
+                crc = hex(zlib.crc32(normalise(data)))
+                data_xml_element.setAttribute("checksum", crc)
+        elif self.has_lazy_data():
+            data_xml_element.setAttribute("state", "deferred")
+        else:
+            data_xml_element.setAttribute("state", "loaded")
 
-            # Add the dtype, and also the array and dtype orders if the
-            # data is loaded.
-            if self._data_manager is None:
-                data = self.data
-                dtype = data.dtype
+        # Add the dtype, and also the array and mask orders if the
+        # data is loaded.
+        if not self.has_lazy_data():
+            data = self.data
+            dtype = data.dtype
 
-                def _order(array):
-                    order = ''
-                    if array.flags['C_CONTIGUOUS']:
-                        order = 'C'
-                    elif array.flags['F_CONTIGUOUS']:
-                        order = 'F'
-                    return order
-                if order:
-                    data_xml_element.setAttribute('order', _order(data))
+            def _order(array):
+                order = ''
+                if array.flags['C_CONTIGUOUS']:
+                    order = 'C'
+                elif array.flags['F_CONTIGUOUS']:
+                    order = 'F'
+                return order
+            if order:
+                data_xml_element.setAttribute('order', _order(data))
 
-                # NB. dtype.byteorder can return '=', which is bad for
-                # cross-platform consistency - so we use dtype.str
-                # instead.
-                byte_order = {'>': 'big', '<': 'little'}.get(dtype.str[0])
-                if byte_order:
-                    data_xml_element.setAttribute('byteorder', byte_order)
+            # NB. dtype.byteorder can return '=', which is bad for
+            # cross-platform consistency - so we use dtype.str
+            # instead.
+            byte_order = {'>': 'big', '<': 'little'}.get(dtype.str[0])
+            if byte_order:
+                data_xml_element.setAttribute('byteorder', byte_order)
 
-                if order and isinstance(data, ma.core.MaskedArray):
-                    data_xml_element.setAttribute('mask_order',
-                                                  _order(data.mask))
-            else:
-                dtype = self._data_manager.data_type
-            data_xml_element.setAttribute('dtype', dtype.name)
+            if order and isinstance(data, ma.core.MaskedArray):
+                data_xml_element.setAttribute('mask_order',
+                                              _order(data.mask))
+        else:
+            dtype = self.lazy_data().dtype
+        data_xml_element.setAttribute('dtype', dtype.name)
 
-            cube_xml_element.appendChild(data_xml_element)
+        cube_xml_element.appendChild(data_xml_element)
 
         return cube_xml_element
 
@@ -2196,18 +2185,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return self._deepcopy(memo)
 
     def _deepcopy(self, memo, data=None):
-        # TODO FIX this with deferred loading and investiaget data=False,...
         if data is None:
-            if self._data is not None and self._data.ndim == 0:
+            if not self.has_lazy_data() and self.ndim == 0:
                 # Cope with NumPy's asymmetric (aka. "annoying!") behaviour
                 # of deepcopy on 0-d arrays.
-                new_cube_data = np.asanyarray(self._data)
+                new_cube_data = np.asanyarray(self.data)
             else:
-                new_cube_data = copy.deepcopy(self._data, memo)
-
-            new_cube_data_manager = copy.deepcopy(self._data_manager, memo)
+                new_cube_data = copy.copy(self._my_data)
         else:
-            data = np.asanyarray(data)
+            if not isinstance(data, biggus.Array):
+                data = np.asanyarray(data)
 
             if data.shape != self.shape:
                 msg = 'Cannot copy cube with new data of a different shape ' \
@@ -2215,7 +2202,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 raise ValueError(msg)
 
             new_cube_data = data
-            new_cube_data_manager = None
 
         new_dim_coords_and_dims = copy.deepcopy(self._dim_coords_and_dims,
                                                 memo)
@@ -2234,8 +2220,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         new_cube = Cube(new_cube_data,
                         dim_coords_and_dims=new_dim_coords_and_dims,
-                        aux_coords_and_dims=new_aux_coords_and_dims,
-                        data_manager=new_cube_data_manager)
+                        aux_coords_and_dims=new_aux_coords_and_dims)
         new_cube.metadata = copy.deepcopy(self.metadata, memo)
 
         for factory in self.aux_factories:
