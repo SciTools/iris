@@ -1246,6 +1246,30 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return len(self.shape)
 
     def lazy_data(self, array=None):
+        """
+        Return a :class:`biggus.Array` representing the
+        multi-dimensional data of the Cube, and optionally provide a
+        new array of values.
+
+        Accessing this method will never cause the data to be loaded.
+        Similarly, calling methods on, or indexing, the returned Array
+        will not cause the Cube to have loaded data.
+
+        If the data have already been loaded for the Cube, the returned
+        Array will be a :class:`biggus.NumpyArrayAdapter` which wraps
+        the numpy array from `self.data`.
+
+        Kwargs:
+
+        * array (:class:`biggus.Array` or None):
+            When this is not None it sets the multi-dimensional data of
+            the cube to the given value.
+
+        Returns:
+            A :class:`biggus.Array` representing the multi-dimensional
+            data of the Cube.
+
+        """
         if array is not None:
             if not isinstance(array, biggus.Array):
                 raise TypeError('new values must be a biggus.Array')
