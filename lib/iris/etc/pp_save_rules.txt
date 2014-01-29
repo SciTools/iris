@@ -651,23 +651,46 @@ THEN
     pp.lblev = scalar_coord(cm, 'air_potential_temperature').points[0]
     pp.blev = scalar_coord(cm, 'air_potential_temperature').points[0]
 
-# single hybrid_height level (reversed from the equivalent load rule)
+# single hybrid_height level
 IF
+    has_aux_factory(cm, iris.aux_factory.HybridHeightFactory)
     scalar_coord(cm, 'model_level_number') is not None
     scalar_coord(cm, 'model_level_number').bounds is None
-    scalar_coord(cm, 'level_height') is not None
-    scalar_coord(cm, 'level_height').bounds is not None
-    scalar_coord(cm, 'sigma') is not None
-    scalar_coord(cm, 'sigma').bounds is not None
+    aux_factory(cm, iris.aux_factory.HybridHeightFactory).dependencies['delta'] is not None
+    aux_factory(cm, iris.aux_factory.HybridHeightFactory).dependencies['delta'].bounds is not None
+    aux_factory(cm, iris.aux_factory.HybridHeightFactory).dependencies['sigma'] is not None
+    aux_factory(cm, iris.aux_factory.HybridHeightFactory).dependencies['sigma'].bounds is not None
 THEN
     pp.lbvc = 65
     pp.lblev = scalar_coord(cm, 'model_level_number').points[0]
-    pp.blev = scalar_coord(cm, 'level_height').points[0]
-    pp.brlev = scalar_coord(cm, 'level_height').bounds[0, 0]
-    pp.brsvd[0] = scalar_coord(cm, 'level_height').bounds[0, 1]
-    pp.bhlev = scalar_coord(cm, 'sigma').points[0]
-    pp.bhrlev = scalar_coord(cm, 'sigma').bounds[0, 0]
-    pp.brsvd[1] = scalar_coord(cm, 'sigma').bounds[0, 1]
+    pp.blev = aux_factory(cm, iris.aux_factory.HybridHeightFactory).dependencies['delta'].points[0]
+    pp.brlev = aux_factory(cm, iris.aux_factory.HybridHeightFactory).dependencies['delta'].bounds[0, 0]
+    pp.brsvd[0] = aux_factory(cm, iris.aux_factory.HybridHeightFactory).dependencies['delta'].bounds[0, 1]
+    pp.bhlev = aux_factory(cm, iris.aux_factory.HybridHeightFactory).dependencies['sigma'].points[0]
+    pp.bhrlev = aux_factory(cm, iris.aux_factory.HybridHeightFactory).dependencies['sigma'].bounds[0, 0]
+    pp.brsvd[1] = aux_factory(cm, iris.aux_factory.HybridHeightFactory).dependencies['sigma'].bounds[0, 1]
+
+# single hybrid pressure level
+IF
+    has_aux_factory(cm, iris.aux_factory.HybridPressureFactory)
+    scalar_coord(cm, 'model_level_number') is not None
+    scalar_coord(cm, 'model_level_number').bounds is None
+    aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['delta'] is not None
+    aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['delta'].bounds is not None
+    aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['sigma'] is not None
+    aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['sigma'].bounds is not None
+THEN
+    pp.lbvc = 9
+    pp.lblev = scalar_coord(cm, 'model_level_number').points[0]
+
+    # Note that sigma and delta are swapped around from the hybrid height rules above.
+    pp.blev = aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['sigma'].points[0]
+    pp.brlev = aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['sigma'].bounds[0, 0]
+    pp.brsvd[0] = aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['sigma'].bounds[0, 1]
+
+    pp.bhlev = aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['delta'].points[0]
+    pp.bhrlev = aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['delta'].bounds[0, 0]
+    pp.brsvd[1] = aux_factory(cm, iris.aux_factory.HybridPressureFactory).dependencies['delta'].bounds[0, 1]
 
 
 #MDI

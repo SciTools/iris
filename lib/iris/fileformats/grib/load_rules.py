@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
-# DO NOT EDIT DIRECTLY
-# Auto-generated from SciTools/iris-code-generators:tools/gen_rules.py
+# Historically this was auto-generated from
+# SciTools/iris-code-generators:tools/gen_rules.py
 
 import warnings
 
@@ -352,7 +352,7 @@ def convert(grib):
         aux_coords_and_dims.append((AuxCoord(grib.scaledValueOfFirstFixedSurface, standard_name='model_level_number', attributes={'positive': 'up'}), None))
         aux_coords_and_dims.append((DimCoord(grib.pv[grib.scaledValueOfFirstFixedSurface], long_name='level_pressure', units='Pa'), None))
         aux_coords_and_dims.append((AuxCoord(grib.pv[grib.numberOfCoordinatesValues/2 + grib.scaledValueOfFirstFixedSurface], long_name='sigma'), None))
-        factories.append(Factory(HybridPressureFactory, [{'long_name': 'level_pressure'}, {'long_name': 'sigma'}, Reference('surface_pressure')]))
+        factories.append(Factory(HybridPressureFactory, [{'long_name': 'level_pressure'}, {'long_name': 'sigma'}, Reference('surface_air_pressure')]))
 
     if grib._originatingCentre != 'unknown':
         aux_coords_and_dims.append((AuxCoord(points=grib._originatingCentre, long_name='originating_centre', units='no_unit'), None))
@@ -372,7 +372,7 @@ def convert(grib):
             (grib.parameterCategory == 3) and \
             (grib.parameterNumber == 25) and \
             (grib.typeOfFirstFixedSurface == 105):
-        references.append(ReferenceTarget('surface_pressure', lambda cube: {'standard_name': 'surface_air_pressure', 'units': 'Pa', 'data': np.exp(cube.data)}))
+        references.append(ReferenceTarget('surface_air_pressure', lambda cube: {'standard_name': 'surface_air_pressure', 'units': 'Pa', 'data': np.exp(cube.data)}))
 
     return (factories, references, standard_name, long_name, units, attributes,
             cell_methods, dim_coords_and_dims, aux_coords_and_dims)

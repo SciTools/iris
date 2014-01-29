@@ -594,6 +594,35 @@ def scalar_cell_method(cube, method, coord_name):
     return found_cell_method
 
 
+def has_aux_factory(cube, aux_factory_class):
+    """
+    Try to find an class:`~iris.aux_factory.AuxCoordFactory` instance of the
+    specified type on the cube.
+
+    """
+    for factory in cube.aux_factories:
+        if isinstance(factory, aux_factory_class):
+            return True
+    return False
+
+
+def aux_factory(cube, aux_factory_class):
+    """
+    Return the class:`~iris.aux_factory.AuxCoordFactory` instance of the
+    specified type from a cube.
+
+    """
+    aux_factories = [aux_factory for aux_factory in cube.aux_factories if
+                     isinstance(aux_factory, aux_factory_class)]
+    if not aux_factories:
+        raise ValueError('Cube does not have an aux factory of '
+                         'type {!r}.'.format(aux_factory_class))
+    elif len(aux_factories) > 1:
+        raise ValueError('Cube has more than one aux factory of '
+                         'type {!r}.'.format(aux_factory_class))
+    return aux_factories[0]
+
+
 class _ReferenceError(Exception):
     """Signals an invalid/missing reference field."""
     pass
