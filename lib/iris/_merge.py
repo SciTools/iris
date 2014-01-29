@@ -184,6 +184,11 @@ class _CoordPayload(namedtuple('CoordPayload',
                                self.factory_defns)
 
 
+class _MergefailReasons(Exception):
+    # Signal containing identified reasons for failure of ProtoCube.register.
+    pass
+
+
 class _CoordSignature(namedtuple('CoordSignature',
                                  ['scalar_defns',
                                   'vector_dim_coords_and_dims',
@@ -216,6 +221,119 @@ class _CoordSignature(namedtuple('CoordSignature',
 
     """
 
+    @staticmethod
+    def _diagnose_coords_mismatch(coord_style, defns_a, defns_b,
+                                  dimlists_a=None, dimlists_b=None):
+        # Return reasons (strings) why coords-and-dims do not match.
+        # 'coord_style' is one of 'scalar', 'dimension' or 'auxiliary'.
+        # 'defns' elements are either CoordDefn (scalar) or Coord (aux/dim).
+        # 'dimlists' are only for dim/aux coords.
+        msgs = []
+
+        def coord_name(coord_info):
+            for namekey in ('standard_name', 'long_name', 'var_name'):
+                name = getattr(coord_info, namekey, None)
+                if name:
+                    return name
+            return ''  # A nameless coordinate is possible.
+
+        names_a = [coord_name(defn) for defn in defns_a]
+        names_b = [coord_name(defn) for defn in defns_b]
+
+        # First test for fundamental mismatches betweens defns lists.
+        if len(defns_a) != len(defns_b):
+            msgs.append('different numbers of {} coordinates.'.format(
+                coord_style))
+        elif sorted(names_a) != sorted(names_b):
+            msgs.append(
+                '{} coordinates have different names: {}.'.format(
+                    coord_style,
+                    ', '.join(sorted(set(names_a) ^ set(names_b)))))
+        elif names_a != names_b:
+            # When names are same, but order different.
+            msgs.append(
+                '{} coordinates do not compare one-to-one.'.format(
+                    coord_style))
+
+        # If no 'fundamental' problem, compare each coord in turn
+        if not msgs:
+            for name, defn_a, defn_b in zip(names_a, defns_a, defns_b):
+                if defn_a != defn_b:
+                    # List non-matching from "_difference_attrs" method
+                    # (defined for both Coord and CoordDef)
+                    diff_keys = defn_a._difference_attrs(defn_b)
+                    msgs.append(
+                        '{} coordinate "{}" has different {}.'.format(
+                            coord_style, name,
+                            ', '.join(diff_keys)))
+            if coord_style != 'scalar':
+                # Also compare dims
+                for name, dims_a, dims_b in zip(names_a,
+                                                dimlists_a,
+                                                dimlists_b):
+                    if dims_a != dims_b:
+                        msgs.append(
+                            '{} coordinate "{}" maps to different '
+                            'dimensions.'.format(
+                                coord_style, name))
+        if not msgs:
+            raise ValueError('Unknown reason for {} coordinates '
+                             'mismatch.'.format(coord_style))
+
+        return msgs
+
+    def match(self, other, fail_if_not=False):
+        """
+        Return whether this matches another.
+
+        Kwargs:
+
+        * fail_if_not (bool):
+            If no match, raise an Exception with detailed explanation.
+
+        """
+        match = self == other
+        if not match and fail_if_not:
+
+            # Test each class of coordinate --> generic or per-coord messages
+            msgs = []
+            if self.scalar_defns != other.scalar_defns:
+                msgs += self._diagnose_coords_mismatch(
+                    'scalar',
+                    self.scalar_defns, other.scalar_defns)
+
+            def codim_coords(coords_and_dims):
+                return [defn[0] for defn in coords_and_dims]
+
+            def codim_dims(coords_and_dims):
+                return [defn[1] for defn in coords_and_dims]
+
+            if (self.vector_dim_coords_and_dims !=
+                    other.vector_dim_coords_and_dims):
+                msgs += self._diagnose_coords_mismatch(
+                    'dimension',
+                    codim_coords(self.vector_dim_coords_and_dims),
+                    codim_coords(other.vector_dim_coords_and_dims),
+                    codim_dims(self.vector_dim_coords_and_dims),
+                    codim_dims(other.vector_dim_coords_and_dims))
+
+            if (self.vector_aux_coords_and_dims !=
+                    other.vector_aux_coords_and_dims):
+                msgs += self._diagnose_coords_mismatch(
+                    'auxiliary',
+                    codim_coords(self.vector_aux_coords_and_dims),
+                    codim_coords(other.vector_aux_coords_and_dims),
+                    codim_dims(self.vector_aux_coords_and_dims),
+                    codim_dims(other.vector_aux_coords_and_dims))
+
+            # Also check factories
+            if self.factory_defns != other.factory_defns:
+                msgs.append('cube.aux_factories() differ.')
+
+            raise _MergefailReasons(msgs)
+
+        return match
+
 
 class _CubeSignature(namedtuple('CubeSignature',
                                 ['defn', 'data_shape', 'data_type',
@@ -240,6 +358,41 @@ class _CubeSignature(namedtuple('CubeSignature',
         or None if no such value exists.
 
     """
+    def match(self, other, fail_if_not=False):
+        """
+        Return whether this matches another.
+
+        Kwargs:
+
+        * fail_if_not (bool):
+            If no match, raise an Exception with detailed explanation.
+
+        """
+        match = self == other
+        if not match and fail_if_not:
+            msgs = []
+            for field in self._fields:
+                this_val = getattr(self, field)
+                other_val = getattr(other, field)
+                if other_val != this_val:
+                    if field == 'defn':
+                        # Use diff-strings (multiple) from separate method.
+                        defn_diffs = self.defn._difference_attrs(other.defn)
+                        for defn_diff in defn_diffs:
+                            msgs.append('cube.{}'.format(defn_diff))
+                    else:
+                        if field == 'data_manager':
+                            # Value content too involved to print out.
+                            msgs.append('cube._data_manager differs.')
+                        else:
+                            # Show actual non-matching values
+                            msgs.append('cube {} differs: '
+                                        '{!r} != {!r}.'.format(
+                                            field, this_val, other_val))
+
+            raise _MergefailReasons(msgs)
+
+        return match
 
 
 class _Skeleton(namedtuple('Skeleton',
@@ -1046,7 +1199,7 @@ class ProtoCube(object):
 
         return merged_cubes
 
-    def register(self, cube):
+    def register(self, cube, fail_if_not=False):
         """
         Add a compatible :class:`iris.cube.Cube` as a source-cube for
         merging under this :class:`ProtoCube`.
@@ -1061,21 +1214,38 @@ class ProtoCube(object):
             Candidate :class:`iris.cube.Cube` to be associated with
             this :class:`ProtoCube`.
 
+        Kwargs:
+
+        * fail_if_not:
+            Raise an informative MergeError if registration fails.
+
         Returns:
             True iff the :class:`iris.cube.Cube` is compatible with
             this :class:`ProtoCube`.
 
         """
-        match = self._cube_signature == self._build_signature(cube)
+        try:
+            other_cube_signature = self._build_signature(cube)
+            match = self._cube_signature.match(other_cube_signature,
+                                               fail_if_not)
 
-        if match:
-            coord_payload = self._extract_coord_payload(cube)
-            signature = coord_payload.as_signature()
-            match = self._coord_signature == signature
+            if match:
+                coord_payload = self._extract_coord_payload(cube)
+                signature = coord_payload.as_signature()
+                match = self._coord_signature.match(signature, fail_if_not)
 
-        if match:
-            # Register the cube as a source-cube for this ProtoCube.
-            self._add_cube(cube, coord_payload)
+            if match:
+                # Register the cube as a source-cube for this ProtoCube.
+                self._add_cube(cube, coord_payload)
+
+        except _MergefailReasons as err:
+            reason_explains = err.args[0]
+            if not reason_explains:
+                raise ValueError('Failed to identify reason for not merging.')
+            err_lines = ['Failed to merge into a single cube:']
+            err_lines += reason_explains
+            combined_message = '\n  '.join(err_lines)
+            raise iris.exceptions.MergeError(combined_message)
 
         return match
 

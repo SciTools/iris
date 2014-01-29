@@ -1,0 +1,5 @@
+Failed to merge into a single cube:
+  scalar coordinates have different names: life, liff, like, ming, mong, moog.
+  dimension coordinates have different names: altitude, equinimity, equinomity, equinumity, latitude, longitude.
+  auxiliary coordinates have different names: ay, bee, cee, one, three, two.
+  cube.aux_factories() differ.

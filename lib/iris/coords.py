@@ -59,6 +59,19 @@ class CoordDefn(collections.namedtuple('CoordDefn',
         """
         return self.standard_name or self.long_name or self.var_name or default
 
+    def _difference_attrs(self, other):
+        """
+        Return a list of the attributes which make this != other.
+
+        .. note:
+            Must match __eq__ definition, i.e. result == [] IFF self == other.
+
+        """
+        # Match NamedTuple __eq__: compare by keys
+        diff_keys = [key for key in self._fields
+                     if getattr(self, key) != getattr(other, key)]
+        return diff_keys
+
 
 # Coordinate cell styles. Used in plot and cartography.
 POINT_MODE = 0
@@ -539,6 +552,31 @@ class Coord(CFVariableMixin):
         defn = CoordDefn(self.standard_name, self.long_name, self.var_name,
                          self.units, self.attributes, self.coord_system)
         return defn
+
+    def _difference_attrs(self, other):
+        """
+        Return a list of the attributes which make this != other.
+
+        .. note:
+            Must match __eq__ definition, i.e. result == [] IFF self == other.
+
+        """
+        # Compare definitions
+        diff_keys = self._as_defn()._difference_attrs(other._as_defn())
+
+        # Also add points + bounds (mirroring __eq__ method)
+        if not iris.util.array_equal(self.points, other.points):
+            diff_keys.append('points')
+
+        bounds_same = True
+        if self.bounds is not None and other.bounds is not None:
+            bounds_same = iris.util.array_equal(self.bounds, other.bounds)
+        elif self.bounds is not None or other.bounds is not None:
+            bounds_same = False
+        if not bounds_same:
+            diff_keys.append('bounds')
+
+        return diff_keys
 
     def __binary_operator__(self, other, mode_constant):
         """
@@ -1275,6 +1313,20 @@ class DimCoord(Coord):
             result = (Coord.__eq__(self, other) and self.circular ==
                       other.circular)
         return result
+
+    def _difference_attrs(self, other):
+        """
+        Return a list of the attributes which make this != other.
+
+        .. note:
+            Must match __eq__ definition, i.e. result == [] IFF self == other.
+
+        """
+        # As __eq__ definition : add 'circular' to the default stuff.
+        diff_keys = super(DimCoord, self)._difference_attrs(other)
+        if self.circular != DimCoord.from_coord(other).circular:
+            diff_keys.append('circular')
+        return diff_keys
 
     # The __ne__ operator from Coord implements the not __eq__ method.
 
