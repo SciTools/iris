@@ -20,13 +20,17 @@
 # importing anything else.
 import iris.tests as tests
 
+import biggus
 import mock
 import numpy as np
 
 from iris import FUTURE
 from iris.analysis import WeightedAggregator, Aggregator
+from iris.analysis import MEAN, MIN
 from iris.cube import Cube
 from iris.coords import AuxCoord, DimCoord
+from iris.exceptions import CoordinateNotFoundError, CoordinateCollapseError
+from iris.exceptions import LazyAggregatorError
 
 
 class Test___init___data(tests.IrisTest):
@@ -68,6 +72,45 @@ class Test_xml(tests.IrisTest):
         data[1, 2] = np.ma.masked
         cube = Cube(data)
         self.assertCML(cube)
+
+
+class Test_collapsed__lazy(tests.IrisTest):
+    def setUp(self):
+        self.data = np.arange(6.0).reshape((2, 3))
+        self.lazydata = biggus.NumpyArrayAdapter(self.data)
+        cube = Cube(self.lazydata)
+        for i_dim, name in enumerate(('y', 'x')):
+            npts = cube.shape[i_dim]
+            coord = DimCoord(np.arange(npts), long_name=name)
+            cube.add_dim_coord(coord, i_dim)
+        self.cube = cube
+
+    def test_dim0_lazy(self):
+        cube_collapsed = self.cube.collapsed('y', MEAN, lazy=True)
+        self.assertTrue(cube_collapsed.has_lazy_data())
+        self.assertArrayAlmostEqual(cube_collapsed.data, [1.5, 2.5, 3.5])
+        self.assertFalse(cube_collapsed.has_lazy_data())
+
+    def test_fail_dim1(self):
+        # Check that MEAN produces a suitable error message for dim != 0.
+        # N.B. non-lazy op can do this
+        with self.assertRaises(AssertionError) as err:
+            cube_collapsed = self.cube.collapsed('x', MEAN, lazy=True)
+
+    def test_fail_multidims(self):
+        # Check that MEAN produces a suitable error message for multiple dims.
+        # N.B. non-lazy op can do this
+        with self.assertRaises(AssertionError) as err:
+            cube_collapsed = self.cube.collapsed(('x', 'y'), MEAN, lazy=True)
+
+    def test_fail_no_lazy(self):
+        dummy_agg = Aggregator('custom_op', lambda x: 1)
+        with self.assertRaises(LazyAggregatorError) as err:
+            cube_collapsed = self.cube.collapsed('x', dummy_agg, lazy=True)
+        msg = err.exception.message
+        self.assertIn('custom_op', msg)
+        self.assertIn('lazy', msg)
+        self.assertIn('not support', msg)
 
 
 class Test_collapsed__warning(tests.IrisTest):
