@@ -98,8 +98,7 @@ class TestVertical(tests.IrisTest):
         # LBCODE, support len().
         def field_with_data(scale=1):
             x, y = 40, 30
-            field = mock.MagicMock(_data_manager=None,
-                                   data=np.arange(1200).reshape(y, x) * scale,
+            field = mock.MagicMock(_data=np.arange(1200).reshape(y, x) * scale,
                                    lbcode=[1], lbnpt=x, lbrow=y,
                                    bzx=350, bdx=1.5, bzy=40, bdy=1.5,
                                    lbuser=[0] * 7, lbrsvd=[0] * 4)
