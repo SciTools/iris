@@ -94,12 +94,19 @@ class IgnoreCubeException(IrisError):
 
 class MergeError(IrisError):
     """
-    Raised when merge is expected to, but fails to, produce a single cube."
+    Raised when merge is expected to produce a single cube, but fails to
+    do so
 
     """
     def __init__(self, differences):
         """
-        TODO
+        Creates a MergeError with a list of textual descriptions of
+        the differences which prevented a merge.
+
+        Args:
+
+        * differences:
+            The list of strings which describe the differences.
 
         """
         self.differences = differences
