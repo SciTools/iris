@@ -355,9 +355,9 @@ class TestLicenseHeaders(unittest.TestCase):
                         failed = True
                     elif last_change.year > years[1]:
                         print('The file header at {} is out of date. The last'
-                              ' commit was in {}, but the license states it '
-                              'was {}.'.format(fname, last_change.year,
-                                               years[1]))
+                              ' commit was in {}, but the copyright states it'
+                              ' was {}.'.format(fname, last_change.year,
+                                                years[1]))
                         failed = True
 
         if failed:

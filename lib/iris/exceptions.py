@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -50,11 +50,6 @@ class CoordinateNotRegularError(ValueError):
     pass
 
 
-class DuplicateDataError(IrisError):
-    """Raised when merging two or more cubes that have identical metadata."""
-    pass
-
-
 class InvalidCubeError(IrisError):
     """Raised when a Cube validation check fails."""
     pass
@@ -90,3 +85,33 @@ class IgnoreCubeException(IrisError):
 
     """
     pass
+
+
+class MergeError(IrisError):
+    """
+    Raised when merge is expected to produce a single cube, but fails to
+    do so.
+
+    """
+    def __init__(self, differences):
+        """
+        Creates a MergeError with a list of textual descriptions of
+        the differences which prevented a merge.
+
+        Args:
+
+        * differences:
+            The list of strings which describe the differences.
+
+        """
+        self.differences = differences
+
+    def __str__(self):
+        return '\n  '.join(['failed to merge into a single cube.'] +
+                           list(self.differences))
+
+
+class DuplicateDataError(MergeError):
+    """Raised when merging two or more cubes that have identical metadata."""
+    def __init__(self, msg):
+        self.differences = [msg]

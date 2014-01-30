@@ -183,6 +183,82 @@ class _CoordPayload(namedtuple('CoordPayload',
                                self.vector.aux_coords_and_dims,
                                self.factory_defns)
 
+    @staticmethod
+    def _coords_msgs(msgs, coord_group, defns_a, defns_b):
+        if defns_a != defns_b:
+            # Get a new list so we can modify it
+            defns_b = list(defns_b)
+            diff_defns = []
+            for defn_a in defns_a:
+                try:
+                    defns_b.remove(defn_a)
+                except ValueError:
+                    diff_defns.append(defn_a)
+            diff_defns.extend(defns_b)
+            if diff_defns:
+                names = set(defn.name() for defn in diff_defns)
+                msgs.append('Coordinates in {} differ: {}.'.format(
+                    coord_group, ', '.join(names)))
+            else:
+                msgs.append('Coordinates in {} differ by dtype or class'
+                            ' (i.e. DimCoord vs AuxCoord).'.format(
+                                coord_group))
+
+    def match_signature(self, signature, error_on_mismatch):
+        """
+        Return whether this _CoordPayload matches the corresponding
+        aspects of a _CoordSignature.
+
+        Args:
+
+        * signature (_CoordSignature):
+            The _CoordSignature to compare against.
+
+        * error_on_mismatch (bool):
+            If True, raise an Exception with detailed explanation.
+
+        Returns:
+           Boolean. True if and only if this _CoordPayload matches
+           the corresponding aspects `other`.
+
+        """
+        def unzip(coords_and_dims):
+            if coords_and_dims:
+                coords, dims = zip(*coords_and_dims)
+            else:
+                coords, dims = [], []
+            return coords, dims
+
+        def dims_msgs(msgs, coord_group, dimlists_a, dimlists_b):
+            if dimlists_a != dimlists_b:
+                msgs.append(
+                    'Coordinate-to-dimension mapping differs for {}.'.format(
+                        coord_group))
+
+        msgs = []
+        self._coords_msgs(msgs, 'cube.aux_coords (scalar)', self.scalar.defns,
+                          signature.scalar_defns)
+
+        coord_group = 'cube.dim_coords'
+        self_coords, self_dims = unzip(self.vector.dim_coords_and_dims)
+        other_coords, other_dims = unzip(signature.vector_dim_coords_and_dims)
+        self._coords_msgs(msgs, coord_group, self_coords, other_coords)
+        dims_msgs(msgs, coord_group, self_dims, other_dims)
+
+        coord_group = 'cube.aux_coords (non-scalar)'
+        self_coords, self_dims = unzip(self.vector.aux_coords_and_dims)
+        other_coords, other_dims = unzip(signature.vector_aux_coords_and_dims)
+        self._coords_msgs(msgs, coord_group, self_coords, other_coords)
+        dims_msgs(msgs, coord_group, self_dims, other_dims)
+
+        if self.factory_defns != signature.factory_defns:
+            msgs.append('cube.aux_factories() differ')
+
+        match = not bool(msgs)
+        if error_on_mismatch and not match:
+            raise iris.exceptions.MergeError(msgs)
+        return match
+
 
 class _CoordSignature(namedtuple('CoordSignature',
                                  ['scalar_defns',
@@ -240,6 +316,78 @@ class _CubeSignature(namedtuple('CubeSignature',
         or None if no such value exists.
 
     """
+    def _defn_msgs(self, other_defn):
+        msgs = []
+        self_defn = self.defn
+        if self_defn.standard_name != other_defn.standard_name:
+            msgs.append('cube.standard_name differs: {!r} != {!r}'.format(
+                self_defn.standard_name, other_defn.standard_name))
+        if self_defn.long_name != other_defn.long_name:
+            msgs.append('cube.long_name differs: {!r} != {!r}'.format(
+                self_defn.long_name, other_defn.long_name))
+        if self_defn.var_name != other_defn.var_name:
+            msgs.append('cube.var_name differs: {!r} != {!r}'.format(
+                self_defn.var_name, other_defn.var_name))
+        if self_defn.units != other_defn.units:
+            msgs.append('cube.units differs: {!r} != {!r}'.format(
+                self_defn.units, other_defn.units))
+        if self_defn.attributes != other_defn.attributes:
+            diff_keys = (self_defn.attributes.viewkeys() ^
+                         other_defn.attributes.viewkeys())
+            if diff_keys:
+                msgs.append('cube.attributes keys differ: ' +
+                            ', '.join(repr(key) for key in diff_keys))
+            else:
+                diff_attrs = [repr(key) for key in self_defn.attributes
+                              if np.all(self_defn.attributes[key] !=
+                                        other_defn.attributes[key])]
+                diff_attrs = ', '.join(diff_attrs)
+                msgs.append(
+                    'cube.attributes values differ for keys: {}'.format(
+                        diff_attrs))
+        if self_defn.cell_methods != other_defn.cell_methods:
+            msgs.append('cube.cell_methods differ')
+        return msgs
+
+    def match(self, other, error_on_mismatch):
+        """
+        Return whether this _CubeSignature equals another.
+
+        This is the first step to determine if two "cubes" (either a
+        real Cube or a ProtoCube) can be merged, by considering:
+            - standard_name, long_name, var_name
+            - units
+            - attributes
+            - cell_methods
+            - shape, dtype, fill_value
+
+        Args:
+
+        * other (_CubeSignature):
+            The _CubeSignature to compare against.
+
+        * error_on_mismatch (bool):
+            If True, raise a :class:`~iris.exceptions.MergeException`
+            with a detailed explanation if the two do not match.
+
+        Returns:
+           Boolean. True if and only if this _CubeSignature matches `other`.
+
+        """
+        msgs = self._defn_msgs(other.defn)
+        if self.data_shape != other.data_shape:
+            msgs.append('cube.shape differs: {} != {}'.format(
+                self.data_shape, other.data_shape))
+        if self.data_type != other.data_type:
+            msgs.append('cube data dtype differs: {} != {}'.format(
+                self.data_type, other.data_type))
+        if self.fill_value != other.fill_value:
+            msgs.append('cube data fill_value differs: {!r} != {!r}'.format(
+                self.fill_value, other.fill_value))
+        match = not bool(msgs)
+        if error_on_mismatch and not match:
+            raise iris.exceptions.MergeError(msgs)
+        return match
 
 
 class _Skeleton(namedtuple('Skeleton',
@@ -1046,7 +1194,7 @@ class ProtoCube(object):
 
         return merged_cubes
 
-    def register(self, cube):
+    def register(self, cube, error_on_mismatch=False):
         """
         Add a compatible :class:`iris.cube.Cube` as a source-cube for
         merging under this :class:`ProtoCube`.
@@ -1061,22 +1209,26 @@ class ProtoCube(object):
             Candidate :class:`iris.cube.Cube` to be associated with
             this :class:`ProtoCube`.
 
+        Kwargs:
+
+        * error_on_mismatch:
+            If True, raise an informative
+            :class:`~iris.exceptions.MergeError` if registration fails.
+
         Returns:
             True iff the :class:`iris.cube.Cube` is compatible with
             this :class:`ProtoCube`.
 
         """
-        match = self._cube_signature == self._build_signature(cube)
-
+        match = self._cube_signature.match(self._build_signature(cube),
+                                           error_on_mismatch)
         if match:
             coord_payload = self._extract_coord_payload(cube)
-            signature = coord_payload.as_signature()
-            match = self._coord_signature == signature
-
+            match = coord_payload.match_signature(self._coord_signature,
+                                                  error_on_mismatch)
         if match:
             # Register the cube as a source-cube for this ProtoCube.
             self._add_cube(cube, coord_payload)
-
         return match
 
     def _guess_axis(self, name):
@@ -1432,6 +1584,9 @@ class ProtoCube(object):
         axis_dict = {'T': 0, 'Z': 1, 'Y': 2, 'X': 3}
 
         # Coordinate sort function.
+        # NB. This makes use of two properties which don't end up in
+        # the CoordDefn used by scalar_defns: `coord.points.dtype` and
+        # `type(coord)`.
         def key_func(coord):
             return (not np.issubdtype(coord.points.dtype, np.number),
                     not isinstance(coord, iris.coords.DimCoord),
