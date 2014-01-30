@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,7 +26,7 @@ import collections
 import mock
 import numpy as np
 
-from iris.coords import AuxCoord, Coord
+from iris.coords import DimCoord, AuxCoord, Coord
 
 
 Pair = collections.namedtuple('Pair', 'points bounds')
@@ -71,53 +71,53 @@ class Test_cell(tests.IrisTest):
 
 
 class Test_collapsed(tests.IrisTest):
-    def _serialize(self, data):
-        return '|'.join(str(item) for item in data.flatten())
-
-    def setUp(self):
-        # Build numeric N points and (N, 2) bounds.
-        points = np.array([2, 4, 6, 8])
-        bounds = np.array([[1, 3], [3, 5], [5, 7], [7, 9]])
-        self.numeric = Pair(points, bounds)
-        # Build string N points and (N, 2) bounds.
-        points = np.array(['two', 'four', 'six', 'eight'])
-        bounds = np.array([['one', 'three'],
-                           ['three', 'five'],
-                           ['five', 'seven'],
-                           ['seven', 'nine']])
-        self.string = Pair(points, bounds)
-        # Build numeric N points and (N, 4) bounds.
-        points = np.array([3, 6, 9])
-        bounds = np.array([[1, 2, 4, 5], [4, 5, 7, 8], [7, 8, 10, 11]])
-        self.numeric_multi = Pair(points, bounds)
-        # Build string N points and (N, 4) bounds.
-        points = np.array(['three', 'six', 'nine'])
-        bounds = np.array([['one', 'two', 'four', 'five'],
-                           ['four', 'five', 'seven', 'eight'],
-                           ['seven', 'eight', 'ten', 'eleven']])
-        self.string_multi = Pair(points, bounds)
-        self.pairs = [self.numeric, self.numeric_multi,
-                      self.string, self.string_multi]
 
     def test_serialize(self):
+        # Collapse a string AuxCoord, causing it to be serialised.
+        string = Pair(np.array(['two', 'four', 'six', 'eight']),
+                      np.array([['one', 'three'],
+                                ['three', 'five'],
+                                ['five', 'seven'],
+                                ['seven', 'nine']]))
+        string_multi = Pair(np.array(['three', 'six', 'nine']),
+                            np.array([['one', 'two', 'four', 'five'],
+                                      ['four', 'five', 'seven', 'eight'],
+                                      ['seven', 'eight', 'ten', 'eleven']]))
+
+        def _serialize(data):
+            return '|'.join(str(item) for item in data.flatten())
+
         for units in ['unknown', 'no_unit']:
-            for points, bounds in self.pairs:
-                coord = mock.MagicMock(spec_set=AuxCoord, name='AuxCoord',
-                                       points=points, bounds=bounds,
-                                       units=units)
-                # Now perform the collase operation with the mock coordinate.
-                AuxCoord.collapsed(coord)
-                # Examine the operational footprint in the mock.
-                self.assertEqual(coord.copy.call_count, 1)
-                args, kwargs = coord.copy.call_args
-                self.assertEqual(args, ())
-                self.assertEqual(set(kwargs), set(['points', 'bounds']))
-                self.assertArrayEqual(kwargs['points'],
-                                      self._serialize(points))
-                for index in np.ndindex(coord.bounds.shape[1:]):
+            for points, bounds in [string, string_multi]:
+                coord = AuxCoord(points=points, bounds=bounds, units=units)
+                collapsed_coord = coord.collapsed()
+                self.assertArrayEqual(collapsed_coord.points,
+                                      _serialize(points))
+                for index in np.ndindex(bounds.shape[1:]):
                     index_slice = (slice(None),) + tuple(index)
-                    self.assertArrayEqual(kwargs['bounds'][index_slice],
-                                          self._serialize(bounds[index_slice]))
+                    self.assertArrayEqual(collapsed_coord.bounds[index_slice],
+                                          _serialize(bounds[index_slice]))
+
+    def test_dim_1d(self):
+        # Numeric coords should not be serialised.
+        coord = DimCoord(points=np.array([2, 4, 6, 8]),
+                         bounds=np.array([[1, 3], [3, 5], [5, 7], [7, 9]]))
+        for units in ['unknown', 'no_unit', 1, 'K']:
+            coord.units = units
+            collapsed_coord = coord.collapsed()
+            self.assertArrayEqual(collapsed_coord.points,
+                                  np.mean(coord.points))
+            self.assertArrayEqual(collapsed_coord.bounds,
+                                  [[coord.bounds.min(), coord.bounds.max()]])
+
+    def test_numeric_nd(self):
+        # Contiguous only defined for 2d bounds.
+        coord = AuxCoord(points=np.array([3, 6, 9]),
+                         bounds=np.array([[1, 2, 4, 5],
+                                          [4, 5, 7, 8],
+                                          [7, 8, 10, 11]]))
+        with self.assertRaises(ValueError):
+            collapsed_coord = coord.collapsed()
 
 
 class Test_is_compatible(tests.IrisTest):
