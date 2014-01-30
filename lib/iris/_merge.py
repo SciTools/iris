@@ -183,6 +183,82 @@ class _CoordPayload(namedtuple('CoordPayload',
                                self.vector.aux_coords_and_dims,
                                self.factory_defns)
 
+    @staticmethod
+    def _coords_msgs(msgs, coord_group, defns_a, defns_b):
+        if defns_a != defns_b:
+            # Get a new list so we can modify it
+            defns_b = list(defns_b)
+            diff_defns = []
+            for defn_a in defns_a:
+                try:
+                    defns_b.remove(defn_a)
+                except ValueError:
+                    diff_defns.append(defn_a)
+            diff_defns.extend(defns_b)
+            if diff_defns:
+                names = set(defn.name() for defn in diff_defns)
+                msgs.append('Coordinates in {} differ: {}.'.format(
+                    coord_group, ', '.join(names)))
+            else:
+                msgs.append('Coordinates in {} differ by dtype or class'
+                            ' (i.e. DimCoord vs AuxCoord).'.format(
+                                coord_group))
+
+    def match_signature(self, signature, error_on_mismatch):
+        """
+        Return whether this _CoordPayload matches the corresponding
+        aspects of a _CoordSignature.
+
+        Args:
+
+        * signature (_CoordSignature):
+            The _CoordSignature to compare against.
+
+        * error_on_mismatch (bool):
+            If True, raise an Exception with detailed explanation.
+
+        Returns:
+           Boolean. True if and only if this _CoordPayload matches
+           the corresponding aspects `other`.
+
+        """
+        def unzip(coords_and_dims):
+            if coords_and_dims:
+                coords, dims = zip(*coords_and_dims)
+            else:
+                coords, dims = [], []
+            return coords, dims
+
+        def dims_msgs(msgs, coord_group, dimlists_a, dimlists_b):
+            if dimlists_a != dimlists_b:
+                msgs.append(
+                    'Coordinate-to-dimension mapping differs for {}.'.format(
+                        coord_group))
+
+        msgs = []
+        self._coords_msgs(msgs, 'cube.aux_coords (scalar)', self.scalar.defns,
+                          signature.scalar_defns)
+
+        coord_group = 'cube.dim_coords'
+        self_coords, self_dims = unzip(self.vector.dim_coords_and_dims)
+        other_coords, other_dims = unzip(signature.vector_dim_coords_and_dims)
+        self._coords_msgs(msgs, coord_group, self_coords, other_coords)
+        dims_msgs(msgs, coord_group, self_dims, other_dims)
+
+        coord_group = 'cube.aux_coords (non-scalar)'
+        self_coords, self_dims = unzip(self.vector.aux_coords_and_dims)
+        other_coords, other_dims = unzip(signature.vector_aux_coords_and_dims)
+        self._coords_msgs(msgs, coord_group, self_coords, other_coords)
+        dims_msgs(msgs, coord_group, self_dims, other_dims)
+
+        if self.factory_defns != signature.factory_defns:
+            msgs.append('cube.aux_factories() differ')
+
+        match = not bool(msgs)
+        if error_on_mismatch and not match:
+            raise iris.exceptions.MergeError(msgs)
+        return match
+
 
 class _CoordSignature(namedtuple('CoordSignature',
                                  ['scalar_defns',
@@ -215,82 +291,6 @@ class _CoordSignature(namedtuple('CoordSignature',
         A list of :class:`_FactoryDefn` instances.
 
     """
-
-    @staticmethod
-    def _coords_msgs(msgs, coord_group, defns_a, defns_b):
-        if defns_a != defns_b:
-            # Get a new list so we can modify it
-            defns_b = list(defns_b)
-            diff_defns = []
-            for defn_a in defns_a:
-                try:
-                    defns_b.remove(defn_a)
-                except ValueError:
-                    diff_defns.append(defn_a)
-            diff_defns.extend(defns_b)
-            if diff_defns:
-                names = set(defn.name() for defn in diff_defns)
-                msgs.append('Coordinates in {} differ: {}.'.format(
-                    coord_group, ', '.join(names)))
-            else:
-                msgs.append('Coordinates in {} differ by dtype or class'
-                            ' (i.e. DimCoord vs AuxCoord).'.format(
-                                coord_group))
-
-    def match_payload(self, payload, error_on_mismatch):
-        """
-        Return whether this _CoordSignature matches the corresponding
-        aspects of a _CoordPayload.
-
-        Args:
-
-        * payload (_CoordPayload):
-            The _CoordPayload to compare against.
-
-        * error_on_mismatch (bool):
-            If True, raise an Exception with detailed explanation.
-
-        Returns:
-           Boolean. True if and only if this _CoordSignature matches
-           the corresponding aspects `other`.
-
-        """
-        def unzip(coords_and_dims):
-            if coords_and_dims:
-                coords, dims = zip(*coords_and_dims)
-            else:
-                coords, dims = [], []
-            return coords, dims
-
-        def dims_msgs(msgs, coord_group, dimlists_a, dimlists_b):
-            if dimlists_a != dimlists_b:
-                msgs.append(
-                    'Coordinate-to-dimension mapping differs for {}.'.format(
-                        coord_group))
-
-        msgs = []
-        self._coords_msgs(msgs, 'cube.aux_coords (scalar)', self.scalar_defns,
-                          payload.scalar.defns)
-
-        coord_group = 'cube.dim_coords'
-        self_coords, self_dims = unzip(self.vector_dim_coords_and_dims)
-        other_coords, other_dims = unzip(payload.vector.dim_coords_and_dims)
-        self._coords_msgs(msgs, coord_group, self_coords, other_coords)
-        dims_msgs(msgs, coord_group, self_dims, other_dims)
-
-        coord_group = 'cube.aux_coords (non-scalar)'
-        self_coords, self_dims = unzip(self.vector_aux_coords_and_dims)
-        other_coords, other_dims = unzip(payload.vector.aux_coords_and_dims)
-        self._coords_msgs(msgs, coord_group, self_coords, other_coords)
-        dims_msgs(msgs, coord_group, self_dims, other_dims)
-
-        if self.factory_defns != payload.factory_defns:
-            msgs.append('cube.aux_factories() differ')
-
-        match = not bool(msgs)
-        if error_on_mismatch and not match:
-            raise iris.exceptions.MergeError(msgs)
-        return match
 
 
 class _CubeSignature(namedtuple('CubeSignature',
@@ -1224,8 +1224,8 @@ class ProtoCube(object):
                                            error_on_mismatch)
         if match:
             coord_payload = self._extract_coord_payload(cube)
-            match = self._coord_signature.match_payload(coord_payload,
-                                                        error_on_mismatch)
+            match = coord_payload.match_signature(self._coord_signature,
+                                                  error_on_mismatch)
         if match:
             # Register the cube as a source-cube for this ProtoCube.
             self._add_cube(cube, coord_payload)
