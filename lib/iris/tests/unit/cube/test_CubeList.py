@@ -51,6 +51,10 @@ class Test_merge_cube(tests.IrisTest):
         self.assertEqual(result, self.cube1)
         self.assertIsNot(result, self.cube1)
 
+    def test_repeated_cube(self):
+        with self.assertRaises(iris.exceptions.MergeError):
+            CubeList([self.cube1, self.cube1]).merge_cube()
+
 
 if __name__ == "__main__":
     tests.main()

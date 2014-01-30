@@ -50,11 +50,6 @@ class CoordinateNotRegularError(ValueError):
     pass
 
 
-class DuplicateDataError(IrisError):
-    """Raised when merging two or more cubes that have identical metadata."""
-    pass
-
-
 class InvalidCubeError(IrisError):
     """Raised when a Cube validation check fails."""
     pass
@@ -114,3 +109,9 @@ class MergeError(IrisError):
     def __str__(self):
         return '\n  '.join(['failed to merge into a single cube.'] +
                            list(self.differences))
+
+
+class DuplicateDataError(MergeError):
+    """Raised when merging two or more cubes that have identical metadata."""
+    def __init__(self, msg):
+        self.differences = [msg]
