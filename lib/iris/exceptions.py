@@ -95,7 +95,7 @@ class IgnoreCubeException(IrisError):
 class MergeError(IrisError):
     """
     Raised when merge is expected to produce a single cube, but fails to
-    do so
+    do so.
 
     """
     def __init__(self, differences):
@@ -112,5 +112,5 @@ class MergeError(IrisError):
         self.differences = differences
 
     def __str__(self):
-        lines = ['failed to merge into a single cube.'] + self.differences
-        return '\n  '.join(lines)
+        return '\n  '.join(['failed to merge into a single cube.'] +
+                           list(self.differences))

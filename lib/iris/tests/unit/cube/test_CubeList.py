@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,8 +25,7 @@ from iris.coords import AuxCoord
 import iris.exceptions
 
 
-class test_merged_cube(tests.IrisTest):
-
+class Test_merge_cube(tests.IrisTest):
     def setUp(self):
         self.cube1 = Cube([1, 2, 3], "air_temperature", units="K")
         self.cube1.add_aux_coord(AuxCoord([0], "height", units="m"))
@@ -34,7 +33,8 @@ class test_merged_cube(tests.IrisTest):
     def test_pass(self):
         cube2 = self.cube1.copy()
         cube2.coord("height").points = [1]
-        CubeList([self.cube1, cube2]).merge_cube()
+        result = CubeList([self.cube1, cube2]).merge_cube()
+        self.assertIsInstance(result, Cube)
 
     def test_fail(self):
         cube2 = self.cube1.copy()
@@ -45,6 +45,11 @@ class test_merged_cube(tests.IrisTest):
     def test_empty(self):
         with self.assertRaises(ValueError):
             CubeList([]).merge_cube()
+
+    def test_single_cube(self):
+        result = CubeList([self.cube1]).merge_cube()
+        self.assertEqual(result, self.cube1)
+        self.assertIsNot(result, self.cube1)
 
 
 if __name__ == "__main__":

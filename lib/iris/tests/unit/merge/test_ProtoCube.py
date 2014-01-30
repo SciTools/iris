@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,9 +26,8 @@ import numpy.ma as ma
 
 import iris
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
-from iris.exceptions import MergeError
-
 from iris.coords import DimCoord, AuxCoord
+from iris.exceptions import MergeError
 from iris.unit import Unit
 
 
@@ -88,18 +87,23 @@ class Test_register__CubeSig(_MergeTest, tests.IrisTest):
         self.cube2.attributes['mint'] = 'waffer-thin'
         self.check_fail('cube.attributes', 'mint')
 
+    def test_defn_attributes_unequal_array(self):
+        self.cube1.attributes['mint'] = np.arange(3)
+        self.cube2.attributes['mint'] = np.arange(3) + 1
+        self.check_fail('cube.attributes', 'mint')
+
     def test_defn_attributes_superset(self):
         self.cube2.attributes['stuffed'] = 'yes'
         self.check_fail('cube.attributes', 'keys', 'stuffed')
 
     def test_defn_attributes_multidiff(self):
-        self.cube1.attributes['tom'] = 1
-        self.cube1.attributes['dick'] = 2
-        self.cube1.attributes['harry'] = 3
+        self.cube1.attributes['ralph'] = 1
+        self.cube1.attributes['sam'] = 2
+        self.cube1.attributes['tom'] = 3
         self.cube2 = self.cube1.copy()
-        self.cube2.attributes['mint'] = 'diddle'
-        self.cube2.attributes['dick'] = 'fiddle'
-        self.check_fail('cube.attributes', 'dick', 'mint')
+        self.cube2.attributes['mint'] = 'humbug'
+        self.cube2.attributes['sam'] = 'mug'
+        self.check_fail('cube.attributes', 'sam', 'mint')
 
     def test_defn_cell_method(self):
         self.cube2.add_cell_method(
@@ -111,13 +115,16 @@ class Test_register__CubeSig(_MergeTest, tests.IrisTest):
         self.check_fail('cube.shape', '(2,)', '(3,)')
 
     def test_data_type(self):
+        self.cube1.data = self.cube1.data.astype(np.int64)
         self.cube2.data = self.cube1.data.astype(np.int8)
         self.check_fail('data dtype', 'int64', 'int8')
 
     def test_fill_value(self):
+        self.cube1.data = ma.array(self.cube1.data)
+        self.cube1.data.fill_value = 654
         self.cube2.data = ma.array(self.cube2.data)
         self.cube2.data.fill_value = 12345
-        self.check_fail('fill_value', '12345', '999999')
+        self.check_fail('fill_value', '12345', '654')
 
     def test_noise(self):
         # Test a massive set of all defn diffs to make sure it's not noise.
@@ -135,8 +142,6 @@ class Test_register__CubeSig(_MergeTest, tests.IrisTest):
         # Check the actual message, so we've got a readable reference text.
         self.cube2 = cube2
         msg = self.check_merge_fails_with_message()
-
-        # pending #884
         self.assertString(msg, self.result_path(ext='txt'))
 
 
@@ -230,8 +235,6 @@ class Test_register__CoordSig_general(_MergeTest, tests.IrisTest):
         # Check the actual message, so we've got a readable reference text.
         self.cube2 = cube2
         msg = self.check_merge_fails_with_message()
-
-        # pending #884
         self.assertString(msg, self.result_path(ext='txt'))
 
 
@@ -242,39 +245,40 @@ class _MergeTest_coordprops(_MergeTest):
     _mergetest_type = NotImplementedError
 
     def test_nochange(self):
-        # this should simply succeed..
+        # This should simply succeed.
         proto_cube = iris._merge.ProtoCube(self.cube1)
         proto_cube.register(self.cube2, error_on_mismatch=True)
 
     def _props_fail(self, *terms):
-        self.check_fail(self._mergetest_type, self.test_coord.name(), *terms)
+        self.check_fail(self._mergetest_type, self.coord_to_change.name(),
+                        *terms)
 
     def test_standard_name(self):
-        self.test_coord.standard_name = 'soil_temperature'
+        self.coord_to_change.standard_name = 'soil_temperature'
         self._props_fail('air_temperature', 'soil_temperature')
 
     def test_long_name(self):
-        self.test_coord.long_name = 'alternate_name'
+        self.coord_to_change.long_name = 'alternate_name'
         self._props_fail('air_temperature')
 
     def test_var_name(self):
-        self.test_coord.var_name = 'alternate_name'
+        self.coord_to_change.var_name = 'alternate_name'
         self._props_fail('air_temperature')
 
     def test_units(self):
-        self.test_coord.units = 'm'
+        self.coord_to_change.units = 'm'
         self._props_fail('air_temperature')
 
     def test_attrs_unequal(self):
-        self.test_coord.attributes['att_a'] = 99
+        self.coord_to_change.attributes['att_a'] = 99
         self._props_fail('air_temperature')
 
     def test_attrs_set(self):
-        self.test_coord.attributes['att_extra'] = 101
+        self.coord_to_change.attributes['att_extra'] = 101
         self._props_fail('air_temperature')
 
     def test_coord_system(self):
-        self.test_coord.coord_system = mock.Mock()
+        self.coord_to_change.coord_system = mock.Mock()
         self._props_fail('air_temperature')
 
 
@@ -292,7 +296,7 @@ class Test_register__CoordSig_scalar(_MergeTest_coordprops, tests.IrisTest):
             units='K',
             attributes={'att_a': 1, 'att_b': 2},
             coord_system=None))
-        self.test_coord = self.cube1.coord('air_temperature')
+        self.coord_to_change = self.cube1.coord('air_temperature')
         self.cube2 = self.cube1.copy()
 
 
@@ -303,17 +307,17 @@ class _MergeTest_coordprops_vect(_MergeTest_coordprops):
     _coord_typename = NotImplementedError
 
     def test_points(self):
-        self.test_coord.points = self.test_coord.points + 1.0
+        self.coord_to_change.points = self.coord_to_change.points + 1.0
         self.check_fail(self._mergetest_type, 'air_temperature')
 
     def test_bounds(self):
-        self.test_coord.bounds = self.test_coord.bounds + 1.0
+        self.coord_to_change.bounds = self.coord_to_change.bounds + 1.0
         self.check_fail(self._mergetest_type, 'air_temperature')
 
     def test_dims(self):
-        self.cube2.remove_coord(self.test_coord)
+        self.cube2.remove_coord(self.coord_to_change)
         cube2_add_method = getattr(self.cube2, 'add_'+self._coord_typename)
-        cube2_add_method(self.test_coord, (1,))
+        cube2_add_method(self.coord_to_change, (1,))
         self.check_fail(self._mergetest_type, 'mapping')
 
 
@@ -334,12 +338,12 @@ class Test_register__CoordSig_dim(_MergeTest_coordprops_vect, tests.IrisTest):
             attributes={'att_a': 1, 'att_b': 2},
             coord_system=None),
             (0,))
-        self.test_coord = self.cube1.coord('air_temperature')
+        self.coord_to_change = self.cube1.coord('air_temperature')
         self.cube2 = self.cube1.copy()
 
     def test_circular(self):
         # Extra failure mode that only applies to dim coords
-        self.test_coord.circular = True
+        self.coord_to_change.circular = True
         self.check_fail(self._mergetest_type, 'air_temperature')
 
 
@@ -360,7 +364,7 @@ class Test_register__CoordSig_aux(_MergeTest_coordprops_vect, tests.IrisTest):
             attributes={'att_a': 1, 'att_b': 2},
             coord_system=None),
             (0,))
-        self.test_coord = self.cube1.coord('air_temperature')
+        self.coord_to_change = self.cube1.coord('air_temperature')
         self.cube2 = self.cube1.copy()
 
 

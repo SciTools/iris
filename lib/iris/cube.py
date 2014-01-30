@@ -309,20 +309,27 @@ class CubeList(list):
 
     def merge_cube(self):
         """
-        Merge into a single Cube, or raise an error explaining why it cannot.
+        Return the merged contents of the :class:`CubeList` as a single
+        :class:`Cube`.
+
+        If it is not possible to merge the `CubeList` into a single
+        `Cube`, a :class:`~iris.exceptions.MergeError` will be raised
+        describing the reason for the failure.
 
         For example:
 
             >>> cube_1 = iris.cube.Cube([1, 2])
-            >>> cube_1.add_aux_coord(iris.coords.AuxCoord([3, 4],
-            ...     long_name='z'), (0,))
-            >>> cube_2 = cube_1.copy()
-            >>> cube_2.coord('z').points[0] = 7
+            >>> cube_1.add_aux_coord(iris.coords.AuxCoord(0, long_name='x'))
+            >>> cube_2 = iris.cube.Cube([3, 4])
+            >>> cube_2.add_aux_coord(iris.coords.AuxCoord(1, long_name='x'))
+            >>> cube_2.add_dim_coord(
+            ...     iris.coords.DimCoord([0, 1], long_name='z'), 0)
             >>> single_cube = iris.cube.CubeList([cube_1, cube_2]).merge_cube()
             Traceback (most recent call last):
             ...
             iris.exceptions.MergeError: failed to merge into a single cube.
-              auxiliary coordinate 'z' has different points.
+              Coordinates in cube.dim_coords differ: z.
+              Coordinate-to-dimension mapping differs for cube.dim_coords.
 
         """
         if not self:
@@ -334,7 +341,7 @@ class CubeList(list):
             proto_cube.register(cube, error_on_mismatch=True)
 
         # Extract the merged cube from the ProtoCube.
-        merged_cube = proto_cube.merge()
+        merged_cube, = proto_cube.merge()
         return merged_cube
 
     def merge(self, unique=True):
