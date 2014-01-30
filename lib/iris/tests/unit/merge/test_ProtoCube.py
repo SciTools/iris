@@ -20,15 +20,246 @@
 # importing anything else.
 import iris.tests as tests
 
+import abc
+
 import mock
 import numpy as np
 import numpy.ma as ma
 
 import iris
+from iris._merge import ProtoCube
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import DimCoord, AuxCoord
 from iris.exceptions import MergeError
 from iris.unit import Unit
+
+
+def example_cube():
+    return iris.cube.Cube(np.array([1, 2, 3], dtype='i4'),
+                          standard_name='air_temperature',
+                          long_name='screen_air_temp', var_name='airtemp',
+                          units='K', attributes={'mint': 'thin'})
+
+
+class Mixin_register(object):
+    __metaclass__ = abc.ABCMeta
+
+    @property
+    def cube1(self):
+        return example_cube()
+
+    @abc.abstractproperty
+    def cube2():
+        pass
+
+    @abc.abstractproperty
+    def fragments(self):
+        pass
+
+    def test_default(self):
+        # Test what happens when we call:
+        #   ProtoCube.register(cube)
+        proto_cube = ProtoCube(self.cube1)
+        result = proto_cube.register(self.cube2)
+        self.assertEqual(result, not self.fragments)
+
+    def test_no_error(self):
+        # Test what happens when we call:
+        #   ProtoCube.register(cube, error_on_mismatch=False)
+        proto_cube = ProtoCube(self.cube1)
+        result = proto_cube.register(self.cube2, error_on_mismatch=False)
+        self.assertEqual(result, not self.fragments)
+
+    def test_error(self):
+        # Test what happens when we call:
+        #   ProtoCube.register(cube, error_on_mismatch=True)
+        proto_cube = ProtoCube(self.cube1)
+        if self.fragments:
+            with self.assertRaises(iris.exceptions.MergeError) as cm:
+                proto_cube.register(self.cube2, error_on_mismatch=True)
+            error_message = str(cm.exception)
+            for substr in self.fragments:
+                self.assertIn(substr, error_message)
+        else:
+            result = proto_cube.register(self.cube2, error_on_mismatch=True)
+            self.assertTrue(result)
+
+
+class Test_register__match(Mixin_register, tests.IrisTest):
+    @property
+    def fragments(self):
+        return []
+
+    @property
+    def cube2(self):
+        return example_cube()
+
+
+class Test_register__standard_name(Mixin_register, tests.IrisTest):
+    @property
+    def fragments(self):
+        return ['cube.standard_name', 'air_temperature', 'air_density']
+
+    @property
+    def cube2(self):
+        cube = example_cube()
+        cube.standard_name = 'air_density'
+        return cube
+
+
+class Test_register__long_name(Mixin_register, tests.IrisTest):
+    @property
+    def fragments(self):
+        return ['cube.long_name', 'screen_air_temp', 'Belling']
+
+    @property
+    def cube2(self):
+        cube = example_cube()
+        cube.long_name = 'Belling'
+        return cube
+
+
+class Test_register__var_name(Mixin_register, tests.IrisTest):
+    @property
+    def fragments(self):
+        return ['cube.var_name', "'airtemp'", "'airtemp2'"]
+
+    @property
+    def cube2(self):
+        cube = example_cube()
+        cube.var_name = 'airtemp2'
+        return cube
+
+
+class Test_register__units(Mixin_register, tests.IrisTest):
+    @property
+    def fragments(self):
+        return ['cube.units', "'K'", "'C'"]
+
+    @property
+    def cube2(self):
+        cube = example_cube()
+        cube.units = 'C'
+        return cube
+
+
+class Test_register__attributes_unequal(Mixin_register, tests.IrisTest):
+    @property
+    def fragments(self):
+        return ['cube.attributes', "'mint'"]
+
+    @property
+    def cube2(self):
+        cube = example_cube()
+        cube.attributes['mint'] = 'waffer-thin'
+        return cube
+
+
+class Test_register__attributes_unequal_array(Mixin_register, tests.IrisTest):
+    @property
+    def fragments(self):
+        return ['cube.attributes', "'mint'"]
+
+    @property
+    def cube1(self):
+        cube = example_cube()
+        cube.attributes['mint'] = np.arange(3)
+        return cube
+
+    @property
+    def cube2(self):
+        cube = example_cube()
+        cube.attributes['mint'] = np.arange(3) + 1
+        return cube
+
+
+class Test_register__attributes_superset(Mixin_register, tests.IrisTest):
+    @property
+    def fragments(self):
+        return ['cube.attributes', "'stuffed'"]
+
+    @property
+    def cube2(self):
+        cube = example_cube()
+        cube.attributes['stuffed'] = 'yes'
+        return cube
+
+
+class Test_register__attributes_multi_diff(Mixin_register, tests.IrisTest):
+    @property
+    def fragments(self):
+        return ['cube.attributes', "'sam'", "'mint'"]
+
+    @property
+    def cube1(self):
+        cube = example_cube()
+        cube.attributes['ralph'] = 1
+        cube.attributes['sam'] = 2
+        cube.attributes['tom'] = 3
+        return cube
+
+    @property
+    def cube2(self):
+        cube = example_cube()
+        cube.attributes['ralph'] = 1
+        cube.attributes['sam'] = 'mug'
+        cube.attributes['tom'] = 3
+        cube.attributes['mint'] = 'humbug'
+        return cube
+
+
+class Test_register__cell_method(Mixin_register, tests.IrisTest):
+    @property
+    def fragments(self):
+        return ['cube.cell_methods']
+
+    @property
+    def cube2(self):
+        cube = example_cube()
+        cube.add_cell_method(iris.coords.CellMethod('monty', ('python',)))
+        return cube
+
+
+class Test_register__data_shape(Mixin_register, tests.IrisTest):
+    @property
+    def fragments(self):
+        return ['cube.shape', '(2,)', '(3,)']
+
+    @property
+    def cube2(self):
+        cube = example_cube()
+        cube = cube[1:]
+        return cube
+
+
+class Test_register__data_dtype(Mixin_register, tests.IrisTest):
+    @property
+    def fragments(self):
+        return ['cube data dtype', 'int32', 'int8']
+
+    @property
+    def cube2(self):
+        cube = example_cube()
+        cube.data = cube.data.astype(np.int8)
+        return cube
+
+
+class Test_register__fill_value(Mixin_register, tests.IrisTest):
+    @property
+    def fragments(self):
+        return ['cube data fill_value', '654', '12345']
+
+    @property
+    def cube1(self):
+        cube = example_cube()
+        cube.data = ma.array(cube.data, fill_value=654)
+        return cube
+
+    @property
+    def cube2(self):
+        cube = example_cube()
+        cube.data = ma.array(cube.data, fill_value=12345)
+        return cube
 
 
 class _MergeTest(object):
@@ -60,71 +291,6 @@ class Test_register__CubeSig(_MergeTest, tests.IrisTest):
         self.cube1 = iris.cube.Cube([1, 2, 3], standard_name="air_temperature",
                                     units='K', attributes={"mint": "thin"})
         self.cube2 = self.cube1.copy()
-
-    def test_defn_standard_name(self):
-        self.cube2.standard_name = "air_pressure"
-        self.check_fail('cube.standard_name', 'air_pressure',
-                        'air_temperature')
-
-    def test_defn_long_name(self):
-        self.cube1.rename("Arthur")
-        self.cube2 = self.cube1.copy()
-        self.cube2.rename("Belling")
-        self.check_fail('cube.long_name', 'Arthur', 'Belling')
-
-    def test_defn_var_name(self):
-        self.cube1.standard_name = None
-        self.cube1.var_name = "Arthur"
-        self.cube2 = self.cube1.copy()
-        self.cube2.var_name = "Nudge"
-        self.check_fail('cube.var_name', 'Arthur', 'Nudge')
-
-    def test_defn_units(self):
-        self.cube2.units = 'C'
-        self.check_fail('cube.units', 'C', 'K')
-
-    def test_defn_attributes_unequal(self):
-        self.cube2.attributes['mint'] = 'waffer-thin'
-        self.check_fail('cube.attributes', 'mint')
-
-    def test_defn_attributes_unequal_array(self):
-        self.cube1.attributes['mint'] = np.arange(3)
-        self.cube2.attributes['mint'] = np.arange(3) + 1
-        self.check_fail('cube.attributes', 'mint')
-
-    def test_defn_attributes_superset(self):
-        self.cube2.attributes['stuffed'] = 'yes'
-        self.check_fail('cube.attributes', 'keys', 'stuffed')
-
-    def test_defn_attributes_multidiff(self):
-        self.cube1.attributes['ralph'] = 1
-        self.cube1.attributes['sam'] = 2
-        self.cube1.attributes['tom'] = 3
-        self.cube2 = self.cube1.copy()
-        self.cube2.attributes['mint'] = 'humbug'
-        self.cube2.attributes['sam'] = 'mug'
-        self.check_fail('cube.attributes', 'sam', 'mint')
-
-    def test_defn_cell_method(self):
-        self.cube2.add_cell_method(
-            iris.coords.CellMethod('monty', ('python',)))
-        self.check_fail('cube.cell_methods')
-
-    def test_data_shape(self):
-        self.cube2 = self.cube1[1:]
-        self.check_fail('cube.shape', '(2,)', '(3,)')
-
-    def test_data_type(self):
-        self.cube1.data = self.cube1.data.astype(np.int64)
-        self.cube2.data = self.cube1.data.astype(np.int8)
-        self.check_fail('data dtype', 'int64', 'int8')
-
-    def test_fill_value(self):
-        self.cube1.data = ma.array(self.cube1.data)
-        self.cube1.data.fill_value = 654
-        self.cube2.data = ma.array(self.cube2.data)
-        self.cube2.data.fill_value = 12345
-        self.check_fail('fill_value', '12345', '654')
 
     def test_noise(self):
         # Test a massive set of all defn diffs to make sure it's not noise.
