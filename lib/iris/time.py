@@ -19,6 +19,7 @@ Time handling.
 
 """
 import collections
+import copy
 import datetime
 import functools
 import operator
@@ -173,3 +174,37 @@ class PartialDateTime(object):
         # exception here instead.
         fmt = 'unable to compare PartialDateTime with {}'
         raise TypeError(fmt.format(type(other)))
+
+    def blended(self, other):
+        """
+        Returns a :class:`PartialDateTime` with calendar/time
+        fields (year, month, hour, etc.) taken from this object, but with any
+        fields that are undefined (i.e. None) set to values taken from the
+        provided datetime-like object.
+
+        Args:
+
+        * other (datetime-like):
+            Datetime-like object such as another
+            :class:`PartialDateTime` or a :class:`datetime.datetime`
+            from which values are extracted.
+
+        Returns:
+            A :class:`PartialDateTime` instance.
+
+        Example:
+
+            >>> import datetime
+            >>> from iris.time import PartialDateTime
+            >>> dt = datetime.datetime(2009, 4, 9)
+            >>> PartialDateTime(month=1, hour=12).blended(dt)
+            PartialDateTime(year=2009, month=1, day=9, hour=12, \
+minute=0, second=0, microsecond=0)
+
+        """
+        new_pdt = copy.copy(self)
+        for attr_name in new_pdt.__slots__:
+            if getattr(new_pdt, attr_name) is None:
+                setattr(new_pdt, attr_name, getattr(other, attr_name))
+
+        return new_pdt
