@@ -167,11 +167,11 @@ class Test_write(tests.IrisTest):
     def test_cf_coord_identity(self):
         geog_cs = iris.coord_systems.GeogCS(semi_major_axis=6370000,
                                             inverse_flattening=298.3)
-        siteLat = 52.3980
-        siteLon = -2.5936
-        reflat = iris.coords.AuxCoord(float(siteLat), long_name='ref_lat',
+        sLat = 52.3980
+        sLon = -2.5936
+        reflat = iris.coords.AuxCoord(float(sLat), long_name='ref_latitude',
                                       coord_system=geog_cs, units='degrees')
-        reflon = iris.coords.AuxCoord(float(siteLon), long_name='ref_lon',
+        reflon = iris.coords.AuxCoord(float(sLon), long_name='ref_longitude',
                                       coord_system=geog_cs, units='degrees')
         asaver = mock.MagicMock(spec=Saver)
         asaver._cf_coord_identity = types.MethodType(Saver._cf_coord_identity,
