@@ -189,6 +189,18 @@ class PartialDateTime(object):
             :class:`PartialDateTime` or a :class:`datetime.datetime`
             from which values are extracted.
 
+        Returns:
+            A :class:`PartialDateTime` instance.
+
+        Example:
+
+            >>> import datetime
+            >>> from iris.time import PartialDateTime
+            >>> dt = datetime.datetime(2009, 4, 9)
+            >>> PartialDateTime(month=1, hour=12).blended(dt)
+            PartialDateTime(year=2009, month=1, day=9, hour=12, \
+minute=0, second=0, microsecond=0)
+
         """
         new_pdt = copy.copy(self)
         for attr_name in new_pdt.__slots__:
