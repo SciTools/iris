@@ -115,3 +115,7 @@ class DuplicateDataError(MergeError):
     """Raised when merging two or more cubes that have identical metadata."""
     def __init__(self, msg):
         self.differences = [msg]
+
+
+class LazyAggregatorError(Exception):
+    pass
