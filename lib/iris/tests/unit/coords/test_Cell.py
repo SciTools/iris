@@ -52,7 +52,7 @@ class Test___common_cmp__(tests.IrisTest):
         cell.__eq__.assert_called_once_with(dt)
 
 
-class Test_contains_point(tests.IrisTest):
+class Test_contains_point__PartialDateTime(tests.IrisTest):
     def test_cross_end_of_year_month(self):
         cell = Cell(datetime.datetime(2012, 2, 1),
                     [datetime.datetime(2011, 12, 1),
