@@ -717,10 +717,7 @@ class Saver(object):
         else:
             for coord in unlimited_dimensions:
                 try:
-                    if isinstance(coord, basestring):
-                        coord = cube.coord(name=coord, dim_coords=True)
-                    else:
-                        coord = cube.coord(coord=coord, dim_coords=True)
+                    coord = cube.coord(name_or_coord=coord, dim_coords=True)
                 except iris.exceptions.CoordinateNotFoundError:
                     # coordinate isn't used for this cube, but it might be
                     # used for a different one

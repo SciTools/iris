@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -141,7 +141,7 @@ def cube_delta(cube, coord):
         raise iris.exceptions.CoordinateMultiDimError(coord)
 
     # Try and get a coord dim
-    delta_dims = cube.coord_dims(coord)
+    delta_dims = cube.coord_dims(coord.name())
     if (coord.shape[0] == 1 and not getattr(coord, 'circular', False)) or not delta_dims:
         raise ValueError('Cannot calculate delta over "%s" as it has length of 1.' % coord.name())
     delta_dim = delta_dims[0]
@@ -209,7 +209,7 @@ def differentiate(cube, coord_to_differentiate):
         coord = coord_to_differentiate
 
     delta_coord = _construct_delta_coord(coord)
-    delta_dim = cube.coord_dims(coord)[0]
+    delta_dim = cube.coord_dims(coord.name())[0]
 
     # calculate delta_cube / delta_coord to give the differential.
     delta_cube = iris.analysis.maths.divide(delta_cube, delta_coord, delta_dim)
@@ -317,8 +317,8 @@ def _curl_change_z(src_cube, z_coord, prototype_diff):
 
     # The existing z_coord doesn't fit the new data so make a
     # new cube using the prototype z_coord.
-    local_z_coord = src_cube.coord(coord=z_coord)
-    new_local_z_coord = prototype_diff.coord(coord=z_coord).copy()
+    local_z_coord = src_cube.coord(z_coord)
+    new_local_z_coord = prototype_diff.coord(z_coord).copy()
     def coord_func(coord):
         if coord is local_z_coord:
             new_coord = new_local_z_coord
@@ -545,7 +545,7 @@ def curl(i_cube, j_cube, k_cube=None, ignore=None):
         # Since prototype_diff == dicos_dtheta we don't need to recalculate dicos_dtheta
         d_j_cube_dphi = _curl_differentiate(j_cube, lon_coord)
         d_j_cube_dphi = _curl_regrid(d_j_cube_dphi, prototype_diff)
-        new_lat_coord = d_j_cube_dphi.coord(name='latitude')
+        new_lat_coord = d_j_cube_dphi.coord('latitude')
         new_lat_cos_coord = _coord_cos(new_lat_coord)
         lat_dim = d_j_cube_dphi.coord_dims(new_lat_coord)[0]
         r_cmpt = iris.analysis.maths.divide(_curl_subtract(dicos_dtheta, d_j_cube_dphi), r * new_lat_cos_coord, dim=lat_dim)

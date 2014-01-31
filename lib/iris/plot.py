@@ -56,10 +56,7 @@ PlotDefn = collections.namedtuple('PlotDefn', ('coords', 'transpose'))
 
 def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
     def as_coord(coord):
-        if isinstance(coord, basestring):
-            coord = cube.coord(name=coord)
-        else:
-            coord = cube.coord(coord=coord)
+        coord = cube.coord(coord)
         return coord
     coords = map(as_coord, coords)
 
@@ -826,10 +823,7 @@ def _1d_coords_deprecation_handler(func):
             if isinstance(args[0], iris.cube.Cube):
                 if len(args) < 2 or not isinstance(args[1], (iris.cube.Cube,
                                                    iris.coords.Coord)):
-                    if isinstance(coords[0], basestring):
-                        coord = args[0].coord(name=coords[0])
-                    else:
-                        coord = args[0].coord(coord=coords[0])
+                    coord = args[0].coord(coords[0])
                     if not args[0].coord_dims(coord):
                         raise ValueError("The coordinate {!r} doesn't "
                                          "span a data dimension."

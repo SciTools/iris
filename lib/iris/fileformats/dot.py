@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -174,7 +174,7 @@ def cube_text(cube):
         relationships += '\n    ":Cube" -> "%s"' % coord_label
 
         # Are there any relationships to data dimensions?
-        dims = cube.coord_dims(coord=coord)
+        dims = cube.coord_dims(coord)
         for dim in dims:
             relationships_association += '\n    "%s" -> "CubeDimension_%s":w' % (coord_label, dim)
 

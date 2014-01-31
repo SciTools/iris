@@ -131,7 +131,7 @@ def nearest_neighbour_indices(cube, sample_points):
         if isinstance(coord, basestring):
             coord = cube.coord(coord)
         else:
-            coord = cube.coord(coord=coord)
+            coord = cube.coord(coord)
         points.append((coord, values))
     sample_points = points
 
@@ -208,7 +208,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_point, cache=None):
         if isinstance(coord, basestring):
             coord = cube.coord(coord)
         else:
-            coord = cube.coord(coord=coord)
+            coord = cube.coord(coord)
         if id(coord) not in ok_coord_ids:
             msg = ('Invalid sample coordinate {!r}: derived coordinates are'
                    ' not allowed.'.format(coord.name()))
@@ -640,7 +640,7 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
         if isinstance(coord, basestring):
             coord = cube.coord(coord)
         else:
-            coord = cube.coord(coord=coord)
+            coord = cube.coord(coord)
         points.append((coord, values))
     sample_points = points
 

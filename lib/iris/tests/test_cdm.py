@@ -385,19 +385,19 @@ class TestQueryCoord(tests.IrisTest):
         self.t = iris.tests.stock.simple_2d_w_multidim_and_scalars()
 
     def test_name(self):
-        coords = self.t.coords(name='dim1')
+        coords = self.t.coords('dim1')
         self.assertEqual([coord.name() for coord in coords], ['dim1'])
         
-        coords = self.t.coords(name='dim2')
+        coords = self.t.coords('dim2')
         self.assertEqual([coord.name() for coord in coords], ['dim2'])
         
-        coords = self.t.coords(name='an_other')
+        coords = self.t.coords('an_other')
         self.assertEqual([coord.name() for coord in coords], ['an_other'])
 
-        coords = self.t.coords(name='air_temperature')
+        coords = self.t.coords('air_temperature')
         self.assertEqual([coord.name() for coord in coords], ['air_temperature'])
 
-        coords = self.t.coords(name='wibble')
+        coords = self.t.coords('wibble')
         self.assertEqual(coords, [])
 
     def test_long_name(self):
@@ -481,12 +481,12 @@ class TestQueryCoord(tests.IrisTest):
         self.assertEqual(set([coord.name() for coord in coords]), {'dim1', 'dim2', 'an_other', 'my_multi_dim_coord', 'air_temperature'})
     
     def test_coord(self):
-        coords = self.t.coords(coord=self.t.coord('dim1'))
+        coords = self.t.coords(self.t.coord('dim1'))
         self.assertEqual([coord.name() for coord in coords], ['dim1'])
         # check for metadata look-up by modifying points
         coord = self.t.coord('dim1').copy()
         coord.points = np.arange(5) * 1.23
-        coords = self.t.coords(coord=coord)
+        coords = self.t.coords(coord)
         self.assertEqual([coord.name() for coord in coords], ['dim1'])
         
     def test_str_repr(self):
