@@ -895,11 +895,16 @@ class Unit(iris.util._OrderedHashable):
             if _OP_SINCE in unit.lower():
                 if calendar is None:
                     calendar_ = CALENDAR_GREGORIAN
-                elif calendar in CALENDARS:
-                    calendar_ = calendar
+                elif isinstance(calendar, basestring):
+                    if calendar.lower() in CALENDARS:
+                        calendar_ = calendar.lower()
+                    else:
+                        msg = '{!r} is an unsupported calendar.'
+                        raise ValueError(msg.format(calendar))
                 else:
-                    raise ValueError('{!r} is an unsupported calendar.'.format(
-                                     calendar))
+                    msg = 'Expected string-like calendar argument, got {!r}.'
+                    raise TypeError(msg.format(type(calendar)))
+
         self._init(category, ut_unit, calendar_, unit)
 
     def _raise_error(self, msg):
@@ -1811,7 +1816,8 @@ class Unit(iris.util._OrderedHashable):
         if self.is_convertible(other):
             # Use utime for converting reference times that are not using a
             # gregorian calendar as it handles these and udunits does not.
-            if self.is_time_reference() and self.calendar is not 'gregorian':
+            if self.is_time_reference() \
+                    and self.calendar != CALENDAR_GREGORIAN:
                 ut1 = self.utime()
                 ut2 = other.utime()
                 result = ut2.date2num(ut1.num2date(value_copy))
