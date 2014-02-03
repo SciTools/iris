@@ -316,7 +316,7 @@ def add_season(cube, coord, name='season',
     """
     # Check that the seasons are valid.
     _validate_seasons(seasons)
-    # Get a list of the season number each month is is, using month numbers
+    # Get a list of the season number each month is in, using month numbers
     # as the indices.
     month_season_numbers = _month_season_numbers(seasons)
 
@@ -355,7 +355,7 @@ def add_season_number(cube, coord, name='season_number',
     """
     # Check that the seasons are valid.
     _validate_seasons(seasons)
-    # Get a list of the season number each month is is, using month numbers
+    # Get a list of the season number each month is in, using month numbers
     # as the indices.
     month_season_numbers = _month_season_numbers(seasons)
 
