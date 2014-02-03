@@ -200,7 +200,7 @@ class _CoordExtent(namedtuple('CoordExtent',
     """
 
 
-def concatenate(cubes):
+def concatenate(cubes, error_on_mismatch=False):
     """
     Concatenate the provided cubes over common existing dimensions.
 
@@ -236,7 +236,7 @@ def concatenate(cubes):
 
         # Register cube with an existing proto-cube.
         for proto_cube in proto_cubes:
-            registered = proto_cube.register(cube, axis)
+            registered = proto_cube.register(cube, axis, error_on_mismatch)
             if registered:
                 axis = proto_cube.axis
                 break
@@ -320,6 +320,60 @@ class _CubeSignature(object):
             else:
                 self.scalar_coords.append(coord)
 
+    def match(self, other, error_on_mismatch):
+        """
+        Return whether this _CubeSignature equals another.
+
+        This is the first step to determine if two "cubes" (either a
+        real Cube or a ProtoCube) can be concatenated, by considering:
+            - data dimensions
+            - dimensions metadata
+            - aux coords metadata
+            - scalar coords
+            - attributes
+            - dtype
+
+        Args:
+
+        * other (_CubeSignature):
+            The _CubeSignature to compare against.
+
+        * error_on_mismatch (bool):
+            If True, raise a :class:`~iris.exceptions.MergeException`
+            with a detailed explanation if the two do not match.
+
+        Returns:
+           Boolean. True if and only if this _CubeSignature matches the other.
+
+        """
+        msg_template = '{} differs: {} != {}'
+        msgs = []
+        if self.aux_metadata != other.aux_metadata:
+            msgs.append(msg_template.format('Aux coords metadata',
+                                            self.aux_metadata,
+                                            other.aux_metadata))
+        if self.data_type != other.data_type:
+            msgs.append(msg_template.format('Datatype',
+                                            self.data_type, other.data_type))
+        if self.defn != other.defn:
+            msgs.append(msg_template.format('Attributes',
+                                            self.defn, other.defn))
+        if self.dim_metadata != other.dim_metadata:
+            msgs.append(msg_template.format('Dimensions metadata',
+                                            self.dim_metadata,
+                                            other.dim_metadata))
+        if self.ndim != other.ndim:
+            msgs.append(msg_template.format('Data dimensions',
+                                            self.ndim, other.ndim))
+        if self.scalar_coords != other.scalar_coords:
+            msgs.append(msg_template.format('Scalar coords',
+                                            self.scalar_coords,
+                                            other.scalar_coords))
+        match = not bool(msgs)
+        if error_on_mismatch and not match:
+            raise iris.exceptions.ConcatenateError(msgs)
+        return match
+
     def __eq__(self, other):
         result = NotImplemented
 
@@ -328,12 +382,7 @@ class _CubeSignature(object):
             if self.anonymous or other.anonymous:
                 result = False
             else:
-                result = self.aux_metadata == other.aux_metadata and \
-                    self.data_type == other.data_type and \
-                    self.defn == other.defn and \
-                    self.dim_metadata == other.dim_metadata and \
-                    self.ndim == other.ndim and \
-                    self.scalar_coords == other.scalar_coords
+                result = match(self, other, error_on_mismatch=False)
 
         return result
 
@@ -546,7 +595,7 @@ class _ProtoCube(object):
 
         return cube
 
-    def register(self, cube, axis=None):
+    def register(self, cube, axis=None, error_on_mismatch=False):
         """
         Determine whether the given source-cube is suitable for concatenation
         with this :class:`_ProtoCube`.
@@ -563,6 +612,9 @@ class _ProtoCube(object):
             Seed the dimension of concatenation for the :class:`_ProtoCube`
             rather than rely on negotiation with source-cubes.
 
+        * error_on_mismatch:
+            If True, raise an informative error if registration fails.
+
         Returns:
             Boolean.
 
@@ -575,7 +627,7 @@ class _ProtoCube(object):
 
         # Check for compatible cube signatures.
         cube_signature = _CubeSignature(cube)
-        match = self._cube_signature == cube_signature
+        match = self._cube_signature.match(cube_signature, error_on_mismatch)
 
         # Check for compatible coordinate signatures.
         if match:

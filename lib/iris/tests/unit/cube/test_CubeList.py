@@ -24,7 +24,32 @@ import numpy as np
 
 from iris.cube import Cube, CubeList
 from iris.coords import AuxCoord, DimCoord
+from iris.unit import Unit
 import iris.exceptions
+
+
+class Test_concatenate_cube(tests.IrisTest):
+    def setUp(self):
+        self.units = Unit('days since 1970-01-01 00:00:00',
+                          calendar='gregorian')
+        self.cube1 = Cube([1, 2, 3], 'air_temperature', units='K')
+        self.cube1.add_dim_coord(DimCoord([0, 1, 2], 'time', units=self.units),
+                                 0)
+
+    def test_pass(self):
+        self.cube2 = Cube([1, 2, 3], 'air_temperature', units='K')
+        self.cube2.add_dim_coord(DimCoord([3, 4, 5], 'time', units=self.units),
+                                 0)
+        result = CubeList([self.cube1, self.cube2]).concatenate_cube()
+        self.assertIsInstance(result, Cube)
+
+    def test_fail(self):
+        units = Unit('days since 1970-01-02 00:00:00',
+                     calendar='gregorian')
+        cube2 = Cube([1, 2, 3], 'air_temperature', units='K')
+        cube2.add_dim_coord(DimCoord([0, 1, 2], 'time', units=units), 0)
+        with self.assertRaises(iris.exceptions.ConcatenateError):
+            CubeList([self.cube1, cube2]).concatenate_cube()
 
 
 class Test_merge_cube(tests.IrisTest):

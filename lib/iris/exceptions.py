@@ -87,6 +87,30 @@ class IgnoreCubeException(IrisError):
     pass
 
 
+class ConcatenateError(IrisError):
+    """
+    Raised when concatenate is expected to produce a single cube, but fails to
+    do so.
+
+    """
+    def __init__(self, differences):
+        """
+        Creates a ConcatenateError with a list of textual descriptions of
+        the differences which prevented a concatenate.
+
+        Args:
+
+        * differences:
+            The list of strings which describe the differences.
+
+        """
+        self.differences = differences
+
+    def __str__(self):
+        return '\n  '.join(['failed to concatenate into a single cube.'] +
+                           list(self.differences))
+
+
 class MergeError(IrisError):
     """
     Raised when merge is expected to produce a single cube, but fails to

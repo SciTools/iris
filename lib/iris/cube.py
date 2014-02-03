@@ -430,6 +430,18 @@ class CubeList(list):
 
         return merged_cubes
 
+    def concatenate_cube(self):
+        """
+        Return the concatenated contents of the :class:`CubeList` as a single
+        :class:`Cube`.
+
+        If it is not possible to concatenate the `CubeList` into a single
+        `Cube`, a :class:`~iris.exceptions.ConcatenateError` will be raised
+        describing the reason for the failure.
+
+        """
+        return iris._concatenate.concatenate(self, error_on_mismatch=True)[0]
+
     def concatenate(self):
         """
         Concatenate the cubes over their common dimensions.
