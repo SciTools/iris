@@ -193,10 +193,14 @@ class IrisTest(unittest.TestCase):
                               filename)
         return result
 
-    def assertCMLApproxData(self, cubes, reference_filename, *args, **kwargs):
+    def assertCMLApproxData(self, cubes, reference_filename=None, *args,
+                            **kwargs):
         # passes args and kwargs on to approx equal
         if isinstance(cubes, iris.cube.Cube):
             cubes = [cubes]
+        if reference_filename is None:
+            reference_filename = self.result_path(None, 'cml')
+            reference_filename = [get_result_path(reference_filename)]
         for i, cube in enumerate(cubes):
             fname = list(reference_filename)
             # don't want the ".cml" for the numpy data file
