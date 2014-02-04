@@ -33,9 +33,11 @@ import collections
 import contextlib
 import difflib
 import filecmp
+import functools
 import gzip
 import inspect
 import logging
+import mock
 import os
 import os.path
 import re
@@ -537,3 +539,20 @@ def skip_data(fn):
         reason='Test(s) require external data.')
 
     return skip(fn)
+
+
+def no_warnings(func):
+    """
+    Provides a decorator to ensure that there are no warnings raised
+    within the test, otherwise the test will fail.
+
+    """
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        with mock.patch('warnings.warn') as warn:
+            result = func(self, *args, **kwargs)
+        self.assertEqual(0, warn.call_count,
+                         ('Got unexpected warnings.'
+                          ' \n{}'.format(warn.call_args_list)))
+        return result
+    return wrapped

@@ -41,7 +41,6 @@ class Test(tests.IrisTest):
                                field_code=mock.sentinel.field_code,
                                spec=NimrodField)
         self.cube = mock.Mock()
-        super(Test, self).setUp()
 
     def _call_vertical_coord(self, vertical_coord_type):
         self.field.vertical_coord_type = vertical_coord_type

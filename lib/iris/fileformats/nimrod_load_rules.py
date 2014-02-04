@@ -121,7 +121,8 @@ def proj_biaxial_ellipsoid(cube, field):
 
 def tm_meridian_scaling(cube, field):
     """
-    Deal with 'tm_meridian_scaling', if present in the field.
+    Deal with the scale factor on the central meridian for transverse mercator
+    projections if present in the field.
 
     Currently only caters for British National Grid.
 

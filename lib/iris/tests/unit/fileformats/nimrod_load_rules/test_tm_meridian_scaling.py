@@ -24,31 +24,12 @@ function.
 # importing anything else.
 import iris.tests as tests
 
-import functools
-
 import mock
 
 from iris.fileformats.nimrod_load_rules import (tm_meridian_scaling,
                                                 NIMROD_DEFAULT,
                                                 MERIDIAN_SCALING_BNG)
 from iris.fileformats.nimrod import NimrodField
-
-
-def no_warnings(func):
-    """
-    Provides a decorator to ensure that there are no warnings raised
-    within the test, otherwise the test will fail.
-
-    """
-    @functools.wraps(func)
-    def wrapped(self, *args, **kwargs):
-        with mock.patch('warnings.warn') as warn:
-            result = func(self, *args, **kwargs)
-        self.assertEqual(0, warn.call_count,
-                         ('Got unexpected warnings.'
-                          ' \n{}'.format(warn.call_args_list)))
-        return result
-    return wrapped
 
 
 class Test(tests.IrisTest):
@@ -62,19 +43,17 @@ class Test(tests.IrisTest):
         self.field.tm_meridian_scaling = scaling_value
         tm_meridian_scaling(self.cube, self.field)
 
-    @no_warnings
     def test_unhandled(self):
         with mock.patch('warnings.warn') as warn:
             self._call_tm_meridian_scaling(1)
         warn.assert_called_once()
 
-    @no_warnings
+    @tests.no_warnings
     def test_british_national_grid(self):
         # A value is not returned in this rule currently.
         self.assertEqual(None,
                          self._call_tm_meridian_scaling(MERIDIAN_SCALING_BNG))
 
-    @no_warnings
     def test_null(self):
         with mock.patch('warnings.warn') as warn:
             self._call_tm_meridian_scaling(NIMROD_DEFAULT)
