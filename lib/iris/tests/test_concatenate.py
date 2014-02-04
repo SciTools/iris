@@ -315,7 +315,7 @@ class TestNoConcat(tests.IrisTest):
         result = concatenate(cubes)
         self.assertEqual(len(result), 2)
 
-    def test_masked_vs_unmasked(self):
+    def test_masked_and_unmasked(self):
         cubes = []
         y = (0, 2)
         cubes.append(_make_cube((0, 2), y, 1))
@@ -323,7 +323,7 @@ class TestNoConcat(tests.IrisTest):
         cube.data = ma.asarray(cube.data)
         cubes.append(cube)
         result = concatenate(cubes)
-        self.assertEqual(len(result), 2)
+        self.assertEqual(len(result), 1)
 
     def test_masked_fill_value(self):
         cubes = []
@@ -337,7 +337,7 @@ class TestNoConcat(tests.IrisTest):
         cube.data.fill_value = 20
         cubes.append(cube)
         result = concatenate(cubes)
-        self.assertEqual(len(result), 2)
+        self.assertEqual(len(result), 1)
 
 
 class Test2D(tests.IrisTest):
