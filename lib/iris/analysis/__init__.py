@@ -797,6 +797,8 @@ For example, the number of ensembles with precipitation exceeding 10
 
 .. seealso:: :func:`iris.analysis.PROPORTION`
 
+This aggregator handles masked data.
+
 """
 
 
@@ -807,6 +809,8 @@ The geometric mean, as computed by :func:`scipy.stats.mstats.gmean`.
 For example, to compute zonal geometric means::
 
     result = cube.collapsed('longitude', iris.analysis.GMEAN)
+
+This aggregator handles masked data.
 
 """
 
@@ -824,6 +828,8 @@ For example, to compute zonal harmonic means::
     The harmonic mean is only valid if all data values are greater
     than zero.
 
+This aggregator handles masked data.
+
 """
 
 
@@ -834,6 +840,8 @@ The maximum, as computed by :func:`numpy.ma.max`.
 For example, to compute zonal maximums::
 
     result = cube.collapsed('longitude', iris.analysis.MAX)
+
+This aggregator handles masked data.
 
 """
 
@@ -869,6 +877,8 @@ For example::
 
         cube.collapsed('x', MEAN, lazy=True)
 
+This aggregator handles masked data.
+
 """
 
 
@@ -880,6 +890,8 @@ For example, to compute zonal medians::
 
     result = cube.collapsed('longitude', iris.analysis.MEDIAN)
 
+This aggregator handles masked data.
+
 """
 
 
@@ -890,6 +902,8 @@ The minimum, as computed by :func:`numpy.ma.min`.
 For example, to compute zonal minimums::
 
     result = cube.collapsed('longitude', iris.analysis.MIN)
+
+This aggregator handles masked data.
 
 """
 
@@ -911,6 +925,8 @@ performed individually, in sequence, for each coordinate specified.
 For example, to compute the peak over time::
 
     result = cube.collapsed('time', iris.analysis.PEAK)
+
+This aggregator handles masked data.
 
 """
 
@@ -935,6 +951,8 @@ For example, to compute the 90th percentile over time::
 
     The default values of ``alphap`` and ``betap`` are both 1. For detailed
     meanings on these values see :func:`scipy.stats.mstats.mquantiles`.
+
+This aggregator handles masked data.
 
 """
 
@@ -966,6 +984,8 @@ Similarly, the proportion of times precipitation exceeded 10
 
 .. seealso:: :func:`iris.analysis.COUNT`
 
+This aggregator handles masked data.
+
 """
 
 
@@ -983,6 +1003,8 @@ Additional kwargs available:
 * weights
     Optional array of floats. If supplied, the shape must match the
     cube. The weights are applied to the squares when taking the mean.
+
+This aggregator handles masked data.
 
 """
 
@@ -1004,6 +1026,8 @@ Additional kwargs available:
 For example, to obtain the biased standard deviation::
 
     result = cube.collapsed(coord_to_collapse, iris.analysis.STD_DEV, ddof=0)
+
+This aggregator handles masked data.
 
 """
 
@@ -1034,6 +1058,8 @@ For example to compute a weighted rolling sum
     result = cube.rolling_window('time', iris.analysis.SUM,
                                  len(weights), weights=weights)
 
+This aggregator handles masked data.
+
 """
 
 
@@ -1062,6 +1088,8 @@ For example, to obtain the biased variance::
     For example::
 
         cube.collapsed('x', VARIANCE, lazy=True)
+
+This aggregator handles masked data.
 
 """
 
