@@ -148,11 +148,12 @@ IF
     scalar_coord(cm, 'time').has_bounds()
     scalar_coord(cm, 'clim_season') is None
     scalar_coord(cm, 'forecast_period') is not None
+    scalar_coord(cm, 'forecast_period').has_bounds()
 THEN
     pp.lbtim.ib = 2
     pp.t1 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0])
     pp.t2 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1])
-    pp.lbft = pp.bounds_adjusted_lbft(cm)
+    pp.lbft = scalar_coord(cm, 'forecast_period').bounds[1]
 
 IF
     # Handle missing forecast period using time and forecast reference time.
@@ -161,11 +162,12 @@ IF
     scalar_coord(cm, 'clim_season') is None
     scalar_coord(cm, 'forecast_period') is None
     scalar_coord(cm, 'forecast_reference_time') is not None
+    scalar_coord(cm, 'forecast_period').has_bounds()
 THEN
     pp.lbtim.ib = 2
     pp.t1 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0])
     pp.t2 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1])
-    pp.lbft = calculate_forecast_period(scalar_coord(cm, 'time'), scalar_coord(cm, 'forecast_reference_time'))
+    pp.lbft = scalar_coord(cm, 'forecast_period').bounds[1]
 
 IF
     # XXX Note the repetition of the previous rule's constraints
@@ -197,6 +199,7 @@ IF
     scalar_coord(cm, 'time').has_bounds()
     scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0]).year == scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1]).year
     scalar_coord(cm, 'forecast_period') is not None
+    scalar_coord(cm, 'forecast_period').has_bounds()
     scalar_coord(cm, 'clim_season') is not None
     'clim_season' in cm.cell_methods[-1].coord_names
 THEN
@@ -204,7 +207,7 @@ THEN
     pp.lbtim.ib = 2
     pp.t1 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0, 0])
     pp.t2 = scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0, 1])
-    pp.lbft = pp.bounds_adjusted_lbft(cm)
+    pp.lbft = scalar_coord(cm, 'forecast_period').bounds[1]
 
 
 #climatiological time mean - spanning years - djf
@@ -213,6 +216,7 @@ IF
     scalar_coord(cm, 'time').has_bounds()
     scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0]).year != scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1]).year
     scalar_coord(cm, 'forecast_period') is not None
+    scalar_coord(cm, 'forecast_period').has_bounds()
     scalar_coord(cm, 'clim_season') is not None
     'clim_season' in cm.cell_methods[-1].coord_names
     scalar_coord(cm, 'clim_season').points[0] == 'djf'
@@ -229,7 +233,7 @@ THEN
     self.conditional_warning(scalar_coord(cm, 'time').bounds[0,0] != scalar_coord(cm, 'time').units.date2num(pp.t1), "modified t1 for climatological seasonal mean")
     self.conditional_warning(scalar_coord(cm, 'time').bounds[0,1] != scalar_coord(cm, 'time').units.date2num(pp.t2), "modified t2 for climatological seasonal mean")
 
-    pp.lbft = pp.bounds_adjusted_lbft(cm)
+    pp.lbft = scalar_coord(cm, 'forecast_period').bounds[1]
 
 #climatiological time mean - spanning years - mam
 IF
@@ -237,6 +241,7 @@ IF
     scalar_coord(cm, 'time').has_bounds()
     scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0]).year != scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1]).year
     scalar_coord(cm, 'forecast_period') is not None
+    scalar_coord(cm, 'forecast_period').has_bounds()
     scalar_coord(cm, 'clim_season') is not None
     'clim_season' in cm.cell_methods[-1].coord_names
     scalar_coord(cm, 'clim_season').points[0] == 'mam'
@@ -253,7 +258,7 @@ THEN
     self.conditional_warning(scalar_coord(cm, 'time').bounds[0,0] != scalar_coord(cm, 'time').units.date2num(pp.t1), "modified t1 for climatological seasonal mean")
     self.conditional_warning(scalar_coord(cm, 'time').bounds[0,1] != scalar_coord(cm, 'time').units.date2num(pp.t2), "modified t2 for climatological seasonal mean")
 
-    pp.lbft = pp.bounds_adjusted_lbft(cm)
+    pp.lbft = scalar_coord(cm, 'forecast_period').bounds[1]
 
 #climatiological time mean - spanning years - jja
 IF
@@ -261,6 +266,7 @@ IF
     scalar_coord(cm, 'time').has_bounds()
     scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0]).year != scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1]).year
     scalar_coord(cm, 'forecast_period') is not None
+    scalar_coord(cm, 'forecast_period').has_bounds()
     scalar_coord(cm, 'clim_season') is not None
     'clim_season' in cm.cell_methods[-1].coord_names
     scalar_coord(cm, 'clim_season').points[0] == 'jja'
@@ -277,7 +283,7 @@ THEN
     self.conditional_warning(scalar_coord(cm, 'time').bounds[0,0] != scalar_coord(cm, 'time').units.date2num(pp.t1), "modified t1 for climatological seasonal mean")
     self.conditional_warning(scalar_coord(cm, 'time').bounds[0,1] != scalar_coord(cm, 'time').units.date2num(pp.t2), "modified t2 for climatological seasonal mean")
 
-    pp.lbft = pp.bounds_adjusted_lbft(cm)
+    pp.lbft = scalar_coord(cm, 'forecast_period').bounds[1]
 
 #climatiological time mean - spanning years - son
 IF
@@ -285,6 +291,7 @@ IF
     scalar_coord(cm, 'time').has_bounds()
     scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,0]).year != scalar_coord(cm, 'time').units.num2date(scalar_coord(cm, 'time').bounds[0,1]).year
     scalar_coord(cm, 'forecast_period') is not None
+    scalar_coord(cm, 'forecast_period').has_bounds()
     scalar_coord(cm, 'clim_season') is not None
     'clim_season' in cm.cell_methods[-1].coord_names
     scalar_coord(cm, 'clim_season').points[0] == 'son'
@@ -301,7 +308,7 @@ THEN
     self.conditional_warning(scalar_coord(cm, 'time').bounds[0,0] != scalar_coord(cm, 'time').units.date2num(pp.t1), "modified t1 for climatological seasonal mean")
     self.conditional_warning(scalar_coord(cm, 'time').bounds[0,1] != scalar_coord(cm, 'time').units.date2num(pp.t2), "modified t2 for climatological seasonal mean")
 
-    pp.lbft = pp.bounds_adjusted_lbft(cm)
+    pp.lbft = scalar_coord(cm, 'forecast_period').bounds[1]
 
 #360 day calendar
 IF

@@ -245,9 +245,9 @@ def _non_missing_forecast_period(cube):
     rt_meaning = 1  # "start of forecast"
 
     # Forecast period
-    if fp_coord.has_bounds():
-        raise iris.exceptions.TranslationError(
-            "Bounds not expected for 'forecast_period'")
+    # if fp_coord.has_bounds():
+    #     raise iris.exceptions.TranslationError(
+    #         "Bounds not expected for 'forecast_period'")
 
     if fp_coord.units == iris.unit.Unit("hours"):
         grib_time_code = 1
@@ -259,11 +259,12 @@ def _non_missing_forecast_period(cube):
         raise iris.exceptions.TranslationError(
             "Unexpected units for 'forecast_period' : %s" % fp_coord.units)
 
-    # Convert fp meaning from Iris (R to t) to grib (R to start-of-period)
+    # # Convert fp meaning from Iris (R to t) to grib (R to start-of-period)
     if not t_coord.has_bounds():
         fp = fp_coord.points[0]
     else:
-        fp = t_coord.bounds[0][0] - rt_num
+        fp = fp_coord.bounds[0][0]
+        # fp = t_coord.bounds[0][0] - rt_num
         fp = iris.unit.Unit('hours').convert(fp, fp_coord.units)
 
     if fp - int(fp):
