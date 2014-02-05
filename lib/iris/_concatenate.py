@@ -687,8 +687,9 @@ class _ProtoCube(object):
         data = [skeleton.data for skeleton in skeletons]
 
         if self.masked_data:
-            # Let's hope 999999 is not in the data, that's the new fill_value!
             data = ma.concatenate(tuple(data), axis=self.axis)
+            # numpy provides a fill_value of 999999 but nan is safer.
+            data.fill_value = np.nan
         else:
             data = np.concatenate(tuple(data), axis=self.axis)
 
