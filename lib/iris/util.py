@@ -1276,3 +1276,30 @@ def regular_step(coord):
         msg = "Coord %s is not regular" % coord.name()
         raise iris.exceptions.CoordinateNotRegularError(msg)
     return avdiff.astype(coord.points.dtype)
+
+
+def unify_time_units(cubes):
+    """
+    Performs an in-place conversion of the time units of all time coords in the
+    cubes in a given iterable. One common epoch is defined for each calendar
+    found in the cubes to prevent units being defined with inconsistencies
+    between epoch and calendar.
+
+    Each epoch is defined from the first suitable time coordinate found in the
+    input cubes.
+
+    Arg:
+
+    * cubes:
+        An iterable of :class:`iris.cube.Cube`s.
+
+    """
+    epochs = {}
+
+    for cube in cubes:
+        for time_coord in cube.coords():
+            if time_coord.units.is_time_reference():
+                epoch = epochs.setdefault(time_coord.units.calendar,
+                                          time_coord.units.origin)
+                new_unit = iris.unit.Unit(epoch, time_coord.units.calendar)
+                time_coord.convert_units(new_unit)

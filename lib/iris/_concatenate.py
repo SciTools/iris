@@ -33,7 +33,7 @@ import numpy.ma as ma
 
 import iris.coords
 import iris.cube
-from iris.util import guess_coord_axis, array_equal
+from iris.util import guess_coord_axis, array_equal, unify_time_units
 
 
 #
@@ -219,6 +219,8 @@ def concatenate(cubes):
         This routine will load your data payload!
 
     """
+    if len(cubes) > 1:
+        unify_time_units(cubes)
     proto_cubes_by_name = defaultdict(list)
     # Initialise the nominated axis (dimension) of concatenation
     # which requires to be negotiated.
