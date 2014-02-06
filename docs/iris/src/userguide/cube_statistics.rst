@@ -143,7 +143,8 @@ Aggregation of grouped data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The :meth:`Cube.aggregated_by <iris.cube.Cube.aggregated_by>` operation 
-combines data for all points with the same value of a given coordinate. 
+combines data for all points with the same value of a given coordinate, using
+an :class:`~iris.analysis.Aggregator`. 
 To do this, you need a coordinate whose points take on only a limited set 
 of different values -- the *number* of these then determines the size of the 
 reduced dimension.

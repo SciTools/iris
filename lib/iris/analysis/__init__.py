@@ -328,8 +328,10 @@ def coord_comparison(*cubes):
 
 
 class Aggregator(object):
-    """Convenience class that supports common aggregation functionality."""
+    """
+    The :class:`Aggregator` class provides common aggregation functionality.
 
+    """
     def __init__(self, cell_method, call_func, units_func=None,
                  lazy_func=None, **kwargs):
         """
@@ -352,6 +354,38 @@ class Aggregator(object):
             main operation, but should raise an error in unhandled cases.
         * kwargs:
             Passed through to :data:`call_func`.
+
+        Aggregators are used by cube aggregation functions;
+        :meth:`~iris.cube.Cube.collapsed`,
+        :meth:`~iris.cube.Cube.aggregated_by` and
+        :meth:`~iris.cube.Cube.rolling_window`. A list of aggregators can be
+        seen at the top of this page, such as :data:`~iris.analysis.MAX` and
+        :data:`~iris.analysis.MEAN`. Each of these is an :class:`Aggregator`
+        object that is passed to Iris::
+
+            result = cube.collapsed('longitude', iris.analysis.MEAN)
+
+        An aggregator can be defined with custom functionality::
+
+            skew = Aggregator('skew', scipy.stats.skew)
+
+        The following example shows how this might be used::
+
+            # Setup.
+            import scipy.stats
+            from iris.analysis import Aggregator
+            from iris.coord_categorisation import add_categorised_coord
+            from iris.tests.stock import global_pp
+            cube = global_pp()
+
+            # Create a custom aggregator and a coordinate to aggregate.
+            skew = Aggregator('skew', scipy.stats.skew)
+            add_categorised_coord(
+                cube, name='quadrant', from_coord='longitude',
+                category_function=lambda crd, val: int(val / 90))
+
+            # Aggregate.
+            quad_skew = cube.aggregated_by('quadrant', skew)
 
         """
         #: Cube cell method string.
@@ -470,6 +504,8 @@ class Aggregator(object):
         """
         Update cube cell method metadata w.r.t the aggregation function.
 
+        This function is only expected to be used by Iris.
+
         Args:
 
         * cube (:class:`iris.cube.Cube`):
@@ -479,9 +515,12 @@ class Aggregator(object):
 
         Kwargs:
 
-        * This function is intended to be used in conjuction with aggregate()
-          and should be passed the same keywords (for example, the "percent"
-          keyword for a percentile aggregator).
+        * This function is intended to be used by cube aggregation functions;
+          :meth:`~iris.cube.Cube.collapsed`,
+          :meth:`~iris.cube.Cube.aggregated_by` and
+          :meth:`~iris.cube.Cube.rolling_window`, and should be passed
+          the same keywords (for example, the "percent" keyword for a
+          percentile aggregator).
 
         """
         kwargs = dict(self._kwargs.items() + kwargs.items())
@@ -507,9 +546,9 @@ class Aggregator(object):
 
     def post_process(self, collapsed_cube, data_result, **kwargs):
         """
-        Process the result from :func:`iris.analysis.Aggregator.aggregate`.
+        Ensure the aggregated data is an array if collapsed to a single value.
 
-        Ensures data is an array, when collapsed to a single value.
+        This function is only expected to be used by Iris.
 
         Args:
 
