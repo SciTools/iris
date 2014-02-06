@@ -1226,21 +1226,7 @@ class PPField(object):
 
     def time_unit(self, time_unit, epoch='epoch'):
         return iris.unit.Unit('%s since %s' % (time_unit, epoch), calendar=self.calendar)
-    
-    def bounds_adjusted_lbft(self, cube):
-        """Calculate PP-style forecast period for bounded time."""
-        t2_hours_since = iris.unit.Unit("hours since epoch").date2num(self.t2)
-        
-        fp_coord = cube.coord('forecast_period')
-        fp_hours = fp_coord.units.convert(fp_coord.points[0], 'hours')
-        
-        t_coord = cube.coord('time')
-        t_dt = t_coord.units.num2date(t_coord.points[0])
-        t_hours_since = iris.unit.Unit("hours since epoch").date2num(t_dt)
-        
-        r_hours_since = (t_hours_since - fp_hours)
-        return t2_hours_since - r_hours_since
-       
+
     def coord_system(self):
         """Return a CoordSystem for this PPField.
 

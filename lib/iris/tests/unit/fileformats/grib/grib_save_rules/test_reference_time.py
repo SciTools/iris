@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for module-level functions."""
+"""Unit tests for `iris.fileformats.grib.grib_save_rules.reference_time`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -34,7 +34,6 @@ class Test(TestGribSimple):
         # The stock cube has a non-compliant forecast_period.
         iris.fileformats.grib.hindcast_workaround = True
         cube = stock.global_grib2()
-        cube.coord("forecast_period").points = [36]
 
         grib = mock.Mock()
         mock_gribapi = mock.Mock(spec=gribapi)
@@ -44,8 +43,8 @@ class Test(TestGribSimple):
 
         mock_gribapi.assert_has_calls(
             [mock.call.grib_set_long(grib, "significanceOfReferenceTime", 1),
-             mock.call.grib_set_long(grib, "dataDate", '19941129'),
-             mock.call.grib_set_long(grib, "dataTime", '1200')])
+             mock.call.grib_set_long(grib, "dataDate", '19980306'),
+             mock.call.grib_set_long(grib, "dataTime", '0300')])
 
     def test_no_forecast_period(self):
         # The stock cube has a non-compliant forecast_period.
@@ -63,6 +62,7 @@ class Test(TestGribSimple):
             [mock.call.grib_set_long(grib, "significanceOfReferenceTime", 2),
              mock.call.grib_set_long(grib, "dataDate", '19941201'),
              mock.call.grib_set_long(grib, "dataTime", '0000')])
+
 
 if __name__ == "__main__":
     tests.main()

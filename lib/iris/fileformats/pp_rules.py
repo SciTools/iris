@@ -62,16 +62,38 @@ def convert(f):
             (f.lbtim.ib == 2) and \
             (f.lbtim.ic in [1, 2, 4]) and \
             ((len(f.lbcode) != 5) or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])):
-        aux_coords_and_dims.append((DimCoord(f.lbft - 0.5 * (f.time_unit('hours').date2num(f.t2) - f.time_unit('hours').date2num(f.t1)), standard_name='forecast_period', units='hours', bounds=[f.lbft - (f.time_unit('hours').date2num(f.t2) - f.time_unit('hours').date2num(f.t1)), f.lbft]), None))
-        aux_coords_and_dims.append((DimCoord((f.time_unit('hours').date2num(f.t1) + f.time_unit('hours').date2num(f.t2)) / 2.0, standard_name='time', units=f.time_unit('hours'), bounds=f.time_unit('hours').date2num([f.t1, f.t2])), None))
+        t_unit = f.time_unit('hours')
+        t1_hours = t_unit.date2num(f.t1)
+        t2_hours = t_unit.date2num(f.t2)
+        period = t2_hours - t1_hours
+        aux_coords_and_dims.append((
+            DimCoord(standard_name='forecast_period', units='hours',
+                     points=f.lbft - 0.5 * period,
+                     bounds=[f.lbft - period, f.lbft]),
+            None))
+        aux_coords_and_dims.append((
+            DimCoord(standard_name='time', units=t_unit,
+                     points=0.5 * (t1_hours + t2_hours),
+                     bounds=[t1_hours, t2_hours]),
+            None))
         aux_coords_and_dims.append((DimCoord(f.time_unit('hours').date2num(f.t2) - f.lbft, standard_name='forecast_reference_time', units=f.time_unit('hours')), None))
 
     if \
             (f.lbtim.ib == 3) and \
             (f.lbtim.ic in [1, 2, 4]) and \
             ((len(f.lbcode) != 5) or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])):
-        aux_coords_and_dims.append((DimCoord(f.lbft - 0.5 * (f.time_unit('hours').date2num(f.t2) - f.time_unit('hours').date2num(f.t1)), standard_name='forecast_period', units='hours', bounds=[f.lbft - (f.time_unit('hours').date2num(f.t2) - f.time_unit('hours').date2num(f.t1)), f.lbft]), None))
-        aux_coords_and_dims.append((DimCoord((f.time_unit('hours').date2num(f.t1) + f.time_unit('hours').date2num(f.t2)) / 2.0, standard_name='time', units=f.time_unit('hours'), bounds=f.time_unit('hours').date2num([f.t1, f.t2])), None))
+        t_unit = f.time_unit('hours')
+        t1_hours = t_unit.date2num(f.t1)
+        t2_hours = t_unit.date2num(f.t2)
+        period = t2_hours - t1_hours
+        aux_coords_and_dims.append((
+            DimCoord(standard_name='forecast_period', units='hours',
+                     points=f.lbft, bounds=[f.lbft - period, f.lbft]),
+            None))
+        aux_coords_and_dims.append((
+            DimCoord(standard_name='time', units=t_unit,
+                     points=t2_hours, bounds=[t1_hours, t2_hours]),
+            None))
         aux_coords_and_dims.append((DimCoord(f.time_unit('hours').date2num(f.t2) - f.lbft, standard_name='forecast_reference_time', units=f.time_unit('hours')), None))
 
     if \
