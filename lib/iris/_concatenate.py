@@ -485,7 +485,7 @@ class _ProtoCube(object):
         # The cube signature is a combination of cube and coordinate
         # metadata that defines this proto-cube.
         self._cube_signature = _CubeSignature(cube)
-        self.masked_data = ma.isMaskedArray(cube.data)
+        self._data_is_masked = ma.isMaskedArray(cube.data)
 
         # The coordinate signature allows suitable non-overlapping
         # source-cubes to be identified.
@@ -593,7 +593,7 @@ class _ProtoCube(object):
         if match:
             # Register the cube as a source-cube for this proto-cube.
             self._add_skeleton(coord_signature, cube.data)
-            self.masked_data |= ma.isMaskedArray(cube.data)
+            self._data_is_masked |= ma.isMaskedArray(cube.data)
             # Declare the nominated axis of concatenation.
             self._axis = candidate_axis
 
@@ -686,7 +686,7 @@ class _ProtoCube(object):
         skeletons = self._skeletons
         data = [skeleton.data for skeleton in skeletons]
 
-        if self.masked_data:
+        if self._data_is_masked:
             data = ma.concatenate(tuple(data), axis=self.axis)
             # numpy provides a fill_value of 999999 but nan is safer.
             data.fill_value = np.nan
