@@ -37,7 +37,7 @@
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="1d7d6eff" points="[172800]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32" var_name="forecast_period"/>
+        <dimCoord bounds="[[-1900800.0, 172800.0]]" id="1d7d6eff" points="[-864000.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64" var_name="forecast_period"/>
       </coord>
       <coord>
         <dimCoord id="bb6a74ca" points="[949680.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="forecast_reference_time"/>
@@ -49,7 +49,7 @@
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[-951120.0, 1122480.0]]" id="2789ad5b" points="[1122480.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="time"/>
+        <dimCoord bounds="[[-951120.0, 1122480.0]]" id="2789ad5b" points="[85680.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="time"/>
       </coord>
     </coords>
     <cellMethods>
