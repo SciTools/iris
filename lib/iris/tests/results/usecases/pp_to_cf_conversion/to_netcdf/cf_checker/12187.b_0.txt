@@ -20,6 +20,10 @@ Checking variable: sigma_bnds
 ------------------
 
 ------------------
+Checking variable: forecast_period_bnds
+------------------
+
+------------------
 Checking variable: longitude
 ------------------
 

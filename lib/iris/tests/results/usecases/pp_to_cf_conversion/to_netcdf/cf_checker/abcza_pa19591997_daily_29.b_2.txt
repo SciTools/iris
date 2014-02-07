@@ -8,6 +8,10 @@ Checking variable: time_bnds
 ------------------
 
 ------------------
+Checking variable: forecast_period_bnds
+------------------
+
+------------------
 Checking variable: precipitation_flux
 ------------------
 
