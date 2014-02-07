@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -67,6 +67,9 @@ extensions = ['sphinx.ext.autodoc',
 
               # better class documentation
               'custom_class_autodoc',
+
+              # Data instance __repr__ filter.
+              'custom_data_autodoc',
 
               'gen_example_directory',
               'generate_package_rst',

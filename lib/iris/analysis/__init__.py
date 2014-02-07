@@ -42,9 +42,10 @@ import scipy.stats.mstats
 import iris.coords
 from iris.exceptions import LazyAggregatorError
 
+
 __all__ = ('COUNT', 'GMEAN', 'HMEAN', 'MAX', 'MEAN', 'MEDIAN', 'MIN',
            'PEAK', 'PERCENTILE', 'PROPORTION', 'RMS', 'STD_DEV', 'SUM',
-           'VARIANCE', 'coord_comparison', 'Aggregator',
+           'VARIANCE', 'coord_comparison', 'Aggregator', 'WeightedAggregator',
            'clear_phenomenon_identity')
 
 
@@ -332,7 +333,7 @@ class Aggregator(object):
     def __init__(self, cell_method, call_func, units_func=None,
                  lazy_func=None, **kwargs):
         """
-        Create an aggregator for the given call_func.
+        Create an aggregator for the given :data:`call_func`.
 
         Args:
 
@@ -346,11 +347,11 @@ class Aggregator(object):
         * units_func (callable):
             Units conversion function.
         * lazy_func (callable):
-            An alternative to 'call_func' implementing a lazy aggregation.
-            (Note:  need not support all features of the main operation, but
-            should raise an error in unhandled cases.)
+            An alternative to :data:`call_func` implementing a lazy
+            aggregation. Note that, it need not support all features of the
+            main operation, but should raise an error in unhandled cases.
         * kwargs:
-            Passed through to call_func.
+            Passed through to :data:`call_func`.
 
         """
         #: Cube cell method string.
@@ -526,15 +527,54 @@ class Aggregator(object):
 
 
 class WeightedAggregator(Aggregator):
+    """
+    Convenience class that supports common weighted aggregation functionality.
 
-    def __init__(self, cell_method, call_func, **kwargs):
-        Aggregator.__init__(self, cell_method, call_func, **kwargs)
+    """
+    def __init__(self, cell_method, call_func, units_func=None,
+                 lazy_func=None, **kwargs):
+        """
+        Create a weighted aggregator for the given :data:`call_func`.
+
+        Args:
+
+        * cell_method (string):
+            Cell method string that supports string format substitution.
+        * call_func (callable):
+            Data aggregation function. Call signature (data, axis, **kwargs).
+
+        Kwargs:
+
+        * units_func (callable):
+            Units conversion function.
+        * lazy_func (callable):
+            An alternative to :data:`call_func` implementing a lazy
+            aggregation. Note that, it need not support all features of the
+            main operation, but should raise an error in unhandled cases.
+        * kwargs:
+            Passed through to :data:`call_func`.
+
+        """
+        Aggregator.__init__(self, cell_method, call_func,
+                            units_func=units_func, lazy_func=lazy_func,
+                            **kwargs)
 
         #: A list of keywords that trigger weighted behaviour.
         self._weighting_keywords = ["returned", "weights"]
 
     def uses_weighting(self, **kwargs):
-        """Does this aggregator use weighting with the given keywords?"""
+        """
+        Determine whether this aggregator uses weighting.
+
+        Kwargs:
+
+        * kwargs:
+            Arguments to filter of weighted keywords.
+
+        Returns:
+            Boolean.
+
+        """
         result = False
         for kwarg in kwargs.keys():
             if kwarg in self._weighting_keywords:
