@@ -688,8 +688,6 @@ class _ProtoCube(object):
 
         if self._data_is_masked:
             data = ma.concatenate(tuple(data), axis=self.axis)
-            # numpy provides a fill_value of 999999 but nan is safer.
-            data.fill_value = np.nan
         else:
             data = np.concatenate(tuple(data), axis=self.axis)
 
