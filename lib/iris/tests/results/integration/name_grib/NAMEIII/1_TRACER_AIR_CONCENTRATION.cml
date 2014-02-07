@@ -3,7 +3,7 @@
   <cube units="unknown">
     <coords>
       <coord>
-        <dimCoord id="73141289" points="[0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
+        <dimCoord bounds="[[0.0, 0.999999996275]]" id="73141289" points="[0.999999996275]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord id="a42bcac2" points="[50.6115, 50.612499, 50.613498, ..., 50.808303,
