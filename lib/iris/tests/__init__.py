@@ -158,9 +158,6 @@ class IrisTest(unittest.TestCase):
                                                  'Reference', 'Test result', '', '', 0))
             self.fail("%s do not match: %s\n%s" % (type_comparison_name, reference_filename, diff))
 
-    def _assert_cml(self, cube_xml, reference_xml, reference_filename):
-        self._assert_str_same(reference_xml, cube_xml, reference_filename, 'CML')
-
     def result_path(self, basename=None, ext=''):
         """
         Return the full path to a test result, generated from the \
