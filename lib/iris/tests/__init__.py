@@ -326,7 +326,8 @@ class IrisTest(unittest.TestCase):
     def _check_same(self, item, reference_path, reference_filename, type_comparison_name='CML'):
         if os.path.isfile(reference_path):
             reference = ''.join(open(reference_path, 'r').readlines())
-            self._assert_str_same(reference, item, reference_filename, type_comparison_name)
+            self._assert_str_same(reference, item, reference_path,
+                                  type_comparison_name)
         else:
             self._ensure_folder(reference_path)
             logger.warning('Creating result file: %s', reference_path)
