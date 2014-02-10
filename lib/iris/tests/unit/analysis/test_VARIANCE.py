@@ -49,10 +49,12 @@ class Test_masked(tests.IrisTest):
 
     def test_ma(self):
         # Note: iris.analysis.VARIANCE adds ddof=1
-        # ma.var(ma.masked_equal([1,2,3,4,5], 3)) == 2.5
-        # ma.var(ma.masked_equal([1,2,3,4,5], 3), ddof=1) ~= 3.333333
         cube = self.cube.collapsed("foo", VARIANCE)
         self.assertArrayAlmostEqual(cube.data, [3.333333])
+
+    def test_ma_ddof0(self):
+        cube = self.cube.collapsed("foo", VARIANCE, ddof=0)
+        self.assertArrayEqual(cube.data, [2.5])
 
     # Pending #1004.
 #     def test_biggus(self):
