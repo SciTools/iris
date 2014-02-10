@@ -1851,7 +1851,7 @@ class Unit(iris.util._OrderedHashable):
                     self._raise_error('Failed to convert %r to %r' %
                                       (self, other))
         else:
-            raise ValueError("Unable to convert from '%s' to '%s'." %
+            raise ValueError("Unable to convert from '%r' to '%r'." %
                              (self, other))
         return result
 
