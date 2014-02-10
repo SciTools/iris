@@ -42,26 +42,26 @@ install:
 
 # install deps
   - ./.travis_no_output sudo apt-get install python-scipy cython python-pip
-  - ./.travis_no_output sudo /usr/bin/pip install numpy==1.7.2
+  - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors numpy==1.7.2
   - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors shapely nose
   - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors pyshp pep8 mock
   - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors setuptools
-  - ./.travis_no_output sudo /usr/bin/pip install matplotlib==1.3.1
+  - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors matplotlib==1.3.1
   - ./.travis_no_output sudo apt-get install libgeos-dev libproj-dev
   - ./.travis_no_output sudo apt-get install libudunits2-dev libhdf5-serial-dev netcdf-bin libnetcdf-dev
   - ./.travis_no_output sudo apt-get install make unzip python-sphinx graphviz
-  - ./.travis_no_output sudo /usr/bin/pip install netCDF4==1.0.2
-  - ./.travis_no_output sudo /usr/bin/pip install pyke
-  - ./.travis_no_output sudo /usr/bin/pip install pandas==0.12.0
+  - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors netCDF4==1.0.2
+  - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors pyke
+  - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors pandas==0.12.0
   - ./.travis_no_output sudo apt-get install openjdk-7-jre
   - sudo apt-get install python-gdal
   - export LD_LIBRARY_PATH=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/server:$LD_LIBRARY_PATH
 
 # cfchecker
-  - ./.travis_no_output sudo /usr/bin/pip install cdat-lite
+  - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors cdat-lite
 # cfchecker via pip normally works, but we've found the pip interface to fail intermittently,
 # therefore we specify the full download url.
-#  - ./.travis_no_output sudo /usr/bin/pip install cfchecker
+#  - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors cfchecker
   - ./.travis_no_output sudo /usr/bin/pip install https://pypi.python.org/packages/source/c/cfchecker/cfchecker-2.0.3.tar.gz#md5=54e780e8688ac743d1e21448a3901061
 
   - echo '#!/usr/bin/env sh' > cfchecker
