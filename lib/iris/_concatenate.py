@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -282,7 +282,6 @@ class _CubeSignature(object):
         self.aux_metadata = []
         self.dim_coords = cube.dim_coords
         self.dim_metadata = []
-        self.mdi = None
         self.ndim = cube.ndim
         self.scalar_coords = []
 
@@ -292,10 +291,6 @@ class _CubeSignature(object):
 
         self.defn = cube.metadata
         self.data_type = cube.data.dtype
-
-        if ma.isMaskedArray(cube.data):
-            # Only set when we're dealing with a masked payload.
-            self.mdi = cube.data.fill_value
 
         #
         # Collate the dimension coordinate metadata.
@@ -337,7 +332,6 @@ class _CubeSignature(object):
                     self.data_type == other.data_type and \
                     self.defn == other.defn and \
                     self.dim_metadata == other.dim_metadata and \
-                    self.mdi == other.mdi and \
                     self.ndim == other.ndim and \
                     self.scalar_coords == other.scalar_coords
 
@@ -491,6 +485,7 @@ class _ProtoCube(object):
         # The cube signature is a combination of cube and coordinate
         # metadata that defines this proto-cube.
         self._cube_signature = _CubeSignature(cube)
+        self._data_is_masked = ma.isMaskedArray(cube.data)
 
         # The coordinate signature allows suitable non-overlapping
         # source-cubes to be identified.
@@ -598,6 +593,7 @@ class _ProtoCube(object):
         if match:
             # Register the cube as a source-cube for this proto-cube.
             self._add_skeleton(coord_signature, cube.data)
+            self._data_is_masked |= ma.isMaskedArray(cube.data)
             # Declare the nominated axis of concatenation.
             self._axis = candidate_axis
 
@@ -690,8 +686,7 @@ class _ProtoCube(object):
         skeletons = self._skeletons
         data = [skeleton.data for skeleton in skeletons]
 
-        if self._cube_signature.mdi is not None:
-            # Preserve masked entries.
+        if self._data_is_masked:
             data = ma.concatenate(tuple(data), axis=self.axis)
         else:
             data = np.concatenate(tuple(data), axis=self.axis)
