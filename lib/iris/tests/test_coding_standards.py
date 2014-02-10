@@ -98,7 +98,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
         '*/iris/tests/test_cf.py',
         '*/iris/tests/test_constraints.py',
         '*/iris/tests/test_coord_api.py',
-        '*/iris/tests/test_coord_categorisation.py',
         '*/iris/tests/test_coordsystem.py',
         '*/iris/tests/test_cube_to_pp.py',
         '*/iris/tests/test_file_load.py',

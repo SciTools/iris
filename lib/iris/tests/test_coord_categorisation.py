@@ -18,7 +18,8 @@
 Test the coordinate categorisation functions.
 """
 
-# import iris tests first so that some things can be initialised before importing anything else
+# import iris tests first so that some things can be initialised before
+# importing anything else
 import iris.tests as tests
 
 import warnings
@@ -117,8 +118,8 @@ class TestCategorisations(tests.IrisTest):
         ccat.add_season_year(cube, time_coord, 'my_season_year')
 
         # also test 'generic' categorisation interface
-        def _month_in_quarter(coord, pt_value):
-            date = coord.units.num2date(pt_value)
+        def _month_in_quarter(coord, cell):
+            date = coord.units.num2date(cell.point)
             return (date.month - 1) % 3
 
         ccat.add_categorised_coord(cube,
