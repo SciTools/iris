@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,3 +15,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :mod:`iris.fileformats` package."""
+
+import iris.tests as tests
+
+
+class TestField(tests.IrisTest):
+    def _test_for_coord(self, field, convert, coord_predicate, expected_points,
+                        expected_bounds):
+        (factories, references, standard_name, long_name, units,
+         attributes, cell_methods, dim_coords_and_dims,
+         aux_coords_and_dims) = convert(field)
+
+        # Check for one and only one matching coordinate.
+        matching_coords = [coord for coord, _ in aux_coords_and_dims if
+                           coord_predicate(coord)]
+        self.assertEqual(len(matching_coords), 1, str(matching_coords))
+        coord = matching_coords[0]
+
+        # Check points and bounds.
+        if expected_points is not None:
+            self.assertArrayEqual(coord.points, expected_points)
+
+        if expected_bounds is None:
+            self.assertIsNone(coord.bounds)
+        else:
+            self.assertArrayEqual(coord.bounds, [expected_bounds])

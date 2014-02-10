@@ -14,6 +14,10 @@ WARNING (3): No standard_name or long_name attribute specified
 INFO (3.1): No units attribute set.  Please consider adding a units attribute for completeness.
 
 ------------------
+Checking variable: forecast_period_bnds
+------------------
+
+------------------
 Checking variable: longitude
 ------------------
 

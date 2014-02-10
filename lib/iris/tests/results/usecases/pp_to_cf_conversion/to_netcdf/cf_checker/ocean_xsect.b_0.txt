@@ -12,7 +12,7 @@ Checking variable: sea_water_potential_temperature
 ------------------
 
 ------------------
-Checking variable: time
+Checking variable: forecast_period_bnds
 ------------------
 
 ------------------
@@ -29,6 +29,10 @@ Checking variable: forecast_reference_time
 
 ------------------
 Checking variable: depth
+------------------
+
+------------------
+Checking variable: time
 ------------------
 
 ------------------

@@ -24,7 +24,7 @@ import mock
 import numpy as np
 
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
-from iris.coords import AuxCoord
+from iris.coords import AuxCoord, CellMethod
 from iris.cube import Cube
 import iris.fileformats.pp
 import iris.fileformats.pp_rules
@@ -246,6 +246,88 @@ class TestVertical(tests.IrisTest):
         self.assertEqual(field.blev, sigma)
         self.assertEqual(field.brlev, sigma_lower)
         self.assertEqual(field.brsvd, [sigma_upper, delta_upper])
+
+
+class TestSaveLBFT(tests.IrisTest):
+    def create_cube(self, fp_min, fp_mid, fp_max, ref_offset, season=None):
+        cube = Cube(np.zeros((3, 4)))
+        cube.add_aux_coord(AuxCoord(standard_name='forecast_period',
+                                    units='hours',
+                                    points=fp_mid, bounds=[fp_min, fp_max]))
+        cube.add_aux_coord(AuxCoord(standard_name='time',
+                                    units='hours since epoch',
+                                    points=ref_offset + fp_mid,
+                                    bounds=[ref_offset + fp_min,
+                                            ref_offset + fp_max]))
+        if season:
+            cube.add_aux_coord(AuxCoord(long_name='clim_season',
+                                        points=season))
+            cube.add_cell_method(CellMethod('DUMMY', 'clim_season'))
+        return cube
+
+    def convert_cube_to_field(self, cube):
+        # Use the save rules to convert the Cube back into a PPField.
+        field = iris.fileformats.pp.PPField3()
+        field.lbfc = 0
+        field.lbvc = 0
+        field.lbtim = 0
+        iris.fileformats.pp._ensure_save_rules_loaded()
+        iris.fileformats.pp._save_rules.verify(cube, field)
+        return field
+
+    def test_time_mean_from_forecast_period(self):
+        cube = self.create_cube(24, 36, 48, 72)
+        field = self.convert_cube_to_field(cube)
+        self.assertEqual(field.lbft, 48)
+
+    def test_time_mean_from_forecast_reference_time(self):
+        cube = Cube(np.zeros((3, 4)))
+        cube.add_aux_coord(AuxCoord(standard_name='forecast_reference_time',
+                                    units='hours since epoch',
+                                    points=72))
+        cube.add_aux_coord(AuxCoord(standard_name='time',
+                                    units='hours since epoch',
+                                    points=72 + 36, bounds=[72 + 24, 72 + 48]))
+        field = self.convert_cube_to_field(cube)
+        self.assertEqual(field.lbft, 48)
+
+    def test_climatological_mean_single_year(self):
+        cube = Cube(np.zeros((3, 4)))
+        cube.add_aux_coord(AuxCoord(standard_name='forecast_period',
+                                    units='hours',
+                                    points=36, bounds=[24, 4 * 24]))
+        cube.add_aux_coord(AuxCoord(standard_name='time',
+                                    units='hours since epoch',
+                                    points=240 + 36, bounds=[240 + 24,
+                                                             240 + 4 * 24]))
+        cube.add_aux_coord(AuxCoord(long_name='clim_season', points='DUMMY'))
+        cube.add_cell_method(CellMethod('DUMMY', 'clim_season'))
+        field = self.convert_cube_to_field(cube)
+        self.assertEqual(field.lbft, 4 * 24)
+
+    def test_climatological_mean_multi_year_djf(self):
+        delta_start = 24
+        delta_mid = 36
+        delta_end = 369 * 24
+        ref_offset = 10 * 24
+        cube = self.create_cube(24, 36, 369 * 24, 240, 'djf')
+        field = self.convert_cube_to_field(cube)
+        self.assertEqual(field.lbft, 369 * 24)
+
+    def test_climatological_mean_multi_year_mam(self):
+        cube = self.create_cube(24, 36, 369 * 24, 240, 'mam')
+        field = self.convert_cube_to_field(cube)
+        self.assertEqual(field.lbft, 369 * 24)
+
+    def test_climatological_mean_multi_year_jja(self):
+        cube = self.create_cube(24, 36, 369 * 24, 240, 'jja')
+        field = self.convert_cube_to_field(cube)
+        self.assertEqual(field.lbft, 369 * 24)
+
+    def test_climatological_mean_multi_year_son(self):
+        cube = self.create_cube(24, 36, 369 * 24, 240, 'son')
+        field = self.convert_cube_to_field(cube)
+        self.assertEqual(field.lbft, 369 * 24)
 
 
 class TestCoordinateForms(tests.IrisTest):

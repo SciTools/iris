@@ -8,7 +8,10 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <auxCoord id="1d7d6eff" points="[86400, 259200, 432000, 604800]" shape="(4,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32" var_name="forecast_period"/>
+        <auxCoord bounds="[[-86400.0, 86400.0],
+		[86400.0, 259200.0],
+		[259200.0, 432000.0],
+		[432000.0, 604800.0]]" id="1d7d6eff" points="[0.0, 172800.0, 345600.0, 518400.0]" shape="(4,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64" var_name="forecast_period"/>
       </coord>
       <coord>
         <dimCoord id="bb6a74ca" points="[-864720.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="forecast_reference_time"/>
@@ -30,7 +33,7 @@
         <dimCoord bounds="[[-951120.0, -778320.0],
 		[-778320.0, -605520.0],
 		[-605520.0, -432720.0],
-		[-432720.0, -259920.0]]" id="2789ad5b" points="[-778320.0, -605520.0, -432720.0, -259920.0]" shape="(4,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="time"/>
+		[-432720.0, -259920.0]]" id="2789ad5b" points="[-864720.0, -691920.0, -519120.0, -346320.0]" shape="(4,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="time"/>
       </coord>
     </coords>
     <cellMethods>
