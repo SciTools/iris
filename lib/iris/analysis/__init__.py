@@ -15,17 +15,32 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-A package providing various analysis facilities.
+A package providing :class:`iris.cube.Cube` analysis support.
 
-Primarily, this module provides definitions of statistical operations, such as
-:const:`MEAN` and :const:`STD_DEV`, that can be applied to Cubes via methods
-such as: :meth:`iris.cube.Cube.collapsed` and
-:meth:`iris.cube.Cube.aggregated_by`.
+This module defines a suite of :class:`~iris.analysis.Aggregator` instances,
+which are used to specify the statistical measure to calculate over a
+:class:`~iris.cube.Cube`, using methods such as
+:meth:`~iris.cube.Cube.aggregated_by` and :meth:`~iris.cube.Cube.collapsed`.
 
- .. note::
+The :class:`~iris.analysis.Aggregator` is a convenience class that allows
+specific statistical aggregation operators to be defined and instantiated.
+These operators can then be used to collapse, or partially collapse, one or
+more dimensions of a :class:`~iris.cube.Cube`, as discussed in
+:ref:`cube-statistics`.
 
-     These statistical operations define how to transform both the
-     metadata and the data.
+In particular, :ref:`cube-statistics-collapsing` discusses how to use
+:const:`MEAN` to average over one dimension of a :class:`~iris.cube.Cube`,
+and also how to perform weighted :ref:`cube-statistics-collapsing-average`.
+While :ref:`cube-statistics-aggregated-by` shows how to aggregate similar
+groups of data points along a single dimension, to result in fewer points
+in that dimension.
+
+The gallery contains several interesting worked examples of how an
+:class:`~iris.analysis.Aggregator` may be used, including:
+ * :ref:`graphics-COP_1d_plot`
+ * :ref:`graphics-SOI_filtering`
+ * :ref:`graphics-hovmoller`
+ * :ref:`graphics-lagged_ensemble`
 
 """
 from __future__ import division
@@ -392,7 +407,7 @@ class Aggregator(object):
             the fraction of data to missing data is less than or equal to
             mdtol.  mdtol=0 means no missing data is tolerated while mdtol=1
             will return the resulting value from the aggregation function.
-            Default mdtol=1.
+            Defaults to 1.
 
             .. warning::
 
@@ -439,7 +454,7 @@ class Aggregator(object):
             the fraction of data to missing data is less than or equal to
             mdtol.  mdtol=0 means no missing data is tolerated while mdtol=1
             will return the resulting value from the aggregation function.
-            Default mdtol=1.
+            Defaults to 1.
 
         * kwargs:
             All keyword arguments apart from those specified above, are
@@ -781,21 +796,25 @@ def _peak(array, **kwargs):
 #
 COUNT = Aggregator('count', _count, lambda units: 1)
 """
-The number of data that match the given function.
+An :class:`~iris.analysis.Aggregator` instance that counts the number
+of :class:`~iris.cube.Cube` data occurrences that satisfy a particular
+criterion, as defined by a user supplied *function*.
 
-Args:
+**Required** kwargs associated with the use of this aggregator:
 
-* function:
+* function (callable):
     A function which converts an array of data values into a corresponding
     array of True/False values.
 
-For example, the number of ensembles with precipitation exceeding 10
+**For example**:
+
+To compute the number of *ensemble members* with precipitation exceeding 10
 (in cube data units) could be calculated with::
 
     result = precip_cube.collapsed('ensemble_member', iris.analysis.COUNT,
                                    function=lambda values: values > 10)
 
-.. seealso:: :func:`iris.analysis.PROPORTION`
+.. seealso:: The :func:`~iris.analysis.PROPORTION` aggregator.
 
 This aggregator handles masked data.
 
@@ -804,9 +823,13 @@ This aggregator handles masked data.
 
 GMEAN = Aggregator('geometric_mean', scipy.stats.mstats.gmean)
 """
-The geometric mean, as computed by :func:`scipy.stats.mstats.gmean`.
+An :class:`~iris.analysis.Aggregator` instance that calculates the
+geometric mean over a :class:`~iris.cube.Cube`, as computed by
+:func:`scipy.stats.mstats.gmean`.
 
-For example, to compute zonal geometric means::
+**For example**:
+
+To compute zonal geometric means over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.GMEAN)
 
@@ -817,9 +840,13 @@ This aggregator handles masked data.
 
 HMEAN = Aggregator('harmonic_mean', scipy.stats.mstats.hmean)
 """
-The harmonic mean, as computed by :func:`scipy.stats.mstats.hmean`.
+An :class:`~iris.analysis.Aggregator` instance that calculates the
+harmonic mean over a :class:`~iris.cube.Cube`, as computed by
+:func:`scipy.stats.mstats.hmean`.
 
-For example, to compute zonal harmonic means::
+**For example**:
+
+To compute zonal harmonic mean over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.HMEAN)
 
@@ -835,9 +862,13 @@ This aggregator handles masked data.
 
 MAX = Aggregator('maximum', ma.max)
 """
-The maximum, as computed by :func:`numpy.ma.max`.
+An :class:`~iris.analysis.Aggregator` instance that calculates
+the maximum over a :class:`~iris.cube.Cube`, as computed by
+:func:`numpy.ma.max`.
 
-For example, to compute zonal maximums::
+**For example**:
+
+To compute zonal maximums over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.MAX)
 
@@ -848,34 +879,40 @@ This aggregator handles masked data.
 
 MEAN = WeightedAggregator('mean', ma.average, lazy_func=biggus.mean)
 """
-The mean, as computed by :func:`numpy.ma.average`.
+An :class:`~iris.analysis.Aggregator` instance that calculates
+the mean over a :class:`~iris.cube.Cube`, as computed by
+:func:`numpy.ma.average`.
 
-For example, to compute zonal means::
+Additional kwargs associated with the use of this aggregator:
+
+* weights (float ndarray):
+    Weights matching the shape of the cube or the length of the window
+    for rolling window operations. Note that, latitude/longitude area
+    weights can be calculated using
+    :func:`iris.analysis.cartography.area_weights`.
+* returned (boolean):
+    Set this to True to indicate that the collapsed weights are to be
+    returned along with the collapsed data. Defaults to False.
+
+**For example**:
+
+To compute zonal means over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.MEAN)
 
-Additional kwargs available:
+To compute a weighted area average::
 
-* weights
-    Optional array of floats. If supplied, the shape must match the cube.
-
-    LatLon area weights can be calculated using
-    :func:`iris.analysis.cartography.area_weights`.
-* returned
-    Set this to True to indicate the collapsed weights are to be returned
-    along with the collapsed data. Defaults to False.
-
-For example::
-
-    cube_out, weights_out = cube_in.collapsed(coord_names, iris.analysis.MEAN,
-    weights=weights_in, returned=True)
+    coords = ('longitude', 'latitude')
+    collapsed_cube, collapsed_weights = cube.collapsed(coords,
+                                                       iris.analysis.MEAN,
+                                                       weights=weights,
+                                                       returned=True)
 
 .. note::
-    Lazy operation is supported, via :func:`biggus.mean`.
 
-    For example::
+    Lazy operation is supported, via :func:`biggus.mean`::
 
-        cube.collapsed('x', MEAN, lazy=True)
+        result = cube.collapsed('longitude', iris.analysis.MEAN, lazy=True)
 
 This aggregator handles masked data.
 
@@ -884,9 +921,13 @@ This aggregator handles masked data.
 
 MEDIAN = Aggregator('median', ma.median)
 """
-The median, as computed by :func:`numpy.ma.median`.
+An :class:`~iris.analysis.Aggregator` instance that calculates
+the median over a :class:`~iris.cube.Cube`, as computed by
+:func:`numpy.ma.median`.
 
-For example, to compute zonal medians::
+**For example**:
+
+To compute zonal medians over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.MEDIAN)
 
@@ -897,9 +938,13 @@ This aggregator handles masked data.
 
 MIN = Aggregator('minimum', ma.min)
 """
-The minimum, as computed by :func:`numpy.ma.min`.
+An :class:`~iris.analysis.Aggregator` instance that calculates
+the minimum over a :class:`~iris.cube.Cube`, as computed by
+:func:`numpy.ma.min`.
 
-For example, to compute zonal minimums::
+**For example**:
+
+To compute zonal minimums over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.MIN)
 
@@ -910,19 +955,22 @@ This aggregator handles masked data.
 
 PEAK = Aggregator('peak', _peak)
 """
-The global peak value, from a spline interpolation of the cube data,
-along the coordinate axis.
+An :class:`~iris.analysis.Aggregator` instance that calculates
+the peak value derived from a spline interpolation over a
+:class:`~iris.cube.Cube`.
 
-The peak calculation takes into account nan values, therefore if the number
+The peak calculation takes into account nan values. Therefore, if the number
 of non-nan values is zero the result itself will be an array of nan values.
 
-The peak calculation also takes into account masked values, therefore if the
+The peak calculation also takes into account masked values. Therefore, if the
 number of non-masked values is zero the result itself will be a masked array.
 
-If multiple coordinates are to be collapsed, the peak calculations are
+If multiple coordinates are specified, then the peak calculations are
 performed individually, in sequence, for each coordinate specified.
 
-For example, to compute the peak over time::
+**For example**:
+
+To compute the peak over the *time* axis of a cube::
 
     result = cube.collapsed('time', iris.analysis.PEAK)
 
@@ -936,21 +984,29 @@ PERCENTILE = Aggregator('percentile ({percent}%)',
                         alphap=1,
                         betap=1)
 """
-The percentile, as computed by :func:`scipy.stats.mstats.scoreatpercentile`.
+An :class:`~iris.analysis.Aggregator` instance that calculates the
+percentile over a :class:`~iris.cube.Cube`, as computed by
+:func:`scipy.stats.mstats.scoreatpercentile`.
 
-Required kwargs:
+**Required** kwargs associated with the use of this aggregator:
 
-* percent:
-    Percentile rank at which to extract value. No default.
+* percent (float):
+    Percentile rank at which to extract value.
 
-For example, to compute the 90th percentile over time::
+Additional kwargs associated with the use of this aggregator:
+
+* alphap (float):
+    Plotting positions parameter, see :func:`scipy.stats.mstats.mquantiles`.
+    Defaults to 1.
+* betap (float):
+    Plotting positions parameter, see :func:`scipy.stats.mstats.mquantiles`.
+    Defaults to 1.
+
+**For example**:
+
+To compute the 90th percentile over *time*::
 
     result = cube.collapsed('time', iris.analysis.PERCENTILE, percent=90)
-
-.. note::
-
-    The default values of ``alphap`` and ``betap`` are both 1. For detailed
-    meanings on these values see :func:`scipy.stats.mstats.mquantiles`.
 
 This aggregator handles masked data.
 
@@ -959,30 +1015,32 @@ This aggregator handles masked data.
 
 PROPORTION = Aggregator('proportion', _proportion, lambda units: 1)
 """
-The proportion, as a decimal, of data that match the given function.
+An :class:`~iris.analysis.Aggregator` instance that calculates the
+proportion, as a fraction, of :class:`~iris.cube.Cube` data occurrences
+that satisfy a particular criterion, as defined by a user supplied
+*function*.
 
-The proportion calculation takes into account masked values, therefore if the
-number of non-masked values is zero the result itself will be a masked array.
+**Required** kwargs associated with the use of this aggregator:
 
-Args:
-
-* function:
+* function (callable):
     A function which converts an array of data values into a corresponding
     array of True/False values.
 
-For example, the probability of precipitation exceeding 10
-(in cube data units) across ensemble members could be calculated with::
+**For example**:
+
+To compute the probability of precipitation exceeding 10
+(in cube data units) across *ensemble members* could be calculated with::
 
     result = precip_cube.collapsed('ensemble_member', iris.analysis.PROPORTION,
                                    function=lambda values: values > 10)
 
-Similarly, the proportion of times precipitation exceeded 10
+Similarly, the proportion of *time* precipitation exceeded 10
 (in cube data units) could be calculated with::
 
     result = precip_cube.collapsed('time', iris.analysis.PROPORTION,
                                    function=lambda values: values > 10)
 
-.. seealso:: :func:`iris.analysis.COUNT`
+.. seealso:: The :func:`~iris.analysis.COUNT` aggregator.
 
 This aggregator handles masked data.
 
@@ -991,18 +1049,22 @@ This aggregator handles masked data.
 
 RMS = WeightedAggregator('root mean square', _rms)
 """
-The root mean square, as computed by
+An :class:`~iris.analysis.Aggregator` instance that calculates
+the root mean square over a :class:`~iris.cube.Cube`, as computed by
 ((x0**2 + x1**2 + ... + xN-1**2) / N) ** 0.5.
 
-For example, to compute zonal root mean square::
+Additional kwargs associated with the use of this aggregator:
+
+* weights (float ndarray):
+    Weights matching the shape of the cube or the length of the window for
+    rolling window operations. The weights are applied to the squares when
+    taking the mean.
+
+**For example**:
+
+To compute the zonal root mean square over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.RMS)
-
-Additional kwargs available:
-
-* weights
-    Optional array of floats. If supplied, the shape must match the
-    cube. The weights are applied to the squares when taking the mean.
 
 This aggregator handles masked data.
 
@@ -1011,21 +1073,25 @@ This aggregator handles masked data.
 
 STD_DEV = Aggregator('standard_deviation', ma.std, ddof=1)
 """
-The standard deviation, as computed by :func:`numpy.ma.std`.
+An :class:`~iris.analysis.Aggregator` instance that calculates
+the standard deviation over a :class:`~iris.cube.Cube`, as
+computed by :func:`numpy.ma.std`.
 
-For example, to compute zonal standard deviations::
+Additional kwargs associated with the use of this aggregator:
+
+* ddof (integer):
+    Delta degrees of freedom. The divisor used in calculations is N - ddof,
+    where N represents the number of elements. Defaults to 1.
+
+**For example**:
+
+To compute zonal standard deviations over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.STD_DEV)
 
-Additional kwargs available:
+To obtain the biased standard deviation::
 
-* ddof:
-    Delta degrees of freedom. The divisor used in calculations is N - ddof,
-    where N represents the number of elements. By default ddof is one.
-
-For example, to obtain the biased standard deviation::
-
-    result = cube.collapsed(coord_to_collapse, iris.analysis.STD_DEV, ddof=0)
+    result = cube.collapsed('longitude', iris.analysis.STD_DEV, ddof=0)
 
 This aggregator handles masked data.
 
@@ -1034,25 +1100,25 @@ This aggregator handles masked data.
 
 SUM = WeightedAggregator('sum', _sum)
 """
-The sum of a dataset, as computed by :func:`numpy.ma.sum`.
+An :class:`~iris.analysis.Aggregator` instance that calculates
+the sum over a :class:`~iris.cube.Cube`, as computed by :func:`numpy.ma.sum`.
 
-For example, to compute an accumulation over time::
+Additional kwargs associated with the use of this aggregator:
 
-    result = cube.collapsed('time', iris.analysis.SUM)
-
-Additional kwargs available:
-
-* weights
-    Optional array of floats. If supplied, the shape must match the
-    shape of the cube for collapsing, or the length of the window for
-    rolling window operations.
-
-* returned
+* weights (float ndarray):
+    Weights matching the shape of the cube, or the length of
+    the window for rolling window operations.
+* returned (boolean):
     Set this to True to indicate the collapsed weights are to be returned
     along with the collapsed data. Defaults to False.
 
-For example to compute a weighted rolling sum
-(e.g., to apply a digital filter)::
+**For example**:
+
+To compute an accumulation over the *time* axis of a cube::
+
+    result = cube.collapsed('time', iris.analysis.SUM)
+
+To compute a weighted rolling sum e.g. to apply a digital filter::
 
     weights = np.array([.1, .2, .4, .2, .1])
     result = cube.rolling_window('time', iris.analysis.SUM,
@@ -1066,28 +1132,31 @@ This aggregator handles masked data.
 VARIANCE = Aggregator('variance', ma.var, lambda units: units * units,
                       lazy_func=biggus.var, ddof=1)
 """
-The variance, as computed by :func:`numpy.ma.var`.
+An :class:`~iris.analysis.Aggregator` instance that calculates
+the variance over a :class:`~iris.cube.Cube`, as computed by
+:func:`numpy.ma.var`.
 
-For example, to compute zonal variance::
+Additional kwargs associated with the use of this aggregator:
+
+* ddof (integer):
+    Delta degrees of freedom. The divisor used in calculations is N - ddof,
+    where N represents the number of elements. Defaults to 1.
+
+**For example**:
+
+To compute zonal variance over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.VARIANCE)
 
-Additional kwargs available:
+To obtain the biased variance::
 
-* ddof:
-    Delta degrees of freedom. The divisor used in calculations is N - ddof,
-    where N represents the number of elements. By default ddof is one.
-
-For example, to obtain the biased variance::
-
-    result = cube.collapsed(coord_to_collapse, iris.analysis.VARIANCE, ddof=0)
+    result = cube.collapsed('longitude', iris.analysis.VARIANCE, ddof=0)
 
 .. note::
-    Lazy operation is supported, via :func:`biggus.var`.
 
-    For example::
+    Lazy operation is supported, via :func:`biggus.var`::
 
-        cube.collapsed('x', VARIANCE, lazy=True)
+        result = cube.collapsed('longitude', iris.analysis.VARIANCE, lazy=True)
 
 This aggregator handles masked data.
 
