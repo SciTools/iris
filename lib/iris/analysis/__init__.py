@@ -358,9 +358,9 @@ class Aggregator(object):
         Aggregators are used by cube aggregation functions;
         :meth:`~iris.cube.Cube.collapsed`,
         :meth:`~iris.cube.Cube.aggregated_by` and
-        :meth:`~iris.cube.Cube.rolling_window`. A list of aggregators can be
-        seen at the top of this page, such as :data:`~iris.analysis.MAX` and
-        :data:`~iris.analysis.MEAN`. Each of these is an :class:`Aggregator`
+        :meth:`~iris.cube.Cube.rolling_window`. A list of aggregators, such as
+        :data:`~iris.analysis.MAX` and :data:`~iris.analysis.MEAN`, can be
+        seen at the top of this page. Each of these is an :class:`Aggregator`
         object that is passed to Iris::
 
             result = cube.collapsed('longitude', iris.analysis.MEAN)
