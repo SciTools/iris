@@ -1,11 +1,11 @@
-.. _reducing_a_cube:
+.. _subsetting_a_cube:
 
-================
- Reducing a Cube
-================
+=================
+Subsetting a Cube
+=================
 
-The :doc:`loading_iris_cubes` section of the user guide showed how to load data into multidimensional Iris cubes. 
-However it is often necessary to reduce the dimensionality of a cube down to something more appropriate. 
+The :doc:`loading_iris_cubes` section of the user guide showed how to load data into multidimensional Iris cubes.
+However it is often necessary to reduce the dimensionality of a cube down to something more appropriate and/or manageable.
 
 Iris provides several ways of reducing both the amount of data and/or the number of dimensions in your cube depending on the circumstance.
 In all cases **the subset of a valid cube is itself a valid cube**.
@@ -40,7 +40,7 @@ and extract every point where the latitude is 0, resulting in a 2d cube with axe
 .. warning::
 
     Caution is required when using equality constraints with floating point coordinates such as ``grid_latitude``.
-    Printing the points of a coordinate does not necessarily show the full precision of the underlying number and it 
+    Printing the points of a coordinate does not necessarily show the full precision of the underlying number and it
     is very easy return no matches to a constraint when one was expected.
     This can be avoided by using a function as the argument to the constraint::
 
@@ -58,7 +58,7 @@ and extract every point where the latitude is 0, resulting in a 2d cube with axe
 The extract method could be applied again to the *equator_slice* cube to get a further subset.
 
 For example to get a ``height`` of 9000 metres at the equator the following line extends the previous example::
-	
+
 	equator_height_9km_slice = equator_slice.extract(iris.Constraint(height=9000))
 	print equator_height_9km_slice
 
@@ -67,8 +67,8 @@ The two steps required to get ``height`` of 9000 m at the equator can be simplif
 	equator_height_9km_slice = cube.extract(iris.Constraint(grid_latitude=0, height=9000))
 	print equator_height_9km_slice
 
-As we saw in :doc:`loading_iris_cubes` the result of :func:`iris.load` is a :class:`CubeList <iris.cube.CubeList>`. 
-The ``extract`` method also exists on a :class:`CubeList <iris.cube.CubeList>` and behaves in exactly the 
+As we saw in :doc:`loading_iris_cubes` the result of :func:`iris.load` is a :class:`CubeList <iris.cube.CubeList>`.
+The ``extract`` method also exists on a :class:`CubeList <iris.cube.CubeList>` and behaves in exactly the
 same way as loading with constraints:
 
     >>> import iris
@@ -100,9 +100,9 @@ same way as loading with constraints:
 
 
 Cube iteration
-^^^^^^^^^^^^^^^ 
-A useful way of dealing with a Cube in its **entirety** is by iterating over its layers or slices. 
-For example, to deal with a 3 dimensional cube (z,y,x) you could iterate over all 2 dimensional slices in y and x 
+^^^^^^^^^^^^^^^
+A useful way of dealing with a Cube in its **entirety** is by iterating over its layers or slices.
+For example, to deal with a 3 dimensional cube (z,y,x) you could iterate over all 2 dimensional slices in y and x
 which make up the full 3d cube.::
 
 	import iris
@@ -117,13 +117,13 @@ line ``print repr(yx_slice)`` was run 15 times.
 
 .. note::
 
-	The order of latitude and longitude in the list is important; had they been swapped the resultant cube slices 
+	The order of latitude and longitude in the list is important; had they been swapped the resultant cube slices
 	would have been transposed.
 
 	For further information see :py:meth:`Cube.slices <iris.cube.Cube.slices>`.
 
 
-This method can handle n-dimensional slices by providing more or fewer coordinate names in the list to **slices**:: 
+This method can handle n-dimensional slices by providing more or fewer coordinate names in the list to **slices**::
 
 	import iris
 	filename = iris.sample_data_path('hybrid_height.nc')
@@ -132,7 +132,7 @@ This method can handle n-dimensional slices by providing more or fewer coordinat
 	for i, x_slice in enumerate(cube.slices(['grid_longitude'])):
 	   print i, repr(x_slice)
 
-The Python function :py:func:`enumerate` is used in this example to provide an incrementing variable **i** which is 
+The Python function :py:func:`enumerate` is used in this example to provide an incrementing variable **i** which is
 printed with the summary of each cube slice. Note that there were 1500 1d longitude cubes as a result of
 slicing the 3 dimensional cube (15, 100, 100) by longitude (i starts at 0 and 1500 = 15 * 100).
 
@@ -142,13 +142,13 @@ slicing the 3 dimensional cube (15, 100, 100) by longitude (i starts at 0 and 15
 
          first_slice = cube.slices(['grid_latitude', 'grid_longitude']).next()
 
-    Once the your code can handle a 2d slice, it is then an easy step to loop over **all** 2d slices within the bigger 
+    Once the your code can handle a 2d slice, it is then an easy step to loop over **all** 2d slices within the bigger
     cube using the slices method.
 
 
 Cube indexing
 ^^^^^^^^^^^^^
-In the same way that you would expect a numeric multidimensional array to be **indexed** to take a subset of your 
+In the same way that you would expect a numeric multidimensional array to be **indexed** to take a subset of your
 original array, you can **index** a Cube for the same purpose.
 
 
@@ -158,7 +158,7 @@ Here are some examples of array indexing in :py:mod:`numpy`::
 	# create an array of 12 consecutive integers starting from 0
 	a = np.arange(12)
 	print a
-	
+
 	print a[0]       # first element of the array
 
 	print a[-1]       # last element of the array
@@ -168,7 +168,7 @@ Here are some examples of array indexing in :py:mod:`numpy`::
 	print a[-4:]       # last four elements of the array
 
 	print a[::-1]       # gives all of the array, but backwards
-	
+
 	# Make a 2d array by reshaping a
 	b = a.reshape(3, 4)
 	print b
@@ -180,7 +180,7 @@ Here are some examples of array indexing in :py:mod:`numpy`::
 	# get the second element of the first dimension and all of the second dimension
 	# in reverse, by steps of two.
 	print b[1, ::-2]
-	
+
 
 Similarly, Iris cubes have indexing capability::
 
@@ -192,7 +192,7 @@ Similarly, Iris cubes have indexing capability::
 
 	# get the first element of the first dimension (+ every other dimension)
 	print cube[0]
-	
+
 	# get the last element of the first dimension (+ every other dimension)
 	print cube[-1]
 

@@ -36,7 +36,7 @@ Let's load some air temperature which runs from 1860 to 2100::
     air_temp = iris.load_cube(filename, 'air_temperature')
 
 We can now get the first and last time slices using indexing 
-(see :doc:`reducing_a_cube` for a reminder)::
+(see :ref:`subsetting_a_cube` for a reminder)::
 
     t_first = air_temp[0, :, :]
     t_last = air_temp[-1, :, :]

@@ -21,8 +21,8 @@ Collapsing entire data dimensions
     grid_areas = iris.analysis.cartography.area_weights(cube)
 
 
-In the section :doc:`reducing_a_cube` we saw how to extract a subset of a cube 
-in order to reduce either its dimensionality or its resolution. 
+In the :doc:`subsetting_a_cube` section we saw how to extract a subset of a
+cube in order to reduce either its dimensionality or its resolution.
 Instead of simply extracting a sub-region of the data, 
 we can produce statistical functions of the data values 
 across a particular dimension, 
@@ -88,6 +88,11 @@ Similarly other analysis operators such as ``MAX``, ``MIN`` and ``STD_DEV``
 can be used instead of ``MEAN``, see :mod:`iris.analysis` for a full list 
 of currently supported operators.
 
+For an example of using this functionality, the
+:ref:`Hovmoller diagram <graphics-hovmoller>` example found
+in the gallery takes a zonal mean of an ``XYT`` cube by using the
+``collapsed`` method with ``latitude`` and ``iris.analysis.MEAN`` as arguments.
+
 
 .. _cube-statistics-collapsing-average:
 
@@ -136,6 +141,8 @@ These areas can now be passed to the ``collapsed`` method as weights:
          Cell methods:
               mean: grid_longitude, grid_latitude
 
+Several examples of area averaging exist in the gallery which may be of interest,
+including an example on taking a :ref:`global area-weighted mean <graphics-COP_1d_plot>`.
 
 .. _cube-statistics-aggregated-by:
 
@@ -241,21 +248,25 @@ from the original cube:  These points are individual months,
 so adjacent ones are often in the same season:
 
 .. doctest:: aggregation
+    :options: +NORMALIZE_WHITESPACE
 
     >>> print zip(
     ...     cube.coord('clim_season')[:10].points, 
     ...     cube.coord('season_year')[:10].points)
-    [('mam', 2006), ('mam', 2006), ('jja', 2006), ('jja', 2006), ('jja', 2006), ('son', 2006), ('son', 2006), ('son', 2006), ('djf', 2007), ('djf', 2007)]
+    [('mam', 2006), ('mam', 2006), ('jja', 2006), ('jja', 2006), ('jja', 2006), ('son', 2006),
+     ('son', 2006), ('son', 2006), ('djf', 2007), ('djf', 2007)]
 
 Compare this with the first 10 values of the new cube's coordinates:  
 All the points now have distinct season+year values:
 
 .. doctest:: aggregation
+    :options: +NORMALIZE_WHITESPACE
 
     >>> print zip(
     ...     annual_seasonal_mean.coord('clim_season')[:10].points, 
     ...     annual_seasonal_mean.coord('season_year')[:10].points)
-    [('mam', 2006), ('jja', 2006), ('son', 2006), ('djf', 2007), ('mam', 2007), ('jja', 2007), ('son', 2007), ('djf', 2008), ('mam', 2008), ('jja', 2008)]
+    [('mam', 2006), ('jja', 2006), ('son', 2006), ('djf', 2007), ('mam', 2007), ('jja', 2007),
+     ('son', 2007), ('djf', 2008), ('mam', 2008), ('jja', 2008)]
 
 Because the original data started in April 2006 we have some incomplete seasons
 (e.g. there were only two months worth of data for 'mam-2006').
@@ -274,9 +285,12 @@ The final result now represents the seasonal mean temperature for 17 seasons
 from jja-2006 to jja-2010:
 
 .. doctest:: aggregation
+    :options: +NORMALIZE_WHITESPACE
 
     >>> print zip(
     ...     full_season_means.coord('clim_season').points, 
     ...     full_season_means.coord('season_year').points)
-    [('jja', 2006), ('son', 2006), ('djf', 2007), ('mam', 2007), ('jja', 2007), ('son', 2007), ('djf', 2008), ('mam', 2008), ('jja', 2008), ('son', 2008), ('djf', 2009), ('mam', 2009), ('jja', 2009), ('son', 2009), ('djf', 2010), ('mam', 2010), ('jja', 2010)]
+    [('jja', 2006), ('son', 2006), ('djf', 2007), ('mam', 2007), ('jja', 2007), ('son', 2007), ('djf', 2008),
+     ('mam', 2008), ('jja', 2008), ('son', 2008), ('djf', 2009), ('mam', 2009), ('jja', 2009), ('son', 2009),
+     ('djf', 2010), ('mam', 2010), ('jja', 2010)]
 

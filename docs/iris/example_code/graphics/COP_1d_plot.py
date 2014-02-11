@@ -17,6 +17,11 @@ References
    Lowe J.A., C.D. Hewitt, D.P. Van Vuuren, T.C. Johns, E. Stehfest, J-F. Royer, and P. van der Linden, 2009.
    New Study For Climate Modeling, Analyses, and Scenarios. Eos Trans. AGU, Vol 90, No. 21.
 
+.. seealso::
+
+    Further details on the aggregation functionality being used in this example can be found in
+    :ref:`cube-statistics`.
+
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -29,24 +34,22 @@ import matplotlib.dates as mdates
 
 
 def main():
-    # Load data into three Cubes, one for each set of PP files
+    # Load data into three Cubes, one for each set of NetCDF files.
     e1 = iris.load_cube(iris.sample_data_path('E1_north_america.nc'))
 
     a1b = iris.load_cube(iris.sample_data_path('A1B_north_america.nc'))
 
-    # load in the global pre-industrial mean temperature, and limit the domain to
-    # the same North American region that e1 and a1b are at.
-    north_america = iris.Constraint(
-                                    longitude=lambda v: 225 <= v <= 315,
-                                    latitude=lambda v: 15 <= v <= 60,
-                                    )
+    # load in the global pre-industrial mean temperature, and limit the domain
+    # to the same North American region that e1 and a1b are at.
+    north_america = iris.Constraint(longitude=lambda v: 225 <= v <= 315,
+                                    latitude=lambda v: 15 <= v <= 60)
     pre_industrial = iris.load_cube(iris.sample_data_path('pre-industrial.pp'),
                                     north_america)
 
     # Generate area-weights array. As e1 and a1b are on the same grid we can
-    # do this just once and re-use.
-    # This method requires bounds on lat/lon coords, so first we must guess
-    # these.
+    # do this just once and re-use. This method requires bounds on lat/lon
+    # coords, so let's add some in sensible locations using the "guess_bounds"
+    # method.
     e1.coord('latitude').guess_bounds()
     e1.coord('longitude').guess_bounds()
     e1_grid_areas = iris.analysis.cartography.area_weights(e1)
@@ -54,7 +57,8 @@ def main():
     pre_industrial.coord('longitude').guess_bounds()
     pre_grid_areas = iris.analysis.cartography.area_weights(pre_industrial)
 
-    # Now perform an area-weighted collape for each dataset:
+    # Perform the area-weighted mean for each of the datasets using the
+    # computed grid-box areas.
     pre_industrial_mean = pre_industrial.collapsed(['latitude', 'longitude'],
                                                    iris.analysis.MEAN,
                                                    weights=pre_grid_areas)
@@ -68,15 +72,13 @@ def main():
     # Show ticks 30 years apart
     plt.gca().xaxis.set_major_locator(mdates.YearLocator(30))
 
-    # Label the ticks with year data
-    plt.gca().format_xdata = mdates.DateFormatter('%Y')
-
     # Plot the datasets
     qplt.plot(e1_mean, label='E1 scenario', lw=1.5, color='blue')
     qplt.plot(a1b_mean, label='A1B-Image scenario', lw=1.5, color='red')
 
-    # Draw a horizontal line showing the pre industrial mean
-    plt.axhline(y=pre_industrial_mean.data, color='gray', linestyle='dashed', label='pre-industrial', lw=1.5)
+    # Draw a horizontal line showing the pre-industrial mean
+    plt.axhline(y=pre_industrial_mean.data, color='gray', linestyle='dashed',
+                label='pre-industrial', lw=1.5)
 
     # Establish where r and t have the same data, i.e. the observations
     common = np.where(a1b_mean.data == e1_mean.data)[0]
@@ -94,6 +96,7 @@ def main():
     plt.grid()
 
     iplt.show()
+
 
 if __name__ == '__main__':
     main()
