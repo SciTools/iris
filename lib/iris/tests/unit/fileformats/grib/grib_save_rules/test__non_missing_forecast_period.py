@@ -52,6 +52,12 @@ class Test(tests.IrisTest):
         rt, rt_meaning, fp, fp_meaning = _non_missing_forecast_period(cube)
         self.assertEqual((rt_meaning, fp, fp_meaning), (1, 3, 1))
 
+    def test_time_bounds_in_minutes(self):
+        cube = self._cube(t_bounds=True)
+        cube.coord('forecast_period').convert_units('minutes')
+        rt, rt_meaning, fp, fp_meaning = _non_missing_forecast_period(cube)
+        self.assertEqual((rt_meaning, fp, fp_meaning), (1, 180, 0))
+
 
 if __name__ == "__main__":
     tests.main()

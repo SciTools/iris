@@ -263,7 +263,6 @@ def _non_missing_forecast_period(cube):
                 "bounds on 'time' coordinate requires bounds on"
                 " 'forecast_period'.")
         fp = fp_coord.bounds[0][0]
-        fp = fp_coord.units.convert(fp, 'hours')
 
     if fp - int(fp):
         warnings.warn("forecast_period encoding problem: "
