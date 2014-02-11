@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -46,6 +46,20 @@ document_dict = {
 '''}
 
 
+horizontal_sep = """
+.. raw:: html
+
+    <p class="hr_p"><a href="#">&uarr;&#32&#32 top &#32&#32&uarr;</a></p>
+    <!--
+-----------
+
+.. raw:: html
+
+    -->
+
+"""
+
+
 def lookup_object_type(obj):
         if inspect.isclass(obj):
             return 'class'
@@ -74,11 +88,10 @@ def auto_doc_module(file_path, import_name, root_package, package_toc=None, titl
 
     tmp = ''
     for element, obj in document_these:
-        tmp += '----------\n' + document_dict[lookup_object_type(obj)] % {'object_name': import_name + '.' + element,
+        tmp += horizontal_sep + document_dict[lookup_object_type(obj)] % {'object_name': import_name + '.' + element,
                                                          'object_name_header_line':'+' * len(import_name + '.' + element),
                                                          'object_docstring': inspect.getdoc(obj),
                                                          }
-
 
     module_elements = '\n'.join([' * :py:obj:`%s`' % (element) for element, obj in document_these])
 
