@@ -12,6 +12,10 @@ Checking variable: northward_ocean_heat_transport
 ------------------
 
 ------------------
+Checking variable: forecast_period_bnds
+------------------
+
+------------------
 Checking variable: pseudo_level
 ------------------
 

@@ -7,8 +7,14 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="73141289" points="[1015224, 1015248, 1015272, ..., 1023792,
-		1023816, 1023840]" shape="(360,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
+        <dimCoord bounds="[[1015200.0, 1015224.0],
+		[1015224.0, 1015248.0],
+		[1015248.0, 1015272.0],
+		..., 
+		[1023768.0, 1023792.0],
+		[1023792.0, 1023816.0],
+		[1023816.0, 1023840.0]]" id="73141289" points="[1015212.0, 1015236.0, 1015260.0, ..., 1023780.0,
+		1023804.0, 1023828.0]" shape="(360,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
         <dimCoord id="88312288" points="[-860400.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
@@ -46,8 +52,8 @@
 		..., 
 		[163368.0, 163392.0],
 		[163392.0, 163416.0],
-		[163416.0, 163440.0]]" id="4c12dc80" points="[154824.0, 154848.0, 154872.0, ..., 163392.0,
-		163416.0, 163440.0]" shape="(360,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+		[163416.0, 163440.0]]" id="4c12dc80" points="[154812.0, 154836.0, 154860.0, ..., 163380.0,
+		163404.0, 163428.0]" shape="(360,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -64,8 +70,14 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="73141289" points="[1015224, 1015248, 1015272, ..., 1023792,
-		1023816, 1023840]" shape="(360,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
+        <dimCoord bounds="[[1015200.0, 1015224.0],
+		[1015224.0, 1015248.0],
+		[1015248.0, 1015272.0],
+		..., 
+		[1023768.0, 1023792.0],
+		[1023792.0, 1023816.0],
+		[1023816.0, 1023840.0]]" id="73141289" points="[1015212.0, 1015236.0, 1015260.0, ..., 1023780.0,
+		1023804.0, 1023828.0]" shape="(360,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
         <dimCoord id="88312288" points="[-860400.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
@@ -103,8 +115,8 @@
 		..., 
 		[163368.0, 163392.0],
 		[163392.0, 163416.0],
-		[163416.0, 163440.0]]" id="4c12dc80" points="[154824.0, 154848.0, 154872.0, ..., 163392.0,
-		163416.0, 163440.0]" shape="(360,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+		[163416.0, 163440.0]]" id="4c12dc80" points="[154812.0, 154836.0, 154860.0, ..., 163380.0,
+		163404.0, 163428.0]" shape="(360,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -121,8 +133,14 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="73141289" points="[1015224, 1015248, 1015272, ..., 1023792,
-		1023816, 1023840]" shape="(360,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32"/>
+        <dimCoord bounds="[[1015200.0, 1015224.0],
+		[1015224.0, 1015248.0],
+		[1015248.0, 1015272.0],
+		..., 
+		[1023768.0, 1023792.0],
+		[1023792.0, 1023816.0],
+		[1023816.0, 1023840.0]]" id="73141289" points="[1015212.0, 1015236.0, 1015260.0, ..., 1023780.0,
+		1023804.0, 1023828.0]" shape="(360,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
         <dimCoord id="88312288" points="[-860400.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
@@ -153,8 +171,8 @@
 		..., 
 		[163368.0, 163392.0],
 		[163392.0, 163416.0],
-		[163416.0, 163440.0]]" id="4c12dc80" points="[154824.0, 154848.0, 154872.0, ..., 163392.0,
-		163416.0, 163440.0]" shape="(360,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+		[163416.0, 163440.0]]" id="4c12dc80" points="[154812.0, 154836.0, 154860.0, ..., 163380.0,
+		163404.0, 163428.0]" shape="(360,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
