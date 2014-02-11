@@ -38,9 +38,11 @@ variables:
 		grid_latitude:axis = "Y" ;
 		grid_latitude:units = "degrees" ;
 		grid_latitude:standard_name = "grid_latitude" ;
-	int forecast_period(time) ;
+	double forecast_period(time) ;
+		forecast_period:bounds = "forecast_period_bnds" ;
 		forecast_period:units = "hours" ;
 		forecast_period:standard_name = "forecast_period" ;
+	double forecast_period_bnds(time, bnds) ;
 	double forecast_reference_time ;
 		forecast_reference_time:units = "hours since 1970-01-01 00:00:00" ;
 		forecast_reference_time:standard_name = "forecast_reference_time" ;

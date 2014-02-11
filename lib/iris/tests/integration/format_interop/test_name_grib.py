@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,8 +28,14 @@ import iris.unit
 
 
 def name_cb(cube, field, filename):
-    t_coord = cube.coord("time")
-    t_coord.points = [t_coord.bounds[0][1]]
+    # NAME files give the time point at the end of the range but Iris'
+    # GRIB loader creates it in the middle (the GRIB file itself doesn't
+    # encode a time point). Here we make them consistent so we can
+    # easily compare them.
+    t_coord = cube.coord('time')
+    t_coord.points = t_coord.bounds[0][1]
+    fp_coord = cube.coord('forecast_period')
+    fp_coord.points = fp_coord.bounds[0][1]
 
 
 class TestNameToGRIB(tests.IrisTest):
