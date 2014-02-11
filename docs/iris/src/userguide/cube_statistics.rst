@@ -142,16 +142,13 @@ to reduce or filter the number of data points of a particular dimension.
 Aggregation of grouped data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The :meth:`Cube.aggregated_by <iris.cube.Cube.aggregated_by>` operation 
-combines data for all points with the same value of a given coordinate, using
-an :class:`~iris.analysis.Aggregator`. 
-To do this, you need a coordinate whose points take on only a limited set 
-of different values -- the *number* of these then determines the size of the 
-reduced dimension.
+:meth:`Cube.aggregated_by <iris.cube.Cube.aggregated_by>` uses an
+:class:`~iris.analysis.Aggregator` to combine data for identical points along
+a given coordinate. The coordinate points must have a limited set of values,
+the number of which determines the size of the reduced dimension.
 The :mod:`iris.coord_categorisation` module can be used to make such 
-'categorical' coordinates out of ordinary ones: The most common use is 
-to aggregate data over regular *time intervals*, 
-such as by calendar month or day of the week.
+coordinates; The most common use is to aggregate data over regular time
+intervals, such as by calendar month or day of the week.
 
 For example, let's create two new coordinates on the cube 
 to represent the climatological seasons and the season year respectively::
