@@ -404,10 +404,7 @@ class Aggregator(object):
         Peform aggregation over the data with a lazy operation, analagous to
         the 'aggregate' result.
 
-        Keyword arguments are passed through to the data aggregation function
-        (for example, the "percent" keyword for a percentile aggregator).
-        This function is usually used in conjunction with update_metadata(),
-        which should be passed the same keyword arguments.
+        This method is only expected to be used by Iris.
 
         Args:
 
@@ -436,7 +433,9 @@ class Aggregator(object):
 
         * kwargs:
             All keyword arguments apart from those specified above, are
-            passed through to the data aggregation function.
+            passed through to the aggregation function.
+            This function is usually used in conjunction with update_metadata,
+            which should be passed the same keyword arguments.
 
         Returns:
             A lazy array representing the aggregation operation
@@ -453,10 +452,7 @@ class Aggregator(object):
         """
         Perform the aggregation function given the data.
 
-        Keyword arguments are passed through to the data aggregation function
-        (for example, the "percent" keyword for a percentile aggregator).
-        This function is usually used in conjunction with update_metadata(),
-        which should be passed the same keyword arguments.
+        This method is only expected to be used by Iris.
 
         Args:
 
@@ -477,7 +473,9 @@ class Aggregator(object):
 
         * kwargs:
             All keyword arguments apart from those specified above, are
-            passed through to the data aggregation function.
+            passed through to the aggregation function.
+            This function is usually used in conjunction with update_metadata,
+            which should be passed the same keyword arguments.
 
         Returns:
             The aggregated data.
@@ -504,7 +502,7 @@ class Aggregator(object):
         """
         Update cube cell method metadata w.r.t the aggregation function.
 
-        This function is only expected to be used by Iris.
+        This method is only expected to be used by Iris.
 
         Args:
 
@@ -515,12 +513,9 @@ class Aggregator(object):
 
         Kwargs:
 
-        * This function is intended to be used by cube aggregation functions;
-          :meth:`~iris.cube.Cube.collapsed`,
-          :meth:`~iris.cube.Cube.aggregated_by` and
-          :meth:`~iris.cube.Cube.rolling_window`, and should be passed
-          the same keywords (for example, the "percent" keyword for a
-          percentile aggregator).
+        * kwargs:
+            This function is usually used in conjunction with aggregate,
+            which should be passed the same keyword arguments.
 
         """
         kwargs = dict(self._kwargs.items() + kwargs.items())
@@ -548,7 +543,7 @@ class Aggregator(object):
         """
         Ensure the aggregated data is an array if collapsed to a single value.
 
-        This function is only expected to be used by Iris.
+        This method is only expected to be used by Iris.
 
         Args:
 
