@@ -186,8 +186,8 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
         Non-Cell vs Cell comparison is used to define Constraint matching.
 
         """
-        if not (isinstance(other, (int, float, np.number, Cell,
-                                   iris.time.PartialDateTime))):
+        if not (isinstance(other, (int, float, np.number, Cell)) or
+                hasattr(other, 'timetuple')):
             raise TypeError("Unexpected type of other "
                             "{}.".format(type(other)))
         if operator_method not in (operator.gt, operator.lt,
@@ -196,11 +196,11 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
 
         # Prevent silent errors resulting from missing netcdftime
         # behaviour.
-        if (isinstance(self.point, netcdftime.datetime) and
-                not isinstance(other, iris.time.PartialDateTime)):
-            raise TypeError("Cannot determine order of {} and {} "
-                            "objects.".format(type(self.point),
-                                              type(other)))
+        if (isinstance(other, netcdftime.datetime) or
+                (isinstance(self.point, netcdftime.datetime) and
+                 not isinstance(other, iris.time.PartialDateTime))):
+            raise TypeError('Cannot determine the order of '
+                            'netcdftime.datetime objects')
 
         if isinstance(other, Cell):
             # Cell vs Cell comparison for providing a strict sort order
