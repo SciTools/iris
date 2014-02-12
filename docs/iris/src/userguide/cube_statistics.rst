@@ -1,6 +1,10 @@
+.. _cube-statistics:
+
 ===============
 Cube statistics
 ===============
+
+.. _cube-statistics-collapsing:
 
 Collapsing entire data dimensions
 ---------------------------------
@@ -85,6 +89,8 @@ can be used instead of ``MEAN``, see :mod:`iris.analysis` for a full list
 of currently supported operators.
 
 
+.. _cube-statistics-collapsing-average:
+
 Area averaging
 ^^^^^^^^^^^^^^
 
@@ -131,6 +137,7 @@ These areas can now be passed to the ``collapsed`` method as weights:
               mean: grid_longitude, grid_latitude
 
 
+.. _cube-statistics-aggregated-by:
 
 Partially reducing data dimensions
 ----------------------------------
