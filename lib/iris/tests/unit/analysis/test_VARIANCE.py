@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,7 +22,13 @@ import iris.tests as tests
 
 import mock
 
+import biggus
+import numpy.ma as ma
+
 from iris.analysis import VARIANCE
+import iris.cube
+from iris.coords import DimCoord
+import iris.exceptions
 
 
 class Test_units_func(tests.IrisTest):
@@ -34,6 +40,28 @@ class Test_units_func(tests.IrisTest):
         # Make sure the VARIANCE units_func tries to square the units.
         mul.assert_called_once_with(units)
         self.assertEqual(new_units, mock.sentinel.new_unit)
+
+
+class Test_masked(tests.IrisTest):
+    def setUp(self):
+        self.cube = iris.cube.Cube(ma.masked_equal([1, 2, 3, 4, 5], 3))
+        self.cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10], long_name='foo'), 0)
+
+    def test_ma(self):
+        # Note: iris.analysis.VARIANCE adds ddof=1
+        cube = self.cube.collapsed("foo", VARIANCE)
+        self.assertArrayAlmostEqual(cube.data, [3.333333])
+
+    def test_ma_ddof0(self):
+        cube = self.cube.collapsed("foo", VARIANCE, ddof=0)
+        self.assertArrayEqual(cube.data, [2.5])
+
+    # Pending #1004.
+#     def test_biggus(self):
+#         self.cube.lazy_data(array=biggus.NumpyArrayAdapter(self.cube.data))
+#         cube = self.cube.collapsed("foo", VARIANCE, lazy=True)
+#         self.assertArrayAlmostEqual(cube.lazy_data().masked_array(),
+#                                     [3.333333])
 
 
 if __name__ == "__main__":
