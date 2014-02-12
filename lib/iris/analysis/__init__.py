@@ -340,14 +340,19 @@ class Aggregator(object):
         Args:
 
         * cell_method (string):
-            Cell method string that supports string format substitution.
+            Cell method name. Supports string format substitution so
+            keywords can be included in the cell method.
+            For example, the :data:`PERCENTILE` aggregator uses
+            *'percentile ({percent}%)'*, where the *'{percent}'* is replaced
+            with *10* when calling *cube.collapsed(PERCENTILE, percent=10)*.  
         * call_func (callable):
             Data aggregation function. Call signature: (data, axis, **kwargs).
 
         Kwargs:
 
         * units_func (callable):
-            Units conversion function.
+            If provided, called to convert a cube's units.
+            Call signature: (units) (returns the converted unit).
         * lazy_func (callable):
             An alternative to :data:`call_func` implementing a lazy
             aggregation. Note that, it need not support all features of the
