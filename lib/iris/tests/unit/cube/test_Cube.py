@@ -24,6 +24,9 @@ import biggus
 import mock
 import numpy as np
 
+import iris.aux_factory
+import iris.coords
+import iris.exceptions
 from iris import FUTURE
 from iris.analysis import WeightedAggregator, Aggregator
 from iris.analysis import MEAN, MIN
@@ -285,6 +288,403 @@ class Test_aggregated_by(tests.IrisTest):
                                long_name='label', units='no_unit')
         self.assertEqual(res_cube.coord('val'), val_coord)
         self.assertEqual(res_cube.coord('label'), label_coord)
+
+
+def create_cube(lon_min, lon_max, bounds=False):
+    n_lons = max(lon_min, lon_max) - min(lon_max, lon_min)
+    data = np.arange(4 * 3 * n_lons, dtype='f4').reshape(4, 3, n_lons)
+    data = biggus.NumpyArrayAdapter(data)
+    cube = Cube(data, standard_name='x_wind', units='ms-1')
+    cube.add_dim_coord(iris.coords.DimCoord([0, 20, 40, 80],
+                                            long_name='level_height',
+                                            units='m'), 0)
+    cube.add_aux_coord(iris.coords.AuxCoord([1.0, 0.9, 0.8, 0.6],
+                                            long_name='sigma'), 0)
+    cube.add_dim_coord(iris.coords.DimCoord([-45, 0, 45], 'latitude',
+                                            units='degrees'), 1)
+    step = 1 if lon_max > lon_min else -1
+    cube.add_dim_coord(iris.coords.DimCoord(np.arange(lon_min, lon_max, step),
+                                            'longitude', units='degrees'), 2)
+    if bounds:
+        cube.coord('longitude').guess_bounds()
+    cube.add_aux_coord(iris.coords.AuxCoord(
+        np.arange(3 * n_lons).reshape(3, n_lons) * 10, 'surface_altitude',
+        units='m'), [1, 2])
+    cube.add_aux_factory(iris.aux_factory.HybridHeightFactory(
+        cube.coord('level_height'), cube.coord('sigma'),
+        cube.coord('surface_altitude')))
+    return cube
+
+
+# Ensure all the other coordinates and factories are correctly preserved.
+class Test_intersection__Metadata(tests.IrisTest):
+    def test_metadata(self):
+        cube = create_cube(0, 360)
+        result = cube.intersection(longitude=(170, 190))
+        self.assertCMLApproxData(result)
+
+    def test_metadata_wrapped(self):
+        cube = create_cube(-180, 180)
+        result = cube.intersection(longitude=(170, 190))
+        self.assertCMLApproxData(result)
+
+
+# Check the various error conditions.
+class Test_intersection__Invalid(tests.IrisTest):
+    def test_reversed_min_max(self):
+        cube = create_cube(0, 360)
+        with self.assertRaises(ValueError):
+            cube.intersection(longitude=(30, 10))
+
+    def test_dest_too_large(self):
+        cube = create_cube(0, 360)
+        with self.assertRaises(ValueError):
+            cube.intersection(longitude=(30, 500))
+
+    def test_src_too_large(self):
+        cube = create_cube(0, 400)
+        with self.assertRaises(ValueError):
+            cube.intersection(longitude=(10, 30))
+
+    def test_missing_coord(self):
+        cube = create_cube(0, 360)
+        with self.assertRaises(iris.exceptions.CoordinateNotFoundError):
+            cube.intersection(parrots=(10, 30))
+
+    def test_multi_dim_coord(self):
+        cube = create_cube(0, 360)
+        with self.assertRaises(iris.exceptions.CoordinateMultiDimError):
+            cube.intersection(surface_altitude=(10, 30))
+
+    def test_null_region(self):
+        # 10 <= v < 10
+        cube = create_cube(0, 360)
+        with self.assertRaises(IndexError):
+            cube.intersection(longitude=(10, 10, False, False))
+
+
+class Test_intersection__Lazy(tests.IrisTest):
+    def test_real_data(self):
+        cube = create_cube(0, 360)
+        cube.data
+        result = cube.intersection(longitude=(170, 190))
+        self.assertFalse(result.has_lazy_data())
+        self.assertArrayEqual(result.coord('longitude').points,
+                              range(170, 191))
+        self.assertEqual(result.data[0, 0, 0], 170)
+        self.assertEqual(result.data[0, 0, -1], 190)
+
+    def test_real_data_wrapped(self):
+        cube = create_cube(-180, 180)
+        cube.data
+        result = cube.intersection(longitude=(170, 190))
+        self.assertFalse(result.has_lazy_data())
+        self.assertArrayEqual(result.coord('longitude').points,
+                              range(170, 191))
+        self.assertEqual(result.data[0, 0, 0], 350)
+        self.assertEqual(result.data[0, 0, -1], 10)
+
+    def test_lazy_data(self):
+        cube = create_cube(0, 360)
+        result = cube.intersection(longitude=(170, 190))
+        self.assertTrue(result.has_lazy_data())
+        self.assertArrayEqual(result.coord('longitude').points,
+                              range(170, 191))
+        self.assertEqual(result.data[0, 0, 0], 170)
+        self.assertEqual(result.data[0, 0, -1], 190)
+
+    def test_lazy_data_wrapped(self):
+        cube = create_cube(-180, 180)
+        result = cube.intersection(longitude=(170, 190))
+        self.assertTrue(result.has_lazy_data())
+        self.assertArrayEqual(result.coord('longitude').points,
+                              range(170, 191))
+        self.assertEqual(result.data[0, 0, 0], 350)
+        self.assertEqual(result.data[0, 0, -1], 10)
+
+
+# Check what happens with a regional, points-only circular intersection
+# coordinate.
+class Test_intersection__RegionalSrcModulus(tests.IrisTest):
+    def test_request_subset(self):
+        cube = create_cube(40, 60)
+        result = cube.intersection(longitude=(45, 50))
+        self.assertArrayEqual(result.coord('longitude').points, range(45, 51))
+        self.assertArrayEqual(result.data[0, 0], range(5, 11))
+
+    def test_request_left(self):
+        cube = create_cube(40, 60)
+        result = cube.intersection(longitude=(35, 45))
+        self.assertArrayEqual(result.coord('longitude').points, range(40, 46))
+        self.assertArrayEqual(result.data[0, 0], range(0, 6))
+
+    def test_request_right(self):
+        cube = create_cube(40, 60)
+        result = cube.intersection(longitude=(55, 65))
+        self.assertArrayEqual(result.coord('longitude').points, range(55, 60))
+        self.assertArrayEqual(result.data[0, 0], range(15, 20))
+
+    def test_request_superset(self):
+        cube = create_cube(40, 60)
+        result = cube.intersection(longitude=(35, 65))
+        self.assertArrayEqual(result.coord('longitude').points, range(40, 60))
+        self.assertArrayEqual(result.data[0, 0], range(0, 20))
+
+    def test_request_subset_modulus(self):
+        cube = create_cube(40, 60)
+        result = cube.intersection(longitude=(45 + 360, 50 + 360))
+        self.assertArrayEqual(result.coord('longitude').points,
+                              range(45 + 360, 51 + 360))
+        self.assertArrayEqual(result.data[0, 0], range(5, 11))
+
+    def test_request_left_modulus(self):
+        cube = create_cube(40, 60)
+        result = cube.intersection(longitude=(35 + 360, 45 + 360))
+        self.assertArrayEqual(result.coord('longitude').points,
+                              range(40 + 360, 46 + 360))
+        self.assertArrayEqual(result.data[0, 0], range(0, 6))
+
+    def test_request_right_modulus(self):
+        cube = create_cube(40, 60)
+        result = cube.intersection(longitude=(55 + 360, 65 + 360))
+        self.assertArrayEqual(result.coord('longitude').points,
+                              range(55 + 360, 60 + 360))
+        self.assertArrayEqual(result.data[0, 0], range(15, 20))
+
+    def test_request_superset_modulus(self):
+        cube = create_cube(40, 60)
+        result = cube.intersection(longitude=(35 + 360, 65 + 360))
+        self.assertArrayEqual(result.coord('longitude').points,
+                              range(40 + 360, 60 + 360))
+        self.assertArrayEqual(result.data[0, 0], range(0, 20))
+
+    def test_tolerance_f4(self):
+        cube = create_cube(0, 5)
+        cube.coord('longitude').points = np.array([0., 3.74999905, 7.49999809,
+                                                   11.24999714, 14.99999619],
+                                                  dtype='f4')
+        result = cube.intersection(longitude=(0, 5))
+
+    def test_tolerance_f8(self):
+        cube = create_cube(0, 5)
+        cube.coord('longitude').points = np.array([0., 3.74999905, 7.49999809,
+                                                   11.24999714, 14.99999619],
+                                                  dtype='f8')
+        result = cube.intersection(longitude=(0, 5))
+
+
+# Check what happens with a global, points-only circular intersection
+# coordinate.
+class Test_intersection__GlobalSrcModulus(tests.IrisTest):
+    def test_global(self):
+        cube = create_cube(0, 360)
+        result = cube.intersection(longitude=(0, 360))
+        self.assertEqual(result.coord('longitude').points[0], 0)
+        self.assertEqual(result.coord('longitude').points[-1], 359)
+        self.assertEqual(result.data[0, 0, 0], 0)
+        self.assertEqual(result.data[0, 0, -1], 359)
+
+    def test_global_wrapped(self):
+        cube = create_cube(0, 360)
+        result = cube.intersection(longitude=(-180, 180))
+        self.assertEqual(result.coord('longitude').points[0], -180)
+        self.assertEqual(result.coord('longitude').points[-1], 179)
+        self.assertEqual(result.data[0, 0, 0], 180)
+        self.assertEqual(result.data[0, 0, -1], 179)
+
+    def test_aux_coord(self):
+        cube = create_cube(0, 360)
+        cube.replace_coord(iris.coords.AuxCoord.from_coord(
+            cube.coord('longitude')))
+        result = cube.intersection(longitude=(0, 360))
+        self.assertEqual(result.coord('longitude').points[0], 0)
+        self.assertEqual(result.coord('longitude').points[-1], 359)
+        self.assertEqual(result.data[0, 0, 0], 0)
+        self.assertEqual(result.data[0, 0, -1], 359)
+
+    def test_aux_coord_wrapped(self):
+        cube = create_cube(0, 360)
+        cube.replace_coord(iris.coords.AuxCoord.from_coord(
+            cube.coord('longitude')))
+        result = cube.intersection(longitude=(-180, 180))
+        self.assertEqual(result.coord('longitude').points[0], 0)
+        self.assertEqual(result.coord('longitude').points[-1], -1)
+        self.assertEqual(result.data[0, 0, 0], 0)
+        self.assertEqual(result.data[0, 0, -1], 359)
+
+    def test_aux_coord_non_contiguous_wrapped(self):
+        cube = create_cube(0, 360)
+        coord = iris.coords.AuxCoord.from_coord(cube.coord('longitude'))
+        coord.points = (coord.points * 1.5) % 360
+        cube.replace_coord(coord)
+        result = cube.intersection(longitude=(-90, 90))
+        self.assertEqual(result.coord('longitude').points[0], 0)
+        self.assertEqual(result.coord('longitude').points[-1], 90)
+        self.assertEqual(result.data[0, 0, 0], 0)
+        self.assertEqual(result.data[0, 0, -1], 300)
+
+    def test_decrementing(self):
+        cube = create_cube(360, 0)
+        result = cube.intersection(longitude=(40, 60))
+        self.assertEqual(result.coord('longitude').points[0], 60)
+        self.assertEqual(result.coord('longitude').points[-1], 40)
+        self.assertEqual(result.data[0, 0, 0], 300)
+        self.assertEqual(result.data[0, 0, -1], 320)
+
+    def test_decrementing_wrapped(self):
+        cube = create_cube(360, 0)
+        result = cube.intersection(longitude=(-10, 10))
+        self.assertEqual(result.coord('longitude').points[0], 10)
+        self.assertEqual(result.coord('longitude').points[-1], -10)
+        self.assertEqual(result.data[0, 0, 0], 350)
+        self.assertEqual(result.data[0, 0, -1], 10)
+
+    def test_no_wrap_after_modulus(self):
+        cube = create_cube(0, 360)
+        result = cube.intersection(longitude=(170 + 360, 190 + 360))
+        self.assertEqual(result.coord('longitude').points[0], 170 + 360)
+        self.assertEqual(result.coord('longitude').points[-1], 190 + 360)
+        self.assertEqual(result.data[0, 0, 0], 170)
+        self.assertEqual(result.data[0, 0, -1], 190)
+
+    def test_wrap_after_modulus(self):
+        cube = create_cube(-180, 180)
+        result = cube.intersection(longitude=(170 + 360, 190 + 360))
+        self.assertEqual(result.coord('longitude').points[0], 170 + 360)
+        self.assertEqual(result.coord('longitude').points[-1], 190 + 360)
+        self.assertEqual(result.data[0, 0, 0], 350)
+        self.assertEqual(result.data[0, 0, -1], 10)
+
+    def test_select_by_coord(self):
+        cube = create_cube(0, 360)
+        coord = iris.coords.DimCoord(0, 'longitude', units='degrees')
+        result = cube.intersection(iris.coords.CoordExtent(coord, 10, 30))
+        self.assertEqual(result.coord('longitude').points[0], 10)
+        self.assertEqual(result.coord('longitude').points[-1], 30)
+        self.assertEqual(result.data[0, 0, 0], 10)
+        self.assertEqual(result.data[0, 0, -1], 30)
+
+    def test_inclusive_exclusive(self):
+        cube = create_cube(0, 360)
+        result = cube.intersection(longitude=(170, 190, True, False))
+        self.assertEqual(result.coord('longitude').points[0], 170)
+        self.assertEqual(result.coord('longitude').points[-1], 189)
+        self.assertEqual(result.data[0, 0, 0], 170)
+        self.assertEqual(result.data[0, 0, -1], 189)
+
+    def test_exclusive_inclusive(self):
+        cube = create_cube(0, 360)
+        result = cube.intersection(longitude=(170, 190, False))
+        self.assertEqual(result.coord('longitude').points[0], 171)
+        self.assertEqual(result.coord('longitude').points[-1], 190)
+        self.assertEqual(result.data[0, 0, 0], 171)
+        self.assertEqual(result.data[0, 0, -1], 190)
+
+    def test_exclusive_exclusive(self):
+        cube = create_cube(0, 360)
+        result = cube.intersection(longitude=(170, 190, False, False))
+        self.assertEqual(result.coord('longitude').points[0], 171)
+        self.assertEqual(result.coord('longitude').points[-1], 189)
+        self.assertEqual(result.data[0, 0, 0], 171)
+        self.assertEqual(result.data[0, 0, -1], 189)
+
+    def test_single_point(self):
+        # 10 <= v <= 10
+        cube = create_cube(0, 360)
+        result = cube.intersection(longitude=(10, 10))
+        self.assertEqual(result.coord('longitude').points[0], 10)
+        self.assertEqual(result.coord('longitude').points[-1], 10)
+        self.assertEqual(result.data[0, 0, 0], 10)
+        self.assertEqual(result.data[0, 0, -1], 10)
+
+    def test_wrap_radians(self):
+        cube = create_cube(0, 360)
+        cube.coord('longitude').convert_units('radians')
+        result = cube.intersection(longitude=(-1, 0.5))
+        self.assertEqual(result.coord('longitude').points[0],
+                         -0.99483767363676634)
+        self.assertEqual(result.coord('longitude').points[-1],
+                         0.48869219055841207)
+        self.assertEqual(result.data[0, 0, 0], 303)
+        self.assertEqual(result.data[0, 0, -1], 28)
+
+
+# Check what happens with a global, points-and-bounds circular
+# intersection coordinate.
+class Test_intersection__ModulusBounds(tests.IrisTest):
+    def test_misaligned_points_inside(self):
+        cube = create_cube(0, 360, bounds=True)
+        result = cube.intersection(longitude=(169.75, 190.25))
+        self.assertArrayEqual(result.coord('longitude').bounds[0],
+                              [169.5, 170.5])
+        self.assertArrayEqual(result.coord('longitude').bounds[-1],
+                              [189.5, 190.5])
+        self.assertEqual(result.data[0, 0, 0], 170)
+        self.assertEqual(result.data[0, 0, -1], 190)
+
+    def test_misaligned_points_outside(self):
+        cube = create_cube(0, 360, bounds=True)
+        result = cube.intersection(longitude=(170.25, 189.75))
+        self.assertArrayEqual(result.coord('longitude').bounds[0],
+                              [169.5, 170.5])
+        self.assertArrayEqual(result.coord('longitude').bounds[-1],
+                              [189.5, 190.5])
+        self.assertEqual(result.data[0, 0, 0], 170)
+        self.assertEqual(result.data[0, 0, -1], 190)
+
+    def test_aligned_inclusive(self):
+        cube = create_cube(0, 360, bounds=True)
+        result = cube.intersection(longitude=(170.5, 189.5))
+        self.assertArrayEqual(result.coord('longitude').bounds[0],
+                              [169.5, 170.5])
+        self.assertArrayEqual(result.coord('longitude').bounds[-1],
+                              [189.5, 190.5])
+        self.assertEqual(result.data[0, 0, 0], 170)
+        self.assertEqual(result.data[0, 0, -1], 190)
+
+    def test_aligned_exclusive(self):
+        cube = create_cube(0, 360, bounds=True)
+        result = cube.intersection(longitude=(170.5, 189.5, False, False))
+        self.assertArrayEqual(result.coord('longitude').bounds[0],
+                              [170.5, 171.5])
+        self.assertArrayEqual(result.coord('longitude').bounds[-1],
+                              [188.5, 189.5])
+        self.assertEqual(result.data[0, 0, 0], 171)
+        self.assertEqual(result.data[0, 0, -1], 189)
+
+
+def unrolled_cube():
+    data = np.arange(5, dtype='f4')
+    cube = Cube(data)
+    cube.add_aux_coord(iris.coords.AuxCoord([5.0, 10.0, 8.0, 5.0, 3.0],
+                                            'longitude', units='degrees'), 0)
+    cube.add_aux_coord(iris.coords.AuxCoord([1.0, 3.0, -2.0, -1.0, -4.0],
+                                            'latitude'), 0)
+    return cube
+
+
+# Check what happens with a "unrolled" scatter-point data with a circular
+# intersection coordinate.
+class Test_intersection__ScatterModulus(tests.IrisTest):
+    def test_subset(self):
+        cube = unrolled_cube()
+        result = cube.intersection(longitude=(5, 8))
+        self.assertArrayEqual(result.coord('longitude').points, [5, 8, 5])
+        self.assertArrayEqual(result.data, [0, 2, 3])
+
+    def test_subset_wrapped(self):
+        cube = unrolled_cube()
+        result = cube.intersection(longitude=(5 + 360, 8 + 360))
+        self.assertArrayEqual(result.coord('longitude').points,
+                              [365, 368, 365])
+        self.assertArrayEqual(result.data, [0, 2, 3])
+
+    def test_superset(self):
+        cube = unrolled_cube()
+        result = cube.intersection(longitude=(0, 15))
+        self.assertArrayEqual(result.coord('longitude').points,
+                              [5, 10, 8, 5, 3])
+        self.assertArrayEqual(result.data, range(5))
 
 
 if __name__ == "__main__":

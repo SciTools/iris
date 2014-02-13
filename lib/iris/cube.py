@@ -34,6 +34,7 @@ import numpy as np
 import numpy.ma as ma
 
 import iris.analysis
+import iris.analysis.cartography
 import iris.analysis.maths
 import iris.analysis.interpolate
 import iris.aux_factory
@@ -1930,6 +1931,224 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Cast the constraint into a proper constraint if it is not so already
         constraint = iris._constraints.as_constraint(constraint)
         return constraint.extract(self)
+
+    def intersection(self, *args, **kwargs):
+        """
+        Return the intersection of the cube with specified coordinate
+        ranges.
+
+        Coordinate ranges can be specified as:
+
+        (a) instances of :class:`iris.coords.CoordExtent`.
+
+        (b) keyword arguments, where the keyword name specifies the name
+            of the coordinate (as defined in :meth:`iris.cube.Cube.coords()`)
+            and the value defines the corresponding range of coordinate
+            values as a tuple. The tuple must contain two, three, or four
+            items corresponding to: (minimum, maximum, min_inclusive,
+            max_inclusive). Where the items are defined as:
+
+            * minimum
+                The minimum value of the range to select.
+
+            * maximum
+                The maximum value of the range to select.
+
+            * min_inclusive
+                If True, coordinate values equal to `minimum` will be included
+                in the selection. Default is True.
+
+            * max_inclusive
+                If True, coordinate values equal to `maximum` will be included
+                in the selection. Default is True.
+
+        .. note::
+
+            For ranges defined over "circular" coordinates (i.e. those
+            where the `units` attribute has a modulus defined) the cube
+            will be "rolled" to fit where neccesary.
+
+        .. warning::
+
+            Currently this routine only works with "circular"
+            coordinates (as defined in the previous note.)
+
+        For example::
+
+            >>> import iris
+            >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
+            >>> print cube.coord('longitude').points[::10]
+            [   0.           37.49999237   74.99998474  112.49996948  \
+149.99996948
+              187.49995422  224.99993896  262.49993896  299.99993896  \
+337.49990845]
+            >>> subset = cube.intersection(longitude=(30, 50))
+            >>> print subset.coord('longitude').points
+            [ 33.74999237  37.49999237  41.24998856  44.99998856  48.74998856]
+            >>> subset = cube.intersection(longitude=(-10, 10))
+            >>> print subset.coord('longitude').points
+            [-7.50012207 -3.75012207  0.          3.75        7.5       ]
+
+        Returns:
+            A new :class:`~iris.cube.Cube` giving the subset of the cube
+            which intersects with the requested coordinate intervals.
+
+        """
+        result = self
+        for arg in args:
+            result = result._intersect(*arg)
+        for name, value in kwargs.iteritems():
+            result = result._intersect(name, *value)
+        return result
+
+    def _intersect(self, name_or_coord, minimum, maximum,
+                   min_inclusive=True, max_inclusive=True):
+        coord = self.coord(name_or_coord)
+        if coord.ndim != 1:
+            raise iris.exceptions.CoordinateMultiDimError(coord)
+        if coord.nbounds not in (0, 2):
+            raise ValueError('expected 0 or 2 bound values per cell')
+        if minimum > maximum:
+            raise ValueError('minimum greater than maximum')
+        modulus = coord.units.modulus
+        if modulus is None:
+            raise ValueError('coordinate units with no modulus are not yet'
+                             ' supported')
+
+        subsets, points, bounds = self._intersect_modulus(coord,
+                                                          minimum, maximum,
+                                                          min_inclusive,
+                                                          max_inclusive)
+
+        # By this point we have either one or two subsets along the relevant
+        # dimension. If it's just one subset (which might be a slice or an
+        # unordered collection of indices) we can simply index the cube
+        # and we're done. If it's two subsets we need to stitch the two
+        # pieces together.
+        def make_chunk(key):
+            chunk = self[key_tuple_prefix + (key,)]
+            chunk_coord = chunk.coord(coord)
+            chunk_coord.points = points[(key,)]
+            if chunk_coord.has_bounds():
+                chunk_coord.bounds = bounds[(key,)]
+            return chunk
+
+        dim, = self.coord_dims(coord)
+        key_tuple_prefix = (slice(None),) * dim
+        chunks = [make_chunk(key) for key in subsets]
+        if len(chunks) == 1:
+            result = chunks[0]
+        else:
+            if self.has_lazy_data():
+                data = biggus.LinearMosaic([chunk.lazy_data()
+                                            for chunk in chunks],
+                                           dim)
+            else:
+                module = ma if ma.isMaskedArray(self.data) else np
+                data = module.concatenate([chunk.data for chunk in chunks],
+                                          dim)
+            result = iris.cube.Cube(data)
+            result.metadata = copy.deepcopy(self.metadata)
+
+            # Record a mapping from old coordinate IDs to new coordinates,
+            # for subsequent use in creating updated aux_factories.
+            coord_mapping = {}
+
+            def create_coords(src_coords, add_coord):
+                # Add copies of the source coordinates, selecting
+                # the appropriate subsets out of coordinates which
+                # share the intersection dimension.
+                for src_coord in src_coords:
+                    dims = self.coord_dims(src_coord)
+                    if dim in dims:
+                        dim_within_coord = dims.index(dim)
+                        points = np.concatenate([chunk.coord(src_coord).points
+                                                 for chunk in chunks],
+                                                dim_within_coord)
+                        if src_coord.has_bounds():
+                            bounds = np.concatenate(
+                                [chunk.coord(src_coord).bounds
+                                 for chunk in chunks],
+                                dim_within_coord)
+                        else:
+                            bounds = None
+                        result_coord = src_coord.copy(points=points,
+                                                      bounds=bounds)
+                    else:
+                        result_coord = src_coord.copy()
+                    add_coord(result_coord, dims)
+                    coord_mapping[id(src_coord)] = result_coord
+
+            create_coords(self.dim_coords, result.add_dim_coord)
+            create_coords(self.aux_coords, result.add_aux_coord)
+            for factory in self.aux_factories:
+                result.add_aux_factory(factory.updated(coord_mapping))
+        return result
+
+    def _intersect_modulus(self, coord, minimum, maximum, min_inclusive,
+                           max_inclusive):
+        modulus = coord.units.modulus
+        if maximum > minimum + modulus:
+            raise ValueError("requested range greater than coordinate's"
+                             " unit's modulus")
+        if coord.has_bounds():
+            values = coord.bounds
+        else:
+            values = coord.points
+        if values.max() > values.min() + modulus:
+            raise ValueError("coordinate's range greater than coordinate's"
+                             " unit's modulus")
+        min_comp = np.less_equal if min_inclusive else np.less
+        max_comp = np.less_equal if max_inclusive else np.less
+        if coord.has_bounds():
+            bounds = iris.analysis.cartography.wrap_lons(coord.bounds, minimum,
+                                                         modulus)
+            inside = np.logical_and(min_comp(minimum, bounds),
+                                    max_comp(bounds, maximum))
+            inside_indices, = np.where(np.any(inside, axis=1))
+            expanded_minimum = np.min(coord.bounds[inside_indices])
+            # To ensure the bounds of matching cells aren't "scrambled"
+            # by the wrap operation we shift the wrap point to the
+            # minimum of all the bounds.
+            # For example: the cell [169.5, 170.5] wrapped at 170 would
+            # become [529.5, 170.5] which is no longer valid. By
+            # shifting the wrap point down to 169.5 it stays coherent.
+            points = iris.analysis.cartography.wrap_lons(coord.points,
+                                                         expanded_minimum,
+                                                         modulus)
+            bounds = iris.analysis.cartography.wrap_lons(coord.bounds,
+                                                         expanded_minimum,
+                                                         modulus)
+        else:
+            points = iris.analysis.cartography.wrap_lons(coord.points, minimum,
+                                                         modulus)
+            bounds = None
+            inside_indices, = np.where(
+                np.logical_and(min_comp(minimum, points),
+                               max_comp(points, maximum)))
+        if isinstance(coord, iris.coords.DimCoord):
+            delta = coord.points[inside_indices] - points[inside_indices]
+            tolerance = np.finfo(delta.dtype).eps * modulus
+            if np.allclose(delta, delta[0], rtol=tolerance, atol=tolerance):
+                # A single, contiguous block.
+                subsets = [slice(inside_indices[0], inside_indices[-1] + 1)]
+            else:
+                # A contiguous block at the start and another at the
+                # end. (NB. We can't have more than two blocks
+                # because we've already restricted the coordinate's
+                # range to its modulus).
+                step = np.rint(np.diff(delta) / modulus)
+                end_of_first_chunk = np.where(step != step[0])[0][0]
+                subsets = [slice(inside_indices[end_of_first_chunk + 1], None),
+                           slice(None, inside_indices[end_of_first_chunk] + 1)]
+        else:
+            # An AuxCoord could have its values in an arbitrary
+            # order, and hence a range of values can select an
+            # arbitrary subset. Also, we want to preserve the order
+            # from the original AuxCoord. So we just use the indices
+            # directly.
+            subsets = [inside_indices]
+        return subsets, points, bounds
 
     def _as_list_of_coords(self, names_or_coords):
         """

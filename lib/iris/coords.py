@@ -60,6 +60,47 @@ class CoordDefn(collections.namedtuple('CoordDefn',
         return self.standard_name or self.long_name or self.var_name or default
 
 
+class CoordExtent(collections.namedtuple('_CoordExtent', ['name_or_coord',
+                                                          'minimum',
+                                                          'maximum',
+                                                          'min_inclusive',
+                                                          'max_inclusive'])):
+    """Defines a range of values for a coordinate."""
+
+    def __new__(cls, name_or_coord, minimum, maximum,
+                min_inclusive=True, max_inclusive=True):
+        """
+        Create a CoordExtent for the specified coordinate and range of
+        values.
+
+        Args:
+
+        * name_or_coord
+            Either a coordinate name or a coordinate, as defined in
+            :meth:`iris.cube.Cube.coords()`.
+
+        * minimum
+            The minimum value of the range to select.
+
+        * maximum
+            The maximum value of the range to select.
+
+        Kwargs:
+
+        * min_inclusive
+            If True, coordinate values equal to `minimum` will be included
+            in the selection. Default is True.
+
+        * max_inclusive
+            If True, coordinate values equal to `maximum` will be included
+            in the selection. Default is True.
+
+        """
+        return super(CoordExtent, cls).__new__(cls, name_or_coord, minimum,
+                                               maximum, min_inclusive,
+                                               max_inclusive)
+
+
 # Coordinate cell styles. Used in plot and cartography.
 POINT_MODE = 0
 BOUND_MODE = 1
