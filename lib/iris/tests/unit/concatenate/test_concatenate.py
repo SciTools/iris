@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the :mod:`iris._concatenate` package."""
+"""Test function :func:`iris._concatenate.concatenate.py`."""
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
@@ -49,15 +49,6 @@ class Test_concatenate__epoch(tests.IrisTest):
         reftimes = ['hours since 1970-01-01 00:00:00',
                     'hours since 1970-01-01 00:00:00']
         coords_points = [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]]
-        cubes = self.simple_1d_time_cubes(reftimes, coords_points)
-        result = concatenate(cubes)
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (10,))
-
-    def test_concat_1d_with_differing_time_units(self):
-        reftimes = ['hours since 1970-01-01 00:00:00',
-                    'hours since 1970-01-02 00:00:00']
-        coords_points = [[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]]
         cubes = self.simple_1d_time_cubes(reftimes, coords_points)
         result = concatenate(cubes)
         self.assertEqual(len(result), 1)

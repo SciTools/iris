@@ -219,8 +219,6 @@ def concatenate(cubes):
         This routine will load your data payload!
 
     """
-    if len(cubes) > 1:
-        unify_time_units(cubes)
     proto_cubes_by_name = defaultdict(list)
     # Initialise the nominated axis (dimension) of concatenation
     # which requires to be negotiated.

@@ -397,6 +397,13 @@ class CubeList(list):
         Contrast this with :meth:`iris.cube.CubeList.concatenate`, which joins
         cubes along an existing dimension.
 
+        .. note::
+
+            If time coordinates in the list of cubes have differing epochs then
+            the cubes will not be able to be merged. If this occurs, use
+            :func:`iris.util.unify_time_units` to normalise the epochs of the
+            time coordinates so that the cubes can be merged.
+
         """
         # Register each of our cubes with its appropriate ProtoCube.
         proto_cubes_by_name = {}
@@ -477,6 +484,13 @@ class CubeList(list):
 
         Contrast this with :meth:`iris.cube.CubeList.merge`, which makes a new
         dimension from values of an auxiliary scalar coordinate.
+
+        .. note::
+
+            If time coordinates in the list of cubes have differing epochs then
+            the cubes will not be able to be concatenated. If this occurs, use
+            :func:`iris.util.unify_time_units` to normalise the epochs of the
+            time coordinates so that the cubes can be concatenated.
 
         .. warning::
 
