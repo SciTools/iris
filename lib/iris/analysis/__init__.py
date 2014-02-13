@@ -41,6 +41,7 @@ The gallery contains several interesting worked examples of how an
  * :ref:`graphics-SOI_filtering`
  * :ref:`graphics-hovmoller`
  * :ref:`graphics-lagged_ensemble`
+ * :ref:`graphics-custom_aggregation`
 
 """
 from __future__ import division
@@ -343,7 +344,10 @@ def coord_comparison(*cubes):
 
 
 class Aggregator(object):
-    """Convenience class that supports common aggregation functionality."""
+    """
+    The :class:`Aggregator` class provides common aggregation functionality.
+
+    """
 
     def __init__(self, cell_method, call_func, units_func=None,
                  lazy_func=None, **kwargs):
@@ -353,20 +357,42 @@ class Aggregator(object):
         Args:
 
         * cell_method (string):
-            Cell method string that supports string format substitution.
+            Cell method definition formatter.  Used in the fashion
+            "cell_method.format(\**kwargs)", to produce a cell-method string
+            which can include keyword values.
+
         * call_func (callable):
-            Data aggregation function. Call signature: (data, axis, **kwargs).
+            | *Call signature*: (data, axis=None, \**kwargs)
+            Data aggregation function.
+            Returns an aggregation result, collapsing the 'axis' dimension of
+            the 'data' argument.
 
         Kwargs:
 
         * units_func (callable):
-            Units conversion function.
+            | *Call signature*: (units)
+            If provided, called to convert a cube's units.
+            Returns an :class:`iris.units.Unit`, or a
+            value that can be made into one.
+
         * lazy_func (callable):
             An alternative to :data:`call_func` implementing a lazy
             aggregation. Note that, it need not support all features of the
             main operation, but should raise an error in unhandled cases.
-        * kwargs:
+
+        Additional kwargs::
             Passed through to :data:`call_func`.
+
+        Aggregators are used by cube aggregation methods such as
+        :meth:`~iris.cube.Cube.collapsed` and
+        :meth:`~iris.cube.Cube.aggregated_by`.  For example::
+
+            result = cube.collapsed('longitude', iris.analysis.MEAN)
+
+        A variety of ready-made aggregators are provided in this module, such
+        as :data:`~iris.analysis.MEAN` and :data:`~iris.analysis.MAX`.  Custom
+        aggregators can also be created for special purposes, see
+        :ref:`graphics-custom_aggregation` for a worked example.
 
         """
         #: Cube cell method string.
