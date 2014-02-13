@@ -332,6 +332,7 @@ class CubeList(list):
               Coordinate-to-dimension mapping differs for cube.dim_coords.
 
         """
+        iris.util.unify_time_units(self)
         if not self:
             raise ValueError("can't merge an empty CubeList")
 
@@ -398,6 +399,7 @@ class CubeList(list):
 
         """
         # Register each of our cubes with its appropriate ProtoCube.
+        iris.util.unify_time_units(self)
         proto_cubes_by_name = {}
         for cube in self:
             name = cube.standard_name

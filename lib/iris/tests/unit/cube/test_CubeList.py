@@ -30,6 +30,20 @@ class Test_merge_cube(tests.IrisTest):
         self.cube1 = Cube([1, 2, 3], "air_temperature", units="K")
         self.cube1.add_aux_coord(AuxCoord([0], "height", units="m"))
 
+    def differing_epochs_cubes(self):
+        cubes = CubeList()
+        reftimes = ['hours since 1970-01-01 00:00:00',
+                    'hours since 1970-01-02 00:00:00']
+        calendar = 'gregorian'
+        for reftime in reftimes:
+            units = iris.unit.Unit(reftime, calendar='gregorian')
+            cube = self.cube1.copy()
+            frt_aux = AuxCoord(0, standard_name='forecast_reference_time',
+                               units=units)
+            cube.add_aux_coord(frt_aux)
+            cubes.append(cube)
+        return cubes
+
     def test_pass(self):
         cube2 = self.cube1.copy()
         cube2.coord("height").points = [1]
@@ -54,6 +68,10 @@ class Test_merge_cube(tests.IrisTest):
     def test_repeated_cube(self):
         with self.assertRaises(iris.exceptions.MergeError):
             CubeList([self.cube1, self.cube1]).merge_cube()
+
+    def test_differing_epochs_cubes(self):
+        result = self.differing_epochs_cubes().merge_cube()
+        self.assertIsInstance(result, Cube)
 
 
 if __name__ == "__main__":
