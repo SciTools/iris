@@ -162,7 +162,7 @@ keyword arguments are equivalent:
 .. plot:: userguide/plotting_examples/1d_simple.py
 
 For more information on how this example reduced the 2D cube to 1 dimension see 
-the previous section entitled :doc:`reducing_a_cube`.
+the previous section entitled :doc:`subsetting_a_cube`.
 
 .. note::
 
