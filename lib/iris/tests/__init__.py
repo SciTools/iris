@@ -86,7 +86,7 @@ if '-d' in sys.argv:
 else:
     plt.switch_backend('agg')
 
-_DEFAULT_IMAGE_TOLERANCE = 10.0
+_DEFAULT_IMAGE_TOLERANCE = 0.0
 
 
 def main():
