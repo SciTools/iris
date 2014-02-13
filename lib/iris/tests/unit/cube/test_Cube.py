@@ -26,7 +26,6 @@ import numpy as np
 
 import iris.aux_factory
 import iris.coords
-import iris.cube
 import iris.exceptions
 from iris import FUTURE
 from iris.analysis import WeightedAggregator, Aggregator
@@ -459,11 +458,18 @@ class Test_intersection__RegionalSrcModulus(tests.IrisTest):
                               range(40 + 360, 60 + 360))
         self.assertArrayEqual(result.data[0, 0], range(0, 20))
 
-    def test_air_temp_pp_from_sample_data(self):
+    def test_tolerance_f4(self):
         cube = create_cube(0, 5)
         cube.coord('longitude').points = np.array([0., 3.74999905, 7.49999809,
                                                    11.24999714, 14.99999619],
                                                   dtype='f4')
+        result = cube.intersection(longitude=(0, 5))
+
+    def test_tolerance_f8(self):
+        cube = create_cube(0, 5)
+        cube.coord('longitude').points = np.array([0., 3.74999905, 7.49999809,
+                                                   11.24999714, 14.99999619],
+                                                  dtype='f8')
         result = cube.intersection(longitude=(0, 5))
 
 
@@ -552,7 +558,7 @@ class Test_intersection__GlobalSrcModulus(tests.IrisTest):
     def test_select_by_coord(self):
         cube = create_cube(0, 360)
         coord = iris.coords.DimCoord(0, 'longitude', units='degrees')
-        result = cube.intersection(iris.cube.CoordExtent(coord, 10, 30))
+        result = cube.intersection(iris.coords.CoordExtent(coord, 10, 30))
         self.assertEqual(result.coord('longitude').points[0], 10)
         self.assertEqual(result.coord('longitude').points[-1], 30)
         self.assertEqual(result.data[0, 0, 0], 10)

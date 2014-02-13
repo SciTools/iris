@@ -49,7 +49,7 @@ import iris.util
 from iris._cube_coord_common import CFVariableMixin
 
 
-__all__ = ['CoordExtent', 'Cube', 'CubeList', 'CubeMetadata']
+__all__ = ['Cube', 'CubeList', 'CubeMetadata']
 
 
 class CubeMetadata(collections.namedtuple('CubeMetadata',
@@ -73,47 +73,6 @@ class CubeMetadata(collections.namedtuple('CubeMetadata',
 
         """
         return self.standard_name or self.long_name or self.var_name or default
-
-
-class CoordExtent(collections.namedtuple('CoordExtent', ['name_or_coord',
-                                                         'minimum',
-                                                         'maximum',
-                                                         'min_inclusive',
-                                                         'max_inclusive'])):
-    """Defines a range of values for a coordinate."""
-
-    def __new__(cls, name_or_coord, minimum, maximum,
-                min_inclusive=True, max_inclusive=True):
-        """
-        Create a CoordExtent for the specified coordinate and range of
-        values.
-
-        Args:
-
-        * name_or_coord
-            Either a coordinate name or a coordinate, as defined in
-            :meth:`iris.cube.Cube.coords()`.
-
-        * minimum
-            The minimum value of the range to select.
-
-        * maximum
-            The maximum value of the range to select.
-
-        Kwargs:
-
-        * min_inclusive
-            If True, coordinate values equal to `minimum` will be included
-            in the selection. Default is True.
-
-        * max_inclusive
-            If True, coordinate values equal to `maximum` will be included
-            in the selection. Default is True.
-
-        """
-        return super(CoordExtent, cls).__new__(cls, name_or_coord, minimum,
-                                               maximum, min_inclusive,
-                                               max_inclusive)
 
 
 # The XML namespace to use for CubeML documents
@@ -1980,7 +1939,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         Coordinate ranges can be specified as:
 
-        (a) instances of :class:`CoordExtent`.
+        (a) instances of :class:`iris.coords.CoordExtent`.
 
         (b) keyword arguments, where the keyword name specifies the name
             of the coordinate (as defined in :meth:`iris.cube.Cube.coords()`)
@@ -2055,11 +2014,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if modulus is None:
             raise ValueError('coordinate units with no modulus are not yet'
                              ' supported')
-        else:
-            subsets, points, bounds = self._intersect_modulus(coord,
-                                                              minimum, maximum,
-                                                              min_inclusive,
-                                                              max_inclusive)
+
+        subsets, points, bounds = self._intersect_modulus(coord,
+                                                          minimum, maximum,
+                                                          min_inclusive,
+                                                          max_inclusive)
 
         # By this point we have either one or two subsets along the relevant
         # dimension. If it's just one subset (which might be a slice or an
@@ -2089,13 +2048,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 data = module.concatenate([chunk.data for chunk in chunks],
                                           dim)
             result = iris.cube.Cube(data)
-            result.metadata = self.metadata
+            result.metadata = copy.deepcopy(self.metadata)
 
             # Record a mapping from old coordinate IDs to new coordinates,
             # for subsequent use in creating updated aux_factories.
             coord_mapping = {}
 
             def create_coords(src_coords, add_coord):
+                # Add copies of the source coordinates, selecting
+                # the appropriate subsets out of coordinates which
+                # share the intersection dimension.
                 for src_coord in src_coords:
                     dims = self.coord_dims(src_coord)
                     if dim in dims:
@@ -2136,15 +2098,21 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if values.max() > values.min() + modulus:
             raise ValueError("coordinate's range greater than coordinate's"
                              " unit's modulus")
+        min_comp = np.less_equal if min_inclusive else np.less
+        max_comp = np.less_equal if max_inclusive else np.less
         if coord.has_bounds():
             bounds = iris.analysis.cartography.wrap_lons(coord.bounds, minimum,
                                                          modulus)
-            min_comp = np.less_equal if min_inclusive else np.less
-            max_comp = np.less_equal if max_inclusive else np.less
             inside = np.logical_and(min_comp(minimum, bounds),
                                     max_comp(bounds, maximum))
-            inside_indices, = np.where(np.logical_or.reduce(inside, axis=1))
+            inside_indices, = np.where(np.any(inside, axis=1))
             expanded_minimum = np.min(coord.bounds[inside_indices])
+            # To ensure the bounds of matching cells aren't "scrambled"
+            # by the wrap operation we shift the wrap point to the
+            # minimum of all the bounds.
+            # For example: the cell [169.5, 170.5] wrapped at 170 would
+            # become [529.5, 170.5] which is no longer valid. By
+            # shifting the wrap point down to 169.5 it stays coherent.
             points = iris.analysis.cartography.wrap_lons(coord.points,
                                                          expanded_minimum,
                                                          modulus)
@@ -2155,14 +2123,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             points = iris.analysis.cartography.wrap_lons(coord.points, minimum,
                                                          modulus)
             bounds = None
-            min_comp = np.less_equal if min_inclusive else np.less
-            max_comp = np.less_equal if max_inclusive else np.less
             inside_indices, = np.where(
                 np.logical_and(min_comp(minimum, points),
                                max_comp(points, maximum)))
         if isinstance(coord, iris.coords.DimCoord):
             delta = coord.points[inside_indices] - points[inside_indices]
-            if np.allclose(delta, delta[0], atol=1e-6):
+            tolerance = np.finfo(delta.dtype).eps * modulus
+            if np.allclose(delta, delta[0], rtol=tolerance, atol=tolerance):
                 # A single, contiguous block.
                 subsets = [slice(inside_indices[0], inside_indices[-1] + 1)]
             else:
