@@ -310,10 +310,14 @@ def load_cube(uris, constraint=None, callback=None):
 
     cubes = _load_collection(uris, constraints, callback).merged().cubes()
 
-    if len(cubes) != 1:
-        msg = 'Expected exactly one cube, found {}.'.format(len(cubes))
-        raise iris.exceptions.ConstraintMismatchError(msg)
-    return cubes[0]
+    try:
+        cube = cubes.merge_cube()
+    except iris.exceptions.MergeError as e:
+        raise iris.exceptions.ConstraintMismatchError(str(e))
+    except ValueError:
+        raise iris.exceptions.ConstraintMismatchError('no cubes found')
+
+    return cube
 
 
 def load_cubes(uris, constraints=None, callback=None):
