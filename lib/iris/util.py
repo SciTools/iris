@@ -1291,7 +1291,7 @@ def unify_time_units(cubes):
     Arg:
 
     * cubes:
-        An iterable of :class:`iris.cube.Cube`s.
+        An iterable containing :class:`iris.cube.Cube` instances.
 
     """
     epochs = {}
