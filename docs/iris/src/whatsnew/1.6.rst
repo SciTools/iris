@@ -1,8 +1,8 @@
 What's new in Iris 1.6
 **********************
 
-:Release: 1.6.0
-:Date: 23rd January 2014
+:Release: 1.6.1
+:Date: 18th February 2014
 
 Iris 1.6 features
 =================
@@ -188,6 +188,11 @@ Incompatible changes
   :func:`~iris.coord_categorisation.add_weekday_shortname`        :func:`~iris.coord_categorisation.add_weekday`
   :func:`~iris.coord_categorisation.add_season_month_initials`    :func:`~iris.coord_categorisation.add_season`
   =============================================================== =======================================================
+* When a cube is loaded from PP or GRIB and it has both time and forecast period
+  coordinates, and the time coordinate has bounds, the forecast period coordinate
+  will now also have bounds. These bounds will be aligned with the bounds of the
+  time coordinate taking into account the forecast reference time. Also,
+  the forecast period point will now be aligned with the time point.
 
 Deprecations
 ============
