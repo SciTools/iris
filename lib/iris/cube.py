@@ -836,7 +836,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     def _add_unique_dim_coord(self, dim_coord, data_dim):
         if isinstance(dim_coord, iris.coords.AuxCoord):
-            raise ValueError('The dim_coord may not be an AuxCoord instance.')
+            try:
+                dim_coord = iris.coords.DimCoord.from_coord(dim_coord)
+                warnings.warn('converting AuxCoord to DimCoord',
+                              stacklevel=2)
+            except BaseException as e:
+                raise ValueError('Could not convert coord to DimCoord: '
+                                 + str(e))
 
         # Convert data_dim to a single integer
         if isinstance(data_dim, collections.Container):
