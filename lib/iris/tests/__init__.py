@@ -364,8 +364,8 @@ class IrisTest(unittest.TestCase):
         np.testing.assert_array_equal(a.mask, b.mask)
         np.testing.assert_array_equal(a[~a.mask].data, b[~b.mask].data)
 
-    def assertArrayAlmostEqual(self, a, b):
-        np.testing.assert_array_almost_equal(a, b)
+    def assertArrayAlmostEqual(self, a, b, decimal=6):
+        np.testing.assert_array_almost_equal(a, b, decimal=decimal)
 
     def assertMaskedArrayAlmostEqual(self, a, b):
         """

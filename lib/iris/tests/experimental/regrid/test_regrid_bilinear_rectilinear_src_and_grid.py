@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -301,6 +301,15 @@ class TestRotatedToLatLon(tests.IrisTest):
         grid.coord('latitude').points = np.linspace(52.377, 52.43, 4)
         result = regrid(self.src, grid)
         self.assertCMLApproxData(result, RESULT_DIR + ('no_overlap.cml',))
+
+    def test_grid_subset_missing_data_aux(self):
+        # The destination grid points are entirely contained within the
+        # src grid points AND we have missing data on the aux coordinate.
+        src = self.src
+        src.coord('surface_altitude').points[1, 2] = np.ma.masked
+        grid = self._grid_subset()
+        result = regrid(src, grid)
+        self.assertCMLApproxData(result, RESULT_DIR + ('masked_altitude.cml',))
 
 
 class TestNOP(tests.IrisTest):

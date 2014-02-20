@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,7 +30,6 @@ import iris.coords
 import iris.coords as icoords
 import iris.tests as tests
 from iris.coord_systems import GeogCS, RotatedGeogCS
-import numpy.ma as ma
 
 
 def lat_lon_cube():

@@ -560,6 +560,44 @@ def regrid_to_max_resolution(cubes, **kwargs):
     return [cube.regridded(grid_cube, **kwargs) for cube in cubes]
 
 
+def _extend_circular_coord_and_data(coord, data, coord_dim):
+    """
+    Return coordinate points and a data array with a shape extended by one
+    in the coord_dim axis. This is common when dealing with circular
+    coordinates.
+
+    """
+    coord_slice_in_cube = [slice(None)] * data.ndim
+    coord_slice_in_cube[coord_dim] = slice(0, 1)
+    modulus = np.array(coord.units.modulus or 0,
+                       dtype=coord.dtype)
+    points = np.append(coord.points,
+                       coord.points[0] + modulus)
+
+    # TODO: Restore this code after resolution of the following issue:
+    # https://github.com/numpy/numpy/issues/478
+#    data = np.append(cube.data,
+#                     cube.data[tuple(coord_slice_in_cube)],
+#                     axis=sample_dim)
+    # This is the alternative, temporary workaround.
+    # It doesn't use append on an nD mask.
+    if (not isinstance(data, ma.MaskedArray) or
+        not isinstance(data.mask, np.ndarray) or
+        len(data.mask.shape) == 0):
+        data = np.append(data,
+                         data[tuple(coord_slice_in_cube)],
+                         axis=coord_dim)
+    else:
+        new_data = np.append(data.data,
+                             data.data[tuple(coord_slice_in_cube)],
+                             axis=coord_dim)
+        new_mask = np.append(data.mask,
+                             data.mask[tuple(coord_slice_in_cube)],
+                             axis=coord_dim)
+        data = ma.array(new_data, mask=new_mask)
+    return points, data
+
+
 def linear(cube, sample_points, extrapolation_mode='linear'):
     """
     Return a cube of the linearly interpolated points given the desired
@@ -692,34 +730,9 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
         # Construct source data & source coordinate values suitable for
         # SciPy's interp1d.
         if getattr(src_coord, 'circular', False):
-            coord_slice_in_cube = [slice(None, None)] * cube.ndim
-            coord_slice_in_cube[sample_dim] = slice(0, 1)
-            modulus = np.array(src_coord.units.modulus or 0,
-                               dtype=src_coord.dtype)
-            src_points = np.append(src_coord.points,
-                                   src_coord.points[0] + modulus)
-
-            # TODO: Restore this code after resolution of the following issue:
-            # https://github.com/numpy/numpy/issues/478
-#            data = np.append(cube.data,
-#                             cube.data[tuple(coord_slice_in_cube)],
-#                             axis=sample_dim)
-            # This is the alternative, temporary workaround.
-            # It doesn't use append on an nD mask.
-            if (not isinstance(cube.data, ma.MaskedArray) or
-                not isinstance(cube.data.mask, np.ndarray) or
-                len(cube.data.mask.shape) == 0):
-                data = np.append(cube.data,
-                                 cube.data[tuple(coord_slice_in_cube)],
-                                 axis=sample_dim)
-            else:
-                new_data = np.append(cube.data.data,
-                                     cube.data.data[tuple(coord_slice_in_cube)],
-                                     axis=sample_dim)
-                new_mask = np.append(cube.data.mask,
-                                     cube.data.mask[tuple(coord_slice_in_cube)],
-                                     axis=sample_dim)
-                data = ma.array(new_data, mask=new_mask)
+            src_points, data = _extend_circular_coord_and_data(src_coord,
+                                                               cube.data,
+                                                               sample_dim)
         else:
             src_points = src_coord.points
             data = cube.data

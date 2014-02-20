@@ -6,54 +6,62 @@
     </attributes>
     <coords>
       <coord datadims="[1, 2, 3]">
-        <auxCoord bounds="[[[[nan, nan],
+        <auxCoord bounds="[[[[403.764, 416.477],
+  		[377.318, 390.072],
   		[nan, nan],
-  		[346.925, 359.725],
-  		[334.798, 347.617]],
-
- 		[[nan, nan],
   		[nan, nan],
-  		[319.574, 332.417],
-  		[386.873, 399.612]],
+  		[nan, nan]],
 
- 		[[nan, nan],
+ 		[[347.89, 360.689],
+  		[323.018, 335.855],
   		[nan, nan],
-  		[315.723, 328.571],
-  		[398.421, 411.142]],
-
- 		[[nan, nan],
   		[nan, nan],
-  		[355.611, 368.398],
-  		[320.153, 332.995]]],
+  		[nan, nan]],
 
-
-		[[[nan, nan],
+ 		[[354.309, 367.098],
+  		[327.01, 339.841],
   		[nan, nan],
-  		[359.725, 378.926],
-  		[347.617, 366.847]],
-
- 		[[nan, nan],
   		[nan, nan],
-  		[332.417, 351.681],
-  		[399.612, 418.722]],
+  		[nan, nan]],
 
- 		[[nan, nan],
+ 		[[425.557, 438.236],
+  		[393.536, 406.265],
   		[nan, nan],
-  		[328.571, 347.845],
-  		[411.142, 430.225]],
-
- 		[[nan, nan],
   		[nan, nan],
-  		[368.398, 387.579],
-  		[332.995, 352.258]]]]" id="c56f646c" points="[[[nan, nan, 351.725, 339.605],
- 		[nan, nan, 324.39, 391.65],
- 		[nan, nan, 320.541, 403.191],
- 		[nan, nan, 360.406, 324.969]],
+  		[nan, nan]]],
 
-		[[nan, nan, 367.726, 355.63],
- 		[nan, nan, 340.443, 407.574],
- 		[nan, nan, 336.602, 419.093],
- 		[nan, nan, 376.39, 341.021]]]" shape="(2, 4, 4)" standard_name="altitude" units="Unit('m')" value_type="float32">
+
+		[[[416.477, 435.548],
+  		[390.072, 409.203],
+  		[nan, nan],
+  		[nan, nan],
+  		[nan, nan]],
+
+ 		[[360.689, 379.888],
+  		[335.855, 355.111],
+  		[nan, nan],
+  		[nan, nan],
+  		[nan, nan]],
+
+ 		[[367.098, 386.282],
+  		[339.841, 359.088],
+  		[nan, nan],
+  		[nan, nan],
+  		[nan, nan]],
+
+ 		[[438.236, 457.257],
+  		[406.265, 425.359],
+  		[nan, nan],
+  		[nan, nan],
+  		[nan, nan]]]]" id="c56f646c" points="[[[408.531, 382.101, nan, nan, nan],
+ 		[352.689, 327.832, nan, nan, nan],
+ 		[359.105, 331.822, nan, nan, nan],
+ 		[430.311, 398.309, nan, nan, nan]],
+
+		[[424.423, 398.043, nan, nan, nan],
+ 		[368.688, 343.878, nan, nan, nan],
+ 		[375.091, 347.861, nan, nan, nan],
+ 		[446.161, 414.22, nan, nan, nan]]]" shape="(2, 4, 5)" standard_name="altitude" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -63,7 +71,7 @@
         <dimCoord id="73141289" points="[0.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="a42bcac2" points="[52.377, 52.3946666667, 52.4123333333, 52.43]" shape="(4,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord id="a42bcac2" points="[52.372, 52.3946666667, 52.4173333333, 52.44]" shape="(4,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -76,7 +84,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[3]">
-        <dimCoord id="63128986" points="[-3.3, -3.22, -3.14, -3.06]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord id="63128986" points="[-3.182, -3.1515, -3.121, -3.0905, -3.06]" shape="(5,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -92,10 +100,10 @@
 		[0.998464, 0.996162]]" id="5f88ebd6" long_name="sigma" points="[0.999424, 0.997504]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[2, 3]">
-        <auxCoord id="4471545e" points="[[nan, nan, 346.925, 334.798],
-		[nan, nan, 319.574, 386.873],
-		[nan, nan, 315.723, 398.421],
-		[nan, nan, 355.611, 320.153]]" shape="(4, 4)" standard_name="surface_altitude" units="Unit('m')" value_type="float32"/>
+        <auxCoord id="4471545e" points="[[403.764, 377.318, nan, nan, nan],
+		[347.89, 323.018, nan, nan, nan],
+		[354.309, 327.01, nan, nan, nan],
+		[425.557, 393.536, nan, nan, nan]]" shape="(4, 5)" standard_name="surface_altitude" units="Unit('m')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord id="6a1b3c16" points="[347921.166667, 347921.333333, 347921.5,
@@ -103,6 +111,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float32" shape="(5, 2, 4, 4)" state="loaded"/>
+    <data byteorder="little" dtype="float32" shape="(5, 2, 4, 5)" state="loaded"/>
   </cube>
 </cubes>
