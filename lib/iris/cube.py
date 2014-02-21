@@ -840,7 +840,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 dim_coord = iris.coords.DimCoord.from_coord(dim_coord)
                 warnings.warn('converting AuxCoord to DimCoord',
                               stacklevel=2)
-            except BaseException as e:
+            except ValueError as e:
                 raise ValueError('Could not convert coord to DimCoord: '
                                  + str(e))
 
