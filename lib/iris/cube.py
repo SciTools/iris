@@ -841,7 +841,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 warnings.warn('converting AuxCoord to DimCoord',
                               stacklevel=2)
             except ValueError as e:
-                raise ValueError('Could not convert coord to DimCoord: '
+                raise ValueError('Could not convert coord to DimCoord. '
                                  + str(e))
 
         # Convert data_dim to a single integer
