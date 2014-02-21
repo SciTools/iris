@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,14 +23,14 @@ import iris.tests as tests
 import extest_util
 
 with extest_util.add_examples_to_path():
-    import custom_aggregation
+    import custom_colours
 
 
-class TestCustomAggregation(tests.GraphicsTest):
-    """Test the custom aggregation example code."""
-    def test_custom_aggregation(self):
+class TestCustomColours(tests.GraphicsTest):
+    """Test the custom-colours example code."""
+    def test_custom_colours(self):
         with extest_util.show_replaced_by_check_graphic(self):
-            custom_aggregation.main()
+            custom_colours.main()
 
 
 if __name__ == '__main__':
