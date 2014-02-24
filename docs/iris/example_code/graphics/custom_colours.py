@@ -2,12 +2,20 @@
 Controlling plot colours
 ========================
 
-This example shows how to use custom colour schemes for anomaly plotting.
-This demonstrates key techniques for using colour in matplotlib including:
+This example shows how to use custom colour schemes for anomaly plotting,
+demonstrating some key matplotlib techniques including:
     * defining custom colour schemes
     * non-linear mapping of data values to colours
     * continuous and discrete colour ranges
     * colour scales for pseudocolour and contour-filled plots
+
+NOTE: "pseudocolour" means that each data point is drawn as a "cell" region on
+the plot, coloured according to its data value.  In matplotlib, this is done
+with the methods `matplotlib.pyplot.pcolor
+<http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.pcolor>`_
+and `matplotlib.pyplot.pcolormesh
+<http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.pcolormesh>`_ .
+See also : http://en.wikipedia.org/wiki/False_color#Pseudocolor.
 
 In this case, we want to colour signed data "logarithmically" -- i.e. we have
 values both above and below zero, and we want to have an equal range of colour
@@ -27,63 +35,69 @@ scale, which matches the levels and colours in the contoured example.
 """
 import iris
 import iris.plot as iplt
-import iris.quickplot as qplt
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcols
 import numpy as np
 
 
-# Define a function to create a colour map and a data normalisation, for
-# continuous logarithmic colouring in a given value range.
+# Define a function to create a colour map and data normalisation.
 def log_color_controls(min_log_scale, max_scale, colour_zero='white',
                        colour_min='blue', colour_max='red',
                        colour_zero_minus=None, colour_zero_plus=None):
     """
-    Create a matplotlib.colors.Colormap and a matplotlib.colors.Normalize to
-    colour data values logarithmically.  All values of less than a certain
-    absolute magnitude map into a 'zero band' of a constant colour.
+    Create controls to colour data values logarithmically.  Values of less than
+    a certain absolute magnitude map into a 'zero band' of a constant colour.
 
-    Colour mappings, as defined by the arguments:
+    In terms of the arguments, colour is a piecewise function:
     * Values of magnitude less than 'min_log_scale' have 'colour_zero'.
-    * Values just larger than +/-'min_log_scale' have 'colour_zero_plus' or
+    * Values just larger than +/-'min_log_scale' have 'colour_zero_plus' and
       'colour_zero_minus' (N.B. these both default to 'zero colour').
-    * Values of +/-'max_scale' have 'colour_max'/'colour_min'.
+    * Values of +/-'max_scale' have 'colour_max' and 'colour_min'.
 
     Returns:
         a pair of (matplotlib.colors.Colormap, matplotlib.colors.Normalize)
 
     """
     # Transform all the colour arguments into the form of RGBA tuples.
-    colour_min, colour_zero_minus, colour_zero, colour_zero_plus, colour_max \
-        = [mcols.colorConverter.to_rgba(colour)
-           for colour in (colour_min,
-                          colour_zero_minus or colour_zero,
-                          colour_zero,
-                          colour_zero_plus or colour_zero,
-                          colour_max)]
+    rgba_tuples = [mcols.colorConverter.to_rgba(colour)
+                   for colour in (colour_min,
+                                  colour_zero_minus or colour_zero,
+                                  colour_zero,
+                                  colour_zero_plus or colour_zero,
+                                  colour_max)]
+    (colour_min, colour_zero_minus, colour_zero, colour_zero_plus,
+     colour_max) = rgba_tuples
 
-    # Construct the argument dictionary for a LinearSegmentedColormap, which
-    # specifies ranges of colour value, and the colour at each end.
-    # Note: the "zero band" occupies a range of colour numbers equivalent to
-    # one decade of the logarithmic sections (see SymLogNorm code, below).
+    # Construct the dictionary argument to create a LinearSegmentedColormap,
+    # specifying colour value ranges, and the colours at either end of them.
+    # NOTE: a matplotlib example explains this in much more detail : see
+    # http://matplotlib.org/examples/pylab_examples/custom_cmap.html.
+    cmap_segs = {}
+    # Calculate the range of colour-values allocated to the "zero band": we
+    # set this to one decade of the logarithmic sections (below).
     log_range_decades = np.log10(max_scale / min_log_scale)
     half_lin_range = 0.5 / (1.0 + 2*log_range_decades)
-    cmap_segs = {}
     for i_rgba, name_rgba in enumerate(('red', 'green', 'blue', 'alpha')):
         cmap_segs[name_rgba] = [
+            # At 0.0, 'Negatives' segment starts : colour --> colour_min.
             (0.0, colour_min[i_rgba], colour_min[i_rgba]),
+            # At 0.5 - "delta", end of 'Negatives' --> colour_zero_minus,
+            # then becoming start of 'zero band' --> colour_zero.
             (0.5 - half_lin_range,
                 colour_zero_minus[i_rgba], colour_zero[i_rgba]),
+            # At 0.5 + "delta", end of 'zero band' --> colour_zero,
+            # then becoming start of 'Positives' --> colour_zero_plus.
             (0.5 + half_lin_range,
                 colour_zero[i_rgba], colour_zero_plus[i_rgba]),
+            # At 1.0, 'Positives' segment ends : colour --> colour_max.
             (1.0, colour_max[i_rgba], colour_max[i_rgba])]
 
-    # Make the colormap.
+    # Create the colormap.
     anom_cmap = mcols.LinearSegmentedColormap('anom', cmap_segs)
 
-    # Make a suitable Norm operator.
-    # The 'linthresh' argument is a minimum magnitude below which logs are not
-    # taken:  Here, this set to our 'zero band' range.
+    # Create a suitable matching Norm operator (a special "SymLogNorm" type).
+    # The 'linthresh' argument is a minimum magnitude, below which logs are
+    # not taken:  This is set to our 'zero band' range.
     # NOTE: there seems to be a bug in the use of the 'linscale' argument,
     # which for now this adjustment factor fixes.
     linscale_bug_factor = np.log(10) * (1.0 - 1.0/np.e)
@@ -92,6 +106,24 @@ def log_color_controls(min_log_scale, max_scale, colour_zero='white',
                                  vmin=-max_scale, vmax=max_scale)
 
     return anom_cmap, anom_norm
+
+
+# Define a convenience function for making a pseudocolour plot.
+def plot_pseudocolour(data, tick_levels, cmap, norm, title):
+    mesh = iplt.pcolormesh(data, cmap=cmap, norm=norm)
+    bar = plt.colorbar(mesh, orientation='horizontal', extend='both')
+    bar.set_ticks(tick_levels)
+    plt.gca().coastlines()
+    plt.title(title)
+
+
+# Define aconvenience function for making a filled-contour plot.
+def plot_filled_contours(data, tick_levels, cmap, norm, title):
+    mesh = iplt.contourf(data, tick_levels, cmap=cmap, norm=norm,
+                         extend='both')
+    bar = plt.colorbar(mesh, orientation='horizontal')
+    plt.gca().coastlines()
+    plt.title(title)
 
 
 def main():
@@ -104,70 +136,69 @@ def main():
     time_mean = cube.collapsed('time', iris.analysis.MEAN)
     anomaly = cube[i_year] - time_mean
 
+    # Construct a plot title string to explain which years are used.
+    cube_time = cube.coord('time')
+    cube_years = [time.year
+                  for time in cube_time.units.num2date(cube_time.points)]
+    title = '{} difference from {}-{} average.'.format(
+        cube_years[i_year], cube_years[0], cube_years[-1])
+
     # Setup scaling levels and thresholds for the anomaly data plots.
     minimum_log_level, maximum_scale_level = 0.1, 3.0
     threshold_levels = np.array([-3, -1, -0.3, -0.1, 0.1, 0.3, 1, 3])
 
-    # Calculate color controls suitable for these data levels.
+    # Calculate suitable color controls for these data levels.
     anom_cmap, anom_norm = log_color_controls(
         minimum_log_level, maximum_scale_level,
         colour_min='#0000d0', colour_max='red',
-        #colour_zero_minus='paleturquoise', colour_zero_plus='lightyellow',
+        colour_zero_minus='paleturquoise', colour_zero_plus='lightyellow',
     )
 
+    # Also set the colormap to highlight over-range values.
+    anom_cmap.set_over('darkred')
+    anom_cmap.set_under('#200040')
+
     # Make a pseudocolor plot using this continuous colour scheme.
-    mesh = iplt.pcolormesh(anomaly, cmap=anom_cmap, norm=anom_norm)
-    bar = plt.colorbar(mesh, orientation='horizontal', extend='both')
-    bar.set_ticks(threshold_levels)
-    plt.gca().coastlines()
-
-    # Construct a plot title explaining which years are used.
-    cube_time = cube.coord('time')
-    cube_years = [time.year
-                  for time in cube_time.units.num2date(cube_time.points)]
-    title = 'Temperature anomalies : {} against {}-{} average.'.format(
-        cube_years[i_year], cube_years[0], cube_years[-1])
-
-    plt.title(title + '\n-- A cell-filled plot with continuous colours.')
-    plt.show()
+    plt.figure(figsize=(18, 5))
+    plt.subplot(131)
+    plot_pseudocolour(anomaly, threshold_levels, anom_cmap, anom_norm,
+                      title + '\nCell-filled plot with continuous colours.')
 
     # Make a filled contour plot of the same data, with our chosen levels.
-    plt.figure()
-    mesh = iplt.contourf(anomaly, threshold_levels,
-                         cmap=anom_cmap, norm=anom_norm,
-                         extend='both'
-                         )
-    bar = plt.colorbar(mesh, orientation='horizontal', extend='both')
-    bar.set_ticks(threshold_levels)
-    plt.gca().coastlines()
-    plt.title(title + '\n-- A filled-contour plot.')
-    plt.show()
+    plt.subplot(132)
+    plot_filled_contours(anomaly, threshold_levels, anom_cmap, anom_norm,
+                         title + '\nFilled-contour plot.')
 
-    # Make a pcolor plot with similarly quantised color-levels...
-    plt.figure()
-    # Convert the threshold levels into colour values (floats) with our
-    # existing continuous Normalize.
+    # To make a pcolor plot with similarly quantised color-levels...
+
+    # First, get a colour value (0-1) for each threshold level, using our
+    # existing (continuous) norm.
     tick_colour_values = anom_norm(threshold_levels)
-    # Average adjacent colour values to get a colour value for each level, and
-    # convert these back from 0-1 values into actual colours.
+
+    # Average adjacent colour values, to get one for each contour level.
     # NOTE: this calculation reproduces the colours generated by 'contour', but
     # they do not extend to the minimum and maximum of the colour scale.
     level_colour_values = 0.5 * (tick_colour_values[:-1] +
                                  tick_colour_values[1:])
+
+    # Convert back into actual colours with the existing (continuous) map.
     colour_values = anom_cmap(level_colour_values)
 
-    # Make a new Colormap and Normalize to give discrete fixed colours between
-    # selected threshold levels (discontinuous).
-    # NOTE: a LinearSegmentedColormap could be used, but this way is simpler.
+    # Make a _new_ Colormap and Normalize, programmed to produce these exact
+    # colours between the appropriate threshold levels (discontinuously).
+    # NOTE: a LinearSegmentedColormap could be used, but this way is simpler
+    # (see documentation of "matplotlib.colors.BoundaryNorm").
     discrete_cmap = mcols.ListedColormap(colour_values)
     discrete_norm = mcols.BoundaryNorm(threshold_levels, len(colour_values))
+    discrete_cmap.set_over('darkred')
+    discrete_cmap.set_under('#200040')
 
-    # Redo the cell-filled plot with the "stepped" colour scheme.
-    mesh = iplt.pcolormesh(anomaly, cmap=discrete_cmap, norm=discrete_norm)
-    bar = plt.colorbar(mesh, orientation='horizontal', extend='both')
-    bar.set_ticks(threshold_levels)
-    plt.gca().coastlines()
-    plt.title(title + '\n-- A cell-filled plot coloured by level.')
+    # Make another cell-filled plot with the discontinous colour scheme.
+    plt.subplot(133)
+    plot_pseudocolour(anomaly, threshold_levels, discrete_cmap, discrete_norm,
+                      title + '\nCell-filled plot coloured by level.')
+
+    # Display results.
     plt.show()
 
 
