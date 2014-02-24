@@ -70,7 +70,7 @@ class TestLbfcProduction(tests.IrisTest):
         self.assertNotIn('STASH', self.cube.attributes)
         self.check_cube_stash_yields_lbfc(None, 0)
 
-    def check_cubename_yields_lbfc(self, name, units, lbfc_expected):
+    def check_cube_name_units_yields_lbfc(self, name, units, lbfc_expected):
         self.cube.rename(name)
         self.cube.units = units
         lbfc_produced = _pp_save_ppfield_values(self.cube).lbfc
@@ -79,25 +79,17 @@ class TestLbfcProduction(tests.IrisTest):
                          'got {:d}'.format(
                              name, units, lbfc_expected, lbfc_produced))
 
-    def test_names_to_lbfc_newcases(self):
-        # Check LBFC values produced from name and units.
-        test_cases = [
-            ('age_of_stratospheric_air', '1', 501),
-            ('cloud_area_fraction', '1', 30),
-            ('sea_ice_temperature', 'K', 209)]
-        for test_case in test_cases:
-            self.check_cubename_yields_lbfc(*test_case)
+    def test_name_units_to_lbfc(self):
+        # Check LBFC value produced from name and units.
+        self.check_cube_name_units_yields_lbfc(
+            'sea_ice_temperature', 'K', 209)
 
-    def test_names_to_lbfc_failcases(self):
+    def test_bad_name_units_to_lbfc_0(self):
         # Check that badly-formed / unrecognised cases yield LBFC == 0.
-        test_cases = [
-            ('sea_ice_temperature', 'K', 209),
-            ('sea_ice_temperature', 'm s-1', 0),
-            # NB even *compatible* units are not recognised:
-            ('sea_ice_temperature', 'degC', 0),
-            ('junk_name', 'K', 0)]
-        for test_case in test_cases:
-            self.check_cubename_yields_lbfc(*test_case)
+        self.check_cube_name_units_yields_lbfc('sea_ice_temperature', 'degC',
+                                               0)
+        self.check_cube_name_units_yields_lbfc('Junk_Name', 'K',
+                                               0)
 
 
 if __name__ == "__main__":
