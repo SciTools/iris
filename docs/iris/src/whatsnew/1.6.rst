@@ -309,3 +309,22 @@ For example, to calculate the peak time:
 
     from iris.analysis import PEAK
     collapsed_cube = cube.collapsed('time', PEAK)
+
+.. _translation:
+
+Phenomenon Translations
+=======================
+
+The modules :mod:`iris.fileformats.um_cf_map` and :mod:`iris.fileformats.grib._grib_cf_map` which provide the translations for UM STASH and Field codes and GRIB parameter codes to and from CF standard names and units of measure have been updated.
+
+These modules are now generated from the `Metarelate <http://www.metarelate.net>`_ project's `metocean <https://github.com/metarelate/metocean>`_ knowledge base.  
+
+The structure of these files has changed, the named tuple
+
+.. code-block:: python
+
+    CFName = namedtuple('CFName', 'standard_name long_name units')
+
+now requires the standard_name, long_name and units to be explicit.  
+
+The contents of these modules is now being managed by the Metarelate project and updates are expected to these modules at each subsequent release of Iris.
