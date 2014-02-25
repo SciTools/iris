@@ -54,6 +54,7 @@ class TestNameToGRIB(tests.IrisTest):
                 self.assertEqual(name_cube.coord(c),
                                  grib_cube.coord(c))
 
+    @iris.tests.skip_data
     def test_name2_field(self):
         filepath = tests.get_data_path(('NAME', 'NAMEII_field.txt'))
         name_cubes = iris.load(filepath)
@@ -68,6 +69,7 @@ class TestNameToGRIB(tests.IrisTest):
                         ('integration', 'name_grib', 'NAMEII',
                          '{}_{}.cml'.format(i, name_cube.name()))))
 
+    @iris.tests.skip_data
     def test_name3_field(self):
         filepath = tests.get_data_path(('NAME', 'NAMEIII_field.txt'))
         name_cubes = iris.load(filepath)

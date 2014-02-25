@@ -30,6 +30,7 @@ from iris.tests.test_grib_load import TestGribSimple
 
 
 class Test(TestGribSimple):
+    @iris.tests.skip_data
     def test_forecast_period(self):
         # The stock cube has a non-compliant forecast_period.
         iris.fileformats.grib.hindcast_workaround = True
@@ -46,6 +47,7 @@ class Test(TestGribSimple):
              mock.call.grib_set_long(grib, "dataDate", '19980306'),
              mock.call.grib_set_long(grib, "dataTime", '0300')])
 
+    @iris.tests.skip_data
     def test_no_forecast_period(self):
         # The stock cube has a non-compliant forecast_period.
         iris.fileformats.grib.hindcast_workaround = True
