@@ -23,14 +23,14 @@ import iris.tests as tests
 import extest_util
 
 with extest_util.add_examples_to_path():
-    import custom_colours
+    import anomaly_log_colouring
 
 
-class TestCustomColours(tests.GraphicsTest):
-    """Test the custom-colours example code."""
-    def test_custom_colours(self):
+class TestAnomalyLogColouring(tests.GraphicsTest):
+    """Test the anomaly colouring example code."""
+    def test_anomaly_log_colouring(self):
         with extest_util.show_replaced_by_check_graphic(self):
-            custom_colours.main()
+            anomaly_log_colouring.main()
 
 
 if __name__ == '__main__':
