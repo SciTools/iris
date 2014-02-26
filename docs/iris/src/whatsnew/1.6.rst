@@ -245,12 +245,12 @@ consuming processing, or to reap the benefit of fast-loading a pickled cube.
 
 .. _rms:
 
-The RPM aggregator supports weights
+The RMS aggregator supports weights
 ===================================
-A :data:`iris.analysis.RMS` aggregator has been extended to allow the use of
+The :data:`iris.analysis.RMS` aggregator has been extended to allow the use of
 weights using the new keyword argument :data:`weights`.
 
-For example, a RMS weighted cube collapse is performed as follows:
+For example, an RMS weighted cube collapse is performed as follows:
 
 .. code-block:: python
 
