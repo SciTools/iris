@@ -21,8 +21,10 @@ region on the plot, coloured according to its data value.  In matplotlib, this
 is done with the methods `matplotlib.pyplot.pcolor
 <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.pcolor>`_
 and `matplotlib.pyplot.pcolormesh
-<http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.pcolormesh>`_ .
-See also : http://en.wikipedia.org/wiki/False_color#Pseudocolor.
+<http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.pcolormesh>`_,
+which are the core functions called by :meth:`iris.plot.pcolor` and
+:meth:`iris.plot.pcolormesh`.
+See also: http://en.wikipedia.org/wiki/False_color#Pseudocolor.
 
 """
 import iris
@@ -46,7 +48,7 @@ def main():
     # Construct a plot title string explaining which years are involved.
     times = temperatures.coord('time')
     cube_years = [time.year for time in times.units.num2date(times.points)]
-    title = 'Temperature anomaly [{}, log scale].'.format(anomaly.units)
+    title = 'Temperature anomaly [{}, log scale]'.format(anomaly.units)
     title += '\n{} differences from {}-{} average.'.format(
         cube_years[i_year], cube_years[0], cube_years[-1])
 
@@ -55,7 +57,7 @@ def main():
     maximum_scale_level = 3.0
 
     # Use a standard colour map which varies blue-white-red.
-    # For suitable options, see the 'Diverging colormaps' section in :
+    # For suitable options, see the 'Diverging colormaps' section in:
     # http://matplotlib.org/examples/color/colormaps_reference.html
     anom_cmap = 'bwr'
 
@@ -64,8 +66,10 @@ def main():
                                  linscale=0,
                                  vmin=-maximum_scale_level,
                                  vmax=maximum_scale_level)
-    # NOTE: 'linthresh' sets the non-logarithmic region to our 'zero band'.
-    # NOTE: 'linscale=0' maps the whole zero-band onto the middle colour (0.5).
+    # Setting "linthresh=minimum_log_level" makes its non-logarithmic
+    # data range equal to our 'zero band'.
+    # Setting "linscale=0" maps the whole zero band to the middle colour value
+    # (i.e. 0.5), which is the neutral point of a "diverging" style colormap.
 
     # Make a pseudocolour plot using this colour scheme.
     mesh = iplt.pcolormesh(anomaly, cmap=anom_cmap, norm=anom_norm)
@@ -73,17 +77,17 @@ def main():
     # Add a colourbar, with suitable "log" ticks, and end-extensions to show
     # the handling of any out-of-range values.
     tick_levels = [-3, -1, -0.3, 0.1, 0.3, 1, 3]
-    tick_labels =  [-3, -1, -0.3, '+/-0.1', 0.3, 1, 3]
+    tick_labels =  [-3, -1, -0.3, r'$\pm$0.1', 0.3, 1, 3]
     colorbar_tick_formatter = mticks.FixedFormatter(tick_labels)
     bar = plt.colorbar(mesh, orientation='horizontal', extend='both',
                        ticks=tick_levels,
                        format=colorbar_tick_formatter)
 
-    # Add map and title.
+    # Add coastlines and a title.
     plt.gca().coastlines()
     plt.title(title)
 
-    # Display results.
+    # Display the result.
     plt.show()
 
 
