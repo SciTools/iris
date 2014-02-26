@@ -27,7 +27,7 @@ with extest_util.add_examples_to_path():
 
 
 class TestCustomAggregation(tests.GraphicsTest):
-    """Test the atlantic_profiles example code."""
+    """Test the custom aggregation example code."""
     def test_custom_aggregation(self):
         with extest_util.show_replaced_by_check_graphic(self):
             custom_aggregation.main()
