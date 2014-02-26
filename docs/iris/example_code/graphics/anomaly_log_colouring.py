@@ -77,7 +77,7 @@ def main():
     # Add a colourbar, with suitable "log" ticks, and end-extensions to show
     # the handling of any out-of-range values.
     tick_levels = [-3, -1, -0.3, 0.1, 0.3, 1, 3]
-    tick_labels =  [-3, -1, -0.3, r'$\pm$0.1', 0.3, 1, 3]
+    tick_labels = [-3, -1, -0.3, r'$\pm$0.1', 0.3, 1, 3]
     colorbar_tick_formatter = mticks.FixedFormatter(tick_labels)
     bar = plt.colorbar(mesh, orientation='horizontal', extend='both',
                        ticks=tick_levels,
