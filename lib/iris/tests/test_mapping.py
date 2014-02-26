@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -64,7 +64,7 @@ class TestBasic(tests.IrisTest):
                                              )
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestUnmappable(tests.IrisTest):
     def setUp(self):
         src_cube = iris.tests.stock.global_pp()
@@ -83,7 +83,7 @@ class TestUnmappable(tests.IrisTest):
         self.check_graphic()
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestMappingSubRegion(tests.IrisTest):
     def setUp(self):
         cube_path = tests.get_data_path(('PP', 'aPProt1', 'rotatedMHtimecube.pp'))
@@ -128,7 +128,7 @@ class TestMappingSubRegion(tests.IrisTest):
                                              (313.01998901, 391.11999512, -22.48999977, 24.80999947)
                                              )
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestLowLevel(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()
@@ -158,7 +158,7 @@ class TestLowLevel(tests.IrisTest):
         self.check_graphic()
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestBoundedCube(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()
@@ -193,7 +193,7 @@ class TestBoundedCube(tests.IrisTest):
                                              )
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestLimitedAreaCube(tests.IrisTest):
     def setUp(self):
         cube_path = tests.get_data_path(('PP', 'aPProt1', 'rotated.pp'))

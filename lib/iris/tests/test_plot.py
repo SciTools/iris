@@ -80,9 +80,9 @@ class TestMissingCoord(tests.GraphicsTest):
         self._check(cube)
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestMissingCS(tests.GraphicsTest):
-    @iris.tests.skip_data
+    @tests.skip_data
     def test_missing_cs(self):
         cube = tests.stock.simple_pp()
         cube.coord("latitude").coord_system = None
@@ -324,7 +324,7 @@ class Test1dQuickplotScatter(Test1dScatter):
         self.draw_method = qplt.scatter
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestAttributePositive(tests.GraphicsTest):
     def test_1d_positive_up(self):
         path = tests.get_data_path(('NetCDF', 'ORCA2', 'votemper.nc'))
@@ -458,7 +458,7 @@ class SliceMixin(object):
         self.check_graphic()
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestContour(tests.GraphicsTest, SliceMixin):
     """Test the iris.plot.contour routine."""
     def setUp(self):
@@ -466,7 +466,7 @@ class TestContour(tests.GraphicsTest, SliceMixin):
         self.draw_method = iplt.contour
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestContourf(tests.GraphicsTest, SliceMixin):
     """Test the iris.plot.contourf routine."""
     def setUp(self):
@@ -474,7 +474,7 @@ class TestContourf(tests.GraphicsTest, SliceMixin):
         self.draw_method = iplt.contourf
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestPcolor(tests.GraphicsTest, SliceMixin):
     """Test the iris.plot.pcolor routine."""
     def setUp(self):
@@ -482,7 +482,7 @@ class TestPcolor(tests.GraphicsTest, SliceMixin):
         self.draw_method = iplt.pcolor
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestPcolormesh(tests.GraphicsTest, SliceMixin):
     """Test the iris.plot.pcolormesh routine."""
     def setUp(self):
@@ -567,7 +567,7 @@ class CheckForWarningsMetaclass(type):
         return type.__new__(cls, name, bases, local)
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestPcolorNoBounds(tests.GraphicsTest, SliceMixin):
     """
     Test the iris.plot.pcolor routine on a cube with coordinates
@@ -581,7 +581,7 @@ class TestPcolorNoBounds(tests.GraphicsTest, SliceMixin):
         self.draw_method = iplt.pcolor
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestPcolormeshNoBounds(tests.GraphicsTest, SliceMixin):
     """
     Test the iris.plot.pcolormesh routine on a cube with coordinates
@@ -630,7 +630,7 @@ class Slice1dMixin(object):
         self.check_graphic()
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestPlot(tests.GraphicsTest, Slice1dMixin):
     """Test the iris.plot.plot routine."""
     def setUp(self):
@@ -638,7 +638,7 @@ class TestPlot(tests.GraphicsTest, Slice1dMixin):
         self.draw_method = iplt.plot
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestQuickplotPlot(tests.GraphicsTest, Slice1dMixin):
     """Test the iris.quickplot.plot routine."""
     def setUp(self):
@@ -679,7 +679,7 @@ class LambdaStr(object):
         return self.repr
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestPlotCoordinatesGiven(tests.GraphicsTest):
     def setUp(self):
         filename = tests.get_data_path(('PP', 'COLPEX',
@@ -807,7 +807,7 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
         self.draw('contourf', cube, coords=['grid_latitude', x])
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestPlotDimAndAuxCoordsKwarg(tests.GraphicsTest):
     def setUp(self):
         filename = tests.get_data_path(('NetCDF', 'rotated', 'xy',
@@ -898,7 +898,7 @@ class TestPlottingExceptions(tests.IrisTest):
             iplt.pcolormesh(cube, coords=['longitude', 'latitude'])
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestPlotOtherCoordSystems(tests.GraphicsTest):
     def test_plot_tmerc(self):
         filename = tests.get_data_path(('NetCDF', 'transverse_mercator',

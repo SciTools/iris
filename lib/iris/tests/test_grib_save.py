@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -32,7 +32,7 @@ import iris.coord_systems
 import iris.coords
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestLoadSave(tests.IrisTest):
     # load and save grib
 
@@ -103,7 +103,7 @@ class TestLoadSave(tests.IrisTest):
             self.save_and_compare(source_grib, reference_text)
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestCubeSave(tests.IrisTest):
     # save fabricated cubes
 

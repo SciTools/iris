@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,7 +28,7 @@ import iris.tests.stock
 
 class TestPPStash(tests.IrisTest):
 
-    @iris.tests.skip_data
+    @tests.skip_data
     def test_cube_attributes(self):
         cube = tests.stock.simple_pp()
         self.assertEqual('m01s16i203', cube.attributes['STASH'])
@@ -36,7 +36,7 @@ class TestPPStash(tests.IrisTest):
         self.assertEqual(cube.attributes['STASH'], 'm01s16i203')
         self.assertNotEqual(cube.attributes['STASH'], 'm01s16i999')
 
-    @iris.tests.skip_data
+    @tests.skip_data
     def test_ppfield(self):
         data_path = tests.get_data_path(('PP', 'simple_pp', 'global.pp'))
         pps = iris.fileformats.pp.load(data_path)

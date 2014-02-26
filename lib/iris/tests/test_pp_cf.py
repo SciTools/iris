@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -77,7 +77,7 @@ def callback_aaxzc_n10r13xy_b_pp(cube, field, filename):
     cube.add_aux_coord(height_coord)
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestAll(tests.IrisTest, pp.PPTest):
     _ref_dir = ('usecases', 'pp_to_cf_conversion')
 

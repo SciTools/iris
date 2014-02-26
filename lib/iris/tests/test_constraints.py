@@ -240,7 +240,7 @@ class StrictConstraintMixin(RelaxedConstraintMixin):
         self.assertCML(cubes, 'theta_and_theta_10')
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestCubeLoadConstraint(RelaxedConstraintMixin, tests.IrisTest):
     suffix = 'load_match'
 
@@ -251,7 +251,7 @@ class TestCubeLoadConstraint(RelaxedConstraintMixin, tests.IrisTest):
         return cubes
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestCubeListConstraint(RelaxedConstraintMixin, tests.IrisTest):
     suffix = 'load_match'
 
@@ -262,7 +262,7 @@ class TestCubeListConstraint(RelaxedConstraintMixin, tests.IrisTest):
         return cubes
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestCubeListStrictConstraint(StrictConstraintMixin, tests.IrisTest):
     suffix = 'load_strict'
 
@@ -271,7 +271,7 @@ class TestCubeListStrictConstraint(StrictConstraintMixin, tests.IrisTest):
         return cubes
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestCubeExtract(TestMixin, tests.IrisTest):
     def setUp(self):
         TestMixin.setUp(self)
@@ -325,7 +325,7 @@ class TestCubeExtract(TestMixin, tests.IrisTest):
         self.assertEqual(self.cube.extract(iris.Constraint(wibble=10)), None)
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestConstraints(TestMixin, tests.IrisTest):
     def test_constraint_expressions(self):
         rt = repr(self.theta)

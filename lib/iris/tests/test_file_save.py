@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -62,7 +62,7 @@ def save_by_filehandle(filehandle1, filehandle2, cube, fn_saver, binary_mode = T
         iris.save(cube, outfile)
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestSaveMethods(tests.IrisTest):
     """ Base class for file saving tests. Loads data and creates/deletes tempfiles"""
     def setUp(self):

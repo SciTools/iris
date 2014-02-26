@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -60,7 +60,7 @@ class TestMixin(object):
         self.assertEqual(len(cubes2), 2 * len(cubes))
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestSingleCube(tests.IrisTest, TestMixin):
     def setUp(self):
         self._data_path = tests.get_data_path(('PP', 'globClim1', 'theta.pp'))
@@ -68,7 +68,7 @@ class TestSingleCube(tests.IrisTest, TestMixin):
         self._prefix = 'theta'
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestMultiCube(tests.IrisTest, TestMixin):
     def setUp(self):
         self._data_path = tests.get_data_path(('PP', 'globClim1', 'dec_subset.pp'))
@@ -90,7 +90,7 @@ class TestMultiCube(tests.IrisTest, TestMixin):
             assert(cube.coord('time').attributes['brain'] == 'hurts')
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestColpex(tests.IrisTest):
     def setUp(self):
         self._data_path = tests.get_data_path(('PP', 'COLPEX', 'small_colpex_theta_p_alt.pp'))
@@ -101,7 +101,7 @@ class TestColpex(tests.IrisTest):
         self.assertCML(cubes, ('COLPEX', 'small_colpex_theta_p_alt.cml'))
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestDataMerge(tests.IrisTest):
     def test_extended_proxy_data(self):
         # Get the empty theta cubes for T+1.5 and T+2

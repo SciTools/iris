@@ -34,7 +34,7 @@ def mock_nimrod_field():
 
 
 class TestLoad(tests.IrisTest):
-    @iris.tests.skip_data
+    @tests.skip_data
     def test_multi_field_load(self):
         # load a cube with two fields
         cube = iris.load(tests.get_data_path(

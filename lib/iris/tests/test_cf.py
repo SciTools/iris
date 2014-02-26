@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -60,7 +60,7 @@ class TestCaching(unittest.TestCase):
         self.assertTrue('standard_name' in cf_var.__dict__)
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestCFReader(tests.IrisTest):
     def setUp(self):
         filename = tests.get_data_path(
@@ -236,7 +236,7 @@ class TestCFReader(tests.IrisTest):
                           ('units', 'degrees_north')))
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestLoad(tests.IrisTest):
     def test_attributes_empty(self):
         filename = tests.get_data_path(('NetCDF', 'global', 'xyt',
@@ -268,7 +268,7 @@ class TestLoad(tests.IrisTest):
         self.assertEquals(cube.cell_methods, (iris.coords.CellMethod(method=u'mean', coords=(u'time',), intervals=(u'6 minutes',), comments=()),))
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestClimatology(tests.IrisTest):
     def setUp(self):
         filename = tests.get_data_path(('NetCDF', 'label_and_climate',
@@ -286,7 +286,7 @@ class TestClimatology(tests.IrisTest):
         self.assertEqual(climatology_var.shape, (1, 2))
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestLabels(tests.IrisTest):
     def setUp(self):
         filename = tests.get_data_path(

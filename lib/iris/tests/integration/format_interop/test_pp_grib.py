@@ -24,7 +24,7 @@ import iris
 
 
 class TestBoundedTime(tests.IrisTest):
-    @iris.tests.skip_data
+    @tests.skip_data
     def test_time_and_forecast_period_round_trip(self):
         pp_path = tests.get_data_path(('PP', 'meanMaxMin',
                                        '200806081200__qwpb.T24.pp'))

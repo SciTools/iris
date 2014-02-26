@@ -75,7 +75,7 @@ class Test(tests.IrisTest):
         unify_time_units(list_of_cubes)
         self._common(expected, list_of_cubes)
 
-    @iris.tests.skip_data
+    @tests.skip_data
     def test_no_time_coord_in_cubes(self):
         path0 = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
         path1 = tests.get_data_path(('PP', 'aPPglob1', 'global_t_forecast.pp'))

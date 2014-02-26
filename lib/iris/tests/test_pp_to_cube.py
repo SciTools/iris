@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,7 +30,7 @@ import iris.util
 import iris.tests.stock
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestPPLoadCustom(tests.IrisTest):
     def setUp(self):
         self.subcubes = iris.cube.CubeList()
@@ -128,14 +128,14 @@ class TestReferences(tests.IrisTest):
         self.assertEqual(new_ref, self.ref)
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestPPLoading(tests.IrisTest):
     def test_simple(self):
         cube = iris.tests.stock.simple_pp()
         self.assertCML(cube, ('cube_io', 'pp', 'load', 'global.cml'))
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestPPLoadRules(tests.IrisTest):
     def test_pp_load_rules(self):
         # Test PP loading and rule evaluation.
@@ -266,7 +266,7 @@ class TestPPLoadRules(tests.IrisTest):
             os.remove(temp_filename)
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestStdName(tests.IrisTest):
     def test_no_std_name(self):
         fname = tests.get_data_path(['PP', 'simple_pp', 'bad_global.pp'])
