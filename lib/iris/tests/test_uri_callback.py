@@ -24,7 +24,7 @@ import os
 import iris.coords
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestCallbacks(tests.IrisTest):
     def test_grib_callback(self):
         def grib_thing_getter(cube, field, filename):

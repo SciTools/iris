@@ -233,7 +233,7 @@ class TestStockCubeStringRepresentations(tests.IrisTest):
         self._check(self.cube[0, 0, 0, 0])
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestCubeStringRepresentations(IrisDotTest):
     def setUp(self):
         path = tests.get_data_path(('PP', 'simple_pp', 'global.pp'))
@@ -364,7 +364,7 @@ class TestCubeStringRepresentations(IrisDotTest):
                                          'unicode_attribute.__unicode__.txt'))
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestValidity(tests.IrisTest):
     def setUp(self):
         self.cube_2d = iris.load_cube(tests.get_data_path(('PP', 'simple_pp', 'global.pp')))
@@ -669,7 +669,7 @@ class Test2dExtractionByCoord(TestCube2d):
         self.assertCML(self.t.subset(c), ('cube_slice', '2d_intersect_and_reverse.cml'))
         
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestCubeExtract(tests.IrisTest):
     def setUp(self):
         self.single_cube = iris.load_cube(tests.get_data_path(('PP', 'globClim1', 'theta.pp')), 'air_potential_temperature')
@@ -916,7 +916,7 @@ class TestCubeEquality(TestCube2d):
         self.assertTrue(self.t.is_compatible(metadata))
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestDataManagerIndexing(TestCube2d):
     def setUp(self):
         self.cube = iris.load_cube(tests.get_data_path(('PP', 'aPProt1', 'rotatedMHtimecube.pp')))
@@ -1005,7 +1005,7 @@ class TestCubeCollapsed(tests.IrisTest):
         # Compare the cube bits that should match
         self.partial_compare(dual_stage, single_stage)
 
-    @iris.tests.skip_data
+    @tests.skip_data
     def test_multi_d(self):
         cube = iris.tests.stock.realistic_4d()
 
@@ -1069,7 +1069,7 @@ class TestTrimAttributes(tests.IrisTest):
             self.fail('Attribute not found in summary output of cube.')
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestMaskedData(tests.IrisTest, pp.PPTest):
     def _load_3d_cube(self):
         # This 3D data set has a missing a slice with SOME missing values (0)

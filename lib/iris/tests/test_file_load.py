@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,7 +24,7 @@ import iris.tests as tests
 import iris
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestFileLoad(tests.IrisTest):
     def _test_file(self, src_path, reference_filename):
         """

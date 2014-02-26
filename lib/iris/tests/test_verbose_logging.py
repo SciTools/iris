@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,7 +27,7 @@ import iris.config as config
 import iris.fileformats.rules as rules
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestVerboseLogging(tests.IrisTest):
     def test_verbose_logging(self):
         # check that verbose logging no longer breaks in pp.save()

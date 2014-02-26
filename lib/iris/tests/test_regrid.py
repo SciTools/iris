@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,7 +29,7 @@ from iris.coords import DimCoord
 from iris.coord_systems import GeogCS
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestRegrid(tests.IrisTest):
     @staticmethod
     def patch_data(cube):

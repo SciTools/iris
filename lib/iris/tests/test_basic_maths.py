@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -31,7 +31,7 @@ import iris.exceptions
 import iris.tests.stock
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestBasicMaths(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()
@@ -226,7 +226,7 @@ class TestBasicMaths(tests.IrisTest):
             iris.analysis.maths.add('not a cube', 123)
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestDivideAndMultiply(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()
@@ -369,7 +369,7 @@ class TestDivideAndMultiply(tests.IrisTest):
                                          in_place=True)
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestExponentiate(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()
@@ -407,7 +407,7 @@ class TestExponential(tests.IrisTest):
         self.assertCMLApproxData(e, ('analysis', 'exp.cml'))
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestLog(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()

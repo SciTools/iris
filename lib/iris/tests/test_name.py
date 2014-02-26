@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,7 +22,7 @@ import iris.tests as tests
 import iris
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestLoad(tests.IrisTest):
     def test_NAMEIII_field(self):
         cubes = iris.load(tests.get_data_path(('NAME', 'NAMEIII_field.txt')))

@@ -42,7 +42,7 @@ def itab_callback(cube, field, filename):
     cube.add_aux_coord(iris.coords.AuxCoord([field.lbexp], long_name='ExperimentNumber(ITAB)', units='no_unit')) 
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestPPSave(tests.IrisTest, pp.PPTest):
     def test_no_forecast_time(self):
         cube = stock.lat_lon_cube()

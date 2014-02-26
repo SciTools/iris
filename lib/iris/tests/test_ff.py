@@ -61,7 +61,7 @@ class TestFF_HEADER(tests.IrisTest):
         self.assertEqual(len(ff.FF_HEADER), 31)
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestFFHeader(tests.IrisTest):
     def setUp(self):
         self.filename = tests.get_data_path(('FF', 'n48_multi_field'))
@@ -126,7 +126,7 @@ class TestFFHeader(tests.IrisTest):
         self.assertEqual(self.ff_header.shape('data'), (2961, -32768))
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestFF2PP2Cube(tests.IrisTest):
     def setUp(self):
         self.filename = tests.get_data_path(('FF', 'n48_multi_field'))
@@ -144,7 +144,7 @@ class TestFF2PP2Cube(tests.IrisTest):
             self.assertCML(cube, ('FF', filename))
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestFFieee32(tests.IrisTest):
     def test_iris_loading(self):
         ff32_fname = tests.get_data_path(('FF', 'n48_multi_field.ieee32'))
@@ -159,7 +159,7 @@ class TestFFieee32(tests.IrisTest):
             self.assertEqual(ff32, ff64)
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestFFVariableResolutionGrid(tests.IrisTest):
     def setUp(self):
         self.filename = tests.get_data_path(('FF', 'n48_multi_field'))

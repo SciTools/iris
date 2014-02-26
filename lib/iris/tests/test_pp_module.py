@@ -32,7 +32,7 @@ import iris.fileformats.pp as pp
 import iris.util
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestPPCopy(tests.IrisTest):
     def setUp(self):
         self.filename = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
@@ -154,7 +154,7 @@ class TestPPHeaderDerived(unittest.TestCase):
             self.fail("Should return a better error: " + str(err))
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestPPField_GlobalTemperature(IrisPPTest):
     def setUp(self):
         self.original_pp_filepath = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
@@ -196,7 +196,7 @@ class TestPPField_GlobalTemperature(IrisPPTest):
         os.remove(temp_filename)
     
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestPackedPP(IrisPPTest):
     def test_wgdos(self):
         r = pp.load(tests.get_data_path(('PP', 'wgdos_packed', 'nae.20100104-06_0001.pp')))
@@ -228,7 +228,7 @@ class TestPackedPP(IrisPPTest):
                 r[0].save(open(temp_filename, 'wb'))
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestPPFile(IrisPPTest):
     def test_lots_of_extra_data(self):
         r = pp.load(tests.get_data_path(('PP', 'cf_processing', 'HadCM2_ts_SAT_ann_18602100.b.pp')))
@@ -239,7 +239,7 @@ class TestPPFile(IrisPPTest):
         self.check_pp(r, ('PP', 'extra_data_time_series.pp.txt'))
         
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestPPFileExtraXData(IrisPPTest):
     def setUp(self):
         self.original_pp_filepath = tests.get_data_path(('PP', 'ukV1', 'ukVpmslont.pp'))
@@ -265,7 +265,7 @@ class TestPPFileExtraXData(IrisPPTest):
         os.remove(temp_filename)
     
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestPPFileWithExtraCharacterData(IrisPPTest):
     def setUp(self):
         self.original_pp_filepath = tests.get_data_path(('PP', 'model_comp', 'dec_subset.pp'))

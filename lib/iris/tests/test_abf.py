@@ -25,7 +25,7 @@ import iris
 import iris.fileformats.abf
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestAbfLoad(tests.GraphicsTest):
     def setUp(self):
         self.path = tests.get_data_path(('abf', 'AVHRRBUVI01.1985apra.abf'))

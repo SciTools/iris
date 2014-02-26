@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,7 +28,7 @@ import iris
 import iris.analysis.stats as stats
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class Test_corr(tests.IrisTest):
     def setUp(self):
         self.cube_a = iris.load_cube(iris.sample_data_path('GloSea4',

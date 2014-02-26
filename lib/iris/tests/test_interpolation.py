@@ -532,7 +532,7 @@ class TestLinear1dInterpolation(tests.IrisTest):
         _ = iris.analysis.interpolate.linear(cube, [('grid_longitude',0), ('grid_latitude',0)])
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestNearestLinearInterpolRealData(tests.IrisTest):
     def setUp(self):
         file = tests.get_data_path(('PP', 'globClim1', 'theta.pp'))
@@ -557,7 +557,7 @@ class TestNearestLinearInterpolRealData(tests.IrisTest):
         np.testing.assert_array_equal(r1.data, r2.data)
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestNearestNeighbour(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()

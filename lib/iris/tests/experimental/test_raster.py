@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -21,7 +21,7 @@ import numpy as np
 import PIL.Image
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestGeoTiffExport(tests.GraphicsTest):
     def check_tiff_header(self, geotiff_fh, reference_filename):
         """

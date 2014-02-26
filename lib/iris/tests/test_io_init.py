@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -58,7 +58,7 @@ class TestFileFormatPicker(tests.IrisTest):
                           tests.get_result_path(('file_load',
                                                  'known_loaders.txt')))
 
-    @iris.tests.skip_data
+    @tests.skip_data
     def test_format_picker(self):
         # ways to test the format picker = list of (format-name, file-spec)
         test_specs = [
@@ -123,7 +123,7 @@ class TestFileFormatPicker(tests.IrisTest):
         self.assertEqual(a.name, 'NetCDF OPeNDAP')
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestFileExceptions(tests.IrisTest):
     def test_pp_little_endian(self):
         filename = tests.get_data_path(('PP', 'aPPglob1', 'global_little_endian.pp'))

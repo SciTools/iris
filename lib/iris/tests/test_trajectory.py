@@ -51,7 +51,7 @@ class TestTrajectory(tests.IrisTest):
         self.assertEqual(trajectory.length, 5.6568542494923806)
         self.assertEqual(trajectory.sampled_points[31], {'lat': 0.12499999999999989, 'lon': 3.875})
 
-    @iris.tests.skip_data
+    @tests.skip_data
     def test_trajectory_extraction(self):
 
         # Load the COLPEX data => TZYX
@@ -115,7 +115,7 @@ class TestTrajectory(tests.IrisTest):
         plt.scatter(x, y, c=trajectory_cube[0, 0, :].data)
         self.check_graphic()
 
-    @iris.tests.skip_data
+    @tests.skip_data
     def test_tri_polar(self):
         # load data
         cubes = iris.load(tests.get_data_path(['NetCDF', 'ORCA2', 'votemper.nc']))

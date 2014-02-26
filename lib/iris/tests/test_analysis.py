@@ -141,7 +141,7 @@ class TestAnalysisWeights(tests.IrisTest):
         # Check there was no residual change
         self.assertCML(cube, ('analysis', 'weighted_mean_source.cml'))
 
-    @iris.tests.skip_data
+    @tests.skip_data
     def test_weighted_mean(self):
         ### compare with pp_area_avg - which collapses both lat and lon
         #
@@ -180,7 +180,7 @@ class TestAnalysisWeights(tests.IrisTest):
         # Test collpasing of non data coord
         self.assertRaises(iris.exceptions.CoordinateCollapseError, e.collapsed, 'pressure', iris.analysis.MEAN)
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestAnalysisBasic(tests.IrisTest):
     def setUp(self):
         file = tests.get_data_path(('PP', 'aPProt1', 'rotatedMHtimecube.pp'))
@@ -548,7 +548,7 @@ class TestAggregators(tests.IrisTest):
                        checksum=False)
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestRotatedPole(tests.IrisTest):
     def _check_both_conversions(self, cube):
         rlons, rlats = iris.analysis.cartography.get_xy_grids(cube)
@@ -639,7 +639,7 @@ class TestRotatedPole(tests.IrisTest):
         self.assertArrayAlmostEqual(resy, soly)
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestAreaWeights(tests.IrisTest):
     def test_area_weights(self):
         small_cube = iris.tests.stock.simple_pp()
@@ -796,7 +796,7 @@ class TestAreaWeightGeneration(tests.IrisTest):
             iris.analysis.cartography.area_weights(self.cube)
 
 
-@iris.tests.skip_data
+@tests.skip_data
 class TestLatitudeWeightGeneration(tests.IrisTest):
 
     def setUp(self):
@@ -1049,7 +1049,7 @@ class TestRollingWindow(tests.IrisTest):
 
 class TestGeometry(tests.IrisTest):
 
-    @iris.tests.skip_data
+    @tests.skip_data
     def test_distinct_xy(self):
         cube = iris.tests.stock.simple_pp()
         cube = cube[:4, :4]
@@ -1117,7 +1117,7 @@ class TestProject(tests.GraphicsTest):
                                                              self.target_proj)
         self.assertEqual(new_cube.shape, self.cube.shape)
 
-    @iris.tests.skip_data
+    @tests.skip_data
     def test_cartopy_projection(self):
         cube = iris.load_cube(tests.get_data_path(('PP', 'aPPglob1',
                                                    'global.pp')))
@@ -1155,7 +1155,7 @@ class TestProject(tests.GraphicsTest):
         # Verify resulting plot
         self.check_graphic(tol=1.0)
 
-    @iris.tests.skip_data
+    @tests.skip_data
     def test_no_coord_system(self):
         cube = iris.load_cube(tests.get_data_path(('PP', 'aPPglob1', 'global.pp')))
         cube.coord('longitude').coord_system = None

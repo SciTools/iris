@@ -49,7 +49,7 @@ class TestPickle(tests.IrisTest):
         np.testing.assert_array_equal(cube1.lazy_data().ndarray(),
                                       cube2.lazy_data().ndarray())
 
-    @iris.tests.skip_data
+    @tests.skip_data
     def test_cube_pickle(self):
         cube = iris.load_cube(tests.get_data_path(('PP', 'globClim1', 'theta.pp')))
         self.assertTrue(cube.has_lazy_data())
@@ -60,7 +60,7 @@ class TestPickle(tests.IrisTest):
             self.assertCML(recon_cube, ('cube_io', 'pickling', 'theta.cml'), checksum=False)
             self.assertCubeData(cube, recon_cube)
 
-    @iris.tests.skip_data
+    @tests.skip_data
     def test_cube_with_deferred_coord_points(self):
         # Data with 2d lats and lons that when loaded results in points that
         # are LazyArray objects.
@@ -74,7 +74,7 @@ class TestPickle(tests.IrisTest):
         _, recon_cube = next(self.pickle_then_unpickle(cube))
         self.assertEqual(recon_cube, cube)
 
-    @iris.tests.skip_data
+    @tests.skip_data
     def test_cubelist_pickle(self):
         cubelist = iris.load(tests.get_data_path(('PP', 'COLPEX', 'theta_and_orog_subset.pp')))
         single_cube = cubelist[0]
