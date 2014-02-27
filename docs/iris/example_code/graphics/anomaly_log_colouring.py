@@ -27,12 +27,13 @@ and  `matplotlib.pyplot.pcolormesh
 See also: http://en.wikipedia.org/wiki/False_color#Pseudocolor.
 
 """
+import cartopy.crs as ccrs
 import iris
+import iris.coord_categorisation
 import iris.plot as iplt
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcols
 import matplotlib.ticker as mticks
-import numpy as np
 
 
 def main():
@@ -40,19 +41,23 @@ def main():
     file_path = iris.sample_data_path('E1_north_america.nc')
     temperatures = iris.load_cube(file_path)
 
-    # Create a sample anomaly field for one year, by subtracting a time mean.
-    i_year = 122
+    # Create a year-number coordinate from the time information.
+    iris.coord_categorisation.add_year(temperatures, 'time')
+
+    # Create a sample anomaly field for one chosen year, by extracting that
+    # year and subtracting the time mean.
+    sample_year = 1982
+    year_temperature = temperatures.extract(iris.Constraint(year=sample_year))
     time_mean = temperatures.collapsed('time', iris.analysis.MEAN)
-    anomaly = temperatures[i_year] - time_mean
+    anomaly = year_temperature - time_mean
 
     # Construct a plot title string explaining which years are involved.
-    times = temperatures.coord('time')
-    cube_years = [time.year for time in times.units.num2date(times.points)]
-    title = 'Temperature anomaly [{}, log scale]'.format(anomaly.units)
-    title += '\n{} differences from {}-{} average.'.format(
-        cube_years[i_year], cube_years[0], cube_years[-1])
+    years = temperatures.coord('year').points
+    plot_title = 'Temperature anomaly'
+    plot_title += '\n{} differences from {}-{} average.'.format(
+        sample_year, years[0], years[-1])
 
-    # Setup scaling levels for the anomaly data.
+    # Define scaling levels for the logarithmic colouring.
     minimum_log_level = 0.1
     maximum_scale_level = 3.0
 
@@ -71,21 +76,29 @@ def main():
     # Setting "linscale=0" maps the whole zero band to the middle colour value
     # (i.e. 0.5), which is the neutral point of a "diverging" style colormap.
 
+    # Create an Axes, specifying the map projection.
+    plt.axes(projection=ccrs.LambertConformal())
+
     # Make a pseudocolour plot using this colour scheme.
     mesh = iplt.pcolormesh(anomaly, cmap=anom_cmap, norm=anom_norm)
 
-    # Add a colourbar, with suitable "log" ticks, and end-extensions to show
-    # the handling of any out-of-range values.
-    tick_levels = [-3, -1, -0.3, 0.1, 0.3, 1, 3]
-    tick_labels = [-3, -1, -0.3, r'$\pm$0.1', 0.3, 1, 3]
-    colorbar_tick_formatter = mticks.FixedFormatter(tick_labels)
-    bar = plt.colorbar(mesh, orientation='horizontal', extend='both',
-                       ticks=tick_levels,
-                       format=colorbar_tick_formatter)
+    # Add a colourbar, with extensions to show handling of out-of-range values.
+    bar = plt.colorbar(mesh, orientation='horizontal', extend='both')
+
+    # Set some suitable fixed "logarithmic" colourbar tick positions.
+    tick_levels = [-3, -1, -0.3, 0.0, 0.3, 1, 3]
+    bar.set_ticks(tick_levels)
+
+    # Modify the tick labels so that the centre one shows "+/-<minumum-level>".
+    tick_levels[3] = r'$\pm${:g}'.format(minimum_log_level)
+    bar.set_ticklabels(tick_levels)
+
+    # Label the colourbar to show the units.
+    bar.set_label('[{}, log scale]'.format(anomaly.units))
 
     # Add coastlines and a title.
     plt.gca().coastlines()
-    plt.title(title)
+    plt.title(plot_title)
 
     # Display the result.
     plt.show()
