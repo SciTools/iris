@@ -17,13 +17,13 @@ the matplotlib Norm class `matplotlib.colours.SymLogNorm
 We use this to make a cell-filled pseudocolour plot with a colorbar.
 
 NOTE: By "pseudocolour", we mean that each data point is drawn as a "cell"
-region on the plot, coloured according to its data value.  In matplotlib, this
-is done with the methods `matplotlib.pyplot.pcolor
+region on the plot, coloured according to its data value. 
+This is provided in Iris by the functions :meth:`iris.plot.pcolor` and
+:meth:`iris.plot.pcolormesh`, which call the underlying matplotlib
+functions of the same names (i.e. `matplotlib.pyplot.pcolor
 <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.pcolor>`_
-and `matplotlib.pyplot.pcolormesh
-<http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.pcolormesh>`_,
-which are the core functions called by :meth:`iris.plot.pcolor` and
-:meth:`iris.plot.pcolormesh`.
+and  `matplotlib.pyplot.pcolormesh
+<http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.pcolormesh>`_).
 See also: http://en.wikipedia.org/wiki/False_color#Pseudocolor.
 
 """
