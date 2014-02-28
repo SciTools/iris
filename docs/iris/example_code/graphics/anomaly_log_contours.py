@@ -30,7 +30,9 @@ Using this method, the "logarithmic" shading requirement is provided simply by
 the appropriate choice of contouring levels.
 
 """
+import cartopy.crs as ccrs
 import iris
+import iris.coord_categorisation
 import iris.plot as iplt
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcols
@@ -82,17 +84,21 @@ def main():
     file_path = iris.sample_data_path('E1_north_america.nc')
     temperatures = iris.load_cube(file_path)
 
-    # Create a sample anomaly field for one year, by subtracting a time mean.
-    i_year = 122
+    # Create a year-number coordinate from the time information.
+    iris.coord_categorisation.add_year(temperatures, 'time')
+
+    # Create a sample anomaly field for one chosen year, by extracting that
+    # year and subtracting the time mean.
+    sample_year = 1982
+    year_temperature = temperatures.extract(iris.Constraint(year=sample_year))
     time_mean = temperatures.collapsed('time', iris.analysis.MEAN)
-    anomaly = temperatures[i_year] - time_mean
+    anomaly = year_temperature - time_mean
 
     # Construct a plot title string explaining which years are involved.
-    times = temperatures.coord('time')
-    cube_years = [time.year for time in times.units.num2date(times.points)]
-    title = 'Temperature anomaly [{}, log scale]'.format(anomaly.units)
-    title += '\n{} differences from {}-{} average.'.format(
-        cube_years[i_year], cube_years[0], cube_years[-1])
+    years = temperatures.coord('year').points
+    plot_title = 'Temperature anomaly'
+    plot_title += '\n{} differences from {}-{} average.'.format(
+        sample_year, years[0], years[-1])
 
     # Define the levels we want to contour with.
     # NOTE: these will also appear as the colorbar ticks.
@@ -103,6 +109,9 @@ def main():
                                          colour_minus='#0040c0',
                                          colour_plus='darkred')
 
+    # Create an Axes, specifying the map projection.
+    plt.axes(projection=ccrs.LambertConformal())
+
     # Make a contour plot with these levels and colours.
     contours = iplt.contourf(anomaly, contour_levels,
                              colors=layer_colours,
@@ -111,13 +120,16 @@ def main():
     # with the min and max colours.
 
     # Add a colourbar.
-    plt.colorbar(contours, orientation='horizontal')
+    bar = plt.colorbar(contours, orientation='horizontal')
     # NOTE: This picks up the 'extend=both' from the plot, automatically
     # showing how out-of-range values are handled.
 
+    # Label the colourbar to show the units.
+    bar.set_label('[{}, log scale]'.format(anomaly.units))
+
     # Add coastlines and a title.
     plt.gca().coastlines()
-    plt.title(title)
+    plt.title(plot_title)
 
     # Display the result.
     plt.show()
