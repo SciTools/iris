@@ -17,7 +17,7 @@
 '''
 Provide grib 1 and 2 phenomenon translations to + from CF terms.
 
-This is done by wrapping '_grib_cf_map.py',
+This is done by wrapping 'grib_cf_map.py',
 which is in a format provided by the metadata translation project.
 
 Currently supports only these ones:
@@ -33,7 +33,7 @@ import warnings
 
 import numpy as np
 
-from iris.fileformats.grib import _grib_cf_map as grcf
+from iris.fileformats.grib import grib_cf_map as grcf
 import iris.std_names
 import iris.unit
 
