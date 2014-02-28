@@ -1,4 +1,6 @@
 """
+.. _anomaly_contours:
+
 Contouring anomaly data with logarithmic levels
 ===============================================
 
@@ -28,6 +30,11 @@ for instance, it is much more easily adapted to slightly altered requirements
 such as unequal positive and negative scales.
 Using this method, the "logarithmic" shading requirement is provided simply by
 the appropriate choice of contouring levels.
+
+.. seealso::
+
+    A related example shows how to make a pseudocolour plot with the same data
+    and scaling requirements.  See : :ref:`anomaly_pseudocolour`.
 
 """
 import cartopy.crs as ccrs
