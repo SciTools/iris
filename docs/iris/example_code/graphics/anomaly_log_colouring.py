@@ -13,7 +13,7 @@ magnitude may be considered "not significant", so we put these into a separate
 
 To do this, we create a custom value mapping function (normalization) using
 the matplotlib Norm class `matplotlib.colours.SymLogNorm
-<http://matplotlib.org/api/colors_api.html#matplotlib.colors.BoundaryNorm>`_.
+<http://matplotlib.org/api/colors_api.html#matplotlib.colors.SymLogNorm>`_.
 We use this to make a cell-filled pseudocolour plot with a colorbar.
 
 NOTE: By "pseudocolour", we mean that each data point is drawn as a "cell"
