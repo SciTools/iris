@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,7 +27,7 @@ import numpy.ma as ma
 from scipy.sparse import csc_matrix
 
 import iris.analysis.cartography
-import iris.coords
+from iris.analysis.interpolate import _extend_circular_coord_and_data
 import iris.coord_systems
 import iris.cube
 import iris.unit
@@ -215,59 +215,111 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
 
     # Prepare the result data array
     shape = list(src_data.shape)
+    assert shape[x_dim] == src_x_coord.shape[0]
+    assert shape[y_dim] == src_y_coord.shape[0]
+
     shape[y_dim] = sample_grid_x.shape[0]
     shape[x_dim] = sample_grid_x.shape[1]
+
     # If we're given integer values, convert them to the smallest
     # possible float dtype that can accurately preserve the values.
     dtype = src_data.dtype
     if dtype.kind == 'i':
         dtype = np.promote_types(dtype, np.float16)
-    data = np.empty(shape, dtype=dtype)
 
-    # TODO: Replace ... see later comment.
-    # A crummy, temporary hack using iris.analysis.interpolate.linear()
-    # The faults include, but are not limited to:
-    # 1) It uses a nested `for` loop.
-    # 2) It is doing lots of unncessary metadata faffing.
-    # 3) It ends up performing two linear interpolations for each
-    # column of results, and the first linear interpolation does a lot
-    # more work than we'd ideally do, as most of the interpolated data
-    # is irrelevant to the second interpolation.
-    src = iris.cube.Cube(src_data)
-    src.add_dim_coord(src_x_coord, x_dim)
-    src.add_dim_coord(src_y_coord, y_dim)
+    if isinstance(src_data, ma.MaskedArray):
+        data = ma.empty(shape, dtype=dtype)
+        data.mask = np.zeros(data.shape, dtype=np.bool)
+    else:
+        data = np.empty(shape, dtype=dtype)
 
-    indices = [slice(None)] * data.ndim
-    linear = iris.analysis.interpolate.linear
-    for yx_index in np.ndindex(sample_grid_x.shape):
-        x = sample_grid_x[yx_index]
-        y = sample_grid_y[yx_index]
-        column_pos = [(src_x_coord,  x), (src_y_coord, y)]
-        column_data = linear(src, column_pos, 'nan').data
-        indices[y_dim] = yx_index[0]
-        indices[x_dim] = yx_index[1]
-        data[tuple(indices)] = column_data
+    # The interpolation class requires monotonically increasing coordinates,
+    # so flip the coordinate(s) and data if the aren't.
+    reverse_x = src_x_coord.points[0] > src_x_coord.points[1]
+    reverse_y = src_y_coord.points[0] > src_y_coord.points[1]
+    flip_index = [slice(None)] * src_data.ndim
+    if reverse_x:
+        src_x_coord = src_x_coord[::-1]
+        flip_index[x_dim] = slice(None, None, -1)
+    if reverse_y:
+        src_y_coord = src_y_coord[::-1]
+        flip_index[y_dim] = slice(None, None, -1)
+    src_data = src_data[tuple(flip_index)]
 
-    # TODO:
-    # Altenative:
-    # Locate the four pairs of src x and y indices relevant to each grid
-    # location:
-    #   => x_indices.shape == (4, ny, nx); y_indices.shape == (4, ny, nx)
-    # Calculate the relative weight of each corner:
-    #   => weights.shape == (4, ny, nx)
-    # Extract the src data relevant to the grid locations:
-    #   => raw_data = src.data[..., y_indices, x_indices]
-    #      NB. Can't rely on this index order in general.
-    #   => raw_data.shape == (..., 4, ny, nx)
-    # Weight it:
-    #   => Reshape `weights` to broadcast against `raw_data`.
-    #   => weighted_data = raw_data * weights
-    #   => weighted_data.shape == (..., 4, ny, nx)
-    # Sum over the `4` dimension:
-    #   => data = weighted_data.sum(axis=sample_axis)
-    #   => data.shape == (..., ny, nx)
-    # Should be able to re-use the weights to calculate the interpolated
-    # values for auxiliary coordinates as well.
+    if src_x_coord.circular:
+        x_points, src_data = _extend_circular_coord_and_data(src_x_coord,
+                                                             src_data, x_dim)
+    else:
+        x_points = src_x_coord.points
+
+    # Slice out the first full 2D piece of data for construction of the
+    # interpolator.
+    index = [0] * src_data.ndim
+    index[x_dim] = index[y_dim] = slice(None)
+    initial_data = src_data[tuple(index)]
+    if y_dim < x_dim:
+        initial_data = initial_data.T
+
+    # Construct the interpolator, we will fill in any values out of bounds
+    # manually.
+    interpolator = _RegularGridInterpolator([x_points,
+                                             src_y_coord.points],
+                                            initial_data, fill_value=None,
+                                            bounds_error=False)
+
+    # Construct the target coordinate points array, suitable for passing to
+    # the interpolator multiple times.
+    interpolator_coords = [sample_grid_x.astype(np.float64)[..., np.newaxis],
+                           sample_grid_y.astype(np.float64)[..., np.newaxis]]
+
+    # Map all the requested values into the range of the source
+    # data (centred over the centre of the source data to allow
+    # extrapolation where required).
+    min_x, max_x = x_points.min(), x_points.max()
+    min_y, max_y = src_y_coord.points.min(), src_y_coord.points.max()
+    if src_x_coord.units.modulus:
+        modulus = src_x_coord.units.modulus
+        offset = (max_x + min_x - modulus) * 0.5
+        interpolator_coords[0] -= offset
+        interpolator_coords[0] = (interpolator_coords[0] % modulus) + offset
+
+    interpolator_coords = np.dstack(interpolator_coords)
+
+    # Figure out which values are out of range, we will use this as a mask
+    # once we've computed the interpolated values.
+    out_of_range = ((interpolator_coords[..., 0] < min_x) |
+                    (interpolator_coords[..., 0] > max_x) |
+                    (interpolator_coords[..., 1] < min_y) |
+                    (interpolator_coords[..., 1] > max_y))
+
+    def interpolate(data):
+        # Update the interpolator for this data slice.
+        data = data.astype(interpolator.values.dtype)
+        if y_dim < x_dim:
+            data = data.T
+        interpolator.values = data
+        data = interpolator(interpolator_coords)
+        data[out_of_range] = np.nan
+        if y_dim > x_dim:
+            data = data.T
+        return data
+
+    # Build up a shape suitable for passing to ndindex, inside the loop we
+    # will insert slice(None) on the data indices.
+    iter_shape = list(shape)
+    iter_shape[x_dim] = iter_shape[y_dim] = 1
+
+    # Iterate through each 2d slice of the data, updating the interpolator
+    # with the new data as we go.
+    for index in np.ndindex(tuple(iter_shape)):
+        index = list(index)
+        index[x_dim] = index[y_dim] = slice(None)
+
+        data[tuple(index)] = interpolate(src_data[tuple(index)])
+
+        if isinstance(data, ma.MaskedArray) and src_data.mask is not False:
+            new_mask = interpolate(src_data[tuple(index)].mask.astype(float))
+            data.mask[tuple(index)] = np.isnan(new_mask) | (new_mask > 0)
 
     return data
 
@@ -1275,3 +1327,222 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
         cube.add_aux_coord(coord.copy())
 
     return cube
+
+
+# ============================================================================
+# |                        Copyright SciPy                                   |
+# | Code from this point unto the termination banner is copyright SciPy.     |
+# | License details can be found at scipy.org/scipylib/license.html          |
+# ============================================================================
+
+# Source: https://github.com/scipy/scipy/blob/b94a5d5ccc08dddbc88453477ff2625\
+# 9aeaafb32/scipy/interpolate/interpnd.pyx#L167
+def _ndim_coords_from_arrays(points, ndim=None):
+    """
+    Convert a tuple of coordinate arrays to a (..., ndim)-shaped array.
+
+    """
+    if isinstance(points, tuple) and len(points) == 1:
+        # handle argument tuple
+        points = points[0]
+    if isinstance(points, tuple):
+        p = np.broadcast_arrays(*points)
+        for j in xrange(1, len(p)):
+            if p[j].shape != p[0].shape:
+                raise ValueError(
+                    "coordinate arrays do not have the same shape")
+        points = np.empty(p[0].shape + (len(points),), dtype=float)
+        for j, item in enumerate(p):
+            points[..., j] = item
+    else:
+        points = np.asanyarray(points)
+        if points.ndim == 1:
+            if ndim is None:
+                points = points.reshape(-1, 1)
+            else:
+                points = points.reshape(-1, ndim)
+    return points
+
+
+# source: https://github.com/scipy/scipy/blob/b94a5d5ccc08dddbc88453477ff2625\
+# 9aeaafb32/scipy/interpolate/interpolate.py#L1400
+class _RegularGridInterpolator(object):
+
+    """
+    Interpolation on a regular grid in arbitrary dimensions
+
+    The data must be defined on a regular grid; the grid spacing however may be
+    uneven.  Linear and nearest-neighbour interpolation are supported. After
+    setting up the interpolator object, the interpolation method (*linear* or
+    *nearest*) may be chosen at each evaluation.
+
+    .. versionadded:: 0.14
+
+    Parameters
+    ----------
+    points : tuple of ndarray of float, with shapes (m1, ), ..., (mn, )
+        The points defining the regular grid in n dimensions.
+
+    values : array_like, shape (m1, ..., mn, ...)
+        The data on the regular grid in n dimensions.
+
+    method : str
+        The method of interpolation to perform. Supported are "linear" and
+        "nearest". This parameter will become the default for the object's
+        ``__call__`` method.
+
+    bounds_error : bool, optional
+        If True, when interpolated values are requested outside of the
+        domain of the input data, a ValueError is raised.
+        If False, then `fill_value` is used.
+
+    fill_value : number, optional
+        If provided, the value to use for points outside of the
+        interpolation domain. If None, values outside
+        the domain are extrapolated.
+
+    Methods
+    -------
+    __call__
+
+    Notes
+    -----
+    Contrary to LinearNDInterpolator and NearestNDInterpolator, this class
+    avoids expensive triangulation of the input data by taking advantage of the
+    regular grid structure.
+
+    """
+    # this class is based on code originally programmed by Johannes Buchner,
+    # see https://github.com/JohannesBuchner/regulargrid
+
+    def __init__(self, points, values, method="linear", bounds_error=True,
+                 fill_value=np.nan):
+        if method not in ["linear", "nearest"]:
+            raise ValueError("Method '%s' is not defined" % method)
+        self.method = method
+        self.bounds_error = bounds_error
+
+        if not hasattr(values, 'ndim'):
+            # allow reasonable duck-typed values
+            values = np.asarray(values)
+
+        if len(points) > values.ndim:
+            raise ValueError("There are %d point arrays, but values has %d "
+                             "dimensions" % (len(points), values.ndim))
+
+        if hasattr(values, 'dtype') and hasattr(values, 'astype'):
+            if not np.issubdtype(values.dtype, np.inexact):
+                values = values.astype(float)
+
+        self.fill_value = fill_value
+        if fill_value is not None:
+            if hasattr(values, 'dtype') and not np.can_cast(fill_value,
+                                                            values.dtype):
+                raise ValueError("fill_value must be either 'None' or "
+                                 "of a type compatible with values")
+
+        for i, p in enumerate(points):
+            if not np.all(np.diff(p) > 0.):
+                raise ValueError("The points in dimension %d must be strictly "
+                                 "ascending" % i)
+            if not np.asarray(p).ndim == 1:
+                raise ValueError("The points in dimension %d must be "
+                                 "1-dimensional" % i)
+            if not values.shape[i] == len(p):
+                raise ValueError("There are %d points and %d values in "
+                                 "dimension %d" % (len(p), values.shape[i], i))
+        self.grid = tuple([np.asarray(p) for p in points])
+        self.values = values
+
+    def __call__(self, xi, method=None):
+        """
+        Interpolation at coordinates
+
+        Parameters
+        ----------
+        xi : ndarray of shape (..., ndim)
+            The coordinates to sample the gridded data at
+
+        method : str
+            The method of interpolation to perform. Supported are "linear" and
+            "nearest".
+
+        """
+        method = self.method if method is None else method
+        if method not in ["linear", "nearest"]:
+            raise ValueError("Method '%s' is not defined" % method)
+
+        ndim = len(self.grid)
+        xi = _ndim_coords_from_arrays(xi, ndim=ndim)
+        if xi.shape[-1] != len(self.grid):
+            raise ValueError("The requested sample points xi have dimension "
+                             "%d, but this RegularGridInterpolator has "
+                             "dimension %d" % (xi.shape[1], ndim))
+
+        xi_shape = xi.shape
+        xi = xi.reshape(-1, xi_shape[-1])
+
+        if self.bounds_error:
+            for i, p in enumerate(xi.T):
+                if not np.logical_and(np.all(self.grid[i][0] <= p),
+                                      np.all(p <= self.grid[i][-1])):
+                    raise ValueError("One of the requested xi is out of "
+                                     "bounds in dimension %d" % i)
+
+        indices, norm_distances, out_of_bounds = self._find_indices(xi.T)
+        if method == "linear":
+            result = self._evaluate_linear(
+                indices, norm_distances, out_of_bounds)
+        elif method == "nearest":
+            result = self._evaluate_nearest(
+                indices, norm_distances, out_of_bounds)
+        if not self.bounds_error and self.fill_value is not None:
+            result[out_of_bounds] = self.fill_value
+
+        return result.reshape(xi_shape[:-1] + self.values.shape[ndim:])
+
+    def _evaluate_linear(self, indices, norm_distances, out_of_bounds):
+        # slice for broadcasting over trailing dimensions in self.values
+        vslice = (slice(None),) + (None,) * (self.values.ndim - len(indices))
+
+        # find relevant values
+        # each i and i+1 represents a edge
+        import itertools
+        edges = itertools.product(*[[i, i + 1] for i in indices])
+        values = 0.
+        for edge_indices in edges:
+            weight = 1.
+            for ei, i, yi in zip(edge_indices, indices, norm_distances):
+                weight *= np.where(ei == i, 1 - yi, yi)
+            values += np.asarray(self.values[edge_indices]) * weight[vslice]
+        return values
+
+    def _evaluate_nearest(self, indices, norm_distances, out_of_bounds):
+        idx_res = []
+        for i, yi in zip(indices, norm_distances):
+            idx_res.append(np.where(yi <= .5, i, i + 1))
+        return self.values[idx_res]
+
+    def _find_indices(self, xi):
+        # find relevant edges between which xi are situated
+        indices = []
+        # compute distance to lower edge in unity units
+        norm_distances = []
+        # check for out of bounds xi
+        out_of_bounds = np.zeros((xi.shape[1]), dtype=bool)
+        # iterate through dimensions
+        for x, grid in zip(xi, self.grid):
+            i = np.searchsorted(grid, x) - 1
+            i[i < 0] = 0
+            i[i > grid.size - 2] = grid.size - 2
+            indices.append(i)
+            norm_distances.append((x - grid[i]) /
+                                  (grid[i + 1] - grid[i]))
+            if not self.bounds_error:
+                out_of_bounds += x < grid[0]
+                out_of_bounds += x > grid[-1]
+        return indices, norm_distances, out_of_bounds
+
+# ============================================================================
+# |                        END SciPy copyright                               |
+# ============================================================================

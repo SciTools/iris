@@ -7,9 +7,9 @@
     </attributes>
     <coords>
       <coord datadims="[0, 1]">
-        <auxCoord id="c56f646c" points="[[nan, nan, 260.259277344, 260.259277344],
-		[nan, nan, 377.580688477, 374.185058594],
-		[nan, nan, 494.902160645, 488.110778809],
+        <auxCoord id="c56f646c" points="[[nan, nan, 260.259246826, 260.259246826],
+		[nan, nan, 377.580688477, 374.184997559],
+		[nan, nan, 494.902130127, 488.110778809],
 		[nan, nan, 612.223571777, 602.036560059]]" shape="(4, 4)" standard_name="altitude" units="Unit('m')" value_type="float64">
           <attributes>
             <attribute name="positive" value="up"/>
