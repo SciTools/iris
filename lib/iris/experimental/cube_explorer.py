@@ -258,13 +258,13 @@ class CubeExplorer(object):
                 picker_plot_dims = [i for i, v in
                                     enumerate(self.current_slice)
                                     if type(v) is slice]
-    
+
                 xpt = event.mouseevent.xdata
                 s[picker_plot_dims[0]] = int(xpt)
                 if len(picker_plot_dims) == 2:
                     ypt = event.mouseevent.ydata
                     s[picker_plot_dims[1]] = int(ypt)
-    
+
                 plt.figure(num=None)
                 plot_func(self.cube[tuple(s)], *args, **kwargs)
                 if hook is not None:
@@ -279,7 +279,7 @@ class CubeExplorer(object):
         Masks off the region selected by clicking a polygon
         (over all other dimensions). Selection is ended with
         a double-click.
-        
+
         """
         # add picker option to plot
         self._plot_kwargs['picker'] = kwargs.pop('picker', True)
@@ -297,7 +297,7 @@ class CubeExplorer(object):
             picker_plot_dims = [i for i, v
                                 in enumerate(self.current_slice)
                                 if type(v) is slice]
-            
+
             x_size = self.cube.shape[picker_plot_dims[-1]]
 
             if event.mouseevent.ydata is None:
@@ -305,8 +305,8 @@ class CubeExplorer(object):
                 self._poly_verts.append(i)
             else:
                 self.current_slice
-                i = event.ind[-1]/x_size
-                j = event.ind[-1]%x_size
+                i = event.ind[-1] / x_size
+                j = event.ind[-1] % x_size
                 self._poly_verts.append([i, j])
 
             if event.mouseevent.dblclick:
