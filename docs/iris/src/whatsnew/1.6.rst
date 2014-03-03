@@ -315,7 +315,7 @@ For example, to calculate the peak time:
 Phenomenon Translations
 =======================
 
-The modules :mod:`iris.fileformats.um_cf_map` and :mod:`iris.fileformats.grib._grib_cf_map` which provide the translations for UM STASH and Field codes and GRIB parameter codes to and from CF standard names and units of measure have been updated.
+The modules :mod:`iris.fileformats.um_cf_map` and :mod:`iris.fileformats.grib.grib_cf_map` which provide the translations for UM STASH and Field codes and GRIB parameter codes to and from CF standard names and units of measure have been updated.
 
 These modules are now generated from the `Metarelate <http://www.metarelate.net>`_ project's `metocean <https://github.com/metarelate/metocean>`_ knowledge base.  
 
