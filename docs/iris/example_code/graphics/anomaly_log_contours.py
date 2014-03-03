@@ -16,12 +16,12 @@ for suitable options, see the 'Diverging colormaps' section in:
 `<http://matplotlib.org/examples/color/colormaps_reference.html>`_).
 
 In this case, however, that approach would not allow for our log-scaling
-requirement.  Whilst this can be overcome with an alternative type of
+requirement.  This can be overcome with an alternative type of
 `matplotlib.colors.Normalize
-<http://matplotlib.org/api/colors_api.html#matplotlib.colors.Normalize>`_, the
-resulting code can become rather complex.
-Also, and perhaps more importantly, it turns out that the resulting colours are
-not precisely what one might expect (or want).
+<http://matplotlib.org/api/colors_api.html#matplotlib.colors.Normalize>`_ (see
+:ref:`anomaly_pseudocolour` for an example of this).  However the resulting
+code can become rather complex and also, perhaps more importantly, it turns out
+that the resulting colours are not precisely what one might expect (or want).
 
 Therefore in this example we have chosen instead to define the contour layer
 colours *explicitly*, using a helper function to calculate the shading tones.
