@@ -40,11 +40,11 @@ def main():
                                                          nx=400, ny=200)
 
     # Plot data in each projection
-    for name, target_proj in projections.iteritems():
+    for name in sorted(projections):
         fig = plt.figure()
         fig.suptitle('ORCA2 Data Projected to {}'.format(name))
         # Set up axes and title
-        ax = plt.subplot(projection=target_proj)
+        ax = plt.subplot(projection=projections[name])
         # Set limits
         ax.set_global()
         # plot with Iris quickplot pcolormesh
