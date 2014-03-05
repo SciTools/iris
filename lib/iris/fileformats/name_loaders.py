@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -450,16 +450,41 @@ def _generate_cubes(header, column_headings, coords, data_arrays,
         yield cube
 
 
-def _build_cell_methods(av_or_ints):
+def _build_cell_methods(av_or_ints, coord):
+    """
+    Return a list of :class:`iris.coords.CellMethod` instances
+    based on the provided list of column heading entries and the
+    associated coordinate. If a given entry does not correspond to a cell
+    method (e.g. "No time averaging"), a value of None is inserted.
+
+    Args:
+
+    * av_or_ints (iterable of strings):
+        An iterable of strings containing the colummn heading entries
+        to be parsed.
+    * coord (string or :class:`iris.coords.Coord`):
+        The coordinate name (or :class:`iris.coords.Coord` instance)
+        to which the column heading entries refer.
+
+    Returns:
+        A list that is the same length as `av_or_ints` containing
+        :class:`iris.coords.CellMethod` instances or values of None.
+
+    """
     cell_methods = []
+    no_avg_pattern = re.compile(r'^(no( (.* )?averaging)?)?$', re.IGNORECASE)
     for av_or_int in av_or_ints:
-        if 'average' in av_or_int or 'averaged' in av_or_int:
-            method = 'mean'
+        if no_avg_pattern.search(av_or_int) is not None:
+            cell_method = None
+        elif 'average' in av_or_int or 'averaged' in av_or_int:
+            cell_method = CellMethod('mean', coord)
         elif 'integral' in av_or_int or 'integrated' in av_or_int:
-            method = 'sum'
+            cell_method = CellMethod('sum', coord)
         else:
-            raise TranslationError("Unhandled time statistic")
-        cell_methods.append(CellMethod(method, 'time'))
+            cell_method = None
+            msg = 'Unknown {} statistic: {!r}. Unable to create cell method.'
+            warnings.warn(msg.format(coord, av_or_int))
+        cell_methods.append(cell_method)
     return cell_methods
 
 
@@ -516,7 +541,8 @@ def load_NAMEIII_field(filename):
         tdim = NAMECoord(name='time', dimension=None,
                          values=np.array(column_headings['Time']))
 
-        cell_methods = _build_cell_methods(column_headings['Time Av or Int'])
+        cell_methods = _build_cell_methods(column_headings['Time Av or Int'],
+                                           tdim.name)
 
         # Build regular latitude and longitude coordinates.
         lat, lon = _build_lat_lon_for_NAME_field(header)
@@ -594,7 +620,8 @@ def load_NAMEII_field(filename):
         tdim = NAMECoord(name='time', dimension=None,
                          values=np.array(column_headings['Time']))
 
-        cell_methods = _build_cell_methods(column_headings['Time Av or Int'])
+        cell_methods = _build_cell_methods(column_headings['Time Av or Int'],
+                                           tdim.name)
 
         # Build regular latitude and longitude coordinates.
         lat, lon = _build_lat_lon_for_NAME_field(header)
