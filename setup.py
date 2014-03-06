@@ -8,7 +8,6 @@ import multiprocessing
 import os
 import sys
 
-import nose
 import numpy as np
 import setuptools
 
@@ -87,6 +86,8 @@ class TestRunner(setuptools.Command):
             print "Stopping tests after the first error or failure"
 
     def run(self):
+        import nose
+
         if self.distribution.tests_require:
             self.distribution.fetch_build_eggs(self.distribution.tests_require)
 
