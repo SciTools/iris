@@ -6,7 +6,7 @@
         <auxCoord id="d32719ac" long_name="an_other" points="[3.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="5292eaeb" long_name="dim1" points="[1.0, 10.0]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord id="5292eaeb" long_name="dim1" points="[1, 10]" shape="(2,)" units="Unit('1')" value_type="int64"/>
       </coord>
       <coord datadims="[1]">
         <auxCoord id="a8c43c3" long_name="dim2" points="[3.0, 3.5, 6.0]" shape="(3,)" units="Unit('1')" value_type="float64"/>
