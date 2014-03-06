@@ -1536,8 +1536,12 @@ class _RegularGridInterpolator(object):
             i[i < 0] = 0
             i[i > grid.size - 2] = grid.size - 2
             indices.append(i)
-            norm_distances.append((x - grid[i]) /
-                                  (grid[i + 1] - grid[i]))
+            # TODO: Add this to scipy's version.
+            if grid.size == 1:
+                norm_distances.append(x - grid[i])
+            else:
+                norm_distances.append((x - grid[i]) /
+                                      (grid[i + 1] - grid[i]))
             if not self.bounds_error:
                 out_of_bounds += x < grid[0]
                 out_of_bounds += x > grid[-1]
