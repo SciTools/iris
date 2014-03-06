@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -114,16 +114,17 @@ In this module:
 
 
 def auto_doc_package(file_path, import_name, root_package, sub_packages):
+    max_depth = 1 if import_name == 'iris' else 2
     package_toc = '\n      '.join(sub_packages)
     package_toc = '''
    .. toctree::
-      :maxdepth: 2
+      :maxdepth: %d
       :titlesonly:
 
       %s
 
 
-''' % package_toc
+''' % (max_depth, package_toc)
 
     if '.' in import_name:
         title = None
