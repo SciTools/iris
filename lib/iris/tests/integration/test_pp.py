@@ -20,6 +20,8 @@
 # importing anything else.
 import iris.tests as tests
 
+from contextlib import nested
+
 import mock
 import numpy as np
 
@@ -173,6 +175,43 @@ class TestVertical(tests.IrisTest):
         self.assertEqual(data_field.blev, sigma)
         self.assertEqual(data_field.brlev, sigma_lower)
         self.assertEqual(data_field.brsvd, [sigma_upper, delta_upper])
+
+    def test_hybrid_pressure_with_duplicate_references(self):
+        def field_with_data(scale=1):
+            x, y = 40, 30
+            field = mock.MagicMock(_data=np.arange(1200).reshape(y, x) * scale,
+                                   lbcode=[1], lbnpt=x, lbrow=y,
+                                   bzx=350, bdx=1.5, bzy=40, bdy=1.5,
+                                   lbuser=[0] * 7, lbrsvd=[0] * 4)
+            field._x_coord_name = lambda: 'longitude'
+            field._y_coord_name = lambda: 'latitude'
+            field.coord_system = lambda: None
+            return field
+
+        # Make a fake reference surface field.
+        pressure_field = field_with_data(10)
+        pressure_field.stash = iris.fileformats.pp.STASH(1, 0, 409)
+        pressure_field.lbuser[3] = 409
+
+        # Make a fake data field which needs the reference surface.
+        model_level = 5678
+        sigma_lower, sigma, sigma_upper = 0.85, 0.9, 0.95
+        delta_lower, delta, delta_upper = 0.05, 0.1, 0.15
+        data_field = field_with_data()
+        data_field.configure_mock(lbvc=9, lblev=model_level,
+                                  bhlev=delta, bhrlev=delta_lower,
+                                  blev=sigma, brlev=sigma_lower,
+                                  brsvd=[sigma_upper, delta_upper])
+
+        # Convert both fields to cubes.
+        load = mock.Mock(return_value=iter([data_field,
+                                            pressure_field,
+                                            pressure_field]))
+        msg = 'Multiple reference cubes for surface_air_pressure'
+        with nested(mock.patch('iris.fileformats.pp.load', new=load),
+                    mock.patch('warnings.warn')) as (load, warn):
+            _, _, _ = iris.fileformats.pp.load_cubes('DUMMY')
+            warn.assert_called_with(msg)
 
     def test_hybrid_height_with_non_standard_coords(self):
         # Check the save rules are using the AuxFactory to find the

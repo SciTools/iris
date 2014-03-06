@@ -68,7 +68,7 @@ class ConcreteReferenceTarget(object):
             if len(src_cubes) > 1:
                 # Merge the reference cubes to allow for
                 # time-varying surface pressure in hybrid-presure.
-                src_cubes = src_cubes.merge()
+                src_cubes = src_cubes.merge(unique=False)
                 if len(src_cubes) > 1:
                     warnings.warn('Multiple reference cubes for {}'
                                   .format(self.name))
