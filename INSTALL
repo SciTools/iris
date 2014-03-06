@@ -49,23 +49,35 @@ python 2.7 or later (http://www.python.org/)
 numpy 1.6 or later (http://numpy.scipy.org/)
     Python package for scientific computing including a powerful N-dimensional array object.
 
-scipy 0.10 or later (http://www.scipy.org/)
-    Python package for scientific computing.
-
-udunits2 2.1.24 or later (http://www.unidata.ucar.edu/downloads/udunits/index.jsp)
-    C library for units of physical quantities.
-
-netcdf4-python 0.9.9 or later (http://netcdf4-python.googlecode.com/)
-    Python interface to the netCDF version 4 C library.
-
 PyKE 1.1.1 or later (http://pyke.sourceforge.net/)
     Python knowledge-based inference engine.
 
 setuptools 0.6c11 or later (http://pypi.python.org/pypi/setuptools/)
     Python package for installing/removing python packages.
 
+
+Runtime requirements
+====================
+These are external packages you will need to install to import iris.
+
+python 2.7 or later (http://www.python.org/)
+    Iris requires Python 2.7 or later, but is not currently compatible with Python 3.
+
+numpy 1.6 or later (http://numpy.scipy.org/)
+    Python package for scientific computing including a powerful N-dimensional array object.
+
+PyKE 1.1.1 or later (http://pyke.sourceforge.net/)
+    Python knowledge-based inference engine.
+
+scipy 0.10 or later (http://www.scipy.org/)
+    Python package for scientific computing.
+
 cartopy 0.8.0 or later (http://github.com/SciTools/cartopy/)
     Python package which provides cartographic tools for python.
+
+netcdf4-python 0.9.9 or later (http://netcdf4-python.googlecode.com/)
+    Python interface to the netCDF version 4 C library.
+
 
 Optional
 --------
@@ -73,6 +85,9 @@ These are optional packages which you may want to install to enable
 additonal Iris functionality such as plotting and
 loading/saving GRIB. These packages are required for the full Iris test
 suite to run.
+
+udunits2 2.1.24 or later (http://www.unidata.ucar.edu/downloads/udunits/index.jsp)
+    C library for units of physical quantities.
 
 gdal 1.9.1 or later (https://pypi.python.org/pypi/GDAL/)
     Python package for the Geospatial Data Abstraction Library (GDAL).
@@ -93,7 +108,10 @@ mock 1.0.1 (http://pypi.python.org/pypi/mock/)
     is only required to support the Iris unit tests.
 
 nose 1.1.2 or later (http://nose.readthedocs.org/en/latest/)
-    Python package for software testing. Iris is not compatible with nose2. 
+    Python package for software testing. Iris is not compatible with nose2.
+
+pep8 1.4.6* (https://pypi.python.org/pypi/pep8) 
+    Python package for software testing.
 
 pandas 0.11.0 or later (http://pandas.pydata.org)
     Python package providing high-performance, easy-to-use data structures and
@@ -105,6 +123,7 @@ PythonImagingLibrary 1.1.7 or later (http://effbot.org/zone/pil-index.htm)
 shapely 1.2.14 (https://github.com/Toblerity/Shapely)
     Python package for the manipulation and analysis of planar geometric objects.
 
+* Those packages have been tested with a specific build.
 
 Packed PP
 =========
