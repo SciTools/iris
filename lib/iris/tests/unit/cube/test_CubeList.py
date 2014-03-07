@@ -14,37 +14,34 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Integration tests for merge."""
+"""Unit tests for the `iris.cube.CubeList` class."""
 
-# import iris tests first so that some things can be initialised before
+# Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
 import numpy as np
 
-import iris
+from iris.cube import Cube, CubeList
+from iris.coords import DimCoord
 
 
-class TestTimeTripleMerging(tests.IrisTest):
+class Test_merge__time_triple(tests.IrisTest):
     @staticmethod
     def _make_cube(fp, rt, t, realization=None):
-        cube = iris.cube.Cube(np.arange(20).reshape(4, 5))
-        cube.add_dim_coord(
-            iris.coords.DimCoord(np.arange(5), long_name='x'), 1)
-        cube.add_dim_coord(
-            iris.coords.DimCoord(np.arange(4), long_name='y'), 0)
-        cube.add_aux_coord(
-            iris.coords.DimCoord(fp, standard_name='forecast_period'))
-        cube.add_aux_coord(
-            iris.coords.DimCoord(rt, standard_name='forecast_reference_time'))
-        cube.add_aux_coord(
-            iris.coords.DimCoord(t, standard_name='time'))
+        cube = Cube(np.arange(20).reshape(4, 5))
+        cube.add_dim_coord(DimCoord(np.arange(5), long_name='x'), 1)
+        cube.add_dim_coord(DimCoord(np.arange(4), long_name='y'), 0)
+        cube.add_aux_coord(DimCoord(fp, standard_name='forecast_period'))
+        cube.add_aux_coord(DimCoord(rt, 
+                                    standard_name='forecast_reference_time'))
+        cube.add_aux_coord(DimCoord(t, standard_name='time'))
         if realization is not None:
-            cube.add_aux_coord(
-                iris.coords.DimCoord(realization, standard_name='realization'))
+            cube.add_aux_coord(DimCoord(realization,
+                                        standard_name='realization'))
         return cube
 
-    def test_with_realization(self):
+    def test_orthogonal_with_realization(self):
         # => fp: 2; rt: 2; t: 2; realization: 2
         triples = ((0, 10, 1),
                    (0, 10, 2),
@@ -58,12 +55,11 @@ class TestTimeTripleMerging(tests.IrisTest):
                      triple in triples]
         en2_cubes = [self._make_cube(*triple, realization=2) for
                      triple in triples]
-        cubes = iris.cube.CubeList(en1_cubes) + iris.cube.CubeList(en2_cubes)
+        cubes = CubeList(en1_cubes) + CubeList(en2_cubes)
         cube, = cubes.merge()
-        self.assertCML(cube, ('merge', 'time_triple_realization.cml'),
-                       checksum=False)
+        self.assertCML(cube, checksum=False)
 
-    def test_with_realization_unrolled(self):
+    def test_combination_with_realization(self):
         # => fp, rt, t: 8; realization: 2
         triples = ((0, 10, 1),
                    (0, 10, 2),
@@ -77,10 +73,9 @@ class TestTimeTripleMerging(tests.IrisTest):
                      triple in triples]
         en2_cubes = [self._make_cube(*triple, realization=2) for
                      triple in triples]
-        cubes = iris.cube.CubeList(en1_cubes) + iris.cube.CubeList(en2_cubes)
+        cubes = CubeList(en1_cubes) + CubeList(en2_cubes)
         cube, = cubes.merge()
-        self.assertCML(cube, ('merge', 'time_triple_realization_unrolled.cml'),
-                       checksum=False)
+        self.assertCML(cube, checksum=False)
 
 
 if __name__ == "__main__":
