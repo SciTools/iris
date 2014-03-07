@@ -169,7 +169,12 @@ class LinearInterpolator(object):
         index_dimension = len(result_shape)# min(self.coord_dims)
         result_shape.insert(index_dimension, coord_points.shape[0])
         
-        result_data = np.empty(result_shape, dtype=self._interpolator.values.dtype)
+        masked = isinstance(self.cube.data, np.ma.MaskedArray)
+        if masked:
+            result_data = np.ma.empty(result_shape, dtype=self._interpolator.values.dtype)
+            result_data.mask = np.zeros(data.shape, dtype=np.bool)
+        else:
+            result_data = np.empty(result_shape, dtype=self._interpolator.values.dtype)
 
         # Iterate through each 2d slice of the data, updating the interpolator
         # with the new data as we go.
@@ -188,6 +193,9 @@ class LinearInterpolator(object):
 
             r = self._interpolate_data_at_coord_points(sub_data, coord_points)
             result_data[interpolant_index] = r
+            if masked:
+                r = self._interpolate_data_at_coord_points(sub_data.mask, coord_points)
+                result_data.mask[interpolant_index] = r
         return result_data
     
     def _interpolate_data_at_coord_points(self, data, coord_points):
@@ -445,7 +453,7 @@ if __name__ == '__main__':
     assert r.shape == a2.shape
     
 
-if __name__ == '__main__':
+if __name__ == '__mains__':
     import iris.tests.stock as stock
     from iris.analysis.new_linear import linear, LinearInterpolator, TriangulatedLinearInterpolator
 
@@ -476,27 +484,61 @@ if __name__ == '__main__':
     print r.coord('foo')
 
 
-if __name__ == '__mains__':
+if __name__ == '__main__':
     fname = '/data/local/dataZoo/NetCDF/ORCA1/NEMO_ORCA1_CF.nc'
     sst = iris.load_cube(fname, 'sea_surface_temperature')
     
-    import iris.quickplot as qplt
+    
     import matplotlib.pyplot as plt
     
     plt.switch_backend('tkagg')
+    import iris.quickplot as qplt
+    
+    
+    # Why is the data not masked...
+    sst.data[sst.data == 0] = np.nan 
     
     interpolator = TriangulatedLinearInterpolator(sst, ['latitude', 'longitude'])
-    arctic_circle = interpolator.orthogonal_cube([['longitude', np.linspace(-180, 180, 180)],
-                                                  ['latitude', 60]], extrapolation_mode='nan')
+    arctic_circle = interpolator.orthogonal_cube([['longitude', np.linspace(-10, 10, 500)],
+                                                  ['latitude', np.linspace(40, 60, 500)]], extrapolation_mode='nan')
     arctic_circle.attributes.clear()
+    
     print sst
     print arctic_circle
-    arctic_circle = arctic_circle[0, 0, :]
     
-    print arctic_circle.data
+    qplt.contourf(arctic_circle[0], coords=['longitude', 'latitude'])
+    plt.gca().coastlines()
+    plt.show()
+    exit()
+    
+    arctic_circle = arctic_circle[0, 0, :]
     
     
     qplt.plot(arctic_circle.coord('longitude'), arctic_circle)
+    
+    plt.figure()
+
+    import cartopy.crs as ccrs
+    
+    xs = arctic_circle.coord('longitude').points
+    ys = np.repeat(arctic_circle.coord('latitude').points[0], len(xs))
+    
+    points = np.array([xs, ys]).T.reshape(-1, 1, 2)
+    segments = np.concatenate([points[:-1], points[1:]], axis=1)
+    
+    from matplotlib.collections import LineCollection
+    lc = LineCollection(segments, transform=ccrs.PlateCarree(), norm=plt.Normalize(vmin=0, vmax=40), cmap='Paired')
+    
+    data = np.ma.masked_array(arctic_circle.data, mask=np.isnan(arctic_circle.data))
+    lc.set_array(data)
+    lc.set_linewidth(3)
+    
+    ax = plt.axes(projection=ccrs.Robinson())
+    ax.add_collection(lc)
+    plt.colorbar(lc, orientation='horizontal')
+    ax.set_global()
+    ax.coastlines()
+    
     plt.show()
-    import matplotlib
-    print matplotlib.get_backend()
+    
+    
