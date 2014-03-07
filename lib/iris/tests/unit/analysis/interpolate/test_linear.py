@@ -41,7 +41,7 @@ class Test_masks(tests.IrisTest):
 
 class TestNDCoords(tests.IrisTest):
     def test_first(self):
-#        from iris.analysis.new_linear import linear, LinearInterpolator
+        from iris.analysis.new_linear import linear, LinearInterpolator
         
         cube = stock.simple_3d_w_multidim_coords()
         cube.add_dim_coord(iris.coords.DimCoord(range(3), 'longitude'), 1)
@@ -52,16 +52,16 @@ class TestNDCoords(tests.IrisTest):
 
 #        x: 1.5
 #        y: 1.5
-        with self.assertRaisesRegexp(ValueError, "Cannot linearly interpolate over 'foo' as it is multi-dimensional."):
+        with self.assertRaisesRegexp(ValueError, "Interpolation coords must be 1-d for non-triangulation based interpolation."):
             interp_cube = linear(cube, {'foo': 15, 'bar': 10})
         
-        with self.assertRaises(iris.exceptions.NotYetImplementedError):
-            interp_cube = linear(cube, {'latitude': 1.5, 'longitude': 1.5})
+        interp_cube = linear(cube, {'latitude': 1.5, 'longitude': 1.5})
+        self.assertCMLApproxData(interp_cube, ('experimental', 'analysis', 'interpolate', 'linear_nd_2_coords.cml'))
         
-        interp_cube = linear(cube, {'wibble': 1.5})
+        interp_cube = linear(cube, {'wibble': 1.5})[0]
         self.assertCMLApproxData(interp_cube, ('experimental', 'analysis', 'interpolate', 'linear_nd_with_extrapolation.cml'))
         
-        interp_cube = linear(cube, {'wibble': 20})
+        interp_cube = linear(cube, {'wibble': 20})[0]
         self.assertArrayEqual(np.mean(cube.data, axis=0), interp_cube.data)
         self.assertCMLApproxData(interp_cube, ('experimental', 'analysis', 'interpolate', 'linear_nd.cml'))
 

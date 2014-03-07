@@ -271,7 +271,7 @@ class LinearInterpolator(object):
             new_coord = iris.coords.AuxCoord.from_coord(coord).copy(new_points)
         return new_coord
 
-    def orthogonal_cube(self, sample_points, data_cube, extrapolation_mode='linear'):
+    def orthogonal_cube(self, sample_points, extrapolation_mode='linear'):
         data = self.cube.data
         data = self.orthogonal_points(sample_points,
                                       data, extrapolation_mode)
@@ -284,15 +284,7 @@ class LinearInterpolator(object):
         for dim_coord in cube.dim_coords:
             dim, = cube.coord_dims(dim_coord)
             if set([dim]).issubset(set(self.coord_dims)):
-                # TODO:
-#                self.interpolate_points(sample_points, data, extrapolation_mode, data_dims)
-                print 'Need to resample:', dim_coord.name()
-                print dim_coord.points
-                print self._orthogonal_points_preserve_dimensionality(sample_points, dim_coord.points, extrapolation_mode, data_dims=[dim])
                 new_coord = self._resample_coord(sample_points, dim_coord, [dim], extrapolation_mode)
-#                continue
-#                new_coord = _resample_coord(dim_coord, src_coord, direction,
-#                                            requested_points, interpolate)
             else:
                 new_coord = dim_coord.copy()
             # new_coord may no longer be a dim coord, so check we don't need
@@ -304,9 +296,7 @@ class LinearInterpolator(object):
 
         for coord in cube.aux_coords:
             dims = cube.coord_dims(coord)
-            if set(dims).issubset(set(self.coord_dims)):
-                new_coord = self._resample_coord(sample_points, coord, dims, extrapolation_mode)
-            elif set(dims).intersection(set(self.coord_dims)):
+            if set(dims).intersection(set(self.coord_dims)):
                 new_coord = self._resample_coord(sample_points, coord, dims, extrapolation_mode)
             else:
                 new_coord = coord.copy()
@@ -316,148 +306,13 @@ class LinearInterpolator(object):
 
 
 def linear(cube, sample_points, extrapolation_mode='linear'):
-    # Iterate over all of the requested keys in the given points_dict calling this routine repeatedly.
-    if len(sample_points) > 1:
-        result = cube
-        for coord, cells in sample_points:
-            result = linear(result, [(coord, cells)], extrapolation_mode=extrapolation_mode)
-        return result
-
-    else:
-        # Now we must be down to a single sample coordinate and its
-        # values.
-        src_coord, requested_points = sample_points[0]
-        sample_values = np.array(requested_points)
-
-        # 1) Define the interpolation characteristics.
-
-        # Get the sample dimension (which we have already tested is not None)
-        sample_dim = cube.coord_dims(src_coord)[0]
-
-
-        # Map all the requested values into the range of the source
-        # data (centered over the centre of the source data to allow
-        # extrapolation where required).
-        src_axis = iris.util.guess_coord_axis(src_coord)
-        if src_axis == 'X' and src_coord.units.modulus:
-            modulus = src_coord.units.modulus
-            offset = (src_points.max() + src_points.min() - modulus) * 0.5
-            sample_values = ((sample_values - offset) % modulus) + offset
-
-        if len(src_points) == 1:
-            if extrapolation_mode == 'error' and \
-                    np.any(sample_values != src_points):
-                raise ValueError('Attempting to extrapolate from a single '
-                                 'point with extrapolation mode set '
-                                 'to {!r}.'.format(extrapolation_mode))
-            direction = 0
-
-            def interpolate(fx, new_x, axis=None, **kwargs):
-                # All kwargs other than axis are ignored.
-                if axis is None:
-                    axis = -1
-                new_x = np.array(new_x)
-                new_shape = list(fx.shape)
-                new_shape[axis] = new_x.size
-                fx = np.broadcast_arrays(fx, np.empty(new_shape))[0].copy()
-                if extrapolation_mode == 'nan':
-                    indices = [slice(None)] * fx.ndim
-                    indices[axis] = new_x != src_points
-                    fx[tuple(indices)] = np.nan
-                # If new_x is a scalar, then remove the dimension from fx.
-                if not new_x.shape:
-                    del new_shape[axis]
-                    fx.shape = new_shape
-                return fx
-        else:
-            monotonic, direction = iris.util.monotonic(src_points,
-                                                       return_direction=True)
-            if not monotonic:
-                raise ValueError('Unable to linearly interpolate this '
-                                 'cube as the coordinate {!r} is not '
-                                 'monotonic'.format(src_coord.name()))
-
-            # SciPy's interp1d requires monotonic increasing coord values.
-            if direction == -1:
-                src_points = iris.util.reverse(src_points, axes=0)
-                data = iris.util.reverse(data, axes=sample_dim)
-
-            # Wrap it all up in a function which makes the right kind of
-            # interpolator/extrapolator.
-            # NB. This uses a closure to capture the values of src_points,
-            # bounds_error, and extrapolation_mode.
-            def interpolate(fx, new_x, **kwargs):
-                # SciPy's interp1d needs float values, so if we're given
-                # integer values, convert them to the smallest possible
-                # float dtype that can accurately preserve the values.
-                if fx.dtype.kind == 'i':
-                    fx = fx.astype(np.promote_types(fx.dtype, np.float16))
-                x = src_points.astype(fx.dtype)
-                interpolator = interp1d(x, fx, kind='linear',
-                                        bounds_error=bounds_error, **kwargs)
-                if extrapolation_mode == 'linear':
-                    interpolator = Linear1dExtrapolator(interpolator)
-                new_fx = interpolator(np.array(new_x, dtype=fx.dtype))
-                return new_fx
-
-        # 2) Interpolate the data and produce our new Cube.
-        if isinstance(data, ma.MaskedArray):
-            # interpolate data, ignoring the mask
-            new_data = interpolate(data.data, sample_values, axis=sample_dim,
-                                   copy=False)
-            # Mask out any results which contain a non-zero contribution
-            # from a masked value when interpolated from mask cast as 1,0.
-            mask_dataset = ma.getmaskarray(data).astype(float)
-            new_mask = interpolate(mask_dataset, sample_values,
-                                   axis=sample_dim, copy=False) > 0
-            # create new_data masked array
-            new_data = ma.MaskedArray(new_data, mask=new_mask)
-        else:
-            new_data = interpolate(data, sample_values, axis=sample_dim,
-                                   copy=False)
-        new_cube = iris.cube.Cube(new_data)
-        new_cube.metadata = cube.metadata
-
-        # If requested_points is an array scalar then `new_cube` will
-        # have one less dimension than `cube`. (The `sample_dim`
-        # dimension will vanish.) In which case we build a mapping from
-        # `cube` dimensions to `new_cube` dimensions.
-        dim_mapping = None
-        if new_cube.ndim != cube.ndim:
-            dim_mapping = {i: i for i in range(sample_dim)}
-            dim_mapping[sample_dim] = None
-            for i in range(sample_dim + 1, cube.ndim):
-                dim_mapping[i] = i - 1
-
-        # 2) Copy/interpolate the coordinates.
-        for dim_coord in cube.dim_coords:
-            dims = cube.coord_dims(dim_coord)
-            if sample_dim in dims:
-                new_coord = _resample_coord(dim_coord, src_coord, direction,
-                                            requested_points, interpolate)
-            else:
-                new_coord = dim_coord.copy()
-            if dim_mapping:
-                dims = [dim_mapping[dim] for dim in dims
-                            if dim_mapping[dim] is not None]
-            if isinstance(new_coord, iris.coords.DimCoord) and dims:
-                new_cube.add_dim_coord(new_coord, dims)
-            else:
-                new_cube.add_aux_coord(new_coord, dims)
-
-        for coord in cube.aux_coords:
-            dims = cube.coord_dims(coord)
-            if sample_dim in dims:
-                new_coord = _resample_coord(coord, src_coord, direction,
-                                            requested_points, interpolate)
-            else:
-                new_coord = coord.copy()
-            if dim_mapping:
-                dims = [dim_mapping[dim] for dim in dims
-                            if dim_mapping[dim] is not None]
-            new_cube.add_aux_coord(new_coord, dims)
-
-        return new_cube
+    coords = []
+    if isinstance(sample_points, dict):
+        sample_points = sample_points.items()
+    for coord, _ in sample_points:
+        coords.append(coord)
+    interp = LinearInterpolator(cube, coords, extrapolation_mode)
+    return interp.orthogonal_cube(sample_points, extrapolation_mode)
 
 
 if __name__ == '__main__':
@@ -598,8 +453,7 @@ if __name__ == '__main__':
 
 
     interpolator = LinearInterpolator(cube, ['height', 'longitude'])
-    result_cube = interpolator.orthogonal_cube([['height', [0, 1, 1]], ['longitude', [0, 1]]],
-                                               cube)
+    result_cube = interpolator.orthogonal_cube([['height', [0, 1, 1]], ['longitude', [0, 1]]])
     print 'B:', cube.coord('foo').points
     print 'R:', result_cube.coord('foo').points
     print result_cube
