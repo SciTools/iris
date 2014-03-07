@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube long_name="thingness" units="1">
+    <coords>
+      <coord datadims="[1, 2]">
+        <auxCoord id="7c9a33bf" long_name="bar" points="[[25]]" shape="(1, 1)" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[1, 2]">
+        <auxCoord id="549be28b" long_name="foo" points="[[20.25]]" shape="(1, 1)" units="Unit('1')" value_type="float64"/>
+      </coord>
+      <coord datadims="[2]">
+        <dimCoord id="a475d0a4" points="[1]" shape="(1,)" standard_name="latitude" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="5d3b1011" points="[1.5]" shape="(1,)" standard_name="longitude" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="a2260f1f" long_name="wibble" points="[10.0, 30.0]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data byteorder="little" dtype="float64" shape="(2, 1, 1)" state="loaded"/>
+  </cube>
+</cubes>

@@ -40,18 +40,22 @@ class Test_masks(tests.IrisTest):
 
 
 class TestNDCoords(tests.IrisTest):
-    def test_first(self):
-        from iris.analysis.new_linear import linear, LinearInterpolator
-        
+    
+    def setUp(self):
         cube = stock.simple_3d_w_multidim_coords()
         cube.add_dim_coord(iris.coords.DimCoord(range(3), 'longitude'), 1)
         cube.add_dim_coord(iris.coords.DimCoord(range(4), 'latitude'), 2)
-        cube.data = cube.data.astype(np.float)
-
+        cube.data = cube.data.astype(np.float32)
+        self.cube = cube
 #        linear = lambda cube, sample_points, mode='linear': LinearInterpolator(cube, mode).points(sample_points)
 
 #        x: 1.5
 #        y: 1.5
+
+    def test_first(self):
+        from iris.analysis.new_linear import linear, LinearInterpolator
+        cube = self.cube
+        
         with self.assertRaisesRegexp(ValueError, "Interpolation coords must be 1-d for non-triangulation based interpolation."):
             interp_cube = linear(cube, {'foo': 15, 'bar': 10})
         

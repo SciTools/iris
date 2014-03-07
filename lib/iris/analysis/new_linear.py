@@ -252,15 +252,20 @@ class LinearInterpolator(object):
     def _orthogonal_points_preserve_dimensionality(self, sample_points, data,
                                                    extrapolation_mode='linear', data_dims=None):
         data = self.orthogonal_points(sample_points, data, extrapolation_mode, data_dims)
-        print 'Before:', data.shape
         index = tuple(0 if dim not in data_dims else slice(None)
                       for dim in range(self.cube.ndim))
         r = data[index]
-        print 'After:', r.shape
         return r
     
     def _resample_coord(self, sample_points, coord, coord_dims, extrapolation_mode):
         coord_points = coord.points
+        if getattr(coord, 'circular', False):
+            assert coord.ndim == 1, 'Only DimCoords are circular'
+            modulus = np.array(coord.units.modulus or 0,
+                               dtype=coord.dtype)
+            coord_points = np.append(coord.points,
+                                     coord.points[0] + modulus)
+
         new_points = self._orthogonal_points_preserve_dimensionality(sample_points, coord_points, extrapolation_mode, coord_dims)
 
         # Watch out for DimCoord instances that are no longer monotonic
@@ -283,7 +288,7 @@ class LinearInterpolator(object):
         # 2) Copy/interpolate the coordinates.
         for dim_coord in cube.dim_coords:
             dim, = cube.coord_dims(dim_coord)
-            if set([dim]).issubset(set(self.coord_dims)):
+            if set([dim]).intersection(set(self.coord_dims)):
                 new_coord = self._resample_coord(sample_points, dim_coord, [dim], extrapolation_mode)
             else:
                 new_coord = dim_coord.copy()
