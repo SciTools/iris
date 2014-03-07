@@ -1144,9 +1144,9 @@ class ProtoCube(object):
             if space[name] is None:
                 if _is_combination(name):
                     members = name.split(_COMBINATION_JOIN)
-                    cells = [tuple(
+                    cells = sorted(set(tuple(
                         position[int(member) if member.isdigit() else member]
-                        for member in members) for position in positions]
+                        for member in members) for position in positions))
                     dim_by_name[name] = len(self._shape)
                     self._nd_names.append(name)
                     self._shape.append(len(cells))
