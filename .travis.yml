@@ -27,7 +27,7 @@ install:
   - export IRIS_TEST_DATA_REF="3378fe68c00ca7f31895ab6630a59a39ccef94e3"
   - export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//")
 
-  - export IRIS_SAMPLE_DATA_REF="2e7c73504e3d675d97dc8a2c2939f9fd2cfe51f1"
+  - export IRIS_SAMPLE_DATA_REF="1ed3e26606366717e2053bacc12bf5e8d8fa2704"
   - export IRIS_SAMPLE_DATA_SUFFIX=$(echo "${IRIS_SAMPLE_DATA_REF}" | sed "s/^v//")
 
 # Switch off virtualenv so we can use apt-get for Python packages.
