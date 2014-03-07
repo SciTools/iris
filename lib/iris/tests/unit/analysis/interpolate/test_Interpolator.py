@@ -34,10 +34,11 @@ class ThreeDimCube(tests.IrisTest):
         cube.add_aux_coord(iris.coords.DimCoord(range(2), 'height'), 0)
         cube.add_dim_coord(iris.coords.DimCoord(range(3), 'latitude'), 1)
         cube.add_dim_coord(iris.coords.DimCoord(range(4), 'longitude'), 2)
-        cube.data = cube.data.astype(np.float)
-
         self.cube = cube
-        self.data = np.arange(24).reshape(2, 3, 4)
+        self.data = np.arange(24).reshape(2, 3, 4).astype(np.float)
+        
+        cube.data = self.data
+
 
 class Test_LinearInterpolator_1D(ThreeDimCube):
     def setUp(self):
