@@ -33,7 +33,7 @@ class Test_merge__time_triple(tests.IrisTest):
         cube.add_dim_coord(DimCoord(np.arange(5), long_name='x'), 1)
         cube.add_dim_coord(DimCoord(np.arange(4), long_name='y'), 0)
         cube.add_aux_coord(DimCoord(fp, standard_name='forecast_period'))
-        cube.add_aux_coord(DimCoord(rt, 
+        cube.add_aux_coord(DimCoord(rt,
                                     standard_name='forecast_reference_time'))
         cube.add_aux_coord(DimCoord(t, standard_name='time'))
         if realization is not None:
