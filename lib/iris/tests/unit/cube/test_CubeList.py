@@ -77,6 +77,46 @@ class Test_merge__time_triple(tests.IrisTest):
         cube, = cubes.merge()
         self.assertCML(cube, checksum=False)
 
+    def test_combination_with_extra_realization(self):
+        # => fp, rt, t, realization: 17
+        triples = ((0, 10, 1),
+                   (0, 10, 2),
+                   (0, 11, 1),
+                   (0, 11, 2),
+                   (1, 10, 1),
+                   (1, 10, 2),
+                   (1, 11, 1),
+                   (1, 11, 2))
+        en1_cubes = [self._make_cube(*triple, realization=1) for
+                     triple in triples]
+        en2_cubes = [self._make_cube(*triple, realization=2) for
+                     triple in triples]
+        # Add extra that is a duplicate of one of the time triples
+        # but with a different realisation.
+        en3_cubes = [self._make_cube(0, 10, 2, realization=3)]
+        cubes = CubeList(en1_cubes) + CubeList(en2_cubes) + CubeList(en3_cubes)
+        cube, = cubes.merge()
+        self.assertCML(cube, checksum=False)
+
+    def test_combination_with_extra_triple(self):
+        # => fp, rt, t, realization: 17
+        triples = ((0, 10, 1),
+                   (0, 10, 2),
+                   (0, 11, 1),
+                   (0, 11, 2),
+                   (1, 10, 1),
+                   (1, 10, 2),
+                   (1, 11, 1),
+                   (1, 11, 2))
+        en1_cubes = [self._make_cube(*triple, realization=1) for
+                     triple in triples]
+        # Add extra time triple on the end.
+        en2_cubes = [self._make_cube(*triple, realization=2) for
+                     triple in triples + ((1, 11, 3),)]
+        cubes = CubeList(en1_cubes) + CubeList(en2_cubes)
+        cube, = cubes.merge()
+        self.assertCML(cube, checksum=False)
+
 
 if __name__ == "__main__":
     tests.main()
