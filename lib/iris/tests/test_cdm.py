@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -1138,7 +1138,9 @@ class TestTrimAttributes(tests.IrisTest):
 @iris.tests.skip_data
 class TestMaskedData(tests.IrisTest, pp.PPTest):
     def _load_3d_cube(self):
-        # This 3D data set has a missing a slice with SOME missing values (0)
+        # This 3D data set has a missing a slice with SOME missing values.
+        # The missing data is in the pressure = 1000 hPa, forcast_period = 0,
+        # time = 1970-02-11 16:00:00 slice.
         return iris.load_cube(tests.get_data_path(["PP", "mdi_handmade_small", "*.pp"]))
     
     def test_complete_field(self):
@@ -1162,7 +1164,7 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
 
         # Test the slicing before deferred loading
         full_slice = cube[3]
-        partial_slice = cube[0]
+        partial_slice = cube[2]
         self.assertIsInstance(full_slice.data, np.ndarray)
         self.assertIsInstance(partial_slice.data, ma.core.MaskedArray)
         self.assertEqual(ma.count_masked(partial_slice._data), 25)
@@ -1170,7 +1172,7 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
         # Test the slicing is consistent after deferred loading
         cube.data
         full_slice = cube[3]
-        partial_slice = cube[0]
+        partial_slice = cube[2]
         self.assertIsInstance(full_slice.data, np.ndarray)
         self.assertIsInstance(partial_slice.data, ma.core.MaskedArray)
         self.assertEqual(ma.count_masked(partial_slice._data), 25)
@@ -1179,7 +1181,7 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
         cube = self._load_3d_cube()
 
         # extract the 2d field that has SOME missing values
-        masked_slice = cube[0]
+        masked_slice = cube[2]
         masked_slice.data.fill_value = 123456
         
         # test saving masked data
