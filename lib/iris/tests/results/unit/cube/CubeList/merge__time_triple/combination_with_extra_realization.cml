@@ -3,19 +3,19 @@
   <cube units="unknown">
     <coords>
       <coord datadims="[0]">
-        <auxCoord id="ca4300da" points="[0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1,
-		1]" shape="(17,)" standard_name="forecast_period" units="Unit('1')" value_type="int64"/>
+        <auxCoord id="ca4300da" points="[0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1,
+		0]" shape="(17,)" standard_name="forecast_period" units="Unit('1')" value_type="int64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="fe82bc89" points="[10, 10, 10, 10, 11, 11, 11, 11, 10, 10, 10, 10,
-		10, 11, 11, 11, 11]" shape="(17,)" standard_name="forecast_reference_time" units="Unit('1')" value_type="int64"/>
+        <auxCoord id="fe82bc89" points="[10, 10, 11, 11, 10, 10, 11, 11, 10, 10, 11, 11,
+		10, 10, 11, 11, 10]" shape="(17,)" standard_name="forecast_reference_time" units="Unit('1')" value_type="int64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="cfd5ae8c" points="[1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 3, 1, 2, 1, 2, 1,
-		2]" shape="(17,)" standard_name="realization" units="Unit('1')" value_type="int64"/>
+        <auxCoord id="cfd5ae8c" points="[1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2,
+		3]" shape="(17,)" standard_name="realization" units="Unit('1')" value_type="int64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="c2f882b5" points="[1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2,
+        <auxCoord id="c2f882b5" points="[1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2,
 		2]" shape="(17,)" standard_name="time" units="Unit('1')" value_type="int64"/>
       </coord>
       <coord datadims="[2]">

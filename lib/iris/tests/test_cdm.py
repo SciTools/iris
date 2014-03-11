@@ -1164,7 +1164,7 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
 
         # Test the slicing before deferred loading
         full_slice = cube[3]
-        partial_slice = cube[2]
+        partial_slice = cube[0]
         self.assertIsInstance(full_slice.data, np.ndarray)
         self.assertIsInstance(partial_slice.data, ma.core.MaskedArray)
         self.assertEqual(ma.count_masked(partial_slice._data), 25)
@@ -1172,7 +1172,7 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
         # Test the slicing is consistent after deferred loading
         cube.data
         full_slice = cube[3]
-        partial_slice = cube[2]
+        partial_slice = cube[0]
         self.assertIsInstance(full_slice.data, np.ndarray)
         self.assertIsInstance(partial_slice.data, ma.core.MaskedArray)
         self.assertEqual(ma.count_masked(partial_slice._data), 25)
@@ -1181,7 +1181,7 @@ class TestMaskedData(tests.IrisTest, pp.PPTest):
         cube = self._load_3d_cube()
 
         # extract the 2d field that has SOME missing values
-        masked_slice = cube[2]
+        masked_slice = cube[0]
         masked_slice.data.fill_value = 123456
         
         # test saving masked data

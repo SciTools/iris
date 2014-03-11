@@ -7,7 +7,7 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <auxCoord id="73141289" points="[0.0, 0.0, 0.0, 3.0, 3.0, 6.0, 6.0, 6.0]" shape="(8,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+        <auxCoord id="73141289" points="[0.0, 3.0, 6.0, 0.0, 3.0, 6.0, 0.0, 6.0]" shape="(8,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
         <dimCoord id="f8c7ad26" points="[999.999999996]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
@@ -27,15 +27,15 @@
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="8d07ce7a" long_name="pressure" points="[800.0, 900.0, 1000.0, 800.0, 1000.0, 800.0,
-		900.0, 1000.0]" shape="(8,)" units="Unit('hPa')" value_type="float32"/>
+        <auxCoord id="8d07ce7a" long_name="pressure" points="[1000.0, 1000.0, 1000.0, 800.0, 800.0, 800.0,
+		900.0, 900.0]" shape="(8,)" units="Unit('hPa')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="6a1b3c16" points="[999.999999996, 999.999999996, 999.999999996,
-		1003.0, 1003.0, 1006.0, 1006.0, 1006.0]" shape="(8,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <auxCoord id="6a1b3c16" points="[999.999999996, 1003.0, 1006.0, 999.999999996,
+		1003.0, 1006.0, 999.999999996, 1006.0]" shape="(8,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x4c30a3b1" dtype="float32" fill_value="1e-09" mask_checksum="0x5a209acb" shape="(8, 20, 20)"/>
+    <data byteorder="little" checksum="-0xb7e918a" dtype="float32" fill_value="1e-09" mask_checksum="0x54a64fdc" shape="(8, 20, 20)"/>
   </cube>
 </cubes>
