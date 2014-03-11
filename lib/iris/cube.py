@@ -325,8 +325,8 @@ class CubeList(list):
 
         def make_overlap_fn(coord_name):
             def overlap_fn(cell):
-                return all([cell in cube.coord(coord_name).cells()
-                            for cube in self])
+                return all(cell in cube.coord(coord_name).cells()
+                           for cube in self)
             return overlap_fn
 
         coord_values = {coord_name: make_overlap_fn(coord_name)
