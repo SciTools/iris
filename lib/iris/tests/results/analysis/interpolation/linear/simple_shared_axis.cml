@@ -12,7 +12,7 @@
         <dimCoord id="a8c43c3" long_name="dim2" points="[3.5, 3.25]" shape="(2,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[1]">
-        <auxCoord id="2d8ba186" long_name="shared_x_coord" points="[9.0, 7.0]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+        <auxCoord id="2d8ba186" long_name="shared_x_coord" points="[9.0, 7.0]" shape="(2,)" units="Unit('1')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>

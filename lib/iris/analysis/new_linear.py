@@ -14,29 +14,16 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""
-Interpolation and re-gridding routines.
-
-See also: :mod:`NumPy <numpy>`, and :ref:`SciPy <scipy:modindex>`.
-
-"""
 import collections
-import warnings
 
 import numpy as np
-import numpy.ma as ma
 from numpy.lib.stride_tricks import as_strided
-import scipy
-import scipy.spatial
-from scipy.interpolate.interpolate import interp1d
 
 import iris.cube
-import iris.coord_systems
 import iris.coords
-import iris.exceptions
 
 from iris.experimental.regrid import _RegularGridInterpolator, _ndim_coords_from_arrays
-from iris.analysis.interpolate import _resample_coord, Linear1dExtrapolator, _extend_circular_coord_and_data, _extend_circular_data
+from iris.analysis.interpolate import _extend_circular_coord_and_data, _extend_circular_data
 
 
 class LinearInterpolator(object):
@@ -68,7 +55,6 @@ class LinearInterpolator(object):
             is_circular = getattr(coord, 'circular', False)
 
             if is_circular:
-                assert coord.ndim == 1
                 coord_points, data = _extend_circular_coord_and_data(coord, data, coord_dims[0])
                 self._circulars.append((interp_dim, coord_dims[0],
                                         coord_points.min(),
@@ -96,13 +82,14 @@ class LinearInterpolator(object):
         
         
         # Create some data which has the simplest possible float dtype.
-        simplest_float = np.float64 if extrapolation_mode == 'nan' else np.float16
-        mock_data = as_strided(np.array(0, dtype=np.result_type(simplest_float, cube.data.dtype)),
+        
+        mock_data = as_strided(np.array(0, dtype=self.interpolated_dtype(cube.data.dtype)),
                                shape=shape, strides=[0] * len(self.coord_dims))
+        self._interpolator = self._build_interpolator(coord_points, mock_data)
 
-        self._interpolator = _RegularGridInterpolator(coord_points, mock_data,
-                                                      fill_value=None,
-                                                      bounds_error=False)
+    def _build_interpolator(self, coord_points, mock_data):
+        return _RegularGridInterpolator(coord_points, mock_data,
+                                        fill_value=None, bounds_error=False)
 
 
     def _update_extrapolation_mode(self, mode):
@@ -123,6 +110,10 @@ class LinearInterpolator(object):
         else:
             # TODO - implement mask extrapolation...
             raise ValueError('Extrapolation mode {!r} not supported.'.format(mode))
+
+    def interpolated_dtype(self, dtype):
+        """Return the dtype resulting from interpolating data of the given dtype."""
+        return np.result_type(np.float16, dtype)
 
     def interpolate_data(self, coord_points, data, extrapolation_mode='linear',
                          data_dims=None):
@@ -201,11 +192,12 @@ class LinearInterpolator(object):
         result_shape.insert(index_dimension, coord_points.shape[0])
 
         masked = isinstance(data, np.ma.MaskedArray)
+        dtype = self.interpolated_dtype(data.dtype)
         if masked:
-            result_data = np.ma.empty(result_shape, dtype=self._interpolator.values.dtype)
+            result_data = np.ma.empty(result_shape, dtype=dtype)
             result_data.mask = np.zeros(result_shape, dtype=np.bool)
         else:
-            result_data = np.empty(result_shape, dtype=self._interpolator.values.dtype)
+            result_data = np.empty(result_shape, dtype=dtype)
 
         # Iterate through each 2d slice of the data, updating the interpolator
         # with the new data as we go.
@@ -425,7 +417,7 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
     # catch the case where a user passes a single (coord/name, value) pair rather than a list of pairs
     if sample_points and not (isinstance(sample_points[0], collections.Container) and not isinstance(sample_points[0], basestring)):
         raise TypeError('Expecting the sample points to be a list of tuple pairs representing (coord, points), got a list of %s.' % type(sample_points[0]))
-        
+
     for coord, _ in sample_points:
         coords.append(coord)
     interp = LinearInterpolator(cube, coords, extrapolation_mode)

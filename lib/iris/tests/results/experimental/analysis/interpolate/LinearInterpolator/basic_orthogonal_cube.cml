@@ -5,7 +5,7 @@
       <coord datadims="[1, 2]">
         <auxCoord id="7c9a33bf" long_name="bar" points="[[2.5, 7.5],
 		[10.0, 17.5],
-		[15.0, 22.5]]" shape="(3, 2)" units="Unit('1')" value_type="float32"/>
+		[15.0, 22.5]]" shape="(3, 2)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[1, 2]">
         <auxCoord id="549be28b" long_name="foo" points="[[-7.5, 7.5],
@@ -22,10 +22,10 @@
         <dimCoord id="5d3b1011" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="a2260f1f" long_name="wibble" points="[10.0, 30.0, 30.0]" shape="(3,)" units="Unit('1')" value_type="float64"/>
+        <auxCoord id="a2260f1f" long_name="wibble" points="[10.0, 30.0, 30.0]" shape="(3,)" units="Unit('1')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" shape="(3, 3, 2)" state="loaded"/>
+    <data byteorder="little" dtype="float32" shape="(3, 3, 2)" state="loaded"/>
   </cube>
 </cubes>

@@ -35,7 +35,7 @@ class ThreeDimCube(tests.IrisTest):
         cube.add_dim_coord(iris.coords.DimCoord(range(3), 'latitude'), 1)
         cube.add_dim_coord(iris.coords.DimCoord(range(4), 'longitude'), 2)
         self.cube = cube
-        self.data = np.arange(24).reshape(2, 3, 4).astype(np.float)
+        self.data = np.arange(24).reshape(2, 3, 4).astype(np.float32)
         
         cube.data = self.data
 
@@ -76,7 +76,8 @@ class Test_LinearInterpolator_1D(ThreeDimCube):
     def test_interpolate_data_dtype_casting(self):
         self.cube.data = self.cube.data.astype(int)
         interpolator = LinearInterpolator(self.cube, ['latitude'])
-        assert interpolator.interpolate_data([0.125], self.data).dtype == np.float64, 'Wrong type'
+        self.assertEqual(interpolator.interpolate_data([0.125], self.data).dtype,
+                         np.float32)
 
     def test_orthogonal_points(self):
         r = self.interpolator.orthogonal_points([['latitude', [1]]], self.cube.data) # TODO test it calls interpolate_data appropriately.
@@ -113,6 +114,9 @@ class SingleLengthDimension(ThreeDimCube):
                                                              extrapolation_mode='nan') ==
                       self.cube.data)
 
+    def test_interpolator_overspecified(self):
+        with self.assertRaisesRegexp(ValueError, 'Coordinates repeat a data dimension - the interpolation would be over-specified'):
+            LinearInterpolator(self.cube, ['latitude', 'longitude'])
 
 
 class Test_LinearInterpolator_monotonic(ThreeDimCube):

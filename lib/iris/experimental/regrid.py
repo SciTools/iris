@@ -1356,7 +1356,8 @@ def _ndim_coords_from_arrays(points, ndim=None):
             points[..., j] = item
     else:
         points = np.asanyarray(points)
-        if points.ndim == 1:
+        # XXX Feed back to scipy.
+        if points.ndim <= 1:
             if ndim is None:
                 points = points.reshape(-1, 1)
             else:
