@@ -26,30 +26,47 @@ from iris.experimental.regrid import _RegularGridInterpolator, _ndim_coords_from
 from iris.analysis.interpolate import _extend_circular_coord_and_data, _extend_circular_data
 
 
-class LinearInterpolator(object):
+class Interpolator(object):
     def __init__(self, cube, interp_coords, extrapolation_mode='linear'):
         # Cube is "data_cube".
         self.cube = cube
-        # XXX use _set_extrapolation_mode.
-        self.extrapolation_mode = extrapolation_mode
-        self._bounds_error = (extrapolation_mode == 'error')
-        
-        self._interp_coords = interp_coords
-        self.ndims = len(interp_coords)
-        data_coords = [cube.coord(coord) for coord in interp_coords]
-        
-        # Triggers the loading - is that really necessary...?
-        data = cube.data
-        coord_points_list = []
+        #: A list of the point values for the given interp_coords.
+        self.coord_points = []
         
         #: Contains tuples of (interpolation dimension, coordinate dimension in cube, min coord point
         #:                     max_coord_point, coord modulus or 0)
         self._circulars = []
+        
+        self._define_interpolation_coords(interp_coords)
+        self._reorder_non_increasing_axes()
+        
+        if len(self._interp_coords) != len(set(self.coord_dims)):
+            raise ValueError('Coordinates repeat a data dimension - the '
+                             'interpolation would be over-specified.')
+        #: The fundamental, simplest, shape that can be created from this interpolator.
+        self._interpolation_shape = [self._data_shape[ind] for ind in self.coord_dims]
+        
+        # XXX use _set_extrapolation_mode.
+        self.extrapolation_mode = extrapolation_mode
+        self._bounds_error = (extrapolation_mode == 'error')
+
+        # Create some data which has the simplest possible float dtype.
+        mock_data = as_strided(np.array(0, dtype=self.interpolated_dtype(cube.data.dtype)),
+                               shape=self._interpolation_shape, strides=[0] * len(self.coord_dims))
+        self._interpolator = self._build_interpolator(self.coord_points, mock_data)
+    
+    def _define_interpolation_coords(self, interp_coords):
+        cube = self.cube
+        # Triggers the loading - is that really necessary...?
+        data = self.cube.data
+        self._interp_coords = interp_coords
+        self.ndims = len(interp_coords)
+        data_coords = [self.cube.coord(coord) for coord in interp_coords]
+        
+        coord_points_list = []
+        
         for interp_dim, coord in enumerate(data_coords):
-            if coord.ndim != 1:
-                raise ValueError('Interpolation coords must be 1-d for '
-                                 'non-triangulation based interpolation.')
-            # xxx What about 1dim coords not bound to a dimension?
+            self._validate_coord(coord)
             coord_dims = cube.coord_dims(coord)
 
             is_circular = getattr(coord, 'circular', False)
@@ -65,32 +82,23 @@ class LinearInterpolator(object):
                 data = data
             coord_points_list.append([coord_points, coord_dims])
         
+        #: The shape of the data array originally provided to the interpolator,
+        #: adjusted for any circular coordinates etc..
+        self._data_shape = data.shape
+        
 #        coord_points_list, coord_dims = zip(*sorted(coord_points_list, key=lambda (points, dim): dim))
-        coord_points, self.coord_dims = zip(*coord_points_list)
-        self.coord_dims = list(np.concatenate(self.coord_dims))
-
-        # XXX Assuming it is monotonic at all - not safe...
-        self.coord_decreasing = [np.all(np.diff(points) < 0) for points in coord_points]
-        if np.any(self.coord_decreasing):
-            coord_points = [points[::-1] if is_decreasing else points
-                            for is_decreasing, points in zip(self.coord_decreasing, coord_points)]
-
-        if len(interp_coords) != len(set(self.coord_dims)):
-            raise ValueError('Coordinates repeat a data dimension - the '
-                             'interpolation would be over-specified.')
-        shape = [data.shape[ind] for ind in self.coord_dims]
+        self.coord_points, self.coord_dims = zip(*coord_points_list)
         
-        
-        # Create some data which has the simplest possible float dtype.
-        
-        mock_data = as_strided(np.array(0, dtype=self.interpolated_dtype(cube.data.dtype)),
-                               shape=shape, strides=[0] * len(self.coord_dims))
-        self._interpolator = self._build_interpolator(coord_points, mock_data)
+        coord_dims = []
+        for dim_list in self.coord_dims:
+            for dim in dim_list:
+                if dim not in coord_dims:
+                    coord_dims.append(dim)
+        self.coord_dims = coord_dims
 
     def _build_interpolator(self, coord_points, mock_data):
-        return _RegularGridInterpolator(coord_points, mock_data,
-                                        fill_value=None, bounds_error=False)
-
+        """Returns the callable interpolator for this interpolation scheme.""" 
+        raise NotImplementedError('Subclass should define.')
 
     def _update_extrapolation_mode(self, mode):
         if mode == 'linear':
@@ -113,6 +121,9 @@ class LinearInterpolator(object):
 
     def interpolated_dtype(self, dtype):
         """Return the dtype resulting from interpolating data of the given dtype."""
+        # Default to the interpolator only being able to return float values,
+        # though subclasses may define their own rules (fixed dtype,
+        # int support etc.). 
         return np.result_type(np.float16, dtype)
 
     def interpolate_data(self, coord_points, data, extrapolation_mode='linear',
@@ -135,9 +146,7 @@ class LinearInterpolator(object):
                 strides.insert(dim, 0)
         data = as_strided(data, strides=strides, shape=self.cube.shape)
 
-        if self._circulars:
-            for _, data_dim, _, _, _ in self._circulars:
-                data = _extend_circular_data(data, data_dim)
+        
 
         try:
             coord_points = _ndim_coords_from_arrays(coord_points, self.ndims)
@@ -159,23 +168,7 @@ class LinearInterpolator(object):
         elif issubclass(coord_points.dtype.type, np.integer):
             coord_points = coord_points.astype(np.float)
 
-        if any(self.coord_decreasing):
-            data_indexer = [slice(None)] * data.ndim
-            for is_decreasing, dim in zip(self.coord_decreasing, self.coord_dims):
-                if is_decreasing:
-                    data_indexer[dim] = slice(None, None, -1)
-            data = data[tuple(data_indexer)]
-
-        # Map all the requested values into the range of the source
-        # data (centred over the centre of the source data to allow
-        # extrapolation where required).
-        if any(self._circulars):
-            for (interp_dim, _, src_min, src_max, 
-                    src_modulus) in self._circulars:
-                offset = (src_max + src_min - src_modulus) * 0.5
-                coord_points[:, interp_dim] -= offset
-                coord_points[:, interp_dim] = (coord_points[:, interp_dim] %
-                                               src_modulus) + offset
+        coord_points, data = self._prepare_coord_points_and_data(coord_points, data)
 
         self._update_extrapolation_mode(extrapolation_mode)
 
@@ -220,6 +213,29 @@ class LinearInterpolator(object):
                 r = self._interpolate_data_at_coord_points(sub_data.mask, coord_points)
                 result_data.mask[interpolant_index] = r > 0
         return result_data
+    
+    def _prepare_coord_points_and_data(self, coord_points, data):
+        """
+        Given the nd-data array, apply any modifications needed before
+        it can be passed to the interpolator.
+        
+        XXX Update.
+
+        """
+        # Map all the requested values into the range of the source
+        # data (centred over the centre of the source data to allow
+        # extrapolation where required).
+        if any(self._circulars):
+            for _, data_dim, _, _, _ in self._circulars:
+                data = _extend_circular_data(data, data_dim)
+            
+            for (interp_dim, _, src_min, src_max, 
+                    src_modulus) in self._circulars:
+                offset = (src_max + src_min - src_modulus) * 0.5
+                coord_points[:, interp_dim] -= offset
+                coord_points[:, interp_dim] = (coord_points[:, interp_dim] %
+                                               src_modulus) + offset
+        return coord_points, data
     
     def _interpolate_data_at_coord_points(self, data, coord_points):
         self._interpolator.values = data
@@ -407,6 +423,48 @@ class LinearInterpolator(object):
                 new_cube._add_unique_aux_coord(new_coord, new_dims)
 
         return new_cube
+
+
+class RectilinearInterpolator(Interpolator):
+    def _validate_coord(self, coord):
+        if coord.ndim != 1:
+            raise ValueError('Interpolation coords must be 1-d for '
+                             'non-triangulation based interpolation.')
+        
+        if not isinstance(coord, iris.coords.DimCoord):
+            # check monotonic.
+            if not iris.util.monotonic(coord.points, strict=True):
+                raise ValueError('Cannot interpolate over the non-'
+                                 'monotonic coordinate {}.'.format(coord.name()))
+            
+    def _reorder_non_increasing_axes(self):
+        # Force all coordinates to be monotonically increasing. Generally this isn't
+        # always necessary for a rectilinear interpolator, but it is a common requirement.
+
+        # We've already checked that each coordinate is strictly monotonic in _validate_coord,
+        # so we just need to get the direction from the difference of the first two values (if more than one exists!).
+        self.coord_decreasing = [np.all(np.diff(points[:2]) < 0)
+                                 for points in self.coord_points]
+        if np.any(self.coord_decreasing):
+            self.coord_points = [points[::-1] if is_decreasing else points
+                                 for is_decreasing, points in zip(self.coord_decreasing, self.coord_points)]
+    
+    def _prepare_coord_points_and_data(self, coord_points, data):
+        # Sort out the order of the data for the monotonically decreasing coordinates.
+        if any(self.coord_decreasing):
+            data_indexer = [slice(None)] * data.ndim
+            for is_decreasing, dim in zip(self.coord_decreasing, self.coord_dims):
+                if is_decreasing:
+                    data_indexer[dim] = slice(None, None, -1)
+            data = data[tuple(data_indexer)]
+
+        return super(RectilinearInterpolator, self)._prepare_coord_points_and_data(coord_points, data)
+    
+
+class LinearInterpolator(RectilinearInterpolator):
+    def _build_interpolator(self, coord_points, mock_data):
+        return _RegularGridInterpolator(coord_points, mock_data,
+                                        fill_value=None, bounds_error=False)
 
 
 def linear(cube, sample_points, extrapolation_mode='linear'):
