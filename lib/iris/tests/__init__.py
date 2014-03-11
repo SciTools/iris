@@ -400,6 +400,31 @@ class IrisTest(unittest.TestCase):
         """
         np.testing.assert_allclose(a, b, rtol=rtol, atol=atol, **kwargs)
 
+    def assertMaskedArrayAllClose(self, a, b, rtol=1.0e-7, atol=0.0, **kwargs):
+        """
+        Check masked arrays are equal, within given relative + absolute
+        tolerances.
+
+        This requires the masks to be equal, and the unmasked array values to
+        be within specified relative and absolute tolerances.
+
+        Args:
+
+        * a, b (array-like):
+            Two arrays to compare.
+
+        Kwargs:
+
+        * rtol, atol (float):
+            Relative and absolute tolerances to apply.
+
+        Any additional kwargs are passed to numpy.testing.assert_allclose.
+        For full details see underlying routine numpy.testing.assert_allclose.
+
+        """
+        np.testing.assert_array_equal(a.mask, b.mask)
+        np.testing.assert_allclose(a[~a.mask].data, b[~b.mask].data)
+
     @contextlib.contextmanager
     def temp_filename(self, suffix=''):
         filename = iris.util.create_temp_filename(suffix)
