@@ -36,13 +36,14 @@ import iris.coords
 import iris.exceptions
 
 from iris.experimental.regrid import _RegularGridInterpolator, _ndim_coords_from_arrays
-from iris.analysis.interpolate import _resample_coord, Linear1dExtrapolator, _extend_circular_coord_and_data
+from iris.analysis.interpolate import _resample_coord, Linear1dExtrapolator, _extend_circular_coord_and_data, _extend_circular_data
 
 
 class LinearInterpolator(object):
     def __init__(self, cube, interp_coords, extrapolation_mode='linear'):
         # Cube is "data_cube".
         self.cube = cube
+        # XXX use _set_extrapolation_mode.
         self.extrapolation_mode = extrapolation_mode
         self._bounds_error = (extrapolation_mode == 'error')
         
@@ -53,17 +54,26 @@ class LinearInterpolator(object):
         # Triggers the loading - is that really necessary...?
         data = cube.data
         coord_points_list = []
-
-        for coord in data_coords:
+        
+        #: Contains tuples of (interpolation dimension, coordinate dimension in cube, min coord point
+        #:                     max_coord_point, coord modulus or 0)
+        self._circulars = []
+        for interp_dim, coord in enumerate(data_coords):
             if coord.ndim != 1:
                 raise ValueError('Interpolation coords must be 1-d for '
                                  'non-triangulation based interpolation.')
             # xxx What about 1dim coords not bound to a dimension?
             coord_dims = cube.coord_dims(coord)
 
-            if getattr(coord, 'circular', False):
+            is_circular = getattr(coord, 'circular', False)
+
+            if is_circular:
                 assert coord.ndim == 1
                 coord_points, data = _extend_circular_coord_and_data(coord, data, coord_dims[0])
+                self._circulars.append((interp_dim, coord_dims[0],
+                                        coord_points.min(),
+                                        coord_points.max(),
+                                        getattr(coord.units, 'modulus', 0)))
             else:
                 coord_points = coord.points
                 data = data
@@ -82,14 +92,18 @@ class LinearInterpolator(object):
         if len(interp_coords) != len(set(self.coord_dims)):
             raise ValueError('Coordinates repeat a data dimension - the '
                              'interpolation would be over-specified.')
-        shape = [cube.shape[ind] for ind in self.coord_dims]
+        shape = [data.shape[ind] for ind in self.coord_dims]
         
-        mock_data = as_strided(np.array(0, dtype=float),
+        
+        # Create some data which has the simplest possible float dtype.
+        simplest_float = np.float64 if extrapolation_mode == 'nan' else np.float16
+        mock_data = as_strided(np.array(0, dtype=np.result_type(simplest_float, cube.data.dtype)),
                                shape=shape, strides=[0] * len(self.coord_dims))
 
         self._interpolator = _RegularGridInterpolator(coord_points, mock_data,
                                                       fill_value=None,
-                                                      bounds_error=False) 
+                                                      bounds_error=False)
+
 
     def _update_extrapolation_mode(self, mode):
         if mode == 'linear':
@@ -99,9 +113,11 @@ class LinearInterpolator(object):
             self._interpolator.bounds_error = True
         elif mode == 'nan':
             self._interpolator.bounds_error = False
-            if not np.can_cast(np.nan, self._interpolator.values.dtype):
-                raise ValueError("The interpolation array's dtype does not "
-                                 "support NaNs for extrapolation.")
+            # This is the check in the _RegularGridInterpolator, but I do not
+            # agree with it - I can put NaNs in a float32 array...
+#            if not np.can_cast(np.nan, self._interpolator.values.dtype):
+#                raise ValueError("The interpolation array's dtype does not "
+#                                 "support NaNs for extrapolation.")
             self._interpolator.fill_value = np.nan
             
         else:
@@ -121,13 +137,17 @@ class LinearInterpolator(object):
         if len(data_dims) != data.ndim:
             raise ValueError('data being interpolated is not consistent with the data passed through.')
 
-        # Put the given array into the shape of the original cube's array.        
+        # Put the given array into the shape of the original cube's array.
         strides = list(data.strides)
         for dim in range(self.cube.ndim):
             if dim not in data_dims:
                 strides.insert(dim, 0)
         data = as_strided(data, strides=strides, shape=self.cube.shape)
-        
+
+        if self._circulars:
+            for _, data_dim, _, _, _ in self._circulars:
+                data = _extend_circular_data(data, data_dim)
+
         try:
             coord_points = _ndim_coords_from_arrays(coord_points, self.ndims)
             if coord_points.shape[-1] != self.ndims:
@@ -145,6 +165,8 @@ class LinearInterpolator(object):
             raise ValueError('Perhaps inconsistently shaped arrays were passed as '
                              'coordinate points. The resulting numpy array has '
                              '"object" as its type.')
+        elif issubclass(coord_points.dtype.type, np.integer):
+            coord_points = coord_points.astype(np.float)
 
         if any(self.coord_decreasing):
             data_indexer = [slice(None)] * data.ndim
@@ -153,9 +175,18 @@ class LinearInterpolator(object):
                     data_indexer[dim] = slice(None, None, -1)
             data = data[tuple(data_indexer)]
 
-        self._update_extrapolation_mode(extrapolation_mode)
+        # Map all the requested values into the range of the source
+        # data (centred over the centre of the source data to allow
+        # extrapolation where required).
+        if any(self._circulars):
+            for (interp_dim, _, src_min, src_max, 
+                    src_modulus) in self._circulars:
+                offset = (src_max + src_min - src_modulus) * 0.5
+                coord_points[:, interp_dim] -= offset
+                coord_points[:, interp_dim] = (coord_points[:, interp_dim] %
+                                               src_modulus) + offset
 
-        # TODO: Move interpolator coordinates to mirror the centre of the given coord_points.
+        self._update_extrapolation_mode(extrapolation_mode)
 
         # Build up a shape suitable for passing to ndindex, inside the loop we
         # will insert slice(None) on the data indices.
@@ -168,11 +199,11 @@ class LinearInterpolator(object):
         #; Keep track of the dimension to put the interpolated data into.
         index_dimension = len(result_shape)# min(self.coord_dims)
         result_shape.insert(index_dimension, coord_points.shape[0])
-        
-        masked = isinstance(self.cube.data, np.ma.MaskedArray)
+
+        masked = isinstance(data, np.ma.MaskedArray)
         if masked:
             result_data = np.ma.empty(result_shape, dtype=self._interpolator.values.dtype)
-            result_data.mask = np.zeros(data.shape, dtype=np.bool)
+            result_data.mask = np.zeros(result_shape, dtype=np.bool)
         else:
             result_data = np.empty(result_shape, dtype=self._interpolator.values.dtype)
 
@@ -195,7 +226,7 @@ class LinearInterpolator(object):
             result_data[interpolant_index] = r
             if masked:
                 r = self._interpolate_data_at_coord_points(sub_data.mask, coord_points)
-                result_data.mask[interpolant_index] = r
+                result_data.mask[interpolant_index] = r > 0
         return result_data
     
     def _interpolate_data_at_coord_points(self, data, coord_points):
@@ -233,7 +264,6 @@ class LinearInterpolator(object):
 
             coord_points[order_in_constructor] = points
             for coord_dim in self.cube.coord_dims(coord):
-#                interpolated_shape[coord_dim] = points.size
                 interpolated_shape[self.coord_dims[order_in_constructor]] = points.size
 
         # Given an expected shape for the final array, compute the shape of
@@ -258,10 +288,7 @@ class LinearInterpolator(object):
         data = self.interpolate_data(coord_points, data, extrapolation_mode, data_dims=data_dims)
         # Turn the interpolated data back into the order that it was given to
         # us in the first place.
-        print 'Data:', data.shape, target_shape
         return np.transpose(data.reshape(target_shape), transpose_order)
-
-#    def _resample_coord(self, sample_points, coord, ):
 
     def _orthogonal_points_preserve_dimensionality(self, sample_points, data,
                                                    extrapolation_mode='linear', data_dims=None):
@@ -273,14 +300,9 @@ class LinearInterpolator(object):
     
     def _resample_coord(self, sample_points, coord, coord_dims, extrapolation_mode):
         coord_points = coord.points
-        if getattr(coord, 'circular', False):
-            assert coord.ndim == 1, 'Only DimCoords are circular'
-            modulus = np.array(coord.units.modulus or 0,
-                               dtype=coord.dtype)
-            coord_points = np.append(coord.points,
-                                     coord.points[0] + modulus)
-
-        new_points = self._orthogonal_points_preserve_dimensionality(sample_points, coord_points, extrapolation_mode, coord_dims)
+        
+        new_points = self._orthogonal_points_preserve_dimensionality(sample_points, coord_points,
+                                                                     extrapolation_mode, coord_dims)
 
         # Watch out for DimCoord instances that are no longer monotonic
         # after the resampling.
@@ -290,36 +312,107 @@ class LinearInterpolator(object):
             new_coord = iris.coords.AuxCoord.from_coord(coord).copy(new_points)
         return new_coord
 
-    def orthogonal_cube(self, sample_points, extrapolation_mode='linear'):
+    def orthogonal_cube(self, sample_points, extrapolation_mode='linear', collapse_scalar=True):
         data = self.cube.data
         data = self.orthogonal_points(sample_points,
                                       data, extrapolation_mode)
+
+        # Get hold of the original interpolation coordinates in terms of the given cube.
+        interp_coords = [self.cube.coord(coord) for coord in self._interp_coords]
+        sample_point_order = [self.cube.coord(coord) for coord, _ in sample_points]
+
+        _new_scalar_dims = set()
+        if collapse_scalar:
+            for coord, points in sample_points:
+                coord = self.cube.coord(coord)
+                if np.array(points).ndim == 0:
+                    _new_scalar_dims.add(self.coord_dims[interp_coords.index(coord)])
+#                    _new_scalar_dims.update(self.cube.coord_dims(coord))
+
+            # Map old dimensions to new (old dimensions no longer existing are defined as None).
+            _dimension_mapping = {}
+            skipped = 0
+            for dim in range(data.ndim):
+                if dim in _new_scalar_dims:
+                    _dimension_mapping[dim] = None
+                    skipped += 1
+                else:
+                    _dimension_mapping[dim] = dim - skipped
+
+            # Remove the *specific* scalar axes from the data.
+            data_index = [slice(None)] * self.cube.data.ndim
+            for scalar_dim in _new_scalar_dims:
+                data_index[scalar_dim] = 0
+             
+            data = data[tuple(data_index)]
 
         cube = self.cube
         new_cube = iris.cube.Cube(data)
         new_cube.metadata = cube.metadata
 
+        def construct_new_coord_given_points(coord, points):
+            # Handle what was previously a DimCoord which would no longer be
+            # monotonic. 
+            try:
+                return iris.coords.DimCoord.from_coord(coord.copy(points))
+            except ValueError:
+                return iris.coords.AuxCoord.from_coord(coord).copy(points)
+        
+        dims_with_dim_coords = []
+        
         # 2) Copy/interpolate the coordinates.
         for dim_coord in cube.dim_coords:
             dim, = cube.coord_dims(dim_coord)
-            if set([dim]).intersection(set(self.coord_dims)):
+            if dim_coord in interp_coords:
+                new_points = sample_points[sample_point_order.index(dim_coord)][1]
+                new_coord = construct_new_coord_given_points(dim_coord, new_points)
+            elif set([dim]).intersection(set(self.coord_dims)):
                 new_coord = self._resample_coord(sample_points, dim_coord, [dim], extrapolation_mode)
             else:
                 new_coord = dim_coord.copy()
+
+            if collapse_scalar:
+                dim = _dimension_mapping[dim]
+
             # new_coord may no longer be a dim coord, so check we don't need
-            # to add it as an aux coord (thus leaving the dim anonymous). 
-            if isinstance(new_coord, iris.coords.DimCoord):
-                new_cube.add_dim_coord(new_coord, dim)
+            # to add it as an aux coord (thus leaving the dim anonymous).
+            if isinstance(new_coord, iris.coords.DimCoord) and dim is not None:
+                new_cube._add_unique_dim_coord(new_coord, dim)
+                dims_with_dim_coords.append(dim)
             else:
-                new_cube.add_aux_coord(new_coord, dim)
+                new_cube._add_unique_aux_coord(new_coord, dim)
 
         for coord in cube.aux_coords:
             dims = cube.coord_dims(coord)
-            if set(dims).intersection(set(self.coord_dims)):
+            if coord in interp_coords:
+                new_points = sample_points[sample_point_order.index(coord)][1]
+                new_coord = construct_new_coord_given_points(coord, new_points)
+                orig = dims
+#                dims = [self.coord_dims[self.ndims - interp_coords.index(coord) - 1]]
+                dims = [self.coord_dims[interp_coords.index(coord)]] 
+            elif set(dims).intersection(set(self.coord_dims)):
                 new_coord = self._resample_coord(sample_points, coord, dims, extrapolation_mode)
             else:
                 new_coord = coord.copy()
-            new_cube.add_aux_coord(new_coord, dims)
+            
+            if not collapse_scalar:
+                new_dims = dims
+            else:
+                subsetter = [slice(None)] * new_coord.ndim
+                new_dims = []
+                for index, dim in enumerate(dims):
+                    if _dimension_mapping[dim] is None:
+                        subsetter[index] = 0
+                    else:
+                        new_dims.append(_dimension_mapping[dim])
+                if len(new_dims) != len(dims):
+                    new_coord = new_coord[tuple(subsetter)]
+            
+            if isinstance(new_coord, iris.coords.DimCoord) and len(new_dims) > 0 and new_dims[0] not in dims_with_dim_coords:
+                new_cube._add_unique_dim_coord(new_coord, new_dims)
+                dims_with_dim_coords.append(new_dims[0])
+            else:
+                new_cube._add_unique_aux_coord(new_coord, new_dims)
 
         return new_cube
 
@@ -328,217 +421,15 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
     coords = []
     if isinstance(sample_points, dict):
         sample_points = sample_points.items()
+    
+    # catch the case where a user passes a single (coord/name, value) pair rather than a list of pairs
+    if sample_points and not (isinstance(sample_points[0], collections.Container) and not isinstance(sample_points[0], basestring)):
+        raise TypeError('Expecting the sample points to be a list of tuple pairs representing (coord, points), got a list of %s.' % type(sample_points[0]))
+        
     for coord, _ in sample_points:
         coords.append(coord)
     interp = LinearInterpolator(cube, coords, extrapolation_mode)
     return interp.orthogonal_cube(sample_points, extrapolation_mode)
 
 
-class TriangulatedLinearInterpolator(LinearInterpolator):
-    def __init__(self, cube, interp_coords, extrapolation_mode='linear'):
-        # Cube is "data_cube".
-        self.cube = cube
-        self.extrapolation_mode = extrapolation_mode
-        self._bounds_error = (extrapolation_mode == 'error')
-        
-        self._interp_coords = interp_coords
-        self.ndims = len(interp_coords)
-        data_coords = [cube.coord(coord) for coord in interp_coords]
-
-        # Triggers the loading - is that really necessary...?
-        data = cube.data
-        coord_points_list = []
-
-        unique_dims = set()
-
-        for coord in data_coords:
-            # xxx What about 1dim coords not bound to a dimension?
-            coord_dims = cube.coord_dims(coord)
-
-            if getattr(coord, 'circular', False):
-                assert coord.ndim == 1
-                coord_points, data = _extend_circular_coord_and_data(coord, data, coord_dims[0])
-            else:
-                coord_points = coord.points
-                data = data
-            unique_dims.update(coord_dims)
-            coord_points_list.append([coord_points, coord_dims])
-
-        shape = [cube.shape[ind] for ind in unique_dims]
-        
-        i = 0
-        cube_dim_to_interp_dim = {}
-        for dim in range(cube.ndim):
-            if dim in unique_dims:
-                cube_dim_to_interp_dim[dim] = i
-                i += 1
-        
-        for coord_points_pair in coord_points_list:
-            points, dims = coord_points_pair
-            dims_of_interest = [cube_dim_to_interp_dim[dim] for dim in dims
-                                if dim in unique_dims]
-            coord_points_pair[0] = _array1_in_terms_of_2(points, dims_of_interest, shape).flatten()
-        
-        shape = [cube.shape[ind] for ind in unique_dims]
-        
-        
-#        coord_points_list, coord_dims = zip(*sorted(coord_points_list, key=lambda (points, dim): dim))
-        coord_points, self.coord_dims = zip(*coord_points_list)
-        self.coord_dims = list(set(list(np.concatenate(self.coord_dims))))
-
-        #: Coord decreasing - doesn't matter for this interpolation.
-        self.coord_decreasing = [False] * len(interp_coords)
-        
-        coord_points = np.array(coord_points).T
-        
-        if len(interp_coords) != len(set(self.coord_dims)):
-            raise ValueError('Coordinates repeat a data dimension - the '
-                             'interpolation would be over-specified.')
-        shape = [cube.shape[ind] for ind in set(self.coord_dims)]
-        
-        mock_data = as_strided(np.array(0, dtype=float),
-                               shape=(np.product(shape), ), strides=[0])
-        
-        from scipy.interpolate import LinearNDInterpolator
-        
-        self._interpolator = LinearNDInterpolator(coord_points, mock_data) 
-        
-    def _interpolate_data_at_coord_points(self, data, coord_points):
-        # XXX Do we have to force it into float64?
-        self._interpolator.values = data.reshape(-1, 1).astype(np.float64)
-        return self._interpolator(coord_points)
-
-
-def _array1_in_terms_of_2(array, array_dims_into_2, array_2_shape, expand=True):
-    """
-    Take any array, which is a subset of array 2 in shape, and for which
-    each dimension of 1 can be mapped to a dimension of 2, and return a full
-    array which is of the same shape as array 2.
-    
-    XXX Ugly docstring!
-    
-    """
-    assert array.ndim == len(array_dims_into_2)
-
-    array1_dims_to_array2 = {i: dim for i, dim in enumerate(array_dims_into_2)}
-    array2_dims_to_array1 = {dim: array_dims_into_2.index(dim)
-                             for dim in range(len(array_2_shape))
-                             if dim in array_dims_into_2}
-
-    # Re-order the array to match the order of array 2.
-    transpose = sorted(range(array.ndim), key=array1_dims_to_array2.get)
-    array = np.transpose(array, transpose)
-
-    # Extend the dimensions of the array to match the number of dimensions
-    # in array 2.
-    new_shape = [1 if dim not in array2_dims_to_array1 else length
-                 for dim, length in enumerate(array_2_shape)]
-    array = array.reshape(new_shape)
-    
-    if expand:
-        new_strides = [0 if dim not in array2_dims_to_array1 else stride
-                       for dim, stride in enumerate(array.strides)]
-        array = as_strided(array, strides=new_strides, shape=array_2_shape)
-        
-    return array
-
-
-if __name__ == '__main__':
-    a1 = np.arange(12).reshape(4, 3)
-    a2 = np.arange(24).reshape(2, 3, 4)
-    r = _array1_in_terms_of_2(a1, [2, 1], a2.shape, False)
-    assert np.all(r[0] == a1.T)
-    
-    r = _array1_in_terms_of_2(a1, [2, 1], a2.shape, True)
-    assert r.shape == a2.shape
-    
-
-if __name__ == '__mains__':
-    import iris.tests.stock as stock
-    from iris.analysis.new_linear import linear, LinearInterpolator, TriangulatedLinearInterpolator
-
-    from nose.tools import assert_raises_regexp
-    
-    cube = stock.simple_3d_w_multidim_coords()
-    cube.add_aux_coord(iris.coords.DimCoord(range(2), 'height'), 0)
-    cube.add_dim_coord(iris.coords.DimCoord(range(3), 'latitude'), 1)
-    cube.add_dim_coord(iris.coords.DimCoord(range(4), 'longitude'), 2)
-    cube.data = cube.data.astype(np.float)
-
-    data = np.arange(24).reshape(2, 3, 4)
-
-#    interpolator = TriangulatedLinearInterpolator(cube, ['latitude', 'longitude'])
-#    print interpolator.interpolate_data([0, 0], cube.data, 'nan')
-    
-    interpolator = TriangulatedLinearInterpolator(cube, ['bar', 'foo'])
-    print interpolator.interpolate_data([0, 0], cube.data, 'nan')
-    print interpolator.interpolate_data([2.5, -7.5], cube.data, 'nan')
-    print interpolator.orthogonal_points([['foo', -7.5], ['bar', 2.5]], cube.data, 'nan')
-    print interpolator.orthogonal_points([['foo', -7.5], ['bar', 4]], cube.data, 'nan')
-    
-    print interpolator.orthogonal_points([['foo', np.linspace(-7.5, -5, 10)], ['bar', 4]],
-                                         cube.data, 'nan')
-    r = interpolator.orthogonal_cube([['foo', np.linspace(-7.5, -5, 10)], ['bar', 4]],
-                                     'nan')
-    print r.coord('bar')
-    print r.coord('foo')
-
-
-if __name__ == '__main__':
-    fname = '/data/local/dataZoo/NetCDF/ORCA1/NEMO_ORCA1_CF.nc'
-    sst = iris.load_cube(fname, 'sea_surface_temperature')
-    
-    
-    import matplotlib.pyplot as plt
-    
-    plt.switch_backend('tkagg')
-    import iris.quickplot as qplt
-    
-    
-    # Why is the data not masked...
-    sst.data[sst.data == 0] = np.nan 
-    
-    interpolator = TriangulatedLinearInterpolator(sst, ['latitude', 'longitude'])
-    arctic_circle = interpolator.orthogonal_cube([['longitude', np.linspace(-10, 10, 500)],
-                                                  ['latitude', np.linspace(40, 60, 500)]], extrapolation_mode='nan')
-    arctic_circle.attributes.clear()
-    
-    print sst
-    print arctic_circle
-    
-    qplt.contourf(arctic_circle[0], coords=['longitude', 'latitude'])
-    plt.gca().coastlines()
-    plt.show()
-    exit()
-    
-    arctic_circle = arctic_circle[0, 0, :]
-    
-    
-    qplt.plot(arctic_circle.coord('longitude'), arctic_circle)
-    
-    plt.figure()
-
-    import cartopy.crs as ccrs
-    
-    xs = arctic_circle.coord('longitude').points
-    ys = np.repeat(arctic_circle.coord('latitude').points[0], len(xs))
-    
-    points = np.array([xs, ys]).T.reshape(-1, 1, 2)
-    segments = np.concatenate([points[:-1], points[1:]], axis=1)
-    
-    from matplotlib.collections import LineCollection
-    lc = LineCollection(segments, transform=ccrs.PlateCarree(), norm=plt.Normalize(vmin=0, vmax=40), cmap='Paired')
-    
-    data = np.ma.masked_array(arctic_circle.data, mask=np.isnan(arctic_circle.data))
-    lc.set_array(data)
-    lc.set_linewidth(3)
-    
-    ax = plt.axes(projection=ccrs.Robinson())
-    ax.add_collection(lc)
-    plt.colorbar(lc, orientation='horizontal')
-    ax.set_global()
-    ax.coastlines()
-    
-    plt.show()
-    
     

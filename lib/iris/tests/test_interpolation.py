@@ -384,7 +384,7 @@ class TestLinear1dInterpolation(tests.IrisTest):
     def test_integer_interpol(self):
         c = self.simple2d_cube
         c.data = c.data.astype(np.int16)
-        self.assertRaises(ValueError, iris.analysis.interpolate.linear, c, [('dim1', 4)])
+        self.assertEqual(c.data.dtype, np.int16)
         
     def test_bad_sample_point_format(self):
         self.assertRaises(TypeError, iris.analysis.interpolate.linear, self.simple2d_cube, ('dim1', 4))
@@ -506,6 +506,7 @@ class TestLinear1dInterpolation(tests.IrisTest):
         self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_shared_axis.cml'))
         
         self.assertRaises(ValueError, iris.analysis.interpolate.linear, c, [('dim2', [3.5, 3.25]), ('shared_x_coord', [9, 7])])
+        
 
     def test_points_datatype_casting(self):
         # this test tries to extract a float from an array of type integer. the result should be of type float.

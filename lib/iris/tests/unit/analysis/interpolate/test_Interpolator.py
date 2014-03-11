@@ -125,6 +125,36 @@ class Test_LinearInterpolator_monotonic(ThreeDimCube):
         assert np.all(self.interpolator.interpolate_data([0], self.cube.data) ==
                       np.transpose(self.data[:, 0:1], [0, 2, 1])), 'Wrong result'
 
+
+class Test_LinearInterpolator_circular(ThreeDimCube):
+    def setUp(self):
+        ThreeDimCube.setUp(self)
+        self.cube.coord('longitude').points = np.linspace(0, 360, 4,
+                                                          endpoint=False)
+        self.cube.coord('longitude').circular = True
+        self.cube.coord('longitude').units = 'degrees'
+        self.interpolator = LinearInterpolator(self.cube, ['longitude'])
+
+    def test_interpolate_data_fully_wrapped(self):
+        expected = self.interpolator.interpolate_data([180, 270], self.cube.data, extrapolation_mode='nan')
+        result = self.interpolator.interpolate_data([-180, -90], self.cube.data, extrapolation_mode='nan')
+        self.assertArrayEqual(expected, result)
+    
+    def test_interpolate_data_partially_wrapped(self):
+        expected = self.interpolator.interpolate_data([180, 90], self.cube.data, extrapolation_mode='nan')
+        result = self.interpolator.interpolate_data([-180, 90], self.cube.data, extrapolation_mode='nan')
+        self.assertArrayEqual(expected, result)
+
+    def test_interpolate_data_fully_wrapped_twice(self):
+        xs = np.linspace(-360, 360, 100)
+        xs_not_wrapped = (xs + 360) % 360
+        result = self.interpolator.interpolate_data(xs, self.cube.data)
+        expected = self.interpolator.interpolate_data(xs_not_wrapped, self.cube.data)
+        self.assertArrayEqual(expected, result)
+
+# XXX Test Masked data...
+        
+
 class Test_LinearInterpolator_2D(ThreeDimCube):
     def setUp(self):
         ThreeDimCube.setUp(self)
@@ -215,9 +245,24 @@ class Test_LinearInterpolator_2D_non_contiguous(ThreeDimCube):
         assert np.all(r == r4), 'Wrong result'
 
     def test_orthogonal_cube(self):
-        result_cube = self.interpolator.orthogonal_cube([['height', [0, 1, 1]], ['longitude', [0, 1]]])
+        result_cube = self.interpolator.orthogonal_cube([['height', np.int64([0, 1, 1])],
+                                                         ['longitude', np.int32([0, 1])]])
         self.assertCMLApproxData(result_cube, ('experimental', 'analysis',
                                                'interpolate', 'LinearInterpolator', 'basic_orthogonal_cube.cml'))
+        self.assertEqual(result_cube.coord('longitude').dtype, np.int32)
+        self.assertEqual(result_cube.coord('height').dtype, np.int64)
+    
+    def test_orthogonal_cube_squash(self):
+        result_cube = self.interpolator.orthogonal_cube([['height', np.int64(0)],
+                                                         ['longitude', np.int32([0, 1])]])
+        self.assertCMLApproxData(result_cube, ('experimental', 'analysis',
+                                               'interpolate', 'LinearInterpolator', 'orthogonal_cube_1d_squashed.cml'))
+        self.assertEqual(result_cube.coord('longitude').dtype, np.int32)
+        self.assertEqual(result_cube.coord('height').dtype, np.int64)
+        
+        non_collapsed_cube = self.interpolator.orthogonal_cube([['height', np.int64(0)],
+                                                                ['longitude', np.int32([0, 1])]], collapse_scalar=False)
+        self.assertEqual(result_cube, non_collapsed_cube[0, ...])
 
 
 if __name__ == "__main__":
