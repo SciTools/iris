@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -21,7 +21,7 @@ Typically the cube merge process is handled by
 :method:`iris.cube.CubeList.merge`.
 
 """
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 from copy import deepcopy
 
 import numpy as np
@@ -1144,9 +1144,14 @@ class ProtoCube(object):
             if space[name] is None:
                 if _is_combination(name):
                     members = name.split(_COMBINATION_JOIN)
-                    cells = [tuple(
-                        position[int(member) if member.isdigit() else member]
-                        for member in members) for position in positions]
+                    # Create list of unique tuples from all combinations of
+                    # scalars for each source cube. The keys of an OrderedDict
+                    # are used to retain the ordering of source cubes but to
+                    # remove any duplicate tuples.
+                    cells = OrderedDict(
+                        (tuple(position[int(member) if member.isdigit() else
+                                        member] for member in members), None)
+                        for position in positions).keys()
                     dim_by_name[name] = len(self._shape)
                     self._nd_names.append(name)
                     self._shape.append(len(cells))
