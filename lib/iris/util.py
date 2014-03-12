@@ -203,7 +203,7 @@ def delta(ndarray, dimension, circular=False):
         if not isinstance(circular, bool):
             result = np.where(ndarray[last_element] >= _delta[last_element])[0]
             _delta[last_element] -= circular
-            _delta[last_element][result] += 2*circular
+            _delta[last_element][result] += 2 * circular
 
         np.subtract(_delta, ndarray, _delta)
     else:
@@ -492,7 +492,7 @@ def reverse(array, axes):
     if axes.ndim != 1:
         raise ValueError('Reverse was expecting a single axis or a 1d array '
                          'of axes, got %r' % axes)
-    if np.min(axes) < 0 or np.max(axes) > array.ndim-1:
+    if np.min(axes) < 0 or np.max(axes) > array.ndim - 1:
         raise ValueError('An axis value out of range for the number of '
                          'dimensions from the given array (%s) was received. '
                          'Got: %r' % (array.ndim, axes))
@@ -645,7 +645,7 @@ def _build_full_slice_given_keys(keys, ndim):
 
     # catch the case where an extra Ellipsis has been provided which can be
     # discarded iff len(keys)-1 == ndim
-    if len(keys)-1 == ndim and \
+    if len(keys) - 1 == ndim and \
             Ellipsis in filter(lambda obj:
                                not isinstance(obj, np.ndarray), keys):
         keys = list(keys)
@@ -678,7 +678,7 @@ def _build_full_slice_given_keys(keys, ndim):
             # iterate over the remaining keys in reverse to fill in
             # the gaps from the right hand side
             for j, key in enumerate(keys[:i:-1]):
-                full_slice[-j-1] = key
+                full_slice[-j - 1] = key
 
             # we've finished with i now so stop the iteration
             break
@@ -1091,6 +1091,138 @@ def new_axis(src_cube, scalar_coord=None):
         new_cube.add_aux_factory(copy.deepcopy(factory))
 
     return new_cube
+
+
+def remap_cube_dimensions(cube, axes_to_remove=None, axes_to_add=None):
+    """
+    Add or remove scalar (length 1) data dimensions to the cube in-place.
+
+    Args:
+
+    * cube - the cube to modify **in-place**.
+
+    Kwargs:
+
+
+    * axes_to_remove - list of axis values of length 1 extent which are to be
+                       squashed.
+    * axes_to_add - list of axis values where new dimensions should be formed.
+                    The axis values may be repeated to construct multiple
+                    consecutive new axes.
+
+    Example:
+
+    >>> import iris
+    >>> from iris.util import remap_cube_dimensions
+
+    >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
+    >>> cube.data
+    >>> print cube.shape
+    (73, 96)
+    >>> remap_cube_dimensions(cube, axes_to_add=[0])
+    >>> print cube.shape
+    (1, 73, 96)
+    >>> remap_cube_dimensions(cube, axes_to_add=[1, 3], axes_to_remove=[0])
+    >>> print cube.shape
+    (73, 1, 96, 1)
+
+    """
+    ndim = cube.ndim
+
+    if cube.has_lazy_data():
+        raise ValueError('None indexing not yet implemented in biggus.')
+
+    axes_to_add = axes_to_add or []
+    for axis in axes_to_add:
+        if not (0 <= axis <= ndim):
+            raise ValueError('The axis to be added ({}) is out of range for a '
+                             'cube of {} dimensions.'.format(axis, ndim))
+
+    axes_to_remove = axes_to_remove or []
+    for axis in axes_to_remove:
+        if not (0 <= axis < ndim):
+            raise ValueError('The axis to be removed ({}) is out of range for'
+                             ' a cube of {} dimensions.'.format(axis, ndim))
+        if cube.shape[axis] != 1:
+            raise ValueError('Axis {} does not have a length '
+                             'of 1.'.format(axis))
+
+    # Keep track of the current axis in the new array.
+    new_axis = 0
+
+    # Build up a list of necessary slices to transform the data into
+    # the desired shape.
+    data_slice = []
+
+    # Map the axis -> new_axis.
+    dim_mapping = {}
+
+    for axis in range(ndim + 1):
+        # Handle new dimensions at this axis for 0 <= axis <= ndim.
+        if axis in axes_to_add:
+            for _ in range(axes_to_add.count(axis)):
+                data_slice.append(np.newaxis)
+                new_axis += 1
+
+        # For all other cases we only want to operate between
+        # 0 <= axis < ndim.
+        if axis >= ndim:
+            continue
+
+        # If we are removing the axis then slice with 0.
+        if axis in axes_to_remove:
+            data_slice.append(0)
+        else:
+            data_slice.append(slice(None))
+            dim_mapping[axis] = new_axis
+            new_axis += 1
+
+    # Update _my_data rather than the data property as we are
+    # fundamentally changing dimensionality of the cube.
+    cube._my_data = cube._my_data[tuple(data_slice)]
+
+    # Iterate over a copy of the aux coords list, as we will update the
+    # cube's list as we go.
+    for coord_and_dims in cube._aux_coords_and_dims[:]:
+        coord, dims = coord_and_dims
+        if set(dims).intersection(axes_to_remove):
+            # If there are any coordinate dimensions which are to be collapsed
+            # we need to reduce the number of dimensions on the coordinate and
+            # re-map those dimensions to the new.
+            coord_slice = [slice(None)] * coord.ndim
+            new_dims = []
+            for i, dim in enumerate(dims):
+                if dim in axes_to_remove:
+                    coord_slice[i] = 0
+                else:
+                    new_dims.append(dim_mapping[dim])
+            old_coord = coord
+            coord = coord[tuple(coord_slice)]
+            # Because we've changed the coordinate we need to update the
+            # factory.
+            for factory in cube._aux_factories:
+                factory.update(old_coord, coord)
+
+            # Remove the coordinate from the aux coords - it has been changed
+            # sufficiently to need to fully replace it.
+            cube._aux_coords_and_dims.remove(coord_and_dims)
+            cube._add_unique_aux_coord(coord, tuple(new_dims))
+        else:
+            # Map the coordinate's dimension(s) to the new dimensions.
+            coord_and_dims[1] = tuple(dim_mapping[dim] for dim in dims)
+
+    # Take a copy of the dim coords list, as we are updating it as we go.
+    for coord_and_dim in cube._dim_coords_and_dims[:]:
+        coord, dim = coord_and_dim
+        if dim in axes_to_remove:
+            # If the dimension coordinate is no longer one of the dim coords
+            # it must have been of scalar length. We simply remove it from
+            # the dim coords and add it to the aux ones.
+            cube._dim_coords_and_dims.remove(coord_and_dim)
+            cube._add_unique_aux_coord(coord, None)
+        else:
+            # Map the coordinate's dimension to the new dimensions.
+            coord_and_dim[1] = dim_mapping[dim]
 
 
 def as_compatible_shape(src_cube, target_cube):
