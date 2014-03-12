@@ -439,25 +439,21 @@ def load_cubes(filenames, callback=None):
 
         # Process each CF data variable.
         for cf_var in cf.cf_group.data_variables.itervalues():
-            # Only process CF data variables that do not participate in a
-            # formula term.
-            if not cf_var.has_formula_terms():
-                cube = _load_cube(engine, cf, cf_var, filename)
-
-                # Process any associated formula terms and attach
-                # the corresponding AuxCoordFactory.
-                _load_aux_factory(engine, cf, filename, cube)
-
-                # Perform any user registered callback function.
-                cube = iris.io.run_callback(callback, cube, engine.cf_var,
-                                            filename)
-
-                # Callback mechanism may return None, which must not be yielded
-                if cube is None:
-                    continue
-
-                yield cube
-
+            cube = _load_cube(engine, cf, cf_var, filename)
+         
+            # Process any associated formula terms and attach
+            # the corresponding AuxCoordFactory.
+            _load_aux_factory(engine, cf, filename, cube)
+         
+            # Perform any user registered callback function.
+            cube = iris.io.run_callback(callback, cube, engine.cf_var,
+                                        filename)
+         
+            # Callback mechanism may return None, which must not be yielded
+            if cube is None:
+                continue
+         
+            yield cube
 
 class Saver(object):
     """A manager for saving netcdf files."""
