@@ -301,7 +301,7 @@ def convert(f):
     if \
             (len(f.lbcode) != 5) and \
             (f.lbvc == 2):
-        aux_coords_and_dims.append((DimCoord(f.lblev, standard_name='model_level_number', attributes={'positive': 'down'}), None))
+        aux_coords_and_dims.append((DimCoord(f.model_level_number, standard_name='model_level_number', attributes={'positive': 'down'}), None))
 
     if \
             (len(f.lbcode) != 5) and \
@@ -317,7 +317,7 @@ def convert(f):
 
     # soil level
     if len(f.lbcode) != 5 and f.lbvc == 6:
-        aux_coords_and_dims.append((DimCoord(f.lblev, long_name='soil_model_level_number', attributes={'positive': 'down'}), None))
+        aux_coords_and_dims.append((DimCoord(f.model_level_number, long_name='soil_model_level_number', attributes={'positive': 'down'}), None))
 
     if \
             (f.lbvc == 8) and \
@@ -331,7 +331,7 @@ def convert(f):
 
     # Hybrid pressure coordinate
     if f.lbvc == 9:
-        model_level_number = DimCoord(f.lblev,
+        model_level_number = DimCoord(f.model_level_number,
                                       standard_name='model_level_number',
                                       attributes={'positive': 'up'})
         # The following match the hybrid height scheme, but data has the
@@ -359,7 +359,7 @@ def convert(f):
                                   Reference('surface_air_pressure')]))
 
     if f.lbvc == 65:
-        aux_coords_and_dims.append((DimCoord(f.lblev, standard_name='model_level_number', attributes={'positive': 'up'}), None))
+        aux_coords_and_dims.append((DimCoord(f.model_level_number, standard_name='model_level_number', attributes={'positive': 'up'}), None))
         aux_coords_and_dims.append((DimCoord(f.blev, long_name='level_height', units='m', bounds=[f.brlev, f.brsvd[0]], attributes={'positive': 'up'}), None))
         aux_coords_and_dims.append((AuxCoord(f.bhlev, long_name='sigma', bounds=[f.bhrlev, f.brsvd[1]]), None))
         factories.append(Factory(HybridHeightFactory, [{'long_name': 'level_height'}, {'long_name': 'sigma'}, Reference('orography')]))

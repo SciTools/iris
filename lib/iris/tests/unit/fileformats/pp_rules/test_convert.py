@@ -63,7 +63,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
 
     def test_soil_levels(self):
         level = 1234
-        field = mock.MagicMock(lbvc=6, lblev=level)
+        field = mock.MagicMock(lbvc=6, model_level_number=level)
         self._test_for_coord(field, convert,
                              TestLBVC._is_soil_model_level_number_coord,
                              expected_points=level,
@@ -71,7 +71,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
 
     def test_hybrid_pressure_model_level_number(self):
         level = 5678
-        field = mock.MagicMock(lbvc=9, lblev=level,
+        field = mock.MagicMock(lbvc=9, model_level_number=level,
                                blev=20, brlev=23, bhlev=42,
                                bhrlev=45, brsvd=[17, 40])
         self._test_for_coord(field, convert,
@@ -83,7 +83,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
         delta_point = 12.0
         delta_lower_bound = 11.0
         delta_upper_bound = 13.0
-        field = mock.MagicMock(lbvc=9, lblev=5678,
+        field = mock.MagicMock(lbvc=9, model_level_number=5678,
                                blev=20, brlev=23, bhlev=delta_point,
                                bhrlev=delta_lower_bound,
                                brsvd=[17, delta_upper_bound])
@@ -97,7 +97,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
         sigma_point = 0.5
         sigma_lower_bound = 0.6
         sigma_upper_bound = 0.4
-        field = mock.MagicMock(lbvc=9, lblev=5678,
+        field = mock.MagicMock(lbvc=9, model_level_number=5678,
                                blev=sigma_point, brlev=sigma_lower_bound,
                                bhlev=12, bhrlev=11,
                                brsvd=[sigma_upper_bound, 13])
