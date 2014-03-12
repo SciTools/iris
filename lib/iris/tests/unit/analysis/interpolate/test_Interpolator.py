@@ -59,15 +59,18 @@ class Test_LinearInterpolator_1D(ThreeDimCube):
         assert np.all(expected == self.interpolator.interpolate_data([-1], self.data)), 'Wrong result'
     
     def test_interpolate_data_nan_extrapolation(self):
+        self.interpolator._update_extrapolation_mode('nan')
         self.interpolator._interpolator.values = self.interpolator._interpolator.values.astype(np.float64)
-        assert np.all(np.isnan(self.interpolator.interpolate_data([-1], self.data.astype(np.float64), extrapolation_mode='nan'))), 'Wrong result'
+        assert np.all(np.isnan(self.interpolator.interpolate_data([-1], self.data.astype(np.float64)))), 'Wrong result'
     
     def test_interpolate_data_nan_extrapolation_wrong_dtype(self):
-        assert np.all(np.isnan(self.interpolator.interpolate_data([-1], self.data.astype(np.float64), extrapolation_mode='nan'))), 'Wrong result'
+        self.interpolator._update_extrapolation_mode('nan')
+        assert np.all(np.isnan(self.interpolator.interpolate_data([-1], self.data.astype(np.float32)))), 'Wrong result'
     
     def test_interpolate_data_error_on_extrapolation(self):
         with assert_raises_regexp(ValueError, 'One of the requested xi is out of bounds in dimension 0'):
-            assert np.all(np.isnan(self.interpolator.interpolate_data([-1], self.data.astype(np.float64), extrapolation_mode='error'))), 'Wrong result'
+            self.interpolator._update_extrapolation_mode('error')
+            assert np.all(np.isnan(self.interpolator.interpolate_data([-1], self.data.astype(np.float64)))), 'Wrong result'
     
     def test_bad_sample_points_array(self):
         with assert_raises_regexp(ValueError, 'The resulting numpy array has "object" as its type'):
@@ -105,13 +108,13 @@ class SingleLengthDimension(ThreeDimCube):
                       self.cube.data)
     
     def test_interpolate_data_nan_extrapolation(self):
-        assert np.all(np.isnan(self.interpolator.interpolate_data([1001], self.cube.data,
-                                                         extrapolation_mode='nan')))
+        self.interpolator._update_extrapolation_mode('nan')
+        assert np.all(np.isnan(self.interpolator.interpolate_data([1001], self.cube.data)))
     
     def test_interpolate_data_nan_extrapolation_not_needed(self):
         # No extrapolation for a single length dimension.
-        assert np.all(self.interpolator.interpolate_data([0], self.cube.data,
-                                                             extrapolation_mode='nan') ==
+        self.interpolator._update_extrapolation_mode('nan')
+        assert np.all(self.interpolator.interpolate_data([0], self.cube.data) ==
                       self.cube.data)
 
     def test_interpolator_overspecified(self):
@@ -140,13 +143,15 @@ class Test_LinearInterpolator_circular(ThreeDimCube):
         self.interpolator = LinearInterpolator(self.cube, ['longitude'])
 
     def test_interpolate_data_fully_wrapped(self):
-        expected = self.interpolator.interpolate_data([180, 270], self.cube.data, extrapolation_mode='nan')
-        result = self.interpolator.interpolate_data([-180, -90], self.cube.data, extrapolation_mode='nan')
+        self.interpolator._update_extrapolation_mode('nan')
+        expected = self.interpolator.interpolate_data([180, 270], self.cube.data)
+        result = self.interpolator.interpolate_data([-180, -90], self.cube.data)
         self.assertArrayEqual(expected, result)
     
     def test_interpolate_data_partially_wrapped(self):
-        expected = self.interpolator.interpolate_data([180, 90], self.cube.data, extrapolation_mode='nan')
-        result = self.interpolator.interpolate_data([-180, 90], self.cube.data, extrapolation_mode='nan')
+        self.interpolator._update_extrapolation_mode('nan')
+        expected = self.interpolator.interpolate_data([180, 90], self.cube.data)
+        result = self.interpolator.interpolate_data([-180, 90], self.cube.data)
         self.assertArrayEqual(expected, result)
 
     def test_interpolate_data_fully_wrapped_twice(self):
@@ -266,6 +271,10 @@ class Test_LinearInterpolator_2D_non_contiguous(ThreeDimCube):
         
         non_collapsed_cube = self.interpolator.orthogonal_cube([['height', np.int64(0)],
                                                                 ['longitude', np.int32([0, 1])]], collapse_scalar=False)
+        self.assertCML(non_collapsed_cube[0, ...], ('experimental', 'analysis',
+                                     'interpolate', 'LinearInterpolator', 'orthogonal_cube_1d_squashed_2.cml'))
+        self.assertCML(result_cube, ('experimental', 'analysis',
+                                     'interpolate', 'LinearInterpolator', 'orthogonal_cube_1d_squashed_2.cml'))
         self.assertEqual(result_cube, non_collapsed_cube[0, ...])
 
 

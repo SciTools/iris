@@ -1093,6 +1093,93 @@ def new_axis(src_cube, scalar_coord=None):
     return new_cube
 
 
+def remap_cube_dimensions(cube, remove_axes=None, new_axes=None):
+    """
+    
+#    dimension_mapping - dictionary of old_dim: new_dim
+#        Map the source dimensions to the target dimensions. An unmapped
+#        target dimension will result in a length 1 unmapped data dimension,
+#        where a source dimension mapped to None will result in the dimension
+#        being collapsed.
+
+    Example:
+    
+        # Collapse the 3rd dimension, but add an unmapped dimension on axis 1.
+#        remap_cube_dimensions(cube, {0: 0, 1: 2, 2: None})
+
+    """
+    remove_axes = remove_axes or []
+    new_axes = new_axes or []
+    # XXX Verify the range of the two lists.
+
+    ndim = cube.ndim
+    new_axis = 0
+    index = []
+    dim_mapping = {}
+    for old_axis in range(ndim):
+        if old_axis in new_axes:
+            # XXX Support repeated axes.
+            index.append(np.newaxis)
+            new_axis += 1
+            
+        if old_axis in remove_axes:
+            assert cube.shape[old_axis] == 1, 'Tried removing an axis which is not of length 1.'
+            index_val = 0
+            dim_mapping[old_axis] = None
+        else:
+            index_val = slice(None)
+            dim_mapping[old_axis] = new_axis
+            new_axis += 1
+
+        index.append(index_val)
+
+    # To avoid data loading, we just need to implement np.newaxis
+    # in biggus.
+    if cube.has_lazy_data():
+        cube.data
+    cube._my_data = cube._my_data[tuple(index)]
+    
+    for coord_and_dims in cube._aux_coords_and_dims[:]:
+        coord, dims = coord_and_dims
+        if set(dims).intersection(remove_axes):
+            index = [slice(None)] * coord.ndim
+            new_dims = []
+            for i, dim in enumerate(dims):
+                if dim in remove_axes:
+                    assert coord.shape[i] == 1
+                    index[i] = 0
+                else:
+                    new_dims.append(dim_mapping[dim])
+
+            old_coord = coord
+            coord = coord[tuple(index)]
+            for factory in cube._aux_factories:
+                factory.update(old_coord, coord)
+
+            cube._aux_coords_and_dims.remove(coord_and_dims)
+            cube._add_unique_aux_coord(coord, tuple(new_dims))
+        else:
+            coord_and_dims[1] = tuple(dim_mapping[dim] for dim in dims)
+
+    for coord_and_dim in cube._dim_coords_and_dims[:]:
+        coord, dim = coord_and_dim
+        if dim in remove_axes:
+            cube._dim_coords_and_dims.remove(coord_and_dim)
+            cube._add_unique_aux_coord(coord, None)
+        else:
+            coord_and_dim[1] = dim_mapping[dim]
+
+
+def squeeze(cube):
+    """
+    Remove length 1 dimensions from the cube.
+    
+    """
+    len_1_axes = [axis for axis, length in enumerate(cube.shape)
+                  if length == 1]
+    remap_cube_dimensions(cube, remove_axes=len_1_axes)
+
+
 def as_compatible_shape(src_cube, target_cube):
     """
     Return a cube with added length one dimensions to match the dimensionality
