@@ -97,8 +97,11 @@ class TestBoundedTime(TestField):
         attributes.update(kwargs)
         message = mock.Mock(**attributes)
         self._test_for_coord(message, convert, self.is_forecast_period,
-                             35, [15, 55])
-        self._test_for_coord(message, convert, self.is_time, 100, [80, 120])
+                             expected_points=[35],
+                             expected_bounds=[[15, 55]])
+        self._test_for_coord(message, convert, self.is_time,
+                             expected_points=[100],
+                             expected_bounds=[[80, 120]])
 
     def test_time_range_indicator_3(self):
         self.assert_bounded_message(timeRangeIndicator=3)
