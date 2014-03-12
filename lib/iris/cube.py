@@ -247,6 +247,155 @@ class CubeList(list):
         # return our newly created XML string
         return doc.toprettyxml(indent="  ")
 
+    def pad_coords(self, dim_coord_names):
+        """
+        Returns a :class:`CubeList` of cubes which have
+        cubes which cover all coord values that appear
+        in any of the source cubes, with masked data values
+        inserted to pad the cubes to the correct shape.
+
+        """
+
+        if type(dim_coord_names) is str:
+            dim_coord_names = [dim_coord_names]
+
+        new_cubes = iris.cube.CubeList([c.copy() for c in self])
+
+        for dim_coord_name in dim_coord_names:
+            # newer_cubes is updated at the end of
+            # the for loop i.e after performing
+            # operation of one dimension
+            newer_cubes = iris.cube.CubeList([])
+
+            a_cube = new_cubes[0]
+            a_cube_coord_dim, = a_cube.coord_dims(dim_coord_name)
+            a_cube_dim_coord, = a_cube.coords(
+                dimensions=a_cube_coord_dim, dim_coords=True
+            )
+            a_cube_aux_coords = a_cube.coords(
+                dimensions=a_cube_coord_dim, dim_coords=False
+            )
+
+            coord_is_compatible = (
+                a_cube_dim_coord.is_compatible(
+                    other.coord(a_cube_dim_coord.name())
+                )
+                for other in self
+            )
+            if not all(coord_is_compatible):
+                raise ValueError("%s dim_coords are not compatible"
+                                 % a_cube_dim_coord.name())
+
+            coord_is_compatible = (
+                a_cube_aux_coord.is_compatible(
+                    other.coord(a_cube_aux_coord.name())
+                )
+                for other in self
+                for a_cube_aux_coord in a_cube_aux_coords
+            )
+            if not all(coord_is_compatible):
+                raise ValueError("aux_coords are not compatible")
+
+            all_pts = (pt for c in self
+                       for pt in c.coord(a_cube_dim_coord._as_defn()).points)
+            new_dim_coord_points = sorted(list(set(all_pts)))
+            new_dim_coord = iris.coords.DimCoord(
+                new_dim_coord_points,
+                **a_cube_dim_coord._as_defn()._asdict()
+            )
+            if hasattr(a_cube_dim_coord, 'bounds') \
+                    and a_cube_dim_coord.bounds is not None:
+                all_pts = (tuple(pt)
+                           for c in self for pt in
+                           c.coord(a_cube_dim_coord._as_defn()).bounds)
+                new_dim_coord.bounds = sorted(list(set(all_pts)))
+
+            new_aux_coords = []
+            if len(a_cube_aux_coords) > 0:
+                for a_cube_aux_coord in a_cube_aux_coords:
+                    new_aux_coord_points = \
+                        np.array([np.nan]*len(new_dim_coord.points))
+                    new_aux_coord = iris.coords.AuxCoord(
+                        new_aux_coord_points,
+                        **a_cube_aux_coord._as_defn()._asdict()
+                    )
+                    new_aux_coords.append(new_aux_coord)
+
+                for cube in self:
+                    ind_data = np.in1d(new_dim_coord.points,
+                                       cube.coord(dim_coord_name).points)
+                    for new_aux_coord in new_aux_coords:
+                        cubes_aux_coord = cube.coord(new_aux_coord._as_defn())
+                        # check if aux coords are different
+                        # for same dim coord values
+                        # in different cubes. i.e. if any
+                        # replacement coord is different
+                        # and present coord is not a nan
+                        if not (
+                            (cubes_aux_coord.points
+                             != new_aux_coord.points[ind_data])
+                                & (~np.isnan(cubes_aux_coord.points))).any():
+                            raise ValueError(
+                                "%s aux_coord values are different "
+                                "for the same dim_coord "
+                                "values on different cubes"
+                                % new_aux_coord.name()
+                            )
+                        new_aux_coord.points[ind_data] = cubes_aux_coord.points
+                        if (hasattr(cubes_aux_coord, 'bounds')
+                                and cubes_aux_coord.bounds is not None):
+                            all_pts = (
+                                tuple(pt)
+                                for c in self
+                                for pt in cubes_aux_coord.bounds
+                            )
+                            new_aux_coord.bounds = sorted(list(set(all_pts)))
+
+            for cube in new_cubes:
+                old_dim_coord = cube.coord(dim_coord_name)
+                new_shape = list(cube.shape)
+                new_shape[np.array(a_cube_coord_dim)] \
+                    = len(new_dim_coord.points)
+                new_shape = tuple(new_shape)
+
+                new_data = np.ma.empty(new_shape)
+                new_data.mask = True
+                insert_real_data_index = [slice(None)]*len(cube.shape)
+                insert_real_data_index[np.array(a_cube_coord_dim)] \
+                    = np.in1d(new_dim_coord.points, old_dim_coord.points)
+
+                new_data[insert_real_data_index] = cube.data
+                try:
+                    new_data.mask[insert_real_data_index] = cube.data.mask
+                except AttributeError:
+                    new_data.mask[insert_real_data_index] = False
+
+                dim_coords_and_dims = [[dc, dim]
+                                       for (dc, dim)
+                                       in cube._dim_coords_and_dims
+                                       if dim != a_cube_coord_dim]
+                dim_coords_and_dims.append([new_dim_coord, (a_cube_coord_dim)])
+                aux_coords_and_dims = [[ac, dim] for (ac, dim)
+                                       in cube._aux_coords_and_dims
+                                       if dim != (a_cube_coord_dim,)]
+                aux_coords_and_dims.extend(
+                    [[new_aux_coord, (a_cube_coord_dim)]
+                     for new_aux_coord in new_aux_coords]
+                )
+
+                new_cube = iris.cube.Cube(
+                    new_data,
+                    dim_coords_and_dims=dim_coords_and_dims,
+                    aux_coords_and_dims=aux_coords_and_dims
+                )
+
+                new_cube.metadata = cube.metadata
+
+                newer_cubes.append(new_cube)
+            new_cubes = newer_cubes[:]
+
+        return new_cubes
+
     def extract(self, constraints, strict=False):
         """
         Filter each of the cubes which can be filtered by the given
