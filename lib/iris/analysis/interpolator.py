@@ -99,7 +99,8 @@ class Interpolator(object):
         mock_data = as_strided(np.array(0, dtype=dtype),
                                shape=interpolation_shape,
                                strides=[0] * len(self.coord_dims))
-        self._interpolator = self._build_interpolator(self.coord_points, mock_data,
+        self._interpolator = self._build_interpolator(self.coord_points,
+                                                      mock_data,
                                                       extrapolation_mode)
 
     def _validate_coordinates(self):
@@ -164,8 +165,20 @@ class Interpolator(object):
 
     def _build_interpolator(self, coord_points, mock_data,
                             extrapolation_mode=None):
-        """Returns the callable interpolator for this interpolation scheme.""" 
-        raise NotImplementedError('Subclass should define.')
+        """
+        Returns the interpolator to be put in ``self._interpolator`` for
+        this interpolation scheme. The interpolator may then be used by the
+        :meth:`_interpolate_data_at_coord_points` method.
+
+        """
+        raise NotImplementedError('Subclass must implement.')
+
+    def _interpolate_data_at_coord_points(self, data, coord_points):
+        """
+        Do the actual interpolation. Data is an array of
+        :data:`.ndim` dimensions.
+        """
+        raise NotImplementedError('Subclass must implement.')
 
     def interpolated_dtype(self, dtype):
         """
@@ -292,7 +305,7 @@ class Interpolator(object):
                                                            coord_points)
                 result_data.mask[interpolant_index] = r > 0
         return result_data
-    
+
     def _prepare_coord_points(self, coord_points):
         try:
             coord_points = _ndim_coords_from_arrays(coord_points, self.ndims)
@@ -308,11 +321,11 @@ class Interpolator(object):
                                        np.asanyarray(coord_points).shape))
 
         if coord_points.dtype == object:
-            raise ValueError('Perhaps inconsistently shaped arrays were passed'
-                             ' as coordinate points. The resulting numpy array'
-                             ' has "object" as its type.')
+            raise ValueError('Perhaps inconsistently shaped arrays were '
+                             'passed as coordinate points. The resulting '
+                             'numpy array has "object" as its type.')
         return coord_points
-    
+
     def _account_for_circular(self, coord_points, data):
         """
         Extend the given data array, and re-centralise coordinate
@@ -334,12 +347,6 @@ class Interpolator(object):
                                                src_modulus) + offset
         return coord_points, data
     
-    def _interpolate_data_at_coord_points(self, data, coord_points):
-        """
-        Do the actual interpolation. Data is an array of
-        :data:`.ndim` dimensions.
-        """
-        raise NotImplementedError('Subclass must implement.')
 
     def orthogonal_points(self, sample_points, data, data_dims=None):
         """
@@ -351,6 +358,17 @@ class Interpolator(object):
         * sample_points - list of (coord, points) pairs. Order of coordinates
                           needn't be the order of the coordinates passed to
                           this interpolator's constructor.
+        * data - The data to interpolate - not necessarily the data that was
+                 in the cube which was used to construct this interpolator.
+                 If the data has fewer dimensions, data_dims should be
+                 defined.
+        
+        Kwargs:
+
+        * data_dims - The dimensions of the given data array in terms of the
+                      original cube passed through to this Interpolator's
+                      constructor. If None the data dimensions must map
+                      one-to-one on :data:`.cube`.
         
         Returns
         
@@ -441,6 +459,30 @@ class Interpolator(object):
         return new_coord
 
     def orthogonal_cube(self, sample_points, collapse_scalar=True):
+        """
+        Construct a cube from the specified orthogonal interpolation points.
+        
+        Args
+        
+        * sample_points - list of (coord, points) pairs. Order of coordinates
+                          needn't be the order of the coordinates passed to
+                          this interpolator's constructor.
+        
+        Kwargs
+        
+        * collapse_scalar - whether to collapse the dimension of the scalar
+                            sample points in the resulting cube. Default is
+                            True.   
+
+        Returns:
+
+        * interpolated_cube - a cube interpolated at the given sample points.
+                              The dimensionality of the cube will be the
+                              number of dimensions in :data:`.cube` minus the
+                              number of scalar coordinates if
+                              ``collapse_scalar`` is True.
+
+        """
         data = self.cube.data
         interpolated_data = self.orthogonal_points(sample_points, data)
         if interpolated_data.ndim == 0:
@@ -476,6 +518,10 @@ class Interpolator(object):
             except ValueError:
                 return AuxCoord.from_coord(coord).copy(points)
         
+        # Keep track of id(coord) -> new_coord for aux factory construction
+        # later on.
+        coord_mapping = {}
+        
         dims_with_dim_coords = []
         
         # 2) Copy/interpolate the coordinates.
@@ -499,12 +545,14 @@ class Interpolator(object):
                 dims_with_dim_coords.append(dim)
             else:
                 new_cube._add_unique_aux_coord(new_coord, dim)
+            coord_mapping[id(dim_coord)] = new_coord
 
         for coord in cube.aux_coords:
             dims = cube.coord_dims(coord)
             if coord in interp_coords:
                 new_points = sample_points[sample_point_order.index(coord)][1]
-                new_coord = construct_new_coord_given_points(coord, new_points)
+                new_coord = construct_new_coord_given_points(coord,
+                                                             new_points)
                 dims = [self.coord_dims[interp_coords.index(coord)]] 
             elif set(dims).intersection(set(self.coord_dims)):
                 new_coord = self._resample_coord(sample_points, coord, dims)
@@ -513,16 +561,20 @@ class Interpolator(object):
             
             new_dims = dims
 
-            if isinstance(new_coord, DimCoord) and len(new_dims) > 0 and new_dims[0] not in dims_with_dim_coords:
+            if (isinstance(new_coord, DimCoord) and len(new_dims) > 0
+                    and new_dims[0] not in dims_with_dim_coords):
                 new_cube._add_unique_dim_coord(new_coord, new_dims)
                 dims_with_dim_coords.append(new_dims[0])
             else:
                 new_cube._add_unique_aux_coord(new_coord, new_dims)
+            coord_mapping[id(coord)] = new_coord
 
-        # XXX Todo - add factories back?
+        for factory in self.cube.aux_factories:
+            new_cube.add_aux_factory(factory.updated(coord_mapping))
 
         if _new_scalar_dims:
-            iris.util.remap_cube_dimensions(new_cube, remove_axes=_new_scalar_dims)
+            iris.util.remap_cube_dimensions(new_cube,
+                                            remove_axes=_new_scalar_dims)
 
         return new_cube
 

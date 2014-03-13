@@ -24,6 +24,7 @@ from nose.tools import assert_raises_regexp
 import numpy as np
 
 import iris
+import iris.exceptions
 import iris.tests.stock as stock
 from iris.analysis.interpolator import LinearInterpolator
 
@@ -44,6 +45,10 @@ class Test_LinearInterpolator_1D(ThreeDimCube):
     def setUp(self):
         ThreeDimCube.setUp(self)
         self.interpolator = LinearInterpolator(self.cube, ['latitude'])
+
+    def test_interpolate_bad_coord_name(self):
+        with self.assertRaises(iris.exceptions.CoordinateNotFoundError):
+            LinearInterpolator(self.cube, ['doesnt exist'])
 
     def test_interpolate_data_single(self):
         result = self.interpolator.interpolate_data([1.5], self.data)
@@ -165,7 +170,22 @@ class Test_LinearInterpolator_circular(ThreeDimCube):
         self.assertArrayEqual(expected, result)
 
 # XXX Test Masked data...
-        
+
+class Test_LinearInterpolator_masked_and_factory(tests.IrisTest):
+    def setUp(self):
+        self.cube = stock.simple_4d_with_hybrid_height()
+        mask = np.isnan(self.cube.data)
+        mask[::3, ::3] = True
+        self.cube.data = np.ma.masked_array(self.cube.data,
+                                            mask=mask)
+    
+    def test_orthogonal_cube(self):
+        interpolator = LinearInterpolator(self.cube, ['grid_latitude'])
+        result_cube = interpolator.orthogonal_cube([['grid_latitude', 1]])
+        self.assertCML(result_cube, ('experimental', 'analysis',
+                                      'interpolate', 'LinearInterpolator',
+                                      'orthogonal_cube_with_factory.cml'))
+
 
 class Test_LinearInterpolator_2D(ThreeDimCube):
     def setUp(self):
