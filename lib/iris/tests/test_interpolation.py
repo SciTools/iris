@@ -588,10 +588,9 @@ class TestNearestNeighbour(tests.IrisTest):
         
     def test_nearest_neighbour_slice(self):
         point_spec = [('latitude', 40)]
-        
         indices = iris.analysis.interpolate.nearest_neighbour_indices(self.cube, point_spec)
         self.assertEqual(indices, (20, slice(None, None)))
-        
+
         b = iris.analysis.interpolate.extract_nearest_neighbour(self.cube, point_spec) 
         self.assertCML(b, ('analysis', 'interpolation', 'nearest_neighbour_extract_latitude.cml'))
         

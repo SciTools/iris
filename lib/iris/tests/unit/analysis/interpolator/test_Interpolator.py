@@ -25,7 +25,7 @@ import numpy as np
 
 import iris
 import iris.tests.stock as stock
-from iris.analysis.new_linear import LinearInterpolator
+from iris.analysis.interpolator import LinearInterpolator
 
 
 class ThreeDimCube(tests.IrisTest):
@@ -46,8 +46,10 @@ class Test_LinearInterpolator_1D(ThreeDimCube):
         self.interpolator = LinearInterpolator(self.cube, ['latitude'])
 
     def test_interpolate_data_single(self):
-        assert np.all(self.interpolator.interpolate_data([1.5], self.data) ==
+        result = self.interpolator.interpolate_data([1.5], self.data)
+        assert np.all(result ==
                       self.data[:, 1:3, :].mean(axis=1)[:, :, np.newaxis]), 'Wrong result'
+        self.assertEqual(result.shape, (2, 4, 1))
     
     def test_interpolate_data_multiple(self):
         assert np.all(self.interpolator.interpolate_data([1, 2], self.data) ==
@@ -126,6 +128,7 @@ class Test_LinearInterpolator_monotonic(ThreeDimCube):
     def setUp(self):
         ThreeDimCube.setUp(self)
         self.cube = self.cube[:, ::-1]
+        self.cube.data = self.data
         self.interpolator = LinearInterpolator(self.cube, ['latitude'])
 
     def test_interpolate_data(self):
@@ -170,8 +173,10 @@ class Test_LinearInterpolator_2D(ThreeDimCube):
         self.interpolator = LinearInterpolator(self.cube, ['latitude', 'longitude'])
     
     def test_interpolate_data(self):
-        assert np.all(self.interpolator.interpolate_data([[1, 2], [2, 2]], self.data) ==
+        result = self.interpolator.interpolate_data([[1, 2], [2, 2]], self.data)
+        assert np.all(result ==
                       self.data[:, 1:3, 2:3].reshape(-1, 2)), 'Wrong result'
+        self.assertEqual(result.shape, (2, 2))
 
     def test_orthogonal_points(self):
         assert np.all(self.interpolator.orthogonal_points([['longitude', [1, 2]], ['latitude', [1, 2]]], self.cube.data) == 
@@ -238,7 +243,7 @@ class Test_LinearInterpolator_2D_non_contiguous(ThreeDimCube):
     
     def test_intepolate_data_wrong_data_shape(self):
         with assert_raises_regexp(ValueError, 'data being interpolated is not consistent with the data passed through'):
-            self.interpolator.interpolate_data([1], self.data[0])
+            self.interpolator.interpolate_data([1, 0], self.data[0])
 
     def test_interpolate_points_data_order(self):
         r = self.interpolator.orthogonal_points([['longitude', [0]], ['height', [0, 1]]], self.cube.data)
@@ -260,6 +265,12 @@ class Test_LinearInterpolator_2D_non_contiguous(ThreeDimCube):
                                                'interpolate', 'LinearInterpolator', 'basic_orthogonal_cube.cml'))
         self.assertEqual(result_cube.coord('longitude').dtype, np.int32)
         self.assertEqual(result_cube.coord('height').dtype, np.int64)
+    
+    def test_orthogonal_cube_scalar_value(self):
+        cube = self.cube[0, 0, 0]
+        interpolator = LinearInterpolator(cube, ['latitude'])
+        result_cube = interpolator.orthogonal_cube([['latitude', 1]])
+        self.assertEqual(result_cube._my_data.ndim, 1)
     
     def test_orthogonal_cube_squash(self):
         result_cube = self.interpolator.orthogonal_cube([['height', np.int64(0)],

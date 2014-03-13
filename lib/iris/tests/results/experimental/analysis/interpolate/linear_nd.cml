@@ -45,10 +45,10 @@
         <dimCoord id="5d3b1011" points="[0, 1, 2]" shape="(3,)" standard_name="longitude" units="Unit('1')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="a2260f1f" long_name="wibble" points="[20.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord id="a2260f1f" long_name="wibble" points="[20]" shape="(1,)" units="Unit('1')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" shape="(3, 4)" state="loaded"/>
+    <data byteorder="little" dtype="float32" shape="(3, 4)" state="loaded"/>
   </cube>
 </cubes>

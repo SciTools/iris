@@ -53,19 +53,18 @@ class TestNDCoords(tests.IrisTest):
 #        y: 1.5
 
     def test_first(self):
-        from iris.analysis.new_linear import linear, LinearInterpolator
         cube = self.cube
         
-        with self.assertRaisesRegexp(ValueError, "Interpolation coords must be 1-d for non-triangulation based interpolation."):
+        with self.assertRaisesRegexp(ValueError, "Interpolation coords must be 1-d for rectilinear interpolation."):
             interp_cube = linear(cube, {'foo': 15, 'bar': 10})
         
         interp_cube = linear(cube, {'latitude': 1.5, 'longitude': 1.5})
         self.assertCMLApproxData(interp_cube, ('experimental', 'analysis', 'interpolate', 'linear_nd_2_coords.cml'))
         
-        interp_cube = linear(cube, {'wibble': 1.5})[0]
+        interp_cube = linear(cube, {'wibble': np.float32(1.5)})
         self.assertCMLApproxData(interp_cube, ('experimental', 'analysis', 'interpolate', 'linear_nd_with_extrapolation.cml'))
         
-        interp_cube = linear(cube, {'wibble': 20})[0]
+        interp_cube = linear(cube, {'wibble': 20})
         self.assertArrayEqual(np.mean(cube.data, axis=0), interp_cube.data)
         self.assertCMLApproxData(interp_cube, ('experimental', 'analysis', 'interpolate', 'linear_nd.cml'))
 

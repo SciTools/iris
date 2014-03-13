@@ -1094,24 +1094,10 @@ def new_axis(src_cube, scalar_coord=None):
 
 
 def remap_cube_dimensions(cube, remove_axes=None, new_axes=None):
-    """
-    
-#    dimension_mapping - dictionary of old_dim: new_dim
-#        Map the source dimensions to the target dimensions. An unmapped
-#        target dimension will result in a length 1 unmapped data dimension,
-#        where a source dimension mapped to None will result in the dimension
-#        being collapsed.
-
-    Example:
-    
-        # Collapse the 3rd dimension, but add an unmapped dimension on axis 1.
-#        remap_cube_dimensions(cube, {0: 0, 1: 2, 2: None})
-
-    """
+    # XXX Ignore this - this is an old implementation - I will merge with #1066 when it is ready.
     remove_axes = remove_axes or []
     new_axes = new_axes or []
-    # XXX Verify the range of the two lists.
-
+    
     ndim = cube.ndim
     new_axis = 0
     index = []
