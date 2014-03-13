@@ -627,6 +627,22 @@ fc_formula_type_atmosphere_hybrid_height_coordinate
         facts_cf.formula_type(atmosphere_hybrid_height_coordinate)
         python engine.rule_triggered.add(rule.name)
 
+#
+# Context:
+#   This rule will trigger iff a formula term that refers to a
+#   dimensionless vertical coordinate of hybrid pressure.
+#
+# Purpose:
+#   Assert that the formula term refers to hybrid pressure.
+#
+fc_formula_type_atmosphere_hybrid_sigma_pressure_coordinate
+    foreach
+        facts_cf.formula_root($coordinate)
+        check getattr(engine.cf_var.cf_group[$coordinate], 'standard_name') == 'atmosphere_hybrid_sigma_pressure_coordinate'
+    assert
+        python engine.requires['formula_type'] = 'atmosphere_hybrid_sigma_pressure_coordinate'
+        facts_cf.formula_type(atmosphere_hybrid_height_coordinate)
+        python engine.rule_triggered.add(rule.name)
 
 #
 # Context:

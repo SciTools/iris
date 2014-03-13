@@ -97,7 +97,12 @@ _FACTORY_DEFNS = {
     iris.aux_factory.HybridHeightFactory: _FactoryDefn(
         primary='delta',
         std_name='atmosphere_hybrid_height_coordinate',
-        formula_terms_format='a: {delta} b: {sigma} orog: {orography}'), }
+        formula_terms_format='a: {delta} b: {sigma} orog: {orography}'),
+    iris.aux_factory.HybridPressureFactory: _FactoryDefn(
+        primary='delta',
+        std_name='atmosphere_hybrid_sigma_pressure_coordinate',
+        formula_terms_format='ap: {delta} b: {sigma} '
+        'ps: {surface_air_pressure}')}
 
 
 class CFNameCoordMap(object):
@@ -391,21 +396,32 @@ def _load_aux_factory(engine, cf, filename, cube):
 
     """
     formula_type = engine.requires.get('formula_type')
-
-    if formula_type == 'atmosphere_hybrid_height_coordinate':
-        def coord_from_var_name(name):
-            mapping = engine.provides['coordinates']
+    if formula_type in ['atmosphere_hybrid_height_coordinate',
+                        'atmosphere_hybrid_sigma_pressure_coordinate']:
+        def coord_from_term(term):
+            # Convert term names to coordinates (via netCDF variable names).
+            name = engine.requires['formula_terms'][term]
             for coord, cf_var_name in engine.provides['coordinates']:
                 if cf_var_name == name:
                     return coord
             raise ValueError('Unable to find coordinate for variable '
                              '{!r}'.format(name))
-        # Convert term names to coordinates (via netCDF variable names).
-        terms_to_var_names = engine.requires['formula_terms']
-        delta = coord_from_var_name(terms_to_var_names['a'])
-        sigma = coord_from_var_name(terms_to_var_names['b'])
-        orography = coord_from_var_name(terms_to_var_names['orog'])
-        factory = iris.aux_factory.HybridHeightFactory(delta, sigma, orography)
+
+        if formula_type == 'atmosphere_hybrid_height_coordinate':
+            delta = coord_from_term('a')
+            sigma = coord_from_term('b')
+            orography = coord_from_term('orog')
+            factory = iris.aux_factory.HybridHeightFactory(
+                delta, sigma, orography)
+        elif formula_type == 'atmosphere_hybrid_sigma_pressure_coordinate':
+            try:
+                delta = coord_from_term('ap')
+            except ValueError:
+                delta = coord_from_term('a') * coord_from_term('p0')
+            sigma = coord_from_term('b')
+            surface_air_pressure = coord_from_term('ps')
+            factory = iris.aux_factory.HybridPressureFactory(
+                delta, sigma, surface_air_pressure)
         cube.add_aux_factory(factory)
 
 
@@ -617,9 +633,6 @@ class Saver(object):
             3 files that do not use HDF5.
 
         """
-        if len(cube.aux_factories) > 1:
-            raise ValueError('Multiple auxiliary factories are not supported.')
-
         cf_profile_available = (
             'cf_profile' in iris.site_configuration and
             iris.site_configuration['cf_profile'] not in [None, False])
@@ -642,13 +655,16 @@ class Saver(object):
             chunksizes=chunksizes, endian=endian,
             least_significant_digit=least_significant_digit)
 
-        # Add coordinate variables and return factory definitions
-        factory_defn = self._add_dim_coords(cube, dimension_names)
+        # Add coordinate variables.
+        self._add_dim_coords(cube, dimension_names)
 
         # Add the auxiliary coordinate variable names and associate the data
         # variable to them
-        cf_var_cube = self._add_aux_coords(cube, cf_var_cube, dimension_names,
-                                           factory_defn)
+        self._add_aux_coords(cube, cf_var_cube, dimension_names)
+
+        # Add the formula terms to the appropriate cf variables for each
+        # aux factory in the cube.
+        self._add_aux_factories(cube)
 
         # Add data variable-only attribute names to local_keys.
         if local_keys is None:
@@ -734,27 +750,18 @@ class Saver(object):
                     size = self._existing_dim[dim_name]
                 self._dataset.createDimension(dim_name, size)
 
-    def _add_aux_coords(self, cube, cf_var_cube, dimension_names,
-                        factory_defn):
+    def _add_aux_coords(self, cube, cf_var_cube, dimension_names):
         """
         Add aux. coordinate to the dataset and associate with the data variable
 
         Args:
 
-        * cube (:class:`iris.cube.Cube`) or cubelist
-          (:class:`iris.cube.CubeList`):
-            A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of
-            cubes to be saved to a netCDF file.
+        * cube (:class:`iris.cube.Cube`):
+            A :class:`iris.cube.Cube` to be saved to a netCDF file.
         * cf_var_cube (:class:`netcdf.netcdf_variable`):
             cf variable cube representation.
         * dimension_names (list):
             Names associated with the dimensions of the cube.
-        * factory_defn (:class:`_FactoryDefn`):
-            An optional description of the AuxCoordFactory relevant to this
-            cube.
-
-        Returns:
-            Updated cf_var_cube with coordinates added.
 
         """
         auxiliary_coordinate_names = []
@@ -763,7 +770,7 @@ class Saver(object):
             # Create the associated coordinate CF-netCDF variable.
             if coord not in self._name_coord_map.coords:
                 cf_name = self._create_cf_variable(cube, dimension_names,
-                                                   coord, factory_defn)
+                                                   coord)
                 self._name_coord_map.append(cf_name, coord)
             else:
                 cf_name = self._name_coord_map.name(coord)
@@ -776,7 +783,6 @@ class Saver(object):
         if auxiliary_coordinate_names:
             cf_var_cube.coordinates = ' '.join(
                 sorted(auxiliary_coordinate_names))
-        return cf_var_cube
 
     def _add_dim_coords(self, cube, dimension_names):
         """
@@ -784,31 +790,60 @@ class Saver(object):
 
         Args:
 
-        * cube (:class:`iris.cube.Cube`) or cubelist
-          (:class:`iris.cube.CubeList`):
-            A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of
-            cubes to be saved to a netCDF file.
+        * cube (:class:`iris.cube.Cube`):
+            A :class:`iris.cube.Cube` to be saved to a netCDF file.
         * dimension_names (list):
             Names associated with the dimensions of the cube.
 
-        Returns:
-            Factory definitions, a description of the AuxCoordFactory relevant
-            to this cube.
-
         """
-        factory_defn = None
-        if cube.aux_factories:
-            factory = cube.aux_factories[0]
-            factory_defn = _FACTORY_DEFNS.get(type(factory), None)
-
         # Ensure we create the netCDF coordinate variables first.
         for coord in cube.dim_coords:
             # Create the associated coordinate CF-netCDF variable.
             if coord not in self._name_coord_map.coords:
                 cf_name = self._create_cf_variable(cube, dimension_names,
-                                                   coord, factory_defn)
+                                                   coord)
                 self._name_coord_map.append(cf_name, coord)
-        return factory_defn
+
+    def _add_aux_factories(self, cube):
+        """
+        Modifies the variables of the NetCDF dataset to represent
+        the presence of dimensionless vertical coordinates based on
+        the aux factories of the cube (if any).
+
+        Args:
+
+        * cube (:class:`iris.cube.Cube`):
+            A :class:`iris.cube.Cube` to be saved to a netCDF file.
+
+        """
+        primaries = []
+        for factory in cube.aux_factories:
+            factory_defn = _FACTORY_DEFNS.get(type(factory), None)
+            if factory_defn is None:
+                msg = 'Unable to determine formula terms ' \
+                      'for AuxFactory: {!r}'.format(factory)
+                warnings.warn(msg)
+            else:
+                # Override `standard_name`, `long_name`, and `axis` of the
+                # primary coord that signals the presense of a dimensionless
+                # vertical coord, then set the `formula_terms` attribute.
+                primary_coord = factory.dependencies[factory_defn.primary]
+                if primary_coord in primaries:
+                    msg = 'Cube {!r} has multiple aux factories that share ' \
+                          'a common primary coordinate {!r}. Unable to save ' \
+                          'to netCDF as having multiple formula terms on a ' \
+                          'single coordinate is not supported.'
+                    raise ValueError(msg.format(cube, primary_coord.name()))
+                primaries.append(primary_coord)
+                cf_name = self._name_coord_map.name(primary_coord)
+                cf_var = self._dataset.variables[cf_name]
+                cf_var.standard_name = factory_defn.std_name
+                cf_var.axis = 'Z'
+                names = {key: self._name_coord_map.name(coord) for
+                         key, coord in factory.dependencies.iteritems()}
+                formula_terms = factory_defn.formula_terms_format.format(
+                    **names)
+                cf_var.formula_terms = formula_terms
 
     def _get_dim_names(self, cube):
         """
@@ -816,10 +851,8 @@ class Saver(object):
 
         Args:
 
-        * cube (:class:`iris.cube.Cube`) or cubelist
-          (:class:`iris.cube.CubeList`):
-            A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of
-            cubes to be saved to a netCDF file.
+        * cube (:class:`iris.cube.Cube`):
+            A :class:`iris.cube.Cube` to be saved to a netCDF file.
 
         Returns:
             List of dimension names with length equal the number of dimensions
@@ -1017,7 +1050,7 @@ class Saver(object):
 
         return cf_name
 
-    def _create_cf_variable(self, cube, dimension_names, coord, factory_defn):
+    def _create_cf_variable(self, cube, dimension_names, coord):
         """
         Create the associated CF-netCDF variable in the netCDF dataset for the
         given coordinate. If required, also create the CF-netCDF bounds
@@ -1025,17 +1058,12 @@ class Saver(object):
 
         Args:
 
-        * dataset (:class:`netCDF4.Dataset`):
-            The CF-netCDF data file being created.
         * cube (:class:`iris.cube.Cube`):
             The associated cube being saved to CF-netCDF file.
         * dimension_names (list):
             Names for each dimension of the cube.
         * coord (:class:`iris.coords.Coord`):
             The coordinate to be saved to CF-netCDF file.
-        * factory_defn (:class:`_FactoryDefn`):
-            An optional description of the AuxCoordFactory relevant to this
-            cube.
 
         Returns:
             The string name of the associated CF-netCDF variable saved.
@@ -1108,21 +1136,6 @@ class Saver(object):
 
         # Deal with CF-netCDF units and standard name.
         standard_name, long_name, units = self._cf_coord_identity(coord)
-
-        # If this coordinate should describe a dimensionless vertical
-        # coordinate, then override `standard_name`, `long_name`, and `axis`,
-        # and also set the `formula_terms` attribute.
-        if factory_defn:
-            dependencies = cube.aux_factories[0].dependencies
-            if coord is dependencies[factory_defn.primary]:
-                standard_name = factory_defn.std_name
-                cf_var.axis = 'Z'
-
-                fmt = factory_defn.formula_terms_format
-                names = {key: coord.name() for key, coord in
-                         dependencies.iteritems()}
-                formula_terms = fmt.format(**names)
-                cf_var.formula_terms = formula_terms
 
         if units != 'unknown':
             cf_var.units = units

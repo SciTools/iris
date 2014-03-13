@@ -50,12 +50,12 @@ variables:
 		forecast_reference_time:calendar = "gregorian" ;
 	float level_height(model_level_number) ;
 		level_height:bounds = "level_height_bnds" ;
-		level_height:axis = "Z" ;
-		level_height:formula_terms = "a: level_height b: sigma orog: surface_altitude" ;
 		level_height:units = "m" ;
-		level_height:standard_name = "atmosphere_hybrid_height_coordinate" ;
 		level_height:long_name = "level_height" ;
 		level_height:positive = "up" ;
+		level_height:standard_name = "atmosphere_hybrid_height_coordinate" ;
+		level_height:axis = "Z" ;
+		level_height:formula_terms = "a: level_height b: sigma orog: surface_altitude" ;
 	float level_height_bnds(model_level_number, bnds) ;
 	float sigma(model_level_number) ;
 		sigma:bounds = "sigma_bnds" ;
