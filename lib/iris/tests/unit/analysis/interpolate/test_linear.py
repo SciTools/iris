@@ -40,17 +40,12 @@ class Test_masks(tests.IrisTest):
 
 
 class TestNDCoords(tests.IrisTest):
-    
     def setUp(self):
         cube = stock.simple_3d_w_multidim_coords()
         cube.add_dim_coord(iris.coords.DimCoord(range(3), 'longitude'), 1)
         cube.add_dim_coord(iris.coords.DimCoord(range(4), 'latitude'), 2)
         cube.data = cube.data.astype(np.float32)
         self.cube = cube
-#        linear = lambda cube, sample_points, mode='linear': LinearInterpolator(cube, mode).points(sample_points)
-
-#        x: 1.5
-#        y: 1.5
 
     def test_first(self):
         cube = self.cube
