@@ -30,9 +30,9 @@ class TestHybridPressure(tests.IrisTest):
         # hybrid pressure factory added to it.
         cube = stock.realistic_4d_no_derived()
         cube.coord('surface_altitude').rename('surface_air_pressure')
-        cube.coord('surface_air_pressure'). units = 'Pa'
+        cube.coord('surface_air_pressure').units = 'Pa'
         cube.coord('level_height').rename('level_pressure')
-        cube.coord('level_pressure'). units = 'Pa'
+        cube.coord('level_pressure').units = 'Pa'
         # Construct and add hybrid pressure factory.
         factory = iris.aux_factory.HybridPressureFactory(
             cube.coord('level_pressure'),

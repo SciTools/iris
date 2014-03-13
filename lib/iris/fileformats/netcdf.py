@@ -834,8 +834,7 @@ class Saver(object):
                           'to netCDF as having multiple formula terms on a ' \
                           'single coordinate is not supported.'
                     raise ValueError(msg.format(cube, primary_coord.name()))
-                else:
-                    primaries.append(primary_coord)
+                primaries.append(primary_coord)
                 cf_name = self._name_coord_map.name(primary_coord)
                 cf_var = self._dataset.variables[cf_name]
                 cf_var.standard_name = factory_defn.std_name
@@ -1059,8 +1058,6 @@ class Saver(object):
 
         Args:
 
-        * dataset (:class:`netCDF4.Dataset`):
-            The CF-netCDF data file being created.
         * cube (:class:`iris.cube.Cube`):
             The associated cube being saved to CF-netCDF file.
         * dimension_names (list):
