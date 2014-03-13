@@ -396,6 +396,59 @@ class IrisTest(unittest.TestCase):
         """
         np.testing.assert_allclose(a, b, rtol=rtol, atol=atol, **kwargs)
 
+    def assertMaskedArrayAllClose(self, a, b, rtol=1.0e-7, atol=0.0, **kwargs):
+        """
+        Check masked arrays are equal, within given relative + absolute
+        tolerances.
+
+        This requires the masks to be equal, and the unmasked array values to
+        be within specified relative and absolute tolerances.
+
+        Args:
+
+        * a, b (array-like):
+            Two arrays to compare.
+
+        Kwargs:
+
+        * rtol, atol (float):
+            Relative and absolute tolerances to apply.
+
+        Any additional kwargs are passed to numpy.testing.assert_allclose.
+        For full details see underlying routine numpy.testing.assert_allclose.
+
+        """
+        # First compare the masks (as full mask arrays).
+        # NOTE: pass kwargs to both "assert_array_equal" and "assert_allclose",
+        # as they happen to have the same additional keywords.
+        np.testing.assert_array_equal(np.ma.getmaskarray(a),
+                                      np.ma.getmaskarray(b), **kwargs)
+
+        def unmasked_data(ma_value):
+            """
+            Return the unmasked portion of any MaskedArray object.
+
+            Return value is always an np.ndarray object.
+
+            """
+            if ma_value.ndim > 0:
+                # Ordinary array case : extract the non-masked points.
+                # NOTE: if all values are masked, this returns array([]).
+                result = ma_value[~ma.getmaskarray(ma_value)].data
+            else:
+                # Scalar case: return data value, or array(nan) if masked.
+                if ma_value.mask:
+                    result = np.array(np.nan)
+                    # NOTE: "np.testing.assert_allclose(result, result)" _does_
+                    # succeed, even though np.nan != np.nan.
+                else:
+                    result = ma_value.data
+            return result
+
+        # Compare non-masked data content.
+        np.testing.assert_allclose(unmasked_data(a), unmasked_data(b),
+                                   rtol=rtol, atol=atol, **kwargs)
+
     @contextlib.contextmanager
     def temp_filename(self, suffix=''):
         filename = iris.util.create_temp_filename(suffix)
