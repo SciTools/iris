@@ -315,8 +315,15 @@ class CubeList(list):
                 for a_cube_aux_coord in a_cube_aux_coords:
                     new_aux_coord_points = \
                         np.array([np.nan]*len(new_dim_coord.points))
+                    if a_cube_aux_coord.bounds is not None:
+                        new_aux_coord_bounds = \
+                            np.array([[np.nan,
+                                       np.nan]]*len(new_dim_coord.points))
+                    else:
+                        new_aux_coord_bounds = None
                     new_aux_coord = iris.coords.AuxCoord(
                         new_aux_coord_points,
+                        bounds=new_aux_coord_bounds,
                         **a_cube_aux_coord._as_defn()._asdict()
                     )
                     new_aux_coords.append(new_aux_coord)
@@ -342,14 +349,9 @@ class CubeList(list):
                                 % new_aux_coord.name()
                             )
                         new_aux_coord.points[ind_data] = cubes_aux_coord.points
-                        if (hasattr(cubes_aux_coord, 'bounds')
-                                and cubes_aux_coord.bounds is not None):
-                            all_pts = (
-                                tuple(pt)
-                                for c in self
-                                for pt in cubes_aux_coord.bounds
-                            )
-                            new_aux_coord.bounds = sorted(list(set(all_pts)))
+                        if cubes_aux_coord.bounds is not None:
+                            new_aux_coord.bounds[ind_data] \
+                                = cubes_aux_coord.bounds
 
             for cube in new_cubes:
                 old_dim_coord = cube.coord(dim_coord_name)
