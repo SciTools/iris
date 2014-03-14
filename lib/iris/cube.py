@@ -331,10 +331,10 @@ class CubeList(list):
                         # in different cubes. i.e. if any
                         # replacement coord is different
                         # and present coord is not a nan
-                        if not (
+                        if any(
                             (cubes_aux_coord.points
                              != new_aux_coord.points[ind_data])
-                                & (~np.isnan(cubes_aux_coord.points))).any():
+                                & (~np.isnan(new_aux_coord.points[ind_data]))):
                             raise ValueError(
                                 "%s aux_coord values are different "
                                 "for the same dim_coord "

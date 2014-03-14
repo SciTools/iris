@@ -65,14 +65,14 @@ class Test_CubeList_pad_coords(tests.IrisTest):
         self.assertArrayEqual(b.data[:4, :-10], self.cube.data[:4, :-10])
 
     def test_incompatible_dim_coords(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegexp(ValueError, "latitude dim_coords are not compatible"):
             p = self.cube.copy()
             q = self.cube.copy()
             q.coord('latitude').convert_units('radians')
             a, b = iris.cube.CubeList([p, q]).pad_coords('latitude')
 
     def test_incompatible_aux_coords(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegexp(ValueError, "aux_coords are not compatible"):
             p = self.cube.copy()
             p.coord('forecast_period').attributes['swallow_type'] = 'african'
             q = self.cube.copy()
@@ -80,10 +80,12 @@ class Test_CubeList_pad_coords(tests.IrisTest):
             a, b = iris.cube.CubeList([p, q]).pad_coords('time')
 
     def test_diff_aux_coord_values(self):
-        with self.assertRaises(ValueError):
+        err_s = ("forecast_period aux_coord values are different for the "
+                 "same dim_coord values on different cubes")
+        with self.assertRaisesRegexp(ValueError, err_s):
             p = self.cube.copy()
             q = self.cube.copy()
-            q.coord('forecast_period').points = [1080, 1800, -999, 3264, 4008, 4752]
+            q.coord('forecast_period').points = [-999, 1800, 2544, 3264, 4008, 4752]
             a, b = iris.cube.CubeList([p, q]).pad_coords('time')
 
 
