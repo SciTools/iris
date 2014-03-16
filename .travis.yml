@@ -23,7 +23,9 @@ install:
   - chmod +x Miniconda-3.0.5-Linux-x86_64.sh
   - ./Miniconda-3.0.5-Linux-x86_64.sh -b
   - export PATH=/home/travis/miniconda/bin:$PATH
-  - conda create -n test_env numpy=1.7.1
+  - conda create --yes -n test_env -c nbren12 iris numpy=1.7.1 scipy=0.13.2 matplotlib=1.3.0 netcdf4=1.0.7 scipy=0.13.2
+  - source test_env
+  - conda install -c nbren12 nose pep8 pyshp shapely udunits2 proj4 pyke
 
 script:
   - python -c "import numpy as np; print np.__version__"
