@@ -923,9 +923,9 @@ class Saver(object):
 
         # TODO: Use #61 to get the units.
         if isinstance(coord.coord_system, iris.coord_systems.GeogCS):
-            if "latitude" in coord.standard_name:
+            if "latitude" in coord.name():
                 units = 'degrees_north'
-            elif "longitude" in coord.standard_name:
+            elif "longitude" in coord.name():
                 units = 'degrees_east'
 
         elif isinstance(coord.coord_system, iris.coord_systems.RotatedGeogCS):

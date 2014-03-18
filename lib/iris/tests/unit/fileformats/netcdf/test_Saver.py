@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,12 +23,14 @@ import iris.tests as tests
 import mock
 import netCDF4 as nc
 import numpy as np
+import types
 
 import iris
 from iris.coord_systems import GeogCS, TransverseMercator
 from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import Saver
+from iris.tests import stock
 
 
 class Test_write(tests.IrisTest):
@@ -161,6 +163,29 @@ class Test_write(tests.IrisTest):
             for dim in unlimited_dimensions:
                 self.assertTrue(ds.dimensions[dim].isunlimited())
             ds.close()
+
+    def test_cf_coord_identity(self):
+        geog_cs = iris.coord_systems.GeogCS(semi_major_axis=6370000,
+                                            inverse_flattening=298.3)
+        sLat = 52.3980
+        sLon = -2.5936
+        reflat = iris.coords.AuxCoord(float(sLat), long_name='ref_latitude',
+                                      coord_system=geog_cs, units='degrees')
+        reflon = iris.coords.AuxCoord(float(sLon), long_name='ref_longitude',
+                                      coord_system=geog_cs, units='degrees')
+        asaver = mock.MagicMock(spec=Saver)
+        asaver._cf_coord_identity = types.MethodType(Saver._cf_coord_identity,
+                                                     asaver)
+        standard_name, long_name, units = asaver._cf_coord_identity(reflat)
+        self.assertEqual(standard_name, reflat.standard_name)
+        self.assertEqual(long_name, reflat.long_name)
+        self.assertNotEqual(str(units), str(reflat.units))
+        self.assertEqual(units, reflat.units)
+        standard_name, long_name, units = asaver._cf_coord_identity(reflon)
+        self.assertEqual(standard_name, reflon.standard_name)
+        self.assertEqual(long_name, reflon.long_name)
+        self.assertNotEqual(str(units), str(reflon.units))
+        self.assertEqual(units, reflon.units)
 
 
 if __name__ == "__main__":
