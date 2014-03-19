@@ -20,6 +20,7 @@
 import iris.tests as tests
 
 import operator
+import math
 
 import numpy as np
 import numpy.ma as ma
@@ -227,7 +228,7 @@ class TestBasicMaths(tests.IrisTest):
         b = iris.analysis.maths.apply_ufunc(np.square, a,
                    new_name='squared temperature', new_unit=a.units**2,
                    in_place=False)
-        self.assertCMLApproxData(a, ('analysis', 'maths_original.cml'))
+        self.assertCMLApproxData(a, ('analysis', 'apply_ufunc_original.cml'))
         self.assertCMLApproxData(b, ('analysis', 'apply_ufunc.cml'))
 
         b = iris.analysis.maths.apply_ufunc(np.square, a,
