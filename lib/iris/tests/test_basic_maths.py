@@ -221,6 +221,42 @@ class TestBasicMaths(tests.IrisTest):
         self.assertIsNone(c.standard_name)
         self.assertEqual(c.attributes, {})
 
+    def test_apply_ufunc(self):
+        a = self.cube
+
+        b = iris.analysis.maths.apply_ufunc(np.square, a,
+                   new_name='squared temperature', new_unit=a.units**2,
+                   in_place=False)
+        self.assertCMLApproxData(a, ('analysis', 'maths_original.cml'))
+        self.assertCMLApproxData(b, ('analysis', 'apply_ufunc.cml'))
+
+        b = iris.analysis.maths.apply_ufunc(np.square, a,
+                   new_name='squared temperature', new_unit=a.units**2,
+                   in_place=True)
+        self.assertCMLApproxData(b, ('analysis', 'apply_ufunc.cml'))
+        self.assertCMLApproxData(a, ('analysis', 'apply_ufunc.cml'))
+
+        def vec_mag(u, v):
+            return math.sqrt(u**2 + v**2)
+
+        c = a.copy() + 2
+
+        vec_mag_ufunc = np.frompyfunc(vec_mag, 2, 1)
+        b = iris.analysis.maths.apply_ufunc(vec_mag_ufunc, a, c)
+        self.assertCMLApproxData(b, ('analysis', 'apply_ufunc_frompyfunc.cml'))
+
+    def test_apply_ufunc_fail(self):
+        a = self.cube
+
+        # should fail because 'blah' is a string, not a np.ufunc
+        self.assertRaises(TypeError, iris.analysis.maths.apply_ufunc, 'blah', a)
+
+        # should fail because math.sqrt is not a np.ufunc
+        self.assertRaises(TypeError, iris.analysis.maths.apply_ufunc, math.sqrt, a)
+
+        # should fail because np.frexp gives 2 arrays as output
+        self.assertRaises(ValueError, iris.analysis.maths.apply_ufunc, np.frexp, a)
+
     def test_type_error(self):
         with self.assertRaises(TypeError):
             iris.analysis.maths.add('not a cube', 123)
@@ -405,6 +441,37 @@ class TestExponential(tests.IrisTest):
     def test_exp(self):
         e = iris.analysis.maths.exp(self.cube)
         self.assertCMLApproxData(e, ('analysis', 'exp.cml'))
+
+
+class TestApplyUfunc(tests.IrisTest):
+    def setUp(self):
+        self.cube = iris.tests.stock.simple_2d()
+
+    def test_apply_ufunc(self):
+        a = self.cube
+        a.units = iris.unit.Unit('meters')
+
+        b = iris.analysis.maths.apply_ufunc(np.square, a,
+                new_name='more_thingness', new_unit=a.units**2, in_place=False)
+
+        ans = a.data**2
+
+        self.assertArrayEqual(b.data, ans)
+        self.assertEqual(b.name(), 'more_thingness')
+        self.assertEqual(b.units, iris.unit.Unit('m^2'))
+
+        def vec_mag(u, v):
+            return math.sqrt(u**2 + v**2)
+
+        c = a.copy() + 2
+
+        vec_mag_ufunc = np.frompyfunc(vec_mag, 2, 1)
+        b = iris.analysis.maths.apply_ufunc(vec_mag_ufunc, a, c)
+
+        ans = a.data**2 + c.data**2
+        b2 = b**2
+
+        self.assertArrayAlmostEqual(b2.data, ans)
 
 
 @tests.skip_data

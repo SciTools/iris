@@ -448,6 +448,93 @@ def log10(cube, in_place=False):
     return _math_op_common(cube, np.log10, cube.units.log(10),
                            in_place=in_place)
 
+def apply_ufunc(ufunc, cube, other_cube=None, new_unit=None, new_name=None,
+                in_place=False):
+    """
+    Apply a `numpy universal function
+<http://docs.scipy.org/doc/numpy/reference/ufuncs.html>`_. to a cube or pair of cubes.
+
+    .. note:: Many of the numpy.ufunc have been implemented explicitly in iris
+    e.g. :func:`numpy.abs`, :func:`numpy.add`, in which case it is usually preferable
+    to use these functions rather than apply_ufunc.
+
+    Args:
+
+    * ufunc:
+        An instance of :func:`numpy.ufunc` e.g. :func:`numpy.sin`, :func:`numpy.mod`.
+
+    * cube:
+        An instance of :class:`iris.cube.Cube`.
+
+    Kwargs:
+
+    * other_cube:
+        An instance of :class:`iris.cube.Cube` to be given as the second argument
+        to :func:`numpy.ufunc`.
+
+    * new_unit:
+        Unit for the resulting Cube.
+
+    * new_name:
+        Name for the resulting Cube.
+
+    * in_place:
+        Whether to create a new Cube, or alter the given "cube".
+
+    Returns:
+        An instance of :class:`iris.cube.Cube`.
+
+    Example usage 1::
+
+        cube = apply_ufunc(numpy.sin, cube, in_place=True)
+
+    Example usage 2::
+
+        def ws(u, v):
+            return math.sqrt(u**2 + v**2)
+
+        ws_ufunc = numpy.frompyfunc(ws, 2, 1)
+        ws_cube = apply_ufunc(ws_ufunc, u_cube, v_cube, new_units=new_cube.units)
+
+    """
+
+    if not isinstance(ufunc, np.ufunc):
+        try:
+            name = ufunc.__name__
+
+        except AttributeError:
+            name = "function passed to apply_ufunc"
+
+        raise TypeError(name +
+              " is not recognised (it is not an instance of numpy.ufunc)")
+
+    if ufunc.nout != 1:
+        raise ValueError(ufunc.__name__ +
+              " gives two arrays as output, so is not suitable for use "
+              "in apply_ufunc")
+
+    if ufunc.nin == 2:
+        if other_cube is None:
+            raise ValueError(ufunc.__name__ +
+                  " requires two arguments, so other_cube must also be "
+                  "passed to apply_ufunc")
+
+        _assert_is_cube(other_cube)
+
+        new_cube = _binary_op_common(ufunc, ufunc.__name__,
+                                     cube, other_cube,
+                                     new_unit, in_place=in_place)
+
+    elif ufunc.nin == 1:
+        new_cube = _math_op_common(cube, ufunc, new_unit,
+                                   in_place=in_place)
+
+    else:
+        raise ValueError(ufunc.__name__ + ".nin should be 1 or 2.")
+
+    new_cube.rename(new_name)
+
+    return new_cube
 
 def _binary_op_common(operation_function, operation_noun, cube, other,
                       new_unit, dim=None, in_place=False):
