@@ -1,4 +1,3 @@
-# -*- coding: iso-8859-1 -*-
 # (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
