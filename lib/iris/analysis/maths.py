@@ -1,3 +1,4 @@
+# -*- coding: iso-8859-1 -*-
 # (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
@@ -452,11 +453,13 @@ def apply_ufunc(ufunc, cube, other_cube=None, new_unit=None, new_name=None,
                 in_place=False):
     """
     Apply a `numpy universal function
-<http://docs.scipy.org/doc/numpy/reference/ufuncs.html>`_. to a cube or pair of cubes.
+<http://docs.scipy.org/doc/numpy/reference/ufuncs.html>`_ to a cube or pair of cubes.
 
-    .. note:: Many of the numpy.ufunc have been implemented explicitly in iris
-    e.g. :func:`numpy.abs`, :func:`numpy.add`, in which case it is usually preferable
-    to use these functions rather than apply_ufunc.
+    .. note:: Many of the numpy.ufunc have been implemented explicitly in Iris
+        e.g. :func:`numpy.abs`, :func:`numpy.add` are implemented in
+        :func:`iris.analysis.maths.abs`, :func:`iris.analysis.maths.add`.
+        It is usually preferable to use these functions rather than
+        :func:`iris.analysis.maths.apply_ufunc` where possible.
 
     Args:
 
