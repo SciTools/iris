@@ -30,6 +30,8 @@ from __future__ import division
 import copy
 import ctypes
 import ctypes.util
+import os.path
+import sys
 import warnings
 
 import netcdftime
@@ -317,8 +319,14 @@ if not _ud_system:
     _ut_ignore = _func_type((_UT_IGNORE, _lib_ud))
     # ignore standard UDUNITS-2 start-up preamble redirected to stderr stream
     _default_handler = _ut_set_error_message_handler(_ut_ignore)
-    # load the unit-database
+    # Load the unit-database from the default location (modified via
+    # the UDUNITS2_XML_PATH environment variable) and if that fails look
+    # relative to sys.prefix to support environments such as conda.
     _ud_system = _ut_read_xml(None)
+    if _ud_system is None:
+        _alt_xml_path = os.path.join(sys.prefix, 'share',
+                                     'udunits', 'udunits2.xml')
+        _ud_system = _ut_read_xml(_alt_xml_path)
     # reinstate old error handler
     _ut_set_error_message_handler(_default_handler)
     del _func_type
