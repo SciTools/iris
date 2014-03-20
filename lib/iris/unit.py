@@ -30,6 +30,8 @@ from __future__ import division
 import copy
 import ctypes
 import ctypes.util
+import os.path
+import sys
 import warnings
 
 import netcdftime
@@ -319,6 +321,10 @@ if not _ud_system:
     _default_handler = _ut_set_error_message_handler(_ut_ignore)
     # load the unit-database
     _ud_system = _ut_read_xml(None)
+    if _ud_system is None:
+        _alt_xml_path = os.path.join(sys.prefix, 'share',
+                                     'udunits', 'udunits2.xml')
+        _ud_system = _ut_read_xml(_alt_xml_path)
     # reinstate old error handler
     _ut_set_error_message_handler(_default_handler)
     del _func_type
@@ -336,6 +342,7 @@ if not _ud_system:
             ctypes.set_errno(0)
         raise OSError('[%s] Failed to open UDUNITS-2 XML unit database %s' % (
             _status_msg, _error_msg))
+
 
 
 ########################################################################
