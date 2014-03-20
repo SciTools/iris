@@ -28,6 +28,7 @@ import iris.analysis
 import iris.coords
 import iris.cube
 import iris.exceptions
+import iris.util
 
 
 def abs(cube, in_place=False):
@@ -471,9 +472,11 @@ def _binary_op_common(operation_function, operation_noun, cube, other,
     if isinstance(other, iris.coords.Coord):
         other = _broadcast_cube_coord_data(cube, other, operation_noun, dim)
     elif isinstance(other, iris.cube.Cube):
-        # TODO: add intelligent broadcasting along coordinate dimensions for
-        # all binary operators, not just + and -
-        other = other.data
+        try:
+            _, other = np.broadcast_arrays(cube.data, other.data)
+        except ValueError:
+            other = iris.util.as_compatible_shape(other, cube).data
+
     # don't worry about checking for other data types (such as scalers or
     # np.ndarrays) because _assert_compatible validates that they are broadcast
     # compatible with cube.data

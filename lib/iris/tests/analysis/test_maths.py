@@ -53,8 +53,8 @@ class Test_maths_broadcasting(tests.IrisTest):
     def test_collapse_inner_dim(self):
         # Collapse an inner dim (latitude: 0)
         other = self.cube1.collapsed('latitude', iris.analysis.MIN)
-        with self.assertRaises(ValueError):
-            new_cube = self.cube1 + other - other
+        new_cube = self.cube1 + other - other
+        self.assertEqual(new_cube, self.cube1)
 
 
 if __name__ == "__main__":
