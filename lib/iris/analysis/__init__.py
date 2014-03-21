@@ -55,6 +55,7 @@ import numpy.ma as ma
 import scipy.interpolate
 import scipy.stats.mstats
 
+from iris.analysis._interpolator import LinearInterpolator
 import iris.coords
 from iris.exceptions import LazyAggregatorError
 
@@ -62,7 +63,7 @@ from iris.exceptions import LazyAggregatorError
 __all__ = ('COUNT', 'GMEAN', 'HMEAN', 'MAX', 'MEAN', 'MEDIAN', 'MIN',
            'PEAK', 'PERCENTILE', 'PROPORTION', 'RMS', 'STD_DEV', 'SUM',
            'VARIANCE', 'coord_comparison', 'Aggregator', 'WeightedAggregator',
-           'clear_phenomenon_identity')
+           'clear_phenomenon_identity', 'Linear')
 
 
 class _CoordGroup(object):
@@ -1478,3 +1479,62 @@ def clear_phenomenon_identity(cube):
     cube.rename(None)
     cube.attributes.clear()
     cube.cell_methods = tuple()
+
+
+###############################################################################
+#
+# Interpolation API
+#
+###############################################################################
+
+class Linear(object):
+    """
+    This class provides support for creating an interpolator that performs
+    linear interpolation over one or more orthogonal coordinates.
+
+    """
+    def __init__(self, extrapolation_mode='linear'):
+        """
+        Perform linear interpolation over one or more orthogonal coordinates.
+
+        Kwargs:
+
+        * extrapolation_mode:
+            Must be one of the following strings:
+
+              * 'linear' - The extrapolation points will be calculated by
+                extending the gradient of closest two points.
+              * 'nan' - The extrapolation points will be be set to NAN.
+              * 'error' - An exception will be raised, notifying an
+                attempt to extrapolate.
+
+            Default mode of extrapolation is 'linear'.
+
+        """
+        self.extrapolation_mode = extrapolation_mode
+
+    def interpolator(self, cube, coords):
+        """
+        Creates a linear interpolator to perform interpolation over the
+        given :class:`~iris.cube.Cube` specified by the dimensions of
+        the specified coordinates.
+
+        Args:
+
+        * cube:
+            The source :class:`iris.cube.Cube` which contains the data
+            to be interpolated from.
+
+        * coords:
+            The names or coordinate instances which are to be
+            interpolated over.
+
+        Returns:
+            A :class:`~iris.analysis._interpolator.LinearInterpolator`
+            instance.
+
+        """
+        mode = self.extrapolation_mode
+        interp = LinearInterpolator(cube, coords,
+                                    extrapolation_mode=mode)
+        return interp

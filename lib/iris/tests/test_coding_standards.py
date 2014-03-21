@@ -331,6 +331,7 @@ class TestLicenseHeaders(unittest.TestCase):
                             'docs/iris/src/userguide/plotting_examples/*.py',
                             'docs/iris/src/developers_guide/gitwash_dumper.py',
                             'docs/iris/build/*',
+                            'lib/iris/analysis/_interpolator_regular_grid.py',
                             'lib/iris/fileformats/_pyke_rules/*',
                             'lib/iris/fileformats/grib/_grib_cf_map.py')
 

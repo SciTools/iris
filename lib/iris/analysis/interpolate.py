@@ -29,6 +29,7 @@ import scipy
 import scipy.spatial
 from scipy.interpolate.interpolate import interp1d
 
+from iris.analysis import Linear
 import iris.cube
 import iris.coord_systems
 import iris.coords
@@ -560,49 +561,6 @@ def regrid_to_max_resolution(cubes, **kwargs):
     return [cube.regridded(grid_cube, **kwargs) for cube in cubes]
 
 
-def _extend_circular_coord_and_data(coord, data, coord_dim):
-    """
-    Return coordinate points and a data array with a shape extended by one
-    in the coord_dim axis. This is common when dealing with circular
-    coordinates.
-
-    """
-    modulus = np.array(coord.units.modulus or 0,
-                       dtype=coord.dtype)
-    points = np.append(coord.points,
-                       coord.points[0] + modulus)
-    data = _extend_circular_data(data, coord_dim)
-    return points, data
-
-
-def _extend_circular_data(data, coord_dim):
-    coord_slice_in_cube = [slice(None)] * data.ndim
-    coord_slice_in_cube[coord_dim] = slice(0, 1)
-
-    # TODO: Restore this code after resolution of the following issue:
-    # https://github.com/numpy/numpy/issues/478
-#    data = np.append(cube.data,
-#                     cube.data[tuple(coord_slice_in_cube)],
-#                     axis=sample_dim)
-    # This is the alternative, temporary workaround.
-    # It doesn't use append on an nD mask.
-    if (not isinstance(data, ma.MaskedArray) or
-        not isinstance(data.mask, np.ndarray) or
-        len(data.mask.shape) == 0):
-        data = np.append(data,
-                         data[tuple(coord_slice_in_cube)],
-                         axis=coord_dim)
-    else:
-        new_data = np.append(data.data,
-                             data.data[tuple(coord_slice_in_cube)],
-                             axis=coord_dim)
-        new_mask = np.append(data.mask,
-                             data.mask[tuple(coord_slice_in_cube)],
-                             axis=coord_dim)
-        data = ma.array(new_data, mask=new_mask)
-    return data
-
-
 def linear(cube, sample_points, extrapolation_mode='linear'):
     """
     Return a cube of the linearly interpolated points given the desired
@@ -667,7 +625,6 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
         point data type in the result.
 
     """
-    coords = []
     if isinstance(sample_points, dict):
         sample_points = sample_points.items()
     
@@ -675,15 +632,12 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
     if sample_points and not (isinstance(sample_points[0], collections.Container) and not isinstance(sample_points[0], basestring)):
         raise TypeError('Expecting the sample points to be a list of tuple pairs representing (coord, points), got a list of %s.' % type(sample_points[0]))
 
-    for coord, _ in sample_points:
-        coords.append(coord)
-    from interpolator import LinearInterpolator
-    interp = LinearInterpolator(cube, coords,
-                                extrapolation_mode=extrapolation_mode)
-    return interp.orthogonal_cube(sample_points)
+    scheme = Linear(extrapolation_mode)
+    return cube.interpolate(scheme, sample_points)
 
 
-def _resample_coord(coord, src_coord, direction, target_points, interpolate):
+# remove this ... ?
+def _XXX_resample_coord(coord, src_coord, direction, target_points, interpolate):
     if coord.ndim != 1:
         raise iris.exceptions.NotYetImplementedError(
             'Linear interpolation of multi-dimensional coordinates.')

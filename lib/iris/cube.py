@@ -3133,6 +3133,35 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         return new_cube
 
+    def interpolate(self, scheme, sample_points, collapse_scalar=True):
+        """
+        Interpolate over the :class:`~iris.cube.Cube` using the provided
+        interpolation scheme and specified sample points.
+
+        Args:
+
+        * scheme:
+            A :class:`~iris.analysis.Linear` instance, which defines the
+            interpolator scheme.
+        * sample_points:
+            A sequence of (coordinate, points) pairs over which to interpolate.
+
+        Kwargs:
+
+        * collapse_scalar:
+            Whether to collapse the dimesion of the scalar sample points
+            in the resulting cube. Default is True.
+
+        Returns:
+            A cube interpolated at the given sample points. The dimensionality
+            of the cube will be the number of original cube dimensions minus
+            the number of scalar coordinates, if collapse_scalar is True.
+
+        """
+        coords, points = zip(*sample_points)
+        interp = scheme.interpolator(self, coords)
+        return interp(points, collapse_scalar=collapse_scalar)
+
 
 class ClassDict(object, UserDict.DictMixin):
     """
