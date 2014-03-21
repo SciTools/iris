@@ -256,7 +256,7 @@ class CubeList(list):
 
         """
 
-        if  isinstance(dim_coord_names, basestring):
+        if isinstance(dim_coord_names, basestring):
             dim_coord_names = [dim_coord_names]
 
         new_cubes = iris.cube.CubeList([c.copy() for c in self])
@@ -270,29 +270,23 @@ class CubeList(list):
             a_cube = new_cubes[0]
             a_cube_coord_dim, = a_cube.coord_dims(dim_coord_name)
             a_cube_dim_coord, = a_cube.coords(
-                dimensions=a_cube_coord_dim, dim_coords=True
-            )
+                dimensions=a_cube_coord_dim, dim_coords=True)
             a_cube_aux_coords = a_cube.coords(
-                dimensions=a_cube_coord_dim, dim_coords=False
-            )
+                dimensions=a_cube_coord_dim, dim_coords=False)
 
             coord_is_compatible = (
                 a_cube_dim_coord.is_compatible(
-                    other.coord(a_cube_dim_coord.name())
-                )
-                for other in self
-            )
+                    other.coord(a_cube_dim_coord.name()))
+                for other in self)
             if not all(coord_is_compatible):
                 raise ValueError("%s dim_coords are not compatible"
                                  % a_cube_dim_coord.name())
 
             coord_is_compatible = (
                 a_cube_aux_coord.is_compatible(
-                    other.coord(a_cube_aux_coord.name())
-                )
+                    other.coord(a_cube_aux_coord.name()))
                 for other in self
-                for a_cube_aux_coord in a_cube_aux_coords
-            )
+                for a_cube_aux_coord in a_cube_aux_coords)
             if not all(coord_is_compatible):
                 raise ValueError("aux_coords are not compatible")
 
@@ -301,8 +295,7 @@ class CubeList(list):
             new_dim_coord_points = sorted(list(set(all_pts)))
             new_dim_coord = iris.coords.DimCoord(
                 new_dim_coord_points,
-                **a_cube_dim_coord._as_defn()._asdict()
-            )
+                **a_cube_dim_coord._as_defn()._asdict())
             if a_cube_dim_coord.has_bounds() \
                     and a_cube_dim_coord.bounds is not None:
                 all_pts = (tuple(pt)
@@ -324,8 +317,7 @@ class CubeList(list):
                     new_aux_coord = iris.coords.AuxCoord(
                         new_aux_coord_points,
                         bounds=new_aux_coord_bounds,
-                        **a_cube_aux_coord._as_defn()._asdict()
-                    )
+                        **a_cube_aux_coord._as_defn()._asdict())
                     new_aux_coords.append(new_aux_coord)
 
                 for cube in self:
@@ -346,8 +338,7 @@ class CubeList(list):
                                 "%s aux_coord values are different "
                                 "for the same dim_coord "
                                 "values on different cubes"
-                                % new_aux_coord.name()
-                            )
+                                % new_aux_coord.name())
                         new_aux_coord.points[ind_data] = cubes_aux_coord.points
                         if cubes_aux_coord.bounds is not None:
                             new_aux_coord.bounds[ind_data] \
@@ -382,15 +373,13 @@ class CubeList(list):
                                        if dim != (a_cube_coord_dim,)]
                 aux_coords_and_dims.extend(
                     [new_aux_coord, (a_cube_coord_dim)]
-                     for new_aux_coord in new_aux_coords
-                )
+                    for new_aux_coord in new_aux_coords)
 
                 new_cube = iris.cube.Cube(
                     new_data,
                     dim_coords_and_dims=dim_coords_and_dims,
                     aux_coords_and_dims=aux_coords_and_dims,
-                    **cube.metadata._asdict()
-                )
+                    **cube.metadata._asdict())
 
                 newer_cubes.append(new_cube)
             new_cubes = newer_cubes[:]
