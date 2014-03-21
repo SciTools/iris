@@ -153,7 +153,6 @@ class Interpolator(object):
                                         coord_points.max(), modulus))
             else:
                 coord_points = coord.points
-                data = data
             coord_points_list.append([coord_points, coord_dims])
 
         self._data_shape = data.shape
@@ -292,7 +291,7 @@ class Interpolator(object):
                                  if index not in self.coord_dims]
             interpolant_index.insert(index_dimension, slice(None))
             index = tuple(position if index not in self.coord_dims
-                          else slice(None, None)
+                          else slice(None)
                           for index, position in enumerate(ndindex))
             sub_data = data[index]
 
@@ -351,7 +350,7 @@ class Interpolator(object):
 
     def orthogonal_points(self, sample_points, data, data_dims=None):
         """
-        Interpolate the given data values at the given a list of
+        Interpolate the given data values at the given list of
         orthogonal (coord, points) pairs. 
         
         Args
@@ -409,7 +408,7 @@ class Interpolator(object):
                     points.size
 
         # Given an expected shape for the final array, compute the shape of
-        # the array which puts the interpolated dimension last.
+        # the array which puts the interpolated dimensions last.
         new_dimension_order = (lambda (dim, length):
                                cube_dim_to_result_dim[dim])
         _, target_shape = zip(*sorted(enumerate(interpolated_shape),
@@ -459,7 +458,7 @@ class Interpolator(object):
             new_coord = aux_coord.copy(new_points)
         return new_coord
 
-    def orthogonal_cube(self, sample_points, collapse_scalar=True):
+    def __call__(self, sample_points, collapse_scalar=True):
         """
         Construct a cube from the specified orthogonal interpolation points.
         
@@ -487,12 +486,11 @@ class Interpolator(object):
         data = self.cube.data
         interpolated_data = self.orthogonal_points(sample_points, data)
         if interpolated_data.ndim == 0:
-            interpolated_data = np.asaanyarray(interpolated_data, ndmin=1)
+            interpolated_data = np.asanyarray(interpolated_data, ndmin=1)
 
         # Get hold of the original interpolation coordinates in terms of the
         # given cube.
-        interp_coords = [self.cube.coord(coord)
-                         for coord in self._interp_coords]
+        interp_coords = self.coords
         sample_point_order = [self.cube.coord(coord)
                               for coord, _ in sample_points]
 
@@ -525,19 +523,18 @@ class Interpolator(object):
 
         dims_with_dim_coords = []
 
-        # 2) Copy/interpolate the coordinates.
-        for dim_coord in cube.dim_coords:
-            dim, = cube.coord_dims(dim_coord)
-            if dim_coord in interp_coords:
-                index_given = sample_point_order.index(dim_coord)
-                new_points = sample_points[index_given][1]
-                new_coord = construct_new_coord_given_points(dim_coord,
+        # Copy/interpolate the coordinates.
+        for coord in cube.dim_coords:
+            dim, = cube.coord_dims(coord)
+            if coord in interp_coords:
+                new_points = sample_points[sample_point_order.index(coord)][1]
+                new_coord = construct_new_coord_given_points(coord,
                                                              new_points)
             elif set([dim]).intersection(set(self.coord_dims)):
-                new_coord = self._resample_coord(sample_points, dim_coord,
+                new_coord = self._resample_coord(sample_points, coord,
                                                  [dim])
             else:
-                new_coord = dim_coord.copy()
+                new_coord = coord.copy()
 
             # new_coord may no longer be a dim coord, so check we don't need
             # to add it as an aux coord (thus leaving the dim anonymous).
@@ -546,7 +543,7 @@ class Interpolator(object):
                 dims_with_dim_coords.append(dim)
             else:
                 new_cube._add_unique_aux_coord(new_coord, dim)
-            coord_mapping[id(dim_coord)] = new_coord
+            coord_mapping[id(coord)] = new_coord
 
         for coord in cube.aux_coords:
             dims = cube.coord_dims(coord)
@@ -686,3 +683,4 @@ class LinearInterpolator(RectilinearInterpolator):
                                                       bounds_error=False)
         self._update_extrapolation_mode(extrapolation_mode)
         return self._interpolator
+

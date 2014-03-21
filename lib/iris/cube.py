@@ -3133,6 +3133,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         return new_cube
 
+    def interpolate(self, scheme, sample_points, collapse_scalar=True):
+        interp_coords = [coord for coord, _ in sample_points]
+        interp = scheme.interpolator(self, interp_coords)
+        return interp(sample_points, collapse_scalar=collapse_scalar)
+        
 
 class ClassDict(object, UserDict.DictMixin):
     """

@@ -1478,3 +1478,37 @@ def clear_phenomenon_identity(cube):
     cube.rename(None)
     cube.attributes.clear()
     cube.cell_methods = tuple()
+
+
+################################################################################
+#
+# Interpolation API
+#
+################################################################################
+
+from iris.analysis.interpolator import LinearInterpolator
+
+
+class Interpolator(object):
+    def __init__(self, extrapolation_mode=None):
+        self._mode = extrapolation_mode
+
+    def interpolator(self, src_cube, interp_coords, extrapolation_mode=None):
+        """Blah blah blah...."""
+        _mode = self._mode
+        if extrapolation_mode is not None:
+            _mode = extrapolation_mode
+        return self._interpolator(src_cube, interp_coords,
+                                  extrapolation_mode=_mode)
+
+
+class Linear(Interpolator):
+    """Scheme is ...."""
+
+    def _interpolator(self, src_cube, interp_coords, extrapolation_mode=None):
+        _mode = self._mode
+        if extrapolation_mode is not None:
+            _mode = extrapolation_mode
+        interpolator = LinearInterpolator(src_cube, interp_coords,
+                                          extrapolation_mode=_mode)
+        return interpolator
