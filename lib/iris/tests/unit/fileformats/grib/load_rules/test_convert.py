@@ -23,14 +23,14 @@ import iris.tests as tests
 import gribapi
 import mock
 
-from iris.aux_factory import HybridPressureFactory
-from iris.coords import DimCoord, CoordDefn
+import iris
+from iris.fileformats.rules import Reference
+from iris.tests.test_grib_load import TestGribSimple
+from iris.tests.unit.fileformats import TestField
+import iris.unit
+
 from iris.fileformats.grib import GribWrapper
 from iris.fileformats.grib.load_rules import convert
-from iris.tests.test_grib_load import TestGribSimple
-from iris.fileformats.rules import Reference
-from iris.tests.unit.fileformats import TestField
-from iris.unit import Unit
 
 
 class Test_GribLevels_Mock(TestGribSimple):
@@ -45,7 +45,7 @@ class Test_GribLevels_Mock(TestGribSimple):
         cube = self.cube_from_message(grib)
         self.assertEqual(
             cube.coord('height'),
-            DimCoord(12345, standard_name="height", units="m"))
+            iris.coords.DimCoord(12345, standard_name="height", units="m"))
 
     def test_grib2_bounded_height(self):
         grib = self.mock_grib()
@@ -59,8 +59,8 @@ class Test_GribLevels_Mock(TestGribSimple):
         cube = self.cube_from_message(grib)
         self.assertEqual(
             cube.coord('height'),
-            DimCoord(33333, standard_name="height", units="m",
-                     bounds=[[12345, 54321]]))
+            iris.coords.DimCoord(33333, standard_name="height", units="m",
+                                 bounds=[[12345, 54321]]))
 
     def test_grib2_diff_bound_types(self):
         grib = self.mock_grib()
@@ -154,16 +154,23 @@ class Test_GribLevels(tests.IrisTest):
         gw = GribWrapper(gm)
         results = convert(gw)
 
-        factories = results[0]
-        self.assertEqual(factories[0].factory_class, HybridPressureFactory)
-        self.assertIn({'long_name': 'level_pressure'}, factories[0].args)
-        self.assertIn({'long_name': 'sigma'}, factories[0].args)
-        self.assertIn(Reference(name='surface_pressure'), factories[0].args)
+        factory, = results[0]
+        self.assertEqual(factory.factory_class,
+                         iris.aux_factory.HybridPressureFactory)
+        delta, sigma, ref = factory.args
+        self.assertEqual(delta, {'long_name': 'level_pressure'})
+        self.assertEqual(sigma, {'long_name': 'sigma'})
+        self.assertEqual(ref, Reference(name='surface_pressure'))
 
-        ml_ref = CoordDefn('model_level_number', None, None, Unit('1'),
-                           {'positive': 'up'}, None)
-        lp_ref = CoordDefn(None, 'level_pressure', None, Unit('Pa'), {}, None)
-        s_ref = CoordDefn(None, 'sigma', None, Unit('1'), {}, None)
+        ml_ref = iris.coords.CoordDefn('model_level_number', None, None,
+                                       iris.unit.Unit('1'),
+                                       {'positive': 'up'}, None)
+        lp_ref = iris.coords.CoordDefn(None, 'level_pressure', None,
+                                       iris.unit.Unit('Pa'),
+                                       {}, None)
+        s_ref = iris.coords.CoordDefn(None, 'sigma', None,
+                                      iris.unit.Unit('1'),
+                                      {}, None)
 
         aux_coord_defns = [coord._as_defn() for coord, dim in results[8]]
         self.assertIn(ml_ref, aux_coord_defns)
