@@ -44,7 +44,7 @@ class Test_linear__circular_wrapping(tests.IrisTest):
         # Check we can interpolate from a Cube defined over [-180, 180).
         cube = self._create_cube([-180, -90, 0, 90])
         samples = [('longitude', range(-360, 720, 45))]
-        result = interpolate.linear(cube, samples)
+        result = interpolate.linear(cube, samples, extrapolation_mode='nan')
         normalise_order(result)
         self.assertCMLApproxData(result, ('analysis', 'interpolation',
                                           'linear', 'circular_wrapping',
@@ -54,7 +54,7 @@ class Test_linear__circular_wrapping(tests.IrisTest):
         # Check we can interpolate from a Cube defined over [0, 360).
         cube = self._create_cube([0, 90, 180, 270])
         samples = [('longitude', range(-360, 720, 45))]
-        result = interpolate.linear(cube, samples)
+        result = interpolate.linear(cube, samples, extrapolation_mode='nan')
         normalise_order(result)
         self.assertCMLApproxData(result, ('analysis', 'interpolation',
                                           'linear', 'circular_wrapping',

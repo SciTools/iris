@@ -1356,7 +1356,8 @@ def _ndim_coords_from_arrays(points, ndim=None):
             points[..., j] = item
     else:
         points = np.asanyarray(points)
-        if points.ndim == 1:
+        # XXX Feed back to scipy.
+        if points.ndim <= 1:
             if ndim is None:
                 points = points.reshape(-1, 1)
             else:
@@ -1503,7 +1504,8 @@ class _RegularGridInterpolator(object):
 
     def _evaluate_linear(self, indices, norm_distances, out_of_bounds):
         # slice for broadcasting over trailing dimensions in self.values
-        vslice = (slice(None),) + (None,) * (self.values.ndim - len(indices))
+        vslice = (slice(None),) + (np.newaxis,) * \
+            (self.values.ndim - len(indices))
 
         # find relevant values
         # each i and i+1 represents a edge
@@ -1536,8 +1538,12 @@ class _RegularGridInterpolator(object):
             i[i < 0] = 0
             i[i > grid.size - 2] = grid.size - 2
             indices.append(i)
-            norm_distances.append((x - grid[i]) /
-                                  (grid[i + 1] - grid[i]))
+            # TODO: Add this to scipy's version.
+            if grid.size == 1:
+                norm_distances.append(x - grid[i])
+            else:
+                norm_distances.append((x - grid[i]) /
+                                      (grid[i + 1] - grid[i]))
             if not self.bounds_error:
                 out_of_bounds += x < grid[0]
                 out_of_bounds += x > grid[-1]

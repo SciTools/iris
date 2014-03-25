@@ -24,6 +24,7 @@ import numpy as np
 import numpy.ma as ma
 
 from iris.analysis.interpolate import linear
+import iris.coords
 import iris.tests.stock as stock
 
 
@@ -36,6 +37,38 @@ class Test_masks(tests.IrisTest):
         self.assertTrue(cube.data.mask[0, 2, 2, 0])
         # and is still masked in the output
         self.assertTrue(interp_cube.data.mask[0, 1, 2, 0])
+
+
+class TestNDCoords(tests.IrisTest):
+    def setUp(self):
+        cube = stock.simple_3d_w_multidim_coords()
+        cube.add_dim_coord(iris.coords.DimCoord(range(3), 'longitude'), 1)
+        cube.add_dim_coord(iris.coords.DimCoord(range(4), 'latitude'), 2)
+        cube.data = cube.data.astype(np.float32)
+        self.cube = cube
+
+    def test_first(self):
+        cube = self.cube
+
+        msg = 'Interpolation coords must be 1-d for rectilinear interpolation.'
+        with self.assertRaisesRegexp(ValueError, msg):
+            interp_cube = linear(cube, {'foo': 15, 'bar': 10})
+
+        interp_cube = linear(cube, {'latitude': 1.5, 'longitude': 1.5})
+        self.assertCMLApproxData(interp_cube, ('experimental', 'analysis',
+                                               'interpolate',
+                                               'linear_nd_2_coords.cml'))
+
+        interp_cube = linear(cube, {'wibble': np.float32(1.5)})
+        expected = ('experimental', 'analysis', 'interpolate',
+                    'linear_nd_with_extrapolation.cml')
+        self.assertCMLApproxData(interp_cube, expected)
+
+        interp_cube = linear(cube, {'wibble': 20})
+        self.assertArrayEqual(np.mean(cube.data, axis=0), interp_cube.data)
+        self.assertCMLApproxData(interp_cube, ('experimental', 'analysis',
+                                               'interpolate', 'linear_nd.cml'))
+
 
 if __name__ == "__main__":
     tests.main()

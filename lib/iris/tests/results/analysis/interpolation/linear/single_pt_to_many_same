@@ -8,7 +8,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <auxCoord id="63128986" points="[1.0, 1.0, 1.0]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+        <auxCoord id="63128986" points="[1, 1, 1]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <geogCS earth_radius="6371229.0"/>
         </auxCoord>
       </coord>
