@@ -355,6 +355,14 @@ class IrisTest(unittest.TestCase):
     def assertArrayEqual(self, a, b, err_msg=''):
         np.testing.assert_array_equal(a, b, err_msg=err_msg)
 
+    def _assertMaskedArray(self, assertion, a, b, strict):
+        a_mask, b_mask = ma.getmaskarray(a), ma.getmaskarray(b)
+        np.testing.assert_array_equal(a_mask, b_mask)
+        if strict:
+            assertion(a.data, b.data)
+        else:
+            assertion(a[~a_mask].data, b[~b_mask].data)
+
     def assertMaskedArrayEqual(self, a, b, strict=False):
         """
         Check that masked arrays are equal. This requires the
@@ -373,11 +381,7 @@ class IrisTest(unittest.TestCase):
             elements.
 
         """
-        np.testing.assert_array_equal(a.mask, b.mask)
-        if strict or not np.ma.is_masked(a):
-            np.testing.assert_array_equal(a.data, b.data)
-        else:
-            np.testing.assert_array_equal(a[~a.mask].data, b[~b.mask].data)
+        self._assertMaskedArray(np.testing.assert_array_equal, a, b, strict)
 
     def assertArrayAlmostEqual(self, a, b, decimal=6):
         np.testing.assert_array_almost_equal(a, b, decimal=decimal)
@@ -401,12 +405,8 @@ class IrisTest(unittest.TestCase):
             elements.
 
         """
-        np.testing.assert_array_equal(a.mask, b.mask)
-        if strict or not np.ma.is_masked(a):
-            np.testing.assert_array_almost_equal(a.data, b.data)
-        else:
-            np.testing.assert_array_almost_equal(a[~a.mask].data,
-                                                 b[~b.mask].data)
+        self._assertMaskedArray(np.testing.assert_array_almost_equal, a, b,
+                                strict)
 
     def assertArrayAllClose(self, a, b, rtol=1.0e-7, atol=0.0, **kwargs):
         """
