@@ -248,19 +248,17 @@ class CubeList(list):
         return doc.toprettyxml(indent="  ")
 
     def _check_coords_compatibility(self, a_cube_dim_coord, a_cube_aux_coords):
-        coord_is_compatible = (a_cube_dim_coord.is_compatible(
-                other.coord(a_cube_dim_coord.name())) for 
-            other in self)
-        if not all(coord_is_compatible):
-            raise ValueError(
+        for other in self:
+            other_dim_coord = other.coord(a_cube_dim_coord.name())
+            if not a_cube_dim_coord.is_compatible(other_dim_coord):
+                raise ValueError(
                 "%s dim_coords are not compatible" % a_cube_dim_coord.name())
-        coord_is_compatible = (
-            a_cube_aux_coord.is_compatible(
-                other.coord(a_cube_aux_coord.name())) for 
-            other in self for 
-            a_cube_aux_coord in a_cube_aux_coords)
-        if not all(coord_is_compatible):
-            raise ValueError("aux_coords are not compatible")
+            
+            for a_cube_aux_coord in a_cube_aux_coords:
+                other_aux_coord = other.coord(a_cube_aux_coord.name())
+                if not a_cube_aux_coord.is_compatible(other_aux_coord):
+                    raise ValueError(
+                    "%s aux_coords are not compatible" % a_cube_aux_coord.name())
 
     def _make_new_dim_coord(self, a_cube_dim_coord):
         """
