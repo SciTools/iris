@@ -355,27 +355,58 @@ class IrisTest(unittest.TestCase):
     def assertArrayEqual(self, a, b, err_msg=''):
         np.testing.assert_array_equal(a, b, err_msg=err_msg)
 
-    def assertMaskedArrayEqual(self, a, b):
+    def assertMaskedArrayEqual(self, a, b, strict=False):
         """
         Check that masked arrays are equal. This requires the
         unmasked values and masks to be identical.
 
+        Args:
+
+        * a, b (array-like):
+            Two arrays to compare.
+
+        Kwargs:
+
+        * strict (bool):
+            If True, perform a complete mask and data array equality check.
+            If False (default), the data array equality considers only unmasked
+            elements.
+
         """
         np.testing.assert_array_equal(a.mask, b.mask)
-        np.testing.assert_array_equal(a[~a.mask].data, b[~b.mask].data)
+        if strict or not np.ma.is_masked(a):
+            np.testing.assert_array_equal(a.data, b.data)
+        else:
+            np.testing.assert_array_equal(a[~a.mask].data, b[~b.mask].data)
 
     def assertArrayAlmostEqual(self, a, b, decimal=6):
         np.testing.assert_array_almost_equal(a, b, decimal=decimal)
 
-    def assertMaskedArrayAlmostEqual(self, a, b):
+    def assertMaskedArrayAlmostEqual(self, a, b, strict=False):
         """
         Check that masked arrays are almost equal. This requires the
         masks to be identical, and the unmasked values to be almost
         equal.
 
+        Args:
+
+        * a, b (array-like):
+            Two arrays to compare.
+
+        Kwargs:
+
+        * strict (bool):
+            If True, perform a complete mask and data array equality check.
+            If False (default), the data array equality considers only unmasked
+            elements.
+
         """
         np.testing.assert_array_equal(a.mask, b.mask)
-        np.testing.assert_array_almost_equal(a[~a.mask].data, b[~b.mask].data)
+        if strict or not np.ma.is_masked(a):
+            np.testing.assert_array_almost_equal(a.data, b.data)
+        else:
+            np.testing.assert_array_almost_equal(a[~a.mask].data,
+                                                 b[~b.mask].data)
 
     def assertArrayAllClose(self, a, b, rtol=1.0e-7, atol=0.0, **kwargs):
         """
