@@ -20,26 +20,20 @@
 # importing anything else.
 import iris.tests as tests
 
-from operator import mul as op
+import operator
 
-from iris.analysis.maths import multiply as iris_operator
-import iris.tests.unit.analysis.maths as maths
+from iris.analysis.maths import multiply
+from iris.tests.unit.analysis.maths import TestValue
 
 
-class TestValue(maths._TestValue):
+class TestValue(tests.IrisTest, TestValue):
     @property
     def op(self):
-        return op
+        return operator.mul
 
     @property
     def func(self):
-        return iris_operator
-
-
-class TestInplace(maths._TestInplace):
-    @property
-    def func(self):
-        return iris_operator
+        return multiply
 
 
 if __name__ == "__main__":

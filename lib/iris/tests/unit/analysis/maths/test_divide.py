@@ -20,26 +20,20 @@
 # importing anything else.
 import iris.tests as tests
 
-from operator import div as op
+import operator
 
-from iris.analysis.maths import divide as iris_operator
-import iris.tests.unit.analysis.maths as maths
+from iris.analysis.maths import divide
+from iris.tests.unit.analysis.maths import TestValue
 
 
-class TestValue(maths._TestValue):
+class TestValue(tests.IrisTest, TestValue):
     @property
     def op(self):
-        return op
+        return operator.div
 
     @property
     def func(self):
-        return iris_operator
-
-
-class TestInplace(maths._TestInplace):
-    @property
-    def func(self):
-        return iris_operator
+        return divide
 
 
 if __name__ == "__main__":
