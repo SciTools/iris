@@ -14,6 +14,8 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+from itertools import izip
+
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
 
@@ -36,7 +38,7 @@ class Interpolator(object):
     def __init__(self, cube, interp_coords, extrapolation_mode=None):
         """
         Args:
-        
+
          * cube - the cube which represents the locations of the data to be
                   interpolated from.
          * interp_coords - the names or coord instances which are to be
@@ -48,7 +50,7 @@ class Interpolator(object):
                                 class for supported modes.
 
         .. note::
-        
+
             The attributes of the Interpolator should be considered read-only.
             Much of the setup of this Interpolator is necessarily done in
             ``__init__``.
@@ -121,7 +123,7 @@ class Interpolator(object):
         Sets up the interpolator's interpolation coordinates.
 
         Attributes defined by this method:
-        
+
          * _interp_coords
          * ndims
          * _circulars
@@ -187,7 +189,7 @@ class Interpolator(object):
         its input data.
 
         .. note::
-        
+
             By default the interpolated dtype is a floating point value,
             however some subclasses may want to relax this requirement.
 
@@ -203,24 +205,24 @@ class Interpolator(object):
         an array computed by interpolating the given data.
 
         Args:
-        
+
         * coord_points - The coordinate values to interpolate over. The array
                          should have a shape of (npts, ndim).
-        
+
         * data - The data to interpolate - not necessarily the data that was
                  in the cube which was used to construct this interpolator.
                  If the data has fewer dimensions, data_dims should be
                  defined.
-        
+
         Kwargs:
-        
+
         * data_dims - The dimensions of the given data array in terms of the
                       original cube passed through to this Interpolator's
                       constructor. If None the data dimensions must map
                       one-to-one on :data:`.cube`.
 
         Returns:
-        
+
         * interpolated_data - The ``data`` array interpolated using the given
                               ``coord_points``. The shape of
                               ``interpolated_data`` will be the shape of the
@@ -229,7 +231,7 @@ class Interpolator(object):
                               ``npts``.
 
         .. note::
-        
+
             The implementation of this method means that even for small
             subsets of the original cube's data, the data to be interpolated
             will be broadcast into the orginal cube's shape - thus resulting
@@ -238,7 +240,8 @@ class Interpolator(object):
             fundamental reason this must be the case.
 
         """
-        coord_points = self._prepare_coord_points(coord_points)
+        coord_points = self._interpolate_data_prepare_coord_points(
+            coord_points)
 
         data_dims = data_dims or range(self.cube.ndim)
 
@@ -307,7 +310,7 @@ class Interpolator(object):
                 result_data.mask[interpolant_index] = r > 0
         return result_data
 
-    def _prepare_coord_points(self, coord_points):
+    def _interpolate_data_prepare_coord_points(self, coord_points):
         try:
             coord_points = _ndim_coords_from_arrays(coord_points, self.ndims)
             if coord_points.shape[-1] != self.ndims:
@@ -348,13 +351,13 @@ class Interpolator(object):
                                                src_modulus) + offset
         return coord_points, data
 
-    def orthogonal_points(self, sample_points, data, data_dims=None):
+    def points(self, sample_points, data, data_dims=None):
         """
         Interpolate the given data values at the given list of
-        orthogonal (coord, points) pairs. 
-        
+        orthogonal (coord, points) pairs.
+
         Args
-        
+
         * sample_points - list of (coord, points) pairs. Order of coordinates
                           needn't be the order of the coordinates passed to
                           this interpolator's constructor.
@@ -362,18 +365,18 @@ class Interpolator(object):
                  in the cube which was used to construct this interpolator.
                  If the data has fewer dimensions, data_dims should be
                  defined.
-        
+
         Kwargs:
 
         * data_dims - The dimensions of the given data array in terms of the
                       original cube passed through to this Interpolator's
                       constructor. If None the data dimensions must map
                       one-to-one on :data:`.cube`.
-        
+
         Returns
-        
-        * interpolated_data - An array of shape 
-        
+
+        * interpolated_data - An array of shape
+
         """
         coord_points = [None] * len(self.coord_dims)
         #: The shape of the array after full interpolation of each dimension.
@@ -438,7 +441,7 @@ class Interpolator(object):
 
     def _orthogonal_points_preserve_dimensionality(self, sample_points, data,
                                                    data_dims=None):
-        data = self.orthogonal_points(sample_points, data, data_dims)
+        data = self.points(sample_points, data, data_dims)
         index = tuple(0 if dim not in data_dims else slice(None)
                       for dim in range(self.cube.ndim))
         return data[index]
@@ -461,18 +464,18 @@ class Interpolator(object):
     def __call__(self, sample_points, collapse_scalar=True):
         """
         Construct a cube from the specified orthogonal interpolation points.
-        
+
         Args
-        
+
         * sample_points - list of (coord, points) pairs. Order of coordinates
                           needn't be the order of the coordinates passed to
                           this interpolator's constructor.
-        
+
         Kwargs
-        
+
         * collapse_scalar - whether to collapse the dimension of the scalar
                             sample points in the resulting cube. Default is
-                            True.   
+                            True.
 
         Returns:
 
@@ -484,7 +487,7 @@ class Interpolator(object):
 
         """
         data = self.cube.data
-        interpolated_data = self.orthogonal_points(sample_points, data)
+        interpolated_data = self.points(sample_points, data)
         if interpolated_data.ndim == 0:
             interpolated_data = np.asanyarray(interpolated_data, ndmin=1)
 
@@ -599,36 +602,26 @@ class RectilinearInterpolator(Interpolator):
             if not isinstance(coord, DimCoord):
                 # check monotonic.
                 if not iris.util.monotonic(coord.points, strict=True):
-                    raise ValueError('Cannot interpolate over the non-'
-                                     'monotonic coordinate {}.'.format(coord.name()))
+                    msg = 'Cannot interpolate over the non-' \
+                        'monotonic coordinate {}.'
+                    raise ValueError(msg.format(coord.name()))
 
         self._reorder_non_increasing_axes()
 
     def _reorder_non_increasing_axes(self):
-        # Force all coordinates to be monotonically increasing. Generally this isn't
-        # always necessary for a rectilinear interpolator, but it is a common
-        # requirement.
+        # Force all coordinates to be monotonically increasing. Generally this
+        # isn't always necessary for a rectilinear interpolator, but it is a
+        # common requirement.
 
-        # We've already checked that each coordinate is strictly monotonic in _validate_coord,
-        # so we just need to get the direction from the difference of the first
-        # two values (if more than one exists!).
+        # We've already checked that each coordinate is strictly monotonic in
+        # _validate_coord, so we just need to get the direction from the
+        # difference of the first two values (if more than one exists!).
         self.coord_decreasing = [np.all(np.diff(points[:2]) < 0)
                                  for points in self.coord_points]
         if np.any(self.coord_decreasing):
+            pairs = izip(self.coord_decreasing, self.coord_points)
             self.coord_points = [points[::-1] if is_decreasing else points
-                                 for is_decreasing, points in zip(self.coord_decreasing, self.coord_points)]
-
-    def _prepare_coord_points_and_data(self, coord_points, data):
-        # Sort out the order of the data for the monotonically decreasing
-        # coordinates.
-        if any(self.coord_decreasing):
-            data_indexer = [slice(None)] * data.ndim
-            for is_decreasing, dim in zip(self.coord_decreasing, self.coord_dims):
-                if is_decreasing:
-                    data_indexer[dim] = slice(None, None, -1)
-            data = data[tuple(data_indexer)]
-
-        return super(RectilinearInterpolator, self)._prepare_coord_points_and_data(coord_points, data)
+                                 for is_decreasing, points in pairs]
 
 
 class LinearInterpolator(RectilinearInterpolator):
@@ -646,9 +639,10 @@ class LinearInterpolator(RectilinearInterpolator):
         self._interpolator.values = data
         return self._interpolator(coord_points)
 
-    def _prepare_coord_points(self, coord_points):
-        coord_points = RectilinearInterpolator._prepare_coord_points(
-            self, coord_points)
+    def _interpolate_data_prepare_coord_points(self, coord_points):
+        cls = RectilinearInterpolator
+        coord_points = cls._interpolate_data_prepare_coord_points(self,
+                                                                  coord_points)
         if issubclass(coord_points.dtype.type, np.integer):
             coord_points = coord_points.astype(np.float)
         return coord_points
@@ -683,4 +677,3 @@ class LinearInterpolator(RectilinearInterpolator):
                                                       bounds_error=False)
         self._update_extrapolation_mode(extrapolation_mode)
         return self._interpolator
-

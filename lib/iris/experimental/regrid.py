@@ -1504,7 +1504,8 @@ class _RegularGridInterpolator(object):
 
     def _evaluate_linear(self, indices, norm_distances, out_of_bounds):
         # slice for broadcasting over trailing dimensions in self.values
-        vslice = (slice(None),) + (np.newaxis,) * (self.values.ndim - len(indices))
+        vslice = (slice(None),) + (np.newaxis,) * \
+            (self.values.ndim - len(indices))
 
         # find relevant values
         # each i and i+1 represents a edge

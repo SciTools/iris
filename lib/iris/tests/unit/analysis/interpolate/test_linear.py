@@ -49,19 +49,25 @@ class TestNDCoords(tests.IrisTest):
 
     def test_first(self):
         cube = self.cube
-        
-        with self.assertRaisesRegexp(ValueError, "Interpolation coords must be 1-d for rectilinear interpolation."):
+
+        msg = 'Interpolation coords must be 1-d for rectilinear interpolation.'
+        with self.assertRaisesRegexp(ValueError, msg):
             interp_cube = linear(cube, {'foo': 15, 'bar': 10})
-        
+
         interp_cube = linear(cube, {'latitude': 1.5, 'longitude': 1.5})
-        self.assertCMLApproxData(interp_cube, ('experimental', 'analysis', 'interpolate', 'linear_nd_2_coords.cml'))
-        
+        self.assertCMLApproxData(interp_cube, ('experimental', 'analysis',
+                                               'interpolate',
+                                               'linear_nd_2_coords.cml'))
+
         interp_cube = linear(cube, {'wibble': np.float32(1.5)})
-        self.assertCMLApproxData(interp_cube, ('experimental', 'analysis', 'interpolate', 'linear_nd_with_extrapolation.cml'))
-        
+        expected = ('experimental', 'analysis', 'interpolate',
+                    'linear_nd_with_extrapolation.cml')
+        self.assertCMLApproxData(interp_cube, expected)
+
         interp_cube = linear(cube, {'wibble': 20})
         self.assertArrayEqual(np.mean(cube.data, axis=0), interp_cube.data)
-        self.assertCMLApproxData(interp_cube, ('experimental', 'analysis', 'interpolate', 'linear_nd.cml'))
+        self.assertCMLApproxData(interp_cube, ('experimental', 'analysis',
+                                               'interpolate', 'linear_nd.cml'))
 
 
 if __name__ == "__main__":

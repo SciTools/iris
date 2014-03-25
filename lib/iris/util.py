@@ -1094,10 +1094,11 @@ def new_axis(src_cube, scalar_coord=None):
 
 
 def remap_cube_dimensions(cube, remove_axes=None, new_axes=None):
-    # XXX Ignore this - this is an old implementation - I will merge with #1066 when it is ready.
+    # XXX Ignore this - this is an old implementation
+    # I will merge with #1066 when it is ready.
     remove_axes = remove_axes or []
     new_axes = new_axes or []
-    
+
     ndim = cube.ndim
     new_axis = 0
     index = []
@@ -1107,9 +1108,10 @@ def remap_cube_dimensions(cube, remove_axes=None, new_axes=None):
             # XXX Support repeated axes.
             index.append(np.newaxis)
             new_axis += 1
-            
+
         if old_axis in remove_axes:
-            assert cube.shape[old_axis] == 1, 'Tried removing an axis which is not of length 1.'
+            msg = 'Tried removing an axis which is not of length 1.'
+            assert cube.shape[old_axis] == 1, msg
             index_val = 0
             dim_mapping[old_axis] = None
         else:
@@ -1124,7 +1126,7 @@ def remap_cube_dimensions(cube, remove_axes=None, new_axes=None):
     if cube.has_lazy_data():
         cube.data
     cube._my_data = cube._my_data[tuple(index)]
-    
+
     for coord_and_dims in cube._aux_coords_and_dims[:]:
         coord, dims = coord_and_dims
         if set(dims).intersection(remove_axes):
@@ -1159,7 +1161,7 @@ def remap_cube_dimensions(cube, remove_axes=None, new_axes=None):
 def squeeze(cube):
     """
     Remove length 1 dimensions from the cube.
-    
+
     """
     len_1_axes = [axis for axis, length in enumerate(cube.shape)
                   if length == 1]

@@ -55,6 +55,7 @@ import numpy.ma as ma
 import scipy.interpolate
 import scipy.stats.mstats
 
+from iris.analysis._interpolator import LinearInterpolator
 import iris.coords
 from iris.exceptions import LazyAggregatorError
 
@@ -1480,35 +1481,57 @@ def clear_phenomenon_identity(cube):
     cube.cell_methods = tuple()
 
 
-################################################################################
+###############################################################################
 #
 # Interpolation API
 #
-################################################################################
-
-from iris.analysis.interpolator import LinearInterpolator
-
+###############################################################################
 
 class Interpolator(object):
+    """
+    The abstract base class defines the common framework for all
+    interpolaton schemes.
+
+    """
     def __init__(self, extrapolation_mode=None):
         self._mode = extrapolation_mode
 
     def interpolator(self, src_cube, interp_coords, extrapolation_mode=None):
-        """Blah blah blah...."""
+        """
+        Creates an interpolator to perform interpolation over the given
+        :class:`~iris.cube.Cube` using the specified coordinates.
+
+        Args:
+
+        * src_cube:
+            The source :class:`iris.cube.Cube` which contains the data
+            to be interpolated from.
+        * interp_coords:
+            The names or coordinate instances which are to be interpolated
+            over.
+        * extrapolation_mode:
+            The extrapolation mode to use with this interpolator.
+
+        """
         _mode = self._mode
         if extrapolation_mode is not None:
             _mode = extrapolation_mode
         return self._interpolator(src_cube, interp_coords,
                                   extrapolation_mode=_mode)
 
+    def _interpolator(self, src_cube, interp_coords, extrapolation_mode=None):
+        raise NotImplementedError('Subclass must implement.')
+
 
 class Linear(Interpolator):
-    """Scheme is ...."""
+    """
+    This class provides support for creating an interpolator that performs
+    linear interpolation over one or more orthogonal coordinates.
 
+    """
     def _interpolator(self, src_cube, interp_coords, extrapolation_mode=None):
-        _mode = self._mode
-        if extrapolation_mode is not None:
-            _mode = extrapolation_mode
+        """Creates the linear interpolator instance."""
+        _mode = extrapolation_mode
         interpolator = LinearInterpolator(src_cube, interp_coords,
                                           extrapolation_mode=_mode)
         return interpolator

@@ -677,10 +677,10 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
 
     for coord, _ in sample_points:
         coords.append(coord)
-    from interpolator import LinearInterpolator
+    from _interpolator import LinearInterpolator
     interp = LinearInterpolator(cube, coords,
                                 extrapolation_mode=extrapolation_mode)
-    return interp.orthogonal_cube(sample_points)
+    return interp(sample_points)
 
 
 def _resample_coord(coord, src_coord, direction, target_points, interpolate):
