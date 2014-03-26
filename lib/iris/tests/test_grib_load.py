@@ -266,39 +266,39 @@ class TestGribLoad(tests.GraphicsTest):
                                                   name)))[0]
             return cube
 
-        #pre-defined sphere
+        # pre-defined sphere
         cube = old_compat_load("0.grib2")
         self.assertCML(cube, ("grib_load", "earth_shape_0.cml"))
 
-        #custom sphere
+        # custom sphere
         cube = old_compat_load("1.grib2")
         self.assertCML(cube, ("grib_load", "earth_shape_1.cml"))
 
-        #IAU65 oblate sphere
+        # IAU65 oblate sphere
         cube = old_compat_load("2.grib2")
         self.assertCML(cube, ("grib_load", "earth_shape_2.cml"))
 
-        #custom oblate spheroid (km)
+        # custom oblate spheroid (km)
         cube = old_compat_load("3.grib2")
         self.assertCML(cube, ("grib_load", "earth_shape_3.cml"))
 
-        #IAG-GRS80 oblate spheroid
+        # IAG-GRS80 oblate spheroid
         cube = old_compat_load("4.grib2")
         self.assertCML(cube, ("grib_load", "earth_shape_4.cml"))
 
-        #WGS84
+        # WGS84
         cube = old_compat_load("5.grib2")
         self.assertCML(cube, ("grib_load", "earth_shape_5.cml"))
 
-        #pre-defined sphere
+        # pre-defined sphere
         cube = old_compat_load("6.grib2")
         self.assertCML(cube, ("grib_load", "earth_shape_6.cml"))
 
-        #custom oblate spheroid (m)
+        # custom oblate spheroid (m)
         cube = old_compat_load("7.grib2")
         self.assertCML(cube, ("grib_load", "earth_shape_7.cml"))
 
-        #grib1 - same as grib2 shape 6, above
+        # grib1 - same as grib2 shape 6, above
         cube = old_compat_load("global.grib1")
         self.assertCML(cube, ("grib_load", "earth_shape_grib1.cml"))
 

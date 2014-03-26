@@ -952,8 +952,8 @@ def symbols(x, y, symbols, size, axes=None, units='inches'):
     #   match_original
     #   See matplotlib.collections.PatchCollection.__init__
     #   Specifically matplotlib/collections line 1053
-    #pc = PatchCollection(symbols, offsets=offsets, transOffset=ax.transData,
-    #                     match_original=True)
+    # pc = PatchCollection(symbols, offsets=offsets, transOffset=ax.transData,
+    #                      match_original=True)
     facecolors = [p.get_facecolor() for p in symbols]
     edgecolors = [p.get_edgecolor() for p in symbols]
     linewidths = [p.get_linewidth() for p in symbols]

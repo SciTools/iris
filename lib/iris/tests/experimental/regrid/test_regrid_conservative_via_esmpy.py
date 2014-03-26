@@ -265,8 +265,8 @@ class TestConservativeRegrid(tests.IrisTest):
         ylims = _minmax(c1.coord(axis='y').contiguous_bounds())
         # Reduce the dimensions slightly to avoid NaNs in regridded orography
         delta = 0.05
-            # NOTE: this is *not* a small amount.  Think there is a bug.
-            # NOTE: See https://github.com/SciTools/iris/issues/458
+        # || NOTE: this is *not* a small amount.  Think there is a bug.
+        # || NOTE: See https://github.com/SciTools/iris/issues/458
         xlims = np.interp([delta, 1.0 - delta], [0, 1], xlims)
         ylims = np.interp([delta, 1.0 - delta], [0, 1], ylims)
         pole_latlon = (c1_cs.grid_north_pole_latitude,

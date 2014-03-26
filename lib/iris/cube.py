@@ -959,7 +959,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                        factories]
 
         # Deprecate name based searching
-        ### Search by coord name, if have no match
+        # -- Search by coord name, if have no match
         # XXX Where did this come from? And why isn't it reflected in the
         # docstring?
         if not matches:
