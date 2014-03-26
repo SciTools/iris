@@ -43,6 +43,9 @@ class _MaskedArrayEquality(object):
 
     def test_non_strict_comparison(self):
         # Checking masked array equality and all unmasked array data values.
+        self._func(self.arr1, self.arr2, strict=False)
+
+    def test_default_strict_arg_comparison(self):
         self._func(self.arr1, self.arr2)
 
     def test_nomask(self):
@@ -51,14 +54,28 @@ class _MaskedArrayEquality(object):
         # 'nomask'.
         arr1 = np.ma.array([1, 2, 3, 4])
         with self.assertRaises(AssertionError):
-            self._func(arr1, self.arr2)
+            self._func(arr1, self.arr2, strict=False)
 
     def test_nomask_unmasked(self):
         # Ensure that a masked array with 'nomask' can compare with an entirely
         # unmasked array.
         arr1 = np.ma.array([1, 2, 3, 4])
         arr2 = np.ma.array([1, 2, 3, 4], mask=False)
-        self._func(arr1, arr2)
+        self._func(arr1, arr2, strict=False)
+
+    def test_different_mask_strict(self):
+        # Differing masks, equal data
+        arr2 = self.arr1.copy()
+        arr2[0] = np.ma.masked
+        with self.assertRaises(AssertionError):
+            self._func(self.arr1, arr2, strict=True)
+
+    def test_different_mask_nonstrict(self):
+        # Differing masks, equal data
+        arr2 = self.arr1.copy()
+        arr2[0] = np.ma.masked
+        with self.assertRaises(AssertionError):
+            self._func(self.arr1, arr2, strict=False)
 
 
 class Test_assertMaskedArrayEqual(_MaskedArrayEquality, tests.IrisTest):
