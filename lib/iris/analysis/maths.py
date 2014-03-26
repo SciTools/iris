@@ -473,9 +473,11 @@ def _binary_op_common(operation_function, operation_noun, cube, other,
         other = _broadcast_cube_coord_data(cube, other, operation_noun, dim)
     elif isinstance(other, iris.cube.Cube):
         try:
-            _, other = np.broadcast_arrays(cube.data, other.data)
+            np.broadcast_arrays(cube.data, other.data)
         except ValueError:
             other = iris.util.as_compatible_shape(other, cube).data
+        else:
+            other = other.data
 
     # don't worry about checking for other data types (such as scalers or
     # np.ndarrays) because _assert_compatible validates that they are broadcast

@@ -34,7 +34,6 @@ from iris.cube import Cube
 from iris.coords import AuxCoord, DimCoord
 from iris.exceptions import CoordinateNotFoundError, CoordinateCollapseError
 from iris.exceptions import LazyAggregatorError
-import iris.tests.stock as stock
 
 
 class Test___init___data(tests.IrisTest):
@@ -686,33 +685,6 @@ class Test_intersection__ScatterModulus(tests.IrisTest):
         self.assertArrayEqual(result.coord('longitude').points,
                               [5, 10, 8, 5, 3])
         self.assertArrayEqual(result.data, range(5))
-
-class Test___add___(tests.IrisTest):
-    def test_cube_collapsed_first(self):
-        # Test value and no copy!
-        c
-        pass
-
-    def test_cube_collapsed_middle(self):
-        pass
-
-    def test_cube_collapsed_multiple(self):
-        pass
-
-class Test___subtract___(tests.IrisTest):
-    def test_cube_collapsed_first(self):
-        # Test value and no copy!
-        cube = stock.simple_3d()
-        wibble_mean = cube.collapsed('wibble', MEAN)
-        res = cube - wibble_mean
-        expected_data = ...
-        self.assertCML(res)
-
-    def test_cube_collapsed_middle(self):
-        pass
-
-    def test_cube_collapsed_multiple(self):
-        pass
 
 
 if __name__ == "__main__":

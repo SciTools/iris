@@ -9,11 +9,11 @@
 #
 # Iris is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with Iris. If not, see <http://www.gnu.org/licenses/>.
+# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :func:`iris.analysis.maths.add` function."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -23,16 +23,16 @@ import iris.tests as tests
 import operator
 
 from iris.analysis.maths import add
-import iris.tests.unit.analysis.maths as maths
+from iris.tests.unit.analysis.maths import CubeBroadcastTestMixin
 
 
-class TestBroadcast(maths._TestBroadcast):
+class TestBroadcast(tests.IrisTest, CubeBroadcastTestMixin):
     @property
-    def op(self):
+    def data_op(self):
         return operator.add
 
     @property
-    def func(self):
+    def cube_func(self):
         return add
 
 

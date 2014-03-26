@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -9,11 +9,11 @@
 #
 # Iris is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with Iris. If not, see <http://www.gnu.org/licenses/>.
+# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :mod:`iris.analysis.maths` module."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -21,60 +21,83 @@
 import iris.tests as tests
 
 from abc import ABCMeta, abstractproperty
+
 import numpy as np
 
-import iris
+from iris.analysis import MEAN
 import iris.tests.stock as stock
 
 
-class _TestBroadcast(tests.IrisTest):
+class CubeBroadcastTestMixin(object):
     __metaclass__ = ABCMeta
 
     @abstractproperty
-    def op(self):
+    def data_op(self):
         pass
 
     @abstractproperty
-    def func(self):
+    def cube_func(self):
         pass
 
-    def setUp(self):
-        self.cube = stock.simple_4d_with_hybrid_height()
-        self.cube._aux_factories = []
+    def test_collapse_zeroth_dim(self):
+        cube = stock.realistic_4d_no_derived()
+        other = cube.collapsed('time', MEAN)
+        res = self.cube_func(cube, other)
+        self.assertCML(res, checksum=False)
+        # No modification to other.data is needed as numpy broadcasting
+        # should be sufficient.
+        expected_data = self.data_op(cube.data, other.data)
+        # Use assertMaskedArrayEqual as collapsing with MEAN results
+        # in a cube with a masked data array.
+        self.assertMaskedArrayEqual(res.data, expected_data)
 
-    def test_outsermost(self):
-        other = self.cube.collapsed(['time'], iris.analysis.MEAN)
+    def test_collapse_all_dims(self):
+        cube = stock.realistic_4d_no_derived()
+        other = cube.collapsed(cube.coords(dim_coords=True), MEAN)
+        res = self.cube_func(cube, other)
+        self.assertCML(res, checksum=False)
+        # No modification to other.data is needed as numpy broadcasting
+        # should be sufficient.
+        expected_data = self.data_op(cube.data, other.data)
+        # Use assertArrayEqual rather than assertMaskedArrayEqual as
+        # collapsing all dims does not result in a masked array.
+        self.assertArrayEqual(res.data, expected_data)
 
-        res_cube = self.func(self.cube, other)
+    def test_collapse_last_dims(self):
+        cube = stock.realistic_4d_no_derived()
+        other = cube.collapsed(['grid_latitude', 'grid_longitude'], MEAN)
+        res = self.cube_func(cube, other)
+        self.assertCML(res, checksum=False)
+        # Transpose the dimensions in self.cube that have been collapsed in
+        # other to lie at the front, thereby enabling numpy broadcasting to
+        # function when applying data operator. Finish by transposing back
+        # again to restore order.
+        expected_data = self.data_op(cube.data.transpose((2, 3, 0, 1)),
+                                     other.data).transpose(2, 3, 0, 1)
+        self.assertMaskedArrayEqual(res.data, expected_data)
 
-        dat = self.op(self.cube.data, other.data)
-        com_cube = self.cube.copy(dat)
-        com_cube.standard_name = None
-        com_cube.units = res_cube.units
+    def test_collapse_middle_dim(self):
+        cube = stock.realistic_4d_no_derived()
+        other = cube.collapsed(['model_level_number'], MEAN)
+        res = self.cube_func(cube, other)
+        self.assertCML(res, checksum=False)
+        # Add the collapsed dimension back in via np.newaxis to enable
+        # numpy broadcasting to function.
+        expected_data = self.data_op(cube.data,
+                                     other.data[:, np.newaxis, ...])
+        self.assertMaskedArrayEqual(res.data, expected_data)
 
-        self.assertEqual(res_cube, com_cube)
-
-    def test_innermost(self):
-        other = self.cube.collapsed(['grid_latitude', 'grid_longitude'],
-                                    iris.analysis.MEAN)
-        res_cube = self.func(self.cube, other)
-
-        dat = self.op(self.cube.data.transpose((2, 3, 0, 1)),
-                      other.data).transpose(2, 3, 0, 1)
-        com_cube = self.cube.copy(dat)
-        com_cube.standard_name = None
-        com_cube.units = res_cube.units
-
-        self.assertEqual(res_cube, com_cube)
-
-    def test_between(self):
-        other = self.cube.collapsed(['model_level_number'], iris.analysis.MEAN)
-
-        res_cube = self.func(self.cube, other)
-
-        dat = self.op(self.cube.data, other.data[:, np.newaxis, ...])
-        com_cube = self.cube.copy(dat)
-        com_cube.standard_name = None
-        com_cube.units = res_cube.units
-
-        self.assertEqual(res_cube, com_cube)
+    def test_slice(self):
+        cube = stock.realistic_4d_no_derived()
+        for dim in range(cube.ndim):
+            keys = [slice(None)] * cube.ndim
+            keys[dim] = 3
+            other = cube[tuple(keys)]
+            res = self.cube_func(cube, other)
+            self.assertCML(res, checksum=False)
+            # Add the collapsed dimension back in via np.newaxis to enable
+            # numpy broadcasting to function.
+            keys[dim] = np.newaxis
+            expected_data = self.data_op(cube.data,
+                                         other.data[tuple(keys)])
+            self.assertArrayEqual(res.data, expected_data)
