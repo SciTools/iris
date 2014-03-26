@@ -251,58 +251,67 @@ class CubeList(list):
         for other in self:
             other_dim_coord = other.coord(a_cube_dim_coord.name())
             if not a_cube_dim_coord.is_compatible(other_dim_coord):
-                raise ValueError(
-                "%s dim_coords are not compatible" % a_cube_dim_coord.name())
-            
+                raise ValueError("%s dim_coords are not compatible"
+                                 % a_cube_dim_coord.name())
+
             for a_cube_aux_coord in a_cube_aux_coords:
                 other_aux_coord = other.coord(a_cube_aux_coord.name())
                 if not a_cube_aux_coord.is_compatible(other_aux_coord):
-                    raise ValueError(
-                    "%s aux_coords are not compatible" % a_cube_aux_coord.name())
+                    raise ValueError("%s aux_coords are not compatible"
+                                     % a_cube_aux_coord.name())
 
     def _make_new_dim_coord(self, a_cube_dim_coord):
         """
         Constructs a new dim coord that comprises all
-        the unique values of the dim coords of the 
+        the unique values of the dim coords of the
         component cubes.
-        
+
         """
-        all_pts = (pt for cube in self for pt in cube.coord(a_cube_dim_coord._as_defn()).points)
+        all_pts = (pt for cube in self for pt
+                   in cube.coord(a_cube_dim_coord._as_defn()).points)
         new_dim_coord_points = sorted(list(set(all_pts)))
         new_dim_coord = iris.coords.DimCoord(
             new_dim_coord_points, **
             a_cube_dim_coord._as_defn()._asdict())
-        if a_cube_dim_coord.has_bounds() and a_cube_dim_coord.bounds is not None:
-            all_pts = (tuple(pt) for 
-                cube in self for pt in 
-                cube.coord(a_cube_dim_coord._as_defn()).bounds)
+        if a_cube_dim_coord.has_bounds() \
+                and a_cube_dim_coord.bounds is not None:
+            all_pts = (tuple(pt) for
+                       cube in self for pt in
+                       cube.coord(a_cube_dim_coord._as_defn()).bounds)
             new_dim_coord.bounds = sorted(list(set(all_pts)))
         return new_dim_coord
 
-    def _make_new_aux_coords(self, dim_coord_name, a_cube_aux_coords, new_dim_coord):
+    def _make_new_aux_coords(self,
+                             dim_coord_name,
+                             a_cube_aux_coords,
+                             new_dim_coord):
         """
-        Constructs new aux coords comprising all the values corresponding to the new dim
-        coord values for all the component cubes. If aux coord values are different
-        for different cubes, but the same dim coord value, then raises ValueError.
+        Constructs new aux coords comprising all the values
+        corresponding to the new dim coord values for all
+        the component cubes. If aux coord values are different
+        for different cubes, but the same dim coord value,
+        then raises ValueError.
+
         """
         new_aux_coords = []
         if a_cube_aux_coords:
             for a_cube_aux_coord in a_cube_aux_coords:
-                new_aux_coord_points = np.array([np.nan] * len(new_dim_coord.points))
+                new_aux_coord_points = np.array([np.nan]
+                                                * len(new_dim_coord.points))
                 if a_cube_aux_coord.bounds is not None:
                     new_aux_coord_bounds = np.array(
                         [[np.nan, np.nan]] * len(new_dim_coord.points))
                 else:
                     new_aux_coord_bounds = None
                 new_aux_coord = iris.coords.AuxCoord(
-                    new_aux_coord_points, 
+                    new_aux_coord_points,
                     bounds=new_aux_coord_bounds, **
                     a_cube_aux_coord._as_defn()._asdict())
                 new_aux_coords.append(new_aux_coord)
-            
+
             for cube in self:
-                ind_data = np.in1d(new_dim_coord.points, 
-                    cube.coord(dim_coord_name).points)
+                ind_data = np.in1d(new_dim_coord.points,
+                                   cube.coord(dim_coord_name).points)
                 for new_aux_coord in new_aux_coords:
                     cubes_aux_coord = cube.coord(new_aux_coord._as_defn())
                     # check if aux coords are different
@@ -311,25 +320,32 @@ class CubeList(list):
                     # replacement coord is different
                     # and present coord is not a nan
                     if any(
-                        (cubes_aux_coord.points != new_aux_coord.points[ind_data]) & (~np.isnan(new_aux_coord.points[ind_data]))):
+                        (cubes_aux_coord.points !=
+                            new_aux_coord.points[ind_data])
+                            & (~np.isnan(new_aux_coord.points[ind_data]))):
                         raise ValueError(
                             "%s aux_coord values are different "
                             "for the same dim_coord "
-                            "values on different cubes" % 
+                            "values on different cubes" %
                             new_aux_coord.name())
                     new_aux_coord.points[ind_data] = cubes_aux_coord.points
                     if cubes_aux_coord.bounds is not None:
                         new_aux_coord.bounds[ind_data] = cubes_aux_coord.bounds
-        
+
         return new_aux_coords
 
-    def _make_padded_cubes(self, new_cubes, dim_coord_name, a_cube_coord_dim, new_dim_coord, new_aux_coords):
+    def _make_padded_cubes(self,
+                           new_cubes,
+                           dim_coord_name,
+                           a_cube_coord_dim,
+                           new_dim_coord,
+                           new_aux_coords):
         """
         Updates new_cubes with cubes using the new aux and dim coords
-        
+
         """
         newer_cubes = iris.cube.CubeList([])
-        
+
         for cube in new_cubes:
             old_dim_coord = cube.coord(dim_coord_name)
             new_shape = list(cube.shape)
@@ -338,28 +354,31 @@ class CubeList(list):
             new_data = np.ma.empty(new_shape)
             new_data.mask = True
             insert_real_data_index = [slice(None)] * len(cube.shape)
-            insert_real_data_index[np.array(a_cube_coord_dim)] = np.in1d(new_dim_coord.points, old_dim_coord.points)
+            insert_real_data_index[np.array(a_cube_coord_dim)] = \
+                np.in1d(new_dim_coord.points, old_dim_coord.points)
             new_data[insert_real_data_index] = cube.data
             try:
                 new_data.mask[insert_real_data_index] = cube.data.mask
             except AttributeError:
                 new_data.mask[insert_real_data_index] = False
-            dim_coords_and_dims = [[dc, dim] for 
-                dc, dim in 
-                cube._dim_coords_and_dims if 
-                dim != a_cube_coord_dim]
+            dim_coords_and_dims = [[dc, dim] for
+                                   dc, dim in
+                                   cube._dim_coords_and_dims if
+                                   dim != a_cube_coord_dim]
             dim_coords_and_dims.append([new_dim_coord, (a_cube_coord_dim)])
-            aux_coords_and_dims = [[ac, dim] for ac, dim in 
-                cube._aux_coords_and_dims if 
-                dim != (a_cube_coord_dim, )]
-            aux_coords_and_dims.extend([new_aux_coord, (a_cube_coord_dim)] for new_aux_coord in new_aux_coords)
+            aux_coords_and_dims = [[ac, dim] for ac, dim in
+                                   cube._aux_coords_and_dims if
+                                   dim != (a_cube_coord_dim,)]
+            aux_coords_and_dims.extend(
+                [new_aux_coord, (a_cube_coord_dim)]
+                for new_aux_coord in new_aux_coords)
             new_cube = iris.cube.Cube(
-                new_data, 
-                dim_coords_and_dims=dim_coords_and_dims, 
+                new_data,
+                dim_coords_and_dims=dim_coords_and_dims,
                 aux_coords_and_dims=aux_coords_and_dims,
                 **cube.metadata._asdict())
             newer_cubes.append(new_cube)
-        
+
         new_cubes = newer_cubes[:]
         return new_cubes
 
@@ -389,10 +408,17 @@ class CubeList(list):
             a_cube_aux_coords = a_cube.coords(
                 dimensions=a_cube_coord_dim, dim_coords=False)
 
-            self._check_coords_compatibility(a_cube_dim_coord, a_cube_aux_coords)
+            self._check_coords_compatibility(a_cube_dim_coord,
+                                             a_cube_aux_coords)
             new_dim_coord = self._make_new_dim_coord(a_cube_dim_coord)
-            new_aux_coords = self._make_new_aux_coords(dim_coord_name, a_cube_aux_coords, new_dim_coord)
-            new_cubes = self._make_padded_cubes(new_cubes, dim_coord_name, a_cube_coord_dim, new_dim_coord, new_aux_coords)
+            new_aux_coords = self._make_new_aux_coords(dim_coord_name,
+                                                       a_cube_aux_coords,
+                                                       new_dim_coord)
+            new_cubes = self._make_padded_cubes(new_cubes,
+                                                dim_coord_name,
+                                                a_cube_coord_dim,
+                                                new_dim_coord,
+                                                new_aux_coords)
 
         return new_cubes
 
