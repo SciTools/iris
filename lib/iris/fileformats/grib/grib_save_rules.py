@@ -52,9 +52,9 @@ def gribbability_check(cube):
         raise iris.exceptions.TranslationError("time coord not found")
 
 
-###########################
-### grid template stuff ###
-###########################
+# ###########################
+# ### grid template stuff ###
+# ###########################
 
 
 def shape_of_the_earth(cube, grib):
@@ -177,9 +177,9 @@ def grid_template(cube, grib):
         raise ValueError("Currently unhandled CoordSystem: %s" % cs)
 
 
-##############################
-### product template stuff ###
-##############################
+# ##############################
+# ### product template stuff ###
+# ##############################
 
 
 def param_code(cube, grib):
@@ -610,7 +610,7 @@ def data(cube, grib):
     gribapi.grib_set_double_array(grib, "values", data.flatten())
 
     # todo: check packing accuracy?
-    #print "packingError", gribapi.getb_get_double(grib, "packingError")
+#    print "packingError", gribapi.getb_get_double(grib, "packingError")
 
 
 def run(cube, grib):
