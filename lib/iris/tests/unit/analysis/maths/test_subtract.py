@@ -23,10 +23,10 @@ import iris.tests as tests
 import operator
 
 from iris.analysis.maths import subtract
-from iris.tests.unit.analysis.maths import TestValue
+from iris.tests.unit.analysis.maths import TestArithmetic
 
 
-class TestValue(tests.IrisTest, TestValue):
+class TestValue(tests.IrisTest, TestArithmetic):
     @property
     def op(self):
         return operator.sub

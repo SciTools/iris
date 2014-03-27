@@ -26,10 +26,10 @@ import numpy as np
 
 import iris
 from iris.analysis.maths import divide
-from iris.tests.unit.analysis.maths import TestValue
+from iris.tests.unit.analysis.maths import TestArithmetic
 
 
-class TestValue(tests.IrisTest, TestValue):
+class TestValue(tests.IrisTest, TestArithmetic):
     @property
     def op(self):
         return operator.div
@@ -64,7 +64,7 @@ class TestValue(tests.IrisTest, TestValue):
         com = self.op(dat_b, dat_a)
         res = self.func(cube_b, cube_a).data
 
-        self.assertMaskedArrayEqual(com, res)
+        self.assertMaskedArrayEqual(com, res, strict=True)
 
 
 if __name__ == "__main__":
