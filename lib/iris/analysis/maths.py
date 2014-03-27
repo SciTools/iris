@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -21,6 +21,7 @@ Basic mathematical and statistical operations.
 from __future__ import division
 import warnings
 import math
+import operator
 
 import numpy as np
 
@@ -161,8 +162,9 @@ def add(cube, other, dim=None, ignore=True, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _add_subtract_common(np.add, 'addition', 'added', cube, other,
-                                dim=dim, ignore=ignore, in_place=in_place)
+    op = operator.iadd if in_place else operator.add
+    return _add_subtract_common(op, 'addition', 'added', cube, other, dim=dim,
+                                ignore=ignore, in_place=in_place)
 
 
 def subtract(cube, other, dim=None, ignore=True, in_place=False):
@@ -194,9 +196,9 @@ def subtract(cube, other, dim=None, ignore=True, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _add_subtract_common(np.subtract, 'subtraction', 'subtracted', cube,
-                                other, dim=dim, ignore=ignore,
-                                in_place=in_place)
+    op = operator.isub if in_place else operator.sub
+    return _add_subtract_common(op, 'subtraction', 'subtracted', cube, other,
+                                dim=dim, ignore=ignore, in_place=in_place)
 
 
 def _add_subtract_common(operation_function, operation_noun,
@@ -293,8 +295,9 @@ def multiply(cube, other, dim=None, in_place=False):
     _assert_is_cube(cube)
     other_unit = getattr(other, 'units', '1')
     new_unit = cube.units * other_unit
-    return _binary_op_common(np.multiply, 'multiplication', cube, other,
-                             new_unit, dim, in_place)
+    op = operator.imul if in_place else operator.mul
+    return _binary_op_common(op, 'multiplication', cube, other, new_unit, dim,
+                             in_place=in_place)
 
 
 def divide(cube, other, dim=None, in_place=False):
@@ -321,8 +324,9 @@ def divide(cube, other, dim=None, in_place=False):
     _assert_is_cube(cube)
     other_unit = getattr(other, 'units', '1')
     new_unit = cube.units / other_unit
-    return _binary_op_common(np.divide, 'divison', cube, other, new_unit, dim,
-                             in_place)
+    op = operator.idiv if in_place else operator.div
+    return _binary_op_common(op, 'divison', cube, other, new_unit, dim,
+                             in_place=in_place)
 
 
 def exponentiate(cube, exponent, in_place=False):
@@ -474,13 +478,13 @@ def _binary_op_common(operation_function, operation_noun, cube, other,
         # TODO: add intelligent broadcasting along coordinate dimensions for
         # all binary operators, not just + and -
         other = other.data
-    # don't worry about checking for other data types (such as scalers or
+    # don't worry about checking for other data types (such as scalars or
     # np.ndarrays) because _assert_compatible validates that they are broadcast
     # compatible with cube.data
     _assert_compatible(cube, other)
 
-    def unary_func(x, out=None):
-        ret = operation_function(x, other, out)
+    def unary_func(x):
+        ret = operation_function(x, other)
         if ret is NotImplemented:
             # explicitly raise the TypeError, so it gets raised even if, for
             # example, `iris.analysis.maths.multiply(cube, other)` is called
@@ -534,7 +538,11 @@ def _math_op_common(cube, operation_function, new_unit, in_place=False):
     _assert_is_cube(cube)
     if in_place:
         new_cube = cube
-        operation_function(new_cube.data, out=new_cube.data)
+        try:
+            operation_function(new_cube.data, out=new_cube.data)
+        except TypeError:
+            # Non ufunc function
+            operation_function(new_cube.data)
     else:
         new_cube = cube.copy(data=operation_function(cube.data))
     iris.analysis.clear_phenomenon_identity(new_cube)
