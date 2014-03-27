@@ -22,7 +22,7 @@ import numpy as np
 from iris.cube import Cube
 
 
-class TestArithmetic(object):
+class Arithmetic(object):
     # This class ensures that the behaviour of cube arithmetic follows that of
     # numpy via operator.xx
     __metaclass__ = ABCMeta

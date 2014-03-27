@@ -26,10 +26,10 @@ import numpy as np
 
 import iris
 from iris.analysis.maths import divide
-from iris.tests.unit.analysis.maths import TestArithmetic
+from iris.tests.unit.analysis.maths import Arithmetic
 
 
-class TestValue(tests.IrisTest, TestArithmetic):
+class TestValue(tests.IrisTest, Arithmetic):
     @property
     def op(self):
         return operator.div

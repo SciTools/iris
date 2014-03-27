@@ -23,10 +23,10 @@ import iris.tests as tests
 import operator
 
 from iris.analysis.maths import multiply
-from iris.tests.unit.analysis.maths import TestArithmetic
+from iris.tests.unit.analysis.maths import Arithmetic
 
 
-class TestValue(tests.IrisTest, TestArithmetic):
+class TestValue(tests.IrisTest, Arithmetic):
     @property
     def op(self):
         return operator.mul
