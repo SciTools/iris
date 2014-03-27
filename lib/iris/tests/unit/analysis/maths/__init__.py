@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2014, Met Office
+# (C) British Crown Copyright 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -34,6 +34,15 @@ class CubeBroadcastTestMixin(object):
     @abstractproperty
     def cube_func(self):
         pass
+
+    def test_transposed(self):
+        cube = stock.realistic_4d_no_derived()
+        other = cube.copy()
+        other.transpose()
+        res = self.cube_func(cube, other)
+        self.assertCML(res, checksum=False)
+        expected_data = self.data_op(cube.data, other.data.T)
+        self.assertArrayEqual(res.data, expected_data)
 
     def test_collapse_zeroth_dim(self):
         cube = stock.realistic_4d_no_derived()
