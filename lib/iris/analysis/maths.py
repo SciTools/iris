@@ -28,6 +28,7 @@ import iris.analysis
 import iris.coords
 import iris.cube
 import iris.exceptions
+import iris.util
 
 
 def abs(cube, in_place=False):
@@ -218,25 +219,6 @@ def _add_subtract_common(operation_function, operation_noun,
         # get a coordinate comparison of this cube and the cube to do the
         # operation with
         coord_comp = iris.analysis.coord_comparison(cube, other)
-
-        if coord_comp['transposable']:
-            # User does not need to transpose their cubes if numpy
-            # array broadcasting will make the dimensions match
-            broadcast_padding = cube.ndim - other.ndim
-            coord_dims_equal = True
-            for coord_group in coord_comp['transposable']:
-                cube_coord, other_coord = coord_group.coords
-                cube_coord_dims = cube.coord_dims(cube_coord)
-                other_coord_dims = other.coord_dims(other_coord)
-                other_coord_dims_broadcasted = tuple(
-                    [dim + broadcast_padding for dim in other_coord_dims])
-                if cube_coord_dims != other_coord_dims_broadcasted:
-                    coord_dims_equal = False
-
-            if not coord_dims_equal:
-                raise ValueError('Cubes cannot be %s, differing axes. '
-                                 'cube.transpose() may be required to '
-                                 're-order the axes.' % operation_past_tense)
 
         # provide a deprecation warning if the ignore keyword has been set
         if ignore is not True:
@@ -471,9 +453,13 @@ def _binary_op_common(operation_function, operation_noun, cube, other,
     if isinstance(other, iris.coords.Coord):
         other = _broadcast_cube_coord_data(cube, other, operation_noun, dim)
     elif isinstance(other, iris.cube.Cube):
-        # TODO: add intelligent broadcasting along coordinate dimensions for
-        # all binary operators, not just + and -
-        other = other.data
+        try:
+            np.broadcast_arrays(cube.data, other.data)
+        except ValueError:
+            other = iris.util.as_compatible_shape(other, cube).data
+        else:
+            other = other.data
+
     # don't worry about checking for other data types (such as scalers or
     # np.ndarrays) because _assert_compatible validates that they are broadcast
     # compatible with cube.data
