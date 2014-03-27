@@ -16,10 +16,6 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :mod:`iris.analysis.maths` module."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
-
 from abc import ABCMeta, abstractproperty
 
 import numpy as np
@@ -100,4 +96,6 @@ class CubeBroadcastTestMixin(object):
             keys[dim] = np.newaxis
             expected_data = self.data_op(cube.data,
                                          other.data[tuple(keys)])
-            self.assertArrayEqual(res.data, expected_data)
+            msg = 'Problem broadcasting cubes when sliced on dimension {}.'
+            self.assertArrayEqual(res.data, expected_data,
+                                  err_msg=msg.format(dim))
