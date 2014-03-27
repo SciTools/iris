@@ -23,32 +23,121 @@ import iris.tests as tests
 import datetime
 
 import mock
+import netcdftime
+import numpy as np
 
 from iris.coords import Cell
+from iris.time import PartialDateTime
 
 
 class Test___common_cmp__(tests.IrisTest):
-    def test_datetime_ordering(self):
-        # Check that cell comparison works with objects with a "timetuple".
+    def assert_raises_on_comparison(self, cell, other, exception_type, regexp):
+        with self.assertRaisesRegexp(exception_type, regexp):
+            cell < other
+        with self.assertRaisesRegexp(exception_type, regexp):
+            cell <= other
+        with self.assertRaisesRegexp(exception_type, regexp):
+            cell > other
+        with self.assertRaisesRegexp(exception_type, regexp):
+            cell >= other
+
+    def test_netcdftime_cell(self):
+        # Check that cell comparison when the cell contains
+        # netcdftime.datetime objects raises an exception otherwise
+        # this will fall back to id comparison producing unreliable
+        # results.
+        cell = Cell(netcdftime.datetime(2010, 3, 21))
         dt = mock.Mock(timetuple=mock.Mock())
-        cell = Cell(datetime.datetime(2010, 3, 21))
-        with mock.patch('operator.gt') as gt:
-            _ = cell > dt
-        gt.assert_called_once_with(cell.point, dt)
+        self.assert_raises_on_comparison(cell, dt, TypeError,
+                                         'determine the order of netcdftime')
+        self.assert_raises_on_comparison(cell, 23, TypeError,
+                                         'determine the order of netcdftime')
+        self.assert_raises_on_comparison(cell, 'hello', TypeError,
+                                         'Unexpected type.*str')
 
-        # Now check that the existence of timetuple is causing that.
-        del dt.timetuple
-        with self.assertRaisesRegexp(ValueError,
-                                     'Unexpected type of other <(.*)>'):
-            _ = cell > dt
+    def test_netcdftime_other(self):
+        # Check that cell comparison to a netcdftime.datetime object
+        # raises an exception otherwise this will fall back to id comparison
+        # producing unreliable results.
+        dt = netcdftime.datetime(2010, 3, 21)
+        cell = Cell(mock.Mock(timetuple=mock.Mock()))
+        self.assert_raises_on_comparison(cell, dt, TypeError,
+                                         'determine the order of netcdftime')
 
-    def test_datetime_equality(self):
+    def test_PartialDateTime_bounded_cell(self):
+        # Check that bounded comparisions to a PartialDateTime
+        # raise an exception. These are not supported as they
+        # depend on the calendar.
+        dt = PartialDateTime(month=6)
+        cell = Cell(datetime.datetime(2010, 1, 1),
+                    bound=[datetime.datetime(2010, 1, 1),
+                           datetime.datetime(2011, 1, 1)])
+        self.assert_raises_on_comparison(cell, dt, TypeError,
+                                         'bounded region for datetime')
+
+    def test_PartialDateTime_unbounded_cell(self):
+        # Check that cell comparison works with PartialDateTimes.
+        dt = PartialDateTime(month=6)
+        cell = Cell(netcdftime.datetime(2010, 3, 1))
+        self.assertLess(cell, dt)
+        self.assertGreater(dt, cell)
+        self.assertLessEqual(cell, dt)
+        self.assertGreaterEqual(dt, cell)
+
+    def test_datetime_unbounded_cell(self):
+        # Check that cell comparison works with datetimes.
+        dt = datetime.datetime(2000, 6, 15)
+        cell = Cell(datetime.datetime(2000, 1, 1))
+        # Note the absence of the inverse of these
+        # e.g. self.assertGreater(dt, cell).
+        # See http://bugs.python.org/issue8005
+        self.assertLess(cell, dt)
+        self.assertLessEqual(cell, dt)
+
+
+class Test___eq__(tests.IrisTest):
+    def test_datetimelike(self):
         # Check that cell equality works with objects with a "timetuple".
         dt = mock.Mock(timetuple=mock.Mock())
         cell = mock.MagicMock(spec=Cell, point=datetime.datetime(2010, 3, 21),
                               bound=None)
         _ = cell == dt
         cell.__eq__.assert_called_once_with(dt)
+
+    def test_datetimelike_bounded_cell(self):
+        # Check that equality with a datetime-like bounded cell
+        # raises an error. This is not supported as it
+        # depends on the calendar which is not always known from
+        # the datetime-like bound objects.
+        other = mock.Mock(timetuple=mock.Mock())
+        cell = Cell(point=object(),
+                    bound=[mock.Mock(timetuple=mock.Mock()),
+                           mock.Mock(timetuple=mock.Mock())])
+        with self.assertRaisesRegexp(TypeError, 'bounded region for datetime'):
+            cell == other
+
+    def test_PartialDateTime_other(self):
+        cell = Cell(datetime.datetime(2010, 3, 2))
+        # A few simple cases.
+        self.assertEqual(cell, PartialDateTime(month=3))
+        self.assertNotEqual(cell, PartialDateTime(month=3, hour=12))
+        self.assertNotEqual(cell, PartialDateTime(month=4))
+
+
+class Test_contains_point(tests.IrisTest):
+    def test_datetimelike_bounded_cell(self):
+        point = object()
+        cell = Cell(point=object(),
+                    bound=[mock.Mock(timetuple=mock.Mock()),
+                           mock.Mock(timetuple=mock.Mock())])
+        with self.assertRaisesRegexp(TypeError, 'bounded region for datetime'):
+            cell.contains_point(point)
+
+    def test_datetimelike_point(self):
+        point = mock.Mock(timetuple=mock.Mock())
+        cell = Cell(point=object(), bound=[object(), object()])
+        with self.assertRaisesRegexp(TypeError, 'bounded region for datetime'):
+            cell.contains_point(point)
 
 
 if __name__ == '__main__':
