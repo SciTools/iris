@@ -25,10 +25,21 @@ import operator
 
 from iris.analysis.maths import divide
 from iris.cube import Cube
-from iris.tests.unit.analysis.maths import CubeArithmeticTestMixin
+from iris.tests.unit.analysis.maths import \
+    CubeArithmeticBroadcastingTestMixin, CubeArithmeticMaskingTestMixin
 
 
-class TestBroadcast(tests.IrisTest, CubeArithmeticTestMixin):
+class TestBroadcasting(tests.IrisTest, CubeArithmeticBroadcastingTestMixin):
+    @property
+    def data_op(self):
+        return operator.div
+
+    @property
+    def cube_func(self):
+        return divide
+
+
+class TestMasking(tests.IrisTest, CubeArithmeticMaskingTestMixin):
     @property
     def data_op(self):
         return operator.div

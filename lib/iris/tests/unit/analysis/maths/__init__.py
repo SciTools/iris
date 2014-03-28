@@ -25,8 +25,9 @@ from iris.cube import Cube
 import iris.tests.stock as stock
 
 
-class CubeArithmeticTestMixin(object):
-    # Test methods to be used on the various cube arithmetic operations.
+class CubeArithmeticBroadcastingTestMixin(object):
+    # A framework for testing the broadcasting behaviour of the various cube
+    # arithmetic operations.  (A test for each operation inherits this).
     __metaclass__ = ABCMeta
 
     @abstractproperty
@@ -40,7 +41,7 @@ class CubeArithmeticTestMixin(object):
         # I.E. 'iris.analysis.maths.xx'.
         pass
 
-    def test_broadcast_transposed(self):
+    def test_transposed(self):
         cube = stock.realistic_4d_no_derived()
         other = cube.copy()
         other.transpose()
@@ -49,7 +50,7 @@ class CubeArithmeticTestMixin(object):
         expected_data = self.data_op(cube.data, other.data.T)
         self.assertArrayEqual(res.data, expected_data)
 
-    def test_broadcast_collapse_zeroth_dim(self):
+    def test_collapse_zeroth_dim(self):
         cube = stock.realistic_4d_no_derived()
         other = cube.collapsed('time', MEAN)
         res = self.cube_func(cube, other)
@@ -61,7 +62,7 @@ class CubeArithmeticTestMixin(object):
         # in a cube with a masked data array.
         self.assertMaskedArrayEqual(res.data, expected_data)
 
-    def test_broadcast_collapse_all_dims(self):
+    def test_collapse_all_dims(self):
         cube = stock.realistic_4d_no_derived()
         other = cube.collapsed(cube.coords(dim_coords=True), MEAN)
         res = self.cube_func(cube, other)
@@ -73,7 +74,7 @@ class CubeArithmeticTestMixin(object):
         # collapsing all dims does not result in a masked array.
         self.assertArrayEqual(res.data, expected_data)
 
-    def test_broadcast_collapse_last_dims(self):
+    def test_collapse_last_dims(self):
         cube = stock.realistic_4d_no_derived()
         other = cube.collapsed(['grid_latitude', 'grid_longitude'], MEAN)
         res = self.cube_func(cube, other)
@@ -86,7 +87,7 @@ class CubeArithmeticTestMixin(object):
                                      other.data).transpose(2, 3, 0, 1)
         self.assertMaskedArrayEqual(res.data, expected_data)
 
-    def test_broadcast_collapse_middle_dim(self):
+    def test_collapse_middle_dim(self):
         cube = stock.realistic_4d_no_derived()
         other = cube.collapsed(['model_level_number'], MEAN)
         res = self.cube_func(cube, other)
@@ -97,7 +98,7 @@ class CubeArithmeticTestMixin(object):
                                      other.data[:, np.newaxis, ...])
         self.assertMaskedArrayEqual(res.data, expected_data)
 
-    def test_broadcast_slice(self):
+    def test_slice(self):
         cube = stock.realistic_4d_no_derived()
         for dim in range(cube.ndim):
             keys = [slice(None)] * cube.ndim
@@ -114,6 +115,23 @@ class CubeArithmeticTestMixin(object):
             self.assertArrayEqual(res.data, expected_data,
                                   err_msg=msg.format(dim))
 
+
+class CubeArithmeticMaskingTestMixin(object):
+    # A framework for testing the mask handling behaviour of the various cube
+    # arithmetic operations.  (A test for each operation inherits this).
+    __metaclass__ = ABCMeta
+
+    @abstractproperty
+    def data_op(self):
+        # Define an operator to be called, I.E. 'operator.xx'.
+        pass
+
+    @abstractproperty
+    def cube_func(self):
+        # Define an iris arithmetic function to be called
+        # I.E. 'iris.analysis.maths.xx'.
+        pass
+
     def _test_partial_mask(self, in_place):
         # Helper method for masked data tests.
         dat_a = np.ma.array([2., 2., 2., 2.], mask=[1, 0, 1, 0])
@@ -127,14 +145,14 @@ class CubeArithmeticTestMixin(object):
 
         return com, res, cube_b
 
-    def test_masking_partial_in_place(self):
+    def test_partial_mask_in_place(self):
         # Cube in_place arithmetic operation.
         com, res, orig_cube = self._test_partial_mask(True)
 
         self.assertMaskedArrayEqual(com, res.data, strict=True)
         self.assertIs(res, orig_cube)
 
-    def test_masking_partial_not_in_place(self):
+    def test_partial_mask_not_in_place(self):
         # Cube arithmetic not an in_place operation.
         com, res, orig_cube = self._test_partial_mask(False)
 
