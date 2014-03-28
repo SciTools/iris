@@ -28,10 +28,12 @@ import operator
 import warnings
 import zlib
 
+import netcdftime
 import numpy as np
 
 import iris.aux_factory
 import iris.exceptions
+import iris.time
 import iris.unit
 import iris.util
 
@@ -227,11 +229,19 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
         """
         if not (isinstance(other, (int, float, np.number, Cell)) or
                 hasattr(other, 'timetuple')):
-            raise ValueError("Unexpected type of other "
-                             "{}.".format(type(other)))
+            raise TypeError("Unexpected type of other "
+                            "{}.".format(type(other)))
         if operator_method not in (operator.gt, operator.lt,
                                    operator.ge, operator.le):
             raise ValueError("Unexpected operator_method")
+
+        # Prevent silent errors resulting from missing netcdftime
+        # behaviour.
+        if (isinstance(other, netcdftime.datetime) or
+                (isinstance(self.point, netcdftime.datetime) and
+                 not isinstance(other, iris.time.PartialDateTime))):
+            raise TypeError('Cannot determine the order of '
+                            'netcdftime.datetime objects')
 
         if isinstance(other, Cell):
             # Cell vs Cell comparison for providing a strict sort order
@@ -276,13 +286,17 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
                     else:
                         result = operator_method(self.bound[0], other.bound[0])
         else:
-            # Cell vs number (or string) for providing Constraint
-            # behaviour.
+            # Cell vs number (or string, or datetime-like) for providing
+            # Constraint behaviour.
             if self.bound is None:
                 # Point vs number
                 # - Simple matching
                 me = self.point
             else:
+                if hasattr(other, 'timetuple'):
+                    raise TypeError('Cannot determine whether a point lies '
+                                    'within a bounded region for '
+                                    'datetime-like objects.')
                 # Point-and-bound vs number
                 # - Match if "within" the Cell
                 if operator_method in [operator.gt, operator.le]:
@@ -322,6 +336,10 @@ class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
         """
         if self.bound is None:
             raise ValueError('Point cannot exist inside an unbounded cell.')
+        if hasattr(point, 'timetuple') or np.any([hasattr(val, 'timetuple') for
+                                                  val in self.bound]):
+            raise TypeError('Cannot determine whether a point lies within '
+                            'a bounded region for datetime-like objects.')
 
         return np.min(self.bound) <= point <= np.max(self.bound)
 

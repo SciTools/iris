@@ -1072,7 +1072,9 @@ class TestTrimAttributes(tests.IrisTest):
 @tests.skip_data
 class TestMaskedData(tests.IrisTest, pp.PPTest):
     def _load_3d_cube(self):
-        # This 3D data set has a missing a slice with SOME missing values (0)
+        # This 3D data set has a missing a slice with SOME missing values.
+        # The missing data is in the pressure = 1000 hPa, forcast_period = 0,
+        # time = 1970-02-11 16:00:00 slice.
         return iris.load_cube(tests.get_data_path(["PP", "mdi_handmade_small", "*.pp"]))
     
     def test_complete_field(self):
