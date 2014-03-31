@@ -104,18 +104,5 @@ class Test_calendar(tests.IrisTest):
         self.assertEqual(field.calendar, '365_day')
 
 
-class Test_model_level_number(tests.IrisTest):
-    def test_9999(self):
-        field = TestPPField()
-        field.lblev = 9999
-        self.assertEqual(field.model_level_number, 0)
-
-    def test_lblev(self):
-        field = TestPPField()
-        for val in xrange(9999):
-            field.lblev = val
-            self.assertEqual(field.model_level_number, val)
-
-
 if __name__ == "__main__":
     tests.main()

@@ -970,11 +970,6 @@ class PPField(object):
             calendar = iris.unit.CALENDAR_365_DAY
         return calendar
 
-    @property
-    def model_level_number(self):
-        """The model level number of the field."""
-        return 0 if self.lblev == 9999 else self.lblev
-
     def _read_extra_data(self, pp_file, file_reader, extra_len):
         """Read the extra data section and update the self appropriately."""
 

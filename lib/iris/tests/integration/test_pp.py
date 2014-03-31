@@ -46,7 +46,7 @@ class TestVertical(tests.IrisTest):
         # NB. Use MagicMock so that SplittableInt header items, such as
         # LBCODE, support len().
         soil_level = 1234
-        field = mock.MagicMock(lbvc=6, model_level_number=soil_level,
+        field = mock.MagicMock(lbvc=6, lblev=soil_level,
                                stash=iris.fileformats.pp.STASH(1, 0, 9),
                                lbuser=[0] * 7, lbrsvd=[0] * 4)
         load = mock.Mock(return_value=iter([field]))
@@ -119,7 +119,7 @@ class TestVertical(tests.IrisTest):
         sigma_lower, sigma, sigma_upper = 0.85, 0.9, 0.95
         delta_lower, delta, delta_upper = 0.05, 0.1, 0.15
         data_field = field_with_data()
-        data_field.configure_mock(lbvc=9, model_level_number=model_level,
+        data_field.configure_mock(lbvc=9, lblev=model_level,
                                   bhlev=delta, bhrlev=delta_lower,
                                   blev=sigma, brlev=sigma_lower,
                                   brsvd=[sigma_upper, delta_upper])
@@ -198,7 +198,7 @@ class TestVertical(tests.IrisTest):
         sigma_lower, sigma, sigma_upper = 0.85, 0.9, 0.95
         delta_lower, delta, delta_upper = 0.05, 0.1, 0.15
         data_field = field_with_data()
-        data_field.configure_mock(lbvc=9, model_level_number=model_level,
+        data_field.configure_mock(lbvc=9, lblev=model_level,
                                   bhlev=delta, bhrlev=delta_lower,
                                   blev=sigma, brlev=sigma_lower,
                                   brsvd=[sigma_upper, delta_upper])
