@@ -23,10 +23,21 @@ import iris.tests as tests
 import operator
 
 from iris.analysis.maths import add
-from iris.tests.unit.analysis.maths import CubeBroadcastTestMixin
+from iris.tests.unit.analysis.maths import \
+    CubeArithmeticBroadcastingTestMixin, CubeArithmeticMaskingTestMixin
 
 
-class TestBroadcast(tests.IrisTest, CubeBroadcastTestMixin):
+class TestBroadcasting(tests.IrisTest, CubeArithmeticBroadcastingTestMixin):
+    @property
+    def data_op(self):
+        return operator.add
+
+    @property
+    def cube_func(self):
+        return add
+
+
+class TestMasking(tests.IrisTest, CubeArithmeticMaskingTestMixin):
     @property
     def data_op(self):
         return operator.add
