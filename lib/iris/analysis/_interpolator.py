@@ -34,6 +34,20 @@ _LINEAR_EXTRAPOLATION_MODES = {
 }
 
 
+def _extend_circular_coord(coord, coord_dim):
+    """
+    Return coordinates points with a shape extended by one
+    in the coord_dim axis. This is common when dealing with
+    circular coordinates.
+
+    """
+    modulus = np.array(coord.units.modulus or 0,
+                       dtype=coord.dtype)
+    points = np.append(coord.points,
+                       coord.points[0] + modulus)
+    return points
+
+
 def _extend_circular_coord_and_data(coord, data, coord_dim):
     """
     Return coordinate points and a data array with a shape extended by one
@@ -41,10 +55,7 @@ def _extend_circular_coord_and_data(coord, data, coord_dim):
     coordinates.
 
     """
-    modulus = np.array(coord.units.modulus or 0,
-                       dtype=coord.dtype)
-    points = np.append(coord.points,
-                       coord.points[0] + modulus)
+    points = _extend_circular_coord(coord, coord_dim)
     data = _extend_circular_data(data, coord_dim)
     return points, data
 
@@ -79,25 +90,34 @@ def _extend_circular_data(data, coord_dim):
 
 class LinearInterpolator(object):
     """
-
+    This class provides support for performing linear interpolation over
+    one or more orthogonal dimensions.
 
     """
     def __init__(self, src_cube, coords, extrapolation_mode='linear'):
         """
-        blah ...
+        Perform linear interpolation over one or more orthogonal coordinates.
 
         Args:
 
         * src_cube:
-            blah ...
-
+            The :class:`iris.cube.Cube` which is to be interpolated.
         * coords:
-            blah ...
+            The names or coordinate instances which are to be
+            interpolated over
 
         Kwargs:
 
         * extrapolation_mode:
-            blah ...
+            Must be one of the following strings:
+
+              * 'linear' - The extrapolation points will be calculated by
+                extending the gradient of closest two points.
+              * 'nan' - The extrapolation points will be be set to NAN.
+              * 'error' - An exception will be raised, notifying an
+                attempt to extrapolate.
+
+            Default mode of extrapolation is 'linear'
 
         """
         # Snapshot the state of the cube to ensure that the interpolator
@@ -136,7 +156,7 @@ class LinearInterpolator(object):
     def extrapolation_mode(self):
         return self._mode
 
-    def _account_for_circular(self, coord_points, data):
+    def _account_for_circular(self, points, data):
         """
         Extend the given data array, and re-centralise coordinate points
         for circular (1D) coordinates.
@@ -146,16 +166,15 @@ class LinearInterpolator(object):
         # data (centred over the centre of the source data to allow
         # extrapolation where required).
         if self._circulars:
-            for _, data_dim, _, _, _ in self._circulars:
-                data = _extend_circular_data(data, data_dim)
+            for _, dim, _, _, _ in self._circulars:
+                data = _extend_circular_data(data, dim)
 
-            for (interp_dim, _, src_min, src_max,
-                    src_modulus) in self._circulars:
-                offset = (src_max + src_min - src_modulus) * 0.5
-                coord_points[:, interp_dim] -= offset
-                coord_points[:, interp_dim] = (coord_points[:, interp_dim] %
-                                               src_modulus) + offset
-        return coord_points, data
+            for (index, _, src_min, src_max, modulus) in self._circulars:
+                offset = (src_max + src_min - modulus) * 0.5
+                points[:, index] -= offset
+                points[:, index] = (points[:, index] % modulus) + offset
+
+        return points, data
 
     def _account_for_inverted(self, data):
         if np.any(self._coord_decreasing):
@@ -167,7 +186,7 @@ class LinearInterpolator(object):
             data = data[dim_slices]
         return data
 
-    def _interpolate(self, data, coord_points):
+    def _interpolate(self, data, interp_points):
         """
         Create and cache the underlying interpolator instance
         before invoking it to perform interpolation over the provided
@@ -193,58 +212,20 @@ class LinearInterpolator(object):
             self._interpolator.fill_value = fill_value
         else:
             self._interpolator.values = data
-        return self._interpolator(coord_points)
 
-    def _prepare_points(self, sample_points):
-        cube_dim_to_result_dim = {}
-        interp_coords_seen = 0
-        total_non_interp_coords = self._src_cube.ndim - len(self._interp_dims)
+        result = self._interpolator(interp_points)
 
-        for dim in range(self._src_cube.ndim):
-            if dim not in self._interp_dims:
-                cube_dim_to_result_dim[dim] = dim - interp_coords_seen
-            else:
-                cube_dim_to_result_dim[dim] = total_non_interp_coords + \
-                    self._interp_dims.index(dim)
-                interp_coords_seen += 1
+        if result.dtype != data.dtype:
+            # Cast the data dtype to be as expected. Note that, the dtype
+            # of the interpolated result is influenced by the dtype of the
+            # interpolation points.
+            result = result.astype(data.dtype)
 
-        result_to_cube_dim = {v: k for k, v in cube_dim_to_result_dim.items()}
-
-        # The shape of the data after full interpolation of each dimension.
-        interpolated_shape = list(self._src_cube.shape)
-        interp_points = []
-        for sample_coord, points, dim in zip(self._src_coords,
-                                             sample_points,
-                                             self._interp_dims):
-            points = np.array(points, ndmin=1)
-            dtype = self._interpolated_dtype(points.dtype)
-            points = list(np.asanyarray(points, dtype=dtype))
-            interp_points.append(points)
-            interpolated_shape[dim] = len(points)
-
-        # Given an expected shape for the final array, compute the shape of
-        # the array which puts the interpolated dimensions last.
-        new_dimension_order = (lambda (dim, length):
-                               cube_dim_to_result_dim[dim])
-        _, target_shape = zip(*sorted(enumerate(interpolated_shape),
-                                      key=new_dimension_order))
-
-        # Now compute the transpose array which needs to be applied to the
-        # previously computed shape to get back to the expected interpolated
-        # shape.
-        old_dimension_order = lambda (dim, length): result_to_cube_dim[dim]
-        transpose_order, _ = zip(*sorted(enumerate(interpolated_shape),
-                                         key=old_dimension_order))
-
-        # Convert the interpolation points into a cross-product array
-        # with shape (n_interp_points, n_dims)
-        interp_points = np.asarray([i for i in product(*interp_points)])
-
-        return interp_points, target_shape, transpose_order
+        return result
 
     def _resample_coord(self, sample_points, coord, coord_dims):
         """
-        XXX
+        Interpolate the given coordinate at the provided sample points.
 
         """
         data = self._points(sample_points, coord.points, coord_dims)
@@ -267,21 +248,18 @@ class LinearInterpolator(object):
 
         """
         cube = self._src_cube
-        # Triggers the loading - is that really necessary...?
-        data = cube.data
         self._src_coords = [self._src_cube.coord(coord) for coord in coords]
 
         coord_points_list = []
 
-        for interp_dim, coord in enumerate(self._src_coords):
+        for index, coord in enumerate(self._src_coords):
             coord_dims = cube.coord_dims(coord)
 
             if getattr(coord, 'circular', False):
                 # Only DimCoords can be circular.
-                coord_points, data = _extend_circular_coord_and_data(
-                    coord, data, coord_dims[0])
+                coord_points = _extend_circular_coord(coord, coord_dims[0])
                 modulus = getattr(coord.units, 'modulus', 0)
-                self._circulars.append((interp_dim, coord_dims[0],
+                self._circulars.append((index, coord_dims[0],
                                         coord_points.min(),
                                         coord_points.max(), modulus))
             else:
@@ -332,24 +310,10 @@ class LinearInterpolator(object):
 
     def _interpolated_dtype(self, dtype):
         """
-        Determine the base dtype required by the underlying interpolator.
-
-        Args:
-
-        * dtype:
-            The :class:`~numpy.dtype` of the candidate data to be interpolated.
-
-        Returns:
-            The :class:`~numpy.dtype` that the underlying interpolator
-            is expecting at a minimum for its input data.
-
-        .. note::
-
-            The interpolator will promote the :class:`~numpy.dtype` to
-            a floating point representation.
+        Determine the minimum base dtype required by the
+        underlying interpolator.
 
         """
-        # Default to float.
         return np.result_type(_DEFAULT_DTYPE, dtype)
 
     def _points(self, sample_points, data, data_dims=None):
@@ -362,7 +326,7 @@ class LinearInterpolator(object):
         * sample_points:
             A sequence of coordinate points over which to interpolate.
             The order of the coordinate points must match the order of
-            the coordinates passed to thid interpolator's constructor.
+            the coordinates passed to this interpolator's constructor.
         * data:
             The data to interpolate - not necessarily the data from the cube
             that was used to construct this interpolator. If the data has
@@ -380,18 +344,17 @@ class LinearInterpolator(object):
             An :class:`~numpy.ndarray` or :class:`~numpy.ma.MaskedArray`
             instance of the interpolated data.
 
-        .. note::
-
-            The implementation of this method means that even for small
-            subsets of the original cube's data, the data to be interpolated
-            will be broadcast into the orginal cube's shape - thus resulting
-            in more interpolation calls than are optimally needed. This has
-            been done for implementation simplification, but there is no
-            fundamental reason this must be the case.
-
         """
+<<<<<<< HEAD
         points, final_shape, final_order = self._prepare_points(sample_points)
         data_dims = data_dims or range(self._src_cube.ndim)
+=======
+        self._validate_sample_points(sample_points)
+
+        dims = range(self._src_cube.ndim)
+        data_dims = data_dims or dims
+        data_dtype = self._interpolated_dtype(data.dtype)
+>>>>>>> Refactor to remove ndindex.
 
         if len(data_dims) != data.ndim:
             msg = 'Data being interpolated is not consistent with ' \
@@ -403,65 +366,67 @@ class LinearInterpolator(object):
             msg = 'Currently only increasing data_dims is supported.'
             raise NotImplementedError(msg)
 
+        # Broadcast the data into the shape of the original cube.
         if data_dims != range(self._src_cube.ndim):
-            # Broadcast the data into the shape of the original cube.
             strides = list(data.strides)
             for dim in range(self._src_cube.ndim):
                 if dim not in data_dims:
                     strides.insert(dim, 0)
-
             data = as_strided(data, strides=strides,
                               shape=self._src_cube.shape)
 
         data = self._account_for_inverted(data)
-        points, data = self._account_for_circular(points, data)
+        # Calculate the transpose order to shuffle the interpolated dimesions
+        # to the lower dimensions for the interpolation algorithm. Then the
+        # transpose order to restore the dimesions to their original positions.
+        di = self._interp_dims
+        ds = sorted(dims, key=lambda d: d not in di)
+        dmap = {d: di.index(d) if d in di else ds.index(d) for d in dims}
+        interp_order, _ = zip(*sorted(dmap.items(), key=lambda (x, fx):  fx))
+        _, src_order = zip(*sorted(dmap.items(), key=lambda (x, fx): x))
 
-        # Build up a shape suitable for passing to ndindex, inside the loop we
-        # will insert slice(None) on the data indices.
-        iter_shape = list(length if dim not in self._interp_dims
-                          else 1
-                          for dim, length in enumerate(data.shape))
+        # Prepare the sample points for interpolation and calculate the
+        # shape of the interpolated result.
+        interp_points = []
+        interp_shape = []
+        for index, points in enumerate(sample_points):
+            dtype = self._interpolated_dtype(self._src_points[index].dtype)
+            points = np.array(points, dtype=dtype, ndmin=1)
+            interp_points.append(points)
+            interp_shape.append(points.size)
 
-        result_shape = list(length for index, length in enumerate(data.shape)
-                            if index not in self._interp_dims)
-        # Keep track of the dimension to put the interpolated data into.
-        interpolate_dimension = len(result_shape)
-        result_shape.insert(interpolate_dimension, points.shape[0])
+        pairs = zip(*filter(lambda (d, v): d not in di, enumerate(data.shape)))
+        if pairs:
+            interp_shape.extend(pairs[1])
 
-        masked = isinstance(data, np.ma.MaskedArray)
-        dtype = self._interpolated_dtype(data.dtype)
-        if masked:
-            result_data = np.ma.empty(result_shape, dtype=dtype)
-            if not isinstance(data.mask, np.ma.MaskType):
-                result_data.mask = np.zeros(result_shape, dtype=np.bool)
-        else:
-            result_data = np.empty(result_shape, dtype=dtype)
+        # Convert the interpolation points into a cross-product array
+        # with shape (n_cross_points, n_dims)
+        interp_points = np.asarray([pts for pts in product(*interp_points)])
 
-        # Iterate through each slice of the data, updating the interpolator
-        # with the new data as we go.
-        for ndindex in np.ndindex(tuple(iter_shape)):
-            interpolant_index = [position
-                                 for dim, position in enumerate(ndindex)
-                                 if dim not in self._interp_dims]
-            interpolant_index.insert(interpolate_dimension, slice(None))
-            index = tuple(position if dim not in self._interp_dims
-                          else slice(None)
-                          for dim, position in enumerate(ndindex))
-            sub_data = data[index]
+        # Adjust for circularity.
+        interp_points, data = self._account_for_circular(interp_points, data)
 
-            order, _ = zip(*sorted(enumerate(self._interp_dims),
-                                   key=lambda (i, dim): dim))
-            sub_data = np.transpose(sub_data, order).copy()
+        if interp_order != dims:
+            # Transpose data in preparation for interpolation.
+            data = np.transpose(data, interp_order)
 
-            interpolated_data = self._interpolate(sub_data, points)
-            result_data[interpolant_index] = interpolated_data
-            if masked and not isinstance(data.mask, np.ma.MaskType):
-                interpolated_data = self._interpolate(sub_data.mask, points)
-                result_data.mask[interpolant_index] = interpolated_data > 0
+        # Interpolate and reshape the data ...
+        result = self._interpolate(data, interp_points)
 
-        # Turn the interpolated data back into the order that
-        # it was given to us in the first place.
-        return np.transpose(result_data.reshape(final_shape), final_order)
+        if isinstance(data, ma.MaskedArray) and \
+                not isinstance(data.mask, ma.MaskType):
+            mask = self._interpolate(data.mask, interp_points)
+            result = ma.asarray(result)
+            result.mask = mask > 0
+
+        result = result.reshape(interp_shape)
+
+        if src_order != dims:
+            # Restore the interpolated result to the original
+            # source cube dimensional order.
+            result = np.transpose(result, src_order)
+
+        return result
 
     def __call__(self, sample_points, collapse_scalar=True):
         """
@@ -472,7 +437,7 @@ class LinearInterpolator(object):
         * sample_points:
             A sequence of coordinate points over which to interpolate.
             The order of the coordinate points must match the order of
-            the coordinates passed to thid interpolator's constructor.
+            the coordinates passed to this interpolator's constructor.
 
         Kwargs:
 

@@ -1522,9 +1522,7 @@ class Linear(object):
         Args:
 
         * cube:
-            The source :class:`iris.cube.Cube` which contains the data
-            to be interpolated from.
-
+            The source :class:`iris.cube.Cube` to be interpolated.
         * coords:
             The names or coordinate instances which are to be
             interpolated over.
