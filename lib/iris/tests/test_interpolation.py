@@ -391,13 +391,13 @@ class TestLinear1dInterpolation(tests.IrisTest):
     
     def test_simple_single_point(self):
         r = iris.analysis.interpolate.linear(self.simple2d_cube, [('dim1', 4)])
-        self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_single_point.cml'))
+        self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_single_point.cml'), checksum=False)
         np.testing.assert_array_equal(r.data, np.array([1.5, 2.5, 3.5], dtype=self.simple2d_cube.data.dtype))
         
     def test_monotonic_decreasing_coord(self):
         c = self.simple2d_cube[::-1]
         r = iris.analysis.interpolate.linear(c, [('dim1', 4)])
-        self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_single_point.cml'))
+        self.assertCML(r, ('analysis', 'interpolation', 'linear', 'simple_single_point.cml'), checksum=False)
         np.testing.assert_array_equal(r.data, np.array([1.5, 2.5, 3.5], dtype=self.simple2d_cube.data.dtype))
         
     def test_overspecified(self):

@@ -93,6 +93,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0xb6dfd43" dtype="float64" shape="(6, 70, 100)"/>
+    <data byteorder="little" checksum="0x4a491a7d" dtype="float64" shape="(6, 70, 100)"/>
   </cube>
 </cubes>
