@@ -164,9 +164,10 @@ def add_day_of_year(cube, coord, name='day_of_year'):
     (1..366 in leap years).
 
     """
+    # Note: tm_yday has index 7 in timetuples.
     add_categorised_coord(
         cube, name, coord,
-        lambda coord, x: _pt_date(coord, x).timetuple().tm_yday)
+        lambda coord, x: _pt_date(coord, x).timetuple()[7])
 
 
 #--------------------------------------------

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,6 +25,11 @@ import mock
 import numpy as np
 
 from iris.coord_categorisation import add_categorised_coord
+from iris.coord_categorisation import add_day_of_year
+from iris.cube import Cube
+from iris.coords import DimCoord
+from iris.unit import CALENDARS as calendars
+from iris.unit import Unit
 
 
 class Test_add_categorised_coord(tests.IrisTest):
@@ -80,6 +85,38 @@ class Test_add_categorised_coord(tests.IrisTest):
             aux_coord_constructor.call_args[0][0],
             vectorise_patch(fn, otypes=[object])(self.coord, self.coord.points)
             .astype('|S64'))
+
+
+class Test_add_day_of_year(tests.IrisTest):
+    def setUp(self):
+        # 10 days straddling the end of the year in each case.
+        # Note that this is a leap year.
+        self.expected = [np.array(range(360, 367) + range(1, 4)),  # standard
+                         np.array(range(360, 367) + range(1, 4)),  # proleptic
+                         np.array(range(359, 366) + range(1, 4)),  # noleap
+                         np.array(range(360, 367) + range(1, 4)),  # julian
+                         np.array(range(360, 367) + range(1, 4)),  # all_leap
+                         np.array(range(359, 366) + range(1, 4)),  # 365 day
+                         np.array(range(360, 367) + range(1, 4)),  # 366 day
+                         np.array(range(355, 361) + range(1, 5))]  # 360 day
+
+    def make_cube(self, calendar):
+        n_times = 10
+        cube = Cube(np.arange(n_times))
+        time_coord = DimCoord(np.arange(n_times), standard_name='time',
+                              units=Unit('days since 1980-12-25',
+                                         calendar=calendar))
+        cube.add_dim_coord(time_coord, 0)
+        return cube
+
+    def test_calendars(self):
+        # Calendars 0 and 1 are equivalent: 'standard' and 'gregorian'.
+        for i, calendar in enumerate(calendars[1:]):
+            cube = self.make_cube(calendar)
+            add_day_of_year(cube, 'time')
+            points = cube.coord('day_of_year').points
+            expected_points = self.expected[i]
+            self.assertArrayEqual(points, expected_points)
 
 
 if __name__ == '__main__':
