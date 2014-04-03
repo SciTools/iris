@@ -89,16 +89,16 @@ class Test_add_categorised_coord(tests.IrisTest):
 
 class Test_add_day_of_year(tests.IrisTest):
     def setUp(self):
-        # 10 days straddling the end of the year in each case.
-        # Note that this is a leap year.
-        self.expected = [np.array(range(360, 367) + range(1, 4)),  # standard
-                         np.array(range(360, 367) + range(1, 4)),  # proleptic
-                         np.array(range(359, 366) + range(1, 4)),  # noleap
-                         np.array(range(360, 367) + range(1, 4)),  # julian
-                         np.array(range(360, 367) + range(1, 4)),  # all_leap
-                         np.array(range(359, 366) + range(1, 4)),  # 365 day
-                         np.array(range(360, 367) + range(1, 4)),  # 366 day
-                         np.array(range(355, 361) + range(1, 5))]  # 360 day
+        self.expected = {
+            'standard': np.array(range(360, 367) + range(1, 4)),
+            'gregorian': np.array(range(360, 367) + range(1, 4)),
+            'proleptic_gregorian': np.array(range(360, 367) + range(1, 4)),
+            'noleap': np.array(range(359, 366) + range(1, 4)),
+            'julian': np.array(range(360, 367) + range(1, 4)),
+            'all_leap': np.array(range(360, 367) + range(1, 4)),
+            '365_day': np.array(range(359, 366) + range(1, 4)),
+            '366_day': np.array(range(360, 367) + range(1, 4)),
+            '360_day': np.array(range(355, 361) + range(1, 5))}
 
     def make_cube(self, calendar):
         n_times = 10
@@ -110,12 +110,11 @@ class Test_add_day_of_year(tests.IrisTest):
         return cube
 
     def test_calendars(self):
-        # Calendars 0 and 1 are equivalent: 'standard' and 'gregorian'.
-        for i, calendar in enumerate(calendars[1:]):
+        for calendar in calendars:
             cube = self.make_cube(calendar)
             add_day_of_year(cube, 'time')
             points = cube.coord('day_of_year').points
-            expected_points = self.expected[i]
+            expected_points = self.expected[calendar]
             self.assertArrayEqual(points, expected_points)
 
 
