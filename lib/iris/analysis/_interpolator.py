@@ -159,7 +159,7 @@ class LinearInterpolator(object):
         data with the coordinate point values.
 
         """
-        dtype = self.interpolated_dtype(data.dtype)
+        dtype = self._interpolated_dtype(data.dtype)
         if data.dtype != dtype:
             # Perform dtype promotion.
             data = data.astype(dtype)
@@ -209,7 +209,7 @@ class LinearInterpolator(object):
                                              sample_points,
                                              self._interp_dims):
             points = np.array(points, ndmin=1)
-            dtype = self.interpolated_dtype(points.dtype)
+            dtype = self._interpolated_dtype(points.dtype)
             points = list(np.asanyarray(points, dtype=dtype))
             interp_points.append(points)
             interpolated_shape[dim] = len(points)
@@ -239,7 +239,7 @@ class LinearInterpolator(object):
         XXX
 
         """
-        data = self.points(sample_points, coord.points, coord_dims)
+        data = self._points(sample_points, coord.points, coord_dims)
         index = tuple(0 if dim not in coord_dims else slice(None)
                       for dim in range(self._src_cube.ndim))
         new_points = data[index]
@@ -328,7 +328,7 @@ class LinearInterpolator(object):
             raise ValueError(msg.format(len(self._src_coords),
                                         len(sample_points)))
 
-    def interpolated_dtype(self, dtype):
+    def _interpolated_dtype(self, dtype):
         """
         Determine the base dtype required by the underlying interpolator.
 
@@ -350,7 +350,7 @@ class LinearInterpolator(object):
         # Default to float.
         return np.result_type(_DEFAULT_DTYPE, dtype)
 
-    def points(self, sample_points, data, data_dims=None):
+    def _points(self, sample_points, data, data_dims=None):
         """
         Interpolate the given data values at the specified list of orthogonal
         (coord, points) pairs.
@@ -428,7 +428,7 @@ class LinearInterpolator(object):
         result_shape.insert(interpolate_dimension, points.shape[0])
 
         masked = isinstance(data, np.ma.MaskedArray)
-        dtype = self.interpolated_dtype(data.dtype)
+        dtype = self._interpolated_dtype(data.dtype)
         if masked:
             result_data = np.ma.empty(result_shape, dtype=dtype)
             if not isinstance(data.mask, np.ma.MaskType):
@@ -489,7 +489,7 @@ class LinearInterpolator(object):
 
         data = self._src_cube.data
         # Interpolate the cube payload.
-        interpolated_data = self.points(sample_points, data)
+        interpolated_data = self._points(sample_points, data)
         # Ensure the data payload has non-zero dimensionality.
         if interpolated_data.ndim == 0:
             interpolated_data = np.asanyarray(interpolated_data, ndmin=1)
