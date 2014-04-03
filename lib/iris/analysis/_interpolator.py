@@ -23,7 +23,6 @@ from numpy.lib.stride_tricks import as_strided
 from iris.analysis._interpolator_regular_grid import _RegularGridInterpolator
 from iris.coords import Coord, DimCoord, AuxCoord
 import iris.cube
-from iris.util import remap_cube_dimensions
 
 
 _DEFAULT_DTYPE = np.float16
@@ -494,11 +493,11 @@ class LinearInterpolator(object):
         if interpolated_data.ndim == 0:
             interpolated_data = np.asanyarray(interpolated_data, ndmin=1)
 
-        # Keep track of the dimensions for which sample points is scalar when
-        # collapse_scalar is True - we will remove these scalar dimensions
-        # later on.
-        _new_scalar_dims = []
         if collapse_scalar:
+            # When collapse_scalar is True, keep track of the dimensions for
+            # which sample points is scalar : We will remove these dimensions
+            # later on.
+            _new_scalar_dims = []
             for dim, points in zip(self._interp_dims, sample_points):
                 if np.array(points).ndim == 0:
                     _new_scalar_dims.append(dim)
@@ -567,7 +566,9 @@ class LinearInterpolator(object):
         for factory in self._src_cube.aux_factories:
             new_cube.add_aux_factory(factory.updated(coord_mapping))
 
-        if _new_scalar_dims:
-            remap_cube_dimensions(new_cube, remove_axes=_new_scalar_dims)
+        if collapse_scalar and _new_scalar_dims:
+            dim_slices = [0 if dim in _new_scalar_dims else slice(None)
+                          for dim in range(new_cube.ndim)]
+            new_cube = new_cube[tuple(dim_slices)]
 
         return new_cube
