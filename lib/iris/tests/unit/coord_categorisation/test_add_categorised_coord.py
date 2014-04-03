@@ -115,7 +115,9 @@ class Test_add_day_of_year(tests.IrisTest):
             add_day_of_year(cube, 'time')
             points = cube.coord('day_of_year').points
             expected_points = self.expected[calendar]
-            self.assertArrayEqual(points, expected_points)
+            msg = 'Test failed for the following calendar: {}.'
+            self.assertArrayEqual(points, expected_points,
+                                  err_msg=msg.format(calendar))
 
 
 if __name__ == '__main__':
