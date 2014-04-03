@@ -164,9 +164,13 @@ def add_day_of_year(cube, coord, name='day_of_year'):
     (1..366 in leap years).
 
     """
+    # Note: netcdftime.datetime objects return a normal tuple from timetuple(),
+    # unlike datetime.datetime objects that return a namedtuple.
+    # Index the time tuple (element 7 is day of year) instead of using named
+    # element tm_yday.
     add_categorised_coord(
         cube, name, coord,
-        lambda coord, x: _pt_date(coord, x).timetuple().tm_yday)
+        lambda coord, x: _pt_date(coord, x).timetuple()[7])
 
 
 # --------------------------------------------
