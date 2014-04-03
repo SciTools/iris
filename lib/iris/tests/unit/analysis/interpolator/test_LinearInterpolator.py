@@ -94,15 +94,19 @@ class Test___init____validation(ThreeDimCube):
         with self.assertRaisesRegexp(ValueError, msg):
             LinearInterpolator(self.cube, ['wibble', 'scalar'])
 
-    def test_interpolate_monotonic(self):
-        # Decreasing monotonic.
-        self.cube = self.cube[:, ::-1]
-        self.cube.data = self.data
-        self.interpolator = LinearInterpolator(self.cube, ['latitude'])
+    def test_interpolate__decreasing(self):
+        def check_expected():
+            # Check a simple case is equivalent to extracting the first row.
+            self.interpolator = LinearInterpolator(self.cube, ['latitude'])
+            expected = self.data[:, 0:1, :]
+            result = self.interpolator([[0]])
+            self.assertArrayEqual(result.data, expected)
 
-        expected = self.data[:, 0:1, :]
-        result = self.interpolator([[0]])
-        self.assertArrayEqual(result.data, expected)
+        # Check with normal cube.
+        check_expected()
+        # Check same result from a cube inverted in the latitude dimension.
+        self.cube = self.cube[:, ::-1]
+        check_expected()
 
     def test_interpolate_non_monotonic(self):
         self.cube.add_aux_coord(iris.coords.AuxCoord(

@@ -112,6 +112,8 @@ class LinearInterpolator(object):
         self._mode = extrapolation_mode
         # The point values defining the dimensions to be interpolated.
         self._src_points = []
+        # A list of flags indicating dimensions that need to be reversed.
+        self._coord_decreasing = []
         # The cube dimensions to be interpolated over.
         self._interp_dims = []
         # XXX meta-data to support circular data-sets.
@@ -154,6 +156,16 @@ class LinearInterpolator(object):
                 coord_points[:, interp_dim] = (coord_points[:, interp_dim] %
                                                src_modulus) + offset
         return coord_points, data
+
+    def _account_for_inverted(self, data):
+        if np.any(self._coord_decreasing):
+            dim_slices = [slice(None)] * len(data.shape)
+            for interp_dim, flip in zip(self._interp_dims,
+                                        self._coord_decreasing):
+                if flip:
+                    dim_slices[interp_dim] = slice(-1, None, -1)
+            data = data[dim_slices]
+        return data
 
     def _interpolate(self, data, coord_points):
         """
@@ -311,10 +323,10 @@ class LinearInterpolator(object):
         # Force all coordinates to be monotonically increasing. Generally this
         # isn't always necessary for a rectilinear interpolator, but it is a
         # common requirement.
-        self.coord_decreasing = [np.all(np.diff(points[:2]) < 0)
-                                 for points in self._src_points]
-        if np.any(self.coord_decreasing):
-            pairs = izip(self.coord_decreasing, self._src_points)
+        self._coord_decreasing = [np.all(np.diff(points[:2]) < 0)
+                                  for points in self._src_points]
+        if np.any(self._coord_decreasing):
+            pairs = izip(self._coord_decreasing, self._src_points)
             self._src_points = [points[::-1] if is_decreasing else points
                                 for is_decreasing, points in pairs]
 
@@ -401,6 +413,7 @@ class LinearInterpolator(object):
             data = as_strided(data, strides=strides,
                               shape=self._src_cube.shape)
 
+        data = self._account_for_inverted(data)
         points, data = self._account_for_circular(points, data)
 
         # Build up a shape suitable for passing to ndindex, inside the loop we
