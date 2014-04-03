@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,82 +22,6 @@ import iris.tests as tests
 import numpy as np
 
 import iris.cube
-
-
-@iris.tests.skip_data
-class Test_CubeList_pad_coords(tests.IrisTest):
-    def setUp(self):
-        self.cube = iris.load_cube(iris.sample_data_path('GloSea4',
-                                                         'ensemble_001.pp'))
-
-    def test_extract_one_str_dim(self):
-        a, b = iris.cube.CubeList([self.cube[2:],
-                                   self.cube[:4]]).pad_coords('time')
-
-        self.assertEquals(a.coord('time'),
-                          self.cube.coord('time'))
-        self.assertEquals(a.coord('forecast_period'),
-                          self.cube.coord('forecast_period'))
-        self.assertEquals(b.coord('time'), self.cube.coord('time'))
-        self.assertEquals(b.coord('forecast_period'),
-                          self.cube.coord('forecast_period'))
-        self.assertTrue(a.data.mask[:2].all())
-        self.assertTrue(not a.data.mask[2:].any())
-        self.assertArrayEqual(a.data[2:], self.cube.data[2:])
-        self.assertTrue(b.data.mask[4:].all())
-        self.assertTrue(not b.data.mask[:4].any())
-        self.assertArrayEqual(b.data[:4], self.cube.data[:4])
-
-    def test_extract_two_dims(self):
-        a, b = iris.cube.CubeList(
-            [self.cube[2:, 20:, :],
-             self.cube[:4, :-10, :]]).pad_coords(['time', 'latitude'])
-
-        self.assertEquals(a.coord('time'),
-                          self.cube.coord('time'))
-        self.assertEquals(a.coord('forecast_period'),
-                          self.cube.coord('forecast_period'))
-        self.assertEquals(b.coord('time'),
-                          self.cube.coord('time'))
-        self.assertEquals(b.coord('forecast_period'),
-                          self.cube.coord('forecast_period'))
-        self.assertEquals(a.coord('latitude'), self.cube.coord('latitude'))
-        self.assertEquals(a.coord('latitude'), self.cube.coord('latitude'))
-        self.assertEquals(b.coord('latitude'), self.cube.coord('latitude'))
-        self.assertEquals(b.coord('latitude'), self.cube.coord('latitude'))
-        self.assertTrue(a.data.mask[:2, :20, :].all())
-        self.assertTrue(not a.data.mask[2:, 20:].any())
-        self.assertArrayEqual(b.data[2:, :-20], self.cube.data[2:, :-20])
-        self.assertTrue(b.data.mask[4:, -10:].all())
-        self.assertTrue(not b.data.mask[:4, :-10].any())
-        self.assertArrayEqual(b.data[:4, :-10], self.cube.data[:4, :-10])
-
-    def test_incompatible_dim_coords(self):
-        with self.assertRaisesRegexp(ValueError, "latitude dim_coords "
-                                     "are not compatible"):
-            p = self.cube.copy()
-            q = self.cube.copy()
-            q.coord('latitude').convert_units('radians')
-            a, b = iris.cube.CubeList([p, q]).pad_coords('latitude')
-
-    def test_incompatible_aux_coords(self):
-        with self.assertRaisesRegexp(ValueError,
-                                     "aux_coords are not compatible"):
-            p = self.cube.copy()
-            p.coord('forecast_period').attributes['swallow_type'] = 'african'
-            q = self.cube.copy()
-            q.coord('forecast_period').attributes['swallow_type'] = 'european'
-            a, b = iris.cube.CubeList([p, q]).pad_coords('time')
-
-    def test_diff_aux_coord_values(self):
-        err_s = ("forecast_period aux_coord values are different for the "
-                 "same dim_coord values on different cubes")
-        with self.assertRaisesRegexp(ValueError, err_s):
-            p = self.cube.copy()
-            q = self.cube.copy()
-            q.coord('forecast_period').points = [-999, 1800, 2544,
-                                                 3264, 4008, 4752]
-            a, b = iris.cube.CubeList([p, q]).pad_coords('time')
 
 
 class Test_CubeList_getitem(tests.IrisTest):
