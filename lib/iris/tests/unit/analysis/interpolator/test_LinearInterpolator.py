@@ -191,10 +191,9 @@ class Test___call____1D(ThreeDimCube):
 
     def test_interpolate_data_unsupported_extrapolation(self):
         msg = "Extrapolation mode 'unsupported' not supported"
-        interpolator = LinearInterpolator(self.cube, ['latitude'],
-                                          extrapolation_mode='unsupported')
         with assert_raises_regexp(ValueError, msg):
-            interpolator([[-1]])
+            LinearInterpolator(self.cube, ['latitude'],
+                               extrapolation_mode='unsupported')
 
     def test_multi_points_array(self):
         # Providing a multidimensional sample points for a 1D interpolation.
