@@ -1489,13 +1489,15 @@ def clear_phenomenon_identity(cube):
 
 class Linear(object):
     """
-    This class provides support for creating an interpolator that performs
-    linear interpolation over one or more orthogonal coordinates.
+    This class describes the linear interpolation scheme for interpolating over
+    one or more orthogonal coordinates, typically for use with
+    :meth:`iris.cube.Cube.interpolate()`.
 
     """
     def __init__(self, extrapolation_mode='linear'):
         """
-        Perform linear interpolation over one or more orthogonal coordinates.
+        Linear interpolation scheme suitable for interpolating over one or
+        more orthogonal coordinates.
 
         Kwargs:
 
@@ -1503,9 +1505,9 @@ class Linear(object):
             Must be one of the following strings:
 
               * 'linear' - The extrapolation points will be calculated by
-                extending the gradient of closest two points.
+                extending the gradient of the closest two points.
               * 'nan' - The extrapolation points will be be set to NAN.
-              * 'error' - An exception will be raised, notifying an
+              * 'error' - A ValueError exception will be raised, notifying an
                 attempt to extrapolate.
 
             Default mode of extrapolation is 'linear'.
@@ -1528,8 +1530,8 @@ class Linear(object):
             interpolated over.
 
         Returns:
-            A :class:`~iris.analysis._interpolator.LinearInterpolator`
-            instance.
+            A a callable with the interface:
+            callable(sample_points, collapse_scalar=True)
 
         """
         mode = self.extrapolation_mode

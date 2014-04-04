@@ -20,8 +20,8 @@ import numpy as np
 import numpy.ma as ma
 from numpy.lib.stride_tricks import as_strided
 
-from iris.analysis._interpolator_regular_grid import _RegularGridInterpolator
-from iris.coords import Coord, DimCoord, AuxCoord
+from iris.analysis._scipy_interpolate import _RegularGridInterpolator
+from iris.coords import DimCoord, AuxCoord
 import iris.cube
 
 
@@ -34,11 +34,10 @@ _LINEAR_EXTRAPOLATION_MODES = {
 }
 
 
-def _extend_circular_coord(coord, coord_dim):
+def _extend_circular_coord(coord):
     """
     Return coordinates points with a shape extended by one
-    in the coord_dim axis. This is common when dealing with
-    circular coordinates.
+    This is common when dealing with circular coordinates.
 
     """
     modulus = np.array(coord.units.modulus or 0,
@@ -55,7 +54,7 @@ def _extend_circular_coord_and_data(coord, data, coord_dim):
     coordinates.
 
     """
-    points = _extend_circular_coord(coord, coord_dim)
+    points = _extend_circular_coord(coord)
     data = _extend_circular_data(data, coord_dim)
     return points, data
 
@@ -66,9 +65,9 @@ def _extend_circular_data(data, coord_dim):
 
     # TODO: Restore this code after resolution of the following issue:
     # https://github.com/numpy/numpy/issues/478
-#    data = np.append(cube.data,
-#                     cube.data[tuple(coord_slice_in_cube)],
-#                     axis=sample_dim)
+    # data = np.append(cube.data,
+    #                  cube.data[tuple(coord_slice_in_cube)],
+    #                  axis=sample_dim)
     # This is the alternative, temporary workaround.
     # It doesn't use append on an nD mask.
     if not (isinstance(data, ma.MaskedArray) and
@@ -124,7 +123,7 @@ class LinearInterpolator(object):
         # is impervious to external changes to the original source cube.
         self._src_cube = src_cube.copy()
         # Coordinates defining the dimensions to be interpolated.
-        self._src_coords = []
+        self._src_coords = [self._src_cube.coord(coord) for coord in coords]
         # The extrapolation mode.
         if extrapolation_mode not in _LINEAR_EXTRAPOLATION_MODES:
             msg = 'Extrapolation mode {!r} not supported.'
@@ -136,13 +135,13 @@ class LinearInterpolator(object):
         self._coord_decreasing = []
         # The cube dimensions to be interpolated over.
         self._interp_dims = []
-        # XXX meta-data to support circular data-sets.
+        # meta-data to support circular data-sets.
         self._circulars = []
         # Instance of the interpolator that performs the actual interpolation.
         self._interpolator = None
 
         # Perform initial start-up configuration and validation.
-        self._setup(coords)
+        self._setup()
 
     @property
     def cube(self):
@@ -192,6 +191,17 @@ class LinearInterpolator(object):
         before invoking it to perform interpolation over the provided
         data with the coordinate point values.
 
+        Args:
+
+        * data (ndarray):
+            Array of N-dimensional data, where N = cube.ndim.
+        * interp_points (ndarray):
+            Array of (n_samples, n_sample_dims)
+
+        Returns:
+            To be completed
+            result = (n_samples, ...non-sampled dimensions...) ?
+
         """
         dtype = self._interpolated_dtype(data.dtype)
         if data.dtype != dtype:
@@ -228,6 +238,13 @@ class LinearInterpolator(object):
         Interpolate the given coordinate at the provided sample points.
 
         """
+        # NB. This section is ripe for improvement:
+        # - Internally self._points() expands coord.points to the same
+        #   N-dimensional shape as the cube's data, but it doesn't
+        #   collapse it again before returning so we have to do that
+        #   here.
+        # - By expanding to N dimensions self._points() is doing
+        #   unnecessary work.
         data = self._points(sample_points, coord.points, coord_dims)
         index = tuple(0 if dim not in coord_dims else slice(None)
                       for dim in range(self._src_cube.ndim))
@@ -241,23 +258,20 @@ class LinearInterpolator(object):
             new_coord = aux_coord.copy(new_points)
         return new_coord
 
-    def _setup(self, coords):
+    def _setup(self):
         """
         Perform initial start-up configuration and validation based on the
         cube and the specified coordinates to be interpolated over.
 
         """
-        cube = self._src_cube
-        self._src_coords = [self._src_cube.coord(coord) for coord in coords]
-
         coord_points_list = []
 
         for index, coord in enumerate(self._src_coords):
-            coord_dims = cube.coord_dims(coord)
+            coord_dims = self._src_cube.coord_dims(coord)
 
             if getattr(coord, 'circular', False):
                 # Only DimCoords can be circular.
-                coord_points = _extend_circular_coord(coord, coord_dims[0])
+                coord_points = _extend_circular_coord(coord)
                 modulus = getattr(coord.units, 'modulus', 0)
                 self._circulars.append((index, coord_dims[0],
                                         coord_points.min(),
@@ -345,16 +359,8 @@ class LinearInterpolator(object):
             instance of the interpolated data.
 
         """
-<<<<<<< HEAD
-        points, final_shape, final_order = self._prepare_points(sample_points)
-        data_dims = data_dims or range(self._src_cube.ndim)
-=======
-        self._validate_sample_points(sample_points)
-
         dims = range(self._src_cube.ndim)
         data_dims = data_dims or dims
-        data_dtype = self._interpolated_dtype(data.dtype)
->>>>>>> Refactor to remove ndindex.
 
         if len(data_dims) != data.ndim:
             msg = 'Data being interpolated is not consistent with ' \
@@ -376,9 +382,10 @@ class LinearInterpolator(object):
                               shape=self._src_cube.shape)
 
         data = self._account_for_inverted(data)
-        # Calculate the transpose order to shuffle the interpolated dimesions
+        # Calculate the transpose order to shuffle the interpolated dimensions
         # to the lower dimensions for the interpolation algorithm. Then the
-        # transpose order to restore the dimesions to their original positions.
+        # transpose order to restore the dimensions to their original
+        # positions.
         di = self._interp_dims
         ds = sorted(dims, key=lambda d: d not in di)
         dmap = {d: di.index(d) if d in di else ds.index(d) for d in dims}
@@ -459,9 +466,6 @@ class LinearInterpolator(object):
         data = self._src_cube.data
         # Interpolate the cube payload.
         interpolated_data = self._points(sample_points, data)
-        # Ensure the data payload has non-zero dimensionality.
-        if interpolated_data.ndim == 0:
-            interpolated_data = np.asanyarray(interpolated_data, ndmin=1)
 
         if collapse_scalar:
             # When collapse_scalar is True, keep track of the dimensions for
@@ -480,7 +484,7 @@ class LinearInterpolator(object):
             # Handle what was previously a DimCoord which may no longer be
             # monotonic.
             try:
-                return DimCoord.from_coord(coord).copy(points)
+                return coord.copy(points)
             except ValueError:
                 return AuxCoord.from_coord(coord).copy(points)
 
@@ -489,49 +493,38 @@ class LinearInterpolator(object):
         coord_mapping = {}
         dims_with_dim_coords = []
 
-        # Copy/interpolate the coordinates.
-        for coord in cube.dim_coords:
-            dim, = cube.coord_dims(coord)
-            if coord in self._src_coords:
-                new_points = sample_points[self._src_coords.index(coord)]
-                new_coord = construct_new_coord_given_points(coord, new_points)
-            elif set([dim]).intersection(set(self._interp_dims)):
-                # Interpolate the coordinate payload.
-                new_coord = self._resample_coord(sample_points, coord, [dim])
-            else:
-                new_coord = coord.copy()
-
-            # new_coord may no longer be a dim coord, so check we don't need
-            # to add it as an aux coord (thus leaving the dim anonymous).
-            if isinstance(new_coord, DimCoord) and dim is not None:
-                new_cube._add_unique_dim_coord(new_coord, dim)
-                dims_with_dim_coords.append(dim)
-            else:
-                new_cube._add_unique_aux_coord(new_coord, dim)
-            coord_mapping[id(coord)] = new_coord
-
-        for coord in cube.aux_coords:
+        def construct_new_coord(coord):
             dims = cube.coord_dims(coord)
-            if coord in self._src_coords:
+            try:
                 index = self._src_coords.index(coord)
                 new_points = sample_points[index]
                 new_coord = construct_new_coord_given_points(coord, new_points)
-                dims = [self._interp_dims[index]]
-            elif set(dims).intersection(set(self._interp_dims)):
-                # Interpolate the coordinate payload.
-                new_coord = self._resample_coord(sample_points, coord, dims)
-            else:
-                new_coord = coord.copy()
+                # isinstance not possible here as a dimension coordinate can be
+                # mapped to the aux coordinates of a cube.
+                if coord in cube.aux_coords:
+                    dims = [self._interp_dims[index]]
+            except ValueError:
+                if set(dims).intersection(set(self._interp_dims)):
+                    # Interpolate the coordinate payload.
+                    new_coord = self._resample_coord(sample_points, coord,
+                                                     dims)
+                else:
+                    new_coord = coord.copy()
+            return new_coord, dims
 
-            new_dims = dims
-
-            if (isinstance(new_coord, DimCoord) and len(new_dims) > 0
-                    and new_dims[0] not in dims_with_dim_coords):
-                new_cube._add_unique_dim_coord(new_coord, new_dims)
-                dims_with_dim_coords.append(new_dims[0])
+        def gen_new_cube():
+            if (isinstance(new_coord, DimCoord) and len(dims) > 0
+                    and dims[0] not in dims_with_dim_coords):
+                new_cube._add_unique_dim_coord(new_coord, dims)
+                dims_with_dim_coords.append(dims[0])
             else:
-                new_cube._add_unique_aux_coord(new_coord, new_dims)
+                new_cube._add_unique_aux_coord(new_coord, dims)
             coord_mapping[id(coord)] = new_coord
+
+        # Copy/interpolate the coordinates.
+        for coord in (cube.dim_coords + cube.aux_coords):
+            new_coord, dims = construct_new_coord(coord)
+            gen_new_cube()
 
         for factory in self._src_cube.aux_factories:
             new_cube.add_aux_factory(factory.updated(coord_mapping))

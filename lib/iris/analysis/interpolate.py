@@ -636,37 +636,6 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
     return cube.interpolate(scheme, sample_points)
 
 
-# remove this ... ?
-def _XXX_resample_coord(coord, src_coord, direction, target_points, interpolate):
-    if coord.ndim != 1:
-        raise iris.exceptions.NotYetImplementedError(
-            'Linear interpolation of multi-dimensional coordinates.')
-    coord_points = coord.points
-    if coord is src_coord:
-        dtype = coord_points.dtype
-        if dtype.kind == 'i':
-            dtype = np.promote_types(dtype, np.float16)
-        new_points = np.array(target_points, dtype=dtype)
-    else:
-        if getattr(src_coord, 'circular', False):
-            coord_points = np.append(coord_points, coord_points[0])
-
-        # If the source coordinate was monotonic decreasing, we need to
-        # flip this coordinate's values.
-        if direction == -1:
-            coord_points = iris.util.reverse(coord_points, axes=0)
-
-        new_points = interpolate(coord_points, target_points)
-
-    # Watch out for DimCoord instances that are no longer monotonic
-    # after the resampling.
-    try:
-        new_coord = coord.copy(new_points)
-    except ValueError:
-        new_coord = iris.coords.AuxCoord.from_coord(coord).copy(new_points)
-    return new_coord
-
-
 def _interp1d_rolls_y():
     """
     Determines if :class:`scipy.interpolate.interp1d` rolls its array `y` by

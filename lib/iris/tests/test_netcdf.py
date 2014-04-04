@@ -664,7 +664,7 @@ class TestNetCDFSave(tests.IrisTest):
             self.assertCML(reloaded,
                            ('netcdf', 'save_load_traj.cml'),
                            checksum=False)
-            self.assertArrayAllClose(traj.data, reloaded.data)
+            self.assertArrayEqual(traj.data, reloaded.data)
 
     def test_attributes(self):
         # Should be global attributes.

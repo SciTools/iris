@@ -28,7 +28,7 @@ from scipy.sparse import csc_matrix
 
 import iris.analysis.cartography
 from iris.analysis._interpolator import _extend_circular_coord_and_data
-from iris.analysis._interpolator_regular_grid import _RegularGridInterpolator
+from iris.analysis._scipy_interpolate import _RegularGridInterpolator
 import iris.coord_systems
 import iris.cube
 import iris.unit

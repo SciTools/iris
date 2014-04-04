@@ -62,16 +62,15 @@ class Test___init____circular(tests.IrisTest):
         # Load some data from a file so that we have some deferred data.
         self.cube = stock.simple_pp()
 
-    # TO-DO: Do not touch the data for this case.
     def test_not_circular(self):
         self.cube.coord('longitude').circular = False
         interpolator = LinearInterpolator(self.cube, ['longitude'])
-        self.assertFalse(interpolator.cube.has_lazy_data())
+        self.assertTrue(interpolator.cube.has_lazy_data())
 
     def test_circular(self):
         self.cube.coord('longitude').circular = True
         interpolator = LinearInterpolator(self.cube, ['longitude'])
-        self.assertFalse(interpolator.cube.has_lazy_data())
+        self.assertTrue(interpolator.cube.has_lazy_data())
 
 
 class Test___init____validation(ThreeDimCube):
