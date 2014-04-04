@@ -159,7 +159,7 @@ class LinearInterpolator(object):
 
     def _account_for_inverted(self, data):
         if np.any(self._coord_decreasing):
-            dim_slices = [slice(None)] * len(data.shape)
+            dim_slices = [slice(None)] * data.ndim
             for interp_dim, flip in zip(self._interp_dims,
                                         self._coord_decreasing):
                 if flip:
