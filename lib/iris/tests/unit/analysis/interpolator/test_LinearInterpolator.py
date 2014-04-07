@@ -240,6 +240,7 @@ class Test___call____1D(ThreeDimCube):
 
 
 class Test___call____1D_circular(ThreeDimCube):
+    # Note: all these test data interpolation.
     def setUp(self):
         ThreeDimCube.setUp(self)
         self.cube.coord('longitude')._points = np.linspace(0, 360, 4,
@@ -248,22 +249,67 @@ class Test___call____1D_circular(ThreeDimCube):
         self.cube.coord('longitude').units = 'degrees'
         self.interpolator = LinearInterpolator(self.cube, ['longitude'],
                                                extrapolation_mode='nan')
+        self.cube_reverselons = self.cube[:, :, ::-1]
+        self.interpolator_reverselons = LinearInterpolator(
+            self.cube_reverselons, ['longitude'], extrapolation_mode='nan')
 
-    def test_interpolate_data_fully_wrapped(self):
-        expected = self.interpolator([[180, 270]])
-        result = self.interpolator([[-180, -90]])
+        self.testpoints_fully_wrapped = ([[180, 270]], [[-180, -90]])
+        self.testpoints_partially_wrapped = ([[180, 90]], [[-180, 90]])
+        self.testpoints_fully_wrapped_twice = (
+            [np.linspace(-360, 360, 100)],
+            [(np.linspace(-360, 360, 100) + 360) % 360])
+
+    def test_fully_wrapped(self):
+        points, points_wrapped = self.testpoints_fully_wrapped
+        expected = self.interpolator(points)
+        result = self.interpolator(points_wrapped)
         self.assertArrayEqual(expected.data, result.data)
 
-    def test_interpolate_data_partially_wrapped(self):
-        expected = self.interpolator([[180, 90]])
-        result = self.interpolator([[-180, 90]])
+    def test_fully_wrapped_reversed_mainpoints(self):
+        points, _ = self.testpoints_fully_wrapped
+        expected = self.interpolator(points)
+        result = self.interpolator_reverselons(points)
         self.assertArrayEqual(expected.data, result.data)
 
-    def test_interpolate_data_fully_wrapped_twice(self):
-        xs = np.linspace(-360, 360, 100)
-        xs_not_wrapped = (xs + 360) % 360
-        expected = self.interpolator([xs])
-        result = self.interpolator([xs_not_wrapped])
+    def test_fully_wrapped_reversed_testpoints(self):
+        _, points = self.testpoints_fully_wrapped
+        expected = self.interpolator(points)
+        result = self.interpolator_reverselons(points)
+        self.assertArrayEqual(expected.data, result.data)
+
+    def test_partially_wrapped(self):
+        points, points_wrapped = self.testpoints_partially_wrapped
+        expected = self.interpolator(points)
+        result = self.interpolator(points_wrapped)
+
+    def test_partially_wrapped_reversed_mainpoints(self):
+        points, _ = self.testpoints_partially_wrapped
+        expected = self.interpolator(points)
+        result = self.interpolator_reverselons(points)
+        self.assertArrayEqual(expected.data, result.data)
+
+    def test_partially_wrapped_reversed_testpoints(self):
+        points, _ = self.testpoints_partially_wrapped
+        expected = self.interpolator(points)
+        result = self.interpolator_reverselons(points)
+        self.assertArrayEqual(expected.data, result.data)
+
+    def test_fully_wrapped_twice(self):
+        xs, xs_not_wrapped = self.testpoints_fully_wrapped_twice
+        expected = self.interpolator(xs)
+        result = self.interpolator(xs_not_wrapped)
+        self.assertArrayEqual(expected.data, result.data)
+
+    def test_fully_wrapped_twice_reversed_mainpoints(self):
+        points. _ = self.testpoints_fully_wrapped_twice
+        expected = self.interpolator(points)
+        result = self.interpolator_reverselons(points)
+        self.assertArrayEqual(expected.data, result.data)
+
+    def test_fully_wrapped_twice_reversed_mainpoints(self):
+        _, points = self.testpoints_fully_wrapped_twice
+        expected = self.interpolator(points)
+        result = self.interpolator_reverselons(points)
         self.assertArrayEqual(expected.data, result.data)
 
 

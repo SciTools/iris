@@ -21,6 +21,7 @@ import numpy.ma as ma
 from numpy.lib.stride_tricks import as_strided
 
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
+from iris.analysis.cartography import wrap_lons as wrap_circular_points
 from iris.coords import DimCoord, AuxCoord
 import iris.cube
 
@@ -34,7 +35,7 @@ _LINEAR_EXTRAPOLATION_MODES = {
 }
 
 
-def _extend_circular_coord(coord):
+def _extend_circular_coord(coord, points):
     """
     Return coordinates points with a shape extended by one
     This is common when dealing with circular coordinates.
@@ -42,8 +43,7 @@ def _extend_circular_coord(coord):
     """
     modulus = np.array(coord.units.modulus or 0,
                        dtype=coord.dtype)
-    points = np.append(coord.points,
-                       coord.points[0] + modulus)
+    points = np.append(points, points[0] + modulus)
     return points
 
 
@@ -54,7 +54,7 @@ def _extend_circular_coord_and_data(coord, data, coord_dim):
     coordinates.
 
     """
-    points = _extend_circular_coord(coord)
+    points = _extend_circular_coord(coord, coord.points)
     data = _extend_circular_data(data, coord_dim)
     return points, data
 
@@ -170,8 +170,8 @@ class LinearInterpolator(object):
 
             for (index, _, src_min, src_max, modulus) in self._circulars:
                 offset = (src_max + src_min - modulus) * 0.5
-                points[:, index] -= offset
-                points[:, index] = (points[:, index] % modulus) + offset
+                points[:, index] = wrap_circular_points(points[:, index],
+                                                        modulus, offset)
 
         return points, data
 
@@ -264,28 +264,46 @@ class LinearInterpolator(object):
         cube and the specified coordinates to be interpolated over.
 
         """
-        coord_points_list = []
-
+        # Pre-calculate control data for each interpolation coordinate.
+        self._src_points = []
+        self._coord_decreasing = []
+        self._circulars = []
+        self._interp_dims = []
         for index, coord in enumerate(self._src_coords):
-            coord_dims = self._src_cube.coord_dims(coord)
+            coord_dims = cube.coord_dims(coord)
+            coord_points = coord.points
 
+            # Record if coord is descending-order, and adjust points.
+            # (notes copied from pelson :-
+            #    Force all coordinates to be monotonically increasing.
+            #    Generally this isn't always necessary for a rectilinear
+            #    interpolator, but it is a common requirement.)
+            decreasing = (coord.ndim == 1 and
+                          # NOTE: this clause avoids an error when > 1D,
+                          # as '_validate' raises a more readable error.
+                          coord_points.size > 1 and
+                          coord_points[1] < coord_points[0])
+            self._coord_decreasing.append(decreasing)
+            if decreasing:
+                coord_points = coord_points[::-1]
+
+            # Record info if coord is circular, and adjust points.
             if getattr(coord, 'circular', False):
                 # Only DimCoords can be circular.
-                coord_points = _extend_circular_coord(coord)
+                coord_points = _extend_circular_coord(coord,
+                                                      coord_points,
+                                                      coord_dims[0])
                 modulus = getattr(coord.units, 'modulus', 0)
                 self._circulars.append((index, coord_dims[0],
                                         coord_points.min(),
                                         coord_points.max(), modulus))
-            else:
-                coord_points = coord.points
-            coord_points_list.append([coord_points, coord_dims])
 
-        self._src_points, coord_dims_lists = zip(*coord_points_list)
+            self._src_points.append(coord_points)
 
-        for dim_list in coord_dims_lists:
-            for dim in dim_list:
-                if dim not in self._interp_dims:
-                    self._interp_dims.append(dim)
+            # Record any interpolation cube dims we haven't already seen.
+            coord_dims = [c for c in coord_dims
+                          if c not in self._interp_dims]
+            self._interp_dims += coord_dims
 
         self._validate()
 
@@ -311,16 +329,6 @@ class LinearInterpolator(object):
                     msg = 'Cannot interpolate over the non-' \
                         'monotonic coordinate {}.'
                     raise ValueError(msg.format(coord.name()))
-
-        # Force all coordinates to be monotonically increasing. Generally this
-        # isn't always necessary for a rectilinear interpolator, but it is a
-        # common requirement.
-        self._coord_decreasing = [np.all(np.diff(points[:2]) < 0)
-                                  for points in self._src_points]
-        if np.any(self._coord_decreasing):
-            pairs = izip(self._coord_decreasing, self._src_points)
-            self._src_points = [points[::-1] if is_decreasing else points
-                                for is_decreasing, points in pairs]
 
     def _interpolated_dtype(self, dtype):
         """
