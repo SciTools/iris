@@ -171,7 +171,7 @@ class LinearInterpolator(object):
             for (index, _, src_min, src_max, modulus) in self._circulars:
                 offset = (src_max + src_min - modulus) * 0.5
                 points[:, index] = wrap_circular_points(points[:, index],
-                                                        modulus, offset)
+                                                        offset, modulus)
 
         return points, data
 

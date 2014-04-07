@@ -551,7 +551,7 @@ class TestNearestLinearInterpolRealData(tests.IrisTest):
             ((self.cube.data[..., -1] - self.cube.data[..., 0]) *
              (((360 - 359.8) - lon_coord[0]) /
               ((360 - lon_coord[-1]) - lon_coord[0])))
-        self.assertArrayAllClose(res.data, expected, rtol=2.0e-7)
+        self.assertArrayAllClose(res.data, expected, rtol=1.0e-6)
 
         # check that the values returned by lon 0 & 360 are the same...
         r1 = iris.analysis.interpolate.linear(self.cube, [('longitude', 360)])
