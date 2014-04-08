@@ -157,7 +157,7 @@ class AuxCoordFactory(CFVariableMixin):
         * old_coord:
             The dependency coordinate to be removed/replaced.
         * new_coord:
-            If None, the dependency using old_coord is removed, othewise
+            If None, the dependency using old_coord is removed, otherwise
             the dependency is updated to use new_coord.
 
         """

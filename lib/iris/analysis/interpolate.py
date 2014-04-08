@@ -29,6 +29,7 @@ import scipy
 import scipy.spatial
 from scipy.interpolate.interpolate import interp1d
 
+from iris.analysis import Linear
 import iris.cube
 import iris.coord_systems
 import iris.coords
@@ -560,44 +561,6 @@ def regrid_to_max_resolution(cubes, **kwargs):
     return [cube.regridded(grid_cube, **kwargs) for cube in cubes]
 
 
-def _extend_circular_coord_and_data(coord, data, coord_dim):
-    """
-    Return coordinate points and a data array with a shape extended by one
-    in the coord_dim axis. This is common when dealing with circular
-    coordinates.
-
-    """
-    coord_slice_in_cube = [slice(None)] * data.ndim
-    coord_slice_in_cube[coord_dim] = slice(0, 1)
-    modulus = np.array(coord.units.modulus or 0,
-                       dtype=coord.dtype)
-    points = np.append(coord.points,
-                       coord.points[0] + modulus)
-
-    # TODO: Restore this code after resolution of the following issue:
-    # https://github.com/numpy/numpy/issues/478
-#    data = np.append(cube.data,
-#                     cube.data[tuple(coord_slice_in_cube)],
-#                     axis=sample_dim)
-    # This is the alternative, temporary workaround.
-    # It doesn't use append on an nD mask.
-    if (not isinstance(data, ma.MaskedArray) or
-        not isinstance(data.mask, np.ndarray) or
-        len(data.mask.shape) == 0):
-        data = np.append(data,
-                         data[tuple(coord_slice_in_cube)],
-                         axis=coord_dim)
-    else:
-        new_data = np.append(data.data,
-                             data.data[tuple(coord_slice_in_cube)],
-                             axis=coord_dim)
-        new_mask = np.append(data.mask,
-                             data.mask[tuple(coord_slice_in_cube)],
-                             axis=coord_dim)
-        data = ma.array(new_data, mask=new_mask)
-    return points, data
-
-
 def linear(cube, sample_points, extrapolation_mode='linear'):
     """
     Return a cube of the linearly interpolated points given the desired
@@ -662,234 +625,15 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
         point data type in the result.
 
     """
-    if not isinstance(cube, iris.cube.Cube):
-        raise ValueError('Expecting a cube instance, got %s' % type(cube))
-
     if isinstance(sample_points, dict):
-        warnings.warn('Providing a dictionary to specify points is deprecated. Please provide a list of (coordinate, values) pairs.')
         sample_points = sample_points.items()
-
+    
     # catch the case where a user passes a single (coord/name, value) pair rather than a list of pairs
     if sample_points and not (isinstance(sample_points[0], collections.Container) and not isinstance(sample_points[0], basestring)):
         raise TypeError('Expecting the sample points to be a list of tuple pairs representing (coord, points), got a list of %s.' % type(sample_points[0]))
 
-    points = []
-    for (coord, values) in sample_points:
-        if isinstance(coord, basestring):
-            coord = cube.coord(coord)
-        else:
-            coord = cube.coord(coord)
-        points.append((coord, values))
-    sample_points = points
-
-    if len(sample_points) == 0:
-        raise ValueError('Expecting a non-empty list of coord value pairs, got %r.' % sample_points)
-
-    if cube.data.dtype.kind == 'i':
-        raise ValueError("Cannot linearly interpolate a cube which has integer type data. Consider casting the "
-                         "cube's data to floating points in order to continue.")
-
-    bounds_error = (extrapolation_mode == 'error')
-
-    # Handle an over-specified points_dict or a specification which does not describe a data dimension
-    data_dimensions_requested = []
-    for coord, values in sample_points:
-        if coord.ndim > 1:
-            raise ValueError('Cannot linearly interpolate over {!r} as it is'
-                             ' multi-dimensional.'.format(coord.name()))
-        data_dim = cube.coord_dims(coord)
-        if not data_dim:
-            raise ValueError('Requested a point over a coordinate which does'
-                             ' not describe a dimension: {!r}.'.format(
-                                 coord.name()))
-        else:
-            data_dim = data_dim[0]
-        if data_dim in data_dimensions_requested:
-            raise ValueError('Requested a point which over specifies a'
-                             ' dimension: {!r}. '.format(coord.name()))
-        data_dimensions_requested.append(data_dim)
-
-    # Iterate over all of the requested keys in the given points_dict calling this routine repeatedly.
-    if len(sample_points) > 1:
-        result = cube
-        for coord, cells in sample_points:
-            result = linear(result, [(coord, cells)], extrapolation_mode=extrapolation_mode)
-        return result
-
-    else:
-        # Now we must be down to a single sample coordinate and its
-        # values.
-        src_coord, requested_points = sample_points[0]
-        sample_values = np.array(requested_points)
-
-        # 1) Define the interpolation characteristics.
-
-        # Get the sample dimension (which we have already tested is not None)
-        sample_dim = cube.coord_dims(src_coord)[0]
-
-        # Construct source data & source coordinate values suitable for
-        # SciPy's interp1d.
-        if getattr(src_coord, 'circular', False):
-            src_points, data = _extend_circular_coord_and_data(src_coord,
-                                                               cube.data,
-                                                               sample_dim)
-        else:
-            src_points = src_coord.points
-            data = cube.data
-
-        # Map all the requested values into the range of the source
-        # data (centered over the centre of the source data to allow
-        # extrapolation where required).
-        src_axis = iris.util.guess_coord_axis(src_coord)
-        if src_axis == 'X' and src_coord.units.modulus:
-            modulus = src_coord.units.modulus
-            offset = (src_points.max() + src_points.min() - modulus) * 0.5
-            sample_values = ((sample_values - offset) % modulus) + offset
-
-        if len(src_points) == 1:
-            if extrapolation_mode == 'error' and \
-                    np.any(sample_values != src_points):
-                raise ValueError('Attempting to extrapolate from a single '
-                                 'point with extrapolation mode set '
-                                 'to {!r}.'.format(extrapolation_mode))
-            direction = 0
-
-            def interpolate(fx, new_x, axis=None, **kwargs):
-                # All kwargs other than axis are ignored.
-                if axis is None:
-                    axis = -1
-                new_x = np.array(new_x)
-                new_shape = list(fx.shape)
-                new_shape[axis] = new_x.size
-                fx = np.broadcast_arrays(fx, np.empty(new_shape))[0].copy()
-                if extrapolation_mode == 'nan':
-                    indices = [slice(None)] * fx.ndim
-                    indices[axis] = new_x != src_points
-                    fx[tuple(indices)] = np.nan
-                # If new_x is a scalar, then remove the dimension from fx.
-                if not new_x.shape:
-                    del new_shape[axis]
-                    fx.shape = new_shape
-                return fx
-        else:
-            monotonic, direction = iris.util.monotonic(src_points,
-                                                       return_direction=True)
-            if not monotonic:
-                raise ValueError('Unable to linearly interpolate this '
-                                 'cube as the coordinate {!r} is not '
-                                 'monotonic'.format(src_coord.name()))
-
-            # SciPy's interp1d requires monotonic increasing coord values.
-            if direction == -1:
-                src_points = iris.util.reverse(src_points, axes=0)
-                data = iris.util.reverse(data, axes=sample_dim)
-
-            # Wrap it all up in a function which makes the right kind of
-            # interpolator/extrapolator.
-            # NB. This uses a closure to capture the values of src_points,
-            # bounds_error, and extrapolation_mode.
-            def interpolate(fx, new_x, **kwargs):
-                # SciPy's interp1d needs float values, so if we're given
-                # integer values, convert them to the smallest possible
-                # float dtype that can accurately preserve the values.
-                if fx.dtype.kind == 'i':
-                    fx = fx.astype(np.promote_types(fx.dtype, np.float16))
-                x = src_points.astype(fx.dtype)
-                interpolator = interp1d(x, fx, kind='linear',
-                                        bounds_error=bounds_error, **kwargs)
-                if extrapolation_mode == 'linear':
-                    interpolator = Linear1dExtrapolator(interpolator)
-                new_fx = interpolator(np.array(new_x, dtype=fx.dtype))
-                return new_fx
-
-        # 2) Interpolate the data and produce our new Cube.
-        if isinstance(data, ma.MaskedArray):
-            # interpolate data, ignoring the mask
-            new_data = interpolate(data.data, sample_values, axis=sample_dim,
-                                   copy=False)
-            # Mask out any results which contain a non-zero contribution
-            # from a masked value when interpolated from mask cast as 1,0.
-            mask_dataset = ma.getmaskarray(data).astype(float)
-            new_mask = interpolate(mask_dataset, sample_values,
-                                   axis=sample_dim, copy=False) > 0
-            # create new_data masked array
-            new_data = ma.MaskedArray(new_data, mask=new_mask)
-        else:
-            new_data = interpolate(data, sample_values, axis=sample_dim,
-                                   copy=False)
-        new_cube = iris.cube.Cube(new_data)
-        new_cube.metadata = cube.metadata
-
-        # If requested_points is an array scalar then `new_cube` will
-        # have one less dimension than `cube`. (The `sample_dim`
-        # dimension will vanish.) In which case we build a mapping from
-        # `cube` dimensions to `new_cube` dimensions.
-        dim_mapping = None
-        if new_cube.ndim != cube.ndim:
-            dim_mapping = {i: i for i in range(sample_dim)}
-            dim_mapping[sample_dim] = None
-            for i in range(sample_dim + 1, cube.ndim):
-                dim_mapping[i] = i - 1
-
-        # 2) Copy/interpolate the coordinates.
-        for dim_coord in cube.dim_coords:
-            dims = cube.coord_dims(dim_coord)
-            if sample_dim in dims:
-                new_coord = _resample_coord(dim_coord, src_coord, direction,
-                                            requested_points, interpolate)
-            else:
-                new_coord = dim_coord.copy()
-            if dim_mapping:
-                dims = [dim_mapping[dim] for dim in dims
-                            if dim_mapping[dim] is not None]
-            if isinstance(new_coord, iris.coords.DimCoord) and dims:
-                new_cube.add_dim_coord(new_coord, dims)
-            else:
-                new_cube.add_aux_coord(new_coord, dims)
-
-        for coord in cube.aux_coords:
-            dims = cube.coord_dims(coord)
-            if sample_dim in dims:
-                new_coord = _resample_coord(coord, src_coord, direction,
-                                            requested_points, interpolate)
-            else:
-                new_coord = coord.copy()
-            if dim_mapping:
-                dims = [dim_mapping[dim] for dim in dims
-                            if dim_mapping[dim] is not None]
-            new_cube.add_aux_coord(new_coord, dims)
-
-        return new_cube
-
-
-def _resample_coord(coord, src_coord, direction, target_points, interpolate):
-    if coord.ndim != 1:
-        raise iris.exceptions.NotYetImplementedError(
-            'Linear interpolation of multi-dimensional coordinates.')
-    coord_points = coord.points
-    if coord is src_coord:
-        dtype = coord_points.dtype
-        if dtype.kind == 'i':
-            dtype = np.promote_types(dtype, np.float16)
-        new_points = np.array(target_points, dtype=dtype)
-    else:
-        if getattr(src_coord, 'circular', False):
-            coord_points = np.append(coord_points, coord_points[0])
-
-        # If the source coordinate was monotonic decreasing, we need to
-        # flip this coordinate's values.
-        if direction == -1:
-            coord_points = iris.util.reverse(coord_points, axes=0)
-
-        new_points = interpolate(coord_points, target_points)
-
-    # Watch out for DimCoord instances that are no longer monotonic
-    # after the resampling.
-    try:
-        new_coord = coord.copy(new_points)
-    except ValueError:
-        new_coord = iris.coords.AuxCoord.from_coord(coord).copy(new_points)
-    return new_coord
+    scheme = Linear(extrapolation_mode)
+    return cube.interpolate(scheme, sample_points)
 
 
 def _interp1d_rolls_y():

@@ -432,7 +432,12 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         # Curl returns None when there is no components of Curl
         self.assertEqual(r[0], None)
         self.assertEqual(r[1], None)
-        self.assertCML(r[2], ('analysis', 'calculus', 'grad_contrived_non_spherical1.cml'))
+        cube = r[2]
+        self.assertCML(
+            cube,
+            ('analysis', 'calculus', 'grad_contrived_non_spherical1.cml'),
+            checksum=False)
+        self.assertTrue(np.all(np.abs(cube.data - (-1.0)) < 1.0e-7))
 
     def test_contrived_non_spherical_curl2(self):
         # testing :
