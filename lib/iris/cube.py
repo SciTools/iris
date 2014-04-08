@@ -3149,7 +3149,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Kwargs:
 
         * collapse_scalar:
-            Whether to collapse the dimesion of the scalar sample points
+            Whether to collapse the dimension of the scalar sample points
             in the resulting cube. Default is True.
 
         Returns:

@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-from itertools import izip, product
+from itertools import product
 
 import numpy as np
 import numpy.ma as ma
@@ -164,14 +164,13 @@ class LinearInterpolator(object):
         # Map all the requested values into the range of the source
         # data (centred over the centre of the source data to allow
         # extrapolation where required).
-        if self._circulars:
-            for _, dim, _, _, _ in self._circulars:
-                data = _extend_circular_data(data, dim)
+        for _, dim, _, _, _ in self._circulars:
+            data = _extend_circular_data(data, dim)
 
-            for (index, _, src_min, src_max, modulus) in self._circulars:
-                offset = (src_max + src_min - modulus) * 0.5
-                points[:, index] = wrap_circular_points(points[:, index],
-                                                        offset, modulus)
+        for (index, _, src_min, src_max, modulus) in self._circulars:
+            offset = (src_max + src_min - modulus) * 0.5
+            points[:, index] = wrap_circular_points(points[:, index],
+                                                    offset, modulus)
 
         return points, data
 
@@ -187,20 +186,31 @@ class LinearInterpolator(object):
 
     def _interpolate(self, data, interp_points):
         """
-        Create and cache the underlying interpolator instance
-        before invoking it to perform interpolation over the provided
-        data with the coordinate point values.
+        Interpolate a data array over N dimensions.
 
-        Args:
+        Create and cache the underlying interpolator instance before invoking
+        it to perform interpolation over the data at the given coordinate point
+        values.
 
         * data (ndarray):
-            Array of N-dimensional data, where N = cube.ndim.
+            A data array, to be interpolated in its first 'N' dimensions.
+
         * interp_points (ndarray):
-            Array of (n_samples, n_sample_dims)
+            An array of interpolation coordinate values.
+            Its shape is (..., N) where N is the number of interpolation
+            dimensions.
+            "interp_points[..., i]" are interpolation point values for the i'th
+            coordinate, which is mapped to the i'th data dimension.
+            The other (leading) dimensions index over the different required
+            sample points.
 
         Returns:
-            To be completed
-            result = (n_samples, ...non-sampled dimensions...) ?
+
+            A :class:`np.ndarray`.  Its shape is "points_shape + extra_shape",
+            where "extra_shape" is the remaining non-interpolated dimensions of
+            the data array (i.e. 'data.shape[N:]'), and "points_shape" is the
+            leading dimensions of interp_points,
+            (i.e. 'interp_points.shape[:-1]').
 
         """
         dtype = self._interpolated_dtype(data.dtype)
@@ -270,7 +280,7 @@ class LinearInterpolator(object):
         self._circulars = []
         self._interp_dims = []
         for index, coord in enumerate(self._src_coords):
-            coord_dims = cube.coord_dims(coord)
+            coord_dims = self._src_cube.coord_dims(coord)
             coord_points = coord.points
 
             # Record if coord is descending-order, and adjust points.
@@ -344,9 +354,9 @@ class LinearInterpolator(object):
         Args:
 
         * sample_points:
-            A sequence of coordinate points over which to interpolate.
-            The order of the coordinate points must match the order of
-            the coordinates passed to this interpolator's constructor.
+            A list of N iterables, where N is the number of coordinates
+            passed to the constructor.
+            [sample_values_for_coord_0, sample_values_for_coord_1, ...]
         * data:
             The data to interpolate - not necessarily the data from the cube
             that was used to construct this interpolator. If the data has
@@ -408,9 +418,8 @@ class LinearInterpolator(object):
             interp_points.append(points)
             interp_shape.append(points.size)
 
-        pairs = zip(*filter(lambda (d, v): d not in di, enumerate(data.shape)))
-        if pairs:
-            interp_shape.extend(pairs[1])
+        interp_shape.extend(length for dim, length in enumerate(data.shape) if
+                            dim not in di)
 
         # Convert the interpolation points into a cross-product array
         # with shape (n_cross_points, n_dims)
@@ -448,9 +457,9 @@ class LinearInterpolator(object):
         Args:
 
         * sample_points:
-            A sequence of coordinate points over which to interpolate.
-            The order of the coordinate points must match the order of
-            the coordinates passed to this interpolator's constructor.
+            A list of N iterables, where N is the number of coordinates
+            passed to the constructor.
+            [sample_values_for_coord_0, sample_values_for_coord_1, ...]
 
         Kwargs:
 

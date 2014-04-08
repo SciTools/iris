@@ -47,7 +47,6 @@ The gallery contains several interesting worked examples of how an
 from __future__ import division
 
 import collections
-from copy import deepcopy
 
 import biggus
 import numpy as np
@@ -1530,8 +1529,18 @@ class Linear(object):
             interpolated over.
 
         Returns:
-            A a callable with the interface:
-            callable(sample_points, collapse_scalar=True)
+            A callable with the interface:
+            `callable(sample_points, collapse_scalar=True)`
+            where `sample_points` is a sequence containing an array of values
+            for each of the coordinates passed to this method, and
+            `collapse_scalar` determines whether to remove length one
+            dimensions in the result cube caused by scalar values in
+            `sample_points`.
+
+            For example, for the callable returned by:
+            `Linear().interpolator(cube, ['latitude', 'longitude'])`,
+            sample_points must have the form
+            `[new_lat_values, new_lon_values]`.
 
         """
         mode = self.extrapolation_mode
