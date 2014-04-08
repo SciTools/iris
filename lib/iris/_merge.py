@@ -97,7 +97,7 @@ class _CoordAndDims(namedtuple('CoordAndDims',
         coordinate instance.
 
     * dims:
-        A tuple of the data dimesion/s spanned by the coordinate.
+        A tuple of the data dimension/s spanned by the coordinate.
 
     """
 
@@ -1023,7 +1023,7 @@ def derive_space(groups, relation_matrix, positions, function_matrix=None):
                                           positions, function_matrix):
                 # There is no relationship between any of the candidate
                 # dimensions in the separable group, so merge them together
-                # into a new combined dimesion of the space.
+                # into a new combined dimension of the space.
                 _build_combination_group(space, group,
                                          positions, function_matrix)
         else:
