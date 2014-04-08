@@ -290,9 +290,7 @@ class LinearInterpolator(object):
             # Record info if coord is circular, and adjust points.
             if getattr(coord, 'circular', False):
                 # Only DimCoords can be circular.
-                coord_points = _extend_circular_coord(coord,
-                                                      coord_points,
-                                                      coord_dims[0])
+                coord_points = _extend_circular_coord(coord, coord_points)
                 modulus = getattr(coord.units, 'modulus', 0)
                 self._circulars.append((index, coord_dims[0],
                                         coord_points.min(),
