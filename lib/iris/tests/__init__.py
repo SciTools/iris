@@ -355,13 +355,13 @@ class IrisTest(unittest.TestCase):
     def assertArrayEqual(self, a, b, err_msg=''):
         np.testing.assert_array_equal(a, b, err_msg=err_msg)
 
-    def _assertMaskedArray(self, assertion, a, b, strict):
+    def _assertMaskedArray(self, assertion, a, b, strict, **kwargs):
         a_mask, b_mask = ma.getmaskarray(a), ma.getmaskarray(b)
         np.testing.assert_array_equal(a_mask, b_mask)
         if strict:
-            assertion(a.data, b.data)
+            assertion(a.data, b.data, **kwargs)
         else:
-            assertion(a[~a_mask].data, b[~b_mask].data)
+            assertion(a[~a_mask].data, b[~b_mask].data, **kwargs)
 
     def assertMaskedArrayEqual(self, a, b, strict=False):
         """
@@ -386,7 +386,7 @@ class IrisTest(unittest.TestCase):
     def assertArrayAlmostEqual(self, a, b, decimal=6):
         np.testing.assert_array_almost_equal(a, b, decimal=decimal)
 
-    def assertMaskedArrayAlmostEqual(self, a, b, strict=False):
+    def assertMaskedArrayAlmostEqual(self, a, b, decimal=6, strict=False):
         """
         Check that masked arrays are almost equal. This requires the
         masks to be identical, and the unmasked values to be almost
@@ -404,9 +404,14 @@ class IrisTest(unittest.TestCase):
             If False (default), the data array equality considers only unmasked
             elements.
 
+        * decimal (int):
+            Equality tolerance level for
+            :meth:`numpy.testing.assert_array_almost_equal`, with the meaning
+            'abs(desired-actual) < 0.5 * 10**(-decimal)'
+
         """
         self._assertMaskedArray(np.testing.assert_array_almost_equal, a, b,
-                                strict)
+                                strict, decimal=decimal)
 
     def assertArrayAllClose(self, a, b, rtol=1.0e-7, atol=0.0, **kwargs):
         """

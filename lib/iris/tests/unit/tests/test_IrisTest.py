@@ -89,6 +89,12 @@ class Test_assertMaskedArrayAlmostEqual(_MaskedArrayEquality, tests.IrisTest):
     def _func(self):
         return self.assertMaskedArrayAlmostEqual
 
+    def test_decimal(self):
+        arr1, arr2 = np.ma.array([100.0]), np.ma.array([100.003])
+        self.assertMaskedArrayAlmostEqual(arr1, arr2, decimal=2)
+        with self.assertRaises(AssertionError):
+            self.assertMaskedArrayAlmostEqual(arr1, arr2, decimal=3)
+
 
 if __name__ == '__main__':
     tests.main()
