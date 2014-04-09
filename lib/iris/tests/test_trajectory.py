@@ -64,11 +64,15 @@ class TestTrajectory(tests.IrisTest):
         cube.remove_coord('surface_altitude')
         self.assertCML(cube, ('trajectory', 'big_cube.cml'))
 
-        # Pull out a single point
+        # Pull out a single point - no interpolation required
         single_point = iris.analysis.trajectory.interpolate(
             cube, [('grid_latitude', [-0.1188]),
                    ('grid_longitude', [359.57958984])])
-        self.assertCML(single_point, ('trajectory', 'single_point.cml'))
+        expected = cube[..., 10, 0].data
+
+        self.assertArrayAllClose(single_point[..., 0].data, expected, rtol=2.0e-7)
+        self.assertCML(single_point, ('trajectory', 'single_point.cml'),
+                       checksum=False)
 
         # Pull out another point and test against a manually calculated result.
         single_point = [['grid_latitude', [-0.1188]], ['grid_longitude', [359.584090412]]]

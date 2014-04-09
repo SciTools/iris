@@ -161,16 +161,22 @@ class LinearInterpolator(object):
         for circular (1D) coordinates.
 
         """
-        # Map all the requested values into the range of the source
-        # data (centred over the centre of the source data to allow
-        # extrapolation where required).
-        for _, dim, _, _, _ in self._circulars:
-            data = _extend_circular_data(data, dim)
+        for (circular, modulus, index, dim, src_min, src_max) in \
+                self._circulars:
+            # Map all the requested values into the range of the source
+            # data (centred over the centre of the source data to allow
+            # extrapolation where required).
+            if circular or modulus:
+                # Performing the wrap around with 32 bit floats results in
+                # rather large errors.
+                points_64 = points.astype(np.float64)
+                offset = (src_max + src_min - modulus) * 0.5
+                points[:, index] = wrap_circular_points(points_64[:, index],
+                                                        offset, modulus)
 
-        for (index, _, src_min, src_max, modulus) in self._circulars:
-            offset = (src_max + src_min - modulus) * 0.5
-            points[:, index] = wrap_circular_points(points[:, index],
-                                                    offset, modulus)
+            # Also extend data if circular (as setup does for coord points).
+            if circular:
+                data = _extend_circular_data(data, dim)
 
         return points, data
 
@@ -298,13 +304,16 @@ class LinearInterpolator(object):
                 coord_points = coord_points[::-1]
 
             # Record info if coord is circular, and adjust points.
-            if getattr(coord, 'circular', False):
+            circular = getattr(coord, 'circular', False)
+            modulus = getattr(coord.units, 'modulus', 0)
+            if circular or modulus:
                 # Only DimCoords can be circular.
-                coord_points = _extend_circular_coord(coord, coord_points)
-                modulus = getattr(coord.units, 'modulus', 0)
-                self._circulars.append((index, coord_dims[0],
+                if circular:
+                    coord_points = _extend_circular_coord(coord, coord_points)
+                self._circulars.append((circular, modulus,
+                                        index, coord_dims[0],
                                         coord_points.min(),
-                                        coord_points.max(), modulus))
+                                        coord_points.max()))
 
             self._src_points.append(coord_points)
 

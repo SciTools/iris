@@ -312,6 +312,17 @@ class Test___call____1D_circular(ThreeDimCube):
         result = self.interpolator_reverselons(points)
         self.assertArrayEqual(expected.data, result.data)
 
+    def test_fully_wrapped_not_circular(self):
+        cube = stock.lat_lon_cube()
+        new_long = cube.coord('longitude').copy(
+            cube.coord('longitude').points + 710)
+        cube.remove_coord('longitude')
+        cube.add_dim_coord(new_long, 1)
+
+        interpolator = LinearInterpolator(cube, ['longitude'])
+        res = interpolator([-10])
+        self.assertArrayEqual(res.data, cube[:, 1].data)
+
 
 class Test___call____1D_singlelendim(ThreeDimCube):
     def setUp(self):
