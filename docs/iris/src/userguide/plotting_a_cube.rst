@@ -313,7 +313,8 @@ Plotting with Brewer
 ====================
 
 To plot a cube using a Brewer colour palette, simply select one of the Iris 
-registered Brewer colour palettes and plot the cube as normal.
+registered Brewer colour palettes and plot the cube as normal. The Brewer palettes
+become available once :mod:`iris.plot` or :mod:`iris.quickplot` are imported.
 
 .. plot:: userguide/plotting_examples/cube_brewer_contourf.py
    :include-source:
