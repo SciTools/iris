@@ -161,20 +161,19 @@ class LinearInterpolator(object):
         for circular (1D) coordinates.
 
         """
-        for (circular, modulus, index, dim, src_min, src_max) in \
-                self._circulars:
-            # Map all the requested values into the range of the source
-            # data (centred over the centre of the source data to allow
-            # extrapolation where required).
-            if circular or modulus:
+        for (circular, modulus, index, dim, offset) in self._circulars:
+            if modulus:
+                # Map all the requested values into the range of the source
+                # data (centred over the centre of the source data to allow
+                # extrapolation where required).
                 # Performing the wrap around with 32 bit floats results in
                 # rather large errors.
-                points_64 = points.astype(np.float64)
-                offset = (src_max + src_min - modulus) * 0.5
-                points[:, index] = wrap_circular_points(points_64[:, index],
-                                                        offset, modulus)
+                points_64 = points[:, index].astype(np.float64)
+                points[:, index] = wrap_circular_points(points_64, offset,
+                                                        modulus)
 
-            # Also extend data if circular (as setup does for coord points).
+            # Also extend data if circular (to match the coord points, which
+            # 'setup' already extended).
             if circular:
                 data = _extend_circular_data(data, dim)
 
@@ -310,10 +309,11 @@ class LinearInterpolator(object):
                 # Only DimCoords can be circular.
                 if circular:
                     coord_points = _extend_circular_coord(coord, coord_points)
+                offset = ((coord_points.max() + coord_points.min() - modulus)
+                          * 0.5)
                 self._circulars.append((circular, modulus,
                                         index, coord_dims[0],
-                                        coord_points.min(),
-                                        coord_points.max()))
+                                        offset))
 
             self._src_points.append(coord_points)
 
