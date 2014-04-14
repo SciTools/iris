@@ -39,4 +39,4 @@ class TestField(tests.IrisTest):
         if expected_bounds is None:
             self.assertIsNone(coord.bounds)
         else:
-            self.assertArrayEqual(coord.bounds, [expected_bounds])
+            self.assertArrayEqual(coord.bounds, expected_bounds)
