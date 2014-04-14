@@ -43,6 +43,9 @@ docs/iris/src/_templates/gallery.html
 docs/iris/src/examples/
 docs/iris/src/iris/
 
+# Example test results
+docs/iris/iris_image_test_output/
+
 # Created by editiors
 *~
 \#*
