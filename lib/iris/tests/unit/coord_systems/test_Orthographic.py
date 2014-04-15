@@ -20,30 +20,49 @@
 # importing anything else.
 import iris.tests as tests
 
-import datetime
-import collections
-
-import mock
-import numpy as np
-
 import cartopy.crs
 from iris.coord_systems import GeogCS, Orthographic
 
 
-class Test_Orthographic(tests.IrisTest):
+class Test_as_cartopy_crs(tests.IrisTest):
     def setUp(self):
         self.latitude_of_projection_origin = 0.0
         self.longitude_of_projection_origin = 0.0
-        self.ellipsoid = GeogCS(semi_major_axis=6377563.396,
-                                semi_minor_axis=6356256.909)
+        self.semi_major_axis = 6377563.396
+        self.semi_minor_axis = 6356256.909
+        self.ellipsoid = GeogCS(self.semi_major_axis, self.semi_minor_axis)
         self.ortho_cs = Orthographic(self.latitude_of_projection_origin,
                                      self.longitude_of_projection_origin,
                                      ellipsoid=self.ellipsoid)
 
-    def test_as_cartopy_crs(self):
+    def test_crs_creation(self):
         res = self.ortho_cs.as_cartopy_crs()
-        globe = cartopy.crs.Globe(semimajor_axis=6377563.396,
-                                  semiminor_axis=6356256.909, ellipse=None)
+        globe = cartopy.crs.Globe(semimajor_axis=self.semi_major_axis,
+                                  semiminor_axis=self.semi_minor_axis,
+                                  ellipse=None)
+        expected = cartopy.crs.Orthographic(
+            self.latitude_of_projection_origin,
+            self.longitude_of_projection_origin,
+            globe=globe)
+        self.assertEqual(res, expected)
+
+
+class Test_as_cartopy_projection(tests.IrisTest):
+    def setUp(self):
+        self.latitude_of_projection_origin = 0.0
+        self.longitude_of_projection_origin = 0.0
+        self.semi_major_axis = 6377563.396
+        self.semi_minor_axis = 6356256.909
+        self.ellipsoid = GeogCS(self.semi_major_axis, self.semi_minor_axis)
+        self.ortho_cs = Orthographic(self.latitude_of_projection_origin,
+                                     self.longitude_of_projection_origin,
+                                     ellipsoid=self.ellipsoid)
+
+    def test_projection_creation(self):
+        res = self.ortho_cs.as_cartopy_projection()
+        globe = cartopy.crs.Globe(semimajor_axis=self.semi_major_axis,
+                                  semiminor_axis=self.semi_minor_axis,
+                                  ellipse=None)
         expected = cartopy.crs.Orthographic(
             self.latitude_of_projection_origin,
             self.longitude_of_projection_origin,

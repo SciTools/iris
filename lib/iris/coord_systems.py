@@ -498,6 +498,9 @@ class Orthographic(CoordSystem):
         else:
             globe = None
 
+        warnings.warn('Discarding false_easting and false_northing that are '
+                      'not used by Cartopy.')
+
         return cartopy.crs.Orthographic(
             central_longitude=self.longitude_of_projection_origin,
             central_latitude=self.latitude_of_projection_origin,
