@@ -166,11 +166,8 @@ class LinearInterpolator(object):
                 # Map all the requested values into the range of the source
                 # data (centred over the centre of the source data to allow
                 # extrapolation where required).
-                # Performing the wrap around with 32 bit floats results in
-                # rather large errors.
-                points_64 = points[:, index].astype(np.float64)
-                points[:, index] = wrap_circular_points(points_64, offset,
-                                                        modulus)
+                points[:, index] = wrap_circular_points(points[:, index],
+                                                        offset, modulus)
 
             # Also extend data if circular (to match the coord points, which
             # 'setup' already extended).
