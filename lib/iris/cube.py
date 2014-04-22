@@ -2839,6 +2839,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Returns:
             :class:`iris.cube.Cube`.
 
+        .. note::
+
+            This operation does not yet have support for lazy evaluation.
+
         For example:
 
             >>> import iris
@@ -2992,6 +2996,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         Returns:
             :class:`iris.cube.Cube`.
+
+        .. note::
+
+            This operation does not yet have support for lazy evaluation.
 
         For example:
 
