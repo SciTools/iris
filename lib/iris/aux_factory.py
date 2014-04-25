@@ -27,6 +27,7 @@ import numpy as np
 
 from iris._cube_coord_common import CFVariableMixin
 import iris.coords
+import iris.unit
 import iris.util
 
 
@@ -42,7 +43,6 @@ class LazyArray(object):
     computed and cached for any subsequent access.
 
     """
-
     def __init__(self, shape, func):
         """
         Args:
@@ -389,7 +389,6 @@ class HybridHeightFactory(AuxCoordFactory):
         z = a + b * orog
 
     """
-
     def __init__(self, delta=None, sigma=None, orography=None):
         """
         Creates a hybrid-height coordinate factory with the formula:
@@ -557,7 +556,6 @@ class HybridPressureFactory(AuxCoordFactory):
         p = ap + b * ps
 
     """
-
     def __init__(self, delta=None, sigma=None, surface_air_pressure=None):
         """
         Creates a hybrid-height coordinate factory with the formula:
@@ -619,7 +617,14 @@ class HybridPressureFactory(AuxCoordFactory):
 
         # Check units.
         if sigma is not None and not sigma.units.is_dimensionless():
-            raise ValueError('Invalid units: sigma must be dimensionless.')
+            if sigma.units == 'unknown':
+                # Gracefully convert unknown unit to dimensionless unit.
+                sigma.units = iris.unit.Unit('1')
+                msg = 'Converting sigma coordinate unknown unit ' \
+                    'to dimensionless unit.'
+                warnings.warn(msg)
+            else:
+                raise ValueError('Invalid units: sigma must be dimensionless.')
         if delta is not None and surface_air_pressure is not None and \
                 delta.units != surface_air_pressure.units:
             msg = 'Incompatible units: delta and ' \
@@ -740,3 +745,244 @@ class HybridPressureFactory(AuxCoordFactory):
                     raise ValueError(msg)
                 else:
                     setattr(self, name, new_coord)
+                break
+
+
+class OceanSigmaZFactory(AuxCoordFactory):
+    """Defines an ocean sigma over z coordinate factory."""
+
+    def __init__(self, sigma=None, eta=None, depth=None,
+                 depth_c=None, nsigma=None, zlev=None):
+        """
+        Creates a ocean sigma over z coordinate factory with the formula:
+
+        if k < nsigma:
+            z(n, k, j, i) = eta(n, j, i) + sigma(k) *
+                             (min(depth_c, depth(j, i)) + eta(n, j, i))
+
+        if k >= nsigma:
+            z(n, k, j, i) = zlev(k)
+
+        The `zlev` and 'nsigma' coordinates must be provided, and at least
+        either `eta`, or 'sigma' and `depth` and `depth_c` coordinates.
+
+        """
+        super(OceanSigmaZFactory, self).__init__()
+
+        # Check that provided coordinates meet necessary conditions.
+        self._check_dependencies(sigma, eta, depth, depth_c, nsigma, zlev)
+
+        self.sigma = sigma
+        self.eta = eta
+        self.depth = depth
+        self.depth_c = depth_c
+        self.nsigma = nsigma
+        self.zlev = zlev
+
+        self.standard_name = 'sea_surface_height_above_reference_ellipsoid'
+        self.attributes = {'positive': 'up'}
+
+    @property
+    def units(self):
+        return self.zlev.units
+
+    @staticmethod
+    def _check_dependencies(sigma, eta, depth, depth_c, nsigma, zlev):
+        # Check for sufficient factory coordinates.
+        if zlev is None:
+            raise ValueError('Unable to determine units: '
+                             'no zlev coordinate available.')
+        if nsigma is None:
+            raise ValueError('Missing nsigma coordinate.')
+
+        if eta is None and (sigma is None or depth_c is None or
+                            depth is None):
+            msg = 'Unable to construct ocean sigma over z coordinate ' \
+                'factory due to insufficient source coordinates.'
+            raise ValueError(msg)
+
+        # Check bounds and shape.
+        for coord, term in ((sigma, 'sigma'), (zlev, 'zlev')):
+            if coord is not None and coord.nbounds not in (0, 2):
+                msg = 'Invalid {} coordinate: must have either ' \
+                    '0 or 2 bounds.'.format(term)
+                raise ValueError(msg)
+
+        if sigma and sigma.nbounds != zlev.nbounds:
+            msg = 'The sigma and zlev coordinate must be equally bounded.'
+            raise ValueError(msg)
+
+        coords = ((eta, 'eta'), (depth, 'depth'),
+                  (depth_c, 'depth_c'), (nsigma, 'nsigma'))
+        for coord, term in coords:
+            if coord is not None and coord.nbounds:
+                msg = '{} coordinate has bounds. ' \
+                    'These are being disregarded.'.format(term.capitalize())
+                warnings.warn(msg, UserWarning, stacklevel=2)
+
+        for coord, term in ((depth_c, 'depth_c'), (nsigma, 'nsigma')):
+            if coord is not None and coord.shape != (1,):
+                msg = 'Expected scalar {} coordinate: ' \
+                    'got shape {!r}.'.format(term, coord.shape)
+                raise ValueError(msg)
+
+        # Check units.
+        if not zlev.units.is_convertible('m'):
+            msg = 'Invalid units: zlev coordinate must have units of distance.'
+            raise ValueError(msg)
+
+        if sigma is not None and not sigma.units.is_dimensionless():
+            if sigma.units == 'unknown':
+                # Gracefully convert unknown unit to dimensionless unit.
+                sigma.units = iris.unit.Unit('1')
+                msg = 'Converting sigma coordinate unknown unit ' \
+                    'to dimensionless unit.'
+                warnings.warn(msg)
+            else:
+                msg = 'Invalid units: sigma coordinate must be dimensionless.'
+                raise ValueError(msg)
+
+        coords = ((eta, 'eta'), (depth_c, 'depth_c'), (depth, 'depth'))
+        for coord, term in coords:
+            if coord is not None and coord.units != zlev.units:
+                msg = 'Incompatible units: {} coordinate and zlev ' \
+                    'coordinate must have the same units.'.format(term)
+                raise ValueError(msg)
+
+    @property
+    def dependencies(self):
+        """
+        Returns a dictionary mapping from constructor argument names to
+        the corresponding coordinates.
+
+        """
+        return dict(sigma=self.sigma, eta=self.eta, depth=self.depth,
+                    depth_c=self.depth_c, nsigma=self.nsigma, zlev=self.zlev)
+
+    def _derive(self, sigma, eta, depth, depth_c,
+                nsigma, zlev, shape, nsigma_slice):
+        # Perform the ocean sigma over z coordinate nsigma slice.
+        if eta.ndim:
+            eta = eta[nsigma_slice]
+        if sigma.ndim:
+            sigma = sigma[nsigma_slice]
+        if depth.ndim:
+            depth = depth[nsigma_slice]
+        # Note that, this performs a point-wise minimum.
+        temp = eta + sigma * (np.minimum(depth_c, depth) + eta)
+        # Calculate the final derived result.
+        result = np.ones(shape, dtype=temp.dtype) * zlev
+        result[nsigma_slice] = temp
+
+        return result
+
+    def make_coord(self, coord_dims_func):
+        """
+        Returns a new :class:`iris.coords.AuxCoord` as defined by this factory.
+
+        Args:
+
+        * coord_dims_func:
+            A callable which can return the list of dimesions relevant
+            to a given coordinate. See :meth:`iris.cube.Cube.coord_dims()`.
+
+        """
+        # Determine the relevant dimensions.
+        derived_dims = self.derived_dims(coord_dims_func)
+        dependency_dims = self._dependency_dims(coord_dims_func)
+
+        # Build a "lazy" points array.
+        nd_points_by_key = self._remap(dependency_dims, derived_dims)
+        points_shape = self._shape(nd_points_by_key)
+
+        # Calculate the nsigma slice.
+        nsigma_slice = [slice(None)] * len(derived_dims)
+        dim, = dependency_dims['zlev']
+        index = derived_dims.index(dim)
+        nsigma_slice[index] = slice(0, int(nd_points_by_key['nsigma']))
+
+        # Define the function here to obtain a closure.
+        def calc_points():
+            return self._derive(nd_points_by_key['sigma'],
+                                nd_points_by_key['eta'],
+                                nd_points_by_key['depth'],
+                                nd_points_by_key['depth_c'],
+                                nd_points_by_key['nsigma'],
+                                nd_points_by_key['zlev'],
+                                points_shape,
+                                nsigma_slice)
+
+        points = LazyArray(points_shape, calc_points)
+
+        bounds = None
+        if self.zlev.nbounds or (self.sigma and self.sigma.nbounds):
+            # Build a "lazy" bounds array.
+            nd_values_by_key = self._remap_with_bounds(dependency_dims,
+                                                       derived_dims)
+            bounds_shape = self._shape(nd_values_by_key)
+            nsigma_slice_bounds = nsigma_slice + [slice(None)]
+
+            # Define the function here to obtain a closure.
+            def calc_bounds():
+                valid_shapes = [(), (1,), (2,)]
+                for key in ('sigma', 'zlev'):
+                    if nd_values_by_key[key].shape[-1:] not in valid_shapes:
+                        msg = 'Invalid {} coordinate bounds.'.format(key)
+                        raise ValueError(msg)
+                valid_shapes.pop()
+                for key in ('eta', 'depth', 'depth_c', 'nsigma'):
+                    if nd_values_by_key[key].shape[-1:] not in valid_shapes:
+                        msg = '{} coordinate has bounds. These are being' \
+                            'disregarded.'.format(key.capitalize())
+                        warnings.warn(msg, UserWarning, stacklevel=2)
+                        # Swap bounds with points.
+                        shape = list(nd_points_by_key[key].shape)
+                        bounds = nd_points_by_key[key].reshape(shape.append(1))
+                        nd_values_by_key[key] = bounds
+                return self._derive(nd_values_by_key['sigma'],
+                                    nd_values_by_key['eta'],
+                                    nd_values_by_key['depth'],
+                                    nd_values_by_key['depth_c'],
+                                    nd_values_by_key['nsigma'],
+                                    nd_values_by_key['zlev'],
+                                    bounds_shape,
+                                    nsigma_slice_bounds)
+
+            bounds = LazyArray(bounds_shape, calc_bounds)
+
+        coord = iris.coords.AuxCoord(points,
+                                     standard_name=self.standard_name,
+                                     long_name=self.long_name,
+                                     var_name=self.var_name,
+                                     units=self.units,
+                                     bounds=bounds,
+                                     attributes=self.attributes,
+                                     coord_system=self.coord_system)
+        return coord
+
+    def update(self, old_coord, new_coord=None):
+        """
+        Notifies the factory of the removal/replacement of a coordinate
+        which might be a dependency.
+
+        Args:
+
+        * old_coord:
+            The coordinate to be removed/replaced.
+        * new_coord:
+            If None, any dependency using old_coord is removed, othewise
+            any dependency using old_coord is updated to use new_coord.
+
+        """
+        new_dependencies = self.dependencies
+        for name, coord in self.dependencies.items():
+            if old_coord is coord:
+                new_dependencies[name] = new_coord
+                try:
+                    self._check_dependencies(**new_dependencies)
+                except ValueError as e:
+                    msg = 'Failed to update dependencies. ' + e.message
+                    raise ValueError(msg)
+                else:
+                    setattr(self, name, new_coord)
+                break
