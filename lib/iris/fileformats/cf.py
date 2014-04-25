@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -454,7 +454,8 @@ class _CFFormulaTermsVariable(CFVariable):
             if nc_var_att is not None:
                 for match_item in _CF_PARSE.finditer(nc_var_att):
                     match_group = match_item.groupdict()
-                    term_name = match_group['lhs']
+                    # Ensure that term name is lower case, as expected.
+                    term_name = match_group['lhs'].lower()
                     variable_name = match_group['rhs']
 
                     if variable_name not in ignore:

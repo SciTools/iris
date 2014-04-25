@@ -39,6 +39,8 @@ import numpy.ma as ma
 from pyke import knowledge_engine
 
 import iris.analysis
+from iris.aux_factory import HybridHeightFactory, HybridPressureFactory, \
+    OceanSigmaZFactory
 import iris.coord_systems
 import iris.coords
 import iris.cube
@@ -94,15 +96,21 @@ _CF_CONVENTIONS_VERSION = 'CF-1.5'
 _FactoryDefn = collections.namedtuple('_FactoryDefn', ('primary', 'std_name',
                                                        'formula_terms_format'))
 _FACTORY_DEFNS = {
-    iris.aux_factory.HybridHeightFactory: _FactoryDefn(
+    HybridHeightFactory: _FactoryDefn(
         primary='delta',
         std_name='atmosphere_hybrid_height_coordinate',
         formula_terms_format='a: {delta} b: {sigma} orog: {orography}'),
-    iris.aux_factory.HybridPressureFactory: _FactoryDefn(
+    HybridPressureFactory: _FactoryDefn(
         primary='delta',
         std_name='atmosphere_hybrid_sigma_pressure_coordinate',
         formula_terms_format='ap: {delta} b: {sigma} '
-        'ps: {surface_air_pressure}')}
+        'ps: {surface_air_pressure}'),
+    OceanSigmaZFactory: _FactoryDefn(
+        primary='zlev',
+        std_name='ocean_sigma_z_coordinate',
+        formula_terms_format='sigma: {sigma} eta: {eta} depth: {depth} '
+        'depth_c: {depth_c} nsigma: {nsigma} zlev: {zlev}')
+}
 
 
 class CFNameCoordMap(object):
@@ -397,7 +405,8 @@ def _load_aux_factory(engine, cf, filename, cube):
     """
     formula_type = engine.requires.get('formula_type')
     if formula_type in ['atmosphere_hybrid_height_coordinate',
-                        'atmosphere_hybrid_sigma_pressure_coordinate']:
+                        'atmosphere_hybrid_sigma_pressure_coordinate',
+                        'ocean_sigma_z_coordinate']:
         def coord_from_term(term):
             # Convert term names to coordinates (via netCDF variable names).
             name = engine.requires['formula_terms'][term]
@@ -411,8 +420,7 @@ def _load_aux_factory(engine, cf, filename, cube):
             delta = coord_from_term('a')
             sigma = coord_from_term('b')
             orography = coord_from_term('orog')
-            factory = iris.aux_factory.HybridHeightFactory(
-                delta, sigma, orography)
+            factory = HybridHeightFactory(delta, sigma, orography)
         elif formula_type == 'atmosphere_hybrid_sigma_pressure_coordinate':
             try:
                 delta = coord_from_term('ap')
@@ -420,8 +428,16 @@ def _load_aux_factory(engine, cf, filename, cube):
                 delta = coord_from_term('a') * coord_from_term('p0')
             sigma = coord_from_term('b')
             surface_air_pressure = coord_from_term('ps')
-            factory = iris.aux_factory.HybridPressureFactory(
-                delta, sigma, surface_air_pressure)
+            factory = HybridPressureFactory(delta, sigma, surface_air_pressure)
+        elif formula_type == 'ocean_sigma_z_coordinate':
+            sigma = coord_from_term('sigma')
+            eta = coord_from_term('eta')
+            depth = coord_from_term('depth')
+            depth_c = coord_from_term('depth_c')
+            nsigma = coord_from_term('nsigma')
+            zlev = coord_from_term('zlev')
+            factory = OceanSigmaZFactory(sigma, eta, depth,
+                                         depth_c, nsigma, zlev)
         cube.add_aux_factory(factory)
 
 
