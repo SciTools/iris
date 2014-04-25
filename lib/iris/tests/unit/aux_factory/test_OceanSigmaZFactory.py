@@ -100,11 +100,6 @@ class Test___init__(tests.IrisTest):
         with self.assertRaises(ValueError):
             OceanSigmaZFactory(**self.kwargs)
 
-    def test_sigma_convert_unknown_units(self):
-        self.sigma.units = Unit('unknown')
-        factory = OceanSigmaZFactory(**self.kwargs)
-        self.assertEqual(factory.sigma.units, Unit('1'))
-
     def test_sigma_incompatible_units(self):
         self.sigma.units = Unit('km')
         with self.assertRaises(ValueError):

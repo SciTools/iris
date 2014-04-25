@@ -617,14 +617,7 @@ class HybridPressureFactory(AuxCoordFactory):
 
         # Check units.
         if sigma is not None and not sigma.units.is_dimensionless():
-            if sigma.units == 'unknown':
-                # Gracefully convert unknown unit to dimensionless unit.
-                sigma.units = iris.unit.Unit('1')
-                msg = 'Converting sigma coordinate unknown unit ' \
-                    'to dimensionless unit.'
-                warnings.warn(msg)
-            else:
-                raise ValueError('Invalid units: sigma must be dimensionless.')
+            raise ValueError('Invalid units: sigma must be dimensionless.')
         if delta is not None and surface_air_pressure is not None and \
                 delta.units != surface_air_pressure.units:
             msg = 'Incompatible units: delta and ' \
@@ -804,49 +797,46 @@ class OceanSigmaZFactory(AuxCoordFactory):
         # Check bounds and shape.
         for coord, term in ((sigma, 'sigma'), (zlev, 'zlev')):
             if coord is not None and coord.nbounds not in (0, 2):
-                msg = 'Invalid {} coordinate: must have either ' \
-                    '0 or 2 bounds.'.format(term)
+                msg = 'Invalid {} coordinate {!r}: must have either ' \
+                    '0 or 2 bounds.'.format(term, coord.name())
                 raise ValueError(msg)
 
         if sigma and sigma.nbounds != zlev.nbounds:
-            msg = 'The sigma and zlev coordinate must be equally bounded.'
+            msg = 'The sigma coordinate {!r} and zlev coordinate {!r} ' \
+                'must be equally bounded.'.format(sigma.name(), zlev.name())
             raise ValueError(msg)
 
         coords = ((eta, 'eta'), (depth, 'depth'),
                   (depth_c, 'depth_c'), (nsigma, 'nsigma'))
         for coord, term in coords:
             if coord is not None and coord.nbounds:
-                msg = '{} coordinate has bounds. ' \
-                    'These are being disregarded.'.format(term.capitalize())
+                msg = 'The {} coordinate {!r} has bounds. ' \
+                    'These are being disregarded.'.format(term, coord.name())
                 warnings.warn(msg, UserWarning, stacklevel=2)
 
         for coord, term in ((depth_c, 'depth_c'), (nsigma, 'nsigma')):
             if coord is not None and coord.shape != (1,):
-                msg = 'Expected scalar {} coordinate: ' \
-                    'got shape {!r}.'.format(term, coord.shape)
+                msg = 'Expected scalar {} coordinate {!r}: ' \
+                    'got shape {!r}.'.format(term, coord.name(), coord.shape)
                 raise ValueError(msg)
 
         # Check units.
         if not zlev.units.is_convertible('m'):
-            msg = 'Invalid units: zlev coordinate must have units of distance.'
+            msg = 'Invalid units: zlev coordinate {!r} ' \
+                'must have units of distance.'.format(zlev.name())
             raise ValueError(msg)
 
         if sigma is not None and not sigma.units.is_dimensionless():
-            if sigma.units == 'unknown':
-                # Gracefully convert unknown unit to dimensionless unit.
-                sigma.units = iris.unit.Unit('1')
-                msg = 'Converting sigma coordinate unknown unit ' \
-                    'to dimensionless unit.'
-                warnings.warn(msg)
-            else:
-                msg = 'Invalid units: sigma coordinate must be dimensionless.'
-                raise ValueError(msg)
+            msg = 'Invalid units: sigma coordinate {!r} ' \
+                'must be dimensionless.'.format(sigma.name())
+            raise ValueError(msg)
 
         coords = ((eta, 'eta'), (depth_c, 'depth_c'), (depth, 'depth'))
         for coord, term in coords:
             if coord is not None and coord.units != zlev.units:
-                msg = 'Incompatible units: {} coordinate and zlev ' \
-                    'coordinate must have the same units.'.format(term)
+                msg = 'Incompatible units: {} coordinate {!r} and zlev ' \
+                    'coordinate {!r} must have ' \
+                    'the same units.'.format(term, coord.name(), zlev.name())
                 raise ValueError(msg)
 
     @property
@@ -927,13 +917,16 @@ class OceanSigmaZFactory(AuxCoordFactory):
                 valid_shapes = [(), (1,), (2,)]
                 for key in ('sigma', 'zlev'):
                     if nd_values_by_key[key].shape[-1:] not in valid_shapes:
-                        msg = 'Invalid {} coordinate bounds.'.format(key)
+                        name = self.dependencies[key].name()
+                        msg = 'Invalid bounds for {} ' \
+                            'coordinate {!r}.'.format(key, name)
                         raise ValueError(msg)
                 valid_shapes.pop()
                 for key in ('eta', 'depth', 'depth_c', 'nsigma'):
                     if nd_values_by_key[key].shape[-1:] not in valid_shapes:
-                        msg = '{} coordinate has bounds. These are being' \
-                            'disregarded.'.format(key.capitalize())
+                        name = self.dependencies[key].name()
+                        msg = 'The {} coordinate {!r} has bounds. ' \
+                            'These are being disregarded.'.format(key, name)
                         warnings.warn(msg, UserWarning, stacklevel=2)
                         # Swap bounds with points.
                         shape = list(nd_points_by_key[key].shape)
