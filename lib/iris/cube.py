@@ -789,10 +789,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             data_dims = (int(data_dims),)
 
         if data_dims:
-            if len(data_dims) != coord.ndim:
-                msg = 'Invalid data dimensions: {} given, {} expected for ' \
-                      '{!r}.'.format(len(data_dims), coord.ndim, coord.name())
-                raise ValueError(msg)
             # Check compatibility with the shape of the data
             for i, dim in enumerate(data_dims):
                 if coord.shape[i] != self.shape[dim]:
