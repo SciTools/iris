@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -76,9 +76,11 @@ class Test__extract_field__LBC_format(tests.IrisTest):
 
     def test_LBC_header(self):
         bzx, bzy = -10, 15
-        field = mock.Mock(lbegin=0, stash='m01s00i001',
+        # stash m01s00i001
+        lbuser = [None, None, 121416, 1, None, None, 1]
+        field = mock.Mock(lbegin=0,
                           lbrow=10, lbnpt=12, bdx=1, bdy=1, bzx=bzx, bzy=bzy,
-                          lbuser=[None, None, 121416])
+                          lbuser=lbuser)
         with self.mock_for_extract_field([field]) as ff2pp:
             ff2pp._ff_header.dataset_type = 5
             result = list(ff2pp._extract_field())
@@ -97,10 +99,10 @@ class Test__extract_field__LBC_format(tests.IrisTest):
 
     def check_non_trivial_coordinate_warning(self, field):
         field.lbegin = 0
-        field.stash = 'm01s31i020'
         field.lbrow = 10
         field.lbnpt = 12
-        field.lbuser = [None, None, 121416]
+        # stash m01s31i020
+        field.lbuser = [None, None, 121416, 20, None, None, 1]
         orig_bdx, orig_bdy = field.bdx, field.bdy
 
         x = np.array([1, 2, 6])
@@ -151,7 +153,8 @@ class Test__extract_field__LBC_format(tests.IrisTest):
         # Check a warning is raised when bdy is negative,
         # we don't yet know what "north" means in this case.
         field = mock.Mock(bdx=10, bdy=-10, bzx=10, bzy=10, lbegin=0,
-                          lbuser=[0, 0, 121416], lbrow=10, lbnpt=12)
+                          lbuser=[0, 0, 121416, 0, None, None, 0],
+                          lbrow=10, lbnpt=12)
         with self.mock_for_extract_field([field]) as ff2pp:
             ff2pp._ff_header.dataset_type = 5
             with mock.patch('warnings.warn') as warn:

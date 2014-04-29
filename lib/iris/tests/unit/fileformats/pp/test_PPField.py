@@ -35,18 +35,21 @@ from iris.fileformats.pp import SplittableInt
 # items when written to disk and get consistent results.
 
 
+DUMMY_HEADER = [('dummy1', (0, 13)),
+                ('lblrec', (14,)),
+                ('dummy2', (15, 18)),
+                ('lbext',  (19,)),
+                ('lbpack', (20,)),
+                ('dummy3', (21, 37)),
+                ('lbuser', (38, 39, 40, 41, 42, 43, 44,)),
+                ('dummy4', (45, 63)),
+                ]
+
+
 class TestPPField(PPField):
 
-    HEADER_DEFN = [
-        ('dummy1', (0, 13)),
-        ('lblrec', (14,)),
-        ('dummy2', (15, 18)),
-        ('lbext',  (19,)),
-        ('lbpack', (20,)),
-        ('dummy3', (21, 37)),
-        ('lbuser', (38, 39, 40, 41, 42, 43, 44,)),
-        ('dummy4', (45, 63)),
-    ]
+    HEADER_DEFN = DUMMY_HEADER
+    HEADER_DICT = dict(DUMMY_HEADER)
 
     @property
     def t1(self):
