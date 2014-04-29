@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,7 +28,6 @@ import numpy as np
 
 import iris.cube
 import iris.coords
-import iris.plot as iplt
 import iris.tests.stock
 import iris.unit
 

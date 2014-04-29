@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,10 +29,14 @@ import numpy as np
 
 import iris
 from iris.coord_systems import GeogCS
-import iris.experimental.animate as animate
-import iris.plot as iplt
+
+# Run tests in no graphics mode if matplotlib is not available.
+if tests.MPL_AVAILABLE:
+    import iris.experimental.animate as animate
+    import iris.plot as iplt
 
 
+@tests.skip_plot
 class IntegrationTest(tests.GraphicsTest):
     def setUp(self):
         cube = iris.cube.Cube(np.arange(36, dtype=np.int32).reshape((3, 3, 4)))

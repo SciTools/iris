@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,14 +25,17 @@ import iris.tests as tests
 import copy
 import random
 
-import matplotlib.pyplot as plt
 import numpy as np
 import numpy.ma as ma
 
 from iris.experimental.regrid import \
     regrid_area_weighted_rectilinear_src_and_grid as regrid_area_weighted
-import iris.quickplot as qplt
 import iris.tests.stock
+
+# Run tests in no graphics mode if matplotlib is not available.
+if tests.MPL_AVAILABLE:
+    import matplotlib.pyplot as plt
+    import iris.quickplot as qplt
 
 
 RESULT_DIR = ('experimental', 'regrid',
@@ -359,6 +362,7 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
         res = regrid_area_weighted(src, dest)
         self.assertCMLApproxData(res, RESULT_DIR + ('higher.cml',))
 
+    @tests.skip_plot
     def test_hybrid_height(self):
         src = self.realistic_cube
         dest = _resampled_grid(src, 0.7, 0.8)
@@ -434,6 +438,7 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
             res = regrid_area_weighted(src, dest)
             self.assertTrue(res, src[indices])
 
+    @tests.skip_plot
     def test_cross_section(self):
         # Slice to get a cross section.
         # Constant latitude
@@ -485,6 +490,7 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
         self.assertEqual(res.data, src.data)
 
     @tests.skip_data
+    @tests.skip_plot
     def test_global_data_reduce_res(self):
         src = iris.tests.stock.global_pp()
         src.coord('latitude').guess_bounds()
@@ -495,6 +501,7 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
         self.check_graphic()
 
     @tests.skip_data
+    @tests.skip_plot
     def test_global_data_increase_res(self):
         src = iris.tests.stock.global_pp()
         src.coord('latitude').guess_bounds()
@@ -505,6 +512,7 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
         self.check_graphic()
 
     @tests.skip_data
+    @tests.skip_plot
     def test_global_data_same_res(self):
         src = iris.tests.stock.global_pp()
         src.coord('latitude').guess_bounds()
@@ -514,6 +522,7 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
         self.check_graphic()
 
     @tests.skip_data
+    @tests.skip_plot
     def test_global_data_subset(self):
         src = iris.tests.stock.global_pp()
         src.coord('latitude').guess_bounds()
@@ -536,6 +545,7 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
         self.check_graphic()
 
     @tests.skip_data
+    @tests.skip_plot
     def test_circular_subset(self):
         src = iris.tests.stock.global_pp()
         src.coord('latitude').guess_bounds()
@@ -558,6 +568,7 @@ class TestAreaWeightedRegrid(tests.GraphicsTest):
         self.check_graphic()
 
     @tests.skip_data
+    @tests.skip_plot
     def test_non_circular_subset(self):
         src = iris.tests.stock.global_pp()
         src.coord('latitude').guess_bounds()
