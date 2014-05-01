@@ -487,19 +487,15 @@ def apply_ufunc(ufunc, cube, other_cube=None, new_unit=None, new_name=None,
     """
 
     if not isinstance(ufunc, np.ufunc):
-        try:
-            name = ufunc.__name__
-
-        except AttributeError:
-            name = "function passed to apply_ufunc"
+        name = getattr(ufunc, '__name__', 'function passed to apply_ufunc')
 
         raise TypeError(name +
               " is not recognised (it is not an instance of numpy.ufunc)")
 
     if ufunc.nout != 1:
-        raise ValueError(ufunc.__name__ +
-              " gives two arrays as output, so is not suitable for use "
-              "in apply_ufunc")
+        msg = ('{} returns {} objects, apply_ufunc currently only supports ufunc '
+           'functions returning a single object.')
+        raise ValueError(msg.format(ufunc.__name__, ufunc.nout))
 
     if ufunc.nin == 2:
         if other_cube is None:
