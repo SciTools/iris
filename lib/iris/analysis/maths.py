@@ -657,6 +657,7 @@ class IFunc(object):
             def __call__(self, u_data, v_data):
                 return ( u_data**2 + v_data**2 ) **0.5
 
+        ws_data_func = WSDataFunc()
         ws_ifunc = iris.analysis.maths.IFunc(ws_data_func, ws_units_func)
         ws_cube = ws_ifunc(u_cube, v_cube, new_name='wind speed')
 

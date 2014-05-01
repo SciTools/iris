@@ -545,6 +545,20 @@ class TestIFunc(tests.IrisTest):
 
         self.assertArrayAlmostEqual(b.data, ans)
 
+        class VecMagDataFunc(object):
+            def __init__(self):
+                self.nin = 2
+                self.nout = 1
+                self.__name__ = 'vec_mag_data_func'
+            def __call__(self, u_data, v_data):
+                return ( u_data**2 + v_data**2 ) **0.5
+
+        vec_mag_data_func = VecMagDataFunc()
+        vec_mag_ifunc = iris.analysis.maths.IFunc(vec_mag_data_func, lambda a,b: (a + b).units)
+        b2 = vec_mag_ifunc(a, c)
+
+        self.assertArrayAlmostEqual(b.data, b2.data)
+
 @tests.skip_data
 class TestLog(tests.IrisTest):
     def setUp(self):
