@@ -14,7 +14,7 @@ python:
   - 2.7
 
 git:
-  depth: 0
+  depth: 10000
 
 install:
 
