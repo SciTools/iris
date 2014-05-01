@@ -619,3 +619,166 @@ def _math_op_common(cube, operation_function, new_unit, in_place=False):
     iris.analysis.clear_phenomenon_identity(new_cube)
     new_cube.units = new_unit
     return new_cube
+
+class IFunc(object):
+    '''
+    Class for functions that can be applied to an iris cube. 
+
+    Example usage 1:: using an existing numpy ufunc, such as numpy.sin for the data
+        function and a simple lambda function for the units function
+
+        sine_ifunc = iris.analysis.maths.IFunc(numpy.sin, 
+                                             lambda cube: iris.unit.Unit('1'))
+        sine_cube = sine_ifunc(cube)
+
+    Example usage 2:: using a user-defined numpy ufunc for the data function and
+        defining a units function that checks the units of the cubes for consistency,
+        before giving the resulting cube the same units as the first cube.        
+
+        def ws(u, v):
+            return math.sqrt(u**2 + v**2)
+
+        ws_data_func = numpy.frompyfunc(ws, 2, 1)
+
+        def ws_units_func(u_cube, v_cube):
+            if u_cube.units != getattr(v_cube, 'units', u_cube.units):
+                raise ValueError("units do not match")
+            return u_cube.units 
+
+        ws_ifunc = iris.analysis.maths.IFunc(ws_data_func, ws_units_func)
+        ws_cube = ws_ifunc(u_cube, v_cube, new_name='wind speed')
+
+    Example usage 3:: As 3, except creating the data function from a class.
+        class WSDataFunc(object):
+            def __init__(self):
+                self.nin = 2
+                self.nout = 1
+                self.__name__ = 'ws_data_func'
+            def __call__(self, u_data, v_data):
+                return ( u_data**2 + v_data**2 ) **0.5
+
+        ws_ifunc = iris.analysis.maths.IFunc(ws_data_func, ws_units_func)
+        ws_cube = ws_ifunc(u_cube, v_cube, new_name='wind speed')
+
+
+    '''
+    def __init__(self, data_func, units_func):
+        '''
+        Create an ifunc from a data function and units function.
+ 
+        Args:
+        
+        * data_func:
+
+            Function to be applied to the data arrays of the cube(s).
+
+            Should have these attributes:
+
+            * __name__: 
+                Function name.
+            * nin: 
+                Number of data arrays function takes as input. 
+                Should be 1 or 2.
+            * nout: 
+                Number of arrays function returns.
+                Should be 1.
+        
+        * units_func:
+        
+            Function to be applied to the data arrays of the cube(s).
+            Should return an instance of :class:`iris.unit.Unit`.
+
+        Returns:
+            An ifunc.
+
+        '''
+
+        if not hasattr(data_func, 'nout'):
+            raise AttributeError("function passed to IFunc needs a nout attribute"
+                 "where nout is the number of numpy arrays it outputs"
+                 "(see e.g. description of nout for numpy ufunc)")
+
+        if data_func.nout != 1:
+            msg = ('{} returns {} objects, the IFunc class currently only supports '
+               'functions returning a single object.')
+            raise ValueError(msg.format(data_func.__name__, data_func.nout))
+
+        if not hasattr(data_func, 'nin'):
+            raise AttributeError("function passed to IFunc needs a nin attribute "
+                 "where nin is the number of numpy arrays it takes as input "
+                 "(see e.g. description of nin for numpy ufunc)")
+
+        if not data_func.nin in [1, 2]:
+            msg = ('{} requires {} input numpy arrays, the IFunc class currently only supports '
+               'functions requiring 1 or two numpy arrays as input.')
+            raise ValueError(msg.format(data_func.__name__, data_func.nin))
+
+        self.data_func = data_func
+
+        self.units_func = units_func
+
+    def __repr__(self): 
+        return "iris.analysis.maths.IFunc(" + self.data_func.__name__ \
+               + ", " + self.units_func.__name__ + ")"
+
+    def __str__(self): 
+        return "IFunc constructed from the data function " + self.data_func.__name__ + \
+               " and the units function " + self.units_func.__name__
+
+    def __call__(self, cube, other=None, dim=None, in_place=False, new_name=None): 
+        '''
+        Applies the ifunc to the cube.
+ 
+        Args:
+
+        * cube
+            An instance of :class:`iris.cube.Cube`, whose data is used as the first
+            argument to the data function.
+     
+        Kwargs:
+
+        * other 
+            A cube, coord, ndarray or number whose data is used as the second argument
+            to the data function.
+
+        * new_name:
+            Name for the resulting Cube.
+
+        * in_place:
+            Whether to create a new Cube, or alter the given "cube".
+
+        * dim:
+            Dimension along which to apply `other` if it's a coordinate that is 
+            not found in `cube`
+
+        Returns:
+            An instance of :class:`iris.cube.Cube`.
+
+        '''
+  
+        if self.data_func.nin == 2:
+            if other is None:
+                raise ValueError(self.data_func.__name__ +
+                      " requires two arguments, so other must also be "
+                      "passed to apply_ufunc")
+
+            new_unit = self.units_func(cube, other)
+
+            new_cube = _binary_op_common(self.data_func, self.data_func.__name__,
+                                     cube, other,
+                                     new_unit, dim=dim, in_place=in_place)
+
+        elif self.data_func.nin == 1:
+
+            new_unit = self.units_func(cube)
+
+            new_cube = _math_op_common(cube, self.data_func, new_unit,
+                                       in_place=in_place)
+
+        else:
+            raise ValueError("self.data_func.nin should be 1 or 2.")
+
+        if not new_name is None:
+            new_cube.rename(new_name)
+
+        return new_cube
