@@ -251,6 +251,52 @@ class TestBasicMaths(tests.IrisTest):
         # should fail because np.frexp gives 2 arrays as output
         self.assertRaises(ValueError, iris.analysis.maths.apply_ufunc, np.frexp, a)
 
+    def test_ifunc(self):
+        a = self.cube
+
+        my_ifunc = iris.analysis.maths.IFunc(np.square, 
+                   lambda a: a.units**2
+                   )
+        b = my_ifunc(a, new_name='squared temperature', in_place=False)
+
+        self.assertCMLApproxData(a, ('analysis', 'apply_ifunc_original.cml'))
+        self.assertCMLApproxData(b, ('analysis', 'apply_ifunc.cml'))
+
+        my_ifunc = iris.analysis.maths.IFunc(np.square, 
+                   lambda a: a.units**2
+                   )
+        b = my_ifunc(a, new_name='squared temperature', in_place=True)
+
+        self.assertCMLApproxData(b, ('analysis', 'apply_ifunc.cml'))
+        self.assertCMLApproxData(a, ('analysis', 'apply_ifunc.cml'))
+
+        def vec_mag(u, v):
+            return math.sqrt(u**2 + v**2)
+
+        c = a.copy() + 2
+
+        vec_mag_ufunc = np.frompyfunc(vec_mag, 2, 1)
+        my_ifunc = iris.analysis.maths.IFunc(vec_mag_ufunc, 
+                   lambda a,b: (a + b).units)
+
+        b = my_ifunc(a, c)
+        self.assertCMLApproxData(b, ('analysis', 'apply_ifunc_frompyfunc.cml'))
+
+    def test_ifunc_fail(self):
+
+        # should fail because 'blah' is a string (fails when it tries to find attributes)
+        self.assertRaises(AttributeError, iris.analysis.maths.IFunc, 'blah', 
+                          lambda cube: iris.unit.Unit('1'))
+
+        # should fail because math.sqrt does not have the right attributes
+        self.assertRaises(AttributeError, iris.analysis.maths.IFunc, math.sqrt,
+                          lambda cube: iris.unit.Unit('1'))
+
+        # should fail because np.frexp gives 2 arrays as output
+        self.assertRaises(ValueError, iris.analysis.maths.IFunc, np.frexp,
+                          lambda cube: iris.unit.Unit('1'))
+
+
     def test_type_error(self):
         with self.assertRaises(TypeError):
             iris.analysis.maths.add('not a cube', 123)
@@ -467,6 +513,37 @@ class TestApplyUfunc(tests.IrisTest):
 
         self.assertArrayAlmostEqual(b2.data, ans)
 
+class TestIFunc(tests.IrisTest):
+    def setUp(self):
+        self.cube = iris.tests.stock.simple_2d()
+
+    def test_ifunc(self):
+        a = self.cube
+        a.units = iris.unit.Unit('meters')
+
+        my_ifunc = iris.analysis.maths.IFunc(np.square,
+                lambda x: x.units**2)
+        b = my_ifunc(a, new_name='more_thingness', in_place=False)
+
+        ans = a.data**2
+
+        self.assertArrayEqual(b.data, ans)
+        self.assertEqual(b.name(), 'more_thingness')
+        self.assertEqual(b.units, iris.unit.Unit('m^2'))
+
+        def vec_mag(u, v):
+            return math.sqrt(u**2 + v**2)
+
+        c = a.copy() + 2
+
+        vec_mag_ufunc = np.frompyfunc(vec_mag, 2, 1)
+        my_ifunc = iris.analysis.maths.IFunc(vec_mag_ufunc, 
+                   lambda x,y: (x + y).units)
+        b = my_ifunc(a, c)
+
+        ans = ( a.data**2 + c.data**2 ) ** 0.5
+
+        self.assertArrayAlmostEqual(b.data, ans)
 
 @tests.skip_data
 class TestLog(tests.IrisTest):

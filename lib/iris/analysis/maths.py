@@ -694,7 +694,7 @@ class IFunc(object):
         '''
 
         if not hasattr(data_func, 'nout'):
-            raise AttributeError("function passed to IFunc needs a nout attribute"
+            raise AttributeError("function passed to IFunc needs a nout attribute "
                  "where nout is the number of data arrays it outputs"
                  "(see e.g. description of nout for numpy ufunc)")
 
