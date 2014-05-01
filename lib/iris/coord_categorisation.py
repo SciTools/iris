@@ -88,7 +88,7 @@ def add_categorised_coord(cube, name, from_coord, category_function,
     cube.add_aux_coord(new_coord, cube.coord_dims(from_coord))
 
 
-#======================================
+# ======================================
 # Specific functions for particular purposes
 #
 # NOTE: all the existing ones are calendar operations, so are for 'Time'
@@ -118,7 +118,7 @@ def _pt_date(coord, time):
     return coord.units.num2date(time)
 
 
-#--------------------------------------------
+# --------------------------------------------
 # Time categorisations : calendar date components
 
 def add_year(cube, coord, name='year'):
@@ -164,12 +164,16 @@ def add_day_of_year(cube, coord, name='day_of_year'):
     (1..366 in leap years).
 
     """
+    # Note: netcdftime.datetime objects return a normal tuple from timetuple(),
+    # unlike datetime.datetime objects that return a namedtuple.
+    # Index the time tuple (element 7 is day of year) instead of using named
+    # element tm_yday.
     add_categorised_coord(
         cube, name, coord,
-        lambda coord, x: _pt_date(coord, x).timetuple().tm_yday)
+        lambda coord, x: _pt_date(coord, x).timetuple()[7])
 
 
-#--------------------------------------------
+# --------------------------------------------
 # Time categorisations : days of the week
 
 def add_weekday_number(cube, coord, name='weekday_number'):
@@ -195,7 +199,7 @@ def add_weekday(cube, coord, name='weekday'):
         units='no_unit')
 
 
-#----------------------------------------------
+# ----------------------------------------------
 # Time categorisations : meteorological seasons
 
 def _months_in_season(season):

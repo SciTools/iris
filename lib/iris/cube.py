@@ -959,7 +959,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                        factories]
 
         # Deprecate name based searching
-        ### Search by coord name, if have no match
+        # -- Search by coord name, if have no match
         # XXX Where did this come from? And why isn't it reflected in the
         # docstring?
         if not matches:
@@ -2839,6 +2839,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Returns:
             :class:`iris.cube.Cube`.
 
+        .. note::
+
+            This operation does not yet have support for lazy evaluation.
+
         For example:
 
             >>> import iris
@@ -2993,6 +2997,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Returns:
             :class:`iris.cube.Cube`.
 
+        .. note::
+
+            This operation does not yet have support for lazy evaluation.
+
         For example:
 
             >>> import iris, iris.analysis
@@ -3132,6 +3140,35 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                              **newkwargs)
 
         return new_cube
+
+    def interpolate(self, scheme, sample_points, collapse_scalar=True):
+        """
+        Interpolate over the :class:`~iris.cube.Cube` using the provided
+        interpolation scheme and specified sample points.
+
+        Args:
+
+        * scheme:
+            A :class:`~iris.analysis.Linear` instance, which defines the
+            interpolator scheme.
+        * sample_points:
+            A sequence of (coordinate, points) pairs over which to interpolate.
+
+        Kwargs:
+
+        * collapse_scalar:
+            Whether to collapse the dimension of the scalar sample points
+            in the resulting cube. Default is True.
+
+        Returns:
+            A cube interpolated at the given sample points. The dimensionality
+            of the cube will be the number of original cube dimensions minus
+            the number of scalar coordinates, if collapse_scalar is True.
+
+        """
+        coords, points = zip(*sample_points)
+        interp = scheme.interpolator(self, coords)
+        return interp(points, collapse_scalar=collapse_scalar)
 
 
 class ClassDict(object, UserDict.DictMixin):

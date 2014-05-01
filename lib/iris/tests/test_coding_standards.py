@@ -193,14 +193,14 @@ class StandardReportWithExclusions(pep8.StandardReport):
 
 class TestCodeFormat(unittest.TestCase):
     def test_pep8_conformance(self):
-#
-#        Tests the iris codebase against the "pep8" tool.
-#
-#        Users can add their own excluded files (should files exist in the
-#        local directory which is not in the repository) by adding a
-#        ".pep8_test_exclude.txt" file in the same directory as this test.
-#        The file should be a line separated list of filenames/directories
-#        as can be passed to the "pep8" tool's exclude list.
+        #
+        #    Tests the iris codebase against the "pep8" tool.
+        #
+        #    Users can add their own excluded files (should files exist in the
+        #    local directory which is not in the repository) by adding a
+        #    ".pep8_test_exclude.txt" file in the same directory as this test.
+        #    The file should be a line separated list of filenames/directories
+        #    as can be passed to the "pep8" tool's exclude list.
 
         # To get a list of bad files, rather than the specific errors, add
         # "reporter=pep8.FileReport" to the StyleGuide constructor.
@@ -331,6 +331,7 @@ class TestLicenseHeaders(unittest.TestCase):
                             'docs/iris/src/userguide/plotting_examples/*.py',
                             'docs/iris/src/developers_guide/gitwash_dumper.py',
                             'docs/iris/build/*',
+                            'lib/iris/analysis/_scipy_interpolate.py',
                             'lib/iris/fileformats/_pyke_rules/*',
                             'lib/iris/fileformats/grib/_grib_cf_map.py')
 

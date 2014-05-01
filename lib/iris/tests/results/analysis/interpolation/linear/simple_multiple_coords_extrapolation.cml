@@ -6,13 +6,13 @@
         <auxCoord id="d32719ac" long_name="an_other" points="[3.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="5292eaeb" long_name="dim1" points="[1.5]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord id="5292eaeb" long_name="dim1" points="[1.5]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="a8c43c3" long_name="dim2" points="[9.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
+        <auxCoord id="a8c43c3" long_name="dim2" points="[9]" shape="(1,)" units="Unit('1')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x7f7dac6d" dtype="float32" shape="()"/>
+    <data byteorder="little" checksum="0x5783d492" dtype="float32" shape="()"/>
   </cube>
 </cubes>

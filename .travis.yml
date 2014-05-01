@@ -21,7 +21,7 @@ install:
   - export BIGGUS_REF="da8f19f197adff77e8071b0e04269c8b888a1fbf"
   - export BIGGUS_SUFFIX=$(echo "${BIGGUS_REF}" | sed "s/^v//")
 
-  - export CARTOPY_REF="v0.10.0"
+  - export CARTOPY_REF="0a0b548a08d445427bef834cf5bdb19cbee4202a"
   - export CARTOPY_SUFFIX=$(echo "${CARTOPY_REF}" | sed "s/^v//")
 
   - export IRIS_TEST_DATA_REF="3378fe68c00ca7f31895ab6630a59a39ccef94e3"

@@ -68,13 +68,6 @@ class TestBasicMaths(tests.IrisTest):
         # Check that the subtraction has had no effect on the original
         self.assertCML(e, ('analysis', 'maths_original.cml'))
 
-    def test_minus_in_need_of_transpose(self):
-        a = self.cube
-        e = self.cube.copy()
-        e.transpose([1, 0])
-        self.assertRaises(ValueError, iris.analysis.maths.subtract, a, e)
-
-
     def test_minus_with_data_describing_coordinate(self):
         a = self.cube
         e = self.cube.copy()

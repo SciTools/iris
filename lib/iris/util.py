@@ -1272,7 +1272,7 @@ def regular_step(coord):
     diffs = coord.points[1:] - coord.points[:-1]
     avdiff = np.mean(diffs)
     if not np.allclose(diffs, avdiff, rtol=0.001):
-    # TODO: This value is set for test_analysis to pass...
+        # TODO: This value is set for test_analysis to pass...
         msg = "Coord %s is not regular" % coord.name()
         raise iris.exceptions.CoordinateNotRegularError(msg)
     return avdiff.astype(coord.points.dtype)

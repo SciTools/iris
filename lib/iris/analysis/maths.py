@@ -21,6 +21,7 @@ Basic mathematical and statistical operations.
 from __future__ import division
 import warnings
 import math
+import operator
 
 import numpy as np
 
@@ -28,6 +29,7 @@ import iris.analysis
 import iris.coords
 import iris.cube
 import iris.exceptions
+import iris.util
 
 
 def abs(cube, in_place=False):
@@ -161,8 +163,9 @@ def add(cube, other, dim=None, ignore=True, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _add_subtract_common(np.add, 'addition', 'added', cube, other,
-                                dim=dim, ignore=ignore, in_place=in_place)
+    op = operator.iadd if in_place else operator.add
+    return _add_subtract_common(op, 'addition', 'added', cube, other, dim=dim,
+                                ignore=ignore, in_place=in_place)
 
 
 def subtract(cube, other, dim=None, ignore=True, in_place=False):
@@ -194,9 +197,9 @@ def subtract(cube, other, dim=None, ignore=True, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     """
-    return _add_subtract_common(np.subtract, 'subtraction', 'subtracted', cube,
-                                other, dim=dim, ignore=ignore,
-                                in_place=in_place)
+    op = operator.isub if in_place else operator.sub
+    return _add_subtract_common(op, 'subtraction', 'subtracted', cube, other,
+                                dim=dim, ignore=ignore, in_place=in_place)
 
 
 def _add_subtract_common(operation_function, operation_noun,
@@ -218,25 +221,6 @@ def _add_subtract_common(operation_function, operation_noun,
         # get a coordinate comparison of this cube and the cube to do the
         # operation with
         coord_comp = iris.analysis.coord_comparison(cube, other)
-
-        if coord_comp['transposable']:
-            # User does not need to transpose their cubes if numpy
-            # array broadcasting will make the dimensions match
-            broadcast_padding = cube.ndim - other.ndim
-            coord_dims_equal = True
-            for coord_group in coord_comp['transposable']:
-                cube_coord, other_coord = coord_group.coords
-                cube_coord_dims = cube.coord_dims(cube_coord)
-                other_coord_dims = other.coord_dims(other_coord)
-                other_coord_dims_broadcasted = tuple(
-                    [dim + broadcast_padding for dim in other_coord_dims])
-                if cube_coord_dims != other_coord_dims_broadcasted:
-                    coord_dims_equal = False
-
-            if not coord_dims_equal:
-                raise ValueError('Cubes cannot be %s, differing axes. '
-                                 'cube.transpose() may be required to '
-                                 're-order the axes.' % operation_past_tense)
 
         # provide a deprecation warning if the ignore keyword has been set
         if ignore is not True:
@@ -293,8 +277,9 @@ def multiply(cube, other, dim=None, in_place=False):
     _assert_is_cube(cube)
     other_unit = getattr(other, 'units', '1')
     new_unit = cube.units * other_unit
-    return _binary_op_common(np.multiply, 'multiplication', cube, other,
-                             new_unit, dim, in_place)
+    op = operator.imul if in_place else operator.mul
+    return _binary_op_common(op, 'multiplication', cube, other, new_unit, dim,
+                             in_place=in_place)
 
 
 def divide(cube, other, dim=None, in_place=False):
@@ -321,8 +306,9 @@ def divide(cube, other, dim=None, in_place=False):
     _assert_is_cube(cube)
     other_unit = getattr(other, 'units', '1')
     new_unit = cube.units / other_unit
-    return _binary_op_common(np.divide, 'divison', cube, other, new_unit, dim,
-                             in_place)
+    op = operator.idiv if in_place else operator.div
+    return _binary_op_common(op, 'divison', cube, other, new_unit, dim,
+                             in_place=in_place)
 
 
 def exponentiate(cube, exponent, in_place=False):
@@ -560,16 +546,20 @@ def _binary_op_common(operation_function, operation_noun, cube, other,
     if isinstance(other, iris.coords.Coord):
         other = _broadcast_cube_coord_data(cube, other, operation_noun, dim)
     elif isinstance(other, iris.cube.Cube):
-        # TODO: add intelligent broadcasting along coordinate dimensions for
-        # all binary operators, not just + and -
-        other = other.data
-    # don't worry about checking for other data types (such as scalers or
+        try:
+            np.broadcast_arrays(cube.data, other.data)
+        except ValueError:
+            other = iris.util.as_compatible_shape(other, cube).data
+        else:
+            other = other.data
+
+    # don't worry about checking for other data types (such as scalars or
     # np.ndarrays) because _assert_compatible validates that they are broadcast
     # compatible with cube.data
     _assert_compatible(cube, other)
 
-    def unary_func(x, out=None):
-        ret = operation_function(x, other, out)
+    def unary_func(x):
+        ret = operation_function(x, other)
         if ret is NotImplemented:
             # explicitly raise the TypeError, so it gets raised even if, for
             # example, `iris.analysis.maths.multiply(cube, other)` is called
@@ -623,7 +613,11 @@ def _math_op_common(cube, operation_function, new_unit, in_place=False):
     _assert_is_cube(cube)
     if in_place:
         new_cube = cube
-        operation_function(new_cube.data, out=new_cube.data)
+        try:
+            operation_function(new_cube.data, out=new_cube.data)
+        except TypeError:
+            # Non ufunc function
+            operation_function(new_cube.data)
     else:
         new_cube = cube.copy(data=operation_function(cube.data))
     iris.analysis.clear_phenomenon_identity(new_cube)

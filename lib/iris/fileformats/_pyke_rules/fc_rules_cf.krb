@@ -646,6 +646,23 @@ fc_formula_type_atmosphere_hybrid_sigma_pressure_coordinate
 
 #
 # Context:
+#   This rule will trigger iff a formula term that refers to a
+#   dimensionless vertical coordinate of ocean sigma over z
+#
+# Purpose:
+#   Assert that the formula term refers to ocean sigma over z.
+#
+fc_formula_type_ocean_sigma_z_coordinate
+    foreach
+        facts_cf.formula_root($coordinate)
+        check getattr(engine.cf_var.cf_group[$coordinate], 'standard_name') == 'ocean_sigma_z_coordinate'
+    assert
+        python engine.requires['formula_type'] = 'ocean_sigma_z_coordinate'
+        facts_cf.formula_type(ocean_sigma_z_coordinate)
+        python engine.rule_triggered.add(rule.name)
+
+#
+# Context:
 #   This rule will trigger for variables referenced by a dimensionless
 #   vertical coordinate.
 #

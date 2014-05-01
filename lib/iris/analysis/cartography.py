@@ -248,14 +248,14 @@ def _quadrant_area(radian_colat_bounds, radian_lon_bounds, radius_of_earth):
     *(radian_colat_bounds.shape[0], radian_lon_bounds.shape[0])*
 
     """
-    #ensure pairs of bounds
+    # ensure pairs of bounds
     if (radian_colat_bounds.shape[-1] != 2 or
             radian_lon_bounds.shape[-1] != 2 or
             radian_colat_bounds.ndim != 2 or
             radian_lon_bounds.ndim != 2):
         raise ValueError("Bounds must be [n,2] array")
 
-    #fill in a new array of areas
+    # fill in a new array of areas
     radius_sqr = radius_of_earth ** 2
     areas = np.ndarray((radian_colat_bounds.shape[0],
                         radian_lon_bounds.shape[0]))
@@ -602,28 +602,28 @@ def project(cube, target_proj, nx=None, ny=None):
                          'to have 1 or 2 dimensions, got {} and '
                          '{}.'.format(lat_coord.ndim, lon_coord.ndim))
 
-    ## Mask out points outside of extent in source_cs - disabled until
-    ## a way to specify global/limited extent is agreed upon and code
-    ## is generalised to handle -180 to +180, 0 to 360 and >360 longitudes.
-    #source_desired_xy = source_cs.transform_points(target_proj,
-    #                                               target_x.flatten(),
-    #                                               target_y.flatten())
-    #if np.any(source_x < 0.0) and np.any(source_x > 180.0):
-    #    raise ValueError('Unable to handle range of longitude.')
-    ## This does not work in all cases e.g. lon > 360
-    #if np.any(source_x > 180.0):
-    #    source_desired_x = (source_desired_xy[:, 0].reshape(ny, nx) +
-    #                        360.0) % 360.0
-    #else:
-    #    source_desired_x = source_desired_xy[:, 0].reshape(ny, nx)
-    #source_desired_y = source_desired_xy[:, 1].reshape(ny, nx)
-    #outof_extent_points = ((source_desired_x < source_x.min()) |
-    #                       (source_desired_x > source_x.max()) |
-    #                       (source_desired_y < source_y.min()) |
-    #                       (source_desired_y > source_y.max()))
-    ## Make array a mask by default (rather than a single bool) to allow mask
-    ## to be assigned to slices.
-    #new_data.mask = np.zeros(new_shape)
+#    # Mask out points outside of extent in source_cs - disabled until
+#    # a way to specify global/limited extent is agreed upon and code
+#    # is generalised to handle -180 to +180, 0 to 360 and >360 longitudes.
+#    source_desired_xy = source_cs.transform_points(target_proj,
+#                                                   target_x.flatten(),
+#                                                   target_y.flatten())
+#    if np.any(source_x < 0.0) and np.any(source_x > 180.0):
+#        raise ValueError('Unable to handle range of longitude.')
+#    # This does not work in all cases e.g. lon > 360
+#    if np.any(source_x > 180.0):
+#        source_desired_x = (source_desired_xy[:, 0].reshape(ny, nx) +
+#                            360.0) % 360.0
+#    else:
+#        source_desired_x = source_desired_xy[:, 0].reshape(ny, nx)
+#    source_desired_y = source_desired_xy[:, 1].reshape(ny, nx)
+#    outof_extent_points = ((source_desired_x < source_x.min()) |
+#                           (source_desired_x > source_x.max()) |
+#                           (source_desired_y < source_y.min()) |
+#                           (source_desired_y > source_y.max()))
+#    # Make array a mask by default (rather than a single bool) to allow mask
+#    # to be assigned to slices.
+#    new_data.mask = np.zeros(new_shape)
 
     # Step through cube data, regrid onto desired projection and insert results
     # in new_data array
@@ -638,8 +638,8 @@ def project(cube, target_proj, nx=None, ny=None):
                                                        target_proj,
                                                        target_x, target_y)
 
-        ## Mask out points beyond extent
-        #new_data[index].mask[outof_extent_points] = True
+#    # Mask out points beyond extent
+#    new_data[index].mask[outof_extent_points] = True
 
     # Remove mask if it is unnecessary
     if not np.any(new_data.mask):

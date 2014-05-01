@@ -20,15 +20,21 @@
 # importing anything else
 import iris.tests as tests
 
+import gribapi
 import mock
 
-from iris.coords import DimCoord
-from iris.fileformats.grib.load_rules import convert
+import iris
+from iris.fileformats.rules import Reference
 from iris.tests.test_grib_load import TestGribSimple
-import iris.tests.unit.fileformats
+from iris.tests.unit.fileformats import TestField
+import iris.unit
+
+from iris.fileformats.grib import GribWrapper
+from iris.fileformats.grib.load_rules import convert
 
 
-class Test_GribLevels(TestGribSimple):
+class Test_GribLevels_Mock(TestGribSimple):
+    # Unit test levels with mocking.
     def test_grib2_height(self):
         grib = self.mock_grib()
         grib.edition = 2
@@ -39,7 +45,7 @@ class Test_GribLevels(TestGribSimple):
         cube = self.cube_from_message(grib)
         self.assertEqual(
             cube.coord('height'),
-            DimCoord(12345, standard_name="height", units="m"))
+            iris.coords.DimCoord(12345, standard_name="height", units="m"))
 
     def test_grib2_bounded_height(self):
         grib = self.mock_grib()
@@ -53,8 +59,8 @@ class Test_GribLevels(TestGribSimple):
         cube = self.cube_from_message(grib)
         self.assertEqual(
             cube.coord('height'),
-            DimCoord(33333, standard_name="height", units="m",
-                     bounds=[[12345, 54321]]))
+            iris.coords.DimCoord(33333, standard_name="height", units="m",
+                                 bounds=[[12345, 54321]]))
 
     def test_grib2_diff_bound_types(self):
         grib = self.mock_grib()
@@ -71,7 +77,7 @@ class Test_GribLevels(TestGribSimple):
             "Different vertical bound types not yet handled.")
 
 
-class TestBoundedTime(iris.tests.unit.fileformats.TestField):
+class TestBoundedTime(TestField):
     @staticmethod
     def is_forecast_period(coord):
         return (coord.standard_name == 'forecast_period' and
@@ -91,8 +97,11 @@ class TestBoundedTime(iris.tests.unit.fileformats.TestField):
         attributes.update(kwargs)
         message = mock.Mock(**attributes)
         self._test_for_coord(message, convert, self.is_forecast_period,
-                             35, [15, 55])
-        self._test_for_coord(message, convert, self.is_time, 100, [80, 120])
+                             expected_points=[35],
+                             expected_bounds=[[15, 55]])
+        self._test_for_coord(message, convert, self.is_time,
+                             expected_points=[100],
+                             expected_bounds=[[80, 120]])
 
     def test_time_range_indicator_3(self):
         self.assert_bounded_message(timeRangeIndicator=3)
@@ -140,6 +149,36 @@ class TestBoundedTime(iris.tests.unit.fileformats.TestField):
     def test_product_template_9(self):
         self.assert_bounded_message(edition=2,
                                     productDefinitionTemplateNumber=9)
+
+
+class Test_GribLevels(tests.IrisTest):
+    def test_grib1_hybrid_height(self):
+        gm = gribapi.grib_new_from_samples('regular_gg_ml_grib1')
+        gw = GribWrapper(gm)
+        results = convert(gw)
+
+        factory, = results[0]
+        self.assertEqual(factory.factory_class,
+                         iris.aux_factory.HybridPressureFactory)
+        delta, sigma, ref = factory.args
+        self.assertEqual(delta, {'long_name': 'level_pressure'})
+        self.assertEqual(sigma, {'long_name': 'sigma'})
+        self.assertEqual(ref, Reference(name='surface_pressure'))
+
+        ml_ref = iris.coords.CoordDefn('model_level_number', None, None,
+                                       iris.unit.Unit('1'),
+                                       {'positive': 'up'}, None)
+        lp_ref = iris.coords.CoordDefn(None, 'level_pressure', None,
+                                       iris.unit.Unit('Pa'),
+                                       {}, None)
+        s_ref = iris.coords.CoordDefn(None, 'sigma', None,
+                                      iris.unit.Unit('1'),
+                                      {}, None)
+
+        aux_coord_defns = [coord._as_defn() for coord, dim in results[8]]
+        self.assertIn(ml_ref, aux_coord_defns)
+        self.assertIn(lp_ref, aux_coord_defns)
+        self.assertIn(s_ref, aux_coord_defns)
 
 
 if __name__ == "__main__":

@@ -66,7 +66,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
         field = mock.MagicMock(lbvc=6, lblev=level)
         self._test_for_coord(field, convert,
                              TestLBVC._is_soil_model_level_number_coord,
-                             expected_points=level,
+                             expected_points=[level],
                              expected_bounds=None)
 
     def test_hybrid_pressure_model_level_number(self):
@@ -76,7 +76,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
                                bhrlev=45, brsvd=[17, 40])
         self._test_for_coord(field, convert,
                              TestLBVC._is_model_level_number_coord,
-                             expected_points=level,
+                             expected_points=[level],
                              expected_bounds=None)
 
     def test_hybrid_pressure_delta(self):
@@ -89,9 +89,9 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
                                brsvd=[17, delta_upper_bound])
         self._test_for_coord(field, convert,
                              TestLBVC._is_level_pressure_coord,
-                             expected_points=delta_point,
-                             expected_bounds=[delta_lower_bound,
-                                              delta_upper_bound])
+                             expected_points=[delta_point],
+                             expected_bounds=[[delta_lower_bound,
+                                               delta_upper_bound]])
 
     def test_hybrid_pressure_sigma(self):
         sigma_point = 0.5
@@ -102,9 +102,9 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
                                bhlev=12, bhrlev=11,
                                brsvd=[sigma_upper_bound, 13])
         self._test_for_coord(field, convert, TestLBVC._is_sigma_coord,
-                             expected_points=sigma_point,
-                             expected_bounds=[sigma_lower_bound,
-                                              sigma_upper_bound])
+                             expected_points=[sigma_point],
+                             expected_bounds=[[sigma_lower_bound,
+                                               sigma_upper_bound]])
 
     def test_potential_temperature_levels(self):
         potm_value = 27.32
@@ -173,12 +173,12 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
         field.lbhrd, field.lbmind, field.lbsecd = 15, 0, 0
 
         self._test_for_coord(field, convert, self.is_forecast_period,
-                             expected_points=7.5,
-                             expected_bounds=[6, 9])
+                             expected_points=[7.5],
+                             expected_bounds=[[6, 9]])
 
         self._test_for_coord(field, convert, self.is_time,
-                             expected_points=24 + 13.5,
-                             expected_bounds=[36, 39])
+                             expected_points=[24 + 13.5],
+                             expected_bounds=[[36, 39]])
 
     def test_time_mean_ib3(self):
         field = self.base_field()
@@ -193,12 +193,12 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
         field.lbhrd, field.lbmind, field.lbsecd = 15, 0, 0
 
         self._test_for_coord(field, convert, self.is_forecast_period,
-                             expected_points=lbft,
-                             expected_bounds=[36 - 30, lbft])
+                             expected_points=[lbft],
+                             expected_bounds=[[36 - 30, lbft]])
 
         self._test_for_coord(field, convert, self.is_time,
-                             expected_points=lbft + 30,
-                             expected_bounds=[36, lbft + 30])
+                             expected_points=[lbft + 30],
+                             expected_bounds=[[36, lbft + 30]])
 
 
 if __name__ == "__main__":

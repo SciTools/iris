@@ -103,5 +103,6 @@ class Test_calendar(tests.IrisTest):
         field.lbtim = SplittableInt(4, {'ia': 2, 'ib': 1, 'ic': 0})
         self.assertEqual(field.calendar, '365_day')
 
+
 if __name__ == "__main__":
     tests.main()

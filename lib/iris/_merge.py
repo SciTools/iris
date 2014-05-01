@@ -21,7 +21,7 @@ Typically the cube merge process is handled by
 :method:`iris.cube.CubeList.merge`.
 
 """
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 from copy import deepcopy
 
 import biggus
@@ -97,7 +97,7 @@ class _CoordAndDims(namedtuple('CoordAndDims',
         coordinate instance.
 
     * dims:
-        A tuple of the data dimesion/s spanned by the coordinate.
+        A tuple of the data dimension/s spanned by the coordinate.
 
     """
 
@@ -1023,7 +1023,7 @@ def derive_space(groups, relation_matrix, positions, function_matrix=None):
                                           positions, function_matrix):
                 # There is no relationship between any of the candidate
                 # dimensions in the separable group, so merge them together
-                # into a new combined dimesion of the space.
+                # into a new combined dimension of the space.
                 _build_combination_group(space, group,
                                          positions, function_matrix)
         else:
@@ -1304,9 +1304,14 @@ class ProtoCube(object):
             if space[name] is None:
                 if _is_combination(name):
                     members = name.split(_COMBINATION_JOIN)
-                    cells = [tuple(
-                        position[int(member) if member.isdigit() else member]
-                        for member in members) for position in positions]
+                    # Create list of unique tuples from all combinations of
+                    # scalars for each source cube. The keys of an OrderedDict
+                    # are used to retain the ordering of source cubes but to
+                    # remove any duplicate tuples.
+                    cells = OrderedDict(
+                        (tuple(position[int(member) if member.isdigit() else
+                                        member] for member in members), None)
+                        for position in positions).keys()
                     dim_by_name[name] = len(self._shape)
                     self._nd_names.append(name)
                     self._shape.append(len(cells))

@@ -661,7 +661,10 @@ class TestNetCDFSave(tests.IrisTest):
         with self.temp_filename(suffix='.nc') as temp_filename:
             iris.save(traj, temp_filename)
             reloaded = iris.load_cube(temp_filename)
-            self.assertCML(reloaded, ('netcdf', 'save_load_traj.cml'))
+            self.assertCML(reloaded,
+                           ('netcdf', 'save_load_traj.cml'),
+                           checksum=False)
+            self.assertArrayEqual(traj.data, reloaded.data)
 
     def test_attributes(self):
         # Should be global attributes.

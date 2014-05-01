@@ -103,7 +103,7 @@ class TestRunner(setuptools.Command):
                                       'example_tests'))
 
         if not tests:
-            raise CommandError('No tests found in %s/*/tests' % lib_dir)
+            raise RuntimeError('No tests found in %s/*/tests' % lib_dir)
 
         if self.system_tests:
             regexp_pat = r'--match=^[Ss]ystem'

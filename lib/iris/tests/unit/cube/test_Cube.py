@@ -29,11 +29,11 @@ import iris.coords
 import iris.exceptions
 from iris import FUTURE
 from iris.analysis import WeightedAggregator, Aggregator
-from iris.analysis import MEAN, MIN
+from iris.analysis import MEAN
 from iris.cube import Cube
 from iris.coords import AuxCoord, DimCoord
-from iris.exceptions import CoordinateNotFoundError, CoordinateCollapseError
 from iris.exceptions import LazyAggregatorError
+import iris.tests.stock as stock
 
 
 class Test___init___data(tests.IrisTest):
@@ -686,6 +686,27 @@ class Test_intersection__ScatterModulus(tests.IrisTest):
                               [5, 10, 8, 5, 3])
         self.assertArrayEqual(result.data, range(5))
 
+
+# Test the API of the cube interpolation method.
+class Test_interpolate(tests.IrisTest):
+    def setUp(self):
+        self.cube = stock.simple_2d()
+
+        self.scheme = mock.Mock(name='interpolation scheme')
+        self.interpolator = mock.Mock(name='interpolator')
+        self.interpolator.return_value = mock.sentinel.RESULT
+        self.scheme.interpolator.return_value = self.interpolator
+        self.collapse_coord = True
+
+    def test_api(self):
+        sample_points = (('foo', 0.5), ('bar', 0.6))
+        result = self.cube.interpolate(self.scheme, sample_points,
+                                       self.collapse_coord)
+        self.scheme.interpolator.assert_called_once_with(
+            self.cube, ('foo', 'bar'))
+        self.interpolator.assert_called_once_with(
+            (0.5, 0.6), collapse_scalar=self.collapse_coord)
+        self.assertIs(result, mock.sentinel.RESULT)
 
 if __name__ == "__main__":
     tests.main()
