@@ -200,6 +200,20 @@ class _CoordExtent(namedtuple('CoordExtent',
     """
 
 
+def _name(coord, default='unknown'):
+    """
+    Returns a human-readable name.
+
+    First it tries self.standard_name, then it tries the 'long_name'
+    attribute, then the 'var_name' attribute, before falling back to
+    the value of `default` (which itself defaults to 'unknown').
+
+    Note this function is an exact duplicate of :func:`cube.metadata.name`.
+
+    """
+    return coord.standard_name or coord.long_name or coord.var_name or default
+
+
 def concatenate(cubes, error_on_mismatch=False):
     """
     Concatenate the provided cubes over common existing dimensions.
@@ -209,6 +223,12 @@ def concatenate(cubes, error_on_mismatch=False):
     * cubes:
         An iterable containing one or more :class:`iris.cube.Cube` instances
         to be concatenated together.
+
+    Kwargs:
+
+    * error_on_mismatch:
+        If True, raise an informative
+        :class:`~iris.exceptions.ContatenateError` if registration fails.
 
     Returns:
         A :class:`iris.cube.CubeList` of concatenated :class:`iris.cube.Cube`
@@ -349,26 +369,36 @@ class _CubeSignature(object):
         msg_template = '{} differs: {} != {}'
         msgs = []
         if self.aux_metadata != other.aux_metadata:
-            msgs.append(msg_template.format('Aux coords metadata',
-                                            self.aux_metadata,
-                                            other.aux_metadata))
+            self_names = [x.defn.name() for x in self.aux_metadata]
+            other_names = [x.defn.name() for x in other.aux_metadata]
+            msgs.append(msg_template.format('Auxiliary coordinates',
+                                            ', '.join(self_names),
+                                            ', '.join(other_names)))
         if self.data_type != other.data_type:
             msgs.append(msg_template.format('Datatype',
                                             self.data_type, other.data_type))
         if self.defn != other.defn:
-            msgs.append(msg_template.format('Attributes',
-                                            self.defn, other.defn))
+            # If the phenomena differ on name we want to print both to make the
+            # point. If not, we don't want to repeat the name!
+            if _name(self.defn) != _name(other.defn):
+                defns = [self.defn, other.defn]
+            else:
+                defns = [self.defn]
+            msgs.append('Cubes metadata differs for phenomena: '
+                        + ', '.join([_name(x) for x in defns]))
         if self.dim_metadata != other.dim_metadata:
-            msgs.append(msg_template.format('Dimensions metadata',
-                                            self.dim_metadata,
-                                            other.dim_metadata))
+            msgs.append(
+                'Dimensions metadata differs for coordinates: '
+                + ', '.join([x.defn.name() for x in self.dim_metadata]))
         if self.ndim != other.ndim:
             msgs.append(msg_template.format('Data dimensions',
                                             self.ndim, other.ndim))
         if self.scalar_coords != other.scalar_coords:
-            msgs.append(msg_template.format('Scalar coords',
-                                            self.scalar_coords,
-                                            other.scalar_coords))
+            self_names = [_name(x) for x in self.scalar_coords]
+            other_names = [_name(x) for x in other.scalar_coords]
+            msgs.append(msg_template.format('Scalar coordinates',
+                                            ', '.join(self_names),
+                                            ', '.join(other_names)))
         match = not bool(msgs)
         if error_on_mismatch and not match:
             raise iris.exceptions.ConcatenateError(msgs)

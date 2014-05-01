@@ -440,7 +440,16 @@ class CubeList(list):
         describing the reason for the failure.
 
         """
-        return iris._concatenate.concatenate(self, error_on_mismatch=True)[0]
+        names = [cube.metadata.name() for cube in self]
+        unique_names = list(collections.OrderedDict.fromkeys(names))
+        if len(unique_names) == 1:
+            res = iris._concatenate.concatenate(self, error_on_mismatch=True)
+            return res[0] 
+        else:
+            msgs = []
+            msgs.append('Cube names differ: {} != {}'.format(names[0],
+                                                             names[1]))
+            raise iris.exceptions.ConcatenateError(msgs)
 
     def concatenate(self):
         """
