@@ -695,7 +695,7 @@ class IFunc(object):
 
         if not hasattr(data_func, 'nout'):
             raise AttributeError("function passed to IFunc needs a nout attribute"
-                 "where nout is the number of numpy arrays it outputs"
+                 "where nout is the number of data arrays it outputs"
                  "(see e.g. description of nout for numpy ufunc)")
 
         if data_func.nout != 1:
@@ -705,12 +705,12 @@ class IFunc(object):
 
         if not hasattr(data_func, 'nin'):
             raise AttributeError("function passed to IFunc needs a nin attribute "
-                 "where nin is the number of numpy arrays it takes as input "
+                 "where nin is the number of data arrays it takes as input "
                  "(see e.g. description of nin for numpy ufunc)")
 
         if not data_func.nin in [1, 2]:
-            msg = ('{} requires {} input numpy arrays, the IFunc class currently only supports '
-               'functions requiring 1 or two numpy arrays as input.')
+            msg = ('{} requires {} input data arrays, the IFunc class currently only supports '
+               'functions requiring 1 or two data arrays as input.')
             raise ValueError(msg.format(data_func.__name__, data_func.nin))
 
         self.data_func = data_func
@@ -759,8 +759,7 @@ class IFunc(object):
         if self.data_func.nin == 2:
             if other is None:
                 raise ValueError(self.data_func.__name__ +
-                      " requires two arguments, so other must also be "
-                      "passed to apply_ufunc")
+                      " requires two arguments")
 
             new_unit = self.units_func(cube, other)
 
