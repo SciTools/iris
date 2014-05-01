@@ -744,7 +744,24 @@ def _regularise(grib_message):
 
 
 def grib_generator(filename, auto_regularise=True):
-    """Returns a generator of GribWrapper fields from the given filename."""
+    """
+    Returns a generator of GribWrapper fields from the given filename.
+
+    Args:
+
+    * filename (string):
+        Name of the file to generate fields from.
+
+    Kwargs:
+
+    * auto_regularise (*True* | *False*):
+        If *True*, any field defined on a reduced grid will be interpolated
+        to an equivalent regular grid. If *False*, any field defined on a
+        reduced grid will be loaded on the raw reduced grid with no shape
+        information. The default behaviour is to interpolate fields on a
+        reduced grid to an equivalent regular grid.
+
+    """
     with open(filename, 'rb') as grib_file:
         while True:
             grib_message = gribapi.grib_new_from_file(grib_file)
@@ -764,7 +781,35 @@ def grib_generator(filename, auto_regularise=True):
 
 
 def load_cubes(filenames, callback=None, auto_regularise=True):
-    """Returns a generator of cubes from the given list of filenames."""
+    """
+    Returns a generator of cubes from the given list of filenames.
+
+    Args:
+
+    * filenames (string/list):
+        One or more GRIB filenames to load from.
+
+    Kwargs:
+
+    * callback (callable function):
+        Function which can be passed on to :func:`iris.io.run_callback`.
+
+    * auto_regularise (*True* | *False*):
+        If *True*, any cube defined on a reduced grid will be interpolated
+        to an equivalent regular grid. If *False*, any cube defined on a
+        reduced grid will be loaded on the raw reduced grid with no shape
+        information. The default behaviour is to interpolate cubes on a
+        reduced grid to an equivalent regular grid.
+
+    .. note::
+       To make use of the *auto_regularise* keyword the normal Iris loading
+       pipeline cannot be used, the loading must be performed manually::
+
+           cube_generator = iris.fileformats.grib.load_cubes(
+               "reduced.grib", auto_regularise=False)
+           cubes = iris.cube.CubeList(cube_generator).merge()
+
+    """
     grib_loader = iris.fileformats.rules.Loader(
         grib_generator, {'auto_regularise': auto_regularise},
         iris.fileformats.grib.load_rules.convert,
