@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -77,9 +77,8 @@ class Test__field_gen(tests.IrisTest):
             calls = [mock.call(open_fh, count=45, dtype='>i4'),
                      mock.call(open_fh, count=19, dtype='>f4')]
             np.fromfile.assert_has_calls(calls)
-        expected_deferred_bytes = pp.DeferredArrayBytes('mocked',
-                                                        open_fh.tell(),
-                                                        4, np.dtype('>f4'))
+        expected_deferred_bytes = ('mocked', open_fh.tell(),
+                                   4, np.dtype('>f4'))
         self.assertEqual(pp_field._data, expected_deferred_bytes)
 
     def test_read_data_call(self):

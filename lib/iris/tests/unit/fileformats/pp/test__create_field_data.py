@@ -47,10 +47,14 @@ class Test__create_field_data(tests.IrisTest):
                                               field.bmdi, land_mask)
 
     def test_deferred_bytes(self):
-        # Check that a field with DeferredArrayBytes in _data gets a
+        # Check that a field with deferred array bytes in _data gets a
         # biggus array.
-        deferred_bytes = mock.Mock(spec=pp.DeferredArrayBytes)
-        deferred_bytes.dtype.newbyteorder.return_value = mock.sentinel.dtype
+        fname = mock.sentinel.fname
+        position = mock.sentinel.position
+        n_bytes = mock.sentinel.n_bytes
+        newbyteorder = mock.Mock(return_value=mock.sentinel.dtype)
+        dtype = mock.Mock(newbyteorder=newbyteorder)
+        deferred_bytes = (fname, position, n_bytes, dtype)
         field = mock.Mock(_data=deferred_bytes)
         data_shape = (mock.sentinel.lat, mock.sentinel.lon)
         land_mask = mock.Mock()
@@ -69,11 +73,10 @@ class Test__create_field_data(tests.IrisTest):
         # Is it making use of a correctly configured proxy?
         # NB. We know it's *using* the result of this call because
         # that's where the dtype came from above.
-        PPDataProxy.assert_called_once_with((data_shape), deferred_bytes.dtype,
-                                            deferred_bytes.fname,
-                                            deferred_bytes.position,
-                                            deferred_bytes.n_bytes,
-                                            field.lbpack, field.bmdi,
+        PPDataProxy.assert_called_once_with((data_shape), dtype,
+                                            fname, position,
+                                            n_bytes,
+                                            field.raw_lbpack, field.bmdi,
                                             land_mask)
 
 
