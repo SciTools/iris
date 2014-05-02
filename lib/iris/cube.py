@@ -444,7 +444,7 @@ class CubeList(list):
         unique_names = list(collections.OrderedDict.fromkeys(names))
         if len(unique_names) == 1:
             res = iris._concatenate.concatenate(self, error_on_mismatch=True)
-            return res[0] 
+            return res[0]
         else:
             msgs = []
             msgs.append('Cube names differ: {} != {}'.format(names[0],
