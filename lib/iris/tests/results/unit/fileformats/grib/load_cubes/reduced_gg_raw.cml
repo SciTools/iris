@@ -20,17 +20,17 @@
         </auxCoord>
       </coord>
       <coord>
-        <dimCoord id="af0092b8" points="[1]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+        <auxCoord id="af0092b8" points="[1]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
-        </dimCoord>
+        </auxCoord>
       </coord>
       <coord>
         <auxCoord id="64f42873" long_name="originating_centre" points="[	European Centre for Medium Range Weather Forecasts]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
       </coord>
       <coord>
-        <dimCoord id="5f88ebd6" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
+        <auxCoord id="5f88ebd6" long_name="sigma" points="[0.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord>
         <dimCoord id="6a1b3c16" points="[377688.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>

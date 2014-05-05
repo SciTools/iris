@@ -745,7 +745,8 @@ def _regularise(grib_message):
 
 def grib_generator(filename, auto_regularise=True):
     """
-    Returns a generator of GribWrapper fields from the given filename.
+    Returns a generator of :class:`~iris.fileformats.grib.GribWrapper`
+    fields from the given filename.
 
     Args:
 
@@ -802,6 +803,7 @@ def load_cubes(filenames, callback=None, auto_regularise=True):
         reduced grid to an equivalent regular grid.
 
     .. note::
+
        To make use of the *auto_regularise* keyword the normal Iris loading
        pipeline cannot be used, the loading must be performed manually::
 
