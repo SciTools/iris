@@ -456,7 +456,8 @@ class FF2PP(object):
 
     def _payload(self, field):
         """Calculate the payload data depth (in bytes) and type."""
-        if field.lbpack.n1 == 0:
+        lbpack_n1 = field.raw_lbpack % 10
+        if lbpack_n1 == 0:
             # Data payload is not packed.
             data_depth = (field.lblrec - field.lbext) * self._word_depth
             # Determine PP field 64-bit payload datatype.
@@ -466,15 +467,15 @@ class FF2PP(object):
             data_type = np.dtype(dtype_name)
         else:
             # Data payload is packed.
-            if field.lbpack.n1 == 1:
+            if lbpack_n1 == 1:
                 # Data packed using WGDOS archive method.
                 data_depth = ((field.lbnrec * 2) - 1) * pp.PP_WORD_DEPTH
-            elif field.lbpack.n1 == 2:
+            elif lbpack_n1 == 2:
                 # Data packed using CRAY 32-bit method.
                 data_depth = (field.lblrec - field.lbext) * pp.PP_WORD_DEPTH
             else:
                 msg = 'PP fields with LBPACK of {} are not supported.'
-                raise NotYetImplementedError(msg.format(field.lbpack))
+                raise NotYetImplementedError(msg.format(field.raw_lbpack))
 
             # Determine PP field payload datatype.
             lookup = pp.LBUSER_DTYPE_LOOKUP
@@ -552,9 +553,8 @@ class FF2PP(object):
                 ff_file, dtype='>f{0}'.format(self._word_depth),
                 count=pp.NUM_FLOAT_HEADERS)
             # In 64-bit words.
-            header_data = tuple(header_integers) + tuple(header_floats)
             # Check whether the current FF LOOKUP table entry is valid.
-            if header_data[0] == _FF_LOOKUP_TABLE_TERMINATE:
+            if header_integers[0] == _FF_LOOKUP_TABLE_TERMINATE:
                 # There are no more FF LOOKUP table entries to read.
                 break
             # Calculate next FF LOOKUP table entry.
@@ -562,25 +562,30 @@ class FF2PP(object):
             # Construct a PPField object and populate using the header_data
             # read from the current FF LOOKUP table.
             # (The PPField sub-class will depend on the header release number.)
-            field = pp.make_pp_field(header_data)
+            field = pp.make_pp_field(header_integers, header_floats)
             # Calculate start address of the associated PP header data.
             data_offset = field.lbegin * self._word_depth
             # Determine PP field payload depth and type.
             data_depth, data_type = self._payload(field)
 
-            stash_entry = STASH_TRANS.get(str(field.stash), None)
+            # Fast stash look-up.
+            stash_s = field.lbuser[3] / 1000
+            stash_i = field.lbuser[3] % 1000
+            stash = 'm{:02}s{:02}i{:03}'.format(field.lbuser[6],
+                                                stash_s, stash_i)
+            stash_entry = STASH_TRANS.get(stash, None)
             if stash_entry is None:
                 subgrid = None
                 warnings.warn('The STASH code {0} was not found in the '
                               'STASH to grid type mapping. Picking the P '
-                              'position as the cell type'.format(field.stash))
+                              'position as the cell type'.format(stash))
             else:
                 subgrid = stash_entry.grid_code
                 if subgrid not in HANDLED_GRIDS:
                     warnings.warn('The stash code {} is on a grid {} which '
                                   'has not been explicitly handled by the '
                                   'fieldsfile loader. Assuming the data is on '
-                                  'a P grid.'.format(field.stash, subgrid))
+                                  'a P grid.'.format(stash, subgrid))
 
             field.x, field.y = grid.vectors(subgrid)
 
@@ -633,9 +638,8 @@ class FF2PP(object):
                                                   data_type)
             else:
                 # Provide enough context to read the data bytes later on.
-                field._data = pp.DeferredArrayBytes(self._filename,
-                                                    data_offset, data_depth,
-                                                    data_type)
+                field._data = (self._filename, data_offset,
+                               data_depth, data_type)
             yield field
         ff_file.close()
 
