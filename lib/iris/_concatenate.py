@@ -368,7 +368,7 @@ class _CubeSignature(object):
         """
         msg_template = '{} differ: {} != {}'
         msgs = []
-        
+
         # Check cube definitions.
         if self.defn != other.defn:
             # Note that the case of different phenomenon names is dealt with
