@@ -803,7 +803,7 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, data_shape, data_type, mdi,
 
 # The special headers of the PPField classes which get some improved functionality
 _SPECIAL_HEADERS = ('lbtim', 'lbcode', 'lbpack', 'lbproc', 'data', 'stash',
-                    't1', 't2', 'header_longs', 'header_floats')
+                    't1', 't2', 'header')
 
 
 def _header_defn(release_number):
@@ -853,14 +853,9 @@ class PPField(object):
 
     __slots__ = ()
 
-    def __init__(self):
-        """
-        PPField instances are always created empty, and attributes are added subsequently.
-
-        .. seealso::
-            For PP field loading see :func:`load`.
-
-        """
+    def __init__(self, header_longs=None, header_floats=None):
+        self._header = tuple(header_longs) + tuple(header_floats)
+        self.raw_lbpack = self._header[self.HEADER_DICT['lbpack'][0]]
 
     def __getattr__(self, key):
         try:
@@ -873,20 +868,20 @@ class PPField(object):
                 cls = self.__class__.__name__
                 msg = '{!r} object has no attribute {!r}'.format(cls, key)
                 raise AttributeError(msg)
-            
-        if loc[0] <= (NUM_LONG_HEADERS - UM_TO_PP_HEADER_OFFSET):
-            header = self._header_longs
-            offset = 0
-        else:
-            header = self._header_floats
-            offset = NUM_LONG_HEADERS - UM_TO_PP_HEADER_OFFSET + 1
+
+#        if loc[0] <= (NUM_LONG_HEADERS - UM_TO_PP_HEADER_OFFSET):
+#            header = self._header_longs
+#            offset = 0
+#        else:
+#            header = self._header_floats
+#            offset = NUM_LONG_HEADERS - UM_TO_PP_HEADER_OFFSET + 1
 
         if len(loc) == 1:
-            value = header[loc[0] - offset]
+            value = self._header[loc[0]]
         else:
-            start = loc[0] - offset
-            stop = loc[-1] + 1 - offset
-            value = tuple(header[start:stop])
+            start = loc[0]
+            stop = loc[-1] + 1
+            value = tuple(self._header[start:stop])
 
         if key.startswith('_'):
             # First we need to assign to the attribute so that the
@@ -1368,13 +1363,6 @@ class PPField2(PPField):
 
     __slots__ = _pp_attribute_names(HEADER_DEFN)
 
-    def __init__(self, header_longs=None, header_floats=None):
-        self._header_longs = header_longs
-        self._header_floats = header_floats
-        self.raw_lbpack = None
-        if header_longs is not None:
-            self.raw_lbpack = self._header_longs[self.HEADER_DICT['lbpack']]
-
     def _get_t1(self):
         if not hasattr(self, '_t1'):
             self._t1 = netcdftime.datetime(self.lbyr, self.lbmon, self.lbdat, self.lbhr, self.lbmin)
@@ -1421,13 +1409,6 @@ class PPField3(PPField):
     HEADER_DICT = dict(_header_defn(3))
 
     __slots__ = _pp_attribute_names(HEADER_DEFN)
-
-    def __init__(self, header_longs=None, header_floats=None):
-        self._header_longs = header_longs
-        self._header_floats = header_floats
-        self.raw_lbpack = None
-        if header_longs is not None:
-            self.raw_lbpack = self._header_longs[self.HEADER_DICT['lbpack']]
 
     def _get_t1(self):
         if not hasattr(self, '_t1'):
