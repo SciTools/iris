@@ -3107,10 +3107,20 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             new_bounds = iris.util.rolling_window(coord_.points, window)
 
-            # Take the first and last element of the rolled window (i.e. the
-            # bounds)
-            new_bounds = new_bounds[:, (0, -1)]
-            new_points = np.mean(new_bounds, axis=-1)
+            if np.issubdtype(new_bounds.dtype, np.str):
+                # Handle case where the AuxCoord contains string. The points
+                # are the serialized form of the points contributing to each
+                # window and the bounds are the first and last points in the
+                # window as with numeric coordinates.
+                new_points = np.apply_along_axis(lambda x: '|'.join(x), -1,
+                                                 new_bounds)
+                new_bounds = new_bounds[:, (0, -1)]
+            else:
+                # Take the first and last element of the rolled window (i.e.
+                # the bounds) and the new points are the midpoints of these
+                # bounds.
+                new_bounds = new_bounds[:, (0, -1)]
+                new_points = np.mean(new_bounds, axis=-1)
 
             # wipe the coords points and set the bounds
             new_coord = new_cube.coord(coord_)

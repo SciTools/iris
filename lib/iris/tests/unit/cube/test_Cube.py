@@ -290,6 +290,35 @@ class Test_aggregated_by(tests.IrisTest):
         self.assertEqual(res_cube.coord('label'), label_coord)
 
 
+class Test_rolling_window(tests.IrisTest):
+
+    def setUp(self):
+        self.cube = Cube(np.arange(6))
+        val_coord = DimCoord([0, 1, 2, 3, 4, 5], long_name="val")
+        month_coord = AuxCoord(['jan', 'feb', 'mar', 'apr', 'may', 'jun'],
+                               long_name='month')
+        self.cube.add_dim_coord(val_coord, 0)
+        self.cube.add_aux_coord(month_coord, 0)
+        self.mock_agg = mock.Mock(spec=Aggregator)
+        self.mock_agg.aggregate = mock.Mock(
+            return_value=np.empty([4]))
+
+    def test_string_coord(self):
+        # Rolling window on a cube that contains a string coordinate.
+        res_cube = self.cube.rolling_window('val', self.mock_agg, 3)
+        val_coord = DimCoord(np.array([1, 2, 3, 4]),
+                             bounds=np.array([[0, 2], [1, 3], [2, 4], [3, 5]]),
+                             long_name='val')
+        month_coord = AuxCoord(
+            np.array(['jan|feb|mar', 'feb|mar|apr', 'mar|apr|may',
+                      'apr|may|jun']),
+            bounds=np.array([['jan', 'mar'], ['feb', 'apr'],
+                             ['mar', 'may'], ['apr', 'jun']]),
+            long_name='month')
+        self.assertEqual(res_cube.coord('val'), val_coord)
+        self.assertEqual(res_cube.coord('month'), month_coord)
+
+
 def create_cube(lon_min, lon_max, bounds=False):
     n_lons = max(lon_min, lon_max) - min(lon_max, lon_min)
     data = np.arange(4 * 3 * n_lons, dtype='f4').reshape(4, 3, n_lons)
