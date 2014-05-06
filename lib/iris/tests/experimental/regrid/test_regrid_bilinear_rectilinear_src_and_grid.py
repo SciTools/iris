@@ -22,7 +22,6 @@ import iris.tests as tests
 import numpy as np
 
 import iris
-import iris.quickplot as qplt
 from iris.experimental.regrid import \
     regrid_bilinear_rectilinear_src_and_grid as regrid
 from iris.aux_factory import HybridHeightFactory
@@ -30,6 +29,10 @@ from iris.coord_systems import GeogCS, OSGB
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.tests.stock import global_pp, realistic_4d
+
+# Run tests in no graphics mode if matplotlib is not available.
+if tests.MPL_AVAILABLE:
+    import iris.quickplot as qplt
 
 
 RESULT_DIR = ('experimental', 'regrid',
@@ -377,6 +380,7 @@ class TestCircular(tests.IrisTest):
 
 
 @tests.skip_data
+@tests.skip_plot
 class TestVisual(tests.GraphicsTest):
     def test_osgb_to_latlon(self):
         path = tests.get_data_path(

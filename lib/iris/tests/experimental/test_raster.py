@@ -22,7 +22,7 @@ import PIL.Image
 
 
 @tests.skip_data
-class TestGeoTiffExport(tests.GraphicsTest):
+class TestGeoTiffExport(tests.IrisTest):
     def check_tiff_header(self, geotiff_fh, reference_filename):
         """
         Checks the given tiff file handle's metadata matches the

@@ -20,14 +20,16 @@ Tests the high-level plotting interface.
 """
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
-
-import matplotlib.pyplot as plt
+import iris.tests.test_plot as test_plot
 
 import iris
-import iris.plot as iplt
-import iris.quickplot as qplt
-import iris.tests.test_plot as test_plot
-import iris.tests.test_mapping as test_mapping
+
+# Run tests in no graphics mode if matplotlib is not available.
+if tests.MPL_AVAILABLE:
+    import matplotlib.pyplot as plt
+    import iris.plot as iplt
+    import iris.quickplot as qplt
+    import iris.tests.test_mapping as test_mapping
 
 
 # Caches _load_theta so subsequent calls are faster
@@ -52,6 +54,7 @@ def _load_theta():
 
 
 @tests.skip_data
+@tests.skip_plot
 class TestQuickplotCoordinatesGiven(test_plot.TestPlotCoordinatesGiven):
     def setUp(self):
         filename = tests.get_data_path(('PP', 'COLPEX', 'theta_and_orog_subset.pp'))
@@ -101,6 +104,7 @@ class TestQuickplotCoordinatesGiven(test_plot.TestPlotCoordinatesGiven):
 
 
 @tests.skip_data
+@tests.skip_plot
 class TestLabels(tests.GraphicsTest):
     def setUp(self):
         self.theta = _load_theta()
@@ -175,6 +179,7 @@ class TestLabels(tests.GraphicsTest):
 
 
 @tests.skip_data
+@tests.skip_plot
 class TestTimeReferenceUnitsLabels(tests.GraphicsTest):
 
     def setUp(self):

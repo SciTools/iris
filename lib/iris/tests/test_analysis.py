@@ -23,8 +23,6 @@ import iris.tests as tests
 import itertools
 
 import cartopy.crs as ccrs
-import matplotlib
-import matplotlib.pyplot as plt
 import numpy as np
 import numpy.ma as ma
 import shapely.geometry
@@ -37,6 +35,11 @@ import iris.coord_systems
 import iris.coords
 import iris.cube
 import iris.tests.stock
+
+# Run tests in no graphics mode if matplotlib is not available.
+if tests.MPL_AVAILABLE:
+    import matplotlib
+    import matplotlib.pyplot as plt
 
 
 class TestAnalysisCubeCoordComparison(tests.IrisTest):
@@ -549,7 +552,8 @@ class TestAggregators(tests.IrisTest):
 
 
 @tests.skip_data
-class TestRotatedPole(tests.IrisTest):
+class TestRotatedPole(tests.GraphicsTest):
+    @tests.skip_plot
     def _check_both_conversions(self, cube):
         rlons, rlats = iris.analysis.cartography.get_xy_grids(cube)
         rcs = cube.coord_system('RotatedGeogCS')
@@ -1118,6 +1122,7 @@ class TestProject(tests.GraphicsTest):
         self.assertEqual(new_cube.shape, self.cube.shape)
 
     @tests.skip_data
+    @tests.skip_plot
     def test_cartopy_projection(self):
         cube = iris.load_cube(tests.get_data_path(('PP', 'aPPglob1',
                                                    'global.pp')))

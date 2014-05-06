@@ -24,16 +24,19 @@ from functools import wraps
 import types
 import warnings
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 import iris
 import iris.coords as coords
-import iris.plot as iplt
-import iris.quickplot as qplt
-import iris.symbols
 import iris.tests.stock
-import iris.tests.test_mapping as test_mapping
+
+# Run tests in no graphics mode if matplotlib is not available.
+if tests.MPL_AVAILABLE:
+    import matplotlib.pyplot as plt
+    import iris.plot as iplt
+    import iris.quickplot as qplt
+    import iris.symbols
+    import iris.tests.test_mapping as test_mapping
 
 
 def simple_cube():
@@ -43,6 +46,7 @@ def simple_cube():
     return cube
 
 
+@tests.skip_plot
 class TestSimple(tests.GraphicsTest):
     def test_points(self):
         cube = simple_cube()
@@ -55,6 +59,7 @@ class TestSimple(tests.GraphicsTest):
         self.check_graphic()
 
 
+@tests.skip_plot
 class TestMissingCoord(tests.GraphicsTest):
     def _check(self, cube):
         qplt.contourf(cube)
@@ -81,6 +86,7 @@ class TestMissingCoord(tests.GraphicsTest):
 
 
 @tests.skip_data
+@tests.skip_plot
 class TestMissingCS(tests.GraphicsTest):
     @tests.skip_data
     def test_missing_cs(self):
@@ -92,6 +98,7 @@ class TestMissingCS(tests.GraphicsTest):
         self.check_graphic()
 
 
+@tests.skip_plot
 class TestHybridHeight(tests.GraphicsTest):
     def setUp(self):
         self.cube = iris.tests.stock.realistic_4d()[0, :15, 0, :]
@@ -139,6 +146,7 @@ class TestHybridHeight(tests.GraphicsTest):
             self.check_graphic()
 
 
+@tests.skip_plot
 class Test1dPlotMultiArgs(tests.GraphicsTest):
     # tests for iris.plot using multi-argument calling convention
 
@@ -237,6 +245,7 @@ class Test1dPlotMultiArgs(tests.GraphicsTest):
             self.draw_method(self.cube1d, coords=['time'])
 
 
+@tests.skip_plot
 class Test1dQuickplotPlotMultiArgs(Test1dPlotMultiArgs):
     # tests for iris.plot using multi-argument calling convention
 
@@ -246,6 +255,7 @@ class Test1dQuickplotPlotMultiArgs(Test1dPlotMultiArgs):
 
 
 @tests.skip_data
+@tests.skip_plot
 class Test1dScatter(tests.GraphicsTest):
 
     def setUp(self):
@@ -315,6 +325,7 @@ class Test1dScatter(tests.GraphicsTest):
 
 
 @tests.skip_data
+@tests.skip_plot
 class Test1dQuickplotScatter(Test1dScatter):
 
     def setUp(self):
@@ -325,6 +336,7 @@ class Test1dQuickplotScatter(Test1dScatter):
 
 
 @tests.skip_data
+@tests.skip_plot
 class TestAttributePositive(tests.GraphicsTest):
     def test_1d_positive_up(self):
         path = tests.get_data_path(('NetCDF', 'ORCA2', 'votemper.nc'))
@@ -421,6 +433,7 @@ def _date_series(src_cube):
     return cube
 
 
+@tests.skip_plot
 class SliceMixin(object):
     """Mixin class providing tests for each 2-dimensional permutation of axes.
 
@@ -595,6 +608,7 @@ class TestPcolormeshNoBounds(tests.GraphicsTest, SliceMixin):
         self.draw_method = iplt.pcolormesh
 
 
+@tests.skip_plot
 class Slice1dMixin(object):
     """Mixin class providing tests for each 1-dimensional permutation of axes.
 
@@ -680,6 +694,7 @@ class LambdaStr(object):
 
 
 @tests.skip_data
+@tests.skip_plot
 class TestPlotCoordinatesGiven(tests.GraphicsTest):
     def setUp(self):
         filename = tests.get_data_path(('PP', 'COLPEX',
@@ -808,6 +823,7 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
 
 
 @tests.skip_data
+@tests.skip_plot
 class TestPlotDimAndAuxCoordsKwarg(tests.GraphicsTest):
     def setUp(self):
         filename = tests.get_data_path(('NetCDF', 'rotated', 'xy',
@@ -851,6 +867,7 @@ class TestPlotDimAndAuxCoordsKwarg(tests.GraphicsTest):
         self.check_graphic()
 
 
+@tests.skip_plot
 class TestSymbols(tests.GraphicsTest):
     def test_cloud_cover(self):
         iplt.symbols(range(10), [0] * 10, [iris.symbols.CLOUD_COVER[i]
@@ -859,6 +876,7 @@ class TestSymbols(tests.GraphicsTest):
         self.check_graphic()
 
 
+@tests.skip_plot
 class TestPlottingExceptions(tests.IrisTest):
     def setUp(self):
         self.bounded_cube = tests.stock.lat_lon_cube()
@@ -899,6 +917,7 @@ class TestPlottingExceptions(tests.IrisTest):
 
 
 @tests.skip_data
+@tests.skip_plot
 class TestPlotOtherCoordSystems(tests.GraphicsTest):
     def test_plot_tmerc(self):
         filename = tests.get_data_path(('NetCDF', 'transverse_mercator',

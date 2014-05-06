@@ -23,18 +23,22 @@ import datetime
 import os
 
 import gribapi
-import matplotlib.pyplot as plt
-from matplotlib.colors import LogNorm
 import mock
 import numpy as np
 
 import iris
 import iris.exceptions
 import iris.fileformats.grib
-import iris.plot as iplt
-import iris.quickplot as qplt
 import iris.tests.stock
 import iris.util
+
+# Run tests in no graphics mode if matplotlib is not available.
+if tests.MPL_AVAILABLE:
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import LogNorm
+    import iris.plot as iplt
+    import iris.quickplot as qplt
+
 
 # Construct a mock object to mimic the gribapi for GribWrapper testing.
 _mock_gribapi = mock.Mock(spec=gribapi)
@@ -215,6 +219,7 @@ class TestGribLoad(tests.GraphicsTest):
         cubes = iris.load(gribfile)
         self.assertCML(cubes, ('grib_load', 'missing_values_grib2.cml'))
 
+    @tests.skip_plot
     def test_y_fastest(self):
         cubes = iris.load(tests.get_data_path(("GRIB", "y_fastest",
                                                "y_fast.grib2")))
@@ -224,6 +229,7 @@ class TestGribLoad(tests.GraphicsTest):
         plt.title("y changes fastest")
         self.check_graphic()
 
+    @tests.skip_plot
     def test_ij_directions(self):
 
         def old_compat_load(name):
@@ -331,6 +337,7 @@ class TestGribLoad(tests.GraphicsTest):
         cube = tests.stock.global_grib2()
         self.assertEqual(cube.name(), 'air_temperature')
 
+    @tests.skip_plot
     def test_polar_stereo_grib1(self):
         cube = iris.load_cube(tests.get_data_path(
             ("GRIB", "polar_stereo", "ST4.2013052210.01h")))
@@ -341,6 +348,7 @@ class TestGribLoad(tests.GraphicsTest):
         plt.title("polar stereo grib1")
         self.check_graphic()
 
+    @tests.skip_plot
     def test_polar_stereo_grib2(self):
         cube = iris.load_cube(tests.get_data_path(
             ("GRIB", "polar_stereo",
@@ -353,6 +361,7 @@ class TestGribLoad(tests.GraphicsTest):
         plt.title("polar stereo grib2")
         self.check_graphic()
 
+    @tests.skip_plot
     def test_lambert_grib1(self):
         cube = iris.load_cube(tests.get_data_path(
             ("GRIB", "lambert", "lambert.grib1")))
@@ -364,6 +373,7 @@ class TestGribLoad(tests.GraphicsTest):
         plt.title("lambert grib1")
         self.check_graphic()
 
+    @tests.skip_plot
     def test_lambert_grib2(self):
         cube = iris.load_cube(tests.get_data_path(
             ("GRIB", "lambert", "lambert.grib2")))
@@ -401,7 +411,7 @@ class TestGribLoad(tests.GraphicsTest):
         self.assertCML(cube, ("grib_load", "reduced_ll_missing_grib1.cml"))
 
 
-class TestGribTimecodes(tests.GraphicsTest):
+class TestGribTimecodes(tests.IrisTest):
     def _run_timetests(self, test_set):
         # Check the unit-handling for given units-codes and editions.
 

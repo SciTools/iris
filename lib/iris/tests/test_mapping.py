@@ -22,7 +22,6 @@ Tests map creation.
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import matplotlib.pyplot as plt
 import numpy as np
 import numpy.testing as np_testing
 import cartopy.crs as ccrs
@@ -30,11 +29,16 @@ import cartopy.crs as ccrs
 import iris
 import iris.coord_systems
 import iris.cube
-import iris.plot as iplt
 import iris.tests.stock
 
+# Run tests in no graphics mode if matplotlib is not available.
+if tests.MPL_AVAILABLE:
+    import matplotlib.pyplot as plt
+    import iris.plot as iplt
 
-class TestBasic(tests.IrisTest):
+
+@tests.skip_plot
+class TestBasic(tests.GraphicsTest):
     cube = iris.tests.stock.realistic_4d()
 
     def test_contourf(self):
@@ -65,7 +69,8 @@ class TestBasic(tests.IrisTest):
 
 
 @tests.skip_data
-class TestUnmappable(tests.IrisTest):
+@tests.skip_plot
+class TestUnmappable(tests.GraphicsTest):
     def setUp(self):
         src_cube = iris.tests.stock.global_pp()
 
@@ -84,7 +89,8 @@ class TestUnmappable(tests.IrisTest):
 
 
 @tests.skip_data
-class TestMappingSubRegion(tests.IrisTest):
+@tests.skip_plot
+class TestMappingSubRegion(tests.GraphicsTest):
     def setUp(self):
         cube_path = tests.get_data_path(('PP', 'aPProt1', 'rotatedMHtimecube.pp'))
         cube = iris.load_cube(cube_path)[0]
@@ -129,7 +135,8 @@ class TestMappingSubRegion(tests.IrisTest):
                                              )
 
 @tests.skip_data
-class TestLowLevel(tests.IrisTest):
+@tests.skip_plot
+class TestLowLevel(tests.GraphicsTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()
         self.few = 4
@@ -159,7 +166,8 @@ class TestLowLevel(tests.IrisTest):
 
 
 @tests.skip_data
-class TestBoundedCube(tests.IrisTest):
+@tests.skip_plot
+class TestBoundedCube(tests.GraphicsTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()
         # Add some bounds to this data (this will actually make the bounds invalid as they
@@ -194,7 +202,8 @@ class TestBoundedCube(tests.IrisTest):
 
 
 @tests.skip_data
-class TestLimitedAreaCube(tests.IrisTest):
+@tests.skip_plot
+class TestLimitedAreaCube(tests.GraphicsTest):
     def setUp(self):
         cube_path = tests.get_data_path(('PP', 'aPProt1', 'rotated.pp'))
         self.cube = iris.load_cube(cube_path)[::20, ::20]

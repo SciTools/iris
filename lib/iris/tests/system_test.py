@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -85,7 +85,8 @@ class SystemInitialTest(tests.IrisTest):
         self.assertEqual(new_result, new_missing_value)
 
     def system_test_imports_general(self):
-        import matplotlib
+        if tests.MPL_AVAILABLE:
+            import matplotlib
         import netCDF4
 
 

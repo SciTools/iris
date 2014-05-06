@@ -32,6 +32,7 @@ import iris
 import iris.tests.stock
 
 
+@tests.skip_plot
 class TestRealistic4d(tests.GraphicsTest):
     def setUp(self):
         self.cube = iris.tests.stock.realistic_4d()

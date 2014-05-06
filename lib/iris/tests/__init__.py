@@ -50,15 +50,23 @@ import warnings
 import xml.dom.minidom
 import zlib
 
-import matplotlib
-import matplotlib.testing.compare as mcompare
-import matplotlib.pyplot as plt
 import numpy as np
 import numpy.ma as ma
 
 import iris.cube
 import iris.config
 import iris.util
+
+# Test for availability of matplotlib.
+# (And remove matplotlib as an iris.tests dependency.)
+try:
+    import matplotlib
+    import matplotlib.testing.compare as mcompare
+    import matplotlib.pyplot as plt
+except ImportError:
+    MPL_AVAILABLE = False
+else:
+    MPL_AVAILABLE = True
 
 
 #: Basepath for test results.
@@ -79,12 +87,13 @@ logger = logging.getLogger('tests')
 # Whether to display matplotlib output to the screen.
 _DISPLAY_FIGURES = False
 
-if '-d' in sys.argv:
-    sys.argv.remove('-d')
-    plt.switch_backend('tkagg')
-    _DISPLAY_FIGURES = True
-else:
-    plt.switch_backend('agg')
+if MPL_AVAILABLE:
+    if '-d' in sys.argv:
+        sys.argv.remove('-d')
+        plt.switch_backend('tkagg')
+        _DISPLAY_FIGURES = True
+    else:
+        plt.switch_backend('agg')
 
 _DEFAULT_IMAGE_TOLERANCE = 10.0
 
@@ -551,7 +560,8 @@ class GraphicsTest(IrisTest):
     def tearDown(self):
         # If a plotting test bombs out it can leave the current figure
         # in an odd state, so we make sure it's been disposed of.
-        plt.close()
+        if MPL_AVAILABLE:
+            plt.close()
 
 
 def skip_data(fn):
@@ -572,6 +582,24 @@ def skip_data(fn):
     skip = unittest.skipIf(
         condition=no_data,
         reason='Test(s) require external data.')
+
+    return skip(fn)
+
+
+def skip_plot(fn):
+    """
+    Decorator to choose whether to run tests, based on the availability of the
+    matplotlib library.
+
+    Example usage:
+        @skip_plot
+        class MyPlotTests(test.GraphicsTest):
+            ...
+
+    """
+    skip = unittest.skipIf(
+        condition=not MPL_AVAILABLE,
+        reason='Graphics tests require the matplotlib library.')
 
     return skip(fn)
 

@@ -20,11 +20,14 @@
 import iris.tests as tests
 
 import biggus
-import matplotlib.pyplot as plt
 import numpy as np
 
 import iris.analysis.trajectory
 import iris.tests.stock
+
+# Run tests in no graphics mode if matplotlib is not available.
+if tests.MPL_AVAILABLE:
+    import matplotlib.pyplot as plt
 
 
 class TestSimple(tests.IrisTest):
@@ -52,6 +55,7 @@ class TestTrajectory(tests.IrisTest):
         self.assertEqual(trajectory.sampled_points[31], {'lat': 0.12499999999999989, 'lon': 3.875})
 
     @tests.skip_data
+    @tests.skip_plot
     def test_trajectory_extraction(self):
 
         # Load the COLPEX data => TZYX
@@ -142,6 +146,7 @@ class TestTrajectory(tests.IrisTest):
         self.check_graphic()
 
     @tests.skip_data
+    @tests.skip_plot
     def test_tri_polar(self):
         # load data
         cubes = iris.load(tests.get_data_path(['NetCDF', 'ORCA2', 'votemper.nc']))
