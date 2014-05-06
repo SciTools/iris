@@ -366,39 +366,48 @@ class _CubeSignature(object):
            Boolean. True if and only if this _CubeSignature matches the other.
 
         """
-        msg_template = '{} differs: {} != {}'
+        msg_template = '{} differ: {} != {}'
         msgs = []
+        
+        # Check cube definitions.
+        if self.defn != other.defn:
+            # Note that the case of different phenomenon names is dealt with
+            # in :meth:`iris.cube.CubeList.concatenate_cube()`.
+            msg = 'Cube metadata differs for phenomenon: {}'
+            msgs.append(msg.format(_name(self.defn)))
+        # Check dim coordinates.
+        if self.dim_metadata != other.dim_metadata:
+            msgs.append(msg_template.format(
+                'Dimension coordinates',
+                ', '.join([x.defn.name() for x in self.dim_metadata]),
+                ', '.join([x.defn.name() for x in other.dim_metadata])))
+        # Check aux coordinates.
         if self.aux_metadata != other.aux_metadata:
-            self_names = [x.defn.name() for x in self.aux_metadata]
-            other_names = [x.defn.name() for x in other.aux_metadata]
+            self_names = [x.defn.name() for x in self.aux_metadata] \
+                or ['< None >']
+            other_names = [x.defn.name() for x in other.aux_metadata] \
+                or ['< None >']
             msgs.append(msg_template.format('Auxiliary coordinates',
                                             ', '.join(self_names),
                                             ', '.join(other_names)))
-        if self.data_type != other.data_type:
-            msgs.append(msg_template.format('Datatype',
-                                            self.data_type, other.data_type))
-        if self.defn != other.defn:
-            # If the phenomena differ on name we want to print both to make the
-            # point. If not, we don't want to repeat the name!
-            if _name(self.defn) != _name(other.defn):
-                defns = [self.defn, other.defn]
-            else:
-                defns = [self.defn]
-            msgs.append('Cubes metadata differs for phenomena: '
-                        + ', '.join([_name(x) for x in defns]))
-        if self.dim_metadata != other.dim_metadata:
-            msgs.append(
-                'Dimensions metadata differs for coordinates: '
-                + ', '.join([x.defn.name() for x in self.dim_metadata]))
-        if self.ndim != other.ndim:
-            msgs.append(msg_template.format('Data dimensions',
-                                            self.ndim, other.ndim))
+        # Check scalar coordinates.
         if self.scalar_coords != other.scalar_coords:
-            self_names = [_name(x) for x in self.scalar_coords]
-            other_names = [_name(x) for x in other.scalar_coords]
+            self_names = [_name(x) for x in self.scalar_coords] \
+                or ['< None >']
+            other_names = [_name(x) for x in other.scalar_coords] \
+                or ['< None >']
             msgs.append(msg_template.format('Scalar coordinates',
                                             ', '.join(self_names),
                                             ', '.join(other_names)))
+        # Check ndim.
+        if self.ndim != other.ndim:
+            msgs.append(msg_template.format('Data dimensions',
+                                            self.ndim, other.ndim))
+        # Check datatype.
+        if self.data_type != other.data_type:
+            msgs.append(msg_template.format('Datatypes',
+                                            self.data_type, other.data_type))
+
         match = not bool(msgs)
         if error_on_mismatch and not match:
             raise iris.exceptions.ConcatenateError(msgs)
