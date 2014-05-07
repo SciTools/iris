@@ -820,7 +820,7 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
                                 src_x_bounds, src_y_bounds,
                                 grid_x_bounds, grid_y_bounds,
                                 grid_x_decreasing, grid_y_decreasing,
-                                area_func, circular=False):
+                                area_func, circular=False, mdtol=0):
     """
     Regrid the given data from its source grid to a new grid using
     an area weighted mean to determine the resulting data values.
@@ -850,9 +850,19 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
     * area_func:
         A function that returns an (p, q) array of weights given an (p, 2)
         shaped array of Y bounds and an (q, 2) shaped array of X bounds.
+
+    Kwargs:
+
     * circular:
         A boolean indicating whether the `src_x_bounds` are periodic. Default
         is False.
+
+    * mdtol:
+        Tolerance of missing data. The value returned in each element of the
+        returned array will be masked if the fraction of missing data exceeds
+        mdtol. mdtol=0 means no missing data is tolerated while mdtol=1 will
+        mean the resulting element will be masked if and only if all the
+        overlapping elements of the source grid are masked. Defaults to 0.
 
     Returns:
         The regridded data as an N-dimensional NumPy array. The lengths
@@ -994,7 +1004,18 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
                 if src_masked:
                     # data.mask may be a bool, if not collapse via any().
                     if data.mask.ndim:
-                        new_data_pt_mask = data.mask.any(axis=axis)
+                        if mdtol == 0:
+                            new_data_pt_mask = data.mask.any(axis=axis)
+                        elif mdtol == 1:
+                            new_data_pt_mask = data.mask.all(axis=axis)
+                        else:
+                            # Calculate the fraction of elements that are
+                            # not masked and compare to mdtol.
+                            n_missing = np.ma.sum(data.mask, axis=axis)
+                            n_elem = np.prod(
+                                np.array(data.mask.shape)[np.array(axis)])
+                            frac_missing = n_missing / float(n_elem)
+                            new_data_pt_mask = frac_missing > mdtol
                     else:
                         new_data_pt_mask = data.mask
 
@@ -1015,7 +1036,8 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
     return new_data
 
 
-def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube):
+def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube,
+                                                  mdtol=0):
     """
     Return a new cube with data values calculated using the area weighted
     mean of data values from src_grid regridded onto the horizontal grid of
@@ -1035,6 +1057,16 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube):
     * grid_cube:
         An instance of :class:`iris.cube.Cube` that supplies the desired
         horizontal grid definition.
+
+    Kwargs:
+
+    * mdtol:
+        Tolerance of missing data. The value returned in each element of the
+        returned cube's data array will be masked if the fraction of masked
+        data in the overlapping cells of the source cube exceeds mdtol.
+        mdtol=0 means no missing data is tolerated while mdtol=1 will mean
+        the resulting element will be masked if and only if all the
+        overlapping cells of the source cube are masked. Defaults to 0.
 
     Returns:
         A new :class:`iris.cube.Cube` instance.
@@ -1127,7 +1159,7 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube):
                                            grid_x_bounds, grid_y_bounds,
                                            grid_x_decreasing,
                                            grid_y_decreasing,
-                                           area_func, circular)
+                                           area_func, circular, mdtol)
 
     # Wrap up the data as a Cube.
     # Create 2d meshgrids as required by _create_cube func.
