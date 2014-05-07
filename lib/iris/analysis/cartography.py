@@ -52,9 +52,12 @@ def wrap_lons(lons, base, period):
 
     For example:
         >>> print wrap_lons(np.array([185, 30, -200, 75]), -180, 360)
-        [-175   30  160   75]
+        [-175.   30.  160.   75.]
 
     """
+    # It is important to use 64bit floating precision when changing a floats
+    # numbers range.
+    lons = lons.astype(np.float64)
     return ((lons - base + period * 2) % period) + base
 
 
