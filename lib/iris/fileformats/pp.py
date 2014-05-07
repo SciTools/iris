@@ -803,7 +803,7 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, data_shape, data_type, mdi,
 
 # The special headers of the PPField classes which get some improved functionality
 _SPECIAL_HEADERS = ('lbtim', 'lbcode', 'lbpack', 'lbproc', 'data', 'stash',
-                    't1', 't2', 'header_longs', 'header_floats')
+                    't1', 't2')
 
 
 def _header_defn(release_number):
@@ -827,7 +827,8 @@ def _pp_attribute_names(header_defn):
     normal_headers = list(name for name, positions in header_defn if name not in _SPECIAL_HEADERS)
     special_headers = list('_' + name for name in _SPECIAL_HEADERS)
     extra_data = EXTRA_DATA.values()
-    return normal_headers + special_headers + extra_data + ['raw_lbpack']
+    raw_attributes = ['_raw_header', 'raw_lbtim', 'raw_lbpack']
+    return normal_headers + special_headers + extra_data + raw_attributes
 
 
 class PPField(object):
@@ -853,14 +854,13 @@ class PPField(object):
 
     __slots__ = ()
 
-    def __init__(self):
-        """
-        PPField instances are always created empty, and attributes are added subsequently.
-
-        .. seealso::
-            For PP field loading see :func:`load`.
-
-        """
+    def __init__(self, header=None):
+        self._raw_header = header
+        self.raw_lbtim = None
+        self.raw_lbpack = None
+        if header is not None:
+            self.raw_lbtim = header[self.HEADER_DICT['lbtim'][0]]
+            self.raw_lbpack = header[self.HEADER_DICT['lbpack'][0]]
 
     def __getattr__(self, key):
         try:
@@ -873,20 +873,13 @@ class PPField(object):
                 cls = self.__class__.__name__
                 msg = '{!r} object has no attribute {!r}'.format(cls, key)
                 raise AttributeError(msg)
-            
-        if loc[0] <= (NUM_LONG_HEADERS - UM_TO_PP_HEADER_OFFSET):
-            header = self._header_longs
-            offset = 0
-        else:
-            header = self._header_floats
-            offset = NUM_LONG_HEADERS - UM_TO_PP_HEADER_OFFSET + 1
 
         if len(loc) == 1:
-            value = header[loc[0] - offset]
+            value = self._raw_header[loc[0]]
         else:
-            start = loc[0] - offset
-            stop = loc[-1] + 1 - offset
-            value = tuple(header[start:stop])
+            start = loc[0]
+            stop = loc[-1] + 1
+            value = tuple(self._raw_header[start:stop])
 
         if key.startswith('_'):
             # First we need to assign to the attribute so that the
@@ -959,8 +952,11 @@ class PPField(object):
     # lbtim
     def _lbtim_setter(self, new_value):
         if not isinstance(new_value, SplittableInt):
+            self.raw_lbtim = new_value
             # add the ia/ib/ic values for lbtim
             new_value = SplittableInt(new_value, {'ia':slice(2, None), 'ib':1, 'ic':0})
+        else:
+            self.raw_lbtim = new_value._value
         self._lbtim = new_value
 
     lbtim = property(lambda self: self._lbtim, _lbtim_setter)
@@ -1368,13 +1364,6 @@ class PPField2(PPField):
 
     __slots__ = _pp_attribute_names(HEADER_DEFN)
 
-    def __init__(self, header_longs=None, header_floats=None):
-        self._header_longs = header_longs
-        self._header_floats = header_floats
-        self.raw_lbpack = None
-        if header_longs is not None:
-            self.raw_lbpack = self._header_longs[self.HEADER_DICT['lbpack']]
-
     def _get_t1(self):
         if not hasattr(self, '_t1'):
             self._t1 = netcdftime.datetime(self.lbyr, self.lbmon, self.lbdat, self.lbhr, self.lbmin)
@@ -1422,13 +1411,6 @@ class PPField3(PPField):
 
     __slots__ = _pp_attribute_names(HEADER_DEFN)
 
-    def __init__(self, header_longs=None, header_floats=None):
-        self._header_longs = header_longs
-        self._header_floats = header_floats
-        self.raw_lbpack = None
-        if header_longs is not None:
-            self.raw_lbpack = self._header_longs[self.HEADER_DICT['lbpack']]
-
     def _get_t1(self):
         if not hasattr(self, '_t1'):
             self._t1 = netcdftime.datetime(self.lbyr, self.lbmon, self.lbdat, self.lbhr, self.lbmin, self.lbsec)
@@ -1472,12 +1454,12 @@ PP_CLASSES = {
 }
 
 
-def make_pp_field(header_longs, header_floats):
+def make_pp_field(header):
     # Choose a PP field class from the value of LBREL
-    lbrel = header_longs[21]
+    lbrel = header[21]
     if lbrel not in PP_CLASSES:
         raise ValueError('Unsupported header release number: {}'.format(lbrel))
-    pp_field = PP_CLASSES[lbrel](header_longs, header_floats)
+    pp_field = PP_CLASSES[lbrel](header)
     return pp_field
 
 
@@ -1610,9 +1592,10 @@ def _field_gen(filename, read_data_bytes):
             break
         # Get the FLOAT header entries
         header_floats = np.fromfile(pp_file, dtype='>f%d' % PP_WORD_DEPTH, count=NUM_FLOAT_HEADERS)
+        header = tuple(header_longs) + tuple(header_floats)
 
         # Make a PPField of the appropriate sub-class (depends on header release number)
-        pp_field = make_pp_field(header_longs, header_floats)
+        pp_field = make_pp_field(header)
 
         # Skip the trailing 4-byte word containing the header length
         pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)

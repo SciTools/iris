@@ -100,7 +100,6 @@ _LBUSER_DTYPE_LOOKUP = {1: '>f{word_depth}',
                         3: '>i{word_depth}',
                         'default': '>f{word_depth}', }
 
-
 #: Codes used in STASH_GRID which indicate the x coordinate is on the
 #: edge of the cell.
 X_COORD_U_GRID = (11, 18, 27)
@@ -546,23 +545,24 @@ class FF2PP(object):
             # table entry.
             ff_file_seek(table_offset, os.SEEK_SET)
             # Read the current PP header entry from the FF LOOKUP table.
-            header_integers = np.fromfile(
+            header_longs = np.fromfile(
                 ff_file, dtype='>i{0}'.format(self._word_depth),
                 count=pp.NUM_LONG_HEADERS)
+            # Check whether the current FF LOOKUP table entry is valid.
+            if header_longs[0] == _FF_LOOKUP_TABLE_TERMINATE:
+                # There are no more FF LOOKUP table entries to read.
+                break
             header_floats = np.fromfile(
                 ff_file, dtype='>f{0}'.format(self._word_depth),
                 count=pp.NUM_FLOAT_HEADERS)
-            # In 64-bit words.
-            # Check whether the current FF LOOKUP table entry is valid.
-            if header_integers[0] == _FF_LOOKUP_TABLE_TERMINATE:
-                # There are no more FF LOOKUP table entries to read.
-                break
+            header = tuple(header_longs) + tuple(header_floats)
+
             # Calculate next FF LOOKUP table entry.
             table_offset += table_entry_depth
             # Construct a PPField object and populate using the header_data
             # read from the current FF LOOKUP table.
             # (The PPField sub-class will depend on the header release number.)
-            field = pp.make_pp_field(header_integers, header_floats)
+            field = pp.make_pp_field(header)
             # Calculate start address of the associated PP header data.
             data_offset = field.lbegin * self._word_depth
             # Determine PP field payload depth and type.

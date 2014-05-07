@@ -187,8 +187,8 @@ class TestFFVariableResolutionGrid(tests.IrisTest):
 
         self.orig_make_pp_field = pp.make_pp_field
 
-        def new_make_pp_field(header_longs, header_floats):
-            field = self.orig_make_pp_field(header_longs, header_floats)
+        def new_make_pp_field(header):
+            field = self.orig_make_pp_field(header)
             field.stash = self.ff2pp._custom_stash
             field.bdx = field.bdy = field.bmdi
             return field
