@@ -1010,7 +1010,9 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
                             new_data_pt_mask = data.mask.all(axis=axis)
                         else:
                             # Calculate the fraction of elements that are
-                            # not masked and compare to mdtol.
+                            # masked and compare to mdtol. np.ma.count()
+                            # cannot be used as it does not support axis
+                            # as a tuple.
                             n_missing = np.ma.sum(data.mask, axis=axis)
                             n_elem = np.prod(
                                 np.array(data.mask.shape)[np.array(axis)])
