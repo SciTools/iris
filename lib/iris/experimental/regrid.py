@@ -1000,7 +1000,6 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
                                              axis=axis)
 
                 # Determine suitable mask for data associated with cell.
-                # Could use all() here.
                 if src_masked:
                     # data.mask may be a bool, if not collapse via any().
                     if data.mask.ndim:
