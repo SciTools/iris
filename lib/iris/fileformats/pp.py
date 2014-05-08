@@ -866,7 +866,7 @@ class PPField(object):
         try:
             loc = self.HEADER_DICT[key]
         except KeyError:
-            if key.startswith('_'):
+            if key[0] == '_' and key[1:] in self.HEADER_DICT:
                 # Must be a special attribute.
                 loc = self.HEADER_DICT[key[1:]]
             else:
@@ -881,7 +881,7 @@ class PPField(object):
             stop = loc[-1] + 1
             value = tuple(self._raw_header[start:stop])
 
-        if key.startswith('_'):
+        if key[0] == '_':
             # First we need to assign to the attribute so that the
             # special attribute is calculated, then we retrieve it.
             setattr(self, key[1:], value)
