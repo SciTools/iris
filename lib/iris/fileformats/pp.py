@@ -1549,8 +1549,8 @@ def _create_field_data(field, data_shape, land_mask):
                                                   loaded_bytes.dtype,
                                                   field.bmdi, land_mask)
     else:
-        # Get hold of the DeferredArrayBytes instance.
-        # deferred_bytes = field._data
+        # Wrap the reference to the data payload within a data proxy
+        # in order to support deferred data loading.
         fname, position, n_bytes, dtype = field._data
         proxy = PPDataProxy(data_shape, dtype,
                             fname, position,
