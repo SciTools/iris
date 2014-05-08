@@ -1150,28 +1150,26 @@ class PPField(object):
                                   'elements.' % (extra_data_attr_name, ib)
                                   )
 
-        HEADER_DICT = dict(self.HEADER_DEFN)
-
         # populate lbext in WORDS
-        lb[HEADER_DICT['lbext'][0]] = len_of_data_payload / PP_WORD_DEPTH
+        lb[self.HEADER_DICT['lbext'][0]] = len_of_data_payload / PP_WORD_DEPTH
 
         # Put the data length of pp.data into len_of_data_payload (in BYTES)
         len_of_data_payload += data.size * PP_WORD_DEPTH
 
         # populate lbrec in WORDS
-        lb[HEADER_DICT['lblrec'][0]] = len_of_data_payload / PP_WORD_DEPTH
+        lb[self.HEADER_DICT['lblrec'][0]] = len_of_data_payload / PP_WORD_DEPTH
 
         # populate lbuser[0] to have the data's datatype
         if data.dtype == np.dtype('>f4'):
-            lb[HEADER_DICT['lbuser'][0]] = 1
+            lb[self.HEADER_DICT['lbuser'][0]] = 1
         elif data.dtype == np.dtype('>f8'):
             warnings.warn("Downcasting array precision from float64 to float32 for save."
                           "If float64 precision is required then please save in a different format")
             data = data.astype('>f4')
-            lb[HEADER_DICT['lbuser'][0]] = 1
+            lb[self.HEADER_DICT['lbuser'][0]] = 1
         elif data.dtype == np.dtype('>i4'):
             # NB: there is no physical difference between lbuser[0] of 2 or 3 so we encode just 2
-            lb[HEADER_DICT['lbuser'][0]] = 2
+            lb[self.HEADER_DICT['lbuser'][0]] = 2
         else:
             raise IOError('Unable to write data array to a PP file. The datatype was %s.' % data.dtype)
 
@@ -1199,11 +1197,12 @@ class PPField(object):
         pp_file.write(struct.pack(">L", int(len_of_data_payload)))
 
         # the data itself
-        if lb[HEADER_DICT['lbpack'][0]] == 0:
+        if lb[self.HEADER_DICT['lbpack'][0]] == 0:
             data.tofile(pp_file)
         else:
-            raise NotImplementedError('Writing packed pp data with lbpack of %s '
-                                      'is not supported.' % lb[HEADER_DICT['lbpack'][0]])
+            msg = 'Writing packed pp data with lbpack of {} ' \
+                'is not supported.'.format(lb[self.HEADER_DICT['lbpack'][0]])
+            raise NotImplementedError(msg)
 
         # extra data elements
         for int_code, extra_data in extra_items:
@@ -1360,7 +1359,7 @@ class PPField2(PPField):
 
     """
     HEADER_DEFN = _header_defn(2)
-    HEADER_DICT = dict(_header_defn(2))
+    HEADER_DICT = dict(HEADER_DEFN)
 
     __slots__ = _pp_attribute_names(HEADER_DEFN)
 
@@ -1407,7 +1406,7 @@ class PPField3(PPField):
 
     """
     HEADER_DEFN = _header_defn(3)
-    HEADER_DICT = dict(_header_defn(3))
+    HEADER_DICT = dict(HEADER_DEFN)
 
     __slots__ = _pp_attribute_names(HEADER_DEFN)
 
