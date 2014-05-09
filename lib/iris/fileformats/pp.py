@@ -855,6 +855,7 @@ class PPField(object):
     __slots__ = ()
 
     def __init__(self, header=None):
+        # Combined header longs and floats data cache.
         self._raw_header = header
         self.raw_lbtim = None
         self.raw_lbpack = None
@@ -863,6 +864,29 @@ class PPField(object):
             self.raw_lbpack = header[self.HEADER_DICT['lbpack'][0]]
 
     def __getattr__(self, key):
+        """
+        This method supports deferred attribute creation, which offers a
+        significant loading optimisation, particularly when not all attributes
+        are referenced and therefore created on the instance.
+
+        When an 'ordinary' HEADER_DICT attribute is required, its associated
+        header offset is used to lookup the data value/s from the combined
+        header longs and floats data cache. The attribute is then set with this
+        value/s on the instance. Thus future lookups for this attribute will be
+        optimised, avoiding the __getattr__ lookup mechanism again.
+
+        When a 'special' HEADER_DICT attribute (leading underscore) is
+        required, its associated 'ordinary' (no leading underscore) header
+        offset is used to lookup the data value/s from the combined header
+        longs and floats data cache. The 'ordinary' attribute is then set
+        with this value/s on the instance. This is required as 'special'
+        attributes have supporting property convenience functionality base on
+        the attribute value e.g. see 'lbpack' and 'lbtim'. Note that, for
+        'special' attributes the interface is via the 'ordinary' attribute but
+        the underlying attribute value is stored within the 'special'
+        attribute.
+
+        """
         try:
             loc = self.HEADER_DICT[key]
         except KeyError:
@@ -881,6 +905,7 @@ class PPField(object):
             stop = loc[-1] + 1
             value = tuple(self._raw_header[start:stop])
 
+        # Now cache the attribute value on the instance.
         if key[0] == '_':
             # First we need to assign to the attribute so that the
             # special attribute is calculated, then we retrieve it.
