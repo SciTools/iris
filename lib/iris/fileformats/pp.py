@@ -619,7 +619,7 @@ class BitwiseInt(SplittableInt):
 class PPDataProxy(object):
     """A reference to the data payload of a single PP field."""
 
-    __slots__ = ('shape', 'src_dtype', 'path', 'offset', 'data_len', 'lbpack',
+    __slots__ = ('shape', 'src_dtype', 'path', 'offset', 'data_len', '_lbpack',
                  'mdi', 'mask')
     
     def __init__(self, shape, src_dtype, path, offset, data_len, lbpack, mdi,
@@ -632,6 +632,19 @@ class PPDataProxy(object):
         self.lbpack = lbpack
         self.mdi = mdi
         self.mask = mask
+
+    # lbpack
+    def _lbpack_setter(self, value):
+        self._lbpack = value
+
+    def _lbpack_getter(self):
+        value = self._lbpack
+        if not isinstance(self._lbpack, SplittableInt):
+            mapping = dict(n5=slice(4, None), n4=3, n3=2, n2=1, n1=0)
+            value = SplittableInt(self._lbpack, mapping)
+        return value
+
+    lbpack = property(_lbpack_getter, _lbpack_setter)
 
     @property
     def dtype(self):
@@ -789,8 +802,8 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, data_shape, data_type, mdi,
 
 
 # The special headers of the PPField classes which get some improved functionality
-_SPECIAL_HEADERS = ('lbtim', 'lbcode', 'lbpack', 'lbproc',
-                    'data', 'stash', 't1', 't2')
+_SPECIAL_HEADERS = ('lbtim', 'lbcode', 'lbpack', 'lbproc', 'data', 'stash',
+                    't1', 't2')
 
 
 def _header_defn(release_number):
@@ -814,7 +827,8 @@ def _pp_attribute_names(header_defn):
     normal_headers = list(name for name, positions in header_defn if name not in _SPECIAL_HEADERS)
     special_headers = list('_' + name for name in _SPECIAL_HEADERS)
     extra_data = EXTRA_DATA.values()
-    return normal_headers + special_headers + extra_data
+    raw_attributes = ['_raw_header', 'raw_lbtim', 'raw_lbpack']
+    return normal_headers + special_headers + extra_data + raw_attributes
 
 
 class PPField(object):
@@ -840,14 +854,66 @@ class PPField(object):
 
     __slots__ = ()
 
-    def __init__(self):
-        """
-        PPField instances are always created empty, and attributes are added subsequently.
+    def __init__(self, header=None):
+        # Combined header longs and floats data cache.
+        self._raw_header = header
+        self.raw_lbtim = None
+        self.raw_lbpack = None
+        if header is not None:
+            self.raw_lbtim = header[self.HEADER_DICT['lbtim'][0]]
+            self.raw_lbpack = header[self.HEADER_DICT['lbpack'][0]]
 
-        .. seealso::
-            For PP field loading see :func:`load`.
+    def __getattr__(self, key):
+        """
+        This method supports deferred attribute creation, which offers a
+        significant loading optimisation, particularly when not all attributes
+        are referenced and therefore created on the instance.
+
+        When an 'ordinary' HEADER_DICT attribute is required, its associated
+        header offset is used to lookup the data value/s from the combined
+        header longs and floats data cache. The attribute is then set with this
+        value/s on the instance. Thus future lookups for this attribute will be
+        optimised, avoiding the __getattr__ lookup mechanism again.
+
+        When a 'special' HEADER_DICT attribute (leading underscore) is
+        required, its associated 'ordinary' (no leading underscore) header
+        offset is used to lookup the data value/s from the combined header
+        longs and floats data cache. The 'ordinary' attribute is then set
+        with this value/s on the instance. This is required as 'special'
+        attributes have supporting property convenience functionality base on
+        the attribute value e.g. see 'lbpack' and 'lbtim'. Note that, for
+        'special' attributes the interface is via the 'ordinary' attribute but
+        the underlying attribute value is stored within the 'special'
+        attribute.
 
         """
+        try:
+            loc = self.HEADER_DICT[key]
+        except KeyError:
+            if key[0] == '_' and key[1:] in self.HEADER_DICT:
+                # Must be a special attribute.
+                loc = self.HEADER_DICT[key[1:]]
+            else:
+                cls = self.__class__.__name__
+                msg = '{!r} object has no attribute {!r}'.format(cls, key)
+                raise AttributeError(msg)
+
+        if len(loc) == 1:
+            value = self._raw_header[loc[0]]
+        else:
+            start = loc[0]
+            stop = loc[-1] + 1
+            value = tuple(self._raw_header[start:stop])
+
+        # Now cache the attribute value on the instance.
+        if key[0] == '_':
+            # First we need to assign to the attribute so that the
+            # special attribute is calculated, then we retrieve it.
+            setattr(self, key[1:], value)
+            value = getattr(self, key)
+        else:
+            setattr(self, key, value)
+        return value
 
     @abc.abstractproperty
     def t1(self):
@@ -911,8 +977,11 @@ class PPField(object):
     # lbtim
     def _lbtim_setter(self, new_value):
         if not isinstance(new_value, SplittableInt):
+            self.raw_lbtim = new_value
             # add the ia/ib/ic values for lbtim
             new_value = SplittableInt(new_value, {'ia':slice(2, None), 'ib':1, 'ic':0})
+        else:
+            self.raw_lbtim = new_value._value
         self._lbtim = new_value
 
     lbtim = property(lambda self: self._lbtim, _lbtim_setter)
@@ -929,9 +998,12 @@ class PPField(object):
     # lbpack
     def _lbpack_setter(self, new_value):
         if not isinstance(new_value, SplittableInt):
+            self.raw_lbpack = new_value
             # add the n1/n2/n3/n4/n5 values for lbpack
             name_mapping = dict(n5=slice(4, None), n4=3, n3=2, n2=1, n1=0)
             new_value = SplittableInt(new_value, name_mapping)
+        else:
+            self.raw_lbpack = new_value._value
         self._lbpack = new_value
 
     lbpack = property(lambda self: self._lbpack, _lbpack_setter)
@@ -1103,28 +1175,26 @@ class PPField(object):
                                   'elements.' % (extra_data_attr_name, ib)
                                   )
 
-        HEADER_DICT = dict(self.HEADER_DEFN)
-
         # populate lbext in WORDS
-        lb[HEADER_DICT['lbext'][0]] = len_of_data_payload / PP_WORD_DEPTH
+        lb[self.HEADER_DICT['lbext'][0]] = len_of_data_payload / PP_WORD_DEPTH
 
         # Put the data length of pp.data into len_of_data_payload (in BYTES)
         len_of_data_payload += data.size * PP_WORD_DEPTH
 
         # populate lbrec in WORDS
-        lb[HEADER_DICT['lblrec'][0]] = len_of_data_payload / PP_WORD_DEPTH
+        lb[self.HEADER_DICT['lblrec'][0]] = len_of_data_payload / PP_WORD_DEPTH
 
         # populate lbuser[0] to have the data's datatype
         if data.dtype == np.dtype('>f4'):
-            lb[HEADER_DICT['lbuser'][0]] = 1
+            lb[self.HEADER_DICT['lbuser'][0]] = 1
         elif data.dtype == np.dtype('>f8'):
             warnings.warn("Downcasting array precision from float64 to float32 for save."
                           "If float64 precision is required then please save in a different format")
             data = data.astype('>f4')
-            lb[HEADER_DICT['lbuser'][0]] = 1
+            lb[self.HEADER_DICT['lbuser'][0]] = 1
         elif data.dtype == np.dtype('>i4'):
             # NB: there is no physical difference between lbuser[0] of 2 or 3 so we encode just 2
-            lb[HEADER_DICT['lbuser'][0]] = 2
+            lb[self.HEADER_DICT['lbuser'][0]] = 2
         else:
             raise IOError('Unable to write data array to a PP file. The datatype was %s.' % data.dtype)
 
@@ -1152,11 +1222,12 @@ class PPField(object):
         pp_file.write(struct.pack(">L", int(len_of_data_payload)))
 
         # the data itself
-        if lb[HEADER_DICT['lbpack'][0]] == 0:
+        if lb[self.HEADER_DICT['lbpack'][0]] == 0:
             data.tofile(pp_file)
         else:
-            raise NotImplementedError('Writing packed pp data with lbpack of %s '
-                                      'is not supported.' % lb[HEADER_DICT['lbpack'][0]])
+            msg = 'Writing packed pp data with lbpack of {} ' \
+                'is not supported.'.format(lb[self.HEADER_DICT['lbpack'][0]])
+            raise NotImplementedError(msg)
 
         # extra data elements
         for int_code, extra_data in extra_items:
@@ -1313,6 +1384,7 @@ class PPField2(PPField):
 
     """
     HEADER_DEFN = _header_defn(2)
+    HEADER_DICT = dict(HEADER_DEFN)
 
     __slots__ = _pp_attribute_names(HEADER_DEFN)
 
@@ -1352,12 +1424,14 @@ class PPField2(PPField):
     t2 = property(_get_t2, _set_t2, None,
         "A netcdftime.datetime object consisting of the lbyrd, lbmond, lbdatd, lbhrd, and lbmind attributes.")
 
+
 class PPField3(PPField):
     """
     A class to hold a single field from a PP file, with a header release number of 3.
 
     """
     HEADER_DEFN = _header_defn(3)
+    HEADER_DICT = dict(HEADER_DEFN)
 
     __slots__ = _pp_attribute_names(HEADER_DEFN)
 
@@ -1397,29 +1471,22 @@ class PPField3(PPField):
     t2 = property(_get_t2, _set_t2, None,
         "A netcdftime.datetime object consisting of the lbyrd, lbmond, lbdatd, lbhrd, lbmind, and lbsecd attributes.")
 
+
 PP_CLASSES = {
     2: PPField2,
     3: PPField3
 }
 
 
-def make_pp_field(header_values):
+def make_pp_field(header):
     # Choose a PP field class from the value of LBREL
-    lbrel = header_values[21]
+    lbrel = header[21]
     if lbrel not in PP_CLASSES:
         raise ValueError('Unsupported header release number: {}'.format(lbrel))
-    pp_field = PP_CLASSES[lbrel]()
-    for name, loc in pp_field.HEADER_DEFN:
-        if len(loc) == 1:
-            value = header_values[loc[0]]
-        else:
-            value = header_values[loc[0]:loc[-1]+1]
-        setattr(pp_field, name, value)
+    pp_field = PP_CLASSES[lbrel](header)
     return pp_field
 
 
-DeferredArrayBytes = collections.namedtuple('DeferredBytes',
-                                            'fname, position, n_bytes, dtype')
 LoadedArrayBytes = collections.namedtuple('LoadedArrayBytes', 'bytes, dtype')
 
 
@@ -1459,12 +1526,14 @@ def _interpret_fields(fields):
     for field in fields:
         # Store the first reference to a land mask, and use this as the
         # definitive mask for future fields in this generator.
-        if land_mask is None and field.stash == 'm01s00i030':
+        if land_mask is None and field.lbuser[6] == 1 and \
+                (field.lbuser[3] / 1000) == 0 and \
+                (field.lbuser[3] % 1000) == 30:
             land_mask = field
 
-        # Handle land compressed data payloads.
-        if field.lbpack.n2 == 2:
-            # If we don't have the land mask yet, we shouldn't yield the field.
+        # Handle land compressed data payloads,
+        # when lbpack.n2 is 2.
+        if (field.raw_lbpack / 10 % 10) == 2:
             if land_mask is None:
                 landmask_compressed_fields.append(field)
                 continue
@@ -1505,11 +1574,12 @@ def _create_field_data(field, data_shape, land_mask):
                                                   loaded_bytes.dtype,
                                                   field.bmdi, land_mask)
     else:
-        # Get hold of the DeferredArrayBytes instance.
-        deferred_bytes = field._data
-        proxy = PPDataProxy(data_shape, deferred_bytes.dtype,
-                            deferred_bytes.fname, deferred_bytes.position,
-                            deferred_bytes.n_bytes, field.lbpack,
+        # Wrap the reference to the data payload within a data proxy
+        # in order to support deferred data loading.
+        fname, position, n_bytes, dtype = field._data
+        proxy = PPDataProxy(data_shape, dtype,
+                            fname, position,
+                            n_bytes, field.raw_lbpack,
                             field.bmdi, land_mask)
         field._data = biggus.NumpyArrayAdapter(proxy)
 
@@ -1576,7 +1646,7 @@ def _field_gen(filename, read_data_bytes):
             pp_field._data = LoadedArrayBytes(pp_file.read(data_len), dtype)
         else:
             # Provide enough context to read the data bytes later on.
-            pp_field._data = DeferredArrayBytes(filename, pp_file.tell(), data_len, dtype)
+            pp_field._data = (filename, pp_file.tell(), data_len, dtype)
             # Seek over the actual data payload.
             pp_file_seek(data_len, os.SEEK_CUR)
 

@@ -36,8 +36,7 @@ import iris.fileformats.pp as pp
 
 
 _MockField = collections.namedtuple('_MockField',
-                                    'lbext,lblrec,lbnrec,lbpack,lbuser')
-_MockLbpack = collections.namedtuple('_MockLbpack', 'n1')
+                                    'lbext lblrec lbnrec raw_lbpack lbuser')
 
 # PP-field: LBPACK N1 values.
 _UNPACKED = 0
@@ -188,8 +187,8 @@ class TestFFVariableResolutionGrid(tests.IrisTest):
 
         self.orig_make_pp_field = pp.make_pp_field
 
-        def new_make_pp_field(header_values):
-            field = self.orig_make_pp_field(header_values)
+        def new_make_pp_field(header):
+            field = self.orig_make_pp_field(header)
             field.stash = self.ff2pp._custom_stash
             field.bdx = field.bdy = field.bmdi
             return field
@@ -236,7 +235,7 @@ class TestFFPayload(tests.IrisTest):
 
     def test_payload_unpacked_real(self):
         mock_field = _MockField(lbext=0, lblrec=100, lbnrec=-1,
-                                lbpack=_MockLbpack(_UNPACKED),
+                                raw_lbpack=_UNPACKED,
                                 lbuser=[_REAL])
         expected_type = ff._LBUSER_DTYPE_LOOKUP[_REAL].format(word_depth=8)
         expected_type = np.dtype(expected_type)
@@ -244,7 +243,7 @@ class TestFFPayload(tests.IrisTest):
 
     def test_payload_unpacked_real_ext(self):
         mock_field = _MockField(lbext=50, lblrec=100, lbnrec=-1,
-                                lbpack=_MockLbpack(_UNPACKED),
+                                raw_lbpack=_UNPACKED,
                                 lbuser=[_REAL])
         expected_type = ff._LBUSER_DTYPE_LOOKUP[_REAL].format(word_depth=8)
         expected_type = np.dtype(expected_type)
@@ -252,7 +251,7 @@ class TestFFPayload(tests.IrisTest):
 
     def test_payload_unpacked_integer(self):
         mock_field = _MockField(lbext=0, lblrec=200, lbnrec=-1,
-                                lbpack=_MockLbpack(_UNPACKED),
+                                raw_lbpack=_UNPACKED,
                                 lbuser=[_INTEGER])
         expected_type = ff._LBUSER_DTYPE_LOOKUP[_INTEGER].format(word_depth=8)
         expected_type = np.dtype(expected_type)
@@ -260,7 +259,7 @@ class TestFFPayload(tests.IrisTest):
 
     def test_payload_unpacked_integer_ext(self):
         mock_field = _MockField(lbext=100, lblrec=200, lbnrec=-1,
-                                lbpack=_MockLbpack(_UNPACKED),
+                                raw_lbpack=_UNPACKED,
                                 lbuser=[_INTEGER])
         expected_type = ff._LBUSER_DTYPE_LOOKUP[_INTEGER].format(word_depth=8)
         expected_type = np.dtype(expected_type)
@@ -268,49 +267,49 @@ class TestFFPayload(tests.IrisTest):
 
     def test_payload_wgdos_real(self):
         mock_field = _MockField(lbext=0, lblrec=-1, lbnrec=100,
-                                lbpack=_MockLbpack(_WGDOS),
+                                raw_lbpack=_WGDOS,
                                 lbuser=[_REAL])
         self._test_payload(mock_field, 796, pp.LBUSER_DTYPE_LOOKUP[_REAL])
 
     def test_payload_wgdos_real_ext(self):
         mock_field = _MockField(lbext=50, lblrec=-1, lbnrec=100,
-                                lbpack=_MockLbpack(_WGDOS),
+                                raw_lbpack=_WGDOS,
                                 lbuser=[_REAL])
         self._test_payload(mock_field, 796, pp.LBUSER_DTYPE_LOOKUP[_REAL])
 
     def test_payload_wgdos_integer(self):
         mock_field = _MockField(lbext=0, lblrec=-1, lbnrec=200,
-                                lbpack=_MockLbpack(_WGDOS),
+                                raw_lbpack=_WGDOS,
                                 lbuser=[_INTEGER])
         self._test_payload(mock_field, 1596, pp.LBUSER_DTYPE_LOOKUP[_INTEGER])
 
     def test_payload_wgdos_integer_ext(self):
         mock_field = _MockField(lbext=100, lblrec=-1, lbnrec=200,
-                                lbpack=_MockLbpack(_WGDOS),
+                                raw_lbpack=_WGDOS,
                                 lbuser=[_INTEGER])
         self._test_payload(mock_field, 1596, pp.LBUSER_DTYPE_LOOKUP[_INTEGER])
 
     def test_payload_cray_real(self):
         mock_field = _MockField(lbext=0, lblrec=100, lbnrec=-1,
-                                lbpack=_MockLbpack(_CRAY),
+                                raw_lbpack=_CRAY,
                                 lbuser=[_REAL])
         self._test_payload(mock_field, 400, pp.LBUSER_DTYPE_LOOKUP[_REAL])
 
     def test_payload_cray_real_ext(self):
         mock_field = _MockField(lbext=50, lblrec=100, lbnrec=-1,
-                                lbpack=_MockLbpack(_CRAY),
+                                raw_lbpack=_CRAY,
                                 lbuser=[_REAL])
         self._test_payload(mock_field, 200, pp.LBUSER_DTYPE_LOOKUP[_REAL])
 
     def test_payload_cray_integer(self):
         mock_field = _MockField(lbext=0, lblrec=200, lbnrec=-1,
-                                lbpack=_MockLbpack(_CRAY),
+                                raw_lbpack=_CRAY,
                                 lbuser=[_INTEGER])
         self._test_payload(mock_field, 800, pp.LBUSER_DTYPE_LOOKUP[_INTEGER])
 
     def test_payload_cray_integer_ext(self):
         mock_field = _MockField(lbext=100, lblrec=200, lbnrec=-1,
-                                lbpack=_MockLbpack(_CRAY),
+                                raw_lbpack=_CRAY,
                                 lbuser=[_INTEGER])
         self._test_payload(mock_field, 400, pp.LBUSER_DTYPE_LOOKUP[_INTEGER])
 
