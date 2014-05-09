@@ -29,6 +29,8 @@ class Test_load_cubes(tests.IrisTest):
         gribfile = tests.get_data_path(
             ("GRIB", "reduced", "reduced_gg.grib2"))
         grib_generator = load_cubes(gribfile, auto_regularise=False)
-        self.assertCML(next(grib_generator),
-                       ("unit", "fileformats", "grib", "load_cubes",
-                        "reduced_gg_raw.cml"))
+        self.assertCML(next(grib_generator))
+
+
+if __name__ == "__main__":
+    tests.main()
