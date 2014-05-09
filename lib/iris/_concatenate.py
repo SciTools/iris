@@ -340,6 +340,48 @@ class _CubeSignature(object):
             else:
                 self.scalar_coords.append(coord)
 
+    def _coordinate_differences(self, other, attr):
+        """
+        Determine the names of the coordinates that differ between `self` and
+        `other` for a coordinate attribute on a _CubeSignature.
+
+        Args:
+
+        * other (_CubeSignature):
+            The _CubeSignature to compare against.
+
+        * attr (string):
+            The _CubeSignature attribute within which differences exist
+            between `self` and `other`.
+
+        Returns:
+            Tuple of names of coordinates that differ between `self` and
+            `other`.
+
+        """
+        try:
+            self_dict = {x.defn.name(): x for x in getattr(self, attr)}
+            other_dict = {x.defn.name(): x for x in getattr(other, attr)}
+        except AttributeError:
+            self_dict = {_name(x): x for x in getattr(self, attr)}
+            other_dict = {_name(x): x for x in getattr(other, attr)}
+        if len(self_dict.keys()) == 0:
+            self_dict = {'< None >': None}
+        if len(other_dict.keys()) == 0:
+            other_dict = {'< None >': None}
+        self_names = self_dict.keys()
+        other_names = other_dict.keys()
+        if len(self_names) != len(other_names) or self_names != other_names:
+            result = (', '.join(self_names), ', '.join(other_names))
+        else:
+            diff_names = []
+            for self_key, self_value in self_dict.iteritems():
+                other_value = other_dict[self_key]
+                if self_value != other_value:
+                    diff_names.append(self_key)
+            result = (', '.join(diff_names), ', '.join(diff_names))
+        return result
+
     def match(self, other, error_on_mismatch):
         """
         Return whether this _CubeSignature equals another.
@@ -377,28 +419,19 @@ class _CubeSignature(object):
             msgs.append(msg.format(_name(self.defn)))
         # Check dim coordinates.
         if self.dim_metadata != other.dim_metadata:
-            msgs.append(msg_template.format(
-                'Dimension coordinates',
-                ', '.join([x.defn.name() for x in self.dim_metadata]),
-                ', '.join([x.defn.name() for x in other.dim_metadata])))
+            differences = self._coordinate_differences(other, 'dim_metadata')
+            msgs.append(msg_template.format('Dimension coordinates',
+                                            *differences))
         # Check aux coordinates.
         if self.aux_metadata != other.aux_metadata:
-            self_names = [x.defn.name() for x in self.aux_metadata] \
-                or ['< None >']
-            other_names = [x.defn.name() for x in other.aux_metadata] \
-                or ['< None >']
+            differences = self._coordinate_differences(other, 'aux_metadata')
             msgs.append(msg_template.format('Auxiliary coordinates',
-                                            ', '.join(self_names),
-                                            ', '.join(other_names)))
+                                            *differences))
         # Check scalar coordinates.
         if self.scalar_coords != other.scalar_coords:
-            self_names = [_name(x) for x in self.scalar_coords] \
-                or ['< None >']
-            other_names = [_name(x) for x in other.scalar_coords] \
-                or ['< None >']
+            differences = self._coordinate_differences(other, 'scalar_coords')
             msgs.append(msg_template.format('Scalar coordinates',
-                                            ', '.join(self_names),
-                                            ', '.join(other_names)))
+                                            *differences))
         # Check ndim.
         if self.ndim != other.ndim:
             msgs.append(msg_template.format('Data dimensions',
