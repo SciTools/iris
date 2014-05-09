@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -165,20 +165,23 @@ class GribWrapper(object):
 
         self._compute_extra_keys()
 
-        #this is something pygrib did for us - reshape,
-        #but it flipped the data - which we don't want
-        ni = self.Ni
-        nj = self.Nj
-
         # set the missing value key to get np.nan where values are missing,
         # must be done before values are read from the message
         gribapi.grib_set_double(self.grib_message, "missingValue", np.nan)
         self.data = self.values
-        j_fast = gribapi.grib_get_long(grib_message, "jPointsAreConsecutive")
-        if j_fast == 0:
-            self.data = self.data.reshape(nj, ni)
-        else:
-            self.data = self.data.reshape(ni, nj)
+
+        #this is something pygrib did for us - reshape,
+        #but it flipped the data - which we don't want
+        if not self.gridType.startswith('reduced'):
+            ni = self.Ni
+            nj = self.Nj
+
+            j_fast = gribapi.grib_get_long(grib_message, "jPointsAreConsecutive")
+            if j_fast == 0:
+                self.data = self.data.reshape(nj, ni)
+            else:
+                self.data = self.data.reshape(ni, nj)
+
         # handle missing values in a sensible way
         mask = np.isnan(self.data)
         if mask.any():
@@ -198,7 +201,7 @@ class GribWrapper(object):
         # is it in the grib message?
         try:
             # we just get <type 'float'> as the type of the "values" array...special case here...
-            if key in ["values", "pv"]:
+            if key in ["values", "pv", "latitudes", "longitudes"]:
                 res = gribapi.grib_get_double_array(self.grib_message, key)
             elif key in ('typeOfFirstFixedSurface','typeOfSecondFixedSurface'):
                 res = np.int32(gribapi.grib_get_long(self.grib_message, key))
@@ -425,7 +428,7 @@ class GribWrapper(object):
 
         gridType = gribapi.grib_get_string(self.grib_message, "gridType")
 
-        if gridType in ["regular_ll", "regular_gg"]:
+        if gridType in ["regular_ll", "regular_gg", "reduced_ll", "reduced_gg"]:
             self.extra_keys['_x_coord_name'] = "longitude"
             self.extra_keys['_y_coord_name'] = "latitude"
             self.extra_keys['_coord_system'] = geoid
@@ -521,7 +524,11 @@ class GribWrapper(object):
                                                               dtype=np.float64)
             self._y_points = y1 + self.DyInMetres * np.arange(self.Ny,
                                                               dtype=np.float64)
-            
+
+        elif gridType in ["reduced_ll", "reduced_gg"]:
+            self._x_points = self.longitudes
+            self._y_points = self.latitudes
+
         else:
             raise TranslationError("unhandled grid type")
 
@@ -736,15 +743,33 @@ def _regularise(grib_message):
     gribapi.grib_set_long(grib_message, "PLPresent", 0)
 
 
-def grib_generator(filename):
-    """Returns a generator of GribWrapper fields from the given filename."""
+def grib_generator(filename, auto_regularise=True):
+    """
+    Returns a generator of :class:`~iris.fileformats.grib.GribWrapper`
+    fields from the given filename.
+
+    Args:
+
+    * filename (string):
+        Name of the file to generate fields from.
+
+    Kwargs:
+
+    * auto_regularise (*True* | *False*):
+        If *True*, any field defined on a reduced grid will be interpolated
+        to an equivalent regular grid. If *False*, any field defined on a
+        reduced grid will be loaded on the raw reduced grid with no shape
+        information. The default behaviour is to interpolate fields on a
+        reduced grid to an equivalent regular grid.
+
+    """
     with open(filename, 'rb') as grib_file:
         while True:
             grib_message = gribapi.grib_new_from_file(grib_file)
             if grib_message is None:
                 break
 
-            if _is_quasi_regular_grib(grib_message):
+            if auto_regularise and _is_quasi_regular_grib(grib_message):
                 warnings.warn("Regularising GRIB message.")
                 _regularise(grib_message)
 
@@ -756,10 +781,40 @@ def grib_generator(filename):
             gribapi.grib_release(grib_message)
 
 
-def load_cubes(filenames, callback=None):
-    """Returns a generator of cubes from the given list of filenames."""
+def load_cubes(filenames, callback=None, auto_regularise=True):
+    """
+    Returns a generator of cubes from the given list of filenames.
+
+    Args:
+
+    * filenames (string/list):
+        One or more GRIB filenames to load from.
+
+    Kwargs:
+
+    * callback (callable function):
+        Function which can be passed on to :func:`iris.io.run_callback`.
+
+    * auto_regularise (*True* | *False*):
+        If *True*, any cube defined on a reduced grid will be interpolated
+        to an equivalent regular grid. If *False*, any cube defined on a
+        reduced grid will be loaded on the raw reduced grid with no shape
+        information. The default behaviour is to interpolate cubes on a
+        reduced grid to an equivalent regular grid.
+
+    .. note::
+
+       To make use of the *auto_regularise* keyword the normal Iris loading
+       pipeline cannot be used, the loading must be performed manually::
+
+           cube_generator = iris.fileformats.grib.load_cubes(
+               "reduced.grib", auto_regularise=False)
+           cubes = iris.cube.CubeList(cube_generator).merge()
+
+    """
     grib_loader = iris.fileformats.rules.Loader(
-        grib_generator, {}, iris.fileformats.grib.load_rules.convert,
+        grib_generator, {'auto_regularise': auto_regularise},
+        iris.fileformats.grib.load_rules.convert,
         _load_rules)
     return iris.fileformats.rules.load_cubes(filenames, callback, grib_loader)
 

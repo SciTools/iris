@@ -43,6 +43,11 @@ def convert(grib):
     aux_coords_and_dims = []
 
     if \
+            (grib.gridType=="reduced_gg"):
+        aux_coords_and_dims.append((AuxCoord(grib._y_points, grib._y_coord_name, units='degrees', coord_system=grib._coord_system), 0))
+        aux_coords_and_dims.append((AuxCoord(grib._x_points, grib._x_coord_name, units='degrees', coord_system=grib._coord_system), 0))
+
+    if \
             (grib.gridType=="regular_ll") and \
             (grib.jPointsAreConsecutive == 0):
         dim_coords_and_dims.append((DimCoord(grib._y_points, grib._y_coord_name, units='degrees', coord_system=grib._coord_system), 0))
