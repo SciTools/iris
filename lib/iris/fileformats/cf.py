@@ -833,6 +833,14 @@ class CFReader(object):
                         attr_name in self._dataset.ncattrs()}
         self.cf_group.global_attributes.update(attr_dict)
 
+        # Identify and register all CF formula terms.
+        formula_terms = _CFFormulaTermsVariable.identify(self._dataset.variables)
+        for cf_var in formula_terms.itervalues():
+            cf_name = cf_var.cf_name
+            if cf_name not in self.cf_group:
+                self.cf_group[cf_name] = CFAuxiliaryCoordinateVariable(cf_name, cf_var.cf_data)
+            self.cf_group[cf_name].add_formula_term(cf_var.cf_root, cf_var.cf_term)
+
         # Determine the CF data variables.
         data_variable_names = set(netcdf_variable_names) - set(self.cf_group.ancillary_variables) - \
                               set(self.cf_group.auxiliary_coordinates) - set(self.cf_group.bounds) - \
@@ -842,12 +850,6 @@ class CFReader(object):
 
         for name in data_variable_names:
             self.cf_group[name] = CFDataVariable(name, self._dataset.variables[name])
-
-        # Identify and register all CF formula terms with the relevant CF variables.
-        formula_terms = _CFFormulaTermsVariable.identify(self._dataset.variables)
-        for cf_var in formula_terms.itervalues():
-            if cf_var.cf_name in self.cf_group:
-                self.cf_group[cf_var.cf_name].add_formula_term(cf_var.cf_root, cf_var.cf_term)
 
     def _build_cf_groups(self):
         """Build the first order relationships between CF-netCDF variables."""
@@ -879,6 +881,11 @@ class CFReader(object):
                 cf_group.update({cf_name: self.cf_group[cf_name] for cf_name
                                     in coordinates_attr.split() if cf_name in
                                     self.cf_group.coordinates})
+                # Add appropriate formula terms.
+                for cf_var in self.cf_group.formula_terms.itervalues():
+                    for cf_root in cf_var.cf_terms_by_root:
+                        if cf_root in cf_group and cf_var.cf_name not in cf_group:
+                            cf_group[cf_var.cf_name] = cf_var
 
             # Add the CF group to the variable.
             cf_variable.cf_group = cf_group
