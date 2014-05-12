@@ -76,14 +76,13 @@ class Test_translate__formula_terms(tests.IrisTest):
                                  ncattrs=ncattrs)
         # Restrict the CFReader functionality to only performing translations.
         cls = 'iris.fileformats.cf.CFReader'
-        self.patcher1 = mock.patch('{}._build_cf_groups'.format(cls))
-        self.patcher2 = mock.patch('{}._reset'.format(cls))
-        self.patcher1.start()
-        self.patcher2.start()
-
-    def tearDown(self):
-        self.patcher1.stop()
-        self.patcher2.stop()
+        build_patch = mock.patch(
+            'iris.fileformats.cf.CFReader._build_cf_groups')
+        reset_patch = mock.patch('iris.fileformats.cf.CFReader._reset')
+        build_patch.start()
+        reset_patch.start()
+        self.addCleanup(build_patch.stop)
+        self.addCleanup(reset_patch.stop)
 
     def test_create_formula_terms(self):
         with mock.patch('netCDF4.Dataset', return_value=self.dataset):
@@ -111,7 +110,7 @@ class Test_translate__formula_terms(tests.IrisTest):
             self.assertIs(group['orography'].cf_data, self.orography)
             # Check all the auxiliary coordinates are formula terms.
             formula_terms = cf_group.formula_terms
-            self.assertTrue(group.viewitems() == formula_terms.viewitems())
+            self.assertEqual(group.viewitems(), formula_terms.viewitems())
 
 
 class Test_build_cf_groups__formula_terms(tests.IrisTest):
@@ -137,11 +136,9 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
                                  ncattrs=ncattrs)
         # Restrict the CFReader functionality to only performing translations
         # and building first level cf-groups for variables.
-        self.patcher = mock.patch('iris.fileformats.cf.CFReader._reset')
-        self.patcher.start()
-
-    def tearDown(self):
-        self.patcher.stop()
+        patcher = mock.patch('iris.fileformats.cf.CFReader._reset')
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
     def test_associate_formula_terms_with_data_variable(self):
         with mock.patch('netCDF4.Dataset', return_value=self.dataset):
@@ -168,7 +165,7 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
             self.assertIs(group['orography'].cf_data, self.orography)
             # Check all the auxiliary coordinates are formula terms.
             formula_terms = cf_group.formula_terms
-            self.assertTrue(group.viewitems() == formula_terms.viewitems())
+            self.assertEqual(group.viewitems(), formula_terms.viewitems())
             # Check the terms by root.
             self.assertEqual(formula_terms['delta'].cf_terms_by_root,
                              dict(height='a'))
