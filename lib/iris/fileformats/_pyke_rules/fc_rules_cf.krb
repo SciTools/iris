@@ -1039,6 +1039,35 @@ fc_extras
 
 
     ################################################################################
+    def reorder_bounds_data(bounds_data, cf_bounds_var, cf_coord_var):
+        """
+        Return a bounds_data array with the vertex dimension as the most
+        rapidly varying.
+
+        .. note::
+
+            This function assumes the dimension names of the coordinate
+            variable match those of the bounds variable in order to determine
+            which is the vertex dimension.
+
+
+        """
+        vertex_dim_names = set(cf_bounds_var.dimensions).difference(
+            cf_coord_var.dimensions)
+        if len(vertex_dim_names) != 1:
+            msg = 'Too many dimension names differ between coordinate ' \
+                  'variable {!r} and the bounds variable {!r}. ' \
+                  'Expected 1, got {}.'
+            raise ValueError(msg.format(str(cf_coord_var.cf_name),
+                                        str(cf_bounds_var.cf_name),
+                                        len(vertex_dim_names)))
+        vertex_dim = cf_bounds_var.dimensions.index(*vertex_dim_names)
+        bounds_data = np.rollaxis(bounds_data.view(), vertex_dim,
+                                  len(bounds_data.shape))
+        return bounds_data
+
+
+    ################################################################################
     def build_dimension_coordinate(engine, cf_coord_var, coord_name=None, coord_system=None):
         """Create a dimension coordinate (DimCoord) and add it to the cube."""
 
@@ -1063,6 +1092,12 @@ fc_extras
                 bounds_data = ma.filled(bounds_data)
                 msg = 'Gracefully filling {!r} dimension coordinate masked bounds'
                 warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+            # Handle transposed bounds where the vertex dimension is not
+            # the last one. Test based on shape to support different
+            # dimension names.
+            if cf_bounds_var.shape[:-1] != cf_coord_var.shape:
+                bounds_data = reorder_bounds_data(bounds_data, cf_bounds_var,
+                                                  cf_coord_var)
         else:
             bounds_data = None
 
@@ -1184,6 +1219,12 @@ fc_extras
             get_values = lambda: deferred_load(filename, nc_bounds_var_name)
             bounds_data = iris.aux_factory.LazyArray(cf_bounds_var.shape,
                                                      get_values)
+            # Handle transposed bounds where the vertex dimension is not
+            # the last one. Test based on shape to support different
+            # dimension names.
+            if cf_bounds_var.shape[:-1] != cf_coord_var.shape:
+                bounds_data = reorder_bounds_data(bounds_data, cf_bounds_var,
+                                                  cf_coord_var)
         else:
             bounds_data = None
 
