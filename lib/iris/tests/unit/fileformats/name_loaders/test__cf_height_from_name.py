@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -46,7 +46,7 @@ class TestAll_NAMEII(TestAll):
         res = _cf_height_from_name(data)
         com = AuxCoord(
             units='m', points=50.0, bounds=np.array([0., 100.]),
-            standard_name='height', long_name=None)
+            standard_name='height', long_name='height above ground level')
         self.assertEqual(com, res)
 
     def test_bounded_flight_level(self):
@@ -62,7 +62,7 @@ class TestAll_NAMEII(TestAll):
         res = _cf_height_from_name(data)
         com = AuxCoord(
             units='m', points=50.0, bounds=np.array([0., 100.]),
-            standard_name='altitude', long_name=None)
+            standard_name='altitude', long_name='altitude above sea level')
         self.assertEqual(com, res)
 
     def test_malformed_height_above_ground(self):
@@ -95,7 +95,7 @@ class TestAll_NAMEII(TestAll):
         res = _cf_height_from_name(data)
         com = AuxCoord(
             units='m', points=50.0, bounds=np.array([0., 100.]),
-            standard_name='height', long_name=None)
+            standard_name='height', long_name='height above ground level')
         self.assertEqual(com, res)
 
     def test_float_bounded_height_flight_level(self):
@@ -113,7 +113,7 @@ class TestAll_NAMEII(TestAll):
         res = _cf_height_from_name(data)
         com = AuxCoord(
             units='m', points=50.0, bounds=np.array([0., 100.]),
-            standard_name='altitude', long_name=None)
+            standard_name='altitude', long_name='altitude above sea level')
         self.assertEqual(com, res)
 
     def test_no_match(self):
@@ -141,7 +141,7 @@ class TestAll_NAMEIII(TestAll):
         res = _cf_height_from_name(data)
         com = AuxCoord(
             units='m', points=50.0, bounds=None,
-            standard_name='height', long_name=None)
+            standard_name='height', long_name='height above ground level')
         self.assertEqual(com, res)
 
     def test_height_flight_level(self):
@@ -157,7 +157,7 @@ class TestAll_NAMEIII(TestAll):
         res = _cf_height_from_name(data)
         com = AuxCoord(
             units='m', points=50.0, bounds=None,
-            standard_name='altitude', long_name=None)
+            standard_name='altitude', long_name='altitude above sea level')
         self.assertEqual(com, res)
 
     def test_malformed_height_above_ground(self):
@@ -190,7 +190,7 @@ class TestAll_NAMEIII(TestAll):
         res = _cf_height_from_name(data)
         com = AuxCoord(
             units='m', points=50.0, bounds=None,
-            standard_name='height', long_name=None)
+            standard_name='height', long_name='height above ground level')
         self.assertEqual(com, res)
 
     def test_integer_height_flight_level(self):
@@ -208,7 +208,7 @@ class TestAll_NAMEIII(TestAll):
         res = _cf_height_from_name(data)
         com = AuxCoord(
             units='m', points=50.0, bounds=None,
-            standard_name='altitude', long_name=None)
+            standard_name='altitude', long_name='altitude above sea level')
         self.assertEqual(com, res)
 
     def test_pressure(self):

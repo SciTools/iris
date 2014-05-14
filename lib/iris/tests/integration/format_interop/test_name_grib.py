@@ -36,6 +36,13 @@ def name_cb(cube, field, filename):
     t_coord.points = t_coord.bounds[0][1]
     fp_coord = cube.coord('forecast_period')
     fp_coord.points = fp_coord.bounds[0][1]
+    # NAME contains extra vertical meta-data.
+    z_coord = cube.coords('height')
+    if z_coord:
+        z_coord[0].long_name = 'height above ground level'
+    z_coord = cube.coords('altitude')
+    if z_coord:
+        z_coord[0].long_name = 'altitude above sea level'
 
 
 class TestNameToGRIB(tests.IrisTest):
@@ -62,7 +69,6 @@ class TestNameToGRIB(tests.IrisTest):
             with self.temp_filename('.grib2') as temp_filename:
                 iris.save(name_cube, temp_filename)
                 grib_cube = iris.load_cube(temp_filename, callback=name_cb)
-
                 self.check_common(name_cube, grib_cube)
                 self.assertCML(
                     grib_cube, tests.get_result_path(
