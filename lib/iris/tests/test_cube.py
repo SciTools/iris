@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -81,10 +81,16 @@ class Test_Cube_add_dim_coord(tests.IrisTest):
                           self.cube.add_dim_coord,
                           iris.coords.DimCoord(np.arange(2), "latitude"))
 
-    def test_adding_aux_coord(self):
-        coord = iris.coords.AuxCoord(np.arange(2), "latitude")
+    def test_adding_nonmonotonic_aux_coord(self):
+        coord = iris.coords.AuxCoord([0, 1, 1, 2], "latitude")
         with self.assertRaises(ValueError):
             self.cube.add_dim_coord(coord, 0)
+
+    def test_adding_aux_coord(self):
+        coord = iris.coords.AuxCoord(np.arange(2), "latitude")
+        self.cube.add_dim_coord(coord, 0)
+        self.assertIsInstance(self.cube.coord("latitude"),
+                              iris.coords.DimCoord)
 
 
 class TestEquality(tests.IrisTest):
