@@ -1258,25 +1258,25 @@ class Saver(object):
                     cs.grid_mapping_name, np.int32)
                 cf_var_grid.grid_mapping_name = cs.grid_mapping_name
 
-                def add_ellipsoid():
-                    if cs.ellipsoid:
-                        cf_var_grid.longitude_of_prime_meridian = (
-                            cs.ellipsoid.longitude_of_prime_meridian)
-                        cf_var_grid.semi_major_axis = (
-                            cs.ellipsoid.semi_major_axis)
-                        cf_var_grid.semi_minor_axis = (
-                            cs.ellipsoid.semi_minor_axis)
+                def add_ellipsoid(ellipsoid):
+                    cf_var_grid.longitude_of_prime_meridian = (
+                        ellipsoid.longitude_of_prime_meridian)
+                    semi_major = ellipsoid.semi_major_axis
+                    semi_minor = ellipsoid.semi_minor_axis
+                    if semi_minor == semi_major:
+                        cf_var_grid.earth_radius = semi_major
+                    else:
+                        cf_var_grid.semi_major_axis = semi_major
+                        cf_var_grid.semi_minor_axis = semi_minor
 
                 # latlon
                 if isinstance(cs, iris.coord_systems.GeogCS):
-                    cf_var_grid.longitude_of_prime_meridian = (
-                        cs.longitude_of_prime_meridian)
-                    cf_var_grid.semi_major_axis = cs.semi_major_axis
-                    cf_var_grid.semi_minor_axis = cs.semi_minor_axis
+                    add_ellipsoid(cs)
 
                 # rotated latlon
                 elif isinstance(cs, iris.coord_systems.RotatedGeogCS):
-                    add_ellipsoid()
+                    if cs.ellipsoid:
+                        add_ellipsoid(cs.ellipsoid)
                     cf_var_grid.grid_north_pole_latitude = (
                         cs.grid_north_pole_latitude)
                     cf_var_grid.grid_north_pole_longitude = (
@@ -1286,7 +1286,8 @@ class Saver(object):
 
                 # tmerc
                 elif isinstance(cs, iris.coord_systems.TransverseMercator):
-                    add_ellipsoid()
+                    if cs.ellipsoid:
+                        add_ellipsoid(cs.ellipsoid)
                     cf_var_grid.longitude_of_central_meridian = (
                         cs.longitude_of_central_meridian)
                     cf_var_grid.latitude_of_projection_origin = (

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,10 +25,11 @@ import netCDF4 as nc
 import numpy as np
 
 import iris
-from iris.coord_systems import GeogCS, TransverseMercator
+from iris.coord_systems import GeogCS, TransverseMercator, RotatedGeogCS
 from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import Saver
+import iris.tests.stock as stock
 
 
 class Test_write(tests.IrisTest):
@@ -161,6 +162,94 @@ class Test_write(tests.IrisTest):
             for dim in unlimited_dimensions:
                 self.assertTrue(ds.dimensions[dim].isunlimited())
             ds.close()
+
+
+class TestCoordSystems(tests.IrisTest):
+    def cube_with_cs(self, coord_system,
+                     names=['grid_longitude', 'grid_latitude']):
+        cube = stock.lat_lon_cube()
+        x, y = cube.coord('longitude'), cube.coord('latitude')
+        x.coord_system = y.coord_system = coord_system
+        for coord, name in zip([x, y], names):
+            coord.rename(name)
+        return cube
+
+    def construct_cf_grid_mapping_variable(self, cube):
+        # Calls the actual NetCDF saver with appropriate mocking, returning
+        # the grid variable that gets created.
+        grid_variable = mock.Mock(name='NetCDFVariable')
+        create_var_fn = mock.Mock(side_effect=[grid_variable])
+        dataset = mock.Mock(variables=[],
+                            createVariable=create_var_fn)
+        saver = mock.Mock(spec=Saver, _coord_systems=[],
+                          _dataset=dataset)
+        variable = mock.Mock()
+
+        Saver._create_cf_grid_mapping(saver, cube, variable)
+        self.assertEqual(create_var_fn.call_count, 1)
+        self.assertEqual(variable.grid_mapping,
+                         grid_variable.grid_mapping_name)
+        return grid_variable
+
+    def variable_attributes(self, mocked_variable):
+        """Get the attributes dictionary from a mocked NetCDF variable."""
+        # Get the attributes defined on the mock object.
+        attributes = filter(lambda name: not name.startswith('_'),
+                            sorted(mocked_variable.__dict__.keys()))
+        attributes.remove('method_calls')
+        return {key: getattr(mocked_variable, key) for key in attributes}
+
+    def test_rotated_geog_cs(self):
+        coord_system = RotatedGeogCS(37.5, 177.5, ellipsoid=GeogCS(6371229.0))
+        cube = self.cube_with_cs(coord_system)
+        expected = {'grid_mapping_name': 'rotated_latitude_longitude',
+                    'north_pole_grid_longitude': 0.0,
+                    'grid_north_pole_longitude': 177.5,
+                    'grid_north_pole_latitude': 37.5,
+                    'longitude_of_prime_meridian': 0.0,
+                    'earth_radius': 6371229.0,
+                    }
+
+        grid_variable = self.construct_cf_grid_mapping_variable(cube)
+        actual = self.variable_attributes(grid_variable)
+
+        # To see obvious differences, check that they keys are the same.
+        self.assertEqual(sorted(actual.keys()), sorted(expected.keys()))
+        # Now check that the values are equivalent.
+        self.assertEqual(actual, expected)
+
+    def test_spherical_geog_cs(self):
+        coord_system = GeogCS(6371229.0)
+        cube = self.cube_with_cs(coord_system)
+        expected = {'grid_mapping_name': 'latitude_longitude',
+                    'longitude_of_prime_meridian': 0.0,
+                    'earth_radius': 6371229.0
+                    }
+
+        grid_variable = self.construct_cf_grid_mapping_variable(cube)
+        actual = self.variable_attributes(grid_variable)
+
+        # To see obvious differences, check that they keys are the same.
+        self.assertEqual(sorted(actual.keys()), sorted(expected.keys()))
+        # Now check that the values are equivalent.
+        self.assertEqual(actual, expected)
+
+    def test_elliptic_geog_cs(self):
+        coord_system = GeogCS(637, 600)
+        cube = self.cube_with_cs(coord_system)
+        expected = {'grid_mapping_name': 'latitude_longitude',
+                    'longitude_of_prime_meridian': 0.0,
+                    'semi_minor_axis': 600.0,
+                    'semi_major_axis': 637.0,
+                    }
+
+        grid_variable = self.construct_cf_grid_mapping_variable(cube)
+        actual = self.variable_attributes(grid_variable)
+
+        # To see obvious differences, check that they keys are the same.
+        self.assertEqual(sorted(actual.keys()), sorted(expected.keys()))
+        # Now check that the values are equivalent.
+        self.assertEqual(actual, expected)
 
 
 if __name__ == "__main__":
