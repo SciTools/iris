@@ -192,6 +192,12 @@ def convert(f):
 
     if \
             (len(f.lbcode) == 5) and \
+            (f.lbcode.iy == 2) and \
+            (f.bdy == 0 or f.bdy == f.bmdi):
+        dim_coords_and_dims.append((DimCoord(f.y, standard_name='height', units='km', bounds=f.y_bounds, attributes={'positive': 'up'}), 0))
+
+    if \
+            (len(f.lbcode) == 5) and \
             (f.lbcode[-1] == 1) and \
             (f.lbcode.iy == 4):
         dim_coords_and_dims.append((DimCoord(f.y, standard_name='depth', units='m', bounds=f.y_bounds, attributes={'positive': 'down'}), 0))

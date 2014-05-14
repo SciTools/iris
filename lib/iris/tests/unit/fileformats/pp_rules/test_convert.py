@@ -33,6 +33,36 @@ import iris.tests.unit.fileformats
 import iris.unit
 
 
+class TestLBCODE(iris.tests.unit.fileformats.TestField):
+    @staticmethod
+    def _is_cross_section_height_coord(coord):
+        return (coord.standard_name == 'height' and
+                coord.units == 'km' and
+                coord.attributes['positive'] == 'up')
+
+    def test_cross_section_height_bdy_zero(self):
+        lbcode = SplittableInt(19902, {'iy': slice(0, 2), 'ix': slice(2, 4)})
+        points = np.array([10, 20, 30, 40])
+        bounds = np.array([[0, 15], [15, 25], [25, 35], [35, 45]])
+        field = mock.MagicMock(lbcode=lbcode, bdy=0, y=points, y_bounds=bounds)
+        self._test_for_coord(field, convert,
+                             TestLBCODE._is_cross_section_height_coord,
+                             expected_points=points,
+                             expected_bounds=bounds)
+
+    def test_cross_section_height_bdy_bmdi(self):
+        lbcode = SplittableInt(19902, {'iy': slice(0, 2), 'ix': slice(2, 4)})
+        points = np.array([10, 20, 30, 40])
+        bounds = np.array([[0, 15], [15, 25], [25, 35], [35, 45]])
+        bmdi = -1.07374e+09
+        field = mock.MagicMock(lbcode=lbcode, bdy=bmdi, bmdi=bmdi,
+                               y=points, y_bounds=bounds)
+        self._test_for_coord(field, convert,
+                             TestLBCODE._is_cross_section_height_coord,
+                             expected_points=points,
+                             expected_bounds=bounds)
+
+
 class TestLBVC(iris.tests.unit.fileformats.TestField):
     @staticmethod
     def _is_potm_level_coord(coord):
