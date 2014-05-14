@@ -16,8 +16,7 @@ variables:
 	int latitude_longitude ;
 		latitude_longitude:grid_mapping_name = "latitude_longitude" ;
 		latitude_longitude:longitude_of_prime_meridian = 0. ;
-		latitude_longitude:semi_major_axis = 6371229. ;
-		latitude_longitude:semi_minor_axis = 6371229. ;
+		latitude_longitude:earth_radius = 6371229. ;
 	int pseudo_level(pseudo_level) ;
 		pseudo_level:units = "1" ;
 		pseudo_level:long_name = "pseudo_level" ;
