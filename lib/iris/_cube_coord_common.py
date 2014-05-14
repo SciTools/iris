@@ -20,7 +20,7 @@
 
 import string
 
-import iris.std_names
+import iris.semantics.std_names
 import iris.unit
 
 
@@ -117,7 +117,7 @@ class CFVariableMixin(object):
 
     @standard_name.setter
     def standard_name(self, name):
-        if name is None or name in iris.std_names.STD_NAMES:
+        if name is None or name in iris.semantics.std_names.STD_NAMES:
             self._standard_name = name
         else:
             raise ValueError('%r is not a valid standard_name' % name)

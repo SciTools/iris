@@ -66,7 +66,7 @@ DOCS_DIRS = [DOC_DIR for DOC_DIR in DOCS_DIRS if os.path.basename(DOC_DIR) not
 
 class StandardReportWithExclusions(pep8.StandardReport):
     expected_bad_files = [
-        '*/iris/std_names.py',
+        '*/iris/semantics/std_names.py',
         '*/iris/analysis/calculus.py',
         '*/iris/analysis/geometry.py',
         '*/iris/analysis/interpolate.py',

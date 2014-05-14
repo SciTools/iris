@@ -692,7 +692,7 @@ fc_extras
     import iris.fileformats.cf as cf
     import iris.fileformats.pp as pp
     import iris.exceptions
-    import iris.std_names
+    import iris.semantics.std_names
     import iris.unit
     
     
@@ -820,7 +820,7 @@ fc_extras
         cube.long_name = long_name
 
         if standard_name is not None:
-            if standard_name in iris.std_names.STD_NAMES:
+            if standard_name in iris.semantics.std_names.STD_NAMES:
                 cube.standard_name = standard_name
             else:
                 if cube.long_name is not None:
@@ -980,7 +980,7 @@ fc_extras
         cf_name = str(cf_coord_var.cf_name)
 
         if standard_name is not None:
-            if standard_name not in iris.std_names.STD_NAMES:
+            if standard_name not in iris.semantics.std_names.STD_NAMES:
                 if long_name is not None:
                     attributes['invalid_standard_name'] = standard_name
                     if coord_name is not None:
@@ -1000,7 +1000,7 @@ fc_extras
 
         # Last attempt to set the standard name to something meaningful.
         if standard_name is None:
-            if cf_name in iris.std_names.STD_NAMES:
+            if cf_name in iris.semantics.std_names.STD_NAMES:
                 standard_name = cf_name
 
         return (standard_name, long_name, cf_name)
