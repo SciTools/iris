@@ -9,7 +9,7 @@ variables:
 		northward_ocean_heat_transport:_FillValue = -1.e+30f ;
 		northward_ocean_heat_transport:standard_name = "northward_ocean_heat_transport" ;
 		northward_ocean_heat_transport:units = "PW" ;
-		northward_ocean_heat_transport:ukmo__um_stash_source = "m02s30i211" ;
+		northward_ocean_heat_transport:um_stash_source = "m02s30i211" ;
 		northward_ocean_heat_transport:cell_methods = "time: mean" ;
 		northward_ocean_heat_transport:grid_mapping = "latitude_longitude" ;
 		northward_ocean_heat_transport:coordinates = "forecast_period forecast_reference_time" ;

@@ -7,7 +7,7 @@ dimensions:
 variables:
 	float unknown(pseudo_level, time, depth, grid_latitude) ;
 		unknown:_FillValue = -1.e+30f ;
-		unknown:ukmo__um_stash_source = "m02s00i???" ;
+		unknown:um_stash_source = "m02s00i???" ;
 		unknown:cell_methods = "time: mean" ;
 		unknown:grid_mapping = "rotated_latitude_longitude" ;
 		unknown:coordinates = "forecast_period forecast_reference_time" ;

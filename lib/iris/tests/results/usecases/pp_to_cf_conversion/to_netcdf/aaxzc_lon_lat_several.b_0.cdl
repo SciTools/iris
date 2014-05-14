@@ -7,7 +7,7 @@ variables:
 	float air_temperature(time, latitude, longitude) ;
 		air_temperature:standard_name = "air_temperature" ;
 		air_temperature:units = "K" ;
-		air_temperature:ukmo__um_stash_source = "m01s03i236" ;
+		air_temperature:um_stash_source = "m01s03i236" ;
 		air_temperature:cell_methods = "time: mean (interval: 1 hour)" ;
 		air_temperature:grid_mapping = "latitude_longitude" ;
 		air_temperature:coordinates = "forecast_period forecast_reference_time height" ;

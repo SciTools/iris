@@ -495,7 +495,7 @@
 		0.982215, 0.976512, 0.970069, 0.962893, 0.954993]" shape="(10,)" units="Unit('1')" value_type="float32" var_name="sigma"/>
       </coord>
       <coord datadims="[2, 3]">
-        <auxCoord id="b0ec1b0b" points="[[99.1904, 305.988, 313.866, ..., 67.0949,
+        <auxCoord id="dac4e29e" points="[[99.1904, 305.988, 313.866, ..., 67.0949,
  		85.6042, 53.1264],
 		[146.068, 188.025, 341.338, ..., 117.513,
  		79.4105, 129.535],
@@ -510,7 +510,7 @@
  		84.2878, 118.704]]" shape="(83, 83)" standard_name="surface_altitude" units="Unit('m')" value_type="float32" var_name="surface_altitude">
           <attributes>
             <attribute name="source" value="Data from Met Office Unified Model 7.04"/>
-            <attribute name="ukmo__um_stash_source" value="m01s00i033"/>
+            <attribute name="um_stash_source" value="m01s00i033"/>
           </attributes>
         </auxCoord>
       </coord>

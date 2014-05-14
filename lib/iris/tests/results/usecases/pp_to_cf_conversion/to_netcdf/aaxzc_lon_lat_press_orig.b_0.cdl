@@ -8,7 +8,7 @@ variables:
 	float geopotential_height(time, pressure, latitude, longitude) ;
 		geopotential_height:standard_name = "geopotential_height" ;
 		geopotential_height:units = "m" ;
-		geopotential_height:ukmo__um_stash_source = "m01s16i202" ;
+		geopotential_height:um_stash_source = "m01s16i202" ;
 		geopotential_height:cell_methods = "time: mean" ;
 		geopotential_height:grid_mapping = "latitude_longitude" ;
 		geopotential_height:coordinates = "forecast_period forecast_reference_time" ;

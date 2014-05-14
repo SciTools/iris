@@ -5,7 +5,7 @@ variables:
 	float air_temperature(time, site_number) ;
 		air_temperature:standard_name = "air_temperature" ;
 		air_temperature:units = "K" ;
-		air_temperature:ukmo__um_stash_source = "m01s03i236" ;
+		air_temperature:um_stash_source = "m01s03i236" ;
 		air_temperature:cell_methods = "time: mean" ;
 		air_temperature:coordinates = "height" ;
 	float time(time) ;
