@@ -496,7 +496,7 @@ class Orthographic(CoordSystem):
         if self.ellipsoid is not None:
             globe = self.ellipsoid.as_cartopy_globe()
         else:
-            globe = None
+            globe = cartopy.crs.Globe()
 
         warnings.warn('Discarding false_easting and false_northing that are '
                       'not used by Cartopy.')
