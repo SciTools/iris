@@ -681,6 +681,46 @@ class Test_intersection__ModulusBounds(tests.IrisTest):
         self.assertEqual(result.data[0, 0, 0], 171)
         self.assertEqual(result.data[0, 0, -1], 189)
 
+    def test_negative_misaligned_points_inside(self):
+        cube = create_cube(0, 360, bounds=True)
+        result = cube.intersection(longitude=(-10.25, 10.25))
+        self.assertArrayEqual(result.coord('longitude').bounds[0],
+                              [-10.5, -9.5])
+        self.assertArrayEqual(result.coord('longitude').bounds[-1],
+                              [9.5, 10.5])
+        self.assertEqual(result.data[0, 0, 0], 350)
+        self.assertEqual(result.data[0, 0, -1], 10)
+
+    def test_negative_misaligned_points_outside(self):
+        cube = create_cube(0, 360, bounds=True)
+        result = cube.intersection(longitude=(-10.25, 9.75))
+        self.assertArrayEqual(result.coord('longitude').bounds[0],
+                              [-10.5, -9.5])
+        self.assertArrayEqual(result.coord('longitude').bounds[-1],
+                              [9.5, 10.5])
+        self.assertEqual(result.data[0, 0, 0], 350)
+        self.assertEqual(result.data[0, 0, -1], 10)
+
+    def test_negative_aligned_inclusive(self):
+        cube = create_cube(0, 360, bounds=True)
+        result = cube.intersection(longitude=(-10.5, 10.5))
+        self.assertArrayEqual(result.coord('longitude').bounds[0],
+                              [-11.5, -10.5])
+        self.assertArrayEqual(result.coord('longitude').bounds[-1],
+                              [10.5, 11.5])
+        self.assertEqual(result.data[0, 0, 0], 349)
+        self.assertEqual(result.data[0, 0, -1], 11)
+
+    def test_negative_aligned_exclusive(self):
+        cube = create_cube(0, 360, bounds=True)
+        result = cube.intersection(longitude=(-10.5, 10.5, False, False))
+        self.assertArrayEqual(result.coord('longitude').bounds[0],
+                              [-10.5, -9.5])
+        self.assertArrayEqual(result.coord('longitude').bounds[-1],
+                              [9.5, 10.5])
+        self.assertEqual(result.data[0, 0, 0], 350)
+        self.assertEqual(result.data[0, 0, -1], 10)
+
 
 def unrolled_cube():
     data = np.arange(5, dtype='f4')

@@ -34,7 +34,7 @@ import numpy as np
 import numpy.ma as ma
 
 import iris.analysis
-import iris.analysis.cartography
+from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
 import iris.analysis.interpolate
 import iris.aux_factory
@@ -2115,24 +2115,36 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         min_comp = np.less_equal if min_inclusive else np.less
         max_comp = np.less_equal if max_inclusive else np.less
         if coord.has_bounds():
-            bounds = iris.analysis.cartography.wrap_lons(coord.bounds, minimum,
-                                                         modulus)
+            points = wrap_lons(coord.points, minimum, modulus)
+            bounds = wrap_lons(coord.bounds, minimum, modulus)
             inside = np.logical_and(min_comp(minimum, bounds),
                                     max_comp(bounds, maximum))
             inside_indices, = np.where(np.any(inside, axis=1))
-            expanded_minimum = np.min(coord.bounds[inside_indices])
-            # To ensure the bounds of matching cells aren't "scrambled"
-            # by the wrap operation we shift the wrap point to the
-            # minimum of all the bounds.
-            # For example: the cell [169.5, 170.5] wrapped at 170 would
-            # become [529.5, 170.5] which is no longer valid. By
-            # shifting the wrap point down to 169.5 it stays coherent.
-            points = iris.analysis.cartography.wrap_lons(coord.points,
-                                                         expanded_minimum,
-                                                         modulus)
-            bounds = iris.analysis.cartography.wrap_lons(coord.bounds,
-                                                         expanded_minimum,
-                                                         modulus)
+
+            # To ensure that bounds (and points) of matching cells aren't
+            # "scrambled" by the wrap operation we detect split cells that
+            # straddle the wrap point and ensure that the lower bound of the
+            # cell (and associated point) are wrapped correctly given the
+            # provided wrap point.
+            # For example: the cell [349.875, 350.4375] wrapped at -10 would
+            # become [349.875, -9.5625] which is no longer valid. The lower
+            # cell bound value (and possibly associated point) are
+            # recalculated so that they are consistent with the extended
+            # wapping scheme which moves the wrap point to the correct lower
+            # bound value thus resulting in the cell no longer being split.
+
+            delta = coord.bounds[inside_indices] - bounds[inside_indices]
+            tolerance = np.finfo(delta.dtype).eps
+            cell_delta = delta[:, 0] - delta[:, 1]
+            split_cell_indices, = np.where(np.abs(cell_delta) > tolerance)
+            if split_cell_indices.size:
+                indices = inside_indices[split_cell_indices]
+                cells = bounds[indices]
+                cells_delta = np.diff(coord.bounds[indices])
+                cells[:, 0] = cells[:, 1] - cells_delta[:, 0]
+                extended_minimum = np.min(cells[:, 0])
+                points = wrap_lons(coord.points, extended_minimum, modulus)
+                bounds = wrap_lons(coord.bounds, extended_minimum, modulus)
         else:
             points = iris.analysis.cartography.wrap_lons(coord.points, minimum,
                                                          modulus)
