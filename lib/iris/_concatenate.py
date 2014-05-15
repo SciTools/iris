@@ -337,7 +337,7 @@ class _CubeSignature(object):
                 self.aux_metadata.append(metadata)
                 coord_and_dims = _CoordAndDims(coord, tuple(dims))
                 self.aux_coords_and_dims.append(coord_and_dims)
-            else:
+            else: 
                 self.scalar_coords.append(coord)
 
     def _coordinate_differences(self, other, attr):
@@ -355,10 +355,11 @@ class _CubeSignature(object):
             between `self` and `other`.
 
         Returns:
-            Tuple of names of coordinates that differ between `self` and
-            `other`.
+            Tuple of a descriptive error message and the names of coordinates
+            that differ between `self` and `other`.
 
         """
+        # Set up {name: coord_metadata} dictionaries.
         try:
             self_dict = {x.defn.name(): x for x in getattr(self, attr)}
             other_dict = {x.defn.name(): x for x in getattr(other, attr)}
@@ -371,15 +372,17 @@ class _CubeSignature(object):
             other_dict = {'< None >': None}
         self_names = self_dict.keys()
         other_names = other_dict.keys()
+
+        # Compare coord metadata.
         if len(self_names) != len(other_names) or self_names != other_names:
-            result = (', '.join(self_names), ', '.join(other_names))
+            result = ('', ', '.join(self_names), ', '.join(other_names))
         else:
             diff_names = []
             for self_key, self_value in self_dict.iteritems():
                 other_value = other_dict[self_key]
                 if self_value != other_value:
                     diff_names.append(self_key)
-            result = (', '.join(diff_names), ', '.join(diff_names))
+            result = (' metadata', ', '.join(diff_names), ', '.join(diff_names))
         return result
 
     def match(self, other, error_on_mismatch):
@@ -408,7 +411,7 @@ class _CubeSignature(object):
            Boolean. True if and only if this _CubeSignature matches the other.
 
         """
-        msg_template = '{} differ: {} != {}'
+        msg_template = '{}{} differ: {} != {}'
         msgs = []
 
         # Check cube definitions.
@@ -434,11 +437,11 @@ class _CubeSignature(object):
                                             *differences))
         # Check ndim.
         if self.ndim != other.ndim:
-            msgs.append(msg_template.format('Data dimensions',
+            msgs.append(msg_template.format('Data dimensions', '',
                                             self.ndim, other.ndim))
         # Check datatype.
         if self.data_type != other.data_type:
-            msgs.append(msg_template.format('Datatypes',
+            msgs.append(msg_template.format('Datatypes', '',
                                             self.data_type, other.data_type))
 
         match = not bool(msgs)
