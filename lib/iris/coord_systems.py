@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -429,6 +429,85 @@ class OSGB(TransverseMercator):
 
     def as_cartopy_projection(self):
         return cartopy.crs.OSGB()
+
+
+class Orthographic(CoordSystem):
+    """
+    An orthographic map projection.
+
+    """
+
+    grid_mapping_name = 'orthographic'
+
+    def __init__(self, latitude_of_projection_origin,
+                 longitude_of_projection_origin, false_easting=0.0,
+                 false_northing=0.0, ellipsoid=None):
+        """
+        Constructs an Orthographic coord system.
+
+        Args:
+
+        * latitude_of_projection_origin:
+            True latitude of planar origin in degrees.
+
+        * longitude_of_projection_origin:
+            True longitude of planar origin in degrees.
+
+        * false_easting
+            X offset from planar origin in metres. Defaults to 0.
+
+        * false_northing
+            Y offset from planar origin in metres. Defaults to 0.
+
+        Kwargs:
+
+        * ellipsoid
+            :class:`GeogCS` defining the ellipsoid.
+
+        """
+        #: True latitude of planar origin in degrees.
+        self.latitude_of_projection_origin = float(
+            latitude_of_projection_origin)
+
+        #: True longitude of planar origin in degrees.
+        self.longitude_of_projection_origin = float(
+            longitude_of_projection_origin)
+
+        #: X offset from planar origin in metres.
+        self.false_easting = float(false_easting)
+
+        #: Y offset from planar origin in metres.
+        self.false_northing = float(false_northing)
+
+        #: Ellipsoid definition.
+        self.ellipsoid = ellipsoid
+
+    def __repr__(self):
+        return "Orthographic(latitude_of_projection_origin={!r}, "\
+               "longitude_of_projection_origin={!r}, "\
+               "false_easting={!r}, false_northing={!r}, "\
+               "ellipsoid={!r})".format(self.latitude_of_projection_origin,
+                                        self.longitude_of_projection_origin,
+                                        self.false_easting,
+                                        self.false_northing,
+                                        self.ellipsoid)
+
+    def as_cartopy_crs(self):
+        if self.ellipsoid is not None:
+            globe = self.ellipsoid.as_cartopy_globe()
+        else:
+            globe = cartopy.crs.Globe()
+
+        warnings.warn('Discarding false_easting and false_northing that are '
+                      'not used by Cartopy.')
+
+        return cartopy.crs.Orthographic(
+            central_longitude=self.longitude_of_projection_origin,
+            central_latitude=self.latitude_of_projection_origin,
+            globe=globe)
+
+    def as_cartopy_projection(self):
+        return self.as_cartopy_crs()
 
 
 class Stereographic(CoordSystem):
