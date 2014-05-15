@@ -15,6 +15,6 @@
         <coord name="bar"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" dtype="float64" shape="(1,)" state="loaded"/>
+    <data dtype="float64" shape="(1,)" state="loaded"/>
   </cube>
 </cubes>

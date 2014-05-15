@@ -433,6 +433,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" shape="(2, 5, 16, 21)" state="loaded"/>
+    <data dtype="float64" shape="(2, 5, 16, 21)" state="loaded"/>
   </cube>
 </cubes>

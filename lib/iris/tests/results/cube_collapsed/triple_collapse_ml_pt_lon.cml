@@ -53,6 +53,6 @@
         <coord name="grid_longitude"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" dtype="float32" shape="(100,)" state="loaded"/>
+    <data dtype="float32" shape="(100,)" state="loaded"/>
   </cube>
 </cubes>

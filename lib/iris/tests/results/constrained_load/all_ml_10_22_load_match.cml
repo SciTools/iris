@@ -50,7 +50,7 @@
         <coord interval="1 hour" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" checksum="0x152ab762" dtype="float32" shape="(2, 145, 192)"/>
+    <data checksum="0x152ab762" dtype="float32" shape="(2, 145, 192)"/>
   </cube>
   <cube standard_name="specific_humidity" units="1">
     <attributes>
@@ -102,7 +102,7 @@
         <coord interval="1 hour" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" checksum="0x38f24240" dtype="float32" shape="(2, 145, 192)"/>
+    <data checksum="0x38f24240" dtype="float32" shape="(2, 145, 192)"/>
   </cube>
   <cube standard_name="x_wind" units="m s-1">
     <attributes>
@@ -155,7 +155,7 @@
         <coord interval="1 hour" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" checksum="0x777b79f0" dtype="float32" shape="(2, 145, 192)"/>
+    <data checksum="0x777b79f0" dtype="float32" shape="(2, 145, 192)"/>
   </cube>
   <cube standard_name="y_wind" units="m s-1">
     <attributes>
@@ -208,6 +208,6 @@
         <coord interval="1 hour" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" checksum="-0x55000ca7" dtype="float32" shape="(2, 144, 192)"/>
+    <data checksum="-0x55000ca7" dtype="float32" shape="(2, 144, 192)"/>
   </cube>
 </cubes>

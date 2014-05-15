@@ -137,6 +137,6 @@
         <coord interval="1 hour" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" dtype="float32" shape="(38, 145)" state="loaded"/>
+    <data dtype="float32" shape="(38, 145)" state="loaded"/>
   </cube>
 </cubes>

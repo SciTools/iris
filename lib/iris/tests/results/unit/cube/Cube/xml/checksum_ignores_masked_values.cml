@@ -3,6 +3,6 @@
   <cube units="unknown">
     <coords/>
     <cellMethods/>
-    <data byteorder="little" checksum="0x254c379c" dtype="int64" fill_value="999999" mask_checksum="-0x4f76ea36" shape="(3, 4)"/>
+    <data checksum="0x254c379c" dtype="int64" fill_value="999999" mask_checksum="-0x4f76ea36" shape="(3, 4)"/>
   </cube>
 </cubes>

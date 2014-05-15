@@ -67,7 +67,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" shape="(72,)" state="loaded"/>
+    <data dtype="float64" shape="(72,)" state="loaded"/>
   </cube>
   <cube long_name="CAESIUM-137_AIR_CONCENTRATION" units="Bq s / m^3">
     <attributes>
@@ -136,7 +136,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" shape="(72,)" state="loaded"/>
+    <data dtype="float64" shape="(72,)" state="loaded"/>
   </cube>
   <cube long_name="CAESIUM-137_DRY_DEPOSITION_RATE" units="Bq / (m^2 s)">
     <attributes>
@@ -204,7 +204,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" shape="(72,)" state="loaded"/>
+    <data dtype="float64" shape="(72,)" state="loaded"/>
   </cube>
   <cube long_name="CAESIUM-137_WET_DEPOSITION_RATE" units="Bq / (m^2 s)">
     <attributes>
@@ -272,7 +272,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" shape="(72,)" state="loaded"/>
+    <data dtype="float64" shape="(72,)" state="loaded"/>
   </cube>
   <cube long_name="CAESIUM-137_DEPOSITION_RATE" units="Bq / (m^2 s)">
     <attributes>
@@ -340,6 +340,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" shape="(72,)" state="loaded"/>
+    <data dtype="float64" shape="(72,)" state="loaded"/>
   </cube>
 </cubes>

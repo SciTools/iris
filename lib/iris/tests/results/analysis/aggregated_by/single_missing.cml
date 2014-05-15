@@ -31,6 +31,6 @@
         <coord name="height"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" dtype="float64" shape="(8, 3, 3)" state="loaded"/>
+    <data dtype="float64" shape="(8, 3, 3)" state="loaded"/>
   </cube>
 </cubes>

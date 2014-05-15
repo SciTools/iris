@@ -32,6 +32,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="0x58a7b75e" dtype="float64" fill_value="1e+20" mask_checksum="-0x646a97b2" shape="(73, 144)"/>
+    <data checksum="0x58a7b75e" dtype="float64" fill_value="1e+20" mask_checksum="-0x646a97b2" shape="(73, 144)"/>
   </cube>
 </cubes>

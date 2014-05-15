@@ -11,6 +11,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="0x71e7c202" dtype="int64" shape="(10, 10)"/>
+    <data checksum="0x71e7c202" dtype="int64" shape="(10, 10)"/>
   </cube>
 </cubes>
