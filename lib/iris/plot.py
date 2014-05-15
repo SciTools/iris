@@ -22,6 +22,7 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 """
 
+
 import collections
 import datetime
 import functools
@@ -32,6 +33,7 @@ import matplotlib.collections as mpl_collections
 import matplotlib.dates as mpl_dates
 import matplotlib.transforms as mpl_transforms
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mpl_ticker
 from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
 import numpy as np
 import numpy.ma as ma
@@ -195,6 +197,40 @@ def _broadcast_2d(u, v):
     return u, v
 
 
+def _string_coord_axis_ticks(string_axes, initial_coords, processed_coords):
+    """
+    Formats axes that have string coords plotted on them to take benefit from
+    the rich information in the string coord.
+
+    Args:
+
+    * string_axes (list):
+        A list of either an axis references or None for each plot axis,
+        depending on whether a string coordinate will be plotted on that axis.
+    * initial_coords (list or `PlotDefn`):
+        The coords to plot as passed by the plot function.
+    * processed_coords (list or `PlotDefn`):
+        The coords to plot, processed for string coords.
+
+    """
+    if not isinstance(initial_coords, list):
+        initial_coords = initial_coords.coords
+
+    if not isinstance(processed_coords, list):
+        processed_coords = processed_coords.coords
+
+    for i, axis_str in enumerate(string_axes):
+        if axis_str is not None:
+            axis = getattr(plt.gca(), axis_str)
+            index_array = processed_coords[i].points
+            labels_array = initial_coords[i].points
+            # Get the current locator to re-apply later.
+            locator = axis.get_major_locator()
+            axis.set_ticks(index_array)
+            axis.set_ticklabels(labels_array)
+            axis.set_major_locator(locator)
+
+
 def _invert_yaxis(v_coord):
     """
     Inverts the y-axis of the current plot based on conditions:
@@ -223,9 +259,27 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     # Get & remove the coords entry from kwargs.
     coords = kwargs.pop('coords', None)
     if coords is not None:
-        plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode)
+        initial_plot_defn = _get_plot_defn_custom_coords_picked(cube,
+                                                                coords,
+                                                                mode)
     else:
-        plot_defn = _get_plot_defn(cube, mode, ndims=2)
+        initial_plot_defn = _get_plot_defn(cube, mode, ndims=2)
+
+    # Process any string coordinates and update plot_defn.
+    string_coords = []
+    string_axes = []
+    axes = {0: 'xaxis', 1: 'yaxis'}
+    for i, coord in enumerate(initial_plot_defn.coords):
+        if coord is not None and coord.dtype.char == 'S':
+            axis = int(not(i)) if initial_plot_defn.transpose else i
+            string_axes.append(axes[axis])
+            new_coord = iris.coords.AuxCoord(np.arange(len(coord.points)),
+                                             long_name=coord.long_name)
+            string_coords.append(new_coord)
+        else:
+            string_axes.append(None)
+            string_coords.append(coord)
+    plot_defn = PlotDefn(string_coords, initial_plot_defn.transpose)
 
     if _can_draw_map(plot_defn.coords):
         result = _map_common(draw_method_name, None, iris.coords.BOUND_MODE,
@@ -257,6 +311,9 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
         draw_method = getattr(plt, draw_method_name)
         result = draw_method(u, v, data, *args, **kwargs)
 
+        # Apply tick labels for string coordinates.
+        _string_coord_axis_ticks(string_axes, initial_plot_defn, plot_defn)
+
         # Invert y-axis if necessary.
         _invert_yaxis(v_coord)
 
@@ -270,9 +327,27 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
     # Get & remove the coords entry from kwargs.
     coords = kwargs.pop('coords', None)
     if coords is not None:
-        plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode)
+        initial_plot_defn = _get_plot_defn_custom_coords_picked(cube,
+                                                                coords,
+                                                                mode)
     else:
-        plot_defn = _get_plot_defn(cube, mode, ndims=2)
+        initial_plot_defn = _get_plot_defn(cube, mode, ndims=2)
+
+    # Process any string coordinates and update plot_defn.
+    string_coords = []
+    string_axes = []
+    axes = {0: 'xaxis', 1: 'yaxis'}
+    for i, coord in enumerate(initial_plot_defn.coords):
+        if coord is not None and coord.dtype.char == 'S':
+            axis = int(not(i)) if initial_plot_defn.transpose else i
+            string_axes.append(axes[axis])
+            new_coord = iris.coords.AuxCoord(np.arange(len(coord.points)),
+                                             long_name=coord.long_name)
+            string_coords.append(new_coord)
+        else:
+            string_axes.append(None)
+            string_coords.append(coord)
+    plot_defn = PlotDefn(string_coords, initial_plot_defn.transpose)
 
     if _can_draw_map(plot_defn.coords):
         result = _map_common(draw_method_name, arg_func,
@@ -315,6 +390,9 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
             result = draw_method(*args, **kwargs)
         else:
             result = draw_method(u, v, data, *args, **kwargs)
+
+        # Apply tick labels for string coordinates if necessary.
+        _string_coord_axis_ticks(string_axes, initial_plot_defn, plot_defn)
 
         # Invert y-axis if necessary.
         _invert_yaxis(v_coord)
@@ -392,7 +470,35 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
     # retrieve the objects that are plotted on the horizontal and vertical
     # axes (cubes or coordinates) and their respective values, along with the
     # argument tuple with these objects removed
-    u_object, v_object, u, v, args = _get_plot_objects(args)
+    initial_u_object, initial_v_object, u, v, args = _get_plot_objects(args)
+    # We need to retain the order of u & v.
+    initial_coords = [initial_u_object, initial_v_object]
+    initial_coords_dict = collections.OrderedDict(
+        [('u', [u, initial_u_object, 'xaxis']),
+         ('v', [v, initial_v_object, 'yaxis'])])
+
+    # Check if u or v are string coordinates.
+    string_axes = []
+    string_coords = []
+    have_string_coords = False
+    for values in initial_coords_dict.values():
+        coord = values[0]
+        initial_coord_object = values[1]
+        if getattr(coord, 'dtype').char == 'S':
+            string_axes.append(values[2])
+            new_coord_object = iris.coords.AuxCoord(
+                np.arange(len(initial_coord_object.points)),
+                long_name=initial_coord_object.long_name)
+            string_coords.append(new_coord_object)
+            have_string_coords = True
+        else:
+            string_axes.append(None)
+            string_coords.append(initial_coord_object)
+
+    # Now re-make u & v after processing for string coords.
+    u_object, v_object = string_coords
+    if have_string_coords:
+        u, v = _uv_from_u_object_v_object(u_object, v_object)
 
     # if both u_object and v_object are coordinates then check if a map
     # should be drawn
@@ -410,6 +516,9 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
         result = draw_method(*args, **kwargs)
     else:
         result = draw_method(u, v, *args, **kwargs)
+
+    # Apply tick labels for string coordinates.
+    _string_coord_axis_ticks(string_axes, initial_coords, string_coords)
 
     # Invert y-axis if necessary.
     _invert_yaxis(v_object)
