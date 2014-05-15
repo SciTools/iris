@@ -232,7 +232,7 @@ class CubeList(list):
         result = CubeList(result)
         return result
 
-    def xml(self, checksum=False, order=True):
+    def xml(self, checksum=False, order=True, byteorder=True):
         """Return a string of the XML that this list of cubes represents."""
         doc = Document()
         cubes_xml_element = doc.createElement("cubes")
@@ -240,7 +240,8 @@ class CubeList(list):
 
         for cube_obj in self:
             cubes_xml_element.appendChild(
-                cube_obj._xml_element(doc, checksum=checksum, order=order))
+                cube_obj._xml_element(
+                    doc, checksum=checksum, order=order, byteorder=byteorder))
 
         doc.appendChild(cubes_xml_element)
 
