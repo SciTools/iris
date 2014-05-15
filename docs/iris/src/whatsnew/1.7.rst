@@ -1,0 +1,23 @@
+What's new in Iris 1.7
+**********************
+
+:Release: 1.7.0
+:Date: XXX
+
+Iris 1.7 features
+=================
+
+Bugs fixed
+==========
+
+Incompatible changes
+====================
+
+* Saving a cube with a STASH attribute to NetCDF now produces a variable
+  with an attribute of "um_stash_source" rather than "ukmo__um_stash_source".
+* Cubes save to NetCDF with a coordinate system referencing a spherical ellipsoid
+  now result in the grid mapping variable containing only the "earth_radius" attribute,
+  rather than the "semi_major_axis" and "semi_minor_axis".
+
+Deprecations
+============

@@ -5,7 +5,7 @@ variables:
 	double temp(dim0, dim1) ;
 		temp:standard_name = "surface_temperature" ;
 		temp:units = "K" ;
-		temp:ukmo__um_stash_source = "m01s02i003" ;
+		temp:um_stash_source = "m01s02i003" ;
 		temp:flag_masks = "a" ;
 		temp:flag_meanings = "b" ;
 		temp:flag_values = "c" ;

@@ -7,7 +7,7 @@ variables:
 		sea_water_potential_temperature:_FillValue = -1.e+30f ;
 		sea_water_potential_temperature:standard_name = "sea_water_potential_temperature" ;
 		sea_water_potential_temperature:units = "degC" ;
-		sea_water_potential_temperature:ukmo__um_stash_source = "m02s00i101" ;
+		sea_water_potential_temperature:um_stash_source = "m02s00i101" ;
 		sea_water_potential_temperature:cell_methods = "time: mean" ;
 		sea_water_potential_temperature:grid_mapping = "latitude_longitude" ;
 		sea_water_potential_temperature:coordinates = "forecast_period forecast_reference_time time" ;

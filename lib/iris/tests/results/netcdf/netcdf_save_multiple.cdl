@@ -7,7 +7,7 @@ variables:
 	float air_temperature(time, latitude, longitude) ;
 		air_temperature:standard_name = "air_temperature" ;
 		air_temperature:units = "K" ;
-		air_temperature:ukmo__um_stash_source = "m01s03i236" ;
+		air_temperature:um_stash_source = "m01s03i236" ;
 		air_temperature:cell_methods = "time: maximum (interval: 1 hour)" ;
 		air_temperature:grid_mapping = "latitude_longitude" ;
 		air_temperature:coordinates = "forecast_period forecast_reference_time height" ;
@@ -46,14 +46,14 @@ variables:
 	float air_temperature_0(time, latitude, longitude) ;
 		air_temperature_0:standard_name = "air_temperature" ;
 		air_temperature_0:units = "K" ;
-		air_temperature_0:ukmo__um_stash_source = "m01s03i236" ;
+		air_temperature_0:um_stash_source = "m01s03i236" ;
 		air_temperature_0:cell_methods = "time: minimum (interval: 1 hour)" ;
 		air_temperature_0:grid_mapping = "latitude_longitude" ;
 		air_temperature_0:coordinates = "forecast_period forecast_reference_time height" ;
 	float precipitation_flux(time, latitude, longitude) ;
 		precipitation_flux:standard_name = "precipitation_flux" ;
 		precipitation_flux:units = "kg m-2 s-1" ;
-		precipitation_flux:ukmo__um_stash_source = "m01s05i216" ;
+		precipitation_flux:um_stash_source = "m01s05i216" ;
 		precipitation_flux:cell_methods = "time: mean (interval: 1 hour)" ;
 		precipitation_flux:grid_mapping = "latitude_longitude" ;
 		precipitation_flux:coordinates = "forecast_period forecast_reference_time" ;

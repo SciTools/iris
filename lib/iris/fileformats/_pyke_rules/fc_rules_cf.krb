@@ -577,19 +577,19 @@ fc_default_coordinate
 
 #
 # Context:
-#   This rule will trigger iff the "ukmo__um_stash_source" attribute exists
+#   This rule will trigger iff the "um_stash_source" or "ukmo__um_stash_source" attributes exist
 #   on the CF-netCDF data variable.
 #
 # Purpose:
-#   Add the CF-netCDF data variable "ukmo__um_stash_source" attribute to the
+#   Add the CF-netCDF data variable "um_stash_source" attribute to the
 #   cube attributes dictionary as a "STASH" key.
 #
 fc_attribute_ukmo__um_stash_source
     foreach
-        check hasattr(engine.cf_var, 'ukmo__um_stash_source')
+        check hasattr(engine.cf_var, 'ukmo__um_stash_source') or hasattr(engine.cf_var, 'um_stash_source')
     assert
-        python attr_value = engine.cf_var.ukmo__um_stash_source
-        python engine.cube.attributes['STASH'] = pp.STASH.from_msi(engine.cf_var.ukmo__um_stash_source)
+        python attr_value = getattr(engine.cf_var, 'um_stash_source', None) or getattr(engine.cf_var, 'ukmo__um_stash_source')
+        python engine.cube.attributes['STASH'] = pp.STASH.from_msi(attr_value)
         python engine.rule_triggered.add(rule.name)
 
 #

@@ -5,7 +5,7 @@ variables:
 	float geopotential_height(pressure, time) ;
 		geopotential_height:standard_name = "geopotential_height" ;
 		geopotential_height:units = "m" ;
-		geopotential_height:ukmo__um_stash_source = "m01s16i202" ;
+		geopotential_height:um_stash_source = "m01s16i202" ;
 		geopotential_height:cell_methods = "time: mean" ;
 	float pressure(pressure) ;
 		pressure:axis = "Z" ;

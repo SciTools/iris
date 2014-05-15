@@ -3,7 +3,7 @@ dimensions:
 	time = 16 ;
 variables:
 	float unknown(depth, time) ;
-		unknown:ukmo__um_stash_source = "m??s44i101" ;
+		unknown:um_stash_source = "m??s44i101" ;
 		unknown:cell_methods = "time: mean (interval: 24 hour)" ;
 	float depth(depth) ;
 		depth:axis = "Z" ;

@@ -8,7 +8,7 @@ variables:
 	float air_potential_temperature(time, model_level_number, grid_latitude, grid_longitude) ;
 		air_potential_temperature:standard_name = "air_potential_temperature" ;
 		air_potential_temperature:units = "K" ;
-		air_potential_temperature:ukmo__um_stash_source = "m01s00i004" ;
+		air_potential_temperature:um_stash_source = "m01s00i004" ;
 		air_potential_temperature:grid_mapping = "rotated_latitude_longitude" ;
 		air_potential_temperature:coordinates = "forecast_period forecast_reference_time level_height sigma surface_altitude" ;
 	int rotated_latitude_longitude ;
@@ -64,7 +64,7 @@ variables:
 	float surface_altitude(grid_latitude, grid_longitude) ;
 		surface_altitude:units = "m" ;
 		surface_altitude:standard_name = "surface_altitude" ;
-		surface_altitude:ukmo__um_stash_source = "m01s00i033" ;
+		surface_altitude:um_stash_source = "m01s00i033" ;
 		surface_altitude:source = "Data from Met Office Unified Model 7.04" ;
 
 // global attributes:

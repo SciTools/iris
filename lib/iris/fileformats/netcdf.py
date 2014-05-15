@@ -89,7 +89,7 @@ _CF_DATA_ATTRS = ['flag_masks', 'flag_meanings', 'flag_values',
 _CF_GLOBAL_ATTRS = ['conventions', 'featureType', 'history', 'title']
 
 # UKMO specific attributes that should not be global.
-_UKMO_DATA_ATTRS = ['STASH', 'ukmo__um_stash_source', 'ukmo__process_flags']
+_UKMO_DATA_ATTRS = ['STASH', 'um_stash_source', 'ukmo__process_flags']
 
 _CF_CONVENTIONS_VERSION = 'CF-1.5'
 
@@ -1170,7 +1170,7 @@ class Saver(object):
             if name == 'STASH':
                 # Adopting provisional Metadata Conventions for representing MO
                 # Scientific Data encoded in NetCDF Format.
-                name = 'ukmo__um_stash_source'
+                name = 'um_stash_source'
                 value = str(value)
 
             # Don't clobber existing attributes.
@@ -1385,7 +1385,7 @@ class Saver(object):
             if attr_name == 'STASH':
                 # Adopting provisional Metadata Conventions for representing MO
                 # Scientific Data encoded in NetCDF Format.
-                attr_name = 'ukmo__um_stash_source'
+                attr_name = 'um_stash_source'
                 value = str(value)
 
             if attr_name == "ukmo__process_flags":
