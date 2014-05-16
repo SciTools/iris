@@ -53,6 +53,6 @@
         <coord name="grid_latitude"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" dtype="float32" shape="(6, 100)" state="loaded"/>
+    <data dtype="float32" shape="(6, 100)" state="loaded"/>
   </cube>
 </cubes>

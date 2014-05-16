@@ -103,6 +103,6 @@
         <coord name="time_counter"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" checksum="-0x16cda235" dtype="float64" shape="(1, 31, 90)"/>
+    <data checksum="-0x16cda235" dtype="float64" shape="(1, 31, 90)"/>
   </cube>
 </cubes>

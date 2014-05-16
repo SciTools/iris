@@ -90,6 +90,6 @@
         <coord interval="6 minutes" name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" checksum="-0x5461b4c8" dtype="float32" shape="(31, 160, 320)"/>
+    <data checksum="-0x5461b4c8" dtype="float32" shape="(31, 160, 320)"/>
   </cube>
 </cubes>

@@ -232,7 +232,7 @@ class CubeList(list):
         result = CubeList(result)
         return result
 
-    def xml(self, checksum=False, order=True):
+    def xml(self, checksum=False, order=True, byteorder=True):
         """Return a string of the XML that this list of cubes represents."""
         doc = Document()
         cubes_xml_element = doc.createElement("cubes")
@@ -240,7 +240,8 @@ class CubeList(list):
 
         for cube_obj in self:
             cubes_xml_element.appendChild(
-                cube_obj._xml_element(doc, checksum=checksum, order=order))
+                cube_obj._xml_element(
+                    doc, checksum=checksum, order=order, byteorder=byteorder))
 
         doc.appendChild(cubes_xml_element)
 
@@ -2327,7 +2328,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         self._aux_coords_and_dims = map(remap_aux_coord,
                                         self._aux_coords_and_dims)
 
-    def xml(self, checksum=False, order=True):
+    def xml(self, checksum=False, order=True, byteorder=True):
         """
         Returns a fully valid CubeML string representation of the Cube.
 
@@ -2335,14 +2336,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         doc = Document()
 
         cube_xml_element = self._xml_element(doc, checksum=checksum,
-                                             order=order)
+                                             order=order,
+                                             byteorder=byteorder)
         cube_xml_element.setAttribute("xmlns", XML_NAMESPACE_URI)
         doc.appendChild(cube_xml_element)
 
         # Print our newly created XML
         return doc.toprettyxml(indent="  ")
 
-    def _xml_element(self, doc, checksum=False, order=True):
+    def _xml_element(self, doc, checksum=False, order=True, byteorder=True):
         cube_xml_element = doc.createElement("cube")
 
         if self.standard_name:
@@ -2445,9 +2447,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # NB. dtype.byteorder can return '=', which is bad for
             # cross-platform consistency - so we use dtype.str
             # instead.
-            byte_order = {'>': 'big', '<': 'little'}.get(dtype.str[0])
-            if byte_order:
-                data_xml_element.setAttribute('byteorder', byte_order)
+            if byteorder:
+                array_byteorder = {'>': 'big', '<': 'little'}.get(dtype.str[0])
+                if array_byteorder is not None:
+                    data_xml_element.setAttribute('byteorder', array_byteorder)
 
             if order and isinstance(data, ma.core.MaskedArray):
                 data_xml_element.setAttribute('mask_order',

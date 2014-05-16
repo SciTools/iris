@@ -13,6 +13,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float32" shape="(3,)" state="loaded"/>
+    <data dtype="float32" shape="(3,)" state="loaded"/>
   </cube>
 </cubes>

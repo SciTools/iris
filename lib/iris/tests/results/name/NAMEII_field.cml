@@ -56,7 +56,7 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" dtype="float32" shape="(200, 200)" state="loaded"/>
+    <data dtype="float32" shape="(200, 200)" state="loaded"/>
   </cube>
   <cube long_name="TRACER_DOSAGE" units="g s/m3">
     <attributes>
@@ -114,7 +114,7 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" dtype="float32" shape="(200, 200)" state="loaded"/>
+    <data dtype="float32" shape="(200, 200)" state="loaded"/>
   </cube>
   <cube long_name="TRACER_WET_DEPOSITION" units="g/m2">
     <attributes>
@@ -172,7 +172,7 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" dtype="float32" shape="(200, 200)" state="loaded"/>
+    <data dtype="float32" shape="(200, 200)" state="loaded"/>
   </cube>
   <cube long_name="TRACER_DRY_DEPOSITION" units="g/m2">
     <attributes>
@@ -230,7 +230,7 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" dtype="float32" shape="(200, 200)" state="loaded"/>
+    <data dtype="float32" shape="(200, 200)" state="loaded"/>
   </cube>
   <cube long_name="TRACER_TOTAL_DEPOSITION" units="g/m2">
     <attributes>
@@ -288,6 +288,6 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" dtype="float32" shape="(200, 200)" state="loaded"/>
+    <data dtype="float32" shape="(200, 200)" state="loaded"/>
   </cube>
 </cubes>

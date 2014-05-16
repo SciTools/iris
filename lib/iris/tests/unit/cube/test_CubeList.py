@@ -150,5 +150,20 @@ class Test_merge__time_triple(tests.IrisTest):
         self.assertCML(cube, checksum=False)
 
 
+class Test_xml(tests.IrisTest):
+    def setUp(self):
+        self.cubes = CubeList([Cube(np.arange(3)),
+                               Cube(np.arange(3))])
+
+    def test_byteorder_default(self):
+        self.assertIn('byteorder', self.cubes.xml())
+
+    def test_byteorder_false(self):
+        self.assertNotIn('byteorder', self.cubes.xml(byteorder=False))
+
+    def test_byteorder_true(self):
+        self.assertIn('byteorder', self.cubes.xml(byteorder=True))
+
+
 if __name__ == "__main__":
     tests.main()

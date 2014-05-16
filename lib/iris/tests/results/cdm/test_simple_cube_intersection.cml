@@ -17,7 +17,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x257d13dc" dtype="int32" shape="(5, 3)"/>
+    <data checksum="-0x257d13dc" dtype="int32" shape="(5, 3)"/>
   </cube>
   <cube units="unknown">
     <coords>
@@ -36,6 +36,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="0x5a2affc8" dtype="int32" shape="(5, 3)"/>
+    <data checksum="0x5a2affc8" dtype="int32" shape="(5, 3)"/>
   </cube>
 </cubes>

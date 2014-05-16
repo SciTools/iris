@@ -520,6 +520,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x6aab33ec" dtype="float32" shape="(6, 10, 83, 83)"/>
+    <data checksum="-0x6aab33ec" dtype="float32" shape="(6, 10, 83, 83)"/>
   </cube>
 </cubes>

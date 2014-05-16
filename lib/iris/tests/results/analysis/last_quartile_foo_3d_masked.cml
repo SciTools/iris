@@ -17,6 +17,6 @@
         <coord name="wibble"/>
       </cellMethod>
     </cellMethods>
-    <data byteorder="little" dtype="float64" shape="(3, 4)" state="loaded"/>
+    <data dtype="float64" shape="(3, 4)" state="loaded"/>
   </cube>
 </cubes>

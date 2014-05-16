@@ -111,6 +111,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float64" shape="(6, 70, 100, 100)" state="loaded"/>
+    <data dtype="float64" shape="(6, 70, 100, 100)" state="loaded"/>
   </cube>
 </cubes>

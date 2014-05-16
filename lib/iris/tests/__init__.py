@@ -276,9 +276,10 @@ class IrisTest(unittest.TestCase):
             reference_filename = self.result_path(basename, "cml")
 
         if isinstance(cubes, (list, tuple)):
-            xml = iris.cube.CubeList(cubes).xml(checksum=checksum, order=False)
+            xml = iris.cube.CubeList(cubes).xml(checksum=checksum, order=False,
+                                                byteorder=False)
         else:
-            xml = cubes.xml(checksum=checksum, order=False)
+            xml = cubes.xml(checksum=checksum, order=False, byteorder=False)
         reference_path = get_result_path(reference_filename)
         self._check_same(xml, reference_path, reference_filename)
 

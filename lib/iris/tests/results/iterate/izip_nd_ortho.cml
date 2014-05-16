@@ -21,7 +21,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
+    <data checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
   </cube>
   <cube units="unknown">
     <coords>
@@ -44,7 +44,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
+    <data checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
   </cube>
   <cube units="unknown">
     <coords>
@@ -67,7 +67,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
+    <data checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
   </cube>
   <cube units="unknown">
     <coords>
@@ -90,7 +90,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
+    <data checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
   </cube>
   <cube units="unknown">
     <coords>
@@ -113,7 +113,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
+    <data checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
   </cube>
   <cube units="unknown">
     <coords>
@@ -136,7 +136,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
+    <data checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
   </cube>
   <cube units="unknown">
     <coords>
@@ -159,7 +159,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
+    <data checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
   </cube>
   <cube units="unknown">
     <coords>
@@ -182,7 +182,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
+    <data checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
   </cube>
   <cube units="unknown">
     <coords>
@@ -205,7 +205,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
+    <data checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
   </cube>
   <cube units="unknown">
     <coords>
@@ -228,6 +228,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
+    <data checksum="-0x271af158" dtype="float64" shape="(5, 5, 5, 5)"/>
   </cube>
 </cubes>

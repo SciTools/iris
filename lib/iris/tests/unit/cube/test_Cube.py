@@ -76,6 +76,18 @@ class Test_xml(tests.IrisTest):
         cube = Cube(data)
         self.assertCML(cube)
 
+    def test_byteorder_default(self):
+        cube = Cube(np.arange(3))
+        self.assertIn('byteorder', cube.xml())
+
+    def test_byteorder_false(self):
+        cube = Cube(np.arange(3))
+        self.assertNotIn('byteorder', cube.xml(byteorder=False))
+
+    def test_byteorder_true(self):
+        cube = Cube(np.arange(3))
+        self.assertIn('byteorder', cube.xml(byteorder=True))
+
 
 class Test_collapsed__lazy(tests.IrisTest):
     def setUp(self):

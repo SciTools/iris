@@ -61,6 +61,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data byteorder="little" dtype="float32" shape="(4, 3, 21)" state="loaded"/>
+    <data dtype="float32" shape="(4, 3, 21)" state="loaded"/>
   </cube>
 </cubes>
