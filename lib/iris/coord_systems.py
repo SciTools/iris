@@ -510,6 +510,99 @@ class Orthographic(CoordSystem):
         return self.as_cartopy_crs()
 
 
+class VerticalPerspective(CoordSystem):
+    """
+    An geostationary satellite image map projection.
+
+    """
+
+    grid_mapping_name = 'vertical_perspective'
+
+    def __init__(self, latitude_of_projection_origin,
+                 longitude_of_projection_origin, perspective_point_height,
+                 false_easting=0, false_northing=0, ellipsoid=None):
+        """
+        Constructs an Vertical Perspective Geostationary coord system.
+
+        Args:
+
+        * latitude_of_projection_origin:
+            True latitude of planar origin in degrees.
+
+        * longitude_of_projection_origin:
+            True longitude of planar origin in degrees.
+
+        * perspective_point_height:
+            Altitude of satellite in metres.
+
+        * false_easting
+            X offset from planar origin in metres. Defaults to 0.
+
+        * false_northing
+            Y offset from planar origin in metres. Defaults to 0.
+
+        Kwargs:
+
+        * ellipsoid
+            :class:`GeogCS` defining the ellipsoid.
+
+        """
+        #: True latitude of planar origin in degrees.
+        self.latitude_of_projection_origin = float(
+            latitude_of_projection_origin)
+        if self.latitude_of_projection_origin != 0.0:
+            raise ValueError('Non-zero latitude of projection currently not'
+                             ' supported by Cartopy.')
+
+        #: True longitude of planar origin in degrees.
+        self.longitude_of_projection_origin = float(
+            longitude_of_projection_origin)
+
+        #: Altitude of satellite in metres.
+        # test if perspective_point_height may be cast to float for proj.4
+        test_pph = float(perspective_point_height)
+        self.perspective_point_height = perspective_point_height
+
+        #: X offset from planar origin in metres.
+        test_fe = float(false_easting)
+        self.false_easting = false_easting
+
+        #: Y offset from planar origin in metres.
+        test_fn = float(false_northing)
+        self.false_northing = false_northing
+
+        #: Ellipsoid definition.
+        self.ellipsoid = ellipsoid
+
+    def __repr__(self):
+        return "Vertical Perspective(latitude_of_projection_origin={!r}, "\
+               "longitude_of_projection_origin={!r}, "\
+               "perspective_point_height = {!r}, "\
+               "false_easting={!r}, false_northing={!r}, "\
+               "ellipsoid={!r})".format(self.latitude_of_projection_origin,
+                                        self.longitude_of_projection_origin,
+                                        self.perspective_point_height,
+                                        self.false_easting,
+                                        self.false_northing,
+                                        self.ellipsoid)
+
+    def as_cartopy_crs(self):
+        if self.ellipsoid is not None:
+            globe = self.ellipsoid.as_cartopy_globe()
+        else:
+            globe = cartopy.crs.Globe()
+
+        return cartopy.crs.Geostationary(
+            central_longitude=self.longitude_of_projection_origin,
+            satellite_height=self.perspective_point_height,
+            false_easting=self.false_easting,
+            false_northing=self.false_northing,
+            globe=globe)
+
+    def as_cartopy_projection(self):
+        return self.as_cartopy_crs()
+
+
 class Stereographic(CoordSystem):
     """
     A stereographic map projection.
