@@ -4,6 +4,7 @@
 Introduction
 ===================
 
+.. _iris_data_structures:
 
 Iris data structures
 --------------------
