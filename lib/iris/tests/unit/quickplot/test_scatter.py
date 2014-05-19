@@ -32,7 +32,7 @@ if tests.MPL_AVAILABLE:
 @tests.skip_plot
 class TestStringCoordPlot(tests.GraphicsTest):
     def test_scatter_xaxis_labels(self):
-        exp_ticklabels = ['a', 'b', 'c', 'd', 'e', 'a', 'b']
+        exp_ticklabels = ['', 'a', 'c', 'e', 'b', 'd', '']
         cube = iris.cube.Cube(np.random.rand(10), long_name='foo', units=1)
         str_coord = iris.coords.AuxCoord(np.array(['a', 'b', 'c', 'd', 'e']*2),
                                          long_name='string',
@@ -46,7 +46,6 @@ class TestStringCoordPlot(tests.GraphicsTest):
         xaxis = plt.gca().xaxis
         ticklabels = [t.get_text() for t in xaxis.get_majorticklabels()]
         self.assertEqual(exp_ticklabels, ticklabels)
-        plt.close()
 
 
 if __name__ == "__main__":

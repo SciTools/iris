@@ -22,6 +22,7 @@ import iris.tests as tests
 
 import iris
 from iris.coord_categorisation import add_weekday
+from iris.tests.stock import realistic_4d
 
 if tests.MPL_AVAILABLE:
     from iris.plot import contour
@@ -31,17 +32,14 @@ if tests.MPL_AVAILABLE:
 @tests.skip_plot
 class TestStringCoordPlot(tests.GraphicsTest):
     def test_contour_xaxis_labels(self):
-        exp_ticklabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-        filename = tests.get_data_path(('NetCDF', 'global', 'xyt',
-                                        'SMALL_hires_wind_u_for_ipcc4.nc'))
-        cube = iris.load_cube(filename)
+        exp_ticklabels = ['Wed', 'Wed', 'Wed', 'Wed', 'Wed', 'Wed']
+        cube = realistic_4d()
         add_weekday(cube, cube.coord('time'))
-        sub_cube = cube[:, :, 160]
-        contour(sub_cube, coords=['weekday', 'latitude'])
+        sub_cube = cube[:, 0, :, 60]
+        contour(sub_cube, coords=['weekday', 'grid_latitude'])
         xaxis = plt.gca().xaxis
         ticklabels = [t.get_text() for t in xaxis.get_majorticklabels()]
         self.assertEqual(exp_ticklabels, ticklabels)
-        plt.close()
 
 
 if __name__ == "__main__":
