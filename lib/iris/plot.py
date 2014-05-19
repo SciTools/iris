@@ -213,22 +213,21 @@ def _string_coord_axis_ticks(string_axes, initial_coords, processed_coords):
         The coords to plot, processed for string coords.
 
     """
-    if not isinstance(initial_coords, list):
+    if hasattr(initial_coords, 'coords'):
         initial_coords = initial_coords.coords
 
-    if not isinstance(processed_coords, list):
+    if hasattr(processed_coords, 'coords'):
         processed_coords = processed_coords.coords
 
-    for i, axis_str in enumerate(string_axes):
+    iterables = zip(string_axes, initial_coords, processed_coords)
+
+    for axis_str, labels, indices in iterables:
         if axis_str is not None:
             axis = getattr(plt.gca(), axis_str)
-            index_array = processed_coords[i].points
-            labels_array = initial_coords[i].points
-            # Get the current locator to re-apply later.
-            locator = axis.get_major_locator()
+            index_array = indices.points
+            labels_array = labels.points
             axis.set_ticks(index_array)
             axis.set_ticklabels(labels_array)
-            axis.set_major_locator(locator)
 
 
 def _invert_yaxis(v_coord):
@@ -268,6 +267,7 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     # Process any string coordinates and update plot_defn.
     string_coords = []
     string_axes = []
+    have_string_coords = False
     axes = {0: 'xaxis', 1: 'yaxis'}
     for i, coord in enumerate(initial_plot_defn.coords):
         if coord is not None and coord.dtype.char == 'S':
@@ -276,6 +276,7 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
             new_coord = iris.coords.AuxCoord(np.arange(len(coord.points)),
                                              long_name=coord.long_name)
             string_coords.append(new_coord)
+            have_string_coords = True
         else:
             string_axes.append(None)
             string_coords.append(coord)
@@ -312,7 +313,8 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
         result = draw_method(u, v, data, *args, **kwargs)
 
         # Apply tick labels for string coordinates.
-        _string_coord_axis_ticks(string_axes, initial_plot_defn, plot_defn)
+        if have_string_coords:
+            _string_coord_axis_ticks(string_axes, initial_plot_defn, plot_defn)
 
         # Invert y-axis if necessary.
         _invert_yaxis(v_coord)
@@ -336,6 +338,7 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
     # Process any string coordinates and update plot_defn.
     string_coords = []
     string_axes = []
+    have_string_coords = False
     axes = {0: 'xaxis', 1: 'yaxis'}
     for i, coord in enumerate(initial_plot_defn.coords):
         if coord is not None and coord.dtype.char == 'S':
@@ -344,6 +347,7 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
             new_coord = iris.coords.AuxCoord(np.arange(len(coord.points)),
                                              long_name=coord.long_name)
             string_coords.append(new_coord)
+            have_string_coords = True
         else:
             string_axes.append(None)
             string_coords.append(coord)
@@ -392,7 +396,8 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
             result = draw_method(u, v, data, *args, **kwargs)
 
         # Apply tick labels for string coordinates if necessary.
-        _string_coord_axis_ticks(string_axes, initial_plot_defn, plot_defn)
+        if have_string_coords:
+            _string_coord_axis_ticks(string_axes, initial_plot_defn, plot_defn)
 
         # Invert y-axis if necessary.
         _invert_yaxis(v_coord)
@@ -518,7 +523,8 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
         result = draw_method(u, v, *args, **kwargs)
 
     # Apply tick labels for string coordinates.
-    _string_coord_axis_ticks(string_axes, initial_coords, string_coords)
+    if have_string_coords:
+        _string_coord_axis_ticks(string_axes, initial_coords, string_coords)
 
     # Invert y-axis if necessary.
     _invert_yaxis(v_object)
