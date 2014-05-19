@@ -223,11 +223,17 @@ def _string_coord_axis_ticks(string_axes, initial_coords, processed_coords):
 
     for axis_str, labels, indices in iterables:
         if axis_str is not None:
+            axis_dict = {}
             axis = getattr(plt.gca(), axis_str)
+            locator = axis.get_major_locator()
+            tick_locs = axis.get_majorticklocs()
             index_array = indices.points
             labels_array = labels.points
-            axis.set_ticks(index_array)
-            axis.set_ticklabels(labels_array)
+            for k, v in zip(index_array, labels_array):
+                axis_dict[k] = v
+            tick_labels = [axis_dict.get(l, '') for l in tick_locs]
+            axis.set_ticklabels(tick_labels)
+            axis.set_major_locator(locator)
 
 
 def _invert_yaxis(v_coord):
