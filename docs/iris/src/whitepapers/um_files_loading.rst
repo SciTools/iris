@@ -5,6 +5,7 @@
     import numpy as np
     import iris
     import iris.fileformats.pp
+    np.set_printoptions(precision=2)
 
 
 ===================================
@@ -24,14 +25,15 @@ Notes:
 
 #.  Iris treats Fieldsfile data almost exactly as if it were PP  -- i.e. it
     treats each field's lookup table entry like a PP header.
-#.  As the Iris datamodel is aligned to NetCDF-CF terms, most of this can
-    also be seen as a metadata translation between PP and CF terms, but it
-    is easier to discuss in terms of Iris elements.
+#.  The Iris datamodel is based on
+    `NetCDF CF conventions <http://cfconventions.org/>`_, so most of this can
+    also be seen as a metadata translation between PP and CF terms, but it is
+    easier to discuss in terms of Iris elements.
 
 For details of Iris terms (cubes, coordinates, attributes), refer to
 :ref:`Iris data structures <iris_data_structures>`.
 
-For details of CF conventions, see http://cf-convention.github.io/.
+For details of CF conventions, see http://cfconventions.org/.
 
 Overview of loading process
 ---------------------------
@@ -71,14 +73,27 @@ as follows:
         methods.
 
 #.  Lastly, Iris attempts to merge the raw cubes into higher-dimensional ones
-    (using :meth:`~iris.cube.CubeList.merge`).  Where possible, this combines
-    fields with different values of a scalar coordinates, to produce a
-    higher-dimensional cube with the scalar coordinate values merged into a
-    vector coordinate.  Where appropriate, created new vector coordinates are
-    also *dimension* coordinates that describe the extra dimensions.
+    (using :meth:`~iris.cube.CubeList.merge`):  This combines raw cubes with
+    different values of a scalar coordinate to produce a higher-dimensional
+    cube with the values arranged in a new vector coordinate.  Where possible,
+    the new vector coordinate is also a *dimension* coordinate, describing the
+    new dimension.
     Apart from the original 2 horizontal dimensions, all cube dimensions and
     dimension coordinates arise in this way -- for example, 'time', 'height',
     'forecast_period', 'realization'.
+
+.. note::
+    This document is only an introduction to the UM data loading process.
+    For further details of the process, consult the source code :
+
+    *   The conversion of fields to raw cubes is performed by the function
+        :func:`iris.fileformats.pp_rules.convert`, which is called from
+        :func:`iris.fileformats.pp.load_cubes` during loading.
+    *   The corresponding save functionality for PP output is implemented by the
+        :func:`iris.fileformats.pp.save` function.  The relevant 'save rules'
+        are defined in a text file ("lib/iris/etc/pp_save_rules.txt"), in a
+        form defined by the :mod:`iris.fileformats.rules` module.
+    *   Saving to Fieldsfiles is currently not supported.
 
 The rest of this document describes various independent sections of related
 metadata items.
@@ -91,9 +106,9 @@ Horizontal Grid
     X_LOWER_BOUNDS, Y_LOWER_BOUNDS
 
 **Cube components**
-    (unrotated) : coordinates 'longitude', 'latitude'
+    (unrotated) : coordinates ``longitude``, ``latitude``
 
-    (rotated pole) : coordinates 'grid_latitude', 'grid_longitude'
+    (rotated pole) : coordinates ``grid_latitude``, ``grid_longitude``
 
 **Details**
 
@@ -108,8 +123,8 @@ For an ordinary latitude-longitude grid, the cubes have coordinates called
  *  They have units of 'degrees'.
  *  They have a coordinate system of type :class:`iris.coord_systems.GeogCS`.
  *  The coordinate point values are normally set to the regular sequence
-    "ZDX/Y + BDX/Y * (1 .. LBNPT/LBROW)" (or simply to the extra data
-    vectors X/Y elements, if present).
+    ``ZDX/Y + BDX/Y * (1 .. LBNPT/LBROW)`` (*except*, if BDX/BDY is zero, the
+    values are taken from the extra data vector X/Y, if present).
  *  If X/Y_LOWER_BOUNDS extra data is available, this appears as bounds values
     of the horizontal cooordinates.
 
@@ -119,32 +134,27 @@ horizontal coordinates differ only slightly --
  *  The coord_system is a :class:`iris.coord_systems.RotatedGeogCS`, created
     with a pole defined by BPLAT, BPLON.
 
-Note that, in CF/Iris, there is no special distinction between "regular" and
-"irregular" coordinates.  Thus on saving, X and Y extra data sections are only
-written if the actual values are unevenly spaced.
-
 For example:
+    >>> # Load a PP field.
+    ... fname = iris.sample_data_path('air_temp.pp')
+    >>> fields_iter = iris.fileformats.pp.load(fname)
+    >>> field = next(fields_iter)
+    >>> 
+    >>> # Show grid details and first 5 longitude values.
+    ... print field.lbcode, field.lbnpt, field.bzx, field.bdx
+    1 96 -3.75 3.75
+    >>> print field.bzx + field.bdx * np.arange(1, 6)
+    [  0.     3.75   7.5   11.25  15.  ]
+    >>> 
+    >>> # Show Iris equivalent information.
+    ... cube = iris.load_cube(fname)
+    >>> print cube.coord('longitude').points[:5]
+    [  0.     3.75   7.5   11.25  15.  ]
 
-    >>> # Get a path to a test file.
-    >>> file_path = iris.sample_data_path('air_temp.pp')
-    >>> # Load just the first field.
-    >>> fields_iter = iris.fileformats.pp.load(file_path)
-    >>> field = fields_iter.next()
-    >>> 
-    >>> # Print some details of the horizontal grid.
-    >>> print 'lbcode={}, npt={}, bzx={}, bdx={}'.format(field.lbcode, field.lbnpt, field.bzx, field.bdx)
-    lbcode=1, npt=96, bzx=-3.74999904633, bdx=3.74999904633
-    >>> # Calculate + print the first 5 longitude values.
-    >>> print 'points[1:5] = {}'.format(field.bzx + field.bdx*np.arange(1,6))
-    points[1:5] = [  0.           3.74999905   7.49999809  11.24999714  14.99999619]
-    >>> 
-    >>> # Load the same data as an Iris cube.
-    >>> cube = iris.load_cube(file_path)
-    >>> 
-    >>> # Print out Iris equivalent longitude details.
-    >>> lons_coord = cube.coord('longitude')
-    >>> print '{}/{}[{}] = {} + ...'.format(lons_coord.name(), lons_coord.units, lons_coord.shape, lons_coord.points[:5])
-    longitude/degrees[(96,)] = [  0.           3.74999905   7.49999809  11.24999714  14.99999619] + ...
+.. note::
+    Note that in Iris (as in CF) there is no special distinction between
+    "regular" and "irregular" coordinates.  Thus on saving, X and Y extra data
+    sections are written only if the actual values are unevenly spaced.
 
 
 Phenomenon identification
@@ -154,16 +164,15 @@ Phenomenon identification
     LBFC, LBUSER4 (aka "stashcode"), LBUSER7 (aka "model code")
 
 **Cube components**
-    cube.standard_name, cube.units, cube.attributes['STASH']
+    ``cube.standard_name``, ``cube.units``, ``cube.attributes['STASH']``
 
 **Details**
 
-In Iris/CF, this information is normally encoded in the cube 'standard_name'
-property.
+This information is normally encoded in the cube 'standard_name' property.
 Iris identifies the stash section and item codes from LBUSER4 and the model
 code in LBUSER7, and compares these against a list of phenomenon types with
 known CF translations.  If the stashcode is recognised, it then assigns the
-appropriate 'standard_name' and 'units' properties of the cube.
+appropriate ``standard_name`` and ``units`` properties of the cube.
 
 Where any parts of the stash information are outside the valid range, Iris will
 instead attempt to interpret LBFC, for which a set of known translations is
@@ -171,29 +180,24 @@ also stored.  This is often the case for fieldsfiles, where LBUSER4 is
 frequently left as 0.
 
 In all cases, Iris also constructs a (:class:`iris.fileformats.pp.STASH`) item
-to identify the phenomenon, which is stored as a cube attribute named 'STASH'.
+to identify the phenomenon, which is stored as a cube attribute named
+``STASH``.
 This preserves the original STASH coding (as standard name translation is not
 always one-to-one), and can be used when no standard_name translation is
 identified (for example, to load only certain stashcodes with a constraint
 -- see example at :ref:`Load constraint examples <constraint_egs>`).
 
 For example:
-
-    >>> # Print PPfield phenomenon details.
-    >>> print field.lbuser[3], field.lbuser[6]
+    >>> # Show PPfield phenomenon details.
+    ... print field.lbuser[3], field.lbuser[6]
     16203 1
     >>> 
-    >>> # Print out Iris equivalent phenomenon details.
-    >>> print '{} [{}]'.format(cube.standard_name, cube.units)
-    air_temperature [K]
     >>> 
-    >>> stash = cube.attributes['STASH']
-    >>> print '{!r} : "{}"'.format(stash, stash)
-    STASH(model=1, section=16, item=203) : "m01s16i203"
-    >>> 
+    >>> # Show Iris equivalents.
+    ... print cube.standard_name, cube.units, cube.attributes['STASH']
+    air_temperature K m01s16i203
 
 .. note::
-
     On saving data, no attempt is made to translate a cube standard_name into a
     STASH code, but any attached 'STASH' attribute will be stored into the
     LBUSER4 and LBUSER7 elements.
@@ -207,20 +211,21 @@ Vertical coordinates
     BHLEV, BHRLEV
 
 **Cube components**
-    for height levels : coordinate 'height'
+    for height levels : coordinate ``height``
 
-    for pressure levels : coordinate 'pressure'
+    for pressure levels : coordinate ``pressure``
 
     for hybrid height levels :
 
-    *   coordinates 'model_level_number', 'sigma', 'level_height', 'altitude'
-    *   cube.aux_factories()[0].orography
+    *   coordinates ``model_level_number``, ``sigma``, ``level_height``,
+        ``altitude``
+    *   ``cube.aux_factories()[0].orography``
 
     for hybrid pressure levels :
 
-    *   coordinates 'model_level_number', 'sigma', 'level_pressure',
-        'air_pressure'
-    *   cube.aux_factories()[0].surface_air_pressure
+    *   coordinates ``model_level_number``, ``sigma``, ``level_pressure``,
+        ``air_pressure``
+    *   ``cube.aux_factories()[0].surface_air_pressure``
 
 
 **Details**
@@ -240,40 +245,40 @@ multiple-valued coordinates, and create a new data dimension (i.e. a "Z" axis)
 which they map onto.
 
 For height levels (LBVC=1):
-    A 'height' coordinate is created.  This has units 'm', point values from
+    A ``height`` coordinate is created.  This has units 'm', point values from
     BLEV, and no bounds.  When there are multiple vertical levels, this will
     become a dimension coordinate mapping to the vertical dimension.
 
 For pressure levels (LBVC=8):
-    A 'pressure' coordinate is created.  This has units 'hPa', point values
+    A ``pressure`` coordinate is created.  This has units 'hPa', point values
     from BLEV, and no bounds.  When there are multiple vertical levels, this
     will become a dimension coordinate mapping a vertical dimension.
 
 For hybrid height levels (LBVC=65):
     Three basic vertical coordinates are created:
 
-    *   The 'model_level' is dimensionless, with point values from LBLEV and
-        no bounds.
-    *   The 'sigma' coordinate is dimensionless, with point values from BHLEV
-        and bounds from BHRLEV and BHULEV.
-    *   The 'level_height' coordinate has units of 'm', point values from BLEV
-        and bounds from BRLEV and BULEV.
+    *   ``model_level`` is dimensionless, with point values from LBLEV and no
+        bounds.
+    *   ``sigma`` is dimensionless, with point values from BHLEV and bounds
+        from BHRLEV and BHULEV.
+    *   ``level_height`` has units of 'm', point values from BLEV and bounds
+        from BRLEV and BULEV.
 
     Also in this case, a :class:`~iris.aux_factory.HybridHeightFactory` is
     created, which references the 'level_height' and 'sigma' coordinates.
     Following raw cube merging, an extra load stage occurs where the
     attached :class:`~iris.aux_factory.HybridHeightFactory` is called to
-    manufacture a new 'altitude' coordinate:
+    manufacture a new ``altitude`` coordinate:
 
-    *   The 'altitude' coordinate is 3D, mapping to the 2 horizontal dimensions
-        *and* the new 'Z' dimension.
+    *   The altitude coordinate is 3D, mapping to the 2 horizontal
+        dimensions *and* the new 'Z' dimension.
     *   Its units are 'm'.
     *   Its point values are calculated from those of the 'level_height' and
         'sigma' coordinates, and an orography field.  If 'sigma' and
         'level_height' possess bounds, then bounds are also created for
         'altitude'.
 
-    To make the 'altitude' coordinate, there must be an orography field present
+    To make the altitude coordinate, there must be an orography field present
     in the load sources.  This is a surface altitude reference field,
     identified (by stashcode) during the main loading operation, and recorded
     for later use in the hybrid height calculation.  If it is absent, a warning
@@ -284,50 +289,17 @@ For hybrid height levels (LBVC=65):
     remain as auxiliary coordinates, because they may be (variously)
     multidimensional or non-monotonic.
 
-    .. note::
+See an example printout of a hybrid height cube,
+:ref:`here <hybrid_cube_printout>`:
+    Notice that this contains all of the above coordinates --
+    'model_level_number', 'sigma', 'level_height' and the derived 'altitude'.
 
-        Hybrid pressure levels can also be handled (for LBVC=9).  Without going
-        into detail, the mechanism is very simliar to that for hybrid height,
-        and produces basic coordinates 'model_level_number', 'sigma' and
-        'level_pressure', and a manufactured 3D 'air_pressure' coordinate.
+.. note::
 
-
-For example:
-
-    >>> # Get a path to a test file.
-    ... hybrid_eg_path = iris.sample_data_path('uk_hires.pp')
-    >>> # Load as PP fields.
-    ... eg_fields = [f for f in iris.fileformats.pp.load(hybrid_eg_path) if f.lbuser[3] == 4]
-    >>> # Print some details of the vertical data.
-    ... for f_index, field in enumerate(eg_fields[:3]):
-    ...     print '#{}: lbvc={}, level={}, sigma={}, height={}'.format(
-    ...         f_index, field.lbvc, field.lblev, field.bhlev, field.blev)
-    ... 
-    #0: lbvc=65, level=1, sigma=0.999423801899, height=5.0
-    #1: lbvc=65, level=4, sigma=0.991374611855, height=75.0
-    #2: lbvc=65, level=7, sigma=0.976512432098, height=205.0
-    >>> 
-    >>> # Load the same data as an Iris cube.
-    ... eg_cube = iris.load_cube(hybrid_eg_path, 'air_potential_temperature')
-    >>> # Extract only first time, and first 3 levels.
-    ... eg_cube = eg_cube[0, :3]
-    >>> 
-    >>> # Print out Iris equivalent vertical information (first 3 levels only).
-    ... for coord_name in ('model_level_number', 'sigma', 'level_height'):
-    ...     print eg_cube.coord(coord_name)
-    ... 
-    DimCoord(array([1, 4, 7], dtype=int32), standard_name='model_level_number', units=Unit('1'), attributes={'positive': 'up'})
-    DimCoord(array([ 0.9994238 ,  0.99137461,  0.97651243], dtype=float32), bounds=array([[ 1.        ,  0.99846387],
-           [ 0.99309671,  0.98927188],
-           [ 0.97936183,  0.97328818]], dtype=float32), standard_name=None, units=Unit('1'), long_name='sigma')
-    DimCoord(array([   5.,   75.,  205.], dtype=float32), bounds=array([[   0.        ,   13.33333206],
-           [  60.        ,   93.33332062],
-           [ 180.        ,  233.33331299]], dtype=float32), standard_name=None, units=Unit('m'), long_name='level_height', attributes={'positive': 'up'})
-    >>> 
-    >>> alt_coord = eg_cube.coord('altitude')
-    >>> print 'Altitude{}, signature={}.'.format(alt_coord.shape, alt_coord._as_defn())
-    Altitude(3, 204, 187), signature=CoordDefn(standard_name='altitude', long_name=None, var_name=None, units=Unit('m'), attributes={'positive': 'up'}, coord_system=None).
-    >>> 
+    Hybrid pressure levels can also be handled (for LBVC=9).  Without going
+    into details, the mechanism is very similar to that for hybrid height:
+    it produces basic coordinates 'model_level_number', 'sigma' and
+    'level_pressure', and a manufactured 3D 'air_pressure' coordinate.
 
 
 .. _um_time_metadata:
@@ -342,13 +314,14 @@ Time information
 *   LBTIM, LBFT
 
 **Cube components**
-    coordinates 'time', 'forecast_reference_time', 'forecast_period'
+    coordinates ``time``, ``forecast_reference_time``, ``forecast_period``
+
 
 **Details**
 
-In Iris/CF, times and time intervals are both expressed as simple numbers,
-following the approach of the udunits project
-(see http://www.unidata.ucar.edu/software/udunits/).
+In Iris (as in CF) times and time intervals are both expressed as simple
+numbers, following the approach of the
+`udunits <http://www.unidata.ucar.edu/software/udunits/>`_  project.
 These values are stored as cube coordinates, where the scaling and calendar
 information is contained in the :data:`iris.coords.Coord.units` property.
 
@@ -362,8 +335,8 @@ information is contained in the :data:`iris.coords.Coord.units` property.
     always 1st Jan 1970 (times before this are represented as negative values).
 
 The units.calendar property of time coordinates is set from the lowest decimal
-digit of LBTIM, known as LBTIM.IC.  Note that the meanings of non-gregorian
-calendars (e.g. 360-day 'model' calendar) are defined in CF, not udunits.
+digit of LBTIM, known as LBTIM.IC.  Note that the non-gregorian calendars (e.g.
+360-day 'model' calendar) are defined in CF, not udunits.
 
 There are a number of different time encoding methods used in UM data, but the
 important distinctions are controlled by the next-to-lowest decimal digit of
@@ -371,20 +344,20 @@ LBTIM, known as "LBTIM.IB".
 The most common cases are as follows:
 
 Data at a single measurement timepoint (LBTIM.IB=0):
-    A single 'time' coordinate is created, with points taken from T1 values,
+    A single ``time`` coordinate is created, with points taken from T1 values,
     and no bounds.  Its units is 'hours since 1970-01-01 00:00:00', with a
     calendar defined according to LBTIM.IC.
 
 Values forecast from T2, valid at T1 (LBTIM.IB=1):
-    Coordinates 'time' and 'forecast_reference_time' are created from the T1
+    Coordinates ``time` and ``forecast_reference_time`` are created from the T1
     and T2 values, respectively.  These have no bounds, and units of
     'hours since 1970-01-01 00:00:00' with the appropriate calendar.
-    A 'forecast_period' coordinate is also created, with values T1-T2, no
+    A ``forecast_period`` coordinate is also created, with values T1-T2, no
     bounds and units of 'hours'.
 
 Time mean values between T1 and T2 (LBTIM.IB=2):
-    The time coordinates 'time', 'forecast_reference_times' and 
-    'forecast_reference_time', are all present, as in the previous case.
+    The time coordinates ``time``, ``forecast_reference_times`` and
+    ``forecast_reference_time``, are all present, as in the previous case.
     In this case, however, the 'time' and 'forecast_period' coordinates also
     have associated bounds:  The 'time' bounds are from T1 to T2, and the
     'forecast_period' bounds are from "LBFT - (T2-T1)" to "LBFT".
@@ -394,48 +367,12 @@ Note that, in those more complex cases where the input defines all three of the
 these may become dimensions of the resulting data cube.  This will depend on
 the values actually present in the source fields for each of the elements.
 
-
-For example:
-
-    >>> # Get a path to a test file.
-    ... times_eg_path = iris.sample_data_path('air_times.pp')
-    >>> # Load as PP fields.
-    ... eg_fields = list(iris.fileformats.pp.load(times_eg_path))
-    >>> # Print details of the time metadata.
-    ... for f_index, field in enumerate(eg_fields):
-    ...     print 'field#{} : LBTIM.IA={} /IB={} /IC={}, LBFT={:03d}, T1={}, T2 ={}'.format(
-    ...         f_index, field.lbtim.ia, field.lbtim.ib, field.lbtim.ic, field.lbft, field.t1, field.t2)
-    ... 
-    field#0 : LBTIM.IA=0 /IB=1 /IC=1, LBFT=000, T1=2010-02-08 03:00:00, T2 =2010-02-08 03:00:00
-    field#1 : LBTIM.IA=0 /IB=1 /IC=1, LBFT=001, T1=2010-02-08 04:00:00, T2 =2010-02-08 03:00:00
-    field#2 : LBTIM.IA=0 /IB=1 /IC=1, LBFT=002, T1=2010-02-08 05:00:00, T2 =2010-02-08 03:00:00
-    >>> 
-    >>> # Load the same data as an Iris cube.
-    ... eg_cube = iris.load_cube(times_eg_path)
-    >>> # Show cube structure.
-    ... print eg_cube
-    air_pressure_at_sea_level / (Pa)    (time: 3; grid_latitude: 928; grid_longitude: 744)
-         Dimension coordinates:
-              time                           x                 -                    -
-              grid_latitude                  -                 x                    -
-              grid_longitude                 -                 -                    x
-         Auxiliary coordinates:
-              forecast_period                x                 -                    -
-         Scalar coordinates:
-              forecast_reference_time: 2010-02-08 03:00:00
-         Attributes:
-              STASH: m01s16i222
-              source: Data from Met Office Unified Model 7.03
-    >>> 
-    >>> # Print out the Iris equivalent time information.
-    ... for coord_name in ('forecast_period', 'forecast_reference_time', 'time'):
-    ...     print eg_cube.coord(coord_name)
-    ... 
-    DimCoord(array([ 0.,  1.,  2.]), standard_name='forecast_period', units=Unit('hours'))
-    DimCoord([2010-02-08 03:00:00], standard_name='forecast_reference_time', calendar='gregorian')
-    DimCoord([2010-02-08 03:00:00, 2010-02-08 04:00:00, 2010-02-08 05:00:00], standard_name='time', calendar='gregorian')
-    >>> 
-
+See an example printout of a forecast data cube,
+:ref:`here <cube-statistics_forecast_printout>` :
+    Notice that this example contains all of the above coordinates -- 'time',
+    'forecast_period' and 'forecast_reference_time'.  In this case the data are
+    forecasts, so 'time' is a dimension, 'forecast_period' varies with time and
+    'forecast_reference_time' is a constant.
 
 
 Statistical measures
@@ -445,16 +382,17 @@ Statistical measures
     LBPROC, LBTIM
 
 **Cube components**
-    cube.cell_methods
+    ``cube.cell_methods``
 
 
 **Details**
 
-Where a field is a time statistic, Iris will also add an appropriate
-:class:`iris.coords.CellMethod` to the cube, representing the aggregation
-operation performed.
-This is currently implemented only for certain specific binary flag values
-within the LBPROC element value:
+Where a field contains statistically processed data, Iris will add an
+appropriate :class:`iris.coords.CellMethod` to the cube, representing the
+aggregation operation which was performed.
+
+This is implemented for certain binary flag bits within the LBPROC element
+value.  For example:
 
 *   time mean, when (LBPROC & 128):
         Cube has a cell_method of the form "CellMethod('mean', 'time').
@@ -465,30 +403,20 @@ within the LBPROC element value:
 
 In all these cases, if the field LBTIM is also set to denote a time aggregate
 field (i.e. "LBTIM.IB=2", see above :ref:`um_time_metadata`), then the
-second-to-last digit of LBTIM, LBTIM.IA may also be non-zero to indicate the
-aggregation time-interval.  In that case, the
+second-to-last digit of LBTIM, aka "LBTIM.IA" may also be non-zero, in which
+case this indicates the aggregation time-interval.  In that case, the
 :data:`iris.coords.CellMethod.intervals` is also set to this many hours.
 
 For example:
-
-    >>> # Get a path to a test file.
-    ... stats_eg_path = iris.sample_data_path('pre-industrial.pp')
-    >>> # Load as a single PP field.
-    ... eg_field = iris.fileformats.pp.load(stats_eg_path).next()
+    >>> # Show stats metadata in a test PP field.
+    ... fname = iris.sample_data_path('pre-industrial.pp')
+    >>> eg_field = next(iris.fileformats.pp.load(fname))
+    >>> print eg_field.lbtim, eg_field.lbproc
+    622 128
     >>> 
-    >>> # Print details of the statistical metadata.
-    ... print 'LBTIM.IA={} /IB={} /IC={}, LBPROC={}'.format(
-    ...     eg_field.lbtim.ia, eg_field.lbtim.ib, eg_field.lbtim.ic, eg_field.lbproc)
-    ... 
-    LBTIM.IA=6 /IB=2 /IC=2, LBPROC=128
-    >>> 
-    >>> # Load the same data as an Iris cube.
-    ... eg_cube = iris.load_cube(stats_eg_path)
-    >>> 
-    >>> # Print out the Iris equivalent statistical information.
-    >>> print eg_cube.cell_methods
+    >>> # Print out the Iris equivalent information.
+    ... print iris.load_cube(fname).cell_methods
     (CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),)
-    >>> 
 
 
 Other metadata
@@ -503,4 +431,3 @@ LBRSVD5
 ^^^^^^^
 If if non-zero, is interpreted as an 'pseudo_level' number.  This produces a
 cube scalar coordinate named 'pseudo_level'.
-

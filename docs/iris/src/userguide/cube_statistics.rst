@@ -28,6 +28,8 @@ we can produce statistical functions of the data values
 across a particular dimension, 
 such as a 'mean over time' or 'minimum over latitude'.
 
+.. _cube-statistics_forecast_printout:
+
 For instance, suppose we have a cube:
 
     >>> import iris
