@@ -71,18 +71,24 @@ class Test_concatenate_messages(tests.IrisTest):
         cube.add_dim_coord(t_coord, 0)
         # Lats and lons
         x_coord = iris.coords.DimCoord(points=np.arange(3, dtype=np.float32),
-                                       standard_name='longitude', units='degrees')
+                                       standard_name='longitude',
+                                       units='degrees')
         cube.add_dim_coord(x_coord, 1)
         y_coord = iris.coords.DimCoord(points=np.arange(4, dtype=np.float32),
-                                       standard_name='latitude', units='degrees')
+                                       standard_name='latitude',
+                                       units='degrees')
         cube.add_dim_coord(y_coord, 2)
         # Scalars
         cube.add_aux_coord(iris.coords.AuxCoord([0], "height", units="m"))
         # Aux Coords
-        cube.add_aux_coord(iris.coords.AuxCoord(data, long_name='wibble', units='1'),
-                                                data_dims=(0, 1, 2))
-        cube.add_aux_coord(iris.coords.AuxCoord([0, 1, 2], long_name='foo', units='1'),
-                                                data_dims=(1,))
+        cube.add_aux_coord(iris.coords.AuxCoord(data,
+                                                long_name='wibble',
+                                                units='1'),
+                           data_dims=(0, 1, 2))
+        cube.add_aux_coord(iris.coords.AuxCoord([0, 1, 2],
+                                                long_name='foo',
+                                                units='1'),
+                           data_dims=(1,))
         self.cube = cube
 
     def test_definition_difference_message(self):
@@ -144,9 +150,11 @@ class Test_concatenate_messages(tests.IrisTest):
     def test_ndim_difference_message(self):
         cube_1 = self.cube
         cube_2 = iris.cube.Cube(np.arange(5, dtype=np.float32),
-                                standard_name='air_temperature', units='K')
+                                standard_name='air_temperature',
+                                units='K')
         x_coord = iris.coords.DimCoord(points=np.arange(5, dtype=np.float32),
-                                       standard_name='longitude', units='degrees')
+                                       standard_name='longitude',
+                                       units='degrees')
         cube_2.add_dim_coord(x_coord, 0)
         exc_regexp = 'Data dimensions differ: [0-9] != [0-9]'
         with self.assertRaisesRegexp(ConcatenateError, exc_regexp):

@@ -337,7 +337,7 @@ class _CubeSignature(object):
                 self.aux_metadata.append(metadata)
                 coord_and_dims = _CoordAndDims(coord, tuple(dims))
                 self.aux_coords_and_dims.append(coord_and_dims)
-            else: 
+            else:
                 self.scalar_coords.append(coord)
 
     def _coordinate_differences(self, other, attr):
@@ -382,7 +382,9 @@ class _CubeSignature(object):
                 other_value = other_dict[self_key]
                 if self_value != other_value:
                     diff_names.append(self_key)
-            result = (' metadata', ', '.join(diff_names), ', '.join(diff_names))
+            result = (' metadata',
+                      ', '.join(diff_names),
+                      ', '.join(diff_names))
         return result
 
     def match(self, other, error_on_mismatch):
