@@ -3,12 +3,10 @@
 ============================
 Iris technical 'Whitepapers'
 ============================
-
-Table of contents:
-------------------
+Extra information on specific technical issues.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :numbered:
 
    um_files_loading.rst

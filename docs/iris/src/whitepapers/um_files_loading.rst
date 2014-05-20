@@ -14,8 +14,8 @@ Iris handling of PP and Fieldsfiles
 
 This document provides a basic account of how PP and Fieldsfiles data is
 represented within Iris.
-It describes how Iris represents UM data, in terms of the metadata elements
-found in PP and Fieldsfile data.
+It describes how Iris represents data from the Met Office Unified Model (UM),
+in terms of the metadata elements found in PP and Fieldsfile formats.
 
 For simplicity, we shall describe this mostly in terms of *loading of PP data into
 Iris* (i.e. into cubes).  However most of the details are identical for
@@ -48,13 +48,13 @@ as follows:
     Each PPfield object represents a single source field:
 
     *   PP header elements are provided as named object attributes (e.g.
-        :data:`iris.fileformats.pp.PPField.lbproc`).
-    *   Extra, calculated "convenience" properties are also provided (e.g.
-        :data:`iris.fileformats.pp.PPField.t1` and
-        :data:`iris.fileformats.pp.PPField.t2` time values).
-    *   The data payload is present (:data:`iris.fileformats.pp.PPField.data`),
-        but is not actually loaded unless/until it is accessed, for greater
-        speed and space efficiency.
+        :attr:`~iris.fileformats.pp.PPField.lbproc`).
+    *   Some extra, calculated "convenience" properties are also provided (e.g.
+        :attr:`~iris.fileformats.pp.PPField.t1` and
+        :attr:`~iris.fileformats.pp.PPField.t2` time values).
+    *   There is a :attr:`iris.fileformats.pp.PPField.data` attribute, but the
+        field data is not actually loaded unless/until this is accessed, for
+        greater speed and space efficiency.
 
 #.  Each input field is translated into a two-dimensional Iris cube (with
     dimensions of latitude and longitude).  These are the 'raw' cubes, as
@@ -68,14 +68,14 @@ as follows:
         (i.e. 1-D) coordinates.  These include all header elements defining
         vertical and time coordinate values, and also more specialised factors
         such as ensemble number and pseudo-level.
-    *   Other metadata encoded on the cube in a variety of other forms, such as
-        the cube 'name' and 'units' properties, attribute values and cell
+    *   Other metadata is encoded on the cube in a variety of other forms, such
+        as the cube 'name' and 'units' properties, attribute values and cell
         methods.
 
 #.  Lastly, Iris attempts to merge the raw cubes into higher-dimensional ones
     (using :meth:`~iris.cube.CubeList.merge`):  This combines raw cubes with
     different values of a scalar coordinate to produce a higher-dimensional
-    cube with the values arranged in a new vector coordinate.  Where possible,
+    cube with the values contained in a new vector coordinate.  Where possible,
     the new vector coordinate is also a *dimension* coordinate, describing the
     new dimension.
     Apart from the original 2 horizontal dimensions, all cube dimensions and
@@ -83,17 +83,17 @@ as follows:
     'forecast_period', 'realization'.
 
 .. note::
-    This document is only an introduction to the UM data loading process.
-    For further details of the process, consult the source code :
+    This document covers the essential features of the UM data loading process.
+    The complete details are implemented as follows:
 
     *   The conversion of fields to raw cubes is performed by the function
         :func:`iris.fileformats.pp_rules.convert`, which is called from
         :func:`iris.fileformats.pp.load_cubes` during loading.
-    *   The corresponding save functionality for PP output is implemented by the
-        :func:`iris.fileformats.pp.save` function.  The relevant 'save rules'
-        are defined in a text file ("lib/iris/etc/pp_save_rules.txt"), in a
-        form defined by the :mod:`iris.fileformats.rules` module.
-    *   Saving to Fieldsfiles is currently not supported.
+    *   The corresponding save functionality for PP output is implemented by
+        the :func:`iris.fileformats.pp.save` function.  The relevant
+        'save rules' are defined in a text file
+        ("lib/iris/etc/pp_save_rules.txt"), in a form defined by the
+        :mod:`iris.fileformats.rules` module.
 
 The rest of this document describes various independent sections of related
 metadata items.
@@ -122,7 +122,7 @@ For an ordinary latitude-longitude grid, the cubes have coordinates called
  *  These are mapped to the appropriate data dimensions.
  *  They have units of 'degrees'.
  *  They have a coordinate system of type :class:`iris.coord_systems.GeogCS`.
- *  The coordinate point values are normally set to the regular sequence
+ *  The coordinate points are normally set to the regular sequence
     ``ZDX/Y + BDX/Y * (1 .. LBNPT/LBROW)`` (*except*, if BDX/BDY is zero, the
     values are taken from the extra data vector X/Y, if present).
  *  If X/Y_LOWER_BOUNDS extra data is available, this appears as bounds values
@@ -168,18 +168,19 @@ Phenomenon identification
 
 **Details**
 
-This information is normally encoded in the cube 'standard_name' property.
+This information is normally encoded in the cube ``standard_name`` property.
 Iris identifies the stash section and item codes from LBUSER4 and the model
 code in LBUSER7, and compares these against a list of phenomenon types with
-known CF translations.  If the stashcode is recognised, it then assigns the
-appropriate ``standard_name`` and ``units`` properties of the cube.
+known CF translations.  If the stashcode is recognised, it then defines the
+appropriate ``standard_name`` and ``units`` properties of the cube
+(i.e. :attr:`iris.cube.Cube.standard_name` and :attr:`iris.cube.Cube.units`).
 
 Where any parts of the stash information are outside the valid range, Iris will
 instead attempt to interpret LBFC, for which a set of known translations is
 also stored.  This is often the case for fieldsfiles, where LBUSER4 is
 frequently left as 0.
 
-In all cases, Iris also constructs a (:class:`iris.fileformats.pp.STASH`) item
+In all cases, Iris also constructs a :class:`~iris.fileformats.pp.STASH` item
 to identify the phenomenon, which is stored as a cube attribute named
 ``STASH``.
 This preserves the original STASH coding (as standard name translation is not
@@ -237,32 +238,31 @@ of LBVC.  The commonest ones are:
 * lbvc=8 : pressure levels
 * lbvc=65 : hybrid height
 
-In all these cases, vertical coordinates are created, with point and bounds
+In all these cases, vertical coordinates are created, with points and bounds
 values taken from the appropriate header elements.  In the raw cubes, each
 vertical coordinate is just a single value, but multiple values will usually
 occur.  The subsequent merge operation will then convert these into
-multiple-valued coordinates, and create a new data dimension (i.e. a "Z" axis)
-which they map onto.
+multiple-valued coordinates, and create a new vertical data dimension (i.e. a
+"Z" axis) which they map onto.
 
 For height levels (LBVC=1):
-    A ``height`` coordinate is created.  This has units 'm', point values from
+    A ``height`` coordinate is created.  This has units 'm', points from
     BLEV, and no bounds.  When there are multiple vertical levels, this will
     become a dimension coordinate mapping to the vertical dimension.
 
 For pressure levels (LBVC=8):
-    A ``pressure`` coordinate is created.  This has units 'hPa', point values
-    from BLEV, and no bounds.  When there are multiple vertical levels, this
-    will become a dimension coordinate mapping a vertical dimension.
+    A ``pressure`` coordinate is created.  This has units 'hPa', points from
+    BLEV, and no bounds.  When there are multiple vertical levels, this will
+    become a dimension coordinate mapping a vertical dimension.
 
 For hybrid height levels (LBVC=65):
     Three basic vertical coordinates are created:
 
-    *   ``model_level`` is dimensionless, with point values from LBLEV and no
-        bounds.
-    *   ``sigma`` is dimensionless, with point values from BHLEV and bounds
-        from BHRLEV and BHULEV.
-    *   ``level_height`` has units of 'm', point values from BLEV and bounds
-        from BRLEV and BULEV.
+    *   ``model_level`` is dimensionless, with points from LBLEV and no bounds.
+    *   ``sigma`` is dimensionless, with points from BHLEV and bounds from
+        BHRLEV and BHULEV.
+    *   ``level_height`` has units of 'm', points from BLEV and bounds from
+        BRLEV and BULEV.
 
     Also in this case, a :class:`~iris.aux_factory.HybridHeightFactory` is
     created, which references the 'level_height' and 'sigma' coordinates.
@@ -271,9 +271,9 @@ For hybrid height levels (LBVC=65):
     manufacture a new ``altitude`` coordinate:
 
     *   The altitude coordinate is 3D, mapping to the 2 horizontal
-        dimensions *and* the new 'Z' dimension.
+        dimensions *and* the new vertical dimension.
     *   Its units are 'm'.
-    *   Its point values are calculated from those of the 'level_height' and
+    *   Its points are calculated from those of the 'level_height' and
         'sigma' coordinates, and an orography field.  If 'sigma' and
         'level_height' possess bounds, then bounds are also created for
         'altitude'.
@@ -321,9 +321,9 @@ Time information
 
 In Iris (as in CF) times and time intervals are both expressed as simple
 numbers, following the approach of the
-`udunits <http://www.unidata.ucar.edu/software/udunits/>`_  project.
+`UDUNITS project <http://www.unidata.ucar.edu/software/udunits/>`_.
 These values are stored as cube coordinates, where the scaling and calendar
-information is contained in the :data:`iris.coords.Coord.units` property.
+information is contained in the :attr:`~iris.coords.Coord.units` property.
 
 *   The units of a time interval (e.g. 'forecast_period'), can be 'seconds' or
     a simple derived unit such as 'hours' or 'days' -- but it does not contain
@@ -331,7 +331,7 @@ information is contained in the :data:`iris.coords.Coord.units` property.
 *   The units of calendar-based times (including 'time' and
     'forecast_reference_time'), are of the general form
     "<time-unit> since <base-date>", interpreted according to the unit's
-    :data:`iris.unit.Unit.calendar` property.  The base date for this is
+    :attr:`~iris.unit.Unit.calendar` property.  The base date for this is
     always 1st Jan 1970 (times before this are represented as negative values).
 
 The units.calendar property of time coordinates is set from the lowest decimal
@@ -344,14 +344,14 @@ LBTIM, known as "LBTIM.IB".
 The most common cases are as follows:
 
 Data at a single measurement timepoint (LBTIM.IB=0):
-    A single ``time`` coordinate is created, with points taken from T1 values,
-    and no bounds.  Its units is 'hours since 1970-01-01 00:00:00', with a
-    calendar defined according to LBTIM.IC.
+    A single ``time`` coordinate is created, with points taken from T1 values.
+    It has no bounds, units of 'hours since 1970-01-01 00:00:00' and a calendar
+    defined according to LBTIM.IC.
 
 Values forecast from T2, valid at T1 (LBTIM.IB=1):
     Coordinates ``time` and ``forecast_reference_time`` are created from the T1
     and T2 values, respectively.  These have no bounds, and units of
-    'hours since 1970-01-01 00:00:00' with the appropriate calendar.
+    'hours since 1970-01-01 00:00:00', with the appropriate calendar.
     A ``forecast_period`` coordinate is also created, with values T1-T2, no
     bounds and units of 'hours'.
 
@@ -405,7 +405,8 @@ In all these cases, if the field LBTIM is also set to denote a time aggregate
 field (i.e. "LBTIM.IB=2", see above :ref:`um_time_metadata`), then the
 second-to-last digit of LBTIM, aka "LBTIM.IA" may also be non-zero, in which
 case this indicates the aggregation time-interval.  In that case, the
-:data:`iris.coords.CellMethod.intervals` is also set to this many hours.
+cell-method :attr:`~iris.coords.CellMethod.intervals` attribute is also set to
+this many hours.
 
 For example:
     >>> # Show stats metadata in a test PP field.
@@ -429,5 +430,5 @@ scalar coordinate named 'realization' (as defined in the CF conventions).
 
 LBRSVD5
 ^^^^^^^
-If if non-zero, is interpreted as an 'pseudo_level' number.  This produces a
+If non-zero, this is interpreted as a 'pseudo_level' number.  This produces a
 cube scalar coordinate named 'pseudo_level'.
