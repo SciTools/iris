@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -29,7 +29,7 @@ import numpy as np
 import iris.exceptions
 
 
-def geometry_area_weights(cube, geometry):
+def geometry_area_weights(cube, geometry, normalize=False):
     """
     Returns the array of weights corresponding to the area of overlap between
     the cells of cube's horizontal grid, and the given shapely geometry.
@@ -50,6 +50,13 @@ def geometry_area_weights(cube, geometry):
     * geometry (a shapely geometry instance):
         The geometry of interest. To produce meaningful results this geometry
         must have a non-zero area. Typically a Polygon or MultiPolygon.
+
+    Kwargs:
+
+    * normalize:
+        Calculate each individual cell weight as the cell area overlap between
+        the cell and the given shapely geometry divided by the total cell area.
+        Default is False.
 
     """
     # Validate the input parameters
@@ -88,7 +95,10 @@ def geometry_area_weights(cube, geometry):
         x0, x1 = x_bounds[xi]
         y0, y1 = y_bounds[yi]
         polygon = Polygon([(x0, y0), (x0, y1), (x1, y1), (x1, y0)])
-        weights[nd_index] = polygon.intersection(geometry).area
+        if normalize:
+            weights[nd_index] = polygon.intersection(geometry).area / polygon.area
+        else:
+            weights[nd_index] = polygon.intersection(geometry).area
 
     # Fix for the limitation of iris.analysis.MEAN weights handling.
     # Broadcast the array to the full shape of the cube
