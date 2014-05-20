@@ -19,27 +19,30 @@
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
+from iris.tests.unit.plot import TestGraphicStringCoord
 
-import iris
-from iris.coord_categorisation import add_weekday
-from iris.tests.stock import realistic_4d
 
 if tests.MPL_AVAILABLE:
-    from iris.plot import contour
+    import iris.plot as iplt
     import matplotlib.pyplot as plt
+    plt.switch_backend('TkAgg')
 
 
 @tests.skip_plot
-class TestStringCoordPlot(tests.GraphicsTest):
+class TestStringCoordContour(TestGraphicStringCoord):
+    def test_contour_yaxis_labels(self):
+        iplt.contour(self.cube, coords=('bar', 'str_coord'))
+        actual = self.tick_loc_and_label('yaxis')
+        expected = [(0.0, 'a'), (0.5, 'b'), (1.0, 'b'),
+                    (1.5, 'c'), (2.0, 'c'), (2.5, 'd'), (3.0, 'd')]
+        self.assertEqual(expected, actual)
+
     def test_contour_xaxis_labels(self):
-        exp_ticklabels = ['Wed', 'Wed', 'Wed', 'Wed', 'Wed', 'Wed']
-        cube = realistic_4d()
-        add_weekday(cube, cube.coord('time'))
-        sub_cube = cube[:, 0, :, 60]
-        contour(sub_cube, coords=['weekday', 'grid_latitude'])
-        xaxis = plt.gca().xaxis
-        ticklabels = [t.get_text() for t in xaxis.get_majorticklabels()]
-        self.assertEqual(exp_ticklabels, ticklabels)
+        iplt.contour(self.cube, coords=('str_coord', 'bar'))
+        actual = self.tick_loc_and_label('xaxis')
+        expected = [(0.0, 'a'), (0.5, 'b'), (1.0, 'b'),
+                    (1.5, 'c'), (2.0, 'c'), (2.5, 'd'), (3.0, 'd')]
+        self.assertEqual(expected, actual)
 
 
 if __name__ == "__main__":

@@ -264,29 +264,9 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     # Get & remove the coords entry from kwargs.
     coords = kwargs.pop('coords', None)
     if coords is not None:
-        initial_plot_defn = _get_plot_defn_custom_coords_picked(cube,
-                                                                coords,
-                                                                mode)
+        plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode)
     else:
-        initial_plot_defn = _get_plot_defn(cube, mode, ndims=2)
-
-    # Process any string coordinates and update plot_defn.
-    string_coords = []
-    string_axes = []
-    have_string_coords = False
-    axes = {0: 'xaxis', 1: 'yaxis'}
-    for i, coord in enumerate(initial_plot_defn.coords):
-        if coord is not None and coord.dtype.char == 'S':
-            axis = int(not(i)) if initial_plot_defn.transpose else i
-            string_axes.append(axes[axis])
-            new_coord = iris.coords.AuxCoord(np.arange(len(coord.points)),
-                                             long_name=coord.long_name)
-            string_coords.append(new_coord)
-            have_string_coords = True
-        else:
-            string_axes.append(None)
-            string_coords.append(coord)
-    plot_defn = PlotDefn(string_coords, initial_plot_defn.transpose)
+        plot_defn = _get_plot_defn(cube, mode, ndims=2)
 
     if _can_draw_map(plot_defn.coords):
         result = _map_common(draw_method_name, None, iris.coords.BOUND_MODE,
@@ -300,27 +280,40 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
         # Obtain U and V coordinates
         v_coord, u_coord = plot_defn.coords
 
-        # XXX: Watch out for non-contiguous bounds.
-        if u_coord:
-            u = u_coord.contiguous_bounds()
-        else:
-            u = np.arange(data.shape[1] + 1)
-        if v_coord:
-            v = v_coord.contiguous_bounds()
-        else:
-            v = np.arange(data.shape[0] + 1)
+        # Keep track of the numpy arrays which will be used for the actual
+        # plotting. In most cases, this will ultimately become [u, v].
+        plot_arrays = []
+    
+        # Store a mapping from axis name (e.g. "x") to a list containing the
+        # original instance (e.g. cube or coordinate) and associated values, 
+        string_axes = {}
 
-        if plot_defn.transpose:
-            u = u.T
-            v = v.T
+        for coord, axis_name, data_dim in zip([u_coord, v_coord], ['xaxis', 'yaxis'], [1, 0]):
+            if coord:
+                if coord.points.dtype.char == 'S':
+                    assert coord.points.ndim == 1
+                    assert coord.bounds is None
+                    string_axes[axis_name] = coord.points
+                    values = np.arange(data.shape[data_dim] + 1) - 0.5
+                else:
+                    values = coord.contiguous_bounds()
+                    if plot_defn.transpose:
+                        values = values.T
+            else:
+                values = np.arange(data.shape[data_dim] + 1)
 
+            plot_arrays.append(values) 
+        
+        u, v = plot_arrays
         u, v = _broadcast_2d(u, v)
         draw_method = getattr(plt, draw_method_name)
         result = draw_method(u, v, data, *args, **kwargs)
-
+        
+        ax = plt.gca()
         # Apply tick labels for string coordinates.
-        if have_string_coords:
-            _string_coord_axis_ticks(string_axes, initial_plot_defn, plot_defn)
+        for axis, ticks in string_axes.items():
+            formatter = mpl_ticker.IndexFormatter(ticks)
+            getattr(ax, axis).set_major_formatter(formatter)
 
         # Invert y-axis if necessary.
         _invert_yaxis(v_coord)
@@ -335,29 +328,29 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
     # Get & remove the coords entry from kwargs.
     coords = kwargs.pop('coords', None)
     if coords is not None:
-        initial_plot_defn = _get_plot_defn_custom_coords_picked(cube,
+        plot_defn = _get_plot_defn_custom_coords_picked(cube,
                                                                 coords,
                                                                 mode)
     else:
-        initial_plot_defn = _get_plot_defn(cube, mode, ndims=2)
+        plot_defn = _get_plot_defn(cube, mode, ndims=2)
 
-    # Process any string coordinates and update plot_defn.
-    string_coords = []
-    string_axes = []
-    have_string_coords = False
-    axes = {0: 'xaxis', 1: 'yaxis'}
-    for i, coord in enumerate(initial_plot_defn.coords):
-        if coord is not None and coord.dtype.char == 'S':
-            axis = int(not(i)) if initial_plot_defn.transpose else i
-            string_axes.append(axes[axis])
-            new_coord = iris.coords.AuxCoord(np.arange(len(coord.points)),
-                                             long_name=coord.long_name)
-            string_coords.append(new_coord)
-            have_string_coords = True
-        else:
-            string_axes.append(None)
-            string_coords.append(coord)
-    plot_defn = PlotDefn(string_coords, initial_plot_defn.transpose)
+#    # Process any string coordinates and update plot_defn.
+#    string_coords = []
+#    string_axes = []
+#    have_string_coords = False
+#    axes = {0: 'xaxis', 1: 'yaxis'}
+#    for i, coord in enumerate(initial_plot_defn.coords):
+#        if coord is not None and coord.dtype.char == 'S':
+#            axis = int(not(i)) if initial_plot_defn.transpose else i
+#            string_axes.append(axes[axis])
+#            new_coord = iris.coords.AuxCoord(np.arange(len(coord.points)),
+#                                             long_name=coord.long_name)
+#            string_coords.append(new_coord)
+#            have_string_coords = True
+#        else:
+#            string_axes.append(None)
+#            string_coords.append(coord)
+#    plot_defn = PlotDefn(string_coords, initial_plot_defn.transpose)
 
     if _can_draw_map(plot_defn.coords):
         result = _map_common(draw_method_name, arg_func,
@@ -386,12 +379,38 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
             u = u.T
             v = v.T
 
-        if u.dtype == np.dtype(object) and isinstance(u[0], datetime.datetime):
-            u = mpl_dates.date2num(u)
+        # Keep track of the numpy arrays which will be used for the actual
+        # plotting. In most cases, this will ultimately become [u, v].
+        plot_arrays = []
+    
+        # Store a mapping from axis name (e.g. "x") to a list containing the
+        # original instance (e.g. cube or coordinate) and associated values, 
+        string_axes = {}
+    
+        for values, axis_name in zip([u, v], ['xaxis', 'yaxis']):
+            # Replace any string coordinates with "index" coordinates, after the
+            # draw method is called, we will then make use of an IndexFormatter
+            # to label the ticks with the appropriate strings.
+            if values.dtype.char == 'S':
+                if values.ndim != 1:
+                    raise ValueError('Multi-dimensional string coordinates '
+                                     'not supported.')
+                # Swap out the values array for an index array, and store the
+                # original for later. 
+                plot_arrays.append(np.arange(values.size))
+                string_axes[axis_name] = values
+            elif (values.dtype == np.dtype(object) and
+                  isinstance(u[0], datetime.datetime)):
+                plot_arrays.append(mpl_dates.date2num(values))
+            else:
+                plot_arrays.append(values)
+#        if u.dtype == np.dtype(object) and isinstance(u[0], datetime.datetime):
+#            u = mpl_dates.date2num(u)
+#
+#        if v.dtype == np.dtype(object) and isinstance(v[0], datetime.datetime):
+#            v = mpl_dates.date2num(v)
 
-        if v.dtype == np.dtype(object) and isinstance(v[0], datetime.datetime):
-            v = mpl_dates.date2num(v)
-
+        u, v = plot_arrays
         u, v = _broadcast_2d(u, v)
 
         draw_method = getattr(plt, draw_method_name)
@@ -401,9 +420,11 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
         else:
             result = draw_method(u, v, data, *args, **kwargs)
 
-        # Apply tick labels for string coordinates if necessary.
-        if have_string_coords:
-            _string_coord_axis_ticks(string_axes, initial_plot_defn, plot_defn)
+        ax = plt.gca()
+        # Apply tick labels for string coordinates.
+        for axis, ticks in string_axes.items():
+            formatter = mpl_ticker.IndexFormatter(ticks)
+            getattr(ax, axis).set_major_formatter(formatter)
 
         # Invert y-axis if necessary.
         _invert_yaxis(v_coord)
@@ -436,7 +457,6 @@ def _uv_from_u_object_v_object(u_object, v_object):
         raise ValueError(ndim_msg.format(u_object.ndim))
     if v_object.ndim > 1:
         raise ValueError(ndim_msg.format(v_object.ndim))
-    type_msg = 'Plot arguments must be cubes or coordinates.'
     v = _data_from_coord_or_cube(v_object)
     if u_object is None:
         u = np.arange(v.shape[0])
@@ -481,35 +501,32 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
     # retrieve the objects that are plotted on the horizontal and vertical
     # axes (cubes or coordinates) and their respective values, along with the
     # argument tuple with these objects removed
-    initial_u_object, initial_v_object, u, v, args = _get_plot_objects(args)
-    # We need to retain the order of u & v.
-    initial_coords = [initial_u_object, initial_v_object]
-    initial_coords_dict = collections.OrderedDict(
-        [('u', [u, initial_u_object, 'xaxis']),
-         ('v', [v, initial_v_object, 'yaxis'])])
+    u_object, v_object, u, v, args = _get_plot_objects(args)
 
-    # Check if u or v are string coordinates.
-    string_axes = []
-    string_coords = []
-    have_string_coords = False
-    for values in initial_coords_dict.values():
-        coord = values[0]
-        initial_coord_object = values[1]
-        if getattr(coord, 'dtype').char == 'S':
-            string_axes.append(values[2])
-            new_coord_object = iris.coords.AuxCoord(
-                np.arange(len(initial_coord_object.points)),
-                long_name=initial_coord_object.long_name)
-            string_coords.append(new_coord_object)
-            have_string_coords = True
+    # Keep track of the numpy arrays which will be used for the actual
+    # plotting. In most cases, this will ultimately become [u, v].
+    plot_arrays = []
+
+    # Store a mapping from axis name (e.g. "x") to a list containing the
+    # original instance (e.g. cube or coordinate) and associated values, 
+    string_axes = {}
+
+    for values, axis_name in zip([u, v], ['xaxis', 'yaxis']):
+        # Replace any string coordinates with "index" coordinates, after the
+        # draw method is called, we will then make use of an IndexFormatter
+        # to label the ticks with the appropriate strings.
+        if values.dtype.char == 'S':
+            if values.ndim != 1:
+                raise ValueError('Multi-dimensional string coordinates '
+                                 'not supported.')
+            # Swap out the values array for an index array, and store the
+            # original for later. 
+            plot_arrays.append(np.arange(values.size))
+            string_axes[axis_name] = values
         else:
-            string_axes.append(None)
-            string_coords.append(initial_coord_object)
+            plot_arrays.append(values)
 
-    # Now re-make u & v after processing for string coords.
-    u_object, v_object = string_coords
-    if have_string_coords:
-        u, v = _uv_from_u_object_v_object(u_object, v_object)
+    u, v = plot_arrays
 
     # if both u_object and v_object are coordinates then check if a map
     # should be drawn
@@ -528,9 +545,11 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
     else:
         result = draw_method(u, v, *args, **kwargs)
 
+    ax = plt.gca()
     # Apply tick labels for string coordinates.
-    if have_string_coords:
-        _string_coord_axis_ticks(string_axes, initial_coords, string_coords)
+    for axis, ticks in string_axes.items():
+        formatter = mpl_ticker.IndexFormatter(ticks)
+        getattr(ax, axis).set_major_formatter(formatter)
 
     # Invert y-axis if necessary.
     _invert_yaxis(v_object)
