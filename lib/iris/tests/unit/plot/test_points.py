@@ -19,27 +19,27 @@
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
-
-import iris
-from iris.coord_categorisation import add_weekday
-from iris.tests.stock import realistic_4d
+from iris.tests.unit.plot import TestGraphicStringCoord
 
 if tests.MPL_AVAILABLE:
-    from iris.plot import points
-    import matplotlib.pyplot as plt
+    import iris.plot as iplt
 
 
 @tests.skip_plot
-class TestStringCoordPlot(tests.GraphicsTest):
-    def test_points_xaxis_labels(self):
-        exp_ticklabels = ['', 'Wed', 'Wed', 'Wed', 'Wed', 'Wed', 'Wed', '']
-        cube = realistic_4d()
-        add_weekday(cube, cube.coord('time'))
-        sub_cube = cube[:, 0, :, 60]
-        points(sub_cube, coords=['weekday', 'grid_latitude'])
-        xaxis = plt.gca().xaxis
-        ticklabels = [t.get_text() for t in xaxis.get_majorticklabels()]
-        self.assertEqual(exp_ticklabels, ticklabels)
+class TestStringCoordPlot(TestGraphicStringCoord):
+    def test_pcolor_yaxis_labels(self):
+        iplt.points(self.cube, coords=('bar', 'str_coord'))
+        actual = self.tick_loc_and_label('yaxis')
+        expected = [(-0.5, 'a'), (0.0, 'a'), (0.5, 'b'), (1.0, 'b'),
+                    (1.5, 'c'), (2.0, 'c'), (2.5, 'd'), (3.0, 'd'), (3.5, '')]
+        self.assertEqual(expected, actual)
+
+    def test_pcolor_xaxis_labels(self):
+        iplt.points(self.cube, coords=('str_coord', 'bar'))
+        actual = self.tick_loc_and_label('xaxis')
+        expected = [(-0.5, 'a'), (0.0, 'a'), (0.5, 'b'), (1.0, 'b'),
+                    (1.5, 'c'), (2.0, 'c'), (2.5, 'd'), (3.0, 'd'), (3.5, '')]
+        self.assertEqual(expected, actual)
 
 
 if __name__ == "__main__":

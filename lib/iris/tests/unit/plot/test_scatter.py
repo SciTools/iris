@@ -21,17 +21,14 @@
 import iris.tests as tests
 from iris.tests.unit.plot import TestGraphicStringCoord
 
-
 if tests.MPL_AVAILABLE:
     import iris.plot as iplt
-    import matplotlib.pyplot as plt
-    plt.switch_backend('TkAgg')
 
 
 @tests.skip_plot
-class TestStringCoordScatter(TestGraphicStringCoord):
+class TestStringCoordPlot(TestGraphicStringCoord):
     def setUp(self):
-        super(TestStringCoordScatter, self).setUp()
+        super(TestStringCoordPlot, self).setUp()
         self.cube = self.cube[0, :]
 
     def test_scatter_xaxis_labels(self):

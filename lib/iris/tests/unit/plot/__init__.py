@@ -35,6 +35,8 @@ class TestGraphicStringCoord(tests.GraphicsTest):
         # Intentional lazy import so that subclasses can have an opportunity
         # to change the backend.
         import matplotlib.pyplot as plt
+
+        # Draw the plot to 'fix' the ticks.
         plt.draw()
         axis = getattr(plt.gca(), axis_name)
         locations = axis.get_majorticklocs()

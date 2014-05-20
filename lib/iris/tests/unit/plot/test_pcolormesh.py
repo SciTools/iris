@@ -21,7 +21,6 @@
 import iris.tests as tests
 from iris.tests.unit.plot import TestGraphicStringCoord
 
-
 if tests.MPL_AVAILABLE:
     import iris.plot as iplt
 

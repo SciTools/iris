@@ -19,33 +19,31 @@
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
-
-import iris
-from iris.coord_categorisation import add_weekday
-import numpy as np
+from iris.tests.unit.plot import TestGraphicStringCoord
 
 if tests.MPL_AVAILABLE:
-    from iris.quickplot import scatter
-    import matplotlib.pyplot as plt
+    import iris.quickplot as qplt
 
 
 @tests.skip_plot
-class TestStringCoordPlot(tests.GraphicsTest):
+class TestStringCoordPlot(TestGraphicStringCoord):
+    def setUp(self):
+        super(TestStringCoordPlot, self).setUp()
+        self.cube = self.cube[0, :]
+
     def test_scatter_xaxis_labels(self):
-        exp_ticklabels = ['', 'a', 'c', 'e', 'b', 'd', '']
-        cube = iris.cube.Cube(np.random.rand(10), long_name='foo', units=1)
-        str_coord = iris.coords.AuxCoord(np.array(['a', 'b', 'c', 'd', 'e']*2),
-                                         long_name='string',
-                                         units='1')
-        val_coord = iris.coords.AuxCoord(np.random.rand(10),
-                                         long_name='val',
-                                         units=1)
-        cube.add_aux_coord(str_coord, 0)
-        cube.add_aux_coord(val_coord, 0)
-        scatter(cube.coord('string'), cube.coord('val'), c=cube.data)
-        xaxis = plt.gca().xaxis
-        ticklabels = [t.get_text() for t in xaxis.get_majorticklabels()]
-        self.assertEqual(exp_ticklabels, ticklabels)
+        qplt.scatter(self.cube.coord('str_coord'), self.cube)
+        actual = self.tick_loc_and_label('xaxis')
+        expected = [(-0.5, 'a'), (0.0, 'a'), (0.5, 'b'), (1.0, 'b'),
+                    (1.5, 'c'), (2.0, 'c'), (2.5, 'd'), (3.0, 'd'), (3.5, '')]
+        self.assertEqual(expected, actual)
+
+    def test_scatter_yaxis_labels(self):
+        qplt.scatter(self.cube, self.cube.coord('str_coord'))
+        actual = self.tick_loc_and_label('yaxis')
+        expected = [(-0.5, 'a'), (0.0, 'a'), (0.5, 'b'), (1.0, 'b'),
+                    (1.5, 'c'), (2.0, 'c'), (2.5, 'd'), (3.0, 'd'), (3.5, '')]
+        self.assertEqual(expected, actual)
 
 
 if __name__ == "__main__":

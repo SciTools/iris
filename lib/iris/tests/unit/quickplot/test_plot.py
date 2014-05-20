@@ -19,27 +19,31 @@
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
-
-import iris
-from iris.coord_categorisation import add_weekday
-from iris.tests.stock import realistic_4d
+from iris.tests.unit.plot import TestGraphicStringCoord
 
 if tests.MPL_AVAILABLE:
-    from iris.quickplot import plot
-    import matplotlib.pyplot as plt
+    import iris.quickplot as qplt
 
 
 @tests.skip_plot
-class TestStringCoordPlot(tests.GraphicsTest):
-    def test_plot_xaxis_labels(self):
-        exp_ticklabels = ['Wed', 'Wed', 'Wed', 'Wed', 'Wed', 'Wed']
-        cube = realistic_4d()
-        add_weekday(cube, cube.coord('time'))
-        sub_cube = cube[:, 0, 40, 60]
-        plot(sub_cube.coord('weekday'), sub_cube)
-        xaxis = plt.gca().xaxis
-        ticklabels = [t.get_text() for t in xaxis.get_majorticklabels()]
-        self.assertEqual(exp_ticklabels, ticklabels)
+class TestStringCoordPlot(TestGraphicStringCoord):
+    def setUp(self):
+        super(TestStringCoordPlot, self).setUp()
+        self.cube = self.cube[0, :]
+
+    def test_contour_yaxis_labels(self):
+        qplt.plot(self.cube, self.cube.coord('str_coord'))
+        actual = self.tick_loc_and_label('yaxis')
+        expected = [(0.0, 'a'), (0.5, 'b'), (1.0, 'b'),
+                    (1.5, 'c'), (2.0, 'c'), (2.5, 'd'), (3.0, 'd')]
+        self.assertEqual(expected, actual)
+
+    def test_contour_xaxis_labels(self):
+        qplt.plot(self.cube.coord('str_coord'), self.cube)
+        actual = self.tick_loc_and_label('xaxis')
+        expected = [(0.0, 'a'), (0.5, 'b'), (1.0, 'b'),
+                    (1.5, 'c'), (2.0, 'c'), (2.5, 'd'), (3.0, 'd')]
+        self.assertEqual(expected, actual)
 
 
 if __name__ == "__main__":

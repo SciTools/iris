@@ -21,15 +21,12 @@
 import iris.tests as tests
 from iris.tests.unit.plot import TestGraphicStringCoord
 
-
 if tests.MPL_AVAILABLE:
     import iris.plot as iplt
-    import matplotlib.pyplot as plt
-    plt.switch_backend('TkAgg')
 
 
 @tests.skip_plot
-class TestStringCoordContour(TestGraphicStringCoord):
+class TestStringCoordPlot(TestGraphicStringCoord):
     def test_contour_yaxis_labels(self):
         iplt.contour(self.cube, coords=('bar', 'str_coord'))
         actual = self.tick_loc_and_label('yaxis')
