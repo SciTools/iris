@@ -61,6 +61,8 @@ All the load functions share very similar arguments:
         :class:`iris.Constraint`, or an instance of
         :class:`iris.AttributeConstraint`.
 
+        .. _constraint_egs:
+
         For example::
 
             # Load air temperature data.
