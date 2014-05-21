@@ -890,8 +890,9 @@ class CFReader(object):
                 for cf_var in self.cf_group.formula_terms.itervalues():
                     for cf_root in cf_var.cf_terms_by_root:
                         if cf_root in cf_group and cf_var.cf_name not in cf_group:
+                            # Sanity check dimensionality.
                             dims = set(cf_var.dimensions)
-                            if (set(cf_variable.dimensions) & dims) == dims:
+                            if dims.issubset(cf_variable.dimensions):
                                 cf_group[cf_var.cf_name] = cf_var
                             else:
                                 msg = 'Ignoring formula terms variable {!r} ' \
