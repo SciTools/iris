@@ -401,14 +401,10 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
             _can_draw_map([v_object, u_object]):
         # Replace non-cartopy subplot/axes with a cartopy alternative and set
         # the transform keyword.
-        draw_method, kwargs = _geoaxes_draw_method_and_kwargs(u_object,
-                                                              v_object,
-                                                              draw_method_name,
-                                                              kwargs)
-    else:
-        # just use a pyplot function to draw
-        draw_method = getattr(plt, draw_method_name)
+        kwargs = _ensure_cartopy_axes_and_determine_kwargs(u_object, v_object,
+                                                           kwargs)
 
+    draw_method = getattr(plt, draw_method_name)
     if arg_func is not None:
         args, kwargs = arg_func(u, v, *args, **kwargs)
         result = draw_method(*args, **kwargs)
@@ -421,8 +417,14 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
     return result
 
 
-def _get_cartopy_axes(cartopy_proj):
-    # Replace non-cartopy subplot/axes with a cartopy alternative.
+def _replace_axes_with_cartopy_axes(cartopy_proj):
+    """
+    Replace non-cartopy subplot/axes with a cartopy alternative
+    based on the provided projection. If the current axes are already an
+    instance of :class:`cartopy.mpl.geoaxes.GeoAxes` then no action is taken.
+
+    """
+
     ax = plt.gca()
     if not isinstance(ax,
                       cartopy.mpl.geoaxes.GeoAxes):
@@ -441,17 +443,16 @@ def _get_cartopy_axes(cartopy_proj):
 
         # delete the axes which didn't have a cartopy projection
         fig.delaxes(ax)
-        ax = new_ax
-    return ax
 
 
-def _geoaxes_draw_method_and_kwargs(x_coord, y_coord, draw_method_name,
-                                    kwargs):
+def _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord, kwargs):
     """
-    Retrieve a GeoAxes draw method and appropriate keyword arguments for
-    calling it given the coordinates and existing keywords.
+    Replace the current non-cartopy axes with :class:`cartopy.mpl.GeoAxes`
+    and return the appropriate kwargs dict based on the provided coordinates
+    and kwargs.
 
     """
+    # Determine projection.
     if x_coord.coord_system != y_coord.coord_system:
         raise ValueError('The X and Y coordinates must have equal coordinate'
                          ' systems.')
@@ -460,14 +461,19 @@ def _geoaxes_draw_method_and_kwargs(x_coord, y_coord, draw_method_name,
         cartopy_proj = cs.as_cartopy_projection()
     else:
         cartopy_proj = cartopy.crs.PlateCarree()
-    ax = _get_cartopy_axes(cartopy_proj)
-    draw_method = getattr(ax, draw_method_name)
+
+    # Ensure the current axes are a cartopy.mpl.GeoAxes instance.
+    _replace_axes_with_cartopy_axes(cartopy_proj)
+
     # Set the "from transform" keyword.
+    if 'transform' in kwargs:
+        raise ValueError("The 'transform' keyword is not allowed as it "
+                         "automatically determined from the coordinate "
+                         "metadata.")
     new_kwargs = kwargs.copy()
-    assert 'transform' not in new_kwargs, 'Transform keyword is not allowed.'
     new_kwargs['transform'] = cartopy_proj
 
-    return draw_method, new_kwargs
+    return new_kwargs
 
 
 def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
@@ -520,9 +526,8 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
 
     # Replace non-cartopy subplot/axes with a cartopy alternative and set the
     # transform keyword.
-    draw_method, kwargs = _geoaxes_draw_method_and_kwargs(x_coord, y_coord,
-                                                          draw_method_name,
-                                                          kwargs)
+    kwargs = _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord,
+                                                       kwargs)
 
     if arg_func is not None:
         new_args, kwargs = arg_func(x, y, data, *args, **kwargs)
@@ -530,7 +535,7 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
         new_args = (x, y, data) + args
 
     # Draw the contour lines/filled contours.
-    return draw_method(*new_args, **kwargs)
+    return getattr(plt, draw_method_name)(*new_args, **kwargs)
 
 
 def contour(cube, *args, **kwargs):
@@ -604,6 +609,9 @@ def contourf(cube, *args, **kwargs):
             zorder = result.collections[0].zorder - .1
             contour(cube, levels=levels, colors=colors, antialiased=True,
                     zorder=zorder, coords=coords)
+            # Restore the current "image" to 'result' rather than the mappable
+            # resulting from the additional call to contour().
+            plt.sci(result)
 
     return result
 
