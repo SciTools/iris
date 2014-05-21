@@ -30,20 +30,17 @@ from shapely.geometry import Polygon
 
 from iris.analysis.geometry import geometry_area_weights
 from iris.coords import DimCoord
+from iris.cube import Cube
 
 
-class TestGeometryAreaWeights(tests.IrisTest):
+class Test(tests.IrisTest):
     def setUp(self):
-        x_coord = DimCoord([0.5, 1.5], long_name='x', bounds=[[0, 2], [2, 4]])
-        y_coord = DimCoord([0.5, 1.5], long_name='y', bounds=[[0, 2], [2, 4]])
-        _axis = dict(y=[y_coord], x=[x_coord])
-        _dim = dict(y=(1,), x=(2,))
+        x_coord = DimCoord([0.5, 1.5], 'longitude', bounds=[[0, 2], [2, 4]])
+        y_coord = DimCoord([0.5, 1.5], 'latitude', bounds=[[0, 2], [2, 4]])
         self.data = np.empty((4, 2, 2))
-        self.cube = Mock(coords=Mock(side_effect=lambda axis: _axis[axis]),
-                         coord_dims=Mock(side_effect=lambda c: _dim[c.name()]),
-                         data=self.data,
-                         shape=self.data.shape)
-        self.geometry = Polygon([(3, 3), (3, 5), (5, 5), (5, 3)])
+        dim_coords_and_dims = [(y_coord, (1,)), (x_coord, (2,))]
+        self.cube = Cube(self.data, dim_coords_and_dims=dim_coords_and_dims)
+        self.geometry = Polygon([(3, 3), (3, 50), (50, 50), (50, 3)])
 
     def test_no_overlap(self):
         self.geometry = Polygon([(4, 4), (4, 6), (6, 6), (6, 4)])
