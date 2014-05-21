@@ -27,19 +27,13 @@ if tests.MPL_AVAILABLE:
 
 @tests.skip_plot
 class TestStringCoordPlot(TestGraphicStringCoord):
-    def test_contour_yaxis_labels(self):
+    def test_yaxis_labels(self):
         iplt.contour(self.cube, coords=('bar', 'str_coord'))
-        actual = self.tick_loc_and_label('yaxis')
-        expected = [(0.0, 'a'), (0.5, 'b'), (1.0, 'b'),
-                    (1.5, 'c'), (2.0, 'c'), (2.5, 'd'), (3.0, 'd')]
-        self.assertEqual(expected, actual)
+        self.assertPointsTickLabels('yaxis')
 
-    def test_contour_xaxis_labels(self):
+    def test_xaxis_labels(self):
         iplt.contour(self.cube, coords=('str_coord', 'bar'))
-        actual = self.tick_loc_and_label('xaxis')
-        expected = [(0.0, 'a'), (0.5, 'b'), (1.0, 'b'),
-                    (1.5, 'c'), (2.0, 'c'), (2.5, 'd'), (3.0, 'd')]
-        self.assertEqual(expected, actual)
+        self.assertPointsTickLabels('xaxis')
 
 
 if __name__ == "__main__":

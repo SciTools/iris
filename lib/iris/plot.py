@@ -197,6 +197,18 @@ def _broadcast_2d(u, v):
     return u, v
 
 
+def _string_coord_axis_tick_labels(string_axes):
+    """Apply tick labels for string coordinates."""
+
+    ax = plt.gca()
+    for axis, ticks in string_axes.items():
+        formatter = mpl_ticker.IndexFormatter(ticks)
+        locator = mpl_ticker.MaxNLocator(integer=True)
+        this_axis = getattr(ax, axis)
+        this_axis.set_major_formatter(formatter)
+        this_axis.set_major_locator(locator)
+
+
 def _invert_yaxis(v_coord):
     """
     Inverts the y-axis of the current plot based on conditions:
@@ -262,8 +274,6 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
                     values = np.arange(data.shape[data_dim] + 1) - 0.5
                 else:
                     values = coord.contiguous_bounds()
-                    if plot_defn.transpose:
-                        values = values.T
             else:
                 values = np.arange(data.shape[data_dim] + 1)
 
@@ -274,11 +284,8 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
         draw_method = getattr(plt, draw_method_name)
         result = draw_method(u, v, data, *args, **kwargs)
 
-        ax = plt.gca()
         # Apply tick labels for string coordinates.
-        for axis, ticks in string_axes.items():
-            formatter = mpl_ticker.IndexFormatter(ticks)
-            getattr(ax, axis).set_major_formatter(formatter)
+        _string_coord_axis_tick_labels(string_axes)
 
         # Invert y-axis if necessary.
         _invert_yaxis(v_coord)
@@ -354,11 +361,8 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
         else:
             result = draw_method(u, v, data, *args, **kwargs)
 
-        ax = plt.gca()
         # Apply tick labels for string coordinates.
-        for axis, ticks in string_axes.items():
-            formatter = mpl_ticker.IndexFormatter(ticks)
-            getattr(ax, axis).set_major_formatter(formatter)
+        _string_coord_axis_tick_labels(string_axes)
 
         # Invert y-axis if necessary.
         _invert_yaxis(v_coord)
@@ -473,11 +477,8 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
     else:
         result = draw_method(u, v, *args, **kwargs)
 
-    ax = plt.gca()
     # Apply tick labels for string coordinates.
-    for axis, ticks in string_axes.items():
-        formatter = mpl_ticker.IndexFormatter(ticks)
-        getattr(ax, axis).set_major_formatter(formatter)
+    _string_coord_axis_tick_labels(string_axes)
 
     # Invert y-axis if necessary.
     _invert_yaxis(v_object)

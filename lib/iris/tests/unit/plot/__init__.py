@@ -42,3 +42,14 @@ class TestGraphicStringCoord(tests.GraphicsTest):
         locations = axis.get_majorticklocs()
         labels = [tick.get_text() for tick in axis.get_ticklabels()]
         return zip(locations, labels)
+
+    def assertBoundsTickLabels(self, axis):
+        actual = self.tick_loc_and_label(axis)
+        expected = [(-1.0, ''), (0.0, 'a'), (1.0, 'b'),
+                    (2.0, 'c'), (3.0, 'd'), (4.0, '')]
+        self.assertEqual(expected, actual)
+
+    def assertPointsTickLabels(self, axis):
+        actual = self.tick_loc_and_label(axis)
+        expected = [(0.0, 'a'), (1.0, 'b'), (2.0, 'c'), (3.0, 'd')]
+        self.assertEqual(expected, actual)

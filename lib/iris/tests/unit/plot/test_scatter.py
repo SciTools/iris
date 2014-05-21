@@ -31,19 +31,13 @@ class TestStringCoordPlot(TestGraphicStringCoord):
         super(TestStringCoordPlot, self).setUp()
         self.cube = self.cube[0, :]
 
-    def test_scatter_xaxis_labels(self):
+    def test_xaxis_labels(self):
         iplt.scatter(self.cube.coord('str_coord'), self.cube)
-        actual = self.tick_loc_and_label('xaxis')
-        expected = [(-0.5, 'a'), (0.0, 'a'), (0.5, 'b'), (1.0, 'b'),
-                    (1.5, 'c'), (2.0, 'c'), (2.5, 'd'), (3.0, 'd'), (3.5, '')]
-        self.assertEqual(expected, actual)
+        self.assertBoundsTickLabels('xaxis')
 
-    def test_scatter_yaxis_labels(self):
+    def test_yaxis_labels(self):
         iplt.scatter(self.cube, self.cube.coord('str_coord'))
-        actual = self.tick_loc_and_label('yaxis')
-        expected = [(-0.5, 'a'), (0.0, 'a'), (0.5, 'b'), (1.0, 'b'),
-                    (1.5, 'c'), (2.0, 'c'), (2.5, 'd'), (3.0, 'd'), (3.5, '')]
-        self.assertEqual(expected, actual)
+        self.assertBoundsTickLabels('yaxis')
 
 
 if __name__ == "__main__":
