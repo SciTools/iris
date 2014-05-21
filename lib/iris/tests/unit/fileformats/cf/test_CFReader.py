@@ -69,6 +69,8 @@ class Test_translate__formula_terms(tests.IrisTest):
         self.height = netcdf_variable('height', 'height', np.float,
                                       formula_terms=formula_terms,
                                       bounds='height_bnds')
+        # Over-specify the formula terms on the bounds variable,
+        # which will be ignored by the cf loader.
         formula_terms = 'a: delta_bnds b: sigma_bnds orog: orography'
         self.height_bnds = netcdf_variable('height_bnds', 'height bnds',
                                            np.float,
@@ -148,6 +150,9 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
         self.height = netcdf_variable('height', 'height', np.float,
                                       formula_terms=formula_terms,
                                       bounds='height_bnds')
+        # Over-specify the formula terms on the bounds variable,
+        # which will be ignored by the cf loader.
+        formula_terms = 'a: delta_bnds b: sigma_bnds orog: orography'
         self.height_bnds = netcdf_variable('height_bnds', 'height bnds',
                                            np.float,
                                            formula_terms=formula_terms)
