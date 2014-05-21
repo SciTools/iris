@@ -398,7 +398,7 @@ def _load_cube(engine, cf, cf_var, filename):
     return cube
 
 
-def _load_aux_factory(engine, cf, filename, cube):
+def _load_aux_factory(engine, cube):
     """
     Convert any CF-netCDF dimensionless coordinate to an AuxCoordFactory.
 
@@ -422,10 +422,32 @@ def _load_aux_factory(engine, cf, filename, cube):
             orography = coord_from_term('orog')
             factory = HybridHeightFactory(delta, sigma, orography)
         elif formula_type == 'atmosphere_hybrid_sigma_pressure_coordinate':
+            # Hybrid pressure has two valid versions of its formula terms:
+            # "p0: var1 a: var2 b: var3 ps: var4" or
+            # "ap: var1 b: var2 ps: var3" where "ap = p0 * a"
             try:
+                # Attempt to get the "ap" term.
                 delta = coord_from_term('ap')
-            except ValueError:
-                delta = coord_from_term('a') * coord_from_term('p0')
+            except (KeyError, ValueError):
+                # The "ap" term is unavailable, so try getting terms "p0"
+                # and "a" terms in order to derive an "ap" equivalent term.
+                coord_p0 = coord_from_term('p0')
+                if coord_p0.shape != (1,):
+                    msg = 'Expecting {!r} to be a scalar reference pressure ' \
+                        'coordinate, got shape {!r}'.format(coord_p0.var_name,
+                                                            coord_p0.shape)
+                    raise ValueError(msg)
+                if coord_p0.has_bounds():
+                    msg = 'Ignoring atmosphere hybrid sigma pressure scalar ' \
+                        'coordinate {!r} bounds.'.format(coord_p0.name())
+                    warnings.warn(msg)
+                coord_a = coord_from_term('a')
+                delta = coord_a * coord_p0.points[0]
+                delta.units = coord_a.units * coord_p0.units
+                delta.rename('vertical pressure')
+                delta.var_name = 'ap'
+                cube.add_aux_coord(delta, cube.coord_dims(coord_a))
+
             sigma = coord_from_term('b')
             surface_air_pressure = coord_from_term('ps')
             factory = HybridPressureFactory(delta, sigma, surface_air_pressure)
@@ -475,7 +497,7 @@ def load_cubes(filenames, callback=None):
 
             # Process any associated formula terms and attach
             # the corresponding AuxCoordFactory.
-            _load_aux_factory(engine, cf, filename, cube)
+            _load_aux_factory(engine, cube)
 
             # Perform any user registered callback function.
             cube = iris.io.run_callback(callback, cube, engine.cf_var,
