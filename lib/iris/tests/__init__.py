@@ -558,11 +558,17 @@ class IrisTest(unittest.TestCase):
 
 class GraphicsTest(IrisTest):
 
+    def setUp(self):
+        # Make sure we have no unclosed plots from previous tests before
+        # generating this one.
+        if MPL_AVAILABLE:
+            plt.close('all')
+
     def tearDown(self):
         # If a plotting test bombs out it can leave the current figure
         # in an odd state, so we make sure it's been disposed of.
         if MPL_AVAILABLE:
-            plt.close()
+            plt.close('all')
 
 
 def skip_data(fn):
