@@ -99,6 +99,8 @@ GRIB2_TO_CF = {
     G2Param(2, 2, 0, 1): CFName('surface_roughness_length', None, 'm'),
     G2Param(2, 2, 0, 2): CFName('soil_temperature', None, 'K'),
     G2Param(2, 2, 0, 7): CFName('surface_altitude', None, 'm'),
+    G2Param(2, 10, 1, 2): CFName('sea_water_x_velocity', None, 'm s-1'),
+    G2Param(2, 10, 1, 3): CFName('sea_water_y_velocity', None, 'm s-1'),
     G2Param(2, 10, 2, 0): CFName('sea_ice_area_fraction', None, '1'),
     G2Param(2, 10, 3, 0): CFName('sea_surface_temperature', None, 'K'),
     }
@@ -164,6 +166,8 @@ CF_TO_GRIB2 = {
     CFName('relative_humidity', None, '%'): G2Param(2, 0, 1, 1),
     CFName('sea_ice_area_fraction', None, '1'): G2Param(2, 10, 2, 0),
     CFName('sea_surface_temperature', None, 'K'): G2Param(2, 10, 3, 0),
+    CFName('sea_water_x_velocity', None, 'm s-1'): G2Param(2, 10, 1, 2),
+    CFName('sea_water_y_velocity', None, 'm s-1'): G2Param(2, 10, 1, 3),
     CFName('soil_temperature', None, 'K'): G2Param(2, 2, 0, 2),
     CFName('specific_humidity', None, 'kg kg-1'): G2Param(2, 0, 1, 0),
     CFName('surface_altitude', None, 'm'): G2Param(2, 2, 0, 7),
