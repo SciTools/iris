@@ -27,6 +27,7 @@ from iris.coords import AuxCoord
 @tests.skip_plot
 class TestGraphicStringCoord(tests.GraphicsTest):
     def setUp(self):
+        super(TestGraphicStringCoord, self).setUp()
         self.cube = simple_2d(with_bounds=True)
         self.cube.add_aux_coord(AuxCoord(list('abcd'),
                                          long_name='str_coord'), 1)
