@@ -21,16 +21,13 @@ from __future__ import division
 import iris.tests as tests
 
 import itertools
-import warnings
 
 import cartopy.crs as ccrs
 import numpy as np
 import numpy.ma as ma
-import shapely.geometry
 
 import iris
 import iris.analysis.cartography
-import iris.analysis.geometry as igeom
 import iris.analysis.maths
 import iris.coord_systems
 import iris.coords
@@ -1050,103 +1047,6 @@ class TestRollingWindow(tests.IrisTest):
                                        [12.0, 9.0]], dtype=np.float64)
         # use almost equal to compare floats
         self.assertArrayAlmostEqual(expected_result, res_cube.data)
-
-
-class TestGeometry(tests.IrisTest):
-
-    @tests.skip_data
-    def test_distinct_xy(self):
-        cube = iris.tests.stock.simple_pp()
-        cube = cube[:4, :4]
-        lon = cube.coord('longitude')
-        lat = cube.coord('latitude')
-        lon.guess_bounds()
-        lat.guess_bounds()
-        from iris.fileformats.rules import regular_step
-        quarter = abs(regular_step(lon) * regular_step(lat) * 0.25)
-        half = abs(regular_step(lon) * regular_step(lat) * 0.5)
-        minx = 3.7499990463256836
-        maxx = 7.499998092651367
-        miny = 84.99998474121094
-        maxy = 89.99998474121094
-        geometry = shapely.geometry.box(minx, miny, maxx, maxy)
-        weights = igeom.geometry_area_weights(cube, geometry)
-        target = np.array([
-            [0, quarter, quarter, 0],
-            [0, half, half, 0],
-            [0, quarter, quarter, 0],
-            [0, 0, 0, 0]])
-        self.assertTrue(np.allclose(weights, target))
-
-    @tests.skip_data
-    def test_distinct_xy_bounds(self):
-        # cases where geometry bnds are outside cube bnds correctly handled?
-        cube = iris.tests.stock.simple_pp()
-        cube = cube[:4, :4]
-        lon = cube.coord('longitude')
-        lat = cube.coord('latitude')
-        lon.guess_bounds()
-        lat.guess_bounds()
-        from iris.fileformats.rules import regular_step
-        quarter = abs(regular_step(lon) * regular_step(lat) * 0.25)
-        half = abs(regular_step(lon) * regular_step(lat) * 0.5)
-        full = abs(regular_step(lon) * regular_step(lat))
-        minx = 3.7499990463256836
-        maxx = 13.12499619
-        maxx_overshoot = 15.
-        miny = 84.99998474121094
-        maxy = 89.99998474121094
-        geometry = shapely.geometry.box(minx, miny, maxx, maxy)
-        geometry_overshoot = shapely.geometry.box(minx, miny, maxx_overshoot,
-                                                  maxy)
-        weights = igeom.geometry_area_weights(cube, geometry)
-        weights_overshoot = igeom.geometry_area_weights(cube,
-                                                        geometry_overshoot)
-        target = np.array([
-            [0, quarter, half, half],
-            [0, half, full, full],
-            [0, quarter, half, half],
-            [0, 0, 0, 0]])
-        self.assertTrue(np.allclose(weights, target))
-        self.assertTrue(np.allclose(weights_overshoot, target))
-
-    @tests.skip_data
-    def test_distinct_xy_bounds_pole(self):
-        # is UserWarning issued for out-of-bounds? results will be unexpected!
-        cube = iris.tests.stock.simple_pp()
-        cube = cube[:4, :4]
-        lon = cube.coord('longitude')
-        lat = cube.coord('latitude')
-        lon.guess_bounds()
-        lat.guess_bounds()
-        from iris.fileformats.rules import regular_step
-        quarter = abs(regular_step(lon) * regular_step(lat) * 0.25)
-        half = abs(regular_step(lon) * regular_step(lat) * 0.5)
-        minx = 3.7499990463256836
-        maxx = 7.499998092651367
-        miny = 84.99998474121094
-        maxy = 99.99998474121094
-        geometry = shapely.geometry.box(minx, miny, maxx, maxy)
-        # see http://stackoverflow.com/a/3892301 to assert warnings
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")  # always trigger all warnings
-            weights = igeom.geometry_area_weights(cube, geometry)
-            self.assertEqual(str(w[-1].message), "The geometry exceeds the "
-                             "cube's y dimension at the upper end.")
-            self.assertTrue(issubclass(w[-1].category, UserWarning))
-        target = np.array([
-            [0, half, half, 0],
-            [0, half, half, 0],
-            [0, quarter, quarter, 0],
-            [0, 0, 0, 0]])
-        self.assertTrue(np.allclose(weights, target))
-
-    def test_shared_xy(self):
-        cube = tests.stock.track_1d()
-        geometry = shapely.geometry.box(1, 4, 3.5, 7)
-        weights = igeom.geometry_area_weights(cube, geometry)
-        target = np.array([0, 0, 2, 0.5, 0, 0, 0, 0, 0, 0, 0])
-        self.assertTrue(np.allclose(weights, target))
 
 
 class TestProject(tests.GraphicsTest):
