@@ -435,10 +435,8 @@ class _CFFormulaTermsVariable(CFVariable):
 
     def __init__(self, name, data, formula_root, formula_term):
         CFVariable.__init__(self, name, data)
-        #: CF-netCDF variable name that defines the formula terms
-        self.cf_root = formula_root
-        #: Formula term of the associated formula variable
-        self.cf_term = formula_term
+        # Register the formula root and term relationship.
+        self.add_formula_term(formula_root, formula_term)
 
     @classmethod
     def identify(cls, variables, ignore=None, target=None, warn=True):
@@ -464,16 +462,19 @@ class _CFFormulaTermsVariable(CFVariable):
                                 message = 'Missing CF-netCDF formula term variable %r, referenced by netCDF variable %r'
                                 warnings.warn(message % (variable_name, nc_var_name))
                         else:
-                            result[variable_name] = _CFFormulaTermsVariable(variable_name,
-                                                                            variables[variable_name],
-                                                                            nc_var_name, term_name)
+                            if variable_name not in result:
+                                result[variable_name] = _CFFormulaTermsVariable(variable_name,
+                                                                                variables[variable_name],
+                                                                                nc_var_name, term_name)
+                            else:
+                                result[variable_name].add_formula_term(nc_var_name, term_name)
 
         return result
 
     def __repr__(self):
-        return '%s(%r, %r, %r, %r)' % (self.__class__.__name__,
-                                       self.cf_name, self.cf_data,
-                                       self.cf_root, self.cf_term)
+        return '%s(%r, %r, %r)' % (self.__class__.__name__,
+                                   self.cf_name, self.cf_data,
+                                   self.cf_terms_by_root)
 
 
 class CFGridMappingVariable(CFVariable):
@@ -835,11 +836,15 @@ class CFReader(object):
 
         # Identify and register all CF formula terms.
         formula_terms = _CFFormulaTermsVariable.identify(self._dataset.variables)
+
         for cf_var in formula_terms.itervalues():
-            cf_name = cf_var.cf_name
-            if cf_name not in self.cf_group:
-                self.cf_group[cf_name] = CFAuxiliaryCoordinateVariable(cf_name, cf_var.cf_data)
-            self.cf_group[cf_name].add_formula_term(cf_var.cf_root, cf_var.cf_term)
+            for cf_root, cf_term in cf_var.cf_terms_by_root.iteritems():
+                # Ignore formula terms owned by a bounds variable.
+                if cf_root not in self.cf_group.bounds:
+                    cf_name = cf_var.cf_name
+                    if cf_var.cf_name not in self.cf_group:
+                        self.cf_group[cf_name] = CFAuxiliaryCoordinateVariable(cf_name, cf_var.cf_data)
+                    self.cf_group[cf_name].add_formula_term(cf_root, cf_term)
 
         # Determine the CF data variables.
         data_variable_names = set(netcdf_variable_names) - set(self.cf_group.ancillary_variables) - \
@@ -885,7 +890,17 @@ class CFReader(object):
                 for cf_var in self.cf_group.formula_terms.itervalues():
                     for cf_root in cf_var.cf_terms_by_root:
                         if cf_root in cf_group and cf_var.cf_name not in cf_group:
-                            cf_group[cf_var.cf_name] = cf_var
+                            # Sanity check dimensionality.
+                            dims = set(cf_var.dimensions)
+                            if dims.issubset(cf_variable.dimensions):
+                                cf_group[cf_var.cf_name] = cf_var
+                            else:
+                                msg = 'Ignoring formula terms variable {!r} ' \
+                                    'referenced by data variable {!r}: ' \
+                                    'dimension ' \
+                                    'mis-match.'.format(cf_var.cf_name,
+                                                        cf_variable.cf_name)
+                                warnings.warn(msg)
 
             # Add the CF group to the variable.
             cf_variable.cf_group = cf_group
