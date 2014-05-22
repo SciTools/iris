@@ -330,12 +330,14 @@ def _cf_height_from_name(z_coord):
                 points = bounds.sum() / 2.
 
             long_name = None
-            if name in ['height', 'altitude']:
+            if name == 'altitude':
+                units = units[0]
+                standard_name = name
+                long_name = 'altitude above sea level'
+            elif name == 'height':
                 units = units[0]
                 standard_name = name
                 long_name = 'height above ground level'
-                if name == 'altitude':
-                    long_name = 'altitude above sea level'
             elif name == 'air_pressure':
                 standard_name = name
             elif name == 'flight_level':
