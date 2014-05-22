@@ -22,6 +22,7 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 """
 
+
 import collections
 import datetime
 import functools
@@ -32,6 +33,7 @@ import matplotlib.collections as mpl_collections
 import matplotlib.dates as mpl_dates
 import matplotlib.transforms as mpl_transforms
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mpl_ticker
 from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
 import numpy as np
 import numpy.ma as ma
@@ -195,6 +197,18 @@ def _broadcast_2d(u, v):
     return u, v
 
 
+def _string_coord_axis_tick_labels(string_axes):
+    """Apply tick labels for string coordinates."""
+
+    ax = plt.gca()
+    for axis, ticks in string_axes.items():
+        formatter = mpl_ticker.IndexFormatter(ticks)
+        locator = mpl_ticker.MaxNLocator(integer=True)
+        this_axis = getattr(ax, axis)
+        this_axis.set_major_formatter(formatter)
+        this_axis.set_major_locator(locator)
+
+
 def _invert_yaxis(v_coord):
     """
     Inverts the y-axis of the current plot based on conditions:
@@ -239,23 +253,39 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
         # Obtain U and V coordinates
         v_coord, u_coord = plot_defn.coords
 
-        # XXX: Watch out for non-contiguous bounds.
-        if u_coord:
-            u = u_coord.contiguous_bounds()
-        else:
-            u = np.arange(data.shape[1] + 1)
-        if v_coord:
-            v = v_coord.contiguous_bounds()
-        else:
-            v = np.arange(data.shape[0] + 1)
+        # Track numpy arrays to use for the actual plotting.
+        plot_arrays = []
 
-        if plot_defn.transpose:
-            u = u.T
-            v = v.T
+        # Map axis name to associated values.
+        string_axes = {}
 
+        for coord, axis_name, data_dim in zip([u_coord, v_coord],
+                                              ['xaxis', 'yaxis'],
+                                              [1, 0]):
+            if coord:
+                if coord.points.dtype.char == 'S':
+                    if coord.points.ndim != 1:
+                        msg = 'Coord {!r} must be one-dimensional.'
+                        raise ValueError(msg.format(coord))
+                    if coord.bounds is not None:
+                        msg = 'Cannot plot bounded string coordinate.'
+                        raise ValueError(msg)
+                    string_axes[axis_name] = coord.points
+                    values = np.arange(data.shape[data_dim] + 1) - 0.5
+                else:
+                    values = coord.contiguous_bounds()
+            else:
+                values = np.arange(data.shape[data_dim] + 1)
+
+            plot_arrays.append(values)
+
+        u, v = plot_arrays
         u, v = _broadcast_2d(u, v)
         draw_method = getattr(plt, draw_method_name)
         result = draw_method(u, v, data, *args, **kwargs)
+
+        # Apply tick labels for string coordinates.
+        _string_coord_axis_tick_labels(string_axes)
 
         # Invert y-axis if necessary.
         _invert_yaxis(v_coord)
@@ -301,12 +331,27 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
             u = u.T
             v = v.T
 
-        if u.dtype == np.dtype(object) and isinstance(u[0], datetime.datetime):
-            u = mpl_dates.date2num(u)
+        # Track numpy arrays to use for the actual plotting.
+        plot_arrays = []
 
-        if v.dtype == np.dtype(object) and isinstance(v[0], datetime.datetime):
-            v = mpl_dates.date2num(v)
+        # Map axis name to associated values.
+        string_axes = {}
 
+        for values, axis_name in zip([u, v], ['xaxis', 'yaxis']):
+            # Replace any string coordinates with "index" coordinates.
+            if values.dtype.char == 'S':
+                if values.ndim != 1:
+                    raise ValueError('Multi-dimensional string coordinates '
+                                     'not supported.')
+                plot_arrays.append(np.arange(values.size))
+                string_axes[axis_name] = values
+            elif (values.dtype == np.dtype(object) and
+                  isinstance(values[0], datetime.datetime)):
+                plot_arrays.append(mpl_dates.date2num(values))
+            else:
+                plot_arrays.append(values)
+
+        u, v = plot_arrays
         u, v = _broadcast_2d(u, v)
 
         draw_method = getattr(plt, draw_method_name)
@@ -315,6 +360,9 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
             result = draw_method(*args, **kwargs)
         else:
             result = draw_method(u, v, data, *args, **kwargs)
+
+        # Apply tick labels for string coordinates.
+        _string_coord_axis_tick_labels(string_axes)
 
         # Invert y-axis if necessary.
         _invert_yaxis(v_coord)
@@ -347,7 +395,6 @@ def _uv_from_u_object_v_object(u_object, v_object):
         raise ValueError(ndim_msg.format(u_object.ndim))
     if v_object.ndim > 1:
         raise ValueError(ndim_msg.format(v_object.ndim))
-    type_msg = 'Plot arguments must be cubes or coordinates.'
     v = _data_from_coord_or_cube(v_object)
     if u_object is None:
         u = np.arange(v.shape[0])
@@ -394,6 +441,25 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
     # argument tuple with these objects removed
     u_object, v_object, u, v, args = _get_plot_objects(args)
 
+    # Track numpy arrays to use for the actual plotting.
+    plot_arrays = []
+
+    # Map axis name to associated values.
+    string_axes = {}
+
+    for values, axis_name in zip([u, v], ['xaxis', 'yaxis']):
+        # Replace any string coordinates with "index" coordinates.
+        if values.dtype.char == 'S':
+            if values.ndim != 1:
+                msg = 'Multi-dimensional string coordinates are not supported.'
+                raise ValueError(msg)
+            plot_arrays.append(np.arange(values.size))
+            string_axes[axis_name] = values
+        else:
+            plot_arrays.append(values)
+
+    u, v = plot_arrays
+
     # if both u_object and v_object are coordinates then check if a map
     # should be drawn
     if isinstance(u_object, iris.coords.Coord) and \
@@ -410,6 +476,9 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
         result = draw_method(*args, **kwargs)
     else:
         result = draw_method(u, v, *args, **kwargs)
+
+    # Apply tick labels for string coordinates.
+    _string_coord_axis_tick_labels(string_axes)
 
     # Invert y-axis if necessary.
     _invert_yaxis(v_object)
