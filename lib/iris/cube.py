@@ -2115,7 +2115,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         min_comp = np.less_equal if min_inclusive else np.less
         max_comp = np.less_equal if max_inclusive else np.less
         if coord.has_bounds():
-            points = wrap_lons(coord.points, minimum, modulus)
             bounds = wrap_lons(coord.bounds, minimum, modulus)
             inside = np.logical_and(min_comp(minimum, bounds),
                                     max_comp(bounds, maximum))
@@ -2133,18 +2132,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # wapping scheme which moves the wrap point to the correct lower
             # bound value thus resulting in the cell no longer being split.
 
-            delta = coord.bounds[inside_indices] - bounds[inside_indices]
-            tolerance = np.finfo(delta.dtype).eps
-            cell_delta = delta[:, 0] - delta[:, 1]
-            split_cell_indices, = np.where(np.abs(cell_delta) > tolerance)
+            pre_wrap_delta = np.diff(coord.bounds[inside_indices])
+            post_wrap_delta = np.diff(bounds[inside_indices])
+            split_cell_indices, _ = np.where(pre_wrap_delta != post_wrap_delta)
             if split_cell_indices.size:
+                # Recalculate the extended minimum.
                 indices = inside_indices[split_cell_indices]
                 cells = bounds[indices]
                 cells_delta = np.diff(coord.bounds[indices])
                 cells[:, 0] = cells[:, 1] - cells_delta[:, 0]
-                extended_minimum = np.min(cells[:, 0])
-                points = wrap_lons(coord.points, extended_minimum, modulus)
-                bounds = wrap_lons(coord.bounds, extended_minimum, modulus)
+                minimum = np.min(cells[:, 0])
+                bounds = wrap_lons(coord.bounds, minimum, modulus)
+            points = wrap_lons(coord.points, minimum, modulus)
         else:
             points = iris.analysis.cartography.wrap_lons(coord.points, minimum,
                                                          modulus)

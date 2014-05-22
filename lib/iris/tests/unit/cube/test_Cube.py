@@ -693,7 +693,7 @@ class Test_intersection__ModulusBounds(tests.IrisTest):
 
     def test_negative_misaligned_points_outside(self):
         cube = create_cube(0, 360, bounds=True)
-        result = cube.intersection(longitude=(-10.25, 9.75))
+        result = cube.intersection(longitude=(-9.75, 9.75))
         self.assertArrayEqual(result.coord('longitude').bounds[0],
                               [-10.5, -9.5])
         self.assertArrayEqual(result.coord('longitude').bounds[-1],
