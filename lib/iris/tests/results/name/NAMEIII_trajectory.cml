@@ -19,7 +19,7 @@
 		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="f4f30ef" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
+        <auxCoord id="5d33cd61" long_name="height above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
 		379.5676, 377.3535]" shape="(836,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
@@ -57,7 +57,7 @@
 		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="f4f30ef" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
+        <auxCoord id="5d33cd61" long_name="height above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
 		379.5676, 377.3535]" shape="(836,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
@@ -95,7 +95,7 @@
 		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="f4f30ef" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
+        <auxCoord id="5d33cd61" long_name="height above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
 		379.5676, 377.3535]" shape="(836,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
@@ -133,7 +133,7 @@
 		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="f4f30ef" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
+        <auxCoord id="5d33cd61" long_name="height above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
 		379.5676, 377.3535]" shape="(836,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
@@ -171,7 +171,7 @@
 		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="f4f30ef" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
+        <auxCoord id="5d33cd61" long_name="height above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
 		379.5676, 377.3535]" shape="(836,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
@@ -209,7 +209,7 @@
 		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="f4f30ef" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
+        <auxCoord id="5d33cd61" long_name="height above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
 		379.5676, 377.3535]" shape="(836,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
@@ -247,7 +247,7 @@
 		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="f4f30ef" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
+        <auxCoord id="5d33cd61" long_name="height above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
 		379.5676, 377.3535]" shape="(836,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
@@ -285,7 +285,7 @@
 		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="f4f30ef" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
+        <auxCoord id="5d33cd61" long_name="height above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
 		379.5676, 377.3535]" shape="(836,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
@@ -323,7 +323,7 @@
 		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="f4f30ef" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
+        <auxCoord id="5d33cd61" long_name="height above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
 		379.5676, 377.3535]" shape="(836,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
@@ -361,7 +361,7 @@
 		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="f4f30ef" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
+        <auxCoord id="5d33cd61" long_name="height above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
 		379.5676, 377.3535]" shape="(836,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
@@ -399,7 +399,7 @@
 		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="f4f30ef" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
+        <auxCoord id="5d33cd61" long_name="height above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
 		379.5676, 377.3535]" shape="(836,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
@@ -437,7 +437,7 @@
 		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="f4f30ef" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
+        <auxCoord id="5d33cd61" long_name="height above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
 		379.5676, 377.3535]" shape="(836,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
@@ -475,7 +475,7 @@
 		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="f4f30ef" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
+        <auxCoord id="5d33cd61" long_name="height above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
 		379.5676, 377.3535]" shape="(836,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
@@ -513,7 +513,7 @@
 		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="f4f30ef" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
+        <auxCoord id="5d33cd61" long_name="height above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
 		379.5676, 377.3535]" shape="(836,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
@@ -551,7 +551,7 @@
 		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="f4f30ef" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
+        <auxCoord id="5d33cd61" long_name="height above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
 		379.5676, 377.3535]" shape="(836,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
@@ -589,7 +589,7 @@
 		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="f4f30ef" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
+        <auxCoord id="5d33cd61" long_name="height above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
 		379.5676, 377.3535]" shape="(836,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
@@ -627,7 +627,7 @@
 		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="f4f30ef" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
+        <auxCoord id="5d33cd61" long_name="height above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
 		379.5676, 377.3535]" shape="(836,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">

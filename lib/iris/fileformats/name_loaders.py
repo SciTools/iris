@@ -330,9 +330,14 @@ def _cf_height_from_name(z_coord):
                 points = bounds.sum() / 2.
 
             long_name = None
-            if name in ['height', 'altitude']:
+            if name == 'altitude':
                 units = units[0]
                 standard_name = name
+                long_name = 'altitude above sea level'
+            elif name == 'height':
+                units = units[0]
+                standard_name = name
+                long_name = 'height above ground level'
             elif name == 'air_pressure':
                 standard_name = name
             elif name == 'flight_level':
@@ -851,12 +856,15 @@ def load_NAMEIII_trajectory(filename):
         elif name == "Z (m asl)":
             name = "height"
             units = "m"
+            long_name = "height above sea level"
 
         try:
             coord = DimCoord(values, units=units)
         except ValueError:
             coord = AuxCoord(values, units=units)
         coord.rename(name)
+        if coord.long_name is None and long_name is not None:
+            coord.long_name = long_name
         coords.append(coord)
 
     # Every numerical column after the Z becomes a cube.
