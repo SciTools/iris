@@ -22,13 +22,10 @@ import warnings
 
 import numpy as np
 
-from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
+from iris.aux_factory import HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.fileformats.rules import Factory, Reference, ReferenceTarget
-from iris.fileformats.um_cf_map import LBFC_TO_CF, STASH_TO_CF
-from iris.unit import Unit
-import iris.fileformats.pp
-import iris.unit
+from iris.unit import CALENDAR_GREGORIAN, Unit
 
 
 def convert(grib):
@@ -143,7 +140,7 @@ def convert(grib):
             (grib.edition == 1) and \
             (grib._phenomenonDateTime != -1.0):
         aux_coords_and_dims.append((DimCoord(points=grib.startStep, standard_name='forecast_period', units=grib._forecastTimeUnit), None))
-        aux_coords_and_dims.append((DimCoord(points=grib.phenomenon_points('hours'), standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)), None))
+        aux_coords_and_dims.append((DimCoord(points=grib.phenomenon_points('hours'), standard_name='time', units=Unit('hours since epoch', CALENDAR_GREGORIAN)), None))
 
     def add_bounded_time_coords(aux_coords_and_dims, grib):
         t_bounds = grib.phenomenon_bounds('hours')
@@ -157,8 +154,7 @@ def convert(grib):
             None))
         aux_coords_and_dims.append((
             DimCoord(standard_name='time',
-                     units=Unit('hours since epoch',
-                                iris.unit.CALENDAR_GREGORIAN),
+                     units=Unit('hours since epoch', CALENDAR_GREGORIAN),
                      points=0.5 * (t_bounds[0] + t_bounds[1]),
                      bounds=t_bounds),
             None))
@@ -245,7 +241,7 @@ def convert(grib):
             (grib.edition == 2) and \
             (grib.productDefinitionTemplateNumber == 0):
         aux_coords_and_dims.append((DimCoord(points=Unit(grib._forecastTimeUnit).convert(np.int32(grib._forecastTime), "hours"), standard_name='forecast_period', units="hours"), None))
-        aux_coords_and_dims.append((DimCoord(points=grib.phenomenon_points('hours'), standard_name='time', units=Unit('hours since epoch', iris.unit.CALENDAR_GREGORIAN)), None))
+        aux_coords_and_dims.append((DimCoord(points=grib.phenomenon_points('hours'), standard_name='time', units=Unit('hours since epoch', CALENDAR_GREGORIAN)), None))
 
     if \
             (grib.edition == 2) and \
