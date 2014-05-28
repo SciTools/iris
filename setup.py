@@ -130,6 +130,31 @@ class TestRunner(setuptools.Command):
             exit(1)
 
 
+class CleanSource(Command):
+    """
+    Removes orphaned pyc/pyo files from the sources.
+
+    """
+    description = 'clean orphaned pyc/pyo files from sources'
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        for root_path, dir_names, file_names in os.walk('lib'):
+            for file_name in file_names:
+                if file_name.endswith('pyc') or file_name.endswith('pyo'):
+                    compiled_path = os.path.join(root_path, file_name)
+                    source_path = compiled_path[:-1]
+                    if not os.path.exists(source_path):
+                        print 'Cleaning', compiled_path
+                        os.remove(compiled_path)
+
+
 class MakeStdNames(Command):
     """
     Generates the CF standard name module containing mappings from
@@ -250,5 +275,6 @@ setup(
         )
     },
     cmdclass={'test': TestRunner, 'build_py': BuildPyWithExtras,
-              'std_names': MakeStdNames, 'pyke_rules': MakePykeRules},
+              'std_names': MakeStdNames, 'pyke_rules': MakePykeRules,
+              'clean_source': CleanSource},
 )
