@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -144,14 +144,25 @@ class Constraint(object):
         else return None.
 
         """
+        result = None
+        # Account for a scalar cube.  Make an indexable so that we can use a
+        # common code path as the non-scalar cubes.
+        reshaped = False
+        if cube.ndim == 0:
+            reshaped = True
+            orig_cube = cube
+            cube = orig_cube.copy()
+            cube.data = cube.data[None]
+
         resultant_CIM = self._CIM_extract(cube)
         slice_tuple = resultant_CIM.as_slice()
-        result = None
         if slice_tuple is not None:
             # Slicing the cube is an expensive operation.
             if all([item == slice(None) for item in slice_tuple]):
-                # Don't perform a full slice, just return the cube.
+                # Don't perform a full slice, just return the original cube.
                 result = cube
+                if reshaped:
+                    result = orig_cube
             else:
                 # Performing the partial slice.
                 result = cube[slice_tuple]
