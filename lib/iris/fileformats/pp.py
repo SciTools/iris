@@ -45,7 +45,8 @@ iris.proxy.apply_proxy('iris.fileformats.pp_packing', globals())
 
 __all__ = ['load', 'save', 'load_cubes', 'PPField',
            'add_load_rules', 'reset_load_rules',
-           'add_save_rules', 'reset_save_rules', 'STASH', 'EARTH_RADIUS']
+           'add_save_rules', 'reset_save_rules', 'STASH', 'UMVersion',
+           'EARTH_RADIUS']
 
 
 EARTH_RADIUS = 6371229.0
@@ -339,6 +340,118 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+
+class UMVersion(collections.namedtuple('UMVersion', ('major', 'minor'))):
+    """A class representing a UM version."""
+
+    __slots__ = ()
+
+    def __new__(cls, major=None, minor=None):
+        """
+        Create a UMVersion object.
+
+        Args:
+
+        * major, minor (integer):
+            Major and minor version codes: major>=0, 0<=minor<=99.
+            If either is None (the default), the version is regarded as
+            unknown.
+
+        """
+        if major is not None:
+            UMVersion.check_major(major)
+            major = int(np.round(major))
+
+        if minor is not None:
+            UMVersion.check_minor(minor)
+            minor = int(np.round(minor))
+
+        return super(UMVersion, cls).__new__(cls, major, minor)
+
+    @staticmethod
+    def check_major(major):
+        """
+        Raise an exception if the provided argument does not meet
+        criteria for a :class:`UVVersion` major component.
+
+        """
+        UMVersion.check_int(major)
+        if major < 0:
+            raise ValueError('UMVersion major component must satisfy: 0 <= major')
+
+    @staticmethod
+    def check_minor(minor):
+        """
+        Raise an exception if the provided argument does not meet
+        criteria for a :class:`UVVersion` minor component.
+
+        """
+        UMVersion.check_int(minor)
+        if minor < 0 or minor > 99:
+            raise ValueError('UMVersion minor component must satisfy: 0 <= minor <= 99')
+
+    @staticmethod
+    def check_int(val):
+        """
+        Raise an exception if the provided value is not sufficiently close
+        to an integer value.
+
+        """
+        if abs(val - np.round(val)) > 1e-5:
+            raise ValueError('UMVersion components must be integers')
+
+    @classmethod
+    def from_lbsrce(cls, lbsrce):
+        """
+        Return an instance of :class:`UMVersion` from an LBSRCE value.
+
+        Returns an "unknown" version if the lower four digits are not '1111'.
+
+        """
+        if lbsrce % 10000 != 1111:
+            major, minor = None, None
+        else:
+            lbsrce /= 10000
+            major, minor = lbsrce / 100, lbsrce % 100
+        return cls(major, minor)
+
+    def is_unknown(self):
+        """
+        Return whether the version is unknown.
+
+        The version is regarded as unknown if either of the major or minor
+        components is set to None.
+
+        """
+        return self.major is None or self.minor is None
+
+    def lbsrce(self):
+        """
+        Calculate an LBSRCE value.
+
+        Result is 0 for unknown version.
+
+        """
+        if self.is_unknown():
+            result = 0
+        else:
+            code = self.major * 100 + self.minor
+            result = code * 10000 + 1111
+        return result
+
+    def __str__(self):
+        """
+        Return a string representation of a :class:`UMVersion`.
+
+        Result is '' (an empty string) for an unknown version.
+
+        """
+        if self.is_unknown():
+            result = ''
+        else:
+            result = '{}.{}'.format(self.major, self.minor)
+        return result
 
 
 class SplittableInt(object):
