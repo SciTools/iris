@@ -71,5 +71,35 @@ class TestLbfcProduction(tests.IrisTest):
         self.check_cube_stash_yields_lbfc(None, 0)
 
 
+class TestLbsrceProduction(tests.IrisTest):
+    def setUp(self):
+        self.cube = stock.lat_lon_cube()
+
+    def check_cube_um_source_yields_lbsrce(
+            self, source_str=None, um_version_str=None, lbsrce_expected=None):
+        if source_str is not None:
+            self.cube.attributes['source'] = source_str
+        if um_version_str is not None:
+            self.cube.attributes['um_version'] = um_version_str
+        lbsrce_produced = _pp_save_ppfield_values(self.cube).lbsrce
+        self.assertEqual(lbsrce_produced, lbsrce_expected)
+
+    def test_none(self):
+        self.check_cube_um_source_yields_lbsrce(
+            None, None, 0)
+
+    def test_source_only_no_version(self):
+        self.check_cube_um_source_yields_lbsrce(
+            'Data from Met Office Unified Model', None, 1111)
+
+    def test_source_only_with_version(self):
+        self.check_cube_um_source_yields_lbsrce(
+            'Data from Met Office Unified Model 12.17', None, 12171111)
+
+    def test_um_version(self):
+        self.check_cube_um_source_yields_lbsrce(
+            'Data from Met Office Unified Model 12.17', '25.36', 25361111)
+
+
 if __name__ == "__main__":
     tests.main()

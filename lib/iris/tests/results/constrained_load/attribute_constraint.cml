@@ -4,7 +4,8 @@
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="my_attribute" value="foobar"/>
-      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="6.6"/>
     </attributes>
     <coords>
       <coord>

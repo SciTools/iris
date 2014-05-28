@@ -249,5 +249,38 @@ class TestLBRSVD(iris.tests.unit.fileformats.TestField):
                              expected_bounds=bounds)
 
 
+class TestLBSRCE(iris.tests.IrisTest):
+    def check_um_source_attrs(self, lbsrce,
+                              source_str=None, um_version_str=None):
+        field = mock.MagicMock(lbsrce=lbsrce)
+        (factories, references, standard_name, long_name, units,
+         attributes, cell_methods, dim_coords_and_dims,
+         aux_coords_and_dims) = convert(field)
+        if source_str is not None:
+            self.assertEqual(attributes['source'], source_str)
+        else:
+            self.assertNotIn('source', attributes)
+        if um_version_str is not None:
+            self.assertEqual(attributes['um_version'], um_version_str)
+        else:
+            self.assertNotIn('um_version', attributes)
+
+    def test_none(self):
+        self.check_um_source_attrs(lbsrce=8123,
+                                   source_str=None, um_version_str=None)
+
+    def test_no_um_version(self):
+        self.check_um_source_attrs(
+            lbsrce=1111,
+            source_str='Data from Met Office Unified Model',
+            um_version_str=None)
+
+    def test_um_version(self):
+        self.check_um_source_attrs(
+            lbsrce=12071111,
+            source_str='Data from Met Office Unified Model',
+            um_version_str='12.7')
+
+
 if __name__ == "__main__":
     tests.main()

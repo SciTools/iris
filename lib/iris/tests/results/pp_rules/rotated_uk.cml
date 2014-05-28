@@ -3,7 +3,8 @@
   <cube units="unknown">
     <attributes>
       <attribute name="STASH" value="m01s03i463"/>
-      <attribute name="source" value="Data from Met Office Unified Model 6.04"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="6.4"/>
     </attributes>
     <coords>
       <coord>

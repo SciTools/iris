@@ -3,7 +3,8 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
-      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="6.6"/>
     </attributes>
     <coords>
       <coord>
@@ -142,7 +143,8 @@
   <cube standard_name="specific_humidity" units="1">
     <attributes>
       <attribute name="STASH" value="m01s00i010"/>
-      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="6.6"/>
     </attributes>
     <coords>
       <coord>
@@ -281,7 +283,8 @@
   <cube standard_name="x_wind" units="m s-1">
     <attributes>
       <attribute name="STASH" value="m01s00i002"/>
-      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="6.6"/>
     </attributes>
     <coords>
       <coord>
@@ -421,7 +424,8 @@
   <cube standard_name="y_wind" units="m s-1">
     <attributes>
       <attribute name="STASH" value="m01s00i003"/>
-      <attribute name="source" value="Data from Met Office Unified Model 6.06"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="6.6"/>
     </attributes>
     <coords>
       <coord>

@@ -3,7 +3,8 @@
   <cube standard_name="air_pressure_at_sea_level" units="meter^-2-kilogram^2-second^-4">
     <attributes>
       <attribute name="STASH" value="m01s16i222"/>
-      <attribute name="source" value="Data from Met Office Unified Model 6.01"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="6.1"/>
     </attributes>
     <coords>
       <coord datadims="[0]">

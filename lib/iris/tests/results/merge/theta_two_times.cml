@@ -3,7 +3,8 @@
   <cube standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
-      <attribute name="source" value="Data from Met Office Unified Model 7.04"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="7.4"/>
     </attributes>
     <coords>
       <coord datadims="[1, 2, 3]">
@@ -487,7 +488,7 @@
 		0.0, 0.0]" shape="(70,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[2, 3]">
-        <auxCoord id="df5b3790" points="[[413.937, 417.817, 412.334, ..., 312.72, 317.89,
+        <auxCoord id="a9e872f8" points="[[413.937, 417.817, 412.334, ..., 312.72, 317.89,
  		324.58],
 		[386.476, 390.813, 393.15, ..., 316.098,
  		321.788, 330.007],
@@ -501,7 +502,8 @@
  		300.34]]" shape="(100, 100)" standard_name="surface_altitude" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="STASH" value="m01s00i033"/>
-            <attribute name="source" value="Data from Met Office Unified Model 7.04"/>
+            <attribute name="source" value="Data from Met Office Unified Model"/>
+            <attribute name="um_version" value="7.4"/>
           </attributes>
         </auxCoord>
       </coord>

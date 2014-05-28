@@ -39,6 +39,7 @@ THEN
 
 #UM - no version number
 IF
+    not 'um_version' in cm.attributes
     'source' in cm.attributes
     len(cm.attributes['source'].rsplit("Data from Met Office Unified Model", 1)) > 1
     len(cm.attributes['source'].rsplit("Data from Met Office Unified Model", 1)[1]) == 0
@@ -47,11 +48,18 @@ THEN
 
 #UM - with version number
 IF
+    not 'um_version' in cm.attributes
     'source' in cm.attributes
     len(cm.attributes['source'].rsplit("Data from Met Office Unified Model", 1)) > 1
     len(cm.attributes['source'].rsplit("Data from Met Office Unified Model", 1)[1]) > 0
 THEN
     pp.lbsrce = int(float(cm.attributes['source'].rsplit("Data from Met Office Unified Model", 1)[1]) * 1000000) + 1111  # UM version
+
+#UM - from 'um_version' attribute
+IF
+    'um_version' in cm.attributes
+THEN
+    pp.lbsrce = 1111 + 10000 * int(cm.attributes['um_version'].split('.')[1]) + 1000000 * int(cm.attributes['um_version'].split('.')[0])
 
 IF
     'STASH' in cm.attributes

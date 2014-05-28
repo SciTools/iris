@@ -56,6 +56,7 @@ variables:
 	double time_bnds(bnds) ;
 
 // global attributes:
-		:source = "Data from Met Office Unified Model 6.01" ;
+		:source = "Data from Met Office Unified Model" ;
+		:um_version = "6.1" ;
 		:Conventions = "CF-1.5" ;
 }

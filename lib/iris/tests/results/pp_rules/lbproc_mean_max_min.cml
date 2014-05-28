@@ -3,7 +3,8 @@
   <cube standard_name="air_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s03i236"/>
-      <attribute name="source" value="Data from Met Office Unified Model 7.08"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="7.8"/>
     </attributes>
     <coords>
       <coord>
@@ -39,7 +40,8 @@
   <cube standard_name="air_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s03i236"/>
-      <attribute name="source" value="Data from Met Office Unified Model 7.08"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="7.8"/>
     </attributes>
     <coords>
       <coord>
@@ -79,7 +81,8 @@
   <cube standard_name="air_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s03i236"/>
-      <attribute name="source" value="Data from Met Office Unified Model 7.08"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="7.8"/>
     </attributes>
     <coords>
       <coord>
@@ -119,7 +122,8 @@
   <cube standard_name="air_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s03i236"/>
-      <attribute name="source" value="Data from Met Office Unified Model 7.08"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="7.8"/>
     </attributes>
     <coords>
       <coord>
@@ -159,7 +163,8 @@
   <cube standard_name="air_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s16i203"/>
-      <attribute name="source" value="Data from Met Office Unified Model 7.08"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="7.8"/>
     </attributes>
     <coords>
       <coord>

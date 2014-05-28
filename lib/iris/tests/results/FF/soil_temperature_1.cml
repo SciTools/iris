@@ -3,7 +3,8 @@
   <cube standard_name="soil_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s08i225"/>
-      <attribute name="source" value="Data from Met Office Unified Model 8.02"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="8.2"/>
     </attributes>
     <coords>
       <coord>

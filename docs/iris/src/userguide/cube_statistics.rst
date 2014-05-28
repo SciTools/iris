@@ -53,7 +53,8 @@ For instance, suppose we have a cube:
               forecast_reference_time: 2009-11-19 04:00:00
          Attributes:
               STASH: m01s00i004
-              source: Data from Met Office Unified Model 7.03
+              source: Data from Met Office Unified Model
+              um_version: 7.3
 
 
 In this case we have a 4 dimensional cube; 
@@ -81,7 +82,8 @@ we can pass the coordinate name and the aggregation definition to the
               sigma: 0.92293, bound=(0.84586, 1.0)
          Attributes:
               STASH: m01s00i004
-              source: Data from Met Office Unified Model 7.03
+              source: Data from Met Office Unified Model
+              um_version: 7.3
          Cell methods:
               mean: model_level_number
 
@@ -139,7 +141,8 @@ These areas can now be passed to the ``collapsed`` method as weights:
               surface_altitude: 399.625 m, bound=(-14.0, 813.25) m
          Attributes:
               STASH: m01s00i004
-              source: Data from Met Office Unified Model 7.03
+              source: Data from Met Office Unified Model
+              um_version: 7.3
          Cell methods:
               mean: grid_longitude, grid_latitude
 
