@@ -179,25 +179,6 @@ def geometry_area_weights(cube, geometry, normalize=False):
         Default is False.
 
     """
-    # Validate the input parameters
-    if not cube.coords(axis='x') or not cube.coords(axis='y'):
-        raise ValueError('The cube must contain x and y axes.')
-
-    x_coords = cube.coords(axis='x')
-    y_coords = cube.coords(axis='y')
-    if len(x_coords) != 1 or len(y_coords) != 1:
-        raise ValueError('The cube must contain one, and only one, coordinate '
-                         'for each of the x and y axes.')
-
-    x_coord = x_coords[0]
-    y_coord = y_coords[0]
-    if not (x_coord.has_bounds() and y_coord.has_bounds()):
-        raise ValueError('Both horizontal coordinates must have bounds.')
-
-    if x_coord.ndim != 1:
-        raise iris.exceptions.CoordinateMultiDimError(x_coord)
-    if y_coord.ndim != 1:
-        raise iris.exceptions.CoordinateMultiDimError(y_coord)
 
     # extract smallest subcube containing geometry
     shape = cube.shape
