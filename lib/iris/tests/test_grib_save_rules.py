@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -74,46 +74,6 @@ class Test_non_hybrid_surfaces(tests.IrisTest):
         mock_set_long.assert_any_call(grib, "typeOfSecondFixedSurface", -1)
         mock_set_long.assert_any_call(grib, "scaleFactorOfSecondFixedSurface", 255)
         mock_set_long.assert_any_call(grib, "scaledValueOfSecondFixedSurface", -1)
-
-
-class Test_data(tests.IrisTest):
-    # Test grib_save_rules.data()
-
-    @mock.patch.object(gribapi, "grib_set_double_array")
-    @mock.patch.object(gribapi, "grib_set_double")
-    @mock.patch.object(gribapi, "grib_set")
-    def test_masked_array(self, mock_set, mock_set_double, grib_set_double_array):
-        grib = None
-        cube = iris.cube.Cube(ma.MaskedArray([1,2,3,4,5], fill_value=54321))
-
-        grib_save_rules.data(cube, grib)
-
-        mock_set_double.assert_any_call(grib, "missingValue", float(54321))
-
-    @mock.patch.object(gribapi, "grib_set_double_array")
-    @mock.patch.object(gribapi, "grib_set_double")
-    def test_numpy_array(self, mock_set_double, grib_set_double_array):
-        grib = None
-        cube = iris.cube.Cube(np.array([1,2,3,4,5]))
-
-        grib_save_rules.data(cube, grib)
-
-        mock_set_double.assert_any_call(grib, "missingValue", float(-1e9))
-
-    @mock.patch.object(gribapi, "grib_set_double_array")
-    @mock.patch.object(gribapi, "grib_set_double")
-    def test_scaling(self, mock_set_double, mock_set_double_array):
-        # Show that data type known to be stored as %ge gets scaled
-        grib = None
-        cube = iris.cube.Cube(np.array([0.0, 0.25, 1.0]),
-                              standard_name='cloud_area_fraction',
-                              units=iris.unit.Unit('0.5'))
-        grib_save_rules.data(cube, grib)
-        callargs = mock_set_double_array.call_args_list
-        self.assertEqual(len(callargs), 1)
-        self.assertEqual(callargs[0][0][:2], (None, "values"))
-        self.assertArrayAlmostEqual(callargs[0][0][2],
-                                    np.array([0.0, 12.5, 50.0]))
 
 
 class Test_phenomenon(tests.IrisTest):

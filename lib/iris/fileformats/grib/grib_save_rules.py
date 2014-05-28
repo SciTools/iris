@@ -585,14 +585,22 @@ def identification(cube, grib):
 
 
 def data(cube, grib):
-    # mdi
+    # Masked data?
     if isinstance(cube.data, ma.core.MaskedArray):
-        gribapi.grib_set(grib, "bitmapPresent", 1)
-        gribapi.grib_set_double(grib, "missingValue",
-                                float(cube.data.fill_value))
-        data = cube.data.filled()
+        # What missing value shall we use?
+        if not np.isnan(cube.data.fill_value):
+            # Use the data's fill value.
+            fill_value = float(cube.data.fill_value)
+        else:
+            # We can't use the data's fill value if it's NaN,
+            # the GRIB API doesn't like it.
+            # Calculate an MDI outside the data range.
+            min, max = cube.data.min(), cube.data.max()
+            fill_value = min - (max - min) * 0.1
+        # Prepare the unmaksed data array, using fill_value as the MDI.
+        data = cube.data.filled(fill_value)
     else:
-        gribapi.grib_set_double(grib, "missingValue", float(-1e9))
+        fill_value = None
         data = cube.data
 
     # units scaling
@@ -605,8 +613,16 @@ def data(cube, grib):
     else:
         if cube.units != grib2_info.units:
             data = cube.units.convert(data, grib2_info.units)
+            if fill_value is not None:
+                fill_value = cube.units.convert(fill_value, grib2_info.units)
 
-    # values
+    if fill_value is None:
+        # Disable missing values in the grib message.
+        gribapi.grib_set(grib, "bitmapPresent", 0)
+    else:
+        # Enable missing values in the grib message.
+        gribapi.grib_set(grib, "bitmapPresent", 1)
+        gribapi.grib_set_double(grib, "missingValue", fill_value)
     gribapi.grib_set_double_array(grib, "values", data.flatten())
 
     # todo: check packing accuracy?
