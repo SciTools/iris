@@ -60,6 +60,38 @@ class Test___init___data(tests.IrisTest):
         self.assertArrayEqual(cube.data, data)
 
 
+class Test_extract(tests.IrisTest):
+    def test_scalar_cube_exists(self):
+        # Ensure that extract is able to extract a scalar cube.
+        constraint = iris.Constraint(name='a1')
+        cube = Cube(1, long_name='a1')
+        res = constraint.extract(cube)
+        self.assertIs(res, cube)
+
+    def test_scalar_cube_noexists(self):
+        # Ensure that extract does not return a non-matching scalar cube.
+        constraint = iris.Constraint(name='a2')
+        cube = Cube(1, long_name='a1')
+        res = constraint.extract(cube)
+        self.assertIs(res, None)
+
+    def test_1d_cube_exists(self):
+        # Ensure that extract is able to extract from a cube with dimension
+        # mapping.
+        constraint = iris.Constraint(name='a1')
+        cube = Cube([1], long_name='a1')
+        res = constraint.extract(cube)
+        self.assertIs(res, cube)
+
+    def test_1d_cube_noexists(self):
+        # Ensure that extract does not return a non-matching cube with
+        # dimension mapping.
+        constraint = iris.Constraint(name='a2')
+        cube = Cube([1], long_name='a1')
+        res = constraint.extract(cube)
+        self.assertIs(res, None)
+
+
 class Test_xml(tests.IrisTest):
     def test_checksum_ignores_masked_values(self):
         # Mask out an single element.
