@@ -106,11 +106,11 @@ class Test_collapsed__lazy(tests.IrisTest):
         self.assertArrayAlmostEqual(cube_collapsed.data, [1.5, 2.5, 3.5])
         self.assertFalse(cube_collapsed.has_lazy_data())
 
-    def test_fail_dim1(self):
-        # Check that MEAN produces a suitable error message for dim != 0.
-        # N.B. non-lazy op can do this
-        with self.assertRaises(AssertionError) as err:
-            cube_collapsed = self.cube.collapsed('x', MEAN, lazy=True)
+    def test_dim1_lazy(self):
+        cube_collapsed = self.cube.collapsed('x', MEAN, lazy=True)
+        self.assertTrue(cube_collapsed.has_lazy_data())
+        self.assertArrayAlmostEqual(cube_collapsed.data, [1.0, 4.0])
+        self.assertFalse(cube_collapsed.has_lazy_data())
 
     def test_fail_multidims(self):
         # Check that MEAN produces a suitable error message for multiple dims.
