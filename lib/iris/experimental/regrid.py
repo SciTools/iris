@@ -167,14 +167,14 @@ def _sample_grid(src_coord_system, grid_x_coord, grid_y_coord):
         arrays.
 
     """
-    src_crs = src_coord_system.as_cartopy_crs()
-    grid_crs = grid_x_coord.coord_system.as_cartopy_crs()
     grid_x, grid_y = np.meshgrid(grid_x_coord.points, grid_y_coord.points)
     # Skip the CRS transform if we can to avoid precision problems.
-    if src_crs == grid_crs:
+    if src_coord_system == grid_x_coord.coord_system:
         sample_grid_x = grid_x
         sample_grid_y = grid_y
     else:
+        src_crs = src_coord_system.as_cartopy_crs()
+        grid_crs = grid_x_coord.coord_system.as_cartopy_crs()
         sample_xyz = src_crs.transform_points(grid_crs, grid_x, grid_y)
         sample_grid_x = sample_xyz[..., 0]
         sample_grid_y = sample_xyz[..., 1]
@@ -497,10 +497,17 @@ def regrid_bilinear_rectilinear_src_and_grid(src, grid):
     grid_x_coord, grid_y_coord = _get_xy_dim_coords(grid)
     src_cs = src_x_coord.coord_system
     grid_cs = grid_x_coord.coord_system
-    if src_cs is None or grid_cs is None:
-        raise ValueError("Both 'src' and 'grid' Cubes must have a"
-                         " coordinate system for their rectilinear grid"
-                         " coordinates.")
+    if src_cs is None and grid_cs is None:
+        if not (src_x_coord.is_compatible(grid_x_coord) and
+                src_y_coord.is_compatible(grid_y_coord)):
+            raise ValueError("The rectilinear grid coordinates of the 'src' "
+                             "and 'grid' Cubes have no coordinate system but "
+                             "they do not have matching coordinate metadata.")
+    elif src_cs is None or grid_cs is None:
+        raise ValueError("The rectilinear grid coordinates of the 'src' and "
+                         "'grid' Cubes must either both have coordinate "
+                         "systems or both have no coordinate system but with "
+                         "matching coordinate metadata.")
 
     def _valid_units(coord):
         if isinstance(coord.coord_system, (iris.coord_systems.GeogCS,
