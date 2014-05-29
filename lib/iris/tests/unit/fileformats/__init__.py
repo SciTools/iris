@@ -41,3 +41,21 @@ class TestField(tests.IrisTest):
             self.assertIsNone(coord.bounds)
         else:
             self.assertArrayEqual(coord.bounds, expected_bounds)
+
+    def assertCoordsAndDimsListsMatch(self, coords_and_dims_got,
+                                      coords_and_dims_expected):
+        """
+        Check that coords_and_dims lists are equivalent.
+
+        The arguments are lists of pairs of (coordinate, dimensions).
+        The elements are compared one-to-one, by coordinate name (so the order
+        of the lists is _not_ significant).
+
+        """
+        def sorted_by_coordname(list):
+            return sorted(list, key=lambda item: item[0].name())
+
+        coords_and_dims_got = sorted_by_coordname(coords_and_dims_got)
+        coords_and_dims_expected = sorted_by_coordname(
+            coords_and_dims_expected)
+        self.assertEqual(coords_and_dims_got, coords_and_dims_expected)

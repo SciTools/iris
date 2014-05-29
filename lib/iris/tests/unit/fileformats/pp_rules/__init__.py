@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -14,25 +14,4 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for :func:`iris.fileformats.pp_rules._model_level_number`."""
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
-
-from iris.fileformats.pp_rules import _model_level_number
-
-
-class Test_9999(tests.IrisTest):
-    def test(self):
-        self.assertEqual(_model_level_number(9999), 0)
-
-
-class Test_lblev(tests.IrisTest):
-    def test(self):
-        for val in xrange(9999):
-            self.assertEqual(_model_level_number(val), val)
-
-
-if __name__ == "__main__":
-    tests.main()
+"""Unit tests for the :mod:`iris.fileformats.pp_rules` module."""

@@ -167,7 +167,7 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
         self.assertEqual(coord.units.calendar, '365_day')
 
     def base_field(self):
-        field = PPField3()
+        field = PPField3(header=mock.MagicMock())
         field.lbfc = 0
         field.bdx = 1
         field.bdy = 1
@@ -176,6 +176,7 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
         field.lbvc = 0
         field.lbuser = [0] * 7
         field.lbrsvd = [0] * 4
+        field.brsvd = [0] * 4
         field.lbsrce = 0
         field.lbcode = 0
         return field
@@ -229,6 +230,23 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
         self._test_for_coord(field, convert, self.is_time,
                              expected_points=[lbft + 30],
                              expected_bounds=[[36, lbft + 30]])
+
+
+class TestLBRSVD(iris.tests.unit.fileformats.TestField):
+    @staticmethod
+    def _is_realization(coord):
+        return (coord.standard_name == 'realization' and coord.units == '1')
+
+    def test_realization(self):
+        lbrsvd = [0] * 4
+        lbrsvd[3] = 71
+        points = np.array([71])
+        bounds = None
+        field = mock.MagicMock(lbrsvd=lbrsvd)
+        self._test_for_coord(field, convert,
+                             TestLBRSVD._is_realization,
+                             expected_points=points,
+                             expected_bounds=bounds)
 
 
 if __name__ == "__main__":
