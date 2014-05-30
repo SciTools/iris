@@ -34,6 +34,13 @@ import iris.cube
 import iris.unit
 
 
+_LINEAR_EXTRAPOLATION_MODES = {
+    'linear': (False, None),
+    'error': (True, None),
+    'nan': (False, np.nan)
+}
+
+
 def _get_xy_dim_coords(cube):
     """
     Return the x and y dimension coordinates from a cube.
@@ -182,7 +189,8 @@ def _sample_grid(src_coord_system, grid_x_coord, grid_y_coord):
 
 
 def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
-                           sample_grid_x, sample_grid_y):
+                           sample_grid_x, sample_grid_y,
+                           extrapolation_mode='nan'):
     """
     Regrid the given data from the src grid to the sample grid.
 
@@ -267,6 +275,12 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
                                              src_y_coord.points],
                                             initial_data, fill_value=None,
                                             bounds_error=False)
+    # The constructor of the _RegularGridInterpolator class does
+    # some unnecessary checks on these values, so we set them
+    # afterwards instead. Sneaky. ;-)
+    bounds_error, fill_value = _LINEAR_EXTRAPOLATION_MODES[extrapolation_mode]
+    interpolator.bounds_error = bounds_error
+    interpolator.fill_value = fill_value
 
     # Construct the target coordinate points array, suitable for passing to
     # the interpolator multiple times.
@@ -286,13 +300,6 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
 
     interpolator_coords = np.dstack(interpolator_coords)
 
-    # Figure out which values are out of range, we will use this as a mask
-    # once we've computed the interpolated values.
-    out_of_range = ((interpolator_coords[..., 0] < min_x) |
-                    (interpolator_coords[..., 0] > max_x) |
-                    (interpolator_coords[..., 1] < min_y) |
-                    (interpolator_coords[..., 1] > max_y))
-
     def interpolate(data):
         # Update the interpolator for this data slice.
         data = data.astype(interpolator.values.dtype)
@@ -300,7 +307,6 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
             data = data.T
         interpolator.values = data
         data = interpolator(interpolator_coords)
-        data[out_of_range] = np.nan
         if y_dim > x_dim:
             data = data.T
         return data
