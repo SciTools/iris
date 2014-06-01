@@ -204,10 +204,9 @@ def geometry_area_weights(cube, geometry, normalize=False):
         x0, x1 = subx_bounds[xi]
         y0, y1 = suby_bounds[yi]
         polygon = Polygon([(x0, y0), (x0, y1), (x1, y1), (x1, y0)])
+        subweights[nd_index] = polygon.intersection(geometry).area
         if normalize:
-            subweights[nd_index] = polygon.intersection(geometry).area / polygon.area
-        else:
-            subweights[nd_index] = polygon.intersection(geometry).area
+            subweights[nd_index] /= polygon.area
 
     # pad the calculated weights with zeros to match original cube shape
     weights = np.zeros(shape, np.float32)
