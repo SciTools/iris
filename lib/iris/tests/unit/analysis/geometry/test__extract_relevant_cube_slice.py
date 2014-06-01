@@ -37,22 +37,12 @@ from iris.analysis.geometry import _extract_relevant_cube_slice
 class Test(tests.IrisTest):
 
     @tests.skip_data
-    def test_polygon_smaller_than_cube_only_subcube(self):
-        cube = tests.stock.lat_lon_cube()
-        cube.dim_coords[0].guess_bounds()
-        cube.dim_coords[1].guess_bounds()
-        geometry = shapely.geometry.box(-0.4, -0.4, 0.4, 0.4)
-        actual = _extract_relevant_cube_slice(cube, geometry)
-        target = cube[1, 1]
-        self.assertEqual(target, actual)
-
-    @tests.skip_data
     def test_polygon_smaller_than_cube(self):
         cube = tests.stock.lat_lon_cube()
         cube.dim_coords[0].guess_bounds()
         cube.dim_coords[1].guess_bounds()
         geometry = shapely.geometry.box(-0.4, -0.4, 0.4, 0.4)
-        actual = _extract_relevant_cube_slice(cube, geometry, full_output=True)
+        actual = _extract_relevant_cube_slice(cube, geometry)
         target = (cube[1, 1],
                   cube[1, 1].coords(axis='x')[0],
                   cube[1, 1].coords(axis='y')[0],
@@ -65,7 +55,7 @@ class Test(tests.IrisTest):
         cube.dim_coords[0].guess_bounds()
         cube.dim_coords[1].guess_bounds()
         geometry = shapely.geometry.box(-0.6, -0.6, 0.6, 0.6)
-        actual = _extract_relevant_cube_slice(cube, geometry, full_output=True)
+        actual = _extract_relevant_cube_slice(cube, geometry)
         target = (cube[:, :3],
                   cube[:, :3].coords(axis='x')[0],
                   cube[:, :3].coords(axis='y')[0],
@@ -78,7 +68,7 @@ class Test(tests.IrisTest):
         cube.dim_coords[0].guess_bounds()
         cube.dim_coords[1].guess_bounds()
         geometry = shapely.geometry.box(-0.5, -0.5, 0.5, 0.5)
-        actual = _extract_relevant_cube_slice(cube, geometry, full_output=True)
+        actual = _extract_relevant_cube_slice(cube, geometry)
         target = (cube[1, 1],
                   cube[1, 1].coords(axis='x')[0],
                   cube[1, 1].coords(axis='y')[0],
@@ -92,7 +82,7 @@ class Test(tests.IrisTest):
         cube.dim_coords[1].guess_bounds()
         geometry = shapely.geometry.Polygon(((0., -.5), (-.5, 0.), (0., .5),
                                              (.5, 0.)))
-        actual = _extract_relevant_cube_slice(cube, geometry, full_output=True)
+        actual = _extract_relevant_cube_slice(cube, geometry)
         target = (cube[1, 1],
                   cube[1, 1].coords(axis='x')[0],
                   cube[1, 1].coords(axis='y')[0],
@@ -106,7 +96,7 @@ class Test(tests.IrisTest):
         cube.dim_coords[1].guess_bounds()
         geometry = shapely.geometry.Polygon(((0., -.6), (-.6, 0.), (0., .6),
                                              (.6, 0.)))
-        actual = _extract_relevant_cube_slice(cube, geometry, full_output=True)
+        actual = _extract_relevant_cube_slice(cube, geometry)
         target = (cube[:, :3],
                   cube[:, :3].coords(axis='x')[0],
                   cube[:, :3].coords(axis='y')[0],

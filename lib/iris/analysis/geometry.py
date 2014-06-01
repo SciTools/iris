@@ -31,14 +31,14 @@ import numpy as np
 import iris.exceptions
 
 
-def _extract_relevant_cube_slice(cube, geometry, full_output=False):
+def _extract_relevant_cube_slice(cube, geometry):
     """
     Given a shapely geometry object, this helper method returns
-    the smallest subcube of cube fully enveloping the geometry.
-
-    If full_output is True, this helper method returns the tuple
+    the tuple
     (subcube, x_coord_of_subcube, y_coord_of_subcube,
      (min_x_index, min_y_index, max_x_index, max_y_index))
+
+    If cube and geometry don't overlap, returns None.
 
     """
 
@@ -129,15 +129,12 @@ def _extract_relevant_cube_slice(cube, geometry, full_output=False):
     constraint = iris.Constraint(coord_values=coord_constr)
     subcube = cube.extract(constraint)
 
-    x_coords = subcube.coords(axis='x')
-    y_coords = subcube.coords(axis='y')
-    x_coord = x_coords[0]
-    y_coord = y_coords[0]
-
-    if full_output:
-        return subcube, x_coord, y_coord, bnds_ix
+    if subcube is None:
+        return None
     else:
-        return subcube
+        x_coord = subcube.coord(axis='x')
+        y_coord = subcube.coord(axis='y')
+        return subcube, x_coord, y_coord, bnds_ix
 
 
 def geometry_area_weights(cube, geometry, normalize=False):
@@ -182,13 +179,17 @@ def geometry_area_weights(cube, geometry, normalize=False):
 
     # extract smallest subcube containing geometry
     shape = cube.shape
-    extraction_results = _extract_relevant_cube_slice(cube, geometry,
-                                                      full_output=True)
+    extraction_results = _extract_relevant_cube_slice(cube, geometry)
+
+    # test if there is overlap between cube and geometry
+    if extraction_results is None:
+        return np.zeros(shape)
+
     subcube, subx_coord, suby_coord, bnds_ix = extraction_results
     x_min_ix, y_min_ix, x_max_ix, y_max_ix = bnds_ix
 
     # prepare the weights array
-    subshape = [1] * len(subcube.shape)
+    subshape = list(cube.shape)
     x_dim = cube.coord_dims(subx_coord)[0]
     y_dim = cube.coord_dims(suby_coord)[0]
     subshape[x_dim] = subx_coord.shape[0]

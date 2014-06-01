@@ -33,9 +33,38 @@ import shapely.geometry
 
 import iris
 from iris.analysis.geometry import geometry_area_weights
+from iris.coords import DimCoord
+from iris.cube import Cube
 
 
 class Test(tests.IrisTest):
+
+    def setUp(self):
+        x_coord = DimCoord([1.0, 3.0], 'longitude', bounds=[[0, 2], [2, 4]])
+        y_coord = DimCoord([1.0, 3.0], 'latitude', bounds=[[0, 2], [2, 4]])
+        self.data = np.empty((4, 2, 2))
+        dim_coords_and_dims = [(y_coord, (1,)), (x_coord, (2,))]
+        self.cube = Cube(self.data, dim_coords_and_dims=dim_coords_and_dims)
+        self.geometry = shapely.geometry.Polygon([(3, 3), (3, 50), (50, 50),
+                                                  (50, 3)])
+
+    def test_no_overlap(self):
+        geometry = shapely.geometry.Polygon([(4, 4), (4, 6), (6, 6), (6, 4)])
+        weights = geometry_area_weights(self.cube, geometry)
+        self.assertEqual(np.sum(weights), 0)
+
+    def test_overlap(self):
+        weights = geometry_area_weights(self.cube, self.geometry)
+        expected = np.repeat([[[0., 0.], [0., 1.]]], self.data.shape[0],
+                             axis=0)
+        self.assertArrayEqual(weights, expected)
+
+    def test_overlap_normalize(self):
+        weights = geometry_area_weights(self.cube, self.geometry,
+                                        normalize=True)
+        expected = np.repeat([[[0., 0.], [0., 0.25]]], self.data.shape[0],
+                             axis=0)
+        self.assertArrayEqual(weights, expected)
 
     @tests.skip_data
     def test_distinct_xy(self):
