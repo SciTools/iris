@@ -27,18 +27,12 @@ import numpy.ma as ma
 from scipy.sparse import csc_matrix
 
 import iris.analysis.cartography
-from iris.analysis._interpolator import _extend_circular_coord_and_data
+from iris.analysis._interpolator import (_extend_circular_coord_and_data,
+                                         _LINEAR_EXTRAPOLATION_MODES)
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
 import iris.coord_systems
 import iris.cube
 import iris.unit
-
-
-_LINEAR_EXTRAPOLATION_MODES = {
-    'linear': (False, None),
-    'error': (True, None),
-    'nan': (False, np.nan)
-}
 
 
 def _get_xy_dim_coords(cube):
