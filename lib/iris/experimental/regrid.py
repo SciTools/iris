@@ -27,7 +27,8 @@ import numpy.ma as ma
 from scipy.sparse import csc_matrix
 
 import iris.analysis.cartography
-from iris.analysis._interpolator import _extend_circular_coord_and_data
+from iris.analysis._interpolator import (_extend_circular_coord_and_data,
+                                         _LINEAR_EXTRAPOLATION_MODES)
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
 import iris.coord_systems
 import iris.cube
@@ -182,9 +183,16 @@ def _sample_grid(src_coord_system, grid_x_coord, grid_y_coord):
 
 
 def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
-                           sample_grid_x, sample_grid_y):
+                           sample_grid_x, sample_grid_y,
+                           extrapolation_mode='nan'):
     """
     Regrid the given data from the src grid to the sample grid.
+
+    If the input data is a MaskedArray then the result will also be a
+    MaskedArray, with the mask set wherever:
+     - there is a non-zero contribution from masked items in the input data,
+     - or, the result contains a NaN (either because of a NaN in the input
+       data or because the extrapolation mode creates NaN values).
 
     Args:
 
@@ -202,6 +210,20 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
         A 2-dimensional array of sample X values.
     * sample_grid_y:
         A 2-dimensional array of sample Y values.
+
+    Kwargs:
+
+    * extrapolation_mode:
+        Must be one of the following strings:
+
+          * 'linear' - The extrapolation points will be calculated by
+            extending the gradient of the closest two points.
+          * 'nan' - The extrapolation points will be be set to NaN.
+          * 'error' - A ValueError exception will be raised, notifying an
+            attempt to extrapolate.
+
+        The default mode of extrapolation is 'nan'.
+
 
     Returns:
         The regridded data as an N-dimensional NumPy array. The lengths
@@ -267,6 +289,12 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
                                              src_y_coord.points],
                                             initial_data, fill_value=None,
                                             bounds_error=False)
+    # The constructor of the _RegularGridInterpolator class does
+    # some unnecessary checks on these values, so we set them
+    # afterwards instead. Sneaky. ;-)
+    bounds_error, fill_value = _LINEAR_EXTRAPOLATION_MODES[extrapolation_mode]
+    interpolator.bounds_error = bounds_error
+    interpolator.fill_value = fill_value
 
     # Construct the target coordinate points array, suitable for passing to
     # the interpolator multiple times.
@@ -286,13 +314,6 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
 
     interpolator_coords = np.dstack(interpolator_coords)
 
-    # Figure out which values are out of range, we will use this as a mask
-    # once we've computed the interpolated values.
-    out_of_range = ((interpolator_coords[..., 0] < min_x) |
-                    (interpolator_coords[..., 0] > max_x) |
-                    (interpolator_coords[..., 1] < min_y) |
-                    (interpolator_coords[..., 1] > max_y))
-
     def interpolate(data):
         # Update the interpolator for this data slice.
         data = data.astype(interpolator.values.dtype)
@@ -300,7 +321,6 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
             data = data.T
         interpolator.values = data
         data = interpolator(interpolator_coords)
-        data[out_of_range] = np.nan
         if y_dim > x_dim:
             data = data.T
         return data

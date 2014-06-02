@@ -112,7 +112,7 @@ class LinearInterpolator(object):
 
               * 'linear' - The extrapolation points will be calculated by
                 extending the gradient of closest two points.
-              * 'nan' - The extrapolation points will be be set to NAN.
+              * 'nan' - The extrapolation points will be be set to NaN.
               * 'error' - An exception will be raised, notifying an
                 attempt to extrapolate.
 
@@ -222,7 +222,6 @@ class LinearInterpolator(object):
 
         if self._interpolator is None:
             # Cache the interpolator instance.
-            bounds_error, fill_value = _LINEAR_EXTRAPOLATION_MODES[self._mode]
             self._interpolator = _RegularGridInterpolator(self._src_points,
                                                           data,
                                                           bounds_error=False,
@@ -230,6 +229,7 @@ class LinearInterpolator(object):
             # The constructor of the _RegularGridInterpolator class does
             # some unnecessary checks on these values, so we set them
             # afterwards instead. Sneaky. ;-)
+            bounds_error, fill_value = _LINEAR_EXTRAPOLATION_MODES[self._mode]
             self._interpolator.bounds_error = bounds_error
             self._interpolator.fill_value = fill_value
         else:

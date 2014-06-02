@@ -614,7 +614,7 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
 
         * If 'linear' the point will be calculated by extending the
           gradient of closest two points.
-        * If 'nan' the extrapolation point will be put as a NAN.
+        * If 'nan' the extrapolation point will be put as a NaN.
         * If 'error' a value error will be raised notifying of the
           attempted extrapolation.
 
