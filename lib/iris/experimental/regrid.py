@@ -191,8 +191,8 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
     If the input data is a MaskedArray then the result will also be a
     MaskedArray, with the mask set wherever:
      - there is a non-zero contribution from masked items in the input data,
-     - or, the result contains a NaN (either because of a NaN in the input
-       data or because the extrapolation mode creates NaN values).
+     - or, the extrapolation mode is 'nan' and the value required
+       extrapolation.
 
     Args:
 
@@ -338,9 +338,11 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
 
         data[tuple(index)] = interpolate(src_data[tuple(index)])
 
-        if isinstance(data, ma.MaskedArray) and src_data.mask is not False:
-            new_mask = interpolate(src_data[tuple(index)].mask.astype(float))
-            data.mask[tuple(index)] = np.isnan(new_mask) | (new_mask > 0)
+        if isinstance(data, ma.MaskedArray):
+            src_mask = np.ma.getmaskarray(src_data[tuple(index)])
+            mask_fraction = interpolate(src_mask.astype(float))
+            data.mask[tuple(index)] = (np.isnan(mask_fraction) |
+                                       (mask_fraction > 0))
 
     return data
 

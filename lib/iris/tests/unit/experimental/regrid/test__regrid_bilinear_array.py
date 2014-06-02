@@ -27,11 +27,11 @@ import iris.tests as tests
 import numpy as np
 
 import iris
+from iris.coords import DimCoord
 from iris.experimental.regrid import _regrid_bilinear_array
 
 
 class Test(tests.IrisTest):
-
     def setUp(self):
         self.x = iris.coords.DimCoord(np.linspace(-2, 57, 60))
         self.y = iris.coords.DimCoord(np.linspace(0, 49, 50))
@@ -149,6 +149,79 @@ class Test(tests.IrisTest):
         self.assertArrayAlmostEqual(result,
                                     np.array([56.80398671, 113.60797342],
                                              ndmin=self.data.ndim))
+
+
+# Check what happens to NaN values, extrapolated values, and
+# masked values.
+class TestModes(tests.IrisTest):
+    values = [[np.nan, np.nan, 2, 3, np.nan],
+              [np.nan, np.nan, 6, 7, np.nan],
+              [8, 9, 10, 11, np.nan]]
+
+    def _regrid(self, data):
+        x = np.arange(4)
+        y = np.arange(3)
+        x_coord = DimCoord(x)
+        y_coord = DimCoord(y)
+        x_dim, y_dim = 1, 0
+        grid_x, grid_y = np.meshgrid(np.arange(5), y)
+        result = _regrid_bilinear_array(data, x_dim, y_dim, x_coord, y_coord,
+                                        grid_x, grid_y)
+        return result
+
+    def test_default_ndarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> NaN
+        data = np.arange(12, dtype=np.float).reshape(3, 4)
+        data[0, 0] = np.nan
+        result = self._regrid(data)
+        self.assertNotIsInstance(result, np.ma.MaskedArray)
+        self.assertArrayEqual(result, self.values)
+
+    def test_default_maskedarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> Masked
+        # Masked        -> Masked
+        data = np.ma.arange(12, dtype=np.float).reshape(3, 4)
+        data[0, 0] = np.nan
+        data[2, 2] = np.ma.masked
+        result = self._regrid(data)
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 0, 1],
+                [0, 0, 0, 0, 1],
+                [0, 0, 1, 0, 1]]
+        expected = np.ma.MaskedArray(self.values, mask)
+        self.assertMaskedArrayEqual(result, expected)
+
+    def test_default_maskedarray_none_masked(self):
+        # NaN           -> NaN
+        # Extrapolated  -> Masked
+        # Masked        -> N/A
+        data = np.ma.arange(12, dtype=np.float).reshape(3, 4)
+        data[0, 0] = np.nan
+        result = self._regrid(data)
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 0, 1],
+                [0, 0, 0, 0, 1],
+                [0, 0, 0, 0, 1]]
+        expected = np.ma.MaskedArray(self.values, mask)
+        self.assertMaskedArrayEqual(result, expected)
+
+    def test_default_maskedarray_none_masked_expanded(self):
+        # NaN           -> NaN
+        # Extrapolated  -> Masked
+        # Masked        -> N/A
+        data = np.ma.arange(12, dtype=np.float).reshape(3, 4)
+        # Make sure the mask has been expanded
+        data.mask = False
+        data[0, 0] = np.nan
+        result = self._regrid(data)
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 0, 1],
+                [0, 0, 0, 0, 1],
+                [0, 0, 0, 0, 1]]
+        expected = np.ma.MaskedArray(self.values, mask)
+        self.assertMaskedArrayEqual(result, expected)
 
 
 if __name__ == '__main__':
