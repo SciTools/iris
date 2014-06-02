@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+from collections import namedtuple
 from itertools import product
 
 import numpy as np
@@ -28,10 +29,14 @@ import iris.cube
 
 _DEFAULT_DTYPE = np.float16
 
+_LinearExtrapMode = namedtuple('Mode', ['bounds_error', 'fill_value',
+                                        'mask_fill_value', 'force_mask'])
 _LINEAR_EXTRAPOLATION_MODES = {
-    'linear': (False, None),
-    'error': (True, None),
-    'nan': (False, np.nan)
+    'linear': _LinearExtrapMode(False, None, None, False),
+    'error': _LinearExtrapMode(True, 0, 0, False),
+    'nan': _LinearExtrapMode(False, np.nan, 0, False),
+    'mask': _LinearExtrapMode(False, np.nan, 1, True),
+    'nanmask': _LinearExtrapMode(False, np.nan, 1, False)
 }
 
 
@@ -115,6 +120,11 @@ class LinearInterpolator(object):
               * 'nan' - The extrapolation points will be be set to NaN.
               * 'error' - An exception will be raised, notifying an
                 attempt to extrapolate.
+              * 'mask' - The extrapolation points will always be masked, even
+                if the source data is not a MaskedArray.
+              * 'nanmask' - If the source data is a MaskedArray the
+                extrapolation points will be masked. Otherwise they will be
+                set to NaN.
 
             Default mode of extrapolation is 'linear'
 
@@ -220,21 +230,21 @@ class LinearInterpolator(object):
             # Perform dtype promotion.
             data = data.astype(dtype)
 
+        mode = _LINEAR_EXTRAPOLATION_MODES[self._mode]
         if self._interpolator is None:
             # Cache the interpolator instance.
+            # NB. The constructor of the _RegularGridInterpolator class does
+            # some unnecessary checks on the bounds_error and fill_value
+            # parameters, so we set them afterwards instead. Sneaky. ;-)
             self._interpolator = _RegularGridInterpolator(self._src_points,
                                                           data,
                                                           bounds_error=False,
                                                           fill_value=None)
-            # The constructor of the _RegularGridInterpolator class does
-            # some unnecessary checks on these values, so we set them
-            # afterwards instead. Sneaky. ;-)
-            bounds_error, fill_value = _LINEAR_EXTRAPOLATION_MODES[self._mode]
-            self._interpolator.bounds_error = bounds_error
-            self._interpolator.fill_value = fill_value
+            self._interpolator.bounds_error = mode.bounds_error
         else:
             self._interpolator.values = data
 
+        self._interpolator.fill_value = mode.fill_value
         result = self._interpolator(interp_points)
 
         if result.dtype != data.dtype:
@@ -242,6 +252,17 @@ class LinearInterpolator(object):
             # of the interpolated result is influenced by the dtype of the
             # interpolation points.
             result = result.astype(data.dtype)
+
+        if isinstance(data, ma.MaskedArray) or mode.force_mask:
+            # NB. np.ma.getmaskarray returns an array of `False` if
+            # `data` is not a masked array.
+            src_mask = np.ma.getmaskarray(data)
+            self._interpolator.fill_value = mode.mask_fill_value
+            self._interpolator.values = src_mask
+            mask_fraction = self._interpolator(interp_points)
+            new_mask = (mask_fraction > 0)
+            if isinstance(data, ma.MaskedArray) or np.any(new_mask):
+                result = np.ma.MaskedArray(result, new_mask)
 
         return result
 
@@ -440,13 +461,6 @@ class LinearInterpolator(object):
 
         # Interpolate and reshape the data ...
         result = self._interpolate(data, interp_points)
-
-        if isinstance(data, ma.MaskedArray) and \
-                not isinstance(data.mask, ma.MaskType):
-            mask = self._interpolate(data.mask, interp_points)
-            result = ma.asarray(result)
-            result.mask = mask > 0
-
         result = result.reshape(interp_shape)
 
         if src_order != dims:

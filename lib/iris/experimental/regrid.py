@@ -184,15 +184,20 @@ def _sample_grid(src_coord_system, grid_x_coord, grid_y_coord):
 
 def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
                            sample_grid_x, sample_grid_y,
-                           extrapolation_mode='nan'):
+                           extrapolation_mode='nanmask'):
     """
     Regrid the given data from the src grid to the sample grid.
 
-    If the input data is a MaskedArray then the result will also be a
-    MaskedArray, with the mask set wherever:
-     - there is a non-zero contribution from masked items in the input data,
-     - or, the extrapolation mode is 'nan' and the value required
+    The result will be a MaskedArray if either/both of:
+     - the source array is a MaskedArray,
+     - the extrapolation_mode is 'mask' and the result requires
        extrapolation.
+
+    If the result is a MaskedArray the mask for each element will be set
+    if either/both of:
+     - there is a non-zero contribution from masked items in the input data,
+     - the element requires extrapolation and the extrapolation_mode
+       dictates a masked value.
 
     Args:
 
@@ -221,9 +226,13 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
           * 'nan' - The extrapolation points will be be set to NaN.
           * 'error' - A ValueError exception will be raised, notifying an
             attempt to extrapolate.
+          * 'mask' - The extrapolation points will always be masked, even
+            if the source data is not a MaskedArray.
+          * 'nanmask' - If the source data is a MaskedArray the
+            extrapolation points will be masked. Otherwise they will be
+            set to NaN.
 
-        The default mode of extrapolation is 'nan'.
-
+        The default mode of extrapolation is 'nanmask'.
 
     Returns:
         The regridded data as an N-dimensional NumPy array. The lengths
@@ -292,9 +301,12 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
     # The constructor of the _RegularGridInterpolator class does
     # some unnecessary checks on these values, so we set them
     # afterwards instead. Sneaky. ;-)
-    bounds_error, fill_value = _LINEAR_EXTRAPOLATION_MODES[extrapolation_mode]
-    interpolator.bounds_error = bounds_error
-    interpolator.fill_value = fill_value
+    try:
+        mode = _LINEAR_EXTRAPOLATION_MODES[extrapolation_mode]
+    except KeyError:
+        raise ValueError('Invalid extrapolation mode.')
+    interpolator.bounds_error = mode.bounds_error
+    interpolator.fill_value = mode.fill_value
 
     # Construct the target coordinate points array, suitable for passing to
     # the interpolator multiple times.
@@ -336,13 +348,24 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
         index = list(index)
         index[x_dim] = index[y_dim] = slice(None)
 
-        data[tuple(index)] = interpolate(src_data[tuple(index)])
+        src_subset = src_data[tuple(index)]
+        interpolator.fill_value = mode.fill_value
+        data[tuple(index)] = interpolate(src_subset)
 
-        if isinstance(data, ma.MaskedArray):
-            src_mask = np.ma.getmaskarray(src_data[tuple(index)])
-            mask_fraction = interpolate(src_mask.astype(float))
-            data.mask[tuple(index)] = (np.isnan(mask_fraction) |
-                                       (mask_fraction > 0))
+        if isinstance(data, ma.MaskedArray) or mode.force_mask:
+            # NB. np.ma.getmaskarray returns an array of `False` if
+            # `src_subset` is not a masked array.
+            src_mask = np.ma.getmaskarray(src_subset)
+            interpolator.fill_value = mode.mask_fill_value
+            mask_fraction = interpolate(src_mask)
+            new_mask = (mask_fraction > 0)
+
+            if isinstance(data, ma.MaskedArray):
+                data.mask[tuple(index)] = new_mask
+            elif np.any(new_mask):
+                data = np.ma.MaskedArray(data, np.zeros(data.shape,
+                                                        dtype=np.bool))
+                data.mask[tuple(index)] = new_mask
 
     return data
 
