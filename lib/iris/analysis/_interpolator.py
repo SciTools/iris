@@ -112,7 +112,7 @@ class LinearInterpolator(object):
 
               * 'linear' - The extrapolation points will be calculated by
                 extending the gradient of closest two points.
-              * 'nan' - The extrapolation points will be be set to NAN.
+              * 'nan' - The extrapolation points will be be set to NaN.
               * 'error' - An exception will be raised, notifying an
                 attempt to extrapolate.
 

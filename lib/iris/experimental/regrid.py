@@ -194,6 +194,12 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
     """
     Regrid the given data from the src grid to the sample grid.
 
+    If the input data is a MaskedArray then the result will also be a
+    MaskedArray, with the mask set wherever:
+     - there is a non-zero contribution from masked items in the input data,
+     - or, the result contains a NaN (either because of a NaN in the input
+       data or because the extrapolation mode creates NaN values).
+
     Args:
 
     * src_data:
@@ -210,6 +216,20 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
         A 2-dimensional array of sample X values.
     * sample_grid_y:
         A 2-dimensional array of sample Y values.
+
+    Kwargs:
+
+    * extrapolation_mode:
+        Must be one of the following strings:
+
+          * 'linear' - The extrapolation points will be calculated by
+            extending the gradient of the closest two points.
+          * 'nan' - The extrapolation points will be be set to NaN.
+          * 'error' - A ValueError exception will be raised, notifying an
+            attempt to extrapolate.
+
+        The default mode of extrapolation is 'nan'.
+
 
     Returns:
         The regridded data as an N-dimensional NumPy array. The lengths
