@@ -33,7 +33,7 @@ from iris.fileformats.cf import CFReader
 
 
 def netcdf_variable(name, dimensions, dtype, ancillary_variables=None,
-                    coordinates=None, bounds=None, climatology=None,
+                    coordinates='', bounds=None, climatology=None,
                     formula_terms=None, grid_mapping=None,
                     cell_measures=None):
     """Return a mock NetCDF4 variable."""
@@ -220,6 +220,25 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
                 self.assertIn(name_bnds, aux_coord_group.bounds)
                 self.assertIs(aux_coord_group[name_bnds].cf_data,
                               getattr(self, name_bnds))
+
+    def test_future_promote(self):
+        with mock.patch('netCDF4.Dataset', return_value=self.dataset):
+            with iris.FUTURE.context(netcdf_promote=True):
+                cf_group = CFReader('dummy').cf_group
+                self.assertEqual(len(cf_group), len(self.variables))
+                # Check the number of data variables.
+                self.assertEqual(len(cf_group.data_variables), 1)
+                self.assertEqual(cf_group.data_variables.keys(), ['temp'])
+                # Check the number of promoted variables.
+                self.assertEqual(len(cf_group.promoted), 1)
+                self.assertEqual(cf_group.promoted.keys(), ['orography'])
+                # Check the promoted variable dependencies.
+                group = cf_group.promoted['orography'].cf_group.coordinates
+                self.assertEqual(len(group), 2)
+                coordinates = ('lat', 'lon')
+                self.assertEqual(group.viewkeys(), set(coordinates))
+                for name in coordinates:
+                    self.assertIs(group[name].cf_data, getattr(self, name))
 
     def test_formula_terms_dimension_mismatch(self):
         self.orography.dimensions = 'lat wibble'

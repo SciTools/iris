@@ -63,23 +63,23 @@ class CFVariable(object):
     #: Name of the netCDF variable attribute that identifies this
     #: CF-netCDF variable.
     cf_identity = None
-    
+
     def __init__(self, name, data):
         # Accessing the list of netCDF attributes is surprisingly slow.
         # Since it's used repeatedly, caching the list makes things
         # quite a bit faster.
         self._nc_attrs = data.ncattrs()
 
-        #: NetCDF variable name
+        #: NetCDF variable name.
         self.cf_name = name
 
-        #: NetCDF4 Variable data instance
+        #: NetCDF4 Variable data instance.
         self.cf_data = data
 
-        #: Collection of CF-netCDF variables associated with this variable
+        #: Collection of CF-netCDF variables associated with this variable.
         self.cf_group = None
 
-        #: CF-netCDF formula terms that his variable participates in
+        #: CF-netCDF formula terms that his variable participates in.
         self.cf_terms_by_root = {}
 
         self.cf_attrs_reset()
@@ -646,7 +646,7 @@ class CFMeasureVariable(CFVariable):
         CFVariable.__init__(self, name, data)
         #: Associated cell measure of the cell variable
         self.cf_measure = measure
- 
+
     @classmethod
     def identify(cls, variables, ignore=None, target=None, warn=True):
         result = {}
@@ -682,11 +682,13 @@ class CFGroup(object, UserDict.DictMixin):
     Conventions' variables and netCDF global attributes.
 
     """
-    def __init__(self):       
+    def __init__(self):
         #: Collection of CF-netCDF variables
         self._cf_variables = {}
         #: Collection of netCDF global attributes
         self.global_attributes = {}
+        #: Collection of CF-netCDF variables promoted to a CFDataVariable.
+        self.promoted = {}
 
     def _cf_getter(self, cls):
         # Generate dictionary with dictionary comprehension.
@@ -771,6 +773,7 @@ class CFGroup(object, UserDict.DictMixin):
         result = []
         result.append('variables:%d' % len(self._cf_variables))
         result.append('global_attributes:%d' % len(self.global_attributes))
+        result.append('promoted:%d' % len(self.promoted))
 
         return '<%s of %s>' % (self.__class__.__name__, ', '.join(result))
 
@@ -789,7 +792,7 @@ class CFReader(object):
         self._variable_types = (CFAncillaryDataVariable, CFAuxiliaryCoordinateVariable,
                                 CFBoundaryVariable, CFClimatologyVariable,
                                 CFGridMappingVariable, CFLabelVariable, CFMeasureVariable)
-        
+
         #: Collection of CF-netCDF variables associated with this netCDF file
         self.cf_group = CFGroup()
 
@@ -859,9 +862,8 @@ class CFReader(object):
     def _build_cf_groups(self):
         """Build the first order relationships between CF-netCDF variables."""
 
-        coordinate_names = self.cf_group.coordinates.keys()
-
-        for cf_variable in self.cf_group.itervalues():
+        def _build(cf_variable):
+            coordinate_names = self.cf_group.coordinates.keys()
             cf_group = CFGroup()
 
             # Build CF variable relationships.
@@ -904,6 +906,21 @@ class CFReader(object):
 
             # Add the CF group to the variable.
             cf_variable.cf_group = cf_group
+
+        for cf_variable in self.cf_group.itervalues():
+            _build(cf_variable)
+
+        # Determine whether there are any variables that may be promoted
+        # to a CFDataVariable.
+        if iris.FUTURE.netcdf_promote:
+            # Restrict promotion to only auxiliary coordinates that
+            # are multi-dimensional.
+            for cf_variable in self.cf_group.auxiliary_coordinates.values():
+                if len(cf_variable.dimensions) > 1:
+                    name = cf_variable.cf_name
+                    data_variable = CFDataVariable(name, cf_variable.cf_data)
+                    self.cf_group.promoted[name] = data_variable
+                    _build(data_variable)
 
     def _reset(self):
         """Reset the attribute touch history of each variable."""
