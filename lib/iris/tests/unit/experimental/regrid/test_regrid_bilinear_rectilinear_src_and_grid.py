@@ -206,18 +206,24 @@ class TestBadAngularUnits(tests.IrisTest):
             regrid(ok, bad)
 
 
+def uk_cube():
+    uk = Cube(np.arange(12, dtype=np.float32).reshape(3, 4))
+    cs = OSGB()
+    y_coord = DimCoord(range(3), 'projection_y_coordinate', units='m',
+                       coord_system=cs)
+    x_coord = DimCoord(range(4), 'projection_x_coordinate', units='m',
+                       coord_system=cs)
+    uk.add_dim_coord(y_coord, 0)
+    uk.add_dim_coord(x_coord, 1)
+    return uk
+
+
 class TestBadLinearUnits(tests.IrisTest):
     def ok_bad(self):
         # Defines `bad` with an x coordinate in km.
         ok = lat_lon_cube()
-        bad = Cube(np.arange(12, dtype=np.float32).reshape(3, 4))
-        cs = OSGB()
-        y_coord = DimCoord(range(3), 'projection_y_coordinate', units='m',
-                           coord_system=cs)
-        x_coord = DimCoord(range(4), 'projection_x_coordinate', units='km',
-                           coord_system=cs)
-        bad.add_dim_coord(y_coord, 0)
-        bad.add_dim_coord(x_coord, 1)
+        bad = uk_cube()
+        bad.coord(axis='x').units = 'km'
         return ok, bad
 
     def test_src_km(self):
@@ -229,6 +235,40 @@ class TestBadLinearUnits(tests.IrisTest):
         ok, bad = self.ok_bad()
         with self.assertRaises(ValueError):
             regrid(ok, bad)
+
+
+class TestNoCoordSystems(tests.IrisTest):
+    # Test behaviour in the absence of any coordinate systems.
+
+    def remove_coord_systems(self, cube):
+        for coord in cube.coords():
+            coord.coord_system = None
+
+    def test_ok(self):
+        # Ensure regridding is supported when the coordinate definitions match.
+        # NB. We change the coordinate *values* to ensure that does not
+        # prevent the regridding operation.
+        src = uk_cube()
+        self.remove_coord_systems(src)
+        grid = src.copy()
+        for src_coord in src.coords():
+            grid.coord(src_coord).points = src_coord.points + 1
+        result = regrid(src, grid)
+        for coord in result.coords():
+            self.assertEqual(coord, grid.coord(coord))
+        expected = np.ma.arange(12).reshape((3, 4)) + 5
+        expected[:, 3] = np.ma.masked
+        expected[2, :] = np.ma.masked
+        self.assertMaskedArrayEqual(result.data, expected)
+
+    def test_coord_metadata_mismatch(self):
+        # Check for failure when coordinate definitions differ.
+        uk = uk_cube()
+        self.remove_coord_systems(uk)
+        lat_lon = lat_lon_cube()
+        self.remove_coord_systems(lat_lon)
+        with self.assertRaises(ValueError):
+            regrid(uk, lat_lon)
 
 
 if __name__ == '__main__':
