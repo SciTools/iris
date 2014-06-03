@@ -400,16 +400,6 @@ def convert(f):
     if f.lbuser[4] != 0:
         aux_coords_and_dims.append((DimCoord(f.lbuser[4], long_name='pseudo_level', units='1'), None))
 
-    if f.lbuser[6] == 1 and f.lbuser[3] == 5226:
-        standard_name = "precipitation_amount"
-        units = "kg m-2"
-
-    if \
-            (f.lbuser[6] == 2) and \
-            (f.lbuser[3] == 101):
-        standard_name = "sea_water_potential_temperature"
-        units = "Celsius"
-
     if \
             ((f.lbsrce % 10000) == 1111) and \
             ((f.lbsrce / 10000) / 100.0 > 0):
@@ -422,30 +412,6 @@ def convert(f):
 
     if f.lbuser[6] != 0 or (f.lbuser[3] / 1000) != 0 or (f.lbuser[3] % 1000) != 0:
         attributes['STASH'] = f.stash
-
-    if \
-            (f.lbuser[6] == 1) and \
-            (f.lbuser[3] == 4205):
-        standard_name = "mass_fraction_of_cloud_ice_in_air"
-        units = "1"
-
-    if \
-            (f.lbuser[6] == 1) and \
-            (f.lbuser[3] == 4206):
-        standard_name = "mass_fraction_of_cloud_liquid_water_in_air"
-        units = "1"
-
-    if \
-            (f.lbuser[6] == 1) and \
-            (f.lbuser[3] == 30204):
-        standard_name = "air_temperature"
-        units = "K"
-
-    if \
-            (f.lbuser[6] == 4) and \
-            (f.lbuser[3] == 6001):
-        standard_name = "sea_surface_wave_significant_height"
-        units = "m"
 
     if str(f.stash) in STASH_TO_CF:
         standard_name = STASH_TO_CF[str(f.stash)].standard_name
