@@ -26,6 +26,7 @@ import iris.tests as tests
 
 import numpy as np
 
+from iris.aux_factory import HybridHeightFactory
 from iris.coord_systems import GeogCS, OSGB
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
@@ -207,7 +208,8 @@ class TestBadAngularUnits(tests.IrisTest):
 
 
 def uk_cube():
-    uk = Cube(np.arange(12, dtype=np.float32).reshape(3, 4))
+    data = np.arange(12, dtype=np.float32).reshape(3, 4)
+    uk = Cube(data)
     cs = OSGB()
     y_coord = DimCoord(range(3), 'projection_y_coordinate', units='m',
                        coord_system=cs)
@@ -215,6 +217,9 @@ def uk_cube():
                        coord_system=cs)
     uk.add_dim_coord(y_coord, 0)
     uk.add_dim_coord(x_coord, 1)
+    surface = AuxCoord(data + 1, units='m')
+    uk.add_aux_coord(surface, (0, 1))
+    uk.add_aux_factory(HybridHeightFactory(orography=surface))
     return uk
 
 
@@ -251,10 +256,10 @@ class TestNoCoordSystems(tests.IrisTest):
         src = uk_cube()
         self.remove_coord_systems(src)
         grid = src.copy()
-        for src_coord in src.coords():
-            grid.coord(src_coord).points = src_coord.points + 1
+        for coord in grid.dim_coords:
+            coord.points = coord.points + 1
         result = regrid(src, grid)
-        for coord in result.coords():
+        for coord in result.dim_coords:
             self.assertEqual(coord, grid.coord(coord))
         expected = np.ma.arange(12).reshape((3, 4)) + 5
         expected[:, 3] = np.ma.masked
@@ -269,6 +274,203 @@ class TestNoCoordSystems(tests.IrisTest):
         self.remove_coord_systems(lat_lon)
         with self.assertRaises(ValueError):
             regrid(uk, lat_lon)
+
+
+# Check what happens to NaN values, extrapolated values, and
+# masked values.
+class TestModes(tests.IrisTest):
+    values = [[np.nan, 6, 7, np.nan],
+              [9, 10, 11, np.nan],
+              [np.nan, np.nan, np.nan, np.nan]]
+
+    linear_values = [[np.nan, 6, 7, 8],
+                     [9, 10, 11, 12],
+                     [13, 14, 15, 16]]
+
+    def _ndarray_cube(self):
+        src = uk_cube()
+        src.data[0, 0] = np.nan
+        return src
+
+    def _masked_cube(self):
+        src = uk_cube()
+        src.data = np.ma.asarray(src.data)
+        src.data[0, 0] = np.nan
+        src.data[2, 3] = np.ma.masked
+        return src
+
+    def _regrid(self, src, extrapolation_mode=None):
+        grid = src.copy()
+        for coord in grid.dim_coords:
+            coord.points = coord.points + 1
+        kwargs = {}
+        if extrapolation_mode is not None:
+            kwargs['extrapolation_mode'] = extrapolation_mode
+        result = regrid(src, grid, **kwargs)
+        return result.data
+
+    def test_default_ndarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> NaN
+        src = self._ndarray_cube()
+        result = self._regrid(src)
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 1],
+                [0, 0, 0, 1],
+                [1, 1, 1, 1]]
+        expected = np.ma.MaskedArray(self.values, mask)
+        self.assertMaskedArrayEqual(result, expected)
+
+    def test_default_maskedarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> Masked
+        # Masked        -> Masked
+        src = self._masked_cube()
+        result = self._regrid(src)
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 1],
+                [0, 0, 1, 1],
+                [1, 1, 1, 1]]
+        expected = np.ma.MaskedArray(self.values, mask)
+        self.assertMaskedArrayEqual(result, expected)
+
+    def test_default_maskedarray_none_masked(self):
+        # NaN           -> NaN
+        # Extrapolated  -> Masked
+        # Masked        -> N/A
+        src = uk_cube()
+        src.data = np.ma.asarray(src.data)
+        src.data[0, 0] = np.nan
+        result = self._regrid(src)
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 1],
+                [0, 0, 0, 1],
+                [1, 1, 1, 1]]
+        expected = np.ma.MaskedArray(self.values, mask)
+        self.assertMaskedArrayEqual(result, expected)
+
+    def test_default_maskedarray_none_masked_expanded(self):
+        # NaN           -> NaN
+        # Extrapolated  -> Masked
+        # Masked        -> N/A
+        src = uk_cube()
+        src.data = np.ma.asarray(src.data)
+        # Make sure the mask has been expanded
+        src.data.mask = False
+        src.data[0, 0] = np.nan
+        result = self._regrid(src)
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 1],
+                [0, 0, 0, 1],
+                [1, 1, 1, 1]]
+        expected = np.ma.MaskedArray(self.values, mask)
+        self.assertMaskedArrayEqual(result, expected)
+
+    def test_linear_ndarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> linear
+        src = self._ndarray_cube()
+        result = self._regrid(src, 'linear')
+        self.assertNotIsInstance(result, np.ma.MaskedArray)
+        self.assertArrayEqual(result, self.linear_values)
+
+    def test_linear_maskedarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> linear
+        # Masked        -> Masked
+        src = self._masked_cube()
+        result = self._regrid(src, 'linear')
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 0],
+                [0, 0, 1, 1],
+                [0, 0, 1, 1]]
+        expected = np.ma.MaskedArray(self.linear_values, mask)
+        self.assertMaskedArrayEqual(result, expected)
+
+    def test_nan_ndarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> NaN
+        src = self._ndarray_cube()
+        result = self._regrid(src, 'nan')
+        self.assertNotIsInstance(result, np.ma.MaskedArray)
+        self.assertArrayEqual(result, self.values)
+
+    def test_nan_maskedarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> NaN
+        # Masked        -> Masked
+        src = self._masked_cube()
+        result = self._regrid(src, 'nan')
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 0]]
+        expected = np.ma.MaskedArray(self.values, mask)
+        self.assertMaskedArrayEqual(result, expected)
+
+    def test_error_ndarray(self):
+        # Values irrelevant - the function raises an error.
+        src = self._ndarray_cube()
+        with self.assertRaisesRegexp(ValueError, 'out of bounds'):
+            self._regrid(src, 'error')
+
+    def test_error_maskedarray(self):
+        # Values irrelevant - the function raises an error.
+        src = self._masked_cube()
+        with self.assertRaisesRegexp(ValueError, 'out of bounds'):
+            self._regrid(src, 'error')
+
+    def test_mask_ndarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> Masked (this is different from all the other
+        #                          modes)
+        src = self._ndarray_cube()
+        result = self._regrid(src, 'mask')
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 1],
+                [0, 0, 0, 1],
+                [1, 1, 1, 1]]
+        expected = np.ma.MaskedArray(self.values, mask)
+        self.assertMaskedArrayEqual(result, expected)
+
+    def test_mask_maskedarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> Masked
+        # Masked        -> Masked
+        src = self._masked_cube()
+        result = self._regrid(src, 'mask')
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 1],
+                [0, 0, 1, 1],
+                [1, 1, 1, 1]]
+        expected = np.ma.MaskedArray(self.values, mask)
+        self.assertMaskedArrayEqual(result, expected)
+
+    def test_nanmask_ndarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> NaN
+        src = self._ndarray_cube()
+        result = self._regrid(src, 'nanmask')
+        self.assertNotIsInstance(result, np.ma.MaskedArray)
+        self.assertArrayEqual(result, self.values)
+
+    def test_nanmask_maskedarray(self):
+        # NaN           -> NaN
+        # Extrapolated  -> Masked
+        # Masked        -> Masked
+        src = self._masked_cube()
+        result = self._regrid(src, 'nanmask')
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        mask = [[0, 0, 0, 1],
+                [0, 0, 1, 1],
+                [1, 1, 1, 1]]
+        expected = np.ma.MaskedArray(self.values, mask)
+        self.assertMaskedArrayEqual(result, expected)
+
+    def test_invalid(self):
+        src = uk_cube()
+        with self.assertRaisesRegexp(ValueError, 'Invalid extrapolation mode'):
+            self._regrid(src, 'BOGUS')
 
 
 if __name__ == '__main__':
