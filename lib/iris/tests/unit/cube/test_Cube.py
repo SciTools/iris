@@ -789,5 +789,31 @@ class Test_interpolate(tests.IrisTest):
             (0.5, 0.6), collapse_scalar=self.collapse_coord)
         self.assertIs(result, mock.sentinel.RESULT)
 
-if __name__ == "__main__":
+
+class Test_regrid(tests.IrisTest):
+    def test(self):
+        # Test that Cube.regrid() just defers to the regridder of the
+        # given scheme.
+
+        # Define a fake scheme and its associated regridder which just
+        # capture their arguments and return them in place of the
+        # regridded cube.
+        class FakeRegridder(object):
+            def __init__(self, *args):
+                self.args = args
+
+            def __call__(self, cube):
+                return self.args + (cube,)
+
+        class FakeScheme(object):
+            def regridder(self, src, target):
+                return FakeRegridder(self, src, target)
+
+        cube = Cube(0)
+        scheme = FakeScheme()
+        result = cube.regrid(mock.sentinel.TARGET, scheme)
+        self.assertEqual(result, (scheme, cube, mock.sentinel.TARGET, cube))
+
+
+if __name__ == '__main__':
     tests.main()

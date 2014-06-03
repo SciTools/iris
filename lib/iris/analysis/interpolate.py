@@ -401,6 +401,10 @@ def regrid(source_cube, grid_cube, mode='bilinear', **kwargs):
         for regrid support with mask awareness.
 
     """
+    if mode == 'bilinear':
+        scheme = iris.analysis.Linear(**kwargs)
+        return source_cube.regrid(grid_cube, scheme)
+
     # Condition 1
     source_cs = source_cube.coord_system(iris.coord_systems.CoordSystem)
     grid_cs = grid_cube.coord_system(iris.coord_systems.CoordSystem)
