@@ -602,7 +602,7 @@ def regrid_bilinear_rectilinear_src_and_grid(src, grid,
 
     # Wrap up the data as a Cube.
     regrid_callback = functools.partial(_regrid_bilinear_array,
-                                        extrapolation_mode=extrapolation_mode)
+                                        extrapolation_mode='nan')
     result = _create_cube(data, src, x_dim, y_dim, src_x_coord, src_y_coord,
                           grid_x_coord, grid_y_coord,
                           sample_grid_x, sample_grid_y,

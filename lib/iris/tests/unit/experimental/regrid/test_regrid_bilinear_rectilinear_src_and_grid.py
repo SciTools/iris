@@ -217,7 +217,7 @@ def uk_cube():
                        coord_system=cs)
     uk.add_dim_coord(y_coord, 0)
     uk.add_dim_coord(x_coord, 1)
-    surface = AuxCoord(data + 1, units='m')
+    surface = AuxCoord(data * 10, 'surface_altitude', units='m')
     uk.add_aux_coord(surface, (0, 1))
     uk.add_aux_factory(HybridHeightFactory(orography=surface))
     return uk
@@ -287,6 +287,10 @@ class TestModes(tests.IrisTest):
                      [9, 10, 11, 12],
                      [13, 14, 15, 16]]
 
+    surface_values = [[50, 60, 70, np.nan],
+                      [90, 100, 110, np.nan],
+                      [np.nan, np.nan, np.nan, np.nan]]
+
     def _ndarray_cube(self):
         src = uk_cube()
         src.data[0, 0] = np.nan
@@ -307,11 +311,16 @@ class TestModes(tests.IrisTest):
         if extrapolation_mode is not None:
             kwargs['extrapolation_mode'] = extrapolation_mode
         result = regrid(src, grid, **kwargs)
+
+        surface = result.coord('surface_altitude').points
+        self.assertNotIsInstance(surface, np.ma.MaskedArray)
+        self.assertArrayEqual(surface, self.surface_values)
+
         return result.data
 
     def test_default_ndarray(self):
         # NaN           -> NaN
-        # Extrapolated  -> NaN
+        # Extrapolated  -> Masked
         src = self._ndarray_cube()
         result = self._regrid(src)
         self.assertIsInstance(result, np.ma.MaskedArray)
