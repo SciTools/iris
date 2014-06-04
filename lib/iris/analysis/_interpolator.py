@@ -29,8 +29,10 @@ import iris.cube
 
 _DEFAULT_DTYPE = np.float16
 
-_LinearExtrapMode = namedtuple('Mode', ['bounds_error', 'fill_value',
-                                        'mask_fill_value', 'force_mask'])
+_LinearExtrapMode = namedtuple('_LinearExtrapMode', ['bounds_error',
+                                                     'fill_value',
+                                                     'mask_fill_value',
+                                                     'force_mask'])
 _LINEAR_EXTRAPOLATION_MODES = {
     'linear': _LinearExtrapMode(False, None, None, False),
     'error': _LinearExtrapMode(True, 0, 0, False),
@@ -234,16 +236,16 @@ class LinearInterpolator(object):
         if self._interpolator is None:
             # Cache the interpolator instance.
             # NB. The constructor of the _RegularGridInterpolator class does
-            # some unnecessary checks on the bounds_error and fill_value
-            # parameters, so we set them afterwards instead. Sneaky. ;-)
-            self._interpolator = _RegularGridInterpolator(self._src_points,
-                                                          data,
-                                                          bounds_error=False,
-                                                          fill_value=None)
-            self._interpolator.bounds_error = mode.bounds_error
+            # some unnecessary checks on the fill_value parameter,
+            # so we set it afterwards instead. Sneaky. ;-)
+            self._interpolator = _RegularGridInterpolator(
+                self._src_points, data, bounds_error=mode.bounds_error,
+                fill_value=None)
         else:
             self._interpolator.values = data
 
+        # We may be re-using a cached interpolator, so ensure the fill
+        # value is set appropriately for extrapolating data values.
         self._interpolator.fill_value = mode.fill_value
         result = self._interpolator(interp_points)
 
@@ -253,10 +255,11 @@ class LinearInterpolator(object):
             # interpolation points.
             result = result.astype(data.dtype)
 
-        if isinstance(data, ma.MaskedArray) or mode.force_mask:
+        if np.ma.isMaskedArray(data) or mode.force_mask:
             # NB. np.ma.getmaskarray returns an array of `False` if
             # `data` is not a masked array.
             src_mask = np.ma.getmaskarray(data)
+            # Switch the extrapolation to work with mask values.
             self._interpolator.fill_value = mode.mask_fill_value
             self._interpolator.values = src_mask
             mask_fraction = self._interpolator(interp_points)

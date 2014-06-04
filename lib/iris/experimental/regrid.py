@@ -360,11 +360,11 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
             mask_fraction = interpolate(src_mask)
             new_mask = (mask_fraction > 0)
 
-            if isinstance(data, ma.MaskedArray):
+            if np.ma.isMaskedArray(data):
                 data.mask[tuple(index)] = new_mask
             elif np.any(new_mask):
-                data = np.ma.MaskedArray(data, np.zeros(data.shape,
-                                                        dtype=np.bool))
+                # Set mask=False to ensure we have an expanded mask array.
+                data = np.ma.MaskedArray(data, mask=False)
                 data.mask[tuple(index)] = new_mask
 
     return data
