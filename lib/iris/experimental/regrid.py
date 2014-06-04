@@ -20,6 +20,7 @@ Regridding functions.
 """
 import collections
 import copy
+import functools
 import warnings
 
 import numpy as np
@@ -202,7 +203,7 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
     Args:
 
     * src_data:
-        An N-dimensional NumPy array.
+        An N-dimensional NumPy array or MaskedArray.
     * x_dim:
         The X dimension within `src_data`.
     * y_dim:
@@ -510,7 +511,8 @@ def _create_cube(data, src, x_dim, y_dim, src_x_coord, src_y_coord,
     return result
 
 
-def regrid_bilinear_rectilinear_src_and_grid(src, grid):
+def regrid_bilinear_rectilinear_src_and_grid(src, grid,
+                                             extrapolation_mode='mask'):
     """
     Return a new Cube that is the result of regridding the source Cube
     onto the grid of the grid Cube using bilinear interpolation.
@@ -527,6 +529,24 @@ def regrid_bilinear_rectilinear_src_and_grid(src, grid):
         The source :class:`iris.cube.Cube` providing the data.
     * grid:
         The :class:`iris.cube.Cube` which defines the new grid.
+
+    Kwargs:
+
+    * extrapolation_mode:
+        Must be one of the following strings:
+
+          * 'linear' - The extrapolation points will be calculated by
+            extending the gradient of the closest two points.
+          * 'nan' - The extrapolation points will be be set to NaN.
+          * 'error' - A ValueError exception will be raised, notifying an
+            attempt to extrapolate.
+          * 'mask' - The extrapolation points will always be masked, even
+            if the source data is not a MaskedArray.
+          * 'nanmask' - If the source data is a MaskedArray the
+            extrapolation points will be masked. Otherwise they will be
+            set to NaN.
+
+        The default mode of extrapolation is 'mask'.
 
     Returns:
         The :class:`iris.cube.Cube` resulting from regridding the source
@@ -565,6 +585,9 @@ def regrid_bilinear_rectilinear_src_and_grid(src, grid):
                                                  grid_x_coord, grid_y_coord)):
         raise ValueError("Unsupported units: must be 'degrees' or 'm'.")
 
+    if extrapolation_mode not in _LINEAR_EXTRAPOLATION_MODES:
+        raise ValueError('Invalid extrapolation mode.')
+
     # Convert the grid to a 2D sample grid in the src CRS.
     sample_grid_x, sample_grid_y = _sample_grid(src_cs,
                                                 grid_x_coord, grid_y_coord)
@@ -572,26 +595,18 @@ def regrid_bilinear_rectilinear_src_and_grid(src, grid):
     # Compute the interpolated data values.
     x_dim = src.coord_dims(src_x_coord)[0]
     y_dim = src.coord_dims(src_y_coord)[0]
-    src_data = src.data
-    fill_value = None
-    if np.ma.isMaskedArray(src_data):
-        # Since we're using iris.analysis.interpolate.linear which
-        # doesn't respect the mask, we replace masked values with NaN.
-        fill_value = src_data.fill_value
-        src_data = src_data.filled(np.nan)
-    data = _regrid_bilinear_array(src_data, x_dim, y_dim,
+    data = _regrid_bilinear_array(src.data, x_dim, y_dim,
                                   src_x_coord, src_y_coord,
-                                  sample_grid_x, sample_grid_y)
-    # Convert NaN based results to masked array where appropriate.
-    mask = np.isnan(data)
-    if np.any(mask):
-        data = np.ma.MaskedArray(data, mask, fill_value=fill_value)
+                                  sample_grid_x, sample_grid_y,
+                                  extrapolation_mode)
 
     # Wrap up the data as a Cube.
+    regrid_callback = functools.partial(_regrid_bilinear_array,
+                                        extrapolation_mode='nan')
     result = _create_cube(data, src, x_dim, y_dim, src_x_coord, src_y_coord,
                           grid_x_coord, grid_y_coord,
                           sample_grid_x, sample_grid_y,
-                          _regrid_bilinear_array)
+                          regrid_callback)
     return result
 
 
