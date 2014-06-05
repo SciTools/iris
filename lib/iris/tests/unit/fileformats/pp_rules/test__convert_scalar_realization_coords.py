@@ -14,24 +14,31 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for :func:`iris.fileformats.pp_rules._model_level_number`."""
+"""
+Unit tests for
+:func:`iris.fileformats.pp_rules._convert_scalar_realization_coords`.
+
+"""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
-from iris.fileformats.pp_rules import _model_level_number
+from iris.coords import DimCoord
+from iris.tests.unit.fileformats import TestField
+
+from iris.fileformats.pp_rules import _convert_scalar_realization_coords
 
 
-class Test_9999(tests.IrisTest):
-    def test(self):
-        self.assertEqual(_model_level_number(9999), 0)
+class Test(TestField):
+    def test_valid(self):
+        coords_and_dims = _convert_scalar_realization_coords(lbrsvd4=21)
+        self.assertEqual(coords_and_dims,
+                         [(DimCoord([21], standard_name='realization'), None)])
 
-
-class Test_lblev(tests.IrisTest):
-    def test(self):
-        for val in xrange(9999):
-            self.assertEqual(_model_level_number(val), val)
+    def test_missing_indicator(self):
+        coords_and_dims = _convert_scalar_realization_coords(lbrsvd4=0)
+        self.assertEqual(coords_and_dims, [])
 
 
 if __name__ == "__main__":
