@@ -54,7 +54,8 @@ import numpy.ma as ma
 import scipy.interpolate
 import scipy.stats.mstats
 
-from iris.analysis._interpolator import LinearInterpolator
+from iris.analysis._interpolator import (_LINEAR_EXTRAPOLATION_MODES,
+                                         LinearInterpolator, LinearRegridder)
 import iris.coords
 from iris.exceptions import LazyAggregatorError
 
@@ -1490,7 +1491,7 @@ class Linear(object):
     """
     This class describes the linear interpolation scheme for interpolating over
     one or more orthogonal coordinates, typically for use with
-    :meth:`iris.cube.Cube.interpolate()`.
+    :meth:`iris.cube.Cube.interpolate()` or :meth:`iris.cube.Cube.regrid()`.
 
     """
     def __init__(self, extrapolation_mode='linear'):
@@ -1508,11 +1509,22 @@ class Linear(object):
               * 'nan' - The extrapolation points will be be set to NaN.
               * 'error' - A ValueError exception will be raised, notifying an
                 attempt to extrapolate.
+              * 'mask' - The extrapolation points will always be masked, even
+                if the source data is not a MaskedArray.
+              * 'nanmask' - If the source data is a MaskedArray the
+                extrapolation points will be masked. Otherwise they will be
+                set to NaN.
 
             Default mode of extrapolation is 'linear'.
 
         """
+        if extrapolation_mode not in _LINEAR_EXTRAPOLATION_MODES:
+            msg = 'Extrapolation mode {!r} not supported.'
+            raise ValueError(msg.format(extrapolation_mode))
         self.extrapolation_mode = extrapolation_mode
+
+    def __repr__(self):
+        return 'Linear({!r})'.format(self.extrapolation_mode)
 
     def interpolator(self, cube, coords):
         """
@@ -1530,7 +1542,9 @@ class Linear(object):
 
         Returns:
             A callable with the interface:
-            `callable(sample_points, collapse_scalar=True)`
+
+                `callable(sample_points, collapse_scalar=True)`
+
             where `sample_points` is a sequence containing an array of values
             for each of the coordinates passed to this method, and
             `collapse_scalar` determines whether to remove length one
@@ -1543,7 +1557,29 @@ class Linear(object):
             `[new_lat_values, new_lon_values]`.
 
         """
-        mode = self.extrapolation_mode
-        interp = LinearInterpolator(cube, coords,
-                                    extrapolation_mode=mode)
-        return interp
+        return LinearInterpolator(cube, coords,
+                                  extrapolation_mode=self.extrapolation_mode)
+
+    def regridder(self, src_grid, target_grid):
+        """
+        Creates a linear regridder to perform regridding from the source
+        grid to the target grid.
+
+        Args:
+
+        * src_grid:
+            The :class:`~iris.cube.Cube` defining the source grid.
+        * target_grid:
+            The :class:`~iris.cube.Cube` defining the target grid.
+
+        Returns:
+            A callable with the interface:
+
+                `callable(cube)`
+
+            where `cube` is a cube with the same grid as `src_grid`
+            which is to be regridded to the `target_grid`.
+
+        """
+        return LinearRegridder(src_grid, target_grid,
+                               extrapolation_mode=self.extrapolation_mode)

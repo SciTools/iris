@@ -3198,6 +3198,29 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         interp = scheme.interpolator(self, coords)
         return interp(points, collapse_scalar=collapse_scalar)
 
+    def regrid(self, grid, scheme):
+        """
+        Regrid this :class:`~iris.cube.Cube` on to the given `grid`
+        using the provided regridding scheme.
+
+        Args:
+
+        * grid:
+            A :class:`~iris.cube.Cube` which defines the target grid.
+        * scheme:
+            A :class:`~iris.analysis.Linear` instance, which defines the
+            interpolator scheme.
+
+        Returns:
+            A cube defined with the horizontal dimensions of the target
+            and the other dimensions from this cube. The data values of
+            this cube will be converted to values on the new grid
+            according to the given scheme.
+
+        """
+        regridder = scheme.regridder(self, grid)
+        return regridder(self)
+
 
 class ClassDict(object, UserDict.DictMixin):
     """
