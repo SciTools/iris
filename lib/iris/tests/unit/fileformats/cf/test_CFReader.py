@@ -35,7 +35,7 @@ from iris.fileformats.cf import CFReader
 def netcdf_variable(name, dimensions, dtype, ancillary_variables=None,
                     coordinates='', bounds=None, climatology=None,
                     formula_terms=None, grid_mapping=None,
-                    cell_measures=None):
+                    cell_measures=None, standard_name=None):
     """Return a mock NetCDF4 variable."""
     ndim = 0
     if dimensions is not None:
@@ -50,7 +50,8 @@ def netcdf_variable(name, dimensions, dtype, ancillary_variables=None,
                       coordinates=coordinates,
                       bounds=bounds, climatology=climatology,
                       formula_terms=formula_terms,
-                      grid_mapping=grid_mapping, cell_measures=cell_measures)
+                      grid_mapping=grid_mapping, cell_measures=cell_measures,
+                      standard_name=standard_name)
     return ncvar
 
 
@@ -66,9 +67,11 @@ class Test_translate__formula_terms(tests.IrisTest):
                                           np.float)
         self.orography = netcdf_variable('orography', 'lat lon', np.float)
         formula_terms = 'a: delta b: sigma orog: orography'
+        standard_name = 'atmosphere_hybrid_height_coordinate'
         self.height = netcdf_variable('height', 'height', np.float,
                                       formula_terms=formula_terms,
-                                      bounds='height_bnds')
+                                      bounds='height_bnds',
+                                      standard_name=standard_name)
         # Over-specify the formula terms on the bounds variable,
         # which will be ignored by the cf loader.
         formula_terms = 'a: delta_bnds b: sigma_bnds orog: orography'
@@ -147,9 +150,11 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
                                           np.float)
         self.orography = netcdf_variable('orography', 'lat lon', np.float)
         formula_terms = 'a: delta b: sigma orog: orography'
+        standard_name = 'atmosphere_hybrid_height_coordinate'
         self.height = netcdf_variable('height', 'height', np.float,
                                       formula_terms=formula_terms,
-                                      bounds='height_bnds')
+                                      bounds='height_bnds',
+                                      standard_name=standard_name)
         # Over-specify the formula terms on the bounds variable,
         # which will be ignored by the cf loader.
         formula_terms = 'a: delta_bnds b: sigma_bnds orog: orography'

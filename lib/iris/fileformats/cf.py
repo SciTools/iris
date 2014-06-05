@@ -53,6 +53,18 @@ _CF_PARSE = re.compile(r'''
 # therefore automatically classed as "used" attributes.
 _CF_ATTRS_IGNORE = set(['_FillValue', 'add_offset', 'missing_value', 'scale_factor', ])
 
+#: Supported dimensionless vertical coordinate reference surface/phemomenon
+#: formula terms. Ref: [CF] Appendix D.
+reference_terms = dict(atmosphere_sigma_coordinate='ps',
+                       atmosphere_hybrid_sigma_pressure_coordinate='ps',
+                       atmosphere_hybrid_height_coordinate='orog',
+                       atmosphere_sleve_coordinate='zsurf1 zsurf2',
+                       ocean_sigma_coordinate='eta',
+                       ocean_s_coordinate='eta',
+                       ocean_sigma_z_coordinate='eta',
+                       ocean_s_coordinate_g1='eta',
+                       ocean_s_coordinate_g2='eta')
+
 
 ################################################################################
 class CFVariable(object):
@@ -910,17 +922,23 @@ class CFReader(object):
         for cf_variable in self.cf_group.itervalues():
             _build(cf_variable)
 
-        # Determine whether there are any variables that may be promoted
-        # to a CFDataVariable.
+        # Determine whether there are any formula terms that
+        # may be promoted to a CFDataVariable.
         if iris.FUTURE.netcdf_promote:
-            # Restrict promotion to only auxiliary coordinates that
-            # are multi-dimensional.
-            for cf_variable in self.cf_group.auxiliary_coordinates.values():
-                if len(cf_variable.dimensions) > 1:
-                    name = cf_variable.cf_name
-                    data_variable = CFDataVariable(name, cf_variable.cf_data)
-                    self.cf_group.promoted[name] = data_variable
-                    _build(data_variable)
+            # Restrict promotion to only those formula terms
+            # that are reference surface/phenomenon.
+            for cf_var in self.cf_group.formula_terms.itervalues():
+                for cf_root, cf_term in cf_var.cf_terms_by_root.iteritems():
+                    cf_root_var = self.cf_group[cf_root]
+                    name = cf_root_var.standard_name or cf_root_var.long_name
+                    terms = reference_terms.get(name, '').split()
+                    cf_var_name = cf_var.cf_name
+                    if cf_term in terms and \
+                            cf_var_name not in self.cf_group.promoted:
+                        data_var = CFDataVariable(cf_var_name, cf_var.cf_data)
+                        self.cf_group.promoted[cf_var_name] = data_var
+                        _build(data_var)
+                        break
 
     def _reset(self):
         """Reset the attribute touch history of each variable."""
