@@ -51,7 +51,7 @@ class Test___init__(tests.IrisTest):
         self._check_init(umver, None, 1, True)
 
     def test_float(self):
-        umver = UMVersion(2.0000001, 4.9999999)
+        umver = UMVersion(2.0, 5.0)
         self._check_init(umver, 2, 5, False)
 
     def test_zeros(self):

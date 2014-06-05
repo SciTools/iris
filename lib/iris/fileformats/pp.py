@@ -398,7 +398,7 @@ class UMVersion(collections.namedtuple('UMVersion', ('major', 'minor'))):
         to an integer value.
 
         """
-        if abs(val - np.round(val)) > 1e-5:
+        if val != np.round(val):
             raise ValueError('UMVersion components must be integers')
 
     @classmethod
