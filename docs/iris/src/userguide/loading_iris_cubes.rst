@@ -94,7 +94,8 @@ list indexing can be used:
               forecast_reference_time: 2009-11-19 04:00:00
          Attributes:
               STASH: m01s00i004
-              source: Data from Met Office Unified Model 7.03
+              source: Data from Met Office Unified Model
+              um_version: 7.3
 
 Notice that the result of printing a **cube** is a little more verbose than 
 it was when printing a **list of cubes**. In addition to the very short summary 

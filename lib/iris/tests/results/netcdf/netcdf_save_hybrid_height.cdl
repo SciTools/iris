@@ -65,9 +65,11 @@ variables:
 		surface_altitude:units = "m" ;
 		surface_altitude:standard_name = "surface_altitude" ;
 		surface_altitude:um_stash_source = "m01s00i033" ;
-		surface_altitude:source = "Data from Met Office Unified Model 7.04" ;
+		surface_altitude:source = "Data from Met Office Unified Model" ;
+		surface_altitude:um_version = "7.4" ;
 
 // global attributes:
-		:source = "Data from Met Office Unified Model 7.04" ;
+		:source = "Data from Met Office Unified Model" ;
+		:um_version = "7.4" ;
 		:Conventions = "CF-1.5" ;
 }

@@ -3042,7 +3042,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                       realization: 10
                  Attributes:
                       STASH: m01s00i024
-                      source: Data from Met Office Unified Model 7.06
+                      source: Data from Met Office Unified Model
+                      um_version: 7.6
                  Cell methods:
                       mean: time (1 hour)
 
@@ -3065,7 +3066,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                       realization: 10
                  Attributes:
                       STASH: m01s00i024
-                      source: Data from Met Office Unified Model 7.06
+                      source: Data from Met Office Unified Model
+                      um_version: 7.6
                  Cell methods:
                       mean: time (1 hour)
                       mean: time

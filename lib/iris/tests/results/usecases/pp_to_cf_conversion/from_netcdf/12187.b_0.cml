@@ -4,7 +4,8 @@
     <attributes>
       <attribute name="Conventions" value="CF-1.5"/>
       <attribute name="STASH" value="m01s12i187"/>
-      <attribute name="source" value="Data from Met Office Unified Model 6.01"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="6.1"/>
     </attributes>
     <coords>
       <coord>

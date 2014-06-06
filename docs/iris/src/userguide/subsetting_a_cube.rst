@@ -96,7 +96,8 @@ same way as loading with constraints:
               time: 2009-11-19 10:00:00
          Attributes:
               STASH: m01s00i004
-              source: Data from Met Office Unified Model 7.03
+              source: Data from Met Office Unified Model
+              um_version: 7.3
 
 
 Cube iteration

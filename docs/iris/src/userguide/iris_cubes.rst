@@ -175,7 +175,8 @@ output as this is the quickest way of inspecting the contents of a cube. Here is
               forecast_reference_time: 2009-11-19 04:00:00
          Attributes:
               STASH: m01s00i004
-              source: Data from Met Office Unified Model 7.03
+              source: Data from Met Office Unified Model
+              um_version: 7.3
 
 
 Using this output we can deduce that:

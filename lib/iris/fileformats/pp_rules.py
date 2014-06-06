@@ -496,15 +496,13 @@ def convert(f):
         standard_name = "sea_water_potential_temperature"
         units = "Celsius"
 
-    if \
-            ((f.lbsrce % 10000) == 1111) and \
-            ((f.lbsrce / 10000) / 100.0 > 0):
-        attributes['source'] = 'Data from Met Office Unified Model %4.2f' % ((f.lbsrce / 10000) / 100.0)
-
-    if \
-            ((f.lbsrce % 10000) == 1111) and \
-            ((f.lbsrce / 10000) / 100.0 == 0):
+    if (f.lbsrce % 10000) == 1111:
         attributes['source'] = 'Data from Met Office Unified Model'
+        # Also define MO-netCDF compliant UM version.
+        um_major = (f.lbsrce / 10000) / 100
+        if um_major != 0:
+            um_minor = (f.lbsrce / 10000) % 100
+            attributes['um_version'] = '{:d}.{:d}'.format(um_major, um_minor)
 
     if f.lbuser[6] != 0 or (f.lbuser[3] / 1000) != 0 or (f.lbuser[3] % 1000) != 0:
         attributes['STASH'] = f.stash
