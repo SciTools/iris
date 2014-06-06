@@ -980,6 +980,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
                     setattr(self, name, new_coord)
                 break
 
+
 class OceanSigmaFactory(AuxCoordFactory):
     """Defines an ocean sigma over z coordinate factory."""
 
@@ -1029,11 +1030,10 @@ class OceanSigmaFactory(AuxCoordFactory):
                 warnings.warn(msg, UserWarning, stacklevel=2)
 
         # Check units.
-        if False:  # FIXME: sigma is "sigma_level"
-            if sigma is not None and not sigma.units.is_dimensionless():
-                msg = 'Invalid units: sigma coordinate {!r} ' \
-                    'must be dimensionless.'.format(sigma.name())
-                raise ValueError(msg)
+        if sigma is not None and not sigma.units.is_dimensionless():
+            msg = 'Invalid units: sigma coordinate {!r} ' \
+                'must be dimensionless.'.format(sigma.name())
+            raise ValueError(msg)
 
         coords = ((eta, 'eta'), (depth, 'depth'))
         for coord, term in coords:
