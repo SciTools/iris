@@ -40,7 +40,7 @@ from pyke import knowledge_engine
 
 import iris.analysis
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory, \
-    OceanSigmaZFactory
+    OceanSigmaZFactory, OceanSigmaFactory
 import iris.coord_systems
 import iris.coords
 import iris.cube
@@ -109,7 +109,11 @@ _FACTORY_DEFNS = {
         primary='zlev',
         std_name='ocean_sigma_z_coordinate',
         formula_terms_format='sigma: {sigma} eta: {eta} depth: {depth} '
-        'depth_c: {depth_c} nsigma: {nsigma} zlev: {zlev}')
+        'depth_c: {depth_c} nsigma: {nsigma} zlev: {zlev}'),
+    OceanSigmaFactory: _FactoryDefn(
+        primary='sigma',
+        std_name='ocean_sigma_coordinate',
+        formula_terms_format='sigma: {sigma} eta: {eta} depth: {depth}')
 }
 
 
@@ -406,7 +410,8 @@ def _load_aux_factory(engine, cube):
     formula_type = engine.requires.get('formula_type')
     if formula_type in ['atmosphere_hybrid_height_coordinate',
                         'atmosphere_hybrid_sigma_pressure_coordinate',
-                        'ocean_sigma_z_coordinate']:
+                        'ocean_sigma_z_coordinate',
+                        'ocean_sigma_coordinate']:
         def coord_from_term(term):
             # Convert term names to coordinates (via netCDF variable names).
             name = engine.requires['formula_terms'][term]
@@ -460,6 +465,11 @@ def _load_aux_factory(engine, cube):
             zlev = coord_from_term('zlev')
             factory = OceanSigmaZFactory(sigma, eta, depth,
                                          depth_c, nsigma, zlev)
+        elif formula_type == 'ocean_sigma_coordinate':
+            sigma = coord_from_term('sigma')
+            eta = coord_from_term('eta')
+            depth = coord_from_term('depth')
+            factory = OceanSigmaFactory(sigma, eta, depth)
         cube.add_aux_factory(factory)
 
 
