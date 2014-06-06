@@ -25,11 +25,9 @@ import itertools
 import cartopy.crs as ccrs
 import numpy as np
 import numpy.ma as ma
-import shapely.geometry
 
 import iris
 import iris.analysis.cartography
-import iris.analysis.geometry
 import iris.analysis.maths
 import iris.coord_systems
 import iris.coords
@@ -1049,40 +1047,6 @@ class TestRollingWindow(tests.IrisTest):
                                        [12.0, 9.0]], dtype=np.float64)
         # use almost equal to compare floats
         self.assertArrayAlmostEqual(expected_result, res_cube.data)
-
-
-class TestGeometry(tests.IrisTest):
-
-    @tests.skip_data
-    def test_distinct_xy(self):
-        cube = iris.tests.stock.simple_pp()
-        cube = cube[:4, :4]
-        lon = cube.coord('longitude')
-        lat = cube.coord('latitude')
-        lon.guess_bounds()
-        lat.guess_bounds()
-        from iris.fileformats.rules import regular_step
-        quarter = abs(regular_step(lon) * regular_step(lat) * 0.25)
-        half = abs(regular_step(lon) * regular_step(lat) * 0.5)
-        minx = 3.7499990463256836
-        maxx = 7.499998092651367
-        miny = 84.99998474121094
-        maxy = 89.99998474121094
-        geometry = shapely.geometry.box(minx, miny, maxx, maxy)
-        weights = iris.analysis.geometry.geometry_area_weights(cube, geometry)
-        target = np.array([
-            [0, quarter, quarter, 0],
-            [0, half, half, 0],
-            [0, quarter, quarter, 0],
-            [0, 0, 0, 0]])
-        self.assertTrue(np.allclose(weights, target))
-
-    def test_shared_xy(self):
-        cube = tests.stock.track_1d()
-        geometry = shapely.geometry.box(1, 4, 3.5, 7)
-        weights = iris.analysis.geometry.geometry_area_weights(cube, geometry)
-        target = np.array([0, 0, 2, 0.5, 0, 0, 0, 0, 0, 0, 0])
-        self.assertTrue(np.allclose(weights, target))
 
 
 class TestProject(tests.GraphicsTest):
