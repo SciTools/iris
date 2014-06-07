@@ -160,7 +160,7 @@ class GribDataProxy(object):
         self.path = path
         self.offset = offset
         self.regularise = regularise
-        
+
     @property
     def ndim(self):
         return len(self.shape)
@@ -218,8 +218,11 @@ class GribWrapper(object):
             message_length = gribapi.grib_get_long(grib_message, 'totalLength')
 
         if auto_regularise and _is_quasi_regular_grib(grib_message):
-            warnings.warn('Regularising GRIB message.')
-            _regularise(grib_message, deferred=deferred)
+            if deferred:
+                self._regularise_shape(grib_message)
+            else:
+                warnings.warn('Regularising GRIB message.')
+                _regularise(grib_message)
 
         # Initialise the key-extension dictionary.
         # NOTE: this attribute *must* exist, or the the __getattr__ overload
@@ -255,6 +258,37 @@ class GribWrapper(object):
             if mask.any():
                 data = ma.array(data, mask=mask, fill_value=np.nan)
             self.data = data
+
+    @staticmethod
+    def _regularise_shape(grib_message):
+        """
+        Calculate the regularised shape of the reduced message and push
+        dummy regularised values into the message to force the gribapi
+        to update the message grid type from reduced to regular.
+
+        """
+        # Make sure to read any missing values as NaN.
+        gribapi.grib_set_double(grib_message, "missingValue", np.nan)
+
+        # Get full longitude values, these describe the longitude value of
+        # *every* point in the grid, they are not 1d monotonic coordinates.
+        lons = gribapi.grib_get_double_array(grib_message, "longitudes")
+
+        # Compute the new longitude coordinate for the regular grid.
+        new_nx = max(gribapi.grib_get_long_array(grib_message, "pl"))
+        new_x_step = (max(lons) - min(lons)) / (new_nx - 1)
+        if gribapi.grib_get_long(grib_message, "iScansNegatively"):
+            new_x_step *= -1
+
+        gribapi.grib_set_long(grib_message, "Nx", int(new_nx))
+        gribapi.grib_set_double(grib_message, "iDirectionIncrementInDegrees",
+                                float(new_x_step))
+        # Spoof gribapi with false regularised values.
+        nj = gribapi.grib_get_long(grib_message, 'Nj')
+        temp = np.zeros((nj * new_nx,), dtype=np.float)
+        gribapi.grib_set_double_array(grib_message, 'values', temp)
+        gribapi.grib_set_long(grib_message, "jPointsAreConsecutive", 0)
+        gribapi.grib_set_long(grib_message, "PLPresent", 0)
 
     def _confirm_in_scope(self):
         """Ensure we have a grib flavour that we choose to support."""
@@ -732,7 +766,7 @@ def _is_quasi_regular_grib(grib_message):
     return gribapi.grib_get(grib_message, 'gridType') in reduced_grids
 
 
-def _regularise(grib_message, deferred=False):
+def _regularise(grib_message):
     """
     Transform a reduced grid to a regular grid using interpolation.
 
@@ -757,67 +791,61 @@ def _regularise(grib_message, deferred=False):
     if gribapi.grib_get_long(grib_message, "iScansNegatively"):
         new_x_step *= -1
 
-    if not deferred:
-        new_lons = np.arange(new_nx) * new_x_step + lons[0]
-        # Get full latitude and data values, these describe the latitude and
-        # data values of *every* point in the grid, they are not 1d monotonic
-        # coordinates.
-        lats = gribapi.grib_get_double_array(grib_message, "latitudes")
-        values = gribapi.grib_get_double_array(grib_message, "values")
+    new_lons = np.arange(new_nx) * new_x_step + lons[0]
+    # Get full latitude and data values, these describe the latitude and
+    # data values of *every* point in the grid, they are not 1d monotonic
+    # coordinates.
+    lats = gribapi.grib_get_double_array(grib_message, "latitudes")
+    values = gribapi.grib_get_double_array(grib_message, "values")
 
-        # Retrieve the distinct latitudes from the GRIB message. GRIBAPI docs
-        # don't specify if these points are guaranteed to be oriented correctly so
-        # the safe option is to sort them into ascending (south-to-north) order
-        # and then reverse the order if necessary.
-        new_lats = gribapi.grib_get_double_array(grib_message, "distinctLatitudes")
-        new_lats.sort()
-        if not gribapi.grib_get_long(grib_message, "jScansPositively"):
-            new_lats = new_lats[::-1]
-        ny = new_lats.shape[0]
+    # Retrieve the distinct latitudes from the GRIB message. GRIBAPI docs
+    # don't specify if these points are guaranteed to be oriented correctly so
+    # the safe option is to sort them into ascending (south-to-north) order
+    # and then reverse the order if necessary.
+    new_lats = gribapi.grib_get_double_array(grib_message, "distinctLatitudes")
+    new_lats.sort()
+    if not gribapi.grib_get_long(grib_message, "jScansPositively"):
+        new_lats = new_lats[::-1]
+    ny = new_lats.shape[0]
 
-        # Use 1d linear interpolation along latitude circles to regularise the
-        # reduced data.
-        cyclic = _longitude_is_cyclic(new_lons)
-        new_values = np.empty([ny, new_nx], dtype=values.dtype)
-        for ilat, lat in enumerate(new_lats):
-            idx = np.where(lats == lat)
-            llons = lons[idx]
-            vvalues = values[idx]
-            if cyclic:
-                # For cyclic data we insert dummy points at each end to ensure
-                # we can interpolate to all output longitudes using pure
-                # interpolation.
-                cgap = (360 - llons[-1] - llons[0])
-                llons = np.concatenate(
-                    (llons[0:1] - cgap, llons, llons[-1:] + cgap))
-                vvalues = np.concatenate(
-                    (vvalues[-1:], vvalues, vvalues[0:1]))
-                fixed_latitude_interpolator = scipy.interpolate.interp1d(
-                    llons, vvalues)
-            else:
-                # Allow extrapolation for non-cyclic data sets to ensure we can
-                # interpolate to all output longitudes.
-                fixed_latitude_interpolator = Linear1dExtrapolator(
-                    scipy.interpolate.interp1d(llons, vvalues))
-            new_values[ilat] = fixed_latitude_interpolator(new_lons)
-        new_values = new_values.flatten()
+    # Use 1d linear interpolation along latitude circles to regularise the
+    # reduced data.
+    cyclic = _longitude_is_cyclic(new_lons)
+    new_values = np.empty([ny, new_nx], dtype=values.dtype)
+    for ilat, lat in enumerate(new_lats):
+        idx = np.where(lats == lat)
+        llons = lons[idx]
+        vvalues = values[idx]
+        if cyclic:
+            # For cyclic data we insert dummy points at each end to ensure
+            # we can interpolate to all output longitudes using pure
+            # interpolation.
+            cgap = (360 - llons[-1] - llons[0])
+            llons = np.concatenate(
+                (llons[0:1] - cgap, llons, llons[-1:] + cgap))
+            vvalues = np.concatenate(
+                (vvalues[-1:], vvalues, vvalues[0:1]))
+            fixed_latitude_interpolator = scipy.interpolate.interp1d(
+                llons, vvalues)
+        else:
+            # Allow extrapolation for non-cyclic data sets to ensure we can
+            # interpolate to all output longitudes.
+            fixed_latitude_interpolator = Linear1dExtrapolator(
+                scipy.interpolate.interp1d(llons, vvalues))
+        new_values[ilat] = fixed_latitude_interpolator(new_lons)
+    new_values = new_values.flatten()
 
-        # Set flags for the regularised data.
-        if np.isnan(new_values).any():
-            # Account for any missing data.
-            gribapi.grib_set_double(grib_message, "missingValue", np.inf)
-            gribapi.grib_set(grib_message, "bitmapPresent", 1)
-            new_values = np.where(np.isnan(new_values), np.inf, new_values)
+    # Set flags for the regularised data.
+    if np.isnan(new_values).any():
+        # Account for any missing data.
+        gribapi.grib_set_double(grib_message, "missingValue", np.inf)
+        gribapi.grib_set(grib_message, "bitmapPresent", 1)
+        new_values = np.where(np.isnan(new_values), np.inf, new_values)
 
     gribapi.grib_set_long(grib_message, "Nx", int(new_nx))
     gribapi.grib_set_double(grib_message,
                             "iDirectionIncrementInDegrees", float(new_x_step))
-    if deferred:
-        nj = gribapi.grib_get_long(grib_message, 'Nj')
-        temp = np.zeros((nj * new_nx,), dtype=np.float)
-        gribapi.grib_set_double_array(grib_message, 'values', temp)
-    else:
-        gribapi.grib_set_double_array(grib_message, "values", new_values)
+    gribapi.grib_set_double_array(grib_message, "values", new_values)
     gribapi.grib_set_long(grib_message, "jPointsAreConsecutive", 0)
     gribapi.grib_set_long(grib_message, "PLPresent", 0)
 
