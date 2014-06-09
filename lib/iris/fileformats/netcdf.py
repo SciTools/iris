@@ -735,7 +735,7 @@ class Saver(object):
                 attributes = dict(attributes)
 
             for attr_name in sorted(attributes):
-                self._datset.setncattr(attr_name, attributes[attr_name])
+                self._dataset.setncattr(attr_name, attributes[attr_name])
 
         for attr_name in sorted(kwargs):
             self._dataset.setncattr(attr_name, kwargs[attr_name])
