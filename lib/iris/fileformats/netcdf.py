@@ -739,10 +739,10 @@ class Saver(object):
                 attributes = dict(attributes)
 
             for attr_name in sorted(attributes):
-                setattr(self._dataset, attr_name, attributes[attr_name])
+                self._dataset.setncattr(attr_name, attributes[attr_name])
 
         for attr_name in sorted(kwargs):
-            setattr(self._dataset, attr_name, kwargs[attr_name])
+            self._dataset.setncattr(attr_name, kwargs[attr_name])
 
     def _create_cf_dimensions(self, cube, dimension_names,
                               unlimited_dimensions=None):
