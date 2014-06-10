@@ -137,6 +137,26 @@ class CFVariable(object):
         """
         pass
 
+    def spans(self, cf_variable):
+        """
+        Determine whether the dimensionality of this variable
+        is a subset of the specified target variable.
+
+        Note that, by default scalar variables always span the
+        dimensionality of the target variable.
+
+        Args:
+
+        * cf_variable:
+            Compare dimensionality with the :class:`CFVariable`.
+
+        Returns:
+            Boolean.
+
+        """
+        result = set(self.dimensions).issubset(cf_variable.dimensions)
+        return result
+
     def __eq__(self, other):
         # CF variable names are unique.
         return self.cf_name == other.cf_name
@@ -336,6 +356,33 @@ class CFBoundaryVariable(CFVariable):
 
         return result
 
+    def spans(self, cf_variable):
+        """
+        Determine whether the dimensionality of this variable
+        is a subset of the specified target variable.
+
+        Note that, by default scalar variables always span the
+        dimensionality of the target variable.
+
+        Args:
+
+        * cf_variable:
+            Compare dimensionality with the :class:`CFVariable`.
+
+        Returns:
+            Boolean.
+
+        """
+        # Scalar variables always span the target variable.
+        result = True
+        if len(self.dimensions):
+            source = self.dimensions
+            target = cf_variable.dimensions
+            # Ignore the bounds extent dimension.
+            result = set(source[:-1]).issubset(target) or \
+                set(source[1:]).issubset(target)
+        return result
+
 
 class CFClimatologyVariable(CFVariable):
     """
@@ -376,6 +423,33 @@ class CFClimatologyVariable(CFVariable):
                     else:
                         result[name] = CFClimatologyVariable(name, variables[name])
 
+        return result
+
+    def spans(self, cf_variable):
+        """
+        Determine whether the dimensionality of this variable
+        is a subset of the specified target variable.
+
+        Note that, by default scalar variables always span the
+        dimensionality of the target variable.
+
+        Args:
+
+        * cf_variable:
+            Compare dimensionality with the :class:`CFVariable`.
+
+        Returns:
+            Boolean.
+
+        """
+        # Scalar variables always span the target variable.
+        result = True
+        if len(self.dimensions):
+            source = self.dimensions
+            target = cf_variable.dimensions
+            # Ignore the climatology extent dimension.
+            result = set(source[:-1]).issubset(target) or \
+                set(source[1:]).issubset(target)
         return result
 
 
@@ -642,6 +716,33 @@ class CFLabelVariable(CFVariable):
 
         return tuple([dim_name for dim_name in self.dimensions if dim_name in cf_data_var.dimensions])
 
+    def spans(self, cf_variable):
+        """
+        Determine whether the dimensionality of this variable
+        is a subset of the specified target variable.
+
+        Note that, by default scalar variables always span the
+        dimensionality of the target variable.
+
+        Args:
+
+        * cf_variable:
+            Compare dimensionality with the :class:`CFVariable`.
+
+        Returns:
+            Boolean.
+
+        """
+        # Scalar variables always span the target variable.
+        result = True
+        if len(self.dimensions):
+            source = self.dimensions
+            target = cf_variable.dimensions
+            # Ignore label string length dimension.
+            result = set(source[:-1]).issubset(target) or \
+                set(source[1:]).issubset(target)
+        return result
+
 
 class CFMeasureVariable(CFVariable):
     """
@@ -885,7 +986,20 @@ class CFReader(object):
                 ignore = None if issubclass(variable_type, CFGridMappingVariable) else coordinate_names
                 match = variable_type.identify(self._dataset.variables, ignore=ignore,
                                                target=cf_variable.cf_name, warn=False)
-                cf_group.update({name: self.cf_group[name] for name in match.iterkeys()})
+                # Sanity check dimensionality coverage.
+                for cf_name, cf_var in match.iteritems():
+                    if cf_var.spans(cf_variable):
+                        cf_group[cf_name] = self.cf_group[cf_name]
+                    else:
+                        # Register the ignored variable.
+                        ignored.append(cf_name)
+                        msg = 'Ignoring variable {!r} referenced ' \
+                            'by variable {!r}: Dimensions {!r} do not ' \
+                            'span {!r}'.format(cf_name,
+                                               cf_variable.cf_name,
+                                               cf_var.dimensions,
+                                               cf_variable.dimensions)
+                        warnings.warn(msg)
 
             # Build CF data variable relationships.
             if isinstance(cf_variable, CFDataVariable):
@@ -905,19 +1019,28 @@ class CFReader(object):
                     for cf_root in cf_var.cf_terms_by_root:
                         if cf_root in cf_group and cf_var.cf_name not in cf_group:
                             # Sanity check dimensionality.
-                            dims = set(cf_var.dimensions)
-                            if dims.issubset(cf_variable.dimensions):
+                            if cf_var.spans(cf_variable):
                                 cf_group[cf_var.cf_name] = cf_var
                             else:
+                                # Register the ignored variable.
+                                ignored.append(cf_var.cf_name)
                                 msg = 'Ignoring formula terms variable {!r} ' \
-                                    'referenced by data variable {!r}: ' \
-                                    'dimension ' \
-                                    'mis-match.'.format(cf_var.cf_name,
-                                                        cf_variable.cf_name)
+                                    'referenced by data variable {!r} via ' \
+                                    'variable {!r}: Dimensions {!r} do not ' \
+                                    'span {!r}'.format(cf_var.cf_name,
+                                                       cf_variable.cf_name,
+                                                       cf_root,
+                                                       cf_var.dimensions,
+                                                       cf_variable.dimensions)
                                 warnings.warn(msg)
 
             # Add the CF group to the variable.
             cf_variable.cf_group = cf_group
+
+        # Ignored variables are those that cannot be attached to a
+        # data variable as the dimensionality of that variable is not
+        # a subset of the dimensionality of the data variable.
+        ignored = []
 
         for cf_variable in self.cf_group.itervalues():
             _build(cf_variable)
@@ -939,10 +1062,17 @@ class CFReader(object):
                         self.cf_group.promoted[cf_var_name] = data_var
                         _build(data_var)
                         break
+            # Promote any ignored variables.
+            for cf_name in ignored:
+                if cf_name not in self.cf_group.data_variables and \
+                        cf_name not in self.cf_group.promoted:
+                    data_var = CFDataVariable(cf_name,
+                                              self.cf_group[cf_name].cf_data)
+                    self.cf_group.promoted[cf_name] = data_var
+                    _build(data_var)
 
     def _reset(self):
         """Reset the attribute touch history of each variable."""
-
         for nc_var_name in self._dataset.variables.iterkeys():
             self.cf_group[nc_var_name].cf_attrs_reset()
 
