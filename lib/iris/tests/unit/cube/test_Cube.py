@@ -101,13 +101,13 @@ class Test_collapsed__lazy(tests.IrisTest):
         self.cube = cube
 
     def test_dim0_lazy(self):
-        cube_collapsed = self.cube.collapsed('y', MEAN, lazy=True)
+        cube_collapsed = self.cube.collapsed('y', MEAN)
         self.assertTrue(cube_collapsed.has_lazy_data())
         self.assertArrayAlmostEqual(cube_collapsed.data, [1.5, 2.5, 3.5])
         self.assertFalse(cube_collapsed.has_lazy_data())
 
     def test_dim1_lazy(self):
-        cube_collapsed = self.cube.collapsed('x', MEAN, lazy=True)
+        cube_collapsed = self.cube.collapsed('x', MEAN)
         self.assertTrue(cube_collapsed.has_lazy_data())
         self.assertArrayAlmostEqual(cube_collapsed.data, [1.0, 4.0])
         self.assertFalse(cube_collapsed.has_lazy_data())
@@ -115,17 +115,23 @@ class Test_collapsed__lazy(tests.IrisTest):
     def test_fail_multidims(self):
         # Check that MEAN produces a suitable error message for multiple dims.
         # N.B. non-lazy op can do this
-        with self.assertRaises(AssertionError) as err:
-            cube_collapsed = self.cube.collapsed(('x', 'y'), MEAN, lazy=True)
+        self.cube.collapsed(('x', 'y'), MEAN)
 
-    def test_fail_no_lazy(self):
-        dummy_agg = Aggregator('custom_op', lambda x: 1)
-        with self.assertRaises(LazyAggregatorError) as err:
-            cube_collapsed = self.cube.collapsed('x', dummy_agg, lazy=True)
-        msg = err.exception.message
-        self.assertIn('custom_op', msg)
-        self.assertIn('lazy', msg)
-        self.assertIn('not support', msg)
+    def test_non_lazy_aggregator(self):
+        # An aggregator which doesn't have a lazy function should still work.
+        dummy_agg = Aggregator('custom_op',
+                               lambda x, axis=None: np.mean(x, axis=axis))
+        result = self.cube.collapsed('x', dummy_agg)
+        self.assertFalse(result.has_lazy_data())
+
+    def test_deprecated_lazy_keyword(self):
+        # Check that a deprecation warning is raised when passing the
+        # lazy keyword.
+        with mock.patch('warnings.warn') as warn:
+            self.cube.collapsed(['x'], MEAN, lazy=True)
+        msg = ('Lazy keyword was deprecated in version v1.7. '
+               'Where possible, aggregations are always lazy.')
+        warn.assert_any_call(msg)
 
 
 class Test_collapsed__warning(tests.IrisTest):
@@ -146,7 +152,7 @@ class Test_collapsed__warning(tests.IrisTest):
     def _aggregator(self, uses_weighting):
         # Returns a mock aggregator with a mocked method (uses_weighting)
         # which returns the given True/False condition.
-        aggregator = mock.Mock(spec=WeightedAggregator)
+        aggregator = mock.Mock(spec=WeightedAggregator, lazy_func=None)
         aggregator.cell_method = None
         aggregator.uses_weighting = mock.Mock(return_value=uses_weighting)
 
@@ -166,7 +172,7 @@ class Test_collapsed__warning(tests.IrisTest):
 
     def test_lat_lon_noweighted_aggregator(self):
         # Collapse latitude coordinate with unweighted aggregator.
-        aggregator = mock.Mock(spec=Aggregator)
+        aggregator = mock.Mock(spec=Aggregator, lazy_func=None)
         aggregator.cell_method = None
         coords = ['latitude', 'longitude']
 

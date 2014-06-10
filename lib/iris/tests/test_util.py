@@ -287,8 +287,7 @@ class TestAsCompatibleShape(tests.IrisTest):
         res = iris.util.as_compatible_shape(collapsed, cube)
         self.assertCML(res, ('util', 'as_compatible_shape_collapsed.cml'),
                        checksum=False)
-        self.assertArrayEqual(expected_data, res.data)
-        self.assertArrayEqual(expected_data.mask, res.data.mask)
+        self.assertMaskedArrayEqual(expected_data, res.data)
 
     def test_reduce_dimensionality(self):
         # Test that as_compatible_shape() can demote

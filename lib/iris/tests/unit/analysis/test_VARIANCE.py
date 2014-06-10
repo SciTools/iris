@@ -21,14 +21,12 @@
 import iris.tests as tests
 
 import mock
-
-import biggus
+import numpy as np
 import numpy.ma as ma
 
 from iris.analysis import VARIANCE
 import iris.cube
 from iris.coords import DimCoord
-import iris.exceptions
 
 
 class Test_units_func(tests.IrisTest):
@@ -45,23 +43,16 @@ class Test_units_func(tests.IrisTest):
 class Test_masked(tests.IrisTest):
     def setUp(self):
         self.cube = iris.cube.Cube(ma.masked_equal([1, 2, 3, 4, 5], 3))
-        self.cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10], long_name='foo'), 0)
+        self.cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10],
+                                         long_name='foo'), 0)
 
     def test_ma(self):
-        # Note: iris.analysis.VARIANCE adds ddof=1
-        cube = self.cube.collapsed("foo", VARIANCE)
-        self.assertArrayAlmostEqual(cube.data, [3.333333])
+        cube = self.cube.collapsed("foo", VARIANCE, ddof=0)
+        self.assertArrayAlmostEqual(cube.data, np.var(self.cube.data, ddof=0))
 
     def test_ma_ddof0(self):
-        cube = self.cube.collapsed("foo", VARIANCE, ddof=0)
-        self.assertArrayEqual(cube.data, [2.5])
-
-    # Pending #1004.
-#     def test_biggus(self):
-#         self.cube.lazy_data(array=biggus.NumpyArrayAdapter(self.cube.data))
-#         cube = self.cube.collapsed("foo", VARIANCE, lazy=True)
-#         self.assertArrayAlmostEqual(cube.lazy_data().masked_array(),
-#                                     [3.333333])
+        cube = self.cube.collapsed("foo", VARIANCE, ddof=1)
+        self.assertArrayEqual(cube.data, np.var(self.cube.data, ddof=1))
 
 
 if __name__ == "__main__":

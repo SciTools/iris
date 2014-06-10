@@ -25,6 +25,7 @@ import numpy as np
 import numpy.ma as ma
 
 from iris.analysis import Aggregator
+from iris.exceptions import LazyAggregatorError
 
 
 class Test_aggregate(tests.IrisTest):
@@ -198,6 +199,12 @@ class Test_aggregate(tests.IrisTest):
             result = self.TEST.aggregate(self.array, axis, mdtol=.45)
             self.assertMaskedArrayEqual(result, self.expected_result_axis1)
         mock_method.assert_called_once_with(self.array, axis=axis)
+
+    def test_no_lazy_func(self):
+        dummy_agg = Aggregator('custom_op', lambda x: 1)
+        expected = 'custom_op aggregator does not support lazy operation'
+        with self.assertRaisesRegexp(LazyAggregatorError, expected):
+            dummy_agg.lazy_aggregate(np.arange(10), axis=0)
 
 
 class Test_update_metadata(tests.IrisTest):

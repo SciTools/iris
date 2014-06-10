@@ -921,16 +921,16 @@ class TestDataManagerIndexing(TestCube2d):
     def setUp(self):
         self.cube = iris.load_cube(tests.get_data_path(('PP', 'aPProt1', 'rotatedMHtimecube.pp')))
 
-    def _is_lazy(self, cube):
+    def assert_is_lazy(self, cube):
         self.assertTrue(cube.has_lazy_data())
 
-    def _is_concrete(self, cube):
+    def assert_is_not_lazy(self, cube):
         self.assertFalse(cube.has_lazy_data())
 
     def test_slices(self):
         lat_cube = self.cube.slices(['grid_latitude', ]).next()
-        self._is_lazy(lat_cube)
-        self._is_lazy(self.cube)
+        self.assert_is_lazy(lat_cube)
+        self.assert_is_lazy(self.cube)
  
     def test_cube_empty_indexing(self):
         test_filename = ('cube_slice', 'real_empty_data_indexing.cml')
@@ -938,12 +938,12 @@ class TestDataManagerIndexing(TestCube2d):
         rshape = r.shape
 
         # Make sure we still have deferred data.
-        self._is_lazy(r)
+        self.assert_is_lazy(r)
         # check the CML of this result
         self.assertCML(r, test_filename)
         # The CML was checked, meaning the data must have been loaded.
         # Check that the cube no longer has deferred data.
-        self._is_concrete(r)
+        self.assert_is_not_lazy(r)
         
         r_data = r.data
         
@@ -989,11 +989,10 @@ class TestCubeCollapsed(tests.IrisTest):
         self.assertEqual(dual.shape, single.shape, "dual and single stage shape differ")
 
     def collapse_test_common(self, cube, a_name, b_name, *args, **kwargs):
-        
         # preserve filenames from before the introduction of "grid_" in rotated coord names.
         a_filename = a_name.replace("grid_", "")
         b_filename = b_name.replace("grid_", "")
-        
+
         # compare dual and single stage collapsing
         dual_stage = cube.collapsed(a_name, iris.analysis.MEAN)
         dual_stage = dual_stage.collapsed(b_name, iris.analysis.MEAN)
