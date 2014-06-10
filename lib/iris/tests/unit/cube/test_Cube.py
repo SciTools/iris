@@ -124,15 +124,6 @@ class Test_collapsed__lazy(tests.IrisTest):
         result = self.cube.collapsed('x', dummy_agg)
         self.assertFalse(result.has_lazy_data())
 
-    def test_deprecated_lazy_keyword(self):
-        # Check that a deprecation warning is raised when passing the
-        # lazy keyword.
-        with mock.patch('warnings.warn') as warn:
-            self.cube.collapsed(['x'], MEAN, lazy=True)
-        msg = ('Lazy keyword was deprecated in version v1.7. '
-               'Where possible, aggregations are always lazy.')
-        warn.assert_any_call(msg)
-
 
 class Test_collapsed__warning(tests.IrisTest):
     def setUp(self):

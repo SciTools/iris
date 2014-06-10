@@ -2644,7 +2644,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         not computed until the data is requested (e.g. via ``cube.data`` or
         ``iris.save``). If lazy evaluation exists for the given aggregator
         it will be used wherever possible when this cube's data is itself
-        a defered array.
+        a deferred array.
 
         Args:
 
@@ -2718,11 +2718,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         # Convert any coordinate names to coordinates
         coords = self._as_list_of_coords(coords)
-
-        if 'lazy' in kwargs:
-            warnings.warn('Lazy keyword was deprecated in version v1.7. '
-                          'Where possible, aggregations are always lazy.')
-            kwargs.pop('lazy')
 
         if (isinstance(aggregator, iris.analysis.WeightedAggregator) and
                 not aggregator.uses_weighting(**kwargs)):
