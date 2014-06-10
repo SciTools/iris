@@ -303,7 +303,6 @@ class Test_aggregated_by(tests.IrisTest):
 
 
 class Test_rolling_window(tests.IrisTest):
-
     def setUp(self):
         self.cube = Cube(np.arange(6))
         val_coord = DimCoord([0, 1, 2, 3, 4, 5], long_name="val")
@@ -344,8 +343,10 @@ def create_cube(lon_min, lon_max, bounds=False):
     cube.add_dim_coord(iris.coords.DimCoord([-45, 0, 45], 'latitude',
                                             units='degrees'), 1)
     step = 1 if lon_max > lon_min else -1
+    circular = (abs(lon_max - lon_min) == 360)
     cube.add_dim_coord(iris.coords.DimCoord(np.arange(lon_min, lon_max, step),
-                                            'longitude', units='degrees'), 2)
+                                            'longitude', units='degrees',
+                                            circular=circular), 2)
     if bounds:
         cube.coord('longitude').guess_bounds()
     cube.add_aux_coord(iris.coords.AuxCoord(

@@ -2093,6 +2093,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                             bounds = None
                         result_coord = src_coord.copy(points=points,
                                                       bounds=bounds)
+                        if getattr(result_coord, 'circular', False):
+                            result_coord.circular = False
                     else:
                         result_coord = src_coord.copy()
                     add_coord(result_coord, dims)
