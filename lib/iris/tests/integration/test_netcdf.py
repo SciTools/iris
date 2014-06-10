@@ -20,8 +20,12 @@
 # importing anything else.
 import iris.tests as tests
 
+from contextlib import contextmanager
+import mock
+
 import iris
 from iris.cube import Cube, CubeList
+from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION
 import iris.tests.stock as stock
 
 
@@ -116,6 +120,41 @@ class TestUmVersionAttribute(tests.IrisTest):
         with self.temp_filename('.nc') as nc_path:
             iris.save(CubeList([cube_a, cube_b]), nc_path)
             self.assertCDL(nc_path)
+
+
+@contextmanager
+def _patch_site_configuration():
+    def cf_patch_conventions(conventions):
+        return ', '.join([conventions, 'convention1, convention2'])
+
+    def update(config):
+        config['cf_profile'] = mock.Mock(name='cf_profile')
+        config['cf_patch'] = mock.Mock(name='cf_patch')
+        config['cf_patch_conventions'] = cf_patch_conventions
+
+    orig_site_config = iris.site_configuration.copy()
+    update(iris.site_configuration)
+    yield
+    iris.site_configuration = orig_site_config
+
+
+class TestConventionsAttributes(tests.IrisTest):
+    def test_patching_conventions_attribute(self):
+        # Ensure that user defined conventions are wiped and those which are
+        # saved patched through site_config can be loaded without an exception
+        # being raised.
+        cube = Cube([1.0], standard_name='air_temperature', units='K',
+                    attributes={'Conventions':
+                                'some user defined conventions'})
+
+        # Patch the site configuration dictionary.
+        with _patch_site_configuration(), self.temp_filename('.nc') as nc_path:
+            iris.save(cube, nc_path)
+            res = iris.load_cube(nc_path)
+
+        self.assertEqual(res.attributes['Conventions'],
+                         '{}, {}, {}'.format(CF_CONVENTIONS_VERSION,
+                                             'convention1', 'convention2'))
 
 
 if __name__ == "__main__":
