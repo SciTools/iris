@@ -35,12 +35,13 @@ from iris.experimental.regrid \
 from iris.tests.experimental.regrid.\
     test_regrid_area_weighted_rectilinear_src_and_grid import \
     _resampled_grid
-import iris.tests.stock
 
 
 class TestMdtol(tests.IrisTest):
+    # Tests to check the masking behaviour controlled by mdtol kwarg.
     def setUp(self):
-        cube = Cube(np.arange(24, dtype=np.int32).reshape((3, 2, 4)))
+        # A (3, 2, 4) cube with a masked element.
+        cube = Cube(np.ma.arange(24, dtype=np.int32).reshape((3, 2, 4)))
         cs = GeogCS(6371229)
         coord = DimCoord(points=np.array([-1, 0, 1], dtype=np.int32),
                          standard_name='latitude',
@@ -54,78 +55,83 @@ class TestMdtol(tests.IrisTest):
         cube.add_dim_coord(coord, 2)
         cube.coord('latitude').guess_bounds()
         cube.coord('longitude').guess_bounds()
-        # A simple (3, 2, 4) cube.
-        self.simple_cube = cube
-        # A simple (3, 2, 4) cube with a masked element.
-        self.simple_masked_cube = cube.copy(
-            data=ma.masked_array(self.simple_cube.data))
-        self.simple_masked_cube.data[1, 1, 2] = ma.masked
+        cube.data[1, 1, 2] = ma.masked
+        self.src_cube = cube
+        # Create (7, 2, 9) grid cube.
+        self.grid_cube = _resampled_grid(cube, 2.3, 2.4)
 
     def test_default(self):
-        src = self.simple_masked_cube
-        dest = _resampled_grid(self.simple_masked_cube, 2.3, 2.4)
-        res = regrid(src, dest)
+        res = regrid(self.src_cube, self.grid_cube)
         expected_mask = np.zeros((7, 2, 9), bool)
         expected_mask[slice(2, 5), 1, slice(4, 7)] = True
         self.assertArrayEqual(res.data.mask, expected_mask)
 
     def test_zero(self):
-        src = self.simple_masked_cube
-        dest = _resampled_grid(self.simple_masked_cube, 2.3, 2.4)
-        res = regrid(src, dest, mdtol=0)
+        res = regrid(self.src_cube, self.grid_cube, mdtol=0)
         expected_mask = np.zeros((7, 2, 9), bool)
         expected_mask[slice(2, 5), 1, slice(4, 7)] = True
         self.assertArrayEqual(res.data.mask, expected_mask)
 
     def test_one(self):
-        src = self.simple_masked_cube
-        dest = _resampled_grid(self.simple_masked_cube, 2.3, 2.4)
-        res = regrid(src, dest, mdtol=1)
+        res = regrid(self.src_cube, self.grid_cube, mdtol=1)
         expected_mask = np.zeros((7, 2, 9), bool)
         # Only a single cell has all contributing cells masked.
         expected_mask[3, 1, 5] = True
         self.assertArrayEqual(res.data.mask, expected_mask)
 
     def test_fraction(self):
-        src = self.simple_masked_cube
-        dest = _resampled_grid(self.simple_masked_cube, 2.3, 2.4)
-        res = regrid(src, dest, mdtol=0.4)
+        # Cells in target grid that overlap with the masked src cell
+        # have the following fractions (approx. due to spherical area).
+        #   4      5      6      7
+        # 2 ----------------------
+        #   | 0.33 | 0.66 | 0.50 |
+        # 3 ----------------------
+        #   | 0.33 | 1.00 | 0.75 |
+        # 4 ----------------------
+        #   | 0.33 | 0.66 | 0.50 |
+        # 5 ----------------------
+        #
+
+        # Threshold less than minimum fraction.
+        mdtol = 0.2
+        res = regrid(self.src_cube, self.grid_cube, mdtol=mdtol)
         expected_mask = np.zeros((7, 2, 9), bool)
-        # Corners of overlapping cells have one of four
-        # masked cells so should not be masked. The rest have
-        # half or all that are masked.
-        expected_mask[3, 1, slice(4, 7)] = True
+        expected_mask[slice(2, 5), 1, slice(4, 7)] = True
+        self.assertArrayEqual(res.data.mask, expected_mask)
+
+        # Threshold between min and max fraction.
+        mdtol = 0.6
+        res = regrid(self.src_cube, self.grid_cube, mdtol=mdtol)
+        expected_mask = np.zeros((7, 2, 9), bool)
         expected_mask[slice(2, 5), 1, 5] = True
+        expected_mask[3, 1, 6] = True
         self.assertArrayEqual(res.data.mask, expected_mask)
 
-    def test_equal_missing(self):
-        # Test the behaviour when mdtol equals the fraction
-        # of missing data.
-        src = self.simple_masked_cube
-        dest = _resampled_grid(self.simple_masked_cube, 2.3, 2.4)
-        res = regrid(src, dest, mdtol=0.25)
-        expected_mask = np.zeros((7, 2, 9), bool)
-        # Corners of overlapping cells have one of four
-        # masked cells so should not be masked. The rest have
-        # half or all that are masked.
-        expected_mask[3, 1, slice(4, 7)] = True
-        expected_mask[slice(2, 5), 1, 5] = True
-        self.assertArrayEqual(res.data.mask, expected_mask)
+    def test_src_not_masked_array(self):
+        self.src_cube.data = self.src_cube.data.filled(1.0)
+        res = regrid(self.src_cube, self.grid_cube, mdtol=0.9)
+        self.assertFalse(ma.isMaskedArray(res.data))
 
-    def test_equal_missing_and_non_missing(self):
-        # Test the behaviour when mdtol equals the fraction
-        # of missing data and non missing data.
-        src = self.simple_masked_cube
-        dest = _resampled_grid(self.simple_masked_cube, 2.3, 2.4)
-        res = regrid(src, dest, mdtol=0.5)
-        expected_mask = np.zeros((7, 2, 9), bool)
-        # Corners of overlapping cells have one of four
-        # masked cells so should not be masked. The edge cells
-        # have half that are masked so should also not be masked. The
-        # centre cell is entirely masked.
-        expected_mask[3, 1, 5] = True
-        self.assertArrayEqual(res.data.mask, expected_mask)
+    def test_boolean_mask(self):
+        self.src_cube.data = np.ma.arange(24).reshape(3, 2, 4)
+        res = regrid(self.src_cube, self.grid_cube, mdtol=0.9)
+        self.assertEqual(ma.count_masked(res.data), 0)
 
+    def test_scalar(self):
+        # Slice src so result collapses to a scalar.
+        src_cube = self.src_cube[:, 1, :]
+
+        # Single cell with no overlap with masked src cells.
+        grid_cube = self.grid_cube[2, 1, 3]
+        res = regrid(src_cube, grid_cube, mdtol=0.8)
+        self.assertFalse(ma.isMaskedArray(res.data))
+
+        # Single cell with 50% overlap with masked src cells.
+        grid_cube = self.grid_cube[3, 1, 4]
+        res = regrid(src_cube, grid_cube, mdtol=0.8)
+        self.assertEqual(ma.count_masked(res.data), 0)
+        res = regrid(src_cube, grid_cube, mdtol=0.2)
+        self.assertEqual(ma.count_masked(res.data), 1)
 
 if __name__ == '__main__':
     tests.main()

@@ -816,6 +816,61 @@ def _get_bounds_in_units(coord, units, dtype):
     return coord.units.convert(coord.bounds.astype(dtype), units).astype(dtype)
 
 
+def _weighted_mean_with_mdtol(data, weights=None, axis=None, mdtol=0):
+    """
+    Return the weighted mean of an array over the specified axis
+    using the provided weights (if any) and a permitted fraction of
+    masked data.
+
+    Args:
+
+    * data (array-like):
+        Data to be averaged.
+
+    Kwargs:
+
+    * axis (int or tuple of ints):
+        Axis along which the mean is computed. The default is to compute
+        the mean of the flattened array.
+
+    * weights (array-like):
+        An array of the same shape as the data that specifies the contribution
+        of each corresponding data element to the calculated mean. Default is
+        to give each element equal weighting.
+
+    * mdtol (float):
+        Tolerance of missing data. The value returned in each element of the
+        returned array will be masked if the fraction of masked data exceeds
+        mdtol. This fraction is weighted by the `weights` array if one is
+        provided. mdtol=0 means no missing data is tolerated
+        while mdtol=1 will mean the resulting element will be masked if and
+        only if all the contributing elements of data are masked.
+        Defaults to 0.
+
+    Returns:
+        Numpy array (possibly masked) or scalar.
+
+    """
+    res = ma.average(data, weights=weights, axis=axis)
+    if ma.isMaskedArray(data) and mdtol < 1:
+        if weights is None:
+            weights = np.ones_like(data)
+        weights_total = weights.sum(axis=axis)
+        masked_weights = weights.copy()
+        masked_weights[~ma.getmaskarray(data)] = 0
+        masked_weights_total = masked_weights.sum(axis=axis)
+        frac_masked = np.true_divide(masked_weights_total, weights_total)
+        mask_pt = frac_masked > mdtol
+        if np.any(mask_pt):
+            if np.isscalar(res):
+                res = ma.masked
+            elif ma.isMaskedArray(res):
+                res.mask |= mask_pt
+            else:
+                res = ma.masked_array(res, mask=mask_pt)
+    return res
+
+
 def _regrid_area_weighted_array(src_data, x_dim, y_dim,
                                 src_x_bounds, src_y_bounds,
                                 grid_x_bounds, grid_y_bounds,
@@ -860,9 +915,11 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
     * mdtol:
         Tolerance of missing data. The value returned in each element of the
         returned array will be masked if the fraction of missing data exceeds
-        mdtol. mdtol=0 means no missing data is tolerated while mdtol=1 will
-        mean the resulting element will be masked if and only if all the
-        overlapping elements of the source grid are masked. Defaults to 0.
+        mdtol. This fraction is calculated based on the area of masked cells
+        within each target cell. mdtol=0 means no missing data is tolerated
+        while mdtol=1 will mean the resulting element will be masked if and
+        only if all the overlapping elements of the source grid are masked.
+        Defaults to 0.
 
     Returns:
         The regridded data as an N-dimensional NumPy array. The lengths
@@ -968,10 +1025,8 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
                         flattened_shape.append(-1)
                         data = data.swapaxes(x_dim, -1).reshape(
                             *flattened_shape)
-                    # Axes of data over which the weighted mean is calculated.
+                    weights = weights.ravel()
                     axis = -1
-                    new_data_pt = ma.average(data, weights=weights.ravel(),
-                                             axis=axis)
                 else:
                     # Transpose weights to match dim ordering in data.
                     weights_shape_y = weights.shape[0]
@@ -992,33 +1047,13 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
                     # Assign new shape to raise error on copy.
                     weights.shape = weights_padded_shape
                     # Broadcast weights to match shape of data.
-                    _, broadcasted_weights = np.broadcast_arrays(data, weights)
+                    _, weights = np.broadcast_arrays(data, weights)
                     # Axes of data over which the weighted mean is calculated.
                     axis = tuple(axes)
-                    # Calculate weighted mean taking into account missing data.
-                    new_data_pt = ma.average(data, weights=broadcasted_weights,
-                                             axis=axis)
 
-                # Determine suitable mask for data associated with cell.
-                if src_masked:
-                    # data.mask may be a bool, if not collapse via any().
-                    if data.mask.ndim:
-                        if mdtol == 0:
-                            new_data_pt_mask = data.mask.any(axis=axis)
-                        elif mdtol == 1:
-                            new_data_pt_mask = data.mask.all(axis=axis)
-                        else:
-                            # Calculate the fraction of elements that are
-                            # masked and compare to mdtol. np.ma.count()
-                            # cannot be used as it does not support axis
-                            # as a tuple.
-                            n_missing = np.ma.sum(data.mask, axis=axis)
-                            n_elem = np.prod(
-                                np.array(data.mask.shape)[np.array(axis)])
-                            frac_missing = n_missing / float(n_elem)
-                            new_data_pt_mask = frac_missing > mdtol
-                    else:
-                        new_data_pt_mask = data.mask
+                # Calculate weighted mean taking into account missing data.
+                new_data_pt = _weighted_mean_with_mdtol(
+                    data, weights=weights, axis=axis, mdtol=mdtol)
 
                 # Insert data (and mask) values into new array.
                 if x_dim is not None:
@@ -1026,8 +1061,6 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
                 if y_dim is not None:
                     indices[y_dim] = j
                 new_data[tuple(indices)] = new_data_pt
-                if src_masked:
-                    new_data.mask[tuple(indices)] = new_data_pt_mask
 
     # Remove new mask if original data was not masked
     # and no values in the new array are masked.
@@ -1064,9 +1097,10 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube,
     * mdtol:
         Tolerance of missing data. The value returned in each element of the
         returned cube's data array will be masked if the fraction of masked
-        data in the overlapping cells of the source cube exceeds mdtol.
-        mdtol=0 means no missing data is tolerated while mdtol=1 will mean
-        the resulting element will be masked if and only if all the
+        data in the overlapping cells of the source cube exceeds mdtol. This
+        fraction is calculated based on the area of masked cells within each
+        target cell. mdtol=0 means no missing data is tolerated while mdtol=1
+        will mean the resulting element will be masked if and only if all the
         overlapping cells of the source cube are masked. Defaults to 0.
 
     Returns:
