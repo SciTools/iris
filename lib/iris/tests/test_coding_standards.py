@@ -68,7 +68,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
     expected_bad_files = [
         '*/iris/std_names.py',
         '*/iris/analysis/calculus.py',
-        '*/iris/analysis/geometry.py',
         '*/iris/analysis/interpolate.py',
         '*/iris/analysis/maths.py',
         '*/iris/analysis/trajectory.py',
