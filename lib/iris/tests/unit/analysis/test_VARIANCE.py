@@ -46,13 +46,21 @@ class Test_masked(tests.IrisTest):
         self.cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10],
                                          long_name='foo'), 0)
 
-    def test_ma(self):
-        cube = self.cube.collapsed("foo", VARIANCE, ddof=0)
-        self.assertArrayAlmostEqual(cube.data, np.var(self.cube.data, ddof=0))
-
     def test_ma_ddof0(self):
+        cube = self.cube.collapsed("foo", VARIANCE, ddof=0)
+        expected = 10 / 4.
+        self.assertArrayEqual(np.var(self.cube.data, ddof=0), expected)
+        self.assertArrayAlmostEqual(cube.data, expected)
+
+    def test_ma_ddof1(self):
         cube = self.cube.collapsed("foo", VARIANCE, ddof=1)
-        self.assertArrayEqual(cube.data, np.var(self.cube.data, ddof=1))
+        expected = 10 / 3.
+        self.assertArrayEqual(np.var(self.cube.data, ddof=1), expected)
+        self.assertArrayEqual(cube.data, expected)
+
+        # test that the default ddof is 1
+        default_cube = self.cube.collapsed("foo", VARIANCE)
+        self.assertArrayEqual(cube.data, default_cube.data)
 
 
 if __name__ == "__main__":

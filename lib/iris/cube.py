@@ -2799,7 +2799,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # accepts multiple axes (unlike 'aggregate').
             collapse_axis = dims_to_collapse
             try:
-                data_result = aggregator.lazy_aggregate(self._my_data,
+                data_result = aggregator.lazy_aggregate(self.lazy_data(),
                                                         collapse_axis,
                                                         **kwargs)
             except TypeError:
@@ -2807,6 +2807,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 # weights to mean)
                 pass
 
+        # If we weren't able to complete a lazy aggreation, compute it
+        # directly now.
         if data_result is None:
             # Perform the (non-lazy) aggregation over the cube data
             # First reshape the data so that the dimensions being aggregated
