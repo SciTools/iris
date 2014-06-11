@@ -55,15 +55,15 @@ _CF_ATTRS_IGNORE = set(['_FillValue', 'add_offset', 'missing_value', 'scale_fact
 
 #: Supported dimensionless vertical coordinate reference surface/phemomenon
 #: formula terms. Ref: [CF] Appendix D.
-reference_terms = dict(atmosphere_sigma_coordinate='ps',
-                       atmosphere_hybrid_sigma_pressure_coordinate='ps',
-                       atmosphere_hybrid_height_coordinate='orog',
-                       atmosphere_sleve_coordinate='zsurf1 zsurf2',
-                       ocean_sigma_coordinate='eta',
-                       ocean_s_coordinate='eta',
-                       ocean_sigma_z_coordinate='eta',
-                       ocean_s_coordinate_g1='eta',
-                       ocean_s_coordinate_g2='eta')
+reference_terms = dict(atmosphere_sigma_coordinate=['ps'],
+                       atmosphere_hybrid_sigma_pressure_coordinate=['ps'],
+                       atmosphere_hybrid_height_coordinate=['orog'],
+                       atmosphere_sleve_coordinate=['zsurf1', 'zsurf2'],
+                       ocean_sigma_coordinate=['eta'],
+                       ocean_s_coordinate=['eta'],
+                       ocean_sigma_z_coordinate=['eta'],
+                       ocean_s_coordinate_g1=['eta'],
+                       ocean_s_coordinate_g2=['eta'])
 
 
 ################################################################################
@@ -375,7 +375,7 @@ class CFBoundaryVariable(CFVariable):
         """
         # Scalar variables always span the target variable.
         result = True
-        if len(self.dimensions):
+        if self.dimensions:
             source = self.dimensions
             target = cf_variable.dimensions
             # Ignore the bounds extent dimension.
@@ -444,7 +444,7 @@ class CFClimatologyVariable(CFVariable):
         """
         # Scalar variables always span the target variable.
         result = True
-        if len(self.dimensions):
+        if self.dimensions:
             source = self.dimensions
             target = cf_variable.dimensions
             # Ignore the climatology extent dimension.
@@ -735,7 +735,7 @@ class CFLabelVariable(CFVariable):
         """
         # Scalar variables always span the target variable.
         result = True
-        if len(self.dimensions):
+        if self.dimensions:
             source = self.dimensions
             target = cf_variable.dimensions
             # Ignore label string length dimension.
@@ -992,7 +992,8 @@ class CFReader(object):
                         cf_group[cf_name] = self.cf_group[cf_name]
                     else:
                         # Register the ignored variable.
-                        ignored.append(cf_name)
+                        # N.B. 'ignored' variable from enclosing scope.
+                        ignored.add(cf_name)
                         msg = 'Ignoring variable {!r} referenced ' \
                             'by variable {!r}: Dimensions {!r} do not ' \
                             'span {!r}'.format(cf_name,
@@ -1023,7 +1024,8 @@ class CFReader(object):
                                 cf_group[cf_var.cf_name] = cf_var
                             else:
                                 # Register the ignored variable.
-                                ignored.append(cf_var.cf_name)
+                                # N.B. 'ignored' variable from enclosing scope.
+                                ignored.add(cf_var.cf_name)
                                 msg = 'Ignoring formula terms variable {!r} ' \
                                     'referenced by data variable {!r} via ' \
                                     'variable {!r}: Dimensions {!r} do not ' \
@@ -1040,7 +1042,7 @@ class CFReader(object):
         # Ignored variables are those that cannot be attached to a
         # data variable as the dimensionality of that variable is not
         # a subset of the dimensionality of the data variable.
-        ignored = []
+        ignored = set()
 
         for cf_variable in self.cf_group.itervalues():
             _build(cf_variable)
@@ -1054,7 +1056,7 @@ class CFReader(object):
                 for cf_root, cf_term in cf_var.cf_terms_by_root.iteritems():
                     cf_root_var = self.cf_group[cf_root]
                     name = cf_root_var.standard_name or cf_root_var.long_name
-                    terms = reference_terms.get(name, '').split()
+                    terms = reference_terms.get(name, [])
                     cf_var_name = cf_var.cf_name
                     if cf_term in terms and \
                             cf_var_name not in self.cf_group.promoted:
@@ -1063,13 +1065,20 @@ class CFReader(object):
                         _build(data_var)
                         break
             # Promote any ignored variables.
-            for cf_name in ignored:
+            promoted = set()
+            not_promoted = ignored.difference(promoted)
+            while not_promoted:
+                cf_name = not_promoted.pop()
                 if cf_name not in self.cf_group.data_variables and \
                         cf_name not in self.cf_group.promoted:
                     data_var = CFDataVariable(cf_name,
                                               self.cf_group[cf_name].cf_data)
                     self.cf_group.promoted[cf_name] = data_var
                     _build(data_var)
+                # Determine whether there are still any ignored variables
+                # yet to be promoted.
+                promoted.add(cf_name)
+                not_promoted = ignored.difference(promoted)
 
     def _reset(self):
         """Reset the attribute touch history of each variable."""
