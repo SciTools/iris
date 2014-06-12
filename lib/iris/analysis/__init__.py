@@ -429,19 +429,6 @@ class Aggregator(object):
 
         Kwargs:
 
-        * mdtol (float):
-            Tolerance of missing data. The value returned will be masked if
-            the fraction of data to missing data is less than or equal to
-            mdtol.  mdtol=0 means no missing data is tolerated while mdtol=1
-            will return the resulting value from the aggregation function.
-            Defaults to 1.
-
-            .. warning::
-
-                This may not be supported by all lazy operations.  Where it is
-                not supported, *any* mention of this keyword will produce an
-                error.
-
         * kwargs:
             All keyword arguments are passed through to the data aggregation
             function.
@@ -917,6 +904,13 @@ the mean over a :class:`~iris.cube.Cube`, as computed by
 
 Additional kwargs associated with the use of this aggregator:
 
+* mdtol (float):
+    Tolerance of missing data. The value returned in each element of the
+    returned array will be masked if the fraction of masked data contributing
+    to that element exceeds mdtol. This fraction is calculated based on the
+    number of masked elements. mdtol=0 means no missing data is tolerated
+    while mdtol=1 means the resulting element will be masked if and only if
+    all the contributing elements are masked. Defaults to 1.
 * weights (float ndarray):
     Weights matching the shape of the cube or the length of the window
     for rolling window operations. Note that, latitude/longitude area
