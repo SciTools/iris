@@ -816,7 +816,7 @@ def _get_bounds_in_units(coord, units, dtype):
     return coord.units.convert(coord.bounds.astype(dtype), units).astype(dtype)
 
 
-def _weighted_mean_with_mdtol(data, weights=None, axis=None, mdtol=0):
+def _weighted_mean_with_mdtol(data, weights, axis=None, mdtol=0):
     """
     Return the weighted mean of an array over the specified axis
     using the provided weights (if any) and a permitted fraction of
@@ -827,16 +827,15 @@ def _weighted_mean_with_mdtol(data, weights=None, axis=None, mdtol=0):
     * data (array-like):
         Data to be averaged.
 
+    * weights (array-like):
+        An array of the same shape as the data that specifies the contribution
+        of each corresponding data element to the calculated mean.
+
     Kwargs:
 
     * axis (int or tuple of ints):
         Axis along which the mean is computed. The default is to compute
         the mean of the flattened array.
-
-    * weights (array-like):
-        An array of the same shape as the data that specifies the contribution
-        of each corresponding data element to the calculated mean. Default is
-        to give each element equal weighting.
 
     * mdtol (float):
         Tolerance of missing data. The value returned in each element of the
@@ -853,8 +852,6 @@ def _weighted_mean_with_mdtol(data, weights=None, axis=None, mdtol=0):
     """
     res = ma.average(data, weights=weights, axis=axis)
     if ma.isMaskedArray(data) and mdtol < 1:
-        if weights is None:
-            weights = np.ones_like(data)
         weights_total = weights.sum(axis=axis)
         masked_weights = weights.copy()
         masked_weights[~ma.getmaskarray(data)] = 0
@@ -879,6 +876,12 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
     """
     Regrid the given data from its source grid to a new grid using
     an area weighted mean to determine the resulting data values.
+
+    .. note::
+
+        Elements in the returned array that lie either partially
+        or entirely outside of the extent of the source grid will
+        be masked irrespective of the value of mdtol.
 
     Args:
 
@@ -1082,6 +1085,12 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube,
     and that these grids are in the same coordinate system. This function
     also requires that the coordinates describing the horizontal grids
     all have bounds.
+
+    .. note::
+
+        Elements in data array of the returned cube that lie either partially
+        or entirely outside of the horizontal extent of the src_cube will
+        be masked irrespective of the value of mdtol.
 
     Args:
 
