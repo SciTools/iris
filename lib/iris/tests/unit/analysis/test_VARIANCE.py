@@ -23,6 +23,7 @@ import iris.tests as tests
 import mock
 
 import biggus
+import numpy as np
 import numpy.ma as ma
 
 from iris.analysis import VARIANCE
@@ -62,6 +63,27 @@ class Test_masked(tests.IrisTest):
 #         cube = self.cube.collapsed("foo", VARIANCE, lazy=True)
 #         self.assertArrayAlmostEqual(cube.lazy_data().masked_array(),
 #                                     [3.333333])
+
+
+class Test_lazy_aggregate(tests.IrisTest):
+    def test_unsupported_mdtol(self):
+        # The VARIANCE aggregator supports lazy_aggregation but does
+        # not provide mdtol handling. Check that a TypeError is raised
+        # if this unsupported kwarg is specified.
+        array = biggus.NumpyArrayAdapter(np.arange(8))
+        msg = "unexpected keyword argument 'mdtol'"
+        with self.assertRaisesRegexp(TypeError, msg):
+            VARIANCE.lazy_aggregate(array, axis=0, mdtol=0.8)
+
+    def test_ddof_one(self):
+        array = biggus.NumpyArrayAdapter(np.arange(8))
+        var = VARIANCE.lazy_aggregate(array, axis=0, ddof=1)
+        self.assertArrayAlmostEqual(var.ndarray(), np.array(6.0))
+
+    def test_ddof_zero(self):
+        array = biggus.NumpyArrayAdapter(np.arange(8))
+        var = VARIANCE.lazy_aggregate(array, axis=0, ddof=0)
+        self.assertArrayAlmostEqual(var.ndarray(), np.array(5.25))
 
 
 if __name__ == "__main__":

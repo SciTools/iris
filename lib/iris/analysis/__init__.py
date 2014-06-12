@@ -382,7 +382,7 @@ class Aggregator(object):
             main operation, but should raise an error in unhandled cases.
 
         Additional kwargs::
-            Passed through to :data:`call_func`.
+            Passed through to :data:`call_func` and :data:`lazy_func`.
 
         Aggregators are used by cube aggregation methods such as
         :meth:`~iris.cube.Cube.collapsed` and
@@ -443,8 +443,8 @@ class Aggregator(object):
                 error.
 
         * kwargs:
-            All keyword arguments apart from those specified above, are
-            passed through to the data aggregation function.
+            All keyword arguments are passed through to the data aggregation
+            function.
 
         Returns:
             A lazy array representing the aggregation operation
@@ -455,6 +455,11 @@ class Aggregator(object):
             raise LazyAggregatorError(
                 '{} aggregator does not support lazy operation.'.format(
                     self.cell_method))
+
+        # Combine keyword args with `kwargs` taking priority over those
+        # provided to __init__.
+        kwargs = dict(self._kwargs.items() + kwargs.items())
+
         return self.lazy_func(data, axis, **kwargs)
 
     def aggregate(self, data, axis, **kwargs):
