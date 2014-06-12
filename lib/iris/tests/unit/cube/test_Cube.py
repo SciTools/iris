@@ -371,6 +371,29 @@ class Test_intersection__Metadata(tests.IrisTest):
         self.assertCMLApproxData(result)
 
 
+# Explicitly check the handling of `circular` on the result.
+class Test_intersection__Circular(tests.IrisTest):
+    def test_regional(self):
+        cube = create_cube(0, 360)
+        result = cube.intersection(longitude=(170, 190))
+        self.assertFalse(result.coord('longitude').circular)
+
+    def test_regional_wrapped(self):
+        cube = create_cube(-180, 180)
+        result = cube.intersection(longitude=(170, 190))
+        self.assertFalse(result.coord('longitude').circular)
+
+    def test_global(self):
+        cube = create_cube(-180, 180)
+        result = cube.intersection(longitude=(-180, 180))
+        self.assertTrue(result.coord('longitude').circular)
+
+    def test_global_wrapped(self):
+        cube = create_cube(-180, 180)
+        result = cube.intersection(longitude=(10, 370))
+        self.assertTrue(result.coord('longitude').circular)
+
+
 # Check the various error conditions.
 class Test_intersection__Invalid(tests.IrisTest):
     def test_reversed_min_max(self):
