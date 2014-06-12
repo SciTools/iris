@@ -91,7 +91,7 @@ _CF_GLOBAL_ATTRS = ['conventions', 'featureType', 'history', 'title']
 # UKMO specific attributes that should not be global.
 _UKMO_DATA_ATTRS = ['STASH', 'um_stash_source', 'ukmo__process_flags']
 
-_CF_CONVENTIONS_VERSION = 'CF-1.5'
+CF_CONVENTIONS_VERSION = 'CF-1.5'
 
 _FactoryDefn = collections.namedtuple('_FactoryDefn', ('primary', 'std_name',
                                                        'formula_terms_format'))
@@ -668,10 +668,8 @@ class Saver(object):
             3 files that do not use HDF5.
 
         """
-        cf_profile_available = (
-            'cf_profile' in iris.site_configuration and
-            iris.site_configuration['cf_profile'] not in [None, False])
-
+        cf_profile_available = (iris.site_configuration.get('cf_profile') not
+                                in [None, False])
         if cf_profile_available:
             # Perform a CF profile of the cube. This may result in an exception
             # being raised if mandatory requirements are not satisfied.
@@ -714,9 +712,14 @@ class Saver(object):
         self.update_global_attributes(global_attributes)
 
         if cf_profile_available:
-            # Perform a CF patch of the dataset.
-            iris.site_configuration['cf_patch'](profile, self._dataset,
-                                                cf_var_cube)
+            cf_patch = iris.site_configuration.get('cf_patch')
+            if cf_patch is not None:
+                # Perform a CF patch of the dataset.
+                cf_patch(profile, self._dataset, cf_var_cube)
+            else:
+                msg = 'cf_profile is available but no {} defined.'.format(
+                    'cf_patch')
+                warnings.warn(msg)
 
     def update_global_attributes(self, attributes=None, **kwargs):
         """
@@ -1605,5 +1608,20 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
                        shuffle, fletcher32, contiguous, chunksizes, endian,
                        least_significant_digit)
 
+        conventions = CF_CONVENTIONS_VERSION
+
+        # Perform a CF patch of the conventions attribute.
+        cf_profile_available = (iris.site_configuration.get('cf_profile') not
+                                in [None, False])
+        if cf_profile_available:
+            conventions_patch = iris.site_configuration.get(
+                'cf_patch_conventions')
+            if conventions_patch is not None:
+                conventions = conventions_patch(conventions)
+            else:
+                msg = 'cf_profile is available but no {} defined.'.format(
+                    'cf_patch_conventions')
+                warnings.warn(msg)
+
         # Add conventions attribute.
-        sman.update_global_attributes(Conventions=_CF_CONVENTIONS_VERSION)
+        sman.update_global_attributes(Conventions=conventions)
