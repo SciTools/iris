@@ -638,6 +638,15 @@ class Test_intersection__GlobalSrcModulus(tests.IrisTest):
         self.assertEqual(result.data[0, 0, 0], 10)
         self.assertEqual(result.data[0, 0, -1], 10)
 
+    def test_two_points(self):
+        # -1.5 <= v <= 0.5
+        cube = create_cube(0, 360)
+        result = cube.intersection(longitude=(-1.5, 0.5))
+        self.assertEqual(result.coord('longitude').points[0], -1)
+        self.assertEqual(result.coord('longitude').points[-1], 0)
+        self.assertEqual(result.data[0, 0, 0], 359)
+        self.assertEqual(result.data[0, 0, -1], 0)
+
     def test_wrap_radians(self):
         cube = create_cube(0, 360)
         cube.coord('longitude').convert_units('radians')

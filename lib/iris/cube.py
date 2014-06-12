@@ -2168,7 +2168,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 # because we've already restricted the coordinate's
                 # range to its modulus).
                 step = np.rint(np.diff(delta) / modulus)
-                end_of_first_chunk = np.where(step != step[0])[0][0]
+                end_of_first_chunk = np.nonzero(step)[0][0]
                 subsets = [slice(inside_indices[end_of_first_chunk + 1], None),
                            slice(None, inside_indices[end_of_first_chunk] + 1)]
         else:
