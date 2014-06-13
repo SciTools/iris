@@ -26,6 +26,7 @@ References:
 """
 
 from abc import ABCMeta, abstractmethod
+from collections import Iterable
 import os
 import re
 import UserDict
@@ -1057,6 +1058,9 @@ class CFReader(object):
                     cf_root_var = self.cf_group[cf_root]
                     name = cf_root_var.standard_name or cf_root_var.long_name
                     terms = reference_terms.get(name, [])
+                    if isinstance(terms, basestring) or \
+                            not isinstance(terms, Iterable):
+                        terms = [terms]
                     cf_var_name = cf_var.cf_name
                     if cf_term in terms and \
                             cf_var_name not in self.cf_group.promoted:

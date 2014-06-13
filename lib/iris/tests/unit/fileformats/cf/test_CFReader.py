@@ -23,7 +23,6 @@ Unit tests for the `iris.fileformats.cf.CFReader` class.
 # importing anything else.
 import iris.tests as tests
 
-from contextlib import nested
 import mock
 import warnings
 
@@ -231,8 +230,8 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
                               getattr(self, name_bnds))
 
     def test_future_promote_reference(self):
-        with nested(mock.patch('netCDF4.Dataset', return_value=self.dataset),
-                    iris.FUTURE.context(netcdf_promote=True)):
+        with mock.patch('netCDF4.Dataset', return_value=self.dataset), \
+                iris.FUTURE.context(netcdf_promote=True):
             cf_group = CFReader('dummy').cf_group
             self.assertEqual(len(cf_group), len(self.variables))
             # Check the number of data variables.
@@ -252,10 +251,9 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
     def test_formula_terms_ignore(self):
         self.orography.dimensions = ['lat', 'wibble']
         for state in [False, True]:
-            with nested(mock.patch('netCDF4.Dataset',
-                                   return_value=self.dataset),
-                        iris.FUTURE.context(netcdf_promote=state),
-                        mock.patch('warnings.warn')) as (_, _, warn):
+            with mock.patch('netCDF4.Dataset', return_value=self.dataset), \
+                    iris.FUTURE.context(netcdf_promote=state), \
+                    mock.patch('warnings.warn') as warn:
                 cf_group = CFReader('dummy').cf_group
                 if state:
                     group = cf_group.promoted
@@ -268,10 +266,9 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
     def test_auxiliary_ignore(self):
         self.x.dimensions = ['lat', 'wibble']
         for state in [False, True]:
-            with nested(mock.patch('netCDF4.Dataset',
-                                   return_value=self.dataset),
-                        iris.FUTURE.context(netcdf_promote=state),
-                        mock.patch('warnings.warn')) as (_, _, warn):
+            with mock.patch('netCDF4.Dataset', return_value=self.dataset), \
+                    iris.FUTURE.context(netcdf_promote=state), \
+                    mock.patch('warnings.warn') as warn:
                 cf_group = CFReader('dummy').cf_group
                 if state:
                     promoted = ['x', 'orography']
@@ -287,9 +284,9 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
         self.wibble = netcdf_variable('wibble', 'lat wibble', np.float)
         self.variables['wibble'] = self.wibble
         self.orography.coordinates = 'wibble'
-        with nested(mock.patch('netCDF4.Dataset', return_value=self.dataset),
-                    iris.FUTURE.context(netcdf_promote=True),
-                    mock.patch('warnings.warn')) as (_, _, warn):
+        with mock.patch('netCDF4.Dataset', return_value=self.dataset), \
+                iris.FUTURE.context(netcdf_promote=True), \
+                mock.patch('warnings.warn') as warn:
             cf_group = CFReader('dummy').cf_group.promoted
             promoted = ['wibble', 'orography']
             self.assertEqual(cf_group.viewkeys(), set(promoted))
