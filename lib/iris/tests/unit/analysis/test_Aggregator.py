@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -199,6 +199,52 @@ class Test_aggregate(tests.IrisTest):
             self.assertMaskedArrayEqual(result, self.expected_result_axis1)
         mock_method.assert_called_once_with(self.array, axis=axis)
 
+    def test_kwarg_pass_through_no_kwargs(self):
+        call_func = Mock()
+        data = sentinel.data
+        axis = sentinel.axis
+        aggregator = Aggregator('', call_func)
+        aggregator.aggregate(data, axis)
+        call_func.assert_called_once_with(data, axis=axis)
+
+    def test_kwarg_pass_through_call_kwargs(self):
+        call_func = Mock()
+        data = sentinel.data
+        axis = sentinel.axis
+        kwargs = dict(wibble='wobble', foo='bar')
+        aggregator = Aggregator('', call_func)
+        aggregator.aggregate(data, axis, **kwargs)
+        call_func.assert_called_once_with(data, axis=axis, **kwargs)
+
+    def test_kwarg_pass_through_init_kwargs(self):
+        call_func = Mock()
+        data = sentinel.data
+        axis = sentinel.axis
+        kwargs = dict(wibble='wobble', foo='bar')
+        aggregator = Aggregator('', call_func, **kwargs)
+        aggregator.aggregate(data, axis)
+        call_func.assert_called_once_with(data, axis=axis, **kwargs)
+
+    def test_kwarg_pass_through_combined_kwargs(self):
+        call_func = Mock()
+        data = sentinel.data
+        axis = sentinel.axis
+        init_kwargs = dict(wibble='wobble', var=1.0)
+        call_kwargs = dict(foo='foo', var=0.5)
+        aggregator = Aggregator('', call_func, **init_kwargs)
+        aggregator.aggregate(data, axis, **call_kwargs)
+        expected_kwargs = init_kwargs.copy()
+        expected_kwargs.update(call_kwargs)
+        call_func.assert_called_once_with(data, axis=axis, **expected_kwargs)
+
+    def test_mdtol_intercept(self):
+        call_func = Mock()
+        data = sentinel.data
+        axis = sentinel.axis
+        aggregator = Aggregator('', call_func)
+        aggregator.aggregate(data, axis, wibble='wobble', mdtol=0.8)
+        call_func.assert_called_once_with(data, axis=axis, wibble='wobble')
+
 
 class Test_update_metadata(tests.IrisTest):
     def test_no_units_change(self):
@@ -218,6 +264,46 @@ class Test_update_metadata(tests.IrisTest):
         aggregator.update_metadata(cube, [])
         units_func.assert_called_once_with(sentinel.units)
         self.assertEqual(cube.units, sentinel.new_units)
+
+
+class Test_lazy_aggregate(tests.IrisTest):
+    def test_kwarg_pass_through_no_kwargs(self):
+        lazy_func = Mock()
+        data = sentinel.data
+        axis = sentinel.axis
+        aggregator = Aggregator('', None, lazy_func=lazy_func)
+        aggregator.lazy_aggregate(data, axis)
+        lazy_func.assert_called_once_with(data, axis)
+
+    def test_kwarg_pass_through_call_kwargs(self):
+        lazy_func = Mock()
+        data = sentinel.data
+        axis = sentinel.axis
+        kwargs = dict(wibble='wobble', foo='bar')
+        aggregator = Aggregator('', None, lazy_func=lazy_func)
+        aggregator.lazy_aggregate(data, axis, **kwargs)
+        lazy_func.assert_called_once_with(data, axis, **kwargs)
+
+    def test_kwarg_pass_through_init_kwargs(self):
+        lazy_func = Mock()
+        data = sentinel.data
+        axis = sentinel.axis
+        kwargs = dict(wibble='wobble', foo='bar')
+        aggregator = Aggregator('', None, lazy_func=lazy_func, **kwargs)
+        aggregator.lazy_aggregate(data, axis)
+        lazy_func.assert_called_once_with(data, axis, **kwargs)
+
+    def test_kwarg_pass_through_combined_kwargs(self):
+        lazy_func = Mock()
+        data = sentinel.data
+        axis = sentinel.axis
+        init_kwargs = dict(wibble='wobble', var=1.0)
+        call_kwargs = dict(foo='foo', var=0.5)
+        aggregator = Aggregator('', None, lazy_func=lazy_func, **init_kwargs)
+        aggregator.lazy_aggregate(data, axis, **call_kwargs)
+        expected_kwargs = init_kwargs.copy()
+        expected_kwargs.update(call_kwargs)
+        lazy_func.assert_called_once_with(data, axis, **expected_kwargs)
 
 
 if __name__ == "__main__":
