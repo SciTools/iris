@@ -2077,6 +2077,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 # Add copies of the source coordinates, selecting
                 # the appropriate subsets out of coordinates which
                 # share the intersection dimension.
+                preserve_circular = (min_inclusive and max_inclusive and
+                                     abs(maximum - minimum) == modulus)
                 for src_coord in src_coords:
                     dims = self.coord_dims(src_coord)
                     if dim in dims:
@@ -2093,6 +2095,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                             bounds = None
                         result_coord = src_coord.copy(points=points,
                                                       bounds=bounds)
+
+                        circular = getattr(result_coord, 'circular', False)
+                        if circular and not preserve_circular:
+                            result_coord.circular = False
                     else:
                         result_coord = src_coord.copy()
                     add_coord(result_coord, dims)
