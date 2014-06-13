@@ -492,7 +492,9 @@ def load_cubes(filenames, callback=None):
         cf = iris.fileformats.cf.CFReader(filename)
 
         # Process each CF data variable.
-        for cf_var in cf.cf_group.data_variables.itervalues():
+        data_variables = cf.cf_group.data_variables.values() + \
+            cf.cf_group.promoted.values()
+        for cf_var in data_variables:
             cube = _load_cube(engine, cf, cf_var, filename)
 
             # Process any associated formula terms and attach
@@ -500,8 +502,7 @@ def load_cubes(filenames, callback=None):
             _load_aux_factory(engine, cube)
 
             # Perform any user registered callback function.
-            cube = iris.io.run_callback(callback, cube, engine.cf_var,
-                                        filename)
+            cube = iris.io.run_callback(callback, cube, cf_var, filename)
 
             # Callback mechanism may return None, which must not be yielded
             if cube is None:

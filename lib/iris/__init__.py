@@ -133,7 +133,7 @@ AttributeConstraint = iris._constraints.AttributeConstraint
 class Future(threading.local):
     """Run-time configuration controller."""
 
-    def __init__(self, cell_datetime_objects=False):
+    def __init__(self, cell_datetime_objects=False, netcdf_promote=False):
         """
         A container for run-time options controls.
 
@@ -162,10 +162,11 @@ class Future(threading.local):
         For more details, see :ref:`using-time-constraints`.
         """
         self.__dict__['cell_datetime_objects'] = cell_datetime_objects
+        self.__dict__['netcdf_promote'] = netcdf_promote
 
     def __repr__(self):
-        return 'Future(cell_datetime_objects={})'.format(
-            self.cell_datetime_objects)
+        return 'Future(cell_datetime_objects={}, netcdf_promote={})'.format(
+            self.cell_datetime_objects, self.netcdf_promote)
 
     def __setattr__(self, name, value):
         if name not in self.__dict__:

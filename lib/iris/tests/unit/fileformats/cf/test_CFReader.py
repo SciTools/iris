@@ -33,9 +33,9 @@ from iris.fileformats.cf import CFReader
 
 
 def netcdf_variable(name, dimensions, dtype, ancillary_variables=None,
-                    coordinates=None, bounds=None, climatology=None,
+                    coordinates='', bounds=None, climatology=None,
                     formula_terms=None, grid_mapping=None,
-                    cell_measures=None):
+                    cell_measures=None, standard_name=None):
     """Return a mock NetCDF4 variable."""
     ndim = 0
     if dimensions is not None:
@@ -50,7 +50,8 @@ def netcdf_variable(name, dimensions, dtype, ancillary_variables=None,
                       coordinates=coordinates,
                       bounds=bounds, climatology=climatology,
                       formula_terms=formula_terms,
-                      grid_mapping=grid_mapping, cell_measures=cell_measures)
+                      grid_mapping=grid_mapping, cell_measures=cell_measures,
+                      standard_name=standard_name)
     return ncvar
 
 
@@ -66,9 +67,11 @@ class Test_translate__formula_terms(tests.IrisTest):
                                           np.float)
         self.orography = netcdf_variable('orography', 'lat lon', np.float)
         formula_terms = 'a: delta b: sigma orog: orography'
+        standard_name = 'atmosphere_hybrid_height_coordinate'
         self.height = netcdf_variable('height', 'height', np.float,
                                       formula_terms=formula_terms,
-                                      bounds='height_bnds')
+                                      bounds='height_bnds',
+                                      standard_name=standard_name)
         # Over-specify the formula terms on the bounds variable,
         # which will be ignored by the cf loader.
         formula_terms = 'a: delta_bnds b: sigma_bnds orog: orography'
@@ -147,9 +150,11 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
                                           np.float)
         self.orography = netcdf_variable('orography', 'lat lon', np.float)
         formula_terms = 'a: delta b: sigma orog: orography'
+        standard_name = 'atmosphere_hybrid_height_coordinate'
         self.height = netcdf_variable('height', 'height', np.float,
                                       formula_terms=formula_terms,
-                                      bounds='height_bnds')
+                                      bounds='height_bnds',
+                                      standard_name=standard_name)
         # Over-specify the formula terms on the bounds variable,
         # which will be ignored by the cf loader.
         formula_terms = 'a: delta_bnds b: sigma_bnds orog: orography'
@@ -158,16 +163,19 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
                                            formula_terms=formula_terms)
         self.lat = netcdf_variable('lat', 'lat', np.float)
         self.lon = netcdf_variable('lon', 'lon', np.float)
+        self.x = netcdf_variable('x', 'lat lon', np.float)
+        self.y = netcdf_variable('y', 'lat lon', np.float)
         # Note that, only lat and lon are explicitly associated as coordinates.
         self.temp = netcdf_variable('temp', 'height lat lon', np.float,
-                                    coordinates='lat lon')
+                                    coordinates='x y')
 
         self.variables = dict(delta=self.delta, sigma=self.sigma,
                               orography=self.orography, height=self.height,
                               lat=self.lat, lon=self.lon, temp=self.temp,
                               delta_bnds=self.delta_bnds,
                               sigma_bnds=self.sigma_bnds,
-                              height_bnds=self.height_bnds)
+                              height_bnds=self.height_bnds,
+                              x=self.x, y=self.y)
         ncattrs = mock.Mock(return_value=[])
         self.dataset = mock.Mock(file_format='NetCDF4',
                                  variables=self.variables,
@@ -184,8 +192,8 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
             self.assertEqual(len(cf_group), len(self.variables))
             # Check the cf-group associated with the data variable.
             temp_cf_group = cf_group['temp'].cf_group
-            # Check the data variable is associated with six variables.
-            self.assertEqual(len(temp_cf_group), 6)
+            # Check the data variable is associated with eight variables.
+            self.assertEqual(len(temp_cf_group), 8)
             # Check there are three coordinates.
             group = temp_cf_group.coordinates
             self.assertEqual(len(group), 3)
@@ -198,16 +206,16 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
             self.assertEqual(len(group.bounds), 1)
             self.assertIn('height_bnds', group.bounds)
             self.assertIs(group['height_bnds'].cf_data, self.height_bnds)
-            # Check there are three auxiliary coordinates.
+            # Check there are five auxiliary coordinates.
             group = temp_cf_group.auxiliary_coordinates
-            self.assertEqual(len(group), 3)
-            aux_coordinates = ['delta', 'sigma', 'orography']
+            self.assertEqual(len(group), 5)
+            aux_coordinates = ['delta', 'sigma', 'orography', 'x', 'y']
             self.assertEqual(group.viewkeys(), set(aux_coordinates))
             for name in aux_coordinates:
                 self.assertIs(group[name].cf_data, getattr(self, name))
             # Check all the auxiliary coordinates are formula terms.
             formula_terms = cf_group.formula_terms
-            self.assertEqual(group.viewitems(), formula_terms.viewitems())
+            self.assertTrue(set(formula_terms.items()).issubset(group.items()))
             # Check the terms by root.
             for name, term in zip(aux_coordinates, ['a', 'b', 'orog']):
                 self.assertEqual(formula_terms[name].cf_terms_by_root,
@@ -221,14 +229,70 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
                 self.assertIs(aux_coord_group[name_bnds].cf_data,
                               getattr(self, name_bnds))
 
-    def test_formula_terms_dimension_mismatch(self):
-        self.orography.dimensions = 'lat wibble'
-        with mock.patch('netCDF4.Dataset', return_value=self.dataset):
-            with warnings.catch_warnings(record=True) as warn:
-                warnings.simplefilter('always')
-                CFReader('dummy')
-                self.assertEqual(len(warn), 1)
-                self.assertIn('dimension mis-match', warn[0].message.message)
+    def test_future_promote_reference(self):
+        with mock.patch('netCDF4.Dataset', return_value=self.dataset), \
+                iris.FUTURE.context(netcdf_promote=True):
+            cf_group = CFReader('dummy').cf_group
+            self.assertEqual(len(cf_group), len(self.variables))
+            # Check the number of data variables.
+            self.assertEqual(len(cf_group.data_variables), 1)
+            self.assertEqual(cf_group.data_variables.keys(), ['temp'])
+            # Check the number of promoted variables.
+            self.assertEqual(len(cf_group.promoted), 1)
+            self.assertEqual(cf_group.promoted.keys(), ['orography'])
+            # Check the promoted variable dependencies.
+            group = cf_group.promoted['orography'].cf_group.coordinates
+            self.assertEqual(len(group), 2)
+            coordinates = ('lat', 'lon')
+            self.assertEqual(group.viewkeys(), set(coordinates))
+            for name in coordinates:
+                self.assertIs(group[name].cf_data, getattr(self, name))
+
+    def test_formula_terms_ignore(self):
+        self.orography.dimensions = ['lat', 'wibble']
+        for state in [False, True]:
+            with mock.patch('netCDF4.Dataset', return_value=self.dataset), \
+                    iris.FUTURE.context(netcdf_promote=state), \
+                    mock.patch('warnings.warn') as warn:
+                cf_group = CFReader('dummy').cf_group
+                if state:
+                    group = cf_group.promoted
+                    self.assertEqual(group.keys(), ['orography'])
+                    self.assertIs(group['orography'].cf_data, self.orography)
+                else:
+                    self.assertEqual(len(cf_group.promoted), 0)
+            self.assertEqual(warn.call_count, 1)
+
+    def test_auxiliary_ignore(self):
+        self.x.dimensions = ['lat', 'wibble']
+        for state in [False, True]:
+            with mock.patch('netCDF4.Dataset', return_value=self.dataset), \
+                    iris.FUTURE.context(netcdf_promote=state), \
+                    mock.patch('warnings.warn') as warn:
+                cf_group = CFReader('dummy').cf_group
+                if state:
+                    promoted = ['x', 'orography']
+                    group = cf_group.promoted
+                    self.assertEqual(group.viewkeys(), set(promoted))
+                    for name in promoted:
+                        self.assertIs(group[name].cf_data, getattr(self, name))
+                else:
+                    self.assertEqual(len(cf_group.promoted), 0)
+            self.assertEqual(warn.call_count, 1)
+
+    def test_promoted_auxiliary_ignore(self):
+        self.wibble = netcdf_variable('wibble', 'lat wibble', np.float)
+        self.variables['wibble'] = self.wibble
+        self.orography.coordinates = 'wibble'
+        with mock.patch('netCDF4.Dataset', return_value=self.dataset), \
+                iris.FUTURE.context(netcdf_promote=True), \
+                mock.patch('warnings.warn') as warn:
+            cf_group = CFReader('dummy').cf_group.promoted
+            promoted = ['wibble', 'orography']
+            self.assertEqual(cf_group.viewkeys(), set(promoted))
+            for name in promoted:
+                self.assertIs(cf_group[name].cf_data, getattr(self, name))
+            self.assertEqual(warn.call_count, 2)
 
 
 if __name__ == '__main__':
