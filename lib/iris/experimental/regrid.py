@@ -35,6 +35,16 @@ import iris.cube
 import iris.unit
 
 
+def _snapshot_grid(cube):
+    """
+    Helper function that returns deep copies of lateral dimension coordinates
+    from a cube.
+
+    """
+    x, y = _get_xy_dim_coords(cube)
+    return x.copy(), y.copy()
+
+
 def _get_xy_dim_coords(cube):
     """
     Return the x and y dimension coordinates from a cube.
