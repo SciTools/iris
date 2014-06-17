@@ -20,13 +20,11 @@
 # importing anything else.
 import iris.tests as tests
 
-import biggus
 import numpy.ma as ma
 
 from iris.analysis import COUNT
 import iris.cube
 from iris.coords import DimCoord
-import iris.exceptions
 
 
 class Test_units_func(tests.IrisTest):
@@ -45,11 +43,6 @@ class Test_masked(tests.IrisTest):
     def test_ma(self):
         cube = self.cube.collapsed("foo", COUNT, function=self.func)
         self.assertArrayEqual(cube.data, [2])
-
-    def test_biggus(self):
-        self.cube.lazy_data(array=biggus.NumpyArrayAdapter(self.cube.data))
-        with self.assertRaises(iris.exceptions.LazyAggregatorError):
-            cube = self.cube.collapsed("foo", COUNT, lazy=True)
 
 
 if __name__ == "__main__":

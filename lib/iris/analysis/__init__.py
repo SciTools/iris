@@ -376,7 +376,7 @@ class Aggregator(object):
             Returns an :class:`iris.units.Unit`, or a
             value that can be made into one.
 
-        * lazy_func (callable):
+        * lazy_func (callable or None):
             An alternative to :data:`call_func` implementing a lazy
             aggregation. Note that, it need not support all features of the
             main operation, but should raise an error in unhandled cases.
@@ -402,14 +402,15 @@ class Aggregator(object):
         self.call_func = call_func
         #: Unit conversion function.
         self.units_func = units_func
-        #: Lazy aggregation function.
+        #: Lazy aggregation function, may be None to indicate that a lazy
+        #: operation is not available.
         self.lazy_func = lazy_func
 
         self._kwargs = kwargs
 
     def lazy_aggregate(self, data, axis, **kwargs):
         """
-        Peform aggregation over the data with a lazy operation, analagous to
+        Perform aggregation over the data with a lazy operation, analogous to
         the 'aggregate' result.
 
         Keyword arguments are passed through to the data aggregation function
@@ -438,7 +439,7 @@ class Aggregator(object):
             (:class:`biggus.Array`).
 
         """
-        if not self.lazy_func:
+        if self.lazy_func is None:
             raise LazyAggregatorError(
                 '{} aggregator does not support lazy operation.'.format(
                     self.cell_method))
@@ -581,7 +582,7 @@ class WeightedAggregator(Aggregator):
 
         * units_func (callable):
             Units conversion function.
-        * lazy_func (callable):
+        * lazy_func (callable or None):
             An alternative to :data:`call_func` implementing a lazy
             aggregation. Note that, it need not support all features of the
             main operation, but should raise an error in unhandled cases.

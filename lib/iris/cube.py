@@ -2628,7 +2628,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     # END ANALYSIS ROUTINES
 
-    def collapsed(self, coords, aggregator, lazy=False, **kwargs):
+    def collapsed(self, coords, aggregator, **kwargs):
         """
         Collapse one or more dimensions over the cube given the coordinate/s
         and an aggregation.
@@ -2645,6 +2645,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         matches the cube. Values for latitude-longitude area weights may be
         calculated using :func:`iris.analysis.cartography.area_weights`.
 
+        Some Iris aggregators support "lazy" evaluation, meaning that
+        cubes resulting from this method may represent data arrays which are
+        not computed until the data is requested (e.g. via ``cube.data`` or
+        ``iris.save``). If lazy evaluation exists for the given aggregator
+        it will be used wherever possible when this cube's data is itself
+        a deferred array.
+
         Args:
 
         * coords (string, coord or a list of strings/coords):
@@ -2655,17 +2662,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             Aggregator to be applied for collapse operation.
 
         Kwargs:
-
-        * lazy (bool):
-            When set, the operation expects and will return a cube with a lazy
-            data array.  This is only supported for certain operations using
-            certain types of aggregator -- see documentation of
-            :class:`iris.analysis.Aggregator`.
-
-            .. warning::
-
-                This keyword may in future be replaced by a different method of
-                controlling the lazy/concrete operations.
 
         * kwargs:
             Aggregation function keyword arguments.
@@ -2780,17 +2776,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Record the axis(s) argument passed to 'aggregation', so the same is
         # passed to the 'update_metadata' function.
         collapse_axis = -1
+
+        data_result = None
+
         # Perform the actual aggregation.
-        if lazy:
-            # Use a lazy operation separately defined by the aggregator, based
-            # on the cube lazy array.
-            # NOTE: do not reform the data in this case, as 'lazy_aggregate'
-            # accepts multiple axes (unlike 'aggregate').
-            collapse_axis = dims_to_collapse
-            data_result = aggregator.lazy_aggregate(self._my_data,
-                                                    collapse_axis,
-                                                    **kwargs)
-        elif aggregator.cell_method == 'peak':
+        if aggregator.cell_method == 'peak':
             # The PEAK aggregator must collapse each coordinate separately.
             untouched_shape = [self.shape[d] for d in untouched_dims]
             collapsed_shape = [self.shape[d] for d in dims_to_collapse]
@@ -2805,8 +2795,28 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                                      axis=-1,
                                                      **kwargs)
             data_result = unrolled_data
-        else:
-            # Perform the aggregation over the cube data
+
+        # Perform the aggregation in lazy form if possible.
+        elif (aggregator.lazy_func is not None
+                and len(dims_to_collapse) == 1 and self.has_lazy_data()):
+            # Use a lazy operation separately defined by the aggregator, based
+            # on the cube lazy array.
+            # NOTE: do not reform the data in this case, as 'lazy_aggregate'
+            # accepts multiple axes (unlike 'aggregate').
+            collapse_axis = dims_to_collapse
+            try:
+                data_result = aggregator.lazy_aggregate(self.lazy_data(),
+                                                        collapse_axis,
+                                                        **kwargs)
+            except TypeError:
+                # TypeError - when unexpected keywords passed through (such as
+                # weights to mean)
+                pass
+
+        # If we weren't able to complete a lazy aggreation, compute it
+        # directly now.
+        if data_result is None:
+            # Perform the (non-lazy) aggregation over the cube data
             # First reshape the data so that the dimensions being aggregated
             # over are grouped 'at the end' (i.e. axis=-1).
             dims_to_collapse = sorted(dims_to_collapse)
