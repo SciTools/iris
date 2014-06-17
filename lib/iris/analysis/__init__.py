@@ -56,14 +56,16 @@ import scipy.stats.mstats
 
 from iris.analysis._interpolator import (_LINEAR_EXTRAPOLATION_MODES,
                                          LinearInterpolator, LinearRegridder)
+from iris.analysis._area_weighted import AreaWeightedRegridder
 import iris.coords
+from iris.experimental.regrid import _get_xy_dim_coords
 from iris.exceptions import LazyAggregatorError
 
 
 __all__ = ('COUNT', 'GMEAN', 'HMEAN', 'MAX', 'MEAN', 'MEDIAN', 'MIN',
            'PEAK', 'PERCENTILE', 'PROPORTION', 'RMS', 'STD_DEV', 'SUM',
            'VARIANCE', 'coord_comparison', 'Aggregator', 'WeightedAggregator',
-           'clear_phenomenon_identity', 'Linear')
+           'clear_phenomenon_identity', 'Linear', 'AreaWeighted')
 
 
 class _CoordGroup(object):
@@ -1583,3 +1585,60 @@ class Linear(object):
         """
         return LinearRegridder(src_grid, target_grid,
                                extrapolation_mode=self.extrapolation_mode)
+
+
+class AreaWeighted(object):
+    """
+    This class describes the area-weighted regridding scheme for regridding
+    over one or more orthogonal coordinates, typically for use with
+    :meth:`iris.cube.Cube.regrid()`.
+
+    """
+
+    def __init__(self, mdtol=0):
+        """
+        Area-weighted regridding scheme suitable for regridding one or more
+        orthogonal coordinates.
+
+        Kwargs:
+
+        * mdtol (float):
+            Tolerance of missing data. The value returned in each element of
+            the returned array will be masked if the fraction of masked data
+            exceeds mdtol. mdtol=0 means no missing data is tolerated while
+            mdtol=1 will mean the resulting element will be masked if and only
+            if all the contributing elements of data are masked.
+            Defaults to 0.
+
+        """
+        msg = 'Value for mdtol must be in range 0 - 1, got {}.'
+        if mdtol < 0 or mdtol > 1:
+            raise ValueError(msg.format(mdtol))
+        self.mdtol = mdtol
+
+    def __repr__(self):
+        return 'AreaWeighted(mdtol={})'.format(self.mdtol)
+
+    def regridder(self, src_grid_cube, target_grid_cube):
+        """
+        Creates an area-weighted regridder to perform regridding from the
+        source grid to the target grid.
+
+        Args:
+
+        * src_grid_cube:
+            The :class:`~iris.cube.Cube` defining the source grid.
+        * target_grid_cube:
+            The :class:`~iris.cube.Cube` defining the target grid.
+
+        Returns:
+            A callable with the interface:
+
+                `callable(cube)`
+
+            where `cube` is a cube with the same grid as `src_grid_cube`, which
+            is to be regridded to the grid of `target_grid_cube`.
+
+        """
+        return AreaWeightedRegridder(src_grid_cube, target_grid_cube,
+                                     mdtol=self.mdtol)

@@ -616,8 +616,8 @@ class LinearRegridder(object):
         """
         # Snapshot the state of the cubes to ensure that the regridder
         # is impervious to external changes to the original source cubes.
-        self._src_grid = self._snapshot_grid(src_grid_cube)
-        self._target_grid = self._snapshot_grid(target_grid_cube)
+        self._src_grid = eregrid._snapshot_grid(src_grid_cube)
+        self._target_grid = eregrid._snapshot_grid(target_grid_cube)
         # The extrapolation mode.
         if extrapolation_mode not in _LINEAR_EXTRAPOLATION_MODES:
             msg = 'Extrapolation mode {!r} not supported.'
@@ -628,10 +628,6 @@ class LinearRegridder(object):
         # caused by the current usage of the experimental regrid
         # function.
         self._target_grid_cube_cache = None
-
-    def _snapshot_grid(self, cube):
-        x, y = eregrid._get_xy_dim_coords(cube)
-        return x.copy(), y.copy()
 
     @property
     def _target_grid_cube(self):
