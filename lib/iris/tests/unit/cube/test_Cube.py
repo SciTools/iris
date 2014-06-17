@@ -123,6 +123,7 @@ class Test_collapsed__lazy(tests.IrisTest):
                                lambda x, axis=None: np.mean(x, axis=axis))
         result = self.cube.collapsed('x', dummy_agg)
         self.assertFalse(result.has_lazy_data())
+        self.assertArrayEqual(result.data, np.mean(self.data, axis=1))
 
 
 class Test_collapsed__warning(tests.IrisTest):

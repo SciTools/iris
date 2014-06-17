@@ -2813,7 +2813,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 # weights to mean)
                 pass
 
-        # If we weren't able to complete a lazy aggreation, compute it
+        # If we weren't able to complete a lazy aggregation, compute it
         # directly now.
         if data_result is None:
             # Perform the (non-lazy) aggregation over the cube data
