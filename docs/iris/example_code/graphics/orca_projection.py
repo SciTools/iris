@@ -1,5 +1,5 @@
 """
-Tru-Polar Grid Projected Ploting
+Tri-Polar Grid Projected Plotting
 ================================
 
 This example demonstrates cell plots of data on the semi-structured ORCA2 model
