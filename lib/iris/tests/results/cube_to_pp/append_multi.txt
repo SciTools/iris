@@ -21,7 +21,7 @@
    lbext: 101
    lbpack: 0
    lbrel: 3
-   lbfc: 0
+   lbfc: 19
    lbcfc: 0
    lbproc: 0
    lbvc: 65
@@ -107,7 +107,7 @@
    lbext: 101
    lbpack: 0
    lbrel: 3
-   lbfc: 0
+   lbfc: 19
    lbcfc: 0
    lbproc: 0
    lbvc: 65
@@ -193,7 +193,7 @@
    lbext: 101
    lbpack: 0
    lbrel: 3
-   lbfc: 0
+   lbfc: 19
    lbcfc: 0
    lbproc: 0
    lbvc: 65
@@ -279,7 +279,7 @@
    lbext: 101
    lbpack: 0
    lbrel: 3
-   lbfc: 0
+   lbfc: 19
    lbcfc: 0
    lbproc: 0
    lbvc: 65
@@ -365,7 +365,7 @@
    lbext: 101
    lbpack: 0
    lbrel: 3
-   lbfc: 0
+   lbfc: 19
    lbcfc: 0
    lbproc: 0
    lbvc: 65
@@ -451,7 +451,7 @@
    lbext: 101
    lbpack: 0
    lbrel: 3
-   lbfc: 0
+   lbfc: 19
    lbcfc: 0
    lbproc: 0
    lbvc: 65
@@ -537,7 +537,7 @@
    lbext: 101
    lbpack: 0
    lbrel: 3
-   lbfc: 0
+   lbfc: 19
    lbcfc: 0
    lbproc: 0
    lbvc: 65
@@ -623,7 +623,7 @@
    lbext: 101
    lbpack: 0
    lbrel: 3
-   lbfc: 0
+   lbfc: 19
    lbcfc: 0
    lbproc: 0
    lbvc: 65
