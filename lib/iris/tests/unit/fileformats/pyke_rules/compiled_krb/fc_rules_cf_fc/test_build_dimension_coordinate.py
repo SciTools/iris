@@ -32,9 +32,43 @@ from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     build_dimension_coordinate
 
 
-class TestBoundsVertexDim(tests.IrisTest):
+class RulesTestMixin(object):
     def setUp(self):
-        # Create coordinate cf variables and pyke engine.
+        # Create dummy pyke engine.
+        self.engine = mock.Mock(
+            cube=mock.Mock(),
+            cf_var=mock.Mock(dimensions=('foo', 'bar')),
+            filename='DUMMY',
+            provides=dict(coordinates=[]))
+
+        # Create patch for deferred loading that prevents attempted
+        # file access. This assumes that self.cf_coord_var and
+        # self.cf_bounds_var are defined in the test case.
+        def deferred_load(filename, var_name):
+            for var in (self.cf_coord_var, self.cf_bounds_var):
+                if var_name == var.cf_name:
+                    return var[:]
+
+        self.deferred_load_patch = mock.patch(
+            'iris.fileformats._pyke_rules.compiled_krb.'
+            'fc_rules_cf_fc.deferred_load', new=deferred_load)
+
+        # Patch the helper function that retrieves the bounds cf variable.
+        # This avoids the need for setting up further mocking of cf objects.
+        def get_cf_bounds_var(coord_var):
+            return self.cf_bounds_var
+
+        self.get_cf_bounds_var_patch = mock.patch(
+            'iris.fileformats._pyke_rules.compiled_krb.'
+            'fc_rules_cf_fc.get_cf_bounds_var',
+            new=get_cf_bounds_var)
+
+
+class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
+    def setUp(self):
+        # Call parent setUp explicitly, because of how unittests work.
+        RulesTestMixin.setUp(self)
+        # Create test coordinate cf variable.
         points = np.arange(6)
         self.cf_coord_var = mock.Mock(
             dimensions=('foo',),
@@ -45,24 +79,6 @@ class TestBoundsVertexDim(tests.IrisTest):
             shape=points.shape,
             dtype=points.dtype,
             __getitem__=lambda self, key: points[key])
-
-        self.engine = mock.Mock(
-            cube=mock.Mock(),
-            cf_var=mock.Mock(dimensions=('foo', 'bar')),
-            filename='DUMMY',
-            provides=dict(coordinates=[]))
-
-        # Create patch for deferred loading that prevents attempted
-        # file access. This assumes that self.cf_bounds_var is
-        # defined in the test case.
-        def deferred_load(filename, var_name):
-            for var in (self.cf_coord_var, self.cf_bounds_var):
-                if var_name == var.cf_name:
-                    return var[:]
-
-        self.deferred_load_patch = mock.patch(
-            'iris.fileformats._pyke_rules.compiled_krb.'
-            'fc_rules_cf_fc.deferred_load', new=deferred_load)
 
     def test_slowest_varying_vertex_dim(self):
         # Create the bounds cf variable.
@@ -83,15 +99,8 @@ class TestBoundsVertexDim(tests.IrisTest):
             units=self.cf_coord_var.units,
             bounds=expected_bounds)
 
-        # Patch the helper function that retrieves the bounds cf variable.
-        # This avoids the need for setting up further mocking of cf objects.
-        get_cf_bounds_var_patch = mock.patch(
-            'iris.fileformats._pyke_rules.compiled_krb.'
-            'fc_rules_cf_fc.get_cf_bounds_var',
-            return_value=self.cf_bounds_var)
-
         # Asserts must lie within context manager because of deferred loading.
-        with self.deferred_load_patch, get_cf_bounds_var_patch:
+        with self.deferred_load_patch, self.get_cf_bounds_var_patch:
             build_dimension_coordinate(self.engine, self.cf_coord_var)
 
             # Test that expected coord is built and added to cube.
@@ -118,13 +127,8 @@ class TestBoundsVertexDim(tests.IrisTest):
             units=self.cf_coord_var.units,
             bounds=bounds)
 
-        get_cf_bounds_var_patch = mock.patch(
-            'iris.fileformats._pyke_rules.compiled_krb.'
-            'fc_rules_cf_fc.get_cf_bounds_var',
-            return_value=self.cf_bounds_var)
-
         # Asserts must lie within context manager because of deferred loading.
-        with self.deferred_load_patch, get_cf_bounds_var_patch:
+        with self.deferred_load_patch, self.get_cf_bounds_var_patch:
             build_dimension_coordinate(self.engine, self.cf_coord_var)
 
             # Test that expected coord is built and added to cube.
@@ -154,13 +158,8 @@ class TestBoundsVertexDim(tests.IrisTest):
             units=self.cf_coord_var.units,
             bounds=bounds)
 
-        get_cf_bounds_var_patch = mock.patch(
-            'iris.fileformats._pyke_rules.compiled_krb.'
-            'fc_rules_cf_fc.get_cf_bounds_var',
-            return_value=self.cf_bounds_var)
-
         # Asserts must lie within context manager because of deferred loading.
-        with self.deferred_load_patch, get_cf_bounds_var_patch:
+        with self.deferred_load_patch, self.get_cf_bounds_var_patch:
             build_dimension_coordinate(self.engine, self.cf_coord_var)
 
             # Test that expected coord is built and added to cube.
@@ -171,6 +170,103 @@ class TestBoundsVertexDim(tests.IrisTest):
             expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
             self.assertEqual(self.engine.provides['coordinates'],
                              expected_list)
+
+
+class TestCircular(tests.IrisTest, RulesTestMixin):
+    # Test the rules logic for marking a coordinate "circular".
+    def setUp(self):
+        # Call parent setUp explicitly, because of how unittests work.
+        RulesTestMixin.setUp(self)
+        self.cf_bounds_var = None
+
+    def _make_vars(self, points, bounds=None, units='degrees'):
+        points = np.array(points)
+        self.cf_coord_var = mock.Mock(
+            dimensions=('foo',),
+            cf_name='wibble',
+            standard_name=None,
+            long_name='wibble',
+            units=units,
+            shape=points.shape,
+            dtype=points.dtype,
+            __getitem__=lambda self, key: points[key])
+        if bounds:
+            bounds = np.array(bounds).reshape(
+                self.cf_coord_var.shape + (2,))
+            self.cf_bounds_var = mock.Mock(
+                dimensions=('x', 'nv'),
+                cf_name='wibble_bnds',
+                shape=bounds.shape,
+                __getitem__=lambda self, key: bounds[key])
+
+    def _check_circular(self, circular, *args, **kwargs):
+        if 'coord_name' in kwargs:
+            coord_name = kwargs.pop('coord_name')
+        else:
+            coord_name = 'longitude'
+        self._make_vars(*args, **kwargs)
+        with self.deferred_load_patch, self.get_cf_bounds_var_patch:
+            build_dimension_coordinate(self.engine, self.cf_coord_var,
+                                       coord_name=coord_name)
+            self.assertEqual(self.engine.cube.add_dim_coord.call_count, 1)
+            coord, dims = self.engine.cube.add_dim_coord.call_args[0]
+        self.assertEqual(coord.circular, circular)
+
+    def check_circular(self, *args, **kwargs):
+        self._check_circular(True, *args, **kwargs)
+
+    def check_noncircular(self, *args, **kwargs):
+        self._check_circular(False, *args, **kwargs)
+
+    def test_single_zero_noncircular(self):
+        self.check_noncircular([0.0])
+
+    def test_single_lt_modulus_noncircular(self):
+        self.check_noncircular([-1.0])
+
+    def test_single_eq_modulus_circular(self):
+        self.check_circular([360.0])
+
+    def test_single_gt_modulus_circular(self):
+        self.check_circular([361.0])
+
+    def test_single_bounded_noncircular(self):
+        self.check_noncircular([180.0], bounds=[90.0, 240.0])
+
+    def test_single_bounded_circular(self):
+        self.check_circular([180.0], bounds=[90.0, 450.0])
+
+    def test_multiple_unbounded_circular(self):
+        self.check_circular([0.0, 90.0, 180.0, 270.0])
+
+    def test_non_angle_noncircular(self):
+        points = [0.0, 90.0, 180.0, 270.0]
+        self.check_noncircular(points, units='m')
+
+    def test_non_longitude_noncircular(self):
+        points = [0.0, 90.0, 180.0, 270.0]
+        self.check_noncircular(points, coord_name='depth')
+
+    def test_multiple_unbounded_irregular_noncircular(self):
+        self.check_noncircular([0.0, 90.0, 189.999, 270.0])
+
+    def test_multiple_unbounded_offset_circular(self):
+        self.check_circular([45.0, 135.0, 225.0, 315.0])
+
+    def test_multiple_unbounded_shortrange_circular(self):
+        self.check_circular([0.0, 90.0, 180.0, 269.9999])
+
+    def test_multiple_bounded_circular(self):
+        self.check_circular([0.0, 120.3, 240.0],
+                            bounds=[[-45.0, 50.0],
+                                    [100.0, 175.0],
+                                    [200.0, 315.0]])
+
+    def test_multiple_bounded_noncircular(self):
+        self.check_noncircular([0.0, 120.3, 240.0],
+                               bounds=[[-45.0, 50.0],
+                                       [100.0, 175.0],
+                                       [200.0, 355.0]])
 
 
 if __name__ == '__main__':
