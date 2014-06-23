@@ -812,7 +812,7 @@ class Test_interpolate(tests.IrisTest):
 
     def test_api(self):
         sample_points = (('foo', 0.5), ('bar', 0.6))
-        result = self.cube.interpolate(self.scheme, sample_points,
+        result = self.cube.interpolate(sample_points, self.scheme,
                                        self.collapse_coord)
         self.scheme.interpolator.assert_called_once_with(
             self.cube, ('foo', 'bar'))

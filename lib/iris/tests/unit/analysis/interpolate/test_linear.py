@@ -44,7 +44,7 @@ class Test(tests.IrisTest):
 
         linear_patch.assert_called_once_with(self.extrapolation)
 
-        cinterp_patch.assert_called_once_with(self.scheme, sample_points_call)
+        cinterp_patch.assert_called_once_with(sample_points_call, self.scheme)
 
     def test_sample_point_dict(self):
         # Passing sample_points in the form of a dictionary.

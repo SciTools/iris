@@ -637,7 +637,7 @@ def linear(cube, sample_points, extrapolation_mode='linear'):
         raise TypeError('Expecting the sample points to be a list of tuple pairs representing (coord, points), got a list of %s.' % type(sample_points[0]))
 
     scheme = Linear(extrapolation_mode)
-    return cube.interpolate(scheme, sample_points)
+    return cube.interpolate(sample_points, scheme)
 
 
 def _interp1d_rolls_y():
