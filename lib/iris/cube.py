@@ -902,7 +902,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         * coord (string or coord)
             The (name of the) coordinate to remove from the cube.
 
-        See also :meth:`Cube.add_coord()<iris.cube.Cube.add_coord>`.
+        See also :meth:`Cube.add_dim_coord()<iris.cube.Cube.add_dim_coord>`
+        and :meth:`Cube.add_aux_coord()<iris.cube.Cube.add_aux_coord>`.
 
         """
         coord = self.coord(coord)
