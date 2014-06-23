@@ -444,7 +444,15 @@ class CubeList(list):
         unique_names = list(collections.OrderedDict.fromkeys(names))
         if len(unique_names) == 1:
             res = iris._concatenate.concatenate(self, error_on_mismatch=True)
-            return res[0]
+            n_res_cubes = len(res)
+            if n_res_cubes == 1:
+                return res[0]
+            else:
+                msgs = []
+                msgs.append('An unexpected problem prevented concatenation.')
+                msgs.append('Expected only a single cube, '
+                            'found {}.'.format(n_res_cubes))
+                raise iris.exceptions.ConcatenateError(msgs)
         else:
             msgs = []
             msgs.append('Cube names differ: {} != {}'.format(names[0],
