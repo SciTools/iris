@@ -3187,18 +3187,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         return new_cube
 
-    def interpolate(self, scheme, sample_points, collapse_scalar=True):
+    def interpolate(self, sample_points, scheme, collapse_scalar=True):
         """
-        Interpolate over the :class:`~iris.cube.Cube` using the provided
-        interpolation scheme and specified sample points.
+        Interpolate over the :class:`~iris.cube.Cube` using the specified
+        sample points and provided interpolation scheme.
 
         Args:
 
+        * sample_points:
+            A sequence of (coordinate, points) pairs over which to interpolate.
         * scheme:
             A :class:`~iris.analysis.Linear` instance, which defines the
             interpolator scheme.
-        * sample_points:
-            A sequence of (coordinate, points) pairs over which to interpolate.
 
         Kwargs:
 
