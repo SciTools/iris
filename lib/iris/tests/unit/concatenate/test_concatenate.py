@@ -26,7 +26,6 @@ import iris.coords
 from iris._concatenate import concatenate
 import iris.cube
 from iris.cube import CubeList
-#import iris.exceptions
 from iris.exceptions import ConcatenateError
 import iris.unit
 
