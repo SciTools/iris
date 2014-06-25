@@ -2284,32 +2284,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         return _SliceIterator(self, dims_index, dim_to_slice, ordered)
 
-    # TODO: This is not used anywhere. Remove.
-    @property
-    def title(self):
-        title = '%s with ' % self.name().replace('_', ' ').capitalize()
-        attribute_str_list = []
-        for coord in self.coords():
-            if coord.shape == (1,):
-                cell = coord.cell(0)
-                if coord.has_points():
-                    attribute_str_list.append(
-                        '%s: %s' % (coord.name(), cell.point))
-                elif coord.has_bounds():
-                    attribute_str_list.append('%s: between %s & %s' % (
-                        coord.name(), cell.bound[0], cell.bound[1]))
-
-        current_len = len(title)
-        for i, line in enumerate(attribute_str_list):
-            if (current_len + len(line)) > 90:
-                attribute_str_list[i] = '\n' + line
-                current_len = len(line)
-            else:
-                current_len += len(line)
-
-        title = title + ', '.join(attribute_str_list)
-        return title
-
     def transpose(self, new_order=None):
         """
         Re-order the data dimensions of the cube in-place.
