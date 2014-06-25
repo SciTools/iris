@@ -867,14 +867,5 @@ class Test3D(tests.IrisTest):
         self.assertEqual(result[0].shape, (8, 8, 8))
 
 
-class TestCubeSignatureEquality(tests.IrisTest):
-    def test_not_implemented(self):
-        class Terry(object):
-            pass
-        sig = ConcatenateCubeSignature(iris.cube.Cube(0))
-        self.assertIs(sig.__eq__(Terry()), NotImplemented)
-        self.assertIs(sig.__ne__(Terry()), NotImplemented)
-
-
 if __name__ == "__main__":
     tests.main()

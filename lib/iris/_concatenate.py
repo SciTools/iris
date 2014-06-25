@@ -208,7 +208,7 @@ def _name(coord, default='unknown'):
     attribute, then the 'var_name' attribute, before falling back to
     the value of `default` (which itself defaults to 'unknown').
 
-    Note this function is an exact duplicate of :func:`cube.metadata.name`.
+    Note this function is an exact duplicate of :meth:`cube.metadata.name`.
 
     """
     return coord.standard_name or coord.long_name or coord.var_name or default
@@ -416,6 +416,11 @@ class _CubeSignature(object):
         msg_template = '{}{} differ: {} != {}'
         msgs = []
 
+        # Check if either cube is anonymous.
+        if self.anonymous or other.anonymous:
+            msg = ('Dimensions differ: one or both cubes have anonymous '
+                   'dimensions')
+            msgs.append(msg)
         # Check cube definitions.
         if self.defn != other.defn:
             # Note that the case of different phenomenon names is dealt with
@@ -450,24 +455,6 @@ class _CubeSignature(object):
         if error_on_mismatch and not match:
             raise iris.exceptions.ConcatenateError(msgs)
         return match
-
-    def __eq__(self, other):
-        result = NotImplemented
-
-        if isinstance(other, _CubeSignature):
-            # Only concatenate with fully described cubes.
-            if self.anonymous or other.anonymous:
-                result = False
-            else:
-                result = match(self, other, error_on_mismatch=False)
-
-        return result
-
-    def __ne__(self, other):
-        result = self.__eq__(other)
-        if result is not NotImplemented:
-            result = not result
-        return result
 
 
 class _CoordSignature(object):

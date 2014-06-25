@@ -440,6 +440,9 @@ class CubeList(list):
         describing the reason for the failure.
 
         """
+        if not self:
+            raise ValueError("can't concatenate an empty CubeList")
+
         names = [cube.metadata.name() for cube in self]
         unique_names = list(collections.OrderedDict.fromkeys(names))
         if len(unique_names) == 1:
