@@ -1303,7 +1303,7 @@ class _Groupby(object):
                                 if item is not None])
                     # Construct composite group key for the group using the
                     # start value from each group-by coordinate.
-                    key = tuple([coord._points[start] for coord
+                    key = tuple([coord.points[start] for coord
                                  in self._groupby_coords])
                     # Associate group slice with group key within the ordered
                     # dictionary.
