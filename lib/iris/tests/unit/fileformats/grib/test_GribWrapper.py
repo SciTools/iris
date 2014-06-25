@@ -33,17 +33,14 @@ _message_length = 1000
 
 
 def _mock_grib_get_long(grib_message, key):
-    if key == 'totalLength':
-        result = _message_length
-    elif key == 'numberOfValues':
-        result = 200
-    elif key == 'jPointsAreConsecutive':
-        result = 0
-    elif key == 'Ni':
-        result = 20
-    elif key == 'Nj':
-        result = 10
-    else:
+    lookup = dict(totalLength=_message_length,
+                  numberOfValues=200,
+                  jPointsAreConsecutive=0,
+                  Ni=20,
+                  Nj=10)
+    try:
+        result = lookup[key]
+    except KeyError:
         msg = 'Mock grib_get_long unknown key: {!r}'.format(key)
         raise AttributeError(msg)
     return result

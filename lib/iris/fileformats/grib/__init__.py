@@ -173,15 +173,7 @@ class GribDataProxy(object):
             if self.regularise and _is_quasi_regular_grib(grib_message):
                 _regularise(grib_message)
 
-            gribapi.grib_set_double(grib_message, 'missingValue', np.nan)
-            data = gribapi.grib_get_double_array(grib_message, 'values')
-            data = data.reshape(self.shape)
-
-            # Handle missing values in a sensible way.
-            mask = np.isnan(data)
-            if mask.any():
-                data = ma.array(data, mask=mask, fill_value=self.fill_value)
-
+            data = _message_values(grib_message, self.shape)
             gribapi.grib_release(grib_message)
 
         return data.__getitem__(keys)
@@ -206,7 +198,7 @@ class GribWrapper(object):
     Contains a pygrib object plus some extra keys of our own.
 
     """
-    def __init__(self, grib_message, grib_fh=None, auto_regularise=None):
+    def __init__(self, grib_message, grib_fh=None, auto_regularise=True):
         """Store the grib message and compute our extra keys."""
         self.grib_message = grib_message
         deferred = grib_fh is not None
@@ -214,14 +206,16 @@ class GribWrapper(object):
         # Store the file pointer and message length from the current
         # grib message before it's changed by calls to the grib-api.
         if deferred:
+            # Note that, the grib-api has already read this message and 
+            # advanced the file pointer to the end of the message.
             offset = grib_fh.tell()
             message_length = gribapi.grib_get_long(grib_message, 'totalLength')
 
         if auto_regularise and _is_quasi_regular_grib(grib_message):
+            warnings.warn('Regularising GRIB message.')
             if deferred:
                 self._regularise_shape(grib_message)
             else:
-                warnings.warn('Regularising GRIB message.')
                 _regularise(grib_message)
 
         # Initialise the key-extension dictionary.
@@ -243,21 +237,16 @@ class GribWrapper(object):
         if deferred:
             # Wrap the reference to the data payload within the data proxy
             # in order to support deferred data loading.
+            # The byte offset requires to be reset back to the first byte
+            # of this message. The file pointer offset is always at the end 
+            # of the current message due to the grib-api reading the message.
             proxy = GribDataProxy(shape, np.zeros(.0).dtype, np.nan,
                                   grib_fh.name,
                                   offset - message_length,
                                   auto_regularise)
             self._data = biggus.NumpyArrayAdapter(proxy)
         else:
-            gribapi.grib_set_double(grib_message, 'missingValue', np.nan)
-            data = gribapi.grib_get_double_array(grib_message, 'values')
-            data = data.reshape(shape)
-
-            # Handle missing values in a sensible way.
-            mask = np.isnan(data)
-            if mask.any():
-                data = ma.array(data, mask=mask, fill_value=np.nan)
-            self.data = data
+            self.data = _message_values(grib_message, shape)
 
     @staticmethod
     def _regularise_shape(grib_message):
@@ -758,6 +747,18 @@ def _longitude_is_cyclic(points):
         if abs(1.0 - gap / max_step) < delta:
             cyclic = True
     return cyclic
+
+
+def _message_values(grib_message, shape):
+    gribapi.grib_set_double(grib_message, 'missingValue', np.nan)
+    data = gribapi.grib_get_double_array(grib_message, 'values')
+    data = data.reshape(shape)
+
+    # Handle missing values in a sensible way.
+    mask = np.isnan(data)
+    if mask.any():
+        data = ma.array(data, mask=mask, fill_value=np.nan)
+    return data
 
 
 def _is_quasi_regular_grib(grib_message):
