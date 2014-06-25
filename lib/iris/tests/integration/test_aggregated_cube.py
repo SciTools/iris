@@ -22,9 +22,11 @@ import iris.tests as tests
 
 import iris
 from iris.analysis import MEAN
+from iris.aux_factory import LazyArray
 from iris.coords import AuxCoord, CellMethod
 
 
+@tests.skip_data
 class Test_aggregated_by(tests.IrisTest):
     def setUp(self):
         problem_test_file = tests.get_data_path(('NetCDF', 'testing',
@@ -34,9 +36,14 @@ class Test_aggregated_by(tests.IrisTest):
     def test_agg_by_aux_coord(self):
         # Test aggregating by aux coord, notably the `forecast_period` aux
         # coord on `self.cube`, whose `_points` attribute is of type
-        # :class:`iris.aux_coords.LazyArray`. This test then ensures that
+        # :class:`iris.aux_factory.LazyArray`. This test then ensures that
         # aggregating using `points` instead is successful.
 
+        # First confirm we've got a `LazyArray`.
+        forecast_period_coord = self.cube.coord('forecast_period')
+        self.assertIsInstance(forecast_period_coord._points, LazyArray)
+
+        # Now confirm we can aggregate along this coord.
         res_cube = self.cube.aggregated_by('forecast_period', MEAN)
         res_cell_methods = res_cube.cell_methods[0]
         self.assertEqual(res_cell_methods.coord_names, ('forecast_period',))
