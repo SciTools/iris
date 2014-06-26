@@ -150,6 +150,8 @@ Bugs fixed
 * Fixes for :meth:`iris.Cube.intersection` to correct calculating the intersection
   of a cube with split bounds, handling of circular coordinates, and for finding
   a wrapped two-point result.
+* A bug affecting :meth:`iris.cube.Cube.extract` and :meth:`iris.cube.CubeList.extract`
+  that led to unexpected behaviour when operating on scalar cubes has been fixed.
 
 Incompatible changes
 ====================
