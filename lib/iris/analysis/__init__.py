@@ -1401,7 +1401,11 @@ class _Groupby(object):
                     new_points = []
                     new_bounds = None
                     for key_slice in self._slices_by_key.itervalues():
-                        new_pt = '|'.join(coord.points[i] for i in key_slice)
+                        if isinstance(key_slice, slice):
+                            indices = key_slice.indices(coord.points.shape[0])
+                            key_slice = range(*indices)
+                        new_pt = '|'.join([coord.points[i]
+                                           for i in key_slice])
                         new_points.append(new_pt)
                 else:
                     msg = ('collapsing the bounded string coordinate {0!r}'
