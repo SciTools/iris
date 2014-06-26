@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,6 +22,10 @@ import iris.tests as tests
 
 import numpy as np
 from osgeo import gdal
+try:
+    from osgeo import gdal
+except ImportError:
+    gdal = None
 
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
@@ -29,6 +33,7 @@ from iris.cube import Cube
 from iris.experimental.raster import export_geotiff
 
 
+@tests.skip_gdal
 class TestDtypeAndValues(tests.IrisTest):
     def _cube(self, dtype):
         data = np.arange(12).reshape(3, 4).astype(dtype) + 20
@@ -96,6 +101,7 @@ class TestDtypeAndValues(tests.IrisTest):
                 export_geotiff(cube, temp_filename)
 
 
+@tests.skip_gdal
 class TestProjection(tests.IrisTest):
     def _cube(self, ellipsoid=None):
         data = np.arange(12).reshape(3, 4).astype('u1')
@@ -140,6 +146,7 @@ class TestProjection(tests.IrisTest):
                 'PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]]')
 
 
+@tests.skip_gdal
 class TestGeoTransform(tests.IrisTest):
     def test_(self):
         data = np.arange(12).reshape(3, 4).astype(np.uint8)

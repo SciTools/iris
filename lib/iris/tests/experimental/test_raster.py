@@ -15,12 +15,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 import iris.tests as tests
-import iris.experimental.raster
+import iris
 
 import numpy as np
 import PIL.Image
 
 
+@tests.skip_gdal
 @tests.skip_data
 class TestGeoTiffExport(tests.IrisTest):
     def check_tiff_header(self, geotiff_fh, reference_filename):
@@ -39,6 +40,7 @@ class TestGeoTiffExport(tests.IrisTest):
                          type_comparison_name='Tiff header')
 
     def check_tiff(self, cube, tif_header):
+        import iris.experimental.raster
         with self.temp_filename('.tif') as temp_filename:
             iris.experimental.raster.export_geotiff(cube, temp_filename)
 
