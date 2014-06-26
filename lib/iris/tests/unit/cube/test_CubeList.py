@@ -195,5 +195,28 @@ class Test_xml(tests.IrisTest):
         self.assertIn('byteorder', self.cubes.xml(byteorder=True))
 
 
+class Test_extract(tests.IrisTest):
+    def setUp(self):
+        self.scalar_cubes = CubeList()
+        for i in range(5):
+            for letter in 'abcd':
+                self.scalar_cubes.append(Cube(i, long_name=letter))
+
+    def test_scalar_cube_name_constraint(self):
+        # Test the name based extraction of a CubeList containing scalar cubes.
+        res = self.scalar_cubes.extract('a')
+        expected = CubeList([Cube(i, long_name='a') for i in range(5)])
+        self.assertEqual(res, expected)
+
+    def test_scalar_cube_data_constraint(self):
+        # Test the extraction of a CubeList containing scalar cubes
+        # when using a cube_func.
+        val = 2
+        constraint = iris.Constraint(cube_func=lambda c: c.data == val)
+        res = self.scalar_cubes.extract(constraint)
+        expected = CubeList([Cube(val, long_name=letter) for letter in 'abcd'])
+        self.assertEqual(res, expected)
+
+
 if __name__ == "__main__":
     tests.main()
