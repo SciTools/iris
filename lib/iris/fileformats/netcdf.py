@@ -1596,7 +1596,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         common_keys.intersection_update(keys)
         different_value_keys = []
         for key in common_keys:
-            if attributes[key] != cube.attributes[key]:
+            if np.any(attributes[key] != cube.attributes[key]):
                 different_value_keys.append(key)
         common_keys.difference_update(different_value_keys)
         local_keys.update(different_value_keys)

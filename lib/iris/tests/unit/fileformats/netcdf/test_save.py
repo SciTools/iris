@@ -21,12 +21,13 @@
 import iris.tests as tests
 
 import netCDF4 as nc
+import numpy as np
 
 from iris.cube import Cube
 from iris.fileformats.netcdf import save, CF_CONVENTIONS_VERSION
 
 
-class Test_global_attributes(tests.IrisTest):
+class Test_attributes(tests.IrisTest):
     def test_custom_conventions(self):
         # Ensure that we drop existing conventions attributes and replace with
         # CF convention.
@@ -39,6 +40,19 @@ class Test_global_attributes(tests.IrisTest):
             res = ds.getncattr('Conventions')
             ds.close()
         self.assertEqual(res, CF_CONVENTIONS_VERSION)
+
+    def test_attributes_arrays(self):
+        # Ensure that attributes containing NumPy arrays can be equality
+        # checked and their cubes saved as appropriate.
+        c1 = Cube([], attributes={'bar': np.arange(2)})
+        c2 = Cube([], attributes={'bar': np.arange(2)})
+
+        with self.temp_filename('foo.nc') as nc_out:
+            save([c1, c2], nc_out)
+            ds = nc.Dataset(nc_out)
+            res = ds.getncattr('bar')
+            ds.close()
+        self.assertArrayEqual(res, np.arange(2))
 
 
 if __name__ == "__main__":
