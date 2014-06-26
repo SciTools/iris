@@ -25,6 +25,8 @@ import numpy as np
 import iris.coords
 from iris._concatenate import concatenate
 import iris.cube
+from iris.cube import CubeList
+from iris.exceptions import ConcatenateError
 import iris.unit
 
 
@@ -54,6 +56,124 @@ class Test_concatenate__epoch(tests.IrisTest):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].shape, (10,))
 
+
+class Test_concatenate_messages(tests.IrisTest):
+    def setUp(self):
+        data = np.arange(24, dtype=np.float32).reshape(2, 3, 4)
+        cube = iris.cube.Cube(data, standard_name='air_temperature', units='K')
+        # Time coord
+        t_unit = iris.unit.Unit('hours since 1970-01-01 00:00:00',
+                                calendar='gregorian')
+        t_coord = iris.coords.DimCoord(points=np.arange(2, dtype=np.float32),
+                                       standard_name='time',
+                                       units=t_unit)
+        cube.add_dim_coord(t_coord, 0)
+        # Lats and lons
+        x_coord = iris.coords.DimCoord(points=np.arange(3, dtype=np.float32),
+                                       standard_name='longitude',
+                                       units='degrees')
+        cube.add_dim_coord(x_coord, 1)
+        y_coord = iris.coords.DimCoord(points=np.arange(4, dtype=np.float32),
+                                       standard_name='latitude',
+                                       units='degrees')
+        cube.add_dim_coord(y_coord, 2)
+        # Scalars
+        cube.add_aux_coord(iris.coords.AuxCoord([0], "height", units="m"))
+        # Aux Coords
+        cube.add_aux_coord(iris.coords.AuxCoord(data,
+                                                long_name='wibble',
+                                                units='1'),
+                           data_dims=(0, 1, 2))
+        cube.add_aux_coord(iris.coords.AuxCoord([0, 1, 2],
+                                                long_name='foo',
+                                                units='1'),
+                           data_dims=(1,))
+        self.cube = cube
+
+    def test_anonymous_coord_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.remove_coord('latitude')
+        exc_regexp = 'one or both cubes have anonymous dimensions'
+        with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
+            CubeList([cube_1, cube_2]).concatenate_cube()
+
+    def test_definition_difference_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.units = '1'
+        exc_regexp = 'Cube metadata differs for phenomenon: *'
+        with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
+            CubeList([cube_1, cube_2]).concatenate_cube()
+
+    def test_dimensions_difference_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.remove_coord('latitude')
+        exc_regexp = 'Dimension coordinates differ: .* != .*'
+        with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
+            CubeList([cube_1, cube_2]).concatenate_cube()
+
+    def test_dimensions_metadata_difference_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.coord('latitude').long_name = 'bob'
+        exc_regexp = 'Dimension coordinates metadata differ: .* != .*'
+        with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
+            CubeList([cube_1, cube_2]).concatenate_cube()
+
+    def test_aux_coords_difference_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.remove_coord('foo')
+        exc_regexp = 'Auxiliary coordinates differ: .* != .*'
+        with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
+            CubeList([cube_1, cube_2]).concatenate_cube()
+
+    def test_aux_coords_metadata_difference_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.coord('foo').units = 'm'
+        exc_regexp = 'Auxiliary coordinates metadata differ: .* != .*'
+        with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
+            CubeList([cube_1, cube_2]).concatenate_cube()
+
+    def test_scalar_coords_difference_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.remove_coord('height')
+        exc_regexp = 'Scalar coordinates differ: .* != .*'
+        with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
+            CubeList([cube_1, cube_2]).concatenate_cube()
+
+    def test_scalar_coords_metadata_difference_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.coord('height').long_name = 'alice'
+        exc_regexp = 'Scalar coordinates metadata differ: .* != .*'
+        with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
+            CubeList([cube_1, cube_2]).concatenate_cube()
+
+    def test_ndim_difference_message(self):
+        cube_1 = self.cube
+        cube_2 = iris.cube.Cube(np.arange(5, dtype=np.float32),
+                                standard_name='air_temperature',
+                                units='K')
+        x_coord = iris.coords.DimCoord(points=np.arange(5, dtype=np.float32),
+                                       standard_name='longitude',
+                                       units='degrees')
+        cube_2.add_dim_coord(x_coord, 0)
+        exc_regexp = 'Data dimensions differ: [0-9] != [0-9]'
+        with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
+            CubeList([cube_1, cube_2]).concatenate_cube()
+
+    def test_datatype_difference_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.data.dtype = np.float64
+        exc_regexp = 'Datatypes differ: .* != .*'
+        with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
+            CubeList([cube_1, cube_2]).concatenate_cube()
 
 if __name__ == '__main__':
     tests.main()

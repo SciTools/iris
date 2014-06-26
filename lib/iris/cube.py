@@ -430,6 +430,38 @@ class CubeList(list):
 
         return merged_cubes
 
+    def concatenate_cube(self):
+        """
+        Return the concatenated contents of the :class:`CubeList` as a single
+        :class:`Cube`.
+
+        If it is not possible to concatenate the `CubeList` into a single
+        `Cube`, a :class:`~iris.exceptions.ConcatenateError` will be raised
+        describing the reason for the failure.
+
+        """
+        if not self:
+            raise ValueError("can't concatenate an empty CubeList")
+
+        names = [cube.metadata.name() for cube in self]
+        unique_names = list(collections.OrderedDict.fromkeys(names))
+        if len(unique_names) == 1:
+            res = iris._concatenate.concatenate(self, error_on_mismatch=True)
+            n_res_cubes = len(res)
+            if n_res_cubes == 1:
+                return res[0]
+            else:
+                msgs = []
+                msgs.append('An unexpected problem prevented concatenation.')
+                msgs.append('Expected only a single cube, '
+                            'found {}.'.format(n_res_cubes))
+                raise iris.exceptions.ConcatenateError(msgs)
+        else:
+            msgs = []
+            msgs.append('Cube names differ: {} != {}'.format(names[0],
+                                                             names[1]))
+            raise iris.exceptions.ConcatenateError(msgs)
+
     def concatenate(self):
         """
         Concatenate the cubes over their common dimensions.

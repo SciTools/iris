@@ -147,6 +147,10 @@ class _CoordMetaData(namedtuple('CoordMetaData',
                                                       kwargs)
         return metadata
 
+    def name(self):
+        """Get the name from the coordinate definition."""
+        return self.defn.name()
+
 
 class _SkeletonCube(namedtuple('SkeletonCube',
                                ['signature', 'data'])):
@@ -200,7 +204,7 @@ class _CoordExtent(namedtuple('CoordExtent',
     """
 
 
-def concatenate(cubes):
+def concatenate(cubes, error_on_mismatch=False):
     """
     Concatenate the provided cubes over common existing dimensions.
 
@@ -209,6 +213,12 @@ def concatenate(cubes):
     * cubes:
         An iterable containing one or more :class:`iris.cube.Cube` instances
         to be concatenated together.
+
+    Kwargs:
+
+    * error_on_mismatch:
+        If True, raise an informative
+        :class:`~iris.exceptions.ContatenateError` if registration fails.
 
     Returns:
         A :class:`iris.cube.CubeList` of concatenated :class:`iris.cube.Cube`
@@ -236,7 +246,7 @@ def concatenate(cubes):
 
         # Register cube with an existing proto-cube.
         for proto_cube in proto_cubes:
-            registered = proto_cube.register(cube, axis)
+            registered = proto_cube.register(cube, axis, error_on_mismatch)
             if registered:
                 axis = proto_cube.axis
                 break
@@ -320,28 +330,117 @@ class _CubeSignature(object):
             else:
                 self.scalar_coords.append(coord)
 
-    def __eq__(self, other):
-        result = NotImplemented
+    def _coordinate_differences(self, other, attr):
+        """
+        Determine the names of the coordinates that differ between `self` and
+        `other` for a coordinate attribute on a _CubeSignature.
 
-        if isinstance(other, _CubeSignature):
-            # Only concatenate with fully described cubes.
-            if self.anonymous or other.anonymous:
-                result = False
-            else:
-                result = self.aux_metadata == other.aux_metadata and \
-                    self.data_type == other.data_type and \
-                    self.defn == other.defn and \
-                    self.dim_metadata == other.dim_metadata and \
-                    self.ndim == other.ndim and \
-                    self.scalar_coords == other.scalar_coords
+        Args:
 
+        * other (_CubeSignature):
+            The _CubeSignature to compare against.
+
+        * attr (string):
+            The _CubeSignature attribute within which differences exist
+            between `self` and `other`.
+
+        Returns:
+            Tuple of a descriptive error message and the names of coordinates
+            that differ between `self` and `other`.
+
+        """
+        # Set up {name: coord_metadata} dictionaries.
+        self_dict = {x.name(): x for x in getattr(self, attr)}
+        other_dict = {x.name(): x for x in getattr(other, attr)}
+        if len(self_dict.keys()) == 0:
+            self_dict = {'< None >': None}
+        if len(other_dict.keys()) == 0:
+            other_dict = {'< None >': None}
+        self_names = sorted(self_dict.keys())
+        other_names = sorted(other_dict.keys())
+
+        # Compare coord metadata.
+        if len(self_names) != len(other_names) or self_names != other_names:
+            result = ('', ', '.join(self_names), ', '.join(other_names))
+        else:
+            diff_names = []
+            for self_key, self_value in self_dict.iteritems():
+                other_value = other_dict[self_key]
+                if self_value != other_value:
+                    diff_names.append(self_key)
+            result = (' metadata',
+                      ', '.join(diff_names),
+                      ', '.join(diff_names))
         return result
 
-    def __ne__(self, other):
-        result = self.__eq__(other)
-        if result is not NotImplemented:
-            result = not result
-        return result
+    def match(self, other, error_on_mismatch):
+        """
+        Return whether this _CubeSignature equals another.
+
+        This is the first step to determine if two "cubes" (either a
+        real Cube or a ProtoCube) can be concatenated, by considering:
+            - data dimensions
+            - dimensions metadata
+            - aux coords metadata
+            - scalar coords
+            - attributes
+            - dtype
+
+        Args:
+
+        * other (_CubeSignature):
+            The _CubeSignature to compare against.
+
+        * error_on_mismatch (bool):
+            If True, raise a :class:`~iris.exceptions.MergeException`
+            with a detailed explanation if the two do not match.
+
+        Returns:
+           Boolean. True if and only if this _CubeSignature matches the other.
+
+        """
+        msg_template = '{}{} differ: {} != {}'
+        msgs = []
+
+        # Check if either cube is anonymous.
+        if self.anonymous or other.anonymous:
+            msg = ('Dimensions differ: one or both cubes have anonymous '
+                   'dimensions')
+            msgs.append(msg)
+        # Check cube definitions.
+        if self.defn != other.defn:
+            # Note that the case of different phenomenon names is dealt with
+            # in :meth:`iris.cube.CubeList.concatenate_cube()`.
+            msg = 'Cube metadata differs for phenomenon: {}'
+            msgs.append(msg.format(self.defn.name()))
+        # Check dim coordinates.
+        if self.dim_metadata != other.dim_metadata:
+            differences = self._coordinate_differences(other, 'dim_metadata')
+            msgs.append(msg_template.format('Dimension coordinates',
+                                            *differences))
+        # Check aux coordinates.
+        if self.aux_metadata != other.aux_metadata:
+            differences = self._coordinate_differences(other, 'aux_metadata')
+            msgs.append(msg_template.format('Auxiliary coordinates',
+                                            *differences))
+        # Check scalar coordinates.
+        if self.scalar_coords != other.scalar_coords:
+            differences = self._coordinate_differences(other, 'scalar_coords')
+            msgs.append(msg_template.format('Scalar coordinates',
+                                            *differences))
+        # Check ndim.
+        if self.ndim != other.ndim:
+            msgs.append(msg_template.format('Data dimensions', '',
+                                            self.ndim, other.ndim))
+        # Check datatype.
+        if self.data_type != other.data_type:
+            msgs.append(msg_template.format('Datatypes', '',
+                                            self.data_type, other.data_type))
+
+        match = not bool(msgs)
+        if error_on_mismatch and not match:
+            raise iris.exceptions.ConcatenateError(msgs)
+        return match
 
 
 class _CoordSignature(object):
@@ -546,7 +645,7 @@ class _ProtoCube(object):
 
         return cube
 
-    def register(self, cube, axis=None):
+    def register(self, cube, axis=None, error_on_mismatch=False):
         """
         Determine whether the given source-cube is suitable for concatenation
         with this :class:`_ProtoCube`.
@@ -563,6 +662,9 @@ class _ProtoCube(object):
             Seed the dimension of concatenation for the :class:`_ProtoCube`
             rather than rely on negotiation with source-cubes.
 
+        * error_on_mismatch:
+            If True, raise an informative error if registration fails.
+
         Returns:
             Boolean.
 
@@ -575,7 +677,7 @@ class _ProtoCube(object):
 
         # Check for compatible cube signatures.
         cube_signature = _CubeSignature(cube)
-        match = self._cube_signature == cube_signature
+        match = self._cube_signature.match(cube_signature, error_on_mismatch)
 
         # Check for compatible coordinate signatures.
         if match:
