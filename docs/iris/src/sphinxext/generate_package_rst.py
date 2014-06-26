@@ -32,6 +32,7 @@ document_dict = {
     .. autoclass:: %(object_name)s
         :members:
         :undoc-members:
+        :inherited-members:
 
 ''',
                      'function': '''
@@ -61,41 +62,43 @@ horizontal_sep = """
 
 
 def lookup_object_type(obj):
-        if inspect.isclass(obj):
-            return 'class'
-        elif inspect.isfunction(obj):
-            return 'function'
-        else:
-            return None
+    if inspect.isclass(obj):
+        return 'class'
+    elif inspect.isfunction(obj):
+        return 'function'
+    else:
+        return None
 
 
 def auto_doc_module(file_path, import_name, root_package, package_toc=None, title=None):
-    r = __import__(import_name)
-    r = sys.modules[import_name]
-    elems = dir(r)
+    mod = __import__(import_name)
+    mod = sys.modules[import_name]
+    elems = dir(mod)
 
     if '__all__' in elems:
-        document_these = r.__all__
-        document_these = [[obj, r.__getattribute__(obj)] for obj in document_these]
+        document_these = [[attr_name, getattr(mod, attr_name)] for attr_name in mod.__all__]
     else:
-        document_these = [[obj, r.__getattribute__(obj)] for obj in elems if not obj.startswith('_') and not inspect.ismodule(r.__getattribute__(obj))]
-        is_from_this_module = lambda x, this_module=r.__name__: hasattr(x[1], '__module__') and x[1].__module__ == r.__name__
+        document_these = [[attr_name, getattr(mod, attr_name)] for attr_name in elems
+                          if not attr_name.startswith('_') and not inspect.ismodule(getattr(mod, attr_name))]
+        is_from_this_module = lambda (name, obj), this_module=mod.__name__: hasattr(obj, '__module__') and obj.__module__ == mod.__name__
 
         document_these = filter(is_from_this_module, document_these)
-        sort_order = {'class': 2, 'function':1, None:0}
+        sort_order = {'class': 2, 'function': 1}
         # sort them according to sort_order dict
-        document_these = sorted(document_these, key=lambda x: sort_order.get(lookup_object_type(x[1]),0))
+        document_these = sorted(document_these, key=lambda (name, obj): sort_order.get(lookup_object_type(obj), 0))
 
-    tmp = ''
+    lines = []
     for element, obj in document_these:
-        tmp += horizontal_sep + document_dict[lookup_object_type(obj)] % {'object_name': import_name + '.' + element,
-                                                         'object_name_header_line':'+' * len(import_name + '.' + element),
-                                                         'object_docstring': inspect.getdoc(obj),
-                                                         }
+        obj_content = document_dict[lookup_object_type(obj)] % {'object_name': import_name + '.' + element,
+                                                               'object_name_header_line':'+' * len(import_name + '.' + element),
+                                                               'object_docstring': inspect.getdoc(obj)}
+        lines.append(obj_content)
+
+    lines = horizontal_sep.join(lines)
 
     module_elements = '\n'.join([' * :py:obj:`%s`' % (element) for element, obj in document_these])
 
-    tmp = r'''.. _%(import_name)s:
+    lines = r'''.. _%(import_name)s:
 
 %(title_underline)s
 %(title)s
@@ -112,7 +115,7 @@ In this module:
 %(module_elements)s
 
 
-''' + tmp
+''' + lines
     if package_toc:
        sidebar = """
 .. sidebar:: Modules in this package
@@ -123,7 +126,10 @@ In this module:
     else:
        sidebar = ''
 
-    return tmp % {'title': title or import_name, 'title_underline': '=' * len(title or import_name), 'import_name': import_name, 'root_package':root_package, 'sidebar':sidebar, 'module_elements': module_elements}
+    return lines % {'title': title or import_name,
+                    'title_underline': '=' * len(title or import_name),
+                    'import_name': import_name, 'root_package': root_package,
+                    'sidebar': sidebar, 'module_elements': module_elements}
 
 
 def auto_doc_package(file_path, import_name, root_package, sub_packages):

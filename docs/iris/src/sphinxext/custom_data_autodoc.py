@@ -23,7 +23,7 @@ from iris.analysis import Aggregator
 
 
 class IrisDataDocumenter(DataDocumenter):
-    priority = 0
+    priority = 100
 
     def add_directive_header(self, sig):
         ModuleLevelDocumenter.add_directive_header(self, sig)
@@ -33,10 +33,7 @@ class IrisDataDocumenter(DataDocumenter):
             except ValueError:
                 pass
             else:
-                if not (objrepr.startswith('<') and objrepr.endswith('>')):
-                    self.add_line(u'   :annotation: = ' + objrepr, '<autodoc>')
-                else:
-                    self.add_line(u'   :annotation:', '<autodoc>')
+                self.add_line(u'   :annotation:', '<autodoc>')
         elif self.options.annotation is object():
             pass
         else:

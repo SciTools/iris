@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,16 +27,9 @@ class ClassWithConstructorDocumenter(autodoc.ClassDocumenter):
 
     def get_object_members(self, want_all):
         r,f = autodoc.ClassDocumenter.get_object_members(self, want_all)
-        #print 'CALLED OBJECT MEMBERS....', r, f
+        #print '\nAutodoc:', self.object, '\n    '.join([name for name, obj in f]),
+        #print want_all, self.options.members
         return r, f
-
-#   def filter_members(self, members, want_all):
-#      res = autodoc.ClassDocumenter.filter_members(self, members, want_all)
-#      for (membername, member) in members:
-#         if membername in ['__init__', '__new__']:
-#            # final argument is "isattr" - no its not an attribute it is a contructor method.
-#            res.insert(0, [membername, member, False])
-#      return res
 
     @staticmethod
     def can_document_member(member, mname, isattr, self):
