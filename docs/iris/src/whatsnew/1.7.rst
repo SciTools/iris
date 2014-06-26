@@ -225,8 +225,6 @@ For example:
     plt.savefig('plot_1d.png', bbox_inches='tight')
     plt.show()
 
-.. image:: pics/plot_1d.png
-
 .. _mdtol:
 
 Missing data tolerance for area-weighted calculations
