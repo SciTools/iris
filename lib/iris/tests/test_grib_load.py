@@ -129,6 +129,7 @@ class FakeGribMessage(dict):
         self.update({
             'Ni': 1,
             'Nj': 1,
+            'numberOfValues': 1,
             'alternativeRowScanning': 0,
             'centre': 'ecmf',
             'year': 2007,
