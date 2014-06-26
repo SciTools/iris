@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -159,7 +159,10 @@ class Constraint(object):
 
     def _CIM_extract(self, cube):
         # Returns _ColumnIndexManager
-        resultant_CIM = _ColumnIndexManager(len(cube.shape))
+
+        # Cater for scalar cubes by setting the dimensionality to 1
+        # when cube.ndim is 0.
+        resultant_CIM = _ColumnIndexManager(cube.ndim or 1)
 
         if not self._coordless_match(cube):
             resultant_CIM.all_false()
@@ -235,7 +238,9 @@ class _CoordConstraint(object):
         match the constraint.
 
         """
-        cube_cim = _ColumnIndexManager(len(cube.shape))
+        # Cater for scalar cubes by setting the dimensionality to 1
+        # when cube.ndim is 0.
+        cube_cim = _ColumnIndexManager(cube.ndim or 1)
         try:
             coord = cube.coord(self.coord_name)
         except iris.exceptions.CoordinateNotFoundError:
