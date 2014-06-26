@@ -145,33 +145,6 @@ class TestPPLoadRules(tests.IrisTest):
         cubes = iris.cube.CubeList([cubes[0], cubes[3], cubes[1], cubes[2], cubes[4]])
         self.assertCML(cubes, ('pp_rules', 'lbproc_mean_max_min.cml'))
 
-    def test_custom_rules(self):
-        # Test custom rule evaluation.
-        # Default behaviour
-        data_path = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
-        cube = iris.load_cube(data_path)
-        self.assertEqual(cube.standard_name, 'air_temperature')
-
-        # Custom behaviour
-        temp_path = iris.util.create_temp_filename()
-        f = open(temp_path, 'w')
-        f.write('\n'.join((
-            'IF',
-            'f.lbuser[3] == 16203',
-            'THEN',
-            'CMAttribute("standard_name", None)',
-            'CMAttribute("long_name", "customised")')))
-        f.close()
-        iris.fileformats.pp.add_load_rules(temp_path)
-        cube = iris.load_cube(data_path)
-        self.assertEqual(cube.name(), 'customised')
-        os.remove(temp_path)
-
-        # Back to default
-        iris.fileformats.pp.reset_load_rules()
-        cube = iris.load_cube(data_path)
-        self.assertEqual(cube.standard_name, 'air_temperature')
-
     def test_cell_methods(self):
         # Test cell methods are created for correct values of lbproc
         orig_file = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))

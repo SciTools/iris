@@ -1247,55 +1247,6 @@ class PPField(object):
     # From here on define helper methods for PP -> Cube conversion.
     #
 
-    def regular_points(self, xy):
-        """Return regular points from the PPField, or fail if not regular.
-
-        Args:
-
-            * xy - a string, "x" or "y" to specify the dimension for which to return points.
-
-        .. deprecated:: 1.5
-
-        """ 
-        msg = "The 'regular_points' method is deprecated."
-        warnings.warn(msg, UserWarning, stacklevel=2)
-
-        if xy.lower() == "x":
-            bz = self.bzx
-            bd = self.bdx
-            count = self.lbnpt
-        elif xy.lower() == "y":
-            bz = self.bzy
-            bd = self.bdy
-            count = self.lbrow
-        else:
-            raise ValueError("'x' or 'y' not supplied")
-
-        return (bz + bd) + bd * np.arange(count, dtype=np.float32)
-
-    def regular_bounds(self, xy):
-        """Return regular bounds from the PPField, or fail if not regular.
-
-        Args:
-
-            * xy - a string, "x" or "y" to specify the dimension for which to return points.
-
-        .. deprecated:: 1.5
-
-        """ 
-        msg = "The 'regular_bounds' method is deprecated."
-        warnings.warn(msg, UserWarning, stacklevel=2)
-
-        if xy.lower() == "x":
-            delta = 0.5 * self.bdx
-        elif xy.lower() == "y":
-            delta = 0.5 * self.bdy
-        else:
-            raise ValueError("'x' or 'y' not supplied")
-
-        points = self.regular_points(xy)
-        return np.concatenate([[points - delta], [points + delta]]).T
-
     def time_unit(self, time_unit, epoch='epoch'):
         return iris.unit.Unit('%s since %s' % (time_unit, epoch), calendar=self.calendar)
 
@@ -1677,28 +1628,6 @@ def _ensure_load_rules_loaded():
         basepath = iris.config.CONFIG_PATH
         _cross_reference_rules = rules.RulesContainer(os.path.join(basepath, 'pp_cross_reference_rules.txt'),
                                                            rule_type=rules.ObjectReturningRule)
-
-
-def add_load_rules(filename):
-    """
-    Registers a rules file for use during the PP load process.
-
-    Registered files are processed after the standard conversion rules, and in
-    the order they were registered.
-    
-        .. deprecated:: 1.5
-
-    """
-    msg = "The 'add_load_rules' function is deprecated."
-    warnings.warn(msg, UserWarning, stacklevel=2)
-
-    # Uses this module-level variable
-    global _load_rules
-
-    if _load_rules is None:
-        _load_rules = iris.fileformats.rules.RulesContainer(filename)
-    else:
-        _load_rules.import_rules(filename)
 
 
 def reset_load_rules():
