@@ -45,7 +45,7 @@ import iris.fileformats.grib.load_rules
 import iris.unit
 
 
-__all__ = ['add_load_rules', 'grib_generator', 'load_cubes',
+__all__ = ['grib_generator', 'load_cubes',
            'reset_load_rules', 'save_grib2', 'GribWrapper',
            'hindcast_workaround']
 

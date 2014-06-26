@@ -44,8 +44,8 @@ iris.proxy.apply_proxy('iris.fileformats.pp_packing', globals())
 
 
 __all__ = ['load', 'save', 'load_cubes', 'PPField',
-           'add_load_rules', 'reset_load_rules',
-           'add_save_rules', 'reset_save_rules', 'STASH', 'EARTH_RADIUS']
+           'reset_load_rules', 'add_save_rules', 'reset_save_rules',
+           'STASH', 'EARTH_RADIUS']
 
 
 EARTH_RADIUS = 6371229.0
