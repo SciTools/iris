@@ -161,10 +161,10 @@ class TestAnalysisWeights(tests.IrisTest):
         e.coord('longitude').bounds = None
         f, collapsed_area_weights = e.collapsed('latitude', iris.analysis.MEAN, weights=area_weights, returned=True)
         g = f.collapsed('longitude', iris.analysis.MEAN, weights=collapsed_area_weights)
-        # check it's a 1D, scalar cube (actually, it should really be 0D)!
-        self.assertEquals(g.shape, (1,))
+        # check it's a 0d, scalar cube
+        self.assertEquals(g.shape, ())
         # check the value - pp_area_avg's result of 287.927 differs by factor of 1.00002959
-        np.testing.assert_approx_equal(g.data[0], 287.935, significant=5)
+        np.testing.assert_approx_equal(g.data, 287.935, significant=5)
 
         #check we get summed weights even if we don't give any
         h, summed_weights = e.collapsed('latitude', iris.analysis.MEAN, returned=True)
@@ -339,14 +339,14 @@ class TestAggregator_mdtol_keyword(tests.IrisTest):
         collapsed = self.cube.collapsed(
             [self.cube.coord('lat'), self.cube.coord('lon')],
             iris.analysis.MEAN)
-        t = np.array([2.5])
+        t = np.array(2.5)
         self.assertArrayEqual(collapsed.data, t)
 
     def test_multi_coord_mdtol(self):
         collapsed = self.cube.collapsed(
             [self.cube.coord('lat'), self.cube.coord('lon')],
             iris.analysis.MEAN, mdtol=0.4)
-        t = ma.array([2.5], mask=[True])
+        t = ma.array(2.5, mask=True)
         self.assertMaskedArrayEqual(collapsed.data, t)
 
 

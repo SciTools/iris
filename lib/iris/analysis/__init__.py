@@ -497,9 +497,6 @@ class Aggregator(object):
                 result.mask = result.mask | mask_update
             else:
                 result = ma.array(result, mask=mask_update)
-                if result.ndim is 0:
-                    result = result * np.array([1])
-                    result.mask = result.mask[np.newaxis]
 
         return result
 
@@ -546,8 +543,6 @@ class Aggregator(object):
         """
         Process the result from :func:`iris.analysis.Aggregator.aggregate`.
 
-        Ensures data is an array, when collapsed to a single value.
-
         Args:
 
         * collapsed_cube
@@ -559,7 +554,8 @@ class Aggregator(object):
         if isinstance(data_result, biggus.Array):
             collapsed_cube.lazy_data(data_result)
         else:
-            collapsed_cube.data = iris.util.ensure_array(data_result)
+            collapsed_cube.data = data_result
+
         return collapsed_cube
 
 
@@ -623,7 +619,6 @@ class WeightedAggregator(Aggregator):
         """
         Process the result from :func:`iris.analysis.Aggregator.aggregate`.
 
-        Ensures data is an array, when collapsed to a single value.
         Returns a tuple(cube, weights) if a tuple(data, weights) was returned
         from :func:`iris.analysis.Aggregator.aggregate`.
 
@@ -638,7 +633,6 @@ class WeightedAggregator(Aggregator):
         if kwargs.get('returned', False):
             # Package the data into the cube and return a tuple
             collapsed_cube.data, collapsed_weights = data_result
-            collapsed_cube.data = iris.util.ensure_array(collapsed_cube.data)
             result = (collapsed_cube, collapsed_weights)
         else:
             result = Aggregator.post_process(self, collapsed_cube,
