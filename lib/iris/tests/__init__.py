@@ -68,6 +68,13 @@ except ImportError:
 else:
     MPL_AVAILABLE = True
 
+try:
+    from osgeo import gdal
+except ImportError:
+    GDAL_AVAILABLE = False
+else:
+    GDAL_AVAILABLE = True
+
 
 #: Basepath for test results.
 _RESULT_PATH = os.path.join(os.path.dirname(__file__), 'results')
@@ -595,6 +602,23 @@ def skip_data(fn):
         condition=no_data,
         reason='Test(s) require external data.')
 
+    return skip(fn)
+
+
+def skip_gdal(fn):
+    """
+    Decorator to choose whether to run tests, based on the availability of the
+    GDAL library.
+
+    Example usage:
+        @skip_gdal
+        class MyGeoTiffTests(test.IrisTest):
+            ...
+
+    """
+    skip = unittest.skipIf(
+        condition=not GDAL_AVAILABLE,
+        reason="Test requires 'gdal'.")
     return skip(fn)
 
 
