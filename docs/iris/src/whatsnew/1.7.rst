@@ -18,6 +18,9 @@ Incompatible changes
 * Cubes save to NetCDF with a coordinate system referencing a spherical ellipsoid
   now result in the grid mapping variable containing only the "earth_radius" attribute,
   rather than the "semi_major_axis" and "semi_minor_axis".
+* Collapsing a cube over all of its dimensions now results in a scalar cube rather
+  than a 1d cube.
 
 Deprecations
 ============
+* :func:`iris.util.ensure_array` has been deprecated.

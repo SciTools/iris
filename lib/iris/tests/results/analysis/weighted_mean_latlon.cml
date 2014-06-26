@@ -22,6 +22,6 @@
         <coord name="lon"/>
       </cellMethod>
     </cellMethods>
-    <data dtype="float64" shape="(1,)" state="loaded"/>
+    <data dtype="float64" shape="()" state="loaded"/>
   </cube>
 </cubes>
