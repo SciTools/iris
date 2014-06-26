@@ -195,5 +195,17 @@ class Test_xml(tests.IrisTest):
         self.assertIn('byteorder', self.cubes.xml(byteorder=True))
 
 
+class Test_extract(tests.IrisTest):
+    def test_scalar_cube_test(self):
+        # Ensure that extraction of a CubeList containing scalar cubes is
+        # successful i.e. extracts the correct number and the correct ones.
+        cubes = CubeList()
+        for i in range(5):
+            for letter in 'abcd':
+                cubes.append(Cube(1, long_name=letter))
+        target = CubeList([Cube(1, long_name='a') for i in range(5)])
+        self.assertEqual(cubes.extract('a'), target)
+
+
 if __name__ == "__main__":
     tests.main()

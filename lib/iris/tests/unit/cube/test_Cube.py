@@ -60,6 +60,56 @@ class Test___init___data(tests.IrisTest):
         self.assertArrayEqual(cube.data, data)
 
 
+class Test_extract(tests.IrisTest):
+    def test_scalar_cube_exists(self):
+        # Ensure that extract is able to extract a scalar cube.
+        constraint = iris.Constraint(name='a1')
+        cube = Cube(1, long_name='a1')
+        res = constraint.extract(cube)
+        self.assertIs(res, cube)
+
+    def test_scalar_cube_noexists(self):
+        # Ensure that extract does not return a non-matching scalar cube.
+        constraint = iris.Constraint(name='a2')
+        cube = Cube(1, long_name='a1')
+        res = constraint.extract(cube)
+        self.assertIs(res, None)
+
+    def test_scalar_cube_coord_match(self):
+        # Ensure that extract is able to extract a scalar cube according to
+        # constrained scalar coordinate.
+        constraint = iris.Constraint(scalar_coord=0)
+        cube = Cube(1, long_name='a1')
+        coord = iris.coords.AuxCoord(0, long_name='scalar_coord')
+        cube.add_aux_coord(coord, None)
+        res = constraint.extract(cube)
+        self.assertIs(res, cube)
+
+    def test_scalar_cube_coord_nomatch(self):
+        # Ensure that extract is not extracting a scalar cube with scalar
+        # coordinate that does not match the constraint.
+        constraint = iris.Constraint(scalar_coord=1)
+        cube = Cube(1, long_name='a1')
+        coord = iris.coords.AuxCoord(0, long_name='scalar_coord')
+        cube.add_aux_coord(coord, None)
+        res = constraint.extract(cube)
+        self.assertIs(res, None)
+
+    def test_1d_cube_exists(self):
+        # Ensure that extract is able to extract from a cube with shape.
+        constraint = iris.Constraint(name='a1')
+        cube = Cube([1], long_name='a1')
+        res = constraint.extract(cube)
+        self.assertIs(res, cube)
+
+    def test_1d_cube_noexists(self):
+        # Ensure that extract does not return a non-matching cube with shape.
+        constraint = iris.Constraint(name='a2')
+        cube = Cube([1], long_name='a1')
+        res = constraint.extract(cube)
+        self.assertIs(res, None)
+
+
 class Test_xml(tests.IrisTest):
     def test_checksum_ignores_masked_values(self):
         # Mask out an single element.
