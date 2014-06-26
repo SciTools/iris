@@ -9,6 +9,8 @@ Iris 1.7 features
 
 Bugs fixed
 ==========
+* A bug affecting :meth:`iris.cube.Cube.extract` and :meth:`iris.cube.CubeList.extract`
+  that led to unexpected behaviour when operating on scalar cubes has been fixed.
 
 Incompatible changes
 ====================
