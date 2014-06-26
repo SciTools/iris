@@ -21,13 +21,11 @@ interface.
 See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 """
-
-
 import collections
 import datetime
-import functools
-import warnings
 
+import cartopy.crs
+import cartopy.mpl.geoaxes
 import matplotlib.axes
 import matplotlib.collections as mpl_collections
 import matplotlib.dates as mpl_dates
@@ -37,16 +35,12 @@ import matplotlib.ticker as mpl_ticker
 from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
 import numpy as np
 import numpy.ma as ma
-import cartopy.crs
-import cartopy.mpl.geoaxes
-
 
 import iris.cube
-import iris.coord_systems
 import iris.analysis.cartography as cartography
 import iris.coords
+# Importing iris.palette to register the brewer palettes.
 import iris.palette
-import iris.unit
 
 
 # Cynthia Brewer citation text.
@@ -879,38 +873,6 @@ def points(cube, *args, **kwargs):
                                 *args, **kwargs)
 
 
-def _1d_coords_deprecation_handler(func):
-    """
-    Manage the deprecation of the coords keyword argument to 1d plot
-    functions.
-
-    """
-    @functools.wraps(func)
-    def _wrapper(*args, **kwargs):
-        coords = kwargs.pop('coords', None)
-        if coords is not None:
-            # issue a deprecation warning and check to see if the old
-            # interface should be mimicked for the deprecation period
-            warnings.warn('The coords keyword argument is deprecated.',
-                          stacklevel=2)
-            if len(coords) != 1:
-                msg = 'The list of coordinates given should have length 1 ' \
-                      'but it has length {}.'
-                raise ValueError(msg.format(len(coords)))
-            if isinstance(args[0], iris.cube.Cube):
-                if len(args) < 2 or not isinstance(args[1], (iris.cube.Cube,
-                                                   iris.coords.Coord)):
-                    coord = args[0].coord(coords[0])
-                    if not args[0].coord_dims(coord):
-                        raise ValueError("The coordinate {!r} doesn't "
-                                         "span a data dimension."
-                                         "".format(coord.name()))
-                    args = (coord,) + args
-        return func(*args, **kwargs)
-    return _wrapper
-
-
-@_1d_coords_deprecation_handler
 def plot(*args, **kwargs):
     """
     Draws a line plot based on the given cube(s) or coordinate(s).
@@ -938,23 +900,14 @@ def plot(*args, **kwargs):
         # plot two 1d cubes against one-another
         plot(cube1, cube2)
 
-    Kwargs:
-
-    * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
-        Use the given coordinates as the axes for the plot. The order of the
-        given coordinates indicates which axis to use for each, where the first
-        element is the horizontal axis of the plot and the second element is
-        the vertical axis of the plot.
-
-        .. deprecated:: 1.5
-
-           The plot coordinates can be specified explicitly as in the
-           above examples, so this keyword is no longer needed.
-
     See :func:`matplotlib.pyplot.plot` for details of valid keyword
     arguments.
 
     """
+    if 'coords' in kwargs:
+        raise TypeError('"coords" is not a valid plot keyword. Coordinates '
+                        'and cubes may be passed as arguments for '
+                        'full control of the plot axes.')
     _plot_args = None
     return _draw_1d_from_points('plot', _plot_args, *args, **kwargs)
 
