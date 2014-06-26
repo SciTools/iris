@@ -93,11 +93,6 @@ All the load functions share very similar arguments:
                     experiment_id, long_name='experiment_id')
                 cube.add_aux_coord(experiment_coord)
 
-Format-specific translation behaviour can be modified by using:
-    :func:`iris.fileformats.pp.add_load_rules`
-
-    :func:`iris.fileformats.grib.add_load_rules`
-
 """
 import contextlib
 import itertools

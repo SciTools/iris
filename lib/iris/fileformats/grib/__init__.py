@@ -45,7 +45,7 @@ import iris.fileformats.grib.load_rules
 import iris.unit
 
 
-__all__ = ['add_load_rules', 'grib_generator', 'load_cubes',
+__all__ = ['grib_generator', 'load_cubes',
            'reset_load_rules', 'save_grib2', 'GribWrapper',
            'hindcast_workaround']
 
@@ -115,28 +115,6 @@ TIME_CODES_EDITION2 = {
 }
 
 unknown_string = "???"
-
-
-def add_load_rules(filename):
-    """
-    Registers a rules file for use during the GRIB load process.
-
-    Registered files are processed after the standard rules, and in the order
-    they were registered.
-
-        .. deprecated:: 1.5
-
-    """
-    msg = "The 'add_load_rules' function is deprecated."
-    warnings.warn(msg, UserWarning, stacklevel=2)
-
-    # Uses this module-level variable
-    global _load_rules
-
-    if _load_rules is None:
-        _load_rules = iris.fileformats.rules.RulesContainer(filename)
-    else:
-        _load_rules.import_rules(filename)
 
 
 def reset_load_rules():

@@ -309,35 +309,6 @@ class TestGribLoad(tests.GraphicsTest):
         cube = old_compat_load("global.grib1")
         self.assertCML(cube, ("grib_load", "earth_shape_grib1.cml"))
 
-    def test_custom_rules(self):
-        # Test custom rule evaluation.
-        # Default behaviour
-        cube = tests.stock.global_grib2()
-        self.assertEqual(cube.name(), 'air_temperature')
-
-        # Custom behaviour
-        temp_path = iris.util.create_temp_filename()
-        f = open(temp_path, 'w')
-        f.write('\n'.join((
-            'IF',
-            'grib.edition == 2',
-            'grib.discipline == 0',
-            'grib.parameterCategory == 0',
-            'grib.parameterNumber == 0',
-            'THEN',
-            'CMAttribute("long_name", "customised")',
-            'CMAttribute("standard_name", None)')))
-        f.close()
-        iris.fileformats.grib.add_load_rules(temp_path)
-        cube = tests.stock.global_grib2()
-        self.assertEqual(cube.name(), 'customised')
-        os.remove(temp_path)
-
-        # Back to default
-        iris.fileformats.grib.reset_load_rules()
-        cube = tests.stock.global_grib2()
-        self.assertEqual(cube.name(), 'air_temperature')
-
     @tests.skip_plot
     def test_polar_stereo_grib1(self):
         cube = iris.load_cube(tests.get_data_path(
