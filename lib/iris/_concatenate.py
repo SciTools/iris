@@ -147,6 +147,10 @@ class _CoordMetaData(namedtuple('CoordMetaData',
                                                       kwargs)
         return metadata
 
+    def name(self):
+        """Get the name from the coordinate definition."""
+        return self.defn.name()
+
 
 class _SkeletonCube(namedtuple('SkeletonCube',
                                ['signature', 'data'])):
@@ -198,20 +202,6 @@ class _CoordExtent(namedtuple('CoordExtent',
         bounds exist for the coordinate.
 
     """
-
-
-def _name(coord, default='unknown'):
-    """
-    Returns a human-readable name.
-
-    First it tries self.standard_name, then it tries the 'long_name'
-    attribute, then the 'var_name' attribute, before falling back to
-    the value of `default` (which itself defaults to 'unknown').
-
-    Note this function is an exact duplicate of :meth:`cube.metadata.name`.
-
-    """
-    return coord.standard_name or coord.long_name or coord.var_name or default
 
 
 def concatenate(cubes, error_on_mismatch=False):
@@ -360,18 +350,14 @@ class _CubeSignature(object):
 
         """
         # Set up {name: coord_metadata} dictionaries.
-        try:
-            self_dict = {x.defn.name(): x for x in getattr(self, attr)}
-            other_dict = {x.defn.name(): x for x in getattr(other, attr)}
-        except AttributeError:
-            self_dict = {_name(x): x for x in getattr(self, attr)}
-            other_dict = {_name(x): x for x in getattr(other, attr)}
+        self_dict = {x.name(): x for x in getattr(self, attr)}
+        other_dict = {x.name(): x for x in getattr(other, attr)}
         if len(self_dict.keys()) == 0:
             self_dict = {'< None >': None}
         if len(other_dict.keys()) == 0:
             other_dict = {'< None >': None}
-        self_names = self_dict.keys()
-        other_names = other_dict.keys()
+        self_names = sorted(self_dict.keys())
+        other_names = sorted(other_dict.keys())
 
         # Compare coord metadata.
         if len(self_names) != len(other_names) or self_names != other_names:
@@ -426,7 +412,7 @@ class _CubeSignature(object):
             # Note that the case of different phenomenon names is dealt with
             # in :meth:`iris.cube.CubeList.concatenate_cube()`.
             msg = 'Cube metadata differs for phenomenon: {}'
-            msgs.append(msg.format(_name(self.defn)))
+            msgs.append(msg.format(self.defn.name()))
         # Check dim coordinates.
         if self.dim_metadata != other.dim_metadata:
             differences = self._coordinate_differences(other, 'dim_metadata')

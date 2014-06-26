@@ -90,6 +90,14 @@ class Test_concatenate_messages(tests.IrisTest):
                            data_dims=(1,))
         self.cube = cube
 
+    def test_anonymous_coord_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.remove_coord('latitude')
+        exc_regexp = 'one or both cubes have anonymous dimensions'
+        with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
+            CubeList([cube_1, cube_2]).concatenate_cube()
+
     def test_definition_difference_message(self):
         cube_1 = self.cube
         cube_2 = cube_1.copy()
