@@ -927,6 +927,8 @@ def clip_string(the_str, clip_length=70, rider="..."):
 
 def ensure_array(a):
     """.. deprecated:: 1.7"""
+    warnings.warn('ensure_array() is deprecated and will be removed '
+                  'in a future release.')
     if not isinstance(a, (np.ndarray, ma.core.MaskedArray)):
         a = np.array([a])
     return a
