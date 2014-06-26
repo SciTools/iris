@@ -156,6 +156,9 @@ Incompatible changes
 Deprecations
 ============
 * :func:`iris.util.ensure_array` has been deprecated.
+* Deprecated the :func:`iris.fileformats.pp.reset_load_rules` and
+  :func:`iris.fileformats.grib.reset_load_rules` functions.
+* Matplotlib is no longer a core Iris dependency.
 
 Documentation Changes
 =====================
