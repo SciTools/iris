@@ -223,26 +223,12 @@ class Test1dPlotMultiArgs(tests.GraphicsTest):
         with self.assertRaises(TypeError):
             self.draw_method(xdim, self.cube1d)
 
-    def test_coords_deprecated(self):
-        # ensure a warning is raised if the old coords keyword argument is
-        # used, and make sure the plot produced is consistent with the old
-        # interface
-        msg = 'Missing deprecation warning for coords keyword.'
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter('always')
-            self.draw_method(self.cube1d, coords=['sigma'])
-            self.assertEqual(len(w), 1, msg)
-        self.check_graphic()
-
-    def test_coords_deprecation_too_many(self):
-        # in deprecation mode, too many coords is an error
-        with self.assertRaises(ValueError):
-            self.draw_method(self.cube1d, coords=['sigma', 'sigma'])
-
-    def test_coords_deprecation_invalid_span(self):
-        # in deprecation mode, a coordinate that doesn't span data is an error
-        with self.assertRaises(ValueError):
-            self.draw_method(self.cube1d, coords=['time'])
+    def test_plot_old_coords_kwarg(self):
+        # Coords used to be a valid kwarg to plot, but it was deprecated and
+        # we are maintaining a reasonable exception, check that it is raised
+        # here.
+        with self.assertRaises(TypeError):
+            self.draw_method(self.cube1d, coords=None)
 
 
 @tests.skip_plot
