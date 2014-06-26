@@ -932,18 +932,28 @@ def ensure_array(a):
 
 
 class _Timers(object):
+    """
+    A utility class for timing things.
+
+    .. deprecated:: 1.7
+
+    """
     # See help for timers, below.
 
     def __init__(self):
         self.timers = {}
 
     def start(self, name, step_name):
+        warnings.warn('Timers was deprecated in v1.7.0 and will be removed '
+                      'in future Iris releases.')
         self.stop(name)
         timer = self.timers.setdefault(name, {})
         timer[step_name] = time.time()
         timer["active_timer_step"] = step_name
 
     def restart(self, name, step_name):
+        warnings.warn('Timers was deprecated in v1.7.0 and will be removed '
+                      'in future Iris releases.')
         self.stop(name)
         timer = self.timers.setdefault(name, {})
         timer[step_name] = time.time() - timer.get(step_name, 0)
@@ -973,10 +983,12 @@ timers = _Timers()
 """
 Provides multiple named timers, each composed of multiple named steps.
 
+.. deprecated:: 1.7
+
 Only one step is active at a time, so calling start(timer_name, step_name)
 will stop the current step and start the new one.
 
-Example Usage:
+Example Usage::
 
     from iris.util import timers
 
@@ -1008,7 +1020,6 @@ Example Usage:
         print timers.stop("big func")
 
         print timers.get("little func")
-
 """
 
 
