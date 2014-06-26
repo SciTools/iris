@@ -15,7 +15,7 @@ git:
 
 install:
 
-  - export BIGGUS_REF="aab46da45f65d2225e0aef9cdde675e435ea255f"
+  - export BIGGUS_REF="v0.6.0"
   - export BIGGUS_SUFFIX=$(echo "${BIGGUS_REF}" | sed "s/^v//")
 
   - export CARTOPY_REF="v0.11.0"
