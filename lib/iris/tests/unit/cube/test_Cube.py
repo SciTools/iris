@@ -299,6 +299,16 @@ class Test_aggregated_by(tests.IrisTest):
         self.assertEqual(res_cube.coord('val'), val_coord)
         self.assertEqual(res_cube.coord('label'), label_coord)
 
+    def test_single_string_aggregation(self):
+        aux_coords = [(AuxCoord(['a', 'b', 'a'], long_name='foo'), 0),
+                      (AuxCoord(['a', 'a', 'a'], long_name='bar'), 0)]
+        cube = iris.cube.Cube(np.arange(12).reshape(3, 4),
+                      aux_coords_and_dims=aux_coords)
+        result = cube.aggregated_by('foo', MEAN)
+        self.assertEqual(result.shape, (2, 4))
+        self.assertEqual(result.coord('bar'),
+                         AuxCoord(['a|a', 'a'], long_name='bar'))
+
 
 class Test_rolling_window(tests.IrisTest):
     def setUp(self):
