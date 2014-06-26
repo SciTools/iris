@@ -28,10 +28,10 @@ and::
 
 
 
-Build requirements
-==================
-These are external packages which you will need to install before
-installing Iris. 
+Build and runtime requirements
+==============================
+These are external packages which you will need to have installed before
+installing and running Iris. 
 
 Many of these packages are available in Linux package managers
 such as aptitude and yum. For example, it may be possible to install 
@@ -49,25 +49,8 @@ python 2.7 or later (http://www.python.org/)
 numpy 1.6 or later (http://numpy.scipy.org/)
     Python package for scientific computing including a powerful N-dimensional array object.
 
-PyKE 1.1.1 or later (http://pyke.sourceforge.net/)
-    Python knowledge-based inference engine.
-
-setuptools 0.6c11 or later (http://pypi.python.org/pypi/setuptools/)
-    Python package for installing/removing python packages.
-
-
-Runtime requirements
-====================
-These are external packages you will need to install to import iris.
-
-python 2.7 or later (http://www.python.org/)
-    Iris requires Python 2.7 or later, but is not currently compatible with Python 3.
-
-numpy 1.6 or later (http://numpy.scipy.org/)
-    Python package for scientific computing including a powerful N-dimensional array object.
-
-PyKE 1.1.1 or later (http://pyke.sourceforge.net/)
-    Python knowledge-based inference engine.
+biggus 0.6 or later (https://github.com/SciTools/biggus)
+    Virtual large arrays and lazy evaluation.
 
 scipy 0.10 or later (http://www.scipy.org/)
     Python package for scientific computing.
@@ -75,11 +58,17 @@ scipy 0.10 or later (http://www.scipy.org/)
 cartopy 0.11.0 or later (http://github.com/SciTools/cartopy/)
     Python package which provides cartographic tools for python.
 
+PyKE 1.1.1 or later (http://pyke.sourceforge.net/)
+    Python knowledge-based inference engine.
+
 netcdf4-python 0.9.9 or later (http://netcdf4-python.googlecode.com/)
     Python interface to the netCDF version 4 C library.
 
 udunits2 2.1.24 or later (http://www.unidata.ucar.edu/downloads/udunits/index.jsp)
     C library for units of physical quantities.
+
+setuptools 0.6c11 or later (http://pypi.python.org/pypi/setuptools/)
+    Python package for installing/removing python packages.
 
 
 Optional
