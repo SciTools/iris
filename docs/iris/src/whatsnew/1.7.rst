@@ -9,86 +9,73 @@ Iris 1.7 features
 
 .. _showcase:
 
-.. admonition:: Showcase: Biggus implementation in Iris
+.. admonition:: Showcase: Iris is making use of Biggus 
 
-    Biggus supplies lazy array manipulation to Iris so that Iris can load and
-    manipulate very large arrays without running out of memory. Manipulating very
-    large arrays will still take a long time, but Biggus implementation ensures
-    that such manipulation won't take a very long time that ends with a memory
-    error.
+    Iris is now making extensive use of Biggus for virtual arrays and lazy
+    array evaluation. In practice this means that analyses of cubes with data
+    bigger than the system's available memory are now possible.
 
-    Note that on the surface nothing will appear to have changed, as Biggus lazy
-    arrays are implemented in the underlying code.
+    Other than the improved functionality the changes are mostly
+    transparent; for example, before the introduction of biggus, MemoryErrors
+    were likely for very large datasets::
 
-    For example:
-
-    .. code-block:: python
-
-        >>> # Without Biggus:
         >>> result = extremely_large_cube.collapsed('time', iris.analyis.MEAN)
-        Memory Error.
-        >>> # With Biggus:
+        MemoryError
+
+    Now, for supported operations, the evaluation is lazy (i.e. it doesn't take
+    place until the actual data is subsequently requested) and can handle data
+    larger than available system memory::
+
         >>> result = extremely_large_cube.collapsed('time', iris.analyis.MEAN)
         >>> print type(result)
         <class 'iris.cube.Cube'>
 
+    Memory is still a limiting factor if ever the data is desired as a numpy array
+    (e.g. via :data:`cube.data <iris.cube.Cube.data>`), but additional methods have
+    been added to the Cube to support querying and subsequently accessing the "lazy"
+    data form (see :meth:`~iris.cube.Cube.has_lazy_data` and
+    :meth:`~iris.cube.Cube.lazy_data`).
+
+
 .. admonition:: Showcase: New interpolation and regridding API
 
-    This release brings with it a new interface for accessing the interpolation and
-    regridding capabilities within Iris. This replaces the old, clunky and
-    exceedingly long-named interface with one that is much shorter, tidier, more
-    unified, and hopefully simpler too.
+    New interpolation and regridding interfaces have been added which simplify and
+    extend the existing functionality.
 
-    Currently linear regridding and interpolation is available via this new API,
-    as well as area-weighted regridding.
+    The interfaces are exposed on the cube in the form of the
+    :meth:`~iris.cube.Cube.interpolate` and :meth:`~iris.cube.Cube.regrid` methods.
+    Conceptually the signatures of the methods are::
 
-    Let's compare old to new. The following two code snippets return exactly the
-    same result but one is achieved with the old API and the other is achieved
-    with the new.
+        interpolated_cube = cube.interpolate(interpolation_points, interpolation_scheme)
 
-    Linear interpolation:
+    and::
 
-    .. code-block:: python
+        regridded_cube = cube.regird(target_grid_cube, regridding_scheme)
 
-        >>> # Old API:
-        >>> interp_cube = iris.analysis.interpolate.linear(cube, sample_points)
-        >>> # New API:
-        >>> scheme = iris.analysis.Linear()
-        >>> interp_cube = cube.interpolate(sample_points, scheme)
+    Whilst not all schemes have been migrated to the new interface,
+    :class:`iris.analysis.Linear` defines both linear interpolation and regridding,
+    and :class:`iris.analysis.AreaWeighted` defines an area weighted regridding
+    scheme.
 
-    Area-weighted regridding:
+.. admonition:: Showcase: Cube broadcasting
 
-    .. code-block:: python
+    When doing mathematical operations, cubes now follow similar rules to the
+    broadcasting of numpy arrays, with extra coordinate aware context providing
+    some enhanced functionality beyond the basic broadcasting behaviour of numpy.
 
-        >>> # Old API:
-        >>> regridded_cube = iris.experimental.regrid.regrid_area_weighted_rectlinear_src_and_grid(cube, grid_cube)
-        >>> # New API:
-        >>> scheme = iris.analysis.AreaWeighted(mdtol=0.3)
-        >>> regridded_cube = cube.regrid(grid_cube, scheme)
+    For instance, it is now possible to subtract a processed cube from the original
+    to the mean deviation::
 
-.. admonition:: Showcase: Cube math broadcasting (#1076)
+        >>> time_mean = original_cube.collapsed('time', iris.analysis.MEAN)
+        >>> mean_deviation = original_cube - time_mean
 
-    Cube math broadcasting enables mathematical operations between a cube and a resultant
-    collapsed cube or slice of the cube without having to do any manual
-    broadcasting/padding/stacking.
 
-    For example:
-
-    .. code-block:: python
-
-        >>> import iris
-        >>> import iris.tests.stock
-        >>> cube = iris.tests.stock.realistic_4d()
-        >>> avg_cube = cube.collapsed('model_level_number', iris.analysis.MEAN)
-        >>> diff = cube - avg_cube
-
-    Previously this would only work if the collapse/slice took place over the leftmost
-    dimensions, through application of NumPy broadcasting rules.
-
-    Addition, subtraction, multiplication and division are all supported.
-
-* Make use of SciPy's RegularGridInterpolator for faster regridding.
-* Allowed "no time averaging" as a column heading in NAME files.
+* Deferred GRIB data loading has been introduced for reduced memory consumption when
+  loading GRIB files.
+* Linear interpolation and regridding now make use of SciPy's RegularGridInterpolator
+  for much faster linear interpolation.
+* NAME file loading now handles the "no time averaging" column and translates
+  height/altitude above ground/sea-level columns into appropriate coordinate metadata.
 * The NetCDF saver has been extended to allow saving of cubes with hybrid pressure
   auxiliary factories.
 * PP/FF loading supports LBLEV of 9999.
@@ -104,16 +91,13 @@ Iris 1.7 features
   factory.
 * Support added for loading CF-NetCDF data with bounds arrays that are missing a
   vertex dimension.
-* :ref:`Reducing string auxiliary coordinates<strings>` using
-  :meth:`iris.cube.Cube.rolling_window`, allowing for serialization of string coordinates.
+* :meth:`iris.cube.Cube.rolling_window` can now be used with string-based AuxCoordinates.
 * Loading of PP and FF files has been optimised through deferring creation of
   PPField attributes.
 * Automatic association of a coordinate's CF formula terms variable with the
   data variable associated with that coordinate.
 * PP loading translates cross-section height into a dimensional auxiliary coordinate.
-* Translation of NAME metadata on height or altitude above ground or sea level
-  into the relevant coordinate's long name.
-* :ref:`String auxiliary coordinates may be plotted with Iris plotting wrappers<plotting>`.
+* String auxiliary coordinates can now be plotted with the Iris plotting wrappers.
 * :func:`iris.analysis.geometry.geometry_area_weights` now allows for the calculation of
   normalized cell weights.
 * Many new translations between the CF spec and STASH codes or GRIB2 parameter codes.
@@ -122,17 +106,12 @@ Iris 1.7 features
 * NetCDF reference surface variable promotion available through the
   :class:`iris.FUTURE` mechanism.
 * A speed improvement in calculation of :func:`iris.analysis.geometry.geometry_area_weights`.
-* :ref:`Missing data tolerance (mdtol)<mdtol>` for area-weighted calculations allows
-  for fractional tolerance of masked data to be specified.
+* The mdtol keyword was added to area-weighted regridding to allow control of the tolerance
+  for missing data.
 * Handling for patching of the CF conventions global attribute via a defined
   cf_patch_conventions function.
 * Concatenate reporting that raises a descriptive error if the concatenation
   process fails.
-
-Hopefully included features
-===========================
-
-* Incorporation of Biggus deferred loading into the GRIB loader (#1137)
 
 Bugs fixed
 ==========
@@ -166,76 +145,17 @@ Incompatible changes
 Deprecations
 ============
 * :func:`iris.util.ensure_array` has been deprecated.
-* Matplotlib is no longer a core Iris dependency.
 
 Documentation Changes
 =====================
-* A custom colours plotting example has been added.
-* An example of reprojecting data and adding annotations has been added.
-* A new section, whitepapers, has been added to the documentation. The first item
-  added to this section contains a detailed overview of the PP/FF load process.
+* An example demonstrating custom log-scale colouring has been added.
+  See :ref:`graphics-anomaly_log_colouring`.
+* An example demonstrating the creation of a custom
+  :class:`iris.analysis.Aggregator` has been added.
+  See :ref:`graphics-custom_aggregation`.
+* An example of reprojecting data from 2D auxiliary spatial coordinates
+  (such as that from the ORCA grid) has been added. See :ref:`graphics-orca_projection`.
+* A new :doc:`"whitepapers" </whitepapers/index>` section has been added to the documentation along
+  with the addition of a paper providing an :doc:`overview of the load process for UM-like
+  fileformats (e.g. PP and Fieldsfile) </whitepapers/um_files_loading>`.
 
-----
-
-.. _strings:
-
-Reducing string auxiliary coordinates
--------------------------------------
-Auxiliary coordinates containing string data (for example coordinates generated
-with :mod:`iris.coord_categorisation` functions) can now be collapsed in the same way
-as coordinates containing more typical numerical data.
-
-For example:
-
-.. code-block:: python
-
-    import iris
-    import numpy as np
-
-    cube = iris.cube.Cube(np.arange(6))
-    sample_coord = iris.coords.DimCoord([0, 1, 2, 3, 4, 5], long_name='sample')
-    month_coord = iris.coords.AuxCoord(['jan', 'feb', 'mar', 'apr', 'may', 'jun'],
-                                       long_name='month')
-    cube.add_dim_coord(sample_coord, 0)
-    cube.add_aux_coord(month_coord, 0)
-
-    aggregator = iris.analysis.MEAN
-    smoothed = cube.rolling_window('sample', aggregator, 3)
-
-.. _plotting:
-
-Plotting string auxiliary coordinates
--------------------------------------
-Auxiliary coordinates containing string data can also now be passed to Iris plotting
-wrappers and used as the data to be plotted on an axis.
-
-For example:
-
-.. code-block:: python
-
-    import matplotlib.pyplot as plt
-
-    import iris
-    from iris.coord_categorisation import add_month
-    import iris.quickplot as qplt
-
-    cube = iris.load_cube(iris.sample_data_path('GloSea4/ensemble_000.pp'))
-    add_month(cube, cube.coord('time'))
-
-    sub_cube = cube[:, 89, 102]
-    qplt.plot(sub_cube.coord('month'), sub_cube)
-    plt.savefig('plot_1d.png', bbox_inches='tight')
-    plt.show()
-
-.. _mdtol:
-
-Missing data tolerance for area-weighted calculations
------------------------------------------------------
-Missing data tolerance (mdtol) describes the fractional tolerance for missing
-data within any given grid cell in a regridding operation. Thus if the fraction
-of missing data (from overlapping source grid cells) in a grid cell exceeds the
-value of mdtol then the grid cell will be masked.
-
-By extension, an mdtol of 0 means no missing data is tolerated while an mdtol of 1
-means that grid cells will only be masked if all contributing elements from the
-source grid are masked.
