@@ -11,9 +11,9 @@ Iris 1.7 features
 
 .. admonition:: Showcase: Iris is making use of Biggus 
 
-    Iris is now making extensive use of Biggus for virtual arrays and lazy
-    array evaluation. In practice this means that analyses of cubes with data
-    bigger than the system's available memory are now possible.
+    Iris is now making extensive use of `Biggus <https://github.com/SciTools/biggus>`_
+    for virtual arrays and lazy array evaluation. In practice this means that analyses
+    of cubes with data bigger than the available system memory are now possible.
 
     Other than the improved functionality the changes are mostly
     transparent; for example, before the introduction of biggus, MemoryErrors
@@ -59,15 +59,26 @@ Iris 1.7 features
 
 .. admonition:: Showcase: Cube broadcasting
 
-    When doing mathematical operations, cubes now follow similar rules to the
-    broadcasting of numpy arrays, with extra coordinate aware context providing
-    some enhanced functionality beyond the basic broadcasting behaviour of numpy.
+    When performing cube arithmetic, cubes now follow similar broadcasting rules
+    as Numpy arrays.
 
-    For instance, it is now possible to subtract a processed cube from the original
-    to the mean deviation::
+    However, the additional richness of Iris coordinate meta-data provides an 
+    enhanced capability beyond the basic broadcasting behaviour of Numpy.
+
+    This means that when performing cube arithmetic, the dimensionality and shape of
+    cubes no longer need to match. For example, if the dimensionality of a cube is
+    reduced by collapsing, then the result can be used to subtract from the original
+    cube to calculate an anomaly::
 
         >>> time_mean = original_cube.collapsed('time', iris.analysis.MEAN)
-        >>> mean_deviation = original_cube - time_mean
+        >>> mean_anomaly = original_cube - time_mean
+
+    Given both broadcasting **and** coordinate meta-data, Iris can now perform
+    arithmetic with cubes which have similar but not identical shape::
+
+        >>> similar_cube = original_cube.copy()
+        >>> similar_cube.transpose()
+        >>> zero_cube = original_cube - similar_cube
 
 
 * Deferred GRIB data loading has been introduced for reduced memory consumption when
