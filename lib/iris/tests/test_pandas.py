@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,17 +20,24 @@
 # importing anything else
 import iris.tests as tests
 
+import copy
 import datetime
 import unittest
 
+import matplotlib.units
 import netcdftime
 import numpy as np
 
+
+# Importing pandas has the side-effect of messing with the formatters
+# used by matplotlib for handling dates.
+default_units_registry = copy.copy(matplotlib.units.registry)
 try:
     import pandas
 except ImportError:
     # Disable all these tests if pandas is not installed.
     pandas = None
+matplotlib.units.registry = default_units_registry
 
 skip_pandas = unittest.skipIf(pandas is None,
                               'Test(s) require "pandas", '
