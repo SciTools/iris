@@ -144,7 +144,8 @@ class Test_is_compatible(tests.IrisTest):
 
 class Test_DimCoord_copy(tests.IrisTest):
     def test_writable_points(self):
-        coord1 = DimCoord(range(5))
+        coord1 = DimCoord(range(5),
+                          bounds=[[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]])
         coord2 = coord1.copy()
         msg = 'destination is read-only'
 
@@ -153,6 +154,12 @@ class Test_DimCoord_copy(tests.IrisTest):
 
         with self.assertRaisesRegexp(ValueError, msg):
             coord2.points[:] = 0
+
+        with self.assertRaisesRegexp(ValueError, msg):
+            coord1.bounds[:] = 0
+
+        with self.assertRaisesRegexp(ValueError, msg):
+            coord2.bounds[:] = 0
 
 
 if __name__ == '__main__':
