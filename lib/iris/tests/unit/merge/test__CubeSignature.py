@@ -74,6 +74,24 @@ class Test_match__fill_value(tests.IrisTest):
             sig2.match(sig1, True)
         self.assertFalse(sig2.match(sig1, False))
 
+    def test_str_fill_value_equal(self):
+        sig1 = CubeSig(self.defn, self.data_shape, self.data_type, ' ')
+        sig2 = CubeSig(self.defn, self.data_shape, self.data_type, ' ')
+        self.assertTrue(sig1.match(sig2, True))
+        self.assertTrue(sig1.match(sig2, False))
+        self.assertTrue(sig2.match(sig1, True))
+        self.assertTrue(sig2.match(sig1, False))
+
+    def test_str_fill_value_unequal(self):
+        sig1 = CubeSig(self.defn, self.data_shape, self.data_type, ' ')
+        sig2 = CubeSig(self.defn, self.data_shape, self.data_type, '_')
+        with self.assertRaises(iris.exceptions.MergeError):
+            sig1.match(sig2, True)
+        self.assertFalse(sig1.match(sig2, False))
+        with self.assertRaises(iris.exceptions.MergeError):
+            sig2.match(sig1, True)
+        self.assertFalse(sig2.match(sig1, False))
+
 
 if __name__ == '__main__':
     tests.main()

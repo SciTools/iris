@@ -381,11 +381,18 @@ class _CubeSignature(namedtuple('CubeSignature',
         if self.data_type != other.data_type:
             msgs.append('cube data dtype differs: {} != {}'.format(
                 self.data_type, other.data_type))
-        if not (np.isnan(self.fill_value) and np.isnan(other.fill_value)) and \
-                self.fill_value != other.fill_value:
-            msg = 'cube data fill_value differs: ' \
-                '{!r} != {!r}'.format(self.fill_value, other.fill_value)
-            msgs.append(msg)
+        # Compare fill values noting that two np.nans do not compare equal
+        # and np.isnan() raises a TypeError on strings.
+        if self.fill_value != other.fill_value:
+            try:
+                both_nan = (np.isnan(self.fill_value) and
+                            np.isnan(other.fill_value))
+            except TypeError:
+                both_nan = False
+            if not both_nan:
+                msg = 'cube data fill_value differs: ' \
+                    '{!r} != {!r}'.format(self.fill_value, other.fill_value)
+                msgs.append(msg)
         match = not bool(msgs)
         if error_on_mismatch and not match:
             raise iris.exceptions.MergeError(msgs)
