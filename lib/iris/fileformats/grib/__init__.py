@@ -118,10 +118,16 @@ unknown_string = "???"
 
 
 def reset_load_rules():
-    """Resets the GRIB load process to use only the standard conversion rules."""
+    """
+    Resets the GRIB load process to use only the standard conversion rules.
 
+    .. deprecated:: 1.7
+
+    """
     # Uses this module-level variable
     global _load_rules
+
+    warnings.warn('reset_load_rules was deprecated in v1.7.')
 
     _load_rules = None
 
