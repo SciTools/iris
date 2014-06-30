@@ -1326,6 +1326,14 @@ class DimCoord(Coord):
         #: Whether the coordinate wraps by ``coord.units.modulus``.
         self.circular = bool(circular)
 
+    def copy(self, points=None, bounds=None):
+        new_coord = super(DimCoord, self).copy(points=points, bounds=bounds)
+        # Make the array read-only.
+        new_coord._points.flags.writeable = False
+        if new_coord._bounds is not None:
+            new_coord._bounds.flags.writeable = False
+        return new_coord
+
     def __eq__(self, other):
         # TODO investigate equality of AuxCoord and DimCoord if circular is
         # False.
