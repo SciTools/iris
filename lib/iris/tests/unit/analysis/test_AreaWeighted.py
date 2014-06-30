@@ -31,7 +31,7 @@ class Test(tests.IrisTest):
         # `iris.analysis._area_weighted.AreaWeightedRegridder` object.
         if mdtol is None:
             area_weighted = AreaWeighted()
-            mdtol = 0
+            mdtol = 1
         else:
             area_weighted = AreaWeighted(mdtol=mdtol)
         self.assertEqual(area_weighted.mdtol, mdtol)

@@ -1593,7 +1593,7 @@ class AreaWeighted(object):
 
     """
 
-    def __init__(self, mdtol=0):
+    def __init__(self, mdtol=1):
         """
         Area-weighted regridding scheme suitable for regridding one or more
         orthogonal coordinates.
@@ -1606,11 +1606,11 @@ class AreaWeighted(object):
             exceeds mdtol. mdtol=0 means no missing data is tolerated while
             mdtol=1 will mean the resulting element will be masked if and only
             if all the contributing elements of data are masked.
-            Defaults to 0.
+            Defaults to 1.
 
         """
-        msg = 'Value for mdtol must be in range 0 - 1, got {}.'
-        if mdtol < 0 or mdtol > 1:
+        if not (0 <= mdtol <= 1):
+            msg = 'Value for mdtol must be in range 0 - 1, got {}.'
             raise ValueError(msg.format(mdtol))
         self.mdtol = mdtol
 

@@ -30,7 +30,6 @@ from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
 from iris.cube import Cube
-import iris.tests.stock as stock
 
 
 class Test(tests.IrisTest):
@@ -55,7 +54,7 @@ class Test(tests.IrisTest):
         src_grid, target_grid = self.grids()
         if mdtol is None:
             regridder = AreaWeightedRegridder(src_grid, target_grid)
-            mdtol = 0
+            mdtol = 1
         else:
             regridder = AreaWeightedRegridder(src_grid, target_grid,
                                               mdtol=mdtol)
