@@ -21,16 +21,15 @@
 import iris.tests as tests
 
 import numpy as np
-from osgeo import gdal
 try:
     from osgeo import gdal
+    from iris.experimental.raster import export_geotiff
 except ImportError:
     gdal = None
 
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
 from iris.cube import Cube
-from iris.experimental.raster import export_geotiff
 
 
 @tests.skip_gdal
