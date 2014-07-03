@@ -21,7 +21,7 @@ Interpolation
 
 Interpolation can be achieved on a cube with the :meth:`~iris.cube.Cube.interpolate`
 method, with the first argument being the points to interpolate, and the second being
-the interpolation scheme to use, with the result being a new, interpolated, cube.
+the interpolation scheme to use. The result is a new interpolated cube.
 
 Sample points can be defined as an iterable of ``(coord/coord name, value(s))`` pairs
 (e.g. ``[('latitude', 51.48), ('longitude', 0)]``).
@@ -209,12 +209,14 @@ To conserve quantities when regridding, it is often the case that a point-based
 interpolation such as that provided by :class:`iris.analysis.Linear` is not
 appropriate. The :class:`iris.analysis.AreaWeighted` scheme is less general than
 :class:`iris.analysis.Linear`, but it is a conservative regridding scheme meaning
-that the area weighted total is preserved across grids.
+that the area weighted total is approximately preserved across grids.
 
 With :class:`~iris.analysis.AreaWeighted`, each target grid-box's data is
 computed as a weighted mean of all grid-boxes from the source grid. The weighting
 for any given target grid-box is the area of the intersection with each of the
-source grid-boxes.
+source grid-boxes. Such a scheme is an excellent choice when regridding from a high
+resolution grid to a lower resolution, since all source data points will be accounted
+for in the target grid.
 
 Using the same global grid we saw previously, along with a limited area cube
 containing total concentration of volcanic ash:
