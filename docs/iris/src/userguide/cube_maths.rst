@@ -71,7 +71,7 @@ but with the data representing their difference:
     ignored :func:`iris.analysis.maths.subtract` can be used instead.
 
 
-Calculating a cube anomoly
+Calculating a cube anomaly
 --------------------------
 
 In section :doc:`cube_statistics` we discussed how the dimensionality of a cube
@@ -79,7 +79,7 @@ can be reduced using the :meth:`Cube.collapsed <iris.cube.Cube.collapsed>` metho
 to calculate a statistic over a dimension.
 
 Let's use that method to calculate a mean of our air temperature time-series,
-which we'll then use to calculate a time mean anomoly and highlight the powerful
+which we'll then use to calculate a time mean anomaly and highlight the powerful
 benefits of cube broadcasting.
 
 First, let's remind ourselves of the shape of our air temperature time-series
@@ -97,14 +97,14 @@ Now, calculate the time-series mean using the
 
 As expected the *time* dimension has been collapsed, reducing the
 dimensionality of the resultant *air_temp_mean* cube. This time-series mean can
-now be used to calculate the time mean anomoly against the original
+now be used to calculate the time mean anomaly against the original
 time-series::
 
-    >>> anomoly = air_temp - air_temp_mean
-    >>> print anomoly.summary(True)
+    >>> anomaly = air_temp - air_temp_mean
+    >>> print anomaly.summary(True)
     unknown / (K)                       (time: 240; latitude: 37; longitude: 49)
 
-Notice that the calculation of the *anomoly* involves subtracting a
+Notice that the calculation of the *anomaly* involves subtracting a
 *2d* cube from a *3d* cube to yield a *3d* result. This is only possible
 because cube broadcasting is supported whenever cube arithmetic is performed.
 
