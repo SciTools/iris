@@ -132,8 +132,13 @@ class LinearInterpolator(object):
             Default mode of extrapolation is 'linear'
 
         """
-        # Snapshot the state of the cube to ensure that the interpolator
-        # is impervious to external changes to the original source cube.
+        # Trigger any deferred loading of the source cube's data and snapshot
+        # its state to ensure that the interpolator is impervious to external
+        # changes to the original source cube. The data is loaded to prevent
+        # the snaphot having lazy data, avoiding the potential for the
+        # same data to be loaded again and again.
+        if src_cube.has_lazy_data():
+            src_cube.data
         self._src_cube = src_cube.copy()
         # Coordinates defining the dimensions to be interpolated.
         self._src_coords = [self._src_cube.coord(coord) for coord in coords]
