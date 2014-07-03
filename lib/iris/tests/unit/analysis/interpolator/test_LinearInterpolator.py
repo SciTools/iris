@@ -20,6 +20,7 @@
 # importing anything else.
 import iris.tests as tests
 
+import biggus
 from nose.tools import assert_raises_regexp
 import numpy as np
 
@@ -53,24 +54,6 @@ class Test___init__(ThreeDimCube):
         # Access to the resulting coordinate which we are interpolating over.
         self.assertEqual(interpolator.coords,
                          [self.cube.coord('latitude')])
-
-
-class Test___init____circular(tests.IrisTest):
-    # Capture the behaviour of the interpolator initialisation based on the
-    # circular flag.
-    def setUp(self):
-        # Load some data from a file so that we have some deferred data.
-        self.cube = stock.simple_pp()
-
-    def test_not_circular(self):
-        self.cube.coord('longitude').circular = False
-        interpolator = LinearInterpolator(self.cube, ['longitude'])
-        self.assertTrue(interpolator.cube.has_lazy_data())
-
-    def test_circular(self):
-        self.cube.coord('longitude').circular = True
-        interpolator = LinearInterpolator(self.cube, ['longitude'])
-        self.assertTrue(interpolator.cube.has_lazy_data())
 
 
 class Test___init____validation(ThreeDimCube):
@@ -466,6 +449,24 @@ class Test___call____2D_non_contiguous(ThreeDimCube):
         self.assertCML(non_collapsed_cube[0, ...], result_path)
         self.assertCML(result_cube, result_path)
         self.assertEqual(result_cube, non_collapsed_cube[0, ...])
+
+
+class Test___call___lazy_data(ThreeDimCube):
+    def test_src_cube_data_loaded(self):
+        # LinearInterpolator operates using a snapshot of the source cube.
+        # If the source cube has lazy data when the interpolator is
+        # instantiated we want to make sure the source cube's data is
+        # loaded as a consequence of interpolation to avoid the risk
+        # of loading it again and again.
+
+        # Modify self.cube to have lazy data.
+        self.cube.lazy_data(biggus.NumpyArrayAdapter(self.data))
+        self.assertTrue(self.cube.has_lazy_data())
+
+        # Perform interpolation and check the data has been loaded.
+        interpolator = LinearInterpolator(self.cube, ['latitude'])
+        interpolator([[1.5]])
+        self.assertFalse(self.cube.has_lazy_data())
 
 
 if __name__ == "__main__":
