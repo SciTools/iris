@@ -88,7 +88,7 @@ cube::
     >>> print air_temp.summary(True)
     air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
 
-Now, calculate the time-series mean using the
+Now, we'll calculate the time-series mean using the
 :meth:`Cube.collapsed <iris.cube.Cube.collapsed>` method::
 
     >>> air_temp_mean = air_temp.collapsed('time', iris.analysis.MEAN)
@@ -106,7 +106,7 @@ time-series::
 
 Notice that the calculation of the *anomaly* involves subtracting a
 *2d* cube from a *3d* cube to yield a *3d* result. This is only possible
-because cube broadcasting is supported whenever cube arithmetic is performed.
+because cube broadcasting is performed during cube arithmetic operations.
 
 Cube broadcasting follows similar broadcasting rules as
 `NumPy <http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html>`_, but
@@ -118,12 +118,12 @@ possible to leverage this knowledge to identify the similar dimensions involved
 in a cube arithmetic operation. This essentially means that we are no longer
 restricted to performing arithmetic on cubes with identical shapes.
 
-This extended broadcasting behaviour is highlighted in the next couple of
-examples. The first of which shows that it is possible to involve the
+This extended broadcasting behaviour is highlighted in the following
+examples. The first of these shows that it is possible to involve the
 transpose of the air temperature time-series in an arithmetic operation with
 itself.
 
-First, let's create the transpose of the air temperature time-series::
+Let's first create the transpose of the air temperature time-series::
 
     >>> air_temp_T = air_temp.copy()
     >>> air_temp_T.transpose()
