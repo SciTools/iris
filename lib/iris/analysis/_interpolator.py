@@ -534,7 +534,7 @@ class LinearInterpolator(object):
 
         def construct_new_coord(coord):
             dims = cube.coord_dims(coord)
-            try:
+            if coord in self._src_coords:
                 index = self._src_coords.index(coord)
                 new_points = sample_points[index]
                 new_coord = construct_new_coord_given_points(coord, new_points)
@@ -542,7 +542,7 @@ class LinearInterpolator(object):
                 # mapped to the aux coordinates of a cube.
                 if coord in cube.aux_coords:
                     dims = [self._interp_dims[index]]
-            except ValueError:
+            else:
                 if set(dims).intersection(set(self._interp_dims)):
                     # Interpolate the coordinate payload.
                     new_coord = self._resample_coord(sample_points, coord,
