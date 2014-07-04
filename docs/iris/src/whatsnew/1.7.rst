@@ -9,7 +9,7 @@ Iris 1.7 features
 
 .. _showcase:
 
-.. admonition:: Showcase: Iris is making use of Biggus 
+.. admonition:: Showcase: Iris is making use of Biggus
 
     Iris is now making extensive use of `Biggus <https://github.com/SciTools/biggus>`_
     for virtual arrays and lazy array evaluation. In practice this means that analyses
@@ -30,12 +30,11 @@ Iris 1.7 features
         >>> print type(result)
         <class 'iris.cube.Cube'>
 
-    Memory is still a limiting factor if ever the data is desired as a numpy array
+    Memory is still a limiting factor if ever the data is desired as a NumPy array
     (e.g. via :data:`cube.data <iris.cube.Cube.data>`), but additional methods have
     been added to the Cube to support querying and subsequently accessing the "lazy"
     data form (see :meth:`~iris.cube.Cube.has_lazy_data` and
     :meth:`~iris.cube.Cube.lazy_data`).
-
 
 .. admonition:: Showcase: New interpolation and regridding API
 
@@ -50,20 +49,54 @@ Iris 1.7 features
 
     and::
 
-        regridded_cube = cube.regird(target_grid_cube, regridding_scheme)
+        regridded_cube = cube.regrid(target_grid_cube, regridding_scheme)
 
     Whilst not all schemes have been migrated to the new interface,
     :class:`iris.analysis.Linear` defines both linear interpolation and regridding,
     and :class:`iris.analysis.AreaWeighted` defines an area weighted regridding
     scheme.
 
+.. admonition:: Showcase: Merge and concatenate reporting
+
+    Merge reporting is designed as an aid to the merge processes. Should merging
+    a :class:`~iris.cube.CubeList` fail, merge reporting means that a descriptive
+    error will be raised that details the differences between the cubes in the
+    :class:`~iris.cube.CubeList` that prevented the merge from being successful.
+
+    A new :class:`~iris.cube.CubeList` method, called
+    :meth:`~iris.cube.CubeList.merge_cube`, has been introduced. Calling it on a
+    :class:`~iris.cube.CubeList` will result in a single merged
+    :class:`~iris.cube.Cube` being returned or an error message being raised
+    that describes why the merge process failed.
+
+    The following example demonstrates the error message that describes a merge
+    failure caused by cubes having differing attributes::
+
+        >>> cube_list = iris.cube.CubeList((c1, c2))
+        >>> cube_list.merge_cube()
+        Traceback (most recent call last):
+            ...
+            raise iris.exceptions.MergeError(msgs)
+        iris.exceptions.MergeError: failed to merge into a single cube.
+          cube.attributes keys differ: 'foo'
+
+    The naming of this new method mirrors that of Iris load functions, where
+    one would always expect a :class:`~iris.cube.CubeList` from :func:`iris.load`
+    and a :class:`~iris.cube.Cube` from :func:`iris.load_cube`.
+
+    Concatenate reporting is the equivalent process for concatenating a
+    :class:`~iris.cube.CubeList`. It is accessed through the method 
+    :meth:`~iris.cube.CubeList.concatenate_cube`, which will return a single
+    concatenated cube or produce an error message that describes why the
+    concatenate process failed.
+
 .. admonition:: Showcase: Cube broadcasting
 
     When performing cube arithmetic, cubes now follow similar broadcasting rules
-    as Numpy arrays.
+    as NumPy arrays.
 
-    However, the additional richness of Iris coordinate meta-data provides an 
-    enhanced capability beyond the basic broadcasting behaviour of Numpy.
+    However, the additional richness of Iris coordinate meta-data provides an
+    enhanced capability beyond the basic broadcasting behaviour of NumPy.
 
     This means that when performing cube arithmetic, the dimensionality and shape of
     cubes no longer need to match. For example, if the dimensionality of a cube is
@@ -74,15 +107,13 @@ Iris 1.7 features
         >>> mean_anomaly = original_cube - time_mean
 
     Given both broadcasting **and** coordinate meta-data, Iris can now perform
-    arithmetic with cubes which have similar but not identical shape::
+    arithmetic with cubes that have similar but not identical shape::
 
         >>> similar_cube = original_cube.copy()
         >>> similar_cube.transpose()
         >>> zero_cube = original_cube - similar_cube
 
-
-* Deferred GRIB data loading has been introduced for reduced memory consumption when
-  loading GRIB files.
+* Merge reporting that raises a descriptive error if the merge process fails.
 * Linear interpolation and regridding now make use of SciPy's RegularGridInterpolator
   for much faster linear interpolation.
 * NAME file loading now handles the "no time averaging" column and translates
@@ -102,7 +133,8 @@ Iris 1.7 features
   factory.
 * Support added for loading CF-NetCDF data with bounds arrays that are missing a
   vertex dimension.
-* :meth:`iris.cube.Cube.rolling_window` can now be used with string-based AuxCoordinates.
+* :meth:`iris.cube.Cube.rolling_window` can now be used with string-based
+  :class:`iris.coords.AuxCoord` instances.
 * Loading of PP and FF files has been optimised through deferring creation of
   PPField attributes.
 * Automatic association of a coordinate's CF formula terms variable with the
@@ -117,10 +149,13 @@ Iris 1.7 features
 * NetCDF reference surface variable promotion available through the
   :class:`iris.FUTURE` mechanism.
 * A speed improvement in calculation of :func:`iris.analysis.geometry.geometry_area_weights`.
-* The mdtol keyword was added to area-weighted regridding to allow control of the tolerance
-  for missing data.
+* The mdtol keyword was added to area-weighted regridding to allow control of the
+  tolerance for missing data. For a further description of this concept, see
+  :data:`iris.analysis.MEAN`.
 * Handling for patching of the CF conventions global attribute via a defined
   cf_patch_conventions function.
+* Deferred GRIB data loading has been introduced for reduced memory consumption when
+  loading GRIB files.
 * Concatenate reporting that raises a descriptive error if the concatenation
   process fails.
 
@@ -137,11 +172,14 @@ Bugs fixed
 * Auxiliary coordinate factory loading now correctly interprets formula term
   varibles for "atmosphere hybrid sigma pressure" coordinate data.
 * Corrected comparison of NumPy NaN values in cube merge process.
-* Fixes for :meth:`iris.Cube.intersection` to correct calculating the intersection
+* Fixes for :meth:`iris.cube.Cube.intersection` to correct calculating the intersection
   of a cube with split bounds, handling of circular coordinates, and for finding
   a wrapped two-point result.
 * A bug affecting :meth:`iris.cube.Cube.extract` and :meth:`iris.cube.CubeList.extract`
   that led to unexpected behaviour when operating on scalar cubes has been fixed.
+* Aggregate_by may now be passed single-value coordinates.
+* Making a copy of a :class:`iris.coords.DimCoord` no longer results in the writeable
+  flag on the copied points and bounds arrays being set to True.
 
 Incompatible changes
 ====================
@@ -162,6 +200,9 @@ Deprecations
 
 Documentation Changes
 =====================
+* New sections on :doc:`cube arithmetic broadcasting </userguide/cube_maths>` and
+  :doc:`regridding and interpolation </userguide/interpolation_and_regridding>`
+  have been added to the :doc:`user guide </userguide/index>`.
 * An example demonstrating custom log-scale colouring has been added.
   See :ref:`graphics-anomaly_log_colouring`.
 * An example demonstrating the creation of a custom
