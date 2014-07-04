@@ -328,6 +328,7 @@ class TestLicenseHeaders(unittest.TestCase):
                             'docs/iris/src/sphinxext/gen_rst.py',
                             'docs/iris/src/sphinxext/plot_directive.py',
                             'docs/iris/src/userguide/plotting_examples/*.py',
+                            'docs/iris/src/userguide/regridding_plots/*.py',
                             'docs/iris/src/developers_guide/gitwash_dumper.py',
                             'docs/iris/build/*',
                             'lib/iris/analysis/_scipy_interpolate.py',
