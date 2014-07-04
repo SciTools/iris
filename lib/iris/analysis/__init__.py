@@ -1602,11 +1602,12 @@ class AreaWeighted(object):
 
         * mdtol (float):
             Tolerance of missing data. The value returned in each element of
-            the returned array will be masked if the fraction of masked data
-            exceeds mdtol. mdtol=0 means no missing data is tolerated while
-            mdtol=1 will mean the resulting element will be masked if and only
-            if all the contributing elements of data are masked.
-            Defaults to 1.
+            the returned array will be masked if the fraction of missing data
+            exceeds mdtol. This fraction is calculated based on the area of
+            masked cells within each target cell. mdtol=0 means no masked
+            data is tolerated while mdtol=1 will mean the resulting element
+            will be masked if and only if all the overlapping elements of the
+            source grid are masked. Defaults to 1.
 
         """
         if not (0 <= mdtol <= 1):

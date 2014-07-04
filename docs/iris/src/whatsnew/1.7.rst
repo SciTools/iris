@@ -151,7 +151,7 @@ Iris 1.7 features
 * A speed improvement in calculation of :func:`iris.analysis.geometry.geometry_area_weights`.
 * The mdtol keyword was added to area-weighted regridding to allow control of the
   tolerance for missing data. For a further description of this concept, see
-  :data:`iris.analysis.MEAN`.
+  :class:`iris.analysis.AreaWeighted`.
 * Handling for patching of the CF conventions global attribute via a defined
   cf_patch_conventions function.
 * Deferred GRIB data loading has been introduced for reduced memory consumption when
