@@ -49,8 +49,8 @@ Taking the air temperature cube we've seen previously:
 
 We can interpolate specific values from the coordinates of the cube:
 
-    >>> points = [('latitude', 51.48), ('longitude', 0)]
-    >>> print air_temp.interpolate(points, iris.analysis.Linear())
+    >>> sample_points = [('latitude', 51.48), ('longitude', 0)]
+    >>> print air_temp.interpolate(sample_points, iris.analysis.Linear())
     air_temperature / (K)               (scalar cube)
          Scalar coordinates:
               forecast_period: 6477 hours, bound=(-28083.0, 6477.0) hours
@@ -82,9 +82,9 @@ The sample points needn't be a scalar value and may be an array of values instea
 When multiple coordinates are provided with arrays instead of scalars, the coordinates
 on the resulting cube will be orthogonal:
 
-    >>> points = [('longitude', np.linspace(-11, 2, 14)),
-    ...           ('latitude',  np.linspace(48, 60, 13))]
-    >>> result = air_temp.interpolate(points, iris.analysis.Linear())
+    >>> sample_points = [('longitude', np.linspace(-11, 2, 14)),
+    ...                  ('latitude',  np.linspace(48, 60, 13))]
+    >>> result = air_temp.interpolate(sample_points, iris.analysis.Linear())
     >>> print result.summary(shorten=True)
     air_temperature / (K)               (latitude: 13; longitude: 14)
 
@@ -92,7 +92,7 @@ on the resulting cube will be orthogonal:
 Interpolating non horizontal coordinates
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Interpolation in iris is not limited to horizontal-spatial coordinates - any
+Interpolation in Iris is not limited to horizontal-spatial coordinates - any
 coordinate satisfying the prerequisites of the chosen scheme may be interpolated
 over.
 
@@ -148,7 +148,7 @@ values requiring extrapolation being masked.
 Regridding
 ---------------------------------
 
-Regridding conceptually is a very similar to interpolation in iris, with the primary difference being
+Regridding conceptually is a very similar to interpolation in Iris, with the primary difference being
 that interpolations are based on sample points, where regridding is based on the **spatial** grid of
 *another cube*.
 
