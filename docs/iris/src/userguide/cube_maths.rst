@@ -71,6 +71,8 @@ but with the data representing their difference:
     ignored :func:`iris.analysis.maths.subtract` can be used instead.
 
 
+.. _cube-maths_anomaly:
+
 Calculating a cube anomaly
 --------------------------
 
