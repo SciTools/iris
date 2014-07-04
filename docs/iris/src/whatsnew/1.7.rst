@@ -185,7 +185,7 @@ Incompatible changes
 ====================
 * Saving a cube with a STASH attribute to NetCDF now produces a variable
   with an attribute of "um_stash_source" rather than "ukmo__um_stash_source".
-* Cubes save to NetCDF with a coordinate system referencing a spherical ellipsoid
+* Cubes saved to NetCDF with a coordinate system referencing a spherical ellipsoid
   now result in the grid mapping variable containing only the "earth_radius" attribute,
   rather than the "semi_major_axis" and "semi_minor_axis".
 * Collapsing a cube over all of its dimensions now results in a scalar cube rather
@@ -200,7 +200,7 @@ Deprecations
 
 Documentation Changes
 =====================
-* New sections on :doc:`cube arithmetic broadcasting </userguide/cube_maths>` and
+* New sections on :ref:`cube broadcasting <cube-maths_anomaly>` and
   :doc:`regridding and interpolation </userguide/interpolation_and_regridding>`
   have been added to the :doc:`user guide </userguide/index>`.
 * An example demonstrating custom log-scale colouring has been added.
