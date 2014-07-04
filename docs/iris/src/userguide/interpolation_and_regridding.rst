@@ -257,9 +257,10 @@ Finally, we can regrid the data using the area weighted scheme:
     VOLCANIC_ASH_AIR_CONCENTRATION / (g/m3) (latitude: 73; longitude: 96)
 
 Notice how the :class:`~iris.analysis.AreaWeighted` scheme allows us to define ``mdtol``
-which is a normalised proportion of masked source grid-boxes which are allowed in any
-given target grid-box. In this case, we've used ``0.5``, meaning that up to half of the
-grid-boxes which make up a target grid-box may have been masked data. Defining an
+which specifies the acceptable fraction of masked data in any given target grid-box.
+If the fraction of masked data exceeds this value, the data in the target grid-box will
+be masked in the result. The fraction of masked data is calculated based on the area of
+masked source grid-boxes that overlaps with each target grid-box. Defining an
 ``mdtol`` allows fine control of masked data tolerance, but it is worth remembering that
 defining anything other than an ``mdtol`` of 1 will prevent the scheme from being fully
 conservative, as some data would be disregarded if it lies close to masked data.
