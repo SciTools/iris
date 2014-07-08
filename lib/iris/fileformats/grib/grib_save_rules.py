@@ -432,17 +432,21 @@ def product_common(cube, grib):
 
 def type_of_statistical_processing(cube, grib, coord):
     """Search for processing over the given coord."""
-    stat_code = 255  # (grib code table 4.10)
-
     # if the last cell method applies only to the given coord...
     cell_method = cube.cell_methods[-1]
     coord_names = cell_method.coord_names
-    if len(coord_names) == 1 and coord_names[0] == coord.name():
-        stat_codes = {'mean': 0, 'sum': 1, 'maximum': 2, 'minimum': 3,
-                      'standard_deviation': 6}
-        stat_code = stat_codes[cell_method.method]
-    if stat_code == 255:
-        warnings.warn("Unable to determine type of statistical processing")
+    if len(coord_names) != 1:
+        raise ValueError('There are multiple coord names referenced by '
+                         'the primary cell method: {!r}. Multiple coordinate '
+                         'names are not supported.'.format(coord_names))
+    if coord_names[0] != coord.name():
+        raise ValueError('The coord name referenced by the primary cell method'
+                         ', {!r},  is not the expected coord name {!r}.'
+                         ''.format(coord_names[0], coord.name()))
+    stat_codes = {'mean': 0, 'sum': 1, 'maximum': 2, 'minimum': 3,
+                  'standard_deviation': 6}
+    # 255 is the code in template 4.8 for 'unknown' statistical method
+    stat_code = stat_codes.get(cell_method.method, 255)
     gribapi.grib_set_long(grib, "typeOfStatisticalProcessing", stat_code)
 
 
@@ -452,7 +456,7 @@ def time_processing_period(cube, grib):
 
     The time range is taken from the 'time' coordinate bounds.
     If the cell-method coordinate is not 'time' itself, the type of statistic
-    will always be 'unknown'.
+    will not be derived and the save process will be aborted.
 
     """
     # We could probably split this function up a bit
@@ -534,7 +538,12 @@ def product_template(cube, grib):
     if _cube_is_time_statistic(cube):
         gribapi.grib_set_long(grib, "productDefinitionTemplateNumber", 8)
         product_common(cube, grib)
-        time_processing_period(cube, grib)
+        try:
+            time_processing_period(cube, grib)
+        except ValueError as e:
+            raise ValueError('Saving to GRIB2 failed: the cube is not suitable'
+                             ' for saving as a time processed statistic GRIB'
+                             ' message. {}'.format(e))
         return
 
     # Don't know how to handle this kind of data
