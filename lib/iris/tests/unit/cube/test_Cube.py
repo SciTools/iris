@@ -20,6 +20,8 @@
 # importing anything else.
 import iris.tests as tests
 
+import itertools
+
 import biggus
 import mock
 import numpy as np
@@ -32,7 +34,7 @@ from iris.analysis import WeightedAggregator, Aggregator
 from iris.analysis import MEAN
 from iris.cube import Cube
 from iris.coords import AuxCoord, DimCoord
-from iris.exceptions import LazyAggregatorError
+from iris.exceptions import CoordinateNotFoundError, LazyAggregatorError
 import iris.tests.stock as stock
 
 
@@ -376,6 +378,111 @@ class Test_rolling_window(tests.IrisTest):
             long_name='month')
         self.assertEqual(res_cube.coord('val'), val_coord)
         self.assertEqual(res_cube.coord('month'), month_coord)
+
+
+class Test_slices_over(tests.IrisTest):
+    def setUp(self):
+        # (time, mln, grid_lat, grid_lon)
+        self.cube = stock.realistic_4d()
+        # Size of dimensions 1, 2, 3 from realistic_4d.
+        self.exp_iter_1d = xrange(len(self.cube.coord('time').points))
+        self.exp_iter_2d = np.ndindex(*[3, 7, 1, 1])
+
+    def test_1d_slice_coord_given(self):
+        res = self.cube.slices_over(self.cube.coord('time'))
+        for i, res_cube in itertools.izip(self.exp_iter_1d, res):
+            expected = self.cube[i]
+            self.assertEqual(res_cube, expected)
+
+    def test_1d_slice_nonexistent_coord_given(self):
+        with self.assertRaisesRegexp(CoordinateNotFoundError,
+                                     'find exactly 1'):
+            res = self.cube.slices_over(self.cube.coord('wibble'))
+
+    def test_1d_slice_coord_name_given(self):
+        res = self.cube.slices_over('time')
+        for i, res_cube in itertools.izip(self.exp_iter_1d, res):
+            expected = self.cube[i]
+            self.assertEqual(res_cube, expected)
+
+    def test_1d_slice_nonexistent_coord_name_given(self):
+        with self.assertRaisesRegexp(CoordinateNotFoundError,
+                                     'find exactly 1'):
+            res = self.cube.slices_over('wibble')
+
+    def test_1d_slice_dimension_given(self):
+        res = self.cube.slices_over(0)
+        for i, res_cube in itertools.izip(self.exp_iter_1d, res):
+            expected = self.cube[i]
+            self.assertEqual(res_cube, expected)
+
+    def test_1d_slice_nonexistent_dimension_given(self):
+        with self.assertRaisesRegexp(ValueError, 'iterator over a dimension'):
+            res = self.cube.slices_over(self.cube.ndim + 1)
+
+    def test_2d_slice_coord_given(self):
+        # Slicing over these two dimensions returns 420 2D cubes, so only check
+        # the first cube to keep test runtime sensible.
+        res = self.cube.slices_over([self.cube.coord('time'),
+                                     self.cube.coord('model_level_number')])
+        i = next(self.exp_iter_2d)
+        # Replace the 1s in requested dimensions (2, 3) with spanning slices.
+        i = [slice(None, None) if c > 1 else v for c, v in enumerate(i)]
+        expected = self.cube[tuple(i)]
+        self.assertEqual(next(res), expected)
+
+    def test_2d_slice_nonexistent_coord_given(self):
+        with self.assertRaisesRegexp(CoordinateNotFoundError,
+                                     'find exactly 1'):
+            res = self.cube.slices_over([self.cube.coord('time'),
+                                         self.cube.coord('wibble')])
+
+    def test_2d_slice_coord_name_given(self):
+        # Slicing over these two dimensions returns 420 2D cubes, so only check
+        # the first cube to keep test runtime sensible.
+        res = self.cube.slices_over(['time', 'model_level_number'])
+        i = next(self.exp_iter_2d)
+        # Replace the 1s in requested dimensions (2, 3) with spanning slices.
+        i = [slice(None, None) if c > 1 else v for c, v in enumerate(i)]
+        expected = self.cube[tuple(i)]
+        self.assertEqual(next(res), expected)
+
+    def test_2d_slice_nonexistent_coord_name_given(self):
+        with self.assertRaisesRegexp(CoordinateNotFoundError,
+                                     'find exactly 1'):
+            res = self.cube.slices_over(['time', 'wibble'])
+
+    def test_2d_slice_dimension_given(self):
+        # Slicing over these two dimensions returns 420 2D cubes, so only check
+        # the first cube to keep test runtime sensible.
+        res = self.cube.slices_over([0, 1])
+        i = next(self.exp_iter_2d)
+        # Replace the 1s in requested dimensions (2, 3) with spanning slices.
+        i = [slice(None, None) if c > 1 else v for c, v in enumerate(i)]
+        expected = self.cube[tuple(i)]
+        self.assertEqual(next(res), expected)
+
+    def test_2d_slice_nonexistent_dimension_given(self):
+        with self.assertRaisesRegexp(ValueError, 'iterator over a dimension'):
+            res = self.cube.slices_over([0, self.cube.ndim + 1])
+
+    def test_multidim_slice_coord_given(self):
+        # Slicing over surface altitude returns 100x100 2D cubes, so only check
+        # the first cube to keep test runtime sensible.
+        res = self.cube.slices_over('surface_altitude')
+        exp_cube = self.cube[:, :, 0, 0]
+        self.assertEqual(next(res), exp_cube)
+
+    def test_duplicate_coordinate_given(self):
+        res = self.cube.slices_over([0, 0])
+        for i, res_cube in itertools.izip(self.exp_iter_1d, res):
+            expected = self.cube[i]
+            self.assertEqual(res_cube, expected)
+
+    def test_nodimension(self):
+        # Slicing over no dimension should return the whole cube.
+        res = self.cube.slices_over([])
+        self.assertEqual(next(res), self.cube)
 
 
 def create_cube(lon_min, lon_max, bounds=False):
