@@ -584,16 +584,28 @@ def regrid_bilinear_rectilinear_src_and_grid(src, grid,
                          "systems or both have no coordinate system but with "
                          "matching coordinate metadata.")
 
-    def _valid_units(coord):
-        if isinstance(coord.coord_system, (iris.coord_systems.GeogCS,
-                                           iris.coord_systems.RotatedGeogCS)):
-            valid_units = 'degrees'
+    def _check_units(coord):
+        if coord.coord_system is None:
+            # No restriction on units.
+            pass
+        elif isinstance(coord.coord_system,
+                        (iris.coord_systems.GeogCS,
+                         iris.coord_systems.RotatedGeogCS)):
+            # Units for lat-lon or rotated pole must be 'degrees'. Note
+            # that 'degrees_east' etc. are equal to 'degrees'.
+            if coord.units != 'degrees':
+                msg = "Unsupported units for coordinate system. " \
+                      "Expected 'degrees' got {!r}.".format(coord.units)
+                raise ValueError(msg)
         else:
-            valid_units = 'm'
-        return coord.units == valid_units
-    if not all(_valid_units(coord) for coord in (src_x_coord, src_y_coord,
-                                                 grid_x_coord, grid_y_coord)):
-        raise ValueError("Unsupported units: must be 'degrees' or 'm'.")
+            # Units for other coord systems must be equal to metres.
+            if coord.units != 'm':
+                msg = "Unsupported units for coordinate system. " \
+                      "Expected 'metres' got {!r}.".format(coord.units)
+                raise ValueError(msg)
+
+    for coord in (src_x_coord, src_y_coord, grid_x_coord, grid_y_coord):
+        _check_units(coord)
 
     modes = iris.analysis._interpolator._LINEAR_EXTRAPOLATION_MODES
     if extrapolation_mode not in modes:
