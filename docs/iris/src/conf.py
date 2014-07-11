@@ -153,7 +153,9 @@ intersphinx_mapping = {
    'python': ('http://docs.python.org/2.7', None),
    'numpy': ('http://docs.scipy.org/doc/numpy/', None),
    'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None),
-   'matplotlib': ('http://matplotlib.sourceforge.net/', None),
+   'matplotlib': ('http://matplotlib.org/', None),
+   'cartopy': ('http://scitools.org.uk/cartopy/docs/latest/', None),
+   'biggus': ('http://biggus.readthedocs.org/en/latest/', None),
 }
 
 

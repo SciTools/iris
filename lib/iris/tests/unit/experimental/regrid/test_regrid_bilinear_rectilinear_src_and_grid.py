@@ -266,6 +266,42 @@ class TestNoCoordSystems(tests.IrisTest):
         expected[2, :] = np.ma.masked
         self.assertMaskedArrayEqual(result.data, expected)
 
+    def test_matching_units(self):
+        # Check we are insensitive to the units provided they match.
+        # NB. We change the coordinate *values* to ensure that does not
+        # prevent the regridding operation.
+        src = uk_cube()
+        self.remove_coord_systems(src)
+        # Move to unusual units (i.e. not metres or degrees).
+        for coord in src.dim_coords:
+            coord.units = 'feet'
+        grid = src.copy()
+        for coord in grid.dim_coords:
+            coord.points = coord.points + 1
+        result = regrid(src, grid)
+        for coord in result.dim_coords:
+            self.assertEqual(coord, grid.coord(coord))
+        expected = np.ma.arange(12).reshape((3, 4)) + 5
+        expected[:, 3] = np.ma.masked
+        expected[2, :] = np.ma.masked
+        self.assertMaskedArrayEqual(result.data, expected)
+
+    def test_different_units(self):
+        src = uk_cube()
+        self.remove_coord_systems(src)
+        # Move to unusual units (i.e. not metres or degrees).
+        for coord in src.coords():
+            coord.units = 'feet'
+        grid = src.copy()
+        grid.coord('projection_y_coordinate').units = 'yards'
+        # We change the coordinate *values* to ensure that does not
+        # prevent the regridding operation.
+        for coord in grid.dim_coords:
+            coord.points = coord.points + 1
+        with self.assertRaisesRegexp(ValueError,
+                                     'matching coordinate metadata'):
+            regrid(src, grid)
+
     def test_coord_metadata_mismatch(self):
         # Check for failure when coordinate definitions differ.
         uk = uk_cube()

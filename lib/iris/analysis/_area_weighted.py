@@ -27,7 +27,7 @@ class AreaWeightedRegridder(object):
 
     """
 
-    def __init__(self, src_grid_cube, target_grid_cube, mdtol=0):
+    def __init__(self, src_grid_cube, target_grid_cube, mdtol=1):
         """
         Create an area-weighted regridder for conversions between the source
         and target grids.
@@ -47,7 +47,7 @@ class AreaWeightedRegridder(object):
             exceeds mdtol. mdtol=0 means no missing data is tolerated while
             mdtol=1 will mean the resulting element will be masked if and only
             if all the contributing elements of data are masked.
-            Defaults to 0.
+            Defaults to 1.
 
         """
         # Snapshot the state of the cubes to ensure that the regridder is
@@ -55,8 +55,8 @@ class AreaWeightedRegridder(object):
         self._src_grid = eregrid._snapshot_grid(src_grid_cube)
         self._target_grid = eregrid._snapshot_grid(target_grid_cube)
         # Missing data tolerance.
-        msg = 'Value for mdtol must be in range 0 - 1, got {}.'
-        if mdtol < 0 or mdtol > 1:
+        if not (0 <= mdtol <= 1):
+            msg = 'Value for mdtol must be in range 0 - 1, got {}.'
             raise ValueError(msg.format(mdtol))
         self._mdtol = mdtol
 

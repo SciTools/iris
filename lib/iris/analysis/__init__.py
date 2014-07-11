@@ -1395,7 +1395,11 @@ class _Groupby(object):
                     new_points = []
                     new_bounds = None
                     for key_slice in self._slices_by_key.itervalues():
-                        new_pt = '|'.join(coord.points[i] for i in key_slice)
+                        if isinstance(key_slice, slice):
+                            indices = key_slice.indices(coord.points.shape[0])
+                            key_slice = range(*indices)
+                        new_pt = '|'.join([coord.points[i]
+                                           for i in key_slice])
                         new_points.append(new_pt)
                 else:
                     msg = ('collapsing the bounded string coordinate {0!r}'
@@ -1589,7 +1593,7 @@ class AreaWeighted(object):
 
     """
 
-    def __init__(self, mdtol=0):
+    def __init__(self, mdtol=1):
         """
         Area-weighted regridding scheme suitable for regridding one or more
         orthogonal coordinates.
@@ -1598,15 +1602,16 @@ class AreaWeighted(object):
 
         * mdtol (float):
             Tolerance of missing data. The value returned in each element of
-            the returned array will be masked if the fraction of masked data
-            exceeds mdtol. mdtol=0 means no missing data is tolerated while
-            mdtol=1 will mean the resulting element will be masked if and only
-            if all the contributing elements of data are masked.
-            Defaults to 0.
+            the returned array will be masked if the fraction of missing data
+            exceeds mdtol. This fraction is calculated based on the area of
+            masked cells within each target cell. mdtol=0 means no masked
+            data is tolerated while mdtol=1 will mean the resulting element
+            will be masked if and only if all the overlapping elements of the
+            source grid are masked. Defaults to 1.
 
         """
-        msg = 'Value for mdtol must be in range 0 - 1, got {}.'
-        if mdtol < 0 or mdtol > 1:
+        if not (0 <= mdtol <= 1):
+            msg = 'Value for mdtol must be in range 0 - 1, got {}.'
             raise ValueError(msg.format(mdtol))
         self.mdtol = mdtol
 

@@ -132,8 +132,13 @@ class LinearInterpolator(object):
             Default mode of extrapolation is 'linear'
 
         """
-        # Snapshot the state of the cube to ensure that the interpolator
-        # is impervious to external changes to the original source cube.
+        # Trigger any deferred loading of the source cube's data and snapshot
+        # its state to ensure that the interpolator is impervious to external
+        # changes to the original source cube. The data is loaded to prevent
+        # the snaphot having lazy data, avoiding the potential for the
+        # same data to be loaded again and again.
+        if src_cube.has_lazy_data():
+            src_cube.data
         self._src_cube = src_cube.copy()
         # Coordinates defining the dimensions to be interpolated.
         self._src_coords = [self._src_cube.coord(coord) for coord in coords]
@@ -534,7 +539,7 @@ class LinearInterpolator(object):
 
         def construct_new_coord(coord):
             dims = cube.coord_dims(coord)
-            try:
+            if coord in self._src_coords:
                 index = self._src_coords.index(coord)
                 new_points = sample_points[index]
                 new_coord = construct_new_coord_given_points(coord, new_points)
@@ -542,7 +547,7 @@ class LinearInterpolator(object):
                 # mapped to the aux coordinates of a cube.
                 if coord in cube.aux_coords:
                     dims = [self._interp_dims[index]]
-            except ValueError:
+            else:
                 if set(dims).intersection(set(self._interp_dims)):
                     # Interpolate the coordinate payload.
                     new_coord = self._resample_coord(sample_points, coord,
