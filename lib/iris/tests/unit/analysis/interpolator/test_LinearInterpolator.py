@@ -20,11 +20,14 @@
 # importing anything else.
 import iris.tests as tests
 
+import datetime
+
 import biggus
-from nose.tools import assert_raises_regexp
 import numpy as np
 
 import iris
+import iris.coords
+import iris.cube
 import iris.exceptions
 import iris.tests.stock as stock
 from iris.analysis._interpolator import LinearInterpolator
@@ -99,7 +102,7 @@ class Test___init____validation(ThreeDimCube):
             LinearInterpolator(self.cube, ['non-monotonic'])
 
 
-class Test___call____1D(ThreeDimCube):
+class Test___call___1D(ThreeDimCube):
     def setUp(self):
         ThreeDimCube.setUp(self)
         self.interpolator = LinearInterpolator(self.cube, ['latitude'])
@@ -172,12 +175,12 @@ class Test___call____1D(ThreeDimCube):
         msg = 'One of the requested xi is out of bounds in dimension 0'
         interpolator = LinearInterpolator(self.cube, ['latitude'],
                                           extrapolation_mode='error')
-        with assert_raises_regexp(ValueError, msg):
+        with self.assertRaisesRegexp(ValueError, msg):
             interpolator([[-1]])
 
     def test_interpolate_data_unsupported_extrapolation(self):
         msg = "Extrapolation mode 'unsupported' not supported"
-        with assert_raises_regexp(ValueError, msg):
+        with self.assertRaisesRegexp(ValueError, msg):
             LinearInterpolator(self.cube, ['latitude'],
                                extrapolation_mode='unsupported')
 
@@ -186,7 +189,7 @@ class Test___call____1D(ThreeDimCube):
         # i.e. points given for two coordinates where there are only one
         # specified.
         msg = 'Expected sample points for 1 coordinates, got 2.'
-        with assert_raises_regexp(ValueError, msg):
+        with self.assertRaisesRegexp(ValueError, msg):
             self.interpolator([[1, 2], [1]])
 
     def test_interpolate_data_dtype_casting(self):
@@ -222,7 +225,7 @@ class Test___call____1D(ThreeDimCube):
             interpolator([0])
 
 
-class Test___call____1D_circular(ThreeDimCube):
+class Test___call___1D_circular(ThreeDimCube):
     # Note: all these test data interpolation.
     def setUp(self):
         ThreeDimCube.setUp(self)
@@ -307,7 +310,7 @@ class Test___call____1D_circular(ThreeDimCube):
         self.assertArrayEqual(res.data, cube[:, 1].data)
 
 
-class Test___call____1D_singlelendim(ThreeDimCube):
+class Test___call___1D_singlelendim(ThreeDimCube):
     def setUp(self):
         """
         thingness / (1)                     (wibble: 2; latitude: 1)
@@ -344,7 +347,7 @@ class Test___call____1D_singlelendim(ThreeDimCube):
         self.assertArrayEqual(result.data, self.cube.data)
 
 
-class Test___call____masked(tests.IrisTest):
+class Test___call___masked(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_4d_with_hybrid_height()
         mask = np.isnan(self.cube.data)
@@ -367,7 +370,7 @@ class Test___call____masked(tests.IrisTest):
                                      'orthogonal_cube_with_factory.cml'))
 
 
-class Test___call____2D(ThreeDimCube):
+class Test___call___2D(ThreeDimCube):
     def setUp(self):
         ThreeDimCube.setUp(self)
         self.interpolator = LinearInterpolator(self.cube,
@@ -404,7 +407,7 @@ class Test___call____2D(ThreeDimCube):
             interpolator([[15], [10]])
 
 
-class Test___call____2D_non_contiguous(ThreeDimCube):
+class Test___call___2D_non_contiguous(ThreeDimCube):
     def setUp(self):
         ThreeDimCube.setUp(self)
         coords = ['height', 'longitude']
@@ -467,6 +470,33 @@ class Test___call___lazy_data(ThreeDimCube):
         interpolator = LinearInterpolator(self.cube, ['latitude'])
         interpolator([[1.5]])
         self.assertFalse(self.cube.has_lazy_data())
+
+
+class Test___call___time(tests.IrisTest):
+    def interpolator(self):
+        data = np.arange(12).reshape(4, 3)
+        cube = iris.cube.Cube(data)
+        time_coord = iris.coords.DimCoord(range(0, 48, 12), 'time',
+                                          units='hours since epoch')
+        height_coord = iris.coords.DimCoord(range(3), 'altitude', units='m')
+        cube.add_dim_coord(time_coord, 0)
+        cube.add_dim_coord(height_coord, 1)
+        return LinearInterpolator(cube, ['time'])
+
+    def test_number_at_existing_value(self):
+        interpolator = self.interpolator()
+        result = interpolator([12])
+        self.assertArrayEqual(result.data, [3, 4, 5])
+
+    def test_datetime_at_existing_value(self):
+        interpolator = self.interpolator()
+        result = interpolator([datetime.datetime(1970, 1, 1, 12)])
+        self.assertArrayEqual(result.data, [3, 4, 5])
+
+    def test_datetime_between_existing_values(self):
+        interpolator = self.interpolator()
+        result = interpolator([datetime.datetime(1970, 1, 1, 18)])
+        self.assertArrayEqual(result.data, [4.5, 5.5, 6.5])
 
 
 if __name__ == "__main__":
