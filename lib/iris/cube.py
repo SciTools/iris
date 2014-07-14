@@ -2240,6 +2240,60 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 raise TypeError(msg)
         return coords
 
+    def slices_over(self, ref_to_slice):
+        """
+        Return an iterator of all subcubes along a given coordinate or
+        dimension index, or multiple of these.
+
+        Args:
+
+        * ref_to_slice (string, coord, dimension index or a list of these):
+            Determines which dimensions will be iterated along (i.e. the
+            dimensions that are not returned in the subcubes).
+            A mix of input types can also be provided.
+
+        Returns:
+            An iterator of subcubes.
+
+        For example, to get all subcubes along the time dimension::
+
+            for sub_cube in cube.slices_over('time'):
+                print sub_cube
+
+        .. seealso:: :meth:`iris.cube.Cube.slices`.
+
+        .. note::
+
+            The order of dimension references to slice along does not affect
+            the order of returned items in the iterator; instead the ordering
+            is based on the fastest-changing dimension.
+
+        """
+        # Required to handle a mix between types.
+        if not hasattr(ref_to_slice, '__iter__'):
+            ref_to_slice = [ref_to_slice]
+
+        slice_dims = set()
+        for ref in ref_to_slice:
+            try:
+                coord, = self._as_list_of_coords(ref)
+            except TypeError:
+                dim = int(ref)
+                if dim < 0 or dim > self.ndim:
+                    msg = ('Requested an iterator over a dimension ({}) '
+                           'which does not exist.'.format(dim))
+                    raise ValueError(msg)
+                # Convert coord index to a single-element list to prevent a
+                # TypeError when `slice_dims.update` is called with it.
+                dims = [dim]
+            else:
+                dims = self.coord_dims(coord)
+            slice_dims.update(dims)
+
+        all_dims = set(range(self.ndim))
+        opposite_dims = list(all_dims - slice_dims)
+        return self.slices(opposite_dims, ordered=False)
+
     def slices(self, ref_to_slice, ordered=True):
         """
         Return an iterator of all subcubes given the coordinates or dimension
@@ -2268,6 +2322,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             for sub_cube in cube.slices(['longitude', 'latitude']):
                 print sub_cube
+
+        .. seealso:: :meth:`iris.cube.Cube.slices_over`.
 
         """
         if not isinstance(ordered, bool):
