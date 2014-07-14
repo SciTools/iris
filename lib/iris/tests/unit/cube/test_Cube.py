@@ -384,38 +384,37 @@ class Test_slices_over(tests.IrisTest):
     def setUp(self):
         self.cube = stock.realistic_4d()
         # Define expected iterators for 1D and 2D test cases.
-        self.exp_iter_1d = xrange(len(self.cube.coord('time').points))
-        self.exp_iter_2d = np.ndindex(3, 7, 1, 1)
+        self.exp_iter_1d = xrange(
+            len(self.cube.coord('model_level_number').points))
+        self.exp_iter_2d = np.ndindex(6, 70, 1, 1)
         # Define maximum number of interations for particularly long
         # (and so time-consuming) iterators.
         self.long_iterator_max = 5
 
     def test_1d_slice_coord_given(self):
-        res = self.cube.slices_over(self.cube.coord('time'))
+        res = self.cube.slices_over(self.cube.coord('model_level_number'))
         for i, res_cube in itertools.izip(self.exp_iter_1d, res):
-            expected = self.cube[i]
+            expected = self.cube[:, i]
             self.assertEqual(res_cube, expected)
 
     def test_1d_slice_nonexistent_coord_given(self):
-        with self.assertRaisesRegexp(CoordinateNotFoundError,
-                                     'find exactly 1'):
+        with self.assertRaises(CoordinateNotFoundError):
             res = self.cube.slices_over(self.cube.coord('wibble'))
 
     def test_1d_slice_coord_name_given(self):
-        res = self.cube.slices_over('time')
+        res = self.cube.slices_over('model_level_number')
         for i, res_cube in itertools.izip(self.exp_iter_1d, res):
-            expected = self.cube[i]
+            expected = self.cube[:, i]
             self.assertEqual(res_cube, expected)
 
     def test_1d_slice_nonexistent_coord_name_given(self):
-        with self.assertRaisesRegexp(CoordinateNotFoundError,
-                                     'find exactly 1'):
+        with self.assertRaises(CoordinateNotFoundError):
             res = self.cube.slices_over('wibble')
 
     def test_1d_slice_dimension_given(self):
-        res = self.cube.slices_over(0)
+        res = self.cube.slices_over(1)
         for i, res_cube in itertools.izip(self.exp_iter_1d, res):
-            expected = self.cube[i]
+            expected = self.cube[:, i]
             self.assertEqual(res_cube, expected)
 
     def test_1d_slice_nonexistent_dimension_given(self):
@@ -428,15 +427,14 @@ class Test_slices_over(tests.IrisTest):
         res = self.cube.slices_over([self.cube.coord('time'),
                                      self.cube.coord('model_level_number')])
         for ct in range(self.long_iterator_max):
-            i = next(self.exp_iter_2d)
-            # Replace the 1s in requested dims (2, 3) with spanning slices.
-            i = [slice(None, None) if c > 1 else v for c, v in enumerate(i)]
-            expected = self.cube[tuple(i)]
+            indices = list(next(self.exp_iter_2d))
+            # Replace the dimensions not iterated over with spanning slices.
+            indices[2] = indices[3] = slice(None)
+            expected = self.cube[tuple(indices)]
             self.assertEqual(next(res), expected)
 
     def test_2d_slice_nonexistent_coord_given(self):
-        with self.assertRaisesRegexp(CoordinateNotFoundError,
-                                     'find exactly 1'):
+        with self.assertRaises(CoordinateNotFoundError):
             res = self.cube.slices_over([self.cube.coord('time'),
                                          self.cube.coord('wibble')])
 
@@ -445,15 +443,14 @@ class Test_slices_over(tests.IrisTest):
         # cubes up to `self.long_iterator_max` to keep test runtime sensible.
         res = self.cube.slices_over(['time', 'model_level_number'])
         for ct in range(self.long_iterator_max):
-            i = next(self.exp_iter_2d)
-            # Replace the 1s in requested dims (2, 3) with spanning slices.
-            i = [slice(None, None) if c > 1 else v for c, v in enumerate(i)]
-            expected = self.cube[tuple(i)]
+            indices = list(next(self.exp_iter_2d))
+            # Replace the dimensions not iterated over with spanning slices.
+            indices[2] = indices[3] = slice(None)
+            expected = self.cube[tuple(indices)]
             self.assertEqual(next(res), expected)
 
     def test_2d_slice_nonexistent_coord_name_given(self):
-        with self.assertRaisesRegexp(CoordinateNotFoundError,
-                                     'find exactly 1'):
+        with self.assertRaises(CoordinateNotFoundError):
             res = self.cube.slices_over(['time', 'wibble'])
 
     def test_2d_slice_dimension_given(self):
@@ -461,10 +458,21 @@ class Test_slices_over(tests.IrisTest):
         # cubes up to `self.long_iterator_max` to keep test runtime sensible.
         res = self.cube.slices_over([0, 1])
         for ct in range(self.long_iterator_max):
-            i = next(self.exp_iter_2d)
-            # Replace the 1s in requested dims (2, 3) with spanning slices.
-            i = [slice(None, None) if c > 1 else v for c, v in enumerate(i)]
-            expected = self.cube[tuple(i)]
+            indices = list(next(self.exp_iter_2d))
+            # Replace the dimensions not iterated over with spanning slices.
+            indices[2] = indices[3] = slice(None)
+            expected = self.cube[tuple(indices)]
+            self.assertEqual(next(res), expected)
+
+    def test_2d_slice_reversed_dimension_given(self):
+        # Confirm that reversing the order of the dimensions returns the same
+        # results as the above test.
+        res = self.cube.slices_over([1, 0])
+        for ct in range(self.long_iterator_max):
+            indices = list(next(self.exp_iter_2d))
+            # Replace the dimensions not iterated over with spanning slices.
+            indices[2] = indices[3] = slice(None)
+            expected = self.cube[tuple(indices)]
             self.assertEqual(next(res), expected)
 
     def test_2d_slice_nonexistent_dimension_given(self):
@@ -478,16 +486,22 @@ class Test_slices_over(tests.IrisTest):
         # Define special ndindex iterator for the different dims sliced over.
         nditer = np.ndindex(1, 1, 100, 100)
         for ct in range(self.long_iterator_max):
-            i = next(nditer)
-            # Replace the 1s in requested dims (0, 1) with spanning slices.
-            i = [slice(None, None) if c < 2 else v for c, v in enumerate(i)]
-            expected = self.cube[tuple(i)]
+            indices = list(next(nditer))
+            # Replace the dimensions not iterated over with spanning slices.
+            indices[0] = indices[1] = slice(None)
+            expected = self.cube[tuple(indices)]
             self.assertEqual(next(res), expected)
 
     def test_duplicate_coordinate_given(self):
-        res = self.cube.slices_over([0, 0])
+        res = self.cube.slices_over([1, 1])
         for i, res_cube in itertools.izip(self.exp_iter_1d, res):
-            expected = self.cube[i]
+            expected = self.cube[:, i]
+            self.assertEqual(res_cube, expected)
+
+    def test_non_orthogonal_coordinates_given(self):
+        res = self.cube.slices_over(['model_level_number', 'sigma'])
+        for i, res_cube in itertools.izip(self.exp_iter_1d, res):
+            expected = self.cube[:, i]
             self.assertEqual(res_cube, expected)
 
     def test_nodimension(self):

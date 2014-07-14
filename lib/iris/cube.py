@@ -2250,8 +2250,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         * ref_to_slice (string, coord, dimension index or a list of these):
             Determines which dimensions will be iterated along (i.e. the
             dimensions that are not returned in the subcubes).
-            A mix of input types can also be provided. They must all be
-            orthogonal (i.e. point to different dimensions).
+            A mix of input types can also be provided.
 
         Returns:
             An iterator of subcubes.
@@ -2261,9 +2260,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             for sub_cube in cube.slices_over('time'):
                 print sub_cube
 
-        .. seealso::
-
-            :meth:`iris.cube.Cube.slices`.
+        .. seealso:: :meth:`iris.cube.Cube.slices`.
 
         .. note::
 
@@ -2326,9 +2323,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             for sub_cube in cube.slices(['longitude', 'latitude']):
                 print sub_cube
 
-        .. seealso::
-
-            :meth:`iris.cube.Cube.slices_over`.
+        .. seealso:: :meth:`iris.cube.Cube.slices_over`.
 
         """
         if not isinstance(ordered, bool):
