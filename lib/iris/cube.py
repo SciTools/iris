@@ -2261,15 +2261,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             for sub_cube in cube.slices_over('time'):
                 print sub_cube
 
-        See also :meth:`iris.cube.Cube.slices`.
+        .. seealso::
+
+            :meth:`iris.cube.Cube.slices`.
 
         .. note::
+
             The order of dimension references to slice along does not affect
             the order of returned items in the iterator; instead the ordering
             is based on the fastest-changing dimension.
 
         """
-        # Required to handle a mix between types
+        # Required to handle a mix between types.
         if not hasattr(ref_to_slice, '__iter__'):
             ref_to_slice = [ref_to_slice]
 
@@ -2323,7 +2326,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             for sub_cube in cube.slices(['longitude', 'latitude']):
                 print sub_cube
 
-        See also :meth:`iris.cube.Cube.slices_over`.
+        .. seealso::
+
+            :meth:`iris.cube.Cube.slices_over`.
 
         """
         if not isinstance(ordered, bool):

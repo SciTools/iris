@@ -382,11 +382,13 @@ class Test_rolling_window(tests.IrisTest):
 
 class Test_slices_over(tests.IrisTest):
     def setUp(self):
-        # (time, mln, grid_lat, grid_lon)
         self.cube = stock.realistic_4d()
-        # Size of dimensions 1, 2, 3 from realistic_4d.
+        # Define expected iterators for 1D and 2D test cases.
         self.exp_iter_1d = xrange(len(self.cube.coord('time').points))
-        self.exp_iter_2d = np.ndindex(*[3, 7, 1, 1])
+        self.exp_iter_2d = np.ndindex(3, 7, 1, 1)
+        # Define maximum number of interations for particularly long
+        # (and so time-consuming) iterators.
+        self.long_iterator_max = 5
 
     def test_1d_slice_coord_given(self):
         res = self.cube.slices_over(self.cube.coord('time'))
@@ -422,14 +424,15 @@ class Test_slices_over(tests.IrisTest):
 
     def test_2d_slice_coord_given(self):
         # Slicing over these two dimensions returns 420 2D cubes, so only check
-        # the first cube to keep test runtime sensible.
+        # cubes up to `self.long_iterator_max` to keep test runtime sensible.
         res = self.cube.slices_over([self.cube.coord('time'),
                                      self.cube.coord('model_level_number')])
-        i = next(self.exp_iter_2d)
-        # Replace the 1s in requested dimensions (2, 3) with spanning slices.
-        i = [slice(None, None) if c > 1 else v for c, v in enumerate(i)]
-        expected = self.cube[tuple(i)]
-        self.assertEqual(next(res), expected)
+        for ct in range(self.long_iterator_max):
+            i = next(self.exp_iter_2d)
+            # Replace the 1s in requested dims (2, 3) with spanning slices.
+            i = [slice(None, None) if c > 1 else v for c, v in enumerate(i)]
+            expected = self.cube[tuple(i)]
+            self.assertEqual(next(res), expected)
 
     def test_2d_slice_nonexistent_coord_given(self):
         with self.assertRaisesRegexp(CoordinateNotFoundError,
@@ -439,13 +442,14 @@ class Test_slices_over(tests.IrisTest):
 
     def test_2d_slice_coord_name_given(self):
         # Slicing over these two dimensions returns 420 2D cubes, so only check
-        # the first cube to keep test runtime sensible.
+        # cubes up to `self.long_iterator_max` to keep test runtime sensible.
         res = self.cube.slices_over(['time', 'model_level_number'])
-        i = next(self.exp_iter_2d)
-        # Replace the 1s in requested dimensions (2, 3) with spanning slices.
-        i = [slice(None, None) if c > 1 else v for c, v in enumerate(i)]
-        expected = self.cube[tuple(i)]
-        self.assertEqual(next(res), expected)
+        for ct in range(self.long_iterator_max):
+            i = next(self.exp_iter_2d)
+            # Replace the 1s in requested dims (2, 3) with spanning slices.
+            i = [slice(None, None) if c > 1 else v for c, v in enumerate(i)]
+            expected = self.cube[tuple(i)]
+            self.assertEqual(next(res), expected)
 
     def test_2d_slice_nonexistent_coord_name_given(self):
         with self.assertRaisesRegexp(CoordinateNotFoundError,
@@ -454,13 +458,14 @@ class Test_slices_over(tests.IrisTest):
 
     def test_2d_slice_dimension_given(self):
         # Slicing over these two dimensions returns 420 2D cubes, so only check
-        # the first cube to keep test runtime sensible.
+        # cubes up to `self.long_iterator_max` to keep test runtime sensible.
         res = self.cube.slices_over([0, 1])
-        i = next(self.exp_iter_2d)
-        # Replace the 1s in requested dimensions (2, 3) with spanning slices.
-        i = [slice(None, None) if c > 1 else v for c, v in enumerate(i)]
-        expected = self.cube[tuple(i)]
-        self.assertEqual(next(res), expected)
+        for ct in range(self.long_iterator_max):
+            i = next(self.exp_iter_2d)
+            # Replace the 1s in requested dims (2, 3) with spanning slices.
+            i = [slice(None, None) if c > 1 else v for c, v in enumerate(i)]
+            expected = self.cube[tuple(i)]
+            self.assertEqual(next(res), expected)
 
     def test_2d_slice_nonexistent_dimension_given(self):
         with self.assertRaisesRegexp(ValueError, 'iterator over a dimension'):
@@ -468,10 +473,16 @@ class Test_slices_over(tests.IrisTest):
 
     def test_multidim_slice_coord_given(self):
         # Slicing over surface altitude returns 100x100 2D cubes, so only check
-        # the first cube to keep test runtime sensible.
+        # cubes up to `self.long_iterator_max` to keep test runtime sensible.
         res = self.cube.slices_over('surface_altitude')
-        exp_cube = self.cube[:, :, 0, 0]
-        self.assertEqual(next(res), exp_cube)
+        # Define special ndindex iterator for the different dims sliced over.
+        nditer = np.ndindex(1, 1, 100, 100)
+        for ct in range(self.long_iterator_max):
+            i = next(nditer)
+            # Replace the 1s in requested dims (0, 1) with spanning slices.
+            i = [slice(None, None) if c < 2 else v for c, v in enumerate(i)]
+            expected = self.cube[tuple(i)]
+            self.assertEqual(next(res), expected)
 
     def test_duplicate_coordinate_given(self):
         res = self.cube.slices_over([0, 0])
