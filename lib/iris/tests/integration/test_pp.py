@@ -32,6 +32,22 @@ import iris.fileformats.pp
 import iris.fileformats.pp_rules
 
 
+def _mock_field(**kwargs):
+    # Produce a MagicMock of a PPField, but insert *real* time values to stop
+    # the time rules breaking.
+    # Otherwise pp_rules._reshape_vector_args fails due to peculiar behaviour..
+    #    >>> field = mock.MagicMock()
+    #    >>> np.array(field.t1).shape
+    #    (0,)
+    # We would expect "np.array(field.t1).shape == ()", but this anomaly makes
+    # it fail the argument consistency test in "pp_rules._reshape_vector_args".
+    field = mock.MagicMock(**kwargs)
+    field.t1 = 0.0
+    field.t2 = 0.0
+    field.lbft = 0.0
+    return field
+
+
 class TestVertical(tests.IrisTest):
     def _test_coord(self, cube, point, bounds=None, **kwargs):
         coords = cube.coords(**kwargs)
@@ -46,9 +62,9 @@ class TestVertical(tests.IrisTest):
         # NB. Use MagicMock so that SplittableInt header items, such as
         # LBCODE, support len().
         soil_level = 1234
-        field = mock.MagicMock(lbvc=6, lblev=soil_level,
-                               stash=iris.fileformats.pp.STASH(1, 0, 9),
-                               lbuser=[0] * 7, lbrsvd=[0] * 4)
+        field = _mock_field(lbvc=6, lblev=soil_level,
+                            stash=iris.fileformats.pp.STASH(1, 0, 9),
+                            lbuser=[0] * 7, lbrsvd=[0] * 4)
         load = mock.Mock(return_value=iter([field]))
         with mock.patch('iris.fileformats.pp.load', new=load) as load:
             cube = next(iris.fileformats.pp.load_cubes('DUMMY'))
@@ -74,8 +90,8 @@ class TestVertical(tests.IrisTest):
         # NB. Use MagicMock so that SplittableInt header items, such as
         # LBCODE, support len().
         potm_value = 22.5
-        field = mock.MagicMock(lbvc=19, blev=potm_value,
-                               lbuser=[0] * 7, lbrsvd=[0] * 4)
+        field = _mock_field(lbvc=19, blev=potm_value,
+                            lbuser=[0] * 7, lbrsvd=[0] * 4)
         load = mock.Mock(return_value=iter([field]))
         with mock.patch('iris.fileformats.pp.load', new=load) as load:
             cube = next(iris.fileformats.pp.load_cubes('DUMMY'))
@@ -100,10 +116,10 @@ class TestVertical(tests.IrisTest):
         # LBCODE, support len().
         def field_with_data(scale=1):
             x, y = 40, 30
-            field = mock.MagicMock(_data=np.arange(1200).reshape(y, x) * scale,
-                                   lbcode=[1], lbnpt=x, lbrow=y,
-                                   bzx=350, bdx=1.5, bzy=40, bdy=1.5,
-                                   lbuser=[0] * 7, lbrsvd=[0] * 4)
+            field = _mock_field(_data=np.arange(1200).reshape(y, x) * scale,
+                                lbcode=[1], lbnpt=x, lbrow=y,
+                                bzx=350, bdx=1.5, bzy=40, bdy=1.5,
+                                lbuser=[0] * 7, lbrsvd=[0] * 4)
             field._x_coord_name = lambda: 'longitude'
             field._y_coord_name = lambda: 'latitude'
             field.coord_system = lambda: None
@@ -179,10 +195,10 @@ class TestVertical(tests.IrisTest):
     def test_hybrid_pressure_with_duplicate_references(self):
         def field_with_data(scale=1):
             x, y = 40, 30
-            field = mock.MagicMock(_data=np.arange(1200).reshape(y, x) * scale,
-                                   lbcode=[1], lbnpt=x, lbrow=y,
-                                   bzx=350, bdx=1.5, bzy=40, bdy=1.5,
-                                   lbuser=[0] * 7, lbrsvd=[0] * 4)
+            field = _mock_field(_data=np.arange(1200).reshape(y, x) * scale,
+                                lbcode=[1], lbnpt=x, lbrow=y,
+                                bzx=350, bdx=1.5, bzy=40, bdy=1.5,
+                                lbuser=[0] * 7, lbrsvd=[0] * 4)
             field._x_coord_name = lambda: 'longitude'
             field._y_coord_name = lambda: 'latitude'
             field.coord_system = lambda: None
