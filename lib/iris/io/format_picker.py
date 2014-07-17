@@ -153,7 +153,8 @@ class FormatSpecification(object):
     a FileElement, such as filename extension or 32-bit magic number, with an associated value for format identification.
 
     """
-    def __init__(self, format_name, file_element, file_element_value, handler=None, priority=0):
+    def __init__(self, format_name, file_element, file_element_value,
+                 handler=None, priority=0, constraint_aware_handler=False):
         """
         Constructs a new FormatSpecification given the format_name and particular FileElements
 
@@ -179,6 +180,7 @@ class FormatSpecification(object):
         self._format_name = format_name
         self._handler = handler
         self.priority = priority
+        self.constraint_aware_handler = constraint_aware_handler
 
     def __hash__(self):
         # Hashed by specification for consistent ordering in FormatAgent (including self._handler in this hash
