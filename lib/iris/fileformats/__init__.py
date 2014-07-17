@@ -53,7 +53,8 @@ FORMAT_AGENT.add_spec(FormatSpecification('UM Post Processing file (PP)',
                                           MagicNumber(4),
                                           0x00000100,
                                           pp.load_cubes,
-                                          priority=5))
+                                          priority=5,
+                                          constraint_aware_handler=True))
 
 
 FORMAT_AGENT.add_spec(
@@ -61,7 +62,8 @@ FORMAT_AGENT.add_spec(
                         MagicNumber(4),
                         0x00010000,
                         _pp_little_endian,
-                        priority=3))
+                        priority=3,
+                        constraint_aware_handler=True))
 
 
 #
@@ -115,21 +117,24 @@ FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) pre v3.1',
                                           MagicNumber(8),
                                           0x000000000000000F,
                                           ff.load_cubes,
-                                          priority=3))
+                                          priority=3,
+                                          constraint_aware_handler=True))
 
 
 FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) post v5.2',
                                           MagicNumber(8),
                                           0x0000000000000014,
                                           ff.load_cubes,
-                                          priority=4))
+                                          priority=4,
+                                          constraint_aware_handler=True))
 
 
 FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) ancillary',
                                           MagicNumber(8),
                                           0xFFFFFFFFFFFF8000,
                                           ff.load_cubes,
-                                          priority=3))
+                                          priority=3,
+                                          constraint_aware_handler=True))
 
 
 FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) converted '
@@ -137,7 +142,8 @@ FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) converted '
                                           MagicNumber(4),
                                           0x00000014,
                                           ff.load_cubes_32bit_ieee,
-                                          priority=3))
+                                          priority=3,
+                                          constraint_aware_handler=True))
 
 
 FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) ancillary '
@@ -145,7 +151,8 @@ FORMAT_AGENT.add_spec(FormatSpecification('UM Fieldsfile (FF) ancillary '
                                           MagicNumber(4),
                                           0xFFFF8000,
                                           ff.load_cubes_32bit_ieee,
-                                          priority=3))
+                                          priority=3,
+                                          constraint_aware_handler=True))
 
 
 #

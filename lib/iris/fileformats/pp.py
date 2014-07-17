@@ -1685,7 +1685,7 @@ def convert_constraints(constraints):
     constraints = iris._constraints.list_of_constraints(constraints)
     pp_constraints = {}
     for con in constraints:
-        if con._attributes.keys() == ['STASH']:
+        if hasattr(con, '_attributes') and con._attributes.keys() == ['STASH']:
             if not pp_constraints.has_key('stash'):
                 stashobj = STASH.from_msi(con._attributes['STASH'])
                 pp_constraints['stash'] = stashobj
@@ -1694,7 +1694,7 @@ def convert_constraints(constraints):
                                  'by the PP loader. {}'.format(constraints))
     return pp_constraints
 
-def load_cubes(filenames, constraints=None, callback=None):
+def load_cubes(filenames, callback=None, constraints=None):
     """
     Loads cubes from a list of pp filenames.
 
@@ -1714,16 +1714,16 @@ def load_cubes(filenames, constraints=None, callback=None):
         is not preserved when there is a field with orography references)
 
     """
-    pp_constraints = {}
-    if constraints is not None:
-        pp_constraints = convert_constraints(constraints)
     return _load_cubes_variable_loader(filenames, callback, load,
-                                       pp_constraints=pp_constraints)
+                                       constraints)
 
 
 def _load_cubes_variable_loader(filenames, callback, loading_function,
-                                loading_function_kwargs=None,
-                                pp_constraints=[]):
+                                constraints=None,
+                                loading_function_kwargs=None):
+    pp_constraints = {}
+    if constraints is not None:
+        pp_constraints = convert_constraints(constraints)
     pp_loader = iris.fileformats.rules.Loader(
         loading_function, loading_function_kwargs or {},
         iris.fileformats.pp_rules.convert, _load_rules)

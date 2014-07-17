@@ -773,7 +773,7 @@ def _make_cube(field, converter):
     return cube, factories, references
 
 
-def load_cubes(filenames, user_callback, loader, constraints=[]):
+def load_cubes(filenames, user_callback, loader, constraints={}):
     concrete_reference_targets = {}
     results_needing_reference = []
 

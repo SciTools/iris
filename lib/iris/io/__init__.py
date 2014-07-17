@@ -165,7 +165,7 @@ def expand_filespecs(file_specs):
     return sum(value_lists, [])
 
 
-def load_files(filenames, constraints, callback):
+def load_files(filenames, callback, constraints):
     """
     Takes a list of filenames which may also be globs, and optionally a
     constraint set and a callback function, and returns a
@@ -188,8 +188,13 @@ def load_files(filenames, constraints, callback):
 
     # Call each iris format handler with the approriate filenames
     for handling_format_spec, fnames in handler_map.iteritems():
-        for cube in handling_format_spec.handler(fnames, constraints, callback):
-            yield cube
+        if handling_format_spec.constraint_aware_handler:
+            for cube in handling_format_spec.handler(fnames, callback,
+                                                     constraints):
+                yield cube
+        else:
+            for cube in handling_format_spec.handler(fnames, callback):
+                yield cube
 
 
 def load_http(urls, callback):

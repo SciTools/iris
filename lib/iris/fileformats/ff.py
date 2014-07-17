@@ -647,7 +647,7 @@ class FF2PP(object):
         return pp._interpret_fields(self._extract_field())
 
 
-def load_cubes(filenames, callback):
+def load_cubes(filenames, callback, constraints):
     """
     Loads cubes from a list of fields files filenames.
 
@@ -667,7 +667,8 @@ def load_cubes(filenames, callback):
         orography references).
 
     """
-    return pp._load_cubes_variable_loader(filenames, callback, FF2PP)
+    return pp._load_cubes_variable_loader(filenames, callback, constraints,
+                                          FF2PP)
 
 
 def load_cubes_32bit_ieee(filenames, callback):

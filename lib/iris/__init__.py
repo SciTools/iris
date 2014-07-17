@@ -220,7 +220,7 @@ else:
     _update(site_configuration)
 
 
-def _generate_cubes(uris, constraints, callback):
+def _generate_cubes(uris, callback, constraints):
     """Returns a generator of cubes given the URIs and a callback."""
     if isinstance(uris, basestring):
         uris = [uris]
@@ -233,7 +233,7 @@ def _generate_cubes(uris, constraints, callback):
         # Call each scheme handler with the appropriate URIs
         if scheme == 'file':
             part_names = [x[1] for x in groups]
-            for cube in iris.io.load_files(part_names, constraints, callback):
+            for cube in iris.io.load_files(part_names, callback, constraints):
                 yield cube
         elif scheme in ['http', 'https']:
             urls = [':'.join(x) for x in groups]
@@ -245,7 +245,7 @@ def _generate_cubes(uris, constraints, callback):
 
 def _load_collection(uris, constraints=None, callback=None):
     try:
-        cubes = _generate_cubes(uris, constraints, callback)
+        cubes = _generate_cubes(uris, callback, constraints)
         result = iris.cube._CubeFilterCollection.from_cubes(cubes, constraints)
     except EOFError as e:
         raise iris.exceptions.TranslationError(
