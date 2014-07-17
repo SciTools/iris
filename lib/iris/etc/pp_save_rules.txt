@@ -616,7 +616,26 @@ THEN
     pp.lblev = scalar_coord(cm, 'air_potential_temperature').points[0]
     pp.blev = scalar_coord(cm, 'air_potential_temperature').points[0]
 
-# single hybrid_height level
+# single hybrid_height level (without aux factory e.g. due to missing orography)
+IF
+    not has_aux_factory(cm, iris.aux_factory.HybridHeightFactory)
+    scalar_coord(cm, 'model_level_number') is not None
+    scalar_coord(cm, 'model_level_number').bounds is None
+    scalar_coord(cm, 'level_height') is not None
+    scalar_coord(cm, 'level_height').bounds is not None
+    scalar_coord(cm, 'sigma') is not None
+    scalar_coord(cm, 'sigma').bounds is not None
+THEN
+    pp.lbvc = 65
+    pp.lblev = scalar_coord(cm, 'model_level_number').points[0]
+    pp.blev = scalar_coord(cm, 'level_height').points[0]
+    pp.brlev = scalar_coord(cm, 'level_height').bounds[0, 0]
+    pp.brsvd[0] = scalar_coord(cm, 'level_height').bounds[0, 1]
+    pp.bhlev = scalar_coord(cm, 'sigma').points[0]
+    pp.bhrlev = scalar_coord(cm, 'sigma').bounds[0, 0]
+    pp.brsvd[1] = scalar_coord(cm, 'sigma').bounds[0, 1]
+
+# single hybrid_height level (with aux factory)
 IF
     has_aux_factory(cm, iris.aux_factory.HybridHeightFactory)
     scalar_coord(cm, 'model_level_number') is not None
