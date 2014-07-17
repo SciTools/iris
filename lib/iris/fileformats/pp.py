@@ -1718,12 +1718,12 @@ def load_cubes(filenames, callback=None, constraints=None):
     if constraints is not None:
         pp_constraints = convert_constraints(constraints)
     return _load_cubes_variable_loader(filenames, callback, load,
-                                       constraints)
+                                       constraints=constraints)
 
 
 def _load_cubes_variable_loader(filenames, callback, loading_function,
-                                constraints=None,
-                                loading_function_kwargs=None):
+                                loading_function_kwargs=None,
+                                constraints=None):
     pp_constraints = {}
     if constraints is not None:
         pp_constraints = convert_constraints(constraints)
