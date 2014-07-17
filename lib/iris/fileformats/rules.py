@@ -773,7 +773,7 @@ def _make_cube(field, converter):
     return cube, factories, references
 
 
-def load_cubes(filenames, user_callback, loader):
+def load_cubes(filenames, user_callback, loader, constraints=[]):
     concrete_reference_targets = {}
     results_needing_reference = []
 
@@ -783,13 +783,23 @@ def load_cubes(filenames, user_callback, loader):
     for filename in filenames:
         for field in loader.field_generator(filename, **loader.field_generator_kwargs):
             # Convert the field to a Cube.
-            cube, factories, references = _make_cube(field, loader.converter)
+            checked_field = field
+            # evaluate field against format specific constraints
+            # load if no format specific constraints are violated
+            for con_key, con_val in constraints.iteritems():
+                if getattr(field, con_key) != con_val:
+                    checked_field = None
+            if checked_field is not None:
+                cube, factories, references = _make_cube(checked_field,
+                                                         loader.converter)
 
-            # Run any custom user-provided rules.
-            if loader.legacy_custom_rules:
-                loader.legacy_custom_rules.verify(cube, field)
+                # Run any custom user-provided rules.
+                if loader.legacy_custom_rules:
+                    loader.legacy_custom_rules.verify(cube, field)
 
-            cube = iris.io.run_callback(user_callback, cube, field, filename)
+                cube = iris.io.run_callback(user_callback, cube, field, filename)
+            else:
+                cube = None
 
             if cube is None:
                 continue
