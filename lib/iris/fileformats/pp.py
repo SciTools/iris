@@ -1714,6 +1714,9 @@ def load_cubes(filenames, callback=None, constraints=None):
         is not preserved when there is a field with orography references)
 
     """
+    pp_constraints = {}
+    if constraints is not None:
+        pp_constraints = convert_constraints(constraints)
     return _load_cubes_variable_loader(filenames, callback, load,
                                        constraints)
 

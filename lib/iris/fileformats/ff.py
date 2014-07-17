@@ -680,5 +680,5 @@ def load_cubes_32bit_ieee(filenames, callback):
         :func:`load_cubes` for keyword details
 
     """
-    return pp._load_cubes_variable_loader(filenames, callback, FF2PP,
-                                          {'word_depth': 4})
+    return pp._load_cubes_variable_loader(filenames, callback, constraints,
+                                          FF2PP, {'word_depth': 4})
