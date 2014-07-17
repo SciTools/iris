@@ -321,7 +321,7 @@ class TestVertical(tests.IrisTest):
               "The file(s) ['DUMMY'] don't contain field(s) for 'orography'."
         warn.assert_called_once_with(msg)
 
-        # Check the data cube is set up to use hybrid-pressure.
+        # Check the data cube is set up to use hybrid height.
         self._test_coord(data_cube, model_level,
                          standard_name='model_level_number')
         self._test_coord(data_cube, delta, [delta_lower, delta_upper],
