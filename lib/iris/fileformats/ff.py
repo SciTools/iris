@@ -647,7 +647,7 @@ class FF2PP(object):
         return pp._interpret_fields(self._extract_field())
 
 
-def load_cubes(filenames, callback, constraints):
+def load_cubes(filenames, callback, constraints=None):
     """
     Loads cubes from a list of fields files filenames.
 
@@ -671,7 +671,7 @@ def load_cubes(filenames, callback, constraints):
                                           constraints=constraints)
 
 
-def load_cubes_32bit_ieee(filenames, callback, constraints):
+def load_cubes_32bit_ieee(filenames, callback, constraints=None):
     """
     Loads cubes from a list of 32bit ieee converted fieldsfiles filenames.
 

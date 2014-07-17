@@ -165,7 +165,7 @@ def expand_filespecs(file_specs):
     return sum(value_lists, [])
 
 
-def load_files(filenames, callback, constraints):
+def load_files(filenames, callback, constraints=None):
     """
     Takes a list of filenames which may also be globs, and optionally a
     constraint set and a callback function, and returns a

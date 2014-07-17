@@ -28,24 +28,24 @@ import iris.fileformats.pp as pp
 
 class Test_convert_constraints(tests.IrisTest):
     def test_single_stash(self):
+        stcube = mock.Mock(stash=pp.STASH.from_msi('m01s03i236'))
         constraint = iris.AttributeConstraint(STASH='m01s03i236')
-        pp_constraints = pp.convert_constraints(constraint)
-        expected_pp_cons = {'stash': pp.STASH.from_msi('m01s03i236')}
-        self.assertEqual(pp_constraints, expected_pp_cons)
+        pp_filter = pp._convert_constraints(constraint)
+        self.assertTrue(pp_filter(stcube))
 
     def test_multiple_with_stash(self):
         constraints = [iris.Constraint('air_potential_temperature'),
                        iris.AttributeConstraint(STASH='m01s00i004')]
-        pp_constraints = pp.convert_constraints(constraints)
-        expected_pp_cons = {'stash': pp.STASH.from_msi('m01s00i004')}
-        self.assertEqual(pp_constraints, expected_pp_cons)
+        pp_filter = pp._convert_constraints(constraints)
+        stcube = mock.Mock(stash=pp.STASH.from_msi('m01s00i004'))
+        self.assertTrue(pp_filter(stcube))
 
     def test_no_stash(self):
         constraints = [iris.Constraint('air_potential_temperature'),
                        iris.AttributeConstraint(source='asource')]
-        pp_constraints = pp.convert_constraints(constraints)
-        expected_pp_cons = {}
-        self.assertEqual(pp_constraints, expected_pp_cons)
+        pp_filter = pp._convert_constraints(constraints)
+        stcube = mock.Mock(stash=pp.STASH.from_msi('m01s00i004'))
+        self.assertTrue(pp_filter(stcube))
 
 
 if __name__ == "__main__":
