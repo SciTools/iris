@@ -498,6 +498,16 @@ class Test___call___time(tests.IrisTest):
         result = interpolator([datetime.datetime(1970, 1, 1, 18)])
         self.assertArrayEqual(result.data, [4.5, 5.5, 6.5])
 
+    def test_mixed_numbers_and_datetimes(self):
+        interpolator = self.interpolator()
+        result = interpolator([(12, datetime.datetime(1970, 1, 1, 18),
+                               datetime.datetime(1970, 1, 2, 0), 26)])
+        self.assertEqual(result.coord('time').points.dtype, float)
+        self.assertArrayEqual(result.data, [[3, 4, 5],
+                                            [4.5, 5.5, 6.5],
+                                            [6, 7, 8],
+                                            [6.5, 7.5, 8.5]])
+
 
 if __name__ == "__main__":
     tests.main()

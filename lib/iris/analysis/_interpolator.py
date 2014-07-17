@@ -106,13 +106,13 @@ def _canonical_sample_points(coords, sample_points):
     canonical_sample_points = []
     for coord, points in zip(coords, sample_points):
         if coord.units.is_time_reference():
-            def convert_dates(date):
+            def convert_date(date):
                 try:
                     date = coord.units.date2num(date)
                 except AttributeError:
                     pass
                 return date
-            convert_dates = np.frompyfunc(convert_dates, 1, 1)
+            convert_dates = np.vectorize(convert_date, [np.dtype(float)])
             points = convert_dates(points)
         canonical_sample_points.append(points)
     return canonical_sample_points
