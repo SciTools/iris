@@ -1677,8 +1677,35 @@ def reset_save_rules():
 
     _save_rules = None
 
+def _convert_constraints(constraints):
+    """
+    Converts known constraints from Iris semantics to PP semantics
+    ignoring all unknown constraints.
 
-def load_cubes(filenames, callback=None):
+    """
+    constraints = iris._constraints.list_of_constraints(constraints)
+    pp_constraints = {}
+    for con in constraints:
+        if hasattr(con, '_attributes') and con._attributes.keys() == ['STASH']:
+            stashobj = STASH.from_msi(con._attributes['STASH'])
+            if not pp_constraints.has_key('stash'):
+                pp_constraints['stash'] = [stashobj]
+            else:
+                pp_constraints['stash'].append(stashobj)
+    def pp_filter(field):
+        """
+        return True if field is to be kept,
+        False if field does not match filter
+
+        """
+        res = True
+        if pp_constraints.get('stash'):
+            if field.stash not in pp_constraints['stash']:
+                res = False
+        return res
+    return pp_filter
+
+def load_cubes(filenames, callback=None, constraints=None):
     """
     Loads cubes from a list of pp filenames.
 
@@ -1688,6 +1715,8 @@ def load_cubes(filenames, callback=None):
 
     Kwargs:
 
+    * constraints - a list of Iris constraints
+
     * callback - a function which can be passed on to :func:`iris.io.run_callback`
 
     .. note::
@@ -1696,15 +1725,21 @@ def load_cubes(filenames, callback=None):
         is not preserved when there is a field with orography references)
 
     """
-    return _load_cubes_variable_loader(filenames, callback, load)
+    return _load_cubes_variable_loader(filenames, callback, load,
+                                       constraints=constraints)
 
 
 def _load_cubes_variable_loader(filenames, callback, loading_function,
-                                loading_function_kwargs=None):
+                                loading_function_kwargs=None,
+                                constraints=None):
+    pp_filter = None
+    if constraints is not None:
+        pp_filter = _convert_constraints(constraints)
     pp_loader = iris.fileformats.rules.Loader(
         loading_function, loading_function_kwargs or {},
         iris.fileformats.pp_rules.convert, _load_rules)
-    return iris.fileformats.rules.load_cubes(filenames, callback, pp_loader)
+    return iris.fileformats.rules.load_cubes(filenames, callback, pp_loader,
+                                             pp_filter)
 
 
 def save(cube, target, append=False, field_coords=None):
