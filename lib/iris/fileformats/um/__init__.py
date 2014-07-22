@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2014, Met Office
+# (C) British Crown Copyright 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,6 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Experimental code for converting cubes to and from specific file formats.
+Conversion of cubes to/from PP/FF formats.
 
 """
