@@ -38,9 +38,18 @@ class TestLoadSave(tests.IrisTest):
 
     def setUp(self):
         iris.fileformats.grib.hindcast_workaround = True
+        self.gribapi_ver = self._get_gribapi_ver()
 
     def tearDown(self):
         iris.fileformats.grib.hindcast_workaround = False
+
+    def _get_gribapi_ver(self):
+        try:
+            # gribapi v1.9.16 has no __version__ attribute.
+            gribapi_ver = gribapi.__version__
+        except AttributeError:
+            gribapi_ver = '1.9.16'
+        return gribapi_ver.replace('.', '-')
 
     def save_and_compare(self, source_grib, reference_text):
         """Load and save grib data, generate diffs, compare with expected diffs."""
@@ -66,12 +75,16 @@ class TestLoadSave(tests.IrisTest):
 
     def test_latlon_forecast_plev(self):
         source_grib = tests.get_data_path(("GRIB", "uk_t", "uk_t.grib2"))
-        reference_text = tests.get_result_path(("grib_save", "latlon_forecast_plev.grib_compare.txt"))
+        result_file = "latlon_forecast_plev.grib_compare.{}.txt"
+        reference_text = tests.get_result_path((
+            "grib_save", result_file.format(self.gribapi_ver)))
         self.save_and_compare(source_grib, reference_text)
 
     def test_rotated_latlon(self):
         source_grib = tests.get_data_path(("GRIB", "rotated_nae_t", "sensible_pole.grib2"))
-        reference_text = tests.get_result_path(("grib_save", "rotated_latlon.grib_compare.txt"))
+        result_file = "rotated_latlon.grib_compare.{}.txt"
+        reference_text = tests.get_result_path((
+            "grib_save", result_file.format(self.gribapi_ver)))
         # TODO: Investigate small change in test result:
         #       long [iDirectionIncrement]: [109994] != [109993]
         #       Consider the change in dx_dy() to "InDegrees" too.
@@ -90,16 +103,17 @@ class TestLoadSave(tests.IrisTest):
         # If the api ever allows -ve ft, we should revert to a single result.
         source_grib = tests.get_data_path(("GRIB", "time_processed",
                                            "time_bound.grib2"))
-        reference_text = tests.get_result_path(("grib_save",
-                                                "time_mean.grib_compare.txt"))
+        result_file = "time_mean.grib_compare.{}.txt"
+        reference_text = tests.get_result_path((
+            "grib_save", result_file.format(self.gribapi_ver)))
         # TODO: It's not ideal to have grib patch awareness here...
         import unittest
         try:
             self.save_and_compare(source_grib, reference_text)
         except unittest.TestCase.failureException:
+            result_file = "time_mean.grib_compare.FT_PATCH.{}.txt"
             reference_text = tests.get_result_path((
-                                        "grib_save",
-                                        "time_mean.grib_compare.FT_PATCH.txt"))
+                "grib_save", result_file.format(self.gribapi_ver)))
             self.save_and_compare(source_grib, reference_text)
 
 
