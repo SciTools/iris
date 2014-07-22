@@ -773,7 +773,7 @@ def _make_cube(field, converter):
     return cube, factories, references
 
 
-def load_cubes(filenames, user_callback, loader):
+def load_cubes(filenames, user_callback, loader, filter_function=None):
     concrete_reference_targets = {}
     results_needing_reference = []
 
@@ -782,6 +782,10 @@ def load_cubes(filenames, user_callback, loader):
 
     for filename in filenames:
         for field in loader.field_generator(filename, **loader.field_generator_kwargs):
+            # evaluate field against format specific desired attributes
+            # load if no format specific desired attributes are violated
+            if filter_function is not None and not filter_function(field):
+                continue
             # Convert the field to a Cube.
             cube, factories, references = _make_cube(field, loader.converter)
 
