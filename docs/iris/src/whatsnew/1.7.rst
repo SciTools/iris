@@ -1,8 +1,8 @@
 What's new in Iris 1.7
 **********************
 
-:Release: 1.7.0
-:Date: 4th July 2014
+:Release: 1.7.1
+:Date: ???
 
 Iris 1.7 features
 =================
@@ -158,6 +158,7 @@ Iris 1.7 features
   loading GRIB files.
 * Concatenate reporting that raises a descriptive error if the concatenation
   process fails.
+* A speed improvement when loading PP or FF data and constraining on STASH code.
 
 Bugs fixed
 ==========
@@ -180,6 +181,9 @@ Bugs fixed
 * Aggregate_by may now be passed single-value coordinates.
 * Making a copy of a :class:`iris.coords.DimCoord` no longer results in the writeable
   flag on the copied points and bounds arrays being set to True.
+* Fixed a bug that prevented regridding of a cube that has coordinates with
+  no :class:`iris.coord_systems.CoordSystem`.
+* Can now save to PP a cube that has vertical levels but no orography.
 
 Incompatible changes
 ====================
