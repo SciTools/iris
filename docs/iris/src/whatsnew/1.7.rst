@@ -181,8 +181,6 @@ Bugs fixed
 * Aggregate_by may now be passed single-value coordinates.
 * Making a copy of a :class:`iris.coords.DimCoord` no longer results in the writeable
   flag on the copied points and bounds arrays being set to True.
-* Fixed a bug that prevented regridding of a cube that has coordinates with
-  no :class:`iris.coord_systems.CoordSystem`.
 * Can now save to PP a cube that has vertical levels but no orography.
 
 Incompatible changes
