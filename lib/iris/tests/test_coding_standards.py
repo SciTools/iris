@@ -58,6 +58,7 @@ LICENSE_RE = re.compile(LICENSE_RE_PATTERN, re.MULTILINE)
 IRIS_DIR = os.path.realpath(os.path.dirname(iris.__file__))
 REPO_DIR = os.path.dirname(os.path.dirname(IRIS_DIR))
 DOCS_DIR = os.path.join(REPO_DIR, 'docs', 'iris')
+DOCS_DIR = iris.config.get_option('Resources', 'doc_dir', default=DOCS_DIR)
 exclusion = ['Makefile', 'build']
 DOCS_DIRS = glob(os.path.join(DOCS_DIR, '*'))
 DOCS_DIRS = [DOC_DIR for DOC_DIR in DOCS_DIRS if os.path.basename(DOC_DIR) not

@@ -65,11 +65,18 @@ class TestRunner():
         if hasattr(self, 'distribution') and self.distribution.tests_require:
             self.distribution.fetch_build_eggs(self.distribution.tests_require)
 
-        script_path = sys.path[0]
         tests = ['iris.tests']
         if self.example_tests:
-            tests.append(os.path.join(script_path, 'docs', 'iris',
-                                      'example_tests'))
+            import iris.config
+            default_doc_path = os.path.join(sys.path[0], 'docs', 'iris')
+            doc_path = iris.config.get_option('Resources', 'doc_dir',
+                                              default=default_doc_path)
+            example_path = os.path.join(doc_path, 'example_tests')
+            if os.path.exists(example_path):
+                tests.append(example_path)
+            else:
+                print('WARNING: Example path %s does not exist.' %
+                      (example_path))
 
         if self.system_tests:
             regexp_pat = r'--match=^[Ss]ystem'
