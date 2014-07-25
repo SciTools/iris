@@ -90,20 +90,21 @@ install:
   - ln -s $(pwd)/iris-sample-data-${IRIS_SAMPLE_DATA_SUFFIX} iris-sample-data
   
 # iris
-  - python setup.py --with-unpack build_ext --inplace --include-dirs=${PREFIX}/include --library-dirs=${PREFIX}/lib --rpath=${PREFIX}/lib
-  - python setup.py std_names
-  - SITE_CFG=lib/iris/etc/site.cfg
+  - python setup.py --with-unpack build --include-dirs=${PREFIX}/include --library-dirs=${PREFIX}/lib
+  - python setup.py --with-unpack install
+
+# set config paths
+  - ETC=`/usr/bin/python -c 'import iris, os; print(os.path.dirname(iris.__file__))'`
+  - SITE_CFG=$ETC/site.cfg
   - echo "[Resources]" > $SITE_CFG
   - echo "sample_data_dir = $(pwd)/iris-sample-data/sample_data" >> $SITE_CFG
   - echo "test_data_dir = $(pwd)/iris-test-data/test_data" >> $SITE_CFG
+  - echo "doc_dir = $(pwd)/docs/iris" >> $SITE_CFG
   - echo "[System]" >> $SITE_CFG
   - echo "udunits2_path = $PREFIX/lib/libudunits2.so" >> $SITE_CFG
-  - SP_DIR=`python -c 'import site; print site.getsitepackages()[0]'`
-  - ln -s $(pwd)/lib/iris $SP_DIR/iris
-  - python setup.py pyke_rules
 
 script:
-  - python setup.py test --example-tests
+  - python -m iris.tests.runner --example-tests
 
   - cd $(pwd)/docs/iris
 # Make html produces an error when run on Travis that does not affect any downstream functionality but causes the build to fail spuriously.
