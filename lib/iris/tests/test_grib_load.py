@@ -20,6 +20,7 @@
 import iris.tests as tests
 
 import datetime
+from distutils.version import StrictVersion
 import os
 
 import gribapi
@@ -531,8 +532,11 @@ class TestGribTimecodes(tests.IrisTest):
         #     GRIB+API+version+1.9.18+released
         try:
             # gribapi v1.9.16 has no __version__ attribute.
-            gribapi.__version__
+            gribapi_ver = gribapi.__version__
         except AttributeError:
+            gribapi_ver = gribapi.grib_get_api_version()
+
+        if StrictVersion(gribapi_ver) < StrictVersion('1.9.18'):
             exp_end_date = datetime.datetime(year=2007, month=03, day=25,
                                              hour=12, minute=0, second=0)
         else:
