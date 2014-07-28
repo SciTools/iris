@@ -3202,7 +3202,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Args:
 
         * sample_points:
-            A sequence of (coordinate, points) pairs over which to interpolate.
+            A sequence of (coordinate, points) pairs over which to
+            interpolate. The values for coordinates which correspond to
+            date/times may optionally be supplied as datetime.datetime or
+            netcdftime.datetime instances.
         * scheme:
             A :class:`~iris.analysis.Linear` instance, which defines the
             interpolator scheme.
@@ -3217,6 +3220,45 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             A cube interpolated at the given sample points. The dimensionality
             of the cube will be the number of original cube dimensions minus
             the number of scalar coordinates, if collapse_scalar is True.
+
+        For example:
+
+            >>> import datetime
+            >>> import iris
+            >>> path = iris.sample_data_path('uk_hires.pp')
+            >>> cube = iris.load_cube(path, 'air_potential_temperature')
+            >>> print cube.summary(shorten=True)
+            air_potential_temperature / (K)     \
+(time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
+            >>> print cube.coord('time')
+            DimCoord([2009-11-19 10:00:00, 2009-11-19 11:00:00, \
+2009-11-19 12:00:00], standard_name='time', calendar='gregorian')
+            >>> print cube.coord('time').points
+            [ 349618.  349619.  349620.]
+            >>> samples = [('time', 349618.5)]
+            >>> result = cube.interpolate(samples, iris.analysis.Linear())
+            >>> print result.summary(shorten=True)
+            air_potential_temperature / (K)     \
+(model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
+            >>> print result.coord('time')
+            DimCoord([2009-11-19 10:30:00], standard_name='time', \
+calendar='gregorian')
+            >>> print result.coord('time').points
+            [ 349618.5]
+            >>> # For datetime-like coordinates, we can also use
+            >>> # datetime-like objects.
+            >>> samples = [('time', datetime.datetime(2009, 11, 19, 10, 30))]
+            >>> result2 = cube.interpolate(samples, iris.analysis.Linear())
+            >>> print result2.summary(shorten=True)
+            air_potential_temperature / (K)     \
+(model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
+            >>> print result2.coord('time')
+            DimCoord([2009-11-19 10:30:00], standard_name='time', \
+calendar='gregorian')
+            >>> print result2.coord('time').points
+            [ 349618.5]
+            >>> print result == result2
+            True
 
         """
         coords, points = zip(*sample_points)

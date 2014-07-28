@@ -1551,6 +1551,10 @@ class Linear(object):
             dimensions in the result cube caused by scalar values in
             `sample_points`.
 
+            The values for coordinates which correspond to date/times
+            may optionally be supplied as datetime.datetime or
+            netcdftime.datetime instances.
+
             For example, for the callable returned by:
             `Linear().interpolator(cube, ['latitude', 'longitude'])`,
             sample_points must have the form
