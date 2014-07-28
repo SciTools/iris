@@ -3275,8 +3275,9 @@ calendar='gregorian')
         * grid:
             A :class:`~iris.cube.Cube` which defines the target grid.
         * scheme:
-            A :class:`~iris.analysis.Linear` instance, which defines the
-            interpolator scheme.
+            A :class:`~iris.analysis.Linear` or
+            :class:`~iris.analysis.AreaWeighted` instance, which defines
+            the interpolator scheme.
 
         Returns:
             A cube defined with the horizontal dimensions of the target
