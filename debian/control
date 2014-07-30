@@ -1,0 +1,69 @@
+Source: iris
+Maintainer: Angelos Tzotsos <gcpp.kalxas@gmail.com>
+Section: science
+Priority: optional
+Build-Depends: debhelper (>= 9),
+               python-setuptools (>= 0.6),
+               python-support (>=0.6), 
+               dpkg-dev (>= 1.16),
+               libnetcdf-dev, 
+               libhdf5-serial-dev, 
+               libgeos-dev, 
+               libproj-dev, 
+               libjasper-dev, 
+               libfreetype6-dev, 
+               libpng-dev, 
+               libgdal-dev,
+               tk-dev, 
+               cython, 
+               netcdf-bin, 
+               python-netcdf,
+               python-scipy,
+               libudunits2-dev, 
+               python-gdal, 
+               python-pandas, 
+               python-pil,
+               python-numpy, 
+               python-nose, 
+               python-pyke, 
+               python-pyshp, 
+               python-mock, 
+               python-sphinx, 
+               python-shapely, 
+               python-matplotlib,
+               python-cartopy,
+               python-biggus,
+               autoconf,
+               automake,
+               autotools-dev,
+               gcc, 
+               python-all (>= 2.7),
+               python-all-dev (>= 2.7)
+Standards-Version: 3.9.3
+X-Python-Version: >= 2.7
+Homepage: http://scitools.org.uk/iris/
+
+Package: python-iris
+Architecture: any
+Section: science
+Depends: ${shlibs:Depends},
+         ${misc:Depends}, 
+         python-netcdf,
+         python-scipy,
+         python-numpy, 
+         python-pyke, 
+         python-cartopy,
+         python-biggus,
+         libudunits2-0, 
+         udunits-bin, 
+         python-gdal, 
+         python-matplotlib, 
+         python-mock, 
+         python-nose, 
+         python-pandas, 
+         python-pil,
+         python (>=2.7), 
+         debconf
+Description: This package contains the Iris library
+ .
+ Iris is a Python library for Meteorology and Climatology.
