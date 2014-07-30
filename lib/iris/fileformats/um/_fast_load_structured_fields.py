@@ -54,11 +54,11 @@ class FieldCollation(object):
     """
     def __init__(self, fields):
         """
-        Kwargs
-        ------
-        fields - a iterable of PPField instances. All instances must be of the
-                 same type (i.e. must all be PPField3/PPField2).
-                 Fields are immutable.
+        Args:
+
+        * fields (iterable of :class:`iris.fileformats.pp.PPField`):
+            The fields in the collation.
+
         """
         self._fields = tuple(fields)
         assert len(self.fields) > 0
@@ -89,38 +89,29 @@ class FieldCollation(object):
             self._calculate_structure()
         return self._element_arrays_and_dims
 
-    @staticmethod
-    def _field_vector_element_arrays(fields):
+    def _field_vector_element_arrays(self):
         """"Define the field components used in the structure analysis."""
-        # First define functions to access t1 and t2 as date-time tuples.
-        # -- this depends on the PPField header version.
-        if isinstance(fields[0], PPField3):
-            # PPField3 store times to one second.
-            t1_fn = lambda fld: (fld.lbyr, fld.lbmon, fld.lbdat,
-                                 fld.lbhr, fld.lbmin, fld.lbsec)
-            t2_fn = lambda fld: (fld.lbyrd, fld.lbmond, fld.lbdatd,
-                                 fld.lbhrd, fld.lbmind, fld.lbsecd)
-        else:
-            # PPField2 has no seconds elements, fill these with zero.
-            t1_fn = lambda fld: (fld.lbyr, fld.lbmon, fld.lbdat,
-                                 fld.lbhr, fld.lbmin, 0)
-            t2_fn = lambda fld: (fld.lbyrd, fld.lbmond, fld.lbdatd,
-                                 fld.lbhrd, fld.lbmind, 0)
+        # Define functions to make t1 and t2 values as date-time tuples.
+        # These depend on header version (PPField2 has no seconds values).
+        t1_fn = lambda fld: (fld.lbyr, fld.lbmon, fld.lbdat,
+                             fld.lbhr, fld.lbmin, getattr(fld, 'lbsec', 0))
+        t2_fn = lambda fld: (fld.lbyrd, fld.lbmond, fld.lbdatd,
+                             fld.lbhrd, fld.lbmind, getattr(fld, 'lbsecd', 0))
 
         # Return a list of (name, array) for the vectorizable elements.
         component_arrays = [
-            ('t1', np.array([t1_fn(fld) for fld in fields])),
-            ('t2', np.array([t2_fn(fld) for fld in fields])),
-            ('lbft', np.array([fld.lbft for fld in fields])),
-            ('blev', np.array([fld.blev for fld in fields])),
-            ('lbrsvd4', np.array([fld.lbrsvd[3] for fld in fields])),
-            ('lbuser5', np.array([fld.lbuser[4] for fld in fields]))]
+            ('t1', np.array([t1_fn(fld) for fld in self.fields])),
+            ('t2', np.array([t2_fn(fld) for fld in self.fields])),
+            ('lbft', np.array([fld.lbft for fld in self.fields])),
+            ('blev', np.array([fld.blev for fld in self.fields])),
+            ('lbrsvd4', np.array([fld.lbrsvd[3] for fld in self.fields])),
+            ('lbuser5', np.array([fld.lbuser[4] for fld in self.fields]))]
 
         return component_arrays
 
     def _calculate_structure(self):
         # Make value arrays for the vectorisable field elements.
-        element_definitions = self._field_vector_element_arrays(self.fields)
+        element_definitions = self._field_vector_element_arrays()
 
         # Make a copy with time value tuples replaced by integers.
         ordering_definitions = element_definitions[:]
@@ -130,13 +121,10 @@ class FieldCollation(object):
                     [_time_comparable_int(*tuple(val)) for val in array])
                 ordering_definitions[index] = (name, array)
 
-        # Get a list of the original value arrays for building results.
-        actual_value_arrays = [array for name, array in element_definitions]
-
         # Perform the main analysis --> vector dimensions, elements, arrays.
         dims_shape, primary_elements, vector_element_arrays_and_dims = \
             optimal_array_structure(ordering_definitions,
-                                    actual_value_arrays)
+                                    element_definitions)
 
         # Replace time tuples in the result with real datetime-like values.
         # N.B. so we *don't* do this on the whole (expanded) input arrays.

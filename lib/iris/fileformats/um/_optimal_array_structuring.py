@@ -67,9 +67,10 @@ def optimal_array_structure(ordering_elements,
         significant, in that earlier elements have priority when associating
         dimensions with specific elements.
 
-    * actual_values_elements (iterable of 1-d array):
-        The 'real' values used to construct the result arrays, given in the
-        same order as the 'ordering_elements'.
+    * actual_values_elements (iterable of (name, 1-d array)):
+        The 'real' values used to construct the result arrays.  Must have all
+        the same names as the 'ordering_elements' (but not necessarily in the
+        same order).
 
     Returns:
 
@@ -87,9 +88,11 @@ def optimal_array_structure(ordering_elements,
     """
     # Convert the inputs to dicts.
     element_ordering_arrays = dict(ordering_elements)
-    actual_value_arrays = {name: actuals_array
-                           for actuals_array, (name, ordering_array)
-                           in zip(actual_values_elements, ordering_elements)}
+    actual_value_arrays = {name:array
+                           for name, array in actual_values_elements}
+    if set(actual_value_arrays.keys()) != set(element_ordering_arrays.keys()):
+        raise ValueError("Names of 'actual_values_elements' do not match "
+                         "those of the 'ordering_elements_arrays'.")
 
     # Define element priorities from ordering, to choose between equally good
     # structures, as structure code does not recognise any element ordering.
