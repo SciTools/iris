@@ -1,5 +1,41 @@
+iris (1.6.1-0~trusty2) trusty; urgency=low
+
+  * Fixed netcdftime missing.
+
+ -- Angelos Tzotsos <gcpp.kalxas@gmail.com>  Wed, 30 Jul 2014 14:57:00 +0200
+
 iris (1.6.1-0~trusty1) trusty; urgency=low
 
-  * Initial debian build.
+  * Initial trusty build.
 
  -- Angelos Tzotsos <gcpp.kalxas@gmail.com>  Wed, 30 Jul 2014 14:20:00 +0200
+
+iris (1.5.1-1ubuntu4) saucy; urgency=low
+
+  * remove patch to read cubes with erroneous calendars again
+
+ -- Andreas Hilboll <andreas@hilboll.de>  Tue, 26 Nov 2013 14:01:31 +0100
+
+iris (1.5.1-1ubuntu3) saucy; urgency=low
+
+  * include patch to read cubes with erroneous calendars
+
+ -- Andreas Hilboll <andreas@hilboll.de>  Fri, 22 Nov 2013 16:37:00 +0100
+
+iris (1.5.1-1ubuntu2) saucy; urgency=low
+
+  * fix missing python-setuptools build dependence
+
+ -- Andreas Hilboll <andreas@hilboll.de>  Sat, 09 Nov 2013 13:46:47 +0100
+
+iris (1.5.1-1ubuntu1) saucy; urgency=low
+
+  * fix package dependencies
+
+ -- Andreas Hilboll <andreas@hilboll.de>  Sat, 09 Nov 2013 13:02:32 +0100
+
+iris (1.5.1-1) saucy; urgency=low
+
+  * Initial packaging of iris 1.5.1 for Saucy Salamander.
+
+ -- Andreas Hilboll <andreas@hilboll.de>  Fri, 08 Nov 2013 16:57:50 +0100
