@@ -28,6 +28,7 @@ from iris.fileformats.pp_rules import convert
 from iris.fileformats.rules import load_cubes
 
 
+@tests.skip_data
 class Test(tests.IrisTest):
     def test_pp_with_stash_constraint(self):
         filenames = [tests.get_data_path(('PP', 'globClim1', 'dec_subset.pp'))]
