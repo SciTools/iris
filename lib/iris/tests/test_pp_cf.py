@@ -132,7 +132,10 @@ class TestAll(tests.IrisTest, pp.PPTest):
 
                     with open(file_checker, 'r') as report:
                         # Get the cfchecker report and purge unwanted lines.
-                        checker_report = ''.join([line for line in report.readlines() if not line.startswith('Using')])
+                        lines = [line for line in report.readlines()
+                                 if not (line.startswith('Using') or
+                                         line.startswith('Checking against'))]
+                        checker_report = ''.join(lines)
 
                     os.remove(file_checker)
                     self.assertString(checker_report, self._ref_dir + ('to_netcdf', 'cf_checker', '%s_%d.txt' % (fname_name, index)))
