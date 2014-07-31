@@ -167,6 +167,15 @@ class TestNetCDFLoad(tests.IrisTest):
         # can pass by manual sorting...
         cubes = iris.cube.CubeList(sorted(cubes, key=lambda cube: cube.name()))
 
+        # TEST_COMPAT mod - different versions of the Python module
+        # `netCDF4` give different data arrays: MaskedArray vs ndarray
+        # Since we're not interested in the data we can just normalise
+        # to MaskedArray (to minimise the change).
+        for cube in cubes:
+            # Force the fill value to be the default netCDF fill value
+            # to ensure it matches the previous behaviour.
+            cube.data = ma.masked_equal(cube.data, -2147483647)
+
         self.assertCML(cubes, ('netcdf', 'netcdf_cell_methods.cml'))
 
     def test_deferred_loading(self):
