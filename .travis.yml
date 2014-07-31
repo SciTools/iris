@@ -69,8 +69,8 @@ install:
   # cfchecker
   - echo '#!/usr/bin/env sh' > cfchecker
   - echo "cfchecks -s `pwd`/etc/cf-standard-name-table.xml -a `pwd`/etc/area-type-table.xml -u $PREFIX/share/udunits/udunits2.xml -v auto \$1" >> cfchecker
-  - sudo cp cfchecker /usr/local/bin/cfchecker
-  - sudo chmod a+x /usr/local/bin/cfchecker
+  - cp cfchecker $PREFIX/bin/cfchecker
+  - chmod a+x $PREFIX/bin/cfchecker
 
   # Output debug info
   - conda info -a
