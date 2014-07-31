@@ -238,13 +238,6 @@ def _convert_scalar_pseudo_level_coords(lbuser5):
 
 def convert(f):
     factories = []
-    references = []
-    standard_name = None
-    long_name = None
-    units = None
-    attributes = {}
-    cell_methods = []
-    dim_coords_and_dims = []
     aux_coords_and_dims = []
 
     # "Normal" (non-cross-sectional) Time values (--> scalar coordinates)
@@ -253,6 +246,55 @@ def convert(f):
         epoch_hours_unit=f.time_unit('hours'),
         t1=f.t1, t2=f.t2, lbft=f.lbft)
     aux_coords_and_dims.extend(time_coords_and_dims)
+
+    # "Normal" (non-cross-sectional) Vertical levels
+    #    (--> scalar coordinates and factories)
+    vertical_coords_and_dims, vertical_factories = \
+        _convert_scalar_vertical_coords(
+            lbcode=f.lbcode,
+            lbvc=f.lbvc,
+            blev=f.blev,
+            lblev=f.lblev,
+            stash=f.stash,
+            bhlev=f.bhlev,
+            bhrlev=f.bhrlev,
+            brsvd1=f.brsvd[0],
+            brsvd2=f.brsvd[1],
+            brlev=f.brlev)
+    aux_coords_and_dims.extend(vertical_coords_and_dims)
+    factories.extend(vertical_factories)
+
+    # Realization (aka ensemble) (--> scalar coordinates)
+    aux_coords_and_dims.extend(_convert_scalar_realization_coords(
+        lbrsvd4=f.lbrsvd[3]))
+
+    # Pseudo-level coordinate (--> scalar coordinates)
+    aux_coords_and_dims.extend(_convert_scalar_pseudo_level_coords(
+        lbuser5=f.lbuser[4]))
+
+    # All the other rules.
+    references, standard_name, long_name, units, attributes, cell_methods, \
+        dim_coords_and_dims, other_aux_coords_and_dims = _all_other_rules(f)
+    aux_coords_and_dims.extend(other_aux_coords_and_dims)
+
+    return (factories, references, standard_name, long_name, units, attributes,
+            cell_methods, dim_coords_and_dims, aux_coords_and_dims)
+
+
+def _all_other_rules(f):
+    """
+    This deals with all the other rules that have not been factored into any of
+    the other convert_scalar_coordinate functions above.
+
+    """
+    references = []
+    standard_name = None
+    long_name = None
+    units = None
+    attributes = {}
+    cell_methods = []
+    dim_coords_and_dims = []
+    aux_coords_and_dims = []
 
     # Season coordinates (--> scalar coordinates)
     if \
@@ -460,31 +502,6 @@ def convert(f):
     if f.lbproc not in [0, 128, 4096, 8192]:
         attributes["ukmo__process_flags"] = tuple(sorted([iris.fileformats.pp.lbproc_map[flag] for flag in f.lbproc.flags]))
 
-    # "Normal" (non-cross-sectional) Vertical levels
-    #    (--> scalar coordinates and factories)
-    vertical_coords_and_dims, vertical_factories = \
-        _convert_scalar_vertical_coords(
-            lbcode=f.lbcode,
-            lbvc=f.lbvc,
-            blev=f.blev,
-            lblev=f.lblev,
-            stash=f.stash,
-            bhlev=f.bhlev,
-            bhrlev=f.bhrlev,
-            brsvd1=f.brsvd[0],
-            brsvd2=f.brsvd[1],
-            brlev=f.brlev)
-    aux_coords_and_dims.extend(vertical_coords_and_dims)
-    factories.extend(vertical_factories)
-
-    # Realization (aka ensemble) (--> scalar coordinates)
-    aux_coords_and_dims.extend(_convert_scalar_realization_coords(
-        lbrsvd4=f.lbrsvd[3]))
-
-    # Pseudo-level coordinate (--> scalar coordinates)
-    aux_coords_and_dims.extend(_convert_scalar_pseudo_level_coords(
-        lbuser5=f.lbuser[4]))
-
     if (f.lbsrce % 10000) == 1111:
         attributes['source'] = 'Data from Met Office Unified Model'
         # Also define MO-netCDF compliant UM version.
@@ -516,5 +533,5 @@ def convert(f):
     if f.lbuser[3] == 409 or f.lbuser[3] == 1:
         references.append(ReferenceTarget('surface_air_pressure', None))
 
-    return (factories, references, standard_name, long_name, units, attributes,
+    return (references, standard_name, long_name, units, attributes,
             cell_methods, dim_coords_and_dims, aux_coords_and_dims)
