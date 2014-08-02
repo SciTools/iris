@@ -89,19 +89,23 @@ install:
   - unzip -q iris-sample-data.zip
   - ln -s $(pwd)/iris-sample-data-${IRIS_SAMPLE_DATA_SUFFIX} iris-sample-data
   
-# iris
-  - python setup.py --with-unpack build --include-dirs=${PREFIX}/include --library-dirs=${PREFIX}/lib
-  - python setup.py --with-unpack install
+# prepare iris build directory
+  - python setup.py --with-unpack build_ext --include-dirs=${PREFIX}/include --library-dirs=${PREFIX}/lib
+  - IRIS=$(ls -d1 build/lib*/iris)
+  - mkdir $IRIS/etc
 
 # set config paths
-  - ETC=`/usr/bin/python -c 'import iris, os; print(os.path.dirname(iris.__file__))'`
-  - SITE_CFG=$ETC/site.cfg
+  - SITE_CFG=$IRIS/etc/site.cfg
   - echo "[Resources]" > $SITE_CFG
   - echo "sample_data_dir = $(pwd)/iris-sample-data/sample_data" >> $SITE_CFG
   - echo "test_data_dir = $(pwd)/iris-test-data/test_data" >> $SITE_CFG
   - echo "doc_dir = $(pwd)/docs/iris" >> $SITE_CFG
   - echo "[System]" >> $SITE_CFG
   - echo "udunits2_path = $PREFIX/lib/libudunits2.so" >> $SITE_CFG
+
+# iris
+  - python setup.py --with-unpack build
+  - python setup.py --with-unpack install
 
 script:
   - python -m iris.tests.runner --example-tests
