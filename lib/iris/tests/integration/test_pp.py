@@ -48,6 +48,21 @@ def _mock_field(**kwargs):
     return field
 
 
+def field_with_data(scale=1):
+    # Manufacture a fake PPField with 2d data.
+    # NB. Use MagicMock so that SplittableInt header items, such as
+    # LBCODE, support len().
+    x, y = 40, 30
+    field = _mock_field(_data=np.arange(1200).reshape(y, x) * scale,
+                        lbcode=[1], lbnpt=x, lbrow=y,
+                        bzx=350, bdx=1.5, bzy=40, bdy=1.5,
+                        lbuser=[0] * 7, lbrsvd=[0] * 4)
+    field._x_coord_name = lambda: 'longitude'
+    field._y_coord_name = lambda: 'latitude'
+    field.coord_system = lambda: None
+    return field
+
+
 class TestVertical(tests.IrisTest):
     def _test_coord(self, cube, point, bounds=None, **kwargs):
         coords = cube.coords(**kwargs)
@@ -112,19 +127,6 @@ class TestVertical(tests.IrisTest):
 
     def test_hybrid_pressure_round_trip(self):
         # Use pp.load_cubes() to convert fake PPFields into Cubes.
-        # NB. Use MagicMock so that SplittableInt header items, such as
-        # LBCODE, support len().
-        def field_with_data(scale=1):
-            x, y = 40, 30
-            field = _mock_field(_data=np.arange(1200).reshape(y, x) * scale,
-                                lbcode=[1], lbnpt=x, lbrow=y,
-                                bzx=350, bdx=1.5, bzy=40, bdy=1.5,
-                                lbuser=[0] * 7, lbrsvd=[0] * 4)
-            field._x_coord_name = lambda: 'longitude'
-            field._y_coord_name = lambda: 'latitude'
-            field.coord_system = lambda: None
-            return field
-
         # Make a fake reference surface field.
         pressure_field = field_with_data(10)
         pressure_field.stash = iris.fileformats.pp.STASH(1, 0, 409)
@@ -193,17 +195,6 @@ class TestVertical(tests.IrisTest):
         self.assertEqual(data_field.brsvd, [sigma_upper, delta_upper])
 
     def test_hybrid_pressure_with_duplicate_references(self):
-        def field_with_data(scale=1):
-            x, y = 40, 30
-            field = _mock_field(_data=np.arange(1200).reshape(y, x) * scale,
-                                lbcode=[1], lbnpt=x, lbrow=y,
-                                bzx=350, bdx=1.5, bzy=40, bdy=1.5,
-                                lbuser=[0] * 7, lbrsvd=[0] * 4)
-            field._x_coord_name = lambda: 'longitude'
-            field._y_coord_name = lambda: 'latitude'
-            field.coord_system = lambda: None
-            return field
-
         # Make a fake reference surface field.
         pressure_field = field_with_data(10)
         pressure_field.stash = iris.fileformats.pp.STASH(1, 0, 409)
@@ -304,19 +295,6 @@ class TestVertical(tests.IrisTest):
 
     def test_hybrid_height_round_trip_no_reference(self):
         # Use pp.load_cubes() to convert fake PPFields into Cubes.
-        # NB. Use MagicMock so that SplittableInt header items, such as
-        # LBCODE, support len().
-        def field_with_data(scale=1):
-            x, y = 40, 30
-            field = mock.MagicMock(_data=np.arange(1200).reshape(y, x) * scale,
-                                   lbcode=[1], lbnpt=x, lbrow=y,
-                                   bzx=350, bdx=1.5, bzy=40, bdy=1.5,
-                                   lbuser=[0] * 7, lbrsvd=[0] * 4)
-            field._x_coord_name = lambda: 'longitude'
-            field._y_coord_name = lambda: 'latitude'
-            field.coord_system = lambda: None
-            return field
-
         # Make a fake data field which needs the reference surface.
         model_level = 5678
         sigma_lower, sigma, sigma_upper = 0.85, 0.9, 0.95
