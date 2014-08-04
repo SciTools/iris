@@ -95,6 +95,29 @@ def _extend_circular_data(data, coord_dim):
     return data
 
 
+def _canonical_sample_points(coords, sample_points):
+    """
+    Return the canonical form of the points values.
+
+    Ensures that any points supplied as datetime objects, or similar,
+    are converted to their numeric form.
+
+    """
+    canonical_sample_points = []
+    for coord, points in zip(coords, sample_points):
+        if coord.units.is_time_reference():
+            def convert_date(date):
+                try:
+                    date = coord.units.date2num(date)
+                except AttributeError:
+                    pass
+                return date
+            convert_dates = np.vectorize(convert_date, [np.dtype(float)])
+            points = convert_dates(points)
+        canonical_sample_points.append(points)
+    return canonical_sample_points
+
+
 class LinearInterpolator(object):
     """
     This class provides support for performing linear interpolation over
@@ -506,6 +529,9 @@ class LinearInterpolator(object):
             msg = 'Expected sample points for {} coordinates, got {}.'
             raise ValueError(msg.format(len(self._src_coords),
                                         len(sample_points)))
+
+        sample_points = _canonical_sample_points(self._src_coords,
+                                                 sample_points)
 
         data = self._src_cube.data
         # Interpolate the cube payload.

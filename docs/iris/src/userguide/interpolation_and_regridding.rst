@@ -23,8 +23,11 @@ Interpolation can be achieved on a cube with the :meth:`~iris.cube.Cube.interpol
 method, with the first argument being the points to interpolate, and the second being
 the interpolation scheme to use. The result is a new interpolated cube.
 
-Sample points can be defined as an iterable of ``(coord/coord name, value(s))`` pairs
-(e.g. ``[('latitude', 51.48), ('longitude', 0)]``).
+Sample points can be defined as an iterable of ``(coord/coord name, value(s))`` pairs, e.g. ``[('latitude', 51.48), ('longitude', 0)]``.
+The values for coordinates which correspond to date/times may optionally
+be supplied as datetime.datetime or netcdftime.datetime instances,
+e.g. ``[('time', datetime.datetime(2009, 11, 19, 10, 30))]``).
+
 Whilst more interpolation schemes will become available, the only interpolation scheme
 currently implementing Iris' interpolate interface is :class:`iris.analysis.Linear`.
 
