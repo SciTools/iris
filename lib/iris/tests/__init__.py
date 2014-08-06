@@ -146,8 +146,18 @@ def get_data_path(relative_path):
         gzipped_fname = data_path + '.gz'
         if os.path.exists(gzipped_fname):
             with gzip.open(gzipped_fname, 'rb') as gz_fh:
-                with open(data_path, 'wb') as fh:
-                    fh.writelines(gz_fh)
+                try:
+                    with open(data_path, 'wb') as fh:
+                        fh.writelines(gz_fh)
+                except IOError:
+                    # Put ungzipped data file in a temporary path, since we
+                    # can't write to the original path (maybe it is owned by
+                    # the system.)
+                    _, ext = os.path.splitext(data_path)
+                    data_path = iris.util.create_temp_filename(suffix=ext)
+                    with open(data_path, 'wb') as fh:
+                        fh.writelines(gz_fh)
+
 
     return data_path
 
