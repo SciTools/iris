@@ -740,6 +740,16 @@ class Test_intersection__GlobalSrcModulus(tests.IrisTest):
         self.assertEqual(result.data[0, 0, 0], 303)
         self.assertEqual(result.data[0, 0, -1], 28)
 
+    def test_tolerance_bug(self):
+        # Floating point changes introduced by wrapping mean
+        # the resulting coordinate values are not equal to their
+        # equivalents. This led to a bug that this test checks.
+        cube = create_cube(0, 400)
+        cube.coord('longitude').points = np.linspace(-179.55, 179.55, 400)
+        result = cube.intersection(longitude=(125, 145))
+        self.assertArrayAlmostEqual(result.coord('longitude').points,
+                                    cube.coord('longitude').points[339:361])
+
 
 # Check what happens with a global, points-and-bounds circular
 # intersection coordinate.
