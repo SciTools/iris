@@ -2197,19 +2197,19 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                max_comp(points, maximum)))
         if isinstance(coord, iris.coords.DimCoord):
             delta = coord.points[inside_indices] - points[inside_indices]
-            tolerance = np.finfo(delta.dtype).eps * modulus
-            if np.allclose(delta, delta[0], rtol=tolerance, atol=tolerance):
-                # A single, contiguous block.
-                subsets = [slice(inside_indices[0], inside_indices[-1] + 1)]
-            else:
+            step = np.rint(np.diff(delta) / modulus)
+            non_zero_step_indices = np.nonzero(step)[0]
+            if non_zero_step_indices.size:
                 # A contiguous block at the start and another at the
                 # end. (NB. We can't have more than two blocks
                 # because we've already restricted the coordinate's
                 # range to its modulus).
-                step = np.rint(np.diff(delta) / modulus)
-                end_of_first_chunk = np.nonzero(step)[0][0]
+                end_of_first_chunk = non_zero_step_indices[0]
                 subsets = [slice(inside_indices[end_of_first_chunk + 1], None),
                            slice(None, inside_indices[end_of_first_chunk] + 1)]
+            else:
+                # A single, contiguous block.
+                subsets = [slice(inside_indices[0], inside_indices[-1] + 1)]
         else:
             # An AuxCoord could have its values in an arbitrary
             # order, and hence a range of values can select an
