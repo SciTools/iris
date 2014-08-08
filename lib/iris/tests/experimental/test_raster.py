@@ -32,6 +32,8 @@ class TestGeoTiffExport(tests.IrisTest):
         """
         im = PIL.Image.open(geotiff_fh)
         tiff_header = '\n'.join(str((tag, val))
+                                if not isinstance(val, unicode)
+                                else "(%s, '%s')" % (tag, val)
                                 for tag, val in sorted(im.tag.items()))
 
         reference_path = tests.get_result_path(reference_filename)
