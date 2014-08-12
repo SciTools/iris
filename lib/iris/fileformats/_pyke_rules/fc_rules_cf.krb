@@ -1107,10 +1107,18 @@ fc_extras
             and iris.unit.Unit(attr_units) in [iris.unit.Unit('radians'), iris.unit.Unit('degrees')]:
                 modulus_value = iris.unit.Unit(attr_units).modulus
                 if bounds_data is not None:
-                    # set circular if bounds ends are equal
-                    first_bound = bounds_data[0, 0] % modulus_value
-                    last_bound = bounds_data[-1, 1] % modulus_value
-                    circular = np.allclose(first_bound, last_bound, rtol=1.0e-5)
+                    # Set circular to True if the bounds ends are equivalent.
+                    first_bound = last_bound = None
+                    if bounds_data.ndim == 1 and bounds_data.shape[-1] == 2:
+                        first_bound = bounds_data[0] % modulus_value
+                        last_bound = bounds_data[1] % modulus_value
+                    elif bounds_data.ndim == 2 and bounds_data.shape[-1] == 2:
+                        first_bound = bounds_data[0, 0] % modulus_value
+                        last_bound = bounds_data[-1, 1] % modulus_value
+
+                    if first_bound is not None and last_bound is not None:
+                        circular = np.allclose(first_bound, last_bound,
+                                               rtol=1.0e-5)
                 else:
                     # set circular if points are regular and last+1 ~= first
                     if len(points_data) > 1:
