@@ -253,5 +253,38 @@ class Test_FieldCollation(tests.IrisTest):
                                      'lbft': ([6, 9], (1,))})
 
 
+class Test__time_comparable_int(tests.IrisTest):
+
+    dummy_collation = FieldCollation([DummyField()])
+    time_convert_function = dummy_collation._time_comparable_int
+
+    def test(self):
+        # Define a list of date-time tuples, which should remain both all
+        # distinct and in ascending order when converted...
+        test_date_tuples = [
+            # Increment each component in turn to check that all are handled.
+            (2004, 1, 1, 0, 0, 0),
+            (2004, 1, 1, 0, 0, 1),
+            (2004, 1, 1, 0, 1, 0),
+            (2004, 1, 1, 1, 0, 0),
+            (2004, 1, 2, 0, 0, 0),
+            (2004, 2, 1, 0, 0, 0),
+            # Go across 2004-02-29 leap-day, and on to "Feb 31 .. Mar 1".
+            (2004, 2, 27, 0, 0, 0),
+            (2004, 2, 28, 0, 0, 0),
+            (2004, 2, 29, 0, 0, 0),
+            (2004, 2, 30, 0, 0, 0),
+            (2004, 2, 31, 0, 0, 0),
+            (2004, 3, 1, 0, 0, 0),
+            (2005, 1, 1, 0, 0, 0)]
+
+        test_date_ints = [self.time_convert_function(*test_tuple)
+                          for test_tuple in test_date_tuples]
+        # Check all values are distinct.
+        self.assertEqual(len(test_date_ints), len(set(test_date_ints), ))
+        # Check all values are in order.
+        self.assertEqual(test_date_ints, sorted(test_date_ints))
+
+
 if __name__ == "__main__":
     tests.main()

@@ -53,8 +53,7 @@ def _optimal_dimensioning_structure(structure, element_priorities):
     return result
 
 
-def optimal_array_structure(ordering_elements,
-                            actual_values_elements):
+def optimal_array_structure(ordering_elements, actual_values_elements=None):
     """
     Calculate an optimal array replication structure for a set of vectors.
 
@@ -63,14 +62,17 @@ def optimal_array_structure(ordering_elements,
     * ordering_elements (iterable of (name, 1-d array)):
         Input element names and value-vectors.  Must all be the same length
         (but not necessarily type).  Must have at least one.
-        These contain the pattern used to deduce a structure.  Order is
-        significant, in that earlier elements have priority when associating
-        dimensions with specific elements.
+
+    Kwargs:
 
     * actual_values_elements (iterable of (name, 1-d array)):
-        The 'real' values used to construct the result arrays.  Must have all
-        the same names as the 'ordering_elements' (but not necessarily in the
-        same order).
+        The 'real' values used to construct the result arrays, if different
+        from 'ordering_elements'.  Must contain  all the same names (but not
+        necessarily in the same order).
+
+    The 'ordering_elements' arg contains the pattern used to deduce a
+    structure.  The order of this is significant, in that earlier elements get
+    priority when associating dimensions with specific elements.
 
     Returns:
 
@@ -78,18 +80,40 @@ def optimal_array_structure(ordering_elements,
 
         * 'dims' is the shape of the vector dimensions chosen.
 
-        * 'primary_elements' is a set of those input element names which are
-        identified as dimensions:  At most one for each dimension.
+        * 'primary_elements' is a set of dimension names.
+            Those input element names which are identified as dimensions:
+            At most one for each dimension.
 
         * 'element_arrays_and_dims' is a dictionary "name --> (array, dims)"
-        for all elements which are not dimensionless.  The 'array's are reduced
-        to the shape of their mapped dimensions.
+            For all elements which are not dimensionless.  The 'array's are
+            reduced to the shape of their mapped dimensions.
+
+    For example::
+
+        >>> import iris.fileformats.um._optimal_array_structuring as optdims
+        >>> elements_structure = [('a', np.array([1, 1, 1, 2, 2, 2])),
+        ...                       ('b', np.array([0, 1, 2, 0, 1, 2])),
+        ...                       ('c', np.array([11, 12, 13, 14, 15, 16]))]
+        >>> elements_values = [('a', np.array([10, 10, 10, 12, 12, 12])),
+        ...                    ('b', np.array([15, 16, 17, 15, 16, 17])),
+        ...                    ('c', np.array([9, 3, 5, 2, 7, 1]))]
+        >>> dims_shape, dim_names, arrays_and_dims = \
+        ...      optdims.optimal_array_structure(elements_structure,
+        ...                                      elements_values)
+        >>> print dims_shape
+        (2, 3)
+        >>> print dim_names
+        set(['a', 'b'])
+        >>> print arrays_and_dims
+        {'a': (array([10, 12]), (0,)), 'c': (array([[9, 3, 5],
+               [2, 7, 1]]), (0, 1)), 'b': (array([15, 16, 17]), (1,))}
 
     """
     # Convert the inputs to dicts.
     element_ordering_arrays = dict(ordering_elements)
-    actual_value_arrays = {name:array
-                           for name, array in actual_values_elements}
+    if actual_values_elements is None:
+        actual_values_elements = element_ordering_arrays
+    actual_value_arrays = dict(actual_values_elements)
     if set(actual_value_arrays.keys()) != set(element_ordering_arrays.keys()):
         raise ValueError("Names of 'actual_values_elements' do not match "
                          "those of the 'ordering_elements_arrays'.")

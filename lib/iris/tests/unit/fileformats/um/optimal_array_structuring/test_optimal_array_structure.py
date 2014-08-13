@@ -24,7 +24,7 @@ Unit tests for the function
 # before importing anything else.
 import iris.tests as tests
 
-from numpy import array as aa
+import numpy as np
 
 from iris.fileformats.um._optimal_array_structuring import \
     optimal_array_structure
@@ -51,143 +51,130 @@ class Test(tests.IrisTest):
 
     def test_one(self):
         # A single value does not make a dimension (no length-1 dims).
-        elements = [('a', aa([1]))]
-        actual_values = [arr for name, arr in elements]
-        dims, primaries, elems_and_dims = optimal_array_structure(
-            elements, actual_values)
+        elements = [('a', np.array([1]))]
+        dims, primaries, elems_and_dims = optimal_array_structure(elements)
         self.assertEqual(dims, (1,))
         self.assertEqual(primaries, set())
         self.assertEqual(elems_and_dims, {})
 
     def test_1d(self):
-        elements = [('a', aa([1, 2, 4]))]
-        actual_values = [arr for name, arr in elements]
-        dims, primaries, elems_and_dims = optimal_array_structure(
-            elements, actual_values)
+        elements = [('a', np.array([1, 2, 4]))]
+        dims, primaries, elems_and_dims = optimal_array_structure(elements)
         self.assertEqual(dims, (3,))
         self.assertEqual(primaries, set('a'))
         self._check_arrays_and_dims(elems_and_dims,
-                                    {'a': (aa([1, 2, 4]), (0,))})
+                                    {'a': (np.array([1, 2, 4]), (0,))})
 
     def test_1d_actuals(self):
         # Test use of alternate element values for array construction.
-        elements = [('a', aa([1, 2, 4]))]
-        actual_values = [aa([7, 3, 9])]
+        elements = [('a', np.array([1, 2, 4]))]
+        actual_values = [('a', np.array([7, 3, 9]))]
         dims, primaries, elems_and_dims = optimal_array_structure(
             elements, actual_values)
         self.assertEqual(dims, (3,))
         self.assertEqual(primaries, set('a'))
         self._check_arrays_and_dims(elems_and_dims,
-                                    {'a': (aa([7, 3, 9]), (0,))})
+                                    {'a': (np.array([7, 3, 9]), (0,))})
+
+    def test_actuals_mismatch_fail(self):
+        elements = [('a', np.array([1, 2, 4]))]
+        actual_values = [('b', np.array([7, 3, 9]))]
+        with self.assertRaisesRegexp(ValueError, 'Names.* do not match.*'):
+            dims, primaries, elems_and_dims = optimal_array_structure(
+                elements, actual_values)
 
     def test_2d(self):
-        elements = [('a', aa([2, 2, 2, 3, 3, 3])),
-                    ('b', aa([7, 8, 9, 7, 8, 9]))]
-        actual_values = [arr for name, arr in elements]
-        dims, primaries, elems_and_dims = optimal_array_structure(
-            elements, actual_values)
+        elements = [('a', np.array([2, 2, 2, 3, 3, 3])),
+                    ('b', np.array([7, 8, 9, 7, 8, 9]))]
+        dims, primaries, elems_and_dims = optimal_array_structure(elements)
         self.assertEqual(dims, (2, 3,))
         self.assertEqual(primaries, set(['a', 'b']))
         self._check_arrays_and_dims(elems_and_dims,
-                                    {'a': (aa([2, 3]), (0,)),
-                                     'b': (aa([7, 8, 9]), (1,))})
+                                    {'a': (np.array([2, 3]), (0,)),
+                                     'b': (np.array([7, 8, 9]), (1,))})
 
     def test_non_2d(self):
         # An incomplete 2d expansion just becomes 1d
-        elements = [('a', aa([2, 2, 2, 3, 3])),
-                    ('b', aa([7, 8, 9, 7, 8]))]
-        actual_values = [arr for name, arr in elements]
-        dims, primaries, elems_and_dims = optimal_array_structure(
-            elements, actual_values)
+        elements = [('a', np.array([2, 2, 2, 3, 3])),
+                    ('b', np.array([7, 8, 9, 7, 8]))]
+        dims, primaries, elems_and_dims = optimal_array_structure(elements)
         self.assertEqual(dims, (5,))
         self.assertEqual(primaries, set())
         self._check_arrays_and_dims(elems_and_dims,
-                                    {'a': (aa([2, 2, 2, 3, 3]), (0,)),
-                                     'b': (aa([7, 8, 9, 7, 8]), (0,))})
+                                    {'a': (np.array([2, 2, 2, 3, 3]), (0,)),
+                                     'b': (np.array([7, 8, 9, 7, 8]), (0,))})
 
     def test_degenerate(self):
         # A all-same vector does not appear in the output.
-        elements = [('a', aa([1, 2, 3])),
-                    ('b', aa([4, 4, 4]))]
-        actual_values = [arr for name, arr in elements]
-        dims, primaries, elems_and_dims = optimal_array_structure(
-            elements, actual_values)
+        elements = [('a', np.array([1, 2, 3])),
+                    ('b', np.array([4, 4, 4]))]
+        dims, primaries, elems_and_dims = optimal_array_structure(elements)
         self.assertEqual(dims, (3,))
         self.assertEqual(primaries, set(['a']))
         self._check_arrays_and_dims(elems_and_dims,
-                                    {'a': (aa([1, 2, 3]), (0,))})
+                                    {'a': (np.array([1, 2, 3]), (0,))})
 
     def test_1d_duplicates(self):
         # When two have the same structure, the first is 'the dimension'.
-        elements = [('a', aa([1, 3, 4])),
-                    ('b', aa([6, 7, 9]))]
-        actual_values = [arr for name, arr in elements]
-        dims, primaries, elems_and_dims = optimal_array_structure(
-            elements, actual_values)
+        elements = [('a', np.array([1, 3, 4])),
+                    ('b', np.array([6, 7, 9]))]
+        dims, primaries, elems_and_dims = optimal_array_structure(elements)
         self.assertEqual(dims, (3,))
         self.assertEqual(primaries, set('a'))
         self._check_arrays_and_dims(elems_and_dims,
-                                    {'a': (aa([1, 3, 4]), (0,)),
-                                     'b': (aa([6, 7, 9]), (0,))})
+                                    {'a': (np.array([1, 3, 4]), (0,)),
+                                     'b': (np.array([6, 7, 9]), (0,))})
 
     def test_1d_duplicates_order(self):
         # Same as previous but reverse passed order of elements 'a' and 'b'.
-        elements = [('b', aa([6, 7, 9])),
-                    ('a', aa([1, 3, 4]))]
-        actual_values = [arr for name, arr in elements]
-        dims, primaries, elems_and_dims = optimal_array_structure(
-            elements, actual_values)
+        elements = [('b', np.array([6, 7, 9])),
+                    ('a', np.array([1, 3, 4]))]
+        dims, primaries, elems_and_dims = optimal_array_structure(elements)
         self.assertEqual(dims, (3,))
         # The only difference is the one chosen as 'principal'
         self.assertEqual(primaries, set('b'))
         self._check_arrays_and_dims(elems_and_dims,
-                                    {'a': (aa([1, 3, 4]), (0,)),
-                                     'b': (aa([6, 7, 9]), (0,))})
+                                    {'a': (np.array([1, 3, 4]), (0,)),
+                                     'b': (np.array([6, 7, 9]), (0,))})
 
     def test_3_way(self):
-        elements = [('t1', aa([2, 3, 4])),
-                    ('t2', aa([4, 5, 6])),
-                    ('period', aa([9, 8, 7]))]
-        actual_values = [arr for name, arr in elements]
-        dims, primaries, elems_and_dims = optimal_array_structure(
-            elements, actual_values)
+        elements = [('t1', np.array([2, 3, 4])),
+                    ('t2', np.array([4, 5, 6])),
+                    ('period', np.array([9, 8, 7]))]
+        dims, primaries, elems_and_dims = optimal_array_structure(elements)
         self.assertEqual(dims, (3,))
         self.assertEqual(primaries, set(['t1']))
         self._check_arrays_and_dims(elems_and_dims,
-                                    {'t1': (aa([2, 3, 4]), (0,)),
-                                     't2': (aa([4, 5, 6]), (0,)),
-                                     'period': (aa([9, 8, 7]), (0,))})
+                                    {'t1': (np.array([2, 3, 4]), (0,)),
+                                     't2': (np.array([4, 5, 6]), (0,)),
+                                     'period': (np.array([9, 8, 7]), (0,))})
 
     def test_mixed_dims(self):
-        elements = [('t1', aa([1, 1, 11, 11])),
-                    ('t2', aa([15, 16, 25, 26])),
-                    ('ft', aa([15, 16, 15, 16]))]
-        actual_values = [arr for name, arr in elements]
-        dims, primaries, elems_and_dims = optimal_array_structure(
-            elements, actual_values)
+        elements = [('t1', np.array([1, 1, 11, 11])),
+                    ('t2', np.array([15, 16, 25, 26])),
+                    ('ft', np.array([15, 16, 15, 16]))]
+        dims, primaries, elems_and_dims = optimal_array_structure(elements)
         self.assertEqual(dims, (2, 2))
         self.assertEqual(primaries, set(['t1', 'ft']))
         self._check_arrays_and_dims(
             elems_and_dims,
-            {'t1': (aa([1, 11]), (0,)),
-             't2': (aa([[15, 16], [25, 26]]), (0, 1)),
-             'ft': (aa([15, 16]), (1,))})
+            {'t1': (np.array([1, 11]), (0,)),
+             't2': (np.array([[15, 16], [25, 26]]), (0, 1)),
+             'ft': (np.array([15, 16]), (1,))})
 
     def test_missing_dim(self):
-        # As above, nothing maps to just dimension 1 (as was 'ft' above)
-        elements = [('t1', aa([1, 1, 11, 11])),
-                    ('t2', aa([15, 16, 25, 26]))]
-        actual_values = [arr for name, arr in elements]
-        dims, primaries, elems_and_dims = optimal_array_structure(
-            elements, actual_values)
+        # Case with no dimension element for dimension 1.
+        elements = [('t1', np.array([1, 1, 11, 11])),
+                    ('t2', np.array([15, 16, 25, 26]))]
+        dims, primaries, elems_and_dims = optimal_array_structure(elements)
         self.assertEqual(dims, (4,))
         # The potential 2d nature can not be recognised.
         # 't1' is auxiliary, as it has duplicate values over the dimension.
         self.assertEqual(primaries, set(['t2']))
         self._check_arrays_and_dims(
             elems_and_dims,
-            {'t1': (aa([1, 1, 11, 11]), (0,)),
-             't2': (aa([15, 16, 25, 26]), (0,))})
+            {'t1': (np.array([1, 1, 11, 11]), (0,)),
+             't2': (np.array([15, 16, 25, 26]), (0,))})
 
 
 if __name__ == "__main__":

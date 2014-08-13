@@ -27,29 +27,32 @@ from iris.fileformats.um._optimal_array_structuring import \
 from iris.fileformats.pp import PPField3
 
 
-# Static values for the _time_comparable_int routine.
-_TIME_ELEMENT_MULTIPLIERS = np.cumprod([1, 60, 60, 24, 31, 12])[::-1]
-
-
-def _time_comparable_int(yr, mon, dat, hr, min, sec):
-    """
-    Return a simple number representing a date-time tuple.
-
-    This calculation takes no account of the real calendar, but instead just
-    gives every month 31 days, which preserves the required time ordering.
-
-    In fact... for the purposes used here we didn't really neded ordering,
-    it is merely important that all datetimes yield a *unique* conversion.
-
-    """
-    elements = np.array((yr, mon, dat, hr, min, sec))
-    return np.sum(elements * _TIME_ELEMENT_MULTIPLIERS)
-
-
 class FieldCollation(object):
     """
     An object representing a group of UM fields with array structure that can
     be vectorized into a single cube.
+
+    For example:
+
+    Suppose we have a set of 28 fields repeating over 7 vertical levels for
+    each of 4 different data times.  If a FieldCollation is created to contain
+    these, it can identify that this is a 4*7 regular array structure.
+
+    This FieldCollation will then have the following properties:
+
+    * 'vector_dims_shape' will be (4, 7).
+    * 'primary_dimension_elements' will be set(['t1', 'blev']).
+    * within 'element_arrays_and_dims' :
+        Element 'blev' have the array shape (7,) and dims of (1,).
+        Elements 't1' and 't2' have shape (4,) and dims (0,).
+        The other elements (lbft, lbrsvd4 and lbuser5) all have scalar array
+        values and dims=None.
+
+    .. note::
+
+        If no array structure is found, the shape will be 1-dimensional in the
+        number of fields, 'primary_dimension_elements' will be empty and the
+        element values are all either scalar or full-length 1-D vectors.
 
     """
     def __init__(self, fields):
@@ -73,18 +76,29 @@ class FieldCollation(object):
 
     @property
     def vector_dims_shape(self):
+        """The shape of the array structure."""
         if not self._structure_calculated:
             self._calculate_structure()
         return self._vector_dims_shape
 
     @property
     def primary_dimension_elements(self):
+        """A set of names of the elements which are array dimensions."""
         if not self._structure_calculated:
             self._calculate_structure()
         return self._primary_dimension_elements
 
     @property
     def element_arrays_and_dims(self):
+        """
+        Value arrays for vector metadata elements.
+
+        A dictionary mapping element_name: (value_array, dims).
+
+        The arrays are reduced to their minimum dimensions.  A scalar array
+        has an associated 'dims' of None (instead of an empty tuple).
+
+        """
         if not self._structure_calculated:
             self._calculate_structure()
         return self._element_arrays_and_dims
@@ -109,6 +123,23 @@ class FieldCollation(object):
 
         return component_arrays
 
+    # Static factors for the _time_comparable_int routine.
+    _TIME_ELEMENT_MULTIPLIERS = np.cumprod([1, 60, 60, 24, 31, 12])[::-1]
+
+    def _time_comparable_int(self, yr, mon, dat, hr, min, sec):
+        """
+        Return a simple number representing a date-time tuple.
+
+        This calculation takes no account of the real calendar, but instead
+        gives every month 31 days, which preserves the required time ordering.
+
+        In fact... for the purposes used here we didn't really need ordering,
+        it is merely important that all datetimes yield a *unique* conversion.
+
+        """
+        elements = np.array((yr, mon, dat, hr, min, sec))
+        return np.sum(elements * self._TIME_ELEMENT_MULTIPLIERS)
+
     def _calculate_structure(self):
         # Make value arrays for the vectorisable field elements.
         element_definitions = self._field_vector_element_arrays()
@@ -118,7 +149,7 @@ class FieldCollation(object):
         for index, (name, array) in enumerate(ordering_definitions):
             if name in ('t1', 't2'):
                 array = np.array(
-                    [_time_comparable_int(*tuple(val)) for val in array])
+                    [self._time_comparable_int(*tuple(val)) for val in array])
                 ordering_definitions[index] = (name, array)
 
         # Perform the main analysis --> vector dimensions, elements, arrays.
@@ -149,7 +180,13 @@ class FieldCollation(object):
 
 
 def _um_collation_key_function(field):
-    """ Standard collation key definition for fast structured field loading."""
+    """
+    Standard collation key definition for fast structured field loading.
+
+    The elements used here are the minimum sufficient to define the
+    'phenomenon', as described for :meth:`group_structured_fields`.
+
+    """
     return (field.lbuser[3], field.lbproc, field.lbuser[6])
 
 
@@ -169,12 +206,14 @@ def group_structured_fields(field_iterator):
     statistical aggregation of one), and those fields appear as a single
     iteration result.
 
-    Implicitly, within each result group, _all_ other metadata components
-    should be either -
-    (1) the same for all fields, or
-    (2) completely irrelevant, or
-    (3) used by a vectorised rule function, such as
-        :func:`iris.fileformats.pp_rules._convert_vector_time_coords`.
+    Implicitly, within each result group, *all* other metadata components
+    should be either:
+
+    * 1. the same for all fields, or
+    * 2. completely irrelevant, or
+    * 3. used by a vectorised rule function
+        (such as :func:`iris.fileformats.pp_rules._convert_vector_time_coords`
+        ).
 
     Returns:
         An iterator yielding
