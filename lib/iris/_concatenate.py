@@ -129,6 +129,8 @@ class _CoordMetaData(namedtuple('CoordMetaData',
         bounds_dtype = coord.bounds.dtype if coord.bounds is not None \
             else None
         kwargs = {}
+        # Add scalar flag metadata.
+        kwargs['scalar'] = coord.points.size == 1
         # Add circular flag metadata for dimensional coordinates.
         if hasattr(coord, 'circular'):
             kwargs['circular'] = coord.circular
@@ -146,6 +148,40 @@ class _CoordMetaData(namedtuple('CoordMetaData',
                                                       bounds_dtype,
                                                       kwargs)
         return metadata
+
+    def __eq__(self, other):
+        def _compare(left, right, properties):
+            same = True
+            for prop in properties:
+                same = left[prop] == right[prop]
+                if not same:
+                    break
+            return same
+
+        result = NotImplemented
+        if isinstance(other, _CoordMetaData):
+            properties = set(self._asdict())
+            properties.discard('kwargs')
+            result = _compare(self._asdict(), other._asdict(), properties)
+            if result:
+                # Monotonic "order" only applies to DimCoord's.
+                # The monotonic "order" must be _INCREASING or _DECREASING if
+                # the DimCoord is NOT "scalar". Otherwise, if the DimCoord is
+                # "scalar" then the "order" must be _CONSTANT.
+                properties = self.kwargs.viewkeys() | other.kwargs.viewkeys()
+                if self.kwargs['scalar'] | other.kwargs['scalar']:
+                    # We don't care about the monotonic "order" given that at
+                    # least one coordinate is a scalar coordinate.
+                    properties.discard('order')
+                properties.discard('scalar')
+                result = _compare(self.kwargs, other.kwargs, properties)
+        return result
+
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+        return result
 
     def name(self):
         """Get the name from the coordinate definition."""
