@@ -117,6 +117,17 @@ def _convert_scalar_time_coords(lbcode, lbtim, epoch_hours_unit, t1, t2, lbft):
     return coords_and_dims
 
 
+_stashcode_implied_heights = {
+    'm01s03i236': 1.5,
+    'm01s03i237': 1.5,
+    'm01s03i245': 1.5,
+    'm01s03i247': 1.5,
+    'm01s03i250': 1.5,
+    'm01s03i225': 10.0,
+    'm01s03i226': 10.0,
+    'm01s03i463': 10.0}
+
+
 def _convert_scalar_vertical_coords(lbcode, lbvc, blev, lblev, stash,
                                     bhlev, bhrlev, brsvd1, brsvd2, brlev):
     """
@@ -128,14 +139,22 @@ def _convert_scalar_vertical_coords(lbcode, lbvc, blev, lblev, stash,
     factories = []
     coords_and_dims = []
     model_level_number = _model_level_number(lblev)
+
     if \
             (lbvc == 1) and \
-            (not (str(stash) in ['m01s03i236', 'm01s03i237', 'm01s03i245', 'm01s03i247', 'm01s03i250'])) and \
+            (not (str(stash) in _stashcode_implied_heights.keys())) and \
             (blev != -1):
-        coords_and_dims.append((DimCoord(blev, standard_name='height', units='m', attributes={'positive': 'up'}), None))
+        coords_and_dims.append(
+            (DimCoord(blev, standard_name='height', units='m',
+                      attributes={'positive': 'up'}),
+             None))
 
-    if str(stash) in ['m01s03i236', 'm01s03i237', 'm01s03i245', 'm01s03i247', 'm01s03i250']:
-        coords_and_dims.append((DimCoord(1.5, standard_name='height', units='m', attributes={'positive': 'up'}), None))
+    if str(stash) in _stashcode_implied_heights.keys():
+        coords_and_dims.append(
+            (DimCoord(_stashcode_implied_heights[str(stash)],
+                      standard_name='height', units='m',
+                      attributes={'positive': 'up'}),
+             None))
 
     if \
             (len(lbcode) != 5) and \
