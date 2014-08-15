@@ -312,7 +312,7 @@ class TestCircularScalar(tests.IrisTest, RulesTestMixin):
         self._assert_circular(True)
 
     def test_two_bounds_circular_decreasing(self):
-        self._make_vars([0., 360.])
+        self._make_vars([360., 0.])
         self._assert_circular(True)
 
     def test_two_bounds_circular_alt(self):
