@@ -25,6 +25,13 @@
         </dimCoord>
       </coord>
       <coord>
+        <dimCoord id="28d5141c" points="[10.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord>
         <dimCoord id="8d07ce7a" long_name="pressure" points="[-1.0]" shape="(1,)" units="Unit('hPa')" value_type="float32"/>
       </coord>
       <coord>

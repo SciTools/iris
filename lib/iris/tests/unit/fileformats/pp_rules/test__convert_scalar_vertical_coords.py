@@ -46,7 +46,7 @@ def _lbcode(value=None, ix=None, iy=None):
 
 class TestLBVC001_Height(TestField):
     def _check_height(self, blev, stash,
-                      expect_normal=True, expect_fixed=False):
+                      expect_normal=True, expect_fixed_height=None):
         lbvc = 1
         lbcode = _lbcode(0)  # effectively unused in this case
         lblev, bhlev, bhrlev, brsvd1, brsvd2, brlev = \
@@ -60,10 +60,10 @@ class TestLBVC001_Height(TestField):
                 (DimCoord(blev, standard_name='height', units='m',
                           attributes={'positive': 'up'}),
                  None)]
-        elif expect_fixed:
+        elif expect_fixed_height:
             expect_result = [
-                (DimCoord([1.5], standard_name='height', units='m',
-                          attributes={'positive': 'up'}),
+                (DimCoord([expect_fixed_height], standard_name='height',
+                          units='m', attributes={'positive': 'up'}),
                  None)]
         else:
             expect_result = []
@@ -77,9 +77,13 @@ class TestLBVC001_Height(TestField):
         self._check_height(blev=-1, stash=STASH(1, 1, 1),
                            expect_normal=False)
 
-    def test_implied_height(self):
+    def test_implied_height_1m5(self):
         self._check_height(blev=75.2, stash=STASH(1, 3, 236),
-                           expect_normal=False, expect_fixed=True)
+                           expect_normal=False, expect_fixed_height=1.5)
+
+    def test_implied_height_10m(self):
+        self._check_height(blev=75.2, stash=STASH(1, 3, 225),
+                           expect_normal=False, expect_fixed_height=10.0)
 
 
 class TestLBVC002_Depth(TestField):
