@@ -297,210 +297,245 @@ def _all_other_rules(f):
     aux_coords_and_dims = []
 
     # Season coordinates (--> scalar coordinates)
-    if \
-            (f.lbtim.ib == 3) and \
-            (f.lbtim.ic in [1, 2, 4]) and \
-            ((len(f.lbcode) != 5) or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])) and \
-            (f.lbmon == 12 and f.lbdat == 1 and f.lbhr == 0 and f.lbmin == 0) and \
-            (f.lbmond == 3 and f.lbdatd == 1 and f.lbhrd == 0 and f.lbmind == 0):
-        aux_coords_and_dims.append((AuxCoord('djf', long_name='season', units='no_unit'), None))
+    if (f.lbtim.ib == 3 and f.lbtim.ic in [1, 2, 4] and
+            (len(f.lbcode) != 5 or
+             (len(f.lbcode) == 5 and
+              (f.lbcode.ix not in [20, 21, 22, 23] and
+               f.lbcode.iy not in [20, 21, 22, 23]))) and
+            f.lbmon == 12 and f.lbdat == 1 and f.lbhr == 0 and f.lbmin == 0 and
+            f.lbmond == 3 and f.lbdatd == 1 and f.lbhrd == 0 and
+            f.lbmind == 0):
+        aux_coords_and_dims.append(
+            (AuxCoord('djf', long_name='season', units='no_unit'),
+             None))
 
-    if \
-            (f.lbtim.ib == 3) and \
-            (f.lbtim.ic in [1, 2, 4]) and \
-            ((len(f.lbcode) != 5) or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])) and \
-            (f.lbmon == 3 and f.lbdat == 1 and f.lbhr == 0 and f.lbmin == 0) and \
-            (f.lbmond == 6 and f.lbdatd == 1 and f.lbhrd == 0 and f.lbmind == 0):
-        aux_coords_and_dims.append((AuxCoord('mam', long_name='season', units='no_unit'), None))
+    if (f.lbtim.ib == 3 and f.lbtim.ic in [1, 2, 4] and
+            ((len(f.lbcode) != 5) or
+             (len(f.lbcode) == 5 and
+              f.lbcode.ix not in [20, 21, 22, 23]
+              and f.lbcode.iy not in [20, 21, 22, 23])) and
+            f.lbmon == 3 and f.lbdat == 1 and f.lbhr == 0 and f.lbmin == 0 and
+            f.lbmond == 6 and f.lbdatd == 1 and f.lbhrd == 0 and
+            f.lbmind == 0):
+        aux_coords_and_dims.append(
+            (AuxCoord('mam', long_name='season', units='no_unit'),
+             None))
 
-    if \
-            (f.lbtim.ib == 3) and \
-            (f.lbtim.ic in [1, 2, 4]) and \
-            ((len(f.lbcode) != 5) or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])) and \
-            (f.lbmon == 6 and f.lbdat == 1 and f.lbhr == 0 and f.lbmin == 0) and \
-            (f.lbmond == 9 and f.lbdatd == 1 and f.lbhrd == 0 and f.lbmind == 0):
-        aux_coords_and_dims.append((AuxCoord('jja', long_name='season', units='no_unit'), None))
+    if (f.lbtim.ib == 3 and f.lbtim.ic in [1, 2, 4] and
+            ((len(f.lbcode) != 5) or
+             (len(f.lbcode) == 5 and
+              f.lbcode.ix not in [20, 21, 22, 23] and
+              f.lbcode.iy not in [20, 21, 22, 23])) and
+            f.lbmon == 6 and f.lbdat == 1 and f.lbhr == 0 and f.lbmin == 0 and
+            f.lbmond == 9 and f.lbdatd == 1 and f.lbhrd == 0 and
+            f.lbmind == 0):
+        aux_coords_and_dims.append(
+            (AuxCoord('jja', long_name='season', units='no_unit'),
+             None))
 
-    if \
-            (f.lbtim.ib == 3) and \
-            (f.lbtim.ic in [1, 2, 4]) and \
-            ((len(f.lbcode) != 5) or (len(f.lbcode) == 5 and f.lbcode.ix not in [20, 21, 22, 23] and f.lbcode.iy not in [20, 21, 22, 23])) and \
-            (f.lbmon == 9 and f.lbdat == 1 and f.lbhr == 0 and f.lbmin == 0) and \
-            (f.lbmond == 12 and f.lbdatd == 1 and f.lbhrd == 0 and f.lbmind == 0):
-        aux_coords_and_dims.append((AuxCoord('son', long_name='season', units='no_unit'), None))
+    if (f.lbtim.ib == 3 and f.lbtim.ic in [1, 2, 4] and
+            ((len(f.lbcode) != 5) or
+             (len(f.lbcode) == 5 and
+              f.lbcode.ix not in [20, 21, 22, 23] and
+              f.lbcode.iy not in [20, 21, 22, 23])) and
+            f.lbmon == 9 and f.lbdat == 1 and f.lbhr == 0 and f.lbmin == 0 and
+            f.lbmond == 12 and f.lbdatd == 1 and f.lbhrd == 0 and
+            f.lbmind == 0):
+        aux_coords_and_dims.append(
+            (AuxCoord('son', long_name='season', units='no_unit'),
+             None))
 
     # "Normal" (i.e. not cross-sectional) lats+lons (--> vector coordinates)
-    if \
-            (f.bdx != 0.0) and \
-            (f.bdx != f.bmdi) and \
-            (len(f.lbcode) != 5) and \
-            (f.lbcode[0] == 1):
-        dim_coords_and_dims.append((DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt, standard_name=f._x_coord_name(), units='degrees', circular=(f.lbhem in [0, 4]), coord_system=f.coord_system()), 1))
+    if (f.bdx != 0.0 and f.bdx != f.bmdi and len(f.lbcode) != 5 and
+            f.lbcode[0] == 1):
+        dim_coords_and_dims.append(
+            (DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt,
+                                   standard_name=f._x_coord_name(),
+                                   units='degrees',
+                                   circular=(f.lbhem in [0, 4]),
+                                   coord_system=f.coord_system()),
+             1))
 
-    if \
-            (f.bdx != 0.0) and \
-            (f.bdx != f.bmdi) and \
-            (len(f.lbcode) != 5) and \
-            (f.lbcode[0] == 2):
-        dim_coords_and_dims.append((DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt, standard_name=f._x_coord_name(), units='degrees', circular=(f.lbhem in [0, 4]), coord_system=f.coord_system(), with_bounds=True), 1))
+    if (f.bdx != 0.0 and f.bdx != f.bmdi and len(f.lbcode) != 5 and
+            f.lbcode[0] == 2):
+        dim_coords_and_dims.append(
+            (DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt,
+                                   standard_name=f._x_coord_name(),
+                                   units='degrees',
+                                   circular=(f.lbhem in [0, 4]),
+                                   coord_system=f.coord_system(),
+                                   with_bounds=True),
+             1))
 
-    if \
-            (f.bdy != 0.0) and \
-            (f.bdy != f.bmdi) and \
-            (len(f.lbcode) != 5) and \
-            (f.lbcode[0] == 1):
-        dim_coords_and_dims.append((DimCoord.from_regular(f.bzy, f.bdy, f.lbrow, standard_name=f._y_coord_name(), units='degrees', coord_system=f.coord_system()), 0))
+    if (f.bdy != 0.0 and f.bdy != f.bmdi and len(f.lbcode) != 5 and
+            f.lbcode[0] == 1):
+        dim_coords_and_dims.append(
+            (DimCoord.from_regular(f.bzy, f.bdy, f.lbrow,
+                                   standard_name=f._y_coord_name(),
+                                   units='degrees',
+                                   coord_system=f.coord_system()),
+             0))
 
-    if \
-            (f.bdy != 0.0) and \
-            (f.bdy != f.bmdi) and \
-            (len(f.lbcode) != 5) and \
-            (f.lbcode[0] == 2):
-        dim_coords_and_dims.append((DimCoord.from_regular(f.bzy, f.bdy, f.lbrow, standard_name=f._y_coord_name(), units='degrees', coord_system=f.coord_system(), with_bounds=True), 0))
+    if (f.bdy != 0.0 and f.bdy != f.bmdi and len(f.lbcode) != 5 and
+            f.lbcode[0] == 2):
+        dim_coords_and_dims.append(
+            (DimCoord.from_regular(f.bzy, f.bdy, f.lbrow,
+                                   standard_name=f._y_coord_name(),
+                                   units='degrees',
+                                   coord_system=f.coord_system(),
+                                   with_bounds=True),
+             0))
 
-    if \
-            (f.bdy == 0.0 or f.bdy == f.bmdi) and \
-            (len(f.lbcode) != 5 or (len(f.lbcode) == 5 and f.lbcode.iy == 10)):
-        dim_coords_and_dims.append((DimCoord(f.y, standard_name=f._y_coord_name(), units='degrees', bounds=f.y_bounds, coord_system=f.coord_system()), 0))
+    if ((f.bdy == 0.0 or f.bdy == f.bmdi) and
+            (len(f.lbcode) != 5 or
+             (len(f.lbcode) == 5 and f.lbcode.iy == 10))):
+        dim_coords_and_dims.append(
+            (DimCoord(f.y, standard_name=f._y_coord_name(), units='degrees',
+                      bounds=f.y_bounds, coord_system=f.coord_system()),
+             0))
 
-    if \
-            (f.bdx == 0.0 or f.bdx == f.bmdi) and \
-            (len(f.lbcode) != 5 or (len(f.lbcode) == 5 and f.lbcode.ix == 11)):
-        dim_coords_and_dims.append((DimCoord(f.x, standard_name=f._x_coord_name(),  units='degrees', bounds=f.x_bounds, circular=(f.lbhem in [0, 4]), coord_system=f.coord_system()), 1))
+    if ((f.bdx == 0.0 or f.bdx == f.bmdi) and
+            (len(f.lbcode) != 5 or
+             (len(f.lbcode) == 5 and f.lbcode.ix == 11))):
+        dim_coords_and_dims.append(
+            (DimCoord(f.x, standard_name=f._x_coord_name(),  units='degrees',
+                      bounds=f.x_bounds, circular=(f.lbhem in [0, 4]),
+                      coord_system=f.coord_system()),
+             1))
 
     # Cross-sectional vertical level types (--> vector coordinates)
-    if \
-            (len(f.lbcode) == 5) and \
-            (f.lbcode.iy == 2) and \
-            (f.bdy == 0 or f.bdy == f.bmdi):
-        dim_coords_and_dims.append((DimCoord(f.y, standard_name='height', units='km', bounds=f.y_bounds, attributes={'positive': 'up'}), 0))
+    if (len(f.lbcode) == 5 and f.lbcode.iy == 2 and
+            (f.bdy == 0 or f.bdy == f.bmdi)):
+        dim_coords_and_dims.append(
+            (DimCoord(f.y, standard_name='height', units='km',
+                      bounds=f.y_bounds, attributes={'positive': 'up'}),
+             0))
 
-    if \
-            (len(f.lbcode) == 5) and \
-            (f.lbcode[-1] == 1) and \
-            (f.lbcode.iy == 4):
-        dim_coords_and_dims.append((DimCoord(f.y, standard_name='depth', units='m', bounds=f.y_bounds, attributes={'positive': 'down'}), 0))
+    if (len(f.lbcode) == 5 and f.lbcode[-1] == 1 and f.lbcode.iy == 4):
+        dim_coords_and_dims.append(
+            (DimCoord(f.y, standard_name='depth', units='m',
+                      bounds=f.y_bounds, attributes={'positive': 'down'}),
+             0))
 
-    if \
-            (len(f.lbcode) == 5) and \
-            (f.lbcode.ix == 10) and \
-            (f.bdx != 0) and \
-            (f.bdx != f.bmdi):
-        dim_coords_and_dims.append((DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt, standard_name=f._y_coord_name(), units='degrees', coord_system=f.coord_system()), 1))
+    if (len(f.lbcode) == 5 and f.lbcode.ix == 10 and f.bdx != 0 and
+            f.bdx != f.bmdi):
+        dim_coords_and_dims.append(
+            (DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt,
+                                   standard_name=f._y_coord_name(),
+                                   units='degrees',
+                                   coord_system=f.coord_system()),
+             1))
 
-    if \
-            (len(f.lbcode) == 5) and \
-            (f.lbcode.iy == 1) and \
-            (f.bdy == 0 or f.bdy == f.bmdi):
-        dim_coords_and_dims.append((DimCoord(f.y, long_name='pressure', units='hPa', bounds=f.y_bounds), 0))
+    if (len(f.lbcode) == 5 and
+            f.lbcode.iy == 1 and
+            (f.bdy == 0 or f.bdy == f.bmdi)):
+        dim_coords_and_dims.append(
+            (DimCoord(f.y, long_name='pressure', units='hPa',
+                      bounds=f.y_bounds),
+             0))
 
-    if \
-            (len(f.lbcode) == 5) and \
-            (f.lbcode.ix == 1) and \
-            (f.bdx == 0 or f.bdx == f.bmdi):
-        dim_coords_and_dims.append((DimCoord(f.x, long_name='pressure', units='hPa', bounds=f.x_bounds), 1))
+    if (len(f.lbcode) == 5 and f.lbcode.ix == 1 and
+            (f.bdx == 0 or f.bdx == f.bmdi)):
+        dim_coords_and_dims.append((DimCoord(f.x, long_name='pressure',
+                                             units='hPa', bounds=f.x_bounds),
+                                    1))
 
     # Cross-sectional time values (--> vector coordinates)
-    if \
-            (len(f.lbcode) == 5) and \
-            (f.lbcode[-1] == 1) and \
-            (f.lbcode.iy == 23):
-        dim_coords_and_dims.append((DimCoord(f.y, standard_name='time', units=iris.unit.Unit('days since 0000-01-01 00:00:00', calendar=iris.unit.CALENDAR_360_DAY), bounds=f.y_bounds), 0))
+    if (len(f.lbcode) == 5 and f.lbcode[-1] == 1 and f.lbcode.iy == 23):
+        dim_coords_and_dims.append(
+            (DimCoord(
+                f.y,
+                standard_name='time',
+                units=iris.unit.Unit('days since 0000-01-01 00:00:00',
+                                     calendar=iris.unit.CALENDAR_360_DAY),
+                bounds=f.y_bounds),
+             0))
 
-    if \
-            (len(f.lbcode) == 5) and \
-            (f.lbcode[-1] == 1) and \
-            (f.lbcode.ix == 23):
-        dim_coords_and_dims.append((DimCoord(f.x, standard_name='time', units=iris.unit.Unit('days since 0000-01-01 00:00:00', calendar=iris.unit.CALENDAR_360_DAY), bounds=f.x_bounds), 1))
+    if (len(f.lbcode) == 5 and f.lbcode[-1] == 1 and f.lbcode.ix == 23):
+        dim_coords_and_dims.append(
+            (DimCoord(
+                f.x,
+                standard_name='time',
+                units=iris.unit.Unit('days since 0000-01-01 00:00:00',
+                                     calendar=iris.unit.CALENDAR_360_DAY),
+                bounds=f.x_bounds),
+             1))
 
     # Site number (--> scalar coordinate)
-    if \
-            (len(f.lbcode) == 5) and \
-            (f.lbcode[-1] == 1) and \
-            (f.lbcode.ix == 13) and \
-            (f.bdx != 0):
-        dim_coords_and_dims.append((DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt, long_name='site_number', units='1'), 1))
+    if (len(f.lbcode) == 5 and f.lbcode[-1] == 1 and f.lbcode.ix == 13 and
+            f.bdx != 0):
+        dim_coords_and_dims.append(
+            (DimCoord.from_regular(f.bzx, f.bdx, f.lbnpt,
+                                   long_name='site_number', units='1'),
+             1))
 
     # Site number cross-sections (???)
-    if \
-            (len(f.lbcode) == 5) and \
-            (13 in [f.lbcode.ix, f.lbcode.iy]) and \
-            (11 not in [f.lbcode.ix, f.lbcode.iy]) and \
-            (hasattr(f, 'lower_x_domain')) and \
-            (hasattr(f, 'upper_x_domain')) and \
-            (all(f.lower_x_domain != -1.e+30)) and \
-            (all(f.upper_x_domain != -1.e+30)):
-        aux_coords_and_dims.append((AuxCoord((f.lower_x_domain + f.upper_x_domain) / 2.0, standard_name=f._x_coord_name(), units='degrees', bounds=np.array([f.lower_x_domain, f.upper_x_domain]).T, coord_system=f.coord_system()), 1 if f.lbcode.ix == 13 else 0))
+    if (len(f.lbcode) == 5 and
+            13 in [f.lbcode.ix, f.lbcode.iy] and
+            11 not in [f.lbcode.ix, f.lbcode.iy] and
+            hasattr(f, 'lower_x_domain') and
+            hasattr(f, 'upper_x_domain') and
+            all(f.lower_x_domain != -1.e+30) and
+            all(f.upper_x_domain != -1.e+30)):
+        aux_coords_and_dims.append(
+            (AuxCoord((f.lower_x_domain + f.upper_x_domain) / 2.0,
+                      standard_name=f._x_coord_name(), units='degrees',
+                      bounds=np.array([f.lower_x_domain, f.upper_x_domain]).T,
+                      coord_system=f.coord_system()),
+             1 if f.lbcode.ix == 13 else 0))
 
-    if \
-            (len(f.lbcode) == 5) and \
-            (13 in [f.lbcode.ix, f.lbcode.iy]) and \
-            (10 not in [f.lbcode.ix, f.lbcode.iy]) and \
-            (hasattr(f, 'lower_y_domain')) and \
-            (hasattr(f, 'upper_y_domain')) and \
-            (all(f.lower_y_domain != -1.e+30)) and \
-            (all(f.upper_y_domain != -1.e+30)):
-        aux_coords_and_dims.append((AuxCoord((f.lower_y_domain + f.upper_y_domain) / 2.0, standard_name=f._y_coord_name(), units='degrees', bounds=np.array([f.lower_y_domain, f.upper_y_domain]).T, coord_system=f.coord_system()), 1 if f.lbcode.ix == 13 else 0))
+    if (len(f.lbcode) == 5 and
+            13 in [f.lbcode.ix, f.lbcode.iy] and
+            10 not in [f.lbcode.ix, f.lbcode.iy] and
+            hasattr(f, 'lower_y_domain') and
+            hasattr(f, 'upper_y_domain') and
+            all(f.lower_y_domain != -1.e+30) and
+            all(f.upper_y_domain != -1.e+30)):
+        aux_coords_and_dims.append(
+            (AuxCoord((f.lower_y_domain + f.upper_y_domain) / 2.0,
+                      standard_name=f._y_coord_name(), units='degrees',
+                      bounds=np.array([f.lower_y_domain, f.upper_y_domain]).T,
+                      coord_system=f.coord_system()),
+             1 if f.lbcode.ix == 13 else 0))
 
     # LBPROC codings (--> cell methods + attributes)
-    if \
-            (f.lbproc == 128) and \
-            (f.lbtim.ib == 2) and \
-            (f.lbtim.ia == 0):
+    if f.lbproc == 128 and f.lbtim.ib == 2 and f.lbtim.ia == 0:
         cell_methods.append(CellMethod("mean", coords="time"))
 
-    if \
-            (f.lbproc == 128) and \
-            (f.lbtim.ib == 2) and \
-            (f.lbtim.ia != 0):
-        cell_methods.append(CellMethod("mean", coords="time", intervals="%d hour" % f.lbtim.ia))
+    if f.lbproc == 128 and f.lbtim.ib == 2 and f.lbtim.ia != 0:
+        cell_methods.append(CellMethod("mean", coords="time",
+                                       intervals="%d hour" % f.lbtim.ia))
 
-    if \
-            (f.lbproc == 128) and \
-            (f.lbtim.ib == 3):
+    if f.lbproc == 128 and f.lbtim.ib == 3:
         cell_methods.append(CellMethod("mean", coords="time"))
 
-    if \
-            (f.lbproc == 128) and \
-            (f.lbtim.ib not in [2, 3]):
+    if f.lbproc == 128 and f.lbtim.ib not in [2, 3]:
         cell_methods.append(CellMethod("mean", coords="time"))
 
-    if \
-            (f.lbproc == 4096) and \
-            (f.lbtim.ib == 2) and \
-            (f.lbtim.ia == 0):
+    if f.lbproc == 4096 and f.lbtim.ib == 2 and f.lbtim.ia == 0:
         cell_methods.append(CellMethod("minimum", coords="time"))
 
-    if \
-            (f.lbproc == 4096) and \
-            (f.lbtim.ib == 2) and \
-            (f.lbtim.ia != 0):
-        cell_methods.append(CellMethod("minimum", coords="time", intervals="%d hour" % f.lbtim.ia))
+    if f.lbproc == 4096 and f.lbtim.ib == 2 and f.lbtim.ia != 0:
+        cell_methods.append(CellMethod("minimum", coords="time",
+                                       intervals="%d hour" % f.lbtim.ia))
 
-    if \
-            (f.lbproc == 4096) and \
-            (f.lbtim.ib != 2):
+    if f.lbproc == 4096 and f.lbtim.ib != 2:
         cell_methods.append(CellMethod("minimum", coords="time"))
 
-    if \
-            (f.lbproc == 8192) and \
-            (f.lbtim.ib == 2) and \
-            (f.lbtim.ia == 0):
+    if f.lbproc == 8192 and f.lbtim.ib == 2 and f.lbtim.ia == 0:
         cell_methods.append(CellMethod("maximum", coords="time"))
 
-    if \
-            (f.lbproc == 8192) and \
-            (f.lbtim.ib == 2) and \
-            (f.lbtim.ia != 0):
-        cell_methods.append(CellMethod("maximum", coords="time", intervals="%d hour" % f.lbtim.ia))
+    if f.lbproc == 8192 and f.lbtim.ib == 2 and f.lbtim.ia != 0:
+        cell_methods.append(CellMethod("maximum", coords="time",
+                                       intervals="%d hour" % f.lbtim.ia))
 
-    if \
-            (f.lbproc == 8192) and \
-            (f.lbtim.ib != 2):
+    if f.lbproc == 8192 and f.lbtim.ib != 2:
         cell_methods.append(CellMethod("maximum", coords="time"))
 
     if f.lbproc not in [0, 128, 4096, 8192]:
-        attributes["ukmo__process_flags"] = tuple(sorted([iris.fileformats.pp.lbproc_map[flag] for flag in f.lbproc.flags]))
+        attributes["ukmo__process_flags"] = tuple(
+            sorted([iris.fileformats.pp.lbproc_map[flag]
+                    for flag in f.lbproc.flags]))
 
     if (f.lbsrce % 10000) == 1111:
         attributes['source'] = 'Data from Met Office Unified Model'
@@ -510,7 +545,9 @@ def _all_other_rules(f):
             um_minor = (f.lbsrce / 10000) % 100
             attributes['um_version'] = '{:d}.{:d}'.format(um_major, um_minor)
 
-    if f.lbuser[6] != 0 or (f.lbuser[3] / 1000) != 0 or (f.lbuser[3] % 1000) != 0:
+    if (f.lbuser[6] != 0 or
+            (f.lbuser[3] / 1000) != 0 or
+            (f.lbuser[3] % 1000) != 0):
         attributes['STASH'] = f.stash
 
     if str(f.stash) in STASH_TO_CF:
@@ -518,9 +555,7 @@ def _all_other_rules(f):
         units = STASH_TO_CF[str(f.stash)].units
         long_name = STASH_TO_CF[str(f.stash)].long_name
 
-    if \
-            (not f.stash.is_valid) and \
-            (f.lbfc in LBFC_TO_CF):
+    if (not f.stash.is_valid and f.lbfc in LBFC_TO_CF):
         standard_name = LBFC_TO_CF[f.lbfc].standard_name
         units = LBFC_TO_CF[f.lbfc].units
         long_name = LBFC_TO_CF[f.lbfc].long_name
