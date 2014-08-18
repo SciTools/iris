@@ -101,7 +101,8 @@ class Test_FieldCollation(tests.IrisTest):
         """
         Make a group of test fields with given values.
 
-        All kwargs are either scalars, or lists or length 1 or 'N'.
+        All kwargs are either length 1 or 'N', for some specific N (i.e.
+        lengths > 1 are all the same).  (Length 1 can also be scalars).
         Returns a list of 'N' fields with the given values.
 
         """
@@ -110,6 +111,7 @@ class Test_FieldCollation(tests.IrisTest):
                    for val in value_lists_kwargs.values()
                    if hasattr(val, '__len__')]
         length = max(lengths + [1])
+
         # Expand all kwargs to the full vector length.
         vector_kwargs = {}
         for keyname, value in value_lists_kwargs.iteritems():
@@ -118,6 +120,7 @@ class Test_FieldCollation(tests.IrisTest):
             elif len(value) == 1:
                 value = value * length
             vector_kwargs[keyname] = value
+
         # Iterate to produce all our test fields.
         self.test_fields = []
         for i_field in range(length):

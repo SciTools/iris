@@ -33,13 +33,20 @@ from iris.fileformats.um._fast_load_structured_fields import \
     group_structured_fields
 
 
-def _tovec(value, length, default):
+def _convert_to_vector(value, length, default):
+    """
+    Return argument (or default) in a list of length 'length'.
+
+    The 'value' arg must either be scalar, or a list of length 'length'.
+    A value of None is replaced by the default.
+    If scalar, the value is replicated to the required length.
+
+    """
     if value is None:
         value = default
-    try:
-        own_length = len(value)
-        assert own_length == length
-    except:
+    if hasattr(value, '__len__'):
+        assert len(value) == length
+    else:
         value = [value] * length
     return value
 
@@ -49,9 +56,9 @@ class Test__grouping(tests.IrisTest):
         # Make a group of test fields, and return an iterator over it.
         a_vec = [vec for vec in (stashes, models, lbprocs) if vec is not None]
         number = len(a_vec[0])
-        stashes = _tovec(stashes, number, default=31)
-        models = _tovec(models, number, default=71)
-        lbprocs = _tovec(lbprocs, number, default=91)
+        stashes = _convert_to_vector(stashes, number, default=31)
+        models = _convert_to_vector(models, number, default=71)
+        lbprocs = _convert_to_vector(lbprocs, number, default=91)
         self.test_fields = [
             mock.MagicMock(lbuser=[0, 0, 0, x_stash, 0, 0, x_model],
                            lbproc=x_lbproc,
