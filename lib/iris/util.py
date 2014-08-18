@@ -21,6 +21,7 @@ Miscellaneous utility functions.
 
 import abc
 import collections
+from contextlib import contextmanager
 import copy
 import inspect
 import os
@@ -1291,6 +1292,29 @@ def regular_step(coord):
         msg = "Coord %s is not regular" % coord.name()
         raise iris.exceptions.CoordinateNotRegularError(msg)
     return avdiff.astype(coord.points.dtype)
+
+
+@contextmanager
+def suppress_unit_warnings():
+    """
+    Suppresses all warnings raised because of invalid units in loaded data.
+
+    """
+    import ctypes
+    from iris.unit import _UT_HANDLER, _UT_IGNORE, _lib_ud
+
+    # Suppress any warning messages raised by UDUNITS2.
+    _func_type = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.c_char_p,
+                                  use_errno=True)
+    _set_handler_type = ctypes.CFUNCTYPE(_func_type, _func_type)
+    _ut_set_error_message_handler = _set_handler_type((_UT_HANDLER, _lib_ud))
+    _ut_ignore = _func_type((_UT_IGNORE, _lib_ud))
+    _default_handler = _ut_set_error_message_handler(_ut_ignore)
+    with warnings.catch_warnings():
+        # Also suppress invalid units warnings from the Iris loader code.
+        warnings.filterwarnings("ignore", message=".*invalid units")
+        yield
+    _ut_set_error_message_handler(_default_handler)
 
 
 def unify_time_units(cubes):
