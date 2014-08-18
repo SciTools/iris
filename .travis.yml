@@ -59,7 +59,7 @@ install:
   - conda install pep8
   - conda install sphinx
   # Optional iris dependencies
-  - conda install ecmwf_grib
+  - conda install ecmwf_grib=1.9.16
   - conda install gdal
   - conda install libmo_unpack
   - conda install pandas=0.12.0
