@@ -229,13 +229,5 @@ class TestPPLoadRules(tests.IrisTest):
             os.remove(temp_filename)
 
 
-@tests.skip_data
-class TestStdName(tests.IrisTest):
-    def test_no_std_name(self):
-        fname = tests.get_data_path(['PP', 'simple_pp', 'bad_global.pp'])
-        cube = iris.load_cube(fname)
-        self.assertCML([cube], ['cube_io', 'pp', 'no_std_name.cml'])
-
-
 if __name__ == "__main__":
     tests.main()
