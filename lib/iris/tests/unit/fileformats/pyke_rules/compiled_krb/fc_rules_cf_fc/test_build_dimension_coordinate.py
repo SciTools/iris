@@ -269,5 +269,64 @@ class TestCircular(tests.IrisTest, RulesTestMixin):
                                        [200.0, 355.0]])
 
 
+class TestCircularScalar(tests.IrisTest, RulesTestMixin):
+    def setUp(self):
+        RulesTestMixin.setUp(self)
+
+    def _make_vars(self, bounds):
+        # Create cf vars for the coordinate and its bounds.
+        # Note that for a scalar the shape of the array from
+        # the cf var is (), rather than (1,).
+        points = np.array([0.])
+        self.cf_coord_var = mock.Mock(
+            dimensions=(),
+            cf_name='wibble',
+            standard_name=None,
+            long_name='wibble',
+            units='degrees',
+            shape=(),
+            dtype=points.dtype,
+            __getitem__=lambda self, key: points[key])
+
+        bounds = np.array(bounds)
+        self.cf_bounds_var = mock.Mock(
+            dimensions=(u'bnds'),
+            cf_name='wibble_bnds',
+            shape=bounds.shape,
+            __getitem__=lambda self, key: bounds[key])
+
+    def _assert_circular(self, value):
+        with self.deferred_load_patch, self.get_cf_bounds_var_patch:
+            build_dimension_coordinate(self.engine, self.cf_coord_var,
+                                       coord_name='longitude')
+            self.assertEqual(self.engine.cube.add_aux_coord.call_count, 1)
+            coord, dims = self.engine.cube.add_aux_coord.call_args[0]
+        self.assertEqual(coord.circular, value)
+
+    def test_two_bounds_noncircular(self):
+        self._make_vars([0., 180.])
+        self._assert_circular(False)
+
+    def test_two_bounds_circular(self):
+        self._make_vars([0., 360.])
+        self._assert_circular(True)
+
+    def test_two_bounds_circular_decreasing(self):
+        self._make_vars([360., 0.])
+        self._assert_circular(True)
+
+    def test_two_bounds_circular_alt(self):
+        self._make_vars([-180., 180.])
+        self._assert_circular(True)
+
+    def test_two_bounds_circular_alt_decreasing(self):
+        self._make_vars([180., -180.])
+        self._assert_circular(True)
+
+    def test_four_bounds(self):
+        self._make_vars([0., 10., 20., 30.])
+        self._assert_circular(False)
+
+
 if __name__ == '__main__':
     tests.main()
