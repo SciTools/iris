@@ -32,7 +32,7 @@ _SUBGRAPH_INDENT = ' ' * 8
 _DOT_EXECUTABLE_PATH = iris.config.get_option('System', 'dot_path',
                                               default='dot')
 if not os.path.exists(_DOT_EXECUTABLE_PATH):
-    if not _DOT_EXECUTABLE_PATH.startswith('/'):
+    if not os.path.isabs(_DOT_EXECUTABLE_PATH):
         try:
             # Check PATH
             subprocess.check_output([_DOT_EXECUTABLE_PATH, '-V'],
