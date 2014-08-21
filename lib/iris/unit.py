@@ -27,6 +27,7 @@ See also: `UDUNITS-2
 
 from __future__ import division
 
+from contextlib import contextmanager
 import copy
 import ctypes
 import ctypes.util
@@ -703,6 +704,26 @@ def _handler(func):
     """Set the error message handler."""
 
     _ut_set_error_message_handler(func)
+
+
+@contextmanager
+def suppress_unit_warnings():
+    """
+    Suppresses all warnings raised because of invalid units in loaded data.
+
+    """
+    # Suppress any warning messages raised by UDUNITS2.
+    _func_type = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.c_char_p,
+                                  use_errno=True)
+    _set_handler_type = ctypes.CFUNCTYPE(_func_type, _func_type)
+    _ut_set_error_message_handler = _set_handler_type((_UT_HANDLER, _lib_ud))
+    _ut_ignore = _func_type((_UT_IGNORE, _lib_ud))
+    _default_handler = _ut_set_error_message_handler(_ut_ignore)
+    with warnings.catch_warnings():
+        # Also suppress invalid units warnings from the Iris loader code.
+        warnings.filterwarnings("ignore", message=".*invalid units")
+        yield
+    _ut_set_error_message_handler(_default_handler)
 
 
 ########################################################################
