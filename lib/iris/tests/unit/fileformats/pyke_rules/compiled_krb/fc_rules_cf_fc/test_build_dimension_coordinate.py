@@ -24,10 +24,12 @@ fc_rules_cf_fc.build_dimension_coordinate`.
 # importing anything else
 import iris.tests as tests
 
+import warnings
+
 import numpy as np
 import mock
 
-from iris.coords import DimCoord
+from iris.coords import AuxCoord, DimCoord
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     build_dimension_coordinate
 
@@ -62,6 +64,74 @@ class RulesTestMixin(object):
             'iris.fileformats._pyke_rules.compiled_krb.'
             'fc_rules_cf_fc.get_cf_bounds_var',
             new=get_cf_bounds_var)
+
+
+class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
+    def setUp(self):
+        # Call parent setUp explicitly, because of how unittests work.
+        RulesTestMixin.setUp(self)
+
+        bounds = np.arange(12).reshape(6, 2)
+        self.cf_bounds_var = mock.Mock(
+            dimensions=('x', 'nv'),
+            cf_name='wibble_bnds',
+            shape=bounds.shape,
+            __getitem__=lambda self, key: bounds[key])
+        self.bounds = bounds
+
+    def _set_cf_coord_var(self, points):
+        self.cf_coord_var = mock.Mock(
+            dimensions=('foo',),
+            cf_name='wibble',
+            standard_name=None,
+            long_name='wibble',
+            units='m',
+            shape=points.shape,
+            dtype=points.dtype,
+            __getitem__=lambda self, key: points[key])
+
+    def test_dim_coord_construction(self):
+        self._set_cf_coord_var(np.arange(6))
+
+        expected_coord = DimCoord(
+            self.cf_coord_var[:],
+            long_name=self.cf_coord_var.long_name,
+            var_name=self.cf_coord_var.cf_name,
+            units=self.cf_coord_var.units,
+            bounds=self.bounds)
+
+        # Asserts must lie within context manager because of deferred loading.
+        with self.deferred_load_patch, self.get_cf_bounds_var_patch:
+            build_dimension_coordinate(self.engine, self.cf_coord_var)
+
+            # Test that expected coord is built and added to cube.
+            self.engine.cube.add_dim_coord.assert_called_with(
+                expected_coord, [0])
+
+    def test_aux_coord_construction(self):
+        # Use non monotonically increasing coordinates to force aux coord
+        # construction.
+        self._set_cf_coord_var(np.array([1, 3, 2, 4, 6, 5]))
+
+        expected_coord = AuxCoord(
+            self.cf_coord_var[:],
+            long_name=self.cf_coord_var.long_name,
+            var_name=self.cf_coord_var.cf_name,
+            units=self.cf_coord_var.units,
+            bounds=self.bounds)
+
+        warning_patch = mock.patch('warnings.warn')
+
+        # Asserts must lie within context manager because of deferred loading.
+        with warning_patch, self.deferred_load_patch, \
+                self.get_cf_bounds_var_patch:
+            build_dimension_coordinate(self.engine, self.cf_coord_var)
+
+            # Test that expected coord is built and added to cube.
+            self.engine.cube.add_aux_coord.assert_called_with(
+                expected_coord, [0])
+            self.assertIn("creating 'wibble' auxiliary coordinate instead",
+                          warnings.warn.call_args[0][0])
 
 
 class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
