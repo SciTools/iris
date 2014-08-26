@@ -89,21 +89,26 @@ install:
   - unzip -q iris-sample-data.zip
   - ln -s $(pwd)/iris-sample-data-${IRIS_SAMPLE_DATA_SUFFIX} iris-sample-data
   
-# iris
-  - python setup.py --with-unpack build_ext --inplace --include-dirs=${PREFIX}/include --library-dirs=${PREFIX}/lib --rpath=${PREFIX}/lib
-  - python setup.py std_names
-  - SITE_CFG=lib/iris/etc/site.cfg
+# prepare iris build directory
+  - python setup.py --with-unpack build_ext --include-dirs=${PREFIX}/include --library-dirs=${PREFIX}/lib
+  - IRIS=$(ls -d1 build/lib*/iris)
+  - mkdir $IRIS/etc
+
+# set config paths
+  - SITE_CFG=$IRIS/etc/site.cfg
   - echo "[Resources]" > $SITE_CFG
   - echo "sample_data_dir = $(pwd)/iris-sample-data/sample_data" >> $SITE_CFG
   - echo "test_data_dir = $(pwd)/iris-test-data/test_data" >> $SITE_CFG
+  - echo "doc_dir = $(pwd)/docs/iris" >> $SITE_CFG
   - echo "[System]" >> $SITE_CFG
   - echo "udunits2_path = $PREFIX/lib/libudunits2.so" >> $SITE_CFG
-  - SP_DIR=`python -c 'import site; print site.getsitepackages()[0]'`
-  - ln -s $(pwd)/lib/iris $SP_DIR/iris
-  - python setup.py pyke_rules
+
+# iris
+  - python setup.py --with-unpack build
+  - python setup.py --with-unpack install
 
 script:
-  - python setup.py test --example-tests
+  - python -m iris.tests.runner --example-tests
 
   - cd $(pwd)/docs/iris
 # Make html produces an error when run on Travis that does not affect any downstream functionality but causes the build to fail spuriously.

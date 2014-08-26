@@ -11,6 +11,10 @@ import sys
 import numpy as np
 import setuptools
 
+# Add full path so Python doesn't load any __init__.py in the intervening
+# directories, thereby saving setup.py from additional dependencies.
+sys.path.append('lib/iris/tests/runner')
+from _runner import TestRunner
 
 exclude_dirs = ['compiled_krb']
 
@@ -52,82 +56,8 @@ def std_name_cmd(target_dir):
     return cmd
 
 
-class TestRunner(setuptools.Command):
-    """Run the Iris tests under nose and multiprocessor for performance"""
-    description = "run tests under nose and multiprocessor for performance"
-    user_options = [('no-data', 'n', 'Override the paths to the data '
-                                     'repositories so it appears to the '
-                                     'tests that it does not exist.'),
-                    ('system-tests', 's', 'Run only the limited subset of '
-                                          'system tests.'),
-                    ('stop', 'x', 'Stop running tests after the first '
-                                  'error or failure'),
-                    ('example-tests', 'e', 'Also run the example code tests.')
-                   ]
-
-    boolean_options = ['no-data', 'system-tests', 'stop', 'example-tests']
-    
-    def initialize_options(self):
-        self.no_data = False
-        self.system_tests = False
-        self.stop = False
-        self.example_tests = False
-    
-    def finalize_options(self):
-        if self.no_data:
-            print "Running tests in no-data mode..."
-
-            # This enviroment variable will be propagated to all the processes that
-            # nose.run creates allowing us to simluate the absence of test data
-            os.environ["override_test_data_repository"] = "true"
-        if self.system_tests:
-            print "Running system tests..."
-        if self.stop:
-            print "Stopping tests after the first error or failure"
-
-    def run(self):
-        import nose
-
-        if self.distribution.tests_require:
-            self.distribution.fetch_build_eggs(self.distribution.tests_require)
-
-        script_path = sys.path[0]
-        tests = []
-        lib_dir = os.path.join(script_path, 'lib')
-        for mod in os.listdir(lib_dir):
-            path = os.path.join(lib_dir, mod)
-            if mod != '.svn' and os.path.exists(os.path.join(path, 'tests')):
-                tests.append('%s.tests' % mod)
-        if self.example_tests:
-            tests.append(os.path.join(script_path, 'docs', 'iris',
-                                      'example_tests'))
-
-        if not tests:
-            raise RuntimeError('No tests found in %s/*/tests' % lib_dir)
-
-        if self.system_tests:
-            regexp_pat = r'--match=^[Ss]ystem'
-        else:
-            regexp_pat = r'--match=^([Tt]est(?![Mm]ixin)|[Ss]ystem)'
-
-        n_processors = max(multiprocessing.cpu_count() - 1, 1)
-
-        args = ['', None, '--processes=%s' % n_processors,
-                '--verbosity=2', regexp_pat,
-                '--process-timeout=250']
-        if self.stop:
-            args.append('--stop')
-
-        result = True
-        for test in tests:
-            args[1] = test
-            print
-            print 'Running test discovery on %s with %s processors.' % (test, n_processors)
-            # run the tests at module level i.e. my_module.tests
-            # - test must start with test/Test and must not contain the word Mixin.
-            result &= nose.run(argv=args)
-        if result is False:
-            exit(1)
+class SetupTestRunner(TestRunner, setuptools.Command):
+    pass
 
 
 class CleanSource(Command):
@@ -274,7 +204,7 @@ setup(
             ]
         )
     },
-    cmdclass={'test': TestRunner, 'build_py': BuildPyWithExtras,
+    cmdclass={'test': SetupTestRunner, 'build_py': BuildPyWithExtras,
               'std_names': MakeStdNames, 'pyke_rules': MakePykeRules,
               'clean_source': CleanSource},
 )
