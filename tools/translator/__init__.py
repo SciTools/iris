@@ -54,9 +54,9 @@ class Mapping(object):
         """
         Filter the given sequence of mappings for those member
         :class:`metarelate.Mapping` translations containing a source
-        :class`metarelate.Concept` with a matching
+        :class`metarelate.Component` with a matching
         :attribute:`Mapping.source_scheme` and a target
-        :class:`metarelate.Concept` with a matching
+        :class:`metarelate.Component` with a matching
         :attribute:`Mapping.target_scheme`.
 
         Also see :method:`Mapping.valid_mapping` for further matching
@@ -72,8 +72,8 @@ class Mapping(object):
         for mapping in mappings:
             source = mapping.source
             target = mapping.target
-            if source.scheme == self.source_scheme and \
-                    target.scheme == self.target_scheme and \
+            if source.com_type == self.source_scheme and \
+                    target.com_type == self.target_scheme and \
                     self.valid_mapping(mapping):
                 temp.append(mapping)
         self.mappings = sorted(temp, key=self._key)
@@ -125,7 +125,7 @@ class Mapping(object):
     def source_scheme(self):
         """
         Abstract property that specifies the name of the scheme for
-        the source :class:`metarelate.Concept` defining this metarelate
+        the source :class:`metarelate.Component` defining this metarelate
         mapping translation.
 
         """
@@ -134,7 +134,7 @@ class Mapping(object):
     def target_scheme(self):
         """
         Abstract property that specifies the name of the scheme for
-        the target :class:`metarelate.Concept` defining this metarelate
+        the target :class:`metarelate.Component` defining this metarelate
         mapping translation.
 
         """
@@ -144,60 +144,60 @@ class Mapping(object):
         """
         Abstract method that determines whether the provided
         :class:`metarelate.Mapping` is a translation from the required
-        source :class:`metarelate.Concept` to the required target
-        :class:`metarelate.Concept`.
+        source :class:`metarelate.Component` to the required target
+        :class:`metarelate.Component`.
 
         """
 
-    def _available(self, prop):
-        """Determine whether a fully populated property is available."""
-        return prop is not None and prop.complete
+    # def _available(self, prop):
+    #     """Determine whether a fully populated property is available."""
+    #     return prop is not None# and prop.complete
 
-    def cf_constrained_notation(self, concept):
-        """
-        Given a CF component from a mapping, the skos notation for
-        the associated CF coordinate and phenomenon are returned.
+    # def cf_constrained_notation(self, concept):
+    #     """
+    #     Given a CF component from a mapping, the skos notation for
+    #     the associated CF coordinate and phenomenon are returned.
 
-        See :meth:`Mapping.cf_coordinate_notation` and
-        :meth:`Mapping.cf_phenomenon_notation`.
+    #     See :meth:`Mapping.cf_coordinate_notation` and
+    #     :meth:`Mapping.cf_phenomenon_notation`.
 
-        Args:
-        * concept:
-            A :class:`metarelate.Concept` instance.
+    #     Args:
+    #     * concept:
+    #         A :class:`metarelate.Component` instance.
 
-        Returns:
-            Tuple containing the :class:`DimensionCoordinate` and
-            :class:`CFName` namedtuples.
+    #     Returns:
+    #         Tuple containing the :class:`DimensionCoordinate` and
+    #         :class:`CFName` namedtuples.
 
-        """
-        coordinate = phenomenon = None
-        for component in concept.components:
-            if component.type == 'dimensionCoordinate':
-                coordinate = self.cf_coordinate_notation(component)
-            if component.type == 'field':
-                phenomenon = self.cf_phenomenon_notation(component)
-        return coordinate, phenomenon
+    #     """
+    #     coordinate = phenomenon = None
+    #     for component in concept.components:
+    #         if component.type == 'dimensionCoordinate':
+    #             coordinate = self.cf_coordinate_notation(component)
+    #         if component.type == 'field':
+    #             phenomenon = self.cf_phenomenon_notation(component)
+    #     return coordinate, phenomenon
 
-    def cf_coordinate_notation(self, component):
-        """
-        Given a CF component from a mapping, the skos notation for
-        the associated CF standard name, units and points are returned.
+    # def cf_coordinate_notation(self, component):
+    #     """
+    #     Given a CF component from a mapping, the skos notation for
+    #     the associated CF standard name, units and points are returned.
 
-        Args:
-        * component:
-            A :class:`metarelate.Component` instance.
+    #     Args:
+    #     * component:
+    #         A :class:`metarelate.Component` instance.
 
-        Returns:
-            Tuple containing the CF standard name, units and points
-            skos notation.
+    #     Returns:
+    #         Tuple containing the CF standard name, units and points
+    #         skos notation.
 
-        """
-        units = component.units.value.notation
-        points = int(component.points.value.notation)
-        standard_name = component.standard_name
-        if self._available(standard_name):
-            standard_name = standard_name.value.notation
-        return DimensionCoordinate(standard_name, units, points)
+    #     """
+    #     units = component.units.value.notation
+    #     points = int(component.points.value.notation)
+    #     standard_name = component.standard_name
+    #     if self._available(standard_name):
+    #         standard_name = standard_name.value.notation
+    #     return DimensionCoordinate(standard_name, units, points)
 
     def cf_phenomenon_notation(self, component):
         """
@@ -207,7 +207,7 @@ class Mapping(object):
 
         Args:
         * component:
-            A :class:`metarelate.Concept` or
+            A :class:`metarelate.Component` or
             :class:`metarelate.Component` instance.
 
         Returns:
@@ -215,70 +215,109 @@ class Mapping(object):
             skos notation.
 
         """
-        units = component.units.value.notation
-        standard_name = component.standard_name
-        if self._available(standard_name):
-            standard_name = standard_name.value.notation
-        long_name = component.long_name
-        if self._available(long_name):
-            long_name = long_name.value.notation
+        units = component.units.notation
+        if isinstance(units, unicode):
+            units = str(units)
+        #standard_name = component.standard_name
+        standard_name = None
+        long_name = None
+        if hasattr(component, 'standard_name'):
+            standard_name = component.standard_name.notation
+        elif hasattr(component, 'long_name'):
+            long_name = component.long_name.notation
         return CFName(standard_name, long_name, units)
 
-    def grib1_notation(self, concept):
+    # def grib1_notation(self, concept):
+    #     """
+    #     Given a GRIB (edition 1) concept from a mapping, the skos notation
+    #     for the associated GRIB edition, table II version, centre and
+    #     indicator of parameter are returned.
+
+    #     Args:
+    #     * concept:
+    #         A :class:`metarelate.Component` instance.
+
+    #     Returns:
+    #         Tuple containing the GRIB1 edition, version, centre and
+    #         indicator skos notation.
+
+    #     """
+    #     edition = int(concept.editionNumber.value.notation)
+    #     version = int(concept.table2Version.value.notation)
+    #     centre = int(concept.centre.value.notation)
+    #     indicator = int(concept.indicatorOfParameter.value.notation)
+    #     return G1LocalParam(edition, version, centre, indicator)
+
+    def grib2_notation(self, component):
         """
-        Given a GRIB (edition 1) concept from a mapping, the skos notation
-        for the associated GRIB edition, table II version, centre and
-        indicator of parameter are returned.
+        Given a GRIB (edition 2) parameter component from a mapping, the skos
+        notation for the associated GRIB edition, discipline, parameter
+        category and parameter number are returned.
 
         Args:
-        * concept:
-            A :class:`metarelate.Concept` instance.
-
-        Returns:
-            Tuple containing the GRIB1 edition, version, centre and
-            indicator skos notation.
-
-        """
-        edition = int(concept.editionNumber.value.notation)
-        version = int(concept.table2Version.value.notation)
-        centre = int(concept.centre.value.notation)
-        indicator = int(concept.indicatorOfParameter.value.notation)
-        return G1LocalParam(edition, version, centre, indicator)
-
-    def grib2_notation(self, concept):
-        """
-        Given a GRIB (edition 2) concept from a mapping, the skos notation
-        for the associated GRIB edition, discipline, parameter category and
-        parameter number are returned.
-
-        Args:
-        * concept:
-            A :class:`metarelate.Concept` instance.
+        * component:
+            A :class:`metarelate.Component` instance.
 
         Returns:
             Tuple containing the GRIB2 edition, discipline, category and
             number skos notation.
 
         """
-        edition = int(concept.editionNumber.value.notation)
-        discipline = int(concept.discipline.value.notation)
-        category = int(concept.parameterCategory.value.notation)
-        number = int(concept.parameterNumber.value.notation)
-        return G2Param(edition, discipline, category, number)
+        gpd = '<http://codes.wmo.int/def/grib2/parameter>'
+        if not (len(component) == 1 and hasattr(component, gpd)):
+            raise ValueError('component is not a GRIB2 parameter')
+        import requests
 
-    def is_cf(self, component, kind='field'):
+        pref = ('prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>'
+                'prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>'
+                'prefix skos: <http://www.w3.org/2004/02/skos/core#>')
+        puri = component.__getattr__(gpd).rdfobject.data
+        qstr = ('SELECT ?key ?val '
+                'WHERE {'
+                '    { SELECT ?param ?key ?val '
+                'WHERE {'
+                '      ?param ?p ?o .'
+                '    FILTER(?param = %s)'
+                '          ?p rdfs:range ?range .'
+                '        ?range skos:notation ?key .'
+                '        ?o skos:notation ?val . '
+                '  } } UNION'
+                '  { SELECT ?param ?key ?val WHERE {'
+                '           ?param rdf:type ?ptype .'
+                '        ?ptype skos:notation ?key .'
+                '        ?param skos:notation ?val .'
+                '    FILTER(?param = %s)'
+                '    } }'
+                '}' % (puri, puri))
+
+        base = 'http://codes.wmo.int/system/query?'
+        r = requests.get(base, params={'query':pref+qstr, 'output':'json'})
+        notation = {}
+        for b in r.json()['results']['bindings']:
+            notation[str(b['key']['value'])] = str(b['val']['value'])
+
+        # edition = int(component.editionNumber.value.notation)
+        # discipline = int(component.discipline.value.notation)
+        # category = int(component.parameterCategory.value.notation)
+        # number = int(component.parameterNumber.value.notation)
+        return G2Param(int(notation['editionNumber']),
+                       int(notation['discipline']),
+                       int(notation['parameterCategory']),
+                       int(notation['parameterNumber']))
+
+    def is_cf(self, comp, kind='<http://def.scitools.org.uk/cfmodel/Field>'):
         """
         Determines whether the provided component from a mapping
         represents a simple CF component of the given kind.
 
         Args:
         * component:
-            A :class:`metarelate.Concept` or
+            A :class:`metarelate.Component` or
             :class:`metarelate.Component` instance.
 
         Kwargs:
         * kind:
-            The type of CF :class:`metarelate.Concept` or
+            The type of CF :class:`metarelate.Component` or
             :class:`metarelate.Component`. Defaults to 'field'.
 
         Returns:
@@ -286,115 +325,117 @@ class Mapping(object):
 
         """
         result = False
-        if component.simple:
-            result = self._available(component.type) and \
-                component.type == kind and \
-                self._available(component.units)
+        result = hasattr(comp, 'com_type') and \
+            comp.com_type == kind and \
+            hasattr(comp, 'units') and \
+            len(comp) in [1, 2]
         return result
 
-    def is_cf_constrained(self, concept):
-        """
-        Determines whether the provided concept from a mapping
-        represents a compound CF concept for a phenomenon and
-        a dimension coordinate constraint.
+    # def is_cf_constrained(self, concept):
+    #     """
+    #     Determines whether the provided concept from a mapping
+    #     represents a compound CF concept for a phenomenon and
+    #     a dimension coordinate constraint.
 
-        Args:
-        * concept:
-            A :class:`metarelate.Concept` instance.
+    #     Args:
+    #     * concept:
+    #         A :class:`metarelate.Component` instance.
 
-        Returns:
-            Boolean.
+    #     Returns:
+    #         Boolean.
 
-        """
-        result = False
-        if len(concept) == 2:
-            constraint = phenomenon = False
-            for component in concept.components:
-                if self.is_cf(component, kind='dimensionCoordinate') and \
-                        self._available(component.points):
-                    constraint = True
-                if self.is_cf(component):
-                    phenomenon = True
-            result = constraint and phenomenon
-        return result
+    #     """
+    #     result = False
+    #     if len(concept) == 2:
+    #         constraint = phenomenon = False
+    #         for component in concept.components:
+    #             if self.is_cf(component, kind='dimensionCoordinate') and \
+    #                     self._available(component.points):
+    #                 constraint = True
+    #             if self.is_cf(component):
+    #                 phenomenon = True
+    #         result = constraint and phenomenon
+    #     return result
 
-    def is_fieldcode(self, concept):
+    def is_fieldcode(self, component):
         """
         Determines whether the provided concept from a mapping
         represents a simple UM concept for a field-code.
 
         Args:
         * concept:
-            A :class:`metarelate.Concept` instance.
+            A :class:`metarelate.Component` instance.
 
         Returns:
             Boolean.
 
         """
         result = False
-        if concept.simple:
-            result = self._available(concept.lbfc)
+        result = hasattr(component, 'lbfc') and len(component) == 1
         return result
 
-    def is_grib1_local_param(self, concept):
+    # def is_grib1_local_param(self, concept):
+    #     """
+    #     Determines whether the provided concept from a mapping
+    #     represents a simple GRIB edition 1 concept for a local
+    #     parameter.
+
+    #     Args:
+    #     * concept:
+    #         A :class:`metarelate.Component` instance.
+
+    #     Returns:
+    #         Boolean.
+
+    #     """
+    #     result = False
+    #     if concept.simple:
+    #         result = self._available(concept.editionNumber) and \
+    #             self._available(concept.table2Version) and \
+    #             self._available(concept.centre) and \
+    #             self._available(concept.indicatorOfParameter)
+    #     return result
+
+    def is_grib2_param(self, component):
         """
-        Determines whether the provided concept from a mapping
-        represents a simple GRIB edition 1 concept for a local
-        parameter.
+        Determines whether the provided component from a mapping
+        represents a simple GRIB edition 2 component for a parameter.
 
         Args:
-        * concept:
-            A :class:`metarelate.Concept` instance.
+        * component:
+            A :class:`metarelate.Component` instance.
 
         Returns:
             Boolean.
 
         """
-        result = False
-        if concept.simple:
-            result = self._available(concept.editionNumber) and \
-                self._available(concept.table2Version) and \
-                self._available(concept.centre) and \
-                self._available(concept.indicatorOfParameter)
+        
+        # result = False
+        # import pdb; pdb.set_trace()
+        gpd = '<http://codes.wmo.int/def/grib2/parameter>'
+        result = len(component) == 1 and hasattr(component, gpd)
+        # if component.simple:
+        #     result = self._available(component.editionNumber) and \
+        #         self._available(component.discipline) and \
+        #         self._available(component.parameterCategory) and \
+        #         self._available(component.parameterNumber)
         return result
 
-    def is_grib2_param(self, concept):
-        """
-        Determines whether the provided concept from a mapping
-        represents a simple GRIB edition 2 concept for a parameter.
-
-        Args:
-        * concept:
-            A :class:`metarelate.Concept` instance.
-
-        Returns:
-            Boolean.
-
-        """
-        result = False
-        if concept.simple:
-            result = self._available(concept.editionNumber) and \
-                self._available(concept.discipline) and \
-                self._available(concept.parameterCategory) and \
-                self._available(concept.parameterNumber)
-        return result
-
-    def is_stash(self, concept):
+    def is_stash(self, component):
         """
         Determines whether the provided concept for a mapping
         represents a simple UM concept for a stash-code.
 
         Args:
         * concept:
-            A :class:`metarelate.Concept` instance.
+            A :class:`metarelate.Component` instance.
 
         Returns:
             Boolean.
 
         """
         result = False
-        if concept.simple:
-            result = self._available(concept.stash)
+        result = hasattr(component, 'stash') and len(component) == 1
         return result
 
 
@@ -430,7 +471,7 @@ class CFFieldcodeMapping(Mapping):
         msg = '    ' \
             'CFName({standard_name!r}, {long_name!r}, {units!r}): {lbfc},\n'
         cf = self.cf_phenomenon_notation(mapping.source)
-        lbfc = mapping.target.lbfc.value.notation
+        lbfc = mapping.target.lbfc.notation
         return msg.format(lbfc=lbfc, **cf._asdict())
 
     @property
@@ -446,21 +487,21 @@ class CFFieldcodeMapping(Mapping):
     def source_scheme(self):
         """
         Property that specifies the name of the scheme for the source
-        :class:`metarelate.Concept` defining this metarelate mapping
+        :class:`metarelate.Component` defining this metarelate mapping
         translation.
 
         """
-        return 'cf'
+        return '<http://def.scitools.org.uk/cfmodel/Field>'
 
     @property
     def target_scheme(self):
         """
         Property that specifies the name of the scheme for the target
-        :class:`metarelate.Concept` defining this metarelate mapping
+        :class:`metarelate.Component` defining this metarelate mapping
         translation.
 
         """
-        return 'um'
+        return '<http://reference.metoffice.gov.uk/um/f3/UMField>'
 
     def valid_mapping(self, mapping):
         """
@@ -490,7 +531,7 @@ class FieldcodeCFMapping(Mapping):
     """
     def _key(self, mapping):
         """Provides the sort key of the mappings order."""
-        return int(mapping.source.lbfc.value.notation)
+        return int(mapping.source.lbfc.notation)
 
     def encode(self, mapping):
         """
@@ -509,7 +550,7 @@ class FieldcodeCFMapping(Mapping):
         """
         msg = '    ' \
             '{lbfc}: CFName({standard_name!r}, {long_name!r}, {units!r}),\n'
-        lbfc = mapping.source.lbfc.value.notation
+        lbfc = mapping.source.lbfc.notation
         cf = self.cf_phenomenon_notation(mapping.target)
         return msg.format(lbfc=lbfc, **cf._asdict())
 
@@ -526,21 +567,21 @@ class FieldcodeCFMapping(Mapping):
     def source_scheme(self):
         """
         Property that specifies the name of the scheme for the source
-        :class:`metarelate.Concept` defining this metarelate mapping
+        :class:`metarelate.Component` defining this metarelate mapping
         translation.
 
         """
-        return 'um'
+        return '<http://reference.metoffice.gov.uk/um/f3/UMField>'
 
     @property
     def target_scheme(self):
         """
         Property that specifies the name of the scheme for the target
-        :class:`metarelate.Concept` defining this metarelate mapping
+        :class:`metarelate.Component` defining this metarelate mapping
         translation.
 
         """
-        return 'cf'
+        return '<http://def.scitools.org.uk/cfmodel/Field>'
 
     def valid_mapping(self, mapping):
         """
@@ -570,7 +611,8 @@ class StashCFMapping(Mapping):
     """
     def _key(self, mapping):
         """Provides the sort key of the mappings order."""
-        return mapping.source.stash.value.notation
+        # return mapping.source.stash.value.notation
+        return mapping.source.stash.notation
 
     def encode(self, mapping):
         """
@@ -589,7 +631,7 @@ class StashCFMapping(Mapping):
         """
         msg = '    ' \
             '{stash!r}: CFName({standard_name!r}, {long_name!r}, {units!r}),\n'
-        stash = mapping.source.stash.value.notation
+        stash = mapping.source.stash.notation
         cf = self.cf_phenomenon_notation(mapping.target)
         return msg.format(stash=stash, **cf._asdict())
 
@@ -606,21 +648,23 @@ class StashCFMapping(Mapping):
     def source_scheme(self):
         """
         Property that specifies the name of the scheme for the source
-        :class:`metarelate.Concept` defining this metarelate mapping
+        :class:`metarelate.Component` defining this metarelate mapping
         translation.
 
         """
-        return 'um'
+        #return 'um'
+        return '<http://reference.metoffice.gov.uk/um/f3/UMField>'
 
     @property
     def target_scheme(self):
         """
         Property that specifies the name of the scheme for the target
-        :class:`metarelate.Concept` defining this metarelate mapping
+        :class:`metarelate.Component` defining this metarelate mapping
         translation.
 
         """
-        return 'cf'
+        #return 'cf'
+        return '<http://def.scitools.org.uk/cfmodel/Field>'
 
     def valid_mapping(self, mapping):
         """
@@ -687,7 +731,7 @@ class GRIB1LocalParamCFMapping(Mapping):
     def source_scheme(self):
         """
         Property that specifies the name of the scheme for the source
-        :class:`metarelate.Concept` defining this metarelate mapping
+        :class:`metarelate.Component` defining this metarelate mapping
         translation.
 
         """
@@ -697,7 +741,7 @@ class GRIB1LocalParamCFMapping(Mapping):
     def target_scheme(self):
         """
         Property that specifies the name of the scheme for the target
-        :class:`metarelate.Concept` defining this metarelate mapping
+        :class:`metarelate.Component` defining this metarelate mapping
         translation.
 
         """
@@ -770,7 +814,7 @@ class CFGRIB1LocalParamMapping(Mapping):
     def source_scheme(self):
         """
         Property that specifies the name of the scheme for the source
-        :class:`metarelate.Concept` defining this metarelate mapping
+        :class:`metarelate.Component` defining this metarelate mapping
         translation.
 
         """
@@ -780,7 +824,7 @@ class CFGRIB1LocalParamMapping(Mapping):
     def target_scheme(self):
         """
         Property that specifies the name of the scheme for the target
-        :class:`metarelate.Concept` defining this metarelate mapping
+        :class:`metarelate.Component` defining this metarelate mapping
         translation.
 
         """
@@ -860,7 +904,7 @@ class GRIB1LocalParamCFConstrainedMapping(Mapping):
     def source_scheme(self):
         """
         Property that specifies the name of the scheme for the source
-        :class:`metarelate.Concept` defining this metarelate mapping
+        :class:`metarelate.Component` defining this metarelate mapping
         translation.
 
         """
@@ -870,7 +914,7 @@ class GRIB1LocalParamCFConstrainedMapping(Mapping):
     def target_scheme(self):
         """
         Property that specifies the name of the scheme for the target
-        :class:`metarelate.Concept` defining this metarelate mapping
+        :class:`metarelate.Component` defining this metarelate mapping
         translation.
 
         """
@@ -952,7 +996,7 @@ class CFConstrainedGRIB1LocalParamMapping(Mapping):
     def source_scheme(self):
         """
         Property that specifies the name of the scheme for the source
-        :class:`metarelate.Concept` defining this metarelate mapping
+        :class:`metarelate.Component` defining this metarelate mapping
         translation.
 
         """
@@ -962,7 +1006,7 @@ class CFConstrainedGRIB1LocalParamMapping(Mapping):
     def target_scheme(self):
         """
         Property that specifies the name of the scheme for the target
-        :class:`metarelate.Concept` defining this metarelate mapping
+        :class:`metarelate.Component` defining this metarelate mapping
         translation.
 
         """
@@ -1036,21 +1080,21 @@ class GRIB2ParamCFMapping(Mapping):
     def source_scheme(self):
         """
         Property that specifies the name of the scheme for the source
-        :class:`metarelate.Concept` defining this metarelate mapping
+        :class:`metarelate.Component` defining this metarelate mapping
         translation.
 
         """
-        return 'grib'
+        return '<http://codes.wmo.int/def/codeform/GRIB-message>'
 
     @property
     def target_scheme(self):
         """
         Property that specifies the name of the scheme for the target
-        :class:`metarelate.Concept` defining this metarelate mapping
+        :class:`metarelate.Component` defining this metarelate mapping
         translation.
 
         """
-        return 'cf'
+        return '<http://def.scitools.org.uk/cfmodel/Field>'
 
     def valid_mapping(self, mapping):
         """
@@ -1119,21 +1163,21 @@ class CFGRIB2ParamMapping(Mapping):
     def source_scheme(self):
         """
         Property that specifies the name of the scheme for the source
-        :class:`metarelate.Concept` defining this metarelate mapping
+        :class:`metarelate.Component` defining this metarelate mapping
         translation.
 
         """
-        return 'cf'
+        return '<http://def.scitools.org.uk/cfmodel/Field>'
 
     @property
     def target_scheme(self):
         """
         Property that specifies the name of the scheme for the target
-        :class:`metarelate.Concept` defining this metarelate mapping
+        :class:`metarelate.Component` defining this metarelate mapping
         translation.
 
         """
-        return 'grib'
+        return '<http://codes.wmo.int/def/codeform/GRIB-message>'
 
     def valid_mapping(self, mapping):
         """
