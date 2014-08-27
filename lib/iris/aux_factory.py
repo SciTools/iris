@@ -43,22 +43,38 @@ class LazyArray(object):
     computed and cached for any subsequent access.
 
     """
-    def __init__(self, shape, func):
+    def __init__(self, shape, dtype, func):
         """
         Args:
 
         * shape (tuple):
             The shape of the array which will be created.
+        * dtype (np.dtype):
+            The numpy dtype of the array which will be created.
         * func:
             The function which will be called to supply the real array.
 
         """
         self.shape = tuple(shape)
+        self.dtype = dtype
         self._func = func
         self._array = None
 
     def __repr__(self):
         return '<LazyArray(shape={})>'.format(self.shape)
+
+    # pickle can't handle function objects, so force the evaluation.
+    def __getstate__(self):
+        return {'shape': self.shape, 'dtype': self.dtype, '_func': None,
+                '_array': self._cached_array()}
+
+    # Don't want copy/deepcopy to use the pickle interface (because of the
+    # evaluation side-effect), so provide an explicit implementation.
+    def __copy__(self):
+        return self
+
+    def __deepcopy__(self, memo):
+        return self
 
     def _cached_array(self):
         if self._array is None:
@@ -382,6 +398,14 @@ class AuxCoordFactory(CFVariableMixin):
                     shape[i] = size
         return shape
 
+    def _dtype(self, arrays_by_key, **other_args):
+        dummy_args = {}
+        for key, array in arrays_by_key.iteritems():
+            dummy_args[key] = np.zeros(1, dtype=array.dtype)
+        dummy_args.update(other_args)
+        dummy_data = self._derive(**dummy_args)
+        return dummy_data.dtype
+
 
 class HybridHeightFactory(AuxCoordFactory):
     """
@@ -477,7 +501,8 @@ class HybridHeightFactory(AuxCoordFactory):
                                 nd_points_by_key['sigma'],
                                 nd_points_by_key['orography'])
         shape = self._shape(nd_points_by_key)
-        points = LazyArray(shape, calc_points)
+        dtype = self._dtype(nd_points_by_key)
+        points = LazyArray(shape, dtype, calc_points)
 
         bounds = None
         if ((self.delta and self.delta.nbounds) or
@@ -506,7 +531,8 @@ class HybridHeightFactory(AuxCoordFactory):
                         orography_pts_shape.append(1))
                 return self._derive(delta, sigma, orography)
             b_shape = self._shape(nd_values_by_key)
-            bounds = LazyArray(b_shape, calc_bounds)
+            b_dtype = self._dtype(nd_values_by_key)
+            bounds = LazyArray(b_shape, b_dtype, calc_bounds)
 
         hybrid_height = iris.coords.AuxCoord(points,
                                              standard_name=self.standard_name,
@@ -675,7 +701,8 @@ class HybridPressureFactory(AuxCoordFactory):
                                 nd_points_by_key['sigma'],
                                 nd_points_by_key['surface_air_pressure'])
         shape = self._shape(nd_points_by_key)
-        points = LazyArray(shape, calc_points)
+        dtype = self._dtype(nd_points_by_key)
+        points = LazyArray(shape, dtype, calc_points)
 
         bounds = None
         if ((self.delta and self.delta.nbounds) or
@@ -705,7 +732,8 @@ class HybridPressureFactory(AuxCoordFactory):
                         surface_air_pressure_pts_shape.append(1))
                 return self._derive(delta, sigma, surface_air_pressure)
             b_shape = self._shape(nd_values_by_key)
-            bounds = LazyArray(b_shape, calc_bounds)
+            b_dtype = self._dtype(nd_values_by_key)
+            bounds = LazyArray(b_shape, b_dtype, calc_bounds)
 
         hybrid_pressure = iris.coords.AuxCoord(
             points, standard_name=self.standard_name, long_name=self.long_name,
@@ -884,6 +912,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
         # Build a "lazy" points array.
         nd_points_by_key = self._remap(dependency_dims, derived_dims)
         points_shape = self._shape(nd_points_by_key)
+        points_dtype = self._dtype(nd_points_by_key, shape=(), nsigma_slice=())
 
         # Calculate the nsigma slice.
         nsigma_slice = [slice(None)] * len(derived_dims)
@@ -902,7 +931,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
                                 points_shape,
                                 nsigma_slice)
 
-        points = LazyArray(points_shape, calc_points)
+        points = LazyArray(points_shape, points_dtype, calc_points)
 
         bounds = None
         if self.zlev.nbounds or (self.sigma and self.sigma.nbounds):
@@ -910,6 +939,8 @@ class OceanSigmaZFactory(AuxCoordFactory):
             nd_values_by_key = self._remap_with_bounds(dependency_dims,
                                                        derived_dims)
             bounds_shape = self._shape(nd_values_by_key)
+            bounds_dtype = self._dtype(nd_values_by_key, shape=(),
+                                       nsigma_slice=())
             nsigma_slice_bounds = nsigma_slice + [slice(None)]
 
             # Define the function here to obtain a closure.
@@ -941,7 +972,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
                                     bounds_shape,
                                     nsigma_slice_bounds)
 
-            bounds = LazyArray(bounds_shape, calc_bounds)
+            bounds = LazyArray(bounds_shape, bounds_dtype, calc_bounds)
 
         coord = iris.coords.AuxCoord(points,
                                      standard_name=self.standard_name,
