@@ -22,9 +22,10 @@ from __future__ import (absolute_import, division, print_function)
 # importing anything else.
 import iris.tests as tests
 
+import biggus
+
 import iris
 from iris.analysis import MEAN
-from iris.aux_factory import LazyArray
 
 
 class Test_aggregated_by(tests.IrisTest):
@@ -41,7 +42,7 @@ class Test_aggregated_by(tests.IrisTest):
 
         # First confirm we've got a `LazyArray`.
         forecast_period_coord = cube.coord('forecast_period')
-        self.assertIsInstance(forecast_period_coord._points, LazyArray)
+        self.assertIsInstance(forecast_period_coord._points, biggus.Array)
 
         # Now confirm we can aggregate along this coord.
         res_cube = cube.aggregated_by('forecast_period', MEAN)

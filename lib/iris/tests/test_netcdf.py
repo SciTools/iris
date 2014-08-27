@@ -30,6 +30,7 @@ import shutil
 import stat
 import tempfile
 
+import biggus
 import mock
 import netCDF4 as nc
 import numpy as np
@@ -102,11 +103,9 @@ class TestNetCDFLoad(tests.IrisTest):
         # Test loading single xy rotated pole CF-netCDF file.
         cube = iris.load_cube(tests.get_data_path(
             ('NetCDF', 'rotated', 'xy', 'rotPole_landAreaFraction.nc')))
-        self.assertCML(cube, ('netcdf', 'netcdf_rotated_xy_land.cml'))
-
         # Make sure the AuxCoords have lazy data.
-        self.assertIsInstance(cube.coord('latitude')._points,
-                              iris.aux_factory.LazyArray)
+        self.assertIsInstance(cube.coord('latitude')._points, biggus.Array)
+        self.assertCML(cube, ('netcdf', 'netcdf_rotated_xy_land.cml'))
 
     def test_load_rotated_xyt_precipitation(self):
         # Test loading single xyt rotated pole CF-netCDF file.
