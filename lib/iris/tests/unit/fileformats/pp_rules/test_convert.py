@@ -28,6 +28,7 @@ import numpy as np
 from iris.fileformats.pp_rules import convert
 from iris.util import guess_coord_axis
 from iris.fileformats.pp import SplittableInt
+from iris.fileformats.pp import STASH
 from iris.fileformats.pp import PPField3
 import iris.tests.unit.fileformats
 import iris.unit
@@ -280,6 +281,43 @@ class TestLBSRCE(iris.tests.IrisTest):
             lbsrce=12071111,
             source_str='Data from Met Office Unified Model',
             um_version_str='12.7')
+
+
+class Test_STASH_CF(iris.tests.unit.fileformats.TestField):
+    def test_stash_cf_air_temp(self):
+        lbuser = [1, 0, 0, 16203, 0, 0, 1]
+        lbfc = 16
+        stash = STASH(lbuser[6], lbuser[3] / 1000, lbuser[3] % 1000)
+        field = mock.MagicMock(lbuser=lbuser, lbfc=lbfc, stash=stash)
+        (factories, references, standard_name, long_name, units,
+         attributes, cell_methods, dim_coords_and_dims,
+         aux_coords_and_dims) = convert(field)
+        self.assertEqual(standard_name, 'air_temperature')
+        self.assertEqual(units, 'K')
+
+    def test_no_std_name(self):
+        lbuser = [1, 0, 0, 0, 0, 0, 0]
+        lbfc = 0
+        stash = STASH(lbuser[6], lbuser[3] / 1000, lbuser[3] % 1000)
+        field = mock.MagicMock(lbuser=lbuser, lbfc=lbfc, stash=stash)
+        (factories, references, standard_name, long_name, units,
+         attributes, cell_methods, dim_coords_and_dims,
+         aux_coords_and_dims) = convert(field)
+        self.assertIsNone(standard_name)
+        self.assertIsNone(units)
+
+
+class Test_LBFC_CF(iris.tests.unit.fileformats.TestField):
+    def test_fc_cf_air_temp(self):
+        lbuser = [1, 0, 0, 0, 0, 0, 0]
+        lbfc = 16
+        stash = STASH(lbuser[6], lbuser[3] / 1000, lbuser[3] % 1000)
+        field = mock.MagicMock(lbuser=lbuser, lbfc=lbfc, stash=stash)
+        (factories, references, standard_name, long_name, units,
+         attributes, cell_methods, dim_coords_and_dims,
+         aux_coords_and_dims) = convert(field)
+        self.assertEqual(standard_name, 'air_temperature')
+        self.assertEqual(units, 'K')
 
 
 if __name__ == "__main__":
