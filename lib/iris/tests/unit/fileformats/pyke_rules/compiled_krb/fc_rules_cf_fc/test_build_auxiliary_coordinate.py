@@ -55,14 +55,16 @@ class TestBoundsVertexDim(tests.IrisTest):
         # Create patch for deferred loading that prevents attempted
         # file access. This assumes that self.cf_bounds_var is
         # defined in the test case.
-        def deferred_load(filename, var_name):
+        def patched__getitem__(proxy_self, keys):
+            variable = None
             for var in (self.cf_coord_var, self.cf_bounds_var):
-                if var_name == var.cf_name:
-                    return var[:]
+                if proxy_self.variable_name == var.cf_name:
+                    return var[keys]
+            raise RuntimeError()
 
         self.deferred_load_patch = mock.patch(
-            'iris.fileformats._pyke_rules.compiled_krb.'
-            'fc_rules_cf_fc.deferred_load', new=deferred_load)
+            'iris.fileformats.netcdf.NetCDFDataProxy.__getitem__',
+            new=patched__getitem__)
 
     def test_slowest_varying_vertex_dim(self):
         # Create the bounds cf variable.
@@ -71,6 +73,7 @@ class TestBoundsVertexDim(tests.IrisTest):
             dimensions=('nv', 'foo', 'bar'),
             cf_name='wibble_bnds',
             shape=bounds.shape,
+            dtype=bounds.dtype,
             __getitem__=lambda self, key: bounds[key])
 
         # Expected bounds on the resulting coordinate should be rolled so that
@@ -109,6 +112,7 @@ class TestBoundsVertexDim(tests.IrisTest):
             dimensions=('foo', 'bar', 'nv'),
             cf_name='wibble_bnds',
             shape=bounds.shape,
+            dtype=bounds.dtype,
             __getitem__=lambda self, key: bounds[key])
 
         expected_coord = AuxCoord(
@@ -145,6 +149,7 @@ class TestBoundsVertexDim(tests.IrisTest):
             dimensions=('x', 'y', 'nv'),
             cf_name='wibble_bnds',
             shape=bounds.shape,
+            dtype=bounds.dtype,
             __getitem__=lambda self, key: bounds[key])
 
         expected_coord = AuxCoord(
