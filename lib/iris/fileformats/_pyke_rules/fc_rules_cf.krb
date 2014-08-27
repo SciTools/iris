@@ -1262,6 +1262,7 @@ fc_extras
             nc_var_name = cf_coord_var.cf_name
             get_values = lambda: deferred_load(filename, nc_var_name)
             points_data = iris.aux_factory.LazyArray(cf_coord_var.shape,
+                                                     cf_coord_var.dtype,
                                                      get_values)
 
         # Get any coordinate bounds.
@@ -1272,6 +1273,7 @@ fc_extras
             nc_bounds_var_name = cf_bounds_var.cf_name
             get_values = lambda: deferred_load(filename, nc_bounds_var_name)
             bounds_data = iris.aux_factory.LazyArray(cf_bounds_var.shape,
+                                                     cf_bounds_var.dtype,
                                                      get_values)
             # Handle transposed bounds where the vertex dimension is not
             # the last one. Test based on shape to support different
