@@ -682,6 +682,7 @@ fc_extras
     import re
     import warnings
 
+    import biggus
     import netCDF4
     import numpy as np
     import numpy.ma as ma
@@ -1165,14 +1166,6 @@ fc_extras
 
 
     ################################################################################
-    def deferred_load(filename, nc_var_name):
-        dataset = netCDF4.Dataset(filename)
-        nc_var = dataset.variables[nc_var_name]
-        values = nc_var[:]
-        return values
-
-
-    ################################################################################
     def build_auxiliary_coordinate(engine, cf_coord_var, coord_name=None, coord_system=None):
         """Create an auxiliary coordinate (AuxCoord) and add it to the cube."""
 
@@ -1187,28 +1180,33 @@ fc_extras
         if isinstance(cf_coord_var, cf.CFLabelVariable):
             points_data = cf_coord_var.cf_label_data(cf_var)
         else:
-            # Use a closure to capture the current file/variable names.
-            filename = engine.filename
-            nc_var_name = cf_coord_var.cf_name
-            get_values = lambda: deferred_load(filename, nc_var_name)
-            points_data = iris.aux_factory.LazyArray(cf_coord_var.shape,
-                                                     cf_coord_var.dtype,
-                                                     get_values)
+            dtype = cf_coord_var.dtype
+            fill_value = getattr(cf_coord_var.cf_data, '_FillValue',
+                                 netCDF4.default_fillvals[dtype.str[1:]])
+            proxy = iris.fileformats.netcdf.NetCDFDataProxy(
+                cf_coord_var.shape, dtype, engine.filename,
+                cf_coord_var.cf_name, fill_value)
+            points_data = biggus.OrthoArrayAdapter(proxy)
 
         # Get any coordinate bounds.
         cf_bounds_var = get_cf_bounds_var(cf_coord_var)
         if cf_bounds_var is not None:
-            # Use a closure to capture the current file/variable names.
-            filename = engine.filename
-            nc_bounds_var_name = cf_bounds_var.cf_name
-            get_values = lambda: deferred_load(filename, nc_bounds_var_name)
-            bounds_data = iris.aux_factory.LazyArray(cf_bounds_var.shape,
-                                                     cf_bounds_var.dtype,
-                                                     get_values)
+            dtype = cf_bounds_var.dtype
+            fill_value = getattr(cf_bounds_var.cf_data, '_FillValue',
+                                 netCDF4.default_fillvals[dtype.str[1:]])
+            proxy = iris.fileformats.netcdf.NetCDFDataProxy(
+                cf_bounds_var.shape, dtype, engine.filename,
+                cf_bounds_var.cf_name, fill_value)
+            bounds_data = biggus.OrthoArrayAdapter(proxy)
+
             # Handle transposed bounds where the vertex dimension is not
             # the last one. Test based on shape to support different
             # dimension names.
             if cf_bounds_var.shape[:-1] != cf_coord_var.shape:
+                # Biggus 0.7 doesn't support rollaxis, so we have to
+                # resolve the data to a numpy array.
+                # NB. This is what used to happen with LazyArray as well.
+                bounds_data = bounds_data.ndarray()
                 bounds_data = reorder_bounds_data(bounds_data, cf_bounds_var,
                                                   cf_coord_var)
         else:

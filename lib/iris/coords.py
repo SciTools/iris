@@ -29,6 +29,7 @@ import operator
 import warnings
 import zlib
 
+import biggus
 import netcdftime
 import numpy as np
 
@@ -446,8 +447,12 @@ class Coord(CFVariableMixin):
             points = self._points
             bounds = self._bounds
         else:
-            points = self.points
-            bounds = self.bounds
+            points = self._points
+            if isinstance(points, iris.aux_factory.LazyArray):
+                points = points.view()
+            bounds = self._bounds
+            if isinstance(bounds, iris.aux_factory.LazyArray):
+                bounds = bounds.view()
 
             # Make indexing on the cube column based by using the
             # column_slices_generator (potentially requires slicing the
@@ -1484,18 +1489,24 @@ class AuxCoord(Coord):
     @property
     def points(self):
         """Property containing the points values as a numpy array"""
-        return self._points.view()
+        points = self._points
+        if isinstance(points, biggus.Array):
+            points = points.ndarray()
+            self._points = points
+        return points.view()
 
     @points.setter
     def points(self, points):
         # Set the points to a new array - as long as it's the same shape.
 
-        # With the exception of LazyArrays ensure points is a numpy array with
-        # ndmin of 1.
-        # This will avoid Scalar coords with points of shape () rather than the
-        # desired (1,)
-        #   ... could change to: points = lazy.array(points, ndmin=1)
-        if not isinstance(points, iris.aux_factory.LazyArray):
+        # With the exception of LazyArrays, ensure points has an ndmin
+        # of 1 and is either a numpy or biggus array.
+        # This will avoid Scalar coords with points of shape () rather
+        # than the desired (1,)
+        if isinstance(points, biggus.Array):
+            if points.shape == ():
+                points = biggus.ArrayStack(np.array([points]))
+        elif not isinstance(points, iris.aux_factory.LazyArray):
             points = self._sanitise_array(points, 1)
         # If points are already defined for this coordinate,
         if hasattr(self, '_points') and self._points is not None:
@@ -1517,7 +1528,11 @@ class AuxCoord(Coord):
 
         """
         if self._bounds is not None:
-            bounds = self._bounds.view()
+            bounds = self._bounds
+            if isinstance(bounds, biggus.Array):
+                bounds = bounds.ndarray()
+                self._bounds = bounds
+            bounds = bounds.view()
         else:
             bounds = None
 
@@ -1527,7 +1542,8 @@ class AuxCoord(Coord):
     def bounds(self, bounds):
         # Ensure the bounds are a compatible shape.
         if bounds is not None:
-            if not isinstance(bounds, iris.aux_factory.LazyArray):
+            if not isinstance(bounds, (iris.aux_factory.LazyArray,
+                                       biggus.Array)):
                 bounds = self._sanitise_array(bounds, 2)
             # NB. Use _points to avoid triggering any lazy array.
             if self._points.shape != bounds.shape[:-1]:
