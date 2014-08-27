@@ -45,7 +45,7 @@ install:
   - conda config --add channels scitools
   # Start with all the mandatory dependencies
   - conda install biggus
-  - conda install cartopy
+  - conda install cartopy matplotlib=1.3.1
   - conda install netcdf4
   - conda install numpy
   - conda install pyke
