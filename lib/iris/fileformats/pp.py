@@ -1678,6 +1678,10 @@ def reset_save_rules():
     _save_rules = None
 
 
+# Stash codes not to be filtered (reference altitude and pressure fields).
+_STASH_ALLOW = [STASH(1, 0, 33), STASH(1, 0, 1)]
+
+
 def _convert_constraints(constraints):
     """
     Converts known constraints from Iris semantics to PP semantics
@@ -1699,7 +1703,7 @@ def _convert_constraints(constraints):
             ## only keep the pp constraints set if they are all handled as
             ## pp constraints
             unhandled_constraints = True
-                
+ 
     def pp_filter(field):
         """
         return True if field is to be kept,
@@ -1708,7 +1712,8 @@ def _convert_constraints(constraints):
         """
         res = True
         if pp_constraints.get('stash'):
-            if field.stash not in pp_constraints['stash']:
+            if (field.stash not in _STASH_ALLOW and field.stash not in
+                    pp_constraints['stash']):
                 res = False
         return res
 
