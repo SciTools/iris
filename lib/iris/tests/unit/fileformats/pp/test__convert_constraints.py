@@ -28,11 +28,26 @@ from iris.fileformats.pp import STASH
 
 
 class Test_convert_constraints(tests.IrisTest):
-    def test_single_stash(self):
-        stcube = mock.Mock(stash=STASH.from_msi('m01s03i236'))
+    def _single_stash(self):
         constraint = iris.AttributeConstraint(STASH='m01s03i236')
-        pp_filter = _convert_constraints(constraint)
+        return _convert_constraints(constraint)
+
+    def test_single_stash(self):
+        pp_filter = self._single_stash()
+        stcube = mock.Mock(stash=STASH.from_msi('m01s03i236'))
         self.assertTrue(pp_filter(stcube))
+
+    def test_surface_altitude(self):
+        # Ensure that surface altitude fields are not filtered.
+        pp_filter = self._single_stash()
+        orography_cube = mock.Mock(stash=STASH.from_msi('m01s00i033'))
+        self.assertTrue(pp_filter(orography_cube))
+
+    def test_surface_pressure(self):
+        # Ensure that surface pressure fields are not filtered.
+        pp_filter = self._single_stash()
+        pressure_cube = mock.Mock(stash=STASH.from_msi('m01s00i001'))
+        self.assertTrue(pp_filter(pressure_cube))
 
     def test_double_stash(self):
         stcube236 = mock.Mock(stash=STASH.from_msi('m01s03i236'))
