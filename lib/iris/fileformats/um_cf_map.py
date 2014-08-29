@@ -671,7 +671,6 @@ CF_TO_LBFC = {
     CFName('air_pressure_at_freezing_level', None, 'Pa'): 8,
     CFName('air_pressure_at_sea_level', None, 'Pa'): 8,
     CFName('air_temperature', None, 'K'): 16,
-    CFName('air_temperature', None, 'K'): 16,
     CFName('atmosphere_boundary_layer_thickness', None, 'm'): 5,
     CFName('atmosphere_eastward_stress_due_to_gravity_wave_drag', None, 'Pa'): 61,
     CFName('atmosphere_kinetic_energy_content', None, 'J m-2'): 63,

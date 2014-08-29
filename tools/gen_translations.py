@@ -87,10 +87,9 @@ def _retrieve_mappings(fuseki, source, target):
     * fuseki:
         The :class:`metrelate.fuseki.FusekiServer` instance.
     * source:
-        The source metarelate scheme for the mapping,
-        i.e. 'um', 'grib' or 'cf'.
+        The source metarelate metadata type for the mapping,
     * target:
-        The target metarelate scheme for the mapping.
+        The target metarelate metadata type for the mapping.
 
     Return:
         The sequence of :class:`metarelate.Mapping`
@@ -124,16 +123,15 @@ def build_um_cf_map(fuseki, filename):
         fh.write('\n')
 
         # Encode the relevant UM to CF translations.
-        #mappings = _retrieve_mappings(fuseki, 'um', 'cf')
         ppff = 'http://reference.metoffice.gov.uk/um/f3/UMField'
-        cff = 'http://def.scitools.org.uk/cfmodel/Field'
+        cff = 'http://def.scitools.org.uk/cfdatamodel/Field'
         mappings = _retrieve_mappings(fuseki, ppff, cff)
-        fh.writelines(FieldcodeCFMapping(mappings).lines())
-        fh.writelines(StashCFMapping(mappings).lines())
+        fh.writelines(FieldcodeCFMapping(mappings).lines(fuseki))
+        fh.writelines(StashCFMapping(mappings).lines(fuseki))
 
         # Encode the relevant CF to UM translations.
         mappings = _retrieve_mappings(fuseki, cff, ppff)
-        fh.writelines(CFFieldcodeMapping(mappings).lines())
+        fh.writelines(CFFieldcodeMapping(mappings).lines(fuseki))
 
 
 def build_grib_cf_map(fuseki, filename):
@@ -160,20 +158,21 @@ def build_grib_cf_map(fuseki, filename):
 
         # Encode the relevant GRIB to CF translations.
         gribmsg = 'http://codes.wmo.int/def/codeform/GRIB-message'
-        cff = 'http://def.scitools.org.uk/cfmodel/Field'
+        cff = 'http://def.scitools.org.uk/cfdatamodel/Field'
         mappings = _retrieve_mappings(fuseki, gribmsg, cff)
-        #fh.writelines(GRIB1LocalParamCFConstrainedMapping(mappings).lines())
-        #fh.writelines(GRIB1LocalParamCFMapping(mappings).lines())
-        fh.writelines(GRIB2ParamCFMapping(mappings).lines())
+        fh.writelines(GRIB1LocalParamCFConstrainedMapping(mappings).lines(fuseki))
+        fh.writelines(GRIB1LocalParamCFMapping(mappings).lines(fuseki))
+        fh.writelines(GRIB2ParamCFMapping(mappings).lines(fuseki))
 
         # Encode the relevant CF to GRIB translations.
         mappings = _retrieve_mappings(fuseki, cff, gribmsg)
-        #fh.writelines(CFConstrainedGRIB1LocalParamMapping(mappings).lines())
-        #fh.writelines(CFGRIB1LocalParamMapping(mappings).lines())
-        fh.writelines(CFGRIB2ParamMapping(mappings).lines())
+        fh.writelines(CFConstrainedGRIB1LocalParamMapping(mappings).lines(fuseki))
+        fh.writelines(CFGRIB1LocalParamMapping(mappings).lines(fuseki))
+        fh.writelines(CFGRIB2ParamMapping(mappings).lines(fuseki))
 
 
 if __name__ == '__main__':
     with FusekiServer() as fuseki:
-        # build_um_cf_map(fuseki, FILE_UM_CF)
+        fuseki.load()
+        build_um_cf_map(fuseki, FILE_UM_CF)
         build_grib_cf_map(fuseki, FILE_GRIB_CF)
