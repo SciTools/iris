@@ -65,19 +65,6 @@ class LazyArray(object):
     def __repr__(self):
         return '<LazyArray(shape={})>'.format(self.shape)
 
-    # pickle can't handle function objects, so force the evaluation.
-    def __getstate__(self):
-        return {'shape': self.shape, 'dtype': self.dtype, '_func': None,
-                '_array': self._cached_array()}
-
-    # Don't want copy/deepcopy to use the pickle interface (because of the
-    # evaluation side-effect), so provide an explicit implementation.
-    def __copy__(self):
-        return self
-
-    def __deepcopy__(self, memo):
-        return self
-
     def _cached_array(self):
         if self._array is None:
             self._array = self._func()
