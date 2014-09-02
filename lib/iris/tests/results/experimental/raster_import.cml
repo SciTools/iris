@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube units="unknown">
+    <coords>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-1.5, -0.5],
+		[-0.5, 0.5],
+		[0.5, 1.5],
+		[1.5, 2.5]]" id="b928afc9" points="[-1.0, 0.0, 1.0, 2.0]" shape="(4,)" standard_name="projection_x_coordinate" units="Unit('1')" value_type="float64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[-1.5, -0.5],
+		[-0.5, 0.5],
+		[0.5, 1.5]]" id="513f3f68" points="[-1.0, 0.0, 1.0]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('1')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="-0x49adf4af" dtype="int32" shape="(3, 4)"/>
+  </cube>
+</cubes>

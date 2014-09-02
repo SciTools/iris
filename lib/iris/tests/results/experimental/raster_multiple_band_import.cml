@@ -1,0 +1,63 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube units="unknown">
+    <coords>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-200000.0, -150000.0],
+		[-150000.0, -100000.0],
+		[-100000.0, -50000.0],
+		[-50000.0, 0.0],
+		[0.0, 50000.0]]" id="b928afc9" points="[-175000, -125000, -75000, -25000, 25000]" shape="(5,)" standard_name="projection_x_coordinate" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[50000.0, 0.0],
+		[0.0, -50000.0],
+		[-50000.0, -100000.0],
+		[-100000.0, -150000.0],
+		[-150000.0, -200000.0]]" id="513f3f68" points="[25000, -25000, -75000, -125000, -175000]" shape="(5,)" standard_name="projection_y_coordinate" units="Unit('1')" value_type="int64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x5a7fd8b3" dtype="int64" shape="(5, 5)"/>
+  </cube>
+  <cube units="unknown">
+    <coords>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-200000.0, -150000.0],
+		[-150000.0, -100000.0],
+		[-100000.0, -50000.0],
+		[-50000.0, 0.0],
+		[0.0, 50000.0]]" id="b928afc9" points="[-175000, -125000, -75000, -25000, 25000]" shape="(5,)" standard_name="projection_x_coordinate" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[50000.0, 0.0],
+		[0.0, -50000.0],
+		[-50000.0, -100000.0],
+		[-100000.0, -150000.0],
+		[-150000.0, -200000.0]]" id="513f3f68" points="[25000, -25000, -75000, -125000, -175000]" shape="(5,)" standard_name="projection_y_coordinate" units="Unit('1')" value_type="int64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x5a7fd8b3" dtype="int64" shape="(5, 5)"/>
+  </cube>
+  <cube units="unknown">
+    <coords>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-200000.0, -150000.0],
+		[-150000.0, -100000.0],
+		[-100000.0, -50000.0],
+		[-50000.0, 0.0],
+		[0.0, 50000.0]]" id="b928afc9" points="[-175000, -125000, -75000, -25000, 25000]" shape="(5,)" standard_name="projection_x_coordinate" units="Unit('1')" value_type="int64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[50000.0, 0.0],
+		[0.0, -50000.0],
+		[-50000.0, -100000.0],
+		[-100000.0, -150000.0],
+		[-150000.0, -200000.0]]" id="513f3f68" points="[25000, -25000, -75000, -125000, -175000]" shape="(5,)" standard_name="projection_y_coordinate" units="Unit('1')" value_type="int64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x5a7fd8b3" dtype="int64" shape="(5, 5)"/>
+  </cube>
+</cubes>
