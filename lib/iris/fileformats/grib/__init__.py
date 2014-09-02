@@ -41,6 +41,7 @@ from iris.exceptions import TranslationError
 # NOTE: careful here, to avoid circular imports (as iris imports grib)
 from iris.fileformats.grib import grib_phenom_translation as gptx
 from iris.fileformats.grib import grib_save_rules
+import iris.fileformats.grib._load_convert
 import iris.fileformats.grib.load_rules
 import iris.unit
 
@@ -869,6 +870,10 @@ def grib_generator(filename, auto_regularise=True):
             gribapi.grib_release(grib_message)
 
 
+def _messages_from_file():
+    """XXX Dummy stub"""
+
+
 def load_cubes(filenames, callback=None, auto_regularise=True):
     """
     Returns a generator of cubes from the given list of filenames.
@@ -900,10 +905,15 @@ def load_cubes(filenames, callback=None, auto_regularise=True):
            cubes = iris.cube.CubeList(cube_generator).merge()
 
     """
-    grib_loader = iris.fileformats.rules.Loader(
-        grib_generator, {'auto_regularise': auto_regularise},
-        iris.fileformats.grib.load_rules.convert,
-        _load_rules)
+    if iris.FUTURE.strict_grib_load:
+        grib_loader = iris.fileformats.rules.Loader(
+            _messages_from_file, {'auto_regularise': auto_regularise},
+            iris.fileformats.grib._load_convert.convert, None)
+    else:
+        grib_loader = iris.fileformats.rules.Loader(
+            grib_generator, {'auto_regularise': auto_regularise},
+            iris.fileformats.grib.load_rules.convert,
+            _load_rules)
     return iris.fileformats.rules.load_cubes(filenames, callback, grib_loader)
 
 
