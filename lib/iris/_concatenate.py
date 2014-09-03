@@ -150,31 +150,24 @@ class _CoordMetaData(namedtuple('CoordMetaData',
         return metadata
 
     def __eq__(self, other):
-        def _compare(left, right, properties):
-            same = True
-            for prop in properties:
-                same = left[prop] == right[prop]
-                if not same:
-                    break
-            return same
-
         result = NotImplemented
         if isinstance(other, _CoordMetaData):
-            properties = set(self._asdict())
-            properties.discard('kwargs')
-            result = _compare(self._asdict(), other._asdict(), properties)
+            sprops, oprops = self._asdict(), other._asdict()
+            # Ignore "kwargs" meta-data for the first comparison.
+            sprops['kwargs'] = oprops['kwargs'] = None
+            result = sprops == oprops
             if result:
+                skwargs, okwargs = self.kwargs.copy(), other.kwargs.copy()
                 # Monotonic "order" only applies to DimCoord's.
                 # The monotonic "order" must be _INCREASING or _DECREASING if
                 # the DimCoord is NOT "scalar". Otherwise, if the DimCoord is
                 # "scalar" then the "order" must be _CONSTANT.
-                properties = self.kwargs.viewkeys() | other.kwargs.viewkeys()
-                if self.kwargs['scalar'] | other.kwargs['scalar']:
-                    # We don't care about the monotonic "order" given that at
-                    # least one coordinate is a scalar coordinate.
-                    properties.discard('order')
-                properties.discard('scalar')
-                result = _compare(self.kwargs, other.kwargs, properties)
+                if skwargs['scalar'] or okwargs['scalar']:
+                    # We don't care about the monotonic "order" given that
+                    # at least one coordinate is a scalar coordinate.
+                    skwargs['scalar'] = okwargs['scalar'] = None
+                    skwargs['order'] = okwargs['order'] = None
+                result = skwargs == okwargs
         return result
 
     def __ne__(self, other):
