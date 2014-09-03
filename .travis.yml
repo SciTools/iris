@@ -73,6 +73,7 @@ install:
   - chmod a+x $PREFIX/bin/cfchecker
 
   # Output debug info
+  - conda list
   - conda info -a
 
 # Pre-load Natural Earth data to avoid multiple, overlapping downloads.
