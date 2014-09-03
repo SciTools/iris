@@ -2184,8 +2184,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 indices = inside_indices[split_cell_indices]
                 cells = bounds[indices]
                 cells_delta = np.diff(coord.bounds[indices])
-                cells[:, 0] = cells[:, 1] - cells_delta[:, 0]
-                minimum = np.min(cells[:, 0])
+                # Watch out for ascending/descending bounds
+                if cells_delta[0, 0] > 0:
+                    cells[:, 0] = cells[:, 1] - cells_delta[:, 0]
+                    minimum = np.min(cells[:, 0])
+                else:
+                    cells[:, 1] = cells[:, 0] + cells_delta[:, 0]
+                    minimum = np.min(cells[:, 1])
                 bounds = wrap_lons(coord.bounds, minimum, modulus)
             points = wrap_lons(coord.points, minimum, modulus)
         else:
