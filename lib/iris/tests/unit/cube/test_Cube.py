@@ -844,6 +844,26 @@ class Test_intersection__ModulusBounds(tests.IrisTest):
         self.assertEqual(result.data[0, 0, 0], 350)
         self.assertEqual(result.data[0, 0, -1], 10)
 
+    def test_decrementing(self):
+        cube = create_cube(360, 0, bounds=True)
+        result = cube.intersection(longitude=(40, 60))
+        self.assertArrayEqual(result.coord('longitude').bounds[0],
+                              [60.5, 59.5])
+        self.assertArrayEqual(result.coord('longitude').bounds[-1],
+                              [40.5, 39.5])
+        self.assertEqual(result.data[0, 0, 0], 300)
+        self.assertEqual(result.data[0, 0, -1], 320)
+
+    def test_decrementing_wrapped(self):
+        cube = create_cube(360, 0, bounds=True)
+        result = cube.intersection(longitude=(-10, 10))
+        self.assertArrayEqual(result.coord('longitude').bounds[0],
+                              [10.5, 9.5])
+        self.assertArrayEqual(result.coord('longitude').bounds[-1],
+                              [-9.5, -10.5])
+        self.assertEqual(result.data[0, 0, 0], 350)
+        self.assertEqual(result.data[0, 0, -1], 10)
+
 
 def unrolled_cube():
     data = np.arange(5, dtype='f4')
