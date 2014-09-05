@@ -663,6 +663,23 @@ fc_formula_type_ocean_sigma_z_coordinate
 
 #
 # Context:
+#   This rule will trigger if a formula term that refers to a
+#   dimensionless vertical coordinate of ocean sigma
+#
+# Purpose:
+#   Assert that the formula term refers to ocean sigma
+#
+fc_formula_type_ocean_sigma_coordinate
+    foreach
+        facts_cf.formula_root($coordinate)
+        check getattr(engine.cf_var.cf_group[$coordinate], 'standard_name') == 'ocean_sigma_coordinate'
+    assert
+        python engine.requires['formula_type'] = 'ocean_sigma_coordinate'
+        facts_cf.formula_type(ocean_sigma_coordinate)
+        python engine.rule_triggered.add(rule.name)
+
+#
+# Context:
 #   This rule will trigger for variables referenced by a dimensionless
 #   vertical coordinate.
 #
@@ -717,8 +734,10 @@ fc_extras
                          'ocean_sigma_coordinate':['sigma', 'eta', 'depth'],
                          'ocean_s_coordinate':['s', 'eta', 'depth', 'a', 'b', 'depth_c'],
                          'ocean_sigma_z_coordinate':['sigma', 'eta', 'depth', 'depth_c', 'nsigma', 'zlev'],
-                         'ocean_double_sigma_coordinate':['sigma', 'depth', 'z1', 'z2', 'a', 'href', 'k_c']}
-    
+                         'ocean_double_sigma_coordinate':['sigma', 'depth', 'z1', 'z2', 'a', 'href', 'k_c'],
+                         'ocean_s_coordinate_g1':['s', 'eta', 'depth', 'depth_c', 'C'],
+                         'ocean_s_coordinate_g2 ':['s', 'eta', 'depth', 'depth_c', 'C']}
+
     #
     # CF Grid Mappings
     #
