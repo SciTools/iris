@@ -42,6 +42,7 @@ from iris.exceptions import TranslationError
 from iris.fileformats.grib import grib_phenom_translation as gptx
 from iris.fileformats.grib import grib_save_rules
 import iris.fileformats.grib._load_convert
+from iris.fileformats.grib.grib_message import GribMessage
 import iris.fileformats.grib.load_rules
 import iris.unit
 
@@ -870,8 +871,21 @@ def grib_generator(filename, auto_regularise=True):
             gribapi.grib_release(grib_message)
 
 
-def _messages_from_file():
-    """XXX Dummy stub"""
+def _messages_from_file(filename):
+    """
+    Yields a :class:`GribData` instance for each grib message in the supplied
+    grib file.
+
+    Args:
+
+    * filename (string):
+        Name of the file to generate fields from.
+
+    """
+    with open(filename, 'rb') as grib_fh:
+        grib_id = gribapi.grib_new_from_file(grib_fh)
+        yield GribMessage(grib_id)
+        gribapi.grib_release(grib_id)
 
 
 def load_cubes(filenames, callback=None, auto_regularise=True):
