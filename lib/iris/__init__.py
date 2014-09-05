@@ -140,12 +140,12 @@ class Future(threading.local):
         If Iris code is executed with multiple threads, note the values of
         these options are thread-specific.
 
-        Currently, the only option available is `cell_datetime_objects` which
-        controls whether the :meth:`iris.coords.Coord.cell()` method returns
-        time coordinate values as simple numbers or as time objects with
-        attributes for year, month, day, etc. In particular, this allows one
-        to express certain time constraints using a simpler, more
-        transparent syntax, such as::
+        The option `cell_datetime_objects` controls whether the
+        :meth:`iris.coords.Coord.cell()` method returns time coordinate
+        values as simple numbers or as time objects with attributes for
+        year, month, day, etc. In particular, this allows one to express
+        certain time constraints using a simpler, more transparent
+        syntax, such as::
 
             # To select all data defined at midday.
             Constraint(time=lambda cell: cell.point.hour == 12)
@@ -155,6 +155,11 @@ class Future(threading.local):
                                          cell.point.month != 2)
 
         For more details, see :ref:`using-time-constraints`.
+
+        The option `netcdf_promote` controls whether the netCDF loader
+        will expose variables which define reference surfaces for
+        dimensionless vertical coordinates as independent Cubes.
+
         """
         self.__dict__['cell_datetime_objects'] = cell_datetime_objects
         self.__dict__['netcdf_promote'] = netcdf_promote

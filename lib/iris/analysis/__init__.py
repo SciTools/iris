@@ -935,7 +935,7 @@ To compute a weighted area average::
 
     Lazy operation is supported, via :func:`biggus.mean`::
 
-        result = cube.collapsed('longitude', iris.analysis.MEAN, lazy=True)
+        result = cube.collapsed('longitude', iris.analysis.MEAN)
 
 This aggregator handles masked data.
 
@@ -1179,7 +1179,7 @@ To obtain the biased variance::
 
     Lazy operation is supported, via :func:`biggus.var`::
 
-        result = cube.collapsed('longitude', iris.analysis.VARIANCE, lazy=True)
+        result = cube.collapsed('longitude', iris.analysis.VARIANCE)
 
 This aggregator handles masked data.
 
