@@ -128,7 +128,8 @@ AttributeConstraint = iris._constraints.AttributeConstraint
 class Future(threading.local):
     """Run-time configuration controller."""
 
-    def __init__(self, cell_datetime_objects=False, netcdf_promote=False):
+    def __init__(self, cell_datetime_objects=False, netcdf_promote=False,
+                 strict_grib_load=False):
         """
         A container for run-time options controls.
 
@@ -160,13 +161,22 @@ class Future(threading.local):
         will expose variables which define reference surfaces for
         dimensionless vertical coordinates as independent Cubes.
 
+        The option `strict_grib_load` controls whether GRIB files are
+        loaded as Cubes using a new template-based conversion process.
+        This new conversion process will raise an exception when it
+        encounters a GRIB message which uses a template not supported
+        by the conversion.
+
         """
         self.__dict__['cell_datetime_objects'] = cell_datetime_objects
         self.__dict__['netcdf_promote'] = netcdf_promote
+        self.__dict__['strict_grib_load'] = strict_grib_load
 
     def __repr__(self):
-        return 'Future(cell_datetime_objects={}, netcdf_promote={})'.format(
-            self.cell_datetime_objects, self.netcdf_promote)
+        return ('Future(cell_datetime_objects={}, netcdf_promote={}, '
+                'strict_grib_load={})'.format(self.cell_datetime_objects,
+                                              self.netcdf_promote,
+                                              self.strict_grib_load))
 
     def __setattr__(self, name, value):
         if name not in self.__dict__:
