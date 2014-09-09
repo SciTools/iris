@@ -1695,7 +1695,11 @@ def _convert_constraints(constraints):
     for con in constraints:
         if isinstance(con, iris.AttributeConstraint) and \
                 con._attributes.keys() == ['STASH']:
-            stashobj = STASH.from_msi(con._attributes['STASH'])
+            # Convert a STASH constraint.
+            stashobj = con._attributes['STASH']
+            if not isinstance(stashobj, STASH):
+                # The attribute can be a STASH object, or a stashcode string.
+                stashobj = STASH.from_msi(stashobj)
             if not 'stash' in pp_constraints:
                 pp_constraints['stash'] = [stashobj]
             else:
