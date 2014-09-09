@@ -157,6 +157,11 @@ class GribMessage(object):
         try:
             if key in ['codedValues', 'values', 'pv']:
                 res = gribapi.grib_get_array(self._message_id, key)
+            elif key in ['typeOfFirstFixedSurface',
+                         'typeOfSecondFixedSurface']:
+                # By default these values are returned as unhelpful strings but
+                # we can use int representation to compare against instead.
+                res = gribapi.grib_get(self._message_id, key, type=int)
             else:
                 res = gribapi.grib_get(self._message_id, key)
         # Deal with gribapi not differentiating between exception types.
