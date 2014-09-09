@@ -25,16 +25,17 @@ import iris.tests as tests
 
 import mock
 
-from iris.fileformats.grib import _messages_from_filename
+import gribapi
+
 from iris.fileformats.grib._grib_message import GribMessage
 
 
 class Test(tests.IrisTest):
     def setUp(self):
         self.filename = tests.get_data_path(('GRIB', 'uk_t', 'uk_t.grib2'))
-        gen = _messages_from_filename(self.filename)
-        self.message = gen.next()
-        self.test_key = 'scanningMode'
+        with open(self.filename, 'rb') as grib_fh:
+            grib_id = gribapi.grib_new_from_file(grib_fh)
+            self.message = GribMessage(grib_id)
 
     def test_sections__set(self):
         # Test that sections writes into the _sections attribute.
@@ -42,7 +43,7 @@ class Test(tests.IrisTest):
         self.assertNotEqual(self.message._sections, None)
 
     def test_sections__indexing(self):
-        res = self.message.sections[3][self.test_key]
+        res = self.message.sections[3]['scanningMode']
         expected = 64
         self.assertEqual(expected, res)
 
