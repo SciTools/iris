@@ -694,6 +694,7 @@ fc_extras
     import iris.exceptions
     import iris.std_names
     import iris.unit
+    import iris.util
     
     
     #
@@ -1106,40 +1107,7 @@ fc_extras
         if points_data.ndim == 1 and coord_name in [CF_VALUE_STD_NAME_LON, CF_VALUE_STD_NAME_GRID_LON] \
             and iris.unit.Unit(attr_units) in [iris.unit.Unit('radians'), iris.unit.Unit('degrees')]:
                 modulus_value = iris.unit.Unit(attr_units).modulus
-                if bounds_data is not None:
-                    # Set circular to True if the bounds ends are equivalent.
-                    first_bound = last_bound = None
-                    if bounds_data.ndim == 1 and bounds_data.shape[-1] == 2:
-                        first_bound = bounds_data[0] % modulus_value
-                        last_bound = bounds_data[1] % modulus_value
-                    elif bounds_data.ndim == 2 and bounds_data.shape[-1] == 2:
-                        first_bound = bounds_data[0, 0] % modulus_value
-                        last_bound = bounds_data[-1, 1] % modulus_value
-
-                    if first_bound is not None and last_bound is not None:
-                        circular = np.allclose(first_bound, last_bound,
-                                               rtol=1.0e-5)
-                else:
-                    # set circular if points are regular and last+1 ~= first
-                    if len(points_data) > 1:
-                        diffs = list(set(np.diff(points_data)))
-                        diff = np.mean(diffs)
-                        abs_tol = diff * 1.0e-4
-                        diff_approx_equal = np.max(np.abs(diffs - diff)) < abs_tol
-                        if diff_approx_equal:
-                            circular_value = (points_data[-1] + diff) % modulus_value
-                            try:
-                                np.testing.assert_approx_equal(points_data[0], circular_value, significant=4)
-                                circular = True
-                            except AssertionError:
-                                if points_data[0] == 0:
-                                    try:
-                                        np.testing.assert_approx_equal(modulus_value, circular_value, significant=4)
-                                        circular = True
-                                    except AssertionError:
-                                        pass
-                    else:
-                        circular = points_data[0] >= modulus_value
+                circular = iris.util.is_circular(points_data, modulus_value, bounds=bounds_data)
 
         # Determine the name of the dimension/s shared between the CF-netCDF data variable
         # and the coordinate being built.
