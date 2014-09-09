@@ -42,7 +42,6 @@ class Test(tests.IrisTest):
         self.assertNotEqual(self.message._sections, None)
 
     def test_sections__indexing(self):
-        #from nose.tools import set_trace; set_trace()
         res = self.message.sections[3][self.test_key]
         expected = 64
         self.assertEqual(expected, res)
