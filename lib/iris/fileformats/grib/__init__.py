@@ -42,7 +42,7 @@ from iris.exceptions import TranslationError
 from iris.fileformats.grib import grib_phenom_translation as gptx
 from iris.fileformats.grib import grib_save_rules
 import iris.fileformats.grib._load_convert
-from iris.fileformats.grib.grib_message import GribMessage
+from iris.fileformats.grib._grib_message import GribMessage
 import iris.fileformats.grib.load_rules
 import iris.unit
 

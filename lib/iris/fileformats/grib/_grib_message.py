@@ -20,7 +20,6 @@ Defines a lightweight wrapper class to wrap a single GRIB message.
 """
 
 from collections import OrderedDict
-from distutils.version import StrictVersion
 import re
 
 import gribapi
@@ -67,6 +66,17 @@ class GribMessage(object):
         Return the key-value pairs of the message keys, grouped by containing
         section.
 
+        Key-value pairs are collected into a dictionary of
+        :class:`collections.OrderedDict` objects. One such object is made for
+        each section in the message, such that the section number is the
+        object's key in the containing dictionary. Each object contains
+        key-value pairs for all of the message keys in the given section.
+
+        .. warning::
+            This currently does **not** return only the coded keys from a
+            message. This is because the gribapi functionality needed to
+            achieve this is broken, with a fix available from gribapi v1.13.0.
+
         """
         if self._sections is None:
             self._sections = self._get_message_sections()
@@ -85,16 +95,12 @@ class GribMessage(object):
         """
         Groups keys in the GRIB message by containing section.
 
-        Returns a dictionary of :class:`collections.OrderedDict` objects. One
-        such object is made for each section in the message, such that the
-        section number is the object's key in the containing dictionary. Each
-        object contains key:value pairs for all of the message keys in the
-        given section.
+        Returns a dictionary of all sections in the message, where the value of
+        each key is a :class:`collections.OrderedDict` object of key-value
+        pairs for each key and associated value in the message section.
 
-        .. warning::
-            This currently does **not** return only the coded keys from a
-            message. This is because the gribapi functionality needed to
-            achieve this is broken, with a fix available from gribapi v1.13.0.
+        .. seealso::
+            The sections property (:meth:`~sections`).
 
         """
         sections = OrderedDict()
@@ -155,11 +161,12 @@ class GribMessage(object):
                 res = gribapi.grib_get(self._message_id, key)
         # Deal with gribapi not differentiating between exception types.
         except gribapi.GribInternalError as e:
-            # Catch the specific case of trying to retrieve the value of an
-            # array key using `gribapi.grib_get`.
+            # Catch the case of trying to retrieve, using `gribapi.grib_get`,
+            # the value of an array key that is NOT in the list above .
             if e.msg == "Passed array is too small":
                 res = gribapi.grib_get_array(self._message_id, key)
-            # Catch cases where a key has no associated value.
+            # Catch cases where a computed key, e.g. `local 98.1` has no
+            # associated value at all in the message.
             elif e.msg == "Key/value not found":
                 msg = 'No value in message for key {!r}'
                 raise KeyError(msg.format(key))

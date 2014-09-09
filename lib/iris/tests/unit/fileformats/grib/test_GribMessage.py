@@ -26,7 +26,7 @@ import iris.tests as tests
 import mock
 
 from iris.fileformats.grib import _messages_from_filename
-from iris.fileformats.grib.grib_message import GribMessage
+from iris.fileformats.grib._grib_message import GribMessage
 
 
 class Test(tests.IrisTest):
