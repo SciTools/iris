@@ -528,7 +528,7 @@ class HybridHeightFactory(AuxCoordFactory):
         * old_coord:
             The coordinate to be removed/replaced.
         * new_coord:
-            If None, any dependency using old_coord is removed, othewise
+            If None, any dependency using old_coord is removed, otherwise
             any dependency using old_coord is updated to use new_coord.
 
         """
@@ -723,7 +723,7 @@ class HybridPressureFactory(AuxCoordFactory):
         * old_coord:
             The coordinate to be removed/replaced.
         * new_coord:
-            If None, any dependency using old_coord is removed, othewise
+            If None, any dependency using old_coord is removed, otherwise
             any dependency using old_coord is updated to use new_coord.
 
         """
@@ -963,7 +963,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
         * old_coord:
             The coordinate to be removed/replaced.
         * new_coord:
-            If None, any dependency using old_coord is removed, othewise
+            If None, any dependency using old_coord is removed, otherwise
             any dependency using old_coord is updated to use new_coord.
 
         """
