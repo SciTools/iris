@@ -933,9 +933,7 @@ To compute a weighted area average::
 
 .. note::
 
-    Lazy operation is supported, via :func:`biggus.mean`::
-
-        result = cube.collapsed('longitude', iris.analysis.MEAN)
+    Lazy operation is supported, via :func:`biggus.mean`.
 
 This aggregator handles masked data.
 
@@ -1094,7 +1092,8 @@ This aggregator handles masked data.
 """
 
 
-STD_DEV = Aggregator('standard_deviation', ma.std, ddof=1)
+STD_DEV = Aggregator('standard_deviation', ma.std, ddof=1,
+                     lazy_func=biggus.std)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the standard deviation over a :class:`~iris.cube.Cube`, as
@@ -1115,6 +1114,10 @@ To compute zonal standard deviations over the *longitude* axis of a cube::
 To obtain the biased standard deviation::
 
     result = cube.collapsed('longitude', iris.analysis.STD_DEV, ddof=0)
+
+.. note::
+
+    Lazy operation is supported, via :func:`biggus.std`.
 
 This aggregator handles masked data.
 
@@ -1177,9 +1180,7 @@ To obtain the biased variance::
 
 .. note::
 
-    Lazy operation is supported, via :func:`biggus.var`::
-
-        result = cube.collapsed('longitude', iris.analysis.VARIANCE)
+    Lazy operation is supported, via :func:`biggus.var`.
 
 This aggregator handles masked data.
 
