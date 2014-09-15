@@ -42,7 +42,7 @@ def _message(sections):
     return _GribMessage(mock.Mock(sections=sections))
 
 
-class TestData(tests.IrisTest):
+class TestDataUnsupported(tests.IrisTest):
     def test_unsupported_grid_definition(self):
         message = _message({3: {'sourceOfGridDefinition': 1}})
         with self.assertRaisesRegexp(TranslationError, 'source'):
@@ -69,11 +69,23 @@ class TestData(tests.IrisTest):
         with self.assertRaisesRegexp(TranslationError, 'template'):
             message.data
 
+
+class TestDataTemplate0(tests.IrisTest):
+    def test_unsupported_scanning_mode(self):
+        message = _message({3: {'sourceOfGridDefinition': 0,
+                                'numberOfOctectsForNumberOfPoints': 0,
+                                'interpretationOfNumberOfPoints': 0,
+                                'gridDefinitionTemplateNumber': 0,
+                                'scanningMode': 1}})
+        with self.assertRaisesRegexp(TranslationError, 'scanning mode'):
+            message.data
+
     def test_regular_data(self):
         message = _message({3: {'sourceOfGridDefinition': 0,
                                 'numberOfOctectsForNumberOfPoints': 0,
                                 'interpretationOfNumberOfPoints': 0,
                                 'gridDefinitionTemplateNumber': 0,
+                                'scanningMode': 0,
                                 'Nj': 3,
                                 'Ni': 4},
                             7: {'codedValues': np.arange(12)}})

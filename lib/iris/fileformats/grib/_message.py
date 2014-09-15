@@ -74,6 +74,10 @@ class _GribMessage(object):
 
         template = grid_section['gridDefinitionTemplateNumber']
         if template == 0:
+            if grid_section['scanningMode'] != 0:
+                msg = 'Unsupported scanning mode: {}'.format(
+                    grid_section['scanningMode'])
+                raise TranslationError(msg)
             data = sections[7]['codedValues'].reshape(grid_section['Nj'],
                                                       grid_section['Ni'])
         else:
