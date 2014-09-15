@@ -24,19 +24,80 @@ import re
 
 import gribapi
 
+from iris.exceptions import TranslationError
 
-class GribMessage(object):
+
+class _GribMessage(object):
     """
     Lightweight GRIB message wrapper, containing **only** the coded keys and
     data attribute of the input GRIB message.
+
+    """
+
+    def __init__(self, raw_message):
+        """
+
+        Args:
+
+        * raw_message:
+            The _RawGribMessage instance which should be wrapped to
+            provide the `data` attribute.
+
+        """
+        self._raw_message = raw_message
+
+    @property
+    def sections(self):
+        return self._raw_message.sections
+
+    @property
+    def data(self):
+        """
+        The data array from the GRIB message.
+
+        The shape of the array will match the logical shape of the
+        message's grid. For example, a simple global grid would be
+        available as a 2-dimensional array with shape (Nj, Ni).
+
+        """
+        sections = self.sections
+        grid_section = sections[3]
+        if grid_section['sourceOfGridDefinition'] != 0:
+            raise TranslationError(
+                'Unsupported source of grid definition: {}'.format(
+                    grid_section['sourceOfGridDefinition']))
+
+        if (grid_section['numberOfOctectsForNumberOfPoints'] != 0 or
+                grid_section['interpretationOfNumberOfPoints'] != 0):
+            raise TranslationError('Grid Definition Section 3 contains '
+                                   'unsupported quasi-regular grid.')
+
+        template = grid_section['gridDefinitionTemplateNumber']
+        if template == 0:
+            if grid_section['scanningMode'] != 0:
+                msg = 'Unsupported scanning mode: {}'.format(
+                    grid_section['scanningMode'])
+                raise TranslationError(msg)
+            data = sections[7]['codedValues'].reshape(grid_section['Nj'],
+                                                      grid_section['Ni'])
+        else:
+            fmt = 'Grid definition template {} is not supported'
+            raise TranslationError(fmt.format(template))
+        return data
+
+
+class _RawGribMessage(object):
+    """
+    Lightweight GRIB message wrapper, containing **only** the coded keys
+    of the input GRIB message.
 
     """
     _NEW_SECTION_KEY_MATCHER = re.compile(r'section([0-9]{1})Length')
 
     def __init__(self, message_id):
         """
-        A GribMessage object contains the **coded** keys and data attribute
-        from a GRIB message that is identified by the input message id.
+        A _RawGribMessage object contains the **coded** keys from a
+        GRIB message that is identified by the input message id.
 
         Args:
 
@@ -54,11 +115,6 @@ class GribMessage(object):
 
         """
         gribapi.grib_release(self._message_id)
-
-    @property
-    def data(self):
-        """Get the data array from the GRIB message."""
-        return gribapi.grib_get_values(self._message_id)
 
     @property
     def sections(self):
