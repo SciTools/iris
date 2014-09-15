@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Unit tests for the `iris.fileformats.grib.GribMessage` class.
+Unit tests for the `iris.fileformats.grib._GribMessage` class.
 
 """
 
@@ -27,7 +27,7 @@ import mock
 
 import gribapi
 
-from iris.fileformats.grib._grib_message import GribMessage
+from iris.fileformats.grib._message import _GribMessage
 
 
 class Test(tests.IrisTest):
@@ -35,7 +35,7 @@ class Test(tests.IrisTest):
         self.filename = tests.get_data_path(('GRIB', 'uk_t', 'uk_t.grib2'))
         with open(self.filename, 'rb') as grib_fh:
             grib_id = gribapi.grib_new_from_file(grib_fh)
-            self.message = GribMessage(grib_id)
+            self.message = _GribMessage(grib_id)
 
     def test_sections__set(self):
         # Test that sections writes into the _sections attribute.
@@ -54,7 +54,7 @@ class Test(tests.IrisTest):
     def test_sections__numberOfSection_value(self):
         # The key `numberOfSection` is repeated in every section meaning that
         # if requested using gribapi it always defaults to its last value (7).
-        # This tests that the `GribMessage._get_message_sections` override is
+        # This tests that the `_GribMessage._get_message_sections` override is
         # functioning.
         section_number = 4
         res = self.message.sections[section_number]['numberOfSection']

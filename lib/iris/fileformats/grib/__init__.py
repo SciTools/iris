@@ -42,7 +42,7 @@ from iris.exceptions import TranslationError
 from iris.fileformats.grib import grib_phenom_translation as gptx
 from iris.fileformats.grib import grib_save_rules
 import iris.fileformats.grib._load_convert
-from iris.fileformats.grib._grib_message import GribMessage
+from iris.fileformats.grib._message import _GribMessage
 import iris.fileformats.grib.load_rules
 import iris.unit
 
@@ -873,7 +873,7 @@ def grib_generator(filename, auto_regularise=True):
 
 def _messages_from_filename(filename):
     """
-    Returns a generator of :class:`GribMessage` instances; one for each GRIB
+    Returns a generator of :class:`_GribMessage` instances; one for each GRIB
     message in the supplied grib file.
 
     Args:
@@ -884,7 +884,7 @@ def _messages_from_filename(filename):
     """
     with open(filename, 'rb') as grib_fh:
         grib_id = gribapi.grib_new_from_file(grib_fh)
-        yield GribMessage(grib_id)
+        yield _GribMessage(grib_id)
 
 
 def load_cubes(filenames, callback=None, auto_regularise=True):

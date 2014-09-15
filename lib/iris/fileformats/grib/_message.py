@@ -25,7 +25,7 @@ import re
 import gribapi
 
 
-class GribMessage(object):
+class _GribMessage(object):
     """
     Lightweight GRIB message wrapper, containing **only** the coded keys and
     data attribute of the input GRIB message.
@@ -35,7 +35,7 @@ class GribMessage(object):
 
     def __init__(self, message_id):
         """
-        A GribMessage object contains the **coded** keys and data attribute
+        A _GribMessage object contains the **coded** keys and data attribute
         from a GRIB message that is identified by the input message id.
 
         Args:
