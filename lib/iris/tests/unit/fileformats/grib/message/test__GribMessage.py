@@ -24,41 +24,60 @@ Unit tests for the `iris.fileformats.grib._GribMessage` class.
 import iris.tests as tests
 
 import mock
+import numpy as np
 
-import gribapi
-
+from iris.exceptions import TranslationError
 from iris.fileformats.grib._message import _GribMessage
 
 
-class Test(tests.IrisTest):
-    def setUp(self):
-        self.filename = tests.get_data_path(('GRIB', 'uk_t', 'uk_t.grib2'))
-        with open(self.filename, 'rb') as grib_fh:
-            grib_id = gribapi.grib_new_from_file(grib_fh)
-            self.message = _GribMessage(grib_id)
+class TestSections(tests.IrisTest):
+    def test(self):
+        # Check that the `sections` attribute defers to the `sections`
+        # attribute on the underlying _RawGribMessage.
+        message = _GribMessage(mock.Mock(sections=mock.sentinel.SECTIONS))
+        self.assertIs(message.sections, mock.sentinel.SECTIONS)
 
-    def test_sections__set(self):
-        # Test that sections writes into the _sections attribute.
-        res = self.message.sections
-        self.assertNotEqual(self.message._sections, None)
 
-    def test_sections__indexing(self):
-        res = self.message.sections[3]['scanningMode']
-        expected = 64
-        self.assertEqual(expected, res)
+def _message(sections):
+    return _GribMessage(mock.Mock(sections=sections))
 
-    def test__get_message_sections__section_numbers(self):
-        res = self.message.sections.keys()
-        self.assertEqual(res, range(9))
 
-    def test_sections__numberOfSection_value(self):
-        # The key `numberOfSection` is repeated in every section meaning that
-        # if requested using gribapi it always defaults to its last value (7).
-        # This tests that the `_GribMessage._get_message_sections` override is
-        # functioning.
-        section_number = 4
-        res = self.message.sections[section_number]['numberOfSection']
-        self.assertEqual(res, section_number)
+class TestData(tests.IrisTest):
+    def test_unsupported_grid_definition(self):
+        message = _message({3: {'sourceOfGridDefinition': 1}})
+        with self.assertRaisesRegexp(TranslationError, 'source'):
+            message.data
+
+    def test_unsupported_quasi_regular__number_of_octets(self):
+        message = _message({3: {'sourceOfGridDefinition': 0,
+                                'numberOfOctectsForNumberOfPoints': 1}})
+        with self.assertRaisesRegexp(TranslationError, 'quasi-regular'):
+            message.data
+
+    def test_unsupported_quasi_regular__interpretation(self):
+        message = _message({3: {'sourceOfGridDefinition': 0,
+                                'numberOfOctectsForNumberOfPoints': 0,
+                                'interpretationOfNumberOfPoints': 1}})
+        with self.assertRaisesRegexp(TranslationError, 'quasi-regular'):
+            message.data
+
+    def test_unsupported_template(self):
+        message = _message({3: {'sourceOfGridDefinition': 0,
+                                'numberOfOctectsForNumberOfPoints': 0,
+                                'interpretationOfNumberOfPoints': 0,
+                                'gridDefinitionTemplateNumber': 1}})
+        with self.assertRaisesRegexp(TranslationError, 'template'):
+            message.data
+
+    def test_regular_data(self):
+        message = _message({3: {'sourceOfGridDefinition': 0,
+                                'numberOfOctectsForNumberOfPoints': 0,
+                                'interpretationOfNumberOfPoints': 0,
+                                'gridDefinitionTemplateNumber': 0,
+                                'Nj': 3,
+                                'Ni': 4},
+                            7: {'codedValues': np.arange(12)}})
+        self.assertArrayEqual(message.data, np.arange(12).reshape(3, 4))
 
 
 if __name__ == '__main__':

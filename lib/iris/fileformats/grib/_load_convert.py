@@ -18,3 +18,4 @@
 
 def convert(message):
     """XXX Dummy stub"""
+    return ([], [], '', '', '', {}, [], [], [])
