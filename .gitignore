@@ -31,6 +31,7 @@ lib/iris/std_names.py
 
 # Iris test result files
 lib/iris/tests/result_image_comparison/
+iris_image_test_output/
 
 # Pydev/Eclipse files
 .project
