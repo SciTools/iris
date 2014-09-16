@@ -31,7 +31,7 @@ from iris.exceptions import TranslationError
 from iris.fileformats.grib import grib_phenom_translation as itranslation
 from iris.fileformats.rules import Factory, Reference
 from iris.unit import CALENDAR_GREGORIAN, date2num, Unit
-from iris.util import is_circular
+from iris.util import _is_circular
 
 
 # Restrict the names imported from this namespace.
@@ -185,7 +185,7 @@ def grid_definition_template_0(section, metadata):
     x_points = np.arange(Ni, dtype=np.float64) * x_inc * x_direction + x_offset
 
     # Determine whether the x-points (in degrees) are circular.
-    circular = is_circular(x_points, 360.0)
+    circular = _is_circular(x_points, 360.0)
 
     # Calculate latitude points.
     y_inc = section['jDirectionIncrement'] * _GRID_ACCURACY_IN_DEGREES

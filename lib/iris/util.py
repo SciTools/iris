@@ -1319,7 +1319,7 @@ def unify_time_units(cubes):
                 time_coord.convert_units(new_unit)
 
 
-def is_circular(points, modulus, bounds=None):
+def _is_circular(points, modulus, bounds=None):
     """
     Determine whether the provided points or bounds are circular in nature
     relative to the modulus value.

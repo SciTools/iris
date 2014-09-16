@@ -1107,7 +1107,7 @@ fc_extras
         if points_data.ndim == 1 and coord_name in [CF_VALUE_STD_NAME_LON, CF_VALUE_STD_NAME_GRID_LON] \
             and iris.unit.Unit(attr_units) in [iris.unit.Unit('radians'), iris.unit.Unit('degrees')]:
                 modulus_value = iris.unit.Unit(attr_units).modulus
-                circular = iris.util.is_circular(points_data, modulus_value, bounds=bounds_data)
+                circular = iris.util._is_circular(points_data, modulus_value, bounds=bounds_data)
 
         # Determine the name of the dimension/s shared between the CF-netCDF data variable
         # and the coordinate being built.
