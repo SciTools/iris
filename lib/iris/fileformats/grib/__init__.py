@@ -883,9 +883,12 @@ def _messages_from_filename(filename, auto_regularise=True):
 
     """
     with open(filename, 'rb') as grib_fh:
-        grib_id = gribapi.grib_new_from_file(grib_fh)
-        raw_message = _RawGribMessage(grib_id)
-        yield _GribMessage(raw_message)
+        while True:
+            grib_id = gribapi.grib_new_from_file(grib_fh)
+            if grib_id is None:
+                break
+            raw_message = _RawGribMessage(grib_id)
+            yield _GribMessage(raw_message)
 
 
 def load_cubes(filenames, callback=None, auto_regularise=True):
