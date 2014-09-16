@@ -43,26 +43,7 @@ install:
   # Customise the testing environment
   # ---------------------------------
   - conda config --add channels scitools
-  # Start with all the mandatory dependencies
-  - conda install biggus
-  - conda install cartopy matplotlib=1.3.1
-  - conda install netcdf4
-  - conda install numpy
-  - conda install pyke
-  - conda install udunits=2
-  # Iris build dependencies
-  - conda install setuptools
-  # Iris testing/documentation dependencies
-  - conda install cfchecker
-  - conda install mock
-  - conda install nose
-  - conda install pep8
-  - conda install sphinx
-  # Optional iris dependencies
-  - conda install ecmwf_grib=1.9.16
-  - conda install gdal
-  - conda install libmo_unpack
-  - conda install pandas=0.12.0
+  - conda install --file conda-requirements.txt
 
   - PREFIX=$HOME/miniconda/envs/$ENV_NAME
 
