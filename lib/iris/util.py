@@ -1317,3 +1317,72 @@ def unify_time_units(cubes):
                                           time_coord.units.origin)
                 new_unit = iris.unit.Unit(epoch, time_coord.units.calendar)
                 time_coord.convert_units(new_unit)
+
+
+def _is_circular(points, modulus, bounds=None):
+    """
+    Determine whether the provided points or bounds are circular in nature
+    relative to the modulus value.
+
+    If the bounds are provided then these are checked for circularity rather
+    than the points.
+
+    Args:
+
+    * points:
+        :class:`numpy.ndarray` of point values.
+
+    * modulus:
+        Circularity modulus value.
+
+    Kwargs:
+
+    * bounds:
+        :class:`numpy.ndarray` of bound values.
+
+    Returns:
+        Boolean.
+
+    """
+    circular = False
+    if bounds is not None:
+        # Set circular to True if the bounds ends are equivalent.
+        first_bound = last_bound = None
+        if bounds.ndim == 1 and bounds.shape[-1] == 2:
+            first_bound = bounds[0] % modulus
+            last_bound = bounds[1] % modulus
+        elif bounds.ndim == 2 and bounds.shape[-1] == 2:
+            first_bound = bounds[0, 0] % modulus
+            last_bound = bounds[-1, 1] % modulus
+
+        if first_bound is not None and last_bound is not None:
+            circular = np.allclose(first_bound, last_bound,
+                                   rtol=1.0e-5)
+    else:
+        # set circular if points are regular and last+1 ~= first
+        if len(points) > 1:
+            diffs = list(set(np.diff(points)))
+            diff = np.mean(diffs)
+            abs_tol = diff * 1.0e-4
+            diff_approx_equal = np.max(np.abs(diffs - diff)) < abs_tol
+            if diff_approx_equal:
+                circular_value = (points[-1] + diff) % modulus
+                try:
+                    np.testing.assert_approx_equal(points[0],
+                                                   circular_value,
+                                                   significant=4)
+                    circular = True
+                except AssertionError:
+                    if points[0] == 0:
+                        try:
+                            np.testing.assert_approx_equal(modulus,
+                                                           circular_value,
+                                                           significant=4)
+                            circular = True
+                        except AssertionError:
+                            pass
+        else:
+            # XXX - Inherited behaviour from NetCDF PyKE rules.
+            # We need to decide whether this is valid!
+            circular = points[0] >= modulus
+    return circular
