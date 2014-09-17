@@ -55,10 +55,12 @@ class TestToggle(tests.IrisTest):
 
     def test_strict_mode(self):
         # Ensure that `load_cubes` uses:
-        #   iris.fileformats.grib._messages_from_filename
+        #   iris.fileformats.grib._message._GribMessage.messages_from_filename
         #   iris.fileformats.grib._load_convert.convert
-        self._test(True, iris.fileformats.grib._messages_from_filename,
-                   iris.fileformats.grib._load_convert.convert)
+        self._test(
+            True,
+            iris.fileformats.grib._message._GribMessage.messages_from_filename,
+            iris.fileformats.grib._load_convert.convert)
 
 
 @tests.skip_data

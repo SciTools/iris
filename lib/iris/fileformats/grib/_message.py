@@ -143,7 +143,7 @@ class _RawGribMessage(object):
         section.
 
         Key-value pairs are collected into a dictionary of
-        :class:`collections.OrderedDict` objects. One such object is made for
+        :class:`_Section` objects. One such object is made for
         each section in the message, such that the section number is the
         object's key in the containing dictionary. Each object contains
         key-value pairs for all of the message keys in the given section.
@@ -169,51 +169,63 @@ class _RawGribMessage(object):
 
     def _get_message_sections(self):
         """
-        Groups keys in the GRIB message by containing section.
+        Group keys by section.
 
-        Returns a dictionary of all sections in the message, where the value of
-        each key is a :class:`collections.OrderedDict` object of key-value
-        pairs for each key and associated value in the message section.
+        Returns a dictionary mapping section number to _Section instance.
 
         .. seealso::
             The sections property (:meth:`~sections`).
 
         """
-        sections = OrderedDict()
+        sections = {}
         # The first keys in a message are for the whole message and are
         # contained in section 0.
         section = new_section = 0
-        # Use a `collections.OrderedDict` to retain key ordering.
-        section_keys = OrderedDict()
+        section_keys = []
 
         for key_name in self._get_message_keys():
+            # The `section<1-7>Length` keys mark the start of each new
+            # section, except for section 8 which is marked by the key '7777'.
             key_match = re.match(self._NEW_SECTION_KEY_MATCHER, key_name)
-
             if key_match is not None:
                 new_section = int(key_match.group(1))
-            # This key only shows up in section 8, which doesn't have a
-            # `section8Length` coded key...
             elif key_name == '7777':
                 new_section = 8
-
             if section != new_section:
-                sections[section] = section_keys
-                section_keys = OrderedDict()
-            # This key is repeated in each section meaning that the last value
-            # is always returned, so override the api-retrieved value.
-            if key_name == 'numberOfSection':
-                section_keys[key_name] = section
-            else:
-                # Leave out keys that have no associated value.
-                # TODO should we instead keep it in and set value to None?
-                try:
-                    section_keys[key_name] = self._get_key_value(key_name)
-                except KeyError:
-                    continue
-            section = new_section
-        # Write the last section's dictionary to sections so it's not lost.
-        sections[section] = section_keys
+                sections[section] = _Section(self._message_id, section,
+                                             section_keys)
+                section_keys = []
+                section = new_section
+            section_keys.append(key_name)
+        sections[section] = _Section(self._message_id, section, section_keys)
         return sections
+
+
+class _Section(object):
+    def __init__(self, message_id, number, keys):
+        self._message_id = message_id
+        self._number = number
+        self._keys = keys
+        self._cache = {}
+
+    def __repr__(self):
+        items = []
+        for key in self._keys:
+            value = self._cache.get(key, '?')
+            items.append('{}={}'.format(key, value))
+        return '<_Section {}: {}>'.format(self._number, ', '.join(items))
+
+    def __getitem__(self, key):
+        if key not in self._cache:
+            if key not in self._keys:
+                raise KeyError('{!r} not defined in section {}'.format(
+                    key, self._number))
+            if key == 'numberOfSection':
+                value = self._number
+            else:
+                value = self._get_key_value(key)
+            self._cache[key] = value
+        return self._cache[key]
 
     def _get_key_value(self, key):
         """
@@ -228,29 +240,12 @@ class _RawGribMessage(object):
         message.
 
         """
-        res = None
-        # See http://nullege.com/codes/search/gribapi.grib_get_values.
-        try:
-            if key in ['codedValues', 'values', 'pv']:
-                res = gribapi.grib_get_array(self._message_id, key)
-            elif key in ['typeOfFirstFixedSurface',
-                         'typeOfSecondFixedSurface']:
-                # By default these values are returned as unhelpful strings but
-                # we can use int representation to compare against instead.
-                res = gribapi.grib_get(self._message_id, key, int)
-            else:
-                res = gribapi.grib_get(self._message_id, key)
-        # Deal with gribapi not differentiating between exception types.
-        except gribapi.GribInternalError as e:
-            # Catch the case of trying to retrieve, using `gribapi.grib_get`,
-            # the value of an array key that is NOT in the list above .
-            if e.msg == "Passed array is too small":
-                res = gribapi.grib_get_array(self._message_id, key)
-            # Catch cases where a computed key, e.g. `local 98.1` has no
-            # associated value at all in the message.
-            elif e.msg == "Key/value not found":
-                msg = 'No value in message for key {!r}'
-                raise KeyError(msg.format(key))
-            else:
-                raise e
+        if key in ('codedValues', 'pv'):
+            res = gribapi.grib_get_array(self._message_id, key)
+        elif key in ('typeOfFirstFixedSurface', 'typeOfSecondFixedSurface'):
+            # By default these values are returned as unhelpful strings but
+            # we can use int representation to compare against instead.
+            res = gribapi.grib_get(self._message_id, key, int)
+        else:
+            res = gribapi.grib_get(self._message_id, key)
         return res
