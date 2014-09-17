@@ -285,12 +285,13 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
     def from_msi(msi):
         """Convert a STASH code MSI string to a STASH instance."""
         if not isinstance(msi, basestring):
-            raise TypeError('Expected STASH code MSI string, got %r' % msi)
+            raise TypeError('Expected STASH code MSI string, got %r' % (msi,))
 
         msi_match = re.match('^\s*m(.*)s(.*)i(.*)\s*$', msi, re.IGNORECASE)
 
         if msi_match is None:
-            raise ValueError('Expected STASH code MSI string "mXXsXXiXXX", got %r' % msi)
+            raise ValueError('Expected STASH code MSI string "mXXsXXiXXX", '
+                             'got %r' % (msi,))
 
         return STASH(*msi_match.groups())
 
@@ -1694,7 +1695,11 @@ def _convert_constraints(constraints):
     for con in constraints:
         if isinstance(con, iris.AttributeConstraint) and \
                 con._attributes.keys() == ['STASH']:
-            stashobj = STASH.from_msi(con._attributes['STASH'])
+            # Convert a STASH constraint.
+            stashobj = con._attributes['STASH']
+            if not isinstance(stashobj, STASH):
+                # The attribute can be a STASH object, or a stashcode string.
+                stashobj = STASH.from_msi(stashobj)
             if not 'stash' in pp_constraints:
                 pp_constraints['stash'] = [stashobj]
             else:
