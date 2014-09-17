@@ -30,19 +30,28 @@ from iris.exceptions import TranslationError
 from iris.fileformats.grib._message import _GribMessage
 
 
-class TestSections(tests.IrisTest):
+@tests.skip_data
+class Test_messages_from_filename(tests.IrisTest):
     def test(self):
-        # Check that the `sections` attribute defers to the `sections`
-        # attribute on the underlying _RawGribMessage.
-        message = _GribMessage(mock.Mock(sections=mock.sentinel.SECTIONS))
-        self.assertIs(message.sections, mock.sentinel.SECTIONS)
+        filename = tests.get_data_path(('GRIB', '3_layer_viz',
+                                        '3_layer.grib2'))
+        messages = list(_GribMessage.messages_from_filename(filename))
+        self.assertEqual(len(messages), 3)
 
 
 def _message(sections):
     return _GribMessage(mock.Mock(sections=sections))
 
 
-class TestDataUnsupported(tests.IrisTest):
+class Test_sections(tests.IrisTest):
+    def test(self):
+        # Check that the `sections` attribute defers to the `sections`
+        # attribute on the underlying _RawGribMessage.
+        message = _message(mock.sentinel.SECTIONS)
+        self.assertIs(message.sections, mock.sentinel.SECTIONS)
+
+
+class Test_data__unsupported(tests.IrisTest):
     def test_unsupported_grid_definition(self):
         message = _message({3: {'sourceOfGridDefinition': 1}})
         with self.assertRaisesRegexp(TranslationError, 'source'):
@@ -70,7 +79,7 @@ class TestDataUnsupported(tests.IrisTest):
             message.data
 
 
-class TestDataTemplate0(tests.IrisTest):
+class Test_data__template0(tests.IrisTest):
     def test_unsupported_scanning_mode(self):
         message = _message({3: {'sourceOfGridDefinition': 0,
                                 'numberOfOctectsForNumberOfPoints': 0,

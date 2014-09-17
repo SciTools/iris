@@ -42,7 +42,7 @@ from iris.exceptions import TranslationError
 from iris.fileformats.grib import grib_phenom_translation as gptx
 from iris.fileformats.grib import grib_save_rules
 import iris.fileformats.grib._load_convert
-from iris.fileformats.grib._message import _GribMessage, _RawGribMessage
+from iris.fileformats.grib._message import _GribMessage
 import iris.fileformats.grib.load_rules
 import iris.unit
 
@@ -871,26 +871,6 @@ def grib_generator(filename, auto_regularise=True):
             gribapi.grib_release(grib_message)
 
 
-def _messages_from_filename(filename, auto_regularise=True):
-    """
-    Returns a generator of :class:`_GribMessage` instances; one for each GRIB
-    message in the supplied grib file.
-
-    Args:
-
-    * filename (string):
-        Name of the file to generate fields from.
-
-    """
-    with open(filename, 'rb') as grib_fh:
-        while True:
-            grib_id = gribapi.grib_new_from_file(grib_fh)
-            if grib_id is None:
-                break
-            raw_message = _RawGribMessage(grib_id)
-            yield _GribMessage(raw_message)
-
-
 def load_cubes(filenames, callback=None, auto_regularise=True):
     """
     Returns a generator of cubes from the given list of filenames.
@@ -924,7 +904,8 @@ def load_cubes(filenames, callback=None, auto_regularise=True):
     """
     if iris.FUTURE.strict_grib_load:
         grib_loader = iris.fileformats.rules.Loader(
-            _messages_from_filename, {'auto_regularise': auto_regularise},
+            _GribMessage.messages_from_filename,
+            {'auto_regularise': auto_regularise},
             iris.fileformats.grib._load_convert.convert, None)
     else:
         grib_loader = iris.fileformats.rules.Loader(

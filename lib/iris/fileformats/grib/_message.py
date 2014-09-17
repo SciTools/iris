@@ -34,6 +34,26 @@ class _GribMessage(object):
 
     """
 
+    @staticmethod
+    def messages_from_filename(filename, auto_regularise=True):
+        """
+        Return a generator of :class:`_GribMessage` instances; one for
+        each message in the supplied GRIB file.
+
+        Args:
+
+        * filename (string):
+            Name of the file to generate fields from.
+
+        """
+        with open(filename, 'rb') as grib_fh:
+            while True:
+                grib_id = gribapi.grib_new_from_file(grib_fh)
+                if grib_id is None:
+                    break
+                raw_message = _RawGribMessage(grib_id)
+                yield _GribMessage(raw_message)
+
     def __init__(self, raw_message):
         """
 
