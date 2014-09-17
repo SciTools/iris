@@ -21,7 +21,7 @@ pep8
 sphinx
 
 # Optional iris dependencies
-ecmwf_grib=1.9.16
+ecmwf_grib=1.12.1
 gdal
 libmo_unpack
 pandas=0.12.0
