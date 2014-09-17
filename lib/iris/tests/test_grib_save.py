@@ -22,6 +22,7 @@ import iris.tests as tests
 import os
 import warnings
 import datetime
+from distutils.version import StrictVersion
 
 import gribapi
 import numpy as np
@@ -38,9 +39,19 @@ class TestLoadSave(tests.IrisTest):
 
     def setUp(self):
         iris.fileformats.grib.hindcast_workaround = True
+        self.problem_gribapi_ver = self._problem_gribapi_ver()
 
     def tearDown(self):
         iris.fileformats.grib.hindcast_workaround = False
+
+    def _problem_gribapi_ver(self):
+        # The difference we're checking for here arrived in v1.12.0
+        try:
+            # gribapi v1.9.16 has no __version__ attribute.
+            gribapi_ver = gribapi.__version__
+        except AttributeError:
+            gribapi_ver = gribapi.grib_get_api_version()
+        return StrictVersion(gribapi_ver) < StrictVersion('1.12.0')
 
     def save_and_compare(self, source_grib, reference_text):
         """Load and save grib data, generate diffs, compare with expected diffs."""
@@ -66,12 +77,20 @@ class TestLoadSave(tests.IrisTest):
 
     def test_latlon_forecast_plev(self):
         source_grib = tests.get_data_path(("GRIB", "uk_t", "uk_t.grib2"))
-        reference_text = tests.get_result_path(("grib_save", "latlon_forecast_plev.grib_compare.txt"))
+        if self.problem_gribapi_ver:
+            result_file = "latlon_forecast_plev.grib_compare.pre1-12-0.txt"
+        else:
+            result_file = "latlon_forecast_plev.grib_compare.post1-12-0.txt"
+        reference_text = tests.get_result_path(("grib_save", result_file))
         self.save_and_compare(source_grib, reference_text)
 
     def test_rotated_latlon(self):
         source_grib = tests.get_data_path(("GRIB", "rotated_nae_t", "sensible_pole.grib2"))
-        reference_text = tests.get_result_path(("grib_save", "rotated_latlon.grib_compare.txt"))
+        if self.problem_gribapi_ver:
+            result_file = "rotated_latlon.grib_compare.pre1-12-0.txt"
+        else:
+            result_file = "rotated_latlon.grib_compare.post1-12-0.txt"
+        reference_text = tests.get_result_path(("grib_save", result_file))
         # TODO: Investigate small change in test result:
         #       long [iDirectionIncrement]: [109994] != [109993]
         #       Consider the change in dx_dy() to "InDegrees" too.
@@ -87,8 +106,11 @@ class TestLoadSave(tests.IrisTest):
         # This test for time-mean fields also tests negative forecast time.
         source_grib = tests.get_data_path(("GRIB", "time_processed",
                                            "time_bound.grib2"))
-        reference_text = tests.get_result_path(("grib_save",
-                                                "time_mean.grib_compare.txt"))
+        if self.problem_gribapi_ver:
+            result_file = "time_mean.grib_compare.pre1-12-0.txt"
+        else:
+            result_file = "time_mean.grib_compare.post1-12-0.txt"
+        reference_text = tests.get_result_path(("grib_save", result_file))
         self.save_and_compare(source_grib, reference_text)
 
 
