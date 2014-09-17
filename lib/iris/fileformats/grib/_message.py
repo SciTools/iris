@@ -217,7 +217,7 @@ class _RawGribMessage(object):
                          'typeOfSecondFixedSurface']:
                 # By default these values are returned as unhelpful strings but
                 # we can use int representation to compare against instead.
-                res = gribapi.grib_get(self._message_id, key, type=int)
+                res = gribapi.grib_get(self._message_id, key, int)
             else:
                 res = gribapi.grib_get(self._message_id, key)
         # Deal with gribapi not differentiating between exception types.
