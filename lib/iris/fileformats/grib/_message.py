@@ -19,8 +19,7 @@ Defines a lightweight wrapper class to wrap a single GRIB message.
 
 """
 
-from collections import OrderedDict
-import functools
+from collections import OrderedDict, namedtuple
 import re
 
 import biggus
@@ -38,7 +37,7 @@ class _GribMessage(object):
     """
 
     @staticmethod
-    def messages_from_filename(filename, auto_regularise=True):
+    def messages_from_filename(filename, regularise=True):
         """
         Return a generator of :class:`_GribMessage` instances; one for
         each message in the supplied GRIB file.
@@ -56,9 +55,8 @@ class _GribMessage(object):
                 if grib_id is None:
                     break
                 raw_message = _RawGribMessage(grib_id)
-                recreate_raw = functools.partial(
-                    _RawGribMessage.from_file_offset, filename, offset)
-                yield _GribMessage(raw_message, recreate_raw, auto_regularise)
+                recreate_raw = _DataLocation(filename, offset)
+                yield _GribMessage(raw_message, recreate_raw, regularise)
 
     def __init__(self, raw_message, recreate_raw, regularise):
         """
@@ -116,6 +114,11 @@ class _GribMessage(object):
         return data
 
 
+class _DataLocation(namedtuple('_DataLocation', 'filename offset')):
+    def __call__(self):
+        return _RawGribMessage.from_file_offset(filename, offset)
+
+
 class _DataProxy(object):
     """A reference to the data payload of a single GRIB message."""
 
@@ -144,9 +147,9 @@ class _DataProxy(object):
 
     def __repr__(self):
         msg = '<{self.__class__.__name__} shape={self.shape} ' \
-          'dtype={self.dtype!r} fill_value={self.fill_value!r} ' \
-          'recreate_raw={self.recreate_raw!r} ' \
-          'regularise={self.regularise}>'
+            'dtype={self.dtype!r} fill_value={self.fill_value!r} ' \
+            'recreate_raw={self.recreate_raw!r} ' \
+            'regularise={self.regularise}>'
         return msg.format(self=self)
 
     def __getstate__(self):
@@ -169,11 +172,11 @@ class _RawGribMessage(object):
     def from_file_offset(filename, offset):
         with open(filename, 'rb') as f:
             f.seek(offset)
-            id = gribapi.grib_new_from_file(f)
-            if id is None:
+            message_id = gribapi.grib_new_from_file(f)
+            if message_id is None:
                 fmt = 'Invalid GRIB message: {} @ {}'
                 raise RuntimeError(fmt.format(filename, offset))
-        return _RawGribMessage(id)
+        return _RawGribMessage(message_id)
 
     def __init__(self, message_id):
         """

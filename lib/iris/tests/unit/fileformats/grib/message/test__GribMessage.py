@@ -107,6 +107,7 @@ class Test_data__template0(tests.IrisTest):
         self.assertIsInstance(data, biggus.Array)
         self.assertEqual(data.shape, (3, 4))
         self.assertEqual(data.dtype, np.floating)
+        self.assertIs(data.fill_value, np.nan)
         self.assertArrayEqual(data.ndarray(), np.arange(12).reshape(3, 4))
 
 

@@ -905,7 +905,7 @@ def load_cubes(filenames, callback=None, auto_regularise=True):
     if iris.FUTURE.strict_grib_load:
         grib_loader = iris.fileformats.rules.Loader(
             _GribMessage.messages_from_filename,
-            {'auto_regularise': auto_regularise},
+            {'regularise': auto_regularise},
             iris.fileformats.grib._load_convert.convert, None)
     else:
         grib_loader = iris.fileformats.rules.Loader(

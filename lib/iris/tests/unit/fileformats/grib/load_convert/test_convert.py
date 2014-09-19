@@ -29,7 +29,7 @@ from iris.fileformats.grib._load_convert import convert
 
 
 def _message(sections):
-    return _GribMessage(mock.Mock(sections=sections))
+    return _GribMessage(mock.Mock(sections=sections), None, None)
 
 
 class Test(tests.IrisTest):
