@@ -171,7 +171,8 @@ class _RawGribMessage(object):
         """
         Group keys by section.
 
-        Returns a dictionary mapping section number to _Section instance.
+        Returns a dictionary mapping section number to :class:`_Section`
+        instance.
 
         .. seealso::
             The sections property (:meth:`~sections`).
@@ -213,7 +214,8 @@ class _Section(object):
         for key in self._keys:
             value = self._cache.get(key, '?')
             items.append('{}={}'.format(key, value))
-        return '<_Section {}: {}>'.format(self._number, ', '.join(items))
+        return '<{} {}: {}>'.format(type(self).__name__, self._number,
+                                    ', '.join(items))
 
     def __getitem__(self, key):
         if key not in self._cache:
