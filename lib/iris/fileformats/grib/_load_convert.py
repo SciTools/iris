@@ -146,8 +146,11 @@ def coord_system(shapeOfTheEarth):
             'invalid shape of the earth [{}]'.format(shapeOfTheEarth)
         raise TranslationError(msg)
 
-    if shapeOfTheEarth == 6:
-        # Earth assumed spherical with radius of 6,371,229.0m
+    if shapeOfTheEarth == 0:
+        # Earth assumed spherical with radius of 6 367 470.0m
+        result = icoord_systems.GeogCS(6367470)
+    elif shapeOfTheEarth == 6:
+        # Earth assumed spherical with radius of 6 371 229.0m
         result = icoord_systems.GeogCS(6371229)
     else:
         msg = 'Grid Definition Section 3 contains an unsupported ' \
