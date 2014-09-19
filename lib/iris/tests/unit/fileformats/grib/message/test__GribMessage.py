@@ -23,6 +23,7 @@ Unit tests for the `iris.fileformats.grib._GribMessage` class.
 # importing anything else.
 import iris.tests as tests
 
+import biggus
 import mock
 import numpy as np
 
@@ -40,7 +41,7 @@ class Test_messages_from_filename(tests.IrisTest):
 
 
 def _message(sections):
-    return _GribMessage(mock.Mock(sections=sections))
+    return _GribMessage(mock.Mock(sections=sections), None, None)
 
 
 class Test_sections(tests.IrisTest):
@@ -89,16 +90,24 @@ class Test_data__template0(tests.IrisTest):
         with self.assertRaisesRegexp(TranslationError, 'scanning mode'):
             message.data
 
-    def test_regular_data(self):
-        message = _message({3: {'sourceOfGridDefinition': 0,
-                                'numberOfOctectsForNumberOfPoints': 0,
-                                'interpretationOfNumberOfPoints': 0,
-                                'gridDefinitionTemplateNumber': 0,
-                                'scanningMode': 0,
-                                'Nj': 3,
-                                'Ni': 4},
-                            7: {'codedValues': np.arange(12)}})
-        self.assertArrayEqual(message.data, np.arange(12).reshape(3, 4))
+    def test_regular(self):
+        def make_raw_message():
+            sections = {3: {'sourceOfGridDefinition': 0,
+                            'numberOfOctectsForNumberOfPoints': 0,
+                            'interpretationOfNumberOfPoints': 0,
+                            'gridDefinitionTemplateNumber': 0,
+                            'scanningMode': 0,
+                            'Nj': 3,
+                            'Ni': 4},
+                        7: {'codedValues': np.arange(12)}}
+            raw_message = mock.Mock(sections=sections)
+            return raw_message
+        message = _GribMessage(make_raw_message(), make_raw_message, False)
+        data = message.data
+        self.assertIsInstance(data, biggus.Array)
+        self.assertEqual(data.shape, (3, 4))
+        self.assertEqual(data.dtype, np.floating)
+        self.assertArrayEqual(data.ndarray(), np.arange(12).reshape(3, 4))
 
 
 if __name__ == '__main__':
