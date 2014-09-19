@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Unit tests for the `iris.fileformats.grib._RawGribMessage` class.
+Unit tests for the `iris.fileformats.grib.message._RawGribMessage` class.
 
 """
 
@@ -23,17 +23,16 @@ Unit tests for the `iris.fileformats.grib._RawGribMessage` class.
 # importing anything else.
 import iris.tests as tests
 
-import mock
-
 import gribapi
 
 from iris.fileformats.grib._message import _RawGribMessage
 
 
+@tests.skip_data
 class Test(tests.IrisTest):
     def setUp(self):
-        self.filename = tests.get_data_path(('GRIB', 'uk_t', 'uk_t.grib2'))
-        with open(self.filename, 'rb') as grib_fh:
+        filename = tests.get_data_path(('GRIB', 'uk_t', 'uk_t.grib2'))
+        with open(filename, 'rb') as grib_fh:
             grib_id = gribapi.grib_new_from_file(grib_fh)
             self.message = _RawGribMessage(grib_id)
 
