@@ -282,20 +282,60 @@ class TestBasicMaths(tests.IrisTest):
         b = my_ifunc(a, c)
         self.assertCMLApproxData(b, ('analysis', 'apply_ifunc_frompyfunc.cml'))
 
-    def test_ifunc_fail(self):
+    def test_ifunc_init_fail(self):
 
-        # should fail because 'blah' is a string (fails when it tries to find attributes)
-        self.assertRaises(AttributeError, iris.analysis.maths.IFunc, 'blah', 
+        # should fail because 'blah' is a string not a python function
+        self.assertRaises(TypeError, iris.analysis.maths.IFunc, 'blah', 
                           lambda cube: iris.unit.Unit('1'))
 
-        # should fail because math.sqrt does not have the right attributes
-        self.assertRaises(AttributeError, iris.analysis.maths.IFunc, math.sqrt,
+        # should fail because math.sqrt is built-in function, which can not be
+        # used in inspect.getargspec
+        self.assertRaises(TypeError, iris.analysis.maths.IFunc, math.sqrt,
                           lambda cube: iris.unit.Unit('1'))
 
         # should fail because np.frexp gives 2 arrays as output
         self.assertRaises(ValueError, iris.analysis.maths.IFunc, np.frexp,
                           lambda cube: iris.unit.Unit('1'))
+      
+        # should fail because data function has 3 arguments
+        self.assertRaises(ValueError, iris.analysis.maths.IFunc,
+                   lambda a, b, c: a + b + c, 
+                   lambda cube: iris.unit.Unit('1')
+                   )
 
+        # should fail because data function returns a tuple
+        self.assertRaises(ValueError, iris.analysis.maths.IFunc,
+                   lambda a: (a**0.5, a**2.0), 
+                   lambda cube: iris.unit.Unit('1')
+                   )
+
+        # should fail because data function does not work when its argument 
+        # is a numpy array
+        self.assertRaises(TypeError, iris.analysis.maths.IFunc,
+                   lambda a: math.sqrt(a), 
+                   lambda cube: iris.unit.Unit('1')
+                   )
+
+    def test_ifunc_call_fail(self):
+        a = self.cube
+
+        my_ifunc = iris.analysis.maths.IFunc(np.square, 
+                   lambda a: a.units**2
+                   )
+
+        # should fail because giving 2 arguments to an ifunc that expects
+        # only one
+        with self.assertRaises(ValueError):
+            my_ifunc(a, a)
+
+        my_ifunc = iris.analysis.maths.IFunc(np.divide, 
+                   lambda a: iris.unit.Unit('1')
+                   )
+
+        # should fail because giving 1 arguments to an ifunc that expects
+        # 2
+        with self.assertRaises(ValueError):
+            my_ifunc(a)
 
     def test_type_error(self):
         with self.assertRaises(TypeError):

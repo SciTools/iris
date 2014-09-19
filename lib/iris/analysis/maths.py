@@ -22,6 +22,7 @@ from __future__ import division
 import warnings
 import math
 import operator
+import inspect
 
 import numpy as np
 
@@ -472,17 +473,9 @@ def apply_ufunc(ufunc, cube, other_cube=None, new_unit=None, new_name=None,
     Returns:
         An instance of :class:`iris.cube.Cube`.
 
-    Example usage 1::
+    Example::
 
         cube = apply_ufunc(numpy.sin, cube, in_place=True)
-
-    Example usage 2::
-
-        def ws(u, v):
-            return math.sqrt(u**2 + v**2)
-
-        ws_ufunc = numpy.frompyfunc(ws, 2, 1)
-        ws_cube = apply_ufunc(ws_ufunc, u_cube, v_cube, new_units=new_cube.units)
 
     """
 
@@ -631,33 +624,18 @@ class IFunc(object):
                                              lambda cube: iris.unit.Unit('1'))
         sine_cube = sine_ifunc(cube)
 
-    Example usage 2:: using a user-defined numpy ufunc for the data function and
-        defining a units function that checks the units of the cubes for consistency,
+    Example usage 2:: Define a function for the data arrays of two cubes
+        and define a units function that checks the units of the cubes for consistency,
         before giving the resulting cube the same units as the first cube.        
 
-        def ws(u, v):
-            return math.sqrt(u**2 + v**2)
-
-        ws_data_func = numpy.frompyfunc(ws, 2, 1)
+        def ws_data_func(u_data, v_data):
+            return ( u_data**2 + v_data**2 ) **0.5
 
         def ws_units_func(u_cube, v_cube):
             if u_cube.units != getattr(v_cube, 'units', u_cube.units):
                 raise ValueError("units do not match")
             return u_cube.units 
 
-        ws_ifunc = iris.analysis.maths.IFunc(ws_data_func, ws_units_func)
-        ws_cube = ws_ifunc(u_cube, v_cube, new_name='wind speed')
-
-    Example usage 3:: As 3, except creating the data function from a class.
-        class WSDataFunc(object):
-            def __init__(self):
-                self.nin = 2
-                self.nout = 1
-                self.__name__ = 'ws_data_func'
-            def __call__(self, u_data, v_data):
-                return ( u_data**2 + v_data**2 ) **0.5
-
-        ws_data_func = WSDataFunc()
         ws_ifunc = iris.analysis.maths.IFunc(ws_data_func, ws_units_func)
         ws_cube = ws_ifunc(u_cube, v_cube, new_name='wind speed')
 
@@ -673,16 +651,12 @@ class IFunc(object):
 
             Function to be applied to the data arrays of the cube(s).
 
-            Should have these attributes:
+            If data_func has the attribute nin (number of data arrays 
+            function takes as input), checks that this
+            is 1 or 2.
 
-            * __name__: 
-                Function name.
-            * nin: 
-                Number of data arrays function takes as input. 
-                Should be 1 or 2.
-            * nout: 
-                Number of arrays function returns.
-                Should be 1.
+            If data_func has the attribute nout (number of arrays 
+            function return), checks that this is 1.  
         
         * units_func:
         
@@ -694,30 +668,44 @@ class IFunc(object):
 
         '''
 
-        if not hasattr(data_func, 'nout'):
-            raise AttributeError("function passed to IFunc needs a nout attribute "
-                 "where nout is the number of data arrays it outputs"
-                 "(see e.g. description of nout for numpy ufunc)")
+        if hasattr(data_func, 'nin'):
+            self.nin = data_func.nin
 
-        if data_func.nout != 1:
-            msg = ('{} returns {} objects, the IFunc class currently only supports '
-               'functions returning a single object.')
-            raise ValueError(msg.format(data_func.__name__, data_func.nout))
+        else:
+            (args, varargs, keywords, defaults) = inspect.getargspec(data_func)
+            self.nin = len(args)
 
-        if not hasattr(data_func, 'nin'):
-            raise AttributeError("function passed to IFunc needs a nin attribute "
-                 "where nin is the number of data arrays it takes as input "
-                 "(see e.g. description of nin for numpy ufunc)")
-
-        if not data_func.nin in [1, 2]:
+        if not self.nin in [1, 2]:
             msg = ('{} requires {} input data arrays, the IFunc class currently only supports '
-               'functions requiring 1 or two data arrays as input.')
-            raise ValueError(msg.format(data_func.__name__, data_func.nin))
+                   'functions requiring 1 or two data arrays as input.')
+            raise ValueError(msg.format(data_func.__name__, self.nin))
+
+        if hasattr(data_func, 'nout'):
+            if data_func.nout != 1:
+                msg = ('{} returns {} objects, the IFunc class currently only supports '
+                    'functions returning a single object.')
+                raise ValueError(msg.format(data_func.__name__, data_func.nout))
 
         self.data_func = data_func
 
         self.units_func = units_func
 
+        # check that data_func works when it has a numpy array as argument(s)
+        # and that it returns one ndarray or one masked array 
+
+        sample_array = np.ones(2)
+
+        if self.nin == 2:
+            test = data_func(sample_array, sample_array)
+
+        elif self.nin == 1:
+            test = data_func(sample_array)
+
+        if ( not isinstance(test, np.ndarray) ) and \
+           ( not isinstance(test, np.ma.MaskedArray) ):
+                msg = ('{} does not return an numpy ndarray or numpy masked array.')
+                raise ValueError(msg.format(data_func.__name__))
+        
     def __repr__(self): 
         return "iris.analysis.maths.IFunc(" + self.data_func.__name__ \
                + ", " + self.units_func.__name__ + ")"
@@ -757,7 +745,7 @@ class IFunc(object):
 
         '''
   
-        if self.data_func.nin == 2:
+        if self.nin == 2:
             if other is None:
                 raise ValueError(self.data_func.__name__ +
                       " requires two arguments")
@@ -768,7 +756,10 @@ class IFunc(object):
                                      cube, other,
                                      new_unit, dim=dim, in_place=in_place)
 
-        elif self.data_func.nin == 1:
+        elif self.nin == 1:
+            if not other is None:
+                raise ValueError(self.data_func.__name__ +
+                      " requires one argument")
 
             new_unit = self.units_func(cube)
 
@@ -776,7 +767,7 @@ class IFunc(object):
                                        in_place=in_place)
 
         else:
-            raise ValueError("self.data_func.nin should be 1 or 2.")
+            raise ValueError("self.nin should be 1 or 2.")
 
         if not new_name is None:
             new_cube.rename(new_name)
