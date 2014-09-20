@@ -620,8 +620,8 @@ class IFunc(object):
     '''
     Class for functions that can be applied to an iris cube.
 
-    Example usage 1:: using an existing numpy ufunc, such as numpy.sin for the data
-        function and a simple lambda function for the units function
+    Example usage 1:: Using an existing numpy ufunc, such as numpy.sin for the data
+        function and a simple lambda function for the units function.
 
         sine_ifunc = iris.analysis.maths.IFunc(numpy.sin, 
                                              lambda cube: iris.unit.Unit('1'))
@@ -641,6 +641,13 @@ class IFunc(object):
 
         ws_ifunc = iris.analysis.maths.IFunc(ws_data_func, ws_units_func)
         ws_cube = ws_ifunc(u_cube, v_cube, new_name='wind speed')
+
+    Example usage 3:: Using a data function that allows a keyword argument.
+
+        cs_ifunc = iris.analysis.maths.IFunc(np.cumsum,
+                   lambda a: a.units
+                   )
+        cs_cube = cs_ifunc(cube, axis=1)
     '''
     def __init__(self, data_func, units_func):
         '''
@@ -650,19 +657,17 @@ class IFunc(object):
         
         * data_func:
 
-            Function to be applied to the data arrays of the cube(s).
+            Function to be applied to one or two data arrays, which
+            are given as positional arguments. Should return another
+            data array, with the same shape as the first array.
 
-            If data_func has the attribute nin (number of data arrays
-            function takes as input), checks that this
-            is 1 or 2.
-
-            If data_func has the attribute nout (number of arrays
-            function return), checks that this is 1.
+            Can also have keyword arguments.
 
         * units_func:
 
-            Function to be applied to the data arrays of the cube(s).
-            Should return an instance of :class:`iris.unit.Unit`.
+            Function to calculate the unit of the resulting cube.
+            Should take the cube(s) as input and return
+            an instance of :class:`iris.unit.Unit`.
 
         Returns:
             An ifunc.
@@ -674,7 +679,7 @@ class IFunc(object):
 
         else:
             (args, varargs, keywords, defaults) = inspect.getargspec(data_func)
-            self.nin = len(args)
+            self.nin = len(args) - (len(defaults) if defaults is not None else 0)
 
         if not self.nin in [1, 2]:
             msg = ('{} requires {} input data arrays, the IFunc class currently only supports '
@@ -691,22 +696,6 @@ class IFunc(object):
 
         self.units_func = units_func
 
-        # check that data_func works when it has a numpy array as argument(s)
-        # and that it returns one ndarray or one masked array 
-
-        sample_array = np.ones(2)
-
-        if self.nin == 2:
-            test = data_func(sample_array, sample_array)
-
-        elif self.nin == 1:
-            test = data_func(sample_array)
-
-        if ( not isinstance(test, np.ndarray) ) and \
-           ( not isinstance(test, np.ma.MaskedArray) ):
-                msg = ('{} does not return an numpy ndarray or numpy masked array.')
-                raise ValueError(msg.format(data_func.__name__))
-
     def __repr__(self):
         return "iris.analysis.maths.IFunc(" + self.data_func.__name__ \
                + ", " + self.units_func.__name__ + ")"
@@ -715,9 +704,9 @@ class IFunc(object):
         return "IFunc constructed from the data function " + self.data_func.__name__ + \
                " and the units function " + self.units_func.__name__
 
-    def __call__(self, cube, other=None, dim=None, in_place=False, new_name=None):
+    def __call__(self, cube, other=None, dim=None, in_place=False, new_name=None, **kwargs_ifunc):
         '''
-        Applies the ifunc to the cube.
+        Applies the ifunc to the cube(s).
 
         Args:
 
@@ -741,10 +730,18 @@ class IFunc(object):
             Dimension along which to apply `other` if it's a coordinate that is
             not found in `cube`
 
+        * **kwargs_ifunc:
+            Keyword arguments that get passed on to the data_func.
+
         Returns:
             An instance of :class:`iris.cube.Cube`.
 
         '''
+
+        def wrap_data_func(*args, **kwargs_data_func):
+            kwargs_combined = dict(kwargs_ifunc, **kwargs_data_func)
+
+            return self.data_func(*args, **kwargs_combined)
 
         if self.nin == 2:
             if other is None:
@@ -753,7 +750,7 @@ class IFunc(object):
 
             new_unit = self.units_func(cube, other)
 
-            new_cube = _binary_op_common(self.data_func, self.data_func.__name__,
+            new_cube = _binary_op_common(wrap_data_func, self.data_func.__name__,
                                      cube, other,
                                      new_unit, dim=dim, in_place=in_place)
 
@@ -764,7 +761,7 @@ class IFunc(object):
 
             new_unit = self.units_func(cube)
 
-            new_cube = _math_op_common(cube, self.data_func, new_unit,
+            new_cube = _math_op_common(cube, wrap_data_func, new_unit,
                                        in_place=in_place)
 
         else:

@@ -262,9 +262,6 @@ class TestBasicMaths(tests.IrisTest):
         self.assertCMLApproxData(a, ('analysis', 'apply_ifunc_original.cml'))
         self.assertCMLApproxData(b, ('analysis', 'apply_ifunc.cml'))
 
-        my_ifunc = iris.analysis.maths.IFunc(np.square,
-                   lambda a: a.units**2
-                   )
         b = my_ifunc(a, new_name='squared temperature', in_place=True)
 
         self.assertCMLApproxData(b, ('analysis', 'apply_ifunc.cml'))
@@ -303,19 +300,6 @@ class TestBasicMaths(tests.IrisTest):
                    lambda cube: iris.unit.Unit('1')
                    )
 
-        # should fail because data function returns a tuple
-        self.assertRaises(ValueError, iris.analysis.maths.IFunc,
-                   lambda a: (a**0.5, a**2.0),
-                   lambda cube: iris.unit.Unit('1')
-                   )
-
-        # should fail because data function does not work when its argument
-        # is a numpy array
-        self.assertRaises(TypeError, iris.analysis.maths.IFunc,
-                   lambda a: math.sqrt(a),
-                   lambda cube: iris.unit.Unit('1')
-                   )
-
     def test_ifunc_call_fail(self):
         a = self.cube
 
@@ -328,13 +312,32 @@ class TestBasicMaths(tests.IrisTest):
         with self.assertRaises(ValueError):
             my_ifunc(a, a)
 
-        my_ifunc = iris.analysis.maths.IFunc(np.divide,
+        my_ifunc = iris.analysis.maths.IFunc(np.multiply,
                    lambda a: iris.unit.Unit('1')
                    )
 
         # should fail because giving 1 arguments to an ifunc that expects
         # 2
         with self.assertRaises(ValueError):
+            my_ifunc(a)
+
+        my_ifunc = iris.analysis.maths.IFunc(
+                   lambda a: (a**0.5, a**2.0),
+                   lambda cube: iris.unit.Unit('1')
+                   )
+
+        # should fail because data function returns a tuple
+        with self.assertRaises(ValueError):
+            my_ifunc(a)
+
+        my_ifunc = iris.analysis.maths.IFunc(
+                   lambda a: math.sqrt(a),
+                   lambda cube: iris.unit.Unit('1')
+                   )
+
+        # should fail because data function does not work when its argument
+        # is a numpy array
+        with self.assertRaises(TypeError):
             my_ifunc(a)
 
     def test_type_error(self):
@@ -585,19 +588,23 @@ class TestIFunc(tests.IrisTest):
 
         self.assertArrayAlmostEqual(b.data, ans)
 
-        class VecMagDataFunc(object):
-            def __init__(self):
-                self.nin = 2
-                self.nout = 1
-                self.__name__ = 'vec_mag_data_func'
-            def __call__(self, u_data, v_data):
-                return ( u_data**2 + v_data**2 ) **0.5
+        def vec_mag_data_func(u_data, v_data):
+            return ( u_data**2 + v_data**2 ) **0.5
 
-        vec_mag_data_func = VecMagDataFunc()
         vec_mag_ifunc = iris.analysis.maths.IFunc(vec_mag_data_func, lambda a,b: (a + b).units)
         b2 = vec_mag_ifunc(a, c)
 
         self.assertArrayAlmostEqual(b.data, b2.data)
+
+        cs_ifunc = iris.analysis.maths.IFunc(np.cumsum,
+                   lambda a: a.units
+                   )
+
+        b = cs_ifunc(a, axis=1)
+        ans = a.data.copy()
+        ans = np.cumsum(ans, axis=1) 
+
+        self.assertArrayAlmostEqual(b.data, ans)
 
 @tests.skip_data
 class TestLog(tests.IrisTest):
