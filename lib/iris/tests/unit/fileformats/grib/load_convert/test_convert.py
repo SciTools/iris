@@ -26,16 +26,13 @@ import iris
 from iris.exceptions import TranslationError
 from iris.fileformats.grib._message import _GribMessage
 from iris.fileformats.grib._load_convert import convert
-
-
-def _message(sections):
-    return _GribMessage(mock.Mock(sections=sections), None, None)
+from iris.tests.unit.fileformats.grib import _make_test_message
 
 
 class Test(tests.IrisTest):
     def test_call(self):
         sections = [{'editionNumber': 2}]
-        field = _message(sections)
+        field = _make_test_message(sections)
         this = 'iris.fileformats.grib._load_convert.grib2_convert'
         factory = mock.sentinel.factory
         func = lambda field, metadata: metadata['factories'].append(factory)
@@ -47,7 +44,7 @@ class Test(tests.IrisTest):
 
     def test_edition_1(self):
         sections = [{'editionNumber': 1}]
-        field = _message(sections)
+        field = _make_test_message(sections)
         with self.assertRaisesRegexp(TranslationError,
                                      'edition 1 is not supported'):
             convert(field)

@@ -27,10 +27,7 @@ import iris
 from iris.exceptions import TranslationError
 from iris.fileformats.grib._message import _GribMessage
 from iris.fileformats.grib._load_convert import grib2_convert
-
-
-def _message(sections):
-    return _GribMessage(mock.Mock(sections=sections))
+from iris.tests.unit.fileformats.grib import _make_test_message
 
 
 class Test(tests.IrisTest):
@@ -56,7 +53,7 @@ class Test(tests.IrisTest):
                     mock.sentinel.product_deininition_section,      # section 4
                     mock.sentinel.data_representation_section,      # section 5
                     mock.sentinel.bitmap_section]                   # section 6
-        field = _message(sections)
+        field = _make_test_message(sections)
         metadata = {'factories': [], 'references': [],
                     'standard_name': None,
                     'long_name': None, 'units': None, 'attributes': {},
