@@ -254,7 +254,7 @@ class TestBasicMaths(tests.IrisTest):
     def test_ifunc(self):
         a = self.cube
 
-        my_ifunc = iris.analysis.maths.IFunc(np.square, 
+        my_ifunc = iris.analysis.maths.IFunc(np.square,
                    lambda a: a.units**2
                    )
         b = my_ifunc(a, new_name='squared temperature', in_place=False)
@@ -262,7 +262,7 @@ class TestBasicMaths(tests.IrisTest):
         self.assertCMLApproxData(a, ('analysis', 'apply_ifunc_original.cml'))
         self.assertCMLApproxData(b, ('analysis', 'apply_ifunc.cml'))
 
-        my_ifunc = iris.analysis.maths.IFunc(np.square, 
+        my_ifunc = iris.analysis.maths.IFunc(np.square,
                    lambda a: a.units**2
                    )
         b = my_ifunc(a, new_name='squared temperature', in_place=True)
@@ -276,8 +276,8 @@ class TestBasicMaths(tests.IrisTest):
         c = a.copy() + 2
 
         vec_mag_ufunc = np.frompyfunc(vec_mag, 2, 1)
-        my_ifunc = iris.analysis.maths.IFunc(vec_mag_ufunc, 
-                   lambda a,b: (a + b).units)
+        my_ifunc = iris.analysis.maths.IFunc(vec_mag_ufunc,
+                   lambda a, b: (a + b).units)
 
         b = my_ifunc(a, c)
         self.assertCMLApproxData(b, ('analysis', 'apply_ifunc_frompyfunc.cml'))
@@ -285,7 +285,7 @@ class TestBasicMaths(tests.IrisTest):
     def test_ifunc_init_fail(self):
 
         # should fail because 'blah' is a string not a python function
-        self.assertRaises(TypeError, iris.analysis.maths.IFunc, 'blah', 
+        self.assertRaises(TypeError, iris.analysis.maths.IFunc, 'blah',
                           lambda cube: iris.unit.Unit('1'))
 
         # should fail because math.sqrt is built-in function, which can not be
@@ -296,30 +296,30 @@ class TestBasicMaths(tests.IrisTest):
         # should fail because np.frexp gives 2 arrays as output
         self.assertRaises(ValueError, iris.analysis.maths.IFunc, np.frexp,
                           lambda cube: iris.unit.Unit('1'))
-      
+
         # should fail because data function has 3 arguments
         self.assertRaises(ValueError, iris.analysis.maths.IFunc,
-                   lambda a, b, c: a + b + c, 
+                   lambda a, b, c: a + b + c,
                    lambda cube: iris.unit.Unit('1')
                    )
 
         # should fail because data function returns a tuple
         self.assertRaises(ValueError, iris.analysis.maths.IFunc,
-                   lambda a: (a**0.5, a**2.0), 
+                   lambda a: (a**0.5, a**2.0),
                    lambda cube: iris.unit.Unit('1')
                    )
 
-        # should fail because data function does not work when its argument 
+        # should fail because data function does not work when its argument
         # is a numpy array
         self.assertRaises(TypeError, iris.analysis.maths.IFunc,
-                   lambda a: math.sqrt(a), 
+                   lambda a: math.sqrt(a),
                    lambda cube: iris.unit.Unit('1')
                    )
 
     def test_ifunc_call_fail(self):
         a = self.cube
 
-        my_ifunc = iris.analysis.maths.IFunc(np.square, 
+        my_ifunc = iris.analysis.maths.IFunc(np.square,
                    lambda a: a.units**2
                    )
 
@@ -328,7 +328,7 @@ class TestBasicMaths(tests.IrisTest):
         with self.assertRaises(ValueError):
             my_ifunc(a, a)
 
-        my_ifunc = iris.analysis.maths.IFunc(np.divide, 
+        my_ifunc = iris.analysis.maths.IFunc(np.divide,
                    lambda a: iris.unit.Unit('1')
                    )
 
