@@ -632,7 +632,7 @@ class IFunc(object):
         before giving the resulting cube the same units as the first cube.
 
         def ws_data_func(u_data, v_data):
-            return ( u_data**2 + v_data**2 ) **0.5
+            return numpy.sqrt( u_data**2 + v_data**2 )
 
         def ws_units_func(u_cube, v_cube):
             if u_cube.units != getattr(v_cube, 'units', u_cube.units):
@@ -644,7 +644,7 @@ class IFunc(object):
 
     Example usage 3:: Using a data function that allows a keyword argument.
 
-        cs_ifunc = iris.analysis.maths.IFunc(np.cumsum,
+        cs_ifunc = iris.analysis.maths.IFunc(numpy.cumsum,
                    lambda a: a.units
                    )
         cs_cube = cs_ifunc(cube, axis=1)

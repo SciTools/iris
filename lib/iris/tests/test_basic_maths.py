@@ -589,7 +589,7 @@ class TestIFunc(tests.IrisTest):
         self.assertArrayAlmostEqual(b.data, ans)
 
         def vec_mag_data_func(u_data, v_data):
-            return ( u_data**2 + v_data**2 ) **0.5
+            return np.sqrt( u_data**2 + v_data**2 )
 
         vec_mag_ifunc = iris.analysis.maths.IFunc(vec_mag_data_func, lambda a,b: (a + b).units)
         b2 = vec_mag_ifunc(a, c)
