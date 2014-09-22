@@ -90,7 +90,7 @@ install:
   - python setup.py --with-unpack install
 
 script:
-  - python -m iris.tests.runner --example-tests
+  - python -m iris.tests.runner --example-tests --repo-dir=`pwd`
 
   - cd $(pwd)/docs/iris
 # Make html produces an error when run on Travis that does not affect any downstream functionality but causes the build to fail spuriously.

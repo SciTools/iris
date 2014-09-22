@@ -57,6 +57,7 @@ LICENSE_RE = re.compile(LICENSE_RE_PATTERN, re.MULTILINE)
 # Python finding the iris package via a symlink.
 IRIS_DIR = os.path.realpath(os.path.dirname(iris.__file__))
 REPO_DIR = os.path.dirname(os.path.dirname(IRIS_DIR))
+REPO_DIR = os.environ.get('IRIS_REPO_DIR', REPO_DIR)
 DOCS_DIR = os.path.join(REPO_DIR, 'docs', 'iris')
 DOCS_DIR = iris.config.get_option('Resources', 'doc_dir', default=DOCS_DIR)
 exclusion = ['Makefile', 'build']
