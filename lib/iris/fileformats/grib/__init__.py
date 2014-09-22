@@ -903,11 +903,11 @@ def load_cubes(filenames, callback=None, regularise=True, auto_regularise=None):
 
     .. note::
 
-       To make use of the *auto_regularise* keyword the normal Iris loading
+       To make use of the *regularise* keyword the normal Iris loading
        pipeline cannot be used, the loading must be performed manually::
 
            cube_generator = iris.fileformats.grib.load_cubes(
-               "reduced.grib", auto_regularise=False)
+               "reduced.grib", regularise=False)
            cubes = iris.cube.CubeList(cube_generator).merge()
 
     """
