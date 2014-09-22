@@ -36,7 +36,9 @@ class TestRunner():
                          'appears to the tests that it does not exist.'),
         ('system-tests', 's', 'Run only the limited subset of system tests.'),
         ('stop', 'x', 'Stop running tests after the first error or failure.'),
-        ('example-tests', 'e', 'Also run the example code tests.')
+        ('example-tests', 'e', 'Also run the example code tests.'),
+        ('num-processors=', 'p', 'The number of processors used for running '
+                                 'the tests.'),
     ]
     boolean_options = ['no-data', 'system-tests', 'stop', 'example-tests']
 
@@ -45,6 +47,7 @@ class TestRunner():
         self.system_tests = False
         self.stop = False
         self.example_tests = False
+        self.num_processors = None
 
     def finalize_options(self):
         if self.no_data:
@@ -58,6 +61,10 @@ class TestRunner():
             print('Running system tests...')
         if self.stop:
             print('Stopping tests after the first error or failure')
+        if self.num_processors is None:
+            self.num_processors = multiprocessing.cpu_count() - 1
+        else:
+            self.num_processors = int(self.num_processors)
 
     def run(self):
         import nose
@@ -83,7 +90,7 @@ class TestRunner():
         else:
             regexp_pat = r'--match=^([Tt]est(?![Mm]ixin)|[Ss]ystem)'
 
-        n_processors = max(multiprocessing.cpu_count() - 1, 1)
+        n_processors = max(self.num_processors, 1)
 
         args = ['', None, '--processes=%s' % n_processors,
                 '--verbosity=2', regexp_pat,
