@@ -23,11 +23,13 @@ Unit tests for the `iris.fileformats.grib._GribMessage` class.
 # importing anything else.
 import iris.tests as tests
 
+import biggus
 import mock
 import numpy as np
 
 from iris.exceptions import TranslationError
 from iris.fileformats.grib._message import _GribMessage
+from iris.tests.unit.fileformats.grib import _make_test_message
 
 
 @tests.skip_data
@@ -39,66 +41,75 @@ class Test_messages_from_filename(tests.IrisTest):
         self.assertEqual(len(messages), 3)
 
 
-def _message(sections):
-    return _GribMessage(mock.Mock(sections=sections))
-
-
 class Test_sections(tests.IrisTest):
     def test(self):
         # Check that the `sections` attribute defers to the `sections`
         # attribute on the underlying _RawGribMessage.
-        message = _message(mock.sentinel.SECTIONS)
+        message = _make_test_message(mock.sentinel.SECTIONS)
         self.assertIs(message.sections, mock.sentinel.SECTIONS)
 
 
 class Test_data__unsupported(tests.IrisTest):
     def test_unsupported_grid_definition(self):
-        message = _message({3: {'sourceOfGridDefinition': 1}})
+        message = _make_test_message({3: {'sourceOfGridDefinition': 1}})
         with self.assertRaisesRegexp(TranslationError, 'source'):
             message.data
 
     def test_unsupported_quasi_regular__number_of_octets(self):
-        message = _message({3: {'sourceOfGridDefinition': 0,
-                                'numberOfOctectsForNumberOfPoints': 1}})
+        message = _make_test_message(
+            {3: {'sourceOfGridDefinition': 0,
+                 'numberOfOctectsForNumberOfPoints': 1}})
         with self.assertRaisesRegexp(TranslationError, 'quasi-regular'):
             message.data
 
     def test_unsupported_quasi_regular__interpretation(self):
-        message = _message({3: {'sourceOfGridDefinition': 0,
-                                'numberOfOctectsForNumberOfPoints': 0,
-                                'interpretationOfNumberOfPoints': 1}})
+        message = _make_test_message(
+            {3: {'sourceOfGridDefinition': 0,
+                 'numberOfOctectsForNumberOfPoints': 0,
+                 'interpretationOfNumberOfPoints': 1}})
         with self.assertRaisesRegexp(TranslationError, 'quasi-regular'):
             message.data
 
     def test_unsupported_template(self):
-        message = _message({3: {'sourceOfGridDefinition': 0,
-                                'numberOfOctectsForNumberOfPoints': 0,
-                                'interpretationOfNumberOfPoints': 0,
-                                'gridDefinitionTemplateNumber': 1}})
+        message = _make_test_message(
+            {3: {'sourceOfGridDefinition': 0,
+                 'numberOfOctectsForNumberOfPoints': 0,
+                 'interpretationOfNumberOfPoints': 0,
+                 'gridDefinitionTemplateNumber': 1}})
         with self.assertRaisesRegexp(TranslationError, 'template'):
             message.data
 
 
 class Test_data__template0(tests.IrisTest):
     def test_unsupported_scanning_mode(self):
-        message = _message({3: {'sourceOfGridDefinition': 0,
-                                'numberOfOctectsForNumberOfPoints': 0,
-                                'interpretationOfNumberOfPoints': 0,
-                                'gridDefinitionTemplateNumber': 0,
-                                'scanningMode': 1}})
+        message = _make_test_message(
+            {3: {'sourceOfGridDefinition': 0,
+                 'numberOfOctectsForNumberOfPoints': 0,
+                 'interpretationOfNumberOfPoints': 0,
+                 'gridDefinitionTemplateNumber': 0,
+                 'scanningMode': 1}})
         with self.assertRaisesRegexp(TranslationError, 'scanning mode'):
             message.data
 
-    def test_regular_data(self):
-        message = _message({3: {'sourceOfGridDefinition': 0,
-                                'numberOfOctectsForNumberOfPoints': 0,
-                                'interpretationOfNumberOfPoints': 0,
-                                'gridDefinitionTemplateNumber': 0,
-                                'scanningMode': 0,
-                                'Nj': 3,
-                                'Ni': 4},
-                            7: {'codedValues': np.arange(12)}})
-        self.assertArrayEqual(message.data, np.arange(12).reshape(3, 4))
+    def test_regular(self):
+        def make_raw_message():
+            sections = {3: {'sourceOfGridDefinition': 0,
+                            'numberOfOctectsForNumberOfPoints': 0,
+                            'interpretationOfNumberOfPoints': 0,
+                            'gridDefinitionTemplateNumber': 0,
+                            'scanningMode': 0,
+                            'Nj': 3,
+                            'Ni': 4},
+                        7: {'codedValues': np.arange(12)}}
+            raw_message = mock.Mock(sections=sections)
+            return raw_message
+        message = _GribMessage(make_raw_message(), make_raw_message, False)
+        data = message.data
+        self.assertIsInstance(data, biggus.Array)
+        self.assertEqual(data.shape, (3, 4))
+        self.assertEqual(data.dtype, np.floating)
+        self.assertIs(data.fill_value, np.nan)
+        self.assertArrayEqual(data.ndarray(), np.arange(12).reshape(3, 4))
 
 
 if __name__ == '__main__':

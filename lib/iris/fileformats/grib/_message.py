@@ -19,10 +19,12 @@ Defines a lightweight wrapper class to wrap a single GRIB message.
 
 """
 
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 import re
 
+import biggus
 import gribapi
+import numpy as np
 
 from iris.exceptions import TranslationError
 
@@ -35,7 +37,7 @@ class _GribMessage(object):
     """
 
     @staticmethod
-    def messages_from_filename(filename, auto_regularise=True):
+    def messages_from_filename(filename, regularise=True):
         """
         Return a generator of :class:`_GribMessage` instances; one for
         each message in the supplied GRIB file.
@@ -48,13 +50,15 @@ class _GribMessage(object):
         """
         with open(filename, 'rb') as grib_fh:
             while True:
+                offset = grib_fh.tell()
                 grib_id = gribapi.grib_new_from_file(grib_fh)
                 if grib_id is None:
                     break
                 raw_message = _RawGribMessage(grib_id)
-                yield _GribMessage(raw_message)
+                recreate_raw = _MessageLocation(filename, offset)
+                yield _GribMessage(raw_message, recreate_raw, regularise)
 
-    def __init__(self, raw_message):
+    def __init__(self, raw_message, recreate_raw, regularise):
         """
 
         Args:
@@ -65,6 +69,8 @@ class _GribMessage(object):
 
         """
         self._raw_message = raw_message
+        self._recreate_raw = recreate_raw
+        self._regularise = regularise
 
     @property
     def sections(self):
@@ -73,7 +79,7 @@ class _GribMessage(object):
     @property
     def data(self):
         """
-        The data array from the GRIB message.
+        The data array from the GRIB message as a biggus Array.
 
         The shape of the array will match the logical shape of the
         message's grid. For example, a simple global grid would be
@@ -98,12 +104,61 @@ class _GribMessage(object):
                 msg = 'Unsupported scanning mode: {}'.format(
                     grid_section['scanningMode'])
                 raise TranslationError(msg)
-            data = sections[7]['codedValues'].reshape(grid_section['Nj'],
-                                                      grid_section['Ni'])
+            shape = (grid_section['Nj'], grid_section['Ni'])
+            proxy = _DataProxy(shape, np.dtype('f8'), np.nan,
+                               self._recreate_raw, self._regularise)
+            data = biggus.NumpyArrayAdapter(proxy)
         else:
             fmt = 'Grid definition template {} is not supported'
             raise TranslationError(fmt.format(template))
         return data
+
+
+class _MessageLocation(namedtuple('_MessageLocation', 'filename offset')):
+    """A reference to a specific GRIB message within a file."""
+    def __call__(self):
+        return _RawGribMessage.from_file_offset(filename, offset)
+
+
+class _DataProxy(object):
+    """A reference to the data payload of a single GRIB message."""
+
+    __slots__ = ('shape', 'dtype', 'fill_value', 'recreate_raw', 'regularise')
+
+    def __init__(self, shape, dtype, fill_value, recreate_raw, regularise):
+        self.shape = shape
+        self.dtype = dtype
+        self.fill_value = fill_value
+        self.recreate_raw = recreate_raw
+        self.regularise = regularise
+
+    @property
+    def ndim(self):
+        return len(self.shape)
+
+    def __getitem__(self, keys):
+        # NB. Currently assumes that the validity of this interpretation
+        # is checked before this proxy is created.
+        message = self.recreate_raw()
+        sections = message.sections
+        grid_section = sections[3]
+        data = sections[7]['codedValues'].reshape(grid_section['Nj'],
+                                                  grid_section['Ni'])
+        return data.__getitem__(keys)
+
+    def __repr__(self):
+        msg = '<{self.__class__.__name__} shape={self.shape} ' \
+            'dtype={self.dtype!r} fill_value={self.fill_value!r} ' \
+            'recreate_raw={self.recreate_raw!r} ' \
+            'regularise={self.regularise}>'
+        return msg.format(self=self)
+
+    def __getstate__(self):
+        return {attr: getattr(self, attr) for attr in self.__slots__}
+
+    def __setstate__(self, state):
+        for key, value in state.iteritems():
+            setattr(self, key, value)
 
 
 class _RawGribMessage(object):
@@ -113,6 +168,16 @@ class _RawGribMessage(object):
 
     """
     _NEW_SECTION_KEY_MATCHER = re.compile(r'section([0-9]{1})Length')
+
+    @staticmethod
+    def from_file_offset(filename, offset):
+        with open(filename, 'rb') as f:
+            f.seek(offset)
+            message_id = gribapi.grib_new_from_file(f)
+            if message_id is None:
+                fmt = 'Invalid GRIB message: {} @ {}'
+                raise RuntimeError(fmt.format(filename, offset))
+        return _RawGribMessage(message_id)
 
     def __init__(self, message_id):
         """

@@ -38,8 +38,9 @@ class TestToggle(tests.IrisTest):
                 result = load_cubes(mock.sentinel.FILES,
                                     mock.sentinel.CALLBACK,
                                     mock.sentinel.REGULARISE)
+                reg_kw = 'regularise' if mode else 'auto_regularise'
                 loader = iris.fileformats.rules.Loader(
-                    generator, {'auto_regularise': mock.sentinel.REGULARISE},
+                    generator, {reg_kw: mock.sentinel.REGULARISE},
                     converter, None)
                 rules_load.assert_called_once_with(mock.sentinel.FILES,
                                                    mock.sentinel.CALLBACK,

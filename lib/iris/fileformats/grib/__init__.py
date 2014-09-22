@@ -871,7 +871,7 @@ def grib_generator(filename, auto_regularise=True):
             gribapi.grib_release(grib_message)
 
 
-def load_cubes(filenames, callback=None, auto_regularise=True):
+def load_cubes(filenames, callback=None, regularise=True, auto_regularise=None):
     """
     Returns a generator of cubes from the given list of filenames.
 
@@ -885,6 +885,13 @@ def load_cubes(filenames, callback=None, auto_regularise=True):
     * callback (callable function):
         Function which can be passed on to :func:`iris.io.run_callback`.
 
+    * regularise (*True* | *False*):
+        If *True*, any cube defined on a reduced grid will be interpolated
+        to an equivalent regular grid. If *False*, any cube defined on a
+        reduced grid will be loaded on the raw reduced grid with no shape
+        information. The default behaviour is to interpolate cubes on a
+        reduced grid to an equivalent regular grid.
+
     * auto_regularise (*True* | *False*):
         If *True*, any cube defined on a reduced grid will be interpolated
         to an equivalent regular grid. If *False*, any cube defined on a
@@ -892,24 +899,32 @@ def load_cubes(filenames, callback=None, auto_regularise=True):
         information. The default behaviour is to interpolate cubes on a
         reduced grid to an equivalent regular grid.
 
+        .. deprecated:: 1.8. Please use the `regularise` kwarg instead.
+
     .. note::
 
-       To make use of the *auto_regularise* keyword the normal Iris loading
+       To make use of the *regularise* keyword the normal Iris loading
        pipeline cannot be used, the loading must be performed manually::
 
            cube_generator = iris.fileformats.grib.load_cubes(
-               "reduced.grib", auto_regularise=False)
+               "reduced.grib", regularise=False)
            cubes = iris.cube.CubeList(cube_generator).merge()
 
     """
+    if auto_regularise is not None:
+        warnings.warn('the`auto_regularise` kwarg is deprecated and '
+                      'will be removed in a future release. Please use '
+                      '`regularise` instead.')
+        regularise = auto_regularise
+
     if iris.FUTURE.strict_grib_load:
         grib_loader = iris.fileformats.rules.Loader(
             _GribMessage.messages_from_filename,
-            {'auto_regularise': auto_regularise},
+            {'regularise': regularise},
             iris.fileformats.grib._load_convert.convert, None)
     else:
         grib_loader = iris.fileformats.rules.Loader(
-            grib_generator, {'auto_regularise': auto_regularise},
+            grib_generator, {'auto_regularise': regularise},
             iris.fileformats.grib.load_rules.convert,
             _load_rules)
     return iris.fileformats.rules.load_cubes(filenames, callback, grib_loader)

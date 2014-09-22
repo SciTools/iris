@@ -15,3 +15,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :mod:`iris.fileformats.grib` package."""
+
+import mock
+
+from iris.fileformats.grib._message import _GribMessage
+
+
+def _make_test_message(sections):
+    return _GribMessage(mock.Mock(sections=sections), None, None)
