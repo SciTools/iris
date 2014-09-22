@@ -55,7 +55,7 @@ class _GribMessage(object):
                 if grib_id is None:
                     break
                 raw_message = _RawGribMessage(grib_id)
-                recreate_raw = _DataLocation(filename, offset)
+                recreate_raw = _MessageLocation(filename, offset)
                 yield _GribMessage(raw_message, recreate_raw, regularise)
 
     def __init__(self, raw_message, recreate_raw, regularise):
@@ -114,7 +114,8 @@ class _GribMessage(object):
         return data
 
 
-class _DataLocation(namedtuple('_DataLocation', 'filename offset')):
+class _MessageLocation(namedtuple('_MessageLocation', 'filename offset')):
+    """A reference to a specific GRIB message within a file."""
     def __call__(self):
         return _RawGribMessage.from_file_offset(filename, offset)
 
