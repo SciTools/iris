@@ -100,7 +100,9 @@ class _GribMessage(object):
 
         template = grid_section['gridDefinitionTemplateNumber']
         if template == 0:
-            if grid_section['scanningMode'] != 0:
+            # We can ignore the first two bits (i-neg, j-pos) because
+            # that is already captured in the coordinate values.
+            if grid_section['scanningMode'] & 0x3f:
                 msg = 'Unsupported scanning mode: {}'.format(
                     grid_section['scanningMode'])
                 raise TranslationError(msg)
