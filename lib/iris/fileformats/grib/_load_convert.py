@@ -400,11 +400,16 @@ def product_definition_template_0(section, metadata, frt_point):
         calculated from several coded keys in message section 1.
 
     """
-    if np.int16(section['hoursAfterDataCutoff']) != _CODE_TABLE_MDI or \
-            np.int8(section['minutesAfterDataCutoff']) != _CODE_TABLE_MDI:
-        msg = 'Product Definition Section 4 contains unsupported ' \
-            'reference time cut-off'
-        raise TranslationError(msg)
+    hoursAfterDataCutoff = section['hoursAfterDataCutoff']
+    minutesAfterDataCutoff = section['minutesAfterDataCutoff']
+    if (np.int16(hoursAfterDataCutoff) != _CODE_TABLE_MDI or
+            np.int8(minutesAfterDataCutoff) != _CODE_TABLE_MDI):
+        cutoff = frt_point
+        if hoursAfterDataCutoff != _CODE_TABLE_MDI:
+            frt_point += timedelta(hours=hoursAfterDataCutoff)
+        if minutesAfterDataCutoff != _CODE_TABLE_MDI:
+            frt_point += timedelta(minutes=minutesAfterDataCutoff)
+        metadata['attributes']['data_cutoff'] = frt_point
 
     # Determine the forecast period and associated units.
     fp_unit = time_range_unit(section['indicatorOfUnitOfTimeRange'])
