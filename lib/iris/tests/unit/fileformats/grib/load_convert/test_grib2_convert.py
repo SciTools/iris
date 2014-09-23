@@ -50,7 +50,7 @@ class Test(tests.IrisTest):
                      'tablesVersion': mock.sentinel.tablesVersion},
                     None,                                           # section 2
                     mock.sentinel.grid_definition_section,          # section 3
-                    mock.sentinel.product_deininition_section,      # section 4
+                    mock.sentinel.product_definition_section,       # section 4
                     mock.sentinel.data_representation_section,      # section 5
                     mock.sentinel.bitmap_section]                   # section 6
         field = _make_test_message(sections)

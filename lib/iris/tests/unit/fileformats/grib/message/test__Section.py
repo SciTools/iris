@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Unit tests for `iris.fileformats.grib._message.Section`.
+Unit tests for `iris.fileformats.grib._message._Section`.
 
 """
 
