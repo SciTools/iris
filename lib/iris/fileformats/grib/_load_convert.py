@@ -22,6 +22,9 @@ cube metadata.
 
 from collections import namedtuple, OrderedDict
 from datetime import datetime, timedelta
+import threading
+import warnings
+
 import numpy as np
 
 from iris.aux_factory import HybridPressureFactory
@@ -36,6 +39,9 @@ from iris.util import _is_circular
 
 # Restrict the names imported from this namespace.
 __all__ = ['convert']
+
+options = threading.local()
+options.warn_on_unsupported = False
 
 ScanningMode = namedtuple('ScanningMode', ['i_negative',
                                            'j_positive',
@@ -402,9 +408,9 @@ def product_definition_template_0(section, metadata, frt_point):
     """
     if np.int16(section['hoursAfterDataCutoff']) != _CODE_TABLE_MDI or \
             np.int8(section['minutesAfterDataCutoff']) != _CODE_TABLE_MDI:
-        msg = 'Product Definition Section 4 contains unsupported ' \
-            'reference time cut-off'
-        raise TranslationError(msg)
+        if options.warn_on_unsupported:
+            warnings.warn('Unable to translate "hours and/or minutes '
+                          'after data cutoff".')
 
     # Determine the forecast period and associated units.
     fp_unit = time_range_unit(section['indicatorOfUnitOfTimeRange'])
