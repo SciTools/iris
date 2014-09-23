@@ -2582,7 +2582,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 # of deepcopy on 0-d arrays.
                 new_cube_data = np.asanyarray(self.data)
             else:
-                new_cube_data = copy.copy(self._my_data)
+                if isinstance(self._my_data, biggus.Array):
+                    new_cube_data = copy.copy(self._my_data)
+                else:
+                    new_cube_data = self._my_data.copy()
         else:
             if not isinstance(data, biggus.Array):
                 data = np.asanyarray(data)
