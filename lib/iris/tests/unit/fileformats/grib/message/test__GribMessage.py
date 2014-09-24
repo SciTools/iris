@@ -80,7 +80,7 @@ class Test_data__unsupported(tests.IrisTest):
             message.data
 
 
-class Test_data__template0(tests.IrisTest):
+class Test_data__grid_template_0(tests.IrisTest):
     def test_unsupported_scanning_mode(self):
         message = _make_test_message(
             {3: {'sourceOfGridDefinition': 0,
@@ -91,13 +91,13 @@ class Test_data__template0(tests.IrisTest):
         with self.assertRaisesRegexp(TranslationError, 'scanning mode'):
             message.data
 
-    def test_regular(self):
+    def _test(self, scanning_mode):
         def make_raw_message():
             sections = {3: {'sourceOfGridDefinition': 0,
                             'numberOfOctectsForNumberOfPoints': 0,
                             'interpretationOfNumberOfPoints': 0,
                             'gridDefinitionTemplateNumber': 0,
-                            'scanningMode': 0,
+                            'scanningMode': scanning_mode,
                             'Nj': 3,
                             'Ni': 4},
                         7: {'codedValues': np.arange(12)}}
@@ -110,6 +110,18 @@ class Test_data__template0(tests.IrisTest):
         self.assertEqual(data.dtype, np.floating)
         self.assertIs(data.fill_value, np.nan)
         self.assertArrayEqual(data.ndarray(), np.arange(12).reshape(3, 4))
+
+    def test_regular_mode_0(self):
+        self._test(0)
+
+    def test_regular_mode_64(self):
+        self._test(64)
+
+    def test_regular_mode_128(self):
+        self._test(128)
+
+    def test_regular_mode_64_128(self):
+        self._test(64 | 128)
 
 
 if __name__ == '__main__':
