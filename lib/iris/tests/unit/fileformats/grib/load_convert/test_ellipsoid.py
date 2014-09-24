@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Test function :func:`iris.fileformats.grib._load_convert.coord_system.
+Test function :func:`iris.fileformats.grib._load_convert.ellipsoid.
 
 """
 
@@ -26,7 +26,7 @@ import iris.tests as tests
 import iris
 import iris.coord_systems as icoord_systems
 from iris.exceptions import TranslationError
-from iris.fileformats.grib._load_convert import coord_system
+from iris.fileformats.grib._load_convert import ellipsoid
 
 
 # Reference GRIB2 Code Table 3.2 - Shape of the Earth.
@@ -37,21 +37,21 @@ class Test(tests.IrisTest):
         shape = 10
         emsg = 'invalid shape of the earth'
         with self.assertRaisesRegexp(TranslationError, emsg):
-            coord_system(shape)
+            ellipsoid(shape)
 
     def test_shape_unsupported(self):
         unsupported = [1, 2, 3, 4, 5, 7, 8, 9]
         emsg = 'unsupported shape of the earth'
         for shape in unsupported:
             with self.assertRaisesRegexp(TranslationError, emsg):
-                coord_system(shape)
+                ellipsoid(shape)
 
     def test_shape_supported(self):
         cs_by_shape = {0: icoord_systems.GeogCS(6367470),
                        6: icoord_systems.GeogCS(6371229),
                        }
         for shape, expected in cs_by_shape.items():
-            self.assertEqual(coord_system(shape), expected)
+            self.assertEqual(ellipsoid(shape), expected)
 
 
 if __name__ == '__main__':

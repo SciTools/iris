@@ -22,6 +22,7 @@ cube metadata.
 
 from collections import namedtuple, OrderedDict
 from datetime import datetime, timedelta
+import math
 import threading
 import warnings
 
@@ -131,7 +132,7 @@ def scanning_mode(scanningMode):
                         j_consecutive, i_alternative)
 
 
-def coord_system(shapeOfTheEarth):
+def ellipsoid(shapeOfTheEarth):
     """
     Translate the shape of the earth to an appropriate coordinate
     reference system.
@@ -165,26 +166,8 @@ def coord_system(shapeOfTheEarth):
     return result
 
 
-def grid_definition_template_0(section, metadata):
-    """
-    Translate template representing regular latitude/longitude
-    grid (regular_ll).
-
-    Updates the metadata in-place with the translations.
-
-    Args:
-
-    * section:
-        Dictionary of coded key/value pairs from section 3 of the message
-
-    * metadata:
-        :class:`collections.OrderedDict` of metadata.
-
-    """
+def grid_definition_template_0_and_1(section, metadata, y_name, x_name, cs):
     scan = scanning_mode(section['scanningMode'])
-
-    # Determine the coordinate system.
-    cs = coord_system(section['shapeOfTheEarth'])
 
     # Calculate longitude points.
     x_inc = section['iDirectionIncrement'] * _GRID_ACCURACY_IN_DEGREES
@@ -204,9 +187,9 @@ def grid_definition_template_0(section, metadata):
     y_points = np.arange(Nj, dtype=np.float64) * y_inc * y_direction + y_offset
 
     # Create the lat/lon coordinates.
-    y_coord = DimCoord(y_points, standard_name='latitude', units='degrees',
+    y_coord = DimCoord(y_points, standard_name=y_name, units='degrees',
                        coord_system=cs)
-    x_coord = DimCoord(x_points, standard_name='longitude', units='degrees',
+    x_coord = DimCoord(x_points, standard_name=x_name, units='degrees',
                        coord_system=cs, circular=circular)
 
     # Determine the lat/lon dimensions.
@@ -217,6 +200,57 @@ def grid_definition_template_0(section, metadata):
     # Add the lat/lon coordinates to the metadata dim coords.
     metadata['dim_coords_and_dims'].append((y_coord, y_dim))
     metadata['dim_coords_and_dims'].append((x_coord, x_dim))
+
+
+def grid_definition_template_0(section, metadata):
+    """
+    Translate template representing regular latitude/longitude
+    grid (regular_ll).
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 3 of the message
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    """
+    # Determine the coordinate system.
+    cs = ellipsoid(section['shapeOfTheEarth'])
+
+    grid_definition_template_0_and_1(section, metadata,
+                                     'latitude', 'longitude', cs)
+
+
+def grid_definition_template_1(section, metadata):
+    """
+    Translate template representing rotated latitude/longitude grid.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 3 of the message
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    """
+    # Determine the coordinate system.
+    south_pole_lat = (section['latitudeOfSouthernPole'] *
+                      _GRID_ACCURACY_IN_DEGREES)
+    south_pole_lon = (section['longitudeOfSouthernPole'] *
+                      _GRID_ACCURACY_IN_DEGREES)
+    cs = icoord_systems.RotatedGeogCS(-south_pole_lat,
+                                      math.fmod(south_pole_lon + 180, 360),
+                                      section['angleOfRotation'],
+                                      ellipsoid(section['shapeOfTheEarth']))
+    grid_definition_template_0_and_1(section, metadata,
+                                     'grid_latitude', 'grid_longitude', cs)
 
 
 def grid_definition_section(section, metadata):
@@ -253,6 +287,9 @@ def grid_definition_section(section, metadata):
     if template == 0:
         # Process regular latitude/longitude grid (regular_ll)
         grid_definition_template_0(section, metadata)
+    elif template == 1:
+        # Process rotated latitude/longitude grid.
+        grid_definition_template_1(section, metadata)
     else:
         msg = 'Grid Definition Template [{}] is not supported'.format(template)
         raise TranslationError(msg)
