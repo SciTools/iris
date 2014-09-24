@@ -25,8 +25,13 @@ import os.path
 
 from metarelate.fuseki import FusekiServer
 
-from translator import *
+# from translator import *
 
+from translator import FORMAT_URIS, FieldcodeCFMapping, StashCFMapping
+from translator import CFFieldcodeMapping, GRIB1LocalParamCFConstrainedMapping
+from translator import GRIB1LocalParamCFMapping, GRIB2ParamCFMapping
+from translator import CFConstrainedGRIB1LocalParamMapping
+from translator import CFGRIB2ParamMapping, CFGRIB1LocalParamMapping
 
 HEADER = """# (C) British Crown Copyright 2013 - {year}, Met Office
 #
@@ -87,7 +92,7 @@ def _retrieve_mappings(fuseki, source, target):
     * fuseki:
         The :class:`metrelate.fuseki.FusekiServer` instance.
     * source:
-        The source metarelate metadata type for the mapping,
+        The source metarelate metadata type for the mapping.
     * target:
         The target metarelate metadata type for the mapping.
 
@@ -123,15 +128,15 @@ def build_um_cf_map(fuseki, filename):
         fh.write('\n')
 
         # Encode the relevant UM to CF translations.
-        ppff = 'http://reference.metoffice.gov.uk/um/f3/UMField'
-        cff = 'http://def.scitools.org.uk/cfdatamodel/Field'
-        mappings = _retrieve_mappings(fuseki, ppff, cff)
-        fh.writelines(FieldcodeCFMapping(mappings).lines(fuseki))
-        fh.writelines(StashCFMapping(mappings).lines(fuseki))
+        maps = _retrieve_mappings(fuseki, FORMAT_URIS['umf'],
+                                  FORMAT_URIS['cff'])
+        fh.writelines(FieldcodeCFMapping(maps).lines(fuseki))
+        fh.writelines(StashCFMapping(maps).lines(fuseki))
 
         # Encode the relevant CF to UM translations.
-        mappings = _retrieve_mappings(fuseki, cff, ppff)
-        fh.writelines(CFFieldcodeMapping(mappings).lines(fuseki))
+        maps = _retrieve_mappings(fuseki, FORMAT_URIS['cff'],
+                                  FORMAT_URIS['umf'])
+        fh.writelines(CFFieldcodeMapping(maps).lines(fuseki))
 
 
 def build_grib_cf_map(fuseki, filename):
@@ -157,18 +162,18 @@ def build_grib_cf_map(fuseki, filename):
         fh.write('\n')
 
         # Encode the relevant GRIB to CF translations.
-        gribmsg = 'http://codes.wmo.int/def/codeform/GRIB-message'
-        cff = 'http://def.scitools.org.uk/cfdatamodel/Field'
-        mappings = _retrieve_mappings(fuseki, gribmsg, cff)
-        fh.writelines(GRIB1LocalParamCFConstrainedMapping(mappings).lines(fuseki))
-        fh.writelines(GRIB1LocalParamCFMapping(mappings).lines(fuseki))
-        fh.writelines(GRIB2ParamCFMapping(mappings).lines(fuseki))
+        maps = _retrieve_mappings(fuseki, FORMAT_URIS['gribm'],
+                                  FORMAT_URIS['cff'])
+        fh.writelines(GRIB1LocalParamCFConstrainedMapping(maps).lines(fuseki))
+        fh.writelines(GRIB1LocalParamCFMapping(maps).lines(fuseki))
+        fh.writelines(GRIB2ParamCFMapping(maps).lines(fuseki))
 
         # Encode the relevant CF to GRIB translations.
-        mappings = _retrieve_mappings(fuseki, cff, gribmsg)
-        fh.writelines(CFConstrainedGRIB1LocalParamMapping(mappings).lines(fuseki))
-        fh.writelines(CFGRIB1LocalParamMapping(mappings).lines(fuseki))
-        fh.writelines(CFGRIB2ParamMapping(mappings).lines(fuseki))
+        maps = _retrieve_mappings(fuseki, FORMAT_URIS['cff'],
+                                  FORMAT_URIS['gribm'])
+        fh.writelines(CFConstrainedGRIB1LocalParamMapping(maps).lines(fuseki))
+        fh.writelines(CFGRIB1LocalParamMapping(maps).lines(fuseki))
+        fh.writelines(CFGRIB2ParamMapping(maps).lines(fuseki))
 
 
 if __name__ == '__main__':

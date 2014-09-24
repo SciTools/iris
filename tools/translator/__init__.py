@@ -28,6 +28,11 @@ import warnings
 from metarelate.fuseki import FusekiServer
 import metarelate
 
+# known format identifier URIs
+FORMAT_URIS = {'cff': '<http://def.scitools.org.uk/cfdatamodel/Field>',
+               'gribm': '<http://codes.wmo.int/def/codeform/GRIB-message>',
+               'umf': '<http://reference.metoffice.gov.uk/um/f3/UMField>'}
+
 # Restrict the tokens exported from this module.
 __all__ = ['Mapping', 'CFFieldcodeMapping',
            'FieldcodeCFMapping', 'StashCFMapping',
@@ -84,8 +89,8 @@ class Mapping(object):
 
     def _sort_lines(self, payload):
         """
-        Return a sorted list of strings,
-        sort on dict key
+        Return the payload, unsorted.
+
         """
         return payload
 
@@ -103,13 +108,9 @@ class Mapping(object):
         lines = ['\n%s = {\n' % self.mapping_name]
 
         for mapping in self.mappings:
-            try:
-                self.encode(mapping, fuseki_process)
-            except Exception, e:
-                import pdb; pdb.set_trace()
-                self.encode(mapping, fuseki_process)
+            self.encode(mapping, fuseki_process)
         payload = [self.encode(mapping, fuseki_process) for mapping in self.mappings]
-        ## now sort the payload
+        # now sort the payload
         payload.sort(key=self._key)
         lines.extend(payload)
         lines.append('    }\n')
@@ -119,7 +120,7 @@ class Mapping(object):
         return len(self.mappings)
 
     def _key(self, line):
-        """Abstract method to provide the sort key of the mappings order."""
+        """Method to provide the sort key of the mappings order."""
         return line
 
     @abstractproperty
@@ -160,8 +161,13 @@ class Mapping(object):
 
     def get_initial_id_nones(self):
         """
-        Return the identifier items which may be None, and are needed
-        for a msg_string 
+        Return the identifier items which may not exist, in the translation
+        database, and are needed for a msg_string.  These must exist, even
+        even if not written from the database.
+
+        Returns two dictionaries to use as the start point for
+        population from the database.
+
         """
         sourceid = {}
         targetid = {}
@@ -186,7 +192,7 @@ class Mapping(object):
             sourceid.update(prop.get_identifiers(fuseki_process))
         for prop in mapping.target.properties:
             targetid.update(prop.get_identifiers(fuseki_process))
-        return '{}: {}'.format(sourcemsg.format(**sourceid), 
+        return '{}: {}'.format(sourcemsg.format(**sourceid),
                                targetmsg.format(**targetid))
 
     def is_cf(self, comp):
@@ -203,7 +209,7 @@ class Mapping(object):
             Boolean.
 
         """
-        kind='<http://def.scitools.org.uk/cfdatamodel/Field>'
+        kind = FORMAT_URIS['cff']
         result = False
         result = hasattr(comp, 'com_type') and \
             comp.com_type == kind and \
@@ -215,7 +221,7 @@ class Mapping(object):
         """
         Determines whether the provided component from a mapping
         represents a compound CF component for a phenomenon and
-        one dimension coordinate.
+        one, single valued dimension coordinate.
 
         Args:
         * component:
@@ -225,7 +231,7 @@ class Mapping(object):
             Boolean.
 
         """
-        ftype = '<http://def.scitools.org.uk/cfdatamodel/Field>'
+        ftype = FORMAT_URIS['cff']
         result = False
         cffield = hasattr(comp, 'com_type') and comp.com_type == ftype and \
                   hasattr(comp, 'units') and (hasattr(comp, 'standard_name') or\
@@ -285,7 +291,7 @@ class Mapping(object):
             Boolean.
 
         """
-        
+
         gpd = '<http://codes.wmo.int/def/grib2/parameter>'
         result = len(component) == 1 and hasattr(component, gpd)
         return result
@@ -309,15 +315,22 @@ class Mapping(object):
 
 
 def _cfn(line):
+    '''
+    Helper function to parse dictionary lines using the CFName named tuple.
+    Matches to the line '    CFName({standard_name}, {long_name}, {units}:*)
+    giving access to these named parts
+
+    '''
     match = re.match('^    CFName\((.+), (.+), (.+)\):.+,', line)
     if match is None:
         raise ValueError('encoding not sortable')
-    sn, ln, u = match.groups()
-    if sn == 'None':
-        sn = None
-    if ln == 'None':
-        ln = None
-    return [sn, ln, u]
+    standard_name, long_name, units = match.groups()
+    if standard_name == 'None':
+        standard_name = None
+    if long_name == 'None':
+        long_name = None
+    return [standard_name, long_name, units]
+
 
 class CFFieldcodeMapping(Mapping):
     """
@@ -339,10 +352,6 @@ class CFFieldcodeMapping(Mapping):
                 '{lbfc},\n')
 
     def get_initial_id_nones(self):
-        """
-        Return the identifier items which may be None, and are needed
-        for a msg_string 
-        """
         sourceid = {'standard_name': None, 'long_name': None}
         targetid = {}
         return sourceid, targetid
@@ -364,7 +373,7 @@ class CFFieldcodeMapping(Mapping):
         translation.
 
         """
-        return '<http://def.scitools.org.uk/cfdatamodel/Field>'
+        return FORMAT_URIS['cff']
 
     @property
     def target_scheme(self):
@@ -374,7 +383,7 @@ class CFFieldcodeMapping(Mapping):
         translation.
 
         """
-        return '<http://reference.metoffice.gov.uk/um/f3/UMField>'
+        return FORMAT_URIS['umf']
 
     def valid_mapping(self, mapping):
         """
@@ -390,8 +399,6 @@ class CFFieldcodeMapping(Mapping):
 
         """
         return self.is_cf(mapping.source) and self.is_fieldcode(mapping.target)
-        
-        
 
 
 class FieldcodeCFMapping(Mapping):
@@ -413,10 +420,6 @@ class FieldcodeCFMapping(Mapping):
                 'CFName({standard_name!r}, {long_name!r}, {units!r}),\n')
 
     def get_initial_id_nones(self):
-        """
-        Return the identifier items which may be None, and are needed
-        for a msg_string 
-        """
         sourceid = {}
         targetid = {'standard_name': None, 'long_name': None}
         return sourceid, targetid
@@ -438,7 +441,7 @@ class FieldcodeCFMapping(Mapping):
         translation.
 
         """
-        return '<http://reference.metoffice.gov.uk/um/f3/UMField>'
+        return FORMAT_URIS['umf']
 
     @property
     def target_scheme(self):
@@ -448,7 +451,7 @@ class FieldcodeCFMapping(Mapping):
         translation.
 
         """
-        return '<http://def.scitools.org.uk/cfdatamodel/Field>'
+        return FORMAT_URIS['cff']
 
     def valid_mapping(self, mapping):
         """
@@ -486,10 +489,6 @@ class StashCFMapping(Mapping):
                '{long_name!r}, {units!r}),\n')
 
     def get_initial_id_nones(self):
-        """
-        Return the identifier items which may be None, and are needed
-        for a msg_string 
-        """
         sourceid = {}
         targetid = {'standard_name': None, 'long_name': None}
         return sourceid, targetid
@@ -511,7 +510,7 @@ class StashCFMapping(Mapping):
         translation.
 
         """
-        return '<http://reference.metoffice.gov.uk/um/f3/UMField>'
+        return FORMAT_URIS['umf']
 
     @property
     def target_scheme(self):
@@ -521,7 +520,7 @@ class StashCFMapping(Mapping):
         translation.
 
         """
-        return '<http://def.scitools.org.uk/cfdatamodel/Field>'
+        return FORMAT_URIS['cff']
 
     def valid_mapping(self, mapping):
         """
@@ -551,7 +550,9 @@ class GRIB1LocalParamCFMapping(Mapping):
     """
     def _key(self, line):
         """Provides the sort key of the mappings order."""
-        match = re.match('^    G1LocalParam\(([0-9]+), ([0-9]+), ([0-9]+), ([0-9]+)\):.*', line)
+        matchstr = ('^    G1LocalParam\(([0-9]+), ([0-9]+), '
+                         '([0-9]+), ([0-9]+)\):.*')
+        match = re.match(matchstr, line)
         if match is None:
             raise ValueError('encoding not sortable')
         return [int(i) for i in match.groups()]
@@ -563,10 +564,6 @@ class GRIB1LocalParamCFMapping(Mapping):
                 '{long_name!r}, {units!r}),\n')
 
     def get_initial_id_nones(self):
-        """
-        Return the identifier items which may be None, and are needed
-        for a msg_string 
-        """
         sourceid = {}
         targetid = {'standard_name': None, 'long_name': None}
         return sourceid, targetid
@@ -588,7 +585,7 @@ class GRIB1LocalParamCFMapping(Mapping):
         translation.
 
         """
-        return '<http://codes.wmo.int/def/codeform/GRIB-message>'
+        return FORMAT_URIS['gribm']
 
     @property
     def target_scheme(self):
@@ -598,7 +595,7 @@ class GRIB1LocalParamCFMapping(Mapping):
         translation.
 
         """
-        return '<http://def.scitools.org.uk/cfdatamodel/Field>'
+        return FORMAT_URIS['cff']
 
     def valid_mapping(self, mapping):
         """
@@ -639,10 +636,6 @@ class CFGRIB1LocalParamMapping(Mapping):
                 '{centre}, {indicatorOfParameter}),\n')
 
     def get_initial_id_nones(self):
-        """
-        Return the identifier items which may be None, and are needed
-        for a msg_string 
-        """
         sourceid = {'standard_name': None, 'long_name': None}
         targetid = {}
         return sourceid, targetid
@@ -664,7 +657,7 @@ class CFGRIB1LocalParamMapping(Mapping):
         translation.
 
         """
-        return '<http://def.scitools.org.uk/cfdatamodel/Field>'
+        return FORMAT_URIS['cff']
 
     @property
     def target_scheme(self):
@@ -674,7 +667,7 @@ class CFGRIB1LocalParamMapping(Mapping):
         translation.
 
         """
-        return '<http://codes.wmo.int/def/codeform/GRIB-message>'
+        return FORMAT_URIS['gribm']
 
     def valid_mapping(self, mapping):
         """
@@ -718,10 +711,6 @@ class GRIB1LocalParamCFConstrainedMapping(Mapping):
                 '{dim_coord[units]!r}, {dim_coord[points]})),\n')
 
     def get_initial_id_nones(self):
-        """
-        Return the identifier items which may be None, and are needed
-        for a msg_string 
-        """
         sourceid = {}
         targetid = {'standard_name': None, 'long_name': None}
         return sourceid, targetid
@@ -743,7 +732,7 @@ class GRIB1LocalParamCFConstrainedMapping(Mapping):
         translation.
 
         """
-        return '<http://codes.wmo.int/def/codeform/GRIB-message>'
+        return FORMAT_URIS['gribm']
 
     @property
     def target_scheme(self):
@@ -753,7 +742,7 @@ class GRIB1LocalParamCFConstrainedMapping(Mapping):
         translation.
 
         """
-        return '<http://def.scitools.org.uk/cfdatamodel/Field>'
+        return FORMAT_URIS['cff']
 
     def valid_mapping(self, mapping):
         """
@@ -799,10 +788,6 @@ class CFConstrainedGRIB1LocalParamMapping(Mapping):
                 '{centre}, {indicatorOfParameter}),\n')
 
     def get_initial_id_nones(self):
-        """
-        Return the identifier items which may be None, and are needed
-        for a msg_string 
-        """
         sourceid = {'standard_name': None, 'long_name': None}
         targetid = {}
         return sourceid, targetid
@@ -824,7 +809,7 @@ class CFConstrainedGRIB1LocalParamMapping(Mapping):
         translation.
 
         """
-        return '<http://def.scitools.org.uk/cfdatamodel/Field>'
+        return FORMAT_URIS['cff']
 
     @property
     def target_scheme(self):
@@ -834,7 +819,7 @@ class CFConstrainedGRIB1LocalParamMapping(Mapping):
         translation.
 
         """
-        return '<http://codes.wmo.int/def/codeform/GRIB-message>'
+        return FORMAT_URIS['gribm']
 
     def valid_mapping(self, mapping):
         """
@@ -867,7 +852,9 @@ class GRIB2ParamCFMapping(Mapping):
     """
     def _key(self, line):
         """Provides the sort key of the mappings order."""
-        match = re.match('^    G2Param\(([0-9]+), ([0-9]+), ([0-9]+), ([0-9]+)\):.*', line)
+        matchstr = ('^    G2Param\(([0-9]+), ([0-9]+), ([0-9]+), '
+                    '([0-9]+)\):.*')
+        match = re.match(matchstr, line)
         if match is None:
             raise ValueError('encoding not sortable')
         return [int(i) for i in match.groups()]
@@ -879,10 +866,6 @@ class GRIB2ParamCFMapping(Mapping):
                 '{units!r}),\n')
 
     def get_initial_id_nones(self):
-        """
-        Return the identifier items which may be None, and are needed
-        for a msg_string 
-        """
         sourceid = {}
         targetid = {'standard_name': None, 'long_name': None}
         return sourceid, targetid
@@ -904,7 +887,7 @@ class GRIB2ParamCFMapping(Mapping):
         translation.
 
         """
-        return '<http://codes.wmo.int/def/codeform/GRIB-message>'
+        return FORMAT_URIS['gribm']
 
     @property
     def target_scheme(self):
@@ -914,7 +897,7 @@ class GRIB2ParamCFMapping(Mapping):
         translation.
 
         """
-        return '<http://def.scitools.org.uk/cfdatamodel/Field>'
+        return FORMAT_URIS['cff']
 
     def valid_mapping(self, mapping):
         """
@@ -955,10 +938,6 @@ class CFGRIB2ParamMapping(Mapping):
                 '{parameterCategory}, {parameterNumber}),\n')
 
     def get_initial_id_nones(self):
-        """
-        Return the identifier items which may be None, and are needed
-        for a msg_string 
-        """
         sourceid = {'standard_name': None, 'long_name': None}
         targetid = {}
         return sourceid, targetid
@@ -980,7 +959,7 @@ class CFGRIB2ParamMapping(Mapping):
         translation.
 
         """
-        return '<http://def.scitools.org.uk/cfdatamodel/Field>'
+        return FORMAT_URIS['cff']
 
     @property
     def target_scheme(self):
@@ -990,7 +969,7 @@ class CFGRIB2ParamMapping(Mapping):
         translation.
 
         """
-        return '<http://codes.wmo.int/def/codeform/GRIB-message>'
+        return FORMAT_URIS['gribm']
 
     def valid_mapping(self, mapping):
         """
