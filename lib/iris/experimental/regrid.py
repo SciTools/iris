@@ -35,6 +35,12 @@ import iris.cube
 import iris.unit
 
 
+_Version = collections.namedtuple('Version',
+                                  ('major', 'minor', 'micro'))
+_NP_VERSION = _Version(*(int(val) for val in
+                         np.version.version.split('.')))
+
+
 def _snapshot_grid(cube):
     """
     Helper function that returns deep copies of lateral dimension coordinates
@@ -1018,11 +1024,7 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
                 # Numpy 1.7 allows the axis keyword arg to be a tuple.
                 # If the version of NumPy is less than 1.7 manipulate the axes
                 # of the data so the x and y dimensions can be flattened.
-                Version = collections.namedtuple('Version',
-                                                 ('major', 'minor', 'micro'))
-                np_version = Version(*(int(val) for val in
-                                       np.version.version.split('.')))
-                if np_version.minor < 7:
+                if _NP_VERSION.minor < 7:
                     if y_dim is not None and x_dim is not None:
                         flattened_shape = list(data.shape)
                         if y_dim > x_dim:
