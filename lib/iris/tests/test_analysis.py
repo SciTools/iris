@@ -672,46 +672,6 @@ class TestAreaWeights(tests.IrisTest):
         self.assertCML(small_cube, ('analysis', 'areaweights_original.cml'),
                        checksum=False)
 
-    def test_quadrant_area(self):
-
-        degrees = iris.unit.Unit("degrees")
-        radians = iris.unit.Unit("radians")
-
-        def lon2radlon(lons):
-            return [degrees.convert(lon, radians) for lon in lons]
-
-        def lat2radcolat(lats):
-            return [degrees.convert(lat + 90, radians) for lat in lats]
-
-        lats = np.array([lat2radcolat([-80, -70])])
-        lons = np.array([lon2radlon([0, 10])])
-        area = iris.analysis.cartography._quadrant_area(lats, lons, iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS)
-        self.assertAlmostEquals(area, [[319251845980.763671875]])
-
-        lats = np.array([lat2radcolat([0, 10])])
-        lons = np.array([lon2radlon([0, 10])])
-        area = iris.analysis.cartography._quadrant_area(lats, lons, iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS)
-        self.assertAlmostEquals(area, [[1228800593851.443115234375]])
-
-        lats = np.array([lat2radcolat([10, 0])])
-        lons = np.array([lon2radlon([0, 10])])
-        area = iris.analysis.cartography._quadrant_area(lats, lons, iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS)
-        self.assertAlmostEquals(area, [[1228800593851.443115234375]])
-
-        lats = np.array([lat2radcolat([70, 80])])
-        lons = np.array([lon2radlon([0, 10])])
-        area = iris.analysis.cartography._quadrant_area(lats, lons, iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS)
-        self.assertAlmostEquals(area, [[319251845980.7646484375]])
-
-        lats = np.array([lat2radcolat([-80, -70]), lat2radcolat([0, 10]), lat2radcolat([70, 80])])
-        lons = np.array([lon2radlon([0, 10])])
-        area = iris.analysis.cartography._quadrant_area(lats, lons, iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS)
-
-        self.assertAlmostEquals(area[0], [319251845980.763671875])
-        self.assertAlmostEquals(area[1], [1228800593851.443115234375])
-        self.assertAlmostEquals(area[2], [319251845980.7646484375])
-
-
 class TestAreaWeightGeneration(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.realistic_4d()
