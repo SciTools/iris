@@ -16,7 +16,7 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
 Test function
-:func:`iris.fileformats.grib._load_convert.product_definition_template_0`.
+:func:`iris.fileformats.grib._load_convert.product_definition_template_1`.
 
 """
 
@@ -29,7 +29,8 @@ import warnings
 
 import mock
 
-from iris.fileformats.grib._load_convert import product_definition_template_0
+from iris.coords import DimCoord
+from iris.fileformats.grib._load_convert import product_definition_template_1
 
 
 class Test(tests.IrisTest):
@@ -37,17 +38,9 @@ class Test(tests.IrisTest):
         module = 'iris.fileformats.grib._load_convert'
         patch = []
         patch.append(mock.patch('warnings.warn'))
-        this = '{}.data_cutoff'.format(module)
-        patch.append(mock.patch(this))
-        this = '{}.forecast_period_coord'.format(module)
-        self.forecast_period = mock.sentinel.forecast_period
-        patch.append(mock.patch(this, return_value=self.forecast_period))
-        this = '{}.validity_time_coord'.format(module)
-        self.time = mock.sentinel.time
-        patch.append(mock.patch(this, return_value=self.time))
-        this = '{}.vertical_coords'.format(module)
-        self.factory = mock.sentinel.factory
-        func = lambda s, m: m['factories'].append(self.factory)
+        this = '{}.product_definition_template_0'.format(module)
+        self.cell_method = mock.sentinel.cell_method
+        func = lambda s, m, f: m['cell_methods'].append(self.cell_method)
         patch.append(mock.patch(this, side_effect=func))
         self.metadata = {'factories': [], 'references': [],
                          'standard_name': None,
@@ -62,27 +55,24 @@ class Test(tests.IrisTest):
         this = 'iris.fileformats.grib._load_convert.options'
         with mock.patch(this, warn_on_unsupported=request_warning):
             metadata = deepcopy(self.metadata)
-            indicator = mock.sentinel.indicatorOfUnitOfTimeRange
-            section = {'hoursAfterDataCutoff': None,
-                       'minutesAfterDataCutoff': None,
-                       'indicatorOfUnitOfTimeRange': indicator,
-                       'forecastTime': mock.sentinel.forecastTime}
+            perturbationNumber = 666
+            section = {'perturbationNumber': perturbationNumber}
             forecast_reference_time = mock.sentinel.forecast_reference_time
             # The called being tested.
-            product_definition_template_0(section, metadata,
+            product_definition_template_1(section, metadata,
                                           forecast_reference_time)
             expected = deepcopy(self.metadata)
-            expected['factories'].append(self.factory)
-            expected['aux_coords_and_dims'] = [(self.forecast_period, None),
-                                               (self.time, None),
-                                               (forecast_reference_time, None)]
+            expected['cell_methods'].append(self.cell_method)
+            realization = DimCoord(perturbationNumber,
+                                   standard_name='realization',
+                                   units='no_unit')
+            expected['aux_coords_and_dims'].append((realization, None))
             self.assertEqual(metadata, expected)
             if request_warning:
-                self.assertEqual(len(warnings.warn.mock_calls), 3)
+                self.assertEqual(len(warnings.warn.mock_calls), 2)
                 _, args, _ = zip(*warnings.warn.mock_calls)
                 args = [arg[0] for arg in args]
-                msgs = ['type of generating', 'background generating',
-                        'forecast generating']
+                msgs = ['type of ensemble', 'number of forecasts']
                 for msg in msgs:
                     self.assertTrue(any([msg in arg for arg in args]))
             else:

@@ -22,7 +22,6 @@ import iris.tests as tests
 
 import mock
 
-import iris
 from iris.exceptions import TranslationError
 from iris.fileformats.grib._message import _GribMessage
 from iris.fileformats.grib._load_convert import convert
@@ -37,6 +36,7 @@ class Test(tests.IrisTest):
         factory = mock.sentinel.factory
         func = lambda field, metadata: metadata['factories'].append(factory)
         with mock.patch(this, side_effect=func) as grib2_convert:
+            # The call being tested.
             result = convert(field)
             self.assertTrue(grib2_convert.called)
             metadata = ([factory], [], None, None, None, {}, [], [], [])

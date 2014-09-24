@@ -23,7 +23,6 @@ Test function :func:`iris.fileformats.grib._load_convert.ellipsoid.
 # before importing anything else.
 import iris.tests as tests
 
-import iris
 import iris.coord_systems as icoord_systems
 from iris.exceptions import TranslationError
 from iris.fileformats.grib._load_convert import ellipsoid
