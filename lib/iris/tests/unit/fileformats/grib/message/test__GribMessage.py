@@ -75,7 +75,7 @@ class Test_data__unsupported(tests.IrisTest):
             {3: {'sourceOfGridDefinition': 0,
                  'numberOfOctectsForNumberOfPoints': 0,
                  'interpretationOfNumberOfPoints': 0,
-                 'gridDefinitionTemplateNumber': 1}})
+                 'gridDefinitionTemplateNumber': 2}})
         with self.assertRaisesRegexp(TranslationError, 'template'):
             message.data
 

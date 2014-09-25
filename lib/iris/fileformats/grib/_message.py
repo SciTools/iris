@@ -99,7 +99,7 @@ class _GribMessage(object):
                                    'unsupported quasi-regular grid.')
 
         template = grid_section['gridDefinitionTemplateNumber']
-        if template == 0:
+        if template in (0, 1):
             # We can ignore the first two bits (i-neg, j-pos) because
             # that is already captured in the coordinate values.
             if grid_section['scanningMode'] & 0x3f:
