@@ -946,5 +946,15 @@ class Test_regrid(tests.IrisTest):
         self.assertEqual(result, (scheme, cube, mock.sentinel.TARGET, cube))
 
 
+class Test_copy(tests.IrisTest):
+
+    def test(self):
+        cube = stock.simple_3d_mask()
+        cube_copy = cube.copy()
+        self.assertNotEqual(id(cube), id(cube_copy))
+        self.assertNotEqual(id(cube.data), id(cube_copy.data))
+        self.assertNotEqual(id(cube.data.mask), id(cube_copy.data.mask))
+
+
 if __name__ == '__main__':
     tests.main()
