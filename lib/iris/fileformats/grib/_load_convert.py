@@ -416,8 +416,8 @@ def translate_phenomenon(metadata, discipline, parameterCategory,
 
 def time_range_unit(indicatorOfUnitOfTimeRange):
     """
-    Translate the time range indicator to a UDUNITS-2 parsable
-    units time string.
+    Translate the time range indicator to an equivalent
+    :class:`iris.unit.Unit`.
 
     Args:
 
