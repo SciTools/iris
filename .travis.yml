@@ -35,15 +35,15 @@ install:
   # ------------------------------------
   - conda config --set always_yes yes --set changeps1 no
   - conda config --set show_channel_urls True
-  - conda update conda
+  - conda update --quiet conda
   - ENV_NAME='test-environment'
-  - conda create -n $ENV_NAME python=$TRAVIS_PYTHON_VERSION
+  - conda create --quiet -n $ENV_NAME python=$TRAVIS_PYTHON_VERSION
   - source activate $ENV_NAME
 
   # Customise the testing environment
   # ---------------------------------
   - conda config --add channels scitools
-  - conda install --file conda-requirements.txt
+  - conda install --quiet --file conda-requirements.txt
 
   - PREFIX=$HOME/miniconda/envs/$ENV_NAME
 
