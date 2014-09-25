@@ -86,8 +86,8 @@ install:
   - echo "udunits2_path = $PREFIX/lib/libudunits2.so" >> $SITE_CFG
 
 # iris
-  - python setup.py --with-unpack build
-  - python setup.py --with-unpack install
+  - python setup.py --quiet --with-unpack build
+  - python setup.py --quiet --with-unpack install
 
 script:
   - python -m iris.tests.runner --example-tests
