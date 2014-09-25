@@ -167,6 +167,31 @@ def ellipsoid(shapeOfTheEarth):
 
 
 def grid_definition_template_0_and_1(section, metadata, y_name, x_name, cs):
+    """
+    Translate templates representing regularly spaced latitude/longitude
+    on either a standard or rotated grid.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 3 of the message
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    * y_name:
+        Name of the Y coordinate, e.g. latitude or grid_latitude.
+
+    * x_name:
+        Name of the X coordinate, e.g. longitude or grid_longitude.
+
+    * cs:
+        The :class:`iris.coord_systems.CoordSystem` to use when creating
+        the X and Y coordinates.
+
+    """
     scan = scanning_mode(section['scanningMode'])
 
     # Calculate longitude points.
