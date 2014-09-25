@@ -40,7 +40,7 @@ class Test(tests.IrisTest):
             ellipsoid(shape)
 
     def test_shape_unsupported(self):
-        unsupported = [1, 2, 3, 4, 5, 7, 8, 9]
+        unsupported = [1, 2, 4, 5, 7, 8, 9]
         emsg = 'unsupported shape of the earth'
         for shape in unsupported:
             with self.assertRaisesRegexp(TranslationError, emsg):
@@ -48,10 +48,31 @@ class Test(tests.IrisTest):
 
     def test_shape_supported(self):
         cs_by_shape = {0: icoord_systems.GeogCS(6367470),
-                       6: icoord_systems.GeogCS(6371229),
-                       }
+                       6: icoord_systems.GeogCS(6371229)}
         for shape, expected in cs_by_shape.items():
             self.assertEqual(ellipsoid(shape), expected)
+
+    def test_shape_3_no_axes(self):
+        emsg = 'axis to be specified'
+        with self.assertRaisesRegexp(ValueError, emsg):
+            ellipsoid(3)
+
+    def test_shape_3_no_major(self):
+        emsg = 'major axis to be specified'
+        with self.assertRaisesRegexp(ValueError, emsg):
+            ellipsoid(3, minor=1)
+
+    def test_shape_3_no_minor(self):
+        emsg = 'minor axis to be specified'
+        with self.assertRaisesRegexp(ValueError, emsg):
+            ellipsoid(3, major=1)
+
+    def test_shape_3(self):
+        # In units of km.
+        major, minor = 1, 10
+        result = ellipsoid(3, major, minor)
+        expected = icoord_systems.GeogCS(major * 1000, minor * 1000)
+        self.assertEqual(result, expected)
 
 
 if __name__ == '__main__':
