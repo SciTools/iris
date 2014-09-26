@@ -47,6 +47,7 @@ import iris.exceptions
 import iris.util
 
 from iris._cube_coord_common import CFVariableMixin
+from functools import reduce
 
 
 __all__ = ['Cube', 'CubeList', 'CubeMetadata']
