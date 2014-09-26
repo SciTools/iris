@@ -1498,7 +1498,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         return tuple((coord for coord, dim in
                       sorted(self._dim_coords_and_dims,
-                             key=lambda (coord, dim): (dim, coord.name()))))
+                             key=lambda co_di: (co_di[1], co_di[0].name()))))
 
     @property
     def aux_coords(self):
@@ -1509,7 +1509,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         return tuple((coord for coord, dims in
                       sorted(self._aux_coords_and_dims,
-                             key=lambda (coord, dims): (dims, coord.name()))))
+                             key=lambda co_di: (co_di[1], co_di[0].name()))))
 
     @property
     def derived_coords(self):

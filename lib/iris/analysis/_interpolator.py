@@ -464,8 +464,8 @@ class LinearInterpolator(object):
         di = self._interp_dims
         ds = sorted(dims, key=lambda d: d not in di)
         dmap = {d: di.index(d) if d in di else ds.index(d) for d in dims}
-        interp_order, _ = zip(*sorted(dmap.items(), key=lambda (x, fx):  fx))
-        _, src_order = zip(*sorted(dmap.items(), key=lambda (x, fx): x))
+        interp_order, _ = zip(*sorted(dmap.items(), key=lambda x_fx:  x_fx[1]))
+        _, src_order = zip(*sorted(dmap.items(), key=lambda x_fx: x_fx[0]))
 
         # Prepare the sample points for interpolation and calculate the
         # shape of the interpolated result.
