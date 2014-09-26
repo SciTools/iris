@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import numpy.ma as ma
 
 import iris
+import iris.plot as iplt
 import iris.quickplot as qplt
 
 
@@ -33,7 +34,7 @@ def main():
     plt.ylabel('latitude / degrees')
     plt.gca().stock_img()
     plt.gca().coastlines()
-    plt.show()
+    iplt.show()
 
 
 if __name__ == '__main__':

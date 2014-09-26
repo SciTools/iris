@@ -10,6 +10,7 @@ a hybrid height vertical coordinate system.
 import matplotlib.pyplot as plt
 
 import iris
+import iris.plot as iplt
 import iris.quickplot as qplt
 
 
@@ -22,13 +23,13 @@ def main():
     cross_section = next(theta.slices(['grid_longitude', 'model_level_number']))
 
     qplt.contourf(cross_section, coords=['grid_longitude', 'altitude'])
-    plt.show()
+    iplt.show()
 
     # Now do the equivalent plot, only against model level
     plt.figure()
 
     qplt.contourf(cross_section, coords=['grid_longitude', 'model_level_number'])
-    plt.show()
+    iplt.show()
 
 
 if __name__ == '__main__':

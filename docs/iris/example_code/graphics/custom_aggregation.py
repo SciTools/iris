@@ -18,6 +18,7 @@ import numpy as np
 
 import iris
 from iris.analysis import Aggregator
+import iris.plot as iplt
 import iris.quickplot as qplt
 from iris.util import rolling_window
 
@@ -86,7 +87,7 @@ def main():
     # Plot the results.
     qplt.contourf(warm_periods, cmap='RdYlBu_r')
     plt.gca().coastlines()
-    plt.show()
+    iplt.show()
 
 
 if __name__ == '__main__':

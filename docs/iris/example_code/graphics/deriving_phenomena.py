@@ -15,6 +15,7 @@ import matplotlib.ticker
 import iris
 import iris.coords as coords
 import iris.iterate
+import iris.plot as iplt
 import iris.quickplot as qplt
 
 
@@ -72,6 +73,10 @@ def main():
                                             coords=['grid_latitude',
                                                     'grid_longitude'])
 
+    # For the purposes of this example, we only want to demonstrate the first
+    # plot.
+    lat_lon_slice_pairs = [next(lat_lon_slice_pairs)]
+
     plt.figure(figsize=(8, 4))
     for exner_slice, air_temp_slice in lat_lon_slice_pairs:
         plt.subplot(121)
@@ -84,11 +89,7 @@ def main():
         plt.subplot(122)
         cont = qplt.contourf(air_temp_slice)
         limit_colorbar_ticks(cont)
-        plt.show()
-
-        # For the purposes of this example, break after the first loop - we
-        # only want to demonstrate the first plot.
-        break
+        iplt.show()
 
 
 if __name__ == '__main__':

@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 import iris
+import iris.plot as iplt
 import iris.quickplot as qplt
 import iris.unit
 
@@ -40,7 +41,7 @@ def main():
     # And format the ticks to just show the year
     plt.gca().yaxis.set_major_formatter(mdates.DateFormatter('%Y'))
 
-    plt.show()
+    iplt.show()
 
 
 if __name__ == '__main__':

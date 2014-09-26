@@ -119,7 +119,7 @@ def main():
         cbar.set_label(e1_slice.units)
         cbar.ax.tick_params(length=0)
 
-        plt.show()
+        iplt.show()
 
 
 if __name__ == '__main__':

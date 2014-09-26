@@ -90,7 +90,7 @@ def main():
     plt.xlabel('Time')
     plt.ylabel('SOI')
     plt.legend(fontsize=10)
-    plt.show()
+    iplt.show()
 
 
 if __name__ == '__main__':

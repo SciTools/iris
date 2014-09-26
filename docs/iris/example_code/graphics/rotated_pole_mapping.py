@@ -30,20 +30,20 @@ def main():
     cb = plt.colorbar(points, orientation='horizontal')
     cb.set_label(air_pressure.units)
     plt.gca().coastlines()
-    plt.show()
+    iplt.show()
 
     # Plot #2: Contourf of the point based data
     plt.figure()
     qplt.contourf(air_pressure, 15)
     plt.gca().coastlines()
-    plt.show()
+    iplt.show()
 
     # Plot #3: Contourf overlayed by coloured point data
     plt.figure()
     qplt.contourf(air_pressure)
     iplt.points(air_pressure, c=air_pressure.data)
     plt.gca().coastlines()
-    plt.show()
+    iplt.show()
 
     # For the purposes of this example, add some bounds to the latitude
     # and longitude
@@ -56,7 +56,7 @@ def main():
     iplt.pcolormesh(air_pressure)
     plt.gca().stock_img()
     plt.gca().coastlines()
-    plt.show()
+    iplt.show()
 
 
 if __name__ == '__main__':

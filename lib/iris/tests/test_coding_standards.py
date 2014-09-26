@@ -164,7 +164,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
             '*/src/sphinxext/gen_gallery.py',
             '*/src/sphinxext/gen_rst.py',
             '*/src/sphinxext/generate_package_rst.py',
-            '*/src/sphinxext/plot_directive.py',
             '*/src/userguide/plotting_examples/1d_with_legend.py']
 
         expected_bad_files += expected_bad_docs_files
@@ -334,7 +333,6 @@ class TestLicenseHeaders(unittest.TestCase):
                             'docs/iris/src/developers_guide/documenting/*.py',
                             'docs/iris/src/sphinxext/gen_gallery.py',
                             'docs/iris/src/sphinxext/gen_rst.py',
-                            'docs/iris/src/sphinxext/plot_directive.py',
                             'docs/iris/src/userguide/plotting_examples/*.py',
                             'docs/iris/src/userguide/regridding_plots/*.py',
                             'docs/iris/src/developers_guide/gitwash_dumper.py',
@@ -383,7 +381,6 @@ class TestFutureImports(unittest.TestCase):
         '*/docs/iris/example_code/graphics/*.py',
         '*/docs/iris/src/developers_guide/documenting/*.py',
         '*/docs/iris/src/sphinxext/gen_rst.py',
-        '*/docs/iris/src/sphinxext/plot_directive.py',
     )
 
     future_imports_pattern = re.compile(

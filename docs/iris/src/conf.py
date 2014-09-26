@@ -62,9 +62,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.doctest',
               'matplotlib.sphinxext.mathmpl',
               'matplotlib.sphinxext.only_directives',
-
-              #'matplotlib.sphinxext.plot_directive',
-              'plot_directive',
+              'matplotlib.sphinxext.plot_directive',
 
               # better class documentation
               'custom_class_autodoc',

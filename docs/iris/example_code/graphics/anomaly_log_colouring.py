@@ -100,7 +100,7 @@ def main():
     plt.title(plot_title)
 
     # Display the result.
-    plt.show()
+    iplt.show()
 
 
 if __name__ == '__main__':

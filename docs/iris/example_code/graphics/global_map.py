@@ -10,6 +10,7 @@ import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 
 import iris
+import iris.plot as iplt
 import iris.quickplot as qplt
 
 
@@ -28,7 +29,7 @@ def main():
     ax = plt.subplot(122, projection=proj)
     qplt.contourf(temperature, 15)
     plt.gca().coastlines()
-    plt.show()
+    iplt.show()
 
 if __name__ == '__main__':
     main()
