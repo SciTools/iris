@@ -313,7 +313,7 @@ class TestCubeStringRepresentations(IrisDotTest):
         
         # Create a list of values used to create cell methods
         test_values = ((("mean",), (u'longitude', 'latitude'), (u'6 minutes', '12 minutes'), (u'This is a test comment',)),
-                        (("average",), (u'longitude', 'latitude'), (u'6 minutes', '15 minutes'), (u'This is another test comment','This is another comment')),
+                        (("average",), (u'longitude', 'latitude'), (u'6 minutes', '15 minutes'), (u'This is another test comment', 'This is another comment')),
                         (("average",), (u'longitude', 'latitude'), (), ()),
                         (("percentile",), (u'longitude',), (u'6 minutes',), (u'This is another test comment',)))
         

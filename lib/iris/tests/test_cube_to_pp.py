@@ -145,7 +145,7 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
 
     def add_coords_to_cube_and_test(self, coord1, coord2):
         # a wrapper for creating arbitrary 2d cross-sections and run pp-saving tests
-        dataarray = np.arange(16, dtype='>f4').reshape(4,4)
+        dataarray = np.arange(16, dtype='>f4').reshape(4, 4)
         cm = iris.cube.Cube(data=dataarray)
 
         cm.add_dim_coord(coord1, 0)
@@ -211,10 +211,10 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
             
 class FakePPEnvironment(object):
     ''' fake a minimal PP environment for use in cross-section coords, as in PP save rules '''
-    y = [1,2,3,4]
-    z = [111,222,333,444]
-    y_bounds = [[0.9,1.1], [1.9,2.1], [2.9,3.1], [3.9,4.1]]
-    z_bounds = [[110.9,111.1], [221.9,222.1], [332.9,333.1], [443.9,444.1]]
+    y = [1, 2, 3, 4]
+    z = [111, 222, 333, 444]
+    y_bounds = [[0.9, 1.1], [1.9, 2.1], [2.9, 3.1], [3.9, 4.1]]
+    z_bounds = [[110.9, 111.1], [221.9, 222.1], [332.9, 333.1], [443.9, 444.1]]
 
     def geog_cs(self):
         """Return a GeogCS for this PPField.

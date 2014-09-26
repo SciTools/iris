@@ -162,8 +162,7 @@ class StandardReportWithExclusions(pep8.StandardReport):
             '*/src/sphinxext/gen_rst.py',
             '*/src/sphinxext/generate_package_rst.py',
             '*/src/sphinxext/plot_directive.py',
-            '*/src/userguide/plotting_examples/1d_with_legend.py',
-            '*/src/userguide/plotting_examples/brewer.py']
+            '*/src/userguide/plotting_examples/1d_with_legend.py']
 
         expected_bad_files += expected_bad_docs_files
 

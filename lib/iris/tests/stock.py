@@ -372,7 +372,7 @@ def hybrid_height():
 
 
 def simple_4d_with_hybrid_height():
-    cube = iris.cube.Cube(np.arange(3*4*5*6, dtype='i8').reshape(3,4,5,6),
+    cube = iris.cube.Cube(np.arange(3*4*5*6, dtype='i8').reshape(3, 4, 5, 6),
                           "air_temperature", units="K")
 
     cube.add_dim_coord(iris.coords.DimCoord(np.arange(3, dtype='i8'), "time",
@@ -391,9 +391,9 @@ def simple_4d_with_hybrid_height():
                                             units="m"), 1)
     cube.add_aux_coord(iris.coords.AuxCoord(np.arange(4, dtype='i8')+50,
                                             long_name="sigma", units="1"), 1)
-    cube.add_aux_coord(iris.coords.AuxCoord(np.arange(5*6, dtype='i8').reshape(5,6)+100,
+    cube.add_aux_coord(iris.coords.AuxCoord(np.arange(5*6, dtype='i8').reshape(5, 6)+100,
                                             long_name="surface_altitude",
-                                            units="m"), [2,3])
+                                            units="m"), [2, 3])
 
     cube.add_aux_factory(iris.aux_factory.HybridHeightFactory(
                                     delta=cube.coord("level_height"),

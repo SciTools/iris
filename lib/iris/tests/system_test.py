@@ -65,7 +65,7 @@ class SystemInitialTest(tests.IrisTest):
 
         cm.assert_valid()
 
-        for filetype in ('.nc', '.pp' , '.grib2'):
+        for filetype in ('.nc', '.pp', '.grib2'):
             saved_tmpfile = iris.util.create_temp_filename(suffix=filetype)
             iris.save(cm, saved_tmpfile)
 

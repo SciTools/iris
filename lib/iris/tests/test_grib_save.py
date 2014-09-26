@@ -231,7 +231,7 @@ class TestHandmade(tests.IrisTest):
 
     def _cube_with_time_bounds(self):
         cube = self._cube_with_pressure()
-        cube.coord("time").bounds = np.array([[0,100]])
+        cube.coord("time").bounds = np.array([[0, 100]])
         return cube
 
     def test_no_time_cube(self):

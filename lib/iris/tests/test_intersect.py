@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -32,11 +32,11 @@ import iris.tests.stock
 
 class TestCubeIntersectTheoretical(tests.IrisTest):
     def test_simple_intersect(self):
-        cube = iris.cube.Cube(np.array([[1,2,3,4,5],
-                                           [2,3,4,5,6],
-                                           [3,4,5,6,7],
-                                           [4,5,6,7,8],
-                                           [5,6,7,8,9]], dtype=np.int32))
+        cube = iris.cube.Cube(np.array([[1, 2, 3, 4, 5],
+                                        [2, 3, 4, 5, 6],
+                                        [3, 4, 5, 6, 7],
+                                        [4, 5, 6, 7, 8],
+                                        [5, 6, 7, 8, 9]], dtype=np.int32))
 
         lonlat_cs = iris.coord_systems.RotatedGeogCS(10, 20)
         cube.add_dim_coord(iris.coords.DimCoord(np.arange(5, dtype=np.float32) * 90 - 180, 'longitude', units='degrees', coord_system=lonlat_cs), 1)
@@ -45,11 +45,11 @@ class TestCubeIntersectTheoretical(tests.IrisTest):
         cube.rename("temperature")
         cube.units = "K"
 
-        cube2 = iris.cube.Cube(np.array([[1,2,3,4,5],
-                                            [2,3,4,5,6],
-                                            [3,4,5,6,7],
-                                            [4,5,6,7,8],
-                                            [5,6,7,8,50]], dtype=np.int32))
+        cube2 = iris.cube.Cube(np.array([[1, 2, 3, 4, 5],
+                                         [2, 3, 4, 5, 6],
+                                         [3, 4, 5, 6, 7],
+                                         [4, 5, 6, 7, 8],
+                                         [5, 6, 7, 8, 50]], dtype=np.int32))
 
         lonlat_cs = iris.coord_systems.RotatedGeogCS(10, 20)
         cube2.add_dim_coord(iris.coords.DimCoord(np.arange(5, dtype=np.float32) * 90, 'longitude', units='degrees', coord_system=lonlat_cs), 1)
