@@ -34,7 +34,7 @@ try:
     import ESMF
     # Check it *is* the real module, and not an iris.proxy FakeModule.
     ESMF.Manager
-except ImportError, AttributeError:
+except ImportError as AttributeError:
     ESMF = None
 skip_esmf = unittest.skipIf(
     condition=ESMF is None,

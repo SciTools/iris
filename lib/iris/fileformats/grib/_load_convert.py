@@ -430,7 +430,7 @@ def time_range_unit(indicatorOfUnitOfTimeRange):
     """
     try:
         unit = Unit(_TIME_RANGE_UNITS[indicatorOfUnitOfTimeRange])
-    except KeyError, ValueError:
+    except (KeyError, ValueError):
         msg = 'Product definition section 4 contains unsupported ' \
             'time range unit [{}]'.format(indicatorOfUnitOfTimeRange)
         raise TranslationError(msg)

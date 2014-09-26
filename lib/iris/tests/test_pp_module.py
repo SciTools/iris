@@ -150,7 +150,7 @@ class TestPPHeaderDerived(unittest.TestCase):
             print self.pp.lbproc.flag65537
         except AttributeError:
             pass
-        except Exception, err:
+        except Exception as err:
             self.fail("Should return a better error: " + str(err))
 
 
@@ -382,7 +382,7 @@ class TestBitwiseInt(unittest.TestCase):
     def test_negative_number(self):
         try:
             _ = pp.BitwiseInt(-5)
-        except ValueError, err:
+        except ValueError as err:
             self.assertEqual(str(err), 'Negative numbers not supported with splittable integers object')
 
     def test_128(self):
@@ -492,7 +492,7 @@ class TestSplittableInt(unittest.TestCase):
         self.assertRaises(ValueError, pp.SplittableInt, -5)
         try:
             _ = pp.SplittableInt(-5)
-        except ValueError, err:
+        except ValueError as err:
             self.assertEqual(str(err), 'Negative numbers not supported with splittable integers object')
 
             
