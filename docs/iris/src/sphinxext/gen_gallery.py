@@ -88,8 +88,7 @@ images = new Array();
 
 '''
 
-    random_image_template = "['%(thumbfile)s', '%(full_image)s', " + \
-                            "'%(link)s', 'Iris examples.'];"
+    random_image_template = "['%(thumbfile)s', '%(full_image)s', '%(link)s'];"
     random_image_join = 'images[%s] = %s'
 
     dirs = ('graphics', )

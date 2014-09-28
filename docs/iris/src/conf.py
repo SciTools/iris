@@ -73,6 +73,9 @@ extensions = ['sphinx.ext.autodoc',
               'gen_example_directory',
               'generate_package_rst',
               'gen_gallery',
+
+              # Add labels to figures automatically
+              'auto_label_figures',
               ]
 
 # list of packages to document
