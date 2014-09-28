@@ -322,7 +322,7 @@ class TestBasicMaths(tests.IrisTest):
             my_ifunc(a)
 
         my_ifunc = iris.analysis.maths.IFunc(
-                   lambda a: (a**0.5, a**2.0),
+                   lambda a: (a, a**2.0),
                    lambda cube: iris.unit.Unit('1')
                    )
 

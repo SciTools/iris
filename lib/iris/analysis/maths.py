@@ -681,7 +681,7 @@ class IFunc(object):
             (args, varargs, keywords, defaults) = inspect.getargspec(data_func)
             self.nin = len(args) - (len(defaults) if defaults is not None else 0)
 
-        if not self.nin in [1, 2]:
+        if self.nin not in [1, 2]:
             msg = ('{} requires {} input data arrays, the IFunc class currently only supports '
                    'functions requiring 1 or two data arrays as input.')
             raise ValueError(msg.format(data_func.__name__, self.nin))
