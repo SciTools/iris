@@ -16,9 +16,9 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
 
-"""
+'''
 Generate the rst files for the examples
-"""
+'''
 
 from __future__ import (absolute_import, division, print_function)
 
@@ -28,14 +28,14 @@ import sys
 
 
 def out_of_date(original, derived):
-    """
+    '''
     Returns True if derivative is out-of-date wrt original,
     both of which are full file paths.
 
-    TODO: this check isn't adequate in some cases.  Eg, if we discover
+    TODO: this check isn't adequate in some cases, e.g., if we discover
     a bug when building the examples, the original and derived will be
     unchanged but we still want to force a rebuild.
-    """
+    '''
     return (not os.path.exists(derived) or
             os.stat(derived).st_mtime < os.stat(original).st_mtime)
 
@@ -43,14 +43,15 @@ def out_of_date(original, derived):
 docstring_regex = re.compile(r'[\'\"]{3}(.*?)[\'\"]{3}', re.DOTALL)
 
 
-noplot_regex = re.compile(r"#\s*-\*-\s*noplot\s*-\*-")
+noplot_regex = re.compile(r'#\s*-\*-\s*noplot\s*-\*-')
 
 
 def generate_example_rst(app):
-    # example code can be found at the same level as the documentation src folder
+    # Example code can be found at the same level as the documentation
+    # src folder.
     rootdir = os.path.join(os.path.dirname(app.builder.srcdir), 'example_code')
 
-    # examples are build as a subfolder of the src folder
+    # Examples are built as a subfolder of the src folder.
     exampledir = os.path.join(app.builder.srcdir, 'examples')
 
     if not os.path.exists(exampledir):
@@ -59,27 +60,29 @@ def generate_example_rst(app):
     datad = {}
     for root, subFolders, files in os.walk(rootdir):
         for fname in files:
-            if ( fname.startswith('.') or fname.startswith('#') or fname.startswith('_') or
-                 fname.find('.svn')>=0 or not fname.endswith('.py') ):
+            if (fname.startswith('.') or fname.startswith('#') or
+                    fname.startswith('_') or fname.find('.svn') >= 0 or
+                    not fname.endswith('.py')):
                 continue
 
-            fullpath = os.path.join(root,fname)
-            contents = file(fullpath).read()
+            fullpath = os.path.join(root, fname)
+            with open(fullpath) as fh:
+                contents = fh.read()
             # indent
             relpath = os.path.split(root)[-1]
             datad.setdefault(relpath, []).append((fullpath, fname, contents))
 
     subdirs = sorted(datad.keys())
 
-    fhindex = file(os.path.join(exampledir, 'index.rst'), 'w')
-    fhindex.write("""\
+    fhindex = open(os.path.join(exampledir, 'index.rst'), 'w')
+    fhindex.write('''\
 Iris examples
 =============
 
 .. toctree::
     :maxdepth: 2
 
-""")
+''')
 
     for subdir in subdirs:
         rstdir = os.path.join(exampledir, subdir)
@@ -95,28 +98,31 @@ Iris examples
             os.makedirs(outputdir)
 
         subdirIndexFile = os.path.join(rstdir, 'index.rst')
-        fhsubdirIndex = file(subdirIndexFile, 'w')
-        fhindex.write('    %s/index.rst\n\n' % subdir)
+        fhsubdirIndex = open(subdirIndexFile, 'w')
+        fhindex.write('    {}/index.rst\n'.format(subdir))
 
         subdir_root_path = os.path.join(rootdir, subdir)
 
-        # use the __init__.py file's docstring for the subdir example page (if __init__ exists)
+        # Use the __init__.py file's docstring for the subdir example page (if
+        # __init__ exists).
         if os.path.exists(os.path.join(subdir_root_path, '__init__.py')):
             import imp
-            mod = imp.load_source(subdir, os.path.join(subdir_root_path, '__init__.py'))
+            mod = imp.load_source(
+                subdir,
+                os.path.join(subdir_root_path, '__init__.py'))
             fhsubdirIndex.writelines(mod.__doc__)
         else:
-            fhsubdirIndex.writelines(['Examples in %s\n' % subdir, '='*50])
+            line = 'Examples in {}\n'.format(subdir)
+            fhsubdirIndex.writelines([line, '=' * len(line)])
 
-        # append the code to produce the toctree
-        fhsubdirIndex.write("""\
-
+        # Append the code to produce the toctree.
+        fhsubdirIndex.write('''
 .. toctree::
     :maxdepth: 1
 
-""")
+''')
 
-        sys.stdout.write(subdir + ", ")
+        sys.stdout.write(subdir + ', ')
         sys.stdout.flush()
 
         data = sorted(datad[subdir])
@@ -124,48 +130,43 @@ Iris examples
         for fullpath, fname, contents in data:
             basename, ext = os.path.splitext(fname)
             outputfile = os.path.join(outputdir, fname)
-            #thumbfile = os.path.join(thumb_dir, '%s.png'%basename)
-            #print '    static_dir=%s, basename=%s, fullpath=%s, fname=%s, thumb_dir=%s, thumbfile=%s'%(static_dir, basename, fullpath, fname, thumb_dir, thumbfile)
 
-            rstfile = '%s.rst'%basename
+            rstfile = '{}.rst'.format(basename)
             outrstfile = os.path.join(rstdir, rstfile)
 
-            fhsubdirIndex.write('    %s\n'%rstfile)
+            fhsubdirIndex.write('    {}\n'.format(rstfile))
 
             if not out_of_date(fullpath, outrstfile):
                 continue
 
-            fh = file(outrstfile, 'w')
-            fh.write('.. _%s-%s:\n\n'%(subdir, basename))
+            fh = open(outrstfile, 'w')
+            fh.write('.. _{}-{}:\n\n'.format(subdir, basename))
 
             docstring_results = docstring_regex.search(contents)
             if docstring_results is not None:
-                fh.write( docstring_results.group(1) )
+                fh.write(docstring_results.group(1))
             else:
-                title = '%s example code: %s'%(subdir, fname)
-                #title = '<img src=%s> %s example code: %s'%(thumbfile, subdir, fname)
+                title = '{} example code: {}'.format(subdir, fname)
                 fh.write(title + '\n')
-                fh.write('='*len(title) + '\n\n')
+                fh.write('=' * len(title) + '\n\n')
 
             if not noplot_regex.search(contents):
-                fh.write("\n\n.. plot:: %s\n\n::\n\n" % fullpath)
+                fh.write('\n\n.. plot:: {}\n'.format(fullpath))
+                fh.write('    :include-source:\n\n')
             else:
-                fh.write("[`source code <%s>`_]\n\n::\n\n" % fname)
-                # write the py file contents (we didnt need to do this for plot as the plot directive does this for us.
-                fhstatic = file(outputfile, 'w')
-                fhstatic.write(contents)
-                fhstatic.close()
-
-            # indent the contents
-            contents = '\n'.join(['    %s'%row.rstrip() for row in contents.split('\n')])
-            fh.write(contents)
-            fh.write('\n\n\n\n\n')
+                fh.write('[`source code <{}>`_]\n\n'.format(fname))
+                fh.write('.. literalinclude:: {}\n\n'.format(fname))
+                # Write the .py file contents (we didn't need to do this for
+                # plots as the plot directive does this for us.)
+                with open(outputfile, 'w') as fhstatic:
+                    fhstatic.write(contents)
 
             fh.close()
 
         fhsubdirIndex.close()
 
     fhindex.close()
+
 
 def setup(app):
     app.connect('builder-inited', generate_example_rst)

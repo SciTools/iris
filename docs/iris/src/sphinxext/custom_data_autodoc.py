@@ -38,8 +38,9 @@ class IrisDataDocumenter(DataDocumenter):
         elif self.options.annotation is object():
             pass
         else:
-            self.add_line(u'   :annotation: %s' % self.options.annotation,
-                          '<autodoc>')
+            self.add_line(
+                u'   :annotation: {}'.format(self.options.annotation),
+                '<autodoc>')
 
 
 def handler(app, what, name, obj, options, signature, return_annotation):

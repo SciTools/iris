@@ -159,11 +159,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
             '*/example_tests/test_rotated_pole_mapping.py',
             '*/src/conf.py',
             '*/src/developers_guide/gitwash_dumper.py',
-            '*/src/sphinxext/custom_class_autodoc.py',
-            '*/src/sphinxext/gen_example_directory.py',
-            '*/src/sphinxext/gen_gallery.py',
-            '*/src/sphinxext/gen_rst.py',
-            '*/src/sphinxext/generate_package_rst.py',
             '*/src/userguide/plotting_examples/1d_with_legend.py']
 
         expected_bad_files += expected_bad_docs_files
@@ -332,7 +327,6 @@ class TestLicenseHeaders(unittest.TestCase):
                             'docs/iris/example_code/graphics/*.py',
                             'docs/iris/src/developers_guide/documenting/*.py',
                             'docs/iris/src/sphinxext/gen_gallery.py',
-                            'docs/iris/src/sphinxext/gen_rst.py',
                             'docs/iris/src/userguide/plotting_examples/*.py',
                             'docs/iris/src/userguide/regridding_plots/*.py',
                             'docs/iris/src/developers_guide/gitwash_dumper.py',
@@ -380,7 +374,6 @@ class TestFutureImports(unittest.TestCase):
         '*/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py',
         '*/docs/iris/example_code/graphics/*.py',
         '*/docs/iris/src/developers_guide/documenting/*.py',
-        '*/docs/iris/src/sphinxext/gen_rst.py',
     )
 
     future_imports_pattern = re.compile(
