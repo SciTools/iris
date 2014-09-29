@@ -25,12 +25,11 @@ import numpy as np
 import iris.coords
 from iris._concatenate import concatenate
 import iris.cube
-from iris.cube import CubeList
 from iris.exceptions import ConcatenateError
 import iris.unit
 
 
-class Test_concatenate__epoch(tests.IrisTest):
+class TestEpoch(tests.IrisTest):
     def simple_1d_time_cubes(self, reftimes, coords_points):
         cubes = []
         data_points = [273, 275, 278, 277, 274]
@@ -57,7 +56,7 @@ class Test_concatenate__epoch(tests.IrisTest):
         self.assertEqual(result[0].shape, (10,))
 
 
-class Test_concatenate_messages(tests.IrisTest):
+class TestMessages(tests.IrisTest):
     def setUp(self):
         data = np.arange(24, dtype=np.float32).reshape(2, 3, 4)
         cube = iris.cube.Cube(data, standard_name='air_temperature', units='K')
@@ -96,7 +95,7 @@ class Test_concatenate_messages(tests.IrisTest):
         cube_2.remove_coord('latitude')
         exc_regexp = 'one or both cubes have anonymous dimensions'
         with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
-            CubeList([cube_1, cube_2]).concatenate_cube()
+            result = concatenate([cube_1, cube_2], True)
 
     def test_definition_difference_message(self):
         cube_1 = self.cube
@@ -104,7 +103,7 @@ class Test_concatenate_messages(tests.IrisTest):
         cube_2.units = '1'
         exc_regexp = 'Cube metadata differs for phenomenon: *'
         with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
-            CubeList([cube_1, cube_2]).concatenate_cube()
+            result = concatenate([cube_1, cube_2], True)
 
     def test_dimensions_difference_message(self):
         cube_1 = self.cube
@@ -112,7 +111,7 @@ class Test_concatenate_messages(tests.IrisTest):
         cube_2.remove_coord('latitude')
         exc_regexp = 'Dimension coordinates differ: .* != .*'
         with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
-            CubeList([cube_1, cube_2]).concatenate_cube()
+            result = concatenate([cube_1, cube_2], True)
 
     def test_dimensions_metadata_difference_message(self):
         cube_1 = self.cube
@@ -120,7 +119,7 @@ class Test_concatenate_messages(tests.IrisTest):
         cube_2.coord('latitude').long_name = 'bob'
         exc_regexp = 'Dimension coordinates metadata differ: .* != .*'
         with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
-            CubeList([cube_1, cube_2]).concatenate_cube()
+            result = concatenate([cube_1, cube_2], True)
 
     def test_aux_coords_difference_message(self):
         cube_1 = self.cube
@@ -128,7 +127,7 @@ class Test_concatenate_messages(tests.IrisTest):
         cube_2.remove_coord('foo')
         exc_regexp = 'Auxiliary coordinates differ: .* != .*'
         with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
-            CubeList([cube_1, cube_2]).concatenate_cube()
+            result = concatenate([cube_1, cube_2], True)
 
     def test_aux_coords_metadata_difference_message(self):
         cube_1 = self.cube
@@ -136,7 +135,7 @@ class Test_concatenate_messages(tests.IrisTest):
         cube_2.coord('foo').units = 'm'
         exc_regexp = 'Auxiliary coordinates metadata differ: .* != .*'
         with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
-            CubeList([cube_1, cube_2]).concatenate_cube()
+            result = concatenate([cube_1, cube_2], True)
 
     def test_scalar_coords_difference_message(self):
         cube_1 = self.cube
@@ -144,7 +143,7 @@ class Test_concatenate_messages(tests.IrisTest):
         cube_2.remove_coord('height')
         exc_regexp = 'Scalar coordinates differ: .* != .*'
         with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
-            CubeList([cube_1, cube_2]).concatenate_cube()
+            result = concatenate([cube_1, cube_2], True)
 
     def test_scalar_coords_metadata_difference_message(self):
         cube_1 = self.cube
@@ -152,7 +151,7 @@ class Test_concatenate_messages(tests.IrisTest):
         cube_2.coord('height').long_name = 'alice'
         exc_regexp = 'Scalar coordinates metadata differ: .* != .*'
         with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
-            CubeList([cube_1, cube_2]).concatenate_cube()
+            result = concatenate([cube_1, cube_2], True)
 
     def test_ndim_difference_message(self):
         cube_1 = self.cube
@@ -165,7 +164,7 @@ class Test_concatenate_messages(tests.IrisTest):
         cube_2.add_dim_coord(x_coord, 0)
         exc_regexp = 'Data dimensions differ: [0-9] != [0-9]'
         with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
-            CubeList([cube_1, cube_2]).concatenate_cube()
+            result = concatenate([cube_1, cube_2], True)
 
     def test_datatype_difference_message(self):
         cube_1 = self.cube
@@ -173,7 +172,44 @@ class Test_concatenate_messages(tests.IrisTest):
         cube_2.data.dtype = np.float64
         exc_regexp = 'Datatypes differ: .* != .*'
         with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
-            CubeList([cube_1, cube_2]).concatenate_cube()
+            result = concatenate([cube_1, cube_2], True)
+
+
+class TestOrder(tests.IrisTest):
+    def _make_cube(self, points, bounds=None):
+        nx = 4
+        data = np.arange(len(points) * nx).reshape(len(points), nx)
+        cube = iris.cube.Cube(data, standard_name='air_temperature', units='K')
+        lat = iris.coords.DimCoord(points, 'latitude', bounds=bounds)
+        lon = iris.coords.DimCoord(range(nx), 'longitude')
+        cube.add_dim_coord(lat, 0)
+        cube.add_dim_coord(lon, 1)
+        return cube
+
+    def test_asc_points(self):
+        top = self._make_cube([10, 30, 50, 70, 90])
+        bottom = self._make_cube([-90, -70, -50, -30, -10])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_asc_bounds(self):
+        top = self._make_cube([22.5, 67.5], [[0, 45], [45, 90]])
+        bottom = self._make_cube([-67.5, -22.5], [[-90, -45], [-45, 0]])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_desc_points(self):
+        top = self._make_cube([90, 70, 50, 30, 10])
+        bottom = self._make_cube([-10, -30, -50, -70, -90])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
+    def test_desc_bounds(self):
+        top = self._make_cube([67.5, 22.5], [[90, 45], [45, 0]])
+        bottom = self._make_cube([-22.5, -67.5], [[0, -45], [-45, -90]])
+        result = concatenate([top, bottom])
+        self.assertEqual(len(result), 1)
+
 
 if __name__ == '__main__':
     tests.main()
