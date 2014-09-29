@@ -37,6 +37,7 @@ in that dimension.
 
 The gallery contains several interesting worked examples of how an
 :class:`~iris.analysis.Aggregator` may be used, including:
+
  * :ref:`graphics-COP_1d_plot`
  * :ref:`graphics-SOI_filtering`
  * :ref:`graphics-hovmoller`
@@ -366,6 +367,7 @@ class Aggregator(object):
 
         * call_func (callable):
             | *Call signature*: (data, axis=None, \**kwargs)
+
             Data aggregation function.
             Returns an aggregation result, collapsing the 'axis' dimension of
             the 'data' argument.
@@ -374,6 +376,7 @@ class Aggregator(object):
 
         * units_func (callable):
             | *Call signature*: (units)
+
             If provided, called to convert a cube's units.
             Returns an :class:`iris.units.Unit`, or a
             value that can be made into one.
@@ -574,7 +577,7 @@ class WeightedAggregator(Aggregator):
         * cell_method (string):
             Cell method string that supports string format substitution.
         * call_func (callable):
-            Data aggregation function. Call signature (data, axis, **kwargs).
+            Data aggregation function. Call signature `(data, axis, **kwargs)`.
 
         Kwargs:
 

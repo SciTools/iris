@@ -836,8 +836,10 @@ class Unit(iris.util._OrderedHashable):
           defined by udunits.
         * 'proleptic_gregorian' - A Gregorian calendar extended to dates
           before 1582-10-15. A year is a leap year if either,
+
             1. It is divisible by 4 but not by 100, or
             2. It is divisible by 400.
+
         * 'noleap' or '365_day' - A Gregorian calendar without leap
           years i.e. all years are 365 days long.
         * 'all_leap' or '366_day' - A Gregorian calendar with every year

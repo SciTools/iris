@@ -9,8 +9,9 @@ To create a format specification we need to define the following:
 
 * format_name - Some text that describes the format specification we are creating
 * file_element - FileElement object describing the element which identifies
-                 this FormatSpecification.
-    Possible values are:
+  this FormatSpecification.
+
+  Possible values are:
     
     ``iris.io.format_picker.MagicNumber(n, o)`` - The n bytes from the file \
     at offset o.
