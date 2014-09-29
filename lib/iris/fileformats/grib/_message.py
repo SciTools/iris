@@ -309,7 +309,11 @@ class _Section(object):
         message.
 
         """
-        if key in ('codedValues', 'pv'):
+        vector_keys = ('codedValues', 'pv', 'satelliteSeries',
+                       'satelliteNumber', 'instrumentType',
+                       'scaleFactorOfCentralWaveNumber',
+                       'scaledValueOfCentralWaveNumber')
+        if key in vector_keys:
             res = gribapi.grib_get_array(self._message_id, key)
         elif key in ('typeOfFirstFixedSurface', 'typeOfSecondFixedSurface'):
             # By default these values are returned as unhelpful strings but
