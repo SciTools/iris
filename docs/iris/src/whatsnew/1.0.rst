@@ -5,6 +5,7 @@ What's new in Iris 1.0
 :Date: 15 Oct, 2012
 
 This document explains the new/changed features of Iris in version 1.0.
+(:doc:`View all changes <index>`.)
 
 With the release of Iris 1.0, we have broadly completed the transition
 to the CF data model, and established a stable foundation for future

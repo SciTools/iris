@@ -4,6 +4,9 @@ What's new in Iris 1.6
 :Release: 1.6.1
 :Date: 18th February 2014
 
+This document explains the new/changed features of Iris in version 1.6.
+(:doc:`View all changes <index>`.)
+
 Iris 1.6 features
 =================
 
