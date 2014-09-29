@@ -163,6 +163,17 @@ class Test_write(tests.IrisTest):
                 self.assertTrue(ds.dimensions[dim].isunlimited())
             ds.close()
 
+    def test_reserved_attributes(self):
+        cube = self._simple_cube('>f4')
+        cube.attributes['dimensions'] = 'something something_else'
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube)
+            ds = nc.Dataset(nc_path)
+            res = ds.getncattr('dimensions')
+            ds.close()
+            self.assertEqual(res, 'something something_else')
+
 
 class TestCoordSystems(tests.IrisTest):
     def cube_with_cs(self, coord_system,
