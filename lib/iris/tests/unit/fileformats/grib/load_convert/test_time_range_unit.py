@@ -40,10 +40,6 @@ class Test(tests.IrisTest):
                                   12: Unit('12 hours'),
                                   13: Unit('seconds')}
 
-    def test_indicators(self):
-        keys = sorted(self.unit_by_indicator.keys())
-        self.assertEqual(sorted(_TIME_RANGE_UNITS.keys()), keys)
-
     def test_units(self):
         for indicator, unit in self.unit_by_indicator.items():
             result = time_range_unit(indicator)

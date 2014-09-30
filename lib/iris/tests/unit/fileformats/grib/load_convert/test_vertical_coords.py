@@ -80,11 +80,11 @@ class Test(tests.IrisTest):
                     else:
                         self.assertEqual(len(warn.mock_calls), 0)
 
-    def test_unknown_first_fixed_surface_with_no_scaled_value(self):
-        self._check(MDI, 'surface with no scaled value')
+    def test_unknown_first_fixed_surface_with_missing_scaled_value(self):
+        self._check(MDI, 'surface with missing scaled value')
 
     def test_unknown_first_fixed_surface_with_scaled_value(self):
-        self._check(0, 'surface and scaled value')
+        self._check(0, 'surface with scaled value')
 
     def test_pressure_with_no_second_fixed_surface(self):
         metadata = deepcopy(self.metadata)
@@ -118,7 +118,7 @@ class Test(tests.IrisTest):
                    'scaledValueOfFirstFixedSurface': None,
                    'scaleFactorOfFirstFixedSurface': None,
                    'typeOfSecondFixedSurface': 0}
-        emsg = 'invalid type of second fixed surface'
+        emsg = 'different types of first and second fixed surface'
         with self.assertRaisesRegexp(TranslationError, emsg):
             vertical_coords(section, None)
 
@@ -129,7 +129,7 @@ class Test(tests.IrisTest):
                    'scaleFactorOfFirstFixedSurface': None,
                    'typeOfSecondFixedSurface': 100,
                    'scaledValueOfSecondFixedSurface': MDI}
-        emsg = 'invalid scaled value of second fixed surface'
+        emsg = 'missing scaled value of second fixed surface'
         with self.assertRaisesRegexp(TranslationError, emsg):
             vertical_coords(section, None)
 

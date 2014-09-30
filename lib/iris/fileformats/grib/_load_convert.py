@@ -124,7 +124,7 @@ def reference_time_coord(section):
     dt = datetime(section['year'], section['month'], section['day'],
                   section['hour'], section['minute'], section['second'])
     unit = Unit('hours since epoch', calendar=CALENDAR_GREGORIAN)
-    point = date2num(dt, unit.origin, unit.calendar)
+    point = unit.date2num(dt)
     # Create the reference time coordinate.
     coord = DimCoord(point, standard_name='forecast_reference_time',
                      units=unit)
@@ -538,12 +538,12 @@ def vertical_coords(section, metadata):
                         _CODE_TABLE_MDI:
                     if options.warn_on_unsupported:
                         msg = 'Unable to translate type of first fixed ' \
-                            'surface with no scaled value.'
+                            'surface with missing scaled value.'
                         warnings.warn(msg)
                 else:
                     if options.warn_on_unsupported:
                         msg = 'Unable to translate type of first fixed ' \
-                            'surface and scaled value.'
+                            'surface with scaled value.'
                         warnings.warn(msg)
         else:
             key = 'scaleFactorOfFirstFixedSurface'
@@ -552,9 +552,8 @@ def vertical_coords(section, metadata):
 
             if np.int8(typeOfSecondFixedSurface) != _CODE_TABLE_MDI:
                 if typeOfFirstFixedSurface != typeOfSecondFixedSurface:
-                    msg = 'Product definition section 4 contains invalid ' \
-                        'type of second fixed ' \
-                        'surface [{}]'.format(typeOfSecondFixedSurface)
+                    msg = 'Product definition section 4 has different ' \
+                        'types of first and second fixed surface'
                     raise TranslationError(msg)
 
                 key = 'scaledValueOfSecondFixedSurface'
@@ -562,9 +561,8 @@ def vertical_coords(section, metadata):
 
                 if np.int32(scaledValueOfSecondFixedSurface) == \
                         _CODE_TABLE_MDI:
-                    msg = 'Product definition section 4 contains invalid ' \
-                        'scaled value of second fixed ' \
-                        'surface [{}]'.format(scaledValueOfSecondFixedSurface)
+                    msg = 'Product definition section 4 has missing ' \
+                        'scaled value of second fixed surface'
                     raise TranslationError(msg)
                 else:
                     key = 'scaleFactorOfSecondFixedSurface'
@@ -647,10 +645,9 @@ def validity_time_coord(frt_coord, fp_coord):
     seconds = fp_coord.units.convert(fp_coord.points[0], 'seconds')
     delta = timedelta(seconds=seconds)
     frt_point = frt_coord.units.num2date(frt_coord.points[0])
-    unit = Unit('hours since epoch', calendar=CALENDAR_GREGORIAN)
-    point = date2num(frt_point + delta, unit.origin, unit.calendar)
+    point = frt_coord.units.date2num(frt_point + delta)
     # Create the time scalar coordinate.
-    coord = DimCoord(point, standard_name='time', units=unit)
+    coord = DimCoord(point, standard_name='time', units=frt_coord.units)
     return coord
 
 

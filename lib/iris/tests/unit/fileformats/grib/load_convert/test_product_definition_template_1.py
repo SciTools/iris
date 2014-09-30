@@ -69,12 +69,12 @@ class Test(tests.IrisTest):
             expected['aux_coords_and_dims'].append((realization, None))
             self.assertEqual(metadata, expected)
             if request_warning:
-                self.assertEqual(len(warnings.warn.mock_calls), 2)
-                _, args, _ = zip(*warnings.warn.mock_calls)
-                args = [arg[0] for arg in args]
-                msgs = ['type of ensemble', 'number of forecasts']
-                for msg in msgs:
-                    self.assertTrue(any([msg in arg for arg in args]))
+                warn_msgs = [mcall[1][0] for mcall in warnings.warn.mock_calls]
+                expected_msgs = ['type of ensemble', 'number of forecasts']
+                for emsg in expected_msgs:
+                    matches = [wmsg for wmsg in warn_msgs if emsg in wmsg]
+                    self.assertEqual(len(matches), 1)
+                    warn_msgs.remove(matches[0])
             else:
                 self.assertEqual(len(warnings.warn.mock_calls), 0)
 
