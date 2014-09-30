@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <standard_name_table xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="cf-standard-name-table-1.1.xsd">
-   <version_number>23</version_number>
-   <last_modified>2013-03-23:T12:30:00Z</last_modified>
+   <version_number>24</version_number>
+   <last_modified>2013-06-27T21:28:18Z</last_modified>
    <institution>Program for Climate Model Diagnosis and Intercomparison</institution>
    <contact>webmaster@pcmdi.llnl.gov</contact>
 
@@ -174,6 +174,13 @@
       <description>Altitude is the (geometric) height above the geoid, which is the reference geopotential surface. The geoid is similar to mean sea level.</description>
    </entry>
   
+   <entry id="ambient_aerosol_particle_diameter">
+      <canonical_units>m</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>&quot;Aerosol&quot; means the suspended liquid or solid particles in air (except cloud droplets). &quot;Ambient aerosol&quot; is aerosol that has taken up ambient water through hygroscopic growth. The extent of hygroscopic growth depends on the relative humidity and the composition of the aerosol. </description>
+   </entry>
+  
    <entry id="angle_of_emergence">
       <canonical_units>degree</canonical_units>
       <grib></grib>
@@ -200,6 +207,13 @@
       <grib></grib>
       <amip></amip>
       <description>The quantity with standard name angle_of_rotation_from_east_to_y is the angle, anticlockwise reckoned positive, between due East and (dr/dj)ik, where r(i,j,k) is the vector 3D position of the point with coordinate indices (i,j,k).  It could be used for rotating vector fields between model space and latitude-longitude space.</description>
+   </entry>
+  
+   <entry id="angle_of_rotation_from_solar_azimuth_to_platform_azimuth">
+      <canonical_units>degree</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>Standard names for &quot;platform&quot; describe the motion and orientation of the vehicle from which observations are made e.g. aeroplane or ship. An angle of rotation is reckoned positive in the anticlockwise direction. The &quot;angle_of_rotation_from_solar_azimuth_to_platform_azimuth&quot; is the angle of rotation between the solar azimuth angle and the platform azimuth angle. Solar azimuth angle is the horizontal angle between the line of sight to the sun and a reference direction which is often due north. The angle is measured clockwise. Platform azimuth angle is the horizontal angle between the line of sight to the platform and a reference direction which is often due north. The angle is measured clockwise.</description>
    </entry>
   
    <entry id="angstrom_exponent_of_ambient_aerosol_in_air">
@@ -2827,6 +2841,13 @@
       <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. A photon flux is specified in terms of numbers of photons expressed in moles. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
    </entry>
   
+   <entry id="downwelling_photon_flux_per_unit_wavelength_in_sea_water">
+      <canonical_units>mol m-2 s-1 m-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. A photon flux is specified in terms of numbers of photons expressed in moles. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
+   </entry>
+  
    <entry id="downwelling_photon_radiance_in_sea_water">
       <canonical_units>mol m-2 s-1 sr-1</canonical_units>
       <grib></grib>
@@ -2834,11 +2855,25 @@
       <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. Photon radiance is the photon flux in a particular direction, per unit of solid angle. The direction from which it is coming must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead. A photon flux is specified in terms of numbers of photons expressed in moles.</description>
    </entry>
   
+   <entry id="downwelling_photon_radiance_per_unit_wavelength_in_sea_water">
+      <canonical_units>mol m-2 s-1 m-1 sr-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. Photon radiance is the photon flux in a particular direction, per unit of solid angle. The direction from which it is coming must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead. A photon flux is specified in terms of numbers of photons expressed in moles. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
+   </entry>
+  
    <entry id="downwelling_photon_spherical_irradiance_in_sea_water">
       <canonical_units>mol m-2 s-1</canonical_units>
       <grib></grib>
       <amip></amip>
       <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. Photon spherical irradiance is the photon flux incident on unit area of a hemispherical (or &quot;2-pi&quot;) collector. A photon flux is specified in terms of numbers of photons expressed in moles.</description>
+   </entry>
+  
+   <entry id="downwelling_photon_spherical_irradiance_per_unit_wavelength_in_sea_water">
+      <canonical_units>mol m-2 s-1 m-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength. Photon spherical irradiance is the photon flux incident on unit area of a hemispherical (or &quot;2-pi&quot;) collector. A photon flux is specified in terms of numbers of photons expressed in moles.</description>
    </entry>
   
    <entry id="downwelling_photosynthetic_photon_flux_in_sea_water">
@@ -2890,11 +2925,39 @@
       <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction from which it is coming must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead.</description>
    </entry>
   
+   <entry id="downwelling_radiance_per_unit_wavelength_in_air">
+      <canonical_units>W m-2 m-1 sr-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction from which it is coming must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead.</description>
+   </entry>
+  
+   <entry id="downwelling_radiance_per_unit_wavelength_in_sea_water">
+      <canonical_units>W m-2 m-1 sr-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction from which it is coming must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead.</description>
+   </entry>
+  
    <entry id="downwelling_radiative_flux_in_sea_water">
       <canonical_units>W m-2</canonical_units>
       <grib></grib>
       <amip></amip>
       <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. Radiative flux is the sum of shortwave and longwave radiative fluxes. When thought of as being incident on a surface, a radiative flux is sometimes called &quot;irradiance&quot;. In addition, it is identical with the quantity measured by a cosine-collector light-meter and sometimes called &quot;vector irradiance&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
+   </entry>
+  
+   <entry id="downwelling_radiative_flux_per_unit_wavelength_in_air">
+      <canonical_units>W m-2 m-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. When thought of as being incident on a surface, a radiative flux is sometimes called &quot;irradiance&quot;. In addition, it is identical with the quantity measured by a cosine-collector light-meter and sometimes called &quot;vector irradiance&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
+   </entry>
+  
+   <entry id="downwelling_radiative_flux_per_unit_wavelength_in_sea_water">
+      <canonical_units>W m-2 m-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;.  When thought of as being incident on a surface, a radiative flux is sometimes called &quot;irradiance&quot;. In addition, it is identical with the quantity measured by a cosine-collector light-meter and sometimes called &quot;vector irradiance&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
    </entry>
   
    <entry id="downwelling_shortwave_flux_in_air">
@@ -2925,67 +2988,18 @@
       <description>&quot;shortwave&quot; means shortwave radiation. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction from which it is coming must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead.</description>
    </entry>
   
-   <entry id="downwelling_spectral_photon_flux_in_sea_water">
-      <canonical_units>mol m-2 s-1 m-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. A photon flux is specified in terms of numbers of photons expressed in moles. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
-   </entry>
-  
-   <entry id="downwelling_spectral_photon_radiance_in_sea_water">
-      <canonical_units>mol m-2 s-1 m-1 sr-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. Photon radiance is the photon flux in a particular direction, per unit of solid angle. The direction from which it is coming must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead. A photon flux is specified in terms of numbers of photons expressed in moles.</description>
-   </entry>
-  
-   <entry id="downwelling_spectral_photon_spherical_irradiance_in_sea_water">
-      <canonical_units>mol m-2 s-1 m-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. &quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. Photon spherical irradiance is the photon flux incident on unit area of a hemispherical (or &quot;2-pi&quot;) collector. A photon flux is specified in terms of numbers of photons expressed in moles.</description>
-   </entry>
-  
-   <entry id="downwelling_spectral_radiance_in_air">
-      <canonical_units>W m-2 m-1 sr-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. &quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction from which it is coming must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead.</description>
-   </entry>
-  
-   <entry id="downwelling_spectral_radiance_in_sea_water">
-      <canonical_units>W m-2 m-1 sr-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. &quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction from which it is coming must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead.</description>
-   </entry>
-  
-   <entry id="downwelling_spectral_radiative_flux_in_air">
-      <canonical_units>W m-2 m-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. &quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. When thought of as being incident on a surface, a radiative flux is sometimes called &quot;irradiance&quot;. In addition, it is identical with the quantity measured by a cosine-collector light-meter and sometimes called &quot;vector irradiance&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
-   </entry>
-  
-   <entry id="downwelling_spectral_radiative_flux_in_sea_water">
-      <canonical_units>W m-2 m-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. &quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. When thought of as being incident on a surface, a radiative flux is sometimes called &quot;irradiance&quot;. In addition, it is identical with the quantity measured by a cosine-collector light-meter and sometimes called &quot;vector irradiance&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
-   </entry>
-  
-   <entry id="downwelling_spectral_spherical_irradiance_in_sea_water">
-      <canonical_units>W m-2 m-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. &quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. Spherical irradiance is the radiation incident on unit area of a hemispherical (or &quot;2-pi&quot;) collector. It is sometimes called &quot;scalar irradiance&quot;. The direction (up/downwelling) is specified. Radiation incident on a 4-pi collector has standard names of &quot;omnidirectional spherical irradiance&quot;.</description>
-   </entry>
-  
    <entry id="downwelling_spherical_irradiance_in_sea_water">
       <canonical_units>W m-2</canonical_units>
       <grib></grib>
       <amip></amip>
       <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. Spherical irradiance is the radiation incident on unit area of a hemispherical (or &quot;2-pi&quot;) collector. It is sometimes called &quot;scalar irradiance&quot;. The direction (up/downwelling) is specified. Radiation incident on a 4-pi collector has standard names of &quot;omnidirectional spherical irradiance&quot;.</description>
+   </entry>
+  
+   <entry id="downwelling_spherical_irradiance_per_unit_wavelength_in_sea_water">
+      <canonical_units>W m-2 m-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. Spherical irradiance is the radiation incident on unit area of a hemispherical (or &quot;2-pi&quot;) collector. It is sometimes called &quot;scalar irradiance&quot;. The direction (up/downwelling) is specified. Radiation incident on a 4-pi collector has standard names of &quot;omnidirectional spherical irradiance&quot;. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
    </entry>
   
    <entry id="dry_energy_content_of_atmosphere_layer">
@@ -3119,6 +3133,20 @@
       <grib>45</grib>
       <amip></amip>
       <description>&quot;Eastward&quot; indicates a vector component which is positive when directed eastward (negative westward). Wind is defined as a two-dimensional (horizontal) air velocity vector, with no vertical component. (Vertical motion in the atmosphere has the standard name upward_air_velocity.) Wind shear is the derivative of wind with respect to height.</description>
+   </entry>
+  
+   <entry id="effective_radius_of_cloud_condensed_water_particles_at_cloud_top">
+      <canonical_units>m</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>The effective radius of a size distribution of particles, such as aerosols, cloud droplets or ice crystals,is the area weighted mean radius of particle size. It is calculated as the ratio of the third to the second moment of the particle size distribution. &quot;cloud_top&quot; refers to the top of the  highest cloud. &quot;condensed_water&quot; means liquid and ice.</description>
+   </entry>
+  
+   <entry id="effective_radius_of_cloud_liquid_water_particle">
+      <canonical_units>m</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>The effective radius of a size distribution of particles, such as aerosols, cloud droplets or ice crystals, is the area weighted mean radius of particle size. It is calculated as the ratio of the third to the second moment of the particle size distribution.</description>
    </entry>
   
    <entry id="effective_radius_of_cloud_liquid_water_particle_at_liquid_water_cloud_top">
@@ -3384,7 +3412,7 @@
       <canonical_units>kg m-2 s-1</canonical_units>
       <grib></grib>
       <amip></amip>
-      <description>Gross primary productivity is the rate of synthesis of biomass per unit area from inorganic precursors by autotrophs, especially by photosynthesising plants using sunlight for energy. The producers also respire some of this biomass and the difference is net_primary_producivity.  &quot;Productivity of carbon&quot; refers to the production of biomass expressed as the mass of carbon which it contains.  &quot;Productivity&quot; means production per unit area.</description>
+      <description>Gross primary productivity is the rate of synthesis of biomass per unit area from inorganic precursors by autotrophs, especially by photosynthesising plants using sunlight for energy. The producers also respire some of this biomass and the difference is net_primary_productivity.  &quot;Productivity of carbon&quot; refers to the production of biomass expressed as the mass of carbon which it contains.  &quot;Productivity&quot; means production per unit area.</description>
    </entry>
   
    <entry id="heat_flux_correction">
@@ -3639,18 +3667,18 @@
       <description>&quot;longwave&quot; means longwave radiation. Radiance is the radiative flux in a particular direction, per unit of solid angle. If radiation is isotropic, the radiance is independent of direction, so the direction should not be specified. If the radiation is directionally dependent, a standard name of upwelling or downwelling radiance should be chosen instead.</description>
    </entry>
   
+   <entry id="isotropic_radiance_per_unit_wavelength_in_air">
+      <canonical_units>W m-2 m-1 sr-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>Radiance is the radiative flux in a particular direction, per unit of solid angle. If radiation is isotropic, the radiance is independent of direction, so the direction should not be specified. If the radiation is directionally dependent, a standard name of upwelling or downwelling radiance should be chosen instead. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
+   </entry>
+  
    <entry id="isotropic_shortwave_radiance_in_air">
       <canonical_units>W m-2 sr-1</canonical_units>
       <grib></grib>
       <amip></amip>
       <description>&quot;shortwave&quot; means shortwave radiation. Radiance is the radiative flux in a particular direction, per unit of solid angle. If radiation is isotropic, the radiance is independent of direction, so the direction should not be specified. If the radiation is directionally dependent, a standard name of upwelling or downwelling radiance should be chosen instead.</description>
-   </entry>
-  
-   <entry id="isotropic_spectral_radiance_in_air">
-      <canonical_units>W m-2 m-1 sr-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>&quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. Radiance is the radiative flux in a particular direction, per unit of solid angle. If radiation is isotropic, the radiance is independent of direction, so the direction should not be specified. If the radiation is directionally dependent, a standard name of upwelling or downwelling radiance should be chosen instead.</description>
    </entry>
   
    <entry id="kinetic_energy_content_of_atmosphere_layer">
@@ -3751,11 +3779,11 @@
       <description>&quot;lwe&quot; means liquid water equivalent. &quot;Land ice&quot; means glaciers, ice-caps and ice-sheets resting on bedrock and also includes ice-shelves. The land ice calving rate is the rate at which ice is lost per unit area through calving into the ocean.</description>
    </entry>
   
-   <entry id="land_ice_lwe_surface_specific_mass_balance">
+   <entry id="land_ice_lwe_surface_specific_mass_balance_rate">
       <canonical_units>m s-1</canonical_units>
       <grib></grib>
       <amip></amip>
-      <description>&quot;lwe&quot; means liquid water equivalent. &quot;Land ice&quot; means glaciers, ice-caps and ice-sheets resting on bedrock and also includes ice-shelves. Specific mass balance means the net rate at which ice is added per unit area at the land ice surface.</description>
+      <description>&quot;Land ice&quot; means glaciers, ice-caps and ice-sheets resting on bedrock and also includes ice-shelves. &quot;lwe&quot; means liquid water equivalent. Specific mass balance means the net rate at which ice is added per unit area at the land ice surface due to all processes of surface accumulation and ablation. A negative value means loss of ice.</description>
    </entry>
   
    <entry id="land_ice_sigma_coordinate">
@@ -3765,11 +3793,18 @@
       <description>&quot;Land ice&quot; means glaciers, ice-caps and ice-sheets resting on bedrock and also includes ice-shelves.</description>
    </entry>
   
-   <entry id="land_ice_surface_specific_mass_balance">
+   <entry id="land_ice_surface_specific_mass_balance_flux">
+      <canonical_units>kg m-2 s-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>&quot;Land ice&quot; means glaciers, ice-caps and ice-sheets resting on bedrock and also includes ice-shelves. Specific mass balance means the net rate at which ice is added per unit area at the land ice surface. A negative value means loss of ice. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
+   </entry>
+  
+   <entry id="land_ice_surface_specific_mass_balance_rate">
       <canonical_units>m s-1</canonical_units>
       <grib></grib>
       <amip></amip>
-      <description>&quot;Land ice&quot; means glaciers, ice-caps and ice-sheets resting on bedrock and also includes ice-shelves. Specific mass balance means the net rate at which ice is added per unit area at the land ice surface.</description>
+      <description>&quot;Land ice&quot; means glaciers, ice-caps and ice-sheets resting on bedrock and also includes ice-shelves. Specific mass balance means the net rate at which ice is added at the land ice surface due to all processes of surface accumulation and ablation. A negative value means loss of ice.</description>
    </entry>
   
    <entry id="land_ice_temperature">
@@ -4043,6 +4078,13 @@
       <grib></grib>
       <amip></amip>
       <description>The quantity with standard name magnitude_of_derivative_of_position_wrt_y_coordinate_index (known in differential geometry as a &quot;scale factor&quot;) is | (dr/dj)ik|, where r(i,j,k) is the vector 3D position of the point with coordinate indices (i,j,k). It is a measure of the gridblock spacing in the y-direction.</description>
+   </entry>
+  
+   <entry id="magnitude_of_heat_flux_in_sea_water_due_to_advection">
+      <canonical_units>W m-2</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>&quot;magnitude_of_X&quot; means magnitude of a vector X. The specification of a physical process by the phrase due_to_process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
    </entry>
   
    <entry id="magnitude_of_sea_ice_displacement">
@@ -7794,28 +7836,28 @@
       <canonical_units>kg m-2 s-1</canonical_units>
       <grib></grib>
       <amip></amip>
-      <description>Net primary productivity is the excess of gross_primary_producivity (rate of synthesis of biomass per unit area from inorganic precursors by autotrophs, or &quot;producers&quot;, especially by photosynthesising plants using sunlight for energy) over the rate at which they themselves respire some of this biomass (plant_respiration, assuming all producers to be plants).  &quot;Productivity of carbon&quot; refers to the production of biomass expressed as the mass of carbon which it contains.  &quot;Productivity&quot; means production per unit area.</description>
+      <description>Net primary productivity is the excess of gross_primary_productivity (rate of synthesis of biomass per unit area from inorganic precursors by autotrophs, or &quot;producers&quot;, especially by photosynthesising plants using sunlight for energy) over the rate at which they themselves respire some of this biomass (plant_respiration, assuming all producers to be plants).  &quot;Productivity of carbon&quot; refers to the production of biomass expressed as the mass of carbon which it contains.  &quot;Productivity&quot; means production per unit area.</description>
    </entry>
   
    <entry id="net_primary_productivity_of_carbon_accumulated_in_leaves">
       <canonical_units>kg m-2 s-1</canonical_units>
       <grib></grib>
       <amip></amip>
-      <description>Net primary productivity is the excess of gross_primary_producivity (rate of synthesis of biomass per unit area from inorganic precursors by autotrophs, or &quot;producers&quot;, especially by photosynthesising plants using sunlight for energy) over the rate at which they themselves respire some of this biomass (plant_respiration, assuming all producers to be plants).  &quot;Productivity of carbon&quot; refers to the production of biomass expressed as the mass of carbon which it contains.  &quot;Productivity&quot; means production per unit area.</description>
+      <description>Net primary productivity is the excess of gross_primary_productivity (rate of synthesis of biomass per unit area from inorganic precursors by autotrophs, or &quot;producers&quot;, especially by photosynthesising plants using sunlight for energy) over the rate at which they themselves respire some of this biomass (plant_respiration, assuming all producers to be plants).  &quot;Productivity of carbon&quot; refers to the production of biomass expressed as the mass of carbon which it contains.  &quot;Productivity&quot; means production per unit area.</description>
    </entry>
   
    <entry id="net_primary_productivity_of_carbon_accumulated_in_roots">
       <canonical_units>kg m-2 s-1</canonical_units>
       <grib></grib>
       <amip></amip>
-      <description>Net primary productivity is the excess of gross_primary_producivity (rate of synthesis of biomass per unit area from inorganic precursors by autotrophs, or &quot;producers&quot;, especially by photosynthesising plants using sunlight for energy) over the rate at which they themselves respire some of this biomass (plant_respiration, assuming all producers to be plants).  &quot;Productivity of carbon&quot; refers to the production of biomass expressed as the mass of carbon which it contains.  &quot;Productivity&quot; means production per unit area.</description>
+      <description>Net primary productivity is the excess of gross_primary_productivity (rate of synthesis of biomass per unit area from inorganic precursors by autotrophs, or &quot;producers&quot;, especially by photosynthesising plants using sunlight for energy) over the rate at which they themselves respire some of this biomass (plant_respiration, assuming all producers to be plants).  &quot;Productivity of carbon&quot; refers to the production of biomass expressed as the mass of carbon which it contains.  &quot;Productivity&quot; means production per unit area.</description>
    </entry>
   
    <entry id="net_primary_productivity_of_carbon_accumulated_in_wood">
       <canonical_units>kg m-2 s-1</canonical_units>
       <grib></grib>
       <amip></amip>
-      <description>Net primary productivity is the excess of gross_primary_producivity (rate of synthesis of biomass per unit area from inorganic precursors by autotrophs, or &quot;producers&quot;, especially by photosynthesising plants using sunlight for energy) over the rate at which they themselves respire some of this biomass (plant_respiration, assumingall producers to be plants).  &quot;Productivity of carbon&quot; refers to the productionof biomass expressed as the mass of carbon which it contains.  &quot;Productivity&quot; means production per unit area.</description>
+      <description>Net primary productivity is the excess of gross_primary_productivity (rate of synthesis of biomass per unit area from inorganic precursors by autotrophs, or &quot;producers&quot;, especially by photosynthesising plants using sunlight for energy) over the rate at which they themselves respire some of this biomass (plant_respiration, assuming all producers to be plants).  &quot;Productivity of carbon&quot; refers to the production of biomass expressed as the mass of carbon which it contains.  &quot;Productivity&quot; means production per unit area.</description>
    </entry>
   
    <entry id="net_rate_of_absorption_of_longwave_energy_in_atmosphere_layer">
@@ -8434,6 +8476,20 @@
       <description>See Appendix D of the CF convention for information about dimensionless vertical coordinates.</description>
    </entry>
   
+   <entry id="ocean_s_coordinate_g1">
+      <canonical_units>1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>See Appendix D of the CF convention for information about dimensionless vertical coordinates.</description>
+   </entry>
+  
+   <entry id="ocean_s_coordinate_g2">
+      <canonical_units>1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>See Appendix D of the CF convention for information about dimensionless vertical coordinates.</description>
+   </entry>
+  
    <entry id="ocean_sigma_coordinate">
       <canonical_units>1</canonical_units>
       <grib></grib>
@@ -8630,11 +8686,11 @@
       <description>&quot;Photosynthetic&quot; radiation is the part of the spectrum which is used in photosynthesis e.g. 300-700 nm. The range of wavelengths could be specified precisely by the bounds of a coordinate of radiation_wavelength. Omnidirectional spherical irradiance is the radiation incident on unit area of a spherical (or &quot;4-pi&quot;) collector. It is sometimes called &quot;scalar irradiance&quot;. Radiation incident on a 2-pi collector has standard names of &quot;spherical irradiance&quot; which specify up/downwelling.</description>
    </entry>
   
-   <entry id="omnidirectional_spectral_spherical_irradiance_in_sea_water">
+   <entry id="omnidirectional_spherical_irradiance_per_unit_wavelength_in_sea_water">
       <canonical_units>W m-3</canonical_units>
       <grib></grib>
       <amip></amip>
-      <description>&quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. Omnidirectional spherical irradiance is the radiation incident on unit area of a spherical (or &quot;4-pi&quot;) collector. It is sometimes called &quot;scalar irradiance&quot;. Radiation incident on a 2-pi collector has standard names of &quot;spherical irradiance&quot; which specify up/downwelling.</description>
+      <description>Omnidirectional spherical irradiance is the radiation incident on unit area of a spherical (or &quot;4-pi&quot;) collector. It is sometimes called &quot;scalar irradiance&quot;. Radiation incident on a 2-pi collector has standard names of &quot;spherical irradiance&quot; which specify up/downwelling. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
    </entry>
   
    <entry id="optical_thickness_of_atmosphere_layer_due_to_ambient_aerosol">
@@ -8663,6 +8719,13 @@
       <grib></grib>
       <amip></amip>
       <description>&quot;Respiration carbon&quot; refers to the rate at which biomass is respired expressed as the mass of carbon which it contains. Plant respiration is the sum of respiration by parts of plants both above and below the soil. Plants which photosynthesise are autotrophs i.e. &quot;producers&quot; of the biomass which they respire from inorganic precursors using sunlight for energy. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
+   </entry>
+  
+   <entry id="platform_azimuth_angle">
+      <canonical_units>degree</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>Standard names for platform describe the motion and orientation of the vehicle from which observations are made e.g. aeroplane, ship or satellite. Platform azimuth angle is the horizontal angle between the line of sight from the observation point to the platform and a reference direction at the observation point, which is often due north. The angle is measured clockwise positive, starting from the reference direction. A comment attribute should be added to a data variable with the standard name platform_azimuth_angle to specify the reference direction. A standard name also exists for sensor_azimuth_angle. For some viewing geometries the sensor and the platform cannot be assumed to be close enough to neglect the difference in calculated azimuth angle.</description>
    </entry>
   
    <entry id="platform_course">
@@ -8726,6 +8789,14 @@
       <grib></grib>
       <amip></amip>
       <description>&quot;wrt&quot; means with respect to. Speed is the magnitude of velocity. Standard names for platform describe the motion and orientation of the vehicle from which observations are made e.g. aeroplane or ship.</description>
+   </entry>
+  
+   <entry id="platform_view_angle">
+      <canonical_units>degree</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>Standard names for platform describe the motion and orientation of the vehicle from which observations are made e.g. aeroplane, ship or satellite. Platform view angle is the angle between the line of sight from the platform and the direction straight vertically down. Zero view angle means looking directly beneath the platform. There is no standardized sign convention for platform_view_angle. A standard name also exists for sensor_view_angle. For some viewing geometries the sensor and the platform cannot be assumed to be close enough to neglect the difference in calculated view angle.
+</description>
    </entry>
   
    <entry id="platform_yaw_angle">
@@ -9069,6 +9140,20 @@
       <grib>52 E157</grib>
       <amip>hur</amip>
       <description></description>
+   </entry>
+  
+   <entry id="relative_platform_azimuth_angle">
+      <canonical_units>degree</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>Standard names for platform describe the motion and orientation of the vehicle from which observations are made e.g. aeroplane, ship or satellite. relative_platform_azimuth_angle is the difference between the viewing geometries from two different platforms over the same observation target. It is the difference between the values of two quantities with standard name platform_azimuth_angle. There is no standardized sign convention for  relative_platform_azimuth_angle. &quot;Observation target&quot; means a location on the Earth defined by the sensor performing the observations. A standard name also exists for relative_sensor_azimuth_angle. For some viewing geometries the sensor and the platform cannot be assumed to be close enough to neglect the difference in calculated azimuth angle.</description>
+   </entry>
+  
+   <entry id="relative_sensor_azimuth_angle">
+      <canonical_units>degree</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>relative_sensor_azimuth_angle is the difference between the viewing geometries from two different sensors over the same observation target. It is the difference between the values of two quantities with standard name sensor_azimuth_angle. There is no standardized sign convention for relative_sensor_azimuth_angle. &quot;Observation target&quot; means a location on the Earth defined by the sensor performing the observations. A standard name also exists for relative_platform_azimuth_angle, where &quot;platform&quot; refers to the vehicle from which observations are made e.g. aeroplane, ship, or satellite. For some viewing geometries the sensor and the platform cannot be assumed to be close enough to neglect the difference in calculated azimuth angle.</description>
    </entry>
   
    <entry id="richardson_number_in_sea_water">
@@ -9474,7 +9559,7 @@
       <canonical_units>degree</canonical_units>
       <grib>104</grib>
       <amip></amip>
-      <description>Swell waves are waves on the ocean surface. &quot;to_direction&quot; is used in the construction X_to_direction and indicates the direction towards which the velocity vector of X is headed.</description>
+      <description>Swell waves are waves on the ocean surface. &quot;to_direction&quot; is used in the construction X_to_direction and indicates the direction towards which the velocity vector of X is headed. The direction is a bearing in the usual geographical sense, measured positive clockwise from due north.</description>
    </entry>
   
    <entry id="sea_surface_swell_wave_zero_upcrossing_period">
@@ -9544,7 +9629,7 @@
       <canonical_units>degree</canonical_units>
       <grib></grib>
       <amip></amip>
-      <description>&quot;to_direction&quot; is used in the construction X_to_direction and indicates the direction towards which the velocity vector of X is headed.</description>
+      <description>&quot;to_direction&quot; is used in the construction X_to_direction and indicates the direction towards which the velocity vector of X is headed. The direction is a bearing in the usual geographical sense, measured positive clockwise from due north. </description>
    </entry>
   
    <entry id="sea_surface_wave_variance_spectral_density">
@@ -9600,7 +9685,7 @@
       <canonical_units>degree</canonical_units>
       <grib>101</grib>
       <amip></amip>
-      <description>Wind waves are waves on the ocean surface. Wind is defined as a two-dimensional (horizontal) air velocity vector, with no vertical component. (Vertical motion in the atmosphere has the standard name upward_air_velocity.) &quot;to_direction&quot; is used in the construction X_to_direction and indicates the direction towards which the velocity vector of X is headed.</description>
+      <description>Wind waves are waves on the ocean surface. Wind is defined as a two-dimensional (horizontal) air velocity vector, with no vertical component. (Vertical motion in the atmosphere has the standard name &quot;upward_air_velocity&quot;.) &quot;to_direction&quot; is used in the construction X_to_direction and indicates the direction towards which the velocity vector of X is headed. The direction is a bearing in the usual geographical sense, measured positive clockwise from due north.</description>
    </entry>
   
    <entry id="sea_surface_wind_wave_zero_upcrossing_period">
@@ -9839,6 +9924,56 @@
       <grib></grib>
       <amip></amip>
       <description>Depth is the vertical distance below the surface. A Secchi disk is a patterned disk that is used to measure water transparency, also called turbidity, in oceans and lakes. The disk is lowered into the water and the depth at which the pattern is no longer visible is the called the secchi depth. Sea water turbidity may also be measured by the quantity with standard name sea_water_turbidity.</description>
+   </entry>
+  
+   <entry id="sensor_azimuth_angle">
+      <canonical_units>degree</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>sensor_azimuth_angle is the horizontal angle between the line of sight from the observation point to the sensor and a reference direction at the observation point, which is often due north. The angle is measured clockwise positive, starting from the reference direction. A comment attribute should be added to a data variable with this standard name to specify the reference direction. A standard name also exists for platform_azimuth_angle, where &quot;platform&quot; refers to the vehicle from which observations are made e.g. aeroplane, ship, or satellite. For some viewing geometries the sensor and the platform cannot be assumed to be close enough to neglect the difference in calculated azimuth angle.</description>
+   </entry>
+  
+   <entry id="sensor_band_central_radiation_frequency">
+      <canonical_units>s-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>sensor_band_central_radiation_frequency is the central frequency of a sensor&#39;s band, calculated as the first moment of the band&#39;s normalized spectral response function.</description>
+   </entry>
+  
+   <entry id="sensor_band_central_radiation_wavelength">
+      <canonical_units>m</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>sensor_band_central_radiation_wavelength is the central wavelength of a sensor&#39;s band, calculated as the first moment of the band&#39;s normalized spectral response function.</description>
+   </entry>
+  
+   <entry id="sensor_band_central_radiation_wavenumber">
+      <canonical_units>m-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>sensor_band_central_radiation_wavenumber is the central wavenumber of a sensor&#39;s band, calculated as the first moment of the band&#39;s normalized spectral response function.</description>
+   </entry>
+  
+   <entry id="sensor_band_identifier">
+      <canonical_units></canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>A variable with the standard name of sensor_band_identifier contains strings which give the alphanumeric identifier of a sensor band. These strings have not yet been standardised.
+</description>
+   </entry>
+  
+   <entry id="sensor_view_angle">
+      <canonical_units>degree</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>Sensor view angle is the angle between the line of sight from the sensor and the direction straight vertically down. Zero view angle means looking directly beneath the sensor. There is no standardized sign convention for sensor_view_angle. A standard name also exists for platform_view_angle, where &quot;platform&quot; refers to the vehicle from which observations are made e.g. aeroplane, ship, or satellite. For some viewing geometries the sensor and the platform cannot be assumed to be close enough to neglect the difference in calculated view angle.</description>
+   </entry>
+  
+   <entry id="sensor_zenith_angle">
+      <canonical_units>degree</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>sensor_zenith_angle is the angle between the line of sight to the sensor and the local zenith at the observation target. This angle is measured starting from directly overhead and its range is from zero (directly overhead the observation target) to 180 degrees (directly below the observation target). Local zenith is a line perpendicular to the Earth&#39;s surface at a given location. &quot;Observation target&quot; means a location on the Earth defined by the sensor performing the observations.  A standard name also exists for platform_zenith_angle, where &quot;platform&quot; refers to the vehicle from which observations are made e.g. aeroplane, ship, or satellite. For some viewing geometries the sensor and the platform cannot be assumed to be close enough to neglect the difference in calculated zenith angle.</description>
    </entry>
   
    <entry id="shallow_convection_time_fraction">
@@ -10268,6 +10403,21 @@
       <description>&quot;Upward&quot; indicates a vector component which is positive when directed upward (negative downward).  Ocean transport means transport by all processes, both sea water and sea ice.  &quot;square_of_X&quot; means X*X.</description>
    </entry>
   
+   <entry id="station_description">
+      <canonical_units></canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>A variable with the standard name of station_description contains strings which help to identify the platform from which an observation was made. For example, this may be a geographical place name such as &quot;South Pole&quot; or the name of a meteorological observing station.
+</description>
+   </entry>
+  
+   <entry id="station_wmo_id">
+      <canonical_units></canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>A variable with the standard name of station_wmo_id contains strings which help to identify the platform from which an observation was made. For example, this may be a WMO station identification number.</description>
+   </entry>
+  
    <entry id="stratiform_cloud_area_fraction">
       <canonical_units>1</canonical_units>
       <grib></grib>
@@ -10597,6 +10747,13 @@
       <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. A photon flux is specified in terms of numbers of photons expressed in moles. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
    </entry>
   
+   <entry id="surface_downwelling_photon_flux_per_unit_wavelength_in_sea_water">
+      <canonical_units>mol m-2 s-1 m-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. A photon flux is specified in terms of numbers of photons expressed in moles. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
+   </entry>
+  
    <entry id="surface_downwelling_photon_radiance_in_sea_water">
       <canonical_units>mol m-2 s-1 sr-1</canonical_units>
       <grib></grib>
@@ -10604,11 +10761,25 @@
       <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. Photon radiance is the photon flux in a particular direction, per unit of solid angle. The direction from which it is coming must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead. A photon flux is specified in terms of numbers of photons expressed in moles.</description>
    </entry>
   
+   <entry id="surface_downwelling_photon_radiance_per_unit_wavelength_in_sea_water">
+      <canonical_units>mol m-2 s-1 m-1 sr-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. Photon radiance is the photon flux in a particular direction, per unit of solid angle. The direction from which it is coming must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead. A photon flux is specified in terms of numbers of photons expressed in moles. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
+   </entry>
+  
    <entry id="surface_downwelling_photon_spherical_irradiance_in_sea_water">
       <canonical_units>mol m-2 s-1</canonical_units>
       <grib></grib>
       <amip></amip>
       <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. Photon spherical irradiance is the photon flux incident on unit area of a hemispherical (or &quot;2-pi&quot;) collector. A photon flux is specified in terms of numbers of photons expressed in moles.</description>
+   </entry>
+  
+   <entry id="surface_downwelling_photon_spherical_irradiance_per_unit_wavelength_in_sea_water">
+      <canonical_units>mol m-2 s-1 m-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. Photon spherical irradiance is the photon flux incident on unit area of a hemispherical (or &quot;2-pi&quot;) collector. A photon flux is specified in terms of numbers of photons expressed in moles. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
    </entry>
   
    <entry id="surface_downwelling_photosynthetic_photon_flux_in_air">
@@ -10674,11 +10845,32 @@
       <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction from which it is coming must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead.</description>
    </entry>
   
+   <entry id="surface_downwelling_radiance_per_unit_wavelength_in_sea_water">
+      <canonical_units>W m-2 m-1 sr-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction from which it is coming must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
+   </entry>
+  
    <entry id="surface_downwelling_radiative_flux_in_sea_water">
       <canonical_units>W m-2</canonical_units>
       <grib></grib>
       <amip></amip>
       <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. Radiative flux is the sum of shortwave and longwave radiative fluxes. When thought of as being incident on a surface, a radiative flux is sometimes called &quot;irradiance&quot;. In addition, it is identical with the quantity measured by a cosine-collector light-meter and sometimes called &quot;vector irradiance&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
+   </entry>
+  
+   <entry id="surface_downwelling_radiative_flux_per_unit_wavelength_in_air">
+      <canonical_units>W m-2 m-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. When thought of as being incident on a surface, a radiative flux is sometimes called &quot;irradiance&quot;. In addition, it is identical with the quantity measured by a cosine-collector light-meter and sometimes called &quot;vector irradiance&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
+   </entry>
+  
+   <entry id="surface_downwelling_radiative_flux_per_unit_wavelength_in_sea_water">
+      <canonical_units>W m-2 m-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. When thought of as being incident on a surface, a radiative flux is sometimes called &quot;irradiance&quot;. In addition, it is identical with the quantity measured by a cosine-collector light-meter and sometimes called &quot;vector irradiance&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
    </entry>
   
    <entry id="surface_downwelling_shortwave_flux_in_air">
@@ -10695,60 +10887,18 @@
       <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. A phrase assuming_condition indicates that the named quantity is the value which would obtain if all aspects of the system were unaltered except for the assumption of the circumstances specified by the condition. &quot;shortwave&quot; means shortwave radiation. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. Surface downwelling shortwave is the sum of direct and diffuse solar radiation incident on the surface, and is sometimes called &quot;global radiation&quot;. When thought of as being incident on a surface, a radiative flux is sometimes called &quot;irradiance&quot;. In addition, it is identical with the quantity measured by a cosine-collector light-meter and sometimes called &quot;vector irradiance&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
    </entry>
   
-   <entry id="surface_downwelling_spectral_photon_flux_in_sea_water">
-      <canonical_units>mol m-2 s-1 m-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. A photon flux is specified in terms of numbers of photons expressed in moles. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
-   </entry>
-  
-   <entry id="surface_downwelling_spectral_photon_radiance_in_sea_water">
-      <canonical_units>mol m-2 s-1 m-1 sr-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. Photon radiance is the photon flux in a particular direction, per unit of solid angle. The direction from which it is coming must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead. A photon flux is specified in terms of numbers of photons expressed in moles.</description>
-   </entry>
-  
-   <entry id="surface_downwelling_spectral_photon_spherical_irradiance_in_sea_water">
-      <canonical_units>mol m-2 s-1 m-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. &quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. Photon spherical irradiance is the photon flux incident on unit area of a hemispherical (or &quot;2-pi&quot;) collector. A photon flux is specified in terms of numbers of photons expressed in moles.</description>
-   </entry>
-  
-   <entry id="surface_downwelling_spectral_radiance_in_sea_water">
-      <canonical_units>W m-2 m-1 sr-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. &quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction from which it is coming must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead.</description>
-   </entry>
-  
-   <entry id="surface_downwelling_spectral_radiative_flux_in_air">
-      <canonical_units>W m-2 m-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. &quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. When thought of as being incident on a surface, a radiative flux is sometimes called &quot;irradiance&quot;. In addition, it is identical with the quantity measured by a cosine-collector light-meter and sometimes called &quot;vector irradiance&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
-   </entry>
-  
-   <entry id="surface_downwelling_spectral_radiative_flux_in_sea_water">
-      <canonical_units>W m-2 m-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. &quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. When thought of as being incident on a surface, a radiative flux is sometimes called &quot;irradiance&quot;. In addition, it is identical with the quantity measured by a cosine-collector light-meter and sometimes called &quot;vector irradiance&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
-   </entry>
-  
-   <entry id="surface_downwelling_spectral_spherical_irradiance_in_sea_water">
-      <canonical_units>W m-2 m-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. &quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. Spherical irradiance is the radiation incident on unit area of a hemispherical (or &quot;2-pi&quot;) collector. It is sometimes called &quot;scalar irradiance&quot;. The direction (up/downwelling) is specified. Radiation incident on a 4-pi collector has standard names of &quot;omnidirectional spherical irradiance&quot;.</description>
-   </entry>
-  
    <entry id="surface_downwelling_spherical_irradiance_in_sea_water">
       <canonical_units>W m-2</canonical_units>
       <grib></grib>
       <amip></amip>
       <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. Spherical irradiance is the radiation incident on unit area of a hemispherical (or &quot;2-pi&quot;) collector. It is sometimes called &quot;scalar irradiance&quot;. The direction (up/downwelling) is specified. Radiation incident on a 4-pi collector has standard names of &quot;omnidirectional spherical irradiance&quot;.</description>
+   </entry>
+  
+   <entry id="surface_downwelling_spherical_irradiance_per_unit_wavelength_in_sea_water">
+      <canonical_units>W m-2 m-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Downwelling radiation is radiation from above. It does not mean &quot;net downward&quot;. Spherical irradiance is the radiation incident on unit area of a hemispherical (or &quot;2-pi&quot;) collector. It is sometimes called &quot;scalar irradiance&quot;. The direction (up/downwelling) is specified. Radiation incident on a 4-pi collector has standard names of &quot;omnidirectional spherical irradiance&quot;. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
    </entry>
   
    <entry id="surface_drag_coefficient_for_heat_in_air">
@@ -11276,6 +11426,48 @@
       <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction towards which it is going must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead.</description>
    </entry>
   
+   <entry id="surface_upwelling_radiance_per_unit_wavelength_in_air">
+      <canonical_units>W m-2 m-1 sr-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction towards which it is going must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
+   </entry>
+  
+   <entry id="surface_upwelling_radiance_per_unit_wavelength_in_air_emerging_from_sea_water">
+      <canonical_units>W m-2 m-1 sr-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction towards which it is going must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
+   </entry>
+  
+   <entry id="surface_upwelling_radiance_per_unit_wavelength_in_air_reflected_by_sea_water">
+      <canonical_units>W m-2 m-1 sr-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction towards which it is going must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
+   </entry>
+  
+   <entry id="surface_upwelling_radiance_per_unit_wavelength_in_sea_water">
+      <canonical_units>W m-2 m-1 sr-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction towards which it is going must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
+   </entry>
+  
+   <entry id="surface_upwelling_radiative_flux_per_unit_wavelength_in_air">
+      <canonical_units>W m-2 m-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. When thought of as being incident on a surface, a radiative flux is sometimes called &quot;irradiance&quot;. In addition, it is identical with the quantity measured by a cosine-collector light-meter and sometimes called &quot;vector irradiance&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
+   </entry>
+  
+   <entry id="surface_upwelling_radiative_flux_per_unit_wavelength_in_sea_water">
+      <canonical_units>W m-2 m-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. When thought of as being incident on a surface, a radiative flux is sometimes called &quot;irradiance&quot;. In addition, it is identical with the quantity measured by a cosine-collector light-meter and sometimes called &quot;vector irradiance&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
+   </entry>
+  
    <entry id="surface_upwelling_shortwave_flux_in_air">
       <canonical_units>W m-2</canonical_units>
       <grib></grib>
@@ -11288,48 +11480,6 @@
       <grib></grib>
       <amip>rsuscs</amip>
       <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. A phrase assuming_condition indicates that the named quantity is the value which would obtain if all aspects of the system were unaltered except for the assumption of the circumstances specified by the condition. &quot;shortwave&quot; means shortwave radiation. Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. When thought of as being incident on a surface, a radiative flux is sometimes called &quot;irradiance&quot;. In addition, it is identical with the quantity measured by a cosine-collector light-meter and sometimes called &quot;vector irradiance&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
-   </entry>
-  
-   <entry id="surface_upwelling_spectral_radiance_in_air">
-      <canonical_units>W m-2 m-1 sr-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. &quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction towards which it is going must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead.</description>
-   </entry>
-  
-   <entry id="surface_upwelling_spectral_radiance_in_air_emerging_from_sea_water">
-      <canonical_units>W m-2 m-1 sr-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. &quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction towards which it is going must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead.</description>
-   </entry>
-  
-   <entry id="surface_upwelling_spectral_radiance_in_air_reflected_by_sea_water">
-      <canonical_units>W m-2 m-1 sr-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. &quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction towards which it is going must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead.</description>
-   </entry>
-  
-   <entry id="surface_upwelling_spectral_radiance_in_sea_water">
-      <canonical_units>W m-2 m-1 sr-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. &quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction towards which it is going must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead.</description>
-   </entry>
-  
-   <entry id="surface_upwelling_spectral_radiative_flux_in_air">
-      <canonical_units>W m-2 m-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. &quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. When thought of as being incident on a surface, a radiative flux is sometimes called &quot;irradiance&quot;. In addition, it is identical with the quantity measured by a cosine-collector light-meter and sometimes called &quot;vector irradiance&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
-   </entry>
-  
-   <entry id="surface_upwelling_spectral_radiative_flux_in_sea_water">
-      <canonical_units>W m-2 m-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Water&quot; means water in all phases, including frozen i.e. ice and snow. Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. &quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. When thought of as being incident on a surface, a radiative flux is sometimes called &quot;irradiance&quot;. In addition, it is identical with the quantity measured by a cosine-collector light-meter and sometimes called &quot;vector irradiance&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
    </entry>
   
    <entry id="surface_water_amount">
@@ -16162,6 +16312,13 @@
       <description>&quot;Content&quot; indicates a quantity per unit area. Thermal energy is the total vibrational energy, kinetic and potential, of all the molecules and atoms in a substance. The surface called &quot;surface&quot; means the lower boundary of the atmosphere.</description>
    </entry>
   
+   <entry id="thermodynamic_phase_of_cloud_water_particles_at_cloud_top">
+      <canonical_units>1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>&quot;cloud_top&quot; refers to the top of the  highest cloud. &quot;Water&quot; means water in all phases. A variable with the standard name of thermodynamic_phase_of_cloud_water_particles_at_cloud_top contains integers which can be translated to strings using flag_values and flag_meanings attributes. Alternatively, the data variable may contain strings which indicate the thermodynamic phase. These strings are standardised. Values must be chosen from the following list: liquid; ice; mixed.</description>
+   </entry>
+  
    <entry id="thickness_of_convective_rainfall_amount">
       <canonical_units>m</canonical_units>
       <grib></grib>
@@ -16225,6 +16382,13 @@
       <description></description>
    </entry>
   
+   <entry id="time_sample_difference_due_to_collocation">
+      <canonical_units>s</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>time_sample_difference_due_to_collocation is the difference in time between two events that are collocated. Two events are deemed to be collocated based on some set of spatial, temporal, and viewing geometry criteria.</description>
+   </entry>
+  
    <entry id="toa_adjusted_longwave_forcing">
       <canonical_units>W m-2</canonical_units>
       <grib></grib>
@@ -16265,6 +16429,22 @@
       <grib></grib>
       <amip></amip>
       <description>The brightness temperature of a body is the temperature of a black body which radiates the same power per unit solid angle per unit area.  A phrase assuming_condition  indicates that the named quantity is the value which would obtain if all  aspects of the system were unaltered except for the assumption of the  circumstances specified by the condition.  &quot;toa&quot; means top of atmosphere.</description>
+   </entry>
+  
+   <entry id="toa_brightness_temperature_bias_at_standard_scene_due_to_intercalibration">
+      <canonical_units>K</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>toa_brightness_temperature_bias_at_standard_scene_due_to_intercalibration is the difference between top-of-atmosphere (TOA) brightness temperature
+of the reference sensor and TOA brightness temperature of the
+monitored sensor. This TOA brightness temperature difference is a measure of the calibration difference between the monitored and reference sensors. The standard scene is a target area with typical Earth surface and atmospheric conditions that is accepted as a reference. Brightness temperature of a body is the temperature of a black body which radiates the same power per unit solid angle per unit area at a given wavenumber. TOA brightness temperature of the standard scene is calculated using a radiative transfer simulation for a given viewing geometry. The resultant top-of-atmosphere spectral radiance is then integrated with each sensor&#39;s spectral response function and converted to equivalent brightness temperature. The specification of a physical process by the phrase &quot;due_to_&quot; process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase.</description>
+   </entry>
+  
+   <entry id="toa_brightness_temperature_of_standard_scene">
+      <canonical_units>K</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>&quot;toa&quot; means top of atmosphere. The brightness temperature of a body is the temperature of a black body which radiates the same power per unit solid angle per unit area at a given wavenumber. The standard scene is a target area with typical Earth surface and atmospheric conditions that is accepted as a reference. The toa radiance of the standard scene is calculated using a radiative transfer model for a given viewing geometry. The resultant toa spectral radiance is then integrated with a sensor&#39;s spectral response function and converted to equivalent brightness temperature.</description>
    </entry>
   
    <entry id="toa_cloud_radiative_effect">
@@ -16377,6 +16557,48 @@
       <grib></grib>
       <amip>rlutcs</amip>
       <description>A phrase assuming_condition indicates that the named quantity is the value which would obtain if all aspects of the system were unaltered except for the assumption of the circumstances specified by the condition. &quot;longwave&quot; means longwave radiation. &quot;toa&quot; means top of atmosphere. The TOA outgoing longwave flux is the upwelling thermal radiative flux, often called the &quot;outgoing longwave radiation&quot; or &quot;OLR&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
+   </entry>
+  
+   <entry id="toa_outgoing_radiance_per_unit_wavelength">
+      <canonical_units>W m-2 sr-1 m-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>&quot;toa&quot; means top of atmosphere. The TOA outgoing radiance is the upwelling radiance, i.e., toward outer space. Radiance is the radiative flux in a particular direction, per unit of solid angle. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
+   </entry>
+  
+   <entry id="toa_outgoing_radiance_per_unit_wavenumber">
+      <canonical_units>W m-2 sr-1 (m-1)-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>&quot;toa&quot; means top of atmosphere. The TOA outgoing radiance is the upwelling radiance, i.e., toward outer space. Radiance is the radiative flux in a particular direction, per unit of solid angle. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
+   </entry>
+  
+   <entry id="toa_outgoing_radiance_per_unit_wavenumber_mean_within_collocation_scene">
+      <canonical_units>W m-2 sr-1 (m-1)-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>toa_outgoing_radiance_per_unit_wavenumber_mean_within_collocation_scene is an average of observations of the quantity with standard name toa_outgoing_radiance_per_unit_wavenumber from a sensor&#39;s adjacent field-of-views within a collocation scene. &quot;toa&quot; means top of atmosphere. The TOA outgoing radiance is the upwelling radiance, i.e., toward outer space. Radiance is the radiative flux in a particular direction, per unit of solid angle. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. The &quot;collocation scene&quot; is a grouping of a sensor&#39;s adjacent field-of-views centered on a collocation target. The size of the collocation scene is typically about twice that of the collocation target. The &quot;collocation target&quot; is an area on the Earth&#39;s surface at which observations from at least two sensors are collected. Its size is defined by the sensor with the largest field-of-view footprint. Two events are deemed to be collocated based on some set of spatial, temporal, and viewing geometry criteria.</description>
+   </entry>
+  
+   <entry id="toa_outgoing_radiance_per_unit_wavenumber_mean_within_collocation_target">
+      <canonical_units>W m-2 sr-1 (m-1)-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>toa_outgoing_radiance_per_unit_wavenumber_mean_within_collocation_target is an average of observations of the quantity with standard name toa_outgoing_radiance_per_unit_wavenumber from a sensor&#39;s adjacent field-of-views within a collocation target. &quot;toa&quot; means top of atmosphere. The TOA outgoing radiance is the upwelling radiance, i.e., toward outer space. Radiance is the radiative flux in a particular direction, per unit of solid angle. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. The &quot;collocation target&quot; is an area on the Earth&#39;s surface at which observations from at least two sensors are collected. Its size is defined by the sensor with the largest field-of-view footprint. Two events are deemed to be collocated based on some set of spatial, temporal, and viewing geometry criteria.</description>
+   </entry>
+  
+   <entry id="toa_outgoing_radiance_per_unit_wavenumber_stdev_within_collocation_scene">
+      <canonical_units>W m-2 sr-1 (m-1)-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>toa_outgoing_radiance_per_unit_wavenumber_stdev_within_collocation_scene is the standard deviation of observations of the quantity with standard name toa_outgoing_radiance_per_unit_wavenumber from a sensor&#39;s adjacent field-of-views within a collocation scene. &quot;toa&quot; means top of atmosphere. The TOA outgoing radiance is the upwelling radiance, i.e., toward outer space. Radiance is the radiative flux in a particular direction, per unit of solid angle. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. The &quot;collocation scene&quot; is a grouping of a sensor&#39;s adjacent field-of-views centered on a collocation target. The size of the collocation scene is typically about twice that of the collocation target. The &quot;collocation target&quot; is an area on the Earth&#39;s surface at which observations from at least two sensors are collected. Its size is defined by the sensor with the largest field-of-view footprint. Two events are deemed to be collocated based on some set of spatial, temporal, and viewing geometry criteria.</description>
+   </entry>
+  
+   <entry id="toa_outgoing_radiance_per_unit_wavenumber_stdev_within_collocation_target">
+      <canonical_units>W m-2 sr-1 (m-1)-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>toa_outgoing_radiance_per_unit_wavenumber_stdev_within_collocation_target is the standard deviation of observations of the quantity with standard name toa_outgoing_radiance_per_unit_wavenumber from a sensor&#39;s adjacent field-of-views within a collocation target. &quot;toa&quot; means top of atmosphere. The TOA outgoing radiance is the upwelling radiance, i.e., toward outer space. Radiance is the radiative flux in a particular direction, per unit of solid angle. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. The &quot;collocation target&quot; is an area on the Earth&#39;s surface at which observations from at least two sensors are collected. Its size is defined by the sensor with the largest field-of-view footprint. Two events are deemed to be collocated based on some set of spatial, temporal, and viewing geometry criteria.</description>
    </entry>
   
    <entry id="toa_outgoing_shortwave_flux">
@@ -16631,6 +16853,13 @@
       <description>&quot;Upward&quot; indicates a vector component which is positive when directed upward (negative downward). The vertical heat flux in air is the sum of all heat fluxes i.e. radiative, latent and sensible. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
    </entry>
   
+   <entry id="upward_heat_flux_in_sea_water_due_to_convection">
+      <canonical_units>W m-2</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>&quot;Upward&quot; indicates a vector component which is positive when directed upward (negative downward). The specification of a physical process by the phrase due_to_process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
+   </entry>
+  
    <entry id="upward_latent_heat_flux_in_air">
       <canonical_units>W m-2</canonical_units>
       <grib></grib>
@@ -16729,6 +16958,27 @@
       <description>&quot;longwave&quot; means longwave radiation. Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction towards which it is going must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead.</description>
    </entry>
   
+   <entry id="upwelling_radiance_per_unit_wavelength_in_air">
+      <canonical_units>W m-2 m-1 sr-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction towards which it is going must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
+   </entry>
+  
+   <entry id="upwelling_radiative_flux_per_unit_wavelength_in_air">
+      <canonical_units>W m-2 m-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. When thought of as being incident on a surface, a radiative flux is sometimes called &quot;irradiance&quot;. In addition, it is identical with the quantity measured by a cosine-collector light-meter and sometimes called &quot;vector irradiance&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
+   </entry>
+  
+   <entry id="upwelling_radiative_flux_per_unit_wavelength_in_sea_water">
+      <canonical_units>W m-2 m-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. When thought of as being incident on a surface, a radiative flux is sometimes called &quot;irradiance&quot;. In addition, it is identical with the quantity measured by a cosine-collector light-meter and sometimes called &quot;vector irradiance&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. A coordinate variable for radiation wavelength should be given the standard name radiation_wavelength.</description>
+   </entry>
+  
    <entry id="upwelling_shortwave_flux_in_air">
       <canonical_units>W m-2</canonical_units>
       <grib></grib>
@@ -16748,27 +16998,6 @@
       <grib></grib>
       <amip></amip>
       <description>&quot;shortwave&quot; means shortwave radiation. Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction towards which it is going must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead.</description>
-   </entry>
-  
-   <entry id="upwelling_spectral_radiance_in_air">
-      <canonical_units>W m-2 m-1 sr-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. &quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. Radiance is the radiative flux in a particular direction, per unit of solid angle. The direction towards which it is going must be specified, for instance with a coordinate of zenith_angle. If the radiation does not depend on direction, a standard name of isotropic radiance should be chosen instead.</description>
-   </entry>
-  
-   <entry id="upwelling_spectral_radiative_flux_in_air">
-      <canonical_units>W m-2 m-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. &quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. When thought of as being incident on a surface, a radiative flux is sometimes called &quot;irradiance&quot;. In addition, it is identical with the quantity measured by a cosine-collector light-meter and sometimes called &quot;vector irradiance&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
-   </entry>
-  
-   <entry id="upwelling_spectral_radiative_flux_in_sea_water">
-      <canonical_units>W m-2 m-1</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>Upwelling radiation is radiation from below. It does not mean &quot;net upward&quot;. &quot;spectral&quot; means per unit wavelength or as a function of wavelength; spectral quantities are sometimes called &quot;monochromatic&quot;. Radiation wavelength has standard name radiation_wavelength. When thought of as being incident on a surface, a radiative flux is sometimes called &quot;irradiance&quot;. In addition, it is identical with the quantity measured by a cosine-collector light-meter and sometimes called &quot;vector irradiance&quot;. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
    </entry>
   
    <entry id="vegetation_area_fraction">
@@ -17223,7 +17452,7 @@
       <canonical_units>degree</canonical_units>
       <grib></grib>
       <amip></amip>
-      <description>Wind is defined as a two-dimensional (horizontal) air velocity vector, with no vertical component. (Vertical motion in the atmosphere has the standard name upward_air_velocity.) In meteorological reports, the direction of the wind vector is usually (but not always) given as the direction from which it is blowing (wind_from_direction) (westerly, northerly, etc.). In other contexts, such as atmospheric modelling, it is often natural to give the direction in the usual manner of vectors as the heading or the direction to which it is blowing (wind_to_direction) (eastward, southward, etc.) &quot;to_direction&quot; is used in the construction X_to_direction and indicates the direction towards which the velocity vector of X is headed.</description>
+      <description>Wind is defined as a two-dimensional (horizontal) air velocity vector, with no vertical component. (Vertical motion in the atmosphere has the standard name upward_air_velocity.) In meteorological reports, the direction of the wind vector is usually (but not always) given as the direction from which it is blowing (wind_from_direction) (westerly, northerly, etc.). In other contexts, such as atmospheric modelling, it is often natural to give the direction in the usual manner of vectors as the heading or the direction to which it is blowing (wind_to_direction) (eastward, southward, etc.) &quot;to_direction&quot; is used in the construction X_to_direction and indicates the direction towards which the velocity vector of X is headed. The direction is a bearing in the usual geographical sense, measured positive clockwise from due north.</description>
    </entry>
   
    <entry id="wood_carbon_content">
@@ -17247,6 +17476,13 @@
       <description>&quot;component_derivative_of_X&quot; means the derivative of X with respect to distance in the component direction, which may be northward, southward, eastward, westward, x or y. The last two indicate derivatives along the axes of the grid,  whether or not they are true longitude and latitude. x_derivative_of_ocean_rigid_lid_pressure means (d/dx) of the ocean surface pressure, as derived by a rigid lid approximation, keeping the other horizontal coordinate (y, presumably) constant.</description>
    </entry>
   
+   <entry id="x_heat_flux_in_sea_water_due_to_advection">
+      <canonical_units>W m-2</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>&quot;x&quot; indicates a vector component along the grid x-axis, positive with increasing x. The specification of a physical process by the phrase due_to_process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
+   </entry>
+  
    <entry id="x_wind">
       <canonical_units>m s-1</canonical_units>
       <grib></grib>
@@ -17259,6 +17495,13 @@
       <grib></grib>
       <amip></amip>
       <description>&quot;component_derivative_of_X&quot; means the derivative of X with respect to distance in the component direction, which may be northward, southward, eastward, westward, x or y. The last two indicate derivatives along the axes of the grid, whether or not they are true longitude and latitude. y_derivative_of_ocean_rigid_lid_pressure means (d/dy) of the ocean surface pressure, as derived by a rigid lid approximation, keeping the other horizontal coordinate (x, presumably) constant.</description>
+   </entry>
+  
+   <entry id="y_heat_flux_in_sea_water_due_to_advection">
+      <canonical_units>W m-2</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>&quot;y&quot; indicates a vector component along the grid y-axis, positive with increasing y. The specification of a physical process by the phrase due_to_process means that the quantity named is a  single term in a sum of terms which together compose the general quantity named by omitting the phrase. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
    </entry>
   
    <entry id="y_wind">
@@ -17438,10 +17681,6 @@
   
   <alias id="shortwave_radiance">
     <entry_id>isotropic_shortwave_radiance_in_air</entry_id>
-  </alias>
-  
-  <alias id="spectral_radiance">
-    <entry_id>isotropic_spectral_radiance_in_air</entry_id>
   </alias>
   
   <alias id="dissipation_in_atmosphere_boundary_layer">
@@ -18138,6 +18377,122 @@
   
   <alias id="tendency_of_atmosphere_water_vapor_content_due_to_advection">
     <entry_id>tendency_of_atmosphere_mass_content_of_water_vapor_due_to_advection</entry_id>
+  </alias>
+  
+  <alias id="downwelling_spectral_spherical_irradiance_in_sea_water">
+    <entry_id>downwelling_spherical_irradiance_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="surface_downwelling_spectral_photon_flux_in_sea_water">
+    <entry_id>surface_downwelling_photon_flux_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="surface_downwelling_spectral_radiance_in_sea_water">
+    <entry_id>surface_downwelling_radiance_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="surface_downwelling_spectral_radiative_flux_in_sea_water">
+    <entry_id>surface_downwelling_radiative_flux_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="surface_upwelling_spectral_radiance_in_air_emerging_from_sea_water">
+    <entry_id>surface_upwelling_radiance_per_unit_wavelength_in_air_emerging_from_sea_water</entry_id>
+  </alias>
+  
+  <alias id="land_ice_surface_specific_mass_balance">
+    <entry_id>land_ice_surface_specific_mass_balance_rate</entry_id>
+  </alias>
+  
+  <alias id="surface_upwelling_spectral_radiative_flux_in_air">
+    <entry_id>surface_upwelling_radiative_flux_per_unit_wavelength_in_air</entry_id>
+  </alias>
+  
+  <alias id="land_ice_lwe_surface_specific_mass_balance">
+    <entry_id>land_ice_lwe_surface_specific_mass_balance_rate</entry_id>
+  </alias>
+  
+  <alias id="upwelling_spectral_radiance_in_air">
+    <entry_id>upwelling_radiance_per_unit_wavelength_in_air</entry_id>
+  </alias>
+  
+  <alias id="upwelling_spectral_radiative_flux_in_air">
+    <entry_id>upwelling_radiative_flux_per_unit_wavelength_in_air</entry_id>
+  </alias>
+  
+  <alias id="upwelling_spectral_radiative_flux_in_sea_water">
+    <entry_id>upwelling_radiative_flux_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="surface_downwelling_spectral_radiative_flux_in_air">
+    <entry_id>surface_downwelling_radiative_flux_per_unit_wavelength_in_air</entry_id>
+  </alias>
+  
+  <alias id="downwelling_spectral_photon_flux_in_sea_water">
+    <entry_id>downwelling_photon_flux_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="surface_upwelling_spectral_radiative_flux_in_sea_water">
+    <entry_id>surface_upwelling_radiative_flux_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="downwelling_spectral_photon_radiance_in_sea_water">
+    <entry_id>downwelling_photon_radiance_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="surface_upwelling_spectral_radiance_in_sea_water">
+    <entry_id>surface_upwelling_radiance_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="surface_upwelling_spectral_radiance_in_air_reflected_by_sea_water">
+    <entry_id>surface_upwelling_radiance_per_unit_wavelength_in_air_reflected_by_sea_water</entry_id>
+  </alias>
+  
+  <alias id="surface_upwelling_spectral_radiance_in_air">
+    <entry_id>surface_upwelling_radiance_per_unit_wavelength_in_air</entry_id>
+  </alias>
+  
+  <alias id="surface_downwelling_spectral_spherical_irradiance_in_sea_water">
+    <entry_id>surface_downwelling_spherical_irradiance_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="surface_downwelling_spectral_photon_spherical_irradiance_in_sea_water">
+    <entry_id>surface_downwelling_photon_spherical_irradiance_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="downwelling_spectral_photon_spherical_irradiance_in_sea_water">
+    <entry_id>downwelling_photon_spherical_irradiance_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="surface_downwelling_spectral_photon_radiance_in_sea_water">
+    <entry_id>surface_downwelling_photon_radiance_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="omnidirectional_spectral_spherical_irradiance_in_sea_water">
+    <entry_id>omnidirectional_spherical_irradiance_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="isotropic_spectral_radiance_in_air">
+    <entry_id>isotropic_radiance_per_unit_wavelength_in_air</entry_id>
+  </alias>
+  
+  <alias id="spectral_radiance">
+    <entry_id>isotropic_radiance_per_unit_wavelength_in_air</entry_id>
+  </alias>
+  
+  <alias id="downwelling_spectral_radiance_in_air">
+    <entry_id>downwelling_radiance_per_unit_wavelength_in_air</entry_id>
+  </alias>
+  
+  <alias id="downwelling_spectral_radiance_in_sea_water">
+    <entry_id>downwelling_radiance_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="downwelling_spectral_radiative_flux_in_air">
+    <entry_id>downwelling_radiative_flux_per_unit_wavelength_in_air</entry_id>
+  </alias>
+  
+  <alias id="downwelling_spectral_radiative_flux_in_sea_water">
+    <entry_id>downwelling_radiative_flux_per_unit_wavelength_in_sea_water</entry_id>
   </alias>
  
 
