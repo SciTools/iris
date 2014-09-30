@@ -76,6 +76,23 @@ _TIME_RANGE_UNITS = {
 }
 
 
+# Regulation 92.1.12
+def unscale(value, factor):
+    """
+    Implements Regulation 92.1.12.
+
+    Args:
+
+    * value:
+        Scaled value.
+
+    * factor:
+        Scale factor.
+
+    """
+    return value / 10.0 ** factor
+
+
 ###############################################################################
 #
 # Identification Section 1
@@ -497,6 +514,62 @@ def product_definition_template_0(section, metadata, frt_point):
     hybrid_factories(section, metadata)
 
 
+def product_definition_template_31(section, metadata):
+    """
+    Translate template representing a satellite product.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 4 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    """
+    # XXX Add forecast reference time coordinate when pdt1 is merged.
+
+    if options.warn_on_unsupported:
+        warnings.warn('Unable to translate type of generating process.')
+        warnings.warn('Unable to translate observation generating '
+                      'process identifier.')
+
+    # Number of contributing spectral bands.
+    NB = section['NB']
+
+    if NB > 0:
+        # Create the satellite series coordinate.
+        satelliteSeries = section['satelliteSeries']
+        coord = AuxCoord(satelliteSeries, long_name='satellite_series')
+        # Add the satellite series coordinate to the metadata aux coords.
+        metadata['aux_coords_and_dims'].append((coord, None))
+
+        # Create the satellite number coordinate.
+        satelliteNumber = section['satelliteNumber']
+        coord = AuxCoord(satelliteNumber, long_name='satellite_number')
+        # Add the satellite number coordinate to the metadata aux coords.
+        metadata['aux_coords_and_dims'].append((coord, None))
+
+        # Create the satellite instrument type coordinate.
+        instrumentType = section['instrumentType']
+        coord = AuxCoord(instrumentType, long_name='instrument_type')
+        # Add the instrument type coordinate to the metadata aux coords.
+        metadata['aux_coords_and_dims'].append((coord, None))
+
+        # Create the central wave number coordinate.
+        scaleFactor = section['scaleFactorOfCentralWaveNumber']
+        scaledValue = section['scaledValueOfCentralWaveNumber']
+        wave_number = unscale(scaledValue, scaleFactor)
+        standard_name = 'sensor_band_central_radiation_wavenumber'
+        coord = AuxCoord(wave_number,
+                         standard_name=standard_name,
+                         units=Unit('m-1'))
+        # Add the central wave number coordinate to the metadata aux coords.
+        metadata['aux_coords_and_dims'].append((coord, None))
+
+
 def product_definition_section(section, metadata, discipline, tablesVersion,
                                frt_point):
     """
@@ -530,6 +603,9 @@ def product_definition_section(section, metadata, discipline, tablesVersion,
         # Process analysis or forecast at a horizontal level or
         # in a horizontal layer at a point in time.
         product_definition_template_0(section, metadata, frt_point)
+    elif template == 31:
+        # Process satellite product.
+        product_definition_template_31(section, metadata)
     else:
         msg = 'Product Definition Template [{}] is not ' \
             'supported'.format(template)

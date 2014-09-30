@@ -24,6 +24,7 @@ Unit tests for `iris.fileformats.grib._message._Section`.
 import iris.tests as tests
 
 import gribapi
+import numpy as np
 
 from iris.fileformats.grib._message import _Section
 
@@ -59,6 +60,24 @@ class Test___getitem__(tests.IrisTest):
         section = _Section(self.grib_id, None, ['Ni'])
         with self.assertRaisesRegexp(KeyError, 'Nii'):
             section['Nii']
+
+
+@tests.skip_data
+class Test__getitem___pdt_31(tests.IrisTest):
+    def setUp(self):
+        filename = tests.get_data_path(('GRIB', 'umukv', 'ukv_chan9.grib2'))
+        with open(filename, 'rb') as grib_fh:
+            self.grib_id = gribapi.grib_new_from_file(grib_fh)
+        self.keys = ['satelliteSeries', 'satelliteNumber', 'instrumentType',
+                     'scaleFactorOfCentralWaveNumber',
+                     'scaledValueOfCentralWaveNumber']
+
+    def test_array(self):
+        section = _Section(self.grib_id, None, self.keys)
+        for key in self.keys:
+            value = section[key]
+            self.assertIsInstance(value, np.ndarray)
+            self.assertEqual(value.shape, (1,))
 
 
 if __name__ == '__main__':
