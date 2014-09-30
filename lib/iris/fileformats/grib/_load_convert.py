@@ -149,7 +149,7 @@ def scanning_mode(scanningMode):
                         j_consecutive, i_alternative)
 
 
-def ellipsoid(shapeOfTheEarth):
+def ellipsoid(shapeOfTheEarth, major=None, minor=None):
     """
     Translate the shape of the earth to an appropriate coordinate
     reference system.
@@ -160,6 +160,14 @@ def ellipsoid(shapeOfTheEarth):
 
     * shapeOfTheEarth:
         Message section 3, octet 15.
+
+    Kwargs:
+
+    * major:
+        Semi-major axis in units determined by the shapeOfTheEarth.
+
+    * minor:
+        Semi-minor axis in units determined by the shapeOfTheEarth.
 
     Returns:
         :class:`iris.coord_systems.CoordSystem`
@@ -173,6 +181,21 @@ def ellipsoid(shapeOfTheEarth):
     if shapeOfTheEarth == 0:
         # Earth assumed spherical with radius of 6 367 470.0m
         result = icoord_systems.GeogCS(6367470)
+    elif shapeOfTheEarth == 3:
+        # Earth assumed oblate spheroid with major and minor axes
+        # specified (in km) by data producer.
+        if major is None:
+            msg = 'Ellipsoid for shape of the earth {} requires a ' \
+                'semi-major axis to be specified.'.format(shapeOfTheEarth)
+            raise ValueError(msg)
+        if minor is None:
+            msg = 'Ellipsoid for shape of the earth {} requires a ' \
+                'semi-minor axis to be specified.'.format(shapeOfTheEarth)
+            raise ValueError(msg)
+        # Convert from km to m.
+        major *= 1000
+        minor *= 1000
+        result = icoord_systems.GeogCS(major, minor)
     elif shapeOfTheEarth == 6:
         # Earth assumed spherical with radius of 6 371 229.0m
         result = icoord_systems.GeogCS(6371229)
