@@ -55,6 +55,24 @@ def netcdf_variable(name, dimensions, dtype, ancillary_variables=None,
     return ncvar
 
 
+class Test_translate__global_attributes(tests.IrisTest):
+
+    def setUp(self):
+        ncvar = netcdf_variable('ncvar', 'height', np.float)
+        ncattrs = mock.Mock(return_value=['dimensions'])
+        getncattr = mock.Mock(return_value='something something_else')
+        self.dataset = mock.Mock(file_format='NetCDF4',
+                                 variables={'ncvar': ncvar},
+                                 ncattrs=ncattrs,
+                                 getncattr=getncattr)
+
+    def test_create_global_attributes(self):
+        with mock.patch('netCDF4.Dataset', return_value=self.dataset):
+            global_attrs = CFReader('dummy').cf_group.global_attributes
+            self.assertEqual(global_attrs['dimensions'],
+                             'something something_else')
+
+
 class Test_translate__formula_terms(tests.IrisTest):
     def setUp(self):
         self.delta = netcdf_variable('delta', 'height', np.float,

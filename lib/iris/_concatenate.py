@@ -873,31 +873,31 @@ class _ProtoCube(object):
             for i, extent in enumerate(dim_extents[1:]):
                 # Check the points - must be strictly monotonic.
                 if order == _DECREASING:
-                    left = dim_extents[i].points.min
-                    right = extent.points.max
+                    big = dim_extents[i].points.min
+                    small = extent.points.max
                 else:
-                    left = dim_extents[i].points.max
-                    right = extent.points.min
+                    small = dim_extents[i].points.max
+                    big = extent.points.min
 
-                if left >= right:
+                if small >= big:
                     result = False
                     break
 
                 # Check the bounds - must be strictly monotonic.
                 if extent.bounds is not None:
                     if order == _DECREASING:
-                        left_0 = dim_extents[i].bounds[0].min
-                        left_1 = dim_extents[1].bounds[1].min
-                        right_0 = extent.bounds[0].max
-                        right_1 = extent.bounds[1].max
+                        big_0 = dim_extents[i].bounds[0].min
+                        big_1 = dim_extents[i].bounds[1].min
+                        small_0 = extent.bounds[0].max
+                        small_1 = extent.bounds[1].max
                     else:
-                        left_0 = dim_extents[i].bounds[0].max
-                        left_1 = dim_extents[i].bounds[1].max
-                        right_0 = extent.bounds[0].min
-                        right_1 = extent.bounds[1].min
+                        small_0 = dim_extents[i].bounds[0].max
+                        small_1 = dim_extents[i].bounds[1].max
+                        big_0 = extent.bounds[0].min
+                        big_1 = extent.bounds[1].min
 
-                    lower_bound_fail = left_0 >= right_0
-                    upper_bound_fail = left_1 >= right_1
+                    lower_bound_fail = small_0 >= big_0
+                    upper_bound_fail = small_1 >= big_1
 
                     if lower_bound_fail or upper_bound_fail:
                         result = False
