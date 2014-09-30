@@ -558,13 +558,15 @@ def product_definition_template_31(section, metadata):
         # Add the instrument type coordinate to the metadata aux coords.
         metadata['aux_coords_and_dims'].append((coord, None))
 
-        # Create the central wavelength coordinate.
+        # Create the central wave number coordinate.
         scaleFactor = section['scaleFactorOfCentralWaveNumber']
         scaledValue = section['scaledValueOfCentralWaveNumber']
-        wavelength = unscale(scaledValue, scaleFactor)
-        coord = AuxCoord(wavelength, long_name='central_wavelength',
+        wave_number = unscale(scaledValue, scaleFactor)
+        standard_name = 'sensor_band_central_radiation_wavenumber'
+        coord = AuxCoord(wave_number,
+                         standard_name=standard_name,
                          units=Unit('m-1'))
-        # Add the central wavelength coordinate to the metadata aux coords.
+        # Add the central wave number coordinate to the metadata aux coords.
         metadata['aux_coords_and_dims'].append((coord, None))
 
 

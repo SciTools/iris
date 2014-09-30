@@ -68,8 +68,9 @@ class Test(tests.IrisTest):
         coord = AuxCoord(instrument, long_name='instrument_type')
         expected['aux_coords_and_dims'].append((coord, None))
         unscale = lambda v, f: v / 10.0 ** f
+        standard_name = 'sensor_band_central_radiation_wavenumber'
         coord = AuxCoord(unscale(value, factor),
-                         long_name='central_wavelength',
+                         standard_name=standard_name,
                          units='m-1')
         expected['aux_coords_and_dims'].append((coord, None))
         self.assertEqual(metadata, expected)
