@@ -49,6 +49,10 @@ ScanningMode = namedtuple('ScanningMode', ['i_negative',
                                            'j_consecutive',
                                            'i_alternative'])
 
+FixedSurface = namedtuple('FixedSurface', ['standard_name',
+                                           'long_name',
+                                           'units'])
+
 _CODE_TABLE_MDI = -1
 _CODE_TABLE_3_2_SHAPE_OF_THE_EARTH_RANGE = 9
 _GRID_ACCURACY_IN_DEGREES = 1e-6  # 1/1,000,000 of a degree
@@ -75,6 +79,12 @@ _TIME_RANGE_UNITS = {
     13: 'seconds'
 }
 
+# Reference Code Table 4.5.
+_FIXED_SURFACE = {
+    100: FixedSurface(None, 'pressure', 'Pa'),  # Isobaric surface
+    103: FixedSurface(None, 'height', 'm')      # Height level above ground
+}
+
 
 # Regulation 92.1.12
 def unscale(value, factor):
@@ -99,7 +109,7 @@ def unscale(value, factor):
 #
 ###############################################################################
 
-def reference_time(section):
+def reference_time_coord(section):
     """
     Translate section 1 forecast reference time.
 
@@ -107,11 +117,18 @@ def reference_time(section):
     hour octet 17, minute octet 18, second octet 19.
 
     Returns:
-        A :class:`datetime.datetime` representation.
+        The scalar forecast reference time :class:`iris.coords.DimCoord`.
 
     """
-    return datetime(section['year'], section['month'], section['day'],
-                    section['hour'], section['minute'], section['second'])
+    # Calculate the reference time and units.
+    dt = datetime(section['year'], section['month'], section['day'],
+                  section['hour'], section['minute'], section['second'])
+    unit = Unit('hours since epoch', calendar=CALENDAR_GREGORIAN)
+    point = unit.date2num(dt)
+    # Create the reference time coordinate.
+    coord = DimCoord(point, standard_name='forecast_reference_time',
+                     units=unit)
+    return coord
 
 
 ###############################################################################
@@ -141,7 +158,7 @@ def scanning_mode(scanningMode):
     i_alternative = bool(scanningMode & 0x10)
 
     if i_alternative:
-        msg = 'Grid Definition Section 3 contains unsupported ' \
+        msg = 'Grid definition section 3 contains unsupported ' \
             'alternative row scanning mode'
         raise TranslationError(msg)
 
@@ -174,7 +191,7 @@ def ellipsoid(shapeOfTheEarth, major=None, minor=None):
 
     """
     if shapeOfTheEarth > _CODE_TABLE_3_2_SHAPE_OF_THE_EARTH_RANGE:
-        msg = 'Grid Definition Section 3 contains an ' \
+        msg = 'Grid definition section 3 contains an ' \
             'invalid shape of the earth [{}]'.format(shapeOfTheEarth)
         raise TranslationError(msg)
 
@@ -200,7 +217,7 @@ def ellipsoid(shapeOfTheEarth, major=None, minor=None):
         # Earth assumed spherical with radius of 6 371 229.0m
         result = icoord_systems.GeogCS(6371229)
     else:
-        msg = 'Grid Definition Section 3 contains an unsupported ' \
+        msg = 'Grid definition section 3 contains an unsupported ' \
             'shape of the earth [{}]'.format(shapeOfTheEarth)
         raise TranslationError(msg)
     return result
@@ -336,13 +353,13 @@ def grid_definition_section(section, metadata):
     # Reference GRIB2 Code Table 3.0.
     value = section['sourceOfGridDefinition']
     if value != 0:
-        msg = 'Grid Definition Section 3 contains unsupported ' \
+        msg = 'Grid definition section 3 contains unsupported ' \
             'source of grid definition [{}]'.format(value)
         raise TranslationError(msg)
 
     if section['numberOfOctectsForNumberOfPoints'] != 0 or \
             section['interpretationOfNumberOfPoints'] != 0:
-        msg = 'Grid Definition Section 3 contains unsupported ' \
+        msg = 'Grid definition section 3 contains unsupported ' \
             'quasi-regular grid'
         raise TranslationError(msg)
 
@@ -356,7 +373,7 @@ def grid_definition_section(section, metadata):
         # Process rotated latitude/longitude grid.
         grid_definition_template_1(section, metadata)
     else:
-        msg = 'Grid Definition Template [{}] is not supported'.format(template)
+        msg = 'Grid definition template [{}] is not supported'.format(template)
         raise TranslationError(msg)
 
 
@@ -399,8 +416,8 @@ def translate_phenomenon(metadata, discipline, parameterCategory,
 
 def time_range_unit(indicatorOfUnitOfTimeRange):
     """
-    Translate the time range indicator to a UDUNITS-2 parsable
-    units time string.
+    Translate the time range indicator to an equivalent
+    :class:`iris.unit.Unit`.
 
     Args:
 
@@ -408,13 +425,13 @@ def time_range_unit(indicatorOfUnitOfTimeRange):
         Message section 4, octet 18.
 
     Returns:
-        UDUNITS-2 units time string.
+        :class:`iris.unit.Unit`.
 
     """
     try:
-        unit = _TIME_RANGE_UNITS[indicatorOfUnitOfTimeRange]
-    except KeyError:
-        msg = 'Product Definition Section 4 contains unsupported ' \
+        unit = Unit(_TIME_RANGE_UNITS[indicatorOfUnitOfTimeRange])
+    except KeyError, ValueError:
+        msg = 'Product definition section 4 contains unsupported ' \
             'time range unit [{}]'.format(indicatorOfUnitOfTimeRange)
         raise TranslationError(msg)
     return unit
@@ -424,7 +441,7 @@ def hybrid_factories(section, metadata):
     """
     Translate the section 4 optional hybrid vertical coordinates.
 
-    Updates the metadata in-place with the traslations.
+    Updates the metadata in-place with the translations.
 
     Reference GRIB2 Code Table 4.5.
 
@@ -444,21 +461,21 @@ def hybrid_factories(section, metadata):
     if NV > 0:
         typeOfFirstFixedSurface = section['typeOfFirstFixedSurface']
         if np.int8(typeOfFirstFixedSurface) == _CODE_TABLE_MDI:
-            msg = 'Product Definition Section 4 contains missing ' \
+            msg = 'Product definition section 4 contains missing ' \
                 'type of first fixed surface'
             raise TranslationError(msg)
 
         typeOfSecondFixedSurface = section['typeOfSecondFixedSurface']
         if np.int8(typeOfSecondFixedSurface) != _CODE_TABLE_MDI:
-            msg = 'Product Definition Section 4 contains unsupported ' \
-                'type of second fixed surface'.format(typeOfSecondFixedSurface)
+            msg = 'Product definition section 4 contains unsupported type ' \
+                'of second fixed surface [{}]'.format(typeOfSecondFixedSurface)
             raise TranslationError(msg)
 
         if typeOfFirstFixedSurface in [105, 119]:
             # Hybrid level (105) and Hybrid pressure level (119).
             scaleFactor = section['scaleFactorOfFirstFixedSurface']
             if scaleFactor != 0:
-                msg = 'Product Definition Section 4 contains invalid scale ' \
+                msg = 'Product definition section 4 contains invalid scale ' \
                     'factor of first fixed surface [{}]'.format(scaleFactor)
                 raise TranslationError(msg)
 
@@ -483,12 +500,178 @@ def hybrid_factories(section, metadata):
             factory = Factory(HybridPressureFactory, args)
             metadata['factories'].append(factory)
         else:
-            msg = 'Product Definition Section 4 contains unsupported ' \
+            msg = 'Product definition section 4 contains unsupported ' \
                 'first fixed surface [{}]'.format(typeOfFirstFixedSurface)
             raise TranslationError(msg)
 
 
-def product_definition_template_0(section, metadata, frt_point):
+def vertical_coords(section, metadata):
+    """
+    Translate the vertical coordinates or hybrid vertical coordinates.
+
+    Updates the metadata in-place with the translations.
+
+    Reference GRIB2 Code Table 4.5.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 4 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    """
+    if section['NV'] > 0:
+        # Generate hybrid vertical coordinates.
+        hybrid_factories(section, metadata)
+    else:
+        # Generate vertical coordinate.
+        typeOfFirstFixedSurface = section['typeOfFirstFixedSurface']
+        key = 'scaledValueOfFirstFixedSurface'
+        scaledValueOfFirstFixedSurface = section[key]
+        fixed_surface = _FIXED_SURFACE.get(typeOfFirstFixedSurface)
+
+        if fixed_surface is None:
+            if np.int8(typeOfFirstFixedSurface) != _CODE_TABLE_MDI:
+                if np.int32(scaledValueOfFirstFixedSurface) == \
+                        _CODE_TABLE_MDI:
+                    if options.warn_on_unsupported:
+                        msg = 'Unable to translate type of first fixed ' \
+                            'surface with missing scaled value.'
+                        warnings.warn(msg)
+                else:
+                    if options.warn_on_unsupported:
+                        msg = 'Unable to translate type of first fixed ' \
+                            'surface with scaled value.'
+                        warnings.warn(msg)
+        else:
+            key = 'scaleFactorOfFirstFixedSurface'
+            scaleFactorOfFirstFixedSurface = section[key]
+            typeOfSecondFixedSurface = section['typeOfSecondFixedSurface']
+
+            if np.int8(typeOfSecondFixedSurface) != _CODE_TABLE_MDI:
+                if typeOfFirstFixedSurface != typeOfSecondFixedSurface:
+                    msg = 'Product definition section 4 has different ' \
+                        'types of first and second fixed surface'
+                    raise TranslationError(msg)
+
+                key = 'scaledValueOfSecondFixedSurface'
+                scaledValueOfSecondFixedSurface = section[key]
+
+                if np.int32(scaledValueOfSecondFixedSurface) == \
+                        _CODE_TABLE_MDI:
+                    msg = 'Product definition section 4 has missing ' \
+                        'scaled value of second fixed surface'
+                    raise TranslationError(msg)
+                else:
+                    key = 'scaleFactorOfSecondFixedSurface'
+                    scaleFactorOfSecondFixedSurface = section[key]
+                    first = unscale(scaledValueOfFirstFixedSurface,
+                                    scaleFactorOfFirstFixedSurface)
+                    second = unscale(scaledValueOfSecondFixedSurface,
+                                     scaleFactorOfSecondFixedSurface)
+                    point = 0.5 * (first + second)
+                    bounds = [first, second]
+                    coord = DimCoord(point,
+                                     standard_name=fixed_surface.standard_name,
+                                     long_name=fixed_surface.long_name,
+                                     units=fixed_surface.units,
+                                     bounds=bounds)
+                    # Add the vertical coordinate to metadata aux coords.
+                    metadata['aux_coords_and_dims'].append((coord, None))
+            else:
+                point = unscale(scaledValueOfFirstFixedSurface,
+                                scaleFactorOfFirstFixedSurface)
+                coord = DimCoord(point,
+                                 standard_name=fixed_surface.standard_name,
+                                 long_name=fixed_surface.long_name,
+                                 units=fixed_surface.units)
+                # Add the vertical coordinate to metadata aux coords.
+                metadata['aux_coords_and_dims'].append((coord, None))
+
+
+def forecast_period_coord(indicatorOfUnitOfTimeRange, forecastTime):
+    """
+    Create the forecast period coordinate.
+
+    Args:
+
+    * indicatorOfUnitOfTimeRange:
+        Message section 4, octets 18.
+
+    * forecastTime:
+        Message section 4, octets 19-22.
+
+    Returns:
+        The scalar forecast period :class:`iris.coords.DimCoord`.
+
+    """
+    # Determine the forecast period and associated units.
+    unit = time_range_unit(indicatorOfUnitOfTimeRange)
+    point = unit.convert(forecastTime, 'hours')
+    # Create the forecast period scalar coordinate.
+    coord = DimCoord(point, standard_name='forecast_period', units='hours')
+    return coord
+
+
+def validity_time_coord(frt_coord, fp_coord):
+    """
+    Create the validity or phenomenon time coordinate.
+
+    Args:
+
+    * frt_coord:
+        The scalar forecast reference time :class:`iris.coords.DimCoord`.
+
+    * fp_coord:
+        The scalar forecast period :class:`iris.coords.DimCoord`.
+
+    Returns:
+        The scalar time :class:`iris.coords.DimCoord`.
+
+    """
+    if frt_coord.shape != (1,):
+        msg = 'Expected scalar forecast reference time coordinate when ' \
+            'calculating validity time, got shape {!r}'.format(frt_coord.shape)
+        raise ValueError(msg)
+
+    if fp_coord.shape != (1,):
+        msg = 'Expected scalar forecast period coordinate when ' \
+            'calculating validity time, got shape {!r}'.format(fp_coord.shape)
+        raise ValueError(msg)
+
+    # Calculate the validity (phenomenon) time and units.
+    seconds = fp_coord.units.convert(fp_coord.points[0], 'seconds')
+    delta = timedelta(seconds=seconds)
+    frt_point = frt_coord.units.num2date(frt_coord.points[0])
+    point = frt_coord.units.date2num(frt_point + delta)
+    # Create the time scalar coordinate.
+    coord = DimCoord(point, standard_name='time', units=frt_coord.units)
+    return coord
+
+
+def data_cutoff(hoursAfterDataCutoff, minutesAfterDataCutoff):
+    """
+    Handle the after reference time data cutoff.
+
+    Args:
+
+    * hoursAfterDataCutoff:
+        Message section 4, octets 15-16.
+
+    * minutesAfterDataCutoff:
+        Message section 4, octet 17.
+
+    """
+    if np.int16(hoursAfterDataCutoff) != _CODE_TABLE_MDI or \
+            np.int8(minutesAfterDataCutoff) != _CODE_TABLE_MDI:
+        if options.warn_on_unsupported:
+            warnings.warn('Unable to translate "hours and/or minutes '
+                          'after data cutoff".')
+
+
+def product_definition_template_0(section, metadata, frt_coord):
     """
     Translate template representing an analysis or forecast at a horizontal
     level or in a horizontal layer at a point in time.
@@ -503,38 +686,74 @@ def product_definition_template_0(section, metadata, frt_point):
     * metadata:
         :class:`collections.OrderedDict` of metadata.
 
-    * frt_point:
-        :class:`datetime.datetime` forecast reference time
-        calculated from several coded keys in message section 1.
+    * frt_coord:
+        The scalar forecast reference time :class:`iris.coords.DimCoord`.
 
     """
-    if np.int16(section['hoursAfterDataCutoff']) != _CODE_TABLE_MDI or \
-            np.int8(section['minutesAfterDataCutoff']) != _CODE_TABLE_MDI:
-        if options.warn_on_unsupported:
-            warnings.warn('Unable to translate "hours and/or minutes '
-                          'after data cutoff".')
+    if options.warn_on_unsupported:
+        # Reference Code Table 4.3.
+        warnings.warn('Unable to translate type of generating process.')
+        warnings.warn('Unable to translate background generating '
+                      'process identifier.')
+        warnings.warn('Unable to translate forecast generating '
+                      'process identifier.')
 
-    # Determine the forecast period and associated units.
-    fp_unit = time_range_unit(section['indicatorOfUnitOfTimeRange'])
-    fp_point = Unit(fp_unit).convert(section['forecastTime'], 'hours')
-    # Create the forecast period scalar coordinate.
-    fp_coord = DimCoord(fp_point, standard_name='forecast_period',
-                        units='hours')
+    # Handle the data cutoff.
+    data_cutoff(section['hoursAfterDataCutoff'],
+                section['minutesAfterDataCutoff'])
+
+    # Calculate the forecast period coordinate.
+    fp_coord = forecast_period_coord(section['indicatorOfUnitOfTimeRange'],
+                                     section['forecastTime'])
     # Add the forecast period coordinate to the metadata aux coords.
     metadata['aux_coords_and_dims'].append((fp_coord, None))
 
     # Calculate the validity (phenomenon) time.
-    seconds = Unit('hours').convert(fp_point, 'seconds')
-    delta = timedelta(seconds=seconds)
-    t_unit = Unit('hours since epoch', calendar=CALENDAR_GREGORIAN)
-    t_point = date2num(frt_point + delta, t_unit.origin, t_unit.calendar)
-    # Create the time scalar coordinate.
-    t_coord = DimCoord(t_point, standard_name='time', units=t_unit)
+    t_coord = validity_time_coord(frt_coord, fp_coord)
     # Add the time coordinate to the metadata aux coords.
     metadata['aux_coords_and_dims'].append((t_coord, None))
 
-    # Check for hybrid vertical coordinates.
-    hybrid_factories(section, metadata)
+    # Add the forecast reference time coordinate to the metadata aux coords.
+    metadata['aux_coords_and_dims'].append((frt_coord, None))
+
+    # Check for vertical coordinates.
+    vertical_coords(section, metadata)
+
+
+def product_definition_template_1(section, metadata, frt_coord):
+    """
+    Translate template representing individual ensemble forecast, control
+    and perturbed, at a horizontal level or in a horizontal layer at a
+    point in time.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 4 of the message.
+
+    * metadata:
+        :class:`collectins.OrderedDict` of metadata.
+
+    * frt_coord:
+        The scalar forecast reference time :class:`iris.coords.DimCoord`.
+
+    """
+    # Perform identical message processing.
+    product_definition_template_0(section, metadata, frt_coord)
+
+    if options.warn_on_unsupported:
+        # Reference Code Table 4.6.
+        warnings.warn('Unable to translate type of ensemble forecast.')
+        warnings.warn('Unable to translate number of forecasts in ensemble.')
+
+    # Create the realization coordinates.
+    realization = DimCoord(section['perturbationNumber'],
+                           standard_name='realization',
+                           units='no_unit')
+    # Add the realization coordinate to the metadata aux coords.
+    metadata['aux_coords_and_dims'].append((realization, None))
 
 
 def product_definition_template_31(section, metadata):
@@ -594,7 +813,7 @@ def product_definition_template_31(section, metadata):
 
 
 def product_definition_section(section, metadata, discipline, tablesVersion,
-                               frt_point):
+                               frt_coord):
     """
     Translate section 4 from the GRIB2 message.
 
@@ -614,9 +833,8 @@ def product_definition_section(section, metadata, discipline, tablesVersion,
     * tablesVersion:
         Message section 1, octet 10.
 
-    * frt_point:
-        :class:`datetime.datetime` forecast reference time
-        calculated from several coded keys in message section 1.
+    * frt_coord:
+        The scalar forecast reference time :class:`iris.coords.DimCoord`.
 
     """
     # Reference GRIB2 Code Table 4.0.
@@ -625,12 +843,16 @@ def product_definition_section(section, metadata, discipline, tablesVersion,
     if template == 0:
         # Process analysis or forecast at a horizontal level or
         # in a horizontal layer at a point in time.
-        product_definition_template_0(section, metadata, frt_point)
+        product_definition_template_0(section, metadata, frt_coord)
+    elif template == 1:
+        # Process individual ensemble forecast, control and perturbed, at
+        # a horizontal level or in a horizontal layer at a point in time.
+        product_definition_template_1(section, metadata, frt_coord)
     elif template == 31:
         # Process satellite product.
         product_definition_template_31(section, metadata)
     else:
-        msg = 'Product Definition Template [{}] is not ' \
+        msg = 'Product definition template [{}] is not ' \
             'supported'.format(template)
         raise TranslationError(msg)
 
@@ -702,7 +924,7 @@ def grib2_convert(field, metadata):
     centre = _CENTRES.get(field.sections[1]['centre'])
     if centre is not None:
         metadata['attributes']['centre'] = centre
-    frt_point = reference_time(field.sections[1])
+    frt_coord = reference_time_coord(field.sections[1])
 
     # Section 3 - Grid Definition Section (Grid Definition Template)
     grid_definition_section(field.sections[3], metadata)
@@ -711,7 +933,7 @@ def grib2_convert(field, metadata):
     product_definition_section(field.sections[4], metadata,
                                field.sections[0]['discipline'],
                                field.sections[1]['tablesVersion'],
-                               frt_point)
+                               frt_coord)
 
     # Section 5 - Data Representation Section (Data Representation Template)
     data_representation_section(field.sections[5])

@@ -23,7 +23,6 @@ Test function :func:`iris.fileformats.grib._load_convert.scanning_mode.
 # before importing anything else.
 import iris.tests as tests
 
-import iris
 from iris.exceptions import TranslationError
 from iris.fileformats.grib._load_convert import scanning_mode, ScanningMode
 

@@ -25,7 +25,6 @@ import mock
 
 import iris
 from iris.exceptions import TranslationError
-from iris.fileformats.grib._message import _GribMessage
 from iris.fileformats.grib._load_convert import grib2_convert
 from iris.tests.unit.fileformats.grib import _make_test_message
 
@@ -34,7 +33,7 @@ class Test(tests.IrisTest):
     def setUp(self):
         this = 'iris.fileformats.grib._load_convert'
         patch = []
-        patch.append(mock.patch('{}.reference_time'.format(this),
+        patch.append(mock.patch('{}.reference_time_coord'.format(this),
                                 return_value=None))
         patch.append(mock.patch('{}.grid_definition_section'.format(this)))
         patch.append(mock.patch('{}.product_definition_section'.format(this)))
@@ -44,7 +43,7 @@ class Test(tests.IrisTest):
             p.start()
             self.addCleanup(p.stop)
 
-    def test_call(self):
+    def test(self):
         sections = [{'discipline': mock.sentinel.discipline},       # section 0
                     {'centre': 'ecmf',                              # section 1
                      'tablesVersion': mock.sentinel.tablesVersion},
@@ -62,11 +61,11 @@ class Test(tests.IrisTest):
         expected = copy.deepcopy(metadata)
         centre = 'European Centre for Medium Range Weather Forecasts'
         expected['attributes'] = {'centre': centre}
+        # The call being tested.
         grib2_convert(field, metadata)
-
         self.assertEqual(metadata, expected)
         this = iris.fileformats.grib._load_convert
-        this.reference_time.assert_called_with(sections[1])
+        this.reference_time_coord.assert_called_with(sections[1])
         this.grid_definition_section.assert_called_with(sections[3],
                                                         expected)
         args = (sections[4], expected, sections[0]['discipline'],
