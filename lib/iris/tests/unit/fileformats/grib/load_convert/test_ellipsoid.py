@@ -23,6 +23,8 @@ Test function :func:`iris.fileformats.grib._load_convert.ellipsoid.
 # before importing anything else.
 import iris.tests as tests
 
+import numpy.ma as ma
+
 import iris.coord_systems as icoord_systems
 from iris.exceptions import TranslationError
 from iris.fileformats.grib._load_convert import ellipsoid
@@ -31,47 +33,65 @@ from iris.fileformats.grib._load_convert import ellipsoid
 # Reference GRIB2 Code Table 3.2 - Shape of the Earth.
 
 
-class Test(tests.IrisTest):
-    def test_shape_invalid(self):
-        shape = 10
-        emsg = 'invalid shape of the earth'
-        with self.assertRaisesRegexp(TranslationError, emsg):
-            ellipsoid(shape)
+MDI = ma.masked
 
+
+class Test(tests.IrisTest):
     def test_shape_unsupported(self):
-        unsupported = [1, 2, 4, 5, 7, 8, 9]
+        unsupported = [2, 4, 5, 8, 9, 10, MDI]
         emsg = 'unsupported shape of the earth'
         for shape in unsupported:
             with self.assertRaisesRegexp(TranslationError, emsg):
-                ellipsoid(shape)
+                ellipsoid(shape, MDI, MDI, MDI)
 
-    def test_shape_supported(self):
+    def test_spherical_default_supported(self):
         cs_by_shape = {0: icoord_systems.GeogCS(6367470),
                        6: icoord_systems.GeogCS(6371229)}
         for shape, expected in cs_by_shape.items():
-            self.assertEqual(ellipsoid(shape), expected)
+            result = ellipsoid(shape, MDI, MDI, MDI)
+            self.assertEqual(result, expected)
 
-    def test_shape_3_no_axes(self):
-        emsg = 'axis to be specified'
+    def test_spherical_shape_1_no_radius(self):
+        shape = 1
+        emsg = 'radius to be specified'
         with self.assertRaisesRegexp(ValueError, emsg):
-            ellipsoid(3)
+            ellipsoid(shape, MDI, MDI, MDI)
 
-    def test_shape_3_no_major(self):
-        emsg = 'major axis to be specified'
-        with self.assertRaisesRegexp(ValueError, emsg):
-            ellipsoid(3, minor=1)
-
-    def test_shape_3_no_minor(self):
-        emsg = 'minor axis to be specified'
-        with self.assertRaisesRegexp(ValueError, emsg):
-            ellipsoid(3, major=1)
-
-    def test_shape_3(self):
-        # In units of km.
-        major, minor = 1, 10
-        result = ellipsoid(3, major, minor)
-        expected = icoord_systems.GeogCS(major * 1000, minor * 1000)
+    def test_spherical_shape_1(self):
+        shape = 1
+        radius = 10
+        result = ellipsoid(shape, MDI, MDI, radius)
+        expected = icoord_systems.GeogCS(radius)
         self.assertEqual(result, expected)
+
+    def test_oblate_shape_3_7_no_axes(self):
+        for shape in [3, 7]:
+            emsg = 'axis to be specified'
+            with self.assertRaisesRegexp(ValueError, emsg):
+                ellipsoid(shape, MDI, MDI, MDI)
+
+    def test_oblate_shape_3_7_no_major(self):
+        for shape in [3, 7]:
+            emsg = 'major axis to be specified'
+            with self.assertRaisesRegexp(ValueError, emsg):
+                ellipsoid(shape, MDI, 1, MDI)
+
+    def test_oblate_shape_3_7_no_minor(self):
+        for shape in [3, 7]:
+            emsg = 'minor axis to be specified'
+            with self.assertRaisesRegexp(ValueError, emsg):
+                ellipsoid(shape, 1, MDI, MDI)
+
+    def test_oblate_shape_3_7(self):
+        for shape in [3, 7]:
+            major, minor = 1, 10
+            scale = 1
+            result = ellipsoid(shape, major, minor, MDI)
+            if shape == 3:
+                # Convert km to m.
+                scale = 1000
+            expected = icoord_systems.GeogCS(major * scale, minor * scale)
+            self.assertEqual(result, expected)
 
 
 if __name__ == '__main__':
