@@ -111,13 +111,13 @@ def unscale(value, factor):
 
 def reference_time_coord(section):
     """
-    Translate section 1 forecast reference time.
+    Translate section 1 reference time according to its significance.
 
     Reference section 1, year octets 13-14, month octet 15, day octet 16,
     hour octet 17, minute octet 18, second octet 19.
 
     Returns:
-        The scalar forecast reference time :class:`iris.coords.DimCoord`.
+        The scalar reference time :class:`iris.coords.DimCoord`.
 
     """
     # Calculate the reference time and units.
@@ -125,9 +125,22 @@ def reference_time_coord(section):
                   section['hour'], section['minute'], section['second'])
     unit = Unit('hours since epoch', calendar=CALENDAR_GREGORIAN)
     point = unit.date2num(dt)
-    # Create the reference time coordinate.
-    coord = DimCoord(point, standard_name='forecast_reference_time',
-                     units=unit)
+
+    # Reference Code Table 1.2.
+    significanceOfReferenceTime = section['significanceOfReferenceTime']
+
+    if significanceOfReferenceTime == 1:
+        # Start of forecast.
+        coord = DimCoord(point, standard_name='forecast_reference_time',
+                         units=unit)
+    elif significanceOfReferenceTime == 3:
+        # Observation time.
+        coord = DimCoord(point, standard_name='time', units=unit)
+    else:
+        msg = 'Identificaton section 1 contains an unsupported significance ' \
+            'of reference time [{}]'.format(significanceOfReferenceTime)
+        raise TranslationError(msg)
+
     return coord
 
 
@@ -756,7 +769,7 @@ def product_definition_template_1(section, metadata, frt_coord):
     metadata['aux_coords_and_dims'].append((realization, None))
 
 
-def product_definition_template_31(section, metadata):
+def product_definition_template_31(section, metadata, rt_coord):
     """
     Translate template representing a satellite product.
 
@@ -770,9 +783,10 @@ def product_definition_template_31(section, metadata):
     * metadata:
         :class:`collections.OrderedDict` of metadata.
 
-    """
-    # XXX Add forecast reference time coordinate when pdt1 is merged.
+    * rt_coord:
+        The scalar observation time :class:`iris.coords.DimCoord'.
 
+    """
     if options.warn_on_unsupported:
         warnings.warn('Unable to translate type of generating process.')
         warnings.warn('Unable to translate observation generating '
@@ -811,9 +825,12 @@ def product_definition_template_31(section, metadata):
         # Add the central wave number coordinate to the metadata aux coords.
         metadata['aux_coords_and_dims'].append((coord, None))
 
+        # Add the observation time coordinate.
+        metadata['aux_coords_and_dims'].append((rt_coord, None))
+
 
 def product_definition_section(section, metadata, discipline, tablesVersion,
-                               frt_coord):
+                               rt_coord):
     """
     Translate section 4 from the GRIB2 message.
 
@@ -833,8 +850,8 @@ def product_definition_section(section, metadata, discipline, tablesVersion,
     * tablesVersion:
         Message section 1, octet 10.
 
-    * frt_coord:
-        The scalar forecast reference time :class:`iris.coords.DimCoord`.
+    * rt_coord:
+        The scalar reference time :class:`iris.coords.DimCoord`.
 
     """
     # Reference GRIB2 Code Table 4.0.
@@ -843,14 +860,14 @@ def product_definition_section(section, metadata, discipline, tablesVersion,
     if template == 0:
         # Process analysis or forecast at a horizontal level or
         # in a horizontal layer at a point in time.
-        product_definition_template_0(section, metadata, frt_coord)
+        product_definition_template_0(section, metadata, rt_coord)
     elif template == 1:
         # Process individual ensemble forecast, control and perturbed, at
         # a horizontal level or in a horizontal layer at a point in time.
-        product_definition_template_1(section, metadata, frt_coord)
+        product_definition_template_1(section, metadata, rt_coord)
     elif template == 31:
         # Process satellite product.
-        product_definition_template_31(section, metadata)
+        product_definition_template_31(section, metadata, rt_coord)
     else:
         msg = 'Product definition template [{}] is not ' \
             'supported'.format(template)
@@ -924,7 +941,7 @@ def grib2_convert(field, metadata):
     centre = _CENTRES.get(field.sections[1]['centre'])
     if centre is not None:
         metadata['attributes']['centre'] = centre
-    frt_coord = reference_time_coord(field.sections[1])
+    rt_coord = reference_time_coord(field.sections[1])
 
     # Section 3 - Grid Definition Section (Grid Definition Template)
     grid_definition_section(field.sections[3], metadata)
@@ -933,7 +950,7 @@ def grib2_convert(field, metadata):
     product_definition_section(field.sections[4], metadata,
                                field.sections[0]['discipline'],
                                field.sections[1]['tablesVersion'],
-                               frt_coord)
+                               rt_coord)
 
     # Section 5 - Data Representation Section (Data Representation Template)
     data_representation_section(field.sections[5])
