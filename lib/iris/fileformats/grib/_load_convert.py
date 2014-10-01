@@ -30,8 +30,8 @@ import numpy as np
 
 from iris.aux_factory import HybridPressureFactory
 import iris.coord_systems as icoord_systems
-from iris.coords import AuxCoord, DimCoord
-from iris.exceptions import TranslationError
+from iris.coords import AuxCoord, DimCoord, CellMethod
+from iris.exceptions import TranslationError, NotYetImplementedError
 from iris.fileformats.grib import grib_phenom_translation as itranslation
 from iris.fileformats.rules import Factory, Reference
 from iris.unit import CALENDAR_GREGORIAN, date2num, Unit
@@ -43,6 +43,7 @@ __all__ = ['convert']
 
 options = threading.local()
 options.warn_on_unsupported = False
+options.support_hindcast_values = True
 
 ScanningMode = namedtuple('ScanningMode', ['i_negative',
                                            'j_positive',
@@ -91,6 +92,20 @@ _FIXED_SURFACE_MISSING = 255
 # Reference Code Table 6.0
 _BITMAP_CODE_NONE = 255
 
+# Reference Code Table 4.10.
+_STATISTIC_TYPE_NAMES = {
+    0: 'mean',
+    2: 'maximum',
+    3: 'minimum'
+}
+
+# Reference Code Table 4.11.
+_STATISTIC_TYPE_OF_TIME_INTERVAL = {
+    2: 'same start time of forecast, forecast time is incremented'
+}
+# NOTE: Our test data contains the value 2, which is all we currently support.
+# The exact interpretation of this is still unclear.
+
 
 # Regulation 92.1.12
 def unscale(value, factor):
@@ -135,6 +150,25 @@ _GRIBAPI_MDI_SIGNED = -(2 ** 31 - 1)
 #           MDI = 0b111...111 = -(2**31 - 1)
 #           min = 0b111...110 = -(2**31 - 2)
 #           max = 0b011...111 = (2**31 - 1)
+
+# Non-standardised usage for negative forecast times.
+def _hindcast_fix(forecast_time):
+    """Return a forecast time interpreted as a possibly negative value."""
+    uft = np.uint32(forecast_time)
+    HIGHBIT = 2**30
+
+    # Workaround grib api's assumption that forecast time is positive.
+    # Handles correctly encoded -ve forecast times up to one -1 billion.
+    if 2 * HIGHBIT < uft < 3 * HIGHBIT:
+        original_forecast_time = forecast_time
+        forecast_time = -(uft - 2 * HIGHBIT)
+        if options.warn_on_unsupported:
+            msg = ('Re-interpreting large grib forecastTime '
+                   'from {} to {}.'.format(original_forecast_time,
+                                           forecast_time))
+            warnings.warn(msg)
+
+    return forecast_time
 
 
 ###############################################################################
@@ -664,6 +698,63 @@ def forecast_period_coord(indicatorOfUnitOfTimeRange, forecastTime):
     return coord
 
 
+def statistical_forecast_period_coord(section, frt_coord):
+    """
+    Create a forecast period coordinate for a time-statistic message.
+
+    This applies only with a product definition template 4.8.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 4 of the message.
+
+    * frt_coord:
+        The scalar forecast reference time :class:`iris.coords.DimCoord`.
+
+    Returns:
+        The scalar forecast period :class:`iris.coords.DimCoord`, containing a
+        single, bounded point (period value).
+
+    """
+    # Get the period end time as a datetime.
+    end_time = datetime(section['yearOfEndOfOverallTimeInterval'],
+                        section['monthOfEndOfOverallTimeInterval'],
+                        section['dayOfEndOfOverallTimeInterval'],
+                        section['hourOfEndOfOverallTimeInterval'],
+                        section['minuteOfEndOfOverallTimeInterval'],
+                        section['secondOfEndOfOverallTimeInterval'])
+
+    # Get forecast reference time (frt) as a datetime.
+    frt_point = frt_coord.units.num2date(frt_coord.points[0])
+
+    # Get the period start time (as a timedelta relative to the frt).
+    forecast_time = section['forecastTime']
+    if options.support_hindcast_values:
+        # Apply the hindcast fix.
+        forecast_time = _hindcast_fix(forecast_time)
+    forecast_units = time_range_unit(section['indicatorOfUnitOfTimeRange'])
+    forecast_seconds = forecast_units.convert(forecast_time, 'seconds')
+    start_time_delta = timedelta(seconds=forecast_seconds)
+
+    # Get the period end time (as a timedelta relative to the frt).
+    end_time_delta = end_time - frt_point
+
+    # Get the middle of the period (as a timedelta relative to the frt).
+    mid_time_delta = (start_time_delta + end_time_delta) / 2
+
+    # Create and return the forecast period coordinate.
+    def timedelta_hours(timedelta):
+        return timedelta.total_seconds() / 3600.0
+
+    mid_point_hours = timedelta_hours(mid_time_delta)
+    bounds_hours = [timedelta_hours(start_time_delta),
+                    timedelta_hours(end_time_delta)]
+    fp_coord = DimCoord(mid_point_hours, bounds=bounds_hours,
+                        standard_name='forecast_period', units='hours')
+    return fp_coord
+
+
 def validity_time_coord(frt_coord, fp_coord):
     """
     Create the validity or phenomenon time coordinate.
@@ -678,6 +769,7 @@ def validity_time_coord(frt_coord, fp_coord):
 
     Returns:
         The scalar time :class:`iris.coords.DimCoord`.
+        It has bounds if the period coord has them, otherwise not.
 
     """
     if frt_coord.shape != (1,):
@@ -690,14 +782,39 @@ def validity_time_coord(frt_coord, fp_coord):
             'calculating validity time, got shape {!r}'.format(fp_coord.shape)
         raise ValueError(msg)
 
-    # Calculate the validity (phenomenon) time and units.
-    seconds = fp_coord.units.convert(fp_coord.points[0], 'seconds')
-    delta = timedelta(seconds=seconds)
+    def coord_timedelta(coord, value):
+        # Helper to convert a time coordinate value into a timedelta.
+        seconds = coord.units.convert(value, 'seconds')
+        return timedelta(seconds=seconds)
+
+    # Calculate validity (phenomenon) time in forecast-reference-time units.
     frt_point = frt_coord.units.num2date(frt_coord.points[0])
-    point = frt_coord.units.date2num(frt_point + delta)
+    point_delta = coord_timedelta(fp_coord, fp_coord.points[0])
+    point = frt_coord.units.date2num(frt_point + point_delta)
+
+    # Calculate bounds (if any) in the same way.
+    if fp_coord.bounds is None:
+        bounds = None
+    else:
+        bounds_deltas = [coord_timedelta(fp_coord, bound_point)
+                         for bound_point in fp_coord.bounds[0]]
+        bounds = [frt_coord.units.date2num(frt_point + delta)
+                  for delta in bounds_deltas]
+
     # Create the time scalar coordinate.
-    coord = DimCoord(point, standard_name='time', units=frt_coord.units)
+    coord = DimCoord(point, bounds=bounds,
+                     standard_name='time', units=frt_coord.units)
     return coord
+
+
+def generating_process(section):
+    if options.warn_on_unsupported:
+        # Reference Code Table 4.3.
+        warnings.warn('Unable to translate type of generating process.')
+        warnings.warn('Unable to translate background generating '
+                      'process identifier.')
+        warnings.warn('Unable to translate forecast generating '
+                      'process identifier.')
 
 
 def data_cutoff(hoursAfterDataCutoff, minutesAfterDataCutoff):
@@ -720,6 +837,68 @@ def data_cutoff(hoursAfterDataCutoff, minutesAfterDataCutoff):
                           'after data cutoff".')
 
 
+def statistical_cell_method(section):
+    """
+    Create a cell method representing a time statistic.
+
+    This applies only with a product definition template 4.8.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 4 of the message.
+
+    Returns:
+        A cell method over 'time'.
+
+    """
+    # Handle the number of time ranges -- we currently only support one.
+    n_time_ranges = section['numberOfTimeRange']
+    if n_time_ranges != 1:
+        if n_time_ranges == 0:
+            msg = ('Product definition section 4 specifes aggregation over '
+                   '"0 time ranges".')
+            raise TranslationError(msg)
+        else:
+            msg = ('Product definition section 4 specifies aggregation over '
+                   'multiple time ranges [{}], which is not yet '
+                   'supported.'.format(n_time_ranges))
+            raise NotYetImplementedError(msg)
+
+    # Decode the type of statistic (aggregation method).
+    statistic_code = section['typeOfStatisticalProcessing']
+    statistic_name = _STATISTIC_TYPE_NAMES.get(statistic_code, None)
+    if not statistic_name:
+        msg = ('grib statistical process type [{}] '
+               'is not recognised'.format(statistic_code))
+        raise NotYetImplementedError(msg)
+
+    # Decode the type of time increment.
+    increment_typecode = section['typeOfTimeIncrement']
+    increment_type = _STATISTIC_TYPE_OF_TIME_INTERVAL.get(increment_typecode)
+    if increment_type == \
+            'same start time of forecast, forecast time is incremented':
+        # The only type we currently support.
+        pass
+    else:
+        msg = ('grib statistic time-increment type [{}] '
+               'is not recognised.'.format(increment_typecode))
+        raise NotYetImplementedError(msg)
+    interval_number = section['timeIncrement']
+    if interval_number == 0:
+        intervals_string = None
+    else:
+        units_string = _TIME_RANGE_UNITS[
+            section['indicatorOfUnitForTimeIncrement']]
+        intervals_string = '{} {}'.format(interval_number, units_string)
+
+    # Create a cell method to represent the time aggregation.
+    cell_method = CellMethod(method=statistic_name,
+                             coords='time',
+                             intervals=intervals_string)
+    return cell_method
+
+
 def product_definition_template_0(section, metadata, frt_coord):
     """
     Translate template representing an analysis or forecast at a horizontal
@@ -739,13 +918,8 @@ def product_definition_template_0(section, metadata, frt_coord):
         The scalar forecast reference time :class:`iris.coords.DimCoord`.
 
     """
-    if options.warn_on_unsupported:
-        # Reference Code Table 4.3.
-        warnings.warn('Unable to translate type of generating process.')
-        warnings.warn('Unable to translate background generating '
-                      'process identifier.')
-        warnings.warn('Unable to translate forecast generating '
-                      'process identifier.')
+    # Handle generating process details.
+    generating_process(section)
 
     # Handle the data cutoff.
     data_cutoff(section['hoursAfterDataCutoff'],
@@ -803,6 +977,58 @@ def product_definition_template_1(section, metadata, frt_coord):
                            units='no_unit')
     # Add the realization coordinate to the metadata aux coords.
     metadata['aux_coords_and_dims'].append((realization, None))
+
+
+def product_definition_template_8(section, metadata, frt_coord):
+    """
+    Translate template representing :
+        "average, accumulation and/or extreme values or other statistically
+        processed values at a horizontal level or in a horizontal layer in a
+        continuous or non-continuous time interval."
+
+    I.E. much like PDT 0, but describing a statistical aggregation over a time
+    period, with specified sampling sub-periods.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 4 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    * frt_coord:
+        The scalar forecast reference time :class:`iris.coords.DimCoord`.
+
+    """
+    # Handle generating process details.
+    generating_process(section)
+
+    # Handle the data cutoff.
+    data_cutoff(section['hoursAfterDataCutoff'],
+                section['minutesAfterDataCutoff'])
+
+    # Create a cell method to represent the time statistic.
+    time_statistic_cell_method = statistical_cell_method(section)
+    # Add the forecast cell method to the metadata.
+    metadata['cell_methods'].append(time_statistic_cell_method)
+
+    # Add the forecast reference time coordinate to the metadata aux coords.
+    metadata['aux_coords_and_dims'].append((frt_coord, None))
+
+    # Add a bounded forecast period coordinate.
+    fp_coord = statistical_forecast_period_coord(section, frt_coord)
+    metadata['aux_coords_and_dims'].append((fp_coord, None))
+
+    # Calculate a bounded validity time coord matching the forecast period.
+    t_coord = validity_time_coord(frt_coord, fp_coord)
+    # Add the time coordinate to the metadata aux coords.
+    metadata['aux_coords_and_dims'].append((t_coord, None))
+
+    # Check for vertical coordinates.
+    vertical_coords(section, metadata)
 
 
 def product_definition_template_31(section, metadata, rt_coord):
@@ -901,6 +1127,10 @@ def product_definition_section(section, metadata, discipline, tablesVersion,
         # Process individual ensemble forecast, control and perturbed, at
         # a horizontal level or in a horizontal layer at a point in time.
         product_definition_template_1(section, metadata, rt_coord)
+    elif template == 8:
+        # Process statistically processed values at a horizontal level or in a
+        # horizontal layer in a continuous or non-continuous time interval.
+        product_definition_template_8(section, metadata, rt_coord)
     elif template == 31:
         # Process satellite product.
         product_definition_template_31(section, metadata, rt_coord)
