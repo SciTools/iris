@@ -1,4 +1,0 @@
-"""
-Visualisation examples
-======================
-"""

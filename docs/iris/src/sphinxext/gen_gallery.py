@@ -99,7 +99,7 @@ images = new Array();
     random_image_template = "['{thumbfile}', '{full_image}', '{link}'];"
     random_image_join = 'images[{}] = {}'
 
-    dirs = ('graphics', )
+    dirs = ('General', 'Meteorology', 'Oceanography')
 
     for subdir in dirs:
         rows.append(header_template.format(subdir, subdir, subdir))

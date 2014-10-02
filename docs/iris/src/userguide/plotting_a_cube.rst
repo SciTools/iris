@@ -190,7 +190,7 @@ and providing the label keyword to identify it.
 Once all of the lines have been added the :func:`matplotlib.pyplot.legend` 
 function can be called to indicate that a legend is desired: 
 
-.. plot:: ../example_code/graphics/lineplot_with_legend.py
+.. plot:: ../example_code/General/lineplot_with_legend.py
    :include-source:
 
 This example of consecutive ``qplt.plot`` calls coupled with the 

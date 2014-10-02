@@ -38,11 +38,11 @@ in that dimension.
 The gallery contains several interesting worked examples of how an
 :class:`~iris.analysis.Aggregator` may be used, including:
 
- * :ref:`graphics-COP_1d_plot`
- * :ref:`graphics-SOI_filtering`
- * :ref:`graphics-hovmoller`
- * :ref:`graphics-lagged_ensemble`
- * :ref:`graphics-custom_aggregation`
+ * :ref:`Meteorology-COP_1d_plot`
+ * :ref:`General-SOI_filtering`
+ * :ref:`Meteorology-hovmoller`
+ * :ref:`Meteorology-lagged_ensemble`
+ * :ref:`General-custom_aggregation`
 
 """
 
@@ -399,7 +399,7 @@ class Aggregator(object):
         A variety of ready-made aggregators are provided in this module, such
         as :data:`~iris.analysis.MEAN` and :data:`~iris.analysis.MAX`.  Custom
         aggregators can also be created for special purposes, see
-        :ref:`graphics-custom_aggregation` for a worked example.
+        :ref:`General-custom_aggregation` for a worked example.
 
         """
         #: Cube cell method string.

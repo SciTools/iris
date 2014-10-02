@@ -210,7 +210,7 @@ The result could now be plotted using the guidance provided in the
 .. htmlonly::
 
     A very similar example to this can be found in 
-    :doc:`/examples/graphics/deriving_phenomena`.
+    :doc:`/examples/Meteorology/deriving_phenomena`.
 
 .. latexonly::
 

@@ -137,14 +137,14 @@ class StandardReportWithExclusions(pep8.StandardReport):
 
     if DOCS_DIRS:
         expected_bad_docs_files = [
-            '*/example_code/graphics/COP_1d_plot.py',
-            '*/example_code/graphics/COP_maps.py',
-            '*/example_code/graphics/SOI_filtering.py',
-            '*/example_code/graphics/cross_section.py',
-            '*/example_code/graphics/custom_file_loading.py',
-            '*/example_code/graphics/global_map.py',
-            '*/example_code/graphics/hovmoller.py',
-            '*/example_code/graphics/lagged_ensemble.py',
+            '*/example_code/General/SOI_filtering.py',
+            '*/example_code/General/cross_section.py',
+            '*/example_code/General/custom_file_loading.py',
+            '*/example_code/General/global_map.py',
+            '*/example_code/Meteorology/COP_1d_plot.py',
+            '*/example_code/Meteorology/COP_maps.py',
+            '*/example_code/Meteorology/hovmoller.py',
+            '*/example_code/Meteorology/lagged_ensemble.py',
             '*/example_tests/test_COP_1d_plot.py',
             '*/example_tests/test_COP_maps.py',
             '*/example_tests/test_SOI_filtering.py',
@@ -324,7 +324,7 @@ class TestLicenseHeaders(unittest.TestCase):
         exclude_patterns = ('setup.py',
                             'build/*',
                             'dist/*',
-                            'docs/iris/example_code/graphics/*.py',
+                            'docs/iris/example_code/*/*.py',
                             'docs/iris/src/developers_guide/documenting/*.py',
                             'docs/iris/src/sphinxext/gen_gallery.py',
                             'docs/iris/src/userguide/plotting_examples/*.py',
@@ -372,7 +372,7 @@ class TestFutureImports(unittest.TestCase):
         '*/iris/fileformats/_pyke_rules/compiled_krb/__init__.py',
         '*/iris/fileformats/_pyke_rules/compiled_krb/compiled_pyke_files.py',
         '*/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py',
-        '*/docs/iris/example_code/graphics/*.py',
+        '*/docs/iris/example_code/*/*.py',
         '*/docs/iris/src/developers_guide/documenting/*.py',
     )
 
