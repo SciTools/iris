@@ -229,15 +229,30 @@ def do_package(package_name):
         if '._' in package or 'test' in package:
             continue
 
-        sub_packages = (spackage
-                        for spackage, spackage_path in package_folder
-                        if (spackage != package and
-                            spackage.startswith(package)))
-        paths = [os.path.join(*spackage.rsplit('.', 2)[-2:None]) + '.rst'
-                 for spackage in sub_packages]
+        paths = []
+        for spackage, spackage_path in package_folder:
+            # Ignore this packages, packages that are not children of this
+            # one, test packages, private packages, and packages that are
+            # subpackages of subpackages (they'll be part of the subpackage).
+            if spackage == package:
+                continue
+            if not spackage.startswith(package):
+                continue
+            if spackage.count('.') > package.count('.') + 1:
+                continue
+            if 'test' in spackage:
+                continue
+
+            split_path = spackage.rsplit('.', 2)[-2:]
+            if any(part[0] == '_' for part in split_path):
+                continue
+
+            paths.append(os.path.join(*split_path) + '.rst')
+
         paths.extend(os.path.join(os.path.basename(os.path.dirname(path)),
                                   os.path.splitext(os.path.basename(path))[0])
                      for imp_name, path in module_folders.get(package, []))
+
         paths.sort()
         doc = auto_doc_package(package_path, package, root_package, paths)
 
