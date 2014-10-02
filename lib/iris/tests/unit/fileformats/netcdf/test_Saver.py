@@ -118,11 +118,15 @@ class Test_write(tests.IrisTest):
         cube = self._simple_cube('>f4')
         with self.temp_filename('.nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
-                saver.write(cube)
+                with mock.patch('warnings.warn') as warn:
+                    saver.write(cube)
             ds = nc.Dataset(nc_path)
             self.assertTrue(ds.dimensions['dim0'].isunlimited())
             self.assertFalse(ds.dimensions['dim1'].isunlimited())
             ds.close()
+        msg = ('The behaviour for making the outermost dimension unlimited is '
+               'to be removed in a future release.')
+        warn.assert_called_once_with(msg)
 
     def test_no_unlimited_dimensions(self):
         cube = self._simple_cube('>f4')
