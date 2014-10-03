@@ -1,6 +1,6 @@
 dimensions:
-	latitude = UNLIMITED ; // (73 currently)
 	bnds = 2 ;
+	latitude = 73 ;
 	longitude = 96 ;
 variables:
 	float air_temperature(latitude, longitude) ;

@@ -1,6 +1,6 @@
 dimensions:
-	dim0 = UNLIMITED ; // (3 currently)
 	bnds = 2 ;
+	dim0 = 3 ;
 	dim1 = 4 ;
 variables:
 	float air_pressure_anomaly(dim0, dim1) ;

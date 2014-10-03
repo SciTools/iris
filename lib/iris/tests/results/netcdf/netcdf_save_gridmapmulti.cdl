@@ -1,10 +1,10 @@
 dimensions:
-	grid_longitude = UNLIMITED ; // (2 currently)
-	longitude = UNLIMITED ; // (2 currently)
-	longitude_0 = UNLIMITED ; // (2 currently)
 	grid_latitude = 2 ;
+	grid_longitude = 2 ;
 	latitude = 2 ;
 	latitude_0 = 2 ;
+	longitude = 2 ;
+	longitude_0 = 2 ;
 variables:
 	int64 air_temperature(longitude, latitude) ;
 		air_temperature:standard_name = "air_temperature" ;

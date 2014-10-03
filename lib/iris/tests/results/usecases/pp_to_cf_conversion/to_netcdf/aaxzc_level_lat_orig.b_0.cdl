@@ -1,8 +1,8 @@
 dimensions:
-	time = UNLIMITED ; // (2 currently)
 	bnds = 2 ;
 	latitude = 73 ;
 	pressure = 15 ;
+	time = 2 ;
 variables:
 	float geopotential_height(time, pressure, latitude) ;
 		geopotential_height:standard_name = "geopotential_height" ;

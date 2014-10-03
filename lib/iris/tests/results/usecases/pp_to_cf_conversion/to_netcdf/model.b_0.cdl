@@ -1,9 +1,9 @@
 dimensions:
-	time = UNLIMITED ; // (22 currently)
 	bnds = 2 ;
 	latitude = 73 ;
 	longitude = 96 ;
 	pressure = 9 ;
+	time = 22 ;
 variables:
 	float air_temperature(time, pressure, latitude, longitude) ;
 		air_temperature:standard_name = "air_temperature" ;

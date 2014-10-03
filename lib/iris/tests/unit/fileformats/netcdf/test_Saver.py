@@ -120,7 +120,7 @@ class Test_write(tests.IrisTest):
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube)
             ds = nc.Dataset(nc_path)
-            self.assertTrue(ds.dimensions['dim0'].isunlimited())
+            self.assertFalse(ds.dimensions['dim0'].isunlimited())
             self.assertFalse(ds.dimensions['dim1'].isunlimited())
             ds.close()
 
