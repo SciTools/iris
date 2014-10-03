@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,18 +20,21 @@ Test the :func:`iris.experimental.ugrid.ugrid` function.
 """
 
 import iris.tests as tests
+
 import iris.experimental.ugrid
 
 
-data_path = ("experimental", "ugrid", )
+data_path = ("NetCDF", "ugrid", )
 file21 = "21_triangle_example.nc"
 long_name = "volume flux between cells"
+
 
 @tests.skip_data
 class TestUgrid(tests.IrisTest):
     def test_ugrid(self):
         path = tests.get_data_path(data_path + (file21, ))
         cube = iris.experimental.ugrid.ugrid(path, long_name)
+        self.assertTrue(hasattr(cube, 'mesh'))
 
 
 if __name__ == "__main__":

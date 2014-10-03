@@ -25,3 +25,4 @@ ecmwf_grib=1.12.1
 gdal
 libmo_unpack
 pandas=0.12.0
+pyugrid
