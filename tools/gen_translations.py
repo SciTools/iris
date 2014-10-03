@@ -25,13 +25,11 @@ import os.path
 
 from metarelate.fuseki import FusekiServer
 
-# from translator import *
-
-from translator import FORMAT_URIS, FieldcodeCFMapping, StashCFMapping
-from translator import CFFieldcodeMapping, GRIB1LocalParamCFConstrainedMapping
-from translator import GRIB1LocalParamCFMapping, GRIB2ParamCFMapping
-from translator import CFConstrainedGRIB1LocalParamMapping
-from translator import CFGRIB2ParamMapping, CFGRIB1LocalParamMapping
+from translator import (FORMAT_URIS, FieldcodeCFMapping, StashCFMapping,
+                        CFFieldcodeMapping, GRIB1LocalParamCFConstrainedMapping,
+                        GRIB1LocalParamCFMapping, GRIB2ParamCFMapping,
+                        CFConstrainedGRIB1LocalParamMapping,
+                        CFGRIB2ParamMapping, CFGRIB1LocalParamMapping)
 
 HEADER = """# (C) British Crown Copyright 2013 - {year}, Met Office
 #
@@ -175,9 +173,12 @@ def build_grib_cf_map(fuseki, filename):
         fh.writelines(CFGRIB1LocalParamMapping(maps).lines(fuseki))
         fh.writelines(CFGRIB2ParamMapping(maps).lines(fuseki))
 
-
-if __name__ == '__main__':
+def main():
     with FusekiServer() as fuseki:
         fuseki.load()
         build_um_cf_map(fuseki, FILE_UM_CF)
         build_grib_cf_map(fuseki, FILE_GRIB_CF)
+
+
+if __name__ == '__main__':
+    main()

@@ -236,10 +236,9 @@ class Mapping(object):
         cffield = hasattr(comp, 'com_type') and comp.com_type == ftype and \
                   hasattr(comp, 'units') and (hasattr(comp, 'standard_name') or\
                                               hasattr(comp, 'long_name'))
-        dctype = '<http://def.scitools.org.uk/cfdatamodel/DimCoord>'
         dimcoord = hasattr(comp, 'dim_coord') and \
                    isinstance(comp.dim_coord, metarelate.ComponentProperty) and \
-                   comp.dim_coord.component.com_type == dctype
+                   comp.dim_coord.component.com_type.notation == 'DimCoord'
         result = cffield and dimcoord
         return result
 
@@ -274,8 +273,7 @@ class Mapping(object):
             Boolean.
 
         """
-        gpd = '<http://codes.wmo.int/def/grib1/parameter>'
-        result = len(component) == 1 and hasattr(component, gpd)
+        result = len(component) == 1 and hasattr(component, 'grib1_parameter')
         return result
 
     def is_grib2_param(self, component):
@@ -292,8 +290,7 @@ class Mapping(object):
 
         """
 
-        gpd = '<http://codes.wmo.int/def/grib2/parameter>'
-        result = len(component) == 1 and hasattr(component, gpd)
+        result = len(component) == 1 and hasattr(component, 'grib2_parameter')
         return result
 
     def is_stash(self, component):
@@ -315,12 +312,12 @@ class Mapping(object):
 
 
 def _cfn(line):
-    '''
+    """
     Helper function to parse dictionary lines using the CFName named tuple.
     Matches to the line '    CFName({standard_name}, {long_name}, {units}:*)
     giving access to these named parts
 
-    '''
+    """
     match = re.match('^    CFName\((.+), (.+), (.+)\):.+,', line)
     if match is None:
         raise ValueError('encoding not sortable')
