@@ -57,6 +57,7 @@ def run_callback(callback, cube, field, filename):
     * callback:
         A function to add metadata from the originating field and/or URI which
         obeys the following rules:
+
             1. Function signature must be: ``(cube, field, filename)``.
             2. Modifies the given cube inplace, unless a new cube is
                returned by the function.

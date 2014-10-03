@@ -119,6 +119,7 @@ with latitude and longitude axes are also supported).
 
 For an ordinary latitude-longitude grid, the cubes have coordinates called
 'longitude' and 'latitude':
+
  *  These are mapped to the appropriate data dimensions.
  *  They have units of 'degrees'.
  *  They have a coordinate system of type :class:`iris.coord_systems.GeogCS`.
@@ -130,6 +131,7 @@ For an ordinary latitude-longitude grid, the cubes have coordinates called
 
 For **rotated** latitude-longitude coordinates (as for LBCODE=101), the
 horizontal coordinates differ only slightly --
+
  *  The names are 'grid_latitude' and 'grid_longitude'.
  *  The coord_system is a :class:`iris.coord_systems.RotatedGeogCS`, created
     with a pole defined by BPLAT, BPLON.

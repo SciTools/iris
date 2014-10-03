@@ -4,6 +4,9 @@ What's new in Iris 1.7
 :Release: 1.7.2
 :Date: ???
 
+This document explains the new/changed features of Iris in version 1.7.
+(:doc:`View all changes <index>`.)
+
 Iris 1.7 features
 =================
 

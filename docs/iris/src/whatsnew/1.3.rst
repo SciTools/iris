@@ -5,6 +5,7 @@ What's new in Iris 1.3
 :Date: 27 March 2013
 
 This document explains the new/changed features of Iris in version 1.3.
+(:doc:`View all changes <index>`.)
 
 Iris 1.3 features
 =================

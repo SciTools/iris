@@ -526,6 +526,7 @@ def monotonic(array, strict=False, return_direction=False):
 
         If the return_direction flag was given then the returned value
         will be:
+
             ``(monotonic_status, direction)``
 
     """
