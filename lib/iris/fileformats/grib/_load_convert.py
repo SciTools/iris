@@ -51,6 +51,11 @@ ScanningMode = namedtuple('ScanningMode', ['i_negative',
                                            'j_consecutive',
                                            'i_alternative'])
 
+ResolutionFlags = namedtuple('ResolutionFlags',
+                             ['i_increments_given',
+                              'j_increments_given',
+                              'uv_resolved'])
+
 FixedSurface = namedtuple('FixedSurface', ['standard_name',
                                            'long_name',
                                            'units'])
@@ -260,7 +265,7 @@ def scanning_mode(scanningMode):
     Args:
 
     * scanningMode:
-        Message section 3, octet 72.
+        Message section 3, coded key value.
 
     Returns:
         A :class:`collections.namedtuple` representation.
@@ -278,6 +283,28 @@ def scanning_mode(scanningMode):
 
     return ScanningMode(i_negative, j_positive,
                         j_consecutive, i_alternative)
+
+
+def resolution_flags(resolutionAndComponentFlags):
+    """
+    Translate the resolution and component bitmask.
+
+    Reference GRIB2 Flag Table 3.3.
+
+    Args:
+
+    * resolutionAndComponentFlags:
+        Message section 3, coded key value.
+
+    Returns:
+        A :class:`collections.namedtuple` representation.
+
+    """
+    i_inc_given = bool(resolutionAndComponentFlags & 0x20)
+    j_inc_given = bool(resolutionAndComponentFlags & 0x10)
+    uv_resolved = bool(resolutionAndComponentFlags & 0x08)
+
+    return ResolutionFlags(i_inc_given, j_inc_given, uv_resolved)
 
 
 def ellipsoid(shapeOfTheEarth, major, minor, radius):
@@ -483,6 +510,97 @@ def grid_definition_template_1(section, metadata):
                                      'grid_latitude', 'grid_longitude', cs)
 
 
+def grid_definition_section_4_and_5(section, metadata, y_name, x_name, cs):
+    """
+    Translate template representing variable resolution latitude/longitude.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 3 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    * y_name:
+        Name of the Y coordinate, e.g. 'latitude' or 'grid_latitude'.
+
+    * x_name:
+        Name of the X coordinate, e.g. 'longitude' or 'grid_longitude'.
+
+    * cs:
+        The :class:`iris.coord_systems.CoordSystem` to use when createing
+        the X and Y coordinates.
+
+    """
+    # Determine the (variable) units of resolution.
+    key = 'basicAngleOfTheInitialProductDomain'
+    basicAngleOfTheInitialProductDomain = np.float64(section[key])
+    subdivisionsOfBasicAngle = np.float64(section['subdivisionsOfBasicAngle'])
+
+    if np.int32(basicAngleOfTheInitialProductDomain) in [0, _CODE_TABLE_MDI]:
+        basicAngleOfTheInitialProductDomain = 1.
+
+    if np.int32(subdivisionsOfBasicAngle) in [0, _CODE_TABLE_MDI]:
+        subdivisionsOfBasicAngle = 1. / _GRID_ACCURACY_IN_DEGREES
+
+    resolution = basicAngleOfTheInitialProductDomain / subdivisionsOfBasicAngle
+    flags = resolution_flags(section['resolutionAndComponentFlags'])
+
+    # Bits 3-4 are not applicable for this template.
+    if flags.uv_resolved and options.warn_on_unsupported:
+        msg = 'Unable to translate resolution and component flags.'
+        warnings.warn(msg)
+
+    # XXX Not sure if these are the correct keys to use!
+    x_points = np.array(section['longitudes'], dtype=np.float64) * resolution
+    y_points = np.array(section['latitudes'], dtype=np.float64) * resolution
+
+    # Determine whether the x-points (in degrees) are circular.
+    circular = _is_circular(x_points, 360.0)
+
+    # Create the lat/lon coordinates.
+    y_coord = DimCoord(y_points, standard_name=y_name, units='degrees',
+                       coord_system=cs)
+    x_coord = DimCoord(x_points, standard_name=x_name, units='degrees',
+                       coord_system=cs, circular=circular)
+
+    scan = scanning_mode(section['scanningMode'])
+
+    # Determine the lat/lon dimensions.
+    y_dim, x_dim = 0, 1
+    if scan.j_consecutive:
+        y_dim, x_dim = 1, 0
+
+    # Add the lat/lon coordinates to the metadata dim coords.
+    metadata['dim_coords_and_dims'].append((y_coord, y_dim))
+    metadata['dim_coords_and_dims'].append((x_coord, x_dim))
+
+
+def grid_definition_section_4(section, metadata):
+    """
+    Translate template representing variable resolution latitude/longitude.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 3 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    """
+    # XXX Requires PR #1354.
+    # major, minor, radius = ellipsoid_geometry(section)
+    cs = ellipsoid(section['shapeOfTheEarth'])
+    grid_definition_section_4_and_5(section, metadata,
+                                    'latitude', 'longitude', cs)
+
+
 def grid_definition_section(section, metadata):
     """
     Translate section 3 from the GRIB2 message.
@@ -520,6 +638,9 @@ def grid_definition_section(section, metadata):
     elif template == 1:
         # Process rotated latitude/longitude grid.
         grid_definition_template_1(section, metadata)
+    elif template == 4:
+        # Process variable resolution latitude/longitude.
+        grid_definition_template_4(section, metadata)
     else:
         msg = 'Grid definition template [{}] is not supported'.format(template)
         raise TranslationError(msg)
