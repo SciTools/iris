@@ -35,28 +35,24 @@ from iris.fileformats.grib._load_convert import product_definition_template_0
 class Test(tests.IrisTest):
     def setUp(self):
         module = 'iris.fileformats.grib._load_convert'
-        patch = []
-        patch.append(mock.patch('warnings.warn'))
+        self.patch('warnings.warn')
         this = '{}.data_cutoff'.format(module)
-        patch.append(mock.patch(this))
+        self.patch(this)
         this = '{}.forecast_period_coord'.format(module)
         self.forecast_period = mock.sentinel.forecast_period
-        patch.append(mock.patch(this, return_value=self.forecast_period))
+        self.patch(this, return_value=self.forecast_period)
         this = '{}.validity_time_coord'.format(module)
         self.time = mock.sentinel.time
-        patch.append(mock.patch(this, return_value=self.time))
+        self.patch(this, return_value=self.time)
         this = '{}.vertical_coords'.format(module)
         self.factory = mock.sentinel.factory
         func = lambda s, m: m['factories'].append(self.factory)
-        patch.append(mock.patch(this, side_effect=func))
+        self.patch(this, side_effect=func)
         self.metadata = {'factories': [], 'references': [],
                          'standard_name': None,
                          'long_name': None, 'units': None, 'attributes': {},
                          'cell_methods': [], 'dim_coords_and_dims': [],
                          'aux_coords_and_dims': []}
-        for p in patch:
-            p.start()
-            self.addCleanup(p.stop)
 
     def _check(self, request_warning):
         this = 'iris.fileformats.grib._load_convert.options'
