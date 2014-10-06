@@ -1161,8 +1161,7 @@ class ProtoCube(object):
         # Determine the largest group of source-cubes that want to occupy
         # the same nd-index in the final merged cube.
         group_depth = max([len(group) for group in group_by_nd_index.values()])
-        nd_indexes = group_by_nd_index.keys()
-        nd_indexes.sort()
+        nd_indexes = sorted(group_by_nd_index.keys())
 
         # Check for unique data.
         if unique and group_depth > 1:

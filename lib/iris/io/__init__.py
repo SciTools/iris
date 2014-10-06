@@ -350,7 +350,7 @@ def save(source, target, saver=None, **kwargs):
     # CubeList or sequence of cubes?
     elif (isinstance(source, iris.cube.CubeList) or
           (isinstance(source, (list, tuple)) and
-           all([type(i) == iris.cube.Cube for i in source]))):
+           all([isinstance(i, iris.cube.Cube) for i in source]))):
         # Only allow cubelist saving for those fileformats that are capable.
         if not 'iris.fileformats.netcdf' in saver.__module__:
             # Make sure the saver accepts an append keyword
