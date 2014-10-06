@@ -19,16 +19,18 @@ A package for converting cubes to and from specific file formats.
 
 """
 
+from __future__ import absolute_import
+
 from iris.io.format_picker import (FileExtension, FormatAgent,
                                    FormatSpecification, MagicNumber,
                                    UriProtocol, LeadingLine)
-import abf
-import ff
-import grib
-import name
-import netcdf
-import nimrod
-import pp
+from . import abf
+from . import ff
+from . import grib
+from . import name
+from . import netcdf
+from . import nimrod
+from . import pp
 
 
 __all__ = ['FORMAT_AGENT']

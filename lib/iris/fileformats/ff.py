@@ -19,7 +19,7 @@ Provides UK Met Office Fields File (FF) format specific capabilities.
 
 """
 
-from __future__ import print_function
+from __future__ import (absolute_import, print_function)
 
 import os
 import warnings
@@ -28,7 +28,7 @@ import numpy as np
 
 from iris.exceptions import NotYetImplementedError
 from iris.fileformats._ff_cross_references import STASH_TRANS
-import pp
+from . import pp
 
 
 IMDI = -32768
