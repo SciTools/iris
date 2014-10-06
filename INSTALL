@@ -109,6 +109,10 @@ pandas 0.11.0 or later (http://pandas.pydata.org)
 PythonImagingLibrary 1.1.7 or later (http://effbot.org/zone/pil-index.htm)
     Python package for image processing.
 
+pyugrid 0.1.1 or later (https://github.com/pyugrid/pyugrid)
+    A Python API to utilize data written using the unstructured grid
+    UGRID conventions.
+
 shapely 1.2.14 (https://github.com/Toblerity/Shapely)
     Python package for the manipulation and analysis of planar geometric objects.
 
