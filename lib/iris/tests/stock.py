@@ -84,7 +84,7 @@ def simple_1d(with_bounds=True):
          Dimension coordinates:
               foo                           x
 
-    >>> print `simple_1d().data`
+    >>> print repr(simple_1d().data)
     [ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10]
 
     """
@@ -108,7 +108,7 @@ def simple_2d(with_bounds=True):
               bar                           x       -
               foo                           -       x
 
-    >>> print `simple_2d().data`
+    >>> print repr(simple_2d().data)
     [[ 0  1  2  3]
      [ 4  5  6  7]
      [ 8  9 10 11]]
@@ -140,7 +140,7 @@ def simple_2d_w_multidim_coords(with_bounds=True):
               bar                                   x               x
               foo                                   x               x
 
-    >>> print `simple_2d().data`
+    >>> print repr(simple_2d().data)
     [[ 0,  1,  2,  3],
      [ 4,  5,  6,  7],
      [ 8,  9, 10, 11]]
@@ -284,7 +284,7 @@ def track_1d(duplicate_x=False):
               y -> y
          Single valued coords:
 
-    >>> print `track_1d().data`
+    >>> print repr(track_1d().data)
     array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10])
 
     """
