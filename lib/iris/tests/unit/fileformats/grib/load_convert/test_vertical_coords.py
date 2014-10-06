@@ -30,8 +30,9 @@ from iris.coords import DimCoord
 from iris.exceptions import TranslationError
 from iris.fileformats.grib._load_convert import vertical_coords
 
-
-MDI = -1
+from iris.fileformats.grib._load_convert import \
+    _FIXED_SURFACE_MISSING as MISSING_SURFACE, \
+    _GRIBAPI_MDI_SIGNED as MISSING_LEVEL
 
 
 class Test(tests.IrisTest):
@@ -56,8 +57,8 @@ class Test(tests.IrisTest):
     def test_no_first_fixed_surface(self):
         metadata = deepcopy(self.metadata)
         section = {'NV': 0,
-                   'typeOfFirstFixedSurface': MDI,
-                   'scaledValueOfFirstFixedSurface': MDI}
+                   'typeOfFirstFixedSurface': MISSING_SURFACE,
+                   'scaledValueOfFirstFixedSurface': MISSING_LEVEL}
         vertical_coords(section, metadata)
         self.assertEqual(metadata, self.metadata)
 
@@ -81,7 +82,7 @@ class Test(tests.IrisTest):
                         self.assertEqual(len(warn.mock_calls), 0)
 
     def test_unknown_first_fixed_surface_with_missing_scaled_value(self):
-        self._check(MDI, 'surface with missing scaled value')
+        self._check(MISSING_SURFACE, 'surface with missing scaled value')
 
     def test_unknown_first_fixed_surface_with_scaled_value(self):
         self._check(0, 'surface with scaled value')
@@ -92,7 +93,7 @@ class Test(tests.IrisTest):
                    'typeOfFirstFixedSurface': 100,  # pressure / Pa
                    'scaledValueOfFirstFixedSurface': 10,
                    'scaleFactorOfFirstFixedSurface': 1,
-                   'typeOfSecondFixedSurface': MDI}
+                   'typeOfSecondFixedSurface': MISSING_SURFACE}
         vertical_coords(section, metadata)
         coord = DimCoord(1.0, long_name='pressure', units='Pa')
         expected = deepcopy(self.metadata)
@@ -105,7 +106,7 @@ class Test(tests.IrisTest):
                    'typeOfFirstFixedSurface': 103,  # height / m
                    'scaledValueOfFirstFixedSurface': 100,
                    'scaleFactorOfFirstFixedSurface': 2,
-                   'typeOfSecondFixedSurface': MDI}
+                   'typeOfSecondFixedSurface': MISSING_SURFACE}
         vertical_coords(section, metadata)
         coord = DimCoord(1.0, long_name='height', units='m')
         expected = deepcopy(self.metadata)
@@ -128,7 +129,7 @@ class Test(tests.IrisTest):
                    'scaledValueOfFirstFixedSurface': None,
                    'scaleFactorOfFirstFixedSurface': None,
                    'typeOfSecondFixedSurface': 100,
-                   'scaledValueOfSecondFixedSurface': MDI}
+                   'scaledValueOfSecondFixedSurface': MISSING_LEVEL}
         emsg = 'missing scaled value of second fixed surface'
         with self.assertRaisesRegexp(TranslationError, emsg):
             vertical_coords(section, None)

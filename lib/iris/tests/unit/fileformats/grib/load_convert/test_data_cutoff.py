@@ -26,10 +26,12 @@ import datetime
 
 import mock
 
+from iris.fileformats.grib._load_convert import _GRIBAPI_MDI_UNSIGNED
+
 from iris.fileformats.grib._load_convert import data_cutoff
 
-
-MDI = -1
+MISSING_HOURS = _GRIBAPI_MDI_UNSIGNED
+MISSING_MINS = _GRIBAPI_MDI_UNSIGNED
 
 
 class TestDataCutoff(tests.IrisTest):
@@ -50,25 +52,25 @@ class TestDataCutoff(tests.IrisTest):
             self.assertEqual(len(warn.mock_calls), 0)
 
     def test_neither(self):
-        self._check(MDI, MDI, False)
+        self._check(MISSING_HOURS, MISSING_MINS, False)
 
     def test_hours(self):
-        self._check(3, MDI, False)
+        self._check(3, MISSING_MINS, False)
 
     def test_minutes(self):
-        self._check(MDI, 20, False)
+        self._check(MISSING_HOURS, 20, False)
 
     def test_hours_and_minutes(self):
         self._check(30, 40, False)
 
     def test_neither_warning(self):
-        self._check(MDI, MDI, True, False)
+        self._check(MISSING_HOURS, MISSING_MINS, True, False)
 
     def test_hours_warning(self):
-        self._check(3, MDI, True, True)
+        self._check(3, MISSING_MINS, True, True)
 
     def test_minutes_warning(self):
-        self._check(MDI, 20, True, True)
+        self._check(MISSING_HOURS, 20, True, True)
 
     def test_hours_and_minutes_warning(self):
         self._check(30, 40, True, True)

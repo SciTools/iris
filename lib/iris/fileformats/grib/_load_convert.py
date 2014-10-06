@@ -53,7 +53,6 @@ FixedSurface = namedtuple('FixedSurface', ['standard_name',
                                            'long_name',
                                            'units'])
 
-_CODE_TABLE_MDI = -1
 _CODE_TABLE_3_2_SHAPE_OF_THE_EARTH_RANGE = 9
 _GRID_ACCURACY_IN_DEGREES = 1e-6  # 1/1,000,000 of a degree
 
@@ -61,6 +60,9 @@ _GRID_ACCURACY_IN_DEGREES = 1e-6  # 1/1,000,000 of a degree
 _CENTRES = {
     'ecmf': 'European Centre for Medium Range Weather Forecasts'
 }
+
+# Reference Code Table 1.0
+_CODE_TABLES_MISSING = 255
 
 # UDUNITS-2 units time string. Reference GRIB2 Code Table 4.4.
 _TIME_RANGE_UNITS = {
@@ -84,6 +86,10 @@ _FIXED_SURFACE = {
     100: FixedSurface(None, 'pressure', 'Pa'),  # Isobaric surface
     103: FixedSurface(None, 'height', 'm')      # Height level above ground
 }
+_FIXED_SURFACE_MISSING = 255
+
+# Reference Code Table 6.0
+_BITMAP_CODE_NONE = 255
 
 
 # Regulation 92.1.12
@@ -101,6 +107,31 @@ def unscale(value, factor):
 
     """
     return value / 10.0 ** factor
+
+
+# Regulations 92.1.4 and 92.1.5.
+_GRIBAPI_MDI_UNSIGNED = 2 ** 32 - 1
+_GRIBAPI_MDI_SIGNED = -(2 ** 31 - 1)
+# Note:
+#    Grib message values (keys and data) may be 8, 16 or 32 bit, either
+#    signed or unsigned.
+#    The gribapi always *returns* values as 64-bit signed (either native
+#    Python 'int' or numpy 'int64'), promoting values with sign extension
+#    as appropriate.
+#    However it also extends MDI values as a special case, so that it
+#    *always* returns either :
+#        (2 ** 32 - 1) for unsigned missing values, or
+#        -(2 ** 31 - 1) for signed ones.
+#    Both of these values are reliably distinct from anything valid as they
+#    are outside the valid range of either signed or unsigned 32 bit :
+#        unsigned 32-bit :
+#            min = 0b'000...000' = 0
+#            max = 0b'111...110' = 2*32 - 2
+#            mdi = 0b'111...111' = 2*32 - 1
+#        signed 32-bit :
+#            mdi = 0b'111...111' = -(2**31 - 1)
+#            min = 0b'111...110' = -(2**31 - 2)
+#            max = 0b'011...111' = (2**31 - 1)
 
 
 ###############################################################################
@@ -460,13 +491,13 @@ def hybrid_factories(section, metadata):
     NV = section['NV']
     if NV > 0:
         typeOfFirstFixedSurface = section['typeOfFirstFixedSurface']
-        if np.int8(typeOfFirstFixedSurface) == _CODE_TABLE_MDI:
+        if typeOfFirstFixedSurface == _FIXED_SURFACE_MISSING:
             msg = 'Product definition section 4 contains missing ' \
                 'type of first fixed surface'
             raise TranslationError(msg)
 
         typeOfSecondFixedSurface = section['typeOfSecondFixedSurface']
-        if np.int8(typeOfSecondFixedSurface) != _CODE_TABLE_MDI:
+        if typeOfSecondFixedSurface != _FIXED_SURFACE_MISSING:
             msg = 'Product definition section 4 contains unsupported type ' \
                 'of second fixed surface [{}]'.format(typeOfSecondFixedSurface)
             raise TranslationError(msg)
@@ -533,9 +564,8 @@ def vertical_coords(section, metadata):
         fixed_surface = _FIXED_SURFACE.get(typeOfFirstFixedSurface)
 
         if fixed_surface is None:
-            if np.int8(typeOfFirstFixedSurface) != _CODE_TABLE_MDI:
-                if np.int32(scaledValueOfFirstFixedSurface) == \
-                        _CODE_TABLE_MDI:
+            if typeOfFirstFixedSurface != _FIXED_SURFACE_MISSING:
+                if scaledValueOfFirstFixedSurface == _FIXED_SURFACE_MISSING:
                     if options.warn_on_unsupported:
                         msg = 'Unable to translate type of first fixed ' \
                             'surface with missing scaled value.'
@@ -550,7 +580,7 @@ def vertical_coords(section, metadata):
             scaleFactorOfFirstFixedSurface = section[key]
             typeOfSecondFixedSurface = section['typeOfSecondFixedSurface']
 
-            if np.int8(typeOfSecondFixedSurface) != _CODE_TABLE_MDI:
+            if typeOfSecondFixedSurface != _FIXED_SURFACE_MISSING:
                 if typeOfFirstFixedSurface != typeOfSecondFixedSurface:
                     msg = 'Product definition section 4 has different ' \
                         'types of first and second fixed surface'
@@ -559,8 +589,7 @@ def vertical_coords(section, metadata):
                 key = 'scaledValueOfSecondFixedSurface'
                 scaledValueOfSecondFixedSurface = section[key]
 
-                if np.int32(scaledValueOfSecondFixedSurface) == \
-                        _CODE_TABLE_MDI:
+                if scaledValueOfSecondFixedSurface == _GRIBAPI_MDI_SIGNED:
                     msg = 'Product definition section 4 has missing ' \
                         'scaled value of second fixed surface'
                     raise TranslationError(msg)
@@ -664,8 +693,8 @@ def data_cutoff(hoursAfterDataCutoff, minutesAfterDataCutoff):
         Message section 4, octet 17.
 
     """
-    if np.int16(hoursAfterDataCutoff) != _CODE_TABLE_MDI or \
-            np.int8(minutesAfterDataCutoff) != _CODE_TABLE_MDI:
+    if (hoursAfterDataCutoff != _GRIBAPI_MDI_UNSIGNED or
+            minutesAfterDataCutoff != _GRIBAPI_MDI_UNSIGNED):
         if options.warn_on_unsupported:
             warnings.warn('Unable to translate "hours and/or minutes '
                           'after data cutoff".')
@@ -857,7 +886,7 @@ def product_definition_section(section, metadata, discipline, tablesVersion,
         raise TranslationError(msg)
 
     # Translate GRIB2 phenomenon to CF phenomenon.
-    if np.int8(tablesVersion) != _CODE_TABLE_MDI:
+    if tablesVersion != _CODE_TABLES_MISSING:
         translate_phenomenon(metadata, discipline,
                              section['parameterCategory'],
                              section['parameterNumber'])
@@ -897,7 +926,7 @@ def bitmap_section(section):
     # Reference GRIB2 Code Table 6.0.
     bitMapIndicator = section['bitMapIndicator']
 
-    if np.int8(bitMapIndicator) != _CODE_TABLE_MDI:
+    if bitMapIndicator != _BITMAP_CODE_NONE:
         msg = 'Bitmap Section 6 contains unsupported ' \
             'bitmap indicator [{}]'.format(bitMapIndicator)
         raise TranslationError(msg)
