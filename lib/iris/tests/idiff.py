@@ -22,6 +22,8 @@ Currently relies on matplotlib for image processing so limited to PNG format.
 
 """
 
+from __future__ import print_function
+
 import os.path
 import shutil
 import sys
@@ -43,14 +45,14 @@ def diff_viewer(expected_fname, result_fname, diff_fname):
 
     def accept(event):
         # removes the expected result, and move the most recent result in
-        print 'ACCEPTED NEW FILE: %s' % (os.path.basename(expected_fname), )
+        print('ACCEPTED NEW FILE: %s' % (os.path.basename(expected_fname), ))
         os.remove(expected_fname)
         shutil.copy2(result_fname, expected_fname)
         os.remove(diff_fname)
         plt.close()
 
     def reject(event):
-        print 'REJECTED: %s' % (os.path.basename(expected_fname), )
+        print('REJECTED: %s' % (os.path.basename(expected_fname), ))
         plt.close()
 
     ax_accept = plt.axes([0.7, 0.05, 0.1, 0.075])

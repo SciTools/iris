@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+
 import json
 import urllib
 import urllib2
@@ -50,7 +52,7 @@ def write_cross_reference_module(module_path, xrefs):
             except ValueError:
                 msg = ('stash code is not of a recognised'
                        '"m??s??i???" form: {}'.format(stash))
-                print msg
+                print(msg)
             grid = xref.get('grid')
             if grid is not None:
                 try:
@@ -58,7 +60,7 @@ def write_cross_reference_module(module_path, xrefs):
                 except ValueError:
                     msg = ('grid code retrieved from STASH lookup'
                            'is not an interger: {}'.format(grid))
-                    print msg
+                    print(msg)
             else:
                 grid = 0
             lbfc = xref.get('lbfcn')

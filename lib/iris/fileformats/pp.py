@@ -19,6 +19,8 @@ Provides UK Met Office Post Process (PP) format specific capabilities.
 
 """
 
+from __future__ import print_function
+
 import abc
 import collections
 from copy import deepcopy
@@ -256,7 +258,7 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
         3
 
     String conversion results in the MSI format:
-        >>> print iris.fileformats.pp.STASH(1, 16, 203)
+        >>> print(iris.fileformats.pp.STASH(1, 16, 203))
         m01s16i203
 
     """
@@ -347,11 +349,11 @@ class SplittableInt(object):
     A class to hold integers which can easily get each decimal digit individually.
 
     >>> three_six_two = SplittableInt(362)
-    >>> print three_six_two
+    >>> print(three_six_two)
     362
-    >>> print three_six_two[0]
+    >>> print(three_six_two[0])
     2
-    >>> print three_six_two[2]
+    >>> print(three_six_two[2])
     3
 
     .. note:: No support for negative numbers
@@ -367,12 +369,12 @@ class SplittableInt(object):
             A special mapping to provide name based access to specific integer positions:
 
                 >>> a = SplittableInt(1234, {'hundreds': 2})
-                >>> print a.hundreds
+                >>> print(a.hundreds)
                 2
                 >>> a.hundreds = 9
-                >>> print a.hundreds
+                >>> print(a.hundreds)
                 9
-                >>> print a
+                >>> print(a)
                 1934
 
         """
@@ -840,12 +842,12 @@ class PPField(object):
     A PPField instance can easily access the PP header "words" as attributes with some added useful capabilities::
 
         for field in iris.fileformats.pp.load(filename):
-            print field.lbyr
-            print field.lbuser
-            print field.lbuser[0]
-            print field.lbtim
-            print field.lbtim.ia
-            print field.t1
+            print(field.lbyr)
+            print(field.lbuser)
+            print(field.lbuser[0])
+            print(field.lbtim)
+            print(field.lbtim.ia)
+            print(field.t1)
 
     """
 
@@ -1460,7 +1462,7 @@ def load(filename, read_data=False):
     To iterate through all of the fields in a pp file::
 
         for field in iris.fileformats.pp.load(filename):
-            print field
+            print(field)
 
     """
     return _interpret_fields(_field_gen(filename, read_data_bytes=read_data))

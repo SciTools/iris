@@ -19,6 +19,8 @@ Classes for representing multi-dimensional data with metadata.
 
 """
 
+from __future__ import print_function
+
 from xml.dom.minidom import Document
 import collections
 import copy
@@ -400,13 +402,13 @@ class CubeList(list):
 
         For example::
 
-            >>> print c1
+            >>> print(c1)
             some_parameter / (unknown)          (x_vals: 3)
                  Dimension coordinates:
                       x_vals                           x
                  Scalar coordinates:
                       y_vals: 100
-            >>> print c2
+            >>> print(c2)
             some_parameter / (unknown)          (x_vals: 3)
                  Dimension coordinates:
                       x_vals                           x
@@ -414,12 +416,12 @@ class CubeList(list):
                       y_vals: 200
             >>> cube_list = iris.cube.CubeList([c1, c2])
             >>> new_cube = cube_list.merge()[0]
-            >>> print new_cube
+            >>> print(new_cube)
             some_parameter / (unknown)          (y_vals: 2; x_vals: 3)
                  Dimension coordinates:
                       y_vals                           x          -
                       x_vals                           -          x
-            >>> print new_cube.coord('y_vals').points
+            >>> print(new_cube.coord('y_vals').points)
             [100 200]
             >>>
 
@@ -518,28 +520,28 @@ class CubeList(list):
 
         For example::
 
-            >>> print c1
+            >>> print(c1)
             some_parameter / (unknown)          (y_vals: 2; x_vals: 4)
                  Dimension coordinates:
                       y_vals                           x          -
                       x_vals                           -          x
-            >>> print c1.coord('y_vals').points
+            >>> print(c1.coord('y_vals').points)
             [4 5]
-            >>> print c2
+            >>> print(c2)
             some_parameter / (unknown)          (y_vals: 3; x_vals: 4)
                  Dimension coordinates:
                       y_vals                           x          -
                       x_vals                           -          x
-            >>> print c2.coord('y_vals').points
+            >>> print(c2.coord('y_vals').points)
             [ 7  9 10]
             >>> cube_list = iris.cube.CubeList([c1, c2])
             >>> new_cube = cube_list.concatenate()[0]
-            >>> print new_cube
+            >>> print(new_cube)
             some_parameter / (unknown)          (y_vals: 5; x_vals: 4)
                  Dimension coordinates:
                       y_vals                           x          -
                       x_vals                           -          x
-            >>> print new_cube.coord('y_vals').points
+            >>> print(new_cube.coord('y_vals').points)
             [ 4  5  7  9 10]
             >>>
 
@@ -571,7 +573,7 @@ class Cube(CFVariableMixin):
     For example:
 
         >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
-        >>> print cube
+        >>> print(cube)
         air_temperature / (K)               (latitude: 73; longitude: 96)
              Dimension coordinates:
                   latitude                           x              -
@@ -1462,7 +1464,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             >>> cube = iris.load_cube(fname, 'air_temperature')
             >>> # cube.data does not yet have a value.
             ...
-            >>> print cube.shape
+            >>> print(cube.shape)
             (73, 96)
             >>> # cube.data still does not have a value.
             ...
@@ -1472,7 +1474,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             >>> data = cube.data
             >>> # Only now is the data loaded.
             ...
-            >>> print data.shape
+            >>> print(data.shape)
             (10, 20)
 
         """
@@ -2061,16 +2063,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             >>> import iris
             >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
-            >>> print cube.coord('longitude').points[::10]
+            >>> print(cube.coord('longitude').points[::10])
             [   0.           37.49999237   74.99998474  112.49996948  \
 149.99996948
               187.49995422  224.99993896  262.49993896  299.99993896  \
 337.49990845]
             >>> subset = cube.intersection(longitude=(30, 50))
-            >>> print subset.coord('longitude').points
+            >>> print(subset.coord('longitude').points)
             [ 33.74999237  37.49999237  41.24998856  44.99998856  48.74998856]
             >>> subset = cube.intersection(longitude=(-10, 10))
-            >>> print subset.coord('longitude').points
+            >>> print(subset.coord('longitude').points)
             [-7.50012207 -3.75012207  0.          3.75        7.5       ]
 
         Returns:
@@ -2300,7 +2302,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         For example, to get all subcubes along the time dimension::
 
             for sub_cube in cube.slices_over('time'):
-                print sub_cube
+                print(sub_cube)
 
         .. seealso:: :meth:`iris.cube.Cube.slices`.
 
@@ -2363,7 +2365,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         multi-dimensional cube::
 
             for sub_cube in cube.slices(['longitude', 'latitude']):
-                print sub_cube
+                print(sub_cube)
 
         .. seealso:: :meth:`iris.cube.Cube.slices_over`.
 
@@ -2784,7 +2786,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             >>> path = iris.sample_data_path('ostia_monthly.nc')
             >>> cube = iris.load_cube(path)
             >>> new_cube = cube.collapsed('longitude', iris.analysis.MEAN)
-            >>> print new_cube
+            >>> print(new_cube)
             surface_temperature / (K)           (time: 54; latitude: 18)
                  Dimension coordinates:
                       time                           x             -
@@ -2994,7 +2996,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             >>> cube = iris.load_cube(fname, 'surface_temperature')
             >>> cat.add_year(cube, 'time', name='year')
             >>> new_cube = cube.aggregated_by('year', iris.analysis.MEAN)
-            >>> print new_cube
+            >>> print(new_cube)
             surface_temperature / (K)           \
 (time: 5; latitude: 18; longitude: 432)
                  Dimension coordinates:
@@ -3148,7 +3150,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             >>> import iris, iris.analysis
             >>> fname = iris.sample_data_path('GloSea4', 'ensemble_010.pp')
             >>> air_press = iris.load_cube(fname, 'surface_temperature')
-            >>> print air_press
+            >>> print(air_press)
             surface_temperature / (K)           \
 (time: 6; latitude: 145; longitude: 192)
                  Dimension coordinates:
@@ -3172,7 +3174,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                       mean: time (1 hour)
 
 
-            >>> print air_press.rolling_window('time', iris.analysis.MEAN, 3)
+            >>> print(air_press.rolling_window('time', iris.analysis.MEAN, 3))
             surface_temperature / (K)           \
 (time: 4; latitude: 145; longitude: 192)
                  Dimension coordinates:
@@ -3328,37 +3330,37 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             >>> import iris
             >>> path = iris.sample_data_path('uk_hires.pp')
             >>> cube = iris.load_cube(path, 'air_potential_temperature')
-            >>> print cube.summary(shorten=True)
+            >>> print(cube.summary(shorten=True))
             air_potential_temperature / (K)     \
 (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
-            >>> print cube.coord('time')
+            >>> print(cube.coord('time'))
             DimCoord([2009-11-19 10:00:00, 2009-11-19 11:00:00, \
 2009-11-19 12:00:00], standard_name='time', calendar='gregorian')
-            >>> print cube.coord('time').points
+            >>> print(cube.coord('time').points)
             [ 349618.  349619.  349620.]
             >>> samples = [('time', 349618.5)]
             >>> result = cube.interpolate(samples, iris.analysis.Linear())
-            >>> print result.summary(shorten=True)
+            >>> print(result.summary(shorten=True))
             air_potential_temperature / (K)     \
 (model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
-            >>> print result.coord('time')
+            >>> print(result.coord('time'))
             DimCoord([2009-11-19 10:30:00], standard_name='time', \
 calendar='gregorian')
-            >>> print result.coord('time').points
+            >>> print(result.coord('time').points)
             [ 349618.5]
             >>> # For datetime-like coordinates, we can also use
             >>> # datetime-like objects.
             >>> samples = [('time', datetime.datetime(2009, 11, 19, 10, 30))]
             >>> result2 = cube.interpolate(samples, iris.analysis.Linear())
-            >>> print result2.summary(shorten=True)
+            >>> print(result2.summary(shorten=True))
             air_potential_temperature / (K)     \
 (model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
-            >>> print result2.coord('time')
+            >>> print(result2.coord('time'))
             DimCoord([2009-11-19 10:30:00], standard_name='time', \
 calendar='gregorian')
-            >>> print result2.coord('time').points
+            >>> print(result2.coord('time').points)
             [ 349618.5]
-            >>> print result == result2
+            >>> print(result == result2)
             True
 
         """

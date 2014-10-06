@@ -24,6 +24,8 @@ Version 1.4, 27 February 2009.
 
 """
 
+from __future__ import print_function
+
 import collections
 import itertools
 import os
@@ -309,22 +311,22 @@ def _assert_case_specific_facts(engine, cf, cf_group):
 
 def _pyke_stats(engine, cf_name):
     if DEBUG:
-        print '-' * 80
-        print 'CF Data Variable: %r' % cf_name
+        print('-' * 80)
+        print('CF Data Variable: %r' % cf_name)
 
         engine.print_stats()
 
-        print 'Rules Triggered:'
+        print('Rules Triggered:')
 
         for rule in sorted(list(engine.rule_triggered)):
-            print '\t%s' % rule
+            print('\t%s' % rule)
 
-        print 'Case Specific Facts:'
+        print('Case Specific Facts:')
         kb_facts = engine.get_kb(_PYKE_FACT_BASE)
 
         for key in kb_facts.entity_lists.iterkeys():
             for arg in kb_facts.entity_lists[key].case_specific_facts:
-                print '\t%s%s' % (key, arg)
+                print('\t%s%s' % (key, arg))
 
 
 def _set_attributes(attributes, key, value):

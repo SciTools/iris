@@ -18,6 +18,9 @@
 Various utilities and numeric transformations relevant to cartography.
 
 """
+
+from __future__ import print_function
+
 import copy
 import itertools
 import math
@@ -51,7 +54,7 @@ def wrap_lons(lons, base, period):
         from iris.analysis.cartography import wrap_lons
 
     For example:
-        >>> print wrap_lons(np.array([185, 30, -200, 75]), -180, 360)
+        >>> print(wrap_lons(np.array([185, 30, -200, 75]), -180, 360))
         [-175.   30.  160.   75.]
 
     """

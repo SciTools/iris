@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -463,8 +464,8 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
 #        result = r[0].copy(data=True)
 #        x_pts, x_ones, y_pts, y_ones, z_pts, z_ones = self.get_coord_pts(result)
 #        result.data = y_pts * 2. * x_ones * z_ones
-#        print repr(r[0].data[0:1, 0:5, 0:25:5])
-#        print repr(result.data[0:1, 0:5, 0:25:5])
+#        print(repr(r[0].data[0:1, 0:5, 0:25:5]))
+#        print(repr(result.data[0:1, 0:5, 0:25:5]))
 #        np.testing.assert_array_almost_equal(result.data, r[0].data, decimal=2)
 #
 #        result = r[1].copy(data=True)

@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 
 import warnings
 
@@ -635,7 +636,7 @@ def data(cube, grib):
     gribapi.grib_set_double_array(grib, "values", data.flatten())
 
     # todo: check packing accuracy?
-#    print "packingError", gribapi.getb_get_double(grib, "packingError")
+#    print("packingError", gribapi.getb_get_double(grib, "packingError"))
 
 
 def run(cube, grib):

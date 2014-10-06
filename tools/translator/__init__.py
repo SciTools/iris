@@ -20,6 +20,8 @@ translations.
 
 """
 
+from __future__ import print_function
+
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import namedtuple
 import re
@@ -104,7 +106,7 @@ class Mapping(object):
 
         """
         msg = '\tGenerating phenomenon translation {!r}.'
-        print msg.format(self.mapping_name)
+        print(msg.format(self.mapping_name))
         lines = ['\n%s = {\n' % self.mapping_name]
 
         payload = [self.encode(mapping, fuseki_process) for mapping in self.mappings]

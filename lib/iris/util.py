@@ -19,6 +19,8 @@ Miscellaneous utility functions.
 
 """
 
+from __future__ import print_function
+
 import abc
 import collections
 import copy
@@ -428,12 +430,12 @@ def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
 
         between_3_and_6 = between(3, 6)
         for i in range(10):
-           print i, between_3_and_6(i)
+           print(i, between_3_and_6(i))
 
 
         between_3_and_6 = between(3, 6, rh_inclusive=False)
         for i in range(10):
-           print i, between_3_and_6(i)
+           print(i, between_3_and_6(i))
 
     """
     if lh_inclusive and rh_inclusive:
@@ -461,7 +463,7 @@ def reverse(array, axes):
 
         >>> import numpy as np
         >>> a = np.arange(24).reshape(2, 3, 4)
-        >>> print a
+        >>> print(a)
         [[[ 0  1  2  3]
           [ 4  5  6  7]
           [ 8  9 10 11]]
@@ -469,7 +471,7 @@ def reverse(array, axes):
          [[12 13 14 15]
           [16 17 18 19]
           [20 21 22 23]]]
-        >>> print reverse(a, 1)
+        >>> print(reverse(a, 1))
         [[[ 8  9 10 11]
           [ 4  5  6  7]
           [ 0  1  2  3]]
@@ -477,7 +479,7 @@ def reverse(array, axes):
          [[20 21 22 23]
           [16 17 18 19]
           [12 13 14 15]]]
-        >>> print reverse(a, [1, 2])
+        >>> print(reverse(a, [1, 2]))
         [[[11 10  9  8]
           [ 7  6  5  4]
           [ 3  2  1  0]]
@@ -1021,9 +1023,9 @@ Example Usage::
         timers.start("big func", "output")
         output()
 
-        print timers.stop("big func")
+        print(timers.stop("big func"))
 
-        print timers.get("little func")
+        print(timers.get("little func"))
 """
 
 

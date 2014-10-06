@@ -19,6 +19,8 @@ Provides UK Met Office Fields File (FF) format specific capabilities.
 
 """
 
+from __future__ import print_function
+
 import os
 import warnings
 
@@ -444,7 +446,7 @@ class FF2PP(object):
         For example::
 
             >>> for field in ff.FF2PP(filename):
-            ...     print field
+            ...     print(field)
 
         """
 

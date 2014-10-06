@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -147,7 +148,7 @@ class TestPPHeaderDerived(unittest.TestCase):
         
     def test_lbproc_bad_access(self):
         try:
-            print self.pp.lbproc.flag65537
+            print(self.pp.lbproc.flag65537)
         except AttributeError:
             pass
         except Exception as err:

@@ -20,6 +20,8 @@ metOcean mapping translations.
 
 """
 
+from __future__ import print_function
+
 from datetime import datetime
 import os.path
 
@@ -100,7 +102,7 @@ def _retrieve_mappings(fuseki, source, target):
 
     """
     msg = 'Retrieving {!r} to {!r} mappings ...'
-    print msg.format(source, target)
+    print(msg.format(source, target))
     return fuseki.retrieve_mappings(source, target)
 
 
