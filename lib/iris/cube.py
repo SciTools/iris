@@ -1877,7 +1877,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                          dimension_mapping[d] is not None]
 
         try:
-            first_slice = slice_gen.next()
+            first_slice = next(slice_gen)
         except StopIteration:
             first_slice = None
 
@@ -3448,7 +3448,7 @@ class _SliceIterator(collections.Iterator):
 
     def next(self):
         # NB. When self._ndindex runs out it will raise StopIteration for us.
-        index_tuple = self._ndindex.next()
+        index_tuple = next(self._ndindex)
 
         # Turn the given tuple into a list so that we can do something with it
         index_list = list(index_tuple)

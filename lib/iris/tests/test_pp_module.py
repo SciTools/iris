@@ -38,7 +38,7 @@ class TestPPCopy(tests.IrisTest):
         self.filename = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
 
     def test_copy_field_deferred(self):
-        field = pp.load(self.filename).next()
+        field = next(pp.load(self.filename))
         clone = field.copy()
         self.assertIsInstance(clone._data, biggus.Array)
         self.assertEqual(field, clone)
@@ -46,7 +46,7 @@ class TestPPCopy(tests.IrisTest):
         self.assertNotEqual(field, clone)
 
     def test_deepcopy_field_deferred(self):
-        field = pp.load(self.filename).next()
+        field = next(pp.load(self.filename))
         clone = deepcopy(field)
         self.assertIsInstance(clone._data, biggus.Array)
         self.assertEqual(field, clone)
@@ -54,14 +54,14 @@ class TestPPCopy(tests.IrisTest):
         self.assertNotEqual(field, clone)
 
     def test_copy_field_non_deferred(self):
-        field = pp.load(self.filename, True).next()
+        field = next(pp.load(self.filename, True))
         clone = field.copy()
         self.assertEqual(field, clone)
         clone.data[0][0] = 666
         self.assertNotEqual(field, clone)
 
     def test_deepcopy_field_non_deferred(self):
-        field = pp.load(self.filename, True).next()
+        field = next(pp.load(self.filename, True))
         clone = deepcopy(field)
         self.assertEqual(field, clone)
         clone.data[0][0] = 666
@@ -186,7 +186,7 @@ class TestPPField_GlobalTemperature(IrisPPTest):
     def test_save_api(self):
         filepath = self.original_pp_filepath
         
-        f = pp.load(filepath).next()
+        f = next(pp.load(filepath))
 
         temp_filename = iris.util.create_temp_filename(".pp")
         
@@ -250,12 +250,12 @@ class TestPPFileExtraXData(IrisPPTest):
 
     def test_save_single(self):
         filepath = tests.get_data_path(('PP', 'ukV1', 'ukVpmslont_first_field.pp'))
-        f = pp.load(filepath).next()
+        f = next(pp.load(filepath))
 
         temp_filename = iris.util.create_temp_filename(".pp")
         f.save(open(temp_filename, 'wb'))
         
-        s = pp.load(temp_filename).next()
+        s = next(pp.load(temp_filename))
         
         # force the data to be loaded (this was done for f when save was run)
         s.data
@@ -289,12 +289,12 @@ class TestPPFileWithExtraCharacterData(IrisPPTest):
     
     def test_save_single(self):
         filepath = tests.get_data_path(('PP', 'model_comp', 'dec_first_field.pp'))
-        f = pp.load(filepath).next()
+        f = next(pp.load(filepath))
 
         temp_filename = iris.util.create_temp_filename(".pp")
         f.save(open(temp_filename, 'wb'))
         
-        s = pp.load(temp_filename).next()
+        s = next(pp.load(temp_filename))
         
         # force the data to be loaded (this was done for f when save was run)
         s.data

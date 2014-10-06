@@ -1670,7 +1670,7 @@ class _CellIterator(collections.Iterator):
 
     def next(self):
         # NB. When self._indices runs out it will raise StopIteration for us.
-        i = self._indices.next()
+        i = next(self._indices)
         return self._coord.cell(i)
 
 

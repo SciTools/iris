@@ -573,7 +573,7 @@ class TestGribTimecodes(tests.IrisTest):
             # Load the message from the file as a cube.
             cube_generator = iris.fileformats.grib.load_cubes(
                 temp_gribfile_path)
-            cube = cube_generator.next()
+            cube = next(cube_generator)
 
             # Check the cube has an extra "warning" attribute.
             self.assertEqual(

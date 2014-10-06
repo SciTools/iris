@@ -35,7 +35,7 @@ class TestPPLoadCustom(tests.IrisTest):
     def setUp(self):
         self.subcubes = iris.cube.CubeList()
         filename = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
-        self.template = iris.fileformats.pp.load(filename).next()
+        self.template = next(iris.fileformats.pp.load(filename))
 
     def _field_to_cube(self, field):
         cube, _, _ = iris.fileformats.rules._make_cube(
@@ -158,7 +158,7 @@ class TestPPLoadRules(tests.IrisTest):
         test_values = list(single_bit_values) + multiple_bit_values
 
         for value, _ in test_values:
-            f = iris.fileformats.pp.load(orig_file).next()
+            f = next(iris.fileformats.pp.load(orig_file))
             f.lbproc = value # set value
 
             # Write out pp file
@@ -187,7 +187,7 @@ class TestPPLoadRules(tests.IrisTest):
 
         # Test single flag values
         for value, _ in iris.fileformats.pp.LBPROC_PAIRS:
-            f = iris.fileformats.pp.load(orig_file).next()
+            f = next(iris.fileformats.pp.load(orig_file))
             f.lbproc = value # set value
 
             # Write out pp file
@@ -213,7 +213,7 @@ class TestPPLoadRules(tests.IrisTest):
         multiple_map = {sum(x) : [iris.fileformats.pp.lbproc_map[y] for y in x] for x in multiple_bit_values}
 
         for bit_values in multiple_bit_values:
-            f = iris.fileformats.pp.load(orig_file).next()
+            f = next(iris.fileformats.pp.load(orig_file))
             f.lbproc = sum(bit_values) # set value
 
             # Write out pp file

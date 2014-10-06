@@ -455,7 +455,7 @@ class TestCoordinateForms(tests.IrisTest):
         with self.temp_filename('.pp') as pp_filepath:
             iris.save(test_cube, pp_filepath)
             pp_loader = iris.fileformats.pp.load(pp_filepath)
-            pp_field = pp_loader.next()
+            pp_field = next(pp_loader)
         return pp_field
 
     def test_save_awkward_case_is_regular(self):

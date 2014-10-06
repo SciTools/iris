@@ -516,7 +516,7 @@ def load_NAMEIII_field(filename):
         header = read_header(file_handle)
 
         # Skip the next line (contains the word Fields:) in the file.
-        file_handle.next()
+        next(file_handle)
 
         # Read the lines of column definitions.
         # In this version a fixed order of column headings is assumed (and
@@ -555,7 +555,7 @@ def load_NAMEIII_field(filename):
         coords = [lon, lat, tdim]
 
         # Skip the line after the column headings.
-        file_handle.next()
+        next(file_handle)
 
         # Create data arrays to hold the data for each column.
         n_arrays = header['Number of field cols']
@@ -634,7 +634,7 @@ def load_NAMEII_field(filename):
         coords = [lon, lat, tdim]
 
         # Skip the blank line after the column headings.
-        file_handle.next()
+        next(file_handle)
 
         # Create data arrays to hold the data for each column.
         n_arrays = header['Number of fields']
@@ -665,7 +665,7 @@ def load_NAMEIII_timeseries(filename):
         header = read_header(file_handle)
 
         # skip the next line (contains the word Fields:) in the file.
-        file_handle.next()
+        next(file_handle)
 
         # Read the lines of column definitions - currently hardwired
         column_headings = {}
@@ -688,7 +688,7 @@ def load_NAMEIII_timeseries(filename):
             column_headings['Time Av or Int'])
 
         # Skip the line after the column headings.
-        file_handle.next()
+        next(file_handle)
 
         # Make a list of data lists to hold the data for each column.
         data_lists = [[] for i in range(header['Number of field cols'])]
@@ -752,7 +752,7 @@ def load_NAMEII_timeseries(filename):
         lat, lon = _build_lat_lon_for_NAME_timeseries(column_headings)
 
         # Skip the blank line after the column headings.
-        file_handle.next()
+        next(file_handle)
 
         # Make a list of data arrays to hold the data for each column.
         data_lists = [[] for i in range(header['Number of series'])]
