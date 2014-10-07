@@ -19,7 +19,7 @@ def main():
 
     # Extract a single height vs longitude cross-section. N.B. This could easily be changed to
     # extract a specific slice, or even to loop over *all* cross section slices.
-    cross_section = theta.slices(['grid_longitude', 'model_level_number']).next()
+    cross_section = next(theta.slices(['grid_longitude', 'model_level_number']))
 
     qplt.contourf(cross_section, coords=['grid_longitude', 'altitude'])
     plt.show()

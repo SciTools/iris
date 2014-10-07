@@ -722,7 +722,7 @@ def _wrap_function_for_method(function, docstring=None):
     simple_arg_source = ', '.join(basic_args + simple_default_args +
                                   var_arg + var_kw)
     source = ('def %s(%s):\n    return function(%s)' %
-              (function.func_name, arg_source, simple_arg_source))
+              (function.__name__, arg_source, simple_arg_source))
 
     # Compile the wrapper function
     # NB. There's an outstanding bug with "exec" where the locals and globals
@@ -731,7 +731,7 @@ def _wrap_function_for_method(function, docstring=None):
     exec source in my_locals, my_locals
 
     # Update the docstring if required, and return the modified function
-    wrapper = my_locals[function.func_name]
+    wrapper = my_locals[function.__name__]
     if docstring is None:
         wrapper.__doc__ = function.__doc__
     else:

@@ -1287,7 +1287,7 @@ class _Groupby(object):
 
                 for coord in self._groupby_coords:
                     groups.append(iris.coords._GroupIterator(coord.points))
-                    items.append(groups[-1].next())
+                    items.append(next(groups[-1]))
 
                 # Construct the group slice for each group over the group-by
                 # coordinates. Keep constructing until all group-by coordinate
@@ -1324,7 +1324,7 @@ class _Groupby(object):
                         elif groupby_slice.stop == stop:
                             # The current group of this coordinate is
                             # exhausted, so get the next one.
-                            items[item_index] = groups[item_index].next()
+                            items[item_index] = next(groups[item_index])
 
                 # Merge multiple slices together into one tuple.
                 self._slice_merge()

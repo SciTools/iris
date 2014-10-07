@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -33,6 +33,7 @@ import iris
 import iris.analysis
 import iris.iterate
 import iris.tests.stock
+from functools import reduce
 
 
 class TestIterateFunctions(tests.IrisTest):
@@ -118,8 +119,8 @@ class TestIterateFunctions(tests.IrisTest):
             zip_slice = zip_iterator.next()[0]
             self.assertEqual(cube_slice, zip_slice)
         with self.assertRaises(StopIteration):
-            zip_iterator.next()    # Should raise exception if we continue
-                                   # to try to iterate
+            next(zip_iterator)  # Should raise exception if we continue try to
+                                # to iterate
         # Two coords
         slice_iterator = self.cube_b.slices(self.coord_names)
         zip_iterator = iris.iterate.izip(self.cube_b, coords=self.coord_names)
@@ -128,8 +129,8 @@ class TestIterateFunctions(tests.IrisTest):
             zip_slice = zip_iterator.next()[0]
             self.assertEqual(cube_slice, zip_slice)
         with self.assertRaises(StopIteration):
-            zip_iterator.next()    # Should raise exception if we continue
-                                   #to try to iterate
+            next(zip_iterator)  # Should raise exception if we continue to try
+                                # to iterate
         # One coord
         slice_iterator = self.cube_b.slices('grid_latitude')
         zip_iterator = iris.iterate.izip(self.cube_b, coords='grid_latitude')
@@ -138,8 +139,8 @@ class TestIterateFunctions(tests.IrisTest):
             zip_slice = zip_iterator.next()[0]
             self.assertEqual(cube_slice, zip_slice)
         with self.assertRaises(StopIteration):
-            zip_iterator.next()    # Should raise exception if we continue
-                                   # to try to iterate
+            next(zip_iterator)  # Should raise exception if we continue to try
+                                # to iterate
         # All coords
         slice_iterator = self.cube_b.slices(['level_height', 'grid_latitude',
                                              'grid_longitude'])
@@ -151,8 +152,8 @@ class TestIterateFunctions(tests.IrisTest):
             zip_slice = zip_iterator.next()[0]
             self.assertEqual(cube_slice, zip_slice)
         with self.assertRaises(StopIteration):
-            zip_iterator.next()    # Should raise exception if we continue
-                                   #to try to iterate
+            next(zip_iterator)  # Should raise exception if we continue to try
+                                # to iterate
 
     def test_izip_same_cube(self):
         nslices = self.cube_b.shape[0]
@@ -162,7 +163,7 @@ class TestIterateFunctions(tests.IrisTest):
                                                            self.cube_b,
                                                            coords=self.coord_names):
             self.assertEqual(slice_first, slice_second)  # Equal to each other
-            self.assertEqual(slice_first, slice_iterator.next()) # Equal to the truth (from slice())
+            self.assertEqual(slice_first, next(slice_iterator))  # Equal to the truth (from slice())
             count += 1
         self.assertEqual(count, nslices)
         # Another case
@@ -175,7 +176,7 @@ class TestIterateFunctions(tests.IrisTest):
                                                            self.cube_a,
                                                            coords=['grid_latitude']):
             self.assertEqual(slice_first, slice_second)
-            self.assertEqual(slice_first, slice_iterator.next()) # Equal to the truth (from slice())
+            self.assertEqual(slice_first, next(slice_iterator))  # Equal to the truth (from slice())
             count += 1
         self.assertEqual(count, nslices)
         # third case - full iteration
@@ -186,7 +187,7 @@ class TestIterateFunctions(tests.IrisTest):
                                                            self.cube_b,
                                                            coords=[]):
             self.assertEqual(slice_first, slice_second)
-            self.assertEqual(slice_first, slice_iterator.next()) # Equal to the truth (from slice())
+            self.assertEqual(slice_first, next(slice_iterator))  # Equal to the truth (from slice())
             count += 1
         self.assertEqual(count, nslices)
 
@@ -203,7 +204,7 @@ class TestIterateFunctions(tests.IrisTest):
                 self.assertEqual(sub_slice, sub_cube)    # This cube should not change
                                                          # as lat and long are the only
                                                          # data dimensions in this cube)
-                self.assertEqual(super_slice, super_slice_iterator.next())
+                self.assertEqual(super_slice, next(super_slice_iterator))
                 if j == k:
                     self.assertEqual(super_slice, sub_slice)
                 else:
@@ -223,7 +224,7 @@ class TestIterateFunctions(tests.IrisTest):
         count = 0
         for slice_a, slice_b in iris.iterate.izip(self.cube_a, self.cube_b,
                                                       coords='level_height'):
-            i, j = ij_iterator.next()
+            i, j = next(ij_iterator)
             if random.random() <  check_eq_probability: # Check these slices
                 slice_a_truth = self.cube_a[:, i, j]
                 slice_b_truth = self.cube_b[:, i, j]
@@ -237,7 +238,7 @@ class TestIterateFunctions(tests.IrisTest):
         count = 0
         for slice_a, slice_b in iris.iterate.izip(self.cube_a, self.cube_b,
                                                       coords=self.coord_names):
-            i = i_iterator.next()
+            i = next(i_iterator)
             slice_a_truth = self.cube_a[i, :, :]
             slice_b_truth = self.cube_b[i, :, :]
             self.assertEqual(slice_a_truth, slice_a)
@@ -301,7 +302,7 @@ class TestIterateFunctions(tests.IrisTest):
         count = 0
         for big_slice, little_slice in iris.iterate.izip(big_cube, little_cube,
                                                          coords='grid_latitude'):
-            i, j = ij_iterator.next()
+            i, j = next(ij_iterator)
             if random.random() <  check_eq_probability:
                 big_slice_truth = big_cube[i, :, j]
                 little_slice_truth = little_cube    # Just 1d so slice is entire cube

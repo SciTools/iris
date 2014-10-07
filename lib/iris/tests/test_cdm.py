@@ -928,7 +928,7 @@ class TestDataManagerIndexing(TestCube2d):
         self.assertFalse(cube.has_lazy_data())
 
     def test_slices(self):
-        lat_cube = self.cube.slices(['grid_latitude', ]).next()
+        lat_cube = next(self.cube.slices(['grid_latitude', ]))
         self.assert_is_lazy(lat_cube)
         self.assert_is_lazy(self.cube)
  

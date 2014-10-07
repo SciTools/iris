@@ -107,7 +107,7 @@ order by ?stash'''
     for result in stash['results']['bindings']:
         res = {}
         for head in heads:
-            if result.has_key(head):
+            if head in result:
                 res[head] = result[head]['value']
         stashcodes.append(res)
     return stashcodes

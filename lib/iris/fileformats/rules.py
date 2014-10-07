@@ -344,7 +344,7 @@ class Rule(object):
 
         try:
             result = self._exec_conditions(field, f, pp, grib, cm)
-        except Exception, err:
+        except Exception as err:
             print >> sys.stderr, 'Condition failed to run conditions: %s : %s' % (self._conditions, err)
             raise err
 
@@ -386,11 +386,11 @@ class Rule(object):
                 if action_factory:
                     factories.append(action_factory)
 
-            except iris.exceptions.CoordinateNotFoundError, err:
+            except iris.exceptions.CoordinateNotFoundError as err:
                 print >> sys.stderr, 'Failed (msg:%(error)s) to find coordinate, perhaps consider running last: %(command)s' % {'command':action, 'error': err}
-            except AttributeError, err:
+            except AttributeError as err:
                 print >> sys.stderr, 'Failed to get value (%(error)s) to execute: %(command)s' % {'command':action, 'error': err}
-            except Exception, err:
+            except Exception as err:
                 print >> sys.stderr, 'Failed (msg:%(error)s) to run:\n    %(command)s\nFrom the rule:\n%(me)r' % {'me':self, 'command':action, 'error': err}
                 raise err
 

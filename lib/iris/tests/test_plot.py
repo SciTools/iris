@@ -746,7 +746,7 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
             draw_method(cube, coords=coords)
             try:
                 self.check_graphic()
-            except AssertionError, err:
+            except AssertionError as err:
                 self.fail('Draw method %r failed with coords: %r. '
                           'Assertion message: %s' % (draw_method, coords, err))
 

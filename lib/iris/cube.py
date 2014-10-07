@@ -47,6 +47,7 @@ import iris.exceptions
 import iris.util
 
 from iris._cube_coord_common import CFVariableMixin
+from functools import reduce
 
 
 __all__ = ['Cube', 'CubeList', 'CubeMetadata']
@@ -1497,7 +1498,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         return tuple((coord for coord, dim in
                       sorted(self._dim_coords_and_dims,
-                             key=lambda (coord, dim): (dim, coord.name()))))
+                             key=lambda co_di: (co_di[1], co_di[0].name()))))
 
     @property
     def aux_coords(self):
@@ -1508,7 +1509,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         return tuple((coord for coord, dims in
                       sorted(self._aux_coords_and_dims,
-                             key=lambda (coord, dims): (dims, coord.name()))))
+                             key=lambda co_di: (co_di[1], co_di[0].name()))))
 
     @property
     def derived_coords(self):
@@ -1876,7 +1877,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                          dimension_mapping[d] is not None]
 
         try:
-            first_slice = slice_gen.next()
+            first_slice = next(slice_gen)
         except StopIteration:
             first_slice = None
 
@@ -3447,7 +3448,7 @@ class _SliceIterator(collections.Iterator):
 
     def next(self):
         # NB. When self._ndindex runs out it will raise StopIteration for us.
-        index_tuple = self._ndindex.next()
+        index_tuple = next(self._ndindex)
 
         # Turn the given tuple into a list so that we can do something with it
         index_list = list(index_tuple)

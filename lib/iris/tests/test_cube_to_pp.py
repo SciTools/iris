@@ -255,7 +255,7 @@ class TestPPSaveRules(tests.IrisTest, pp.PPTest):
     def lbproc_from_pp(self, filename):
         # Gets the lbproc field from the ppfile
         pp_file = iris.fileformats.pp.load(filename)
-        field = pp_file.next()
+        field = next(pp_file)
         return field.lbproc
 
     def test_pp_save_rules(self):
