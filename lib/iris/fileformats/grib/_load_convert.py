@@ -125,13 +125,13 @@ _GRIBAPI_MDI_SIGNED = -(2 ** 31 - 1)
 #    Both of these values are reliably distinct from anything valid as they
 #    are outside the valid range of either signed or unsigned 32 bit :
 #        unsigned 32-bit :
-#            min = 0b'000...000' = 0
-#            max = 0b'111...110' = 2*32 - 2
-#            mdi = 0b'111...111' = 2*32 - 1
+#            min = 0b000...000 = 0
+#            max = 0b111...110 = 2*32 - 2
+#            mdi = 0b111...111 = 2*32 - 1
 #        signed 32-bit :
-#            mdi = 0b'111...111' = -(2**31 - 1)
-#            min = 0b'111...110' = -(2**31 - 2)
-#            max = 0b'011...111' = (2**31 - 1)
+#            mdi = 0b111...111 = -(2**31 - 1)
+#            min = 0b111...110 = -(2**31 - 2)
+#            max = 0b011...111 = (2**31 - 1)
 
 
 ###############################################################################
