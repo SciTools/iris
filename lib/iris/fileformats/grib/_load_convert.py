@@ -120,26 +120,30 @@ def reference_time_coord(section):
         The scalar reference time :class:`iris.coords.DimCoord`.
 
     """
+    # Look-up standard name by significanceOfReferenceTime.
+    _lookup = {1: 'forecast_reference_time',
+               3: 'time'}
+
     # Calculate the reference time and units.
     dt = datetime(section['year'], section['month'], section['day'],
                   section['hour'], section['minute'], section['second'])
+    # XXX Defaulting to a Gregorian calendar.
+    # Current GRIBAPI does not cover GRIB Section 1 - Octets 22-nn (optional)
+    # which are part of GRIB spec v12.
     unit = Unit('hours since epoch', calendar=CALENDAR_GREGORIAN)
     point = unit.date2num(dt)
 
     # Reference Code Table 1.2.
     significanceOfReferenceTime = section['significanceOfReferenceTime']
+    standard_name = _lookup.get(significanceOfReferenceTime)
 
-    if significanceOfReferenceTime == 1:
-        # Start of forecast.
-        coord = DimCoord(point, standard_name='forecast_reference_time',
-                         units=unit)
-    elif significanceOfReferenceTime == 3:
-        # Observation time.
-        coord = DimCoord(point, standard_name='time', units=unit)
-    else:
+    if standard_name is None:
         msg = 'Identificaton section 1 contains an unsupported significance ' \
             'of reference time [{}]'.format(significanceOfReferenceTime)
         raise TranslationError(msg)
+
+    # Create the associated reference time of data coordinate.
+    coord = DimCoord(point, standard_name=standard_name, units=unit)
 
     return coord
 
