@@ -154,7 +154,7 @@ def cube_delta(cube, coord):
         delta_cube = cube.copy(data=delta_cube_data)
     else:
         # Subset the cube to the appropriate new shape by knocking off the last row of the delta dimension
-        subset_slice = [slice(None,None)] * cube.ndim
+        subset_slice = [slice(None, None)] * cube.ndim
         subset_slice[delta_dim] = slice(None, -1)
         delta_cube = cube[tuple(subset_slice)]
         delta_cube.data = delta_cube_data

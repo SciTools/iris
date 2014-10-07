@@ -204,12 +204,12 @@ EXTRA_DATA = {
 
 #: Maps lbuser[0] to numpy data type. "default" will be interpreted if
 #: no match is found, providing a warning in such a case.
-LBUSER_DTYPE_LOOKUP = {1 :np.dtype('>f4'), 
-                       2 :np.dtype('>i4'), 
-                       3 :np.dtype('>i4'),
-                       -1:np.dtype('>f4'),
-                       -2:np.dtype('>i4'),
-                       -3:np.dtype('>i4'),
+LBUSER_DTYPE_LOOKUP = {1: np.dtype('>f4'),
+                       2: np.dtype('>i4'),
+                       3: np.dtype('>i4'),
+                       -1: np.dtype('>f4'),
+                       -2: np.dtype('>i4'),
+                       -3: np.dtype('>i4'),
                        'default': np.dtype('>f4'),
                        }
 
@@ -234,7 +234,7 @@ LBPROC_PAIRS = ((1, "Difference from another experiment"),
                 (131072, "Mean over an ensemble of parallel runs"))
 
 # lbproc_map is dict mapping lbproc->English and English->lbproc essentially a one to one mapping
-lbproc_map = {x : y for x,y in itertools.chain(LBPROC_PAIRS, ((y,x) for x,y in LBPROC_PAIRS))}
+lbproc_map = {x : y for x, y in itertools.chain(LBPROC_PAIRS, ((y, x) for x, y in LBPROC_PAIRS))}
 
 
 class STASH(collections.namedtuple('STASH', 'model section item')):

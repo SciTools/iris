@@ -281,7 +281,7 @@ class GribWrapper(object):
             # we just get <type 'float'> as the type of the "values" array...special case here...
             if key in ["values", "pv", "latitudes", "longitudes"]:
                 res = gribapi.grib_get_double_array(self.grib_message, key)
-            elif key in ('typeOfFirstFixedSurface','typeOfSecondFixedSurface'):
+            elif key in ('typeOfFirstFixedSurface', 'typeOfSecondFixedSurface'):
                 res = np.int32(gribapi.grib_get_long(self.grib_message, key))
             else:
                 key_type = gribapi.grib_get_native_type(self.grib_message, key)

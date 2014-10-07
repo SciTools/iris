@@ -577,8 +577,8 @@ class TestRotatedPole(tests.GraphicsTest):
         self._check_both_conversions(cube)
 
     def test_unrotate_nd(self):
-        rlons = np.array([[350., 352.],[350., 352.]])
-        rlats = np.array([[-5., -0.],[-4., -1.]])
+        rlons = np.array([[350., 352.], [350., 352.]])
+        rlats = np.array([[-5., -0.], [-4., -1.]])
 
         resx, resy = iris.analysis.cartography.unrotate_pole(rlons, rlats,
                                                              178.0, 38.0)
@@ -609,8 +609,8 @@ class TestRotatedPole(tests.GraphicsTest):
         self.assertArrayAlmostEqual(resy, soly)
 
     def test_rotate_nd(self):
-        rlons = np.array([[350., 351.],[352., 353.]])
-        rlats = np.array([[10., 15.],[20., 25.]])
+        rlons = np.array([[350., 351.], [352., 353.]])
+        rlats = np.array([[10., 15.], [20., 25.]])
 
         resx, resy = iris.analysis.cartography.rotate_pole(rlons, rlats,
                                                            20., 80.)

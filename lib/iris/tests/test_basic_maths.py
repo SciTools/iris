@@ -423,8 +423,8 @@ class TestMaskedArrays(tests.IrisTest):
     iops = (operator.iadd, operator.isub, operator.imul, operator.idiv)
 
     def setUp(self):
-        self.data1 = ma.MaskedArray([[9,9,9],[8,8,8,]],mask=[[0,1,0],[0,0,1]])
-        self.data2 = ma.MaskedArray([[3,3,3],[2,2,2,]],mask=[[0,1,0],[0,1,1]])
+        self.data1 = ma.MaskedArray([[9, 9, 9], [8, 8, 8,]], mask=[[0, 1, 0], [0, 0, 1]])
+        self.data2 = ma.MaskedArray([[3, 3, 3], [2, 2, 2,]], mask=[[0, 1, 0], [0, 1, 1]])
 
         self.cube1 = iris.cube.Cube(self.data1)
         self.cube2 = iris.cube.Cube(self.data2)
@@ -458,7 +458,7 @@ class TestMaskedArrays(tests.IrisTest):
             np.testing.assert_array_equal(result1.data, result2)
 
     def test_incompatible_dimensions(self):
-        data3 = ma.MaskedArray([[3,3,3,4],[2,2,2]],mask=[[0,1,0,0],[0,1,1]])
+        data3 = ma.MaskedArray([[3, 3, 3, 4], [2, 2, 2]], mask=[[0, 1, 0, 0], [0, 1, 1]])
         with self.assertRaises(ValueError):
             # incompatible dimensions
             self.cube1 + data3
@@ -466,8 +466,8 @@ class TestMaskedArrays(tests.IrisTest):
     def test_increase_cube_dimensionality(self):
         with self.assertRaises(ValueError):
             # This would increase the dimensionality of the cube due to auto broadcasting
-            cubex = iris.cube.Cube(ma.MaskedArray([[9,]],mask=[[0]]))
-            cubex + ma.MaskedArray([[3,3,3,3]],mask=[[0,1,0,1]])
+            cubex = iris.cube.Cube(ma.MaskedArray([[9,]], mask=[[0]]))
+            cubex + ma.MaskedArray([[3, 3, 3, 3]], mask=[[0, 1, 0, 1]])
 
 
 if __name__ == "__main__":

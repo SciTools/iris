@@ -1432,15 +1432,19 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         Example::
             >>> fname = iris.sample_data_path('air_temp.pp')
-            >>> cube = iris.load_cube(fname, 'air_temperature')  \
-# cube.data does not yet have a value.
-            >>> print cube.shape                                 \
-# cube.data still does not have a value.
+            >>> cube = iris.load_cube(fname, 'air_temperature')
+            >>> # cube.data does not yet have a value.
+            ...
+            >>> print cube.shape
             (73, 96)
-            >>> cube = cube[:10, :20]                            \
-# cube.data still does not have a value.
-            >>> data = cube.data                                 \
-# Only now is the data loaded.
+            >>> # cube.data still does not have a value.
+            ...
+            >>> cube = cube[:10, :20]
+            >>> # cube.data still does not have a value.
+            ...
+            >>> data = cube.data
+            >>> # Only now is the data loaded.
+            ...
             >>> print data.shape
             (10, 20)
 

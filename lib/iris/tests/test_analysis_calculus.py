@@ -312,7 +312,7 @@ def build_cube(data, spherical=False):
     if spherical:
         hcs = iris.coord_systems.GeogCS(6321)
         cube.add_dim_coord(DimCoord(np.arange(-180, 180, 360./nx, dtype=np.float32), 'longitude', units='degrees', coord_system=hcs, circular=True), dimx)
-        cube.add_dim_coord(DimCoord(np.arange(-90, 90, 180./ny, dtype=np.float32), 'latitude', units='degrees',coord_system=hcs), dimy)
+        cube.add_dim_coord(DimCoord(np.arange(-90, 90, 180./ny, dtype=np.float32), 'latitude', units='degrees', coord_system=hcs), dimy)
 
     else:
         cube.add_dim_coord(DimCoord(np.arange(nx, dtype=np.float32) * 2.21 + 2, 'projection_x_coordinate', units='meters'), dimx)
@@ -389,7 +389,7 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         y = df_dlon.coord('latitude')
 
         sin_x_pts = np.sin(np.radians(x.points)).reshape(1, x.shape[0])
-        y_ones = np.ones((y.shape[0] , 1))
+        y_ones = np.ones((y.shape[0], 1))
 
         data = - sin_x_pts * y_ones
         result = df_dlon.copy(data=data)
@@ -522,7 +522,7 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         sin_x_pts = np.sin(np.radians(x.points)).reshape(1, x.shape[0])
         cos_y_pts = np.cos(np.radians(y.points)).reshape(y.shape[0], 1)
         sin_y_pts = np.sin(np.radians(y.points)).reshape(y.shape[0], 1)
-        y_ones = np.ones((cube.shape[0] , 1))
+        y_ones = np.ones((cube.shape[0], 1))
 
         u = cube.copy(data=sin_y_pts * cos_x_pts * radius)
         v = cube.copy(data=-sin_x_pts * y_ones * radius)

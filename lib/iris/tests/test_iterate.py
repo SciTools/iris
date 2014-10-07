@@ -430,7 +430,7 @@ class TestIterateFunctions(tests.IrisTest):
         cube1.add_dim_coord(iris.coords.DimCoord(np.arange(5, dtype='i8'),
                                                  long_name='z'), [0])
         cube1.add_aux_coord(iris.coords.AuxCoord(np.arange(25, dtype='i8').reshape(5, 5),
-                                                 long_name='y'), [1,2])
+                                                 long_name='y'), [1, 2])
         cube1.add_aux_coord(iris.coords.AuxCoord(np.arange(25, dtype='i8').reshape(5, 5),
                                                  long_name='x'), [3, 4])
         cube2 = cube1.copy()
