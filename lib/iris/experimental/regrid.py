@@ -29,7 +29,7 @@ from scipy.sparse import csc_matrix
 
 import iris.analysis.cartography
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
-import iris.analysis._interpolator
+import iris.analysis._linear
 import iris.coord_systems
 import iris.cube
 import iris.unit
@@ -295,7 +295,7 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
     src_data = src_data[tuple(flip_index)]
 
     if src_x_coord.circular:
-        extend = iris.analysis._interpolator._extend_circular_coord_and_data
+        extend = iris.analysis._linear._extend_circular_coord_and_data
         x_points, src_data = extend(src_x_coord, src_data, x_dim)
     else:
         x_points = src_x_coord.points
@@ -318,7 +318,7 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
     # some unnecessary checks on these values, so we set them
     # afterwards instead. Sneaky. ;-)
     try:
-        modes = iris.analysis._interpolator._LINEAR_EXTRAPOLATION_MODES
+        modes = iris.analysis._linear._LINEAR_EXTRAPOLATION_MODES
         mode = modes[extrapolation_mode]
     except KeyError:
         raise ValueError('Invalid extrapolation mode.')
@@ -613,7 +613,7 @@ def regrid_bilinear_rectilinear_src_and_grid(src, grid,
     for coord in (src_x_coord, src_y_coord, grid_x_coord, grid_y_coord):
         _check_units(coord)
 
-    modes = iris.analysis._interpolator._LINEAR_EXTRAPOLATION_MODES
+    modes = iris.analysis._linear._LINEAR_EXTRAPOLATION_MODES
     if extrapolation_mode not in modes:
         raise ValueError('Invalid extrapolation mode.')
 
