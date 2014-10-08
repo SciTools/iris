@@ -595,13 +595,11 @@ class IrisTest(unittest.TestCase):
         finally:
             plt.close()
 
-    def remove_testcase_patches(self):
-        # Stop all per-testcase patches (started or not), ignoring errors.
+    def _remove_testcase_patches(self):
+        """Helper to remove per-testcase patches installed by :meth:`patch`."""
+        # Remove all patches made, ignoring errors.
         for p in self.testcase_patches:
-            try:
-                p.stop()
-            except RuntimeError:
-                pass
+            p.stop()
         # Reset per-test patch control variable.
         self.testcase_patches.clear()
 
@@ -633,7 +631,7 @@ class IrisTest(unittest.TestCase):
 
         # When installing the first patch, schedule remove-all at cleanup.
         if not self.testcase_patches:
-            self.addCleanup(self.remove_testcase_patches)
+            self.addCleanup(self._remove_testcase_patches)
 
         # Record the new patch and start object for reference.
         self.testcase_patches[patch] = start_result

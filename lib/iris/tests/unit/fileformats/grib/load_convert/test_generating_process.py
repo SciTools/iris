@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Tests for :function:`iris.fileformats.grib._load_convert.generating_process`.
+Tests for function
+:func:`iris.fileformats.grib._load_convert.generating_process`.
 
 """
 # import iris tests first so that some things can be initialised

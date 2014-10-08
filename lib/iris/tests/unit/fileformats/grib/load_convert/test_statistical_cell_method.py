@@ -15,15 +15,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Tests for
-:function:`iris.fileformats.grib._load_convert.statistical_cell_method`.
+Tests for function
+:func:`iris.fileformats.grib._load_convert.statistical_cell_method`.
 
 """
 # import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
-from iris.exceptions import TranslationError, NotYetImplementedError
+from iris.exceptions import TranslationError
 
 from iris.fileformats.grib._load_convert import statistical_cell_method
 
@@ -59,24 +59,24 @@ class Test(tests.IrisTest):
 
     def test_fail_multiple_ranges(self):
         self.section['numberOfTimeRange'] = 2
-        with self.assertRaises(NotYetImplementedError) as err:
+        with self.assertRaises(TranslationError) as err:
             statistical_cell_method(self.section)
         msg = err.exception.message
         self.assertIn('multiple time ranges [2]', msg)
 
     def test_fail_unknown_statistic(self):
         self.section['typeOfStatisticalProcessing'] = 17
-        with self.assertRaises(NotYetImplementedError) as err:
+        with self.assertRaises(TranslationError) as err:
             statistical_cell_method(self.section)
         msg = err.exception.message
-        self.assertIn('statistical process type [17] is not recognised', msg)
+        self.assertIn('statistical process type [17] is not supported', msg)
 
     def test_fail_bad_increment_type(self):
         self.section['typeOfTimeIncrement'] = 7
-        with self.assertRaises(NotYetImplementedError) as err:
+        with self.assertRaises(TranslationError) as err:
             statistical_cell_method(self.section)
         msg = err.exception.message
-        self.assertIn('time-increment type [7] is not recognised', msg)
+        self.assertIn('time-increment type [7] is not supported', msg)
 
 
 if __name__ == '__main__':

@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Tests for
-:function:`iris.fileformats.grib._load_convert.product_definition_template_8`.
+Tests for function
+:func:`iris.fileformats.grib._load_convert.product_definition_template_8`.
 
 """
 # import iris tests first so that some things can be initialised

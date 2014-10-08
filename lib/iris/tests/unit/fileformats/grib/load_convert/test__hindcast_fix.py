@@ -14,7 +14,10 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Tests for :function:`iris.fileformats.grib._load_convert._hindcast_fix`."""
+"""
+Tests for function :func:`iris.fileformats.grib._load_convert._hindcast_fix`.
+
+"""
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
@@ -38,6 +41,9 @@ class TestHindcastFix(tests.IrisTest):
         FixTest(3 * 2**30 - 1, True, -(2**30 - 1)),
         FixTest(3 * 2**30, False, None)]
 
+    def setUp(self):
+        self.patch_warn = self.patch('warnings.warn')
+
     def test_fix(self):
         # Check hindcast fixing.
         for given, fixable, fixed in self.test_values:
@@ -49,17 +55,15 @@ class TestHindcastFix(tests.IrisTest):
         # Check warning appears when enabled.
         self.patch('iris.fileformats.grib._load_convert.options'
                    '.warn_on_unsupported', True)
-        patch_warn = self.patch('warnings.warn')
         hindcast_fix(2 * 2**30 + 5)
-        self.assertEqual(patch_warn.call_count, 1)
+        self.assertEqual(self.patch_warn.call_count, 1)
         self.assertIn('Re-interpreting large grib forecastTime',
-                      patch_warn.call_args[0][0])
+                      self.patch_warn.call_args[0][0])
 
     def test_fix_warning_disabled(self):
         # Default is no warning.
-        patch_warn = self.patch('warnings.warn')
         hindcast_fix(2 * 2**30 + 5)
-        self.assertEqual(patch_warn.call_count, 0)
+        self.assertEqual(self.patch_warn.call_count, 0)
 
 
 if __name__ == '__main__':

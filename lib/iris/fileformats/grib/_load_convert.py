@@ -31,7 +31,7 @@ import numpy as np
 from iris.aux_factory import HybridPressureFactory
 import iris.coord_systems as icoord_systems
 from iris.coords import AuxCoord, DimCoord, CellMethod
-from iris.exceptions import TranslationError, NotYetImplementedError
+from iris.exceptions import TranslationError
 from iris.fileformats.grib import grib_phenom_translation as itranslation
 from iris.fileformats.rules import Factory, Reference
 from iris.unit import CALENDAR_GREGORIAN, date2num, Unit
@@ -856,34 +856,33 @@ def statistical_cell_method(section):
     n_time_ranges = section['numberOfTimeRange']
     if n_time_ranges != 1:
         if n_time_ranges == 0:
-            msg = ('Product definition section 4 specifes aggregation over '
+            msg = ('Product definition section 4 specifies aggregation over '
                    '"0 time ranges".')
             raise TranslationError(msg)
         else:
             msg = ('Product definition section 4 specifies aggregation over '
                    'multiple time ranges [{}], which is not yet '
                    'supported.'.format(n_time_ranges))
-            raise NotYetImplementedError(msg)
+            raise TranslationError(msg)
 
     # Decode the type of statistic (aggregation method).
     statistic_code = section['typeOfStatisticalProcessing']
-    statistic_name = _STATISTIC_TYPE_NAMES.get(statistic_code, None)
-    if not statistic_name:
+    statistic_name = _STATISTIC_TYPE_NAMES.get(statistic_code)
+    if statistic_name is None:
         msg = ('grib statistical process type [{}] '
-               'is not recognised'.format(statistic_code))
-        raise NotYetImplementedError(msg)
+               'is not supported'.format(statistic_code))
+        raise TranslationError(msg)
 
     # Decode the type of time increment.
     increment_typecode = section['typeOfTimeIncrement']
-    increment_type = _STATISTIC_TYPE_OF_TIME_INTERVAL.get(increment_typecode)
-    if increment_type == \
-            'same start time of forecast, forecast time is incremented':
-        # The only type we currently support.
-        pass
-    else:
+    if increment_typecode != 2:
+        # NOTE: All our current test data seems to contain the value 2, which
+        # is all we currently support.
+        # The exact interpretation of this is still unclear.
         msg = ('grib statistic time-increment type [{}] '
-               'is not recognised.'.format(increment_typecode))
-        raise NotYetImplementedError(msg)
+               'is not supported.'.format(increment_typecode))
+        raise TranslationError(msg)
+
     interval_number = section['timeIncrement']
     if interval_number == 0:
         intervals_string = None
@@ -981,13 +980,9 @@ def product_definition_template_1(section, metadata, frt_coord):
 
 def product_definition_template_8(section, metadata, frt_coord):
     """
-    Translate template representing :
-        "average, accumulation and/or extreme values or other statistically
-        processed values at a horizontal level or in a horizontal layer in a
-        continuous or non-continuous time interval."
-
-    I.E. much like PDT 0, but describing a statistical aggregation over a time
-    period, with specified sampling sub-periods.
+    Translate template representing average, accumulation and/or extreme values
+    or other statistically processed values at a horizontal level or in a
+    horizontal layer in a continuous or non-continuous time interval.
 
     Updates the metadata in-place with the translations.
 
