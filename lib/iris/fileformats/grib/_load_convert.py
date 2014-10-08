@@ -113,25 +113,28 @@ def unscale(value, factor):
 _GRIBAPI_MDI_UNSIGNED = 2 ** 32 - 1
 _GRIBAPI_MDI_SIGNED = -(2 ** 31 - 1)
 # Note:
-#    Grib message values (keys and data) may be 8, 16 or 32 bit, either
-#    signed or unsigned.
-#    The gribapi always *returns* values as 64-bit signed (either native
-#    Python 'int' or numpy 'int64'), promoting values with sign extension
-#    as appropriate.
-#    However it also extends MDI values as a special case, so that it
-#    *always* returns either :
-#        (2 ** 32 - 1) for unsigned missing values, or
-#        -(2 ** 31 - 1) for signed ones.
-#    Both of these values are reliably distinct from anything valid as they
-#    are outside the valid range of either signed or unsigned 32 bit :
-#        unsigned 32-bit :
-#            min = 0b000...000 = 0
-#            max = 0b111...110 = 2*32 - 2
-#            mdi = 0b111...111 = 2*32 - 1
-#        signed 32-bit :
-#            mdi = 0b111...111 = -(2**31 - 1)
-#            min = 0b111...110 = -(2**31 - 2)
-#            max = 0b011...111 = (2**31 - 1)
+#   1. Integer "on-disk" values (aka. coded keys) in GRIB messages:
+#       - Are 8-, 16-, or 32-bit.
+#       - Are either signed or unsigned, with signed values stored as
+#         sign-and-magnitude (*not* twos-complement).
+#       - Use all bits set to indicate a missing value (MDI).
+#   2. Irrespective of the on-disk form, the ECMWF GRIB API *always*:
+#       - Returns values as 64-bit signed integers, either as native
+#         Python 'int' or numpy 'int64'.
+#       - Returns missing values as:
+#           - unsigned => 2**32 - 1
+#           - signed => -(2**31 - 1)
+#   NB. Both of these MDI values are reliably distinct from anything
+#   valid as they are outside the valid range of either signed or
+#   unsigned 8-, 16-, or 32-bit values:
+#       unsigned 32-bit:
+#           min = 0b000...000 = 0
+#           max = 0b111...110 = 2*32 - 2
+#           MDI = 0b111...111 = 2*32 - 1
+#       signed 32-bit:
+#           MDI = 0b111...111 = -(2**31 - 1)
+#           min = 0b111...110 = -(2**31 - 2)
+#           max = 0b011...111 = (2**31 - 1)
 
 
 ###############################################################################
