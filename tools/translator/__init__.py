@@ -107,8 +107,6 @@ class Mapping(object):
         print msg.format(self.mapping_name)
         lines = ['\n%s = {\n' % self.mapping_name]
 
-        for mapping in self.mappings:
-            self.encode(mapping, fuseki_process)
         payload = [self.encode(mapping, fuseki_process) for mapping in self.mappings]
         # now sort the payload
         payload.sort(key=self._key)
