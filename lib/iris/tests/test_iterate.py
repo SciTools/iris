@@ -107,9 +107,13 @@ class TestIterateFunctions(tests.IrisTest):
         with self.assertRaises(iris.exceptions.CoordinateNotFoundError):
             iris.iterate.izip(self.cube_a, self.cube_b, coords=self.coord_names)
 
-    def test_izip_onecube(self):
+    def test_izip_onecube_no_coords(self):
         # Should do the same as slices() but bearing in mind izip.next()
         # returns a tuple of cubes
+
+        # Reduce the size to speed things up - we're going to iterate
+        # over *every* data point.
+        self.cube_b = self.cube_b[:2, :4, :3]
 
         # Empty list as coords
         slice_iterator = self.cube_b.slices([])
@@ -121,6 +125,8 @@ class TestIterateFunctions(tests.IrisTest):
         with self.assertRaises(StopIteration):
             next(zip_iterator)  # Should raise exception if we continue try to
                                 # to iterate
+
+    def test_izip_onecube_lat_lon(self):
         # Two coords
         slice_iterator = self.cube_b.slices(self.coord_names)
         zip_iterator = iris.iterate.izip(self.cube_b, coords=self.coord_names)
@@ -131,6 +137,8 @@ class TestIterateFunctions(tests.IrisTest):
         with self.assertRaises(StopIteration):
             next(zip_iterator)  # Should raise exception if we continue to try
                                 # to iterate
+
+    def test_izip_onecube_lat(self):
         # One coord
         slice_iterator = self.cube_b.slices('grid_latitude')
         zip_iterator = iris.iterate.izip(self.cube_b, coords='grid_latitude')
@@ -141,6 +149,8 @@ class TestIterateFunctions(tests.IrisTest):
         with self.assertRaises(StopIteration):
             next(zip_iterator)  # Should raise exception if we continue to try
                                 # to iterate
+
+    def test_izip_onecube_height_lat_long(self):
         # All coords
         slice_iterator = self.cube_b.slices(['level_height', 'grid_latitude',
                                              'grid_longitude'])
@@ -155,7 +165,7 @@ class TestIterateFunctions(tests.IrisTest):
             next(zip_iterator)  # Should raise exception if we continue to try
                                 # to iterate
 
-    def test_izip_same_cube(self):
+    def test_izip_same_cube_lat_lon(self):
         nslices = self.cube_b.shape[0]
         slice_iterator = self.cube_b.slices(self.coord_names)
         count = 0
@@ -166,7 +176,8 @@ class TestIterateFunctions(tests.IrisTest):
             self.assertEqual(slice_first, next(slice_iterator))  # Equal to the truth (from slice())
             count += 1
         self.assertEqual(count, nslices)
-        # Another case
+
+    def test_izip_same_cube_lat(self):
         nslices = self.cube_a.shape[0] * self.cube_a.shape[2] # Calc product of dimensions
                                                               # excluding the latitude
                                                               # (2nd data dim)
@@ -179,7 +190,12 @@ class TestIterateFunctions(tests.IrisTest):
             self.assertEqual(slice_first, next(slice_iterator))  # Equal to the truth (from slice())
             count += 1
         self.assertEqual(count, nslices)
-        # third case - full iteration
+
+    def test_izip_same_cube_no_coords(self):
+        # Reduce the size to speed things up - we're going to iterate
+        # over *every* data point.
+        self.cube_b = self.cube_b[:2, :4, :3]
+
         nslices = reduce(operator.mul, self.cube_b.shape)
         slice_iterator = self.cube_b.slices([])
         count = 0
