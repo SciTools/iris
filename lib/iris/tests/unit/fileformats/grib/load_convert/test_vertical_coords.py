@@ -32,7 +32,7 @@ from iris.fileformats.grib._load_convert import vertical_coords
 
 from iris.fileformats.grib._load_convert import \
     _FIXED_SURFACE_MISSING as MISSING_SURFACE, \
-    _GRIBAPI_MDI_SIGNED as MISSING_LEVEL
+    _MDI as MISSING_LEVEL
 
 
 class Test(tests.IrisTest):

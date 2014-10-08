@@ -124,8 +124,7 @@ def unscale(value, factor):
     return value / 10.0 ** factor
 
 # Regulations 92.1.4 and 92.1.5.
-_GRIBAPI_MDI_UNSIGNED = 2 ** 32 - 1
-_GRIBAPI_MDI_SIGNED = -(2 ** 31 - 1)
+_MDI = 2 ** 32 - 1
 # Note:
 #   1. Integer "on-disk" values (aka. coded keys) in GRIB messages:
 #       - Are 8-, 16-, or 32-bit.
@@ -135,20 +134,19 @@ _GRIBAPI_MDI_SIGNED = -(2 ** 31 - 1)
 #   2. Irrespective of the on-disk form, the ECMWF GRIB API *always*:
 #       - Returns values as 64-bit signed integers, either as native
 #         Python 'int' or numpy 'int64'.
-#       - Returns missing values as:
-#           - unsigned => 2**32 - 1
-#           - signed => -(2**31 - 1)
-#   NB. Both of these MDI values are reliably distinct from anything
-#   valid as they are outside the valid range of either signed or
-#   unsigned 8-, 16-, or 32-bit values:
+#       - Returns missing values as 2**32 - 1, but not all keys are
+#         defined as supporting missing values.
+#   NB. For keys which support missing values, the MDI value is reliably
+#   distinct from the valid range of either signed or unsigned 8-, 16-,
+#   or 32-bit values. For example:
 #       unsigned 32-bit:
 #           min = 0b000...000 = 0
-#           max = 0b111...110 = 2*32 - 2
-#           MDI = 0b111...111 = 2*32 - 1
+#           max = 0b111...110 = 2**32 - 2
+#           MDI = 0b111...111 = 2**32 - 1
 #       signed 32-bit:
-#           MDI = 0b111...111 = -(2**31 - 1)
+#           MDI = 0b111...111 = 2**32 - 1
 #           min = 0b111...110 = -(2**31 - 2)
-#           max = 0b011...111 = (2**31 - 1)
+#           max = 0b011...111 = 2**31 - 1
 
 
 # Non-standardised usage for negative forecast times.
@@ -643,7 +641,7 @@ def vertical_coords(section, metadata):
                 key = 'scaledValueOfSecondFixedSurface'
                 scaledValueOfSecondFixedSurface = section[key]
 
-                if scaledValueOfSecondFixedSurface == _GRIBAPI_MDI_SIGNED:
+                if scaledValueOfSecondFixedSurface == _MDI:
                     msg = 'Product definition section 4 has missing ' \
                         'scaled value of second fixed surface'
                     raise TranslationError(msg)
@@ -830,8 +828,8 @@ def data_cutoff(hoursAfterDataCutoff, minutesAfterDataCutoff):
         Message section 4, octet 17.
 
     """
-    if (hoursAfterDataCutoff != _GRIBAPI_MDI_UNSIGNED or
-            minutesAfterDataCutoff != _GRIBAPI_MDI_UNSIGNED):
+    if (hoursAfterDataCutoff != _MDI or
+            minutesAfterDataCutoff != _MDI):
         if options.warn_on_unsupported:
             warnings.warn('Unable to translate "hours and/or minutes '
                           'after data cutoff".')
