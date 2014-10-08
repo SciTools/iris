@@ -510,7 +510,7 @@ def grid_definition_template_1(section, metadata):
                                      'grid_latitude', 'grid_longitude', cs)
 
 
-def grid_definition_section_4_and_5(section, metadata, y_name, x_name, cs):
+def grid_definition_template_4_and_5(section, metadata, y_name, x_name, cs):
     """
     Translate template representing variable resolution latitude/longitude.
 
@@ -579,7 +579,7 @@ def grid_definition_section_4_and_5(section, metadata, y_name, x_name, cs):
     metadata['dim_coords_and_dims'].append((x_coord, x_dim))
 
 
-def grid_definition_section_4(section, metadata):
+def grid_definition_template_4(section, metadata):
     """
     Translate template representing variable resolution latitude/longitude.
 
@@ -596,9 +596,10 @@ def grid_definition_section_4(section, metadata):
     """
     # XXX Requires PR #1354.
     # major, minor, radius = ellipsoid_geometry(section)
+    # cs = ellipsoid(section['shapeOfTheEarth'], major, minor, radius)
     cs = ellipsoid(section['shapeOfTheEarth'])
-    grid_definition_section_4_and_5(section, metadata,
-                                    'latitude', 'longitude', cs)
+    grid_definition_template_4_and_5(section, metadata,
+                                     'latitude', 'longitude', cs)
 
 
 def grid_definition_section(section, metadata):

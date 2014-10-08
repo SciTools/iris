@@ -16,7 +16,7 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
 Test function
-:func:`iris.fileformats.grib._load_convert.grid_definition_section_4_and_5`.
+:func:`iris.fileformats.grib._load_convert.grid_definition_template_4_and_5`.
 
 """
 
@@ -31,7 +31,8 @@ import mock
 import numpy as np
 
 from iris.coords import DimCoord
-from iris.fileformats.grib._load_convert import grid_definition_section_4_and_5
+from iris.fileformats.grib._load_convert import \
+    grid_definition_template_4_and_5
 
 
 MDI = -1
@@ -62,8 +63,8 @@ class Test(tests.IrisTest):
         with mock.patch(this, warn_on_unsupported=request_warning):
             metadata = deepcopy(self.metadata)
             # The called being tested.
-            grid_definition_section_4_and_5(section, metadata,
-                                            'latitude', 'longitude', self.cs)
+            grid_definition_template_4_and_5(section, metadata,
+                                             'latitude', 'longitude', self.cs)
             expected = deepcopy(self.metadata)
             coord = DimCoord(self.data,
                              standard_name='latitude',
