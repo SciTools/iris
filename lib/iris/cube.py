@@ -323,7 +323,7 @@ class CubeList(list):
            over which to perform the extraction.
 
         """
-        if type(coord_names) is str:
+        if isinstance(coord_names, basestring):
             coord_names = [coord_names]
 
         def make_overlap_fn(coord_name):
