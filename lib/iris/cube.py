@@ -2158,6 +2158,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                              " unit's modulus")
         min_comp = np.less_equal if min_inclusive else np.less
         max_comp = np.less_equal if max_inclusive else np.less
+
         if coord.has_bounds():
             bounds = wrap_lons(coord.bounds, minimum, modulus)
             inside = np.logical_and(min_comp(minimum, bounds),
@@ -2166,16 +2167,17 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             # To ensure that bounds (and points) of matching cells aren't
             # "scrambled" by the wrap operation we detect split cells that
-            # straddle the wrap point and ensure that the lower bound of the
-            # cell (and associated point) are wrapped correctly given the
-            # provided wrap point.
+            # straddle the wrap point and choose a new wrap point which avoids
+            # split cells.
             # For example: the cell [349.875, 350.4375] wrapped at -10 would
             # become [349.875, -9.5625] which is no longer valid. The lower
             # cell bound value (and possibly associated point) are
             # recalculated so that they are consistent with the extended
             # wapping scheme which moves the wrap point to the correct lower
-            # bound value thus resulting in the cell no longer being split.
-
+            # bound value (-10.125) thus resulting in the cell no longer
+            # being split. For bounds which may extend exactly the length of
+            # the modulus, we simply preserve the point to bound difference,
+            # and call the new bounds = the new points + the difference.
             pre_wrap_delta = np.diff(coord.bounds[inside_indices])
             post_wrap_delta = np.diff(bounds[inside_indices])
             split_cell_indices, _ = np.where(pre_wrap_delta != post_wrap_delta)
@@ -2184,6 +2186,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 indices = inside_indices[split_cell_indices]
                 cells = bounds[indices]
                 cells_delta = np.diff(coord.bounds[indices])
+
                 # Watch out for ascending/descending bounds
                 if cells_delta[0, 0] > 0:
                     cells[:, 0] = cells[:, 1] - cells_delta[:, 0]
@@ -2191,11 +2194,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 else:
                     cells[:, 1] = cells[:, 0] + cells_delta[:, 0]
                     minimum = np.min(cells[:, 1])
-                bounds = wrap_lons(coord.bounds, minimum, modulus)
+
             points = wrap_lons(coord.points, minimum, modulus)
+
+            bound_diffs = coord.points[:, np.newaxis] - coord.bounds
+            bounds = points[:, np.newaxis] - bound_diffs
         else:
-            points = iris.analysis.cartography.wrap_lons(coord.points, minimum,
-                                                         modulus)
+            points = wrap_lons(coord.points, minimum, modulus)
             bounds = None
             inside_indices, = np.where(
                 np.logical_and(min_comp(minimum, points),
