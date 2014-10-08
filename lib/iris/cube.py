@@ -310,6 +310,33 @@ class CubeList(list):
         """
         return self.extract(constraints, strict=True)
 
+    def extract_overlapping(self, coord_names):
+        """
+        Returns a :class:`CubeList` of cubes extracted over regions
+        where they coordinates overlap, for the coordinates
+        in coord_names
+
+        Args:
+
+        * coord_names:
+           A string or list of strings of the names of the coordinates
+           over which to perform the extraction.
+
+        """
+        if type(coord_names) is str:
+            coord_names = [coord_names]
+
+        def make_overlap_fn(coord_name):
+            def overlap_fn(cell):
+                return all(cell in cube.coord(coord_name).cells()
+                           for cube in self)
+            return overlap_fn
+
+        coord_values = {coord_name: make_overlap_fn(coord_name)
+                        for coord_name in coord_names}
+
+        return self.extract(iris.Constraint(coord_values=coord_values))
+
     def merge_cube(self):
         """
         Return the merged contents of the :class:`CubeList` as a single
