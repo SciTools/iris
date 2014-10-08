@@ -48,6 +48,7 @@ class Test(tests.IrisTest):
         series = mock.sentinel.satelliteSeries
         number = mock.sentinel.satelliteNumber
         instrument = mock.sentinel.instrumentType
+        rt_coord = mock.sentinel.observation_time
         section = {'NB': 1,
                    'satelliteSeries': series,
                    'satelliteNumber': number,
@@ -58,7 +59,7 @@ class Test(tests.IrisTest):
         this = 'iris.fileformats.grib._load_convert.options'
         with mock.patch(this, warn_on_unsupported=request_warning):
             # The call being tested.
-            product_definition_template_31(section, metadata)
+            product_definition_template_31(section, metadata, rt_coord)
         # Check the result.
         expected = deepcopy(self.metadata)
         coord = AuxCoord(series, long_name='satellite_series')
@@ -73,6 +74,7 @@ class Test(tests.IrisTest):
                          standard_name=standard_name,
                          units='m-1')
         expected['aux_coords_and_dims'].append((coord, None))
+        expected['aux_coords_and_dims'].append((rt_coord, None))
         self.assertEqual(metadata, expected)
         if request_warning:
             warn_msgs = [arg[1][0] for arg in warnings.warn.mock_calls]
