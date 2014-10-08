@@ -916,6 +916,27 @@ class Test_intersection__ModulusBounds(tests.IrisTest):
         self.assertEqual(result.data[0, 0, 0], 170)
         self.assertEqual(result.data[0, 0, -1], 190)
 
+    def test_misaligned_bounds(self):
+        cube = create_cube(-180, 180, bounds=True)
+        result = cube.intersection(longitude=(0, 360))
+        self.assertArrayEqual(result.coord('longitude').bounds[0],
+                              [-0.5,  0.5])
+        self.assertArrayEqual(result.coord('longitude').bounds[-1],
+                              [358.5,  359.5])
+        self.assertEqual(result.data[0, 0, 0], 180)
+        self.assertEqual(result.data[0, 0, -1], 179)
+
+    def test_misaligned_bounds_decreasing(self):
+        cube = create_cube(180, -180, bounds=True)
+        result = cube.intersection(longitude=(0, 360))
+        self.assertArrayEqual(result.coord('longitude').bounds[0],
+                              [359.5,  358.5])
+        self.assertArrayEqual(result.coord('longitude').points[-1], 0)
+        self.assertArrayEqual(result.coord('longitude').bounds[-1],
+                              [0.5, -0.5])
+        self.assertEqual(result.data[0, 0, 0], 181)
+        self.assertEqual(result.data[0, 0, -1], 180)
+
     def test_aligned_inclusive(self):
         cube = create_cube(0, 360, bounds=True)
         result = cube.intersection(longitude=(170.5, 189.5))
@@ -1079,7 +1100,6 @@ class Test_regrid(tests.IrisTest):
 
 
 class Test_copy(tests.IrisTest):
-
     def test(self):
         cube = stock.simple_3d_mask()
         cube_copy = cube.copy()
