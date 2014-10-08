@@ -123,7 +123,6 @@ def unscale(value, factor):
     """
     return value / 10.0 ** factor
 
-
 # Regulations 92.1.4 and 92.1.5.
 _GRIBAPI_MDI_UNSIGNED = 2 ** 32 - 1
 _GRIBAPI_MDI_SIGNED = -(2 ** 31 - 1)
@@ -150,6 +149,7 @@ _GRIBAPI_MDI_SIGNED = -(2 ** 31 - 1)
 #           MDI = 0b111...111 = -(2**31 - 1)
 #           min = 0b111...110 = -(2**31 - 2)
 #           max = 0b011...111 = (2**31 - 1)
+
 
 # Non-standardised usage for negative forecast times.
 def _hindcast_fix(forecast_time):

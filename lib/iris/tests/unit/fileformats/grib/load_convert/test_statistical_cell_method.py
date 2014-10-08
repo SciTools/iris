@@ -52,31 +52,29 @@ class Test(tests.IrisTest):
 
     def test_fail_bad_ranges(self):
         self.section['numberOfTimeRange'] = 0
-        with self.assertRaises(TranslationError) as err:
+        with self.assertRaisesRegexp(TranslationError,
+                                     'aggregation over "0 time ranges"'):
             statistical_cell_method(self.section)
-        msg = err.exception.message
-        self.assertIn('aggregation over "0 time ranges"', msg)
 
     def test_fail_multiple_ranges(self):
         self.section['numberOfTimeRange'] = 2
-        with self.assertRaises(TranslationError) as err:
+        with self.assertRaisesRegexp(TranslationError,
+                                     'multiple time ranges \[2\]'):
             statistical_cell_method(self.section)
-        msg = err.exception.message
-        self.assertIn('multiple time ranges [2]', msg)
 
     def test_fail_unknown_statistic(self):
         self.section['typeOfStatisticalProcessing'] = 17
-        with self.assertRaises(TranslationError) as err:
+        with self.assertRaisesRegexp(
+                TranslationError,
+                'statistical process type \[17\] is not supported'):
             statistical_cell_method(self.section)
-        msg = err.exception.message
-        self.assertIn('statistical process type [17] is not supported', msg)
 
     def test_fail_bad_increment_type(self):
         self.section['typeOfTimeIncrement'] = 7
-        with self.assertRaises(TranslationError) as err:
+        with self.assertRaisesRegexp(
+                TranslationError,
+                'time-increment type \[7\] is not supported'):
             statistical_cell_method(self.section)
-        msg = err.exception.message
-        self.assertIn('time-increment type [7] is not supported', msg)
 
 
 if __name__ == '__main__':
