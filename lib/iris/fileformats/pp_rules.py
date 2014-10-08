@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import division
+
 # Historically this was auto-generated from
 # SciTools/iris-code-generators:tools/gen_rules.py
 
@@ -559,13 +561,13 @@ def _all_other_rules(f):
     if (f.lbsrce % 10000) == 1111:
         attributes['source'] = 'Data from Met Office Unified Model'
         # Also define MO-netCDF compliant UM version.
-        um_major = (f.lbsrce / 10000) / 100
+        um_major = (f.lbsrce // 10000) // 100
         if um_major != 0:
-            um_minor = (f.lbsrce / 10000) % 100
+            um_minor = (f.lbsrce // 10000) % 100
             attributes['um_version'] = '{:d}.{:d}'.format(um_major, um_minor)
 
     if (f.lbuser[6] != 0 or
-            (f.lbuser[3] / 1000) != 0 or
+            (f.lbuser[3] // 1000) != 0 or
             (f.lbuser[3] % 1000) != 0):
         attributes['STASH'] = f.stash
 

@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import division
+
 # Historically this was auto-generated from
 # SciTools/iris-code-generators:tools/gen_rules.py
 
@@ -326,7 +328,7 @@ def convert(grib):
             (hasattr(grib, 'pv')):
         aux_coords_and_dims.append((AuxCoord(grib.level, standard_name='model_level_number', attributes={'positive': 'up'}), None))
         aux_coords_and_dims.append((DimCoord(grib.pv[grib.level], long_name='level_pressure', units='Pa'), None))
-        aux_coords_and_dims.append((AuxCoord(grib.pv[grib.numberOfCoordinatesValues/2 + grib.level], long_name='sigma'), None))
+        aux_coords_and_dims.append((AuxCoord(grib.pv[grib.numberOfCoordinatesValues//2 + grib.level], long_name='sigma'), None))
         factories.append(Factory(HybridPressureFactory, [{'long_name': 'level_pressure'}, {'long_name': 'sigma'}, Reference('surface_pressure')]))
 
     if \
@@ -364,7 +366,7 @@ def convert(grib):
             (grib.numberOfCoordinatesValues > 0):
         aux_coords_and_dims.append((AuxCoord(grib.scaledValueOfFirstFixedSurface, standard_name='model_level_number', attributes={'positive': 'up'}), None))
         aux_coords_and_dims.append((DimCoord(grib.pv[grib.scaledValueOfFirstFixedSurface], long_name='level_pressure', units='Pa'), None))
-        aux_coords_and_dims.append((AuxCoord(grib.pv[grib.numberOfCoordinatesValues/2 + grib.scaledValueOfFirstFixedSurface], long_name='sigma'), None))
+        aux_coords_and_dims.append((AuxCoord(grib.pv[grib.numberOfCoordinatesValues//2 + grib.scaledValueOfFirstFixedSurface], long_name='sigma'), None))
         factories.append(Factory(HybridPressureFactory, [{'long_name': 'level_pressure'}, {'long_name': 'sigma'}, Reference('surface_air_pressure')]))
 
     if grib._originatingCentre != 'unknown':

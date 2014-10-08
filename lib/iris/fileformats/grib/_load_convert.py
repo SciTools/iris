@@ -20,6 +20,8 @@ cube metadata.
 
 """
 
+from __future__ import division
+
 from collections import namedtuple, Iterable, OrderedDict
 from datetime import datetime, timedelta
 import math
@@ -988,7 +990,9 @@ def statistical_forecast_period_coord(section, frt_coord):
     end_time_delta = end_time - frt_point
 
     # Get the middle of the period (as a timedelta relative to the frt).
-    mid_time_delta = (start_time_delta + end_time_delta) / 2
+    # Note: timedelta division in 2.7 is odd. Even though we request integer
+    # division, it's to the nearest _micro_second.
+    mid_time_delta = (start_time_delta + end_time_delta) // 2
 
     # Create and return the forecast period coordinate.
     def timedelta_hours(timedelta):

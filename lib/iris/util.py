@@ -19,7 +19,7 @@ Miscellaneous utility functions.
 
 """
 
-from __future__ import print_function
+from __future__ import (division, print_function)
 
 import abc
 import collections
@@ -357,7 +357,7 @@ def rolling_window(a, window=1, step=1, axis=-1):
     if step < 1:
         raise ValueError("`step` must be at least 1.")
     axis = axis % a.ndim
-    num_windows = (a.shape[axis] - window + step) / step
+    num_windows = (a.shape[axis] - window + step) // step
     shape = a.shape[:axis] + (num_windows, window) + a.shape[axis + 1:]
     strides = (a.strides[:axis] + (step * a.strides[axis], a.strides[axis]) +
                a.strides[axis + 1:])

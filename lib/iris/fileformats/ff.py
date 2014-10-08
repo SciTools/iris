@@ -19,7 +19,7 @@ Provides UK Met Office Fields File (FF) format specific capabilities.
 
 """
 
-from __future__ import (absolute_import, print_function)
+from __future__ import (absolute_import, division, print_function)
 
 import os
 import warnings
@@ -571,7 +571,7 @@ class FF2PP(object):
             data_depth, data_type = self._payload(field)
 
             # Fast stash look-up.
-            stash_s = field.lbuser[3] / 1000
+            stash_s = field.lbuser[3] // 1000
             stash_i = field.lbuser[3] % 1000
             stash = 'm{:02}s{:02}i{:03}'.format(field.lbuser[6],
                                                 stash_s, stash_i)

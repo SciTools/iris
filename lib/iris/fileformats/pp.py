@@ -19,7 +19,7 @@ Provides UK Met Office Post Process (PP) format specific capabilities.
 
 """
 
-from __future__ import print_function
+from __future__ import (division, print_function)
 
 import abc
 import collections
@@ -961,7 +961,7 @@ class PPField(object):
         if (not hasattr(self, '_stash') or
                 self.lbuser[6] != self._stash.lbuser6() or
                 self.lbuser[3] != self._stash.lbuser3()):
-            self._stash = STASH(self.lbuser[6], self.lbuser[3] / 1000, self.lbuser[3] % 1000)
+            self._stash = STASH(self.lbuser[6], self.lbuser[3] // 1000, self.lbuser[3] % 1000)
         return self._stash
     
     @stash.setter
@@ -1158,7 +1158,7 @@ class PPField(object):
                     extra_elem = extra_elem.ljust(ia, '\00')
 
                     # ia is now the datalength in WORDS of the string
-                    ia /= PP_WORD_DEPTH
+                    ia //= PP_WORD_DEPTH
                 else:
                     # ia is the datalength in WORDS
                     ia = np.product(extra_elem.shape)
@@ -1180,13 +1180,13 @@ class PPField(object):
                                   )
 
         # populate lbext in WORDS
-        lb[self.HEADER_DICT['lbext'][0]] = len_of_data_payload / PP_WORD_DEPTH
+        lb[self.HEADER_DICT['lbext'][0]] = len_of_data_payload // PP_WORD_DEPTH
 
         # Put the data length of pp.data into len_of_data_payload (in BYTES)
         len_of_data_payload += data.size * PP_WORD_DEPTH
 
         # populate lbrec in WORDS
-        lb[self.HEADER_DICT['lblrec'][0]] = len_of_data_payload / PP_WORD_DEPTH
+        lb[self.HEADER_DICT['lblrec'][0]] = len_of_data_payload // PP_WORD_DEPTH
 
         # populate lbuser[0] to have the data's datatype
         if data.dtype == np.dtype('>f4'):
@@ -1482,13 +1482,13 @@ def _interpret_fields(fields):
         # Store the first reference to a land mask, and use this as the
         # definitive mask for future fields in this generator.
         if land_mask is None and field.lbuser[6] == 1 and \
-                (field.lbuser[3] / 1000) == 0 and \
+                (field.lbuser[3] // 1000) == 0 and \
                 (field.lbuser[3] % 1000) == 30:
             land_mask = field
 
         # Handle land compressed data payloads,
         # when lbpack.n2 is 2.
-        if (field.raw_lbpack / 10 % 10) == 2:
+        if (field.raw_lbpack // 10 % 10) == 2:
             if land_mask is None:
                 landmask_compressed_fields.append(field)
                 continue

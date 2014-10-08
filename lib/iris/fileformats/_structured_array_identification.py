@@ -54,7 +54,7 @@ An example using numpy arrays:
 
 """
 
-from __future__ import print_function
+from __future__ import (division, print_function)
 
 from collections import namedtuple
 
@@ -128,7 +128,7 @@ class ArrayStructure(namedtuple('ArrayStructure',
 
         """
         return np.tile(np.repeat(self.unique_ordered_values, self.stride),
-                       size / (self.size * self.stride))
+                       size // (self.size * self.stride))
 
     def nd_array_and_dims(self, original_array, target_shape, order='c'):
         """
@@ -274,7 +274,7 @@ class ArrayStructure(namedtuple('ArrayStructure',
             try:
                 stride = np.diff(ind_diffs_which_changed[:2])[0]
             except IndexError:
-                stride = n_fields / u_len
+                stride = n_fields // u_len
 
             structure = cls(stride, unique)
 
