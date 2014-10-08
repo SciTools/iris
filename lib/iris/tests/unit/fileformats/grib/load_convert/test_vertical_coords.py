@@ -31,7 +31,7 @@ from iris.exceptions import TranslationError
 from iris.fileformats.grib._load_convert import vertical_coords
 
 from iris.fileformats.grib._load_convert import \
-    _FIXED_SURFACE_MISSING as MISSING_SURFACE, \
+    _TYPE_OF_FIXED_SURFACE_MISSING as MISSING_SURFACE, \
     _MDI as MISSING_LEVEL
 
 
@@ -72,6 +72,7 @@ class Test(tests.IrisTest):
                     section = {'NV': 0,
                                'typeOfFirstFixedSurface': 0,
                                'scaledValueOfFirstFixedSurface': value}
+                    # The call being tested.
                     vertical_coords(section, metadata)
                     self.assertEqual(metadata, self.metadata)
                     if request_warning:
@@ -82,7 +83,7 @@ class Test(tests.IrisTest):
                         self.assertEqual(len(warn.mock_calls), 0)
 
     def test_unknown_first_fixed_surface_with_missing_scaled_value(self):
-        self._check(MISSING_SURFACE, 'surface with missing scaled value')
+        self._check(MISSING_LEVEL, 'surface with missing scaled value')
 
     def test_unknown_first_fixed_surface_with_scaled_value(self):
         self._check(0, 'surface with scaled value')
@@ -123,7 +124,7 @@ class Test(tests.IrisTest):
         with self.assertRaisesRegexp(TranslationError, emsg):
             vertical_coords(section, None)
 
-    def test_same_fixed_surfaces_no_second_scaled_value(self):
+    def test_same_fixed_surfaces_missing_second_scaled_value(self):
         section = {'NV': 0,
                    'typeOfFirstFixedSurface': 100,
                    'scaledValueOfFirstFixedSurface': None,

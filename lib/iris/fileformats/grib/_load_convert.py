@@ -87,7 +87,7 @@ _FIXED_SURFACE = {
     100: FixedSurface(None, 'pressure', 'Pa'),  # Isobaric surface
     103: FixedSurface(None, 'height', 'm')      # Height level above ground
 }
-_FIXED_SURFACE_MISSING = 255
+_TYPE_OF_FIXED_SURFACE_MISSING = 255
 
 # Reference Code Table 6.0
 _BITMAP_CODE_NONE = 255
@@ -543,13 +543,13 @@ def hybrid_factories(section, metadata):
     NV = section['NV']
     if NV > 0:
         typeOfFirstFixedSurface = section['typeOfFirstFixedSurface']
-        if typeOfFirstFixedSurface == _FIXED_SURFACE_MISSING:
+        if typeOfFirstFixedSurface == _TYPE_OF_FIXED_SURFACE_MISSING:
             msg = 'Product definition section 4 contains missing ' \
                 'type of first fixed surface'
             raise TranslationError(msg)
 
         typeOfSecondFixedSurface = section['typeOfSecondFixedSurface']
-        if typeOfSecondFixedSurface != _FIXED_SURFACE_MISSING:
+        if typeOfSecondFixedSurface != _TYPE_OF_FIXED_SURFACE_MISSING:
             msg = 'Product definition section 4 contains unsupported type ' \
                 'of second fixed surface [{}]'.format(typeOfSecondFixedSurface)
             raise TranslationError(msg)
@@ -616,8 +616,8 @@ def vertical_coords(section, metadata):
         fixed_surface = _FIXED_SURFACE.get(typeOfFirstFixedSurface)
 
         if fixed_surface is None:
-            if typeOfFirstFixedSurface != _FIXED_SURFACE_MISSING:
-                if scaledValueOfFirstFixedSurface == _FIXED_SURFACE_MISSING:
+            if typeOfFirstFixedSurface != _TYPE_OF_FIXED_SURFACE_MISSING:
+                if scaledValueOfFirstFixedSurface == _MDI:
                     if options.warn_on_unsupported:
                         msg = 'Unable to translate type of first fixed ' \
                             'surface with missing scaled value.'
@@ -632,7 +632,7 @@ def vertical_coords(section, metadata):
             scaleFactorOfFirstFixedSurface = section[key]
             typeOfSecondFixedSurface = section['typeOfSecondFixedSurface']
 
-            if typeOfSecondFixedSurface != _FIXED_SURFACE_MISSING:
+            if typeOfSecondFixedSurface != _TYPE_OF_FIXED_SURFACE_MISSING:
                 if typeOfFirstFixedSurface != typeOfSecondFixedSurface:
                     msg = 'Product definition section 4 has different ' \
                         'types of first and second fixed surface'
