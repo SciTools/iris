@@ -22,6 +22,7 @@ import numpy as np
 import numpy.ma as ma
 from numpy.lib.stride_tricks import as_strided
 
+from iris.analysis._interpolation import get_xy_dim_coords, snapshot_grid
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
 from iris.analysis.cartography import wrap_lons as wrap_circular_points
 from iris.coords import DimCoord, AuxCoord
@@ -649,8 +650,8 @@ class LinearRegridder(object):
         """
         # Snapshot the state of the cubes to ensure that the regridder
         # is impervious to external changes to the original source cubes.
-        self._src_grid = eregrid._snapshot_grid(src_grid_cube)
-        self._target_grid = eregrid._snapshot_grid(target_grid_cube)
+        self._src_grid = snapshot_grid(src_grid_cube)
+        self._target_grid = snapshot_grid(target_grid_cube)
         # The extrapolation mode.
         if extrapolation_mode not in _LINEAR_EXTRAPOLATION_MODES:
             msg = 'Extrapolation mode {!r} not supported.'
@@ -693,7 +694,7 @@ class LinearRegridder(object):
             linear interpolation.
 
         """
-        if eregrid._get_xy_dim_coords(cube) != self._src_grid:
+        if get_xy_dim_coords(cube) != self._src_grid:
             raise ValueError('The given cube is not defined on the same '
                              'source grid as this regridder.')
         return eregrid.regrid_bilinear_rectilinear_src_and_grid(

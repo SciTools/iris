@@ -59,7 +59,6 @@ from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.analysis._linear import (_LINEAR_EXTRAPOLATION_MODES,
                                    LinearInterpolator, LinearRegridder)
 import iris.coords
-from iris.experimental.regrid import _get_xy_dim_coords
 from iris.exceptions import LazyAggregatorError
 
 

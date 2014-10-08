@@ -30,6 +30,7 @@ import numpy.ma as ma
 
 from iris.experimental.regrid import \
     regrid_area_weighted_rectilinear_src_and_grid as regrid_area_weighted
+import iris.analysis._interpolation
 import iris.tests.stock
 
 # Run tests in no graphics mode if matplotlib is not available.
@@ -49,7 +50,7 @@ def _scaled_and_offset_grid(cube, x_scalefactor, y_scalefactor,
     from the horizontal grid of `src`.
 
     """
-    x, y = iris.experimental.regrid._get_xy_dim_coords(cube)
+    x, y = iris.analysis._interpolation.get_xy_dim_coords(cube)
     new_cube = cube.copy()
     new_cube.replace_coord(x * x_scalefactor + x_offset)
     new_cube.replace_coord(y * y_scalefactor + y_offset)
@@ -87,7 +88,7 @@ def _subsampled_grid(cube, x_subsamplefactor, y_subsamplefactor):
     .. note:: The data of the returned cube is populated with zeros.
 
     """
-    x, y = iris.experimental.regrid._get_xy_dim_coords(cube)
+    x, y = iris.analysis._interpolation.get_xy_dim_coords(cube)
     x_dim = cube.coord_dims(x)[0]
     y_dim = cube.coord_dims(y)[0]
     new_x = _subsampled_coord(x, x_subsamplefactor)
@@ -140,7 +141,7 @@ def _resampled_grid(cube, x_samplefactor, y_samplefactor):
     .. note:: The data of the returned cube is populated with zeros.
 
     """
-    x, y = iris.experimental.regrid._get_xy_dim_coords(cube)
+    x, y = iris.analysis._interpolation.get_xy_dim_coords(cube)
     x_dim = cube.coord_dims(x)[0]
     y_dim = cube.coord_dims(y)[0]
     new_x = _resampled_coord(x, x_samplefactor)
