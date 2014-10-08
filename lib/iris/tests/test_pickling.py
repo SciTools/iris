@@ -18,7 +18,6 @@
 Test pickling of Iris objects.
 
 """
-from __future__ import with_statement
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
