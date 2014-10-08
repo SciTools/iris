@@ -21,6 +21,9 @@ interface.
 See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 import collections
 import datetime
 

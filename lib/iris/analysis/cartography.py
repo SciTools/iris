@@ -19,7 +19,7 @@ Various utilities and numeric transformations relevant to cartography.
 
 """
 
-from __future__ import print_function
+from __future__ import (absolute_import, division, print_function)
 
 import copy
 import itertools

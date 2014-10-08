@@ -21,6 +21,8 @@ See also: `ECMWF GRIB API <http://www.ecmwf.int/publications/manuals/grib_api/in
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+
 import datetime
 import math  #for fmod
 import warnings

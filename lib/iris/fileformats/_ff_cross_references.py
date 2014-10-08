@@ -21,6 +21,9 @@ Auto-generated from iris/tools/gen_stash_refs.py
 Relates grid code and field code to the stash code.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 from collections import namedtuple
 
 

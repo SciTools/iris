@@ -20,7 +20,8 @@ Provide conversion to and from Pandas data structures.
 See also: http://pandas.pydata.org/
 
 """
-from __future__ import absolute_import
+
+from __future__ import (absolute_import, division, print_function)
 
 import datetime
 

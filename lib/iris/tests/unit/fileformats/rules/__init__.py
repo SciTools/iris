@@ -15,3 +15,5 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :mod:`iris.fileformats.rules` module."""
+
+from __future__ import (absolute_import, division, print_function)

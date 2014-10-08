@@ -19,3 +19,5 @@ Unit tests for the module
 :mod:`iris.fileformats.um._fast_load_structured_fields`.
 
 """
+
+from __future__ import (absolute_import, division, print_function)

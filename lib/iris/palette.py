@@ -20,6 +20,7 @@ color map meta-data mappings.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
 
 from functools import wraps
 import os

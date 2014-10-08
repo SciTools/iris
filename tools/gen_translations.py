@@ -20,7 +20,7 @@ metOcean mapping translations.
 
 """
 
-from __future__ import print_function
+from __future__ import (absolute_import, division, print_function)
 
 from datetime import datetime
 import os.path
@@ -52,6 +52,9 @@ HEADER = """# (C) British Crown Copyright 2013 - {year}, Met Office
 #
 # DO NOT EDIT: AUTO-GENERATED
 {doc_string}
+
+from __future__ import (absolute_import, division, print_function)
+
 from collections import namedtuple
 
 

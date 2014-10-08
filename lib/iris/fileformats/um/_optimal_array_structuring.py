@@ -16,6 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """A module to provide an optimal array structure calculation."""
 
+from __future__ import (absolute_import, division, print_function)
+
 import itertools
 
 import numpy as np

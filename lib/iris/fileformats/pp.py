@@ -19,7 +19,7 @@ Provides UK Met Office Post Process (PP) format specific capabilities.
 
 """
 
-from __future__ import (division, print_function)
+from __future__ import (absolute_import, division, print_function)
 
 import abc
 import collections

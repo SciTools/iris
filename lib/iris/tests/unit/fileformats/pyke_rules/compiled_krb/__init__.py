@@ -18,3 +18,5 @@
 Unit tests for the :mod:`iris.fileformats._pyke_rules.compiled_krb` module.
 
 """
+
+from __future__ import (absolute_import, division, print_function)

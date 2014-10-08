@@ -16,6 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """NAME file format loading functions."""
 
+from __future__ import (absolute_import, division, print_function)
+
 import collections
 import datetime
 from itertools import izip

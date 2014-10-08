@@ -19,7 +19,7 @@ Tests for :func:`iris.experimental.regrid.regrid_conservative_via_esmpy`.
 
 """
 
-from __future__ import division
+from __future__ import (absolute_import, division, print_function)
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.

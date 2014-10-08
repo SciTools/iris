@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Test function :func:`iris.util.describe_diff`."""
+
+from __future__ import (absolute_import, division, print_function)
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
