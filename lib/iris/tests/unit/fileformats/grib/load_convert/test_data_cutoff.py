@@ -26,7 +26,7 @@ import datetime
 
 import mock
 
-from iris.fileformats.grib._load_convert import _GRIBAPI_MDI_UNSIGNED as MDI
+from iris.fileformats.grib._load_convert import _MDI as MDI
 
 from iris.fileformats.grib._load_convert import data_cutoff
 
