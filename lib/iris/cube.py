@@ -313,8 +313,8 @@ class CubeList(list):
     def extract_overlapping(self, coord_names):
         """
         Returns a :class:`CubeList` of cubes extracted over regions
-        where they coordinates overlap, for the coordinates
-        in coord_names
+        where the coordinates overlap, for the coordinates
+        in coord_names.
 
         Args:
 
