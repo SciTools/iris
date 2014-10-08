@@ -32,16 +32,11 @@ from iris.tests.unit.fileformats.grib import _make_test_message
 class Test(tests.IrisTest):
     def setUp(self):
         this = 'iris.fileformats.grib._load_convert'
-        patch = []
-        patch.append(mock.patch('{}.reference_time_coord'.format(this),
-                                return_value=None))
-        patch.append(mock.patch('{}.grid_definition_section'.format(this)))
-        patch.append(mock.patch('{}.product_definition_section'.format(this)))
-        patch.append(mock.patch('{}.data_representation_section'.format(this)))
-        patch.append(mock.patch('{}.bitmap_section'.format(this)))
-        for p in patch:
-            p.start()
-            self.addCleanup(p.stop)
+        self.patch('{}.reference_time_coord'.format(this), return_value=None)
+        self.patch('{}.grid_definition_section'.format(this))
+        self.patch('{}.product_definition_section'.format(this))
+        self.patch('{}.data_representation_section'.format(this))
+        self.patch('{}.bitmap_section'.format(this))
 
     def test(self):
         sections = [{'discipline': mock.sentinel.discipline},       # section 0

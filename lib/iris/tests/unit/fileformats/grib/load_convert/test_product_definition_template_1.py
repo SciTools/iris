@@ -36,20 +36,16 @@ from iris.fileformats.grib._load_convert import product_definition_template_1
 class Test(tests.IrisTest):
     def setUp(self):
         module = 'iris.fileformats.grib._load_convert'
-        patch = []
-        patch.append(mock.patch('warnings.warn'))
+        self.patch('warnings.warn')
         this = '{}.product_definition_template_0'.format(module)
         self.cell_method = mock.sentinel.cell_method
         func = lambda s, m, f: m['cell_methods'].append(self.cell_method)
-        patch.append(mock.patch(this, side_effect=func))
+        self.patch(this, side_effect=func)
         self.metadata = {'factories': [], 'references': [],
                          'standard_name': None,
                          'long_name': None, 'units': None, 'attributes': {},
                          'cell_methods': [], 'dim_coords_and_dims': [],
                          'aux_coords_and_dims': []}
-        for p in patch:
-            p.start()
-            self.addCleanup(p.stop)
 
     def _check(self, request_warning):
         this = 'iris.fileformats.grib._load_convert.options'
