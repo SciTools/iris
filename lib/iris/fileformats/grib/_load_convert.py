@@ -512,7 +512,8 @@ def grid_definition_template_1(section, metadata):
 
 def grid_definition_template_4_and_5(section, metadata, y_name, x_name, cs):
     """
-    Translate template representing variable resolution latitude/longitude.
+    Translate template representing variable resolution latitude/longitude
+    and common variable resolution rotated latitude/longitude.
 
     Updates the metadata in-place with the translations.
 
@@ -537,19 +538,21 @@ def grid_definition_template_4_and_5(section, metadata, y_name, x_name, cs):
     """
     # Determine the (variable) units of resolution.
     key = 'basicAngleOfTheInitialProductDomain'
-    basicAngleOfTheInitialProductDomain = np.float64(section[key])
-    subdivisionsOfBasicAngle = np.float64(section['subdivisionsOfBasicAngle'])
+    basicAngleOfTheInitialProductDomain = section[key]
+    subdivisionsOfBasicAngle = section['subdivisionsOfBasicAngle']
 
-    if np.int32(basicAngleOfTheInitialProductDomain) in [0, _CODE_TABLE_MDI]:
+    if basicAngleOfTheInitialProductDomain in [0, _MDI]:
         basicAngleOfTheInitialProductDomain = 1.
 
-    if np.int32(subdivisionsOfBasicAngle) in [0, _CODE_TABLE_MDI]:
+    if subdivisionsOfBasicAngle in [0, _MDI]:
         subdivisionsOfBasicAngle = 1. / _GRID_ACCURACY_IN_DEGREES
 
-    resolution = basicAngleOfTheInitialProductDomain / subdivisionsOfBasicAngle
+    resolution = np.float64(basicAngleOfTheInitialProductDomain)
+    resolution /= subdivisionsOfBasicAngle
     flags = resolution_flags(section['resolutionAndComponentFlags'])
 
-    # Bits 3-4 are not applicable for this template.
+    # Grid Definition Template 3.4. Notes (2).
+    # Flag bits 3-4 are not applicable for this template.
     if flags.uv_resolved and options.warn_on_unsupported:
         msg = 'Unable to translate resolution and component flags.'
         warnings.warn(msg)
@@ -594,10 +597,8 @@ def grid_definition_template_4(section, metadata):
         :class:`collections.OrderedDict` of metadata.
 
     """
-    # XXX Requires PR #1354.
-    # major, minor, radius = ellipsoid_geometry(section)
-    # cs = ellipsoid(section['shapeOfTheEarth'], major, minor, radius)
-    cs = ellipsoid(section['shapeOfTheEarth'])
+    major, minor, radius = ellipsoid_geometry(section)
+    cs = ellipsoid(section['shapeOfTheEarth'], major, minor, radius)
     grid_definition_template_4_and_5(section, metadata,
                                      'latitude', 'longitude', cs)
 

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Test function :func:`iris.fileformats.grib._load_convert.resolution_flags.
+Test function :func:`iris.fileformats.grib._load_convert.resolution_flags.`
 
 """
 
@@ -23,8 +23,8 @@ Test function :func:`iris.fileformats.grib._load_convert.resolution_flags.
 # before importing anything else.
 import iris.tests as tests
 
-from iris.fileformats.grib._load_convert import resolution_flags
-from iris.fileformats.grib._load_convert import ResolutionFlags
+from iris.fileformats.grib._load_convert import \
+    resolution_flags, ResolutionFlags
 
 
 class Test(tests.IrisTest):
