@@ -56,8 +56,9 @@ import scipy.interpolate
 import scipy.stats.mstats
 
 from iris.analysis._area_weighted import AreaWeightedRegridder
-from iris.analysis._linear import (_LINEAR_EXTRAPOLATION_MODES,
-                                   LinearInterpolator, LinearRegridder)
+from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
+                                          RegularInterpolator)
+from iris.analysis._linear import LinearRegridder
 import iris.coords
 from iris.exceptions import LazyAggregatorError
 
@@ -1497,6 +1498,9 @@ class Linear(object):
     :meth:`iris.cube.Cube.interpolate()` or :meth:`iris.cube.Cube.regrid()`.
 
     """
+
+    LINEAR_EXTRAPOLATION_MODES = EXTRAPOLATION_MODES.keys() + ['linear']
+
     def __init__(self, extrapolation_mode='linear'):
         """
         Linear interpolation scheme suitable for interpolating over one or
@@ -1507,8 +1511,9 @@ class Linear(object):
         * extrapolation_mode:
             Must be one of the following strings:
 
-              * 'linear' - The extrapolation points will be calculated by
-                extending the gradient of the closest two points.
+              * 'linear' or 'extrapolate' - The extrapolation points
+                will be calculated by extending the gradient of the
+                closest two points.
               * 'nan' - The extrapolation points will be be set to NaN.
               * 'error' - A ValueError exception will be raised, notifying an
                 attempt to extrapolate.
@@ -1518,16 +1523,22 @@ class Linear(object):
                 extrapolation points will be masked. Otherwise they will be
                 set to NaN.
 
-            Default mode of extrapolation is 'linear'.
+            The default mode of extrapolation is 'linear'.
 
         """
-        if extrapolation_mode not in _LINEAR_EXTRAPOLATION_MODES:
+        if extrapolation_mode not in Linear.LINEAR_EXTRAPOLATION_MODES:
             msg = 'Extrapolation mode {!r} not supported.'
             raise ValueError(msg.format(extrapolation_mode))
         self.extrapolation_mode = extrapolation_mode
 
     def __repr__(self):
         return 'Linear({!r})'.format(self.extrapolation_mode)
+
+    def _normalised_extrapolation_mode(self):
+        mode = self.extrapolation_mode
+        if mode == 'linear':
+            mode = 'extrapolate'
+        return mode
 
     def interpolator(self, cube, coords):
         """
@@ -1564,8 +1575,8 @@ class Linear(object):
             `[new_lat_values, new_lon_values]`.
 
         """
-        return LinearInterpolator(cube, coords,
-                                  extrapolation_mode=self.extrapolation_mode)
+        return RegularInterpolator(cube, coords, 'linear',
+                                   self._normalised_extrapolation_mode())
 
     def regridder(self, src_grid, target_grid):
         """
@@ -1589,7 +1600,7 @@ class Linear(object):
 
         """
         return LinearRegridder(src_grid, target_grid,
-                               extrapolation_mode=self.extrapolation_mode)
+                               self._normalised_extrapolation_mode())
 
 
 class AreaWeighted(object):

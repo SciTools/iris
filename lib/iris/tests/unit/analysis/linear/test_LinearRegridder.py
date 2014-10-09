@@ -70,21 +70,18 @@ class Test(tests.IrisTest):
         self.assertEqual(regrid.call_count, 1)
         _, args, kwargs = regrid.mock_calls[0]
         if mode is None:
-            mode = 'linear'
+            mode = 'extrapolate'
         self.assertEqual(args[0], src)
         self.assertEqual(self.extract_grid(args[1]),
                          self.extract_grid(target_grid))
         self.assertEqual(kwargs, {'extrapolation_mode': mode})
         self.assertIs(result, mock.sentinel.result)
 
-    def test_mode_default(self):
-        self.check_mode()
-
     def test_mode_error(self):
         self.check_mode('error')
 
-    def test_mode_linear(self):
-        self.check_mode('linear')
+    def test_mode_extrapolate(self):
+        self.check_mode('extrapolate')
 
     def test_mode_nan(self):
         self.check_mode('nan')
@@ -103,7 +100,7 @@ class Test(tests.IrisTest):
         src.add_dim_coord(lon, 1)
         target = mock.Mock()
         with self.assertRaises(ValueError):
-            LinearRegridder(src, target)
+            LinearRegridder(src, target, 'extrapolate')
 
 
 if __name__ == '__main__':

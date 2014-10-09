@@ -28,7 +28,8 @@ import numpy.ma as ma
 from scipy.sparse import csc_matrix
 
 import iris.analysis.cartography
-from iris.analysis._interpolation import (extend_circular_coord_and_data,
+from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
+                                          extend_circular_coord_and_data,
                                           get_xy_dim_coords)
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
 import iris.coord_systems
@@ -39,22 +40,6 @@ import iris.unit
 _Version = namedtuple('Version', ('major', 'minor', 'micro'))
 _NP_VERSION = _Version(*(int(val) for val in
                          np.version.version.split('.')))
-
-
-# These are a duplicate of those in iris.analysis._linear to avoid a
-# circular dependency. Once the bilinear interpolation code is moved
-# to iris.analysis._linear this problem will go away.
-_LinearExtrapMode = namedtuple('_LinearExtrapMode', ['bounds_error',
-                                                     'fill_value',
-                                                     'mask_fill_value',
-                                                     'force_mask'])
-_LINEAR_EXTRAPOLATION_MODES = {
-    'linear': _LinearExtrapMode(False, None, None, False),
-    'error': _LinearExtrapMode(True, 0, 0, False),
-    'nan': _LinearExtrapMode(False, np.nan, 0, False),
-    'mask': _LinearExtrapMode(False, np.nan, 1, True),
-    'nanmask': _LinearExtrapMode(False, np.nan, 1, False)
-}
 
 
 def _get_xy_coords(cube):
@@ -286,7 +271,7 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
     # some unnecessary checks on these values, so we set them
     # afterwards instead. Sneaky. ;-)
     try:
-        mode = _LINEAR_EXTRAPOLATION_MODES[extrapolation_mode]
+        mode = EXTRAPOLATION_MODES[extrapolation_mode]
     except KeyError:
         raise ValueError('Invalid extrapolation mode.')
     interpolator.bounds_error = mode.bounds_error
@@ -580,7 +565,7 @@ def regrid_bilinear_rectilinear_src_and_grid(src, grid,
     for coord in (src_x_coord, src_y_coord, grid_x_coord, grid_y_coord):
         _check_units(coord)
 
-    if extrapolation_mode not in _LINEAR_EXTRAPOLATION_MODES:
+    if extrapolation_mode not in EXTRAPOLATION_MODES:
         raise ValueError('Invalid extrapolation mode.')
 
     # Convert the grid to a 2D sample grid in the src CRS.

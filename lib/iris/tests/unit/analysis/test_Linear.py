@@ -38,12 +38,15 @@ class TestModes(tests.IrisTest):
         # To avoid duplicating tests, just check that creating an
         # interpolator defers to the LinearInterpolator with the
         # correct arguments (and honouring the return value!)
-        with mock.patch('iris.analysis.LinearInterpolator',
-                        return_value=mock.sentinel.interpolator) as li:
+        with mock.patch('iris.analysis.RegularInterpolator',
+                        return_value=mock.sentinel.interpolator) as ri:
             interpolator = linear.interpolator(mock.sentinel.cube,
                                                mock.sentinel.coords)
-        li.assert_called_once_with(mock.sentinel.cube, mock.sentinel.coords,
-                                   extrapolation_mode=mode)
+        expected_mode = mode
+        if mode == 'linear':
+            expected_mode = 'extrapolate'
+        ri.assert_called_once_with(mock.sentinel.cube, mock.sentinel.coords,
+                                   'linear', expected_mode)
         self.assertIs(interpolator, mock.sentinel.interpolator)
 
         # As above, check method defers to LinearRegridder.
@@ -52,11 +55,14 @@ class TestModes(tests.IrisTest):
             regridder = linear.regridder(mock.sentinel.src,
                                          mock.sentinel.target)
         lr.assert_called_once_with(mock.sentinel.src, mock.sentinel.target,
-                                   extrapolation_mode=mode)
+                                   expected_mode)
         self.assertIs(regridder, mock.sentinel.regridder)
 
     def test_default(self):
         self.check_mode()
+
+    def test_extrapolate(self):
+        self.check_mode('extrapolate')
 
     def test_linear(self):
         self.check_mode('linear')

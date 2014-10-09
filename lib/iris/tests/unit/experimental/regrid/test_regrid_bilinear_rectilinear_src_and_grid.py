@@ -415,7 +415,7 @@ class TestModes(tests.IrisTest):
         # NaN           -> NaN
         # Extrapolated  -> linear
         src = self._ndarray_cube()
-        result = self._regrid(src, 'linear')
+        result = self._regrid(src, 'extrapolate')
         self.assertNotIsInstance(result, np.ma.MaskedArray)
         self.assertArrayEqual(result, self.linear_values)
 
@@ -424,7 +424,7 @@ class TestModes(tests.IrisTest):
         # Extrapolated  -> linear
         # Masked        -> Masked
         src = self._masked_cube()
-        result = self._regrid(src, 'linear')
+        result = self._regrid(src, 'extrapolate')
         self.assertIsInstance(result, np.ma.MaskedArray)
         mask = [[0, 0, 0, 0],
                 [0, 0, 1, 1],
