@@ -23,7 +23,7 @@ import iris.tests as tests
 
 import logging
 
-import cartopy.crs
+import cartopy.crs as ccrs
 import numpy as np
 
 import iris.cube
@@ -182,9 +182,9 @@ class Test_GeogCS_as_cartopy_crs(tests.IrisTest):
     def test_as_cartopy_crs(self):
         cs = GeogCS(6543210, 6500000)
         res = cs.as_cartopy_crs()
-        globe = cartopy.crs.Globe(semimajor_axis=6543210.0,
-                                  semiminor_axis=6500000.0, ellipse=None)
-        expected = cartopy.crs.Geodetic(globe)
+        globe = ccrs.Globe(semimajor_axis=6543210.0,
+                           semiminor_axis=6500000.0, ellipse=None)
+        expected = ccrs.Geodetic(globe)
         self.assertEqual(res, expected)
 
 
@@ -265,14 +265,14 @@ class Test_TransverseMercator_as_cartopy_crs(tests.IrisTest):
             scale_factor_at_central_meridian,
             ellipsoid=ellipsoid)
 
-        expected = cartopy.crs.TransverseMercator(
+        expected = ccrs.TransverseMercator(
             central_longitude=longitude_of_central_meridian,
             central_latitude=latitude_of_projection_origin,
             false_easting=false_easting,
             false_northing=false_northing,
             scale_factor=scale_factor_at_central_meridian,
-            globe=cartopy.crs.Globe(semimajor_axis=6377563.396,
-                                    semiminor_axis=6356256.909, ellipse=None))
+            globe=ccrs.Globe(semimajor_axis=6377563.396,
+                             semiminor_axis=6356256.909, ellipse=None))
 
         res = tmerc_cs.as_cartopy_crs()
         self.assertEqual(res, expected)
@@ -296,14 +296,14 @@ class Test_TransverseMercator_as_cartopy_projection(tests.IrisTest):
             scale_factor_at_central_meridian,
             ellipsoid=ellipsoid)
 
-        expected = cartopy.crs.TransverseMercator(
+        expected = ccrs.TransverseMercator(
             central_longitude=longitude_of_central_meridian,
             central_latitude=latitude_of_projection_origin,
             false_easting=false_easting,
             false_northing=false_northing,
             scale_factor=scale_factor_at_central_meridian,
-            globe=cartopy.crs.Globe(semimajor_axis=6377563.396,
-                                    semiminor_axis=6356256.909, ellipse=None))
+            globe=ccrs.Globe(semimajor_axis=6377563.396,
+                             semiminor_axis=6356256.909, ellipse=None))
 
         res = tmerc_cs.as_cartopy_projection()
         self.assertEqual(res, expected)

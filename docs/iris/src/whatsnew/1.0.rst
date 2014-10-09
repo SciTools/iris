@@ -280,15 +280,15 @@ This functionality is provided by :func:`iris.analysis.cartography.project()`.
 For example::
 
     import iris
-    import cartopy
+    import cartopy.crs as ccrs
     import matplotlib.pyplot as plt
 
     # Load data
     cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
 
     # Transform cube to target projection
-    target_proj = cartopy.crs.RotatedPole(pole_longitude=177.5,
-                                          pole_latitude=37.5)
+    target_proj = ccrs.RotatedPole(pole_longitude=177.5,
+                                   pole_latitude=37.5)
     new_cube, extent = iris.analysis.cartography.project(cube, target_proj)
 
     # Plot

@@ -27,7 +27,7 @@ import os
 import warnings
 
 import biggus
-import cartopy
+import cartopy.crs as ccrs
 import numpy as np
 import numpy.ma as ma
 import scipy.interpolate
@@ -592,7 +592,7 @@ class GribWrapper(object):
             x1, y1 = cartopy_crs.transform_point(
                                 self.longitudeOfFirstGridPointInDegrees,
                                 self.latitudeOfFirstGridPointInDegrees,
-                                cartopy.crs.Geodetic())
+                                ccrs.Geodetic())
 
             if not np.all(np.isfinite([x1, y1])):
                 raise TranslationError("Could not determine the first latitude"
