@@ -557,7 +557,7 @@ def grid_definition_template_4_and_5(section, metadata, y_name, x_name, cs):
         msg = 'Unable to translate resolution and component flags.'
         warnings.warn(msg)
 
-    # XXX Not sure if these are the correct keys to use!
+    # Calculate the latitude and longitude points.
     x_points = np.array(section['longitudes'], dtype=np.float64) * resolution
     y_points = np.array(section['latitudes'], dtype=np.float64) * resolution
 
@@ -597,10 +597,42 @@ def grid_definition_template_4(section, metadata):
         :class:`collections.OrderedDict` of metadata.
 
     """
+    # Determine the coordinate system.
     major, minor, radius = ellipsoid_geometry(section)
     cs = ellipsoid(section['shapeOfTheEarth'], major, minor, radius)
     grid_definition_template_4_and_5(section, metadata,
                                      'latitude', 'longitude', cs)
+
+
+def grid_definition_template_5(section, metadata):
+    """
+    Translate template representing variable resolution rotated
+    latitude/longitude.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 3 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    """
+    # Determine the coordinate system.
+    major, minor, radius = ellipsoid_geometry(section)
+    south_pole_lat = (section['latitudeOfSouthernPole'] *
+                      _GRID_ACCURACY_IN_DEGREES)
+    south_pole_lon = (section['longitudeOfSouthernPole'] *
+                      _GRID_ACCURACY_IN_DEGREES)
+    cs = icoord_systems.RotatedGeogCS(-south_pole_lat,
+                                      math.fmod(south_pole_lon + 180, 360),
+                                      section['angleOfRotation'],
+                                      ellipsoid(section['shapeOfTheEarth'],
+                                                major, minor, radius))
+    grid_definition_template_4_and_5(section, metadata,
+                                     'grid_latitude', 'grid_longitude', cs)
 
 
 def grid_definition_section(section, metadata):
@@ -643,6 +675,9 @@ def grid_definition_section(section, metadata):
     elif template == 4:
         # Process variable resolution latitude/longitude.
         grid_definition_template_4(section, metadata)
+    elif template == 5:
+        # Process variable resolution rotated latitude/longitude.
+        grid_definition_template_5(section, metadata)
     else:
         msg = 'Grid definition template [{}] is not supported'.format(template)
         raise TranslationError(msg)
