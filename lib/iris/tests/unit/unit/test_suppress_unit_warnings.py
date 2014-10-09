@@ -23,23 +23,25 @@ import iris.tests as tests
 import warnings
 
 import iris
-import iris.tests.stock as stock
 from iris.unit import suppress_unit_warnings
 
 
 class Test(tests.IrisTest):
 
     def test_generic_warnings(self):
-        realistic_warning = ("Ignoring netCDF variable 'AL' invalid "
-                             "units '(0 - 1)'")
+        unit_warning = ("Ignoring netCDF variable 'AL' invalid "
+                        "units '(0 - 1)'")
+        example_warning = 'Example warning'
         with warnings.catch_warnings(record=True) as filtered_warnings:
             with suppress_unit_warnings():
-                warnings.warn('Example warning')
-                warnings.warn(realistic_warning)
+                warnings.warn(unit_warning)
+                warnings.warn(example_warning)
         # Get to the actual warning strings for testing purposes.
         filtered_warnings_list = [w.message.message for w in filtered_warnings]
-        self.assertNotIn(realistic_warning, filtered_warnings_list)
+        self.assertNotIn(unit_warning, filtered_warnings_list)
+        self.assertIn(example_warning, filtered_warnings_list)
 
+    @tests.skip_data
     def test_load_file_with_captured_warnings(self):
         test_filename = tests.get_data_path(('NetCDF', 'testing', 'units.nc'))
         with warnings.catch_warnings(record=True) as filtered_warnings:
@@ -47,3 +49,7 @@ class Test(tests.IrisTest):
                 iris.load(test_filename)
         filtered_warnings_list = [w.message.message for w in filtered_warnings]
         self.assertEqual(len(filtered_warnings_list), 0)
+
+
+if __name__ == '__main__':
+    tests.main()
