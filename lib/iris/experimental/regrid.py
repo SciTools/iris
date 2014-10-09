@@ -18,7 +18,7 @@
 Regridding functions.
 
 """
-import collections
+from collections import namedtuple
 import copy
 import functools
 import warnings
@@ -28,65 +28,33 @@ import numpy.ma as ma
 from scipy.sparse import csc_matrix
 
 import iris.analysis.cartography
+from iris.analysis._interpolation import (extend_circular_coord_and_data,
+                                          get_xy_dim_coords)
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
-import iris.analysis._interpolator
 import iris.coord_systems
 import iris.cube
 import iris.unit
 
 
-_Version = collections.namedtuple('Version',
-                                  ('major', 'minor', 'micro'))
+_Version = namedtuple('Version', ('major', 'minor', 'micro'))
 _NP_VERSION = _Version(*(int(val) for val in
                          np.version.version.split('.')))
 
 
-def _snapshot_grid(cube):
-    """
-    Helper function that returns deep copies of lateral dimension coordinates
-    from a cube.
-
-    """
-    x, y = _get_xy_dim_coords(cube)
-    return x.copy(), y.copy()
-
-
-def _get_xy_dim_coords(cube):
-    """
-    Return the x and y dimension coordinates from a cube.
-
-    This function raises a ValueError if the cube does not contain one and
-    only one set of x and y dimension coordinates. It also raises a ValueError
-    if the identified x and y coordinates do not have coordinate systems that
-    are equal.
-
-    Args:
-
-    * cube:
-        An instance of :class:`iris.cube.Cube`.
-
-    Returns:
-        A tuple containing the cube's x and y dimension coordinates.
-
-    """
-    x_coords = cube.coords(axis='x', dim_coords=True)
-    if len(x_coords) != 1:
-        raise ValueError('Cube {!r} must contain a single 1D x '
-                         'coordinate.'.format(cube.name()))
-    x_coord = x_coords[0]
-
-    y_coords = cube.coords(axis='y', dim_coords=True)
-    if len(y_coords) != 1:
-        raise ValueError('Cube {!r} must contain a single 1D y '
-                         'coordinate.'.format(cube.name()))
-    y_coord = y_coords[0]
-
-    if x_coord.coord_system != y_coord.coord_system:
-        raise ValueError("The cube's x ({!r}) and y ({!r}) "
-                         "coordinates must have the same coordinate "
-                         "system.".format(x_coord.name(), y_coord.name()))
-
-    return x_coord, y_coord
+# These are a duplicate of those in iris.analysis._linear to avoid a
+# circular dependency. Once the bilinear interpolation code is moved
+# to iris.analysis._linear this problem will go away.
+_LinearExtrapMode = namedtuple('_LinearExtrapMode', ['bounds_error',
+                                                     'fill_value',
+                                                     'mask_fill_value',
+                                                     'force_mask'])
+_LINEAR_EXTRAPOLATION_MODES = {
+    'linear': _LinearExtrapMode(False, None, None, False),
+    'error': _LinearExtrapMode(True, 0, 0, False),
+    'nan': _LinearExtrapMode(False, np.nan, 0, False),
+    'mask': _LinearExtrapMode(False, np.nan, 1, True),
+    'nanmask': _LinearExtrapMode(False, np.nan, 1, False)
+}
 
 
 def _get_xy_coords(cube):
@@ -295,8 +263,8 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
     src_data = src_data[tuple(flip_index)]
 
     if src_x_coord.circular:
-        extend = iris.analysis._interpolator._extend_circular_coord_and_data
-        x_points, src_data = extend(src_x_coord, src_data, x_dim)
+        x_points, src_data = extend_circular_coord_and_data(src_x_coord,
+                                                            src_data, x_dim)
     else:
         x_points = src_x_coord.points
 
@@ -318,8 +286,7 @@ def _regrid_bilinear_array(src_data, x_dim, y_dim, src_x_coord, src_y_coord,
     # some unnecessary checks on these values, so we set them
     # afterwards instead. Sneaky. ;-)
     try:
-        modes = iris.analysis._interpolator._LINEAR_EXTRAPOLATION_MODES
-        mode = modes[extrapolation_mode]
+        mode = _LINEAR_EXTRAPOLATION_MODES[extrapolation_mode]
     except KeyError:
         raise ValueError('Invalid extrapolation mode.')
     interpolator.bounds_error = mode.bounds_error
@@ -574,8 +541,8 @@ def regrid_bilinear_rectilinear_src_and_grid(src, grid,
         raise TypeError("'src' must be a Cube")
     if not isinstance(grid, iris.cube.Cube):
         raise TypeError("'grid' must be a Cube")
-    src_x_coord, src_y_coord = _get_xy_dim_coords(src)
-    grid_x_coord, grid_y_coord = _get_xy_dim_coords(grid)
+    src_x_coord, src_y_coord = get_xy_dim_coords(src)
+    grid_x_coord, grid_y_coord = get_xy_dim_coords(grid)
     src_cs = src_x_coord.coord_system
     grid_cs = grid_x_coord.coord_system
     if src_cs is None and grid_cs is None:
@@ -613,8 +580,7 @@ def regrid_bilinear_rectilinear_src_and_grid(src, grid,
     for coord in (src_x_coord, src_y_coord, grid_x_coord, grid_y_coord):
         _check_units(coord)
 
-    modes = iris.analysis._interpolator._LINEAR_EXTRAPOLATION_MODES
-    if extrapolation_mode not in modes:
+    if extrapolation_mode not in _LINEAR_EXTRAPOLATION_MODES:
         raise ValueError('Invalid extrapolation mode.')
 
     # Convert the grid to a 2D sample grid in the src CRS.
@@ -1310,7 +1276,7 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
     # Get the source cube x and y 2D auxiliary coordinates.
     sx, sy = src_cube.coord(axis='x'), src_cube.coord(axis='y')
     # Get the target grid cube x and y dimension coordinates.
-    tx, ty = _get_xy_dim_coords(grid_cube)
+    tx, ty = get_xy_dim_coords(grid_cube)
 
     if sx.units.modulus is None or sy.units.modulus is None or \
             sx.units != sy.units:

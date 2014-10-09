@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Test the :func:`iris.experimental.regrid._get_xy_dim_coords` function.
+Unit tests for :func:`iris.analysis._interpolation.get_xy_dim_coords`.
 
 """
 # import iris tests first so that some things can be initialised
@@ -26,6 +26,7 @@ import copy
 
 import numpy as np
 
+from iris.analysis._interpolation import get_xy_dim_coords
 import iris.coords
 import iris.coord_systems
 import iris.experimental.regrid
@@ -35,13 +36,13 @@ import iris.tests.stock
 class TestGetXYCoords(tests.IrisTest):
     def test_grid_lat_lon(self):
         cube = iris.tests.stock.realistic_4d()
-        x, y = iris.experimental.regrid._get_xy_dim_coords(cube)
+        x, y = get_xy_dim_coords(cube)
         self.assertIs(x, cube.coord('grid_longitude'))
         self.assertIs(y, cube.coord('grid_latitude'))
 
     def test_lat_lon(self):
         cube = iris.tests.stock.lat_lon_cube()
-        x, y = iris.experimental.regrid._get_xy_dim_coords(cube)
+        x, y = get_xy_dim_coords(cube)
         self.assertIs(x, cube.coord('longitude'))
         self.assertIs(y, cube.coord('latitude'))
 
@@ -49,7 +50,7 @@ class TestGetXYCoords(tests.IrisTest):
         cube = iris.tests.stock.lat_lon_cube()
         cube.coord('longitude').rename('projection_x_coordinate')
         cube.coord('latitude').rename('projection_y_coordinate')
-        x, y = iris.experimental.regrid._get_xy_dim_coords(cube)
+        x, y = get_xy_dim_coords(cube)
         self.assertIs(x, cube.coord('projection_x_coordinate'))
         self.assertIs(y, cube.coord('projection_y_coordinate'))
 
@@ -57,13 +58,13 @@ class TestGetXYCoords(tests.IrisTest):
         cube = iris.tests.stock.realistic_4d()
         cube.remove_coord('grid_longitude')
         with self.assertRaises(ValueError):
-            iris.experimental.regrid._get_xy_dim_coords(cube)
+            get_xy_dim_coords(cube)
 
     def test_missing_y_coord(self):
         cube = iris.tests.stock.realistic_4d()
         cube.remove_coord('grid_latitude')
         with self.assertRaises(ValueError):
-            iris.experimental.regrid._get_xy_dim_coords(cube)
+            get_xy_dim_coords(cube)
 
     def test_multiple_coords(self):
         cube = iris.tests.stock.realistic_4d()
@@ -86,12 +87,12 @@ class TestGetXYCoords(tests.IrisTest):
         cube.add_dim_coord(lon_coord, model_level_dims)
 
         with self.assertRaises(ValueError):
-            iris.experimental.regrid._get_xy_dim_coords(cube)
+            get_xy_dim_coords(cube)
 
         cube.remove_coord('grid_latitude')
         cube.remove_coord('grid_longitude')
 
-        x, y = iris.experimental.regrid._get_xy_dim_coords(cube)
+        x, y = get_xy_dim_coords(cube)
         self.assertIs(x, lon_coord)
         self.assertIs(y, lat_coord)
 
@@ -99,7 +100,7 @@ class TestGetXYCoords(tests.IrisTest):
         cube = iris.tests.stock.lat_lon_cube()
         for coord in cube.coords():
             coord.coord_system = None
-        x, y = iris.experimental.regrid._get_xy_dim_coords(cube)
+        x, y = get_xy_dim_coords(cube)
         self.assertIs(x, cube.coord('longitude'))
         self.assertIs(y, cube.coord('latitude'))
 
@@ -107,7 +108,7 @@ class TestGetXYCoords(tests.IrisTest):
         cube = iris.tests.stock.lat_lon_cube()
         cube.coord('longitude').coord_system = None
         with self.assertRaises(ValueError):
-            iris.experimental.regrid._get_xy_dim_coords(cube)
+            get_xy_dim_coords(cube)
 
     def test_different_coordsystem(self):
         cube = iris.tests.stock.lat_lon_cube()
@@ -121,7 +122,7 @@ class TestGetXYCoords(tests.IrisTest):
         cube.coord('longitude').coord_system = lon_cs
 
         with self.assertRaises(ValueError):
-            iris.experimental.regrid._get_xy_dim_coords(cube)
+            get_xy_dim_coords(cube)
 
 
 if __name__ == "__main__":

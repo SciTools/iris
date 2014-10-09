@@ -17,6 +17,7 @@
 
 import numpy as np
 
+from iris.analysis._interpolation import get_xy_dim_coords, snapshot_grid
 import iris
 import iris.experimental.regrid as eregrid
 
@@ -52,8 +53,8 @@ class AreaWeightedRegridder(object):
         """
         # Snapshot the state of the cubes to ensure that the regridder is
         # impervious to external changes to the original source cubes.
-        self._src_grid = eregrid._snapshot_grid(src_grid_cube)
-        self._target_grid = eregrid._snapshot_grid(target_grid_cube)
+        self._src_grid = snapshot_grid(src_grid_cube)
+        self._target_grid = snapshot_grid(target_grid_cube)
         # Missing data tolerance.
         if not (0 <= mdtol <= 1):
             msg = 'Value for mdtol must be in range 0 - 1, got {}.'
@@ -95,7 +96,7 @@ class AreaWeightedRegridder(object):
             area-weighted regridding.
 
         """
-        if eregrid._get_xy_dim_coords(cube) != self._src_grid:
+        if get_xy_dim_coords(cube) != self._src_grid:
             raise ValueError('The given cube is not defined on the same '
                              'source grid as this regridder.')
         return eregrid.regrid_area_weighted_rectilinear_src_and_grid(

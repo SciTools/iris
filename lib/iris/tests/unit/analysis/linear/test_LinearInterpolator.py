@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for :class:`iris.analysis._interpolator.LinearInterpolator`."""
+"""Unit tests for :class:`iris.analysis._linear.LinearInterpolator`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -30,7 +30,7 @@ import iris.coords
 import iris.cube
 import iris.exceptions
 import iris.tests.stock as stock
-from iris.analysis._interpolator import LinearInterpolator
+from iris.analysis._linear import LinearInterpolator
 
 
 class ThreeDimCube(tests.IrisTest):
