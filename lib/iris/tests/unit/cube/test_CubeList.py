@@ -25,6 +25,7 @@ import numpy as np
 from iris.cube import Cube, CubeList
 from iris.coords import AuxCoord, DimCoord
 from iris.unit import Unit
+import iris.coord_systems
 import iris.exceptions
 
 
@@ -55,6 +56,60 @@ class Test_concatenate_cube(tests.IrisTest):
         exc_regexp = "can't concatenate an empty CubeList"
         with self.assertRaisesRegexp(ValueError, exc_regexp):
             CubeList([]).concatenate_cube()
+
+
+class Test_extract_overlapping(tests.IrisTest):
+    def setUp(self):
+        shape = (6, 14, 19)
+        n_time, n_lat, n_lon = shape
+        n_data = n_time * n_lat * n_lon
+        cube = Cube(np.arange(n_data, dtype=np.int32).reshape(shape))
+        coord = iris.coords.DimCoord(points=np.arange(n_time),
+                                     standard_name='time',
+                                     units='hours since epoch')
+        cube.add_dim_coord(coord, 0)
+        cs = iris.coord_systems.GeogCS(6371229)
+        coord = iris.coords.DimCoord(points=np.linspace(-90, 90, n_lat),
+                                     standard_name='latitude',
+                                     units='degrees',
+                                     coord_system=cs)
+        cube.add_dim_coord(coord, 1)
+        coord = iris.coords.DimCoord(points=np.linspace(-180, 180, n_lon),
+                                     standard_name='longitude',
+                                     units='degrees',
+                                     coord_system=cs)
+        cube.add_dim_coord(coord, 2)
+        self.cube = cube
+
+    def test_extract_one_str_dim(self):
+        cubes = iris.cube.CubeList([self.cube[2:], self.cube[:4]])
+        a, b = cubes.extract_overlapping('time')
+        self.assertEquals(a.coord('time'), self.cube.coord('time')[2:4])
+        self.assertEquals(b.coord('time'), self.cube.coord('time')[2:4])
+
+    def test_extract_one_list_dim(self):
+        cubes = iris.cube.CubeList([self.cube[2:], self.cube[:4]])
+        a, b = cubes.extract_overlapping(['time'])
+        self.assertEquals(a.coord('time'), self.cube.coord('time')[2:4])
+        self.assertEquals(b.coord('time'), self.cube.coord('time')[2:4])
+
+    def test_extract_two_dims(self):
+        cubes = iris.cube.CubeList([self.cube[2:, 5:], self.cube[:4, :10]])
+        a, b = cubes.extract_overlapping(['time', 'latitude'])
+        self.assertEquals(a.coord('time'),
+                          self.cube.coord('time')[2:4])
+        self.assertEquals(a.coord('latitude'),
+                          self.cube.coord('latitude')[5:10])
+        self.assertEquals(b.coord('time'),
+                          self.cube.coord('time')[2:4])
+        self.assertEquals(b.coord('latitude'),
+                          self.cube.coord('latitude')[5:10])
+
+    def test_different_orders(self):
+        cubes = iris.cube.CubeList([self.cube[::-1][:4], self.cube[:4]])
+        a, b = cubes.extract_overlapping('time')
+        self.assertEquals(a.coord('time'), self.cube[::-1].coord('time')[2:4])
+        self.assertEquals(b.coord('time'), self.cube.coord('time')[2:4])
 
 
 class Test_merge_cube(tests.IrisTest):
