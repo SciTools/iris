@@ -24,51 +24,6 @@ import numpy as np
 import iris.cube
 
 
-@iris.tests.skip_data
-class Test_CubeList_extract_overlapping(tests.IrisTest):
-    def setUp(self):
-        self.cube = iris.load_cube(iris.sample_data_path('GloSea4',
-                                                         'ensemble_001.pp'))
-
-    def test_extract_one_str_dim(self):
-        a, b = iris.cube.CubeList([self.cube[2:],
-                                   self.cube[:4]]).extract_overlapping('time')
-
-        self.assertEquals(a.coord('time'), self.cube.coord('time')[2:4])
-        self.assertEquals(b.coord('time'), self.cube.coord('time')[2:4])
-
-    def test_extract_one_list_dim(self):
-        a, b = iris.cube.CubeList([self.cube[2:],
-                                   self.cube[:4]])\
-            .extract_overlapping(['time'])
-
-        self.assertEquals(a.coord('time'), self.cube.coord('time')[2:4])
-        self.assertEquals(b.coord('time'), self.cube.coord('time')[2:4])
-
-    def test_extract_two_dims(self):
-        a, b = iris.cube.CubeList([self.cube[2:, 5:],
-                                   self.cube[:4, :10]])\
-            .extract_overlapping(['time', 'latitude'])
-
-        self.assertEquals(a.coord('time'),
-                          self.cube.coord('time')[2:4])
-        self.assertEquals(a.coord('latitude'),
-                          self.cube.coord('latitude')[5:10])
-        self.assertEquals(b.coord('time'),
-                          self.cube.coord('time')[2:4])
-        self.assertEquals(b.coord('latitude'),
-                          self.cube.coord('latitude')[5:10])
-
-    def test_different_orders(self):
-        reverse_order = np.arange(self.cube.shape[0], 0, -1) - 1
-        a, b = iris.cube.CubeList([self.cube[reverse_order, ...][:4],
-                                   self.cube[:4]]).extract_overlapping('time')
-        self.assertEquals(a.coord('time'),
-                          self.cube[reverse_order, ...].coord('time')[2:4])
-        self.assertEquals(b.coord('time'),
-                          self.cube.coord('time')[2:4])
-
-
 class Test_CubeList_getitem(tests.IrisTest):
     def setUp(self):
         self.cube0 = iris.cube.Cube(0)
