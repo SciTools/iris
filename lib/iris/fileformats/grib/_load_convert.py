@@ -20,13 +20,14 @@ cube metadata.
 
 """
 
-from collections import namedtuple, OrderedDict
+from collections import namedtuple, Iterable, OrderedDict
 from datetime import datetime, timedelta
 import math
 import threading
 import warnings
 
 import numpy as np
+import numpy.ma as ma
 
 from iris.aux_factory import HybridPressureFactory
 import iris.coord_systems as icoord_systems
@@ -54,7 +55,7 @@ FixedSurface = namedtuple('FixedSurface', ['standard_name',
                                            'long_name',
                                            'units'])
 
-_CODE_TABLE_3_2_SHAPE_OF_THE_EARTH_RANGE = 9
+# Regulations 92.1.6.
 _GRID_ACCURACY_IN_DEGREES = 1e-6  # 1/1,000,000 of a degree
 
 # Reference Common Code Table C-1.
@@ -115,13 +116,43 @@ def unscale(value, factor):
     Args:
 
     * value:
-        Scaled value.
+        Scaled value or sequence of scaled values.
 
     * factor:
-        Scale factor.
+        Scale factor or sequence of scale factors.
+
+    Returns:
+        For scalar value and factor, the unscaled floating point
+        result is returned. If either value and/or factor are
+        MDI, then :data:`numpy.ma.masked` is returned.
+
+        For sequence value and factor, the unscaled floating point
+        :class:`numpy.ndarray` is returned. If either value and/or
+        factor contain MDI, then :class:`numpy.ma.core.MaskedArray`
+        is returned.
 
     """
-    return value / 10.0 ** factor
+    _unscale = lambda v, f: v / 10.0 ** f
+    if isinstance(value, Iterable) or isinstance(factor, Iterable):
+        def _masker(item):
+            result = ma.masked_equal(item, _MDI)
+            if ma.count_masked(result):
+                # Circumvent downstream NumPy "RuntimeWarning"
+                # of "overflow encountered in power" in _unscale
+                # for data containing _MDI.
+                result.data[result.mask] = 0
+            return result
+        value = _masker(value)
+        factor = _masker(factor)
+        result = _unscale(value, factor)
+        if ma.count_masked(result) == 0:
+            result = result.data
+    else:
+        result = ma.masked
+        if value != _MDI and factor != _MDI:
+            result = _unscale(value, factor)
+    return result
+
 
 # Regulations 92.1.4 and 92.1.5.
 _MDI = 2 ** 32 - 1
@@ -249,10 +280,12 @@ def scanning_mode(scanningMode):
                         j_consecutive, i_alternative)
 
 
-def ellipsoid(shapeOfTheEarth, major=None, minor=None):
+def ellipsoid(shapeOfTheEarth, major, minor, radius):
     """
     Translate the shape of the earth to an appropriate coordinate
     reference system.
+
+    For MDI set either major and minor or radius to :data:`numpy.ma.masked`
 
     Reference GRIB2 Code Table 3.2.
 
@@ -261,49 +294,79 @@ def ellipsoid(shapeOfTheEarth, major=None, minor=None):
     * shapeOfTheEarth:
         Message section 3, octet 15.
 
-    Kwargs:
-
     * major:
-        Semi-major axis in units determined by the shapeOfTheEarth.
+        Semi-major axis of the oblate spheroid in units determined by
+        the shapeOfTheEarth.
 
     * minor:
-        Semi-minor axis in units determined by the shapeOfTheEarth.
+        Semi-minor axis of the oblate spheroid in units determined by
+        the shapeOfTheEarth.
+
+    * radius:
+        Radius of sphere (in m).
 
     Returns:
         :class:`iris.coord_systems.CoordSystem`
 
     """
-    if shapeOfTheEarth > _CODE_TABLE_3_2_SHAPE_OF_THE_EARTH_RANGE:
-        msg = 'Grid definition section 3 contains an ' \
-            'invalid shape of the earth [{}]'.format(shapeOfTheEarth)
+    # Supported shapeOfTheEarth values.
+    if shapeOfTheEarth not in (0, 1, 3, 6, 7):
+        msg = 'Grid definition section 3 contains an unsupported ' \
+            'shape of the earth [{}]'.format(shapeOfTheEarth)
         raise TranslationError(msg)
 
     if shapeOfTheEarth == 0:
         # Earth assumed spherical with radius of 6 367 470.0m
         result = icoord_systems.GeogCS(6367470)
-    elif shapeOfTheEarth == 3:
+    elif shapeOfTheEarth == 1:
+        # Earth assumed spherical with radius specified (in m) by
+        # data producer.
+        if radius is ma.masked:
+            msg = 'Ellipsoid for shape of the earth {} requires a' \
+                'radius to be specified.'.format(shapeOfTheEarth)
+            raise ValueError(msg)
+        result = icoord_systems.GeogCS(radius)
+    elif shapeOfTheEarth in [3, 7]:
         # Earth assumed oblate spheroid with major and minor axes
-        # specified (in km) by data producer.
-        if major is None:
-            msg = 'Ellipsoid for shape of the earth {} requires a ' \
-                'semi-major axis to be specified.'.format(shapeOfTheEarth)
-            raise ValueError(msg)
-        if minor is None:
-            msg = 'Ellipsoid for shape of the earth {} requires a ' \
-                'semi-minor axis to be specified.'.format(shapeOfTheEarth)
-            raise ValueError(msg)
-        # Convert from km to m.
-        major *= 1000
-        minor *= 1000
+        # specified (in km)/(in m) by data producer.
+        emsg_oblate = 'Ellipsoid for shape of the earth [{}] requires a' \
+            'semi-{} axis to be specified.'
+        if major is ma.masked:
+            raise ValueError(emsg_oblate.format(shapeOfTheEarth, 'major'))
+        if minor is ma.masked:
+            raise ValueError(emsg_oblate.format(shapeOfTheEarth, 'minor'))
+        # Check whether to convert from km to m.
+        if shapeOfTheEarth == 3:
+            major *= 1000
+            minor *= 1000
         result = icoord_systems.GeogCS(major, minor)
     elif shapeOfTheEarth == 6:
         # Earth assumed spherical with radius of 6 371 229.0m
         result = icoord_systems.GeogCS(6371229)
-    else:
-        msg = 'Grid definition section 3 contains an unsupported ' \
-            'shape of the earth [{}]'.format(shapeOfTheEarth)
-        raise TranslationError(msg)
+
     return result
+
+
+def ellipsoid_geometry(section):
+    """
+    Calculated the unscaled ellipsoid major-axis, minor-axis and radius.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 3 of the message.
+
+    Returns:
+        Tuple containing the major-axis, minor-axis and radius.
+
+    """
+    major = unscale(section['scaledValueOfEarthMajorAxis'],
+                    section['scaleFactorOfEarthMajorAxis'])
+    minor = unscale(section['scaledValueOfEarthMinorAxis'],
+                    section['scaleFactorOfEarthMinorAxis'])
+    radius = unscale(section['scaledValueOfRadiusOfSphericalEarth'],
+                     section['scaleFactorOfRadiusOfSphericalEarth'])
+    return major, minor, radius
 
 
 def grid_definition_template_0_and_1(section, metadata, y_name, x_name, cs):
@@ -384,8 +447,8 @@ def grid_definition_template_0(section, metadata):
 
     """
     # Determine the coordinate system.
-    cs = ellipsoid(section['shapeOfTheEarth'])
-
+    major, minor, radius = ellipsoid_geometry(section)
+    cs = ellipsoid(section['shapeOfTheEarth'], major, minor, radius)
     grid_definition_template_0_and_1(section, metadata,
                                      'latitude', 'longitude', cs)
 
@@ -406,6 +469,7 @@ def grid_definition_template_1(section, metadata):
 
     """
     # Determine the coordinate system.
+    major, minor, radius = ellipsoid_geometry(section)
     south_pole_lat = (section['latitudeOfSouthernPole'] *
                       _GRID_ACCURACY_IN_DEGREES)
     south_pole_lon = (section['longitudeOfSouthernPole'] *
@@ -413,7 +477,8 @@ def grid_definition_template_1(section, metadata):
     cs = icoord_systems.RotatedGeogCS(-south_pole_lat,
                                       math.fmod(south_pole_lon + 180, 360),
                                       section['angleOfRotation'],
-                                      ellipsoid(section['shapeOfTheEarth']))
+                                      ellipsoid(section['shapeOfTheEarth'],
+                                                major, minor, radius))
     grid_definition_template_0_and_1(section, metadata,
                                      'grid_latitude', 'grid_longitude', cs)
 
