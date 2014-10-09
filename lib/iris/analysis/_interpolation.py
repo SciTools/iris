@@ -14,6 +14,63 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+"""A collection of helper functions for interpolation."""
+
+import numpy as np
+import numpy.ma as ma
+
+
+def extend_circular_coord(coord, points):
+    """
+    Return coordinates points with a shape extended by one
+    This is common when dealing with circular coordinates.
+
+    """
+    modulus = np.array(coord.units.modulus or 0,
+                       dtype=coord.dtype)
+    points = np.append(points, points[0] + modulus)
+    return points
+
+
+def extend_circular_coord_and_data(coord, data, coord_dim):
+    """
+    Return coordinate points and a data array with a shape extended by one
+    in the coord_dim axis. This is common when dealing with circular
+    coordinates.
+
+    """
+    points = extend_circular_coord(coord, coord.points)
+    data = extend_circular_data(data, coord_dim)
+    return points, data
+
+
+def extend_circular_data(data, coord_dim):
+    coord_slice_in_cube = [slice(None)] * data.ndim
+    coord_slice_in_cube[coord_dim] = slice(0, 1)
+
+    # TODO: Restore this code after resolution of the following issue:
+    # https://github.com/numpy/numpy/issues/478
+    # data = np.append(cube.data,
+    #                  cube.data[tuple(coord_slice_in_cube)],
+    #                  axis=sample_dim)
+    # This is the alternative, temporary workaround.
+    # It doesn't use append on an nD mask.
+    if not (isinstance(data, ma.MaskedArray) and
+            not isinstance(data.mask, np.ndarray)) or \
+            len(data.mask.shape) == 0:
+        data = np.append(data,
+                         data[tuple(coord_slice_in_cube)],
+                         axis=coord_dim)
+    else:
+        new_data = np.append(data.data,
+                             data.data[tuple(coord_slice_in_cube)],
+                             axis=coord_dim)
+        new_mask = np.append(data.mask,
+                             data.mask[tuple(coord_slice_in_cube)],
+                             axis=coord_dim)
+        data = ma.array(new_data, mask=new_mask)
+    return data
+
 
 def get_xy_dim_coords(cube):
     """

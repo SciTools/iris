@@ -22,7 +22,9 @@ import numpy as np
 import numpy.ma as ma
 from numpy.lib.stride_tricks import as_strided
 
-from iris.analysis._interpolation import get_xy_dim_coords, snapshot_grid
+from iris.analysis._interpolation import (extend_circular_coord,
+                                          extend_circular_data,
+                                          get_xy_dim_coords, snapshot_grid)
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
 from iris.analysis.cartography import wrap_lons as wrap_circular_points
 from iris.coords import DimCoord, AuxCoord
@@ -43,58 +45,6 @@ _LINEAR_EXTRAPOLATION_MODES = {
     'mask': _LinearExtrapMode(False, np.nan, 1, True),
     'nanmask': _LinearExtrapMode(False, np.nan, 1, False)
 }
-
-
-def _extend_circular_coord(coord, points):
-    """
-    Return coordinates points with a shape extended by one
-    This is common when dealing with circular coordinates.
-
-    """
-    modulus = np.array(coord.units.modulus or 0,
-                       dtype=coord.dtype)
-    points = np.append(points, points[0] + modulus)
-    return points
-
-
-def _extend_circular_coord_and_data(coord, data, coord_dim):
-    """
-    Return coordinate points and a data array with a shape extended by one
-    in the coord_dim axis. This is common when dealing with circular
-    coordinates.
-
-    """
-    points = _extend_circular_coord(coord, coord.points)
-    data = _extend_circular_data(data, coord_dim)
-    return points, data
-
-
-def _extend_circular_data(data, coord_dim):
-    coord_slice_in_cube = [slice(None)] * data.ndim
-    coord_slice_in_cube[coord_dim] = slice(0, 1)
-
-    # TODO: Restore this code after resolution of the following issue:
-    # https://github.com/numpy/numpy/issues/478
-    # data = np.append(cube.data,
-    #                  cube.data[tuple(coord_slice_in_cube)],
-    #                  axis=sample_dim)
-    # This is the alternative, temporary workaround.
-    # It doesn't use append on an nD mask.
-    if not (isinstance(data, ma.MaskedArray) and
-            not isinstance(data.mask, np.ndarray)) or \
-            len(data.mask.shape) == 0:
-        data = np.append(data,
-                         data[tuple(coord_slice_in_cube)],
-                         axis=coord_dim)
-    else:
-        new_data = np.append(data.data,
-                             data.data[tuple(coord_slice_in_cube)],
-                             axis=coord_dim)
-        new_mask = np.append(data.mask,
-                             data.mask[tuple(coord_slice_in_cube)],
-                             axis=coord_dim)
-        data = ma.array(new_data, mask=new_mask)
-    return data
 
 
 def _canonical_sample_points(coords, sample_points):
@@ -215,7 +165,7 @@ class LinearInterpolator(object):
             # Also extend data if circular (to match the coord points, which
             # 'setup' already extended).
             if circular:
-                data = _extend_circular_data(data, dim)
+                data = extend_circular_data(data, dim)
 
         return points, data
 
@@ -360,7 +310,7 @@ class LinearInterpolator(object):
             if circular or modulus:
                 # Only DimCoords can be circular.
                 if circular:
-                    coord_points = _extend_circular_coord(coord, coord_points)
+                    coord_points = extend_circular_coord(coord, coord_points)
                 offset = ((coord_points.max() + coord_points.min() - modulus)
                           * 0.5)
                 self._circulars.append((circular, modulus,
