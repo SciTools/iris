@@ -20,7 +20,7 @@
 # importing anything else.
 import iris.tests as tests
 
-import cartopy.crs
+import cartopy.crs as ccrs
 from iris.coord_systems import GeogCS, VerticalPerspective
 
 
@@ -39,10 +39,10 @@ class Test_cartopy_crs(tests.IrisTest):
 
     def test_crs_creation(self):
         res = self.vp_cs.as_cartopy_crs()
-        globe = cartopy.crs.Globe(semimajor_axis=self.semi_major_axis,
-                                  semiminor_axis=self.semi_minor_axis,
-                                  ellipse=None)
-        expected = cartopy.crs.Geostationary(
+        globe = ccrs.Globe(semimajor_axis=self.semi_major_axis,
+                           semiminor_axis=self.semi_minor_axis,
+                           ellipse=None)
+        expected = ccrs.Geostationary(
             self.longitude_of_projection_origin,
             self.perspective_point_height,
             globe=globe)
@@ -64,10 +64,10 @@ class Test_cartopy_projection(tests.IrisTest):
 
     def test_projection_creation(self):
         res = self.vp_cs.as_cartopy_projection()
-        globe = cartopy.crs.Globe(semimajor_axis=self.semi_major_axis,
-                                  semiminor_axis=self.semi_minor_axis,
-                                  ellipse=None)
-        expected = cartopy.crs.Geostationary(
+        globe = ccrs.Globe(semimajor_axis=self.semi_major_axis,
+                           semiminor_axis=self.semi_minor_axis,
+                           ellipse=None)
+        expected = ccrs.Geostationary(
             self.longitude_of_projection_origin,
             self.perspective_point_height,
             globe=globe)

@@ -24,7 +24,7 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 import collections
 import datetime
 
-import cartopy.crs
+import cartopy.crs as ccrs
 import cartopy.mpl.geoaxes
 import matplotlib.axes
 import matplotlib.collections as mpl_collections
@@ -523,7 +523,7 @@ def _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord, kwargs):
     if cs is not None:
         cartopy_proj = cs.as_cartopy_projection()
     else:
-        cartopy_proj = cartopy.crs.PlateCarree()
+        cartopy_proj = ccrs.PlateCarree()
 
     # Ensure the current axes are a cartopy.mpl.GeoAxes instance.
     _replace_axes_with_cartopy_axes(cartopy_proj)
