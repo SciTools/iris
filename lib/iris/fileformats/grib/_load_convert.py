@@ -112,6 +112,10 @@ _STATISTIC_TYPE_OF_TIME_INTERVAL = {
 # NOTE: Our test data contains the value 2, which is all we currently support.
 # The exact interpretation of this is still unclear.
 
+# Class containing details of a probability analysis.
+Probability = namedtuple('Probability',
+                         ('probability_type_name', 'threshold'))
+
 
 # Regulation 92.1.12
 def unscale(value, factor):
@@ -690,7 +694,7 @@ def grid_definition_section(section, metadata):
 ###############################################################################
 
 def translate_phenomenon(metadata, discipline, parameterCategory,
-                         parameterNumber):
+                         parameterNumber, probability=None):
     """
     Translate GRIB2 phenomenon to CF phenomenon.
 
@@ -710,14 +714,36 @@ def translate_phenomenon(metadata, discipline, parameterCategory,
     * parameterNumber:
         Message section 4, octet 11.
 
+    Kwargs:
+
+    * probability (:class:`Probability`):
+        If present, the data encodes a forecast probability analysis with the
+        given properties.
+
     """
     cf = itranslation.grib2_phenom_to_cf_info(param_discipline=discipline,
                                               param_category=parameterCategory,
                                               param_number=parameterNumber)
     if cf is not None:
-        metadata['standard_name'] = cf.standard_name
-        metadata['long_name'] = cf.long_name
-        metadata['units'] = cf.units
+        if probability is None:
+            metadata['standard_name'] = cf.standard_name
+            metadata['long_name'] = cf.long_name
+            metadata['units'] = cf.units
+        else:
+            # The basic name+unit info goes into a 'threshold coordinate' which
+            # encodes probability threshold values.
+            threshold_coord = DimCoord(
+                probability.threshold,
+                standard_name=cf.standard_name, long_name=cf.long_name,
+                units=cf.units)
+            metadata['aux_coords_and_dims'].append((threshold_coord, None))
+            # The main cube has an adjusted name, and units of '1'.
+            base_name = cf.standard_name or cf.long_name
+            long_name = 'probability_of_{}_{}'.format(
+                base_name, probability.probability_type_name)
+            metadata['standard_name'] = None
+            metadata['long_name'] = long_name
+            metadata['units'] = Unit(1)
 
 
 def time_range_unit(indicatorOfUnitOfTimeRange):
@@ -1247,6 +1273,66 @@ def product_definition_template_8(section, metadata, frt_coord):
     vertical_coords(section, metadata)
 
 
+def product_definition_template_9(section, metadata, frt_coord):
+    """
+    Translate template representing probability forecasts at a
+    horizontal level or in a horizontal layer in a continuous or
+    non-continuous time interval.
+
+    Updates the metadata in-place with the translations.
+
+    Args:
+
+    * section:
+        Dictionary of coded key/value pairs from section 4 of the message.
+
+    * metadata:
+        :class:`collections.OrderedDict` of metadata.
+
+    * frt_coord:
+        The scalar forecast reference time :class:`iris.coords.DimCoord`.
+
+    """
+    # Start by calling PDT8 as all elements of that are common to this.
+    product_definition_template_8(section, metadata, frt_coord)
+
+    # Remove the cell_method encoding the underlying statistic, as CF does not
+    # currently support this type of representation.
+    cell_method, = metadata['cell_methods']
+    metadata['cell_methods'] = []
+    # NOTE: we currently don't record the nature of the underlying statistic,
+    # as we don't have an agreed way of representing that in CF.
+
+    # Return a probability object to control the production of a probability
+    # result.  This is done once the underlying phenomenon type is determined,
+    # in 'translate_phenomenon'.
+    probability_typecode = section['probabilityType']
+    if probability_typecode == 1:
+        # Type is "above upper level".
+        threshold_value = section['scaledValueOfUpperLimit']
+        if threshold_value == _MDI:
+            msg = 'Product definition section 4 has missing ' \
+                'scaled value of upper limit'
+            raise TranslationError(msg)
+        threshold_scaling = section['scaleFactorOfUpperLimit']
+        if threshold_scaling == _MDI:
+            msg = 'Product definition section 4 has missing ' \
+                'scale factor of upper limit'
+            raise TranslationError(msg)
+        # Encode threshold information.
+        threshold = unscale(threshold_value, threshold_scaling)
+        probability_type = Probability('above_threshold', threshold)
+        # Note that GRIB provides separate "above lower threshold" and "above
+        # upper threshold" probability types.  This naming style doesn't
+        # recognise that distinction.  For now, assume this is not important.
+    else:
+        msg = ('Product definition section 4 contains an unsupported '
+               'probability type [{}]'.format(probability_typecode))
+        raise TranslationError(msg)
+
+    return probability_type
+
+
 def product_definition_template_31(section, metadata, rt_coord):
     """
     Translate template representing a satellite product.
@@ -1335,6 +1421,7 @@ def product_definition_section(section, metadata, discipline, tablesVersion,
     # Reference GRIB2 Code Table 4.0.
     template = section['productDefinitionTemplateNumber']
 
+    probability = None
     if template == 0:
         # Process analysis or forecast at a horizontal level or
         # in a horizontal layer at a point in time.
@@ -1347,6 +1434,9 @@ def product_definition_section(section, metadata, discipline, tablesVersion,
         # Process statistically processed values at a horizontal level or in a
         # horizontal layer in a continuous or non-continuous time interval.
         product_definition_template_8(section, metadata, rt_coord)
+    elif template == 9:
+        probability = \
+            product_definition_template_9(section, metadata, rt_coord)
     elif template == 31:
         # Process satellite product.
         product_definition_template_31(section, metadata, rt_coord)
@@ -1359,7 +1449,8 @@ def product_definition_section(section, metadata, discipline, tablesVersion,
     if tablesVersion != _CODE_TABLES_MISSING:
         translate_phenomenon(metadata, discipline,
                              section['parameterCategory'],
-                             section['parameterNumber'])
+                             section['parameterNumber'],
+                             probability=probability)
 
 
 ###############################################################################
