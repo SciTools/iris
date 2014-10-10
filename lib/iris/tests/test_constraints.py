@@ -21,8 +21,6 @@ Test the constrained cube loading mechanism.
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import biggus
-
 import iris
 import iris.tests.stock as stock
 
