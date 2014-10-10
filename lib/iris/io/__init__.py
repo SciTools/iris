@@ -22,7 +22,6 @@ import glob
 import os.path
 import types
 import re
-import warnings
 import collections
 
 import iris.fileformats

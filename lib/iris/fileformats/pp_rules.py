@@ -18,8 +18,6 @@
 # Historically this was auto-generated from
 # SciTools/iris-code-generators:tools/gen_rules.py
 
-import warnings
-
 import numpy as np
 
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
