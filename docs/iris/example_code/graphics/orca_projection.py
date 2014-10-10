@@ -12,7 +12,6 @@ using different projections for the output image.
 
 """
 
-import matplotlib
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs
