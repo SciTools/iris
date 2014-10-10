@@ -28,7 +28,6 @@ from copy import deepcopy
 
 import mock
 
-from iris.coords import DimCoord
 from iris.fileformats.grib._load_convert import grid_definition_template_5
 
 
