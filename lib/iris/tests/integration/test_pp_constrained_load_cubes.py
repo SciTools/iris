@@ -20,8 +20,6 @@
 # importing anything else.
 import iris.tests as tests
 
-import mock
-
 import iris
 from iris.fileformats import pp
 from iris.fileformats.pp_rules import convert

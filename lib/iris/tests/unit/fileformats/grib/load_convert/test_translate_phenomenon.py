@@ -24,7 +24,6 @@ Tests for function
 import iris.tests as tests
 
 from copy import deepcopy
-import mock
 
 from iris.coords import DimCoord
 from iris.unit import Unit
