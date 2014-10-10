@@ -24,7 +24,6 @@ import datetime
 
 import mock
 import netcdftime
-import numpy as np
 
 from iris.coords import Cell
 from iris.time import PartialDateTime

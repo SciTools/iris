@@ -27,7 +27,6 @@ import iris.tests as tests
 from copy import deepcopy
 
 import mock
-import numpy as np
 
 from iris.coords import DimCoord
 from iris.fileformats.grib._load_convert import grid_definition_template_5

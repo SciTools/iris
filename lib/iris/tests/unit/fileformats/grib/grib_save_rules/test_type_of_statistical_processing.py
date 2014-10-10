@@ -22,7 +22,6 @@ import iris.tests as tests
 
 import gribapi
 import mock
-import numpy as np
 
 from iris.fileformats.grib.grib_save_rules \
     import type_of_statistical_processing

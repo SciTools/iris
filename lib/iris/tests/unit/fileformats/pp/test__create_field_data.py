@@ -22,7 +22,6 @@ import iris.tests as tests
 
 import biggus
 import mock
-import numpy as np
 
 import iris.fileformats.pp as pp
 

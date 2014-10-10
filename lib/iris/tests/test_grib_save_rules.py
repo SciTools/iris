@@ -21,7 +21,6 @@ import iris.tests as tests
 
 import gribapi
 import numpy as np
-import numpy.ma as ma
 import mock
 import warnings
 

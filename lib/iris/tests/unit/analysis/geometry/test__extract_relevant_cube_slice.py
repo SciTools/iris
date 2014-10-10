@@ -26,7 +26,6 @@ from __future__ import division
 import iris.tests as tests
 import iris.tests.stock
 
-import numpy as np
 import shapely.geometry
 
 import iris

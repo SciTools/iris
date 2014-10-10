@@ -23,7 +23,6 @@ import iris.tests as tests
 from copy import deepcopy
 
 import mock
-import numpy as np
 
 import iris.fileformats.pp as pp
 
