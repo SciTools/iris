@@ -34,7 +34,7 @@ from iris.analysis import WeightedAggregator, Aggregator
 from iris.analysis import MEAN
 from iris.cube import Cube
 from iris.coords import AuxCoord, DimCoord
-from iris.exceptions import CoordinateNotFoundError, LazyAggregatorError
+from iris.exceptions import CoordinateNotFoundError
 import iris.tests.stock as stock
 
 

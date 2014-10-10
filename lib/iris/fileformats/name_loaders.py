@@ -832,7 +832,7 @@ def load_NAMEIII_trajectory(filename):
             z_column = i
             break
     if z_column is None:
-        raise iris.exceptions.TranslationError("Expected a Z column")
+        raise TranslationError("Expected a Z column")
 
     # Every column up to Z becomes a coordinate.
     coords = []
