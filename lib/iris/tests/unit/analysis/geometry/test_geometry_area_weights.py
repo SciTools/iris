@@ -25,7 +25,7 @@ from __future__ import division
 # importing anything else.
 
 import iris.tests as tests
-import iris.tests.stock
+import iris.tests.stock as stock
 
 import warnings
 import numpy as np
@@ -67,7 +67,7 @@ class Test(tests.IrisTest):
 
     @tests.skip_data
     def test_distinct_xy(self):
-        cube = tests.stock.simple_pp()
+        cube = stock.simple_pp()
         cube = cube[:4, :4]
         lon = cube.coord('longitude')
         lat = cube.coord('latitude')
@@ -92,7 +92,7 @@ class Test(tests.IrisTest):
     @tests.skip_data
     def test_distinct_xy_bounds(self):
         # cases where geometry bnds are outside cube bnds correctly handled?
-        cube = tests.stock.simple_pp()
+        cube = stock.simple_pp()
         cube = cube[:4, :4]
         lon = cube.coord('longitude')
         lat = cube.coord('latitude')
@@ -123,7 +123,7 @@ class Test(tests.IrisTest):
     @tests.skip_data
     def test_distinct_xy_bounds_pole(self):
         # is UserWarning issued for out-of-bounds? results will be unexpected!
-        cube = tests.stock.simple_pp()
+        cube = stock.simple_pp()
         cube = cube[:4, :4]
         lon = cube.coord('longitude')
         lat = cube.coord('latitude')
@@ -152,7 +152,7 @@ class Test(tests.IrisTest):
         self.assertTrue(np.allclose(weights, target))
 
     def test_shared_xy(self):
-        cube = tests.stock.track_1d()
+        cube = stock.track_1d()
         geometry = shapely.geometry.box(1, 4, 3.5, 7)
         weights = geometry_area_weights(cube, geometry)
         target = np.array([0, 0, 2, 0.5, 0, 0, 0, 0, 0, 0, 0])
