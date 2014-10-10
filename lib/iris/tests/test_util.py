@@ -23,7 +23,6 @@ Test iris.util
 import iris.tests as tests
 
 import inspect
-import os
 import StringIO
 import unittest
 

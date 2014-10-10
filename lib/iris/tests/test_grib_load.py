@@ -21,7 +21,6 @@ import iris.tests as tests
 
 import datetime
 from distutils.version import StrictVersion
-import os
 
 import gribapi
 import mock
