@@ -19,7 +19,6 @@ Time handling.
 
 """
 import functools
-import operator
 
 import netcdftime
 

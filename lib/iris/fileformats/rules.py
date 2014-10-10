@@ -24,7 +24,6 @@ import collections
 import getpass
 import logging
 import logging.handlers as handlers
-import operator
 import os
 import os.path
 import platform
