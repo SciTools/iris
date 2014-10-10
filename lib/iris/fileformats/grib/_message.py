@@ -19,7 +19,7 @@ Defines a lightweight wrapper class to wrap a single GRIB message.
 
 """
 
-from collections import OrderedDict, namedtuple
+from collections import namedtuple
 import re
 
 import biggus
