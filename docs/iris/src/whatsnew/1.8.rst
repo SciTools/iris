@@ -10,6 +10,8 @@ This document explains the new/changed features of Iris in version 1.8.
 Iris 1.8 features
 =================
 
+* :func:`iris.cube.CubeList.concatenate` now works with biggus arrays and so
+  now supports concatenation of deferred data cubes.
 * :meth: `iris.cube.Cube.slices_over` returns an iterator over all subcubes along a given
   coordinate or dimension index.
 * :meth:`iris.cube.Cube.interpolate` now accepts instances of datetime.datetime and 
@@ -81,3 +83,4 @@ Documentation Changes
   </installing.rst>`.
 * Updates to :doc:`regridding and interpolation </userguide/interpolation_and_regridding>`
   have been added to the :doc:`user guide </userguide/index>`.
+

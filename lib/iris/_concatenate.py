@@ -17,21 +17,14 @@
 """
 Automatic concatenation of multiple cubes over one or more existing dimensions.
 
-.. warning::
-
-    Currently, the :func:`concatenate` routine will load the data payload
-    of all cubes passed to it.
-
-    This restriction will be relaxed in a future release.
-
 """
 
 from __future__ import (absolute_import, division, print_function)
 
 from collections import defaultdict, namedtuple
 
+import biggus
 import numpy as np
-import numpy.ma as ma
 
 import iris.coords
 import iris.cube
@@ -267,10 +260,6 @@ def concatenate(cubes, error_on_mismatch=False):
 
     # Register each cube with its appropriate proto-cube.
     for cube in cubes:
-        # TODO: Remove this when new deferred data mechanism is available.
-        # Avoid deferred data/data manager issues, and load the cube data!
-        cube.data
-
         name = cube.standard_name or cube.long_name
         proto_cubes = proto_cubes_by_name[name]
         registered = False
@@ -331,7 +320,7 @@ class _CubeSignature(object):
         self.anonymous = covered != set(range(self.ndim))
 
         self.defn = cube.metadata
-        self.data_type = cube.data.dtype
+        self.data_type = cube.dtype
 
         #
         # Collate the dimension coordinate metadata.
@@ -615,7 +604,6 @@ class _ProtoCube(object):
         # The cube signature is a combination of cube and coordinate
         # metadata that defines this proto-cube.
         self._cube_signature = _CubeSignature(cube)
-        self._data_is_masked = ma.isMaskedArray(cube.data)
 
         # The coordinate signature allows suitable non-overlapping
         # source-cubes to be identified.
@@ -623,7 +611,7 @@ class _ProtoCube(object):
 
         # The list of source-cubes relevant to this proto-cube.
         self._skeletons = []
-        self._add_skeleton(self._coord_signature, cube.data)
+        self._add_skeleton(self._coord_signature, cube.lazy_data())
 
         # The nominated axis of concatenation.
         self._axis = None
@@ -725,8 +713,7 @@ class _ProtoCube(object):
 
         if match:
             # Register the cube as a source-cube for this proto-cube.
-            self._add_skeleton(coord_signature, cube.data)
-            self._data_is_masked |= ma.isMaskedArray(cube.data)
+            self._add_skeleton(coord_signature, cube.lazy_data())
             # Declare the nominated axis of concatenation.
             self._axis = candidate_axis
 
@@ -819,10 +806,7 @@ class _ProtoCube(object):
         skeletons = self._skeletons
         data = [skeleton.data for skeleton in skeletons]
 
-        if self._data_is_masked:
-            data = ma.concatenate(tuple(data), axis=self.axis)
-        else:
-            data = np.concatenate(tuple(data), axis=self.axis)
+        data = biggus.LinearMosaic(tuple(data), axis=self.axis)
 
         return data
 
