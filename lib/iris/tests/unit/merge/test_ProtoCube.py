@@ -31,7 +31,6 @@ from iris._merge import ProtoCube
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import DimCoord, AuxCoord
 from iris.exceptions import MergeError
-from iris.unit import Unit
 
 
 def example_cube():
