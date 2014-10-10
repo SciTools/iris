@@ -28,7 +28,6 @@ import iris.tests.stock
 
 import shapely.geometry
 
-import iris
 from iris.analysis.geometry import _extract_relevant_cube_slice
 
 

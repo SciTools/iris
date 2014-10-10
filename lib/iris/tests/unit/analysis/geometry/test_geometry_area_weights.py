@@ -31,7 +31,6 @@ import warnings
 import numpy as np
 import shapely.geometry
 
-import iris
 from iris.analysis.geometry import geometry_area_weights
 from iris.coords import DimCoord
 from iris.cube import Cube
