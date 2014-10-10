@@ -20,8 +20,6 @@ Time handling.
 """
 import functools
 
-import netcdftime
-
 
 @functools.total_ordering
 class PartialDateTime(object):
