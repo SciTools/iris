@@ -24,7 +24,6 @@ Test function :func:`iris.fileformats.grib._load_convert.time_range_unit.
 import iris.tests as tests
 
 from iris.exceptions import TranslationError
-from iris.fileformats.grib._load_convert import _TIME_RANGE_UNITS
 from iris.fileformats.grib._load_convert import time_range_unit
 from iris.unit import Unit
 

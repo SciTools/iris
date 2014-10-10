@@ -26,8 +26,7 @@ import types
 from iris.aux_factory import HybridHeightFactory
 from iris.cube import Cube
 from iris.fileformats.rules import ConcreteReferenceTarget, Factory, Loader, \
-                                   Reference, ReferenceTarget, RuleResult, \
-                                   load_cubes
+                                   Reference, ReferenceTarget, load_cubes
 import iris.tests.stock as stock
 
 
