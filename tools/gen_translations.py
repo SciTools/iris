@@ -25,11 +25,11 @@ import os.path
 
 from metarelate.fuseki import FusekiServer
 
-from translator import (FORMAT_URIS, FieldcodeCFMapping, StashCFMapping,
-                        CFFieldcodeMapping, GRIB1LocalParamCFConstrainedMapping,
-                        GRIB1LocalParamCFMapping, GRIB2ParamCFMapping,
-                        CFConstrainedGRIB1LocalParamMapping,
-                        CFGRIB2ParamMapping, CFGRIB1LocalParamMapping)
+from translator import (FORMAT_URIS, FieldcodeCFMappings, StashCFMappings,
+                        CFFieldcodeMappings, GRIB1LocalParamCFConstrainedMappings,
+                        GRIB1LocalParamCFMappings, GRIB2ParamCFMappings,
+                        CFConstrainedGRIB1LocalParamMappings,
+                        CFGRIB2ParamMappings, CFGRIB1LocalParamMappings)
 
 HEADER = """# (C) British Crown Copyright 2013 - {year}, Met Office
 #
@@ -128,13 +128,20 @@ def build_um_cf_map(fuseki, filename):
         # Encode the relevant UM to CF translations.
         maps = _retrieve_mappings(fuseki, FORMAT_URIS['umf'],
                                   FORMAT_URIS['cff'])
-        fh.writelines(FieldcodeCFMapping(maps).lines(fuseki))
-        fh.writelines(StashCFMapping(maps).lines(fuseki))
+        # create the collections, then call lines on each one
+        # for thread safety during lines and encode
+        fccf = FieldcodeCFMappings(maps)
+        stcf = StashCFMappings(maps)
+        fh.writelines(fccf.lines(fuseki))
+        fh.writelines(stcf.lines(fuseki))
 
         # Encode the relevant CF to UM translations.
         maps = _retrieve_mappings(fuseki, FORMAT_URIS['cff'],
                                   FORMAT_URIS['umf'])
-        fh.writelines(CFFieldcodeMapping(maps).lines(fuseki))
+        # create the collections, then call lines on each one
+        # for thread safety during lines and encode
+        cffc = CFFieldcodeMappings(maps)
+        fh.writelines(cffc.lines(fuseki))
 
 
 def build_grib_cf_map(fuseki, filename):
@@ -162,16 +169,26 @@ def build_grib_cf_map(fuseki, filename):
         # Encode the relevant GRIB to CF translations.
         maps = _retrieve_mappings(fuseki, FORMAT_URIS['gribm'],
                                   FORMAT_URIS['cff'])
-        fh.writelines(GRIB1LocalParamCFConstrainedMapping(maps).lines(fuseki))
-        fh.writelines(GRIB1LocalParamCFMapping(maps).lines(fuseki))
-        fh.writelines(GRIB2ParamCFMapping(maps).lines(fuseki))
+        # create the collections, then call lines on each one
+        # for thread safety during lines and encode
+        g1cfc = GRIB1LocalParamCFConstrainedMappings(maps)
+        g1c = GRIB1LocalParamCFMappings(maps)
+        g2c = GRIB2ParamCFMappings(maps)
+        fh.writelines(g1cfc.lines(fuseki))
+        fh.writelines(g1c.lines(fuseki))
+        fh.writelines(g2c.lines(fuseki))
 
         # Encode the relevant CF to GRIB translations.
         maps = _retrieve_mappings(fuseki, FORMAT_URIS['cff'],
                                   FORMAT_URIS['gribm'])
-        fh.writelines(CFConstrainedGRIB1LocalParamMapping(maps).lines(fuseki))
-        fh.writelines(CFGRIB1LocalParamMapping(maps).lines(fuseki))
-        fh.writelines(CFGRIB2ParamMapping(maps).lines(fuseki))
+        # create the collections, then call lines on each one
+        # for thread safety during lines and encode
+        cfcg1 = CFConstrainedGRIB1LocalParamMappings(maps)
+        cg1 = CFGRIB1LocalParamMappings(maps)
+        cg2 = CFGRIB2ParamMappings(maps)
+        fh.writelines(cfcg1.lines(fuseki))
+        fh.writelines(cg1.lines(fuseki))
+        fh.writelines(cg2.lines(fuseki))
 
 def main():
     with FusekiServer() as fuseki:

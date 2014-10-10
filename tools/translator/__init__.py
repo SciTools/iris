@@ -21,25 +21,20 @@ translations.
 """
 
 from abc import ABCMeta, abstractmethod, abstractproperty
-from collections import namedtuple
+from collections import deque, namedtuple
+import copy
+from Queue import Queue
 import re
+from threading import Thread
 import warnings
 
-from metarelate.fuseki import FusekiServer
+from metarelate.fuseki import FusekiServer, WorkerThread, MAXTHREADS
 import metarelate
 
 # known format identifier URIs
 FORMAT_URIS = {'cff': '<http://def.scitools.org.uk/cfdatamodel/Field>',
                'gribm': '<http://codes.wmo.int/def/codeform/GRIB-message>',
                'umf': '<http://reference.metoffice.gov.uk/um/f3/UMField>'}
-
-# Restrict the tokens exported from this module.
-__all__ = ['Mapping', 'CFFieldcodeMapping',
-           'FieldcodeCFMapping', 'StashCFMapping',
-           'GRIB1LocalParamCFMapping', 'CFGRIB1LocalParamMapping',
-           'GRIB1LocalParamCFConstrainedMapping',
-           'CFConstrainedGRIB1LocalParamMapping',
-           'GRIB2ParamCFMapping', 'CFGRIB2ParamMapping']
 
 CFName = namedtuple('CFName', 'standard_name long_name units')
 DimensionCoordinate = namedtuple('DimensionCoordinate',
@@ -48,7 +43,60 @@ G1LocalParam = namedtuple('G1LocalParam', 'edition t2version centre iParam')
 G2Param = namedtuple('G2Param', 'edition discipline category number')
 
 
-class Mapping(object):
+class MappingEncodeWorker(WorkerThread):
+    """Worker thread class for handling EncodableMap instances"""
+    def dowork(self, resource):
+        resource.encode(self.fuseki_process)
+
+
+class EncodableMap(object):
+    """
+    A metarelate mapping able to encode itself as a string for use in Iris,
+    as defined by a translator Mappings subclass
+
+    """
+    def __init__(self, mapping, sourcemsg, targetmsg, sourceid, targetid):
+        """
+        Args:
+        * mapping:
+            A :class:`metarelate.Mapping` instance representing a translation.
+        * sourcemsg:
+            The code snippet message for the source of the translation for
+            formatting
+        * targetmsg:
+            The code snippet message for the target of the translation for
+            formatting
+        * sourceid:
+            A dictionary of required key:value pairs required by the sourcemsg
+        * targetid:
+            A dictionary of required key:value pairs required by the targetmsg
+
+        """
+        self.mapping = mapping
+        self.sourcemsg = sourcemsg
+        self.targetmsg = targetmsg
+        self.sourceid = sourceid
+        self.targetid = targetid
+        self.encoding = None
+
+    def encode(self, fuseki_process):
+        """
+        Return a string of the Python source code required to represent an
+        entry in a dictionary mapping source to target.
+
+        Args:
+        * fuseki_process:
+            A :class:`metarelate.fuseki.FusekiServer` instance.
+
+        """
+        sids, tids = self.mapping.get_identifiers(fuseki_process)
+        self.sourceid.update(sids)
+        self.targetid.update(tids)
+        self.encoding = '{}: {}'.format(self.sourcemsg.format(**self.sourceid),
+                                        self.targetmsg.format(**self.targetid))
+
+
+class Mappings(object):
     """
     Abstract base class to support the encoding of specific metarelate
     mapping translations.
@@ -60,7 +108,7 @@ class Mapping(object):
         """
         Filter the given sequence of mappings for those member
         :class:`metarelate.Mapping` translations containing a source
-        :class`metarelate.Component` with a matching
+        :class:`metarelate.Component` with a matching
         :attribute:`Mapping.source_scheme` and a target
         :class:`metarelate.Component` with a matching
         :attribute:`Mapping.target_scheme`.
@@ -78,10 +126,13 @@ class Mapping(object):
         for mapping in mappings:
             source = mapping.source
             target = mapping.target
+            sourcemsg, targetmsg = self.msg_strings()
+            sourceid, targetid = self.get_initial_id_nones()
             if source.com_type == self.source_scheme and \
                     target.com_type == self.target_scheme and \
                     self.valid_mapping(mapping):
-                temp.append(mapping)
+                temp.append(EncodableMap(mapping, sourcemsg, targetmsg,
+                                         sourceid, targetid))
         self.mappings = temp
         if len(self) == 0:
             msg = '{!r} contains no mappings.'
@@ -106,9 +157,24 @@ class Mapping(object):
         msg = '\tGenerating phenomenon translation {!r}.'
         print msg.format(self.mapping_name)
         lines = ['\n%s = {\n' % self.mapping_name]
+        # Retrieve encodings for the collection of mapping instances.
+        # Retrieval is threaded as it is heavily bound by resource resolution
+        # over http.
+        # Queue for metarelate mapping instances
+        mapenc_queue = Queue()
+        for mapping in self.mappings:
+            mapenc_queue.put(mapping)
+        # deque to contain the results of the jobs processed from the queue
+        mapencs = deque()
+        # run worker threads
+        for i in range(MAXTHREADS):
+            MappingEncodeWorker(mapenc_queue, mapencs, fuseki_process).start()
+        # block progress until the queue is empty
+        mapenc_queue.join()
+        # end of threaded retrieval process.
 
-        payload = [self.encode(mapping, fuseki_process) for mapping in self.mappings]
         # now sort the payload
+        payload = [mapenc.encoding for mapenc in mapencs]
         payload.sort(key=self._key)
         lines.extend(payload)
         lines.append('    }\n')
@@ -170,28 +236,6 @@ class Mapping(object):
         sourceid = {}
         targetid = {}
         return sourceid, targetid
-
-    def encode(self, mapping, fuseki_process):
-        """
-        Return a string of the Python source code required to represent an
-        entry in a dictionary mapping source to target.
-
-        Args:
-        * mapping:
-            A :class:`metarelate.Mapping` instance representing a translation.
-
-        Returns:
-            String.
-
-        """
-        sourcemsg, targetmsg = self.msg_strings()
-        sourceid, targetid = self.get_initial_id_nones()
-        for prop in mapping.source.properties:
-            sourceid.update(prop.get_identifiers(fuseki_process))
-        for prop in mapping.target.properties:
-            targetid.update(prop.get_identifiers(fuseki_process))
-        return '{}: {}'.format(sourcemsg.format(**sourceid),
-                               targetmsg.format(**targetid))
 
     def is_cf(self, comp):
         """
@@ -327,7 +371,7 @@ def _cfn(line):
     return [standard_name, long_name, units]
 
 
-class CFFieldcodeMapping(Mapping):
+class CFFieldcodeMappings(Mappings):
     """
     Represents a container for CF phenomenon to UM field-code metarelate
     mapping translations.
@@ -396,7 +440,7 @@ class CFFieldcodeMapping(Mapping):
         return self.is_cf(mapping.source) and self.is_fieldcode(mapping.target)
 
 
-class FieldcodeCFMapping(Mapping):
+class FieldcodeCFMappings(Mappings):
     """
     Represents a container for UM field-code to CF phenomenon metarelate
     mapping translations.
@@ -464,7 +508,7 @@ class FieldcodeCFMapping(Mapping):
         return self.is_fieldcode(mapping.source) and self.is_cf(mapping.target)
 
 
-class StashCFMapping(Mapping):
+class StashCFMappings(Mappings):
     """
     Represents a container for UM stash-code to CF phenomenon metarelate
     mapping translations.
@@ -533,7 +577,7 @@ class StashCFMapping(Mapping):
         return self.is_stash(mapping.source) and self.is_cf(mapping.target)
 
 
-class GRIB1LocalParamCFMapping(Mapping):
+class GRIB1LocalParamCFMappings(Mappings):
     """
     Represents a container for GRIB (edition 1) local parameter to
     CF phenomenon metarelate mapping translations.
@@ -609,7 +653,7 @@ class GRIB1LocalParamCFMapping(Mapping):
             self.is_cf(mapping.target)
 
 
-class CFGRIB1LocalParamMapping(Mapping):
+class CFGRIB1LocalParamMappings(Mappings):
     """
     Represents a container for CF phenomenon to GRIB (edition 1) local
     parameter metarelate mapping translations.
@@ -681,7 +725,7 @@ class CFGRIB1LocalParamMapping(Mapping):
             self.is_grib1_local_param(mapping.target)
 
 
-class GRIB1LocalParamCFConstrainedMapping(Mapping):
+class GRIB1LocalParamCFConstrainedMappings(Mappings):
     """
     Represents a container for GRIB (edition 1) local parameter to
     CF phenomenon and dimension coordinate constraint metarelate mapping
@@ -757,7 +801,7 @@ class GRIB1LocalParamCFConstrainedMapping(Mapping):
             self.is_cf_constrained(mapping.target)
 
 
-class CFConstrainedGRIB1LocalParamMapping(Mapping):
+class CFConstrainedGRIB1LocalParamMappings(Mappings):
     """
     Represents a container for CF phenomenon and dimension coordinate
     constraint to GRIB (edition 1) local parameter metarelate mapping
@@ -834,7 +878,7 @@ class CFConstrainedGRIB1LocalParamMapping(Mapping):
             self.is_grib1_local_param(mapping.target)
 
 
-class GRIB2ParamCFMapping(Mapping):
+class GRIB2ParamCFMappings(Mappings):
     """
     Represents a container for GRIB (edition 2) parameter to CF phenomenon
     metarelate mapping translations.
@@ -911,7 +955,7 @@ class GRIB2ParamCFMapping(Mapping):
             self.is_cf(mapping.target)
 
 
-class CFGRIB2ParamMapping(Mapping):
+class CFGRIB2ParamMappings(Mappings):
     """
     Represents a container for CF phenomenon to GRIB (edition 2) parameter
     metarelate mapping translations.
