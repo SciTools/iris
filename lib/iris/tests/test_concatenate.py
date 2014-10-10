@@ -26,7 +26,6 @@ import iris.tests as tests
 import numpy as np
 import numpy.ma as ma
 
-from iris._concatenate import _CubeSignature as ConcatenateCubeSignature
 import iris.cube
 from iris.coords import DimCoord, AuxCoord
 import iris.tests.stock as stock
