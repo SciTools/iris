@@ -22,8 +22,6 @@ Tests for function :func:`iris.fileformats.grib._load_convert.data_cutoff`.
 # before importing anything else.
 import iris.tests as tests
 
-import datetime
-
 import mock
 
 from iris.fileformats.grib._load_convert import _MDI as MDI

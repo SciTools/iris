@@ -18,7 +18,6 @@
 Time handling.
 
 """
-import datetime
 import functools
 import operator
 
