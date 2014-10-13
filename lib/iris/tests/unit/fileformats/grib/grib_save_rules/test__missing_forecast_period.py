@@ -20,7 +20,6 @@
 # importing anything else.
 import iris.tests as tests
 
-import gribapi
 import mock
 import numpy as np
 

@@ -14,7 +14,6 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-from Image import ORDERED
 """
 Tests for function
 :func:`iris.fileformats.grib._load_convert.product_definition_template_9`.

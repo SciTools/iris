@@ -18,12 +18,7 @@
 Time handling.
 
 """
-import collections
-import datetime
 import functools
-import operator
-
-import netcdftime
 
 
 @functools.total_ordering

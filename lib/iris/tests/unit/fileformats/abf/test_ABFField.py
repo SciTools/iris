@@ -21,7 +21,6 @@
 import iris.tests as tests
 
 import mock
-import numpy as np
 
 from iris.fileformats.abf import ABFField
 

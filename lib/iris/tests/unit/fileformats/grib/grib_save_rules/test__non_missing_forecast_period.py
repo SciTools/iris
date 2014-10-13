@@ -20,10 +20,6 @@
 # importing anything else.
 import iris.tests as tests
 
-import gribapi
-import mock
-import numpy as np
-
 from iris.fileformats.grib.grib_save_rules import _non_missing_forecast_period
 import iris.unit
 

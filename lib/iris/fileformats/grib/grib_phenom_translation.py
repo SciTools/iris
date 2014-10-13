@@ -31,8 +31,6 @@ Currently supports only these ones:
 import collections
 import warnings
 
-import numpy as np
-
 from iris.fileformats.grib import _grib_cf_map as grcf
 import iris.std_names
 import iris.unit

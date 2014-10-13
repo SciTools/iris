@@ -20,7 +20,6 @@ Various utilities and numeric transformations relevant to cartography.
 """
 import copy
 import itertools
-import math
 import warnings
 
 import numpy as np

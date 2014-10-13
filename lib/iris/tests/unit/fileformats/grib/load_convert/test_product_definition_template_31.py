@@ -28,7 +28,7 @@ import warnings
 import mock
 import numpy as np
 
-from iris.coords import AuxCoord, DimCoord
+from iris.coords import AuxCoord
 from iris.fileformats.grib._load_convert import product_definition_template_31
 
 

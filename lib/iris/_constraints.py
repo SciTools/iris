@@ -20,7 +20,6 @@ Provides objects for building up expressions useful for pattern matching.
 """
 import collections
 import operator
-import warnings
 
 import numpy as np
 

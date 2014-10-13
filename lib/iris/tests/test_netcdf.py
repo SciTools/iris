@@ -27,7 +27,6 @@ import os
 import shutil
 import stat
 import tempfile
-import warnings
 
 import mock
 import netCDF4 as nc

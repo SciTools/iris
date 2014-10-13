@@ -27,7 +27,6 @@ from iris.analysis._linear import LinearRegridder
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
 from iris.cube import Cube
-import iris.tests.stock as stock
 
 
 class Test(tests.IrisTest):

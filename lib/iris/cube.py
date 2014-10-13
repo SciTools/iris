@@ -24,7 +24,6 @@ import collections
 import copy
 import datetime
 import operator
-import re
 import UserDict
 import warnings
 import zlib

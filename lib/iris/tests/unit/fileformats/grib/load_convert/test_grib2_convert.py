@@ -24,7 +24,6 @@ import copy
 import mock
 
 import iris
-from iris.exceptions import TranslationError
 from iris.fileformats.grib._load_convert import grib2_convert
 from iris.tests.unit.fileformats.grib import _make_test_message
 

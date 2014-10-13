@@ -26,7 +26,6 @@ import iris.tests as tests
 import mock
 
 import iris.cube
-import iris.fileformats.name_loaders
 from iris.fileformats.name_loaders import _generate_cubes
 
 

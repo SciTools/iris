@@ -20,8 +20,6 @@
 # importing anything else.
 import iris.tests as tests
 
-import warnings
-
 import mock
 import numpy as np
 

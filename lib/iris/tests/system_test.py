@@ -23,7 +23,6 @@ The system tests can be run with ``python setup.py test --system-tests``.
 
 """
 # import iris tests first so that some things can be initialised before importing anything else
-import sys
 
 import numpy as np
 

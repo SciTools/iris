@@ -40,7 +40,6 @@ import logging
 import mock
 import os
 import os.path
-import re
 import shutil
 import StringIO
 import subprocess

@@ -24,7 +24,6 @@ Unit tests for the `iris.fileformats.cf.CFReader` class.
 import iris.tests as tests
 
 import mock
-import warnings
 
 import numpy as np
 

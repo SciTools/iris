@@ -25,7 +25,6 @@ Test the Fieldsfile file loading plugin and FFHeader.
 import iris.tests as tests
 
 import collections
-import warnings
 
 import mock
 import numpy as np

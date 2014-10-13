@@ -29,7 +29,6 @@ if tests.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
     import iris.plot as iplt
     import iris.quickplot as qplt
-    import iris.tests.test_mapping as test_mapping
 
 
 # Caches _load_theta so subsequent calls are faster

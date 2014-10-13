@@ -28,7 +28,6 @@ import mock
 
 import numpy as np
 
-import iris
 from iris.aux_factory import OceanSigmaZFactory
 from iris.coords import AuxCoord, DimCoord
 from iris.unit import Unit

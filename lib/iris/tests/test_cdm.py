@@ -25,9 +25,7 @@ from contextlib import contextmanager
 import os
 import re
 import sys
-import warnings
 
-import biggus
 import numpy as np
 import numpy.ma as ma
 

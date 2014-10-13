@@ -24,7 +24,6 @@ import collections
 import warnings
 
 import numpy as np
-import numpy.ma as ma
 import scipy
 import scipy.spatial
 from scipy.interpolate.interpolate import interp1d

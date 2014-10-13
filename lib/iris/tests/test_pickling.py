@@ -26,7 +26,6 @@ import iris.tests as tests
 import cPickle
 import StringIO
 
-import biggus
 import numpy as np
 
 import iris

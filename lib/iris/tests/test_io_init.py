@@ -25,7 +25,6 @@ import unittest
 from io import BytesIO
 
 import iris.fileformats as iff
-import iris.io.format_picker as fp
 import iris.io
 
 

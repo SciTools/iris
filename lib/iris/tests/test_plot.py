@@ -36,7 +36,6 @@ if tests.MPL_AVAILABLE:
     import iris.plot as iplt
     import iris.quickplot as qplt
     import iris.symbols
-    import iris.tests.test_mapping as test_mapping
 
 
 def simple_cube():

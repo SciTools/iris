@@ -57,28 +57,28 @@ class Test(tests.IrisTest):
         self.assertFalse(array_equal(array_a, array_c))
 
     def test_masked_is_ignored(self):
-        array_a = np.ma.masked_array([1, 2, 3], mask=[1, 0, 1])
-        array_b = np.ma.masked_array([2, 2, 2], mask=[1, 0, 1])
+        array_a = ma.masked_array([1, 2, 3], mask=[1, 0, 1])
+        array_b = ma.masked_array([2, 2, 2], mask=[1, 0, 1])
         self.assertFalse(array_equal(array_a, array_b))
 
     def test_fully_masked_arrays(self):
-        array_a = np.ma.masked_array(np.arange(24).reshape(2, 3, 4), mask=True)
-        array_b = np.ma.masked_array(np.arange(24).reshape(2, 3, 4), mask=True)
+        array_a = ma.masked_array(np.arange(24).reshape(2, 3, 4), mask=True)
+        array_b = ma.masked_array(np.arange(24).reshape(2, 3, 4), mask=True)
         self.assertTrue(array_equal(array_a, array_b))
 
     def test_fully_masked_0d_arrays(self):
-        array_a = np.ma.masked_array(3, mask=True)
-        array_b = np.ma.masked_array(3, mask=True)
+        array_a = ma.masked_array(3, mask=True)
+        array_b = ma.masked_array(3, mask=True)
         self.assertTrue(array_equal(array_a, array_b))
 
     def test_fully_masked_string_arrays(self):
-        array_a = np.ma.masked_array(['a', 'b', 'c'], mask=True)
-        array_b = np.ma.masked_array(['a', 'b', 'c'], mask=[1, 1, 1])
+        array_a = ma.masked_array(['a', 'b', 'c'], mask=True)
+        array_b = ma.masked_array(['a', 'b', 'c'], mask=[1, 1, 1])
         self.assertTrue(array_equal(array_a, array_b))
 
     def test_partially_masked_string_arrays(self):
-        array_a = np.ma.masked_array(['a', 'b', 'c'], mask=[1, 0, 1])
-        array_b = np.ma.masked_array(['a', 'b', 'c'], mask=[1, 0, 1])
+        array_a = ma.masked_array(['a', 'b', 'c'], mask=[1, 0, 1])
+        array_b = ma.masked_array(['a', 'b', 'c'], mask=[1, 0, 1])
         self.assertTrue(array_equal(array_a, array_b))
 
     def test_string_arrays_equal(self):

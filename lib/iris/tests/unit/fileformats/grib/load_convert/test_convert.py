@@ -23,7 +23,6 @@ import iris.tests as tests
 import mock
 
 from iris.exceptions import TranslationError
-from iris.fileformats.grib._message import _GribMessage
 from iris.fileformats.grib._load_convert import convert
 from iris.tests.unit.fileformats.grib import _make_test_message
 

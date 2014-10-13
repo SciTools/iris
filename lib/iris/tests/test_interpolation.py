@@ -21,7 +21,6 @@ Test the interpolation of Iris cubes.
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import biggus
 import numpy as np
 import numpy.ma as ma
 from scipy.interpolate import interp1d

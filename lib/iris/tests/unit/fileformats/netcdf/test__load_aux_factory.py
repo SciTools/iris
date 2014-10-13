@@ -26,7 +26,6 @@ import warnings
 
 from iris.coords import DimCoord
 from iris.cube import Cube
-from iris.aux_factory import HybridPressureFactory
 from iris.fileformats.netcdf import _load_aux_factory
 
 

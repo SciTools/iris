@@ -20,10 +20,8 @@
 # importing anything else.
 import iris.tests as tests
 
-import mock
 import numpy as np
 
-import cartopy.crs as ccrs
 import iris
 from iris.coords import DimCoord
 from iris.analysis.cartography import project

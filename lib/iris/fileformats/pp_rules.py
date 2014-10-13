@@ -18,8 +18,6 @@
 # Historically this was auto-generated from
 # SciTools/iris-code-generators:tools/gen_rules.py
 
-import warnings
-
 import numpy as np
 
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
@@ -465,8 +463,8 @@ def _all_other_rules(f):
             (DimCoord(
                 f.y,
                 standard_name='time',
-                units=iris.unit.Unit('days since 0000-01-01 00:00:00',
-                                     calendar=iris.unit.CALENDAR_360_DAY),
+                units=Unit('days since 0000-01-01 00:00:00',
+                           calendar=iris.unit.CALENDAR_360_DAY),
                 bounds=f.y_bounds),
              0))
 
@@ -475,8 +473,8 @@ def _all_other_rules(f):
             (DimCoord(
                 f.x,
                 standard_name='time',
-                units=iris.unit.Unit('days since 0000-01-01 00:00:00',
-                                     calendar=iris.unit.CALENDAR_360_DAY),
+                units=Unit('days since 0000-01-01 00:00:00',
+                           calendar=iris.unit.CALENDAR_360_DAY),
                 bounds=f.x_bounds),
              1))
 
