@@ -139,30 +139,27 @@ def _reshape_vector_args(values_and_dims):
 
     """
     # Find maximum dimension index, which sets ndim of results.
-    max_dims = [max(dims) if len(dims) else -1
-                for values, dims in values_and_dims]
-    max_dim = max(max_dims) if len(max_dims) else -1
+    max_dims = [max(dims) if dims else -1 for values, dims in values_and_dims]
+    max_dim = max(max_dims) if max_dims else -1
     result = []
     for value, dims in values_and_dims:
-        # Force to array.
-        if not isinstance(value, np.ndarray):
-            value = np.array(value)
+        value = np.asarray(value)
         if len(dims) != value.ndim:
             raise ValueError('Lengths of dimension-mappings must match '
                              'input array dimensions.')
         # Save dim sizes in original order.
         original_shape = value.shape
         if dims:
-            # First transpose values to put its dims in the target order..
+            # Transpose values to put its dims in the target order.
             dims_order = sorted(range(len(dims)),
                                 key=lambda i_dim: dims[i_dim])
             value = value.transpose(dims_order)
         if max_dim > -1:
-            # ..Then reshape to add any extra *1 dims.
+            # Reshape to add any extra *1 dims.
             shape = [1] * (max_dim + 1)
             for i_dim, dim in enumerate(dims):
                 shape[dim] = original_shape[i_dim]
-            value = np.array(value).reshape(shape)
+            value = value.reshape(shape)
         result.append(value)
     return result
 
@@ -208,7 +205,7 @@ def _reduce_points_and_bounds(points, lower_and_upper_bounds=None):
     bounds).
 
     Dimensions over which all values are the same are reduced to size 1, using
-    :meth:`_collapse_degenerate_points_and_bounds`.
+    :func:`_collapse_degenerate_points_and_bounds`.
     All size-1 dimensions are then removed.
     If the bounds arrays are also passed in, then all three arrays must have
     the same shape.
@@ -271,7 +268,7 @@ def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
                          t1, t2, lbft,
                          t1_dims=(), t2_dims=(), lbft_dims=()):
     """
-    Make vector time coordinates from the time metadata.
+    Make time coordinates from the time metadata.
 
     Args:
 
@@ -279,7 +276,7 @@ def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
         Scalar field elements.
     * epoch_hours_unit (:class:`iris.units.Unit`):
         Epoch time reference unit, for hours-since conversions.
-    * t1, t2, lbft (array):
+    * t1, t2, lbft (array or scalar):
         Arrays of metadata (may be scalar).
     * t1_dims, t2_dims, lbft_dims (tuple of int):
         Cube dimension mappings for the array metadata, if any.
@@ -300,7 +297,7 @@ def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
     def date2hours(times_array):
         """Convert datetime values to hours-since-epoch values."""
         # Use a minimum-1D form, as netcdftime.date2num doesn't like scalars.
-        times_array = np.array(times_array)
+        times_array = np.asarray(times_array)
         return epoch_hours_unit.date2num(
             np.atleast_1d(times_array)).reshape(times_array.shape)
 
