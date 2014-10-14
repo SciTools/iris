@@ -18,9 +18,6 @@
 Unit tests for
 :func:`iris.fileformats.pp_rules._convert_time_coords`.
 
-NOTE: basic calculations logic is tested in "test__convert_scalar_time_coords".
-Here we are testing the vector/array coordinate specifics.
-
 """
 
 # Import iris.tests first so that some things can be initialised before
@@ -31,11 +28,11 @@ import mock
 from netcdftime import datetime as nc_datetime
 import numpy as np
 
-import iris
 from iris.coords import DimCoord, AuxCoord
 from iris.fileformats.pp import SplittableInt
 from iris.fileformats.pp_rules import _convert_time_coords
 from iris.tests.unit.fileformats import TestField
+from iris.unit import Unit, CALENDAR_GREGORIAN
 
 
 def _lbtim(ia=0, ib=0, ic=0):
@@ -52,10 +49,8 @@ def _lbcode(value=None, ix=None, iy=None):
     return result
 
 
-_EPOCH_HOURS_UNIT = iris.unit.Unit('hours since epoch',
-                                   calendar=iris.unit.CALENDAR_GREGORIAN)
-
-_HOURS_UNIT = iris.unit.Unit('hours')
+_EPOCH_HOURS_UNIT = Unit('hours since epoch', calendar=CALENDAR_GREGORIAN)
+_HOURS_UNIT = Unit('hours')
 
 
 class TestLBTIMx0x_SingleTimepoint(TestField):
