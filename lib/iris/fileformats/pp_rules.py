@@ -154,7 +154,7 @@ def _reshape_vector_args(values_and_dims):
             dims_order = sorted(range(len(dims)),
                                 key=lambda i_dim: dims[i_dim])
             value = value.transpose(dims_order)
-        if max_dim > -1:
+        if max_dim != -1:
             # Reshape to add any extra *1 dims.
             shape = [1] * (max_dim + 1)
             for i_dim, dim in enumerate(dims):
