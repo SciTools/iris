@@ -20,7 +20,6 @@
 # importing anything else.
 import iris.tests as tests
 
-import datetime
 import types
 
 import mock
@@ -35,22 +34,6 @@ import iris.tests.unit.fileformats
 import iris.unit
 
 
-def _mock_field(**kwargs):
-    # Produce a MagicMock of a PPField, but insert *real* time values to stop
-    # the time rules breaking.
-    # Otherwise pp_rules._reshape_vector_args fails due to peculiar behaviour..
-    #    >>> field = mock.MagicMock()
-    #    >>> np.array(field.t1).shape
-    #    (0,)
-    # We would expect "np.array(field.t1).shape == ()", but this anomaly makes
-    # it fail the argument consistency test in "pp_rules._reshape_vector_args".
-    field = mock.MagicMock(**kwargs)
-    field.t1 = 0.0
-    field.t2 = 0.0
-    field.lbft = 0.0
-    return field
-
-
 class TestLBCODE(iris.tests.unit.fileformats.TestField):
     @staticmethod
     def _is_cross_section_height_coord(coord):
@@ -62,7 +45,7 @@ class TestLBCODE(iris.tests.unit.fileformats.TestField):
         lbcode = SplittableInt(19902, {'iy': slice(0, 2), 'ix': slice(2, 4)})
         points = np.array([10, 20, 30, 40])
         bounds = np.array([[0, 15], [15, 25], [25, 35], [35, 45]])
-        field = _mock_field(lbcode=lbcode, bdy=0, y=points, y_bounds=bounds)
+        field = mock.MagicMock(lbcode=lbcode, bdy=0, y=points, y_bounds=bounds)
         self._test_for_coord(field, convert,
                              TestLBCODE._is_cross_section_height_coord,
                              expected_points=points,
@@ -73,8 +56,8 @@ class TestLBCODE(iris.tests.unit.fileformats.TestField):
         points = np.array([10, 20, 30, 40])
         bounds = np.array([[0, 15], [15, 25], [25, 35], [35, 45]])
         bmdi = -1.07374e+09
-        field = _mock_field(lbcode=lbcode, bdy=bmdi, bmdi=bmdi,
-                            y=points, y_bounds=bounds)
+        field = mock.MagicMock(lbcode=lbcode, bdy=bmdi, bmdi=bmdi,
+                               y=points, y_bounds=bounds)
         self._test_for_coord(field, convert,
                              TestLBCODE._is_cross_section_height_coord,
                              expected_points=points,
@@ -111,7 +94,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
 
     def test_soil_levels(self):
         level = 1234
-        field = _mock_field(lbvc=6, lblev=level)
+        field = mock.MagicMock(lbvc=6, lblev=level)
         self._test_for_coord(field, convert,
                              TestLBVC._is_soil_model_level_number_coord,
                              expected_points=[level],
@@ -119,9 +102,9 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
 
     def test_hybrid_pressure_model_level_number(self):
         level = 5678
-        field = _mock_field(lbvc=9, lblev=level,
-                            blev=20, brlev=23, bhlev=42,
-                            bhrlev=45, brsvd=[17, 40])
+        field = mock.MagicMock(lbvc=9, lblev=level,
+                               blev=20, brlev=23, bhlev=42,
+                               bhrlev=45, brsvd=[17, 40])
         self._test_for_coord(field, convert,
                              TestLBVC._is_model_level_number_coord,
                              expected_points=[level],
@@ -131,10 +114,10 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
         delta_point = 12.0
         delta_lower_bound = 11.0
         delta_upper_bound = 13.0
-        field = _mock_field(lbvc=9, lblev=5678,
-                            blev=20, brlev=23, bhlev=delta_point,
-                            bhrlev=delta_lower_bound,
-                            brsvd=[17, delta_upper_bound])
+        field = mock.MagicMock(lbvc=9, lblev=5678,
+                               blev=20, brlev=23, bhlev=delta_point,
+                               bhrlev=delta_lower_bound,
+                               brsvd=[17, delta_upper_bound])
         self._test_for_coord(field, convert,
                              TestLBVC._is_level_pressure_coord,
                              expected_points=[delta_point],
@@ -145,10 +128,10 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
         sigma_point = 0.5
         sigma_lower_bound = 0.6
         sigma_upper_bound = 0.4
-        field = _mock_field(lbvc=9, lblev=5678,
-                            blev=sigma_point, brlev=sigma_lower_bound,
-                            bhlev=12, bhrlev=11,
-                            brsvd=[sigma_upper_bound, 13])
+        field = mock.MagicMock(lbvc=9, lblev=5678,
+                               blev=sigma_point, brlev=sigma_lower_bound,
+                               bhlev=12, bhrlev=11,
+                               brsvd=[sigma_upper_bound, 13])
         self._test_for_coord(field, convert, TestLBVC._is_sigma_coord,
                              expected_points=[sigma_point],
                              expected_bounds=[[sigma_lower_bound,
@@ -156,7 +139,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
 
     def test_potential_temperature_levels(self):
         potm_value = 27.32
-        field = _mock_field(lbvc=19, blev=potm_value)
+        field = mock.MagicMock(lbvc=19, blev=potm_value)
         self._test_for_coord(field, convert, TestLBVC._is_potm_level_coord,
                              expected_points=np.array([potm_value]),
                              expected_bounds=None)
@@ -168,12 +151,8 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
                            lbyr=2013, lbmon=1, lbdat=1, lbhr=12, lbmin=0,
                            lbsec=0,
                            spec=PPField3)
-        f.t1 = datetime.datetime(1990, 1, 1)
-        f.t2 = datetime.datetime(1990, 1, 2)
-        f.lbft = 0
         f.time_unit = types.MethodType(PPField3.time_unit, f)
         f.calendar = iris.unit.CALENDAR_365_DAY
-
         (factories, references, standard_name, long_name, units,
          attributes, cell_methods, dim_coords_and_dims,
          aux_coords_and_dims) = convert(f)
@@ -264,7 +243,7 @@ class TestLBRSVD(iris.tests.unit.fileformats.TestField):
         lbrsvd[3] = 71
         points = np.array([71])
         bounds = None
-        field = _mock_field(lbrsvd=lbrsvd)
+        field = mock.MagicMock(lbrsvd=lbrsvd)
         self._test_for_coord(field, convert,
                              TestLBRSVD._is_realization,
                              expected_points=points,
@@ -274,7 +253,7 @@ class TestLBRSVD(iris.tests.unit.fileformats.TestField):
 class TestLBSRCE(iris.tests.IrisTest):
     def check_um_source_attrs(self, lbsrce,
                               source_str=None, um_version_str=None):
-        field = _mock_field(lbsrce=lbsrce)
+        field = mock.MagicMock(lbsrce=lbsrce)
         (factories, references, standard_name, long_name, units,
          attributes, cell_methods, dim_coords_and_dims,
          aux_coords_and_dims) = convert(field)
