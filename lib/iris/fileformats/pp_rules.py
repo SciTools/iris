@@ -53,6 +53,68 @@ def _model_level_number(lblev):
     return model_level_number
 
 
+def _convert_scalar_time_coords(lbcode, lbtim, epoch_hours_unit, t1, t2, lbft):
+    """
+    Encode scalar time values from PP headers as CM data components.
+
+    Returns a list of coords_and_dims.
+
+    """
+    t1_epoch_hours = epoch_hours_unit.date2num(t1)
+    t2_epoch_hours = epoch_hours_unit.date2num(t2)
+    hours_from_t1_to_t2 = t2_epoch_hours - t1_epoch_hours
+    hours_from_t2_to_t1 = t1_epoch_hours - t2_epoch_hours
+    coords_and_dims = []
+
+    if \
+            (lbtim.ia == 0) and \
+            (lbtim.ib == 0) and \
+            (lbtim.ic in [1, 2, 3, 4]) and \
+            (len(lbcode) != 5 or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
+        coords_and_dims.append((DimCoord(t1_epoch_hours, standard_name='time', units=epoch_hours_unit), None))
+
+    if \
+            (lbtim.ia == 0) and \
+            (lbtim.ib == 1) and \
+            (lbtim.ic in [1, 2, 3, 4]) and \
+            (len(lbcode) != 5 or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
+        coords_and_dims.append((DimCoord(hours_from_t2_to_t1, standard_name='forecast_period', units='hours'), None))
+        coords_and_dims.append((DimCoord(t1_epoch_hours, standard_name='time', units=epoch_hours_unit), None))
+        coords_and_dims.append((DimCoord(t2_epoch_hours, standard_name='forecast_reference_time', units=epoch_hours_unit), None))
+
+    if \
+            (lbtim.ib == 2) and \
+            (lbtim.ic in [1, 2, 4]) and \
+            ((len(lbcode) != 5) or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
+        coords_and_dims.append((
+            DimCoord(standard_name='forecast_period', units='hours',
+                     points=lbft - 0.5 * hours_from_t1_to_t2,
+                     bounds=[lbft - hours_from_t1_to_t2, lbft]),
+            None))
+        coords_and_dims.append((
+            DimCoord(standard_name='time', units=epoch_hours_unit,
+                     points=0.5 * (t1_epoch_hours + t2_epoch_hours),
+                     bounds=[t1_epoch_hours, t2_epoch_hours]),
+            None))
+        coords_and_dims.append((DimCoord(t2_epoch_hours - lbft, standard_name='forecast_reference_time', units=epoch_hours_unit), None))
+
+    if \
+            (lbtim.ib == 3) and \
+            (lbtim.ic in [1, 2, 4]) and \
+            ((len(lbcode) != 5) or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
+        coords_and_dims.append((
+            DimCoord(standard_name='forecast_period', units='hours',
+                     points=lbft, bounds=[lbft - hours_from_t1_to_t2, lbft]),
+            None))
+        coords_and_dims.append((
+            DimCoord(standard_name='time', units=epoch_hours_unit,
+                     points=t2_epoch_hours, bounds=[t1_epoch_hours, t2_epoch_hours]),
+            None))
+        coords_and_dims.append((DimCoord(t2_epoch_hours - lbft, standard_name='forecast_reference_time', units=epoch_hours_unit), None))
+
+    return coords_and_dims
+
+
 def _reshape_vector_args(values_and_dims):
     """
     Reshape a group of (array, dimensions-mapping) onto all dimensions.
@@ -478,7 +540,7 @@ def convert(f):
     aux_coords_and_dims = []
 
     # "Normal" (non-cross-sectional) Time values (--> scalar coordinates)
-    time_coords_and_dims = _convert_time_coords(
+    time_coords_and_dims = _convert_scalar_time_coords(
         lbcode=f.lbcode, lbtim=f.lbtim,
         epoch_hours_unit=f.time_unit('hours'),
         t1=f.t1, t2=f.t2, lbft=f.lbft)
