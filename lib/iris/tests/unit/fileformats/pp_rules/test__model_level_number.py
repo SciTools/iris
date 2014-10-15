@@ -20,18 +20,36 @@
 # importing anything else.
 import iris.tests as tests
 
+import numpy as np
+
 from iris.fileformats.pp_rules import _model_level_number
 
 
 class Test_9999(tests.IrisTest):
-    def test(self):
-        self.assertEqual(_model_level_number(9999), 0)
+    def test_scalar(self):
+        expected = np.array(0, ndmin=1)
+        result = _model_level_number(9999)
+        np.testing.assert_array_equal(result, expected)
+
+    def test_vector(self):
+        lblev = [1, 2, 9999, 4, 5, 9999]
+        expected = np.array([1, 2, 0, 4, 5, 0])
+        result = _model_level_number(lblev)
+        np.testing.assert_array_equal(result, expected)
 
 
 class Test_lblev(tests.IrisTest):
-    def test(self):
+    def test_scalar(self):
         for val in xrange(9999):
-            self.assertEqual(_model_level_number(val), val)
+            expected = np.array(val, ndmin=1)
+            result = _model_level_number(val)
+            np.testing.assert_array_equal(result, expected)
+
+    def test_vector(self):
+        lblev = range(9999)
+        expected = np.arange(9999)
+        result = _model_level_number(lblev)
+        np.testing.assert_array_equal(result, expected)
 
 
 if __name__ == "__main__":
