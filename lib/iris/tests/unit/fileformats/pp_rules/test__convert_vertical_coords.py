@@ -64,13 +64,10 @@ class TestLBVC001_Height(TestField):
                           attributes={'positive': 'up'}),
                  dim)]
         elif expect_fixed_height:
-            klass = DimCoord
-            if isinstance(expect_fixed_height, Iterable):
-                klass = AuxCoord
             expect_result = [
-                (klass(expect_fixed_height, standard_name='height',
-                       units='m', attributes={'positive': 'up'}),
-                 dim)]
+                (DimCoord(expect_fixed_height, standard_name='height',
+                          units='m', attributes={'positive': 'up'}),
+                 None)]
         else:
             expect_result = []
         self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_result)
@@ -103,9 +100,8 @@ class TestLBVC001_Height(TestField):
 
     def test_implied_height_1m5__vector(self):
         blev = np.array([1, 2, 3, 4])
-        expected = [1.5] * blev.size
         self._check_height(blev=blev, stash=STASH(1, 3, 236),
-                           expect_normal=False, expect_fixed_height=expected,
+                           expect_normal=False, expect_fixed_height=1.5,
                            dim=1)
 
     def test_implied_height_10m(self):
@@ -114,9 +110,8 @@ class TestLBVC001_Height(TestField):
 
     def test_implied_height_10m__vector(self):
         blev = np.arange(10)
-        expected = [10.0] * blev.size
         self._check_height(blev=blev, stash=STASH(1, 3, 225),
-                           expect_normal=False, expect_fixed_height=expected,
+                           expect_normal=False, expect_fixed_height=10.0,
                            dim=2)
 
 

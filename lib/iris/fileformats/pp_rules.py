@@ -106,13 +106,12 @@ def _convert_vertical_coords(lbcode, lbvc, blev, lblev, stash,
              dim))
 
     if str(stash) in _STASHCODE_IMPLIED_HEIGHTS.keys():
-        heights = [_STASHCODE_IMPLIED_HEIGHTS[str(stash)]] * blev.size
-        klass = DimCoord if blev.size == 1 else AuxCoord
+        height = _STASHCODE_IMPLIED_HEIGHTS[str(stash)]
         coords_and_dims.append(
-            (klass(heights,
-                   standard_name='height', units='m',
-                   attributes={'positive': 'up'}),
-             dim))
+            (DimCoord(height,
+                      standard_name='height', units='m',
+                      attributes={'positive': 'up'}),
+             None))
 
     if \
             (len(lbcode) != 5) and \
