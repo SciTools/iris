@@ -29,6 +29,182 @@ import iris.fileformats.pp
 import iris.unit
 
 
+###############################################################################
+#
+# Convert vectorisation routines.
+#
+
+def _convert_vertical_coords(lbcode, lbvc, blev, lblev, stash,
+                             bhlev, bhrlev, brsvd1, brsvd2, brlev,
+                             dim=None):
+    """
+    Encode scalar or vector vertical level values from PP headers as CM data
+    components.
+
+    Args:
+
+    * lbcode:
+        Scalar field :class:`iris.fileformats.pp.SplittableInt` value.
+
+    * lbvc:
+        Scalar field value.
+
+    * blev:
+        Scalar field value or :class:`numpy.ndarray` vector of field values.
+
+    * lblev:
+        Scalar field value or :class:`numpy.ndarray` vector of field values.
+
+    * stash:
+        Scalar field :class:`iris.fileformats.pp.STASH` value.
+
+    * bhlev:
+        Scalar field value or :class:`numpy.ndarray` vector of field values.
+
+    * bhrlev:
+        Scalar field value or :class:`numpy.ndarray` vector of field values.
+
+    * brsvd1:
+        Scalar field value or :class:`numpy.ndarray` vector of field values.
+
+    * brsvd2:
+        Scalar field value or :class:`numpy.ndarray` vector of field values.
+
+    * brlev:
+        Scalar field value or :class:`numpy.ndarray` vector of field values.
+
+    Kwargs:
+
+    * dim:
+        Associated dimension of the vertical coordinate. Defaults to None.
+
+    Returns:
+        A tuple containing a list of coords_and_dims, and a list of factories.
+
+    """
+    factories = []
+    coords_and_dims = []
+
+    # See Word no. 33 (LBLEV) in section 4 of UM Model Docs (F3).
+    BASE_RHO_LEVEL_LBLEV = 9999
+    model_level_number  = np.array(lblev, ndmin=1)
+    model_level_number[model_level_number == BASE_RHO_LEVEL_LBLEV] = 0
+
+    # Ensure to vectorise these arguments as arrays, as they participate
+    # in the conditions of convert rules.
+    blev = np.array(blev, ndmin=1)
+    brsvd1 = np.array(brsvd1, ndmin=1)
+    brlev = np.array(brlev, ndmin=1)
+
+    if \
+            (lbvc == 1) and \
+            (not (str(stash) in _STASHCODE_IMPLIED_HEIGHTS.keys())) and \
+            (np.all(blev != -1)):
+        coords_and_dims.append(
+            (DimCoord(blev, standard_name='height', units='m',
+                      attributes={'positive': 'up'}),
+             dim))
+
+    if str(stash) in _STASHCODE_IMPLIED_HEIGHTS.keys():
+        heights = [_STASHCODE_IMPLIED_HEIGHTS[str(stash)]] * blev.size
+        klass = DimCoord if blev.size == 1 else AuxCoord
+        coords_and_dims.append(
+            (klass(heights,
+                   standard_name='height', units='m',
+                   attributes={'positive': 'up'}),
+             dim))
+
+    if \
+            (len(lbcode) != 5) and \
+            (lbvc == 2):
+        coords_and_dims.append((DimCoord(model_level_number, standard_name='model_level_number', attributes={'positive': 'down'}), dim))
+
+    if \
+            (len(lbcode) != 5) and \
+            (lbvc == 2) and \
+            np.all(brsvd1 == brlev):
+        coords_and_dims.append((DimCoord(blev, standard_name='depth', units='m', attributes={'positive': 'down'}), dim))
+
+    if \
+            (len(lbcode) != 5) and \
+            (lbvc == 2) and \
+            np.all(brsvd1 != brlev):
+        coords_and_dims.append((DimCoord(blev, standard_name='depth', units='m', bounds=np.vstack((brsvd1, brlev)).T, attributes={'positive': 'down'}), dim))
+
+    # soil level
+    if len(lbcode) != 5 and lbvc == 6:
+        coords_and_dims.append((DimCoord(model_level_number, long_name='soil_model_level_number', attributes={'positive': 'down'}), dim))
+
+    if \
+            (lbvc == 8) and \
+            (len(lbcode) != 5 or (len(lbcode) == 5 and 1 not in [lbcode.ix, lbcode.iy])):
+        coords_and_dims.append((DimCoord(blev, long_name='pressure', units='hPa'), dim))
+
+    if \
+            (len(lbcode) != 5) and \
+            (lbvc == 19):
+        coords_and_dims.append((DimCoord(blev, standard_name='air_potential_temperature', units='K', attributes={'positive': 'up'}), dim))
+
+    # Hybrid pressure levels.
+    if lbvc == 9:
+        bhrlev = np.array(bhrlev, ndmin=1)
+        brsvd2 = np.array(brsvd2, ndmin=1)
+        model_level_number = DimCoord(model_level_number,
+                                      standard_name='model_level_number',
+                                      attributes={'positive': 'up'})
+        # The following match the hybrid height scheme, but data has the
+        # blev and bhlev values the other way around.
+        #level_pressure = DimCoord(blev,
+        #                          long_name='level_pressure',
+        #                          units='Pa',
+        #                          bounds=[brlev, brsvd1])
+        #sigma = AuxCoord(bhlev,
+        #                 long_name='sigma',
+        #                 bounds=[bhrlev, brsvd2])
+        level_pressure = DimCoord(bhlev,
+                                  long_name='level_pressure',
+                                  units='Pa',
+                                  bounds=np.vstack((bhrlev, brsvd2)).T)
+        sigma = AuxCoord(blev,
+                         long_name='sigma',
+                         bounds=np.vstack((brlev, brsvd1)).T)
+        coords_and_dims.extend([(model_level_number, dim),
+                                (level_pressure, dim),
+                                (sigma, dim)])
+        factories.append(Factory(HybridPressureFactory,
+                                 [{'long_name': 'level_pressure'},
+                                  {'long_name': 'sigma'},
+                                  Reference('surface_air_pressure')]))
+
+    # Hybrid height levels.
+    if lbvc == 65:
+        bhrlev = np.array(bhrlev, ndmin=1)
+        brsvd2 = np.array(brsvd2, ndmin=1)
+        model_level_number = DimCoord(model_level_number,
+                                      standard_name='model_level_number',
+                                      attributes={'positive': 'up'})
+        level_height = DimCoord(blev,
+                                long_name='level_height',
+                                units='m',
+                                bounds=np.vstack((brlev, brsvd1)).T,
+                                attributes={'positive': 'up'})
+        sigma = AuxCoord(bhlev,
+                         long_name='sigma',
+                         bounds=np.vstack((bhrlev, brsvd2)).T)
+        coords_and_dims.extend([(model_level_number, dim),
+                                (level_height, dim),
+                                (sigma, dim)])
+        factories.append(Factory(HybridHeightFactory,
+                                 [{'long_name': 'level_height'},
+                                  {'long_name': 'sigma'},
+                                  Reference('orography')]))
+
+    return coords_and_dims, factories
+
+
+###############################################################################
+
+
 def _model_level_number(lblev):
     """
     Return model level number for an LBLEV value.
