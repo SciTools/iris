@@ -208,7 +208,7 @@ def _reduce_points_and_bounds(points, lower_and_upper_bounds=None):
     :func:`_collapse_degenerate_points_and_bounds`.
     All size-1 dimensions are then removed.
     If the bounds arrays are also passed in, then all three arrays must have
-    the same shape.
+    the same shape or be capable of being broadcast to match.
 
     Args:
 
@@ -231,12 +231,17 @@ def _reduce_points_and_bounds(points, lower_and_upper_bounds=None):
     orig_points_dtype = np.asarray(points).dtype
     bounds = None
     if lower_and_upper_bounds is not None:
-        lower_bounds, upper_bounds = lower_and_upper_bounds
+        lower_bounds, upper_bounds = np.broadcast_arrays(
+            *lower_and_upper_bounds)
         orig_bounds_dtype = np.asarray(lower_bounds).dtype
         bds_shape = lower_bounds.shape + (1,)
         bounds = np.concatenate((lower_bounds.reshape(bds_shape),
                                  upper_bounds.reshape(bds_shape)),
                                 axis=-1)
+
+    # Attempt to broadcast points to match bounds to handle scalars.
+    if bounds is not None and points.shape != bounds.shape[:-1]:
+        points, _ = np.broadcast_arrays(points, bounds[..., 0])
 
     points, bounds = _collapse_degenerate_points_and_bounds(points, bounds)
 

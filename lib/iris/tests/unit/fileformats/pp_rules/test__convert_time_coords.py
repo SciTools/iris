@@ -397,11 +397,11 @@ class TestArrayInputWithLBTIM_0_2_1(TestField):
         lbcode = _lbcode(1)
         hours = np.array([0, 3, 6, 9])
         # Start times - vector
-        t1 = [nc_datetime(1970, 1, 9, hour=9 + hour, minute=0, second=0) for
+        t1 = [nc_datetime(1970, 1, 9, hour=9 + hour) for
               hour in hours]
         t1_dims = (0,)
         # End time - scalar
-        t2 = nc_datetime(1970, 1, 11, hour=9, minute=0, second=0)
+        t2 = nc_datetime(1970, 1, 11, hour=9)
         lbft = 3.0  # Sample period
 
         coords_and_dims = _convert_time_coords(
@@ -427,12 +427,52 @@ class TestArrayInputWithLBTIM_0_2_1(TestField):
         fref_time_coord = DimCoord((24 * 10) + 9 - lbft,
                                    standard_name='forecast_reference_time',
                                    units=_EPOCH_HOURS_UNIT)
-        expected = [(fp_coord, (0, 1)),     # spans dims 0 and 1.
+        expected = [(fp_coord, (0, 1)),
                     (time_coord, (0,)),
                     (fref_time_coord, (1,))]
 
 
+class TestArrayInputWithLBTIM_0_3_1(TestField):
+    def test_t2_list(self):
+        lbtim = _lbtim(ib=3, ic=1)
+        lbcode = _lbcode(1)
+        years = np.array([1972, 1973, 1974])
+        # Start times - scalar
+        t1 = nc_datetime(1970, 1, 9, hour=9)
+        # End time - vector
+        t2 = [nc_datetime(year, 1, 11, hour=9) for
+              year in years]
+        t2_dims = (0,)
+        lbft = 3.0  # Sample period
 
+        coords_and_dims = _convert_time_coords(
+            lbcode=lbcode, lbtim=lbtim, epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            t1=t1, t2=t2, lbft=lbft,
+            t2_dims=t2_dims)
+
+        # Expected coords.
+        points = np.ones_like(years) * lbft
+        bounds = np.array([lbft - ((years - 1970) * 365 * 24 + 2 * 24),
+                           points]).transpose()
+        fp_coord = AuxCoord(points,
+                            standard_name='forecast_period',
+                            units='hours',
+                            bounds=bounds)
+        points = (years - 1970) * 365 * 24 + 10 * 24 + 9
+        bounds = np.array([np.ones_like(points) * (8 * 24 + 9),
+                           points]).transpose()
+        # The time coordinate is an AuxCoord as the lower bound for each
+        # cell is the same so it does not meet the monotonicity requirement.
+        time_coord = AuxCoord(points,
+                              standard_name='time',
+                              units=_EPOCH_HOURS_UNIT,
+                              bounds=bounds)
+        fref_time_coord = DimCoord(points - lbft,
+                                   standard_name='forecast_reference_time',
+                                   units=_EPOCH_HOURS_UNIT)
+        expected = [(fp_coord, (0,)),
+                    (time_coord, (0,)),
+                    (fref_time_coord, (0,))]
 
 
 class Test__vector_calls(TestField):
