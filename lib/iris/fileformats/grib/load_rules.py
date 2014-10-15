@@ -24,11 +24,24 @@ import numpy as np
 
 from iris.aux_factory import HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
-from iris.fileformats.rules import Factory, Reference, ReferenceTarget
+from iris.fileformats.rules import (ConversionMetadata, Factory, Reference,
+                                    ReferenceTarget)
 from iris.unit import CALENDAR_GREGORIAN, Unit
 
 
 def convert(grib):
+    """
+    Converts a GRIB message into the corresponding items of Cube metadata.
+
+    Args:
+
+    * grib:
+        A :class:`~iris.fileformats.grib.GribWrapper` object.
+
+    Returns:
+        A :class:`iris.fileformats.rules.ConversionMetadata` object.
+
+    """
     factories = []
     references = []
     standard_name = None
@@ -387,5 +400,6 @@ def convert(grib):
             (grib.typeOfFirstFixedSurface == 105):
         references.append(ReferenceTarget('surface_air_pressure', lambda cube: {'standard_name': 'surface_air_pressure', 'units': 'Pa', 'data': np.exp(cube.data)}))
 
-    return (factories, references, standard_name, long_name, units, attributes,
-            cell_methods, dim_coords_and_dims, aux_coords_and_dims)
+    return ConversionMetadata(factories, references, standard_name, long_name,
+                              units, attributes, cell_methods,
+                              dim_coords_and_dims, aux_coords_and_dims)

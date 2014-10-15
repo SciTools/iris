@@ -22,7 +22,8 @@ import numpy as np
 
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
-from iris.fileformats.rules import Factory, Reference, ReferenceTarget
+from iris.fileformats.rules import (ConversionMetadata, Factory, Reference,
+                                    ReferenceTarget)
 from iris.fileformats.um_cf_map import LBFC_TO_CF, STASH_TO_CF
 from iris.unit import Unit
 import iris.fileformats.pp
@@ -254,6 +255,18 @@ def _convert_scalar_pseudo_level_coords(lbuser5):
 
 
 def convert(f):
+    """
+    Converts a PP field into the corresponding items of Cube metadata.
+
+    Args:
+
+    * f:
+        A :class:`iris.fileformats.pp.PPField` object.
+
+    Returns:
+        A :class:`iris.fileformats.rules.ConversionMetadata` object.
+
+    """
     factories = []
     aux_coords_and_dims = []
 
@@ -294,8 +307,9 @@ def convert(f):
         dim_coords_and_dims, other_aux_coords_and_dims = _all_other_rules(f)
     aux_coords_and_dims.extend(other_aux_coords_and_dims)
 
-    return (factories, references, standard_name, long_name, units, attributes,
-            cell_methods, dim_coords_and_dims, aux_coords_and_dims)
+    return ConversionMetadata(factories, references, standard_name, long_name,
+                              units, attributes, cell_methods,
+                              dim_coords_and_dims, aux_coords_and_dims)
 
 
 def _all_other_rules(f):

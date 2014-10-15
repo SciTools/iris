@@ -736,10 +736,18 @@ Loader = collections.namedtuple('Loader',
                                  'converter', 'legacy_custom_rules'))
 
 
+ConversionMetadata = collections.namedtuple('ConversionMetadata',
+                                            ('factories', 'references',
+                                             'standard_name', 'long_name',
+                                             'units', 'attributes',
+                                             'cell_methods',
+                                             'dim_coords_and_dims',
+                                             'aux_coords_and_dims'))
+
+
 def _make_cube(field, converter):
     # Convert the field to a Cube.
-    (factories, references, standard_name, long_name, units, attributes,
-     cell_methods, dim_coords_and_dims, aux_coords_and_dims) = converter(field)
+    metadata = converter(field)
 
     try:
         data = field._data
@@ -747,29 +755,29 @@ def _make_cube(field, converter):
         data = field.data
 
     cube = iris.cube.Cube(data,
-                          attributes=attributes,
-                          cell_methods=cell_methods,
-                          dim_coords_and_dims=dim_coords_and_dims,
-                          aux_coords_and_dims=aux_coords_and_dims)
+                          attributes=metadata.attributes,
+                          cell_methods=metadata.cell_methods,
+                          dim_coords_and_dims=metadata.dim_coords_and_dims,
+                          aux_coords_and_dims=metadata.aux_coords_and_dims)
 
     # Temporary code to deal with invalid standard names in the
     # translation table.
-    if standard_name is not None:
-        cube.rename(standard_name)
-    if long_name is not None:
-        cube.long_name = long_name
-    if units is not None:
+    if metadata.standard_name is not None:
+        cube.rename(metadata.standard_name)
+    if metadata.long_name is not None:
+        cube.long_name = metadata.long_name
+    if metadata.units is not None:
         # Temporary code to deal with invalid units in the translation
         # table.
         try:
-            cube.units = units
+            cube.units = metadata.units
         except ValueError:
-            msg = 'Ignoring PP invalid units {!r}'.format(units)
+            msg = 'Ignoring PP invalid units {!r}'.format(metadata.units)
             warnings.warn(msg)
-            cube.attributes['invalid_units'] = units
+            cube.attributes['invalid_units'] = metadata.units
             cube.units = iris.unit._UNKNOWN_UNIT_STRING
 
-    return cube, factories, references
+    return cube, metadata.factories, metadata.references
 
 
 def load_cubes(filenames, user_callback, loader, filter_function=None):

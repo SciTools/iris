@@ -34,7 +34,7 @@ import iris.coord_systems as icoord_systems
 from iris.coords import AuxCoord, DimCoord, CellMethod
 from iris.exceptions import TranslationError
 from iris.fileformats.grib import grib_phenom_translation as itranslation
-from iris.fileformats.rules import Factory, Reference
+from iris.fileformats.rules import ConversionMetadata, Factory, Reference
 from iris.unit import CALENDAR_GREGORIAN, date2num, Unit
 from iris.util import _is_circular
 
@@ -1544,11 +1544,7 @@ def convert(field):
         GRIB message to be translated.
 
     Returns:
-        Translated cube metadata tuple containing factories list, references
-        list, standard_name, long_name, units, attributes dictionary, cell
-        methods list, list containing dimension coordinate and associated
-        dimension tuple pairs, and a list containing auxiliary coordinate and
-        associated dimensions tuple pairs.
+        A :class:`iris.fileformats.rules.ConversionMetadata` object.
 
     """
     editionNumber = field.sections[0]['editionNumber']
@@ -1571,4 +1567,4 @@ def convert(field):
     # Convert GRIB2 message to cube metadata.
     grib2_convert(field, metadata)
 
-    return tuple(metadata.values())
+    return ConversionMetadata._make(metadata.values())
