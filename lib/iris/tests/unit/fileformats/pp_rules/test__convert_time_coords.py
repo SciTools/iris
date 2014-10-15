@@ -205,6 +205,33 @@ class TestLBTIMxxx_Unhandled(TestField):
         self.assertEqual(coords_and_dims, [])
 
 
+class TestArrayInputWithLBTIM_0_0_1(TestField):
+    def test_t1_list(self):
+        # lbtim ia = 0, ib = 0, ic = 1
+        # with a series of times (t1).
+        lbcode = _lbcode(1)
+        lbtim = _lbtim(ia=0, ib=0, ic=1)
+        hours = np.array([0, 3, 6, 9, 12])
+        # Validity time - vector of different values
+        t1 = [nc_datetime(1970, 1, 9, hour=3 + hour) for hour in hours]
+        t1_dims = (0,)
+        # Forecast time - scalar (not used)
+        t2 = nc_datetime(1970, 1, 9, hour=3)
+        lbft = None
+
+        coords_and_dims = _convert_time_coords(
+            lbcode=lbcode, lbtim=lbtim, epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            t1=t1, t2=t2, lbft=lbft,
+            t1_dims=t1_dims)
+
+        # Expected coords.
+        time_coord = DimCoord((24 * 8) + 3 + hours,
+                              standard_name='time',
+                              units=_EPOCH_HOURS_UNIT)
+        expected = [(time_coord, (0,))]
+        self.assertCoordsAndDimsListsMatch(coords_and_dims, expected)
+
+
 class TestArrayInputWithLBTIM_0_1_1(TestField):
     def test_t1_list(self):
         # lbtim ia = 0, ib = 1, ic = 1
@@ -473,81 +500,6 @@ class TestArrayInputWithLBTIM_0_3_1(TestField):
         expected = [(fp_coord, (0,)),
                     (time_coord, (0,)),
                     (fref_time_coord, (0,))]
-
-
-class Test__vector_calls(TestField):
-    def test_reshape_call(self):
-        # Check that "_reshape_vector_args" is called correctly.
-        odd_mocks = mock.MagicMock()
-        reshape_call = mock.MagicMock(
-            return_value=(odd_mocks.a_t1, odd_mocks.a_t2, odd_mocks.a_ft))
-        with mock.patch('iris.fileformats.pp_rules._reshape_vector_args',
-                        new=reshape_call):
-            coords_and_dims = _convert_time_coords(
-                lbcode=odd_mocks.lbcode,
-                lbtim=odd_mocks.lbtim,
-                epoch_hours_unit=odd_mocks.epoch_unit,
-                t1=odd_mocks.t1, t1_dims=odd_mocks.t1_dims,
-                t2=odd_mocks.t2, t2_dims=odd_mocks.t2_dims,
-                lbft=odd_mocks.lbft, lbft_dims=odd_mocks.lbft_dims)
-        # Check it was called once with the expected args.
-        self.assertEqual(reshape_call.call_count, 1)
-        self.assertEqual(reshape_call.call_args,
-                         mock.call([(odd_mocks.t1, odd_mocks.t1_dims),
-                                    (odd_mocks.t2, odd_mocks.t2_dims),
-                                    (odd_mocks.lbft, odd_mocks.lbft_dims)]))
-
-    def _check_reduce_calls(self, lbtim_ib, n_coords_expected):
-        # Check that "_reduce_points_and_bounds" is called correctly, for a
-        # given setting of LBTIM.IB.
-        lbtim = _lbtim(ib=lbtim_ib, ic=1)
-        # Provide dummy times and units that won't crash the testee.
-        times = _EPOCH_HOURS_UNIT.num2date(np.arange(2))
-        reshape_call = mock.MagicMock(
-            return_value=(times, times, np.arange(2)))
-        # Make distinguishable test data for 1st, 2nd, 3rd coords returned.
-        results_array = [((0,), [1, 2, 3], None),
-                         ((0,), [3, 4, 5], None),
-                         ((0,), [5, 6, 7], None)]
-        reduce_call = mock.MagicMock(side_effect=results_array)
-        odd_mocks = mock.MagicMock()
-        with \
-            mock.patch('iris.fileformats.pp_rules._reshape_vector_args',
-                       reshape_call), \
-            mock.patch('iris.fileformats.pp_rules._reduce_points_and_bounds',
-                       reduce_call):
-                coords_and_dims = _convert_time_coords(
-                    lbcode=mock.MagicMock(),
-                    lbtim=lbtim,
-                    epoch_hours_unit=_EPOCH_HOURS_UNIT,
-                    t1=odd_mocks.t1, t1_dims=odd_mocks.t1_dims,
-                    t2=odd_mocks.t2, t2_dims=odd_mocks.t2_dims,
-                    lbft=odd_mocks.lbft, lbft_dims=odd_mocks.lbft_dims)
-        # Check reduce was called the correct number of times.
-        self.assertEqual(reduce_call.call_count, n_coords_expected)
-        # Check the number of coords_and_dims is the same.
-        self.assertEqual(len(coords_and_dims), n_coords_expected)
-        # Check we got the expected coords in the expected order.
-        if n_coords_expected == 1:
-            names = ['time']
-        else:
-            names = ['forecast_period', 'time', 'forecast_reference_time']
-        for i_result, (coord, dims) in enumerate(coords_and_dims):
-            result = results_array[i_result]
-            self.assertEqual(coord.name(), names[i_result])
-            self.assertArrayEqual(coord.points, result[1])
-
-    def test_reduce_LBTIMx0x(self):
-        self._check_reduce_calls(lbtim_ib=0, n_coords_expected=1)
-
-    def test_reduce_LBTIMx1x(self):
-        self._check_reduce_calls(lbtim_ib=1, n_coords_expected=3)
-
-    def test_reduce_LBTIMx2x(self):
-        self._check_reduce_calls(lbtim_ib=2, n_coords_expected=3)
-
-    def test_reduce_LBTIMx3x(self):
-        self._check_reduce_calls(lbtim_ib=3, n_coords_expected=3)
 
 
 if __name__ == "__main__":
