@@ -139,7 +139,7 @@ def _reshape_vector_args(values_and_dims):
 
     """
     # Find maximum dimension index, which sets ndim of results.
-    max_dims = [max(dims) if dims else -1 for values, dims in values_and_dims]
+    max_dims = [max(dims) if dims else -1 for _, dims in values_and_dims]
     max_dim = max(max_dims) if max_dims else -1
     result = []
     for value, dims in values_and_dims:
@@ -228,11 +228,11 @@ def _reduce_points_and_bounds(points, lower_and_upper_bounds=None):
             If no bounds were passed, None is returned.
 
     """
-    orig_points_dtype = np.array(points).dtype
+    orig_points_dtype = np.asarray(points).dtype
     bounds = None
     if lower_and_upper_bounds is not None:
         lower_bounds, upper_bounds = lower_and_upper_bounds
-        orig_bounds_dtype = np.array(lower_bounds).dtype
+        orig_bounds_dtype = np.asarray(lower_bounds).dtype
         bds_shape = lower_bounds.shape + (1,)
         bounds = np.concatenate((lower_bounds.reshape(bds_shape),
                                  upper_bounds.reshape(bds_shape)),
@@ -249,7 +249,7 @@ def _reduce_points_and_bounds(points, lower_and_upper_bounds=None):
         bounds = bounds.reshape(reshape_inds + (2,))
         bounds = bounds.astype(orig_bounds_dtype)
 
-    if not len(used_dims):
+    if not used_dims:
         used_dims = None
 
     return used_dims, points, bounds
@@ -289,7 +289,7 @@ def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
         When 'coordinate' is scalar, then 'cube-dimensions-mapping' is None.
 
     """
-    # Reform input values so they have all the same dimensions.
+    # Reform input values so they have all the same number of dimensions.
     t1, t2, lbft = _reshape_vector_args([(t1, t1_dims), (t2, t2_dims),
                                          (lbft, lbft_dims)])
     coords_and_dims = []
