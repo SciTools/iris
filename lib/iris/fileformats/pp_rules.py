@@ -292,7 +292,6 @@ def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
     # Reform input values so they have all the same number of dimensions.
     t1, t2, lbft = _reshape_vector_args([(t1, t1_dims), (t2, t2_dims),
                                          (lbft, lbft_dims)])
-    coords_and_dims = []
 
     def date2hours(times_array):
         """Convert datetime values to hours-since-epoch values."""

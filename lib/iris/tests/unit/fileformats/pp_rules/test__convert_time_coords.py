@@ -205,6 +205,236 @@ class TestLBTIMxxx_Unhandled(TestField):
         self.assertEqual(coords_and_dims, [])
 
 
+class TestArrayInputWithLBTIM_0_1_1(TestField):
+    def test_t1_list(self):
+        # lbtim ia = 0, ib = 1, ic = 1
+        # with a single forecast reference time (t2) and a series
+        # of validity times (t1).
+        lbcode = _lbcode(1)
+        lbtim = _lbtim(ia=0, ib=1, ic=1)
+        forecast_period_in_hours = np.array([0, 3, 6, 9, 12])
+        # Validity time - vector of different values
+        t1 = [nc_datetime(1970, 1, 9, hour=(3 + fp)) for fp in
+              forecast_period_in_hours]
+        t1_dims = (0,)
+        # Forecast time - scalar
+        t2 = nc_datetime(1970, 1, 9, hour=3)
+        lbft = None  # Not used.
+
+        coords_and_dims = _convert_time_coords(
+            lbcode=lbcode, lbtim=lbtim, epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            t1=t1, t2=t2, lbft=lbft,
+            t1_dims=t1_dims)
+
+        # Expected coords.
+        fp_coord = DimCoord(forecast_period_in_hours,
+                            standard_name='forecast_period',
+                            units='hours')
+        time_coord = DimCoord((24 * 8) + 3 + forecast_period_in_hours,
+                              standard_name='time',
+                              units=_EPOCH_HOURS_UNIT)
+        fref_time_coord = DimCoord((24 * 8) + 3,
+                                   standard_name='forecast_reference_time',
+                                   units=_EPOCH_HOURS_UNIT)
+        expected = [(fp_coord, (0,)),
+                    (time_coord, (0,)),
+                    (fref_time_coord, None)]
+        self.assertCoordsAndDimsListsMatch(coords_and_dims, expected)
+
+    def test_t1_and_t2_list(self):
+        # lbtim ia = 0, ib = 1, ic = 1
+        # with a single repeated forecast reference time (t2) and a series
+        # of validity times (t1).
+        lbcode = _lbcode(1)
+        lbtim = _lbtim(ia=0, ib=1, ic=1)
+        forecast_period_in_hours = np.array([0, 3, 6, 9, 12])
+        # Validity time - vector of different values
+        t1 = [nc_datetime(1970, 1, 9, hour=(3 + fp)) for fp in
+              forecast_period_in_hours]
+        t1_dims = (0,)
+        # Forecast time - vector of same values
+        t2 = [nc_datetime(1970, 1, 9, hour=3) for _ in
+              forecast_period_in_hours]
+        t2_dims = (0,)
+        lbft = None  # Not used.
+
+        coords_and_dims = _convert_time_coords(
+            lbcode=lbcode, lbtim=lbtim, epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            t1=t1, t2=t2, lbft=lbft,
+            t1_dims=t1_dims, t2_dims=t2_dims)
+
+        # Expected coords.
+        fp_coord = DimCoord(forecast_period_in_hours,
+                            standard_name='forecast_period',
+                            units='hours')
+        time_coord = DimCoord((24 * 8) + 3 + forecast_period_in_hours,
+                              standard_name='time',
+                              units=_EPOCH_HOURS_UNIT)
+        fref_time_coord = DimCoord((24 * 8) + 3,
+                                   standard_name='forecast_reference_time',
+                                   units=_EPOCH_HOURS_UNIT)
+        expected = [(fp_coord, (0,)),
+                    (time_coord, (0,)),
+                    (fref_time_coord, None)]
+        self.assertCoordsAndDimsListsMatch(coords_and_dims, expected)
+
+    def test_t1_and_t2_orthogonal_lists(self):
+        # lbtim ia = 0, ib = 1, ic = 1
+        # with a single repeated forecast reference time (t2) and a series
+        # of validity times (t1).
+        lbcode = _lbcode(1)
+        lbtim = _lbtim(ia=0, ib=1, ic=1)
+        years = np.array([1970, 1971, 1972])
+        hours = np.array([3, 6, 9, 12])
+        # Validity time - vector of different values
+        t1 = [nc_datetime(year, 1, 9, hour=12) for year in years]
+        t1_dims = (0,)
+        # Forecast time - vector of different values
+        t2 = [nc_datetime(1970, 1, 9, hour=hour) for hour in hours]
+        t2_dims = (1,)
+        lbft = None  # Not used.
+
+        coords_and_dims = _convert_time_coords(
+            lbcode=lbcode, lbtim=lbtim, epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            t1=t1, t2=t2, lbft=lbft,
+            t1_dims=t1_dims, t2_dims=t2_dims)
+
+        # Expected coords.
+        fp_coord = AuxCoord([[(year -1970) * 365 * 24 + 12 - hour for
+                              hour in hours] for year in years],
+                            standard_name='forecast_period',
+                            units='hours')
+        time_coord = DimCoord((years - 1970) * 24 * 365 + (24 * 8) + 12,
+                              standard_name='time',
+                              units=_EPOCH_HOURS_UNIT)
+        fref_time_coord = DimCoord((24 * 8) + hours,
+                                   standard_name='forecast_reference_time',
+                                   units=_EPOCH_HOURS_UNIT)
+        expected = [(fp_coord, (0, 1)),     # spans dims 0 and 1.
+                    (time_coord, (0,)),
+                    (fref_time_coord, (1,))]
+        self.assertCoordsAndDimsListsMatch(coords_and_dims, expected)
+
+    def test_t1_multi_dim_list(self):
+        # Another case of lbtim ia = 0, ib = 1, ic = 1 but
+        # with a changing forecast reference time (t2) and 
+        # validity time (t1).
+        lbcode = _lbcode(1)
+        lbtim = _lbtim(ia=0, ib=1, ic=1)
+        forecast_period_in_hours = np.array([0, 3, 6, 9, 12])
+        years = np.array([1970, 1971, 1972])
+        # Validity time - 2d array of different values
+        t1 = [[nc_datetime(year, 1, 9, hour=(3 + fp)) for fp in
+               forecast_period_in_hours] for year in years]
+        t1_dims = (0, 1)
+        # Forecast time - vector of different values
+        t2 = nc_datetime(1970, 1, 9, hour=3)
+        lbft = None  # Not used.
+
+        coords_and_dims = _convert_time_coords(
+            lbcode=lbcode, lbtim=lbtim, epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            t1=t1, t2=t2, lbft=lbft,
+            t1_dims=t1_dims)
+
+        # Expected coords.
+        fp_coord = AuxCoord([forecast_period_in_hours +
+                             (year - 1970) * 365 * 24 for year in years],
+                            standard_name='forecast_period',
+                            units='hours')
+        time_coord = AuxCoord([(24 * 8) + 3 + forecast_period_in_hours +
+                               (year - 1970) * 365 * 24 for year in years],
+                              standard_name='time',
+                              units=_EPOCH_HOURS_UNIT)
+        fref_time_coord = DimCoord((24 * 8) + 3,
+                                   standard_name='forecast_reference_time',
+                                   units=_EPOCH_HOURS_UNIT)
+        expected = [(fp_coord, (0, 1)),
+                    (time_coord, (0, 1)),
+                    (fref_time_coord, None)]
+        self.assertCoordsAndDimsListsMatch(coords_and_dims, expected)
+
+    def test_t1_and_t2_nparrays(self):
+        # lbtim ia = 0, ib = 1, ic = 1
+        # with a single repeated forecast reference time (t2) and a series
+        # of validity times (t1).
+        lbcode = _lbcode(1)
+        lbtim = _lbtim(ia=0, ib=1, ic=1)
+        forecast_period_in_hours = np.array([0, 3, 6, 9, 12])
+        # Validity time - vector of different values
+        t1 = np.array([nc_datetime(1970, 1, 9, hour=(3 + fp)) for fp in
+              forecast_period_in_hours])
+        t1_dims = (0,)
+        # Forecast time - vector of same values
+        t2 = np.array([nc_datetime(1970, 1, 9, hour=3) for _ in
+              forecast_period_in_hours])
+        t2_dims = (0,)
+        lbft = None  # Not used.
+
+        coords_and_dims = _convert_time_coords(
+            lbcode=lbcode, lbtim=lbtim, epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            t1=t1, t2=t2, lbft=lbft,
+            t1_dims=t1_dims, t2_dims=t2_dims)
+
+        # Expected coords.
+        fp_coord = DimCoord(forecast_period_in_hours,
+                            standard_name='forecast_period',
+                            units='hours')
+        time_coord = DimCoord((24 * 8) + 3 + forecast_period_in_hours,
+                              standard_name='time',
+                              units=_EPOCH_HOURS_UNIT)
+        fref_time_coord = DimCoord((24 * 8) + 3,
+                                   standard_name='forecast_reference_time',
+                                   units=_EPOCH_HOURS_UNIT)
+        expected = [(fp_coord, (0,)),
+                    (time_coord, (0,)),
+                    (fref_time_coord, None)]
+        self.assertCoordsAndDimsListsMatch(coords_and_dims, expected)
+
+
+class TestArrayInputWithLBTIM_0_2_1(TestField):
+    def test_t1_list(self):
+        lbtim = _lbtim(ib=2, ic=1)
+        lbcode = _lbcode(1)
+        hours = np.array([0, 3, 6, 9])
+        # Start times - vector
+        t1 = [nc_datetime(1970, 1, 9, hour=9 + hour, minute=0, second=0) for
+              hour in hours]
+        t1_dims = (0,)
+        # End time - scalar
+        t2 = nc_datetime(1970, 1, 11, hour=9, minute=0, second=0)
+        lbft = 3.0  # Sample period
+
+        coords_and_dims = _convert_time_coords(
+            lbcode=lbcode, lbtim=lbtim, epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            t1=t1, t2=t2, lbft=lbft,
+            t1_dims=t1_dims)
+
+        # Expected coords.
+        points = lbft - (48 - hours) / 2.0
+        bounds = np.array([lbft - (48 - hours),
+                           np.ones_like(hours) * lbft]).transpose()
+        fp_coord = AuxCoord(points,
+                            standard_name='forecast_period',
+                            units='hours',
+                            bounds=bounds)
+        points = 9 * 24 + (hours / 2.0)
+        bounds = np.array([points - lbft / 2.0,
+                           points + lbft / 2.0]).transpose()
+        time_coord = DimCoord(points,
+                              standard_name='time',
+                              units=_EPOCH_HOURS_UNIT,
+                              bounds=bounds)
+        fref_time_coord = DimCoord((24 * 10) + 9 - lbft,
+                                   standard_name='forecast_reference_time',
+                                   units=_EPOCH_HOURS_UNIT)
+        expected = [(fp_coord, (0, 1)),     # spans dims 0 and 1.
+                    (time_coord, (0,)),
+                    (fref_time_coord, (1,))]
+
+
+
+
+
 class Test__vector_calls(TestField):
     def test_reshape_call(self):
         # Check that "_reshape_vector_args" is called correctly.
