@@ -53,64 +53,284 @@ def _model_level_number(lblev):
     return model_level_number
 
 
-def _convert_scalar_time_coords(lbcode, lbtim, epoch_hours_unit, t1, t2, lbft):
+def _reshape_vector_args(values_and_dims):
     """
-    Encode scalar time values from PP headers as CM data components.
+    Reshape a group of (array, dimensions-mapping) onto all dimensions.
 
-    Returns a list of coords_and_dims.
+    The resulting arrays are all mapped over the same dimensions; as many as
+    the maximum dimension number found in the inputs.  Those dimensions not
+    mapped by a given input appear as length-1 dimensions in the output array.
+    The resulting arrays are thus all mutually compatible in arithmetic -- i.e.
+    can combine without broadcasting errors (provided that all inputs mapping
+    to a dimension define the same associated length).
+
+    Args:
+
+    * values_and_dims (iterable of (array-like, iterable of int)):
+        Input arrays with associated mapping dimension numbers.
+        The length of each 'dims' must match the ndims of the 'value'.
+
+    Returns:
+
+    * reshaped_arrays (iterable of arrays).
+        The inputs, transposed and reshaped onto common target dimensions.
 
     """
-    t1_epoch_hours = epoch_hours_unit.date2num(t1)
-    t2_epoch_hours = epoch_hours_unit.date2num(t2)
+    # Find maximum dimension index, which sets ndim of results.
+    max_dims = [max(dims) if len(dims) else -1
+                for values, dims in values_and_dims]
+    max_dim = max(max_dims) if len(max_dims) else -1
+    result = []
+    for value, dims in values_and_dims:
+        # Force to array.
+        if not isinstance(value, np.ndarray):
+            value = np.array(value)
+        if len(dims) != value.ndim:
+            raise ValueError('Lengths of dimension-mappings must match '
+                             'input array dimensions.')
+        # Save dim sizes in original order.
+        original_shape = value.shape
+        if dims:
+            # First transpose values to put its dims in the target order..
+            dims_order = sorted(range(len(dims)),
+                                key=lambda i_dim: dims[i_dim])
+            value = value.transpose(dims_order)
+        if max_dim > -1:
+            # ..Then reshape to add any extra *1 dims.
+            shape = [1] * (max_dim + 1)
+            for i_dim, dim in enumerate(dims):
+                shape[dim] = original_shape[i_dim]
+            value = np.array(value).reshape(shape)
+        result.append(value)
+    return result
+
+
+def _collapse_degenerate_points_and_bounds(points, bounds=None, rtol=1.0e-7):
+    """
+    Collapse points (and optionally bounds) in any dimensions over which all
+    values are the same.
+
+    All dimensions are tested, and if degenerate are reduced to length 1.
+    Returns (points, bounds).
+
+    Value equivalence is controlled by a tolerance, to avoid problems with
+    numbers from netcdftime.date2num, which has limited precision because of
+    the way it calculates with floats of days.
+
+    """
+    array = points
+    if bounds is not None:
+        array = np.concatenate(
+            (points.reshape(points.shape + (1,)),
+             bounds), axis=-1)
+
+    for i_dim in range(points.ndim):
+        if array.shape[i_dim] > 1:
+            slice_inds = [slice(None)] * points.ndim
+            slice_inds[i_dim] = slice(0, 1)
+            slice_0 = array[slice_inds]
+            if np.allclose(array, slice_0, rtol):
+                array = slice_0
+
+    points = array
+    if bounds is not None:
+        points = array[..., 0]
+        bounds = array[..., 1:]
+
+    return points, bounds
+
+
+def _reduce_points_and_bounds(points, lower_and_upper_bounds=None):
+    """
+    Reduce the dimensionality of arrays of coordinate points (and optionally
+    bounds).
+
+    Dimensions over which all values are the same are reduced to size 1, using
+    :meth:`_collapse_degenerate_points_and_bounds`.
+    All size-1 dimensions are then removed.
+    If the bounds arrays are also passed in, then all three arrays must have
+    the same shape.
+
+    Args:
+
+    * points (array-like):
+        Coordinate point values.
+
+    * lower_and_upper_bounds (pair of array-like, or None):
+        Corresponding bounds values (lower, upper), if any.
+
+    Returns:
+        dims (iterable of ints), points(array), bounds(array)
+
+        * 'dims' is the mapping from the result array dimensions to the
+            original dimensions.  However, when 'array' is scalar, 'dims' will
+            be None (rather than an empty tuple).
+        * 'points' and 'bounds' are the reduced arrays.
+            If no bounds were passed, None is returned.
+
+    """
+    orig_points_dtype = np.array(points).dtype
+    bounds = None
+    if lower_and_upper_bounds is not None:
+        lower_bounds, upper_bounds = lower_and_upper_bounds
+        orig_bounds_dtype = np.array(lower_bounds).dtype
+        bds_shape = lower_bounds.shape + (1,)
+        bounds = np.concatenate((lower_bounds.reshape(bds_shape),
+                                 upper_bounds.reshape(bds_shape)),
+                                axis=-1)
+
+    points, bounds = _collapse_degenerate_points_and_bounds(points, bounds)
+
+    used_dims = tuple(i_dim for i_dim in range(points.ndim)
+                      if points.shape[i_dim] > 1)
+    reshape_inds = tuple([points.shape[dim] for dim in used_dims])
+    points = points.reshape(reshape_inds)
+    points = points.astype(orig_points_dtype)
+    if bounds is not None:
+        bounds = bounds.reshape(reshape_inds + (2,))
+        bounds = bounds.astype(orig_bounds_dtype)
+
+    if not len(used_dims):
+        used_dims = None
+
+    return used_dims, points, bounds
+
+
+def _dim_or_aux(*args, **kwargs):
+    """Make a coordinate -- a DimCoord if possible, otherwise AuxCoord."""
+    try:
+        result = DimCoord(*args, **kwargs)
+    except ValueError:
+        result = AuxCoord(*args, **kwargs)
+    return result
+
+
+def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
+                         t1, t2, lbft,
+                         t1_dims=(), t2_dims=(), lbft_dims=()):
+    """
+    Make vector time coordinates from the time metadata.
+
+    Args:
+
+    * lbcode, lbtim (:class:`iris.fileformats.pp.SplittableInt`):
+        Scalar field elements.
+    * epoch_hours_unit (:class:`iris.units.Unit`):
+        Epoch time reference unit, for hours-since conversions.
+    * t1, t2, lbft (array):
+        Arrays of metadata (may be scalar).
+    * t1_dims, t2_dims, lbft_dims (tuple of int):
+        Cube dimension mappings for the array metadata, if any.
+        Must match the actual shape of the data.
+
+    Returns:
+
+        a list of (coordinate, cube-dimensions-mapping).
+        The coordinates are DimCoord where possible, otherwise AuxCoord.
+        When 'coordinate' is scalar, then 'cube-dimensions-mapping' is None.
+
+    """
+    # Reform input values so they have all the same dimensions.
+    t1, t2, lbft = _reshape_vector_args([(t1, t1_dims), (t2, t2_dims),
+                                         (lbft, lbft_dims)])
+    coords_and_dims = []
+
+    def date2hours(times_array):
+        """Convert datetime values to hours-since-epoch values."""
+        # Use a minimum-1D form, as netcdftime.date2num doesn't like scalars.
+        times_array = np.array(times_array)
+        return epoch_hours_unit.date2num(
+            np.atleast_1d(times_array)).reshape(times_array.shape)
+
+    t1_epoch_hours = date2hours(t1)
+    t2_epoch_hours = date2hours(t2)
     hours_from_t1_to_t2 = t2_epoch_hours - t1_epoch_hours
     hours_from_t2_to_t1 = t1_epoch_hours - t2_epoch_hours
     coords_and_dims = []
 
-    if \
-            (lbtim.ia == 0) and \
-            (lbtim.ib == 0) and \
-            (lbtim.ic in [1, 2, 3, 4]) and \
-            (len(lbcode) != 5 or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
-        coords_and_dims.append((DimCoord(t1_epoch_hours, standard_name='time', units=epoch_hours_unit), None))
+    if ((lbtim.ia == 0) and
+        (lbtim.ib == 0) and
+        (lbtim.ic in [1, 2, 3, 4]) and
+        (len(lbcode) != 5 or (len(lbcode) == 5 and
+                              lbcode.ix not in [20, 21, 22, 23] and
+                              lbcode.iy not in [20, 21, 22, 23]))):
+        dims, points, _ = _reduce_points_and_bounds(t1_epoch_hours)
+        coords_and_dims.append(
+            (_dim_or_aux(points, standard_name='time', units=epoch_hours_unit),
+             dims))
 
-    if \
-            (lbtim.ia == 0) and \
-            (lbtim.ib == 1) and \
-            (lbtim.ic in [1, 2, 3, 4]) and \
-            (len(lbcode) != 5 or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
-        coords_and_dims.append((DimCoord(hours_from_t2_to_t1, standard_name='forecast_period', units='hours'), None))
-        coords_and_dims.append((DimCoord(t1_epoch_hours, standard_name='time', units=epoch_hours_unit), None))
-        coords_and_dims.append((DimCoord(t2_epoch_hours, standard_name='forecast_reference_time', units=epoch_hours_unit), None))
+    if ((lbtim.ia == 0) and
+        (lbtim.ib == 1) and
+        (lbtim.ic in [1, 2, 3, 4]) and
+        (len(lbcode) != 5 or (len(lbcode) == 5
+                              and lbcode.ix not in [20, 21, 22, 23]
+                              and lbcode.iy not in [20, 21, 22, 23]))):
+        dims, points, _ = _reduce_points_and_bounds(hours_from_t2_to_t1)
+        coords_and_dims.append(
+            (_dim_or_aux(points, standard_name='forecast_period',
+                         units='hours'),
+             dims))
+        dims, points, _ = _reduce_points_and_bounds(t1_epoch_hours)
+        coords_and_dims.append(
+            (_dim_or_aux(points, standard_name='time', units=epoch_hours_unit),
+             dims))
+        dims, points, _ = _reduce_points_and_bounds(t2_epoch_hours)
+        coords_and_dims.append(
+            (_dim_or_aux(points, standard_name='forecast_reference_time',
+                         units=epoch_hours_unit),
+             dims))
 
-    if \
-            (lbtim.ib == 2) and \
-            (lbtim.ic in [1, 2, 4]) and \
-            ((len(lbcode) != 5) or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
-        coords_and_dims.append((
-            DimCoord(standard_name='forecast_period', units='hours',
-                     points=lbft - 0.5 * hours_from_t1_to_t2,
-                     bounds=[lbft - hours_from_t1_to_t2, lbft]),
-            None))
-        coords_and_dims.append((
-            DimCoord(standard_name='time', units=epoch_hours_unit,
-                     points=0.5 * (t1_epoch_hours + t2_epoch_hours),
-                     bounds=[t1_epoch_hours, t2_epoch_hours]),
-            None))
-        coords_and_dims.append((DimCoord(t2_epoch_hours - lbft, standard_name='forecast_reference_time', units=epoch_hours_unit), None))
+    if ((lbtim.ib == 2) and
+        (lbtim.ic in [1, 2, 4]) and
+        ((len(lbcode) != 5) or (len(lbcode) == 5 and
+                                lbcode.ix not in [20, 21, 22, 23]
+                                and lbcode.iy not in [20, 21, 22, 23]))):
+        dims, points, bounds = _reduce_points_and_bounds(
+            lbft - 0.5 * hours_from_t1_to_t2,
+            (lbft - hours_from_t1_to_t2, lbft))
+        coords_and_dims.append(
+            (_dim_or_aux(standard_name='forecast_period', units='hours',
+                         points=points, bounds=bounds),
+             dims))
 
-    if \
-            (lbtim.ib == 3) and \
-            (lbtim.ic in [1, 2, 4]) and \
-            ((len(lbcode) != 5) or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
-        coords_and_dims.append((
-            DimCoord(standard_name='forecast_period', units='hours',
-                     points=lbft, bounds=[lbft - hours_from_t1_to_t2, lbft]),
-            None))
-        coords_and_dims.append((
-            DimCoord(standard_name='time', units=epoch_hours_unit,
-                     points=t2_epoch_hours, bounds=[t1_epoch_hours, t2_epoch_hours]),
-            None))
-        coords_and_dims.append((DimCoord(t2_epoch_hours - lbft, standard_name='forecast_reference_time', units=epoch_hours_unit), None))
+        dims, points, bounds = _reduce_points_and_bounds(
+            0.5 * (t1_epoch_hours + t2_epoch_hours),
+            (t1_epoch_hours, t2_epoch_hours))
+        coords_and_dims.append(
+            (_dim_or_aux(standard_name='time', units=epoch_hours_unit,
+                         points=points, bounds=bounds),
+             dims))
+
+        dims, points, _ = _reduce_points_and_bounds(t2_epoch_hours - lbft)
+        coords_and_dims.append(
+            (_dim_or_aux(points, standard_name='forecast_reference_time',
+                         units=epoch_hours_unit),
+             dims))
+
+    if ((lbtim.ib == 3) and
+        (lbtim.ic in [1, 2, 4]) and
+        ((len(lbcode) != 5) or (len(lbcode) == 5 and
+                                lbcode.ix not in [20, 21, 22, 23] and
+                                lbcode.iy not in [20, 21, 22, 23]))):
+        dims, points, bounds = _reduce_points_and_bounds(
+            lbft, (lbft - hours_from_t1_to_t2, lbft))
+        coords_and_dims.append(
+            (_dim_or_aux(standard_name='forecast_period', units='hours',
+                         points=points, bounds=bounds),
+             dims))
+
+        dims, points, bounds = _reduce_points_and_bounds(
+            t2_epoch_hours, (t1_epoch_hours, t2_epoch_hours))
+        coords_and_dims.append(
+            (_dim_or_aux(standard_name='time', units=epoch_hours_unit,
+                         points=points, bounds=bounds),
+             dims))
+
+        dims, points, _ = _reduce_points_and_bounds(t2_epoch_hours - lbft)
+        coords_and_dims.append(
+            (_dim_or_aux(points, standard_name='forecast_reference_time',
+                         units=epoch_hours_unit),
+             dims))
 
     return coords_and_dims
 
@@ -258,7 +478,7 @@ def convert(f):
     aux_coords_and_dims = []
 
     # "Normal" (non-cross-sectional) Time values (--> scalar coordinates)
-    time_coords_and_dims = _convert_scalar_time_coords(
+    time_coords_and_dims = _convert_time_coords(
         lbcode=f.lbcode, lbtim=f.lbtim,
         epoch_hours_unit=f.time_unit('hours'),
         t1=f.t1, t2=f.t2, lbft=f.lbft)
