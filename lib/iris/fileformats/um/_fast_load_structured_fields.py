@@ -104,7 +104,7 @@ class FieldCollation(object):
         return self._element_arrays_and_dims
 
     def _field_vector_element_arrays(self):
-        """"Define the field components used in the structure analysis."""
+        """Define the field components used in the structure analysis."""
         # Define functions to make t1 and t2 values as date-time tuples.
         # These depend on header version (PPField2 has no seconds values).
         t1_fn = lambda fld: (fld.lbyr, fld.lbmon, fld.lbdat,
@@ -123,18 +123,16 @@ class FieldCollation(object):
 
         return component_arrays
 
-    # Static factors for the _time_comparable_int routine.
+    # Static factors for the _time_comparable_int routine (seconds per period).
     _TIME_ELEMENT_MULTIPLIERS = np.cumprod([1, 60, 60, 24, 31, 12])[::-1]
 
     def _time_comparable_int(self, yr, mon, dat, hr, min, sec):
         """
-        Return a simple number representing a date-time tuple.
+        Return a single unique number representing a date-time tuple.
 
-        This calculation takes no account of the real calendar, but instead
-        gives every month 31 days, which preserves the required time ordering.
-
-        In fact... for the purposes used here we didn't really need ordering,
-        it is merely important that all datetimes yield a *unique* conversion.
+        This calculation takes no account of the time field's real calendar,
+        instead giving every month 31 days, which preserves the required
+        time ordering.
 
         """
         elements = np.array((yr, mon, dat, hr, min, sec))
@@ -152,7 +150,7 @@ class FieldCollation(object):
                     [self._time_comparable_int(*tuple(val)) for val in array])
                 ordering_definitions[index] = (name, array)
 
-        # Perform the main analysis --> vector dimensions, elements, arrays.
+        # Perform the main analysis: get vector dimensions, elements, arrays.
         dims_shape, primary_elements, vector_element_arrays_and_dims = \
             optimal_array_structure(ordering_definitions,
                                     element_definitions)
@@ -200,8 +198,8 @@ def group_structured_fields(field_iterator):
     * field_iterator (iterator of :class:`iris.fileformats.pp.PPField`):
         A source of PP or FF fields.  N.B. order is significant.
 
-    The function sorts + collates on phenomenon-relevant metadata only, defined
-    as the field components : 'lbuser[3]', 'lbuser[6]' and 'lbproc'.
+    The function sorts and collates on phenomenon-relevant metadata only,
+    defined as the field components: 'lbuser[3]', 'lbuser[6]' and 'lbproc'.
     Each distinct combination of these defines a specific phenomenon (or
     statistical aggregation of one), and those fields appear as a single
     iteration result.
@@ -209,18 +207,17 @@ def group_structured_fields(field_iterator):
     Implicitly, within each result group, *all* other metadata components
     should be either:
 
-    * 1. the same for all fields, or
-    * 2. completely irrelevant, or
-    * 3. used by a vectorised rule function
-        (such as :func:`iris.fileformats.pp_rules._convert_vector_time_coords`
-        ).
+    *  the same for all fields,
+    *  completely irrelevant, or
+    *  used by a vectorised rule function (such as
+       :func:`iris.fileformats.pp_rules._convert_vector_time_coords`).
 
     Returns:
-        An iterator yielding
-        :class:`~iris.experimental.fileformats.um.FieldCollation` objects, each
-        of which contains a single collated group from the input fields.
+        An generator of
+        :class:`~iris.experimental.fileformats.um.FieldCollation` objects,
+        each of which contains a single collated group from the input fields.
 
     """
-    fields = sorted(field_iterator, key=_um_collation_key_function)
-    for _, fields in itertools.groupby(fields, _um_collation_key_function):
+    _fields = sorted(field_iterator, key=_um_collation_key_function)
+    for _, fields in itertools.groupby(_fields, _um_collation_key_function):
         yield FieldCollation(tuple(fields))

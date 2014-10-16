@@ -26,30 +26,41 @@ from iris.fileformats._structured_array_identification import \
 
 def _optimal_dimensioning_structure(structure, element_priorities):
     """
-    Return the optimal array replication structure for a given
-    :class:`~iris.fileformats._structured_array_identification.GroupStructure`.
+    Uses the structure options provided by the
+    :class:`~iris.fileformats._structured_array_identification.GroupStructure`
+    to determine the optimal array structure for the :class:`FieldCollation`.
 
-    The optimal, in this case, is defined as that which produces the most
-    number of non-trivial dimensions.
+    The optimal structure is that which generates the greatest number of
+    non-trivial dimensions. If the number of non-trivial dimensions is equal
+    in more than one structure options then dimension priorities as specified
+    by `element_priorities` are used to determine optimal structure.
 
-    May return an empty list if no structure can be identified.
+    Args:
+
+    * structure:
+        A set of structure options, as provided by :class:\
+        `~iris.fileformats._structured_array_identification.GroupStructure`.
+
+    * element_priorities:
+        A dictionary mapping structure element names to their priority as
+        defined by their input order to :func:`~optimal_array_structure`.
+
+    Returns:
+
+        The determined optimal array structure or an empty list if no structure
+        options were determined.
 
     """
     permitted_structures = structure.possible_structures()
     if not permitted_structures:
         result = []
     else:
-        #
-        # TODO: this looks wrong to me (PP) ?
-        #  Surely the product of the sizes is just the overall length ???
-        #
         result = max(permitted_structures,
-                     key=lambda potential: (
-                         np.prod([struct.size
-                                  for (name, struct) in potential]),
-                         len(potential),
-                         max(element_priorities[name]
-                             for (name, struct) in potential)))
+                     key=lambda candidate: (
+                         len(candidate),
+                         [element_priorities[name]
+                             for (name, struct) in candidate])
+                     )
     return result
 
 
@@ -67,7 +78,7 @@ def optimal_array_structure(ordering_elements, actual_values_elements=None):
 
     * actual_values_elements (iterable of (name, 1-d array)):
         The 'real' values used to construct the result arrays, if different
-        from 'ordering_elements'.  Must contain  all the same names (but not
+        from 'ordering_elements'.  Must contain all the same names (but not
         necessarily in the same order).
 
     The 'ordering_elements' arg contains the pattern used to deduce a
@@ -76,17 +87,17 @@ def optimal_array_structure(ordering_elements, actual_values_elements=None):
 
     Returns:
 
-        dims_shape, primary_elements, element_arrays_and_dims
+        dims_shape, primary_elements, element_arrays_and_dims, where:
 
-        * 'dims' is the shape of the vector dimensions chosen.
+        * 'dims_shape' is the shape of the vector dimensions chosen.
 
-        * 'primary_elements' is a set of dimension names.
-            Those input element names which are identified as dimensions:
-            At most one for each dimension.
+        * 'primary_elements' is a set of dimension names; the names of input
+            elements that are identified as dimensions. At most one for each
+            dimension.
 
-        * 'element_arrays_and_dims' is a dictionary "name --> (array, dims)"
-            For all elements which are not dimensionless.  The 'array's are
-            reduced to the shape of their mapped dimensions.
+        * 'element_arrays_and_dims' is a dictionary [name: (array, dims)],
+            for all elements that are not dimensionless. Each array is reduced
+            to the shape of its mapped dimension.
 
     For example::
 
@@ -115,8 +126,8 @@ def optimal_array_structure(ordering_elements, actual_values_elements=None):
         actual_values_elements = element_ordering_arrays
     actual_value_arrays = dict(actual_values_elements)
     if set(actual_value_arrays.keys()) != set(element_ordering_arrays.keys()):
-        raise ValueError("Names of 'actual_values_elements' do not match "
-                         "those of the 'ordering_elements_arrays'.")
+        msg = 'Names in values arrays do not match those in ordering arrays.'
+        raise ValueError(msg)
 
     # Define element priorities from ordering, to choose between equally good
     # structures, as structure code does not recognise any element ordering.
@@ -136,11 +147,12 @@ def optimal_array_structure(ordering_elements, actual_values_elements=None):
     # Work out result cube dimensions.
     if not target_structure:
         # Get the length of an input array (they are all the same).
+        # Note that no elements map to multiple dimensions.
         elements_length = len(ordering_elements[0][1])
         vector_dims_shape = (elements_length,)
     else:
         vector_dims_shape = tuple(
-            struct.size for (name, struct) in target_structure)
+            struct.size for (_, struct) in target_structure)
 
     # Build arrays of element values mapped onto the vectorised dimensions.
     elements_and_dimensions = base_structure.build_arrays(
@@ -152,9 +164,9 @@ def optimal_array_structure(ordering_elements, actual_values_elements=None):
         for name, (array, dims) in elements_and_dimensions.iteritems()
         if len(dims)}
 
-    # Make a list of the 'primary' elements = those in the target structure.
+    # Make a list of 'primary' elements; i.e. those in the target structure.
     primary_dimension_elements = set(
-        name for name, structure in target_structure)
+        name for (name, _) in target_structure)
 
     # Return all the information.
     return (vector_dims_shape,
