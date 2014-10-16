@@ -118,9 +118,13 @@ class FieldCollation(object):
             ('t2', np.array([t2_fn(fld) for fld in self.fields])),
             ('lbft', np.array([fld.lbft for fld in self.fields])),
             ('blev', np.array([fld.blev for fld in self.fields])),
-            ('lbrsvd4', np.array([fld.lbrsvd[3] for fld in self.fields])),
-            ('lbuser5', np.array([fld.lbuser[4] for fld in self.fields]))]
-
+            ('lblev', np.array([fld.lblev for fld in self.fields])),
+            ('bhlev', np.array([fld.bhlev for fld in self.fields])),
+            ('bhrlev', np.array([fld.bhrlev for fld in self.fields])),
+            ('brsvd1', np.array([fld.brsvd[0] for fld in self.fields])),
+            ('brsvd2', np.array([fld.brsvd[1] for fld in self.fields])),
+            ('brlev', np.array([fld.brlev for fld in self.fields]))
+        ]
         return component_arrays
 
     # Static factors for the _time_comparable_int routine (seconds per period).
