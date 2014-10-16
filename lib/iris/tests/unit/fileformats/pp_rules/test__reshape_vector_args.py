@@ -29,13 +29,13 @@ import numpy as np
 from iris.fileformats.pp_rules import _reshape_vector_args
 
 
-class Test_empty(tests.IrisTest):
+class TestEmpty(tests.IrisTest):
     def test(self):
         result = _reshape_vector_args([])
         self.assertEqual(result, [])
 
 
-class Test_single_arg(tests.IrisTest):
+class TestSingleArg(tests.IrisTest):
     def _check_result(self, array):
         self.assertEqual(len(self.result), 1)
         self.assertArrayEqual(self.result[0], array)
@@ -71,7 +71,7 @@ class Test_single_arg(tests.IrisTest):
         self._check_result(array.reshape((1, 3, 1, 4)))
 
 
-class Test_multiple_args(tests.IrisTest):
+class TestMultipleArgs(tests.IrisTest):
     def _check_results(self, arrays):
         self.assertEqual(len(self.result), len(arrays))
         for result, array in zip(self.result, arrays):
