@@ -40,8 +40,6 @@ class FieldCollation(object):
 
     This FieldCollation will then have the following properties:
 
-    * 'vector_dims_shape' will be (4, 7).
-    * 'primary_dimension_elements' will be set(['t1', 'blev']).
     * within 'element_arrays_and_dims' :
         Element 'blev' have the array shape (7,) and dims of (1,).
         Elements 't1' and 't2' have shape (4,) and dims (0,).
@@ -50,9 +48,8 @@ class FieldCollation(object):
 
     .. note::
 
-        If no array structure is found, the shape will be 1-dimensional in the
-        number of fields, 'primary_dimension_elements' will be empty and the
-        element values are all either scalar or full-length 1-D vectors.
+        If no array structure is found, the element values are all
+        either scalar or full-length 1-D vectors.
 
     """
     def __init__(self, fields):
@@ -75,14 +72,14 @@ class FieldCollation(object):
         return self._fields
 
     @property
-    def vector_dims_shape(self):
+    def _UNUSED_vector_dims_shape(self):
         """The shape of the array structure."""
         if not self._structure_calculated:
             self._calculate_structure()
         return self._vector_dims_shape
 
     @property
-    def primary_dimension_elements(self):
+    def _UNUSED_primary_dimension_elements(self):
         """A set of names of the elements which are array dimensions."""
         if not self._structure_calculated:
             self._calculate_structure()
