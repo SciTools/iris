@@ -292,21 +292,32 @@ def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
 
     Args:
 
-    * lbcode, lbtim (:class:`iris.fileformats.pp.SplittableInt`):
-        Scalar field elements.
+    * lbcode(:class:`iris.fileformats.pp.SplittableInt`):
+        Scalar field value.
+    * lbtim (:class:`iris.fileformats.pp.SplittableInt`):
+        Scalar field value.
     * epoch_hours_unit (:class:`iris.units.Unit`):
-        Epoch time reference unit, for hours-since conversions.
-    * t1, t2, lbft (array or scalar):
-        Arrays of metadata (may be scalar).
-    * t1_dims, t2_dims, lbft_dims (tuple of int):
-        Cube dimension mappings for the array metadata, if any.
-        Must match the actual shape of the data.
+        Epoch time reference unit.
+    * t1 (array-like or scalar):
+        Scalar field value or an array of values.
+    * t2 (array-like or scalar):
+        Scalar field value or an array of values.
+    * lbft (array-like or scalar):
+        Scalar field value or an array of values.
+
+    Kwargs:
+
+    * t1_dims, t2_dims, lbft_dims (tuples of int):
+        Cube dimension mappings for the array metadata. Each default to
+        to (). The length of each dims tuple should equal the dimensionality
+        of the corresponding array of values.
 
     Returns:
 
-        a list of (coordinate, cube-dimensions-mapping).
-        The coordinates are DimCoord where possible, otherwise AuxCoord.
-        When 'coordinate' is scalar, then 'cube-dimensions-mapping' is None.
+        A list of (coordinate, dims) tuples. The coordinates are instance of
+        :class:`iris.coords.DimCoord` if possible, otherwise they are instance
+        of :class:`iris.coords.AuxCoord`. When the coordinate is of length one,
+        the `dims` value is None rather than an empty tuple.
 
     """
     # Reform input values so they have all the same number of dimensions.
