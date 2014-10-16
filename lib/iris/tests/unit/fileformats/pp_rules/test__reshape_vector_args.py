@@ -38,7 +38,7 @@ class TestEmpty(tests.IrisTest):
 class TestSingleArg(tests.IrisTest):
     def _check(self, result, expected):
         self.assertEqual(len(result), len(expected))
-        for result_arr, expected_arr  in zip(result, expected):
+        for result_arr, expected_arr in zip(result, expected):
             self.assertArrayEqual(result_arr, expected_arr)
 
     def test_nochange(self):
@@ -80,7 +80,7 @@ class TestSingleArg(tests.IrisTest):
 class TestMultipleArgs(tests.IrisTest):
     def _check(self, result, expected):
         self.assertEqual(len(result), len(expected))
-        for result_arr, expected_arr  in zip(result, expected):
+        for result_arr, expected_arr in zip(result, expected):
             self.assertArrayEqual(result_arr, expected_arr)
 
     def test_nochange(self):
