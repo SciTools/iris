@@ -233,7 +233,7 @@ class TestArrayInputWithLBTIM_0_0_1(TestField):
 
 
 class TestArrayInputWithLBTIM_0_1_1(TestField):
-    def test_t1_list(self):
+    def test_t1_list_t2_scalar(self):
         # lbtim ia = 0, ib = 1, ic = 1
         # with a single forecast reference time (t2) and a series
         # of validity times (t1).
@@ -342,7 +342,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
                     (fref_time_coord, (1,))]
         self.assertCoordsAndDimsListsMatch(coords_and_dims, expected)
 
-    def test_t1_multi_dim_list(self):
+    def test_t1_multi_dim_list_t2_scalar(self):
         # Another case of lbtim ia = 0, ib = 1, ic = 1 but
         # with a changing forecast reference time (t2) and
         # validity time (t1).
@@ -419,7 +419,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
 
 
 class TestArrayInputWithLBTIM_0_2_1(TestField):
-    def test_t1_list(self):
+    def test_t1_list_t2_scalar(self):
         lbtim = _lbtim(ib=2, ic=1)
         lbcode = _lbcode(1)
         hours = np.array([0, 3, 6, 9])
@@ -460,7 +460,7 @@ class TestArrayInputWithLBTIM_0_2_1(TestField):
 
 
 class TestArrayInputWithLBTIM_0_3_1(TestField):
-    def test_t2_list(self):
+    def test_t1_scalar_t2_list(self):
         lbtim = _lbtim(ib=3, ic=1)
         lbcode = _lbcode(1)
         years = np.array([1972, 1973, 1974])
