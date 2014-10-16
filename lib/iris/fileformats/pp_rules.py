@@ -320,7 +320,11 @@ def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
         the `dims` value is None rather than an empty tuple.
 
     """
-    # Reform input values so they have all the same number of dimensions.
+    # Reform the input values so they have all the same number of dimensions,
+    # transposing where necessary (based on the dimension mappings) so the
+    # dimensions are common across each array.
+    # Note that this does not guarantee that the arrays are broadcastable,
+    # but subsequent arithmetic makes this assumption.
     t1, t2, lbft = _reshape_vector_args([(t1, t1_dims), (t2, t2_dims),
                                          (lbft, lbft_dims)])
 
