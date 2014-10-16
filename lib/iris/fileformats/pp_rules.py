@@ -170,11 +170,26 @@ def _collapse_degenerate_points_and_bounds(points, bounds=None, rtol=1.0e-7):
     values are the same.
 
     All dimensions are tested, and if degenerate are reduced to length 1.
-    Returns (points, bounds).
 
     Value equivalence is controlled by a tolerance, to avoid problems with
     numbers from netcdftime.date2num, which has limited precision because of
     the way it calculates with floats of days.
+
+    Args:
+
+    * points (:class:`numpy.ndarray`)):
+        Array of points values.
+
+    Kwargs:
+
+    * bounds (:class:`numpy.ndarray`)
+        Array of bounds values. This array should have an additional vertex
+        dimension (typically of length 2) when compared to the  points array
+        i.e. bounds.shape = points.shape + (nvertex,)
+
+    Returns:
+
+        A (points, bounds) tuple.
 
     """
     array = points
