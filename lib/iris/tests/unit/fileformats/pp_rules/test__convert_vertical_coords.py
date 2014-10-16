@@ -24,17 +24,13 @@ Unit tests for
 # importing anything else.
 import iris.tests as tests
 
-from collections import Iterable
 import numpy as np
 
 from iris.coords import DimCoord, AuxCoord
 from iris.aux_factory import HybridPressureFactory, HybridHeightFactory
 from iris.fileformats.pp import SplittableInt, STASH
-from iris.fileformats.pp_rules import Reference
+from iris.fileformats.pp_rules import Reference, _convert_vertical_coords
 from iris.tests.unit.fileformats import TestField
-
-
-from iris.fileformats.pp_rules import _convert_vertical_coords
 
 
 def _lbcode(value=None, ix=None, iy=None):
@@ -77,48 +73,63 @@ class TestLBVC001_Height(TestField):
         self._check_height(blev=12.3, stash=STASH(1, 1, 1))
 
     def test_normal_height__present_vector(self):
-        blev = [12.3, 123.4, 1234.5]
-        self._check_height(blev=blev, stash=STASH(1, 1, 1), dim=1)
+        data = [12.3, 123.4, 1234.5]
+        dim = 0
+        for blev in [data, np.asarray(data)]:
+            for dim_i in [dim, (dim,)]:
+                self._check_height(blev=blev, stash=STASH(1, 1, 1), dim=dim_i)
 
     def test_normal_height__absent(self):
         self._check_height(blev=-1, stash=STASH(1, 1, 1),
                            expect_normal=False)
 
     def test_normal_height__absent_vector(self):
-        blev = [-1, -1, -1]
-        self._check_height(blev=blev, stash=STASH(1, 1, 1),
-                           expect_normal=False, dim=2)
+        data = [-1, -1, -1]
+        dim = 1
+        for blev in [data, np.asarray(data)]:
+            for dim_i in [dim, (dim,)]:
+                self._check_height(blev=blev, stash=STASH(1, 1, 1),
+                                   expect_normal=False, dim=dim_i)
 
     def test_normal_height__absent_mixed_vector(self):
-        blev = [-1, 12.3, -1, 123.4]
-        self._check_height(blev=blev, stash=STASH(1, 1, 1),
-                           expect_normal=False)
+        data = [-1, 12.3, -1, 123.4]
+        dim = 2
+        for blev in [data, np.asarray(data)]:
+            for dim_i in [dim, (dim,)]:
+                self._check_height(blev=blev, stash=STASH(1, 1, 1),
+                                   expect_normal=False, dim=dim_i)
 
     def test_implied_height_1m5(self):
         self._check_height(blev=75.2, stash=STASH(1, 3, 236),
                            expect_normal=False, expect_fixed_height=1.5)
 
     def test_implied_height_1m5__vector(self):
-        blev = np.array([1, 2, 3, 4])
-        self._check_height(blev=blev, stash=STASH(1, 3, 236),
-                           expect_normal=False, expect_fixed_height=1.5,
-                           dim=1)
+        data = [1, 2, 3, 4]
+        dim = 3
+        for blev in [data, np.asarray(data)]:
+            for dim_i in [dim, (dim,)]:
+                self._check_height(blev=blev, stash=STASH(1, 3, 236),
+                                   expect_normal=False,
+                                   expect_fixed_height=1.5, dim=dim_i)
 
     def test_implied_height_10m(self):
         self._check_height(blev=75.2, stash=STASH(1, 3, 225),
                            expect_normal=False, expect_fixed_height=10.0)
 
     def test_implied_height_10m__vector(self):
-        blev = np.arange(10)
-        self._check_height(blev=blev, stash=STASH(1, 3, 225),
-                           expect_normal=False, expect_fixed_height=10.0,
-                           dim=2)
+        data = range(10)
+        dim = 4
+        for blev in [data, np.asarray(data)]:
+            for dim_i in [dim, (dim,)]:
+                self._check_height(blev=blev, stash=STASH(1, 3, 225),
+                                   expect_normal=False,
+                                   expect_fixed_height=10.0, dim=dim_i)
 
 
 class TestLBVC002_Depth(TestField):
     def _check_depth(self, lbcode, lblev=23.0, blev=123.4, brlev=0.0,
                      brsvd1=0.0, expect_bounds=True, expect_match=True,
-                     expect_depth=True, dim=None):
+                     expect_mixed=False, dim=None):
         lbvc = 2
         stash = STASH(1, 1, 1)
         bhlev, bhrlev, brsvd2 = None, None, None
@@ -131,20 +142,24 @@ class TestLBVC002_Depth(TestField):
                 (DimCoord(lblev,
                           standard_name='model_level_number',
                           attributes={'positive': 'down'}), dim)]
-            if expect_depth:
-                if expect_bounds:
-                    brsvd1 = np.array(brsvd1, ndmin=1)
-                    brlev = np.array(brlev, ndmin=1)
-                    bounds = np.vstack((brsvd1, brlev)).T
-                    expect_result.append(
-                        (DimCoord(blev, standard_name='depth',
-                                  units='m',
-                                  bounds=bounds,
-                                  attributes={'positive': 'down'}), dim))
+            if expect_bounds:
+                brsvd1 = np.atleast_1d(brsvd1)
+                brlev = np.atleast_1d(brlev)
+                if expect_mixed:
+                    lower = np.where(brsvd1 == brlev, blev, brsvd1)
+                    upper = np.where(brsvd1 == brlev, blev, brlev)
                 else:
-                    expect_result.append(
-                        (DimCoord(blev, standard_name='depth', units='m',
-                                  attributes={'positive': 'down'}), dim))
+                    lower, upper = brsvd1, brlev
+                bounds = np.vstack((lower, upper)).T
+                expect_result.append(
+                    (DimCoord(blev, standard_name='depth',
+                              units='m',
+                              bounds=bounds,
+                              attributes={'positive': 'down'}), dim))
+            else:
+                expect_result.append(
+                    (DimCoord(blev, standard_name='depth', units='m',
+                              attributes={'positive': 'down'}), dim))
         else:
             expect_result = []
         self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_result)
@@ -167,7 +182,7 @@ class TestLBVC002_Depth(TestField):
         brsvd1 = [5, 15, 25]
         brlev = [5, 15, 666]  # not all equal or all unequal!
         self._check_depth(_lbcode(1), lblev=lblev, blev=blev, brsvd1=brsvd1,
-                          brlev=brlev, expect_depth=False, dim=0)
+                          brlev=brlev, expect_mixed=True, dim=0)
 
     def test_bounded(self):
         self._check_depth(_lbcode(1), lblev=23.0, brlev=22.5, brsvd1=23.5,
@@ -184,6 +199,15 @@ class TestLBVC002_Depth(TestField):
     def test_cross_section(self):
         self._check_depth(_lbcode(ix=1, iy=2), lblev=23.0,
                           expect_match=False)
+
+    def test_cross_section__vector(self):
+        lblev = [1, 2, 3]
+        blev = [10, 20, 30]
+        brsvd1 = [5, 15, 25]
+        brlev = [15, 25, 35]
+        self._check_depth(_lbcode(ix=1, iy=2), lblev=lblev, blev=blev,
+                          brsvd1=brsvd1, brlev=brlev,
+                          expect_match=False, dim=1)
 
 
 class TestLBVC006_SoilLevel(TestField):
@@ -215,6 +239,11 @@ class TestLBVC006_SoilLevel(TestField):
 
     def test_cross_section(self):
         self._check_soil_level(_lbcode(ix=1, iy=2), expect_match=False)
+
+    def test_cross_section__vector(self):
+        lblev = np.arange(10)
+        self._check_soil_level(_lbcode(ix=1, iy=2), lblev=lblev,
+                               expect_match=False, dim=0)
 
 
 class TestLBVC008_Pressure(TestField):
@@ -254,7 +283,8 @@ class TestLBVC008_Pressure(TestField):
 
     def test_pressure_cross_section__vector(self):
         blev = np.arange(10)
-        self._check_pressure(_lbcode(ix=10, iy=1), expect_match=False)
+        self._check_pressure(_lbcode(ix=10, iy=1), blev=blev, dim=1,
+                             expect_match=False)
 
 
 class TestLBVC019_PotentialTemperature(TestField):
@@ -286,9 +316,10 @@ class TestLBVC019_PotentialTemperature(TestField):
     def test_cross_section(self):
         self._check_potm(_lbcode(ix=10, iy=11), expect_match=False)
 
-    def test_cross_section(self):
+    def test_cross_section__vector(self):
         blev = np.arange(5) + 100
-        self._check_potm(_lbcode(ix=10, iy=11), expect_match=False)
+        self._check_potm(_lbcode(ix=10, iy=11), blev=blev, dim=1,
+                         expect_match=False)
 
 
 class TestLBVC009_HybridPressure(TestField):
@@ -303,32 +334,28 @@ class TestLBVC009_HybridPressure(TestField):
             lbcode=lbcode, lbvc=lbvc, blev=blev, lblev=lblev, stash=stash,
             bhlev=bhlev, bhrlev=bhrlev, brsvd1=brsvd1, brsvd2=brsvd2,
             brlev=brlev, dim=dim)
-        if expect_match:
-            expect_coords_and_dims = [
-                (DimCoord(lblev,
-                          standard_name='model_level_number',
-                          attributes={'positive': 'up'}), dim)]
+        expect_coords_and_dims = [
+            (DimCoord(lblev,
+                      standard_name='model_level_number',
+                      attributes={'positive': 'up'}), dim)]
 
-            bhrlev = np.array(bhrlev, ndmin=1)
-            brsvd2 = np.array(brsvd2, ndmin=1)
-            expect_coords_and_dims.append(
-                (DimCoord(bhlev,
-                          long_name='level_pressure',
-                          units='Pa',
-                          bounds=np.vstack((bhrlev, brsvd2)).T), dim))
-            brlev = np.array(brlev, ndmin=1)
-            brsvd1 = np.array(brsvd1, ndmin=1)
-            expect_coords_and_dims.append(
-                (AuxCoord(blev,
-                          long_name='sigma',
-                          bounds=np.vstack((brlev, brsvd1)).T), dim))
-            expect_factories = [(HybridPressureFactory,
-                                 [{'long_name': 'level_pressure'},
-                                  {'long_name': 'sigma'},
-                                  Reference('surface_air_pressure')])]
-        else:
-            expect_coords_and_dims = []
-            expect_factories = []
+        bhrlev = np.atleast_1d(bhrlev)
+        brsvd2 = np.atleast_1d(brsvd2)
+        expect_coords_and_dims.append(
+            (DimCoord(bhlev,
+                      long_name='level_pressure',
+                      units='Pa',
+                      bounds=np.vstack((bhrlev, brsvd2)).T), dim))
+        brlev = np.atleast_1d(brlev)
+        brsvd1 = np.atleast_1d(brsvd1)
+        expect_coords_and_dims.append(
+            (AuxCoord(blev,
+                      long_name='sigma',
+                      bounds=np.vstack((brlev, brsvd1)).T), dim))
+        expect_factories = [(HybridPressureFactory,
+                             [{'long_name': 'level_pressure'},
+                              {'long_name': 'sigma'},
+                              Reference('surface_air_pressure')])]
         self.assertCoordsAndDimsListsMatch(coords_and_dims,
                                            expect_coords_and_dims)
         self.assertEqual(factories, expect_factories)
@@ -352,7 +379,7 @@ class TestLBVC065_HybridHeight(TestField):
     def _check(self, lblev=37.0,
                blev=9596.3, brlev=9500.0, brsvd1=9800.0,
                bhlev=0.35, bhrlev=0.31, brsvd2=0.39,
-               expect_match=True, dim=None):
+               dim=None):
         lbvc = 65
         lbcode = _lbcode(0)  # unused
         stash = STASH(1, 1, 1)  # unused
@@ -360,31 +387,27 @@ class TestLBVC065_HybridHeight(TestField):
             lbcode=lbcode, lbvc=lbvc, blev=blev, lblev=lblev, stash=stash,
             bhlev=bhlev, bhrlev=bhrlev, brsvd1=brsvd1, brsvd2=brsvd2,
             brlev=brlev, dim=dim)
-        if expect_match:
-            expect_coords_and_dims = [
-                (DimCoord(lblev,
-                          standard_name='model_level_number',
-                          attributes={'positive': 'up'}), dim)]
-            brlev = np.array(brlev, ndmin=1)
-            brsvd1 = np.array(brsvd1, ndmin=1)
-            expect_coords_and_dims.append(
-                (DimCoord(blev,
-                          long_name='level_height', units='m',
-                          bounds=np.vstack((brlev, brsvd1)).T,
-                          attributes={'positive': 'up'}), dim))
-            bhrlev = np.array(bhrlev, ndmin=1)
-            brsvd2 = np.array(brsvd2, ndmin=1)
-            expect_coords_and_dims.append(
-                (AuxCoord(bhlev,
-                          long_name='sigma',
-                          bounds=np.vstack((bhrlev, brsvd2)).T), dim))
-            expect_factories = [(HybridHeightFactory,
-                                 [{'long_name': 'level_height'},
-                                  {'long_name': 'sigma'},
-                                  Reference('orography')])]
-        else:
-            expect_coords_and_dims = []
-            expect_factories = []
+        expect_coords_and_dims = [
+            (DimCoord(lblev,
+                      standard_name='model_level_number',
+                      attributes={'positive': 'up'}), dim)]
+        brlev = np.atleast_1d(brlev)
+        brsvd1 = np.atleast_1d(brsvd1)
+        expect_coords_and_dims.append(
+            (DimCoord(blev,
+                      long_name='level_height', units='m',
+                      bounds=np.vstack((brlev, brsvd1)).T,
+                      attributes={'positive': 'up'}), dim))
+        bhrlev = np.atleast_1d(bhrlev)
+        brsvd2 = np.atleast_1d(brsvd2)
+        expect_coords_and_dims.append(
+            (AuxCoord(bhlev,
+                      long_name='sigma',
+                      bounds=np.vstack((bhrlev, brsvd2)).T), dim))
+        expect_factories = [(HybridHeightFactory,
+                             [{'long_name': 'level_height'},
+                              {'long_name': 'sigma'},
+                              Reference('orography')])]
         self.assertCoordsAndDimsListsMatch(coords_and_dims,
                                            expect_coords_and_dims)
         self.assertEqual(factories, expect_factories)

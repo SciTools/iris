@@ -34,6 +34,17 @@ import iris.unit
 # Convert vectorisation routines.
 #
 
+def _dim_or_aux(*args, **kwargs):
+    try:
+        result = DimCoord(*args, **kwargs)
+    except ValueError:
+        attr = kwargs.get('attributes')
+        if attr is not None and 'positive' in attr:
+            del attr['positive']
+        result = AuxCoord(*args, **kwargs)
+    return result
+
+
 def _convert_vertical_coords(lbcode, lbvc, blev, lblev, stash,
                              bhlev, bhrlev, brsvd1, brsvd2, brlev,
                              dim=None):
@@ -87,83 +98,93 @@ def _convert_vertical_coords(lbcode, lbvc, blev, lblev, stash,
 
     # See Word no. 33 (LBLEV) in section 4 of UM Model Docs (F3).
     BASE_RHO_LEVEL_LBLEV = 9999
-    model_level_number  = np.array(lblev, ndmin=1)
+    model_level_number  = np.atleast_1d(lblev)
     model_level_number[model_level_number == BASE_RHO_LEVEL_LBLEV] = 0
 
     # Ensure to vectorise these arguments as arrays, as they participate
     # in the conditions of convert rules.
-    blev = np.array(blev, ndmin=1)
-    brsvd1 = np.array(brsvd1, ndmin=1)
-    brlev = np.array(brlev, ndmin=1)
+    blev = np.atleast_1d(blev)
+    brsvd1 = np.atleast_1d(brsvd1)
+    brlev = np.atleast_1d(brlev)
 
-    if \
-            (lbvc == 1) and \
-            (not (str(stash) in _STASHCODE_IMPLIED_HEIGHTS.keys())) and \
+    # Height.
+    if (lbvc == 1) and \
+            (not (str(stash) in _STASHCODE_IMPLIED_HEIGHTS)) and \
             (np.all(blev != -1)):
-        coords_and_dims.append(
-            (DimCoord(blev, standard_name='height', units='m',
-                      attributes={'positive': 'up'}),
-             dim))
+        coord = _dim_or_aux(blev, standard_name='height', units='m',
+                            attributes={'positive': 'up'})
+        coords_and_dims.append((coord, dim))
 
-    if str(stash) in _STASHCODE_IMPLIED_HEIGHTS.keys():
+    if str(stash) in _STASHCODE_IMPLIED_HEIGHTS:
         height = _STASHCODE_IMPLIED_HEIGHTS[str(stash)]
-        coords_and_dims.append(
-            (DimCoord(height,
-                      standard_name='height', units='m',
-                      attributes={'positive': 'up'}),
-             None))
+        coord = DimCoord(height, standard_name='height', units='m',
+                         attributes={'positive': 'up'})
+        coords_and_dims.append((coord, None))
 
-    if \
-            (len(lbcode) != 5) and \
+    # Model level number.
+    if (len(lbcode) != 5) and \
             (lbvc == 2):
-        coords_and_dims.append((DimCoord(model_level_number, standard_name='model_level_number', attributes={'positive': 'down'}), dim))
+        coord = _dim_or_aux(model_level_number, standard_name='model_level_number',
+                            attributes={'positive': 'down'})
+        coords_and_dims.append((coord, dim))
 
-    if \
-            (len(lbcode) != 5) and \
+    # Depth - unbound.
+    if (len(lbcode) != 5) and \
             (lbvc == 2) and \
             np.all(brsvd1 == brlev):
-        coords_and_dims.append((DimCoord(blev, standard_name='depth', units='m', attributes={'positive': 'down'}), dim))
+        coord = _dim_or_aux(blev, standard_name='depth', units='m',
+                            attributes={'positive': 'down'})
+        coords_and_dims.append((coord, dim))
 
-    if \
-            (len(lbcode) != 5) and \
+    # Depth - bound.
+    if (len(lbcode) != 5) and \
             (lbvc == 2) and \
             np.all(brsvd1 != brlev):
-        coords_and_dims.append((DimCoord(blev, standard_name='depth', units='m', bounds=np.vstack((brsvd1, brlev)).T, attributes={'positive': 'down'}), dim))
+        coord = _dim_or_aux(blev, standard_name='depth', units='m',
+                            bounds=np.vstack((brsvd1, brlev)).T,
+                            attributes={'positive': 'down'})
+        coords_and_dims.append((coord, dim))
 
-    # soil level
-    if len(lbcode) != 5 and lbvc == 6:
-        coords_and_dims.append((DimCoord(model_level_number, long_name='soil_model_level_number', attributes={'positive': 'down'}), dim))
+    # Depth - unbound and bound (mixed).
+    if (len(lbcode) != 5) and \
+            (lbvc == 2) and \
+            (np.any(brsvd1 == brlev) and np.any(brsvd1 != brlev)):
+        lower = np.where(brsvd1 == brlev, blev, brsvd1)
+        upper = np.where(brsvd1 == brlev, blev, brlev)
+        coord = _dim_or_aux(blev, standard_name='depth', units='m',
+                            bounds=np.vstack((lower, upper)).T,
+                            attributes={'positive': 'down'})
+        coords_and_dims.append((coord, dim))
 
-    if \
-            (lbvc == 8) and \
+    # Soil level.
+    if len(lbcode) != 5 and \
+            lbvc == 6:
+        coord = _dim_or_aux(model_level_number, long_name='soil_model_level_number',
+                            attributes={'positive': 'down'})
+        coords_and_dims.append((coord, dim))
+
+    # Pressure.
+    if (lbvc == 8) and \
             (len(lbcode) != 5 or (len(lbcode) == 5 and 1 not in [lbcode.ix, lbcode.iy])):
-        coords_and_dims.append((DimCoord(blev, long_name='pressure', units='hPa'), dim))
+        coord = _dim_or_aux(blev, long_name='pressure', units='hPa')
+        coords_and_dims.append((coord, dim))
 
-    if \
-            (len(lbcode) != 5) and \
+    # Air potential temperature.
+    if (len(lbcode) != 5) and \
             (lbvc == 19):
-        coords_and_dims.append((DimCoord(blev, standard_name='air_potential_temperature', units='K', attributes={'positive': 'up'}), dim))
+        coord = _dim_or_aux(blev, standard_name='air_potential_temperature', units='K',
+                            attributes={'positive': 'up'})
+        coords_and_dims.append((coord, dim))
 
     # Hybrid pressure levels.
     if lbvc == 9:
-        bhrlev = np.array(bhrlev, ndmin=1)
-        brsvd2 = np.array(brsvd2, ndmin=1)
-        model_level_number = DimCoord(model_level_number,
-                                      standard_name='model_level_number',
-                                      attributes={'positive': 'up'})
-        # The following match the hybrid height scheme, but data has the
-        # blev and bhlev values the other way around.
-        #level_pressure = DimCoord(blev,
-        #                          long_name='level_pressure',
-        #                          units='Pa',
-        #                          bounds=[brlev, brsvd1])
-        #sigma = AuxCoord(bhlev,
-        #                 long_name='sigma',
-        #                 bounds=[bhrlev, brsvd2])
-        level_pressure = DimCoord(bhlev,
-                                  long_name='level_pressure',
-                                  units='Pa',
-                                  bounds=np.vstack((bhrlev, brsvd2)).T)
+        model_level_number = _dim_or_aux(model_level_number,
+                                         standard_name='model_level_number',
+                                         attributes={'positive': 'up'})
+        level_pressure = _dim_or_aux(bhlev,
+                                     long_name='level_pressure',
+                                     units='Pa',
+                                     bounds=np.vstack((bhrlev, brsvd2)).T)
         sigma = AuxCoord(blev,
                          long_name='sigma',
                          bounds=np.vstack((brlev, brsvd1)).T)
@@ -177,16 +198,14 @@ def _convert_vertical_coords(lbcode, lbvc, blev, lblev, stash,
 
     # Hybrid height levels.
     if lbvc == 65:
-        bhrlev = np.array(bhrlev, ndmin=1)
-        brsvd2 = np.array(brsvd2, ndmin=1)
-        model_level_number = DimCoord(model_level_number,
-                                      standard_name='model_level_number',
-                                      attributes={'positive': 'up'})
-        level_height = DimCoord(blev,
-                                long_name='level_height',
-                                units='m',
-                                bounds=np.vstack((brlev, brsvd1)).T,
-                                attributes={'positive': 'up'})
+        model_level_number = _dim_or_aux(model_level_number,
+                                         standard_name='model_level_number',
+                                         attributes={'positive': 'up'})
+        level_height = _dim_or_aux(blev,
+                                   long_name='level_height',
+                                   units='m',
+                                   bounds=np.vstack((brlev, brsvd1)).T,
+                                   attributes={'positive': 'up'})
         sigma = AuxCoord(bhlev,
                          long_name='sigma',
                          bounds=np.vstack((bhrlev, brsvd2)).T)
