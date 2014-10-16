@@ -327,7 +327,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
             t1_dims=t1_dims, t2_dims=t2_dims)
 
         # Expected coords.
-        fp_coord = AuxCoord([[(year -1970) * 365 * 24 + 12 - hour for
+        fp_coord = AuxCoord([[(year - 1970) * 365 * 24 + 12 - hour for
                               hour in hours] for year in years],
                             standard_name='forecast_period',
                             units='hours')
@@ -344,7 +344,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
 
     def test_t1_multi_dim_list(self):
         # Another case of lbtim ia = 0, ib = 1, ic = 1 but
-        # with a changing forecast reference time (t2) and 
+        # with a changing forecast reference time (t2) and
         # validity time (t1).
         lbcode = _lbcode(1)
         lbtim = _lbtim(ia=0, ib=1, ic=1)
@@ -389,11 +389,11 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         forecast_period_in_hours = np.array([0, 3, 6, 9, 12])
         # Validity time - vector of different values
         t1 = np.array([nc_datetime(1970, 1, 9, hour=(3 + fp)) for fp in
-              forecast_period_in_hours])
+                       forecast_period_in_hours])
         t1_dims = (0,)
         # Forecast time - vector of same values
         t2 = np.array([nc_datetime(1970, 1, 9, hour=3) for _ in
-              forecast_period_in_hours])
+                       forecast_period_in_hours])
         t2_dims = (0,)
         lbft = None  # Not used.
 
