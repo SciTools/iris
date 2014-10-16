@@ -339,6 +339,43 @@ def hybrid_surfaces(cube, grib):
     return is_hybrid
 
 
+def _decimal_scaled_int(value):
+    """
+    Return a scaled integer and decimal exponent for a value.
+
+    Returns:
+        (result_int, result_exponent)
+
+        Where value ~= result_int / (10.0 ** result_exponent).
+
+    """
+    result_int, result_exponent = int(round(value)), 0
+    max_grib_long = 2 ** 63 - 1
+    if abs(value) > max_grib_long:
+        # Scale down a value that is too large to represent directly.
+        while abs(result_int) >= max_grib_long:
+            result_exponent -= 1
+            result_int = int(round(value / (10 ** -result_exponent)))
+    else:
+        scalar_item = np.array(value).flat[0]
+        if isinstance(scalar_item, np.floating):
+            # Floating value: work out the scaling to adequately represent it.
+            # Choose a target precision based on the type of the input value.
+            max_scaling = 16
+            if scalar_item.dtype.itemsize <= 4:
+                max_scaling = 8
+            abs_tolerance = abs(value) * (10.0 ** -max_scaling)
+            # Scale up as required to get adequate precision.
+            scale = 1.0
+            while (result_exponent < max_scaling and
+                   abs(value - result_int / scale) > abs_tolerance):
+                result_exponent += 1
+                scale = 10.0 ** result_exponent
+                result_int = int(round(value * scale))
+
+    return result_int, result_exponent
+
+
 def non_hybrid_surfaces(cube, grib):
 
     # Look for something we can export
@@ -390,29 +427,24 @@ def non_hybrid_surfaces(cube, grib):
     elif not v_coord.has_bounds():
         # No second surface
         output_v = v_coord.units.convert(v_coord.points[0], output_unit)
-        if output_v - abs(output_v):
-            warnings.warn("Vertical level encoding problem: scaling required.")
-        output_v = int(output_v)
-
         gribapi.grib_set_long(grib, "typeOfFirstFixedSurface", grib_v_code)
-        gribapi.grib_set_long(grib, "scaleFactorOfFirstFixedSurface", 0)
-        gribapi.grib_set_long(grib, "scaledValueOfFirstFixedSurface", output_v)
+        value, scaling = _decimal_scaled_int(output_v)
+        gribapi.grib_set_long(grib, "scaleFactorOfFirstFixedSurface", scaling)
+        gribapi.grib_set_long(grib, "scaledValueOfFirstFixedSurface", value)
         gribapi.grib_set_long(grib, "typeOfSecondFixedSurface", -1)
         gribapi.grib_set_long(grib, "scaleFactorOfSecondFixedSurface", 255)
         gribapi.grib_set_long(grib, "scaledValueOfSecondFixedSurface", -1)
     else:
         # bounded : set lower+upper surfaces
         output_v = v_coord.units.convert(v_coord.bounds[0], output_unit)
-        if output_v[0] - abs(output_v[0]) or output_v[1] - abs(output_v[1]):
-            warnings.warn("Vertical level encoding problem: scaling required.")
         gribapi.grib_set_long(grib, "typeOfFirstFixedSurface", grib_v_code)
         gribapi.grib_set_long(grib, "typeOfSecondFixedSurface", grib_v_code)
-        gribapi.grib_set_long(grib, "scaleFactorOfFirstFixedSurface", 0)
-        gribapi.grib_set_long(grib, "scaleFactorOfSecondFixedSurface", 0)
-        gribapi.grib_set_long(grib, "scaledValueOfFirstFixedSurface",
-                              int(output_v[0]))
-        gribapi.grib_set_long(grib, "scaledValueOfSecondFixedSurface",
-                              int(output_v[1]))
+        value, scaling = _decimal_scaled_int(output_v[0])
+        gribapi.grib_set_long(grib, "scaleFactorOfFirstFixedSurface", scaling)
+        gribapi.grib_set_long(grib, "scaledValueOfFirstFixedSurface", value)
+        value, scaling = _decimal_scaled_int(output_v[1])
+        gribapi.grib_set_long(grib, "scaleFactorOfSecondFixedSurface", scaling)
+        gribapi.grib_set_long(grib, "scaledValueOfSecondFixedSurface", value)
 
 
 def surfaces(cube, grib):
