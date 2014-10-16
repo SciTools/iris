@@ -215,7 +215,7 @@ class TestArrayInputWithLBTIM_0_0_1(TestField):
         # Validity time - vector of different values
         t1 = [nc_datetime(1970, 1, 9, hour=3 + hour) for hour in hours]
         t1_dims = (0,)
-        # Forecast time - scalar (not used)
+        # Forecast reference time - scalar (not used)
         t2 = nc_datetime(1970, 1, 9, hour=3)
         lbft = None
 
@@ -244,7 +244,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         t1 = [nc_datetime(1970, 1, 9, hour=(3 + fp)) for fp in
               forecast_period_in_hours]
         t1_dims = (0,)
-        # Forecast time - scalar
+        # Forecast reference time - scalar
         t2 = nc_datetime(1970, 1, 9, hour=3)
         lbft = None  # Not used.
 
@@ -279,7 +279,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         t1 = [nc_datetime(1970, 1, 9, hour=(3 + fp)) for fp in
               forecast_period_in_hours]
         t1_dims = (0,)
-        # Forecast time - vector of same values
+        # Forecast reference time - vector of same values
         t2 = [nc_datetime(1970, 1, 9, hour=3) for _ in
               forecast_period_in_hours]
         t2_dims = (0,)
@@ -316,7 +316,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         # Validity time - vector of different values
         t1 = [nc_datetime(year, 1, 9, hour=12) for year in years]
         t1_dims = (0,)
-        # Forecast time - vector of different values
+        # Forecast reference time - vector of different values
         t2 = [nc_datetime(1970, 1, 9, hour=hour) for hour in hours]
         t2_dims = (1,)
         lbft = None  # Not used.
@@ -327,17 +327,20 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
             t1_dims=t1_dims, t2_dims=t2_dims)
 
         # Expected coords.
-        fp_coord = AuxCoord([[(year - 1970) * 365 * 24 + 12 - hour for
-                              hour in hours] for year in years],
+        points = [[(year - 1970) * 365 * 24 + 12 - hour for hour
+                   in hours] for year in years]
+        fp_coord = AuxCoord(points,
                             standard_name='forecast_period',
                             units='hours')
-        time_coord = DimCoord((years - 1970) * 24 * 365 + (24 * 8) + 12,
+        points = (years - 1970) * 24 * 365 + (24 * 8) + 12
+        time_coord = DimCoord(points,
                               standard_name='time',
                               units=_EPOCH_HOURS_UNIT)
-        fref_time_coord = DimCoord((24 * 8) + hours,
+        points = (24 * 8) + hours
+        fref_time_coord = DimCoord(points,
                                    standard_name='forecast_reference_time',
                                    units=_EPOCH_HOURS_UNIT)
-        expected = [(fp_coord, (0, 1)),     # spans dims 0 and 1.
+        expected = [(fp_coord, (0, 1)),     # Spans dims 0 and 1.
                     (time_coord, (0,)),
                     (fref_time_coord, (1,))]
         self.assertCoordsAndDimsListsMatch(coords_and_dims, expected)
@@ -354,7 +357,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         t1 = [[nc_datetime(year, 1, 9, hour=(3 + fp)) for fp in
                forecast_period_in_hours] for year in years]
         t1_dims = (0, 1)
-        # Forecast time - vector of different values
+        # Forecast reference time - vector of different values
         t2 = nc_datetime(1970, 1, 9, hour=3)
         lbft = None  # Not used.
 
@@ -391,7 +394,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         t1 = np.array([nc_datetime(1970, 1, 9, hour=(3 + fp)) for fp in
                        forecast_period_in_hours])
         t1_dims = (0,)
-        # Forecast time - vector of same values
+        # Forecast reference time - vector of same values
         t2 = np.array([nc_datetime(1970, 1, 9, hour=3) for _ in
                        forecast_period_in_hours])
         t2_dims = (0,)
