@@ -30,23 +30,32 @@ import sys
 class TestRunner():
     """Run the Iris tests under nose and multiprocessor for performance"""
 
-    description = 'run tests under nose and multiprocessor for performance'
+    description = ('Run tests under nose and multiprocessor for performance. '
+                   'Default behaviour is to run all non-example tests. '
+                   'Specifying one or more test flags will run *only* those '
+                   'tests.')
     user_options = [
         ('no-data', 'n', 'Override the paths to the data repositories so it '
                          'appears to the tests that it does not exist.'),
-        ('system-tests', 's', 'Run only the limited subset of system tests.'),
         ('stop', 'x', 'Stop running tests after the first error or failure.'),
-        ('example-tests', 'e', 'Also run the example code tests.'),
+        ('system-tests', 's', 'Run the limited subset of system tests.'),
+        ('example-tests', 'e', 'Run the example code tests.'),
+        ('default-tests', 'd', 'Run the default tests.'),
+        ('coding-tests', 'c', 'Run the coding standards tests. (These are a '
+                              'subset of the default tests.)'),
         ('num-processors=', 'p', 'The number of processors used for running '
                                  'the tests.'),
     ]
-    boolean_options = ['no-data', 'system-tests', 'stop', 'example-tests']
+    boolean_options = ['no-data', 'system-tests', 'stop', 'example-tests',
+                       'default-tests', 'coding-tests']
 
     def initialize_options(self):
         self.no_data = False
-        self.system_tests = False
         self.stop = False
+        self.system_tests = False
         self.example_tests = False
+        self.default_tests = False
+        self.coding_tests = False
         self.num_processors = None
 
     def finalize_options(self):
@@ -57,8 +66,18 @@ class TestRunner():
             # that nose.run creates, allowing us to simulate the absence of
             # test data
             os.environ['override_test_data_repository'] = 'true'
+        tests = []
         if self.system_tests:
-            print('Running system tests...')
+            tests.append('system')
+        if self.default_tests:
+            tests.append('default')
+        if self.coding_tests:
+            tests.append('coding')
+        if self.example_tests:
+            tests.append('example')
+        if not tests:
+            tests.append('default')
+        print('Running test suite(s): {}'.format(', '.join(tests)))
         if self.stop:
             print('Stopping tests after the first error or failure')
         if self.num_processors is None:
@@ -72,7 +91,13 @@ class TestRunner():
         if hasattr(self, 'distribution') and self.distribution.tests_require:
             self.distribution.fetch_build_eggs(self.distribution.tests_require)
 
-        tests = ['iris.tests']
+        tests = []
+        if self.system_tests:
+            tests.append('iris.tests.system_test')
+        if self.default_tests:
+            tests.append('iris.tests')
+        if self.coding_tests:
+            tests.append('iris.tests.test_coding_standards')
         if self.example_tests:
             import iris.config
             default_doc_path = os.path.join(sys.path[0], 'docs', 'iris')
@@ -84,11 +109,10 @@ class TestRunner():
             else:
                 print('WARNING: Example path %s does not exist.' %
                       (example_path))
+        if not tests:
+            tests.append('iris.tests')
 
-        if self.system_tests:
-            regexp_pat = r'--match=^[Ss]ystem'
-        else:
-            regexp_pat = r'--match=^([Tt]est(?![Mm]ixin)|[Ss]ystem)'
+        regexp_pat = r'--match=^([Tt]est(?![Mm]ixin)|[Ss]ystem)'
 
         n_processors = max(self.num_processors, 1)
 
