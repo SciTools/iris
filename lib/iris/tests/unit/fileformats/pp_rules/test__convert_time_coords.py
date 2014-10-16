@@ -447,19 +447,21 @@ class TestArrayInputWithLBTIM_0_2_1(TestField):
                             standard_name='forecast_period',
                             units='hours',
                             bounds=bounds)
-        points = 9 * 24 + (hours / 2.0)
-        bounds = np.array([points - lbft / 2.0,
-                           points + lbft / 2.0]).transpose()
-        time_coord = DimCoord(points,
+        points = 9 * 24 + 9 + (hours / 2.0)
+        bounds = np.array([8 * 24 + 9 + hours,
+                           np.ones_like(hours) * 10 * 24 + 9]).transpose()
+        time_coord = AuxCoord(points,
                               standard_name='time',
                               units=_EPOCH_HOURS_UNIT,
                               bounds=bounds)
-        fref_time_coord = DimCoord((24 * 10) + 9 - lbft,
+        points = 10 * 24 + 9 - lbft
+        fref_time_coord = DimCoord(points,
                                    standard_name='forecast_reference_time',
                                    units=_EPOCH_HOURS_UNIT)
-        expected = [(fp_coord, (0, 1)),
+        expected = [(fp_coord, (0,)),
                     (time_coord, (0,)),
-                    (fref_time_coord, (1,))]
+                    (fref_time_coord, None)]
+        self.assertCoordsAndDimsListsMatch(coords_and_dims, expected)
 
 
 class TestArrayInputWithLBTIM_0_3_1(TestField):

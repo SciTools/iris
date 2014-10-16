@@ -194,9 +194,7 @@ def _collapse_degenerate_points_and_bounds(points, bounds=None, rtol=1.0e-7):
     """
     array = points
     if bounds is not None:
-        array = np.concatenate(
-            (points.reshape(points.shape + (1,)),
-             bounds), axis=-1)
+        array = np.vstack((points, bounds.T)).T
 
     for i_dim in range(points.ndim):
         if array.shape[i_dim] > 1:
@@ -248,11 +246,8 @@ def _reduce_points_and_bounds(points, lower_and_upper_bounds=None):
     if lower_and_upper_bounds is not None:
         lower_bounds, upper_bounds = np.broadcast_arrays(
             *lower_and_upper_bounds)
-        orig_bounds_dtype = np.asarray(lower_bounds).dtype
-        bds_shape = lower_bounds.shape + (1,)
-        bounds = np.concatenate((lower_bounds.reshape(bds_shape),
-                                 upper_bounds.reshape(bds_shape)),
-                                axis=-1)
+        orig_bounds_dtype = lower_bounds.dtype
+        bounds = np.vstack((lower_bounds, upper_bounds)).T
 
     # Attempt to broadcast points to match bounds to handle scalars.
     if bounds is not None and points.shape != bounds.shape[:-1]:
