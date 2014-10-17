@@ -29,90 +29,195 @@ import iris.fileformats.pp
 import iris.unit
 
 
-def _model_level_number(lblev):
+###############################################################################
+#
+# Convert vectorisation routines.
+#
+
+def _dim_or_aux(*args, **kwargs):
+    try:
+        result = DimCoord(*args, **kwargs)
+    except ValueError:
+        attr = kwargs.get('attributes')
+        if attr is not None and 'positive' in attr:
+            del attr['positive']
+        result = AuxCoord(*args, **kwargs)
+    return result
+
+
+def _convert_vertical_coords(lbcode, lbvc, blev, lblev, stash,
+                             bhlev, bhrlev, brsvd1, brsvd2, brlev,
+                             dim=None):
     """
-    Return model level number for an LBLEV value.
+    Encode scalar or vector vertical level values from PP headers as CM data
+    components.
 
     Args:
 
-    * lblev (int):
-        PP field LBLEV value.
+    * lbcode:
+        Scalar field :class:`iris.fileformats.pp.SplittableInt` value.
+
+    * lbvc:
+        Scalar field value.
+
+    * blev:
+        Scalar field value or :class:`numpy.ndarray` vector of field values.
+
+    * lblev:
+        Scalar field value or :class:`numpy.ndarray` vector of field values.
+
+    * stash:
+        Scalar field :class:`iris.fileformats.pp.STASH` value.
+
+    * bhlev:
+        Scalar field value or :class:`numpy.ndarray` vector of field values.
+
+    * bhrlev:
+        Scalar field value or :class:`numpy.ndarray` vector of field values.
+
+    * brsvd1:
+        Scalar field value or :class:`numpy.ndarray` vector of field values.
+
+    * brsvd2:
+        Scalar field value or :class:`numpy.ndarray` vector of field values.
+
+    * brlev:
+        Scalar field value or :class:`numpy.ndarray` vector of field values.
+
+    Kwargs:
+
+    * dim:
+        Associated dimension of the vertical coordinate. Defaults to None.
 
     Returns:
-        Model level number (integer).
+        A tuple containing a list of coords_and_dims, and a list of factories.
 
     """
-    # See Word no. 33 (LBLEV) in section 4 of UM Model Docs (F3).
-    SURFACE_AND_ZEROTH_RHO_LEVEL_LBLEV = 9999
-
-    if lblev == SURFACE_AND_ZEROTH_RHO_LEVEL_LBLEV:
-        model_level_number = 0
-    else:
-        model_level_number = lblev
-
-    return model_level_number
-
-
-def _convert_scalar_time_coords(lbcode, lbtim, epoch_hours_unit, t1, t2, lbft):
-    """
-    Encode scalar time values from PP headers as CM data components.
-
-    Returns a list of coords_and_dims.
-
-    """
-    t1_epoch_hours = epoch_hours_unit.date2num(t1)
-    t2_epoch_hours = epoch_hours_unit.date2num(t2)
-    hours_from_t1_to_t2 = t2_epoch_hours - t1_epoch_hours
-    hours_from_t2_to_t1 = t1_epoch_hours - t2_epoch_hours
+    factories = []
     coords_and_dims = []
 
-    if \
-            (lbtim.ia == 0) and \
-            (lbtim.ib == 0) and \
-            (lbtim.ic in [1, 2, 3, 4]) and \
-            (len(lbcode) != 5 or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
-        coords_and_dims.append((DimCoord(t1_epoch_hours, standard_name='time', units=epoch_hours_unit), None))
+    # See Word no. 33 (LBLEV) in section 4 of UM Model Docs (F3).
+    BASE_RHO_LEVEL_LBLEV = 9999
+    model_level_number  = np.atleast_1d(lblev)
+    model_level_number[model_level_number == BASE_RHO_LEVEL_LBLEV] = 0
 
-    if \
-            (lbtim.ia == 0) and \
-            (lbtim.ib == 1) and \
-            (lbtim.ic in [1, 2, 3, 4]) and \
-            (len(lbcode) != 5 or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
-        coords_and_dims.append((DimCoord(hours_from_t2_to_t1, standard_name='forecast_period', units='hours'), None))
-        coords_and_dims.append((DimCoord(t1_epoch_hours, standard_name='time', units=epoch_hours_unit), None))
-        coords_and_dims.append((DimCoord(t2_epoch_hours, standard_name='forecast_reference_time', units=epoch_hours_unit), None))
+    # Ensure to vectorise these arguments as arrays, as they participate
+    # in the conditions of convert rules.
+    blev = np.atleast_1d(blev)
+    brsvd1 = np.atleast_1d(brsvd1)
+    brlev = np.atleast_1d(brlev)
 
-    if \
-            (lbtim.ib == 2) and \
-            (lbtim.ic in [1, 2, 4]) and \
-            ((len(lbcode) != 5) or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
-        coords_and_dims.append((
-            DimCoord(standard_name='forecast_period', units='hours',
-                     points=lbft - 0.5 * hours_from_t1_to_t2,
-                     bounds=[lbft - hours_from_t1_to_t2, lbft]),
-            None))
-        coords_and_dims.append((
-            DimCoord(standard_name='time', units=epoch_hours_unit,
-                     points=0.5 * (t1_epoch_hours + t2_epoch_hours),
-                     bounds=[t1_epoch_hours, t2_epoch_hours]),
-            None))
-        coords_and_dims.append((DimCoord(t2_epoch_hours - lbft, standard_name='forecast_reference_time', units=epoch_hours_unit), None))
+    # Height.
+    if (lbvc == 1) and \
+            (not (str(stash) in _STASHCODE_IMPLIED_HEIGHTS)) and \
+            (np.all(blev != -1)):
+        coord = _dim_or_aux(blev, standard_name='height', units='m',
+                            attributes={'positive': 'up'})
+        coords_and_dims.append((coord, dim))
 
-    if \
-            (lbtim.ib == 3) and \
-            (lbtim.ic in [1, 2, 4]) and \
-            ((len(lbcode) != 5) or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
-        coords_and_dims.append((
-            DimCoord(standard_name='forecast_period', units='hours',
-                     points=lbft, bounds=[lbft - hours_from_t1_to_t2, lbft]),
-            None))
-        coords_and_dims.append((
-            DimCoord(standard_name='time', units=epoch_hours_unit,
-                     points=t2_epoch_hours, bounds=[t1_epoch_hours, t2_epoch_hours]),
-            None))
-        coords_and_dims.append((DimCoord(t2_epoch_hours - lbft, standard_name='forecast_reference_time', units=epoch_hours_unit), None))
+    if str(stash) in _STASHCODE_IMPLIED_HEIGHTS:
+        height = _STASHCODE_IMPLIED_HEIGHTS[str(stash)]
+        coord = DimCoord(height, standard_name='height', units='m',
+                         attributes={'positive': 'up'})
+        coords_and_dims.append((coord, None))
 
-    return coords_and_dims
+    # Model level number.
+    if (len(lbcode) != 5) and \
+            (lbvc == 2):
+        coord = _dim_or_aux(model_level_number, standard_name='model_level_number',
+                            attributes={'positive': 'down'})
+        coords_and_dims.append((coord, dim))
+
+    # Depth - unbound.
+    if (len(lbcode) != 5) and \
+            (lbvc == 2) and \
+            np.all(brsvd1 == brlev):
+        coord = _dim_or_aux(blev, standard_name='depth', units='m',
+                            attributes={'positive': 'down'})
+        coords_and_dims.append((coord, dim))
+
+    # Depth - bound.
+    if (len(lbcode) != 5) and \
+            (lbvc == 2) and \
+            np.all(brsvd1 != brlev):
+        coord = _dim_or_aux(blev, standard_name='depth', units='m',
+                            bounds=np.vstack((brsvd1, brlev)).T,
+                            attributes={'positive': 'down'})
+        coords_and_dims.append((coord, dim))
+
+    # Depth - unbound and bound (mixed).
+    if (len(lbcode) != 5) and \
+            (lbvc == 2) and \
+            (np.any(brsvd1 == brlev) and np.any(brsvd1 != brlev)):
+        lower = np.where(brsvd1 == brlev, blev, brsvd1)
+        upper = np.where(brsvd1 == brlev, blev, brlev)
+        coord = _dim_or_aux(blev, standard_name='depth', units='m',
+                            bounds=np.vstack((lower, upper)).T,
+                            attributes={'positive': 'down'})
+        coords_and_dims.append((coord, dim))
+
+    # Soil level.
+    if len(lbcode) != 5 and \
+            lbvc == 6:
+        coord = _dim_or_aux(model_level_number, long_name='soil_model_level_number',
+                            attributes={'positive': 'down'})
+        coords_and_dims.append((coord, dim))
+
+    # Pressure.
+    if (lbvc == 8) and \
+            (len(lbcode) != 5 or (len(lbcode) == 5 and 1 not in [lbcode.ix, lbcode.iy])):
+        coord = _dim_or_aux(blev, long_name='pressure', units='hPa')
+        coords_and_dims.append((coord, dim))
+
+    # Air potential temperature.
+    if (len(lbcode) != 5) and \
+            (lbvc == 19):
+        coord = _dim_or_aux(blev, standard_name='air_potential_temperature', units='K',
+                            attributes={'positive': 'up'})
+        coords_and_dims.append((coord, dim))
+
+    # Hybrid pressure levels.
+    if lbvc == 9:
+        model_level_number = _dim_or_aux(model_level_number,
+                                         standard_name='model_level_number',
+                                         attributes={'positive': 'up'})
+        level_pressure = _dim_or_aux(bhlev,
+                                     long_name='level_pressure',
+                                     units='Pa',
+                                     bounds=np.vstack((bhrlev, brsvd2)).T)
+        sigma = AuxCoord(blev,
+                         long_name='sigma',
+                         bounds=np.vstack((brlev, brsvd1)).T)
+        coords_and_dims.extend([(model_level_number, dim),
+                                (level_pressure, dim),
+                                (sigma, dim)])
+        factories.append(Factory(HybridPressureFactory,
+                                 [{'long_name': 'level_pressure'},
+                                  {'long_name': 'sigma'},
+                                  Reference('surface_air_pressure')]))
+
+    # Hybrid height levels.
+    if lbvc == 65:
+        model_level_number = _dim_or_aux(model_level_number,
+                                         standard_name='model_level_number',
+                                         attributes={'positive': 'up'})
+        level_height = _dim_or_aux(blev,
+                                   long_name='level_height',
+                                   units='m',
+                                   bounds=np.vstack((brlev, brsvd1)).T,
+                                   attributes={'positive': 'up'})
+        sigma = AuxCoord(bhlev,
+                         long_name='sigma',
+                         bounds=np.vstack((bhrlev, brsvd2)).T)
+        coords_and_dims.extend([(model_level_number, dim),
+                                (level_height, dim),
+                                (sigma, dim)])
+        factories.append(Factory(HybridHeightFactory,
+                                 [{'long_name': 'level_height'},
+                                  {'long_name': 'sigma'},
+                                  Reference('orography')]))
+
+    return coords_and_dims, factories
 
 
 def _reshape_vector_args(values_and_dims):
@@ -270,15 +375,6 @@ def _reduce_points_and_bounds(points, lower_and_upper_bounds=None):
     return used_dims, points, bounds
 
 
-def _dim_or_aux(*args, **kwargs):
-    """Make a coordinate -- a DimCoord if possible, otherwise AuxCoord."""
-    try:
-        result = DimCoord(*args, **kwargs)
-    except ValueError:
-        result = AuxCoord(*args, **kwargs)
-    return result
-
-
 def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
                          t1, t2, lbft,
                          t1_dims=(), t2_dims=(), lbft_dims=()):
@@ -419,6 +515,95 @@ def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
             (_dim_or_aux(points, standard_name='forecast_reference_time',
                          units=epoch_hours_unit),
              dims))
+
+    return coords_and_dims
+
+
+###############################################################################
+
+
+def _model_level_number(lblev):
+    """
+    Return model level number for an LBLEV value.
+
+    Args:
+
+    * lblev (int):
+        PP field LBLEV value.
+
+    Returns:
+        Model level number (integer).
+
+    """
+    # See Word no. 33 (LBLEV) in section 4 of UM Model Docs (F3).
+    SURFACE_AND_ZEROTH_RHO_LEVEL_LBLEV = 9999
+
+    if lblev == SURFACE_AND_ZEROTH_RHO_LEVEL_LBLEV:
+        model_level_number = 0
+    else:
+        model_level_number = lblev
+
+    return model_level_number
+
+
+def _convert_scalar_time_coords(lbcode, lbtim, epoch_hours_unit, t1, t2, lbft):
+    """
+    Encode scalar time values from PP headers as CM data components.
+
+    Returns a list of coords_and_dims.
+
+    """
+    t1_epoch_hours = epoch_hours_unit.date2num(t1)
+    t2_epoch_hours = epoch_hours_unit.date2num(t2)
+    hours_from_t1_to_t2 = t2_epoch_hours - t1_epoch_hours
+    hours_from_t2_to_t1 = t1_epoch_hours - t2_epoch_hours
+    coords_and_dims = []
+
+    if \
+            (lbtim.ia == 0) and \
+            (lbtim.ib == 0) and \
+            (lbtim.ic in [1, 2, 3, 4]) and \
+            (len(lbcode) != 5 or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
+        coords_and_dims.append((DimCoord(t1_epoch_hours, standard_name='time', units=epoch_hours_unit), None))
+
+    if \
+            (lbtim.ia == 0) and \
+            (lbtim.ib == 1) and \
+            (lbtim.ic in [1, 2, 3, 4]) and \
+            (len(lbcode) != 5 or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
+        coords_and_dims.append((DimCoord(hours_from_t2_to_t1, standard_name='forecast_period', units='hours'), None))
+        coords_and_dims.append((DimCoord(t1_epoch_hours, standard_name='time', units=epoch_hours_unit), None))
+        coords_and_dims.append((DimCoord(t2_epoch_hours, standard_name='forecast_reference_time', units=epoch_hours_unit), None))
+
+    if \
+            (lbtim.ib == 2) and \
+            (lbtim.ic in [1, 2, 4]) and \
+            ((len(lbcode) != 5) or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
+        coords_and_dims.append((
+            DimCoord(standard_name='forecast_period', units='hours',
+                     points=lbft - 0.5 * hours_from_t1_to_t2,
+                     bounds=[lbft - hours_from_t1_to_t2, lbft]),
+            None))
+        coords_and_dims.append((
+            DimCoord(standard_name='time', units=epoch_hours_unit,
+                     points=0.5 * (t1_epoch_hours + t2_epoch_hours),
+                     bounds=[t1_epoch_hours, t2_epoch_hours]),
+            None))
+        coords_and_dims.append((DimCoord(t2_epoch_hours - lbft, standard_name='forecast_reference_time', units=epoch_hours_unit), None))
+
+    if \
+            (lbtim.ib == 3) and \
+            (lbtim.ic in [1, 2, 4]) and \
+            ((len(lbcode) != 5) or (len(lbcode) == 5 and lbcode.ix not in [20, 21, 22, 23] and lbcode.iy not in [20, 21, 22, 23])):
+        coords_and_dims.append((
+            DimCoord(standard_name='forecast_period', units='hours',
+                     points=lbft, bounds=[lbft - hours_from_t1_to_t2, lbft]),
+            None))
+        coords_and_dims.append((
+            DimCoord(standard_name='time', units=epoch_hours_unit,
+                     points=t2_epoch_hours, bounds=[t1_epoch_hours, t2_epoch_hours]),
+            None))
+        coords_and_dims.append((DimCoord(t2_epoch_hours - lbft, standard_name='forecast_reference_time', units=epoch_hours_unit), None))
 
     return coords_and_dims
 
