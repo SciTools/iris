@@ -43,11 +43,11 @@ class Test(tests.IrisTest):
         self.assertArrayEqual(result, array)
         self.assertEqual(dims, (0,))
 
-    def test_1d_collapse(self):
+    def test_1d_degenerate(self):
         array = np.array([1, 1, 1])
         dims, result, _ = _reduce_points_and_bounds(array)
-        self.assertArrayEqual(result, np.array(1))
-        self.assertEqual(dims, None)
+        self.assertArrayEqual(result, array)
+        self.assertEqual(dims, (0,))
 
     def test_2d_nochange(self):
         array = np.array([[1, 2, 3], [4, 5, 6]])
@@ -55,40 +55,40 @@ class Test(tests.IrisTest):
         self.assertArrayEqual(result, array)
         self.assertEqual(dims, (0, 1))
 
-    def test_2d_collapse_dim0(self):
+    def test_2d_dim0_degenerate(self):
         array = np.array([[1, 2, 3], [1, 2, 3]])
         dims, result, _ = _reduce_points_and_bounds(array)
-        self.assertArrayEqual(result, np.array([1, 2, 3]))
-        self.assertEqual(dims, (1,))
+        self.assertArrayEqual(result, array)
+        self.assertEqual(dims, (0, 1))
 
-    def test_2d_collapse_dim1(self):
+    def test_2d_dim1_degenerate(self):
         array = np.array([[1, 1, 1], [2, 2, 2]])
         dims, result, _ = _reduce_points_and_bounds(array)
-        self.assertArrayEqual(result, np.array([1, 2]))
-        self.assertEqual(dims, (0,))
+        self.assertArrayEqual(result, array)
+        self.assertEqual(dims, (0, 1))
 
-    def test_2d_collapse_both(self):
+    def test_2d_degenerate(self):
         array = np.array([[3, 3, 3], [3, 3, 3]])
         dims, result, _ = _reduce_points_and_bounds(array)
-        self.assertArrayEqual(result, np.array(3))
-        self.assertEqual(dims, None)
+        self.assertArrayEqual(result, array)
+        self.assertEqual(dims, (0, 1))
 
-    def test_3d(self):
+    def test_3d_degenerate(self):
         array = np.array([[[3, 3, 3], [4, 4, 4]], [[3, 3, 3], [4, 4, 4]]])
         dims, result, _ = _reduce_points_and_bounds(array)
-        self.assertArrayEqual(result, np.array([3, 4]))
-        self.assertEqual(dims, (1,))
+        self.assertArrayEqual(result, array)
+        self.assertEqual(dims, (0, 1, 2))
 
-    def test_bounds_collapse(self):
+    def test_1d_degenerate_with_bounds(self):
         points = np.array([1, 1, 1])
         bounds = np.array([[0, 2], [0, 2], [0, 2]])
         result_dims, result_pts, result_bds = \
             _reduce_points_and_bounds(points, (bounds[..., 0], bounds[..., 1]))
-        self.assertArrayEqual(result_pts, np.array(1))
-        self.assertArrayEqual(result_bds, np.array([0, 2]))
-        self.assertEqual(result_dims, None)
+        self.assertArrayEqual(result_pts, points)
+        self.assertArrayEqual(result_bds, bounds)
+        self.assertEqual(result_dims, (0,))
 
-    def test_bounds_no_collapse(self):
+    def test_1d_with_bounds(self):
         points = np.array([1, 2, 3])
         bounds = np.array([[0, 2], [1, 3], [2, 4]])
         result_dims, result_pts, result_bds = \
