@@ -26,6 +26,7 @@ import iris.tests as tests
 
 from netcdftime import datetime
 
+from biggus import ConstantArray, ndarrays
 from iris.fileformats.um._fast_load_structured_fields import FieldCollation
 import iris.fileformats.pp
 
@@ -43,7 +44,8 @@ class Test_fields(tests.IrisTest):
         self.assertEqual(collation.fields, fields)
 
 
-def _make_field(lbyr=None, lbyrd=None, lbft=None, blev=None, bhlev=None):
+def _make_field(lbyr=None, lbyrd=None, lbft=None,
+                blev=None, bhlev=None, data=None):
     header = [0] * 64
     if lbyr is not None:
         header[0] = lbyr
@@ -56,7 +58,42 @@ def _make_field(lbyr=None, lbyrd=None, lbft=None, blev=None, bhlev=None):
     if bhlev is not None:
         header[53] = bhlev
     field = iris.fileformats.pp.PPField3(header)
+    if data is not None:
+        _data = _make_data(data)
+        field.data = _data
     return field
+
+
+def _make_data(fill_value):
+    shape = (10, 10)
+    return ConstantArray(shape, fill_value)
+
+
+class Test_data(tests.IrisTest):
+    # Test order of the data attribute when fastest-varying element is changed.
+    def test_t1_varies_faster(self):
+        collation = FieldCollation(
+            [_make_field(lbyr=2013, lbyrd=2000, data=0),
+             _make_field(lbyr=2014, lbyrd=2000, data=1),
+             _make_field(lbyr=2015, lbyrd=2000, data=2),
+             _make_field(lbyr=2013, lbyrd=2001, data=3),
+             _make_field(lbyr=2014, lbyrd=2001, data=4),
+             _make_field(lbyr=2015, lbyrd=2001, data=5)])
+        data = ndarrays(collation.data)
+        result = [vals[0, 0] for array in data for vals in array]
+        self.assertEqual(result, range(6))
+
+    def test_t2_varies_faster(self):
+        collation = FieldCollation(
+            [_make_field(lbyr=2013, lbyrd=2000, data=0),
+             _make_field(lbyr=2013, lbyrd=2001, data=1),
+             _make_field(lbyr=2013, lbyrd=2002, data=2),
+             _make_field(lbyr=2014, lbyrd=2000, data=3),
+             _make_field(lbyr=2014, lbyrd=2001, data=4),
+             _make_field(lbyr=2014, lbyrd=2002, data=5)])
+        data = ndarrays(collation.data)
+        result = [vals[0, 0] for array in data for vals in array]
+        self.assertEqual(result, range(6))
 
 
 class Test_element_arrays_and_dims(tests.IrisTest):
