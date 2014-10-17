@@ -77,9 +77,12 @@ install:
   
 # prepare iris build directory
   - python setup.py --with-unpack build_ext --include-dirs=${PREFIX}/include --library-dirs=${PREFIX}/lib
-  - if [[ $TEST_TARGET == 'installed' ]]; then IRIS=$(ls -d1 build/lib*/iris); fi
-  - if [[ $TEST_TARGET == 'source' ]]; then IRIS=lib/iris; fi
-  - mkdir -p $IRIS/etc
+  - if [[ $TEST_TARGET == 'installed' ]]; then
+      IRIS=$(ls -d1 build/lib*/iris);
+      mkdir $IRIS/etc;
+    else
+      IRIS=lib/iris;
+    fi
 
 # set config paths
   - SITE_CFG=$IRIS/etc/site.cfg
@@ -90,19 +93,30 @@ install:
   - echo "[System]" >> $SITE_CFG
   - echo "udunits2_path = $PREFIX/lib/libudunits2.so" >> $SITE_CFG
 
-  - if [[ $TEST_TARGET == 'source' ]]; then python setup.py std_names; fi
-  - if [[ $TEST_TARGET == 'source' ]]; then python setup.py pyke_rules; fi
+  # The coding standards tests expect all the standard names and PyKE
+  # modules to be present.
+  - if [[ $TEST_TARGET == 'source' ]]; then
+      python setup.py std_names;
+      PYTHONPATH=lib python setup.py pyke_rules;
+    fi
 
 # iris
   - python setup.py --quiet --with-unpack build
   - python setup.py --quiet --with-unpack install
 
 script:
-  - if [[ $TEST_TARGET == 'installed' ]]; then python -m iris.tests.runner --default-tests --example-tests; fi
-  - if [[ $TEST_TARGET == 'installed' ]]; then cd $(pwd)/docs/iris; fi
-# Make html produces an error when run on Travis that does not affect any downstream functionality but causes the build to fail spuriously.
-# The following gets around this error, which should be investigated further in the future.
-  - if [[ $TEST_TARGET == 'installed' ]]; then echo `make clean html`; fi
-  - if [[ $TEST_TARGET == 'installed' ]]; then make doctest; fi
-
-  - if [[ $TEST_TARGET == 'source' ]]; then python setup.py test --coding-tests; fi
+  - if [[ $TEST_TARGET == 'installed' ]]; then
+      python -m iris.tests.runner --default-tests --example-tests;
+    fi
+  # "make html" produces an error when run on Travis that does not
+  # affect any downstream functionality but causes the build to fail
+  # spuriously. The echo-backtick workaround gets around this error,
+  # which should be investigated further in the future.
+  - if [[ $TEST_TARGET == 'installed' ]]; then
+      cd $(pwd)/docs/iris;
+      echo `make clean html`;
+      make doctest;
+    fi
+  - if [[ $TEST_TARGET == 'source' ]]; then
+      python setup.py test --coding-tests;
+    fi
