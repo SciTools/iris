@@ -19,6 +19,8 @@ Contains symbol definitions for use with :func:`iris.plot.symbols`.
 
 """
 
+from __future__ import division
+
 import itertools
 import math
 
@@ -54,7 +56,7 @@ def _make_merged_patch(paths):
         all_vertices[i_vertices:i_vertices + n_vertices] = vertices
         i_vertices += n_vertices
 
-        n_codes = n_vertices / 2
+        n_codes = n_vertices // 2
         if code == Path.STOP:
             code = Path.MOVETO
         all_codes[i_codes:i_codes + n_codes] = code

@@ -25,7 +25,7 @@ See also: `UDUNITS-2
 
 """
 
-from __future__ import division
+from __future__ import (division, print_function)
 
 from contextlib import contextmanager
 import copy
@@ -1817,7 +1817,7 @@ class Unit(iris.util._OrderedHashable):
             >>> import numpy as np
             >>> c = unit.Unit('deg_c')
             >>> f = unit.Unit('deg_f')
-            >>> print c.convert(0, f)
+            >>> print(c.convert(0, f))
             32.0
             >>> c.convert(0, f, unit.FLOAT32)
             32.0

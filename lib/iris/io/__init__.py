@@ -18,6 +18,9 @@
 Provides an interface to manage URI scheme support in iris.
 
 """
+
+from __future__ import print_function
+
 import glob
 import os.path
 import types
@@ -101,22 +104,22 @@ def decode_uri(uri, default='file'):
 
     Examples:
         >>> from iris.io import decode_uri
-        >>> print decode_uri('http://www.thing.com:8080/resource?id=a:b')
+        >>> print(decode_uri('http://www.thing.com:8080/resource?id=a:b'))
         ('http', '//www.thing.com:8080/resource?id=a:b')
 
-        >>> print decode_uri('file:///data/local/dataZoo/...')
+        >>> print(decode_uri('file:///data/local/dataZoo/...'))
         ('file', '///data/local/dataZoo/...')
 
-        >>> print decode_uri('/data/local/dataZoo/...')
+        >>> print(decode_uri('/data/local/dataZoo/...'))
         ('file', '/data/local/dataZoo/...')
 
-        >>> print decode_uri('file:///C:\data\local\dataZoo\...')
+        >>> print(decode_uri('file:///C:\data\local\dataZoo\...'))
         ('file', '///C:\\data\\local\\dataZoo\\...')
 
-        >>> print decode_uri('C:\data\local\dataZoo\...')
+        >>> print(decode_uri('C:\data\local\dataZoo\...'))
         ('file', 'C:\\data\\local\\dataZoo\\...')
 
-        >>> print decode_uri('dataZoo/...')
+        >>> print(decode_uri('dataZoo/...'))
         ('file', 'dataZoo/...')
 
     '''
@@ -349,7 +352,7 @@ def save(source, target, saver=None, **kwargs):
     # CubeList or sequence of cubes?
     elif (isinstance(source, iris.cube.CubeList) or
           (isinstance(source, (list, tuple)) and
-           all([type(i) == iris.cube.Cube for i in source]))):
+           all([isinstance(i, iris.cube.Cube) for i in source]))):
         # Only allow cubelist saving for those fileformats that are capable.
         if not 'iris.fileformats.netcdf' in saver.__module__:
             # Make sure the saver accepts an append keyword

@@ -16,6 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for :func:`iris.fileformats.pp_rules.convert`."""
 
+from __future__ import division
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -287,7 +289,7 @@ class Test_STASH_CF(iris.tests.unit.fileformats.TestField):
     def test_stash_cf_air_temp(self):
         lbuser = [1, 0, 0, 16203, 0, 0, 1]
         lbfc = 16
-        stash = STASH(lbuser[6], lbuser[3] / 1000, lbuser[3] % 1000)
+        stash = STASH(lbuser[6], lbuser[3] // 1000, lbuser[3] % 1000)
         field = mock.MagicMock(lbuser=lbuser, lbfc=lbfc, stash=stash)
         (factories, references, standard_name, long_name, units,
          attributes, cell_methods, dim_coords_and_dims,
@@ -298,7 +300,7 @@ class Test_STASH_CF(iris.tests.unit.fileformats.TestField):
     def test_no_std_name(self):
         lbuser = [1, 0, 0, 0, 0, 0, 0]
         lbfc = 0
-        stash = STASH(lbuser[6], lbuser[3] / 1000, lbuser[3] % 1000)
+        stash = STASH(lbuser[6], lbuser[3] // 1000, lbuser[3] % 1000)
         field = mock.MagicMock(lbuser=lbuser, lbfc=lbfc, stash=stash)
         (factories, references, standard_name, long_name, units,
          attributes, cell_methods, dim_coords_and_dims,
@@ -311,7 +313,7 @@ class Test_LBFC_CF(iris.tests.unit.fileformats.TestField):
     def test_fc_cf_air_temp(self):
         lbuser = [1, 0, 0, 0, 0, 0, 0]
         lbfc = 16
-        stash = STASH(lbuser[6], lbuser[3] / 1000, lbuser[3] % 1000)
+        stash = STASH(lbuser[6], lbuser[3] // 1000, lbuser[3] % 1000)
         field = mock.MagicMock(lbuser=lbuser, lbfc=lbfc, stash=stash)
         (factories, references, standard_name, long_name, units,
          attributes, cell_methods, dim_coords_and_dims,

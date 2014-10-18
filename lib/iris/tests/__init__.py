@@ -29,6 +29,9 @@ switched to "tkagg" to allow the interactive visual inspection of
 graphical test results.
 
 """
+
+from __future__ import print_function
+
 import collections
 import contextlib
 import difflib
@@ -81,7 +84,7 @@ _RESULT_PATH = os.path.join(os.path.dirname(__file__), 'results')
 if '--data-files-used' in sys.argv:
     sys.argv.remove('--data-files-used')
     fname = '/var/tmp/all_iris_test_resource_paths.txt'
-    print 'saving list of files used by tests to %s' % fname
+    print('saving list of files used by tests to %s' % fname)
     _EXPORT_DATAPATHS_FILE = open(fname, 'w')
 else:
     _EXPORT_DATAPATHS_FILE = None
@@ -121,7 +124,7 @@ def main():
             lines.insert(11, '                       NOTE: To compare results of failing tests, ')
             lines.insert(12, '                             use idiff.py instead')
             lines.insert(13, '  --data-files-used    Save a list of files used to a temporary file')
-            print '\n'.join(lines)
+            print('\n'.join(lines))
     else:
         unittest.main()
 
@@ -586,7 +589,7 @@ class IrisTest(unittest.TestCase):
 
             if _DISPLAY_FIGURES:
                 if err:
-                    print 'Image comparison would have failed. Message: %s' % err
+                    print('Image comparison would have failed. Message: %s' % err)
                 plt.show()
             else:
                 assert not err, 'Image comparison failed. Message: %s' % err

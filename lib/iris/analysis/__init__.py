@@ -45,7 +45,8 @@ The gallery contains several interesting worked examples of how an
  * :ref:`graphics-custom_aggregation`
 
 """
-from __future__ import division
+
+from __future__ import (division, print_function)
 
 import collections
 
@@ -210,7 +211,7 @@ def coord_comparison(*cubes):
     Example usage::
 
         result = coord_comparison(cube1, cube2)
-        print 'All equal coordinates: ', result['equal']
+        print('All equal coordinates: ', result['equal'])
 
     """
     all_coords = [cube.coords() for cube in cubes]

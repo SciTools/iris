@@ -21,6 +21,9 @@ Typically the cube merge process is handled by
 :method:`iris.cube.CubeList.merge`.
 
 """
+
+from __future__ import print_function
+
 from collections import namedtuple, OrderedDict
 from copy import deepcopy
 
@@ -489,12 +492,12 @@ def build_indexes(positions):
         ...
         >>> indexes = build_indexes(positions)
         >>> for k in sorted(indexes):
-        ...     print '%r:' % k
+        ...     print('%r:' % k)
         ...     for kk in sorted(indexes[k]):
-        ...         print '\t%r:' % kk,
+        ...         print('\t%r:' % kk, end=' ')
         ...         for kkk in sorted(indexes[k][kk]):
-        ...             print '%r: %r' % (kkk, indexes[k][kk][kkk]),
-        ...         print
+        ...             print('%r: %r' % (kkk, indexes[k][kk][kkk]), end=' ')
+        ...         print()
         ...
         'a':
              0: 'b': set([10]) 'c': set([100])
@@ -623,7 +626,7 @@ def derive_relation_matrix(indexes):
         >>> indexes = build_indexes(positions)
         >>> matrix = derive_relation_matrix(indexes)
         >>> for k, v in matrix.iteritems():
-        ...     print '%r: %r' % (k, v)
+        ...     print('%r: %r' % (k, v))
         ...
         'a': Relation(separable=set([]), inseparable=set(['c', 'b']))
         'c': Relation(separable=set([]), inseparable=set(['a', 'b']))
@@ -1161,8 +1164,7 @@ class ProtoCube(object):
         # Determine the largest group of source-cubes that want to occupy
         # the same nd-index in the final merged cube.
         group_depth = max([len(group) for group in group_by_nd_index.values()])
-        nd_indexes = group_by_nd_index.keys()
-        nd_indexes.sort()
+        nd_indexes = sorted(group_by_nd_index.keys())
 
         # Check for unique data.
         if unique and group_depth > 1:

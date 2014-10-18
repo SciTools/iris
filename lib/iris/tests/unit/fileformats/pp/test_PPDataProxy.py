@@ -16,6 +16,8 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the `iris.fileformats.pp.PPDataProxy` class."""
 
+from __future__ import division
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -41,9 +43,9 @@ class Test_lbpack(tests.IrisTest):
         self.assertIsNot(proxy.lbpack, lbpack)
         self.assertIsInstance(proxy.lbpack, SplittableInt)
         self.assertEqual(proxy.lbpack.n1, lbpack % 10)
-        self.assertEqual(proxy.lbpack.n2, lbpack / 10 % 10)
-        self.assertEqual(proxy.lbpack.n3, lbpack / 100 % 10)
-        self.assertEqual(proxy.lbpack.n4, lbpack / 1000 % 10)
+        self.assertEqual(proxy.lbpack.n2, lbpack // 10 % 10)
+        self.assertEqual(proxy.lbpack.n3, lbpack // 100 % 10)
+        self.assertEqual(proxy.lbpack.n4, lbpack // 1000 % 10)
 
 
 if __name__ == '__main__':

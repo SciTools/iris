@@ -19,6 +19,8 @@ Provides UK Met Office Fields File (FF) format specific capabilities.
 
 """
 
+from __future__ import (absolute_import, division, print_function)
+
 import os
 import warnings
 
@@ -26,7 +28,7 @@ import numpy as np
 
 from iris.exceptions import NotYetImplementedError
 from iris.fileformats._ff_cross_references import STASH_TRANS
-import pp
+from . import pp
 
 
 IMDI = -32768
@@ -444,7 +446,7 @@ class FF2PP(object):
         For example::
 
             >>> for field in ff.FF2PP(filename):
-            ...     print field
+            ...     print(field)
 
         """
 
@@ -569,7 +571,7 @@ class FF2PP(object):
             data_depth, data_type = self._payload(field)
 
             # Fast stash look-up.
-            stash_s = field.lbuser[3] / 1000
+            stash_s = field.lbuser[3] // 1000
             stash_i = field.lbuser[3] % 1000
             stash = 'm{:02}s{:02}i{:03}'.format(field.lbuser[6],
                                                 stash_s, stash_i)

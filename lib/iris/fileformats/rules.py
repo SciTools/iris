@@ -19,6 +19,8 @@ Processing of simple IF-THEN rules.
 
 """
 
+from __future__ import print_function
+
 import abc
 import collections
 import getpass
@@ -344,7 +346,7 @@ class Rule(object):
         try:
             result = self._exec_conditions(field, f, pp, grib, cm)
         except Exception as err:
-            print >> sys.stderr, 'Condition failed to run conditions: %s : %s' % (self._conditions, err)
+            print('Condition failed to run conditions: %s : %s' % (self._conditions, err), file=sys.stderr)
             raise err
 
         return result
@@ -386,11 +388,11 @@ class Rule(object):
                     factories.append(action_factory)
 
             except iris.exceptions.CoordinateNotFoundError as err:
-                print >> sys.stderr, 'Failed (msg:%(error)s) to find coordinate, perhaps consider running last: %(command)s' % {'command':action, 'error': err}
+                print('Failed (msg:%(error)s) to find coordinate, perhaps consider running last: %(command)s' % {'command':action, 'error': err}, file=sys.stderr)
             except AttributeError as err:
-                print >> sys.stderr, 'Failed to get value (%(error)s) to execute: %(command)s' % {'command':action, 'error': err}
+                print('Failed to get value (%(error)s) to execute: %(command)s' % {'command':action, 'error': err}, file=sys.stderr)
             except Exception as err:
-                print >> sys.stderr, 'Failed (msg:%(error)s) to run:\n    %(command)s\nFrom the rule:\n%(me)r' % {'me':self, 'command':action, 'error': err}
+                print('Failed (msg:%(error)s) to run:\n    %(command)s\nFrom the rule:\n%(me)r' % {'me':self, 'command':action, 'error': err}, file=sys.stderr)
                 raise err
 
         return factories
@@ -444,7 +446,7 @@ class FunctionRule(Rule):
             factory = obj
 
         elif isinstance(obj, DebugString):
-            print obj
+            print(obj)
 
         # The function returned nothing, like the pp save actions, "lbft = 3"
         elif obj is None:

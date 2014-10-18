@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import contextlib
 from distutils.command import build_ext, build_py
 from distutils.core import setup, Command
@@ -81,7 +83,7 @@ class CleanSource(Command):
                     compiled_path = os.path.join(root_path, file_name)
                     source_path = compiled_path[:-1]
                     if not os.path.exists(source_path):
-                        print 'Cleaning', compiled_path
+                        print('Cleaning', compiled_path)
                         os.remove(compiled_path)
 
 

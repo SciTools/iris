@@ -18,11 +18,12 @@
 Provides testing capabilities for installed copies of Iris.
 
 """
-from __future__ import print_function
+
+from __future__ import (absolute_import, print_function)
 
 import argparse
 
-from _runner import TestRunner
+from ._runner import TestRunner
 
 
 parser = argparse.ArgumentParser('iris.tests',

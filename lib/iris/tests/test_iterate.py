@@ -18,6 +18,9 @@
 Test the iteration of cubes in step.
 
 """
+
+from __future__ import division
+
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
@@ -234,7 +237,7 @@ class TestIterateFunctions(tests.IrisTest):
         nslices = reduce(operator.mul, self.cube_a.shape[1:])
         nslices_to_check = 20       # This is only approximate as we use random to select slices
         # Fraction of slices to check
-        check_eq_probability = max(0.0, min(1.0, float(nslices_to_check)/nslices))
+        check_eq_probability = max(0.0, min(1.0, nslices_to_check / nslices))
 
         ij_iterator = np.ndindex(self.cube_a.shape[1], self.cube_a.shape[2])
         count = 0
@@ -313,7 +316,7 @@ class TestIterateFunctions(tests.IrisTest):
         nslices = big_cube.shape[0]*big_cube.shape[2]
         nslices_to_check = 20   # This is only approximate as we use random to select slices
         # Fraction of slices to check
-        check_eq_probability = max(0.0, min(1.0, float(nslices_to_check)/nslices))
+        check_eq_probability = max(0.0, min(1.0, nslices_to_check / nslices))
         ij_iterator = np.ndindex(big_cube.shape[0], big_cube.shape[2])
         count = 0
         for big_slice, little_slice in iris.iterate.izip(big_cube, little_cube,
