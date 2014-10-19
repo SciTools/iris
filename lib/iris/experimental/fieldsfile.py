@@ -37,6 +37,19 @@ def _adjust_dims(coords_and_dims, n_dims):
     return [(coord, adjust(dims)) for coord, dims in coords_and_dims]
 
 
+def _bind_coords(coords_and_dims, dim_coord_dims, dim_coords_and_dims,
+                 aux_coords_and_dims):
+    # Target the first DimCoord for a dimension at dim_coords,
+    # and target everything else at aux_coords.
+    for coord, dims in coords_and_dims:
+        if (isinstance(coord, DimCoord) and dims is not None and
+                len(dims) == 1 and dims[0] not in dim_coord_dims):
+            dim_coords_and_dims.append((coord, dims))
+            dim_coord_dims.add(dims[0])
+        else:
+            aux_coords_and_dims.append((coord, dims))
+
+
 def convert_collation(collation):
     """
     Converts a FieldCollation into the corresponding items of Cube
@@ -80,11 +93,9 @@ def convert_collation(collation):
                                            field.time_unit('hours'),
                                            t1, t2, lbft,
                                            t1_dims, t2_dims, lbft_dims)
-    for coord, dims in coords_and_dims:
-        if dims is not None and len(dims) == 1:
-            dim_coords_and_dims.append((coord, dims))
-        else:
-            aux_coords_and_dims.append((coord, dims))
+    dim_coord_dims = set()
+    _bind_coords(coords_and_dims, dim_coord_dims, dim_coords_and_dims,
+                 aux_coords_and_dims)
 
     # "Normal" (non-cross-sectional) vertical levels
     blev, blev_dims = vector_headers.get('blev', (field.blev, ()))
@@ -102,6 +113,9 @@ def convert_collation(collation):
                                'dimension.')
     if dims:
         v_dims = dims.pop()
+        if len(v_dims) > 1:
+            raise TranslationError('Unsupported multi-dimension vertical '
+                                   'headers.')
     else:
         v_dims = ()
     coords_and_dims, factories = _convert_vertical_coords(field.lbcode,
@@ -111,15 +125,8 @@ def convert_collation(collation):
                                                           bhlev, bhrlev,
                                                           brsvd1, brsvd2,
                                                           brlev, v_dims)
-    done = False
-    for coord, dims in coords_and_dims:
-        # Assumes the first DimCoord, if any, should be used as *the*
-        # dimension coordinate.
-        if not done and isinstance(coord, DimCoord):
-            dim_coords_and_dims.append((coord, dims))
-            done = True
-        else:
-            aux_coords_and_dims.append((coord, dims))
+    _bind_coords(coords_and_dims, dim_coord_dims, dim_coords_and_dims,
+                 aux_coords_and_dims)
 
     # Realization (aka ensemble) (--> scalar coordinates)
     aux_coords_and_dims.extend(_convert_scalar_realization_coords(
