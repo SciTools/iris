@@ -297,12 +297,13 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         time_coord = DimCoord((24 * 8) + 3 + forecast_period_in_hours,
                               standard_name='time',
                               units=_EPOCH_HOURS_UNIT)
-        fref_time_coord = DimCoord((24 * 8) + 3,
+        points = (24 * 8) + 3 * np.ones_like(forecast_period_in_hours)
+        fref_time_coord = AuxCoord(points,
                                    standard_name='forecast_reference_time',
                                    units=_EPOCH_HOURS_UNIT)
         expected = [(fp_coord, (0,)),
                     (time_coord, (0,)),
-                    (fref_time_coord, None)]
+                    (fref_time_coord, (0,))]
         self.assertCoordsAndDimsListsMatch(coords_and_dims, expected)
 
     def test_t1_and_t2_orthogonal_lists(self):
@@ -412,12 +413,13 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         time_coord = DimCoord((24 * 8) + 3 + forecast_period_in_hours,
                               standard_name='time',
                               units=_EPOCH_HOURS_UNIT)
-        fref_time_coord = DimCoord((24 * 8) + 3,
+        points = (24 * 8) + 3 * np.ones_like(forecast_period_in_hours)
+        fref_time_coord = AuxCoord(points,
                                    standard_name='forecast_reference_time',
                                    units=_EPOCH_HOURS_UNIT)
         expected = [(fp_coord, (0,)),
                     (time_coord, (0,)),
-                    (fref_time_coord, None)]
+                    (fref_time_coord, (0,))]
         self.assertCoordsAndDimsListsMatch(coords_and_dims, expected)
 
 

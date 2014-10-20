@@ -272,62 +272,11 @@ def _reshape_vector_args(values_and_dims):
     return result
 
 
-def _collapse_degenerate_points_and_bounds(points, bounds=None, rtol=1.0e-7):
-    """
-    Collapse points (and optionally bounds) in any dimensions over which all
-    values are the same.
-
-    All dimensions are tested, and if degenerate are reduced to length 1.
-
-    Value equivalence is controlled by a tolerance, to avoid problems with
-    numbers from netcdftime.date2num, which has limited precision because of
-    the way it calculates with floats of days.
-
-    Args:
-
-    * points (:class:`numpy.ndarray`)):
-        Array of points values.
-
-    Kwargs:
-
-    * bounds (:class:`numpy.ndarray`)
-        Array of bounds values. This array should have an additional vertex
-        dimension (typically of length 2) when compared to the  points array
-        i.e. bounds.shape = points.shape + (nvertex,)
-
-    Returns:
-
-        A (points, bounds) tuple.
-
-    """
-    array = points
-    if bounds is not None:
-        array = np.vstack((points, bounds.T)).T
-
-    for i_dim in range(points.ndim):
-        if array.shape[i_dim] > 1:
-            slice_inds = [slice(None)] * points.ndim
-            slice_inds[i_dim] = slice(0, 1)
-            slice_0 = array[slice_inds]
-            if np.allclose(array, slice_0, rtol):
-                array = slice_0
-
-    points = array
-    if bounds is not None:
-        points = array[..., 0]
-        bounds = array[..., 1:]
-
-    return points, bounds
-
-
 def _reduce_points_and_bounds(points, lower_and_upper_bounds=None):
     """
     Reduce the dimensionality of arrays of coordinate points (and optionally
     bounds).
 
-    Dimensions over which all values are the same are reduced to size 1, using
-    :func:`_collapse_degenerate_points_and_bounds`.
-    All size-1 dimensions are then removed.
     If the bounds arrays are also passed in, then all three arrays must have
     the same shape or be capable of being broadcast to match.
 
@@ -360,8 +309,6 @@ def _reduce_points_and_bounds(points, lower_and_upper_bounds=None):
     # Attempt to broadcast points to match bounds to handle scalars.
     if bounds is not None and points.shape != bounds.shape[:-1]:
         points, _ = np.broadcast_arrays(points, bounds[..., 0])
-
-    points, bounds = _collapse_degenerate_points_and_bounds(points, bounds)
 
     used_dims = tuple(i_dim for i_dim in range(points.ndim)
                       if points.shape[i_dim] > 1)
