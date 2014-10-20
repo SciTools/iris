@@ -48,11 +48,9 @@ class Test(tests.IrisTest):
     def extract_grid(self, cube):
         return cube.coord('latitude'), cube.coord('longitude')
 
-    def check_mode(self, mode=None):
+    def check_mode(self, mode):
         src_grid, target_grid = self.grids()
-        kwargs = {}
-        if mode is not None:
-            kwargs['extrapolation_mode'] = mode
+        kwargs = {'extrapolation_mode': mode}
         regridder = LinearRegridder(src_grid, target_grid, **kwargs)
         # Make a new cube to regrid with different data so we can
         # distinguish between regridding the original src grid
@@ -69,8 +67,6 @@ class Test(tests.IrisTest):
             result = regridder(src)
         self.assertEqual(regrid.call_count, 1)
         _, args, kwargs = regrid.mock_calls[0]
-        if mode is None:
-            mode = 'extrapolate'
         self.assertEqual(args[0], src)
         self.assertEqual(self.extract_grid(args[1]),
                          self.extract_grid(target_grid))
@@ -85,6 +81,12 @@ class Test(tests.IrisTest):
 
     def test_mode_nan(self):
         self.check_mode('nan')
+
+    def test_mode_mask(self):
+        self.check_mode('mask')
+
+    def test_mode_nanmask(self):
+        self.check_mode('nanmask')
 
     def test_invalid_mode(self):
         src, target = self.grids()

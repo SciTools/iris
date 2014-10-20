@@ -14,7 +14,10 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for :class:`iris.analysis._interpolation.RegularInterpolator`."""
+"""
+Unit tests for :class:`iris.analysis._interpolation.RectilinearInterpolator`.
+
+"""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -30,7 +33,7 @@ import iris.coords
 import iris.cube
 import iris.exceptions
 import iris.tests.stock as stock
-from iris.analysis._interpolation import RegularInterpolator
+from iris.analysis._interpolation import RectilinearInterpolator
 
 
 LINEAR = 'linear'
@@ -52,13 +55,13 @@ class ThreeDimCube(tests.IrisTest):
 
 class Test___init__(ThreeDimCube):
     def test_properties(self):
-        interpolator = RegularInterpolator(self.cube, ['latitude'], LINEAR,
-                                           EXTRAPOLATE)
+        interpolator = RectilinearInterpolator(self.cube, ['latitude'], LINEAR,
+                                               EXTRAPOLATE)
 
         self.assertEqual(interpolator.method, LINEAR)
         self.assertEqual(interpolator.extrapolation_mode, EXTRAPOLATE)
 
-        # Access to cube property of the RegularInterpolator instance.
+        # Access to cube property of the RectilinearInterpolator instance.
         self.assertEqual(interpolator.cube, self.cube)
 
         # Access to the resulting coordinate which we are interpolating over.
@@ -73,8 +76,8 @@ class Test___init____validation(ThreeDimCube):
         msg = 'Coordinates repeat a data dimension - '\
             'the interpolation would be over-specified'
         with self.assertRaisesRegexp(ValueError, msg):
-            RegularInterpolator(self.cube, ['wibble', 'height'], LINEAR,
-                                EXTRAPOLATE)
+            RectilinearInterpolator(self.cube, ['wibble', 'height'], LINEAR,
+                                    EXTRAPOLATE)
 
     def test_interpolator_overspecified_scalar(self):
         # Over specification by means of interpolating over one dimension
@@ -85,14 +88,15 @@ class Test___init____validation(ThreeDimCube):
         msg = 'Coordinates repeat a data dimension - '\
             'the interpolation would be over-specified'
         with self.assertRaisesRegexp(ValueError, msg):
-            RegularInterpolator(self.cube, ['wibble', 'scalar'], LINEAR,
-                                EXTRAPOLATE)
+            RectilinearInterpolator(self.cube, ['wibble', 'scalar'], LINEAR,
+                                    EXTRAPOLATE)
 
     def test_interpolate__decreasing(self):
         def check_expected():
             # Check a simple case is equivalent to extracting the first row.
-            self.interpolator = RegularInterpolator(self.cube, ['latitude'],
-                                                    LINEAR, EXTRAPOLATE)
+            self.interpolator = RectilinearInterpolator(self.cube,
+                                                        ['latitude'],
+                                                        LINEAR, EXTRAPOLATE)
             expected = self.data[:, 0:1, :]
             result = self.interpolator([[0]])
             self.assertArrayEqual(result.data, expected)
@@ -109,20 +113,20 @@ class Test___init____validation(ThreeDimCube):
         msg = ('Cannot interpolate over the non-monotonic coordinate '
                'non-monotonic.')
         with self.assertRaisesRegexp(ValueError, msg):
-            RegularInterpolator(self.cube, ['non-monotonic'], LINEAR,
-                                EXTRAPOLATE)
+            RectilinearInterpolator(self.cube, ['non-monotonic'], LINEAR,
+                                    EXTRAPOLATE)
 
 
 class Test___call___1D(ThreeDimCube):
     def setUp(self):
         ThreeDimCube.setUp(self)
-        self.interpolator = RegularInterpolator(self.cube, ['latitude'],
-                                                LINEAR, EXTRAPOLATE)
+        self.interpolator = RectilinearInterpolator(self.cube, ['latitude'],
+                                                    LINEAR, EXTRAPOLATE)
 
     def test_interpolate_bad_coord_name(self):
         with self.assertRaises(iris.exceptions.CoordinateNotFoundError):
-            RegularInterpolator(self.cube, ['doesnt exist'], LINEAR,
-                                EXTRAPOLATE)
+            RectilinearInterpolator(self.cube, ['doesnt exist'], LINEAR,
+                                    EXTRAPOLATE)
 
     def test_interpolate_data_single(self):
         # Single sample point.
@@ -161,8 +165,9 @@ class Test___call___1D(ThreeDimCube):
         self.assertArrayEqual(result.data, expected)
 
     def _extrapolation_dtype(self, dtype):
-        interpolator = RegularInterpolator(self.cube, ['latitude'], LINEAR,
-                                           extrapolation_mode='nan')
+        self.cube.data = self.cube.data.astype(dtype)
+        interpolator = RectilinearInterpolator(self.cube, ['latitude'], LINEAR,
+                                               extrapolation_mode='nan')
         result = interpolator([[-1]])
         self.assertTrue(np.all(np.isnan(result.data)))
 
@@ -176,16 +181,16 @@ class Test___call___1D(ThreeDimCube):
 
     def test_interpolate_data_error_on_extrapolation(self):
         msg = 'One of the requested xi is out of bounds in dimension 0'
-        interpolator = RegularInterpolator(self.cube, ['latitude'], LINEAR,
-                                           extrapolation_mode='error')
+        interpolator = RectilinearInterpolator(self.cube, ['latitude'], LINEAR,
+                                               extrapolation_mode='error')
         with self.assertRaisesRegexp(ValueError, msg):
             interpolator([[-1]])
 
     def test_interpolate_data_unsupported_extrapolation(self):
         msg = "Extrapolation mode 'unsupported' not supported"
         with self.assertRaisesRegexp(ValueError, msg):
-            RegularInterpolator(self.cube, ['latitude'], LINEAR,
-                                extrapolation_mode='unsupported')
+            RectilinearInterpolator(self.cube, ['latitude'], LINEAR,
+                                    extrapolation_mode='unsupported')
 
     def test_multi_points_array(self):
         # Providing a multidimensional sample points for a 1D interpolation.
@@ -198,26 +203,26 @@ class Test___call___1D(ThreeDimCube):
     def test_interpolate_data_dtype_casting(self):
         data = self.data.astype(int)
         self.cube.data = data
-        self.interpolator = RegularInterpolator(self.cube, ['latitude'],
-                                                LINEAR, EXTRAPOLATE)
+        self.interpolator = RectilinearInterpolator(self.cube, ['latitude'],
+                                                    LINEAR, EXTRAPOLATE)
         result = self.interpolator([[0.125]])
         self.assertEqual(result.data.dtype, np.float64)
 
     def test_default_collapse_scalar(self):
-        interpolator = RegularInterpolator(self.cube, ['wibble'], LINEAR,
-                                           EXTRAPOLATE)
+        interpolator = RectilinearInterpolator(self.cube, ['wibble'], LINEAR,
+                                               EXTRAPOLATE)
         result = interpolator([0])
         self.assertEqual(result.shape, (3, 4))
 
     def test_collapse_scalar(self):
-        interpolator = RegularInterpolator(self.cube, ['wibble'], LINEAR,
-                                           EXTRAPOLATE)
+        interpolator = RectilinearInterpolator(self.cube, ['wibble'], LINEAR,
+                                               EXTRAPOLATE)
         result = interpolator([0], collapse_scalar=True)
         self.assertEqual(result.shape, (3, 4))
 
     def test_no_collapse_scalar(self):
-        interpolator = RegularInterpolator(self.cube, ['wibble'], LINEAR,
-                                           EXTRAPOLATE)
+        interpolator = RectilinearInterpolator(self.cube, ['wibble'], LINEAR,
+                                               EXTRAPOLATE)
         result = interpolator([0], collapse_scalar=False)
         self.assertEqual(result.shape, (1, 3, 4))
 
@@ -226,8 +231,8 @@ class Test___call___1D(ThreeDimCube):
         # indexing is not yet clever enough to remap the interpolated
         # coordinates.
         self.cube.transpose((0, 2, 1))
-        interpolator = RegularInterpolator(self.cube, ['latitude'], LINEAR,
-                                           EXTRAPOLATE)
+        interpolator = RectilinearInterpolator(self.cube, ['latitude'], LINEAR,
+                                               EXTRAPOLATE)
         msg = 'Currently only increasing data_dims is supported.'
         with self.assertRaisesRegexp(NotImplementedError, msg):
             interpolator([0])
@@ -241,11 +246,11 @@ class Test___call___1D_circular(ThreeDimCube):
                                                            endpoint=False)
         self.cube.coord('longitude').circular = True
         self.cube.coord('longitude').units = 'degrees'
-        self.interpolator = RegularInterpolator(self.cube, ['longitude'],
-                                                LINEAR,
-                                                extrapolation_mode='nan')
+        self.interpolator = RectilinearInterpolator(self.cube, ['longitude'],
+                                                    LINEAR,
+                                                    extrapolation_mode='nan')
         self.cube_reverselons = self.cube[:, :, ::-1]
-        self.interpolator_reverselons = RegularInterpolator(
+        self.interpolator_reverselons = RectilinearInterpolator(
             self.cube_reverselons, ['longitude'], LINEAR,
             extrapolation_mode='nan')
 
@@ -315,8 +320,8 @@ class Test___call___1D_circular(ThreeDimCube):
         cube.remove_coord('longitude')
         cube.add_dim_coord(new_long, 1)
 
-        interpolator = RegularInterpolator(cube, ['longitude'], LINEAR,
-                                           EXTRAPOLATE)
+        interpolator = RectilinearInterpolator(cube, ['longitude'], LINEAR,
+                                               EXTRAPOLATE)
         res = interpolator([-10])
         self.assertArrayEqual(res.data, cube[:, 1].data)
 
@@ -337,8 +342,8 @@ class Test___call___1D_singlelendim(ThreeDimCube):
         """
         ThreeDimCube.setUp(self)
         self.cube = self.cube[:, 0:1, 0]
-        self.interpolator = RegularInterpolator(self.cube, ['latitude'],
-                                                LINEAR, EXTRAPOLATE)
+        self.interpolator = RectilinearInterpolator(self.cube, ['latitude'],
+                                                    LINEAR, EXTRAPOLATE)
 
     def test_interpolate_data_linear_extrapolation(self):
         # Linear extrapolation of a single valued element.
@@ -346,15 +351,15 @@ class Test___call___1D_singlelendim(ThreeDimCube):
         self.assertArrayEqual(result.data, self.cube.data)
 
     def test_interpolate_data_nan_extrapolation(self):
-        interpolator = RegularInterpolator(self.cube, ['latitude'], LINEAR,
-                                           extrapolation_mode='nan')
+        interpolator = RectilinearInterpolator(self.cube, ['latitude'], LINEAR,
+                                               extrapolation_mode='nan')
         result = interpolator([[1001]])
         self.assertTrue(np.all(np.isnan(result.data)))
 
     def test_interpolate_data_nan_extrapolation_not_needed(self):
         # No extrapolation for a single length dimension.
-        interpolator = RegularInterpolator(self.cube, ['latitude'], LINEAR,
-                                           extrapolation_mode='nan')
+        interpolator = RectilinearInterpolator(self.cube, ['latitude'], LINEAR,
+                                               extrapolation_mode='nan')
         result = interpolator([[0]])
         self.assertArrayEqual(result.data, self.cube.data)
 
@@ -368,8 +373,8 @@ class Test___call___masked(tests.IrisTest):
                                             mask=mask)
 
     def test_orthogonal_cube(self):
-        interpolator = RegularInterpolator(self.cube, ['grid_latitude'],
-                                           LINEAR, EXTRAPOLATE)
+        interpolator = RectilinearInterpolator(self.cube, ['grid_latitude'],
+                                               LINEAR, EXTRAPOLATE)
         result_cube = interpolator([1])
 
         # Explicit mask comparison to ensure mask retention.
@@ -386,9 +391,9 @@ class Test___call___masked(tests.IrisTest):
 class Test___call___2D(ThreeDimCube):
     def setUp(self):
         ThreeDimCube.setUp(self)
-        self.interpolator = RegularInterpolator(self.cube,
-                                                ['latitude', 'longitude'],
-                                                LINEAR, EXTRAPOLATE)
+        self.interpolator = RectilinearInterpolator(self.cube,
+                                                    ['latitude', 'longitude'],
+                                                    LINEAR, EXTRAPOLATE)
 
     def test_interpolate_data(self):
         result = self.interpolator([[1, 2], [2]])
@@ -417,8 +422,8 @@ class Test___call___2D(ThreeDimCube):
     def test_multi_dim_coord_interpolation(self):
         msg = 'Interpolation coords must be 1-d for rectilinear interpolation.'
         with self.assertRaisesRegexp(ValueError, msg):
-            interpolator = RegularInterpolator(self.cube, ['foo', 'bar'],
-                                               LINEAR, EXTRAPOLATE)
+            interpolator = RectilinearInterpolator(self.cube, ['foo', 'bar'],
+                                                   LINEAR, EXTRAPOLATE)
             interpolator([[15], [10]])
 
 
@@ -426,8 +431,8 @@ class Test___call___2D_non_contiguous(ThreeDimCube):
     def setUp(self):
         ThreeDimCube.setUp(self)
         coords = ['height', 'longitude']
-        self.interpolator = RegularInterpolator(self.cube, coords, LINEAR,
-                                                EXTRAPOLATE)
+        self.interpolator = RectilinearInterpolator(self.cube, coords, LINEAR,
+                                                    EXTRAPOLATE)
 
     def test_interpolate_data_multiple(self):
         result = self.interpolator([[1], [1, 2]])
@@ -472,7 +477,7 @@ class Test___call___2D_non_contiguous(ThreeDimCube):
 
 class Test___call___lazy_data(ThreeDimCube):
     def test_src_cube_data_loaded(self):
-        # RegularInterpolator operates using a snapshot of the source cube.
+        # RectilinearInterpolator operates using a snapshot of the source cube.
         # If the source cube has lazy data when the interpolator is
         # instantiated we want to make sure the source cube's data is
         # loaded as a consequence of interpolation to avoid the risk
@@ -483,8 +488,8 @@ class Test___call___lazy_data(ThreeDimCube):
         self.assertTrue(self.cube.has_lazy_data())
 
         # Perform interpolation and check the data has been loaded.
-        interpolator = RegularInterpolator(self.cube, ['latitude'], LINEAR,
-                                           EXTRAPOLATE)
+        interpolator = RectilinearInterpolator(self.cube, ['latitude'], LINEAR,
+                                               EXTRAPOLATE)
         interpolator([[1.5]])
         self.assertFalse(self.cube.has_lazy_data())
 
@@ -498,7 +503,7 @@ class Test___call___time(tests.IrisTest):
         height_coord = iris.coords.DimCoord(range(3), 'altitude', units='m')
         cube.add_dim_coord(time_coord, 0)
         cube.add_dim_coord(height_coord, 1)
-        return RegularInterpolator(cube, ['time'], method, EXTRAPOLATE)
+        return RectilinearInterpolator(cube, ['time'], method, EXTRAPOLATE)
 
     def test_number_at_existing_value(self):
         interpolator = self.interpolator()

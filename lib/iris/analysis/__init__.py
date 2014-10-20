@@ -57,7 +57,7 @@ import scipy.stats.mstats
 
 from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
-                                          RegularInterpolator)
+                                          RectilinearInterpolator)
 from iris.analysis._linear import LinearRegridder
 import iris.coords
 from iris.exceptions import LazyAggregatorError
@@ -1511,7 +1511,7 @@ class Linear(object):
         * extrapolation_mode:
             Must be one of the following strings:
 
-              * 'linear' or 'extrapolate' - The extrapolation points
+              * 'extrapolate' or 'linear' - The extrapolation points
                 will be calculated by extending the gradient of the
                 closest two points.
               * 'nan' - The extrapolation points will be be set to NaN.
@@ -1526,7 +1526,7 @@ class Linear(object):
             The default mode of extrapolation is 'linear'.
 
         """
-        if extrapolation_mode not in Linear.LINEAR_EXTRAPOLATION_MODES:
+        if extrapolation_mode not in self.LINEAR_EXTRAPOLATION_MODES:
             msg = 'Extrapolation mode {!r} not supported.'
             raise ValueError(msg.format(extrapolation_mode))
         self.extrapolation_mode = extrapolation_mode
@@ -1575,8 +1575,8 @@ class Linear(object):
             `[new_lat_values, new_lon_values]`.
 
         """
-        return RegularInterpolator(cube, coords, 'linear',
-                                   self._normalised_extrapolation_mode())
+        return RectilinearInterpolator(cube, coords, 'linear',
+                                       self._normalised_extrapolation_mode())
 
     def regridder(self, src_grid, target_grid):
         """

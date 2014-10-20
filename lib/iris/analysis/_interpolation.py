@@ -170,7 +170,7 @@ def snapshot_grid(cube):
     return x.copy(), y.copy()
 
 
-class RegularInterpolator(object):
+class RectilinearInterpolator(object):
     """
     This class provides support for performing nearest-neighbour or
     linear interpolation over one or more orthogonal dimensions.
