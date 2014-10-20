@@ -39,6 +39,8 @@ class TestRunner():
         ('example-tests', 'e', 'Also run the example code tests.'),
         ('num-processors=', 'p', 'The number of processors used for running '
                                  'the tests.'),
+        ('repo-dir=', 'r', 'The location of the git repository for the '
+                           'iris source code.'),
     ]
     boolean_options = ['no-data', 'system-tests', 'stop', 'example-tests']
 
@@ -48,6 +50,7 @@ class TestRunner():
         self.stop = False
         self.example_tests = False
         self.num_processors = None
+        self.repo_dir = None
 
     def finalize_options(self):
         if self.no_data:
@@ -98,6 +101,11 @@ class TestRunner():
         if self.stop:
             args.append('--stop')
 
+        env = None
+        if self.repo_dir:
+            env = os.environ.copy()
+            env['IRIS_REPO_DIR'] = self.repo_dir
+
         result = True
         for test in tests:
             args[1] = test
@@ -107,6 +115,6 @@ class TestRunner():
             # run the tests at module level i.e. my_module.tests
             # - test must start with test/Test and must not contain the
             #   word Mixin.
-            result &= nose.run(argv=args)
+            result &= nose.run(argv=args, env=env)
         if result is False:
             exit(1)
