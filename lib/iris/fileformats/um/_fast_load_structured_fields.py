@@ -24,6 +24,7 @@ import numpy as np
 from iris.fileformats.um._optimal_array_structuring import \
     optimal_array_structure
 
+from biggus import ArrayStack
 from iris.fileformats.pp import PPField3
 
 
@@ -61,6 +62,7 @@ class FieldCollation(object):
 
         """
         self._fields = tuple(fields)
+        self._data_cache = None
         assert len(self.fields) > 0
         self._structure_calculated = False
         self._vector_dims_shape = None
@@ -72,7 +74,18 @@ class FieldCollation(object):
         return self._fields
 
     @property
-    def _UNUSED_vector_dims_shape(self):
+    def data(self):
+        if not self._structure_calculated:
+            self._calculate_structure()
+        if self._data_cache is None:
+            data_arrays = [f._data for f in self.fields]
+            self._data_cache = \
+                ArrayStack.multidim_array_stack(data_arrays,
+                                                self.vector_dims_shape)
+        return self._data_cache
+
+    @property
+    def vector_dims_shape(self):
         """The shape of the array structure."""
         if not self._structure_calculated:
             self._calculate_structure()
