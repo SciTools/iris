@@ -282,7 +282,7 @@ def guess_coord_axis(coord):
     """
     Returns a "best guess" axis name of the coordinate.
 
-    Heuristic categoration of the coordinate into either label
+    Heuristic categorisation of the coordinate into either label
     'T', 'Z', 'Y', 'X' or None.
 
     Args:
