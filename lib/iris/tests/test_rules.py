@@ -96,7 +96,7 @@ class TestLoadCubes(tests.IrisTest):
 
         # The fake PPField which will be supplied to our converter.
         field = Mock()
-        field.data = None
+        field.lazy_data = lambda: None
         field_generator = lambda filename: [field]
         # A fake conversion function returning:
         #   1) A parameter cube needing a simple factory construction.
@@ -156,9 +156,9 @@ class TestLoadCubes(tests.IrisTest):
 
         # The fake PPFields which will be supplied to our converter.
         press_field = Mock()
-        press_field.data = param_cube.data
+        press_field.lazy_data = lambda: param_cube.data
         orog_field = Mock()
-        orog_field.data = orog_cube.data
+        orog_field.lazy_data = lambda: orog_cube.data
         field_generator = lambda filename: [press_field, orog_field]
         # A fake rule set returning:
         #   1) A parameter cube needing an "orography" reference

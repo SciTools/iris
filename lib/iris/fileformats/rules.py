@@ -751,12 +751,7 @@ def _make_cube(field, converter):
     # Convert the field to a Cube.
     metadata = converter(field)
 
-    try:
-        data = field._data
-    except AttributeError:
-        data = field.data
-
-    cube = iris.cube.Cube(data,
+    cube = iris.cube.Cube(field.lazy_data(),
                           attributes=metadata.attributes,
                           cell_methods=metadata.cell_methods,
                           dim_coords_and_dims=metadata.dim_coords_and_dims,

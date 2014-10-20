@@ -35,14 +35,14 @@ class TestGribMessage(tests.IrisTest):
             with open(filename, 'wb') as f:
                 pickle.dump(message, f)
 
-    def test_data(self):
-        # Check that _GribMessage.data pickles without errors.
+    def test_lazy_data(self):
+        # Check that _GribMessage.lazy_data() pickles without errors.
         path = tests.get_data_path(('GRIB', 'fp_units', 'hours.grib2'))
         messages = _GribMessage.messages_from_filename(path)
         message = next(messages)
         with self.temp_filename('.pkl') as filename:
             with open(filename, 'wb') as f:
-                pickle.dump(message.data, f)
+                pickle.dump(message.lazy_data(), f)
 
 
 if __name__ == '__main__':

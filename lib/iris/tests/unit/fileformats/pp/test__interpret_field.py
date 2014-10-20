@@ -33,13 +33,13 @@ class Test__interpret_fields__land_packed_fields(tests.IrisTest):
         self.pp_field = mock.Mock(lblrec=1, lbext=0, lbuser=[0] * 7,
                                   lbrow=0, lbnpt=0,
                                   raw_lbpack=20,
-                                  _data=('dummy', 0, 0, 0))
+                                  _my_data=('dummy', 0, 0, 0))
         # The field specifying the land/seamask.
         lbuser = [None, None, None, 30, None, None, 1]  # m01s00i030
         self.land_mask_field = mock.Mock(lblrec=1, lbext=0, lbuser=lbuser,
                                          lbrow=3, lbnpt=4,
                                          raw_lbpack=0,
-                                         _data=('dummy', 0, 0, 0))
+                                         _my_data=('dummy', 0, 0, 0))
 
     def test_non_deferred_fix_lbrow_lbnpt(self):
         # Checks the fix_lbrow_lbnpt is applied to fields which are not
@@ -51,7 +51,7 @@ class Test__interpret_fields__land_packed_fields(tests.IrisTest):
         self.assertEqual(f1.lbrow, 3)
         self.assertEqual(f1.lbnpt, 4)
         # Check the data's shape has been updated too.
-        self.assertEqual(f1._data.shape, (3, 4))
+        self.assertEqual(f1._my_data.shape, (3, 4))
 
     def test_fix_lbrow_lbnpt_no_mask_available(self):
         # Check a warning is issued when loading a land masked field

@@ -28,10 +28,10 @@ import iris.fileformats.pp as pp
 
 class Test__create_field_data(tests.IrisTest):
     def test_loaded_bytes(self):
-        # Check that a field with LoadedArrayBytes in _data gets the
+        # Check that a field with LoadedArrayBytes in _my_data gets the
         # result of a suitable call to _data_bytes_to_shaped_array().
         mock_loaded_bytes = mock.Mock(spec=pp.LoadedArrayBytes)
-        field = mock.Mock(_data=mock_loaded_bytes)
+        field = mock.Mock(_my_data=mock_loaded_bytes)
         data_shape = mock.Mock()
         land_mask = mock.Mock()
         with mock.patch('iris.fileformats.pp._data_bytes_to_shaped_array') as \
@@ -39,14 +39,14 @@ class Test__create_field_data(tests.IrisTest):
             convert_bytes.return_value = mock.sentinel.array
             pp._create_field_data(field, data_shape, land_mask)
 
-        self.assertIs(field._data, mock.sentinel.array)
+        self.assertIs(field._my_data, mock.sentinel.array)
         convert_bytes.assert_called_once_with(mock_loaded_bytes.bytes,
                                               field.lbpack, data_shape,
                                               mock_loaded_bytes.dtype,
                                               field.bmdi, land_mask)
 
     def test_deferred_bytes(self):
-        # Check that a field with deferred array bytes in _data gets a
+        # Check that a field with deferred array bytes in _my_data gets a
         # biggus array.
         fname = mock.sentinel.fname
         position = mock.sentinel.position
@@ -54,7 +54,7 @@ class Test__create_field_data(tests.IrisTest):
         newbyteorder = mock.Mock(return_value=mock.sentinel.dtype)
         dtype = mock.Mock(newbyteorder=newbyteorder)
         deferred_bytes = (fname, position, n_bytes, dtype)
-        field = mock.Mock(_data=deferred_bytes)
+        field = mock.Mock(_my_data=deferred_bytes)
         data_shape = (mock.sentinel.lat, mock.sentinel.lon)
         land_mask = mock.Mock()
         proxy = mock.Mock(dtype=mock.sentinel.dtype, shape=data_shape)
@@ -66,9 +66,9 @@ class Test__create_field_data(tests.IrisTest):
             PPDataProxy.return_value = proxy
             pp._create_field_data(field, data_shape, land_mask)
         # Does the biggus array look OK from the outside?
-        self.assertIsInstance(field._data, biggus.Array)
-        self.assertEqual(field._data.shape, data_shape)
-        self.assertEqual(field._data.dtype, mock.sentinel.dtype)
+        self.assertIsInstance(field._my_data, biggus.Array)
+        self.assertEqual(field._my_data.shape, data_shape)
+        self.assertEqual(field._my_data.dtype, mock.sentinel.dtype)
         # Is it making use of a correctly configured proxy?
         # NB. We know it's *using* the result of this call because
         # that's where the dtype came from above.
