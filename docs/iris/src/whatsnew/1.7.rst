@@ -1,8 +1,8 @@
 What's new in Iris 1.7
 **********************
 
-:Release: 1.7.2
-:Date: 20th October 2014
+:Release: 1.7.3
+:Date: ???
 
 Iris 1.7 features
 =================
