@@ -156,13 +156,22 @@ class FieldCollation(object):
         # Make value arrays for the vectorisable field elements.
         element_definitions = self._field_vector_element_arrays()
 
-        # Make a copy with time value tuples replaced by integers.
+        # Identify the vertical elements and payload.
+        blev_array = dict(element_definitions).get('blev')
+        vertical_elements = ('lblev', 'bhlev', 'bhrlev',
+                             'brsvd1', 'brsvd2', 'brlev')
+
+        # Make an ordering copy.
         ordering_definitions = element_definitions[:]
+        # Replace time value tuples with integers and bind the vertical
+        # elements to the (expected) primary vertical element "blev".
         for index, (name, array) in enumerate(ordering_definitions):
             if name in ('t1', 't2'):
                 array = np.array(
                     [self._time_comparable_int(*tuple(val)) for val in array])
                 ordering_definitions[index] = (name, array)
+            if name in vertical_elements and blev_array is not None:
+                ordering_definitions[index] = (name, blev_array)
 
         # Perform the main analysis: get vector dimensions, elements, arrays.
         dims_shape, primary_elements, vector_element_arrays_and_dims = \

@@ -20,13 +20,50 @@ High-speed loading of structured FieldsFiles.
 """
 
 from iris.coords import DimCoord
+from iris.cube import CubeList
 from iris.exceptions import TranslationError
+from iris.fileformats.ff import FF2PP
 from iris.fileformats.pp_rules import (_convert_time_coords,
                                        _convert_vertical_coords,
                                        _convert_scalar_realization_coords,
                                        _convert_scalar_pseudo_level_coords,
                                        _all_other_rules)
-from iris.fileformats.rules import ConversionMetadata
+from iris.fileformats.rules import ConversionMetadata, Loader, load_cubes
+from iris.fileformats.um._fast_load_structured_fields import \
+    group_structured_fields
+
+
+# Seed the preferred order of candidate dimension coordinates.
+_HINT_COORDS = ['time', 'forecast_reference_time', 'model_level_number']
+_HINTS = {name: i for i, name in zip(range(len(_HINT_COORDS)), _HINT_COORDS)}
+
+
+def _collations_from_filename(filename):
+    fields = iter(FF2PP(filename))
+    return group_structured_fields(fields)
+
+
+def load(filenames, callback=None):
+    """
+    Load the structured FieldsFiles.
+
+    Args:
+
+    * filesnames:
+        One or more filenames.
+
+    Kwargs:
+
+    * callback:
+        A modifier/filter function. Please see the module documentation
+        for :mod:`iris`.
+
+    Returns:
+        An :class:`iris.cube.CubeList`.
+
+    """
+    loader = Loader(_collations_from_filename, {}, convert_collation, None)
+    return CubeList(load_cubes(filenames, callback, loader, None))
 
 
 def _adjust_dims(coords_and_dims, n_dims):
@@ -39,9 +76,10 @@ def _adjust_dims(coords_and_dims, n_dims):
 
 def _bind_coords(coords_and_dims, dim_coord_dims, dim_coords_and_dims,
                  aux_coords_and_dims):
+    key_func = lambda item: _HINTS.get(item[0].name(), len(_HINTS))
     # Target the first DimCoord for a dimension at dim_coords,
     # and target everything else at aux_coords.
-    for coord, dims in coords_and_dims:
+    for coord, dims in sorted(coords_and_dims, key=key_func):
         if (isinstance(coord, DimCoord) and dims is not None and
                 len(dims) == 1 and dims[0] not in dim_coord_dims):
             dim_coords_and_dims.append((coord, dims))
