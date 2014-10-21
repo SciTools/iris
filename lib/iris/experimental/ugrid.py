@@ -23,7 +23,10 @@ Ugrid functions.
 from __future__ import (absolute_import, division, print_function)
 
 import iris
-from pyugrid.ugrid import UGrid
+
+# Import pyugrid via iris.proxy, just so we can build the docs with no pyugrid.
+import iris.proxy
+iris.proxy.apply_proxy('pyugrid', globals())
 
 
 def ugrid(location, name):
@@ -52,7 +55,7 @@ def ugrid(location, name):
     """
 
     cube = iris.load_cube(location, name)
-    ug = UGrid.from_ncfile(location)
+    ug = pyugrid.ugrid.UGrid.from_ncfile(location)
     cube.mesh = ug
     cube.mesh_dimension = 1  # {0:time, 1:node}
     return cube
